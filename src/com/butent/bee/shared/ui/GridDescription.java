@@ -34,7 +34,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private enum Serial {
     NAME, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HAS_HEADERS, HAS_FOOTERS,
     CACHING, ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE,
-    READONLY, NEW_ROW_FORM, NEW_ROW_COLUMNS, EDIT_FORM, EDIT_COLUMNS, EDIT_MODE,
+    READONLY, NEW_ROW_FORM, NEW_ROW_COLUMNS, EDIT_FORM, EDIT_IN_PLACE, EDIT_MODE,
     HEADER, BODY, FOOTER, ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION,
     SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH, COLUMNS
   }
@@ -75,7 +75,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private String newRowForm = null;
   private String newRowColumns = null;
   private String editForm = null;
-  private String editColumns = null;
+  private String editInPlace = null;
 
   private GridComponentDescription header = null;
   private GridComponentDescription body = null;
@@ -213,8 +213,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_FORM:
           setEditForm(value);
           break;
-        case EDIT_COLUMNS:
-          setEditColumns(value);
+        case EDIT_IN_PLACE:
+          setEditInPlace(value);
           break;
         case EDIT_MODE:
           setEditMode(value);
@@ -265,12 +265,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return columns;
   }
 
-  public String getEditColumns() {
-    return editColumns;
-  }
-
   public String getEditForm() {
     return editForm;
+  }
+
+  public String getEditInPlace() {
+    return editInPlace;
   }
 
   public String getEditMode() {
@@ -315,7 +315,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "New Row Form", getNewRowForm(),
         "New Row Columns", getNewRowColumns(),
         "Edit Form", getEditForm(),
-        "Edit Columns", getEditColumns(),
+        "Edit In Place", getEditInPlace(),
         "Edit Mode", getEditMode(),
         "Show Column Widths", showColumnWidths(),
         "Min Column Width", getMinColumnWidth(),
@@ -567,8 +567,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_FORM:
           arr[i++] = getEditForm();
           break;
-        case EDIT_COLUMNS:
-          arr[i++] = getEditColumns();
+        case EDIT_IN_PLACE:
+          arr[i++] = getEditInPlace();
           break;
         case EDIT_MODE:
           arr[i++] = getEditMode();
@@ -625,12 +625,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     setInitialRowSetSize(DataUtils.getMaxInitialRowSetSize());
   }
 
-  public void setEditColumns(String editColumns) {
-    this.editColumns = editColumns;
-  }
-
   public void setEditForm(String editForm) {
     this.editForm = editForm;
+  }
+
+  public void setEditInPlace(String editInPlace) {
+    this.editInPlace = editInPlace;
   }
 
   public void setEditMode(String editMode) {

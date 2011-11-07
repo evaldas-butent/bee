@@ -116,7 +116,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         }
       }
 
-      if (type.isEditable() && hasData()) {
+      if (type.isEditable() && hasData() && !BeeUtils.isEmpty(result.getSource())) {
         String source = result.getSource();
         int index = getDataIndex(source);
 
@@ -230,6 +230,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  private static final String NEW_ROW_CAPTION = "Create New";
+  
   private Presenter viewPresenter = null;
 
   private Widget rootWidget = null;
@@ -254,6 +256,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private JavaScriptObject rowJso = null;
 
   private boolean readOnly = false;
+  
+  private String caption = null;
 
   private FormCallback formCallback = null;
 
@@ -328,6 +332,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
 
     setReadOnly(formDescription.isReadOnly());
+    setCaption(formDescription.getCaption());
 
     Widget root = FormFactory.createForm(formDescription, dataCols, getCreationCallback(),
         callback);
@@ -376,6 +381,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       return null;
     }
     return new RowInfo(getRow());
+  }
+
+  public String getCaption() {
+    return caption;
   }
 
   public List<BeeColumn> getDataColumns() {
@@ -602,7 +611,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public void prepareForInsert() {
-    if (getFormCallback() != null && !getFormCallback().onPrepareForInsert(this, getRow())) {
+    if (getFormCallback() != null && !getFormCallback().onPrepareForInsert(this, this, getRow())) {
       return;
     }
     if (!checkNewRow(getRow())) {
@@ -748,7 +757,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public void startNewRow() {
     setAdding(true);
-    fireEvent(new AddStartEvent());
+    fireEvent(new AddStartEvent(NEW_ROW_CAPTION));
 
     IsRow oldRow = getRow();
     setRowBuffer(oldRow);
@@ -855,11 +864,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     String[] arr = new String[getDataColumns().size()];
     return new BeeRow(0, arr);
   }
-
+  
   private void fireDataRequest() {
     fireEvent(new DataRequestEvent());
   }
-  
+
   private void fireScopeChange() {
     fireEvent(new ScopeChangeEvent(getPageStart(), getPageSize(), getRowCount()));
   }
@@ -920,11 +929,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private CreationCallback getCreationCallback() {
     return creationCallback;
   }
-
+  
   private Set<DisplayWidget> getDisplayWidgets() {
     return displayWidgets;
   }
-  
+
   private EditableWidget getEditableWidget(String columnId) {
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (BeeUtils.same(columnId, editableWidget.getColumnId())) {
@@ -1124,6 +1133,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private void setAdding(boolean adding) {
     this.adding = adding;
+  }
+
+  private void setCaption(String caption) {
+    this.caption = caption;
   }
 
   private void setDataColumns(List<BeeColumn> dataColumns) {

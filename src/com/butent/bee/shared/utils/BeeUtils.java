@@ -1,5 +1,8 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
@@ -26,6 +29,9 @@ import java.util.Set;
  */
 public class BeeUtils {
 
+  public static final Splitter NAME_SPLITTER = 
+      Splitter.on(CharMatcher.anyOf(" ,;")).trimResults().omitEmptyStrings();
+  
   private static int nameCounter = 0;
 
   /**
@@ -906,7 +912,7 @@ public class BeeUtils {
     }
     return key;
   }
-
+  
   /**
    * Gets a prefix from a String, where separator sets that the prefix will end at the first
    * occurrence of the separator.
@@ -1004,14 +1010,14 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
-  
+
   public static boolean hasLength(CharSequence cs, int min) {
     if (cs == null) {
       return false;
     }
     return cs.length() >= min;
   }
-
+  
   /**
    * @param x Object to check
    * @param def Objects {@code x} default value to set
@@ -1606,8 +1612,8 @@ public class BeeUtils {
    * @param idx the index to check
    * @return true if an Enum with the specified index {@code idx} exists, otherwise false.
    */
-  public static boolean isOrdinal(Class<?> clazz, int idx) {
-    if (clazz == null || !clazz.isEnum() || idx < 0) {
+  public static boolean isOrdinal(Class<?> clazz, Integer idx) {
+    if (clazz == null || !clazz.isEnum() || idx == null || idx < 0) {
       return false;
     }
     return idx < ArrayUtils.length(clazz.getEnumConstants());
@@ -2030,19 +2036,6 @@ public class BeeUtils {
     return z;
   }
 
-  /**
-   * Normalizes the String to lower case.
-   * 
-   * @param s string to be normalized
-   * @return a normalized string
-   */
-  public static String normalize(String s) {
-    if (s == null) {
-      return BeeConst.STRING_EMPTY;
-    }
-    return s.trim().toLowerCase();
-  }
-
   public static double normalize(double x, double min, double max) {
     double z;
 
@@ -2058,6 +2051,19 @@ public class BeeUtils {
       z = (x - min) / (max - min);
     }
     return z;
+  }
+
+  /**
+   * Normalizes the String to lower case.
+   * 
+   * @param s string to be normalized
+   * @return a normalized string
+   */
+  public static String normalize(String s) {
+    if (s == null) {
+      return BeeConst.STRING_EMPTY;
+    }
+    return s.trim().toLowerCase();
   }
 
   /**
@@ -2621,6 +2627,13 @@ public class BeeUtils {
     return BeeConst.DOUBLE_ZERO;
   }
 
+  public static boolean same(char c1, char c2) {
+    if (c1 == c2) {
+      return true;
+    }
+    return Character.toLowerCase(c1) == Character.toLowerCase(c2);
+  }
+
   /**
    * Checks if {@code s1} and {@code s2} are same. Note: values are trimmed, case is ignored.
    * 
@@ -2636,13 +2649,6 @@ public class BeeUtils {
       return isEmpty(s1);
     }
     return s1.trim().equalsIgnoreCase(s2.trim());
-  }
-
-  public static boolean same(char c1, char c2) {
-    if (c1 == c2) {
-      return true;
-    }
-    return Character.toLowerCase(c1) == Character.toLowerCase(c2);
   }
 
   public static boolean sameSign(int i1, int i2) {
@@ -2778,7 +2784,7 @@ public class BeeUtils {
       return false;
     }
   }
-  
+
   /**
    * Checks if {@code x} is a Boolean value.
    * 
@@ -2788,7 +2794,7 @@ public class BeeUtils {
   public static boolean toBoolean(int x) {
     return x == BeeConst.INT_TRUE;
   }
-
+  
   /**
    * Checks if {@code s} is a Boolean value.
    * 
@@ -2819,21 +2825,15 @@ public class BeeUtils {
     return (char) x;
   }
 
-  public static BigDecimal toDecimalOrNull(String s) {
-    if (isEmpty(s)) {
+  public static BigDecimal toDecimalOrNull(Double x) {
+    if (x == null) {
       return null;
+    } else {
+      return BigDecimal.valueOf(x);
     }
-    BigDecimal d;
-
-    try {
-      d = new BigDecimal(s.trim());
-    } catch (NumberFormatException ex) {
-      d = null;
-    }
-    return d;
   }
 
-  public static BigDecimal toDecimalOrNull(Double x) {
+  public static BigDecimal toDecimalOrNull(Integer x) {
     if (x == null) {
       return null;
     } else {
@@ -2849,12 +2849,18 @@ public class BeeUtils {
     }
   }
 
-  public static BigDecimal toDecimalOrNull(Integer x) {
-    if (x == null) {
+  public static BigDecimal toDecimalOrNull(String s) {
+    if (isEmpty(s)) {
       return null;
-    } else {
-      return BigDecimal.valueOf(x);
     }
+    BigDecimal d;
+
+    try {
+      d = new BigDecimal(s.trim());
+    } catch (NumberFormatException ex) {
+      d = null;
+    }
+    return d;
   }
 
   /**
@@ -2977,6 +2983,13 @@ public class BeeUtils {
     }
   }
 
+  public static List<String> toList(String s) {
+    if (s == null) {
+      return null;
+    }
+    return Lists.newArrayList(NAME_SPLITTER.split(s));
+  }
+
   public static long toLong(Double d) {
     if (!isDouble(d)) {
       return 0L;
@@ -3022,15 +3035,15 @@ public class BeeUtils {
     return toLong(s);
   }
 
+  public static int toNonNegativeInt(Double d) {
+    return toNonNegativeInt(toInt(d));
+  }
+
   public static int toNonNegativeInt(Integer x) {
     if (x == null) {
       return 0;
     }
     return Math.max(x, 0);
-  }
-
-  public static int toNonNegativeInt(Double d) {
-    return toNonNegativeInt(toInt(d));
   }
 
   /**

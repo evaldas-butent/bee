@@ -1,91 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeForm
-  xmlns="http://www.butent.com/bee"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
-  
+<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd" xmlns:xi="http://www.w3.org/2001/XInclude"
+
   name="Tasks" viewName="Tasks" caption="Užduotys">
 
-  <SplitPanel splitterSize="2">
-    <north size="300" scrollBars="both">
-      <FlexTable cellSpacing="10">
-        <row>
-          <cell><Label html="ID" /></cell>
-          <cell>
-            <LongLabel horizontalAlignment="left">
-              <calc>
-                <expression>rowId</expression>
-              </calc>
-            </LongLabel>
-          </cell>
-          <cell><Label html="Prioritetas" horizontalAlignment="right" /></cell>
-          <cell horizontalAlignment="center"><ListBox source="Priority" name="Priority" valueNumeric="true" /></cell>
-        </row>
-        <row>
-          <cell><Label html="Pradžios data" /></cell>
-          <cell><InputDateTime source="StartTime" /></cell>
-          <cell><Label html="Įmonė" horizontalAlignment="right" /></cell>
-          <cell>
-            <DataSelector source="CompanyName" relSource="Company" relView="Companies" relColumn="Name" />
-          </cell>
-        </row>
-        <row>
-          <cell><Label html="Pabaigos data" /></cell>
-          <cell><InputDateTime source="FinishTime" /></cell>
-          <cell><Label html="Asmuo" horizontalAlignment="right" /></cell>
-          <cell>
-            <DataSelector source="PersonFirstName" relSource="CompanyPerson" relView="CompanyPersons" relColumn="FirstName" />
-          </cell>
-        </row>
-        <row>
-          <cell><Label html="Užduotis" /></cell>
-          <cell colSpan="3">
-            <InputArea source="Task" style="width: 100%; height: 60px;" />
-          </cell>
-        </row>
-        <row>
-          <cell><Label html="Vykdytojas" /></cell>
-          <cell>
-            <DataSelector source="ExecutorFirstName" relSource="Executor" relView="Users" relColumn="FirstName" />
-          </cell>
-          <cell><Label html="Autorius" horizontalAlignment="right" /></cell>
-          <cell>
-            <TextLabel>
-              <calc>
-                <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
-              </calc>
-            </TextLabel>
-          </cell>
-        </row>
-      </FlexTable>
-    </north>
-    <center>
-    <SplitPanel>
-      <north size="25" splitterSize="0">
-        <FlowPanel>
+  <SplitPanel splitterSize="1">
+    <west size="450">
+      <FlowPanel>
+        <xi:include href="widgets/task_info.xml" />
+        <FlowPanel style="margin-top: 2ex;">
           <Button name="COMMENTED" html="Naujas komentaras" />
           <Button name="FORWARDED" html="Persiųsti" />
           <Button name="EXTENDED" html="Keisti terminą" />
-          <Button name="ACTIVATED" html="Sukurti užduotį" style="position:absolute; right:0px" />
         </FlowPanel>
-      </north>
-      <south size="25" splitterSize="0">
-        <AbsolutePanel>
-          <layer right="0" rightUnit="px">
-            <HorizontalPanel>
-              <cell><Button name="SUSPENDED" html="Sustabdyti" /></cell>
-              <cell><Button name="CANCELED" html="Nutraukti" /></cell>
-              <cell><Button name="COMPLETED" html="Užbaigti" /></cell>
-              <cell><Button name="APPROVED" html="Patvirtinti" /></cell>
-              <cell><Button name="RENEWED" html="Grąžinti vykdymui" /></cell>
-            </HorizontalPanel>
-          </layer>
-        </AbsolutePanel>
-      </south>
-      <center>
-        <ChildGrid name="TaskEvents" relColumn="Task" />
-      </center>
-    </SplitPanel>
+        <FlowPanel style="margin-top: 2ex;">
+          <Button name="SUSPENDED" html="Sustabdyti" />
+          <Button name="CANCELED" html="Nutraukti" />
+          <Button name="COMPLETED" html="Užbaigti" />
+          <Button name="APPROVED" html="Patvirtinti" />
+          <Button name="RENEWED" html="Grąžinti vykdymui" />
+        </FlowPanel>
+      </FlowPanel>
+    </west>
+    <center>
+      <ChildGrid name="TaskEvents" relColumn="Task" />
     </center>
   </SplitPanel>
 </BeeForm>  

@@ -10,23 +10,23 @@
     <north size="30">
       <HorizontalPanel cellSpacing="5" style="fontFamily: Tahoma; fontSize: 12px;">
         <cell><Label html="Pabaigos data nuo:" /></cell>
-        <cell><InputDateTime name="DateFrom" source="X"></InputDateTime></cell>
+        <cell><InputDateTime name="DateFrom"></InputDateTime></cell>
         <cell><Label html="iki:" /></cell>
-        <cell><InputDateTime name="DateTo" source="X"></InputDateTime></cell>
-        <cell><CheckBox name="Overdue" source="X" html="Tik vėluojančios" /></cell>
-        <cell><CheckBox name="Updated" source="X" html="Tik pasikeitusios" /></cell>
+        <cell><InputDateTime name="DateTo"></InputDateTime></cell>
+        <cell><CheckBox name="Overdue" html="Tik vėluojančios" /></cell>
+        <cell><CheckBox name="Updated" html="Tik pasikeitusios" /></cell>
       </HorizontalPanel>
     </north>
     <north size="30" splitterSize="1">
       <AbsolutePanel>
         <layer>
-          <HorizontalPanel cellSpacing="3" style="fontFamily: Tahoma; fontSize: 11px;">
-            <cell><CheckBox name="Scheduled" source="X" html="Suplanuota" /></cell>
-            <cell><CheckBox name="Executing" source="X" html="Vykdoma" /></cell>
-            <cell><CheckBox name="Suspended" source="X" html="Pristabdyta" /></cell>
-            <cell><CheckBox name="Completed" source="X" html="Įvykdyta" /></cell>
-            <cell><CheckBox name="Canceled" source="X" html="Nutraukta" /></cell>
-            <cell><CheckBox name="Approved" source="X" html="Baigta" /></cell>
+          <HorizontalPanel cellSpacing="3" style="fontFamily: Tahoma; fontSize: 12px;">
+            <cell><CheckBox name="Scheduled" html="Suplanuota" /></cell>
+            <cell><CheckBox name="Executing" html="Vykdoma" /></cell>
+            <cell><CheckBox name="Suspended" html="Pristabdyta" /></cell>
+            <cell><CheckBox name="Completed" html="Įvykdyta" /></cell>
+            <cell><CheckBox name="Canceled" html="Nutraukta" /></cell>
+            <cell><CheckBox name="Approved" html="Baigta" /></cell>
           </HorizontalPanel>
         </layer>
         <layer right="5" top="1">
@@ -35,7 +35,7 @@
       </AbsolutePanel>
     </north>
     <center>
-      <GridPanel name="TaskUsers" style="backgroundColor: white;"/>
+      <GridPanel name="TaskUsers" style="backgroundColor: white;" />
     </center>
   </SplitPanel>
 </BeeForm>  

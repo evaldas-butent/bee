@@ -46,8 +46,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler,
     EditFormEvent.Handler {
 
-  public static String newRowCaption = "New Row";
-
   private Presenter viewPresenter = null;
 
   private Direction footerDirection = null;
@@ -283,9 +281,9 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     setAdding(true);
     showHeaderFooterScroller(false);
     
-    if (hasHeader()) {
+    if (hasHeader() && !BeeUtils.isEmpty(event.getCaption())) {
       setCurrentCaption(getHeader().getCaption());
-      getHeader().setCaption(newRowCaption);
+      getHeader().setCaption(event.getCaption());
     }
   }
 

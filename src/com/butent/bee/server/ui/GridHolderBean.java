@@ -89,7 +89,7 @@ public class GridHolderBean {
 
   private static final String ATTR_HAS_HEADERS = "hasHeaders";
   private static final String ATTR_HAS_FOOTERS = "hasFooters";
-  
+
   private static final String ATTR_CACHING = "caching";
   private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
   private static final String ATTR_PAGING_THRESHOLD = "pagingThreshold";
@@ -101,7 +101,7 @@ public class GridHolderBean {
   private static final String ATTR_NEW_ROW_FORM = "newRowForm";
   private static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";
   private static final String ATTR_EDIT_FORM = "editForm";
-  private static final String ATTR_EDIT_COLUMNS = "editColumns";
+  private static final String ATTR_EDIT_IN_PLACE = "editInPlace";
 
   private static final String ATTR_WIDTH = "width";
   private static final String ATTR_MIN_WIDTH = "minWidth";
@@ -666,7 +666,7 @@ public class GridHolderBean {
     if (showColumnWidths != null) {
       dst.setShowColumnWidths(showColumnWidths);
     }
-    
+
     Boolean caching = XmlUtils.getAttributeBoolean(src, ATTR_CACHING);
     if (caching != null) {
       dst.setCaching(caching);
@@ -712,9 +712,9 @@ public class GridHolderBean {
     if (!BeeUtils.isEmpty(editForm)) {
       dst.setEditForm(editForm);
     }
-    String editColumns = src.getAttribute(ATTR_EDIT_COLUMNS);
-    if (!BeeUtils.isEmpty(editColumns)) {
-      dst.setEditColumns(editColumns.trim());
+    String editInPlace = src.getAttribute(ATTR_EDIT_IN_PLACE);
+    if (!BeeUtils.isEmpty(editInPlace)) {
+      dst.setEditInPlace(editInPlace.trim());
     }
 
     GridComponentDescription header = getComponent(src, TAG_HEADER);

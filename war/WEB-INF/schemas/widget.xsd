@@ -1,0 +1,623 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="http://www.butent.com/bee"
+  xmlns:bee="http://www.butent.com/bee"
+  elementFormDefault="qualified">
+
+  <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd" />
+
+  <xs:include schemaLocation="types.xsd" />
+  <xs:include schemaLocation="ui.xsd" />
+
+  <xs:element name="html" type="xs:string" />
+  <xs:element name="text" type="xs:string" />
+
+  <xs:complexType name="widgetType">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="dynStyle" type="bee:conditionalStyle" />
+      <xs:element name="handler" type="bee:eventHandler"/>
+    </xs:choice>
+    <xs:attributeGroup ref="bee:appearance" />
+    <xs:attribute name="name" type="bee:nameType" />
+    <xs:attribute name="title" type="xs:string" />
+    <xs:attribute name="html" type="xs:string" />
+    <xs:attribute name="visible" type="xs:boolean" default="true" />
+    <xs:attribute ref="xml:base" />
+  </xs:complexType>
+
+  <xs:element name="widget" type="bee:widgetType" abstract="true" />
+
+  <xs:complexType name="focusableWidget">
+    <xs:complexContent>
+      <xs:extension base="bee:widgetType">
+        <xs:attribute name="tabIndex" type="xs:int" default="0" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="labelType">
+    <xs:complexContent>
+      <xs:extension base="bee:widgetType">
+        <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="display">
+    <xs:complexContent>
+      <xs:extension base="bee:labelType">
+        <xs:choice minOccurs="0" maxOccurs="1">
+          <xs:element name="calc" type="bee:calcType" />
+        </xs:choice>
+        <xs:attribute name="source" type="bee:nameType" />
+        <xs:attribute name="format" type="xs:normalizedString" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="focusableDisplay">
+    <xs:complexContent>
+      <xs:extension base="bee:display">
+        <xs:attribute name="tabIndex" type="xs:int" default="0" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="editableWidget">
+    <xs:complexContent>
+      <xs:extension base="bee:focusableWidget">
+        <xs:sequence>
+          <xs:element name="editable" type="bee:calcType" minOccurs="0" />
+          <xs:element name="validation" type="bee:calcType" minOccurs="0" />
+          <xs:element name="carry" type="bee:calcType" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="source" type="bee:nameType" />
+        <xs:attribute name="caption" type="xs:string" />
+        <xs:attribute name="readOnly" type="xs:boolean" />
+        <xs:attribute name="format" type="xs:normalizedString" />
+        <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
+        <xs:attribute name="minValue" type="xs:normalizedString" />
+        <xs:attribute name="maxValue" type="xs:normalizedString" />
+        <xs:attribute name="required" type="xs:boolean" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="childWidget">
+    <xs:sequence>
+      <xs:element ref="bee:widget" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="widgetOrHtml">
+    <xs:choice>
+      <xs:element ref="bee:widget" />
+      <xs:element ref="bee:html" />
+      <xs:element ref="bee:text" />
+    </xs:choice>
+  </xs:complexType>
+  
+  <xs:complexType name="headerAndContent">
+    <xs:complexContent>
+      <xs:extension base="bee:widgetOrHtml">
+        <xs:sequence>
+          <xs:element ref="bee:widget" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="tableCell">
+    <xs:complexContent>
+      <xs:extension base="bee:widgetOrHtml">
+        <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
+        <xs:attribute name="verticalAlignment" type="bee:verticalAlignmentType" />
+        <xs:attributeGroup ref="bee:dimension" />
+        <xs:attributeGroup ref="bee:appearance" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="cellVector">
+    <xs:complexContent>
+      <xs:extension base="bee:widgetType">
+        <xs:choice minOccurs="2" maxOccurs="unbounded">
+          <xs:element name="cell" type="bee:tableCell" />
+        </xs:choice>
+        <xs:attribute name="borderWidth" type="xs:unsignedByte" />
+        <xs:attribute name="cellSpacing" type="xs:unsignedByte" />
+        <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
+        <xs:attribute name="verticalAlignment" type="bee:verticalAlignmentType" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="HorizontalPanel" type="bee:cellVector" substitutionGroup="bee:widget" />
+  <xs:element name="VerticalPanel" type="bee:cellVector" substitutionGroup="bee:widget" />
+
+  <xs:complexType name="customButton">
+    <xs:complexContent>
+      <xs:extension base="bee:editableWidget">
+        <xs:sequence>
+          <xs:element name="upFace" type="bee:buttonFace" minOccurs="0" />
+          <xs:element name="downFace" type="bee:buttonFace" minOccurs="0" />
+          <xs:element name="upHoveringFace" type="bee:buttonFace" minOccurs="0" />
+          <xs:element name="downHoveringFace" type="bee:buttonFace" minOccurs="0" />
+          <xs:element name="upDisabledFace" type="bee:buttonFace" minOccurs="0" />
+          <xs:element name="downDisabledFace" type="bee:buttonFace" minOccurs="0" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="buttonFace">
+    <xs:attribute name="html" type="xs:string" />
+    <xs:attribute name="resource" type="bee:imageResource" />
+    <xs:attribute name="url" type="xs:anyURI" />
+  </xs:complexType>
+
+  <xs:element name="Toggle" type="bee:customButton" substitutionGroup="bee:widget" />
+
+  <xs:complexType name="splitPanel">
+    <xs:complexContent>
+      <xs:extension base="bee:widgetType">
+        <xs:sequence>
+          <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="north" type="bee:splitDirection" />
+            <xs:element name="south" type="bee:splitDirection" />
+            <xs:element name="west" type="bee:splitDirection" />
+            <xs:element name="east" type="bee:splitDirection" />
+          </xs:choice>
+          <xs:element name="center">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element ref="bee:widget" />
+              </xs:sequence>
+              <xs:attribute name="scrollBars" type="bee:scrollBarsType" />
+            </xs:complexType>
+          </xs:element>
+        </xs:sequence>
+        <xs:attribute name="splitterSize" type="xs:unsignedByte" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="splitDirection">
+    <xs:sequence>
+      <xs:element ref="bee:widget" />
+    </xs:sequence>
+    <xs:attribute name="size" type="xs:positiveInteger" use="required" />
+    <xs:attribute name="splitterSize" type="xs:unsignedByte" />
+    <xs:attribute name="scrollBars" type="bee:scrollBarsType" />
+  </xs:complexType>
+
+  <xs:element name="SplitPanel" type="bee:splitPanel" substitutionGroup="bee:widget" />
+
+  <xs:complexType name="layer">
+    <xs:complexContent>
+      <xs:extension base="bee:childWidget">
+        <xs:attributeGroup ref="bee:positioning" />
+        <xs:attributeGroup ref="bee:dimension" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="layout">
+    <xs:complexContent>
+      <xs:extension base="bee:widgetType">
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+          <xs:element name="layer" type="bee:layer" />
+        </xs:choice>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="LayoutPanel" type="bee:layout" substitutionGroup="bee:widget" />
+  <xs:element name="AbsolutePanel" type="bee:layout" substitutionGroup="bee:widget" />
+  <xs:element name="ComplexPanel" type="bee:layout" substitutionGroup="bee:widget" />
+
+  <xs:element name="StackPanel" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:widgetType">
+          <xs:choice minOccurs="2" maxOccurs="unbounded">
+            <xs:element name="stack" type="bee:stackElement" />
+          </xs:choice>
+          <xs:attribute name="unit" type="bee:cssUnit" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="stackElement">
+    <xs:complexContent>
+      <xs:extension base="bee:headerAndContent">
+        <xs:attribute name="headerSize" type="bee:positiveDecimal" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="TabbedPages" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:widgetType">
+          <xs:choice minOccurs="2" maxOccurs="unbounded">
+            <xs:element name="page" type="bee:headerAndContent" />
+          </xs:choice>
+          <xs:attribute name="barHeight" type="bee:positiveDecimal" use="required" />
+          <xs:attribute name="barUnit" type="bee:cssUnit" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="Radio" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:editableWidget">
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="option" type="xs:normalizedString" />
+          </xs:choice>
+          <xs:attribute name="vertical" type="xs:boolean" default="false" />
+          <xs:attribute name="valueStartIndex" type="xs:nonNegativeInteger" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="ListBox" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:editableWidget">
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="item" type="xs:normalizedString" />
+          </xs:choice>
+          <xs:attribute name="multiSelect" type="xs:boolean" default="false" />
+          <xs:attribute name="allItemsVisible" type="xs:boolean" default="false" />
+          <xs:attribute name="visibleItemCount" type="xs:positiveInteger" />
+          <xs:attribute name="valueNumeric" type="xs:boolean" default="false" />
+          <xs:attribute name="valueStartIndex" type="xs:nonNegativeInteger" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="Link" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:focusableDisplay">
+          <xs:attribute name="url" type="xs:anyURI" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="Button" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:focusableDisplay">
+          <xs:attribute name="service" type="xs:token" />
+          <xs:attribute name="stage" type="xs:token" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="Image" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:focusableDisplay">
+          <xs:attribute name="resource" type="bee:imageResource" />
+          <xs:attribute name="url" type="xs:anyURI" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="CheckBox" type="bee:editableWidget" substitutionGroup="bee:widget" />
+
+  <xs:complexType name="internalLink">
+    <xs:complexContent>
+      <xs:extension base="bee:focusableWidget">
+        <xs:attribute name="historyToken" type="xs:token" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="Hyperlink" type="bee:internalLink" substitutionGroup="bee:widget" />
+  <xs:element name="InlineHyperlink" type="bee:internalLink" substitutionGroup="bee:widget" />
+
+  <xs:element name="Label" type="bee:labelType" substitutionGroup="bee:widget" />
+  <xs:element name="InlineLabel" type="bee:labelType" substitutionGroup="bee:widget" />
+
+  <xs:element name="TextLabel" type="bee:display" substitutionGroup="bee:widget" />
+  <xs:element name="HtmlLabel" type="bee:display" substitutionGroup="bee:widget" />
+
+  <xs:element name="IntegerLabel" type="bee:display" substitutionGroup="bee:widget" />
+  <xs:element name="LongLabel" type="bee:display" substitutionGroup="bee:widget" />
+  <xs:element name="DoubleLabel" type="bee:display" substitutionGroup="bee:widget" />
+  <xs:element name="CurrencyLabel" type="bee:display" substitutionGroup="bee:widget" />
+
+  <xs:element name="DecimalLabel" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:display">
+          <xs:attribute name="scale" type="xs:unsignedByte" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="DateLabel" type="bee:display" substitutionGroup="bee:widget" />
+  <xs:element name="DateTimeLabel" type="bee:display" substitutionGroup="bee:widget" />
+
+  <xs:element name="Meter" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:display">
+          <xs:attribute name="min" type="xs:double" use="required" />
+          <xs:attribute name="max" type="xs:double" use="required" />
+          <xs:attribute name="low" type="xs:double" />
+          <xs:attribute name="high" type="xs:double" />
+          <xs:attribute name="optimum" type="xs:double" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="Progress" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:display">
+          <xs:attribute name="max" type="bee:positiveDecimal" use="required" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="Svg" type="bee:display" substitutionGroup="bee:widget" />
+  <xs:element name="Canvas" type="bee:display" substitutionGroup="bee:widget" />
+
+  <xs:complexType name="mediaWidget">
+    <xs:complexContent>
+      <xs:extension base="bee:display">
+        <xs:attribute name="url" type="xs:anyURI" />
+        <xs:attribute name="autoplay" type="xs:boolean" />
+        <xs:attribute name="controls" type="xs:boolean" default="true" />
+        <xs:attribute name="currentTime" type="bee:positiveDecimal" />
+        <xs:attribute name="defaultPlaybackRate" type="bee:positiveDecimal" />
+        <xs:attribute name="loop" type="xs:boolean" />
+        <xs:attribute name="muted" type="xs:boolean" />
+        <xs:attribute name="playbackRate" type="bee:positiveDecimal" />
+        <xs:attribute name="preload">
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="auto" />
+              <xs:enumeration value="metadata" />
+              <xs:enumeration value="none" />
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="volume">
+          <xs:simpleType>
+            <xs:restriction base="xs:double">
+              <xs:minInclusive value="0" />
+              <xs:maxInclusive value="1" />
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:attribute>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="Audio" type="bee:mediaWidget" substitutionGroup="bee:widget" />
+  <xs:element name="Video" type="bee:mediaWidget" substitutionGroup="bee:widget" />
+
+  <xs:complexType name="hasChildren">
+    <xs:complexContent>
+      <xs:extension base="bee:widgetType">
+        <xs:choice minOccurs="2" maxOccurs="unbounded">
+          <xs:element ref="bee:widget" />
+        </xs:choice>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="FlowPanel" type="bee:hasChildren" substitutionGroup="bee:widget" />
+  <xs:element name="SpanPanel" type="bee:hasChildren" substitutionGroup="bee:widget" />
+
+  <xs:element name="FlexTable" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:widgetType">
+          <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="col">
+              <xs:complexType>
+                <xs:attribute name="index" type="xs:nonNegativeInteger" use="required" />
+                <xs:attribute name="width" type="bee:positiveDecimal" />
+                <xs:attribute name="widthUnit" type="bee:cssUnit" />
+                <xs:attributeGroup ref="bee:appearance" />
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="row">
+              <xs:complexType>
+                <xs:choice minOccurs="1" maxOccurs="unbounded">
+                  <xs:element name="cell">
+                    <xs:complexType>
+                      <xs:complexContent>
+                        <xs:extension base="bee:tableCell">
+                          <xs:attribute name="colSpan" type="xs:positiveInteger" />
+                          <xs:attribute name="rowSpan" type="xs:positiveInteger" />
+                          <xs:attribute name="wordWrap" type="xs:boolean" />
+                        </xs:extension>
+                      </xs:complexContent>
+                    </xs:complexType>
+                  </xs:element>
+                </xs:choice>
+                <xs:attribute name="verticalAlignment" type="bee:verticalAlignmentType" />
+                <xs:attributeGroup ref="bee:appearance" />
+              </xs:complexType>
+            </xs:element>
+          </xs:choice>
+          <xs:attribute name="borderWidth" type="xs:unsignedByte" />
+          <xs:attribute name="cellPadding" type="xs:unsignedByte" />
+          <xs:attribute name="cellSpacing" type="xs:unsignedByte" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="hasName">
+    <xs:complexContent>
+      <xs:restriction base="bee:widgetType">
+        <xs:attribute name="name" type="bee:nameType" use="required" />
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
+  
+  <xs:element name="ChildGrid" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:hasName">
+          <xs:attribute name="relColumn" type="bee:nameType" use="required" />
+          <xs:attribute name="source" type="bee:nameType" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="GridPanel" type="bee:hasName" substitutionGroup="bee:widget" />
+
+  <xs:complexType name="hasOneChild">
+    <xs:complexContent>
+      <xs:extension base="bee:widgetType">
+        <xs:sequence>
+          <xs:element ref="bee:widget" />
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="SimplePanel" type="bee:hasOneChild" substitutionGroup="bee:widget" />
+  <xs:element name="SimpleInlinePanel" type="bee:hasOneChild" substitutionGroup="bee:widget" />
+
+  <xs:element name="ResizePanel" type="bee:hasOneChild" substitutionGroup="bee:widget" />
+
+  <xs:element name="ScrollPanel" type="bee:hasOneChild" substitutionGroup="bee:widget" />
+
+  <xs:element name="Frame" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:display">
+          <xs:attribute name="url" type="xs:anyURI" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="HeaderContentFooter" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:widgetType">
+          <xs:sequence>
+            <xs:element name="header" type="bee:childWidget" minOccurs="0" />
+            <xs:element name="content" type="bee:childWidget" />
+            <xs:element name="footer" type="bee:childWidget" minOccurs="0" />
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="InputArea" type="bee:editableWidget" substitutionGroup="bee:widget" />
+  <xs:element name="InputText" type="bee:editableWidget" substitutionGroup="bee:widget" />
+
+  <xs:complexType name="editableInteger">
+    <xs:complexContent>
+      <xs:extension base="bee:editableWidget">
+        <xs:attribute name="min" type="xs:int" />
+        <xs:attribute name="max" type="xs:int" />
+        <xs:attribute name="step" type="xs:positiveInteger" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="InputInteger" type="bee:editableInteger" substitutionGroup="bee:widget" />
+
+  <xs:element name="InputLong" type="bee:editableWidget" substitutionGroup="bee:widget" />
+  <xs:element name="InputDouble" type="bee:editableWidget" substitutionGroup="bee:widget" />
+
+  <xs:element name="InputDecimal" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:editableWidget">
+          <xs:attribute name="scale" type="xs:unsignedByte" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="InputCurrency" type="bee:editableWidget" substitutionGroup="bee:widget" />
+
+  <xs:element name="InputSpinner" type="bee:editableInteger" substitutionGroup="bee:widget" />
+  <xs:element name="InputSlider" type="bee:editableInteger" substitutionGroup="bee:widget" />
+
+  <xs:element name="InputDate" type="bee:editableWidget" substitutionGroup="bee:widget" />
+  <xs:element name="InputDateTime" type="bee:editableWidget" substitutionGroup="bee:widget" />
+
+  <xs:complexType name="spinnerBase">
+    <xs:complexContent>
+      <xs:extension base="bee:editableWidget">
+        <xs:attribute name="min" type="xs:long" use="required" />
+        <xs:attribute name="max" type="xs:long" use="required" />
+        <xs:attribute name="step" type="xs:positiveInteger" />
+        <xs:attribute name="minStep" type="xs:positiveInteger" />
+        <xs:attribute name="maxStep" type="xs:positiveInteger" />
+        <xs:attribute name="constrained" type="xs:boolean" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="ValueSpinner" type="bee:spinnerBase" substitutionGroup="bee:widget" />
+  <xs:element name="VolumeSlider" type="bee:spinnerBase" substitutionGroup="bee:widget" />
+
+  <xs:element name="SliderBar" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:editableWidget">
+          <xs:attribute name="min" type="xs:double" use="required" />
+          <xs:attribute name="max" type="xs:double" use="required" />
+          <xs:attribute name="step" type="xs:double" use="required" />
+          <xs:attribute name="numLabels" type="xs:nonNegativeInteger" />
+          <xs:attribute name="numTicks" type="xs:nonNegativeInteger" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="StringPicker" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:editableWidget">
+          <xs:choice minOccurs="2" maxOccurs="unbounded">
+            <xs:element name="item" type="xs:normalizedString" />
+          </xs:choice>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="DataSelector" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:editableWidget">
+          <xs:attribute name="relSource" type="bee:nameType" use="required" />
+          <xs:attribute name="relView" type="bee:nameType" use="required" />
+          <xs:attribute name="relColumn" type="bee:nameType" use="required" />
+          <xs:attribute name="options" type="xs:normalizedString" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

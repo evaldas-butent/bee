@@ -638,7 +638,7 @@ public class DataEditorBean {
     }
     if (srcName != null) {
       String als = view.getColumnSource(srcName);
-      String fld = view.getColumnSource(srcName);
+      String fld = view.getColumnField(srcName);
       ok = registerField(srcName, new FieldInfo(als, null, fld, null, null, null),
           updates, view, response);
       relation = BeeUtils.concat(".", BeeUtils.ifString(view.getColumnOwner(srcName), als), fld);

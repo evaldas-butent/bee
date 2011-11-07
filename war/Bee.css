@@ -730,7 +730,12 @@ body, select {
   bottom: 0;
 }
 
+.bee-GridFormContainer-newRow {
+  background-color: #ecf6ce;
+}
+
 .bee-GridFormCommandPanel {
+  background-color: #e8e8d7;
 }
 
 .bee-Form {
@@ -810,6 +815,19 @@ body, select {
   position: absolute;
   right: 20px;
   bottom: 20px;
+}
+
+.bee-required:after {
+  content: " *";
+  color: red;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.bee-display {
+  outline: #aaa solid 1px;
+  outline-offset: 2px;
+  font-size: 14px;
 }
 
 .gwt-TreeItem-selected {

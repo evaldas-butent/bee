@@ -22,14 +22,21 @@ public class AddStartEvent extends GwtEvent<AddStartEvent.Handler> {
   public static Type<Handler> getType() {
     return TYPE;
   }
+  
+  private final String caption;
 
-  public AddStartEvent() {
+  public AddStartEvent(String caption) {
     super();
+    this.caption = caption;
   }
 
   @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
+  }
+
+  public String getCaption() {
+    return caption;
   }
 
   @Override

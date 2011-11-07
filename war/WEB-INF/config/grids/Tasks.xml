@@ -2,7 +2,7 @@
 <BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
 
-  <BeeGrid name="Tasks" viewName="Tasks" caption="Užduotys" editForm="Tasks">
+  <BeeGrid name="Tasks" viewName="Tasks" caption="Užduotys">
     <columns>
       <BeeIdColumn name="Id"  caption="ID" />
       <BeeCalcColumn name="Priority" type="string" caption="Prioritetas" sortBy="Priority">

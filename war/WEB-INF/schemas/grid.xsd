@@ -44,7 +44,7 @@
     <xs:attribute name="newRowForm" type="bee:nameType" />
     <xs:attribute name="newRowColumns" type="xs:normalizedString" />
     <xs:attribute name="editForm" type="bee:nameType" />
-    <xs:attribute name="editColumns" type="xs:normalizedString" />
+    <xs:attribute name="editInPlace" type="xs:normalizedString" />
   </xs:complexType>
 
   <xs:complexType name="baseColumn">

@@ -793,7 +793,7 @@ public class XmlUtils {
     return lst;
   }
 
-  public static Document getXmlResource(String resource, String resourceSchema) {
+  public static synchronized Document getXmlResource(String resource, String resourceSchema) {
     if (BeeUtils.isEmpty(resource) || !FileUtils.isInputFile(resource)) {
       return null;
     }
@@ -801,6 +801,7 @@ public class XmlUtils {
     String error = null;
     DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
     builderFactory.setNamespaceAware(true);
+    builderFactory.setXIncludeAware(true);
 
     try {
       Schema schema = schemaFactory.newSchema(new StreamSource(resourceSchema));
@@ -902,6 +903,7 @@ public class XmlUtils {
         } else {
           DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
           builderFactory.setNamespaceAware(true);
+          builderFactory.setXIncludeAware(true);
           builderFactory.setSchema(schemaFactory.newSchema(new File(schemaPath)));
           DocumentBuilder builder = builderFactory.newDocumentBuilder();
           builder.setErrorHandler(new SAXErrorHandler());

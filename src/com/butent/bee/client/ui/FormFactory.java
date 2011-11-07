@@ -21,7 +21,9 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.presenter.FormPresenter;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.utils.XmlUtils;
+import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeButton;
@@ -59,10 +61,14 @@ public class FormFactory {
     
     boolean onLoad(Element formElement);
     
-    boolean onPrepareForInsert(FormView form, IsRow row);
+    boolean onPrepareForInsert(FormView form, DataView dataView, IsRow row);
+
+    boolean onSaveChanges(FormView form, IsRow row);
     
-    void onShow(FormPresenter presenter);
+    void onShow(Presenter presenter);
     
+    void onStartEdit(FormView form, IsRow row);
+
     void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow);
   }
 

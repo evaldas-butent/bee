@@ -643,15 +643,20 @@ public class UiServiceBean {
     String formExt = XmlUtils.defaultXmlExtension;
 
     String fileName = Config.getPath(formPath + formName + "." + formExt);
-    String xml = null;
-    if (!BeeUtils.isEmpty(fileName)) {
-      xml = FileUtils.fileToString(fileName);
+    if (BeeUtils.isEmpty(fileName)) {
+      return ResponseObject.error("form not found:", formName);
     }
 
-    if (!BeeUtils.isEmpty(xml)) {
-      return ResponseObject.response(xml);
+    Document doc = XmlUtils.getXmlResource(fileName, Config.getSchemaPath("form.xsd"));
+    if (doc == null) {
+      return ResponseObject.error("cannot parse xml:", fileName);
     }
-    return ResponseObject.error("form", formName, "not found");
+    
+    String xml = XmlUtils.toString(doc, false);
+    if (xml == null || xml.isEmpty()) {
+      return ResponseObject.error("cannot transform xml to string:", fileName);
+    }
+    return ResponseObject.response(xml);
   }
 
   private ResponseObject getGrid(RequestInfo reqInfo) {

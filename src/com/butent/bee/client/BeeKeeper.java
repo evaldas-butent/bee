@@ -14,11 +14,6 @@ import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.PasswordService;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.widget.BeeListBox;
-import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.modules.crm.CrmConstants.Priority;
-import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.RowComparator;
 
@@ -122,40 +117,7 @@ public class BeeKeeper {
       }
     });
 
-    FormFactory.registerFormCallback("Tasks", new AbstractFormCallback() {
-      @Override
-      public void afterCreateWidget(final String name, final Widget widget) {
-        if (BeeUtils.same(name, "Priority") && widget instanceof BeeListBox) {
-          for (Priority priority : Priority.values()) {
-            ((BeeListBox) widget).addItem(priority.name());
-          }
-
-        } else if (widget instanceof HasClickHandlers) {
-          TaskEvent ev;
-          try {
-            ev = TaskEvent.valueOf(name);
-          } catch (Exception e) {
-            ev = null;
-          }
-          if (ev != null) {
-            final TaskEvent taskEvent = ev;
-            ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-              @Override
-              public void onClick(ClickEvent event) {
-                new TaskEventHandler(taskEvent, UiHelper.getForm(widget));
-              }
-            });
-          }
-        }
-      }
-
-      @Override
-      public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-        newRow.setValue(form.getDataIndex("Owner"), getUser().getUserId());
-        newRow.setValue(form.getDataIndex("StartTime"), System.currentTimeMillis());
-        newRow.setValue(form.getDataIndex("Event"), TaskEvent.ACTIVATED.ordinal());
-      }
-    });
+    TaskEventHandler.register();
     
     getMenu().registerMenuCallback("task_list", new MenuManager.MenuCallback() {
       public void onSelection(String parameters) {

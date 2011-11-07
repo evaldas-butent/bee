@@ -39,8 +39,6 @@ import java.util.List;
 public class FormContainerImpl extends Split implements FormContainerView, HasNavigation,
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler {
 
-  public static String newRowCaption = "New Row";
-
   private Presenter viewPresenter = null;
 
   private String headerId = null;
@@ -288,10 +286,10 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   }
   
   public void onAddStart(AddStartEvent event) {
-    if (hasHeader()) {
+    if (hasHeader() && !BeeUtils.isEmpty(event.getCaption())) {
       getHeader().setEnabled(false);
       setCurrentCaption(getHeader().getCaption());
-      getHeader().setCaption(newRowCaption);
+      getHeader().setCaption(event.getCaption());
     }
     if (hasFooter()) {
       getFooter().setEnabled(false);

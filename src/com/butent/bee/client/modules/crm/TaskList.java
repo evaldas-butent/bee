@@ -11,7 +11,7 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.grid.GridPanel;
-import com.butent.bee.client.presenter.FormPresenter;
+import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.edit.Editor;
@@ -119,7 +119,7 @@ public class TaskList {
     }
 
     @Override
-    public void onShow(FormPresenter presenter) {
+    public void onShow(Presenter presenter) {
       Editor widget = filterWidgets.get(BeeUtils.normalize("Executing"));
 
       if (widget != null) {
