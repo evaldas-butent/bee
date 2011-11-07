@@ -15,9 +15,9 @@
         <calc>
           <function>
             if (!row.LastAccess) {
-              return "New";
+              return "N";
             } else if(row.LastAccess &lt; row.LastPublish) {
-              return "Upd";
+              return "U";
             }
             return "";
           </function>
@@ -74,5 +74,30 @@
       </BeeCalcColumn>
       <BeeDataColumn name="FinishTime" source="FinishTime" caption="Pabaigos laikas" />
     </columns>
+
+    <rowStyle>
+      <style>
+        <inline>="color:red"</inline>
+      </style>
+      <condition>
+        <expression>row.Event == 0 &amp;&amp; row.FinishTime &lt; new Date()</expression>
+      </condition>      
+    </rowStyle>
+    <rowStyle>
+      <style>
+        <inline>="color:gray"</inline>
+      </style>
+      <condition>
+        <expression>row.StartTime &gt; new Date()</expression>
+      </condition>      
+    </rowStyle>
+    <rowStyle>
+      <style>
+        <inline>="color:" + (row.Event==1 ? "blue" : (row.Event==2 ? "orange" : (row.Event==3 ? "green" : (row.Event==4 ? "brown" : "black"))))</inline>
+      </style>
+      <condition>
+        <expression>true</expression>
+      </condition>
+    </rowStyle>
   </BeeGrid>
 </BeeGrids>

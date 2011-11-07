@@ -73,6 +73,7 @@ public class CrmModuleBean implements BeeModule {
   private ResponseObject doTaskEvent(TaskEvent event, RequestInfo reqInfo) {
     ResponseObject response = null;
     long time = System.currentTimeMillis();
+    long currentUser = usr.getCurrentUserId();
 
     switch (event) {
       case ACTIVATED:
@@ -83,6 +84,13 @@ public class CrmModuleBean implements BeeModule {
           long taskId = ((BeeRow) response.getResponse()).getId();
           ResponseObject resp = registerTaskEvent(taskId, time, reqInfo, event, null);
 
+          if (!resp.hasErrors()) {
+            long executor = BeeUtils.toLong(rs.getString(0, "Executor"));
+
+            if (executor != currentUser) {
+              resp = registerTaskVisit(taskId, executor, null, true);
+            }
+          }
           if (resp.hasErrors()) {
             response = resp;
           }
@@ -90,8 +98,9 @@ public class CrmModuleBean implements BeeModule {
         break;
 
       case VISITED:
-        response = registerTaskVisit(
-            BeeUtils.toLong(reqInfo.getParameter(CrmConstants.VAR_TASK_ID)), time, false);
+        response =
+            registerTaskVisit(BeeUtils.toLong(reqInfo.getParameter(CrmConstants.VAR_TASK_ID)),
+                currentUser, time, false);
         break;
 
       case COMMENTED:
@@ -112,8 +121,12 @@ public class CrmModuleBean implements BeeModule {
           ResponseObject resp = registerTaskEvent(taskId, time, reqInfo, event,
               BeeUtils.concat(" -> ", usr.getUserSign(oldUser), usr.getUserSign(newUser)));
 
+          if (!resp.hasErrors()) {
+            resp = registerTaskVisit(taskId, newUser, null, false);
+          }
           if (resp.hasErrors()) {
             response = resp;
+
           } else if (BeeUtils.isEmpty(reqInfo.getParameter(CrmConstants.VAR_TASK_OBSERVE))) {
             String tbl = "TaskUsers";
             qs.updateData(new SqlDelete(tbl)
@@ -180,10 +193,12 @@ public class CrmModuleBean implements BeeModule {
               BeeUtils.toLong(reqInfo.getParameter(CrmConstants.VAR_TASK_DURATION_TYPE)))
           .addConstant("DurationInMinutes", minutes));
     }
+    long currentUser = usr.getCurrentUserId();
+
     if (response == null || !response.hasErrors()) {
       response = qs.insertDataWithResponse(new SqlInsert("TaskEvents")
           .addConstant("Task", taskId)
-          .addConstant("Publisher", usr.getCurrentUserId())
+          .addConstant("Publisher", currentUser)
           .addConstant("PublishTime", time)
           .addConstant("Comment", reqInfo.getParameter(CrmConstants.VAR_TASK_COMMENT))
           .addConstant("Event", event.ordinal())
@@ -191,15 +206,15 @@ public class CrmModuleBean implements BeeModule {
           .addConstant("EventDuration", response == null ? null : (Long) response.getResponse()));
     }
     if (!response.hasErrors()) {
-      response = registerTaskVisit(taskId, time, BeeUtils.equals(event, TaskEvent.ACTIVATED));
+      response =
+          registerTaskVisit(taskId, currentUser, time, BeeUtils.equals(event, TaskEvent.ACTIVATED));
     }
     return response;
   }
 
-  private ResponseObject registerTaskVisit(long taskId, long time, boolean newVisit) {
+  private ResponseObject registerTaskVisit(long taskId, long userId, Long time, boolean newVisit) {
     ResponseObject response = null;
     String tbl = "TaskUsers";
-    long userId = usr.getCurrentUserId();
 
     if (!newVisit) {
       response = qs.updateDataWithResponse(new SqlUpdate(tbl)

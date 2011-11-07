@@ -1,7 +1,6 @@
 package com.butent.bee.server.sql;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlConstants.SqlFunction;
@@ -10,7 +9,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Generates SELECT SQL statements and their full range of elements (inc. formation of WHERE and
@@ -62,7 +60,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addAvg(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(SqlFunction.AVG, expr, false, alias);
+    addExpr(SqlUtils.aggregate(SqlFunction.AVG, expr), alias);
     return getReference();
   }
 
@@ -99,7 +97,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addAvgDistinct(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(SqlFunction.AVG, expr, true, alias);
+    addExpr(SqlUtils.aggregate(SqlFunction.AVG_DISTINCT, expr), alias);
     return getReference();
   }
 
@@ -136,7 +134,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance.
    */
   public SqlSelect addCount(IsExpression expr, String alias) {
-    addAggregate(SqlFunction.COUNT, expr, false, alias);
+    addExpr(SqlUtils.aggregate(SqlFunction.COUNT, expr), alias);
     return getReference();
   }
 
@@ -184,7 +182,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addCountDistinct(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(SqlFunction.COUNT, expr, true, alias);
+    addExpr(SqlUtils.aggregate(SqlFunction.COUNT_DISTINCT, expr), alias);
     return getReference();
   }
 
@@ -395,7 +393,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addMax(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(SqlFunction.MAX, expr, false, alias);
+    addExpr(SqlUtils.aggregate(SqlFunction.MAX, expr), alias);
     return getReference();
   }
 
@@ -432,7 +430,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addMin(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(SqlFunction.MIN, expr, false, alias);
+    addExpr(SqlUtils.aggregate(SqlFunction.MIN, expr), alias);
     return getReference();
   }
 
@@ -493,7 +491,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addSum(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(SqlFunction.SUM, expr, false, alias);
+    addExpr(SqlUtils.aggregate(SqlFunction.SUM, expr), alias);
     return getReference();
   }
 
@@ -530,7 +528,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   public SqlSelect addSumDistinct(IsExpression expr, String alias) {
     Assert.notNull(expr);
-    addAggregate(SqlFunction.SUM, expr, true, alias);
+    addExpr(SqlUtils.aggregate(SqlFunction.SUM_DISTINCT, expr), alias);
     return getReference();
   }
 
@@ -842,14 +840,6 @@ public class SqlSelect extends HasFrom<SqlSelect> {
   public SqlSelect setWhere(IsCondition clause) {
     whereClause = clause;
     return getReference();
-  }
-
-  private void addAggregate(SqlFunction fnc, IsExpression expr, boolean distinct, String alias) {
-    Map<String, Object> params = Maps.newHashMap();
-    params.put("expression", expr);
-    params.put("distinct", distinct);
-
-    addExpr(new FunctionExpression(fnc, params), alias);
   }
 
   private void addField(IsExpression expr, String alias) {

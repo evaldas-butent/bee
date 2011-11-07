@@ -79,8 +79,23 @@
           </function>
         </calc>
       </BeeCalcColumn>
-      <BeeDataColumn name="EventDuration" source="EventDuration" caption="Trukmė min." />
-      <BeeDataColumn name="DurationType" source="DurationType" caption="Tipas" />
+      <BeeCalcColumn name="Duration" type="string" caption="Sugaištas laikas" width="100">
+        <style>
+          <bodyStyle>
+            <inline>white-space: pre-wrap;</inline>
+          </bodyStyle>
+        </style>
+        <calc>
+          <function>
+            var s = "";
+            
+            if (row.EventDuration) {
+              s =  row.EventDuration + " min" + "\n" + row.DurationType;
+            }
+            return s;
+          </function>
+        </calc>
+      </BeeCalcColumn>
     </columns>
   </BeeGrid>
 </BeeGrids>

@@ -17,7 +17,6 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.NameUtils;
-import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
@@ -372,7 +371,8 @@ public class UiServiceBean {
 
           String relView = null;
           if (view.hasColumn(relSource)) {
-            relView = sys.getRelation(view.getColumnTable(relSource), view.getColumnField(relSource));
+            relView =
+                sys.getRelation(view.getColumnTable(relSource), view.getColumnField(relSource));
             if (!BeeUtils.isEmpty(relView)) {
               widgetElement.setAttribute("relView", relView);
               isColumn = true;
@@ -395,7 +395,7 @@ public class UiServiceBean {
           String relColumn = view.getSourceIdName();
           widgetElement.setAttribute("name", source);
           widgetElement.setAttribute("relColumn", relColumn);
-          
+
           if (grd.isGrid(source)) {
             if (sys.getView(grd.getGrid(source).getViewName()).hasColumn(relColumn)) {
               isColumn = true;
@@ -715,36 +715,31 @@ public class UiServiceBean {
     String size = reqInfo.getParameter(Service.VAR_VIEW_SIZE);
     String rowId = reqInfo.getParameter(Service.VAR_VIEW_ROW_ID);
 
-    IsCondition condition = null;
+    Filter filter = null;
     if (!BeeUtils.isEmpty(rowId)) {
-      condition = sys.getView(viewName).getRowCondition(BeeUtils.toLong(rowId)); 
+      filter = sys.getView(viewName).getRowFilter(BeeUtils.toLong(rowId));
     } else if (!BeeUtils.isEmpty(where)) {
-      condition = sys.getViewCondition(viewName, Filter.restore(where));
+      filter = Filter.restore(where);
     }
-
     Order order = null;
     if (!BeeUtils.isEmpty(sort)) {
       order = Order.restore(sort);
     }
-
     String[] cols = new String[0];
     if (!BeeUtils.isEmpty(columns)) {
       cols = columns.split(Service.VIEW_COLUMN_SEPARATOR);
     }
-    
     int cnt = BeeConst.UNDEF;
     if (!BeeUtils.isEmpty(size)) {
-      cnt = sys.getViewSize(viewName, condition);
+      cnt = sys.getViewSize(viewName, filter);
       if (cnt < BeeUtils.toInt(size)) {
         limit = BeeConst.UNDEF;
       }
     }
-
-    BeeRowSet res = sys.getViewData(viewName, condition, order, limit, offset, cols);
+    BeeRowSet res = sys.getViewData(viewName, filter, order, limit, offset, cols);
     if (cnt >= 0 && res != null) {
       res.setTableProperty(Service.VAR_VIEW_SIZE, BeeUtils.toString(cnt));
     }
-
     return ResponseObject.response(res);
   }
 
@@ -770,8 +765,7 @@ public class UiServiceBean {
     if (!BeeUtils.isEmpty(where)) {
       filter = Filter.restore(where);
     }
-    return ResponseObject.response(sys.getViewSize(viewName,
-        sys.getViewCondition(viewName, filter)));
+    return ResponseObject.response(sys.getViewSize(viewName, filter));
   }
 
   private ResponseObject gridInfo(RequestInfo reqInfo) {

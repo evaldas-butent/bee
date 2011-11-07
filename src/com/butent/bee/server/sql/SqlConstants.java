@@ -98,7 +98,7 @@ public final class SqlConstants {
   public enum SqlFunction {
     BITAND, IF, CASE, CAST,
     PLUS, MINUS, MULTIPLY, DIVIDE, BULK,
-    MIN, MAX, SUM, AVG, COUNT
+    MIN, MAX, SUM, AVG, COUNT, SUM_DISTINCT, AVG_DISTINCT, COUNT_DISTINCT
   }
 
   /**

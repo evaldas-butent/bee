@@ -58,7 +58,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
@@ -761,7 +760,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         if (flt == null) {
           flt = f;
         } else {
-          flt = CompoundFilter.or(flt, f);
+          flt = Filter.or(flt, f);
         }
       }
 
@@ -771,7 +770,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       if (filter == null) {
         filter = flt;
       } else {
-        filter = CompoundFilter.and(filter, flt);
+        filter = Filter.and(filter, flt);
       }
     }
     return filter;

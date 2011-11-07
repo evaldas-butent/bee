@@ -63,7 +63,7 @@ public class TaskEventHandler {
         }
       }
     }
-    
+
     @Override
     public boolean onPrepareForInsert(FormView form, final DataView dataView, IsRow row) {
       Assert.notNull(dataView);
@@ -81,7 +81,7 @@ public class TaskEventHandler {
             dataView.notifySevere(colName + ": value required");
             return false;
           }
-        } else {  
+        } else {
           columns.add(column);
           values.add(value);
         }
@@ -108,7 +108,7 @@ public class TaskEventHandler {
           }
         }
       });
-      
+
       return false;
     }
 
@@ -120,7 +120,7 @@ public class TaskEventHandler {
       newRow.setValue(form.getDataIndex("Priority"), Priority.MEDIUM.ordinal());
     }
   }
-  
+
   private static class TaskDialog extends DialogBox {
     private int row = -1;
     private FlexTable container = null;
@@ -166,7 +166,7 @@ public class TaskEventHandler {
         container.setWidget(row, 1, minutes);
         addSelector("Darbo tipas", "DurationTypes", "Name");
         addDate("Atlikimo data", ValueType.DATE);
-        date.setValue(TimeUtils.today(0).serialize()); // TODO
+        date.setValue(TimeUtils.today(0).serialize());
       }
     }
 
@@ -243,7 +243,7 @@ public class TaskEventHandler {
 
   private static class TaskEditHandler extends AbstractFormCallback {
     private Widget priorityWidget = null;
-    
+
     private TaskEditHandler() {
       super();
     }
@@ -288,7 +288,7 @@ public class TaskEventHandler {
         }
         getPriorityWidget().getElement().setInnerText(text);
       }
-      
+
       if (row != null && row.getId() > 0) {
         ParameterList args = createParams(TaskEvent.VISITED.name());
         args.addDataItem(CrmConstants.VAR_TASK_ID, row.getId());
@@ -313,9 +313,9 @@ public class TaskEventHandler {
       this.priorityWidget = priorityWidget;
     }
   }
-  
+
   private static final String VIEW_NAME = "TaskUsers";
-  
+
   public static void register() {
     FormFactory.registerFormCallback("NewTask", new TaskCreateHandler());
     FormFactory.registerFormCallback("Tasks", new TaskEditHandler());
@@ -324,7 +324,6 @@ public class TaskEventHandler {
   private static ParameterList createParams(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(CrmConstants.CRM_MODULE);
     args.addQueryItem(CrmConstants.CRM_METHOD, name);
-    // TODO args.addQueryItem(Service.RPC_VAR_CTP, ContentType.BINARY);
     return args;
   }
 

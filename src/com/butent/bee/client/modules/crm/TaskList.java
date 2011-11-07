@@ -1,6 +1,5 @@
 package com.butent.bee.client.modules.crm;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -61,47 +60,48 @@ public class TaskList {
     }
 
     public Filter getFilter() {
-      List<Filter> filters = Lists.newArrayList();
+      CompoundFilter andFilter = Filter.and();
       Value now = new LongValue(new DateTime().getTime());
 
       Value dateFrom = getDateValue("DateFrom");
       if (dateFrom != null) {
-        filters.add(ComparisonFilter.isMoreEqual("FinishTime", dateFrom));
+        andFilter.add(ComparisonFilter.isMoreEqual("FinishTime", dateFrom));
       }
       Value dateTo = getDateValue("DateTo");
       if (dateTo != null) {
-        filters.add(ComparisonFilter.isLess("FinishTime", dateTo));
-      }
-      if (isChecked("Overdue")) {
-        filters.add(ComparisonFilter.isLess("FinishTime", now));
+        andFilter.add(ComparisonFilter.isLess("FinishTime", dateTo));
       }
       if (isChecked("Updated")) {
-        filters.add(ComparisonFilter.compareWithColumn("LastAccess", Operator.LT, "LastPublish"));
+        andFilter.add(ComparisonFilter.compareWithColumn("LastAccess", Operator.LT, "LastPublish"));
       }
-      List<Filter> orFilters = Lists.newArrayList();
+      if (isChecked("Overdue")) {
+        andFilter.add(ComparisonFilter.isLess("FinishTime", now),
+            ComparisonFilter.isEqual("Event", new IntegerValue(TaskEvent.ACTIVATED.ordinal())));
+      } else {
+        CompoundFilter orFilter = Filter.or();
 
-      if (isChecked("Scheduled")) {
-        orFilters.add(ComparisonFilter.isMore("StartTime", now));
-      }
-      if (isChecked("Executing")) {
-        Filter flt = ComparisonFilter.isEqual("Event",
-            new IntegerValue(TaskEvent.ACTIVATED.ordinal()));
-
-        if (!isChecked("Scheduled")) {
-          flt = CompoundFilter.and(flt, ComparisonFilter.isLessEqual("StartTime", now));
+        if (isChecked("Scheduled")) {
+          orFilter.add(ComparisonFilter.isMore("StartTime", now));
         }
-        orFilters.add(flt);
-      }
-      for (TaskEvent flt : TaskEvent.values()) {
-        if (isChecked(flt.name())) {
-          orFilters.add(ComparisonFilter.isEqual("Event", new IntegerValue(flt.ordinal())));
+        if (isChecked("Executing")) {
+          Filter flt = ComparisonFilter.isEqual("Event",
+              new IntegerValue(TaskEvent.ACTIVATED.ordinal()));
+
+          if (!isChecked("Scheduled")) {
+            flt = Filter.and(flt, ComparisonFilter.isLessEqual("StartTime", now));
+          }
+          orFilter.add(flt);
+        }
+        for (TaskEvent flt : TaskEvent.values()) {
+          if (isChecked(flt.name())) {
+            orFilter.add(ComparisonFilter.isEqual("Event", new IntegerValue(flt.ordinal())));
+          }
+        }
+        if (!orFilter.isEmpty()) {
+          andFilter.add(orFilter);
         }
       }
-      if (!orFilters.isEmpty()) {
-        filters.add(CompoundFilter.or(orFilters));
-      }
-
-      return filters.isEmpty() ? null : CompoundFilter.and(filters);
+      return andFilter.isEmpty() ? null : andFilter;
     }
 
     public void onClick(ClickEvent event) {
@@ -121,9 +121,18 @@ public class TaskList {
     @Override
     public void onShow(Presenter presenter) {
       Editor widget = filterWidgets.get(BeeUtils.normalize("Executing"));
-
       if (widget != null) {
         widget.setValue("true");
+      }
+      widget = filterWidgets.get(BeeUtils.normalize("Suspended"));
+      if (widget != null) {
+        widget.setValue("true");
+      }
+      if (getType() == Type.DELEGATED) {
+        widget = filterWidgets.get(BeeUtils.normalize("Completed"));
+        if (widget != null) {
+          widget.setValue("true");
+        }
       }
     }
 
@@ -189,22 +198,19 @@ public class TaskList {
       gridDescription.setCaption(null);
 
       if (getUserId() != null && getType() != null) {
-        Filter filter = null;
         Value user = new LongValue(getUserId());
+        CompoundFilter filter = Filter.and(ComparisonFilter.isEqual("User", user));
 
         switch (getType()) {
           case ASSIGNED:
-            filter = ComparisonFilter.isEqual("Executor", user);
+            filter.add(ComparisonFilter.isEqual("Executor", user));
             break;
           case DELEGATED:
-            filter = CompoundFilter.and(
-                ComparisonFilter.isEqual("Owner", user),
+            filter.add(ComparisonFilter.isEqual("Owner", user),
                 ComparisonFilter.isNotEqual("Executor", user));
             break;
           case OBSERVED:
-            filter = CompoundFilter.and(
-                ComparisonFilter.isEqual("User", user),
-                ComparisonFilter.isNotEqual("Owner", user),
+            filter.add(ComparisonFilter.isNotEqual("Owner", user),
                 ComparisonFilter.isNotEqual("Executor", user));
             break;
         }

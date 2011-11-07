@@ -9,7 +9,6 @@ import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.cache.CachingPolicy;
-import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -386,7 +385,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     } else if (lst.size() == 1) {
       return lst.get(0);
     } else {
-      return CompoundFilter.and(lst);
+      return Filter.and(lst);
     }
   }
 

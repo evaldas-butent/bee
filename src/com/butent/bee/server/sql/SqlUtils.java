@@ -24,6 +24,12 @@ import java.util.Map;
 
 public class SqlUtils {
 
+  public static IsExpression aggregate(SqlFunction fnc, IsExpression expr) {
+    Map<String, Object> params = Maps.newHashMap();
+    params.put("expression", expr);
+    return new FunctionExpression(fnc, params);
+  }
+
   public static HasConditions and(IsCondition... conditions) {
     return CompoundCondition.and(conditions);
   }

@@ -166,7 +166,7 @@ public class RemoteCall {
           }
         }
         if (rs == null) {
-          rs = sys.getViewData(prm.view, sys.getViewCondition(prm.view, filter), order,
+          rs = sys.getViewData(prm.view, filter, order,
               BeeUtils.toNonNegativeInt(prm.limit), BeeUtils.toNonNegativeInt(prm.offset),
               columns.toArray(new String[0]));
         }

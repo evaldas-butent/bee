@@ -13,7 +13,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
-import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.ui.GridDescription;
@@ -90,7 +89,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
 
   private void createPresenter(final IsRow row) {
     final String viewName = getGridDescription().getViewName();
-    Filter filter = CompoundFilter.and(getGridDescription().getFilter(), getFilter(row));
+    Filter filter = Filter.and(getGridDescription().getFilter(), getFilter(row));
 
     Queries.getRowSet(viewName, null, filter, getGridDescription().getOrder(),
         getGridDescription().getCachingPolicy(), new Queries.RowSetCallback() {

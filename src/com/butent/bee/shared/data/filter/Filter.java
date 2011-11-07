@@ -9,6 +9,7 @@ import com.butent.bee.shared.data.RowFilter;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -17,6 +18,34 @@ import java.util.List;
  */
 
 public abstract class Filter implements BeeSerializable, Transformable, RowFilter {
+
+  public static CompoundFilter and(Filter... filters) {
+    return new CompoundFilter(CompoundType.AND, filters);
+  }
+
+  public static CompoundFilter and(Collection<Filter> filters) {
+    Assert.notNull(filters);
+    return and(filters.toArray(new Filter[0]));
+  }
+
+  public static Filter isEmpty(String column) {
+    Assert.notEmpty(column);
+    return new ColumnIsEmptyFilter(column);
+  }
+
+  public static Filter isNot(Filter filter) {
+    Assert.notNull(filter);
+    return new CompoundFilter(CompoundType.NOT, filter);
+  }
+
+  public static CompoundFilter or(Filter... filters) {
+    return new CompoundFilter(CompoundType.OR, filters);
+  }
+
+  public static CompoundFilter or(Collection<Filter> filters) {
+    Assert.notNull(filters);
+    return or(filters.toArray(new Filter[0]));
+  }
 
   public static Filter restore(String s) {
     if (BeeUtils.isEmpty(s)) {
@@ -47,9 +76,6 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
 
     } else if (BeeUtils.getClassName(ColumnIsEmptyFilter.class).equals(clazz)) {
       flt = new ColumnIsEmptyFilter();
-
-    } else if (BeeUtils.getClassName(NegationFilter.class).equals(clazz)) {
-      flt = new NegationFilter();
 
     } else if (BeeUtils.getClassName(CompoundFilter.class).equals(clazz)) {
       flt = new CompoundFilter();

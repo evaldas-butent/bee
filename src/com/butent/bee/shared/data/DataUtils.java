@@ -7,12 +7,10 @@ import com.google.gwt.core.client.JsArrayString;
 import com.butent.bee.client.data.JsData;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.filter.ColumnIsEmptyFilter;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.CompoundType;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.NegationFilter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -33,7 +31,7 @@ public class DataUtils {
 
   public static final int ID_INDEX = -2;
   public static final int VERSION_INDEX = -3;
-  
+
   private static final Splitter COLUMN_SPLITTER =
       Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
 
@@ -102,7 +100,7 @@ public class DataUtils {
     }
     return index;
   }
-  
+
   public static String getColumnName(String input, List<? extends IsColumn> columns,
       String idColumnName, String versionColumnName) {
     if (BeeUtils.isEmpty(input)) {
@@ -172,12 +170,12 @@ public class DataUtils {
       List<String> parts = getParts(cond, "\\s+[oO][rR]\\s+");
 
       if (parts.size() > 1) {
-        flt = CompoundFilter.or();
+        flt = Filter.or();
       } else {
         parts = getParts(cond, "\\s+[aA][nN][dD]\\s+");
 
         if (parts.size() > 1) {
-          flt = CompoundFilter.and();
+          flt = Filter.and();
         }
       }
       if (!BeeUtils.isEmpty(flt)) {
@@ -199,7 +197,7 @@ public class DataUtils {
               idColumnName, versionColumnName);
 
           if (!BeeUtils.isEmpty(flt)) {
-            flt = new NegationFilter(flt);
+            flt = Filter.isNot(flt);
           }
         } else {
           flt = parseExpression(s, columns, idColumnName, versionColumnName);
@@ -254,13 +252,13 @@ public class DataUtils {
               .replaceAll("\"\"", "\"");
 
           if (BeeUtils.isEmpty(value)) {
-            flt = new ColumnIsEmptyFilter(colName);
+            flt = Filter.isEmpty(colName);
           } else {
             flt = ComparisonFilter.compareWithValue(column, operator, value);
           }
         }
         if (notMode && flt != null) {
-          flt = new NegationFilter(flt);
+          flt = Filter.isNot(flt);
         }
       } else {
         LogUtils.warning(LogUtils.getDefaultLogger(), "Unknown column in expression: " + expr);
@@ -288,12 +286,12 @@ public class DataUtils {
       }
     }
 
-    if (BeeUtils.hasLength(idColumnName, len + 1) && BeeUtils.startsWith(expr, idColumnName)) { 
+    if (BeeUtils.hasLength(idColumnName, len + 1) && BeeUtils.startsWith(expr, idColumnName)) {
       column = new BeeColumn(ValueType.LONG, idColumnName);
       len = idColumnName.length();
     }
     if (BeeUtils.hasLength(versionColumnName, len + 1) &&
-        BeeUtils.startsWith(expr, versionColumnName)) { 
+        BeeUtils.startsWith(expr, versionColumnName)) {
       column = new BeeColumn(ValueType.DATETIME, versionColumnName);
     }
     return column;

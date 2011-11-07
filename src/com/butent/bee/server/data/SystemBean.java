@@ -207,8 +207,8 @@ public class SystemBean {
   public DataInfo getDataInfo(String viewName) {
     BeeView view = getView(viewName);
     BeeTable source = getTable(view.getSourceName());
-    
-    List<BeeColumn> columns = null; 
+
+    List<BeeColumn> columns = null;
     int cnt = BeeConst.UNDEF;
 
     if (source.isActive()) {
@@ -286,7 +286,7 @@ public class SystemBean {
     }
     return states;
   }
-  
+
   public String getVersionName(String tblName) {
     return getTable(tblName).getVersionName();
   }
@@ -301,20 +301,17 @@ public class SystemBean {
     }
     return view;
   }
-  
+
   public IsCondition getViewCondition(String viewName, Filter filter) {
     return getView(viewName).getCondition(filter);
   }
 
-  public BeeRowSet getViewData(String viewName, IsCondition condition,
-      Order order, int limit, int offset, String... columns) {
+  public BeeRowSet getViewData(String viewName, Filter filter, Order order, int limit, int offset,
+      String... columns) {
 
     BeeView view = getView(viewName);
-    SqlSelect ss = view.getQuery(order, columns);
+    SqlSelect ss = view.getQuery(filter, order, columns);
 
-    if (!BeeUtils.isEmpty(condition)) {
-      ss.setWhere(SqlUtils.and(ss.getWhere(), condition));
-    }
     if (limit > 0) {
       ss.setLimit(limit);
     }
@@ -337,13 +334,8 @@ public class SystemBean {
     return getView(viewName).getQuery();
   }
 
-  public int getViewSize(String viewName, IsCondition condition) {
-    SqlSelect ss = getViewQuery(viewName);
-
-    if (!BeeUtils.isEmpty(condition)) {
-      ss.setWhere(SqlUtils.and(ss.getWhere(), condition));
-    }
-    return qs.dbRowCount(ss);
+  public int getViewSize(String viewName, Filter filter) {
+    return qs.dbRowCount(getView(viewName).getQuery(filter, null));
   }
 
   public XmlState getXmlState(String stateName) {

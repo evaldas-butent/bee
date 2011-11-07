@@ -18,7 +18,6 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.event.SortEvent;
-import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -37,7 +36,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   private final String viewName;
   private final String idColumnName;
   private final String versionColumnName;
-  
+
   private final List<BeeColumn> columns;
 
   private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
@@ -81,7 +80,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   public List<BeeColumn> getColumns() {
     return columns;
   }
-  
+
   public String getIdColumnName() {
     return idColumnName;
   }
@@ -92,7 +91,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   public Filter getQueryFilter(Filter filter) {
     List<Filter> lst = Lists.newArrayList();
-    
+
     if (getDataFilter() != null) {
       lst.add(getDataFilter());
     }
@@ -102,13 +101,13 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     if (filter != null) {
       lst.add(filter);
     }
-    
+
     if (lst.isEmpty()) {
       return null;
     } else if (lst.size() == 1) {
       return lst.get(0);
     } else {
-      return CompoundFilter.and(lst);
+      return Filter.and(lst);
     }
   }
 
@@ -133,7 +132,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       getDisplay().onCellUpdate(event);
     }
   }
-  
+
   public void onFilterChanged(Filter newFilter, int rowCount) {
     setUserFilter(newFilter);
     getDisplay().setRowCount(rowCount, true);
@@ -194,7 +193,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       }
     });
   }
-  
+
   public abstract void requery(boolean updateActiveRow);
 
   public void setCacheEnabled(boolean cacheEnabled) {
@@ -204,17 +203,17 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   public void setOrder(Order order) {
     this.order = order;
   }
-  
+
   public void setParentFilter(String key, Filter filter, boolean requery) {
     Assert.notEmpty(key);
-    
+
     boolean upd;
     if (filter == null) {
       upd = (getParentFilters().remove(key) != null);
     } else {
       upd = (getParentFilters().put(key, filter) != filter);
     }
-    
+
     if (upd && requery) {
       requery(false);
     }
@@ -227,7 +226,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   protected HasDataTable getDisplay() {
     return display;
   }
-  
+
   protected Filter getFilter() {
     return getQueryFilter(getUserFilter());
   }
@@ -239,7 +238,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   protected int getPageStart() {
     return getDisplay().getPageStart();
   }
-  
+
   protected void goTop() {
     getDisplay().setPageStart(0, true, false);
     onRequest(true);

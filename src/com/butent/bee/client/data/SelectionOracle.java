@@ -22,7 +22,6 @@ import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -215,7 +214,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private final List<String> viewColumns = Lists.newArrayList();
   private final int relIndex;
-  
+
   private final List<Integer> searchColumns = Lists.newArrayList();
 
   private final Order viewOrder;
@@ -258,7 +257,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
         }
       }
     }
-    
+
     this.relIndex = BeeUtils.indexOf(getViewColumns(), relColumn);
 
     this.viewOrder = new Order();
@@ -266,7 +265,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
     this.cachingPolicy = cachingPolicy;
     this.cachingThreshold = cachingThreshold;
-    
+
     Global.getDataInfo(relationInfo.getRelView(), new DataInfoCallback() {
       @Override
       public void onSuccess(DataInfo result) {
@@ -420,7 +419,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       if (filter == null) {
         filter = flt;
       } else {
-        filter = CompoundFilter.or(filter, flt);
+        filter = Filter.or(filter, flt);
       }
     }
     return filter;
@@ -472,7 +471,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       setCaching(Caching.NONE);
       return;
     }
-    
+
     int threshold = getCachingThreshold();
     if (threshold <= 0) {
       if (policy == CachingPolicy.FULL) {

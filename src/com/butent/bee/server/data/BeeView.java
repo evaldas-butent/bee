@@ -11,6 +11,7 @@ import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlConstants.SqlDataType;
+import com.butent.bee.server.sql.SqlConstants.SqlFunction;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
@@ -26,10 +27,11 @@ import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
 import com.butent.bee.shared.data.filter.ColumnColumnFilter;
 import com.butent.bee.shared.data.filter.ColumnIsEmptyFilter;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.IdFilter;
-import com.butent.bee.shared.data.filter.NegationFilter;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.filter.VersionFilter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -54,12 +56,12 @@ public class BeeView implements HasExtendedInfo {
     private final String alias;
     private final BeeField field;
     private final String locale;
-    private final AggregateType aggregate;
+    private final SqlFunction aggregate;
     private final String parentName;
     private final String ownerAlias;
 
     public ColumnInfo(String alias, BeeField field, String colName, String locale,
-        AggregateType aggregate, String parent, String owner) {
+        SqlFunction aggregate, String parent, String owner) {
       this.colName = colName;
       this.alias = alias;
       this.field = field;
@@ -69,7 +71,7 @@ public class BeeView implements HasExtendedInfo {
       this.ownerAlias = owner;
     }
 
-    public AggregateType getAggregate() {
+    public SqlFunction getAggregate() {
       return aggregate;
     }
 
@@ -98,10 +100,6 @@ public class BeeView implements HasExtendedInfo {
     }
   }
 
-  private enum AggregateType {
-    MIN, MAX, SUM, AVG, COUNT, SUM_DISTINCT, AVG_DISTINCT, COUNT_DISTINCT;
-  };
-
   private enum JoinType {
     INNER, RIGHT, LEFT, FULL;
   };
@@ -110,9 +108,10 @@ public class BeeView implements HasExtendedInfo {
   private final BeeTable source;
   private final String sourceAlias;
   private final boolean readOnly;
+  private boolean hasAggregate;
   private final SqlSelect query;
   private final Map<String, ColumnInfo> columns = Maps.newLinkedHashMap();
-  private String filter = null;
+  private Filter filter = null;
   private Order order = null;
 
   BeeView(XmlView xmlView, Map<String, BeeTable> tables) {
@@ -129,10 +128,11 @@ public class BeeView implements HasExtendedInfo {
     this.query = new SqlSelect().addFrom(getSourceName(), getSourceAlias());
 
     addColumns(source, getSourceAlias(), xmlView.columns, null, tables);
-
-    setFilter(xmlView.filter);
     setGrouping();
 
+    if (!BeeUtils.isEmpty(xmlView.filter)) {
+      this.filter = parseFilter(xmlView.filter);
+    }
     if (!BeeUtils.isEmpty(xmlView.orders)) {
       this.order = new Order();
 
@@ -142,7 +142,7 @@ public class BeeView implements HasExtendedInfo {
     }
   }
 
-  public AggregateType getColumnAggregate(String colName) {
+  public SqlFunction getColumnAggregate(String colName) {
     return getColumnInfo(colName).getAggregate();
   }
 
@@ -204,9 +204,6 @@ public class BeeView implements HasExtendedInfo {
       } else if (BeeUtils.getClassName(ColumnIsEmptyFilter.class).equals(clazz)) {
         return getCondition((ColumnIsEmptyFilter) flt);
 
-      } else if (BeeUtils.getClassName(NegationFilter.class).equals(clazz)) {
-        return getCondition((NegationFilter) flt);
-
       } else if (BeeUtils.getClassName(CompoundFilter.class).equals(clazz)) {
         return getCondition((CompoundFilter) flt);
 
@@ -223,7 +220,7 @@ public class BeeView implements HasExtendedInfo {
     return null;
   }
 
-  public String getFilter() {
+  public Filter getFilter() {
     return filter;
   }
 
@@ -232,7 +229,7 @@ public class BeeView implements HasExtendedInfo {
 
     PropertyUtils.addProperties(info, false, "Name", getName(), "Source", getSourceName(),
         "Source Alias", getSourceAlias(), "Source Id Name", getSourceIdName(),
-        "Source Version Name", getSourceVersionName(), "Filter", getFilter(),
+        "Source Version Name", getSourceVersionName(), "Filter", getFilter().transform(),
         "Read Only", isReadOnly(), "Query", query.getQuery(), "Columns", getColumnCount());
 
     int i = 0;
@@ -262,10 +259,10 @@ public class BeeView implements HasExtendedInfo {
   }
 
   public SqlSelect getQuery(String... cols) {
-    return getQuery(null, cols);
+    return getQuery(null, null, cols);
   }
 
-  public SqlSelect getQuery(Order ord, String... cols) {
+  public SqlSelect getQuery(Filter flt, Order ord, String... cols) {
     Assert.state(!isEmpty());
     SqlSelect ss = query.copyOf();
     Collection<String> activeCols = null;
@@ -279,6 +276,8 @@ public class BeeView implements HasExtendedInfo {
         activeCols.add(getColumnName(col));
       }
     }
+    setFilter(ss, flt);
+
     String src = getSourceAlias();
     String idCol = getSourceIdName();
     String verCol = getSourceVersionName();
@@ -291,7 +290,7 @@ public class BeeView implements HasExtendedInfo {
       for (Order.Column ordCol : o.getColumns()) {
         for (String col : ordCol.getSources()) {
           if (hasColumn(col) && (activeCols == null || activeCols.contains(getColumnName(col)))) {
-            if (!BeeUtils.isEmpty(getColumnAggregate(col))) {
+            if (getColumnAggregate(col) != null) {
               alias = null;
               colName = getColumnName(col);
             } else {
@@ -322,8 +321,8 @@ public class BeeView implements HasExtendedInfo {
     return ss.addFields(src, idCol, verCol);
   }
 
-  public IsCondition getRowCondition(long rowId) {
-    return SqlUtils.equal(getSourceAlias(), getSourceIdName(), rowId);
+  public Filter getRowFilter(long rowId) {
+    return ComparisonFilter.compareId(getSourceIdName(), Operator.EQ, BeeUtils.toString(rowId));
   }
 
   public String getSourceAlias() {
@@ -405,10 +404,10 @@ public class BeeView implements HasExtendedInfo {
       ownerAlias = alias;
       alias = table.joinExtField(query, ownerAlias, field);
     }
-    AggregateType aggregate = null;
+    SqlFunction aggregate = null;
 
     if (!BeeUtils.isEmpty(aggregateType)) {
-      aggregate = AggregateType.valueOf(aggregateType);
+      aggregate = SqlFunction.valueOf(aggregateType);
     }
     columns.put(BeeUtils.normalize(colName),
         new ColumnInfo(alias, field, colName, locale, aggregate, parent, ownerAlias));
@@ -490,51 +489,39 @@ public class BeeView implements HasExtendedInfo {
   }
 
   private IsCondition getCondition(ColumnColumnFilter flt) {
-    String firstName = flt.getColumn();
-    String secondName = flt.getValue();
-    IsExpression firstSrc = SqlUtils.field(getColumnSource(firstName), getColumnField(firstName));
-    IsExpression secondSrc =
-        SqlUtils.field(getColumnSource(secondName), getColumnField(secondName));
-
-    return SqlUtils.compare(firstSrc, flt.getOperator(), secondSrc);
+    return SqlUtils.compare(
+        getSqlExpression(flt.getColumn()), flt.getOperator(), getSqlExpression(flt.getValue()));
   }
 
   private IsCondition getCondition(ColumnIsEmptyFilter flt) {
     String colName = flt.getColumn();
     String als = getColumnSource(colName);
     String fld = getColumnField(colName);
-    IsCondition condition = SqlUtils.equal(als, fld, getColumnType(colName).getEmptyValue());
 
-    if (!getColumnInfo(colName).getField().isNotNull()) {
-      condition = SqlUtils.or(SqlUtils.isNull(als, fld), condition);
-    }
-    return condition;
+    return SqlUtils.or(SqlUtils.isNull(als, fld),
+        SqlUtils.equal(als, fld, getColumnType(colName).getEmptyValue()));
   }
 
   private IsCondition getCondition(ColumnValueFilter flt) {
-    String colName = flt.getColumn();
-
-    return SqlUtils.compare(SqlUtils.field(getColumnSource(colName), getColumnField(colName)),
-        flt.getOperator(), SqlUtils.constant(flt.getValue()));
+    return SqlUtils.compare(
+        getSqlExpression(flt.getColumn()), flt.getOperator(), SqlUtils.constant(flt.getValue()));
   }
 
   private IsCondition getCondition(CompoundFilter flt) {
     HasConditions condition = null;
-    List<Filter> subFilters = flt.getSubFilters();
 
-    if (!BeeUtils.isEmpty(subFilters)) {
-      switch (flt.getJoinType()) {
+    if (!flt.isEmpty()) {
+      switch (flt.getType()) {
         case AND:
           condition = SqlUtils.and();
           break;
         case OR:
           condition = SqlUtils.or();
           break;
-        default:
-          Assert.unsupported();
-          break;
+        case NOT:
+          return SqlUtils.not(getCondition(flt.getSubFilters().get(0)));
       }
-      for (Filter subFilter : subFilters) {
+      for (Filter subFilter : flt.getSubFilters()) {
         condition.add(getCondition(subFilter));
       }
     }
@@ -546,20 +533,26 @@ public class BeeView implements HasExtendedInfo {
         flt.getOperator(), SqlUtils.constant(flt.getValue()));
   }
 
-  private IsCondition getCondition(NegationFilter flt) {
-    return SqlUtils.not(getCondition(flt.getSubFilter()));
-  }
-
   private IsCondition getCondition(VersionFilter flt) {
     return SqlUtils.compare(SqlUtils.field(getSourceAlias(), getSourceVersionName()),
         flt.getOperator(), SqlUtils.constant(flt.getValue()));
+  }
+
+  private IsExpression getSqlExpression(String colName) {
+    IsExpression expr = SqlUtils.field(getColumnSource(colName), getColumnField(colName));
+    SqlFunction aggregate = getColumnAggregate(colName);
+
+    if (aggregate != null) {
+      expr = SqlUtils.aggregate(aggregate, expr);
+    }
+    return expr;
   }
 
   private void setColumn(SqlSelect ss, String col) {
     String alias = getColumnSource(col);
     String fldName = getColumnField(col);
     String colName = getColumnName(col);
-    AggregateType aggregate = getColumnAggregate(col);
+    SqlFunction aggregate = getColumnAggregate(col);
 
     if (aggregate == null) {
       ss.addField(alias, fldName, colName);
@@ -589,30 +582,35 @@ public class BeeView implements HasExtendedInfo {
         case COUNT_DISTINCT:
           ss.addCountDistinct(alias, fldName, colName);
           break;
+        default:
+          Assert.unsupported();
       }
     }
   }
 
-  private void setFilter(String filter) {
-    String strFilter = null;
+  private void setFilter(SqlSelect ss, Filter flt) {
+    CompoundFilter f = Filter.and(filter, flt);
 
-    if (!BeeUtils.isEmpty(filter)) {
-      Filter flt = parseFilter(filter);
+    if (!f.isEmpty()) {
+      IsCondition condition = getCondition(f);
 
-      if (flt != null) {
-        query.setWhere(getCondition(flt));
-        strFilter = flt.transform();
+      if (hasAggregate) {
+        for (String col : getColumnNames()) {
+          if (getColumnAggregate(col) != null && f.involvesColumn(col)) {
+            ss.setHaving(condition);
+            return;
+          }
+        }
       }
+      ss.setWhere(condition);
     }
-    this.filter = strFilter;
   }
 
   private void setGrouping() {
-    boolean hasAggregate = false;
     Multimap<String, String> group = HashMultimap.create();
 
     for (String col : getColumnNames()) {
-      if (!BeeUtils.isEmpty(getColumnAggregate(col))) {
+      if (getColumnAggregate(col) != null) {
         hasAggregate = true;
       } else {
         group.put(getColumnSource(col), getColumnField(col));

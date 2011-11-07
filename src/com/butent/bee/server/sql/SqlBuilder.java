@@ -405,8 +405,16 @@ public abstract class SqlBuilder {
         if (BeeUtils.isEmpty(expression)) {
           expression = "*";
         }
-        return function +
-            "(" + ((Boolean) params.get("distinct") ? "DISTINCT " : "") + expression + ")";
+        return function + "(" + expression + ")";
+
+      case SUM_DISTINCT:
+        return "SUM(DISTINCT " + params.get("expression") + ")";
+
+      case AVG_DISTINCT:
+        return "AVG(DISTINCT " + params.get("expression") + ")";
+
+      case COUNT_DISTINCT:
+        return "COUNT(DISTINCT " + params.get("expression") + ")";
 
       case PLUS:
       case MINUS:

@@ -16,13 +16,13 @@ public class ColumnIsEmptyFilter extends Filter {
 
   private String column;
 
-  public ColumnIsEmptyFilter(String column) {
-    Assert.notEmpty(column);
-    this.column = column;
-  }
-
   protected ColumnIsEmptyFilter() {
     super();
+  }
+
+  protected ColumnIsEmptyFilter(String column) {
+    Assert.notEmpty(column);
+    this.column = column;
   }
 
   @Override

@@ -28,7 +28,8 @@ public abstract class ComparisonFilter extends Filter {
   public static Filter compareId(String column, Operator op, String value) {
     Assert.notEmpty(column);
     Assert.notNull(op);
-  
+    Assert.notEmpty(value);
+
     if (!BeeUtils.isLong(value)) {
       LogUtils.warning(LogUtils.getDefaultLogger(), "Not an ID value:", value);
       return null;
@@ -44,8 +45,9 @@ public abstract class ComparisonFilter extends Filter {
   }
 
   public static Filter compareWithColumn(String leftColumn, Operator op, String rightColumn) {
-    Assert.notEmpty(leftColumn, rightColumn);
+    Assert.notEmpty(leftColumn);
     Assert.notNull(op);
+    Assert.notEmpty(rightColumn);
     return new ColumnColumnFilter(leftColumn, op, rightColumn);
   }
 
@@ -55,7 +57,7 @@ public abstract class ComparisonFilter extends Filter {
     ValueType leftType = left.getType();
     String rightColumn = right.getId();
     ValueType rightType = right.getType();
-  
+
     if (!BeeUtils.same(leftType.getGroupCode(), rightType.getGroupCode())) {
       LogUtils.warning(LogUtils.getDefaultLogger(),
           "Incompatible column types: " +
@@ -68,15 +70,14 @@ public abstract class ComparisonFilter extends Filter {
 
   public static Filter compareWithValue(String column, Operator op, Value value) {
     Assert.notEmpty(column);
-    Assert.notEmpty(value);
-    Assert.notNull(op);
+    Assert.noNulls(op, value);
     return new ColumnValueFilter(column, op, value);
   }
 
   public static Filter compareWithValue(IsColumn column, Operator op, String value) {
     Assert.noNulls(column, op);
     Assert.notEmpty(value);
-  
+
     if (ValueType.isNumeric(column.getType()) && !BeeUtils.isDouble(value)) {
       LogUtils.warning(LogUtils.getDefaultLogger(), "Not a numeric value: " + value);
       return null;

@@ -38,7 +38,6 @@ import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -146,10 +145,12 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
     this.gridContainer = createView(gridDescription, rowSet.getColumns(), rowCount, rowSet,
         gridCallback, options);
-    this.dataProvider = createProvider(gridContainer, viewName, rowSet.getColumns(),
-        gridDescription.getIdName(), gridDescription.getVersionName(),
-        gridDescription.getFilter(), gridDescription.getParentFilters(), gridDescription.getOrder(),
-        rowSet, async, gridDescription.getCachingPolicy());
+    this.dataProvider =
+        createProvider(gridContainer, viewName, rowSet.getColumns(),
+            gridDescription.getIdName(), gridDescription.getVersionName(),
+            gridDescription.getFilter(), gridDescription.getParentFilters(), gridDescription
+                .getOrder(),
+            rowSet, async, gridDescription.getCachingPolicy());
 
     bind();
   }
@@ -267,7 +268,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
       }
     });
   }
-  
+
   public void onSaveChanges(SaveChangesEvent event) {
     final long rowId = event.getRowId();
 
@@ -328,16 +329,16 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     GridView display = view.getContent();
 
     if (isAsync) {
-      provider = new AsyncProvider(display.getGrid(), viewName, columns, 
+      provider = new AsyncProvider(display.getGrid(), viewName, columns,
           idColumnName, versionColumnName, dataFilter);
       if (cachingPolicy != null) {
         ((AsyncProvider) provider).setCachingPolicy(cachingPolicy);
       }
     } else {
-      provider = new CachedProvider(display.getGrid(), viewName, columns, 
+      provider = new CachedProvider(display.getGrid(), viewName, columns,
           idColumnName, versionColumnName, dataFilter, rowSet);
     }
-    
+
     if (parentFilters != null) {
       for (Map.Entry<String, Filter> entry : parentFilters.entrySet()) {
         String key = entry.getKey();
@@ -396,7 +397,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
   private String getViewName() {
     return getDataProvider().getViewName();
   }
-  
+
   private void setLoadingState(LoadingStateChangeEvent.LoadingState loadingState) {
     if (loadingState != null) {
       getView().getContent().getGrid().fireLoadingStateChange(loadingState);
@@ -441,7 +442,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
         filter = filters.get(0);
         break;
       default:
-        filter = CompoundFilter.and(filters.toArray(new Filter[filters.size()]));
+        filter = Filter.and(filters);
     }
 
     if (Objects.equal(filter, getLastFilter())) {

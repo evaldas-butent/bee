@@ -173,7 +173,7 @@ public class DataEditorBean {
       }
       if (!response.hasErrors()) {
         if (returnAllFields) {
-          BeeRowSet newRs = sys.getViewData(view.getName(), view.getRowCondition(id), null, 0, 0);
+          BeeRowSet newRs = sys.getViewData(view.getName(), view.getRowFilter(id), null, 0, 0);
 
           if (newRs.isEmpty()) {
             response.addError("Optimistic lock exception");
@@ -594,7 +594,7 @@ public class DataEditorBean {
       }
     }
     Assert.notEmpty(id);
-    Map<String, String> res = qs.getRow(ss.setWhere(view.getRowCondition(id)));
+    Map<String, String> res = qs.getRow(ss.setWhere(view.getCondition(view.getRowFilter(id))));
 
     if (BeeUtils.isEmpty(res)) {
       return false;

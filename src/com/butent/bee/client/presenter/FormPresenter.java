@@ -36,7 +36,6 @@ import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -280,7 +279,7 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
     if (isAsync) {
       provider = new AsyncProvider(content.getDisplay(), dataName, columns, null, null, dataFilter);
     } else {
-      provider = new CachedProvider(content.getDisplay(), dataName, columns, null, null, 
+      provider = new CachedProvider(content.getDisplay(), dataName, columns, null, null,
           dataFilter, rowSet);
     }
     return provider;
@@ -353,7 +352,7 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
         filter = filters.get(0);
         break;
       default:
-        filter = CompoundFilter.and(filters.toArray(new Filter[filters.size()]));
+        filter = Filter.and(filters);
     }
 
     if (Objects.equal(filter, getLastFilter())) {
