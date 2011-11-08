@@ -66,8 +66,7 @@ public class TaskEventHandler {
 
     @Override
     public boolean onPrepareForInsert(FormView form, final DataView dataView, IsRow row) {
-      Assert.notNull(dataView);
-      Assert.notNull(row);
+      Assert.noNulls(dataView, row);
 
       List<BeeColumn> columns = Lists.newArrayList();
       List<String> values = Lists.newArrayList();
@@ -107,7 +106,6 @@ public class TaskEventHandler {
           }
         }
       });
-
       return false;
     }
 
@@ -115,7 +113,7 @@ public class TaskEventHandler {
     public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
       newRow.setValue(form.getDataIndex("Owner"), BeeKeeper.getUser().getUserId());
       newRow.setValue(form.getDataIndex("StartTime"), System.currentTimeMillis());
-      newRow.setValue(form.getDataIndex("Event"), TaskEvent.ACTIVATED.ordinal());
+      newRow.setValue(form.getDataIndex(EVENT_NAME), TaskEvent.ACTIVATED.ordinal());
       newRow.setValue(form.getDataIndex("Priority"), Priority.MEDIUM.ordinal());
     }
   }
@@ -250,8 +248,8 @@ public class TaskEventHandler {
 
       } else if (widget instanceof HasClickHandlers) {
         setWidget(name, widget);
-
         TaskEvent ev;
+
         try {
           ev = TaskEvent.valueOf(name);
         } catch (Exception e) {
@@ -290,7 +288,7 @@ public class TaskEventHandler {
         }
         getWidget("Priority").getElement().setInnerText(text);
       }
-      Integer status = row.getInteger(form.getDataIndex("Event"));
+      Integer status = row.getInteger(form.getDataIndex(EVENT_NAME));
 
       if (BeeUtils.isOrdinal(TaskEvent.class, status)) {
         Long owner = row.getLong(form.getDataIndex("Owner"));
@@ -326,6 +324,7 @@ public class TaskEventHandler {
   }
 
   private static final String VIEW_NAME = "TaskUsers";
+  private static final String EVENT_NAME = "Event";
 
   public static void register() {
     FormFactory.registerFormCallback("NewTask", new TaskCreateHandler());
@@ -383,28 +382,27 @@ public class TaskEventHandler {
 
         if (response.hasErrors()) {
           Global.showError((Object[]) response.getErrors());
-        } else if (response.hasResponse(BeeRow.class)) {
-          if (dialog != null) {
-            dialog.hide();
-          }
-          form.updateRow(BeeRow.restore((String) response.getResponse()));
         } else {
-          Global.showError("Unknown response");
+          if (response.hasResponse(BeeRow.class)) {
+            dialog.hide();
+            form.updateRow(BeeRow.restore((String) response.getResponse()));
+
+          } else if (response.hasResponse(Long.class)) {
+            form.updateCell("LastAccess", (String) response.getResponse());
+
+            if (dialog != null) {
+              dialog.hide();
+              form.updateRow(form.getRow());
+            }
+          } else {
+            Global.showError("Unknown response");
+          }
         }
       }
     });
   }
 
   private static void doApprove(final FormView form) {
-    final IsRow data = form.getRow();
-    Assert.notEmpty(data.getId());
-    final int evOld = data.getInteger(form.getDataIndex("Event"));
-    final TaskEvent event = TaskEvent.APPROVED;
-
-    if (!availableEvent(event, evOld, form)) {
-      Global.showError("Veiksmas neleidžiamas");
-      return;
-    }
     final TaskDialog dialog = new TaskDialog("Užduoties patvirtinimas");
     dialog.addComment("Komentaras", false);
     dialog.addAction("Patvirtinti", new ClickHandler() {
@@ -415,11 +413,14 @@ public class TaskEventHandler {
           Global.showError("Įveskite komentarą");
           return;
         }
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, "Event"));
+        IsRow data = form.getRow();
+        int evOld = data.getInteger(form.getDataIndex(EVENT_NAME));
+        TaskEvent event = TaskEvent.APPROVED;
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, EVENT_NAME));
         rs.setViewName(VIEW_NAME);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, "Event", BeeUtils.toString(event.ordinal()));
+        rs.preliminaryUpdate(0, EVENT_NAME, BeeUtils.toString(event.ordinal()));
 
         ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -432,15 +433,6 @@ public class TaskEventHandler {
   }
 
   private static void doCancel(final FormView form) {
-    final IsRow data = form.getRow();
-    Assert.notEmpty(data.getId());
-    final int evOld = data.getInteger(form.getDataIndex("Event"));
-    final TaskEvent event = TaskEvent.CANCELED;
-
-    if (!availableEvent(event, evOld, form)) {
-      Global.showError("Veiksmas neleidžiamas");
-      return;
-    }
     final TaskDialog dialog = new TaskDialog("Užduoties nutraukimas");
     dialog.addComment("Komentaras", false);
     dialog.addAction("Nutraukti", new ClickHandler() {
@@ -451,11 +443,14 @@ public class TaskEventHandler {
           Global.showError("Įveskite komentarą");
           return;
         }
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, "Event"));
+        IsRow data = form.getRow();
+        int evOld = data.getInteger(form.getDataIndex(EVENT_NAME));
+        TaskEvent event = TaskEvent.CANCELED;
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, EVENT_NAME));
         rs.setViewName(VIEW_NAME);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, "Event", BeeUtils.toString(event.ordinal()));
+        rs.preliminaryUpdate(0, EVENT_NAME, BeeUtils.toString(event.ordinal()));
 
         ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -468,9 +463,6 @@ public class TaskEventHandler {
   }
 
   private static void doComment(final FormView form) {
-    final IsRow data = form.getRow();
-    Assert.notEmpty(data.getId());
-
     final TaskDialog dialog = new TaskDialog("Užduoties komentaras, laiko registracija");
     dialog.addComment("Komentaras", true);
     dialog.addAction("Išsaugoti", new ClickHandler() {
@@ -482,7 +474,7 @@ public class TaskEventHandler {
           return;
         }
         ParameterList args = createParams(TaskEvent.COMMENTED.name());
-        args.addDataItem(CrmConstants.VAR_TASK_ID, data.getId());
+        args.addDataItem(CrmConstants.VAR_TASK_ID, form.getRow().getId());
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
         int minutes = dialog.getMinutes();
@@ -502,34 +494,13 @@ public class TaskEventHandler {
           args.addDataItem(CrmConstants.VAR_TASK_DURATION_TIME, BeeUtils.transform(minutes));
           args.addDataItem(CrmConstants.VAR_TASK_DURATION_TYPE, BeeUtils.transform(type));
         }
-        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            Assert.notNull(response);
-
-            if (response.hasErrors()) {
-              Global.showError((Object[]) response.getErrors());
-            } else {
-              dialog.hide();
-              form.updateRow(data);
-            }
-          }
-        });
+        createRequest(args, dialog, form);
       }
     });
     dialog.display();
   }
 
   private static void doComplete(final FormView form) {
-    final IsRow data = form.getRow();
-    Assert.notEmpty(data.getId());
-    final int evOld = data.getInteger(form.getDataIndex("Event"));
-    final TaskEvent event = TaskEvent.COMPLETED;
-
-    if (!availableEvent(event, evOld, form)) {
-      Global.showError("Veiksmas neleidžiamas");
-      return;
-    }
     final TaskDialog dialog = new TaskDialog("Užduoties užbaigimas");
     dialog.addComment("Komentaras", true);
     dialog.addAction("Užbaigti", new ClickHandler() {
@@ -555,20 +526,20 @@ public class TaskEventHandler {
           Global.showError("Įveskite atlikimo datą");
           return;
         }
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, "Event"));
+        TaskEvent event = TaskEvent.COMPLETED;
+        TaskEvent ev = event;
+        IsRow data = form.getRow();
+        int evOld = data.getInteger(form.getDataIndex(EVENT_NAME));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, EVENT_NAME));
         rs.setViewName(VIEW_NAME);
-
-        TaskEvent ev;
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
 
         if (BeeUtils.equals(data.getLong(form.getDataIndex("Owner")),
             BeeKeeper.getUser().getUserId())) {
           ev = TaskEvent.APPROVED;
-        } else {
-          ev = TaskEvent.COMPLETED;
         }
-        rs.preliminaryUpdate(0, "Event", BeeUtils.toString(ev.ordinal()));
+        rs.preliminaryUpdate(0, EVENT_NAME, BeeUtils.toString(ev.ordinal()));
 
         ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -584,6 +555,12 @@ public class TaskEventHandler {
   }
 
   private static void doEvent(final TaskEvent ev, final FormView form) {
+    Assert.notEmpty(form.getRow().getId());
+
+    if (!availableEvent(ev, form.getRow().getInteger(form.getDataIndex(EVENT_NAME)), form)) {
+      Global.showError("Veiksmas neleidžiamas");
+      return;
+    }
     switch (ev) {
       case VISITED:
         doVisit(form);
@@ -624,15 +601,6 @@ public class TaskEventHandler {
   }
 
   private static void doExtend(final FormView form) {
-    final IsRow data = form.getRow();
-    Assert.notEmpty(data.getId());
-    final int evOld = data.getInteger(form.getDataIndex("Event"));
-    final TaskEvent event = TaskEvent.EXTENDED;
-
-    if (!availableEvent(event, evOld, form)) {
-      Global.showError("Veiksmas neleidžiamas");
-      return;
-    }
     final TaskDialog dialog = new TaskDialog("Užduoties termino pratęsimas");
     dialog.addDate("Pabaigos data", ValueType.DATETIME);
     dialog.addComment("Komentaras", false);
@@ -644,6 +612,7 @@ public class TaskEventHandler {
           Global.showError("Įveskite terminą");
           return;
         }
+        IsRow data = form.getRow();
         Long oldTerm = data.getLong(form.getDataIndex("FinishTime"));
         if (newTerm < oldTerm) {
           Global.showError("Neteisingas terminas");
@@ -660,7 +629,7 @@ public class TaskEventHandler {
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(oldTerm)});
         rs.preliminaryUpdate(0, "FinishTime", BeeUtils.toString(newTerm));
 
-        ParameterList args = createParams(event.name());
+        ParameterList args = createParams(TaskEvent.EXTENDED.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
@@ -671,15 +640,6 @@ public class TaskEventHandler {
   }
 
   private static void doForward(final FormView form) {
-    final IsRow data = form.getRow();
-    Assert.notEmpty(data.getId());
-    final int evOld = data.getInteger(form.getDataIndex("Event"));
-    final TaskEvent event = TaskEvent.FORWARDED;
-
-    if (!availableEvent(event, evOld, form)) {
-      Global.showError("Veiksmas neleidžiamas");
-      return;
-    }
     final TaskDialog dialog = new TaskDialog("Užduoties persiuntimas");
     dialog.addSelector("Vykdytojas", "Users", "FirstName");
     dialog.addQuestion("Palikti siuntėją prie stebėtojų", true);
@@ -692,6 +652,7 @@ public class TaskEventHandler {
           Global.showError("Įveskite vykdytoją");
           return;
         }
+        IsRow data = form.getRow();
         Long oldUser = data.getLong(form.getDataIndex("Executor"));
         if (BeeUtils.equals(newUser, oldUser)) {
           Global.showError("Nurodėte tą patį vykdytoją");
@@ -708,7 +669,7 @@ public class TaskEventHandler {
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(oldUser)});
         rs.preliminaryUpdate(0, "Executor", BeeUtils.toString(newUser));
 
-        ParameterList args = createParams(event.name());
+        ParameterList args = createParams(TaskEvent.FORWARDED.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
@@ -722,15 +683,6 @@ public class TaskEventHandler {
   }
 
   private static void doRenew(final FormView form) {
-    final IsRow data = form.getRow();
-    Assert.notEmpty(data.getId());
-    final int evOld = data.getInteger(form.getDataIndex("Event"));
-    final TaskEvent event = TaskEvent.RENEWED;
-
-    if (!availableEvent(event, evOld, form)) {
-      Global.showError("Veiksmas neleidžiamas");
-      return;
-    }
     final TaskDialog dialog = new TaskDialog("Užduoties grąžinimas vykdymui");
     dialog.addComment("Komentaras", false);
     dialog.addAction("Grąžinti vykdymui", new ClickHandler() {
@@ -741,13 +693,15 @@ public class TaskEventHandler {
           Global.showError("Įveskite komentarą");
           return;
         }
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, "Event"));
+        IsRow data = form.getRow();
+        int evOld = data.getInteger(form.getDataIndex(EVENT_NAME));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, EVENT_NAME));
         rs.setViewName(VIEW_NAME);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, "Event", BeeUtils.toString(TaskEvent.ACTIVATED.ordinal()));
+        rs.preliminaryUpdate(0, EVENT_NAME, BeeUtils.toString(TaskEvent.ACTIVATED.ordinal()));
 
-        ParameterList args = createParams(event.name());
+        ParameterList args = createParams(TaskEvent.RENEWED.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
@@ -758,15 +712,6 @@ public class TaskEventHandler {
   }
 
   private static void doSuspend(final FormView form) {
-    final IsRow data = form.getRow();
-    Assert.notEmpty(data.getId());
-    final int evOld = data.getInteger(form.getDataIndex("Event"));
-    final TaskEvent event = TaskEvent.SUSPENDED;
-
-    if (!availableEvent(event, evOld, form)) {
-      Global.showError("Veiksmas neleidžiamas");
-      return;
-    }
     final TaskDialog dialog = new TaskDialog("Užduoties sustabdymas");
     dialog.addComment("Komentaras", false);
     dialog.addAction("Sustabdyti", new ClickHandler() {
@@ -777,11 +722,14 @@ public class TaskEventHandler {
           Global.showError("Įveskite komentarą");
           return;
         }
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, "Event"));
+        IsRow data = form.getRow();
+        int evOld = data.getInteger(form.getDataIndex(EVENT_NAME));
+        TaskEvent event = TaskEvent.SUSPENDED;
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, EVENT_NAME));
         rs.setViewName(VIEW_NAME);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, "Event", BeeUtils.toString(event.ordinal()));
+        rs.preliminaryUpdate(0, EVENT_NAME, BeeUtils.toString(event.ordinal()));
 
         ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -793,23 +741,11 @@ public class TaskEventHandler {
     dialog.display();
   }
 
-  private static void doVisit(final FormView form) {
-    IsRow data = form.getRow();
-    Assert.notEmpty(data.getId());
-
+  private static void doVisit(FormView form) {
     ParameterList args = createParams(TaskEvent.VISITED.name());
-    args.addDataItem(CrmConstants.VAR_TASK_ID, data.getId());
+    args.addDataItem(CrmConstants.VAR_TASK_ID, form.getRow().getId());
 
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        Assert.notNull(response);
-
-        if (response.hasErrors()) {
-          Global.showError((Object[]) response.getErrors());
-        }
-      }
-    });
+    createRequest(args, null, form);
   }
 
   private TaskEventHandler() {

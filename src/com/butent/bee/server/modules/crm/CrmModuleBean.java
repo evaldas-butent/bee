@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.crm;
 
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -47,8 +48,8 @@ public class CrmModuleBean implements BeeModule {
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response = null;
     String svc = reqInfo.getParameter(CrmConstants.CRM_METHOD);
-
     TaskEvent ev;
+
     try {
       ev = TaskEvent.valueOf(svc);
     } catch (Exception e) {
@@ -78,21 +79,30 @@ public class CrmModuleBean implements BeeModule {
     switch (event) {
       case ACTIVATED:
         BeeRowSet rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
-        response = deb.commitRow(rs, true);
+        response = deb.commitRow(rs, false);
 
         if (!response.hasErrors()) {
           long taskId = ((BeeRow) response.getResponse()).getId();
-          ResponseObject resp = registerTaskEvent(taskId, time, reqInfo, event, null);
+          response = registerTaskEvent(taskId, time, reqInfo, event, null);
 
-          if (!resp.hasErrors()) {
+          if (!response.hasErrors()) {
             long executor = BeeUtils.toLong(rs.getString(0, "Executor"));
 
             if (executor != currentUser) {
-              resp = registerTaskVisit(taskId, executor, null, true);
+              response = registerTaskVisit(taskId, executor, null, true);
             }
-          }
-          if (resp.hasErrors()) {
-            response = resp;
+            if (!response.hasErrors()) {
+              BeeView view = sys.getView(rs.getViewName());
+              rs = sys.getViewData(view.getName(), view.getRowFilter(taskId), null, 0, 0);
+
+              if (rs.isEmpty()) {
+                String msg = "Optimistic lock exception";
+                logger.warning(msg);
+                response = ResponseObject.error(msg);
+              } else {
+                response.setResponse(rs.getRow(0));
+              }
+            }
           }
         }
         break;
@@ -111,47 +121,44 @@ public class CrmModuleBean implements BeeModule {
 
       case FORWARDED:
         rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
-        response = deb.commitRow(rs, true);
+        long taskId = rs.getRow(0).getId();
+        long oldUser = BeeUtils.toLong(rs.getShadowString(0, "Executor"));
+        long newUser = BeeUtils.toLong(rs.getString(0, "Executor"));
+
+        response = registerTaskEvent(taskId, time, reqInfo, event,
+            BeeUtils.concat(" -> ", usr.getUserSign(oldUser), usr.getUserSign(newUser)));
 
         if (!response.hasErrors()) {
-          long taskId = ((BeeRow) response.getResponse()).getId();
-          long oldUser = BeeUtils.toLong(rs.getShadowString(0, "Executor"));
-          long newUser = BeeUtils.toLong(rs.getString(0, "Executor"));
+          response = deb.commitRow(rs, true);
 
-          ResponseObject resp = registerTaskEvent(taskId, time, reqInfo, event,
-              BeeUtils.concat(" -> ", usr.getUserSign(oldUser), usr.getUserSign(newUser)));
+          if (!response.hasErrors()) {
+            ResponseObject resp = registerTaskVisit(taskId, newUser, null, false);
 
-          if (!resp.hasErrors()) {
-            resp = registerTaskVisit(taskId, newUser, null, false);
-          }
-          if (resp.hasErrors()) {
-            response = resp;
+            if (resp.hasErrors()) {
+              response = resp;
 
-          } else if (BeeUtils.isEmpty(reqInfo.getParameter(CrmConstants.VAR_TASK_OBSERVE))) {
-            String tbl = "TaskUsers";
-            qs.updateData(new SqlDelete(tbl)
-                .setWhere(SqlUtils.and(SqlUtils.equal(tbl, "Task", taskId),
-                    SqlUtils.equal(tbl, "User", oldUser))));
+            } else if (BeeUtils.isEmpty(reqInfo.getParameter(CrmConstants.VAR_TASK_OBSERVE))) {
+              String tbl = "TaskUsers";
+              qs.updateData(new SqlDelete(tbl)
+                  .setWhere(SqlUtils.and(SqlUtils.equal(tbl, "Task", taskId),
+                      SqlUtils.equal(tbl, "User", oldUser))));
+            }
           }
         }
         break;
 
       case EXTENDED:
         rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
-        response = deb.commitRow(rs, true);
+        taskId = rs.getRow(0).getId();
+        String oldTerm = rs.getShadowString(0, "FinishTime");
+        String newTerm = rs.getString(0, "FinishTime");
+
+        response = registerTaskEvent(taskId, time, reqInfo, event,
+            BeeUtils.concat(" -> ",
+                TimeUtils.toDateTimeOrNull(oldTerm), TimeUtils.toDateTimeOrNull(newTerm)));
 
         if (!response.hasErrors()) {
-          long taskId = ((BeeRow) response.getResponse()).getId();
-          String oldTerm = rs.getShadowString(0, "FinishTime");
-          String newTerm = rs.getString(0, "FinishTime");
-
-          ResponseObject resp = registerTaskEvent(taskId, time, reqInfo, event,
-              BeeUtils.concat(" -> ",
-                  TimeUtils.toDateTimeOrNull(oldTerm), TimeUtils.toDateTimeOrNull(newTerm)));
-
-          if (resp.hasErrors()) {
-            response = resp;
-          }
+          response = deb.commitRow(rs, true);
         }
         break;
 
@@ -161,15 +168,12 @@ public class CrmModuleBean implements BeeModule {
       case APPROVED:
       case RENEWED:
         rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
-        response = deb.commitRow(rs, true);
+        taskId = rs.getRow(0).getId();
+
+        response = registerTaskEvent(taskId, time, reqInfo, event, null);
 
         if (!response.hasErrors()) {
-          long taskId = ((BeeRow) response.getResponse()).getId();
-          ResponseObject resp = registerTaskEvent(taskId, time, reqInfo, event, null);
-
-          if (resp.hasErrors()) {
-            response = resp;
-          }
+          response = deb.commitRow(rs, true);
         }
         break;
     }
@@ -222,11 +226,14 @@ public class CrmModuleBean implements BeeModule {
           .setWhere(SqlUtils.and(SqlUtils.equal(tbl, "Task", taskId),
               SqlUtils.equal(tbl, "User", userId))));
     }
-    if (newVisit || BeeUtils.isEmpty(response.getResponse(-1, logger))) {
+    if (newVisit || BeeUtils.isEmpty(response.getResponse(-1L, logger))) {
       response = qs.insertDataWithResponse(new SqlInsert(tbl)
           .addConstant("Task", taskId)
           .addConstant("User", userId)
           .addConstant("LastAccess", time));
+    }
+    if (!response.hasErrors()) {
+      response = ResponseObject.response(time);
     }
     return response;
   }
