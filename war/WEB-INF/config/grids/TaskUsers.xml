@@ -85,15 +85,15 @@
     </rowStyle>
     <rowStyle>
       <style>
-        <inline>="color:gray"</inline>
+        <inline>="color:black"</inline>
       </style>
       <condition>
-        <expression>row.StartTime &gt; new Date()</expression>
+        <expression>row.Event == 0</expression>
       </condition>      
     </rowStyle>
     <rowStyle>
       <style>
-        <inline>="color:" + (row.Event==1 ? "blue" : (row.Event==2 ? "orange" : (row.Event==3 ? "green" : (row.Event==4 ? "brown" : "black"))))</inline>
+        <inline>="color:gray"</inline>
       </style>
       <condition>
         <expression>true</expression>

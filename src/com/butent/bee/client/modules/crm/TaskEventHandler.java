@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.crm;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -16,6 +17,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.FlexTable.FlexCellFormatter;
 import com.butent.bee.client.layout.Absolute;
@@ -47,13 +49,11 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.List;
+import java.util.Map;
 
 public class TaskEventHandler {
 
   private static class TaskCreateHandler extends AbstractFormCallback {
-    private TaskCreateHandler() {
-      super();
-    }
 
     @Override
     public void afterCreateWidget(final String name, final Widget widget) {
@@ -77,7 +77,7 @@ public class TaskEventHandler {
         String value = row.getString(form.getDataIndex(colName));
 
         if (BeeUtils.isEmpty(value)) {
-          if (BeeUtils.inListSame(colName, "Priority", "FinishTime", "Task", "Executor")) {
+          if (BeeUtils.inListSame(colName, "StartTime", "FinishTime", "Task", "Executor")) {
             dataView.notifySevere(colName + ": value required");
             return false;
           }
@@ -86,7 +86,6 @@ public class TaskEventHandler {
           values.add(value);
         }
       }
-
       BeeRowSet rs = new BeeRowSet(columns);
       rs.setViewName(VIEW_NAME);
       rs.addRow(0, values.toArray(new String[0]));
@@ -242,17 +241,16 @@ public class TaskEventHandler {
   }
 
   private static class TaskEditHandler extends AbstractFormCallback {
-    private Widget priorityWidget = null;
-
-    private TaskEditHandler() {
-      super();
-    }
+    private Map<String, Widget> formWidgets = Maps.newHashMap();
 
     @Override
     public void afterCreateWidget(final String name, final Widget widget) {
       if (BeeUtils.same(name, "Priority")) {
-        setPriorityWidget(widget);
+        setWidget(name, widget);
+
       } else if (widget instanceof HasClickHandlers) {
+        setWidget(name, widget);
+
         TaskEvent ev;
         try {
           ev = TaskEvent.valueOf(name);
@@ -260,11 +258,11 @@ public class TaskEventHandler {
           ev = null;
         }
         if (ev != null) {
-          final TaskEvent taskEvent = ev;
+          final TaskEvent event = ev;
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
             @Override
-            public void onClick(ClickEvent event) {
-              new TaskEventHandler(taskEvent, UiHelper.getForm(widget));
+            public void onClick(ClickEvent e) {
+              doEvent(event, UiHelper.getForm(widget));
             }
           });
         }
@@ -278,39 +276,52 @@ public class TaskEventHandler {
 
     @Override
     public void onStartEdit(FormView form, IsRow row) {
-      if (row != null && getPriorityWidget() != null) {
+      if (row == null) {
+        return;
+      }
+      if (getWidget("Priority") != null) {
         Integer idx = row.getInteger(form.getDataIndex("Priority"));
         String text;
+
         if (BeeUtils.isOrdinal(Priority.class, idx)) {
           text = Priority.values()[idx].name();
         } else {
           text = BeeConst.STRING_EMPTY;
         }
-        getPriorityWidget().getElement().setInnerText(text);
+        getWidget("Priority").getElement().setInnerText(text);
       }
+      Integer status = row.getInteger(form.getDataIndex("Event"));
 
-      if (row != null && row.getId() > 0) {
-        ParameterList args = createParams(TaskEvent.VISITED.name());
-        args.addDataItem(CrmConstants.VAR_TASK_ID, row.getId());
+      if (BeeUtils.isOrdinal(TaskEvent.class, status)) {
+        Long owner = row.getLong(form.getDataIndex("Owner"));
+        Long executor = row.getLong(form.getDataIndex("Executor"));
 
-        BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-          @Override
-          public void onResponse(ResponseObject response) {
-            Assert.notNull(response);
-            if (response.hasErrors()) {
-              Global.showError((Object[]) response.getErrors());
+        for (TaskEvent ev : TaskEvent.values()) {
+          if (ev == TaskEvent.VISITED) {
+            doEvent(TaskEvent.VISITED, form);
+
+          } else if (ev == TaskEvent.ACTIVATED) {
+            continue;
+
+          } else {
+            Widget widget = getWidget(ev.name());
+
+            if (availableEvent(ev, status, owner, executor)) {
+              StyleUtils.unhideDisplay(widget);
+            } else {
+              StyleUtils.hideDisplay(widget);
             }
           }
-        });
+        }
       }
     }
 
-    private Widget getPriorityWidget() {
-      return priorityWidget;
+    private Widget getWidget(String name) {
+      return formWidgets.get(BeeUtils.normalize(name));
     }
 
-    private void setPriorityWidget(Widget priorityWidget) {
-      this.priorityWidget = priorityWidget;
+    private void setWidget(String name, Widget widget) {
+      formWidgets.put(BeeUtils.normalize(name), widget);
     }
   }
 
@@ -321,49 +332,50 @@ public class TaskEventHandler {
     FormFactory.registerFormCallback("Tasks", new TaskEditHandler());
   }
 
+  private static boolean availableEvent(TaskEvent ev, int status, FormView form) {
+    IsRow row = form.getRow();
+    return availableEvent(ev, status, row.getLong(form.getDataIndex("Owner")),
+        row.getLong(form.getDataIndex("Executor")));
+  }
+
+  private static boolean availableEvent(TaskEvent ev, Integer status, Long owner, Long executor) {
+    long user = BeeKeeper.getUser().getUserId();
+
+    if (user != owner && user != executor) {
+      return ev == TaskEvent.COMMENTED || ev == TaskEvent.VISITED;
+    }
+    switch (ev) {
+      case COMMENTED:
+      case VISITED:
+      case ACTIVATED:
+        return true;
+
+      case RENEWED:
+        return status != TaskEvent.ACTIVATED.ordinal();
+
+      case FORWARDED:
+      case EXTENDED:
+      case SUSPENDED:
+      case COMPLETED:
+        return status == TaskEvent.ACTIVATED.ordinal();
+
+      case CANCELED:
+        return BeeUtils.inList(status,
+            TaskEvent.ACTIVATED.ordinal(), TaskEvent.SUSPENDED.ordinal());
+
+      case APPROVED:
+        return status == TaskEvent.COMPLETED.ordinal() && user == owner && user != executor;
+    }
+    return true;
+  }
+
   private static ParameterList createParams(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(CrmConstants.CRM_MODULE);
     args.addQueryItem(CrmConstants.CRM_METHOD, name);
     return args;
   }
 
-  private TaskEventHandler(final TaskEvent ev, final FormView form) {
-    switch (ev) {
-      case COMMENTED:
-        doComment(form);
-        break;
-
-      case FORWARDED:
-        doForward(form);
-        break;
-
-      case EXTENDED:
-        doExtend(form);
-        break;
-
-      case SUSPENDED:
-        doSuspend(form);
-        break;
-
-      case CANCELED:
-        doCancel(form);
-        break;
-
-      case COMPLETED:
-        doComplete(form);
-        break;
-
-      case APPROVED:
-        doApprove(form);
-        break;
-
-      case RENEWED:
-        doRenew(form);
-        break;
-    }
-  }
-
-  private void createRequest(ParameterList args, final TaskDialog dialog, final FormView form) {
+  private static void createRequest(ParameterList args, final TaskDialog dialog, final FormView form) {
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -383,20 +395,21 @@ public class TaskEventHandler {
     });
   }
 
-  private void doApprove(final FormView form) {
+  private static void doApprove(final FormView form) {
     final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
     final int evOld = data.getInteger(form.getDataIndex("Event"));
+    final TaskEvent event = TaskEvent.APPROVED;
 
-    if (!BeeUtils.equals(evOld, TaskEvent.COMPLETED.ordinal())) {
-      Global.showError("Patvirtinti galima tik užbaigtą užduotį");
+    if (!availableEvent(event, evOld, form)) {
+      Global.showError("Veiksmas neleidžiamas");
       return;
     }
     final TaskDialog dialog = new TaskDialog("Užduoties patvirtinimas");
     dialog.addComment("Komentaras", false);
     dialog.addAction("Patvirtinti", new ClickHandler() {
       @Override
-      public void onClick(ClickEvent event) {
+      public void onClick(ClickEvent e) {
         String comment = dialog.getComment();
         if (BeeUtils.isEmpty(comment)) {
           Global.showError("Įveskite komentarą");
@@ -406,9 +419,9 @@ public class TaskEventHandler {
         rs.setViewName(VIEW_NAME);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, "Event", BeeUtils.toString(TaskEvent.APPROVED.ordinal()));
+        rs.preliminaryUpdate(0, "Event", BeeUtils.toString(event.ordinal()));
 
-        ParameterList args = createParams(TaskEvent.APPROVED.name());
+        ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
@@ -418,20 +431,21 @@ public class TaskEventHandler {
     dialog.display();
   }
 
-  private void doCancel(final FormView form) {
+  private static void doCancel(final FormView form) {
     final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
     final int evOld = data.getInteger(form.getDataIndex("Event"));
+    final TaskEvent event = TaskEvent.CANCELED;
 
-    if (!BeeUtils.inList(evOld, TaskEvent.ACTIVATED.ordinal(), TaskEvent.SUSPENDED.ordinal())) {
-      Global.showError("Nutraukti galima tik aktyvią arba sustabdytą užduotį");
+    if (!availableEvent(event, evOld, form)) {
+      Global.showError("Veiksmas neleidžiamas");
       return;
     }
     final TaskDialog dialog = new TaskDialog("Užduoties nutraukimas");
     dialog.addComment("Komentaras", false);
     dialog.addAction("Nutraukti", new ClickHandler() {
       @Override
-      public void onClick(ClickEvent event) {
+      public void onClick(ClickEvent e) {
         String comment = dialog.getComment();
         if (BeeUtils.isEmpty(comment)) {
           Global.showError("Įveskite komentarą");
@@ -441,9 +455,9 @@ public class TaskEventHandler {
         rs.setViewName(VIEW_NAME);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, "Event", BeeUtils.toString(TaskEvent.CANCELED.ordinal()));
+        rs.preliminaryUpdate(0, "Event", BeeUtils.toString(event.ordinal()));
 
-        ParameterList args = createParams(TaskEvent.CANCELED.name());
+        ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
@@ -453,7 +467,7 @@ public class TaskEventHandler {
     dialog.display();
   }
 
-  private void doComment(final FormView form) {
+  private static void doComment(final FormView form) {
     final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
 
@@ -461,7 +475,7 @@ public class TaskEventHandler {
     dialog.addComment("Komentaras", true);
     dialog.addAction("Išsaugoti", new ClickHandler() {
       @Override
-      public void onClick(ClickEvent event) {
+      public void onClick(ClickEvent e) {
         String comment = dialog.getComment();
         if (BeeUtils.isEmpty(comment)) {
           Global.showError("Įveskite komentarą");
@@ -506,20 +520,21 @@ public class TaskEventHandler {
     dialog.display();
   }
 
-  private void doComplete(final FormView form) {
+  private static void doComplete(final FormView form) {
     final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
     final int evOld = data.getInteger(form.getDataIndex("Event"));
+    final TaskEvent event = TaskEvent.COMPLETED;
 
-    if (!BeeUtils.equals(evOld, TaskEvent.ACTIVATED.ordinal())) {
-      Global.showError("Užbaigti galima tik aktyvią užduotį");
+    if (!availableEvent(event, evOld, form)) {
+      Global.showError("Veiksmas neleidžiamas");
       return;
     }
     final TaskDialog dialog = new TaskDialog("Užduoties užbaigimas");
     dialog.addComment("Komentaras", true);
     dialog.addAction("Užbaigti", new ClickHandler() {
       @Override
-      public void onClick(ClickEvent event) {
+      public void onClick(ClickEvent e) {
         String comment = dialog.getComment();
         if (BeeUtils.isEmpty(comment)) {
           Global.showError("Įveskite komentarą");
@@ -555,7 +570,7 @@ public class TaskEventHandler {
         }
         rs.preliminaryUpdate(0, "Event", BeeUtils.toString(ev.ordinal()));
 
-        ParameterList args = createParams(TaskEvent.COMPLETED.name());
+        ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
         args.addDataItem(CrmConstants.VAR_TASK_DURATION_DATE, BeeUtils.transform(date));
@@ -568,13 +583,54 @@ public class TaskEventHandler {
     dialog.display();
   }
 
-  private void doExtend(final FormView form) {
+  private static void doEvent(final TaskEvent ev, final FormView form) {
+    switch (ev) {
+      case VISITED:
+        doVisit(form);
+        break;
+
+      case COMMENTED:
+        doComment(form);
+        break;
+
+      case FORWARDED:
+        doForward(form);
+        break;
+
+      case EXTENDED:
+        doExtend(form);
+        break;
+
+      case SUSPENDED:
+        doSuspend(form);
+        break;
+
+      case CANCELED:
+        doCancel(form);
+        break;
+
+      case COMPLETED:
+        doComplete(form);
+        break;
+
+      case APPROVED:
+        doApprove(form);
+        break;
+
+      case RENEWED:
+        doRenew(form);
+        break;
+    }
+  }
+
+  private static void doExtend(final FormView form) {
     final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
-    final int ev = data.getInteger(form.getDataIndex("Event"));
+    final int evOld = data.getInteger(form.getDataIndex("Event"));
+    final TaskEvent event = TaskEvent.EXTENDED;
 
-    if (!BeeUtils.equals(ev, TaskEvent.ACTIVATED.ordinal())) {
-      Global.showError("Pratęsti galima tik aktyvią užduotį");
+    if (!availableEvent(event, evOld, form)) {
+      Global.showError("Veiksmas neleidžiamas");
       return;
     }
     final TaskDialog dialog = new TaskDialog("Užduoties termino pratęsimas");
@@ -582,7 +638,7 @@ public class TaskEventHandler {
     dialog.addComment("Komentaras", false);
     dialog.addAction("Pratęsti terminą", new ClickHandler() {
       @Override
-      public void onClick(ClickEvent event) {
+      public void onClick(ClickEvent e) {
         Long newTerm = dialog.getDate();
         if (BeeUtils.isEmpty(newTerm)) {
           Global.showError("Įveskite terminą");
@@ -604,7 +660,7 @@ public class TaskEventHandler {
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(oldTerm)});
         rs.preliminaryUpdate(0, "FinishTime", BeeUtils.toString(newTerm));
 
-        ParameterList args = createParams(TaskEvent.EXTENDED.name());
+        ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
@@ -614,13 +670,14 @@ public class TaskEventHandler {
     dialog.display();
   }
 
-  private void doForward(final FormView form) {
+  private static void doForward(final FormView form) {
     final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
-    final int ev = data.getInteger(form.getDataIndex("Event"));
+    final int evOld = data.getInteger(form.getDataIndex("Event"));
+    final TaskEvent event = TaskEvent.FORWARDED;
 
-    if (!BeeUtils.equals(ev, TaskEvent.ACTIVATED.ordinal())) {
-      Global.showError("Persiųsti galima tik aktyvią užduotį");
+    if (!availableEvent(event, evOld, form)) {
+      Global.showError("Veiksmas neleidžiamas");
       return;
     }
     final TaskDialog dialog = new TaskDialog("Užduoties persiuntimas");
@@ -629,7 +686,7 @@ public class TaskEventHandler {
     dialog.addComment("Komentaras", false);
     dialog.addAction("Persiųsti", new ClickHandler() {
       @Override
-      public void onClick(ClickEvent event) {
+      public void onClick(ClickEvent e) {
         Long newUser = dialog.getSelector();
         if (BeeUtils.isEmpty(newUser)) {
           Global.showError("Įveskite vykdytoją");
@@ -651,7 +708,7 @@ public class TaskEventHandler {
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(oldUser)});
         rs.preliminaryUpdate(0, "Executor", BeeUtils.toString(newUser));
 
-        ParameterList args = createParams(TaskEvent.FORWARDED.name());
+        ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
@@ -664,21 +721,21 @@ public class TaskEventHandler {
     dialog.display();
   }
 
-  private void doRenew(final FormView form) {
+  private static void doRenew(final FormView form) {
     final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
     final int evOld = data.getInteger(form.getDataIndex("Event"));
-    final int evNew = TaskEvent.ACTIVATED.ordinal();
+    final TaskEvent event = TaskEvent.RENEWED;
 
-    if (BeeUtils.equals(evOld, evNew)) {
-      Global.showError("Užduotis jau ir taip aktyvi");
+    if (!availableEvent(event, evOld, form)) {
+      Global.showError("Veiksmas neleidžiamas");
       return;
     }
     final TaskDialog dialog = new TaskDialog("Užduoties grąžinimas vykdymui");
     dialog.addComment("Komentaras", false);
     dialog.addAction("Grąžinti vykdymui", new ClickHandler() {
       @Override
-      public void onClick(ClickEvent event) {
+      public void onClick(ClickEvent e) {
         String comment = dialog.getComment();
         if (BeeUtils.isEmpty(comment)) {
           Global.showError("Įveskite komentarą");
@@ -688,9 +745,9 @@ public class TaskEventHandler {
         rs.setViewName(VIEW_NAME);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, "Event", BeeUtils.toString(evNew));
+        rs.preliminaryUpdate(0, "Event", BeeUtils.toString(TaskEvent.ACTIVATED.ordinal()));
 
-        ParameterList args = createParams(TaskEvent.RENEWED.name());
+        ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
@@ -700,20 +757,21 @@ public class TaskEventHandler {
     dialog.display();
   }
 
-  private void doSuspend(final FormView form) {
+  private static void doSuspend(final FormView form) {
     final IsRow data = form.getRow();
     Assert.notEmpty(data.getId());
     final int evOld = data.getInteger(form.getDataIndex("Event"));
+    final TaskEvent event = TaskEvent.SUSPENDED;
 
-    if (!BeeUtils.equals(evOld, TaskEvent.ACTIVATED.ordinal())) {
-      Global.showError("Sustabdyti galima tik aktyvią užduotį");
+    if (!availableEvent(event, evOld, form)) {
+      Global.showError("Veiksmas neleidžiamas");
       return;
     }
     final TaskDialog dialog = new TaskDialog("Užduoties sustabdymas");
     dialog.addComment("Komentaras", false);
     dialog.addAction("Sustabdyti", new ClickHandler() {
       @Override
-      public void onClick(ClickEvent event) {
+      public void onClick(ClickEvent e) {
         String comment = dialog.getComment();
         if (BeeUtils.isEmpty(comment)) {
           Global.showError("Įveskite komentarą");
@@ -723,9 +781,9 @@ public class TaskEventHandler {
         rs.setViewName(VIEW_NAME);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, "Event", BeeUtils.toString(TaskEvent.SUSPENDED.ordinal()));
+        rs.preliminaryUpdate(0, "Event", BeeUtils.toString(event.ordinal()));
 
-        ParameterList args = createParams(TaskEvent.SUSPENDED.name());
+        ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
@@ -733,5 +791,27 @@ public class TaskEventHandler {
       }
     });
     dialog.display();
+  }
+
+  private static void doVisit(final FormView form) {
+    IsRow data = form.getRow();
+    Assert.notEmpty(data.getId());
+
+    ParameterList args = createParams(TaskEvent.VISITED.name());
+    args.addDataItem(CrmConstants.VAR_TASK_ID, data.getId());
+
+    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        Assert.notNull(response);
+
+        if (response.hasErrors()) {
+          Global.showError((Object[]) response.getErrors());
+        }
+      }
+    });
+  }
+
+  private TaskEventHandler() {
   }
 }
