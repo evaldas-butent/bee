@@ -75,9 +75,9 @@ public abstract class AbstractPager extends Composite implements PagerView {
     this.viewPresenter = viewPresenter;
   }
 
-  public void start(HasDataTable display) {
-    if (!Objects.equal(display, getDisplay())) {
-      setDisplay(display);
+  public void start(HasDataTable displ) {
+    if (!Objects.equal(displ, getDisplay())) {
+      setDisplay(displ);
     }
   }
 

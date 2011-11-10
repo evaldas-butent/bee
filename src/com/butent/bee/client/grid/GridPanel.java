@@ -60,10 +60,10 @@ public class GridPanel extends ResizePanel implements HasEnabled {
     }
     
     GridFactory.createGrid(getGridName(), gcb, new GridFactory.PresenterCallback() {
-      public void onCreate(GridPresenter presenter) {
-        if (presenter != null) {
-          setPresenter(presenter);
-          setWidget(presenter.getWidget());
+      public void onCreate(GridPresenter gp) {
+        if (gp != null) {
+          setPresenter(gp);
+          setWidget(gp.getWidget());
         }
       }
     }, EnumSet.of(UiOption.EMBEDDED));

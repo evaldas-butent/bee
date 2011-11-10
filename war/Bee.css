@@ -830,6 +830,13 @@ body, select {
   font-size: 14px;
 }
 
+.bee-Disclosure-header {
+  cursor: pointer;
+}
+.bee-Disclosure-content {
+  margin-left: 12px;
+}
+
 .gwt-TreeItem-selected {
   background-color: #ffffaa;
 }

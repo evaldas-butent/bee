@@ -2544,11 +2544,12 @@ public class BeeUtils {
 
     int len = search.length();
     StringBuilder sb = new StringBuilder();
+    int cnt = max;
 
     while (end >= 0) {
       sb.append(text.substring(start, end)).append(replacement);
       start = end + len;
-      if (--max == 0) {
+      if (--cnt == 0) {
         break;
       }
       end = text.indexOf(search, start);

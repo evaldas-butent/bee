@@ -199,7 +199,9 @@ public class SpinnerBase {
     return Global.getImages().arrowUpPressed();
   }
 
-  public void doStep(long v, boolean incr) {
+  public void doStep(long z, boolean incr) {
+    long v = z;
+
     if (incr) {
       if (v < getMin() || v >= getMax()) {
         v = getMin();
@@ -219,6 +221,7 @@ public class SpinnerBase {
         }
       }
     }
+    
     updateValue(v);
   }
 

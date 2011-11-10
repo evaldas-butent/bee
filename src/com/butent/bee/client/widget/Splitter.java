@@ -167,15 +167,13 @@ public abstract class Splitter extends Widget implements HasId, HasLayoutCallbac
   }
 
   private void setAssociatedWidgetSize(int size) {
-    if (size < minSize) {
-      size = minSize;
-    }
+    int z = Math.max(size, minSize);
 
     LayoutData layout = (LayoutData) target.getLayoutData();
-    if (size == layout.size) {
+    if (z == layout.size) {
       return;
     }
-    layout.size = size;
+    layout.size = z;
 
     if (layoutCommand == null) {
       layoutCommand = new LayoutCommand(this);

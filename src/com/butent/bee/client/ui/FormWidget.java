@@ -24,6 +24,7 @@ import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SliderBar;
@@ -49,6 +50,7 @@ import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.HeaderContentFooter;
 import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.layout.HtmlPanel;
 import com.butent.bee.client.layout.ResizePanel;
 import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.layout.Simple;
@@ -130,6 +132,7 @@ public enum FormWidget {
   DATE_LABEL("DateLabel", EnumSet.of(Type.DISPLAY)),
   DATE_TIME_LABEL("DateTimeLabel", EnumSet.of(Type.DISPLAY)),
   DECIMAL_LABEL("DecimalLabel", EnumSet.of(Type.DISPLAY)),
+  DISCLOSURE("Disclosure", EnumSet.of(Type.PANEL)),
   DOUBLE_LABEL("DoubleLabel", EnumSet.of(Type.DISPLAY)),
   FLEX_TABLE("FlexTable", EnumSet.of(Type.TABLE)),
   FLOW_PANEL("FlowPanel", EnumSet.of(Type.HAS_CHILDREN)),
@@ -138,6 +141,7 @@ public enum FormWidget {
   HEADER_CONTENT_FOOTER("HeaderContentFooter", EnumSet.of(Type.PANEL)),
   HORIZONTAL_PANEL("HorizontalPanel", EnumSet.of(Type.CELL_VECTOR)),
   HTML_LABEL("HtmlLabel", EnumSet.of(Type.DISPLAY)),
+  HTML_PANEL("HtmlPanel", EnumSet.of(Type.PANEL)),
   HYPERLINK("Hyperlink", EnumSet.of(Type.DISPLAY)),
   IMAGE("Image", EnumSet.of(Type.DISPLAY)),
   INLINE_HYPERLINK("InlineHyperlink", EnumSet.of(Type.DISPLAY)),
@@ -331,6 +335,8 @@ public enum FormWidget {
   private static final String ATTR_REL_VIEW = "relView";
   private static final String ATTR_REL_COLUMN = "relColumn";
 
+  private static final String ATTR_ANIMATE = "animate";
+
   private static final String ATTR_OPTIONS = "options";
 
   private static final String ATTR_EVENT = "event";
@@ -507,6 +513,18 @@ public enum FormWidget {
           widget = new DecimalLabel(format);
         }
         break;
+        
+      case DISCLOSURE:
+        if (BeeUtils.isEmpty(html)) {
+          widget = new Disclosure();
+        } else {
+          widget = new Disclosure(html);
+        }
+        String animate = attributes.get(ATTR_ANIMATE);
+        if (BeeUtils.isInt(animate)) {
+          ((Disclosure) widget).setAnimationDuration(BeeUtils.toInt(animate));
+        }
+        break;
 
       case DOUBLE_LABEL:
         format = attributes.get(ATTR_FORMAT);
@@ -553,6 +571,17 @@ public enum FormWidget {
           widget = new Html();
         } else {
           widget = new Html(html);
+        }
+        break;
+      
+      case HTML_PANEL:
+        if (!children.isEmpty()) {
+          StringBuilder sb = new StringBuilder();
+          for (Element child : children) {
+            sb.append(child.toString());
+          }
+          widget = new HtmlPanel(sb.toString());
+          children.clear();
         }
         break;
 
@@ -1666,6 +1695,16 @@ public enum FormWidget {
         && BeeUtils.inListSame(childTag, TAG_UP_FACE, TAG_DOWN_FACE, TAG_UP_HOVERING_FACE,
             TAG_DOWN_HOVERING_FACE, TAG_UP_DISABLED_FACE, TAG_DOWN_DISABLED_FACE)) {
       setFace((CustomButton) parent, childTag, child);
+    
+    } else if (this == DISCLOSURE) {
+      Widget w = createIfWidget(child, columns, widgetCallback, formCallback);
+      if (w != null && parent instanceof Disclosure) {
+        if (((Disclosure) parent).getHeaderWidget() == null) {
+          ((Disclosure) parent).setHeaderWidget(w);
+        } else if (((Disclosure) parent).getContentWidget() == null) {
+          ((Disclosure) parent).setContentWidget(w);
+        }
+      }
     }
   }
 

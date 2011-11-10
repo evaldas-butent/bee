@@ -1773,7 +1773,7 @@ public class CliWorker {
       } else {
         String z = BeeKeeper.getStorage().getItem(key);
         if (z == null) {
-          Global.showError(Global.messages.keyNotFound(key));
+          Global.showError(Global.MESSAGES.keyNotFound(key));
         } else {
           Global.inform(key, z);
         }

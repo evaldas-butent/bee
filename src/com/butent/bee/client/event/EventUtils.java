@@ -1045,7 +1045,7 @@ public class EventUtils {
 
   private static JavaScriptObject createDomHandler(String body) {
     return JsUtils.createFunction("event, target, row, rowId, rowVersion", body);
-  };
+  }
 
   private static boolean dispatchDnd(DndEvent evt) {
     boolean ret = false;

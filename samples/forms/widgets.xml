@@ -239,11 +239,11 @@
               <Label html="Audio" horizontalAlignment="center" />
             </north>
             <north size="50">
-<!--               <Audio url="http://www.drchinese.com/wav/Snowball.mp3" /> -->
+              <!-- <Audio url="http://www.drchinese.com/wav/Snowball.mp3" /> -->
               <Audio />
             </north>
             <center>
-<!--               <Video url="http://people.opera.com/shwetankd/webm/sunflower.webm" /> -->
+              <!-- <Video url="http://people.opera.com/shwetankd/webm/sunflower.webm" /> -->
               <Video />
             </center>
           </SplitPanel>
@@ -255,6 +255,31 @@
             <layer left="10" top="20" width="80" widthUnit="%">
               <SliderBar source="X" min="-100" max="200" step="50" numLabels="10"
                 numTicks="20" />
+            </layer>
+            <layer left="100" top="100" width="300" height="100">
+              <FlowPanel>
+                <Disclosure html="disclosure">
+                  <FlowPanel>
+                    <InlineLabel html="This is" />
+                    <Button html="Content" />
+                    <Label html="more content" />
+                  </FlowPanel>
+                </Disclosure>
+                <HtmlPanel>
+                  <br />
+                  <svg width="200" height="50" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient y1="0" x1="0" y2="1" x2="1" id="svg_grad">
+                        <stop stop-color="#ff0000" offset="0" />
+                        <stop stop-color="#ffff00" offset="1" />
+                      </linearGradient>
+                    </defs>
+                    <g>
+                      <rect y="0" x="0" width="200" height="50" fill="url(#svg_grad)" />
+                    </g>
+                  </svg>
+                </HtmlPanel>
+              </FlowPanel>
             </layer>
             <layer right="20" bottom="20">
               <Toggle source="X">

@@ -12,11 +12,7 @@
   <xs:element name="html" type="xs:string" />
   <xs:element name="text" type="xs:string" />
 
-  <xs:complexType name="widgetType">
-    <xs:choice minOccurs="0" maxOccurs="unbounded">
-      <xs:element name="dynStyle" type="bee:conditionalStyle" />
-      <xs:element name="handler" type="bee:eventHandler"/>
-    </xs:choice>
+  <xs:complexType name="widgetBase">
     <xs:attributeGroup ref="bee:appearance" />
     <xs:attribute name="name" type="bee:nameType" />
     <xs:attribute name="title" type="xs:string" />
@@ -25,7 +21,18 @@
     <xs:attribute ref="xml:base" />
   </xs:complexType>
 
-  <xs:element name="widget" type="bee:widgetType" abstract="true" />
+  <xs:complexType name="widgetType">
+    <xs:complexContent>
+      <xs:extension base="bee:widgetBase">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="dynStyle" type="bee:conditionalStyle" />
+          <xs:element name="handler" type="bee:eventHandler"/>
+        </xs:choice>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="widget" type="bee:widgetBase" abstract="true" />
 
   <xs:complexType name="focusableWidget">
     <xs:complexContent>
@@ -504,7 +511,7 @@
   <xs:element name="ResizePanel" type="bee:hasOneChild" substitutionGroup="bee:widget" />
 
   <xs:element name="ScrollPanel" type="bee:hasOneChild" substitutionGroup="bee:widget" />
-
+  
   <xs:element name="Frame" substitutionGroup="bee:widget">
     <xs:complexType>
       <xs:complexContent>
@@ -615,6 +622,31 @@
           <xs:attribute name="relView" type="bee:nameType" use="required" />
           <xs:attribute name="relColumn" type="bee:nameType" use="required" />
           <xs:attribute name="options" type="xs:normalizedString" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="HtmlPanel" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:widgetBase">
+          <xs:sequence minOccurs="1" maxOccurs="unbounded">
+            <xs:any processContents="lax" />
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="Disclosure" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:widgetType">
+          <xs:choice minOccurs="0" maxOccurs="2">
+            <xs:element ref="bee:widget" />
+          </xs:choice>
+          <xs:attribute name="animate" type="xs:int" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

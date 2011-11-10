@@ -55,10 +55,10 @@ public class Grego {
   public static int[] dayToFields(long day) {
     int[] fields = new int[FIELD_COUNT];
 
-    day += JULIAN_1970_CE - JULIAN_1_CE;
+    long d = day + JULIAN_1970_CE - JULIAN_1_CE;
 
     long[] rem = new long[1];
-    long n400 = floorDivide(day, 146097, rem);
+    long n400 = floorDivide(d, 146097, rem);
     long n100 = floorDivide(rem[0], 36524, rem);
     long n4 = floorDivide(rem[0], 1461, rem);
     long n1 = floorDivide(rem[0], 365, rem);
@@ -79,7 +79,7 @@ public class Grego {
     }
     int month = (12 * (dayOfYear + correction) + 6) / 367;
     int dayOfMonth = dayOfYear - DAYS_BEFORE[isLeap ? month + 12 : month] + 1;
-    int dayOfWeek = (int) ((day + 2) % 7);
+    int dayOfWeek = (int) ((d + 2) % 7);
     if (dayOfWeek < 1) {
       dayOfWeek += 7;
     }

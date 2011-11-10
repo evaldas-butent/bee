@@ -40,8 +40,8 @@ public class Global implements Module {
 
   public static final String VAR_DEBUG = "debug";
 
-  public static final LocalizableConstants constants = GWT.create(LocalizableConstants.class);
-  public static final LocalizableMessages messages = GWT.create(LocalizableMessages.class);
+  public static final LocalizableConstants CONSTANTS = GWT.create(LocalizableConstants.class);
+  public static final LocalizableMessages MESSAGES = GWT.create(LocalizableMessages.class);
 
   private static final MessageBoxes msgBoxen = new MessageBoxes();
   private static final InputBoxes inpBoxen = new InputBoxes();

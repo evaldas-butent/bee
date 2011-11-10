@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.ScriptElement;
 import com.google.gwt.user.client.Window;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Vector;
 
@@ -84,12 +85,15 @@ public class AjaxLoader {
     if (initialized == true) {
       return;
     }
-
-    if (apiKey == null) {
-      apiKey = AjaxKeyRepository.getKey();
+    
+    String key;
+    if (BeeUtils.isEmpty(apiKey)) {
+      key = AjaxKeyRepository.getKey();
+    } else {
+      key = BeeUtils.trim(apiKey);
     }
 
-    boolean alreadyLoaded = injectJsapi(apiKey, hostname);
+    boolean alreadyLoaded = injectJsapi(key, hostname);
 
     if (alreadyLoaded) {
       loaded = true;
@@ -117,15 +121,13 @@ public class AjaxLoader {
     Assert.notNull(onLoad);
     init();
 
-    if (settings == null) {
-      settings = AjaxLoaderOptions.newInstance();
-    }
-    settings.setCallback(onLoad);
-    final AjaxLoaderOptions copyOfSettings = settings;
+    final AjaxLoaderOptions options = (settings == null) 
+        ? AjaxLoaderOptions.newInstance() : settings;
+    options.setCallback(onLoad);
 
     Runnable apiLoad = new Runnable() {
       public void run() {
-        nativeLoadApi(api, version, copyOfSettings);
+        nativeLoadApi(api, version, options);
       }
     };
 
@@ -154,9 +156,8 @@ public class AjaxLoader {
     }
     Document doc = Document.get();
     String key = (apiKey == null) ? "" : ("key=" + apiKey + "&");
-    hostname = (hostname == null) ? "www.google.com" : hostname;
-    String src = getProtocol() + "//" + hostname + "/jsapi?" + key
-        + "callback=__gwt_AjaxLoader_onLoad";
+    String host = BeeUtils.isEmpty(hostname) ? "www.google.com" : hostname;
+    String src = getProtocol() + "//" + host + "/jsapi?" + key + "callback=__gwt_AjaxLoader_onLoad";
     ScriptElement script = doc.createScriptElement();
     script.setSrc(src);
     script.setType("text/javascript");

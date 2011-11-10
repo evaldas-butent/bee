@@ -102,7 +102,7 @@ public class BeeView implements HasExtendedInfo {
 
   private enum JoinType {
     INNER, RIGHT, LEFT, FULL;
-  };
+  }
 
   private final String name;
   private final BeeTable source;

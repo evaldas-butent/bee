@@ -511,7 +511,7 @@ public class ScreenImpl implements Screen {
     tp.add(new BeeLabel(), "Recent");
 
     BeeLayoutPanel dp = new BeeLayoutPanel();
-    tp.add(dp, Global.constants.data(), Global.getDataInfoProvider().getDataInfoCreator());
+    tp.add(dp, Global.CONSTANTS.data(), Global.getDataInfoProvider().getDataInfoCreator());
     setDataPanel(dp);
 
     FlexTable fp = new FlexTable();
@@ -528,7 +528,7 @@ public class ScreenImpl implements Screen {
       fp.setWidget(i, 1, new SimpleBoolean(Global.getVar(name)));
     }
 
-    fp.setWidget(r, 0, new BeeButton(Global.constants.refresh(), Service.REFRESH_MENU));
+    fp.setWidget(r, 0, new BeeButton(Global.CONSTANTS.refresh(), Service.REFRESH_MENU));
     fp.setWidget(r, 1, new BeeButton("BEE", new MenuService().name(), "stage_dummy"));
 
     BeeCheckBox log = new BeeCheckBox("Log");
@@ -558,9 +558,9 @@ public class ScreenImpl implements Screen {
 
     adm.add(new ButtonGroup("Ping", Service.DB_PING,
         "Info", Service.DB_INFO,
-        Global.constants.tables(), Service.DB_TABLES));
+        Global.CONSTANTS.tables(), Service.DB_TABLES));
 
-    adm.add(new BeeButton(Global.constants.clazz(), Service.GET_CLASS, Stage.STAGE_GET_PARAMETERS));
+    adm.add(new BeeButton(Global.CONSTANTS.clazz(), Service.GET_CLASS, Stage.STAGE_GET_PARAMETERS));
     adm.add(new BeeButton("Xml", Service.GET_XML, Stage.STAGE_GET_PARAMETERS));
     adm.add(new BeeButton("Jdbc", Service.GET_DATA, Stage.STAGE_GET_PARAMETERS));
 
@@ -604,7 +604,7 @@ public class ScreenImpl implements Screen {
     int z = direction.isHorizontal() ? p.getCenterWidth() : p.getCenterHeight();
     z = Math.round((z - p.getSplitterSize()) / 2);
     if (z < getMinTileSize()) {
-      Global.showError(Global.constants.no(), z);
+      Global.showError(Global.CONSTANTS.no(), z);
       return;
     }
 

@@ -176,6 +176,21 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
       UIObject.setStyleName(ensureColumn(column), styleName, false);
     }
 
+    public void resizeColumnGroup(int columns, boolean growOnly) {
+      int cc = Math.max(columns, 1);
+
+      int num = columnGroup.getChildCount();
+      if (num < cc) {
+        for (int i = num; i < cc; i++) {
+          columnGroup.appendChild(Document.get().createColElement());
+        }
+      } else if (!growOnly && num > cc) {
+        for (int i = num; i > cc; i--) {
+          columnGroup.removeChild(columnGroup.getLastChild());
+        }
+      }
+    }
+
     public void setStyleName(int column, String styleName) {
       UIObject.setStyleName(ensureColumn(column), styleName);
     }
@@ -186,21 +201,6 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
 
     public void setWidth(int column, String width) {
       DOM.setElementProperty(ensureColumn(column), "width", width);
-    }
-
-    void resizeColumnGroup(int columns, boolean growOnly) {
-      columns = Math.max(columns, 1);
-
-      int num = columnGroup.getChildCount();
-      if (num < columns) {
-        for (int i = num; i < columns; i++) {
-          columnGroup.appendChild(Document.get().createColElement());
-        }
-      } else if (!growOnly && num > columns) {
-        for (int i = num; i > columns; i--) {
-          columnGroup.removeChild(columnGroup.getLastChild());
-        }
-      }
     }
 
     private Element ensureColumn(int col) {
