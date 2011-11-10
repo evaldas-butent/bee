@@ -6,10 +6,11 @@
   source="OrderItems"
   >
   <BeeColumns>
-    <BeeJoinColumn name="ItemID" expression="ItemID" joinType="LEFT">
+    <BeeSimpleJoin expression="ItemID" joinType="LEFT">
+      <BeeSimpleColumn expression="ItemID" />
       <BeeSimpleColumn name="ItemIDName" expression="Name" />
       <BeeSimpleColumn name="ItemIDArticle" expression="Article" />
-    </BeeJoinColumn>
+    </BeeSimpleJoin>
     <BeeSimpleColumn expression="Amount" />
     <BeeSimpleColumn expression="UnitOfMsr" />
     <BeeSimpleColumn expression="Price" />

@@ -9,19 +9,20 @@
     <BeeSimpleColumn expression="Name" />
     <BeeSimpleColumn expression="Code" />
     <BeeSimpleColumn expression="VATCode" />
-    <BeeJoinColumn expression="Contact" joinType="LEFT">
+    <BeeSimpleJoin expression="Contact" joinType="LEFT">
       <BeeSimpleColumn expression="Phone" />
       <BeeSimpleColumn expression="Email" />
       <BeeSimpleColumn expression="Address" />
       <BeeSimpleColumn expression="PostIndex" />
       <BeeSimpleColumn expression="Website" />
-      <BeeJoinColumn name="City" expression="City" joinType="LEFT">
+      <BeeSimpleColumn expression="City" />
+      <BeeSimpleJoin expression="City" joinType="LEFT">
         <BeeSimpleColumn name="CityName" expression="Name" />
-        <BeeJoinColumn expression="Country" joinType="LEFT">
+        <BeeSimpleJoin expression="Country" joinType="LEFT">
           <BeeSimpleColumn name="CountryName" expression="Name" />
-        </BeeJoinColumn>
-      </BeeJoinColumn>
-    </BeeJoinColumn>
+        </BeeSimpleJoin>
+      </BeeSimpleJoin>
+    </BeeSimpleJoin>
   </BeeColumns>
   <BeeOrder>
     <OrderBy column="Name" />

@@ -7,22 +7,22 @@
   >
   <BeeColumns>
     <BeeSimpleColumn expression="Task" />
-    <BeeJoinColumn expression="Publisher" joinType="LEFT">
-      <BeeJoinColumn expression="Person" joinType="LEFT">
+    <BeeSimpleJoin expression="Publisher" joinType="LEFT">
+      <BeeSimpleJoin expression="Person" joinType="LEFT">
         <BeeSimpleColumn name="PublisherFirstName" expression="FirstName" />
         <BeeSimpleColumn name="PublisherLastName" expression="LastName" />
-      </BeeJoinColumn>
-    </BeeJoinColumn>
+      </BeeSimpleJoin>
+    </BeeSimpleJoin>
     <BeeSimpleColumn expression="PublishTime" />
     <BeeSimpleColumn expression="Comment" />
     <BeeSimpleColumn expression="Event" />
     <BeeSimpleColumn expression="EventNote" />
-    <BeeJoinColumn expression="EventDuration" joinType="LEFT">
-      <BeeSimpleColumn name="EventDuration" expression="DurationInMinutes" />
-      <BeeJoinColumn expression="DurationType" joinType="LEFT">
+    <BeeSimpleJoin expression="EventDuration" joinType="LEFT">
+      <BeeSimpleColumn expression="Duration" />
+      <BeeSimpleJoin expression="DurationType" joinType="LEFT">
         <BeeSimpleColumn name="DurationType" expression="Name" />
-      </BeeJoinColumn>
-    </BeeJoinColumn>
+      </BeeSimpleJoin>
+    </BeeSimpleJoin>
   </BeeColumns>
 </BeeView>
  

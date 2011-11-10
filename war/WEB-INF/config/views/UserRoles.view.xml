@@ -7,9 +7,10 @@
   >
   <BeeColumns>
     <BeeSimpleColumn expression="User" />
-    <BeeJoinColumn name="Role" expression="Role" joinType="INNER">
+    <BeeSimpleColumn expression="Role" />
+    <BeeSimpleJoin expression="Role" joinType="INNER">
       <BeeSimpleColumn name="RoleName" expression="Name" />
-    </BeeJoinColumn>
+    </BeeSimpleJoin>
   </BeeColumns>
   <BeeOrder>
     <OrderBy column="RoleName" />

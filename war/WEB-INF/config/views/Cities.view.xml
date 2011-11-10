@@ -7,9 +7,10 @@
   >
   <BeeColumns>
     <BeeSimpleColumn expression="Name" />
-    <BeeJoinColumn name="Country" expression="Country" joinType="LEFT">
+    <BeeSimpleColumn expression="Country" />
+    <BeeSimpleJoin expression="Country" joinType="LEFT">
       <BeeSimpleColumn name="CountryName" expression="Name" />
-    </BeeJoinColumn>
+    </BeeSimpleJoin>
   </BeeColumns>
   <BeeOrder>
     <OrderBy column="CountryName" />

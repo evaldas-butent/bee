@@ -18,8 +18,15 @@
   </xs:complexType>
 
   <xs:element name="column" type="bee:columnType" abstract="true" />
+  <xs:element name="aggregate" type="bee:columnType" substitutionGroup="bee:column" abstract="true" />
+
   <xs:element name="BeeSimpleColumn" type="bee:simpleColumnType" substitutionGroup="bee:column" />
-  <xs:element name="BeeJoinColumn" type="bee:joinColumnType" substitutionGroup="bee:column" />
+  <xs:element name="BeeFilterColumn" type="bee:filterColumnType" substitutionGroup="bee:aggregate" />
+  <xs:element name="BeeAggregateColumn" type="bee:aggregateColumnType" substitutionGroup="bee:aggregate" />
+  
+  <xs:element name="BeeSimpleJoin" type="bee:joinColumnType" substitutionGroup="bee:column" />
+  <xs:element name="BeeInternalJoin" type="bee:joinInternalType" substitutionGroup="bee:aggregate" />
+  <xs:element name="BeeExternalJoin" type="bee:joinExternalType" substitutionGroup="bee:aggregate" />
 
   <xs:complexType name="columns">
     <xs:sequence>
@@ -34,13 +41,13 @@
   </xs:complexType>
 
   <xs:complexType name="columnType">
-        <xs:attribute name="name" type="bee:nameType" />
     <xs:attribute name="expression" type="bee:fieldNameType" use="required" />
   </xs:complexType>
 
   <xs:complexType name="simpleColumnType">
     <xs:complexContent>
       <xs:extension base="bee:columnType">
+        <xs:attribute name="name" type="bee:nameType" />
         <xs:attribute name="locale">
           <xs:simpleType>
             <xs:restriction base="xs:string">
@@ -48,7 +55,20 @@
             </xs:restriction>
           </xs:simpleType>
         </xs:attribute>
-        <xs:attribute name="aggregate" type="bee:aggregateType" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="filterColumnType">
+    <xs:complexContent>
+      <xs:extension base="bee:simpleColumnType" />
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="aggregateColumnType">
+    <xs:complexContent>
+      <xs:extension base="bee:simpleColumnType">
+        <xs:attribute name="aggregate" type="bee:aggregateType" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -59,8 +79,26 @@
         <xs:sequence>
           <xs:element ref="bee:column" maxOccurs="unbounded" />
         </xs:sequence>
-        <xs:attribute name="source" type="bee:tableNameType" />
         <xs:attribute name="joinType" type="bee:joinType" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="joinInternalType">
+    <xs:complexContent>
+      <xs:extension base="bee:columnType">
+        <xs:sequence>
+          <xs:element ref="bee:aggregate" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="joinType" type="bee:joinType" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="joinExternalType">
+    <xs:complexContent>
+      <xs:extension base="bee:joinInternalType">
+        <xs:attribute name="source" type="bee:tableNameType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

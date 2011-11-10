@@ -147,29 +147,37 @@ public class TaskEventHandler {
       button.addClickHandler(clickHandler);
     }
 
-    public void addComment(String caption, boolean durationRequired) {
+    public void addComment(String caption, boolean required, boolean showDuration) {
       row++;
-      container.setWidget(row, 0, new BeeLabel(caption));
+      BeeLabel lbl = new BeeLabel(caption);
+      if (required) {
+        lbl.setStyleName("bee-required");
+      }
+      container.setWidget(row, 0, lbl);
       comment = new InputArea();
       comment.setVisibleLines(5);
       comment.setCharacterWidth(40);
       container.setWidget(row, 1, comment);
 
-      if (durationRequired) {
+      if (showDuration) {
         row++;
         container.setWidget(row, 0, new BeeLabel("Sugaišta minučių"));
         minutes = new InputSpinner(0, 0, 1440, 5);
         minutes.setWidth("4em");
         container.setWidget(row, 1, minutes);
-        addSelector("Darbo tipas", "DurationTypes", "Name");
-        addDate("Atlikimo data", ValueType.DATE);
+        addSelector("Darbo tipas", "DurationTypes", "Name", false);
+        addDate("Atlikimo data", ValueType.DATE, false);
         date.setValue(TimeUtils.today(0).serialize());
       }
     }
 
-    public void addDate(String caption, ValueType dateType) {
+    public void addDate(String caption, ValueType dateType, boolean required) {
       row++;
-      container.setWidget(row, 0, new BeeLabel(caption));
+      BeeLabel lbl = new BeeLabel(caption);
+      if (required) {
+        lbl.setStyleName("bee-required");
+      }
+      container.setWidget(row, 0, lbl);
       date = new InputDate(dateType);
       container.setWidget(row, 1, date);
     }
@@ -181,9 +189,13 @@ public class TaskEventHandler {
       container.setWidget(row, 1, question);
     }
 
-    public void addSelector(String caption, String relView, String relColumn) {
+    public void addSelector(String caption, String relView, String relColumn, boolean required) {
       row++;
-      container.setWidget(row, 0, new BeeLabel(caption));
+      BeeLabel lbl = new BeeLabel(caption);
+      if (required) {
+        lbl.setStyleName("bee-required");
+      }
+      container.setWidget(row, 0, lbl);
       BeeColumn col = new BeeColumn(ValueType.LONG, "Dummy");
       selector = new DataSelector(
           RelationInfo.create(Lists.newArrayList(col), null, col.getId(), relView, relColumn),
@@ -242,8 +254,8 @@ public class TaskEventHandler {
     private Map<String, Widget> formWidgets = Maps.newHashMap();
 
     @Override
-    public void afterCreateWidget(final String name, final Widget widget) {
-      if (BeeUtils.same(name, "Priority")) {
+    public void afterCreateWidget(String name, final Widget widget) {
+      if (!BeeUtils.isEmpty(name) && BeeUtils.inListSame(name, "Priority", EVENT_NAME)) {
         setWidget(name, widget);
 
       } else if (widget instanceof HasClickHandlers) {
@@ -277,20 +289,18 @@ public class TaskEventHandler {
       if (row == null) {
         return;
       }
-      if (getWidget("Priority") != null) {
-        Integer idx = row.getInteger(form.getDataIndex("Priority"));
-        String text;
+      String text = BeeConst.STRING_EMPTY;
+      Integer idx = row.getInteger(form.getDataIndex("Priority"));
 
-        if (BeeUtils.isOrdinal(Priority.class, idx)) {
-          text = Priority.values()[idx].name();
-        } else {
-          text = BeeConst.STRING_EMPTY;
-        }
-        getWidget("Priority").getElement().setInnerText(text);
+      if (BeeUtils.isOrdinal(Priority.class, idx)) {
+        text = Priority.values()[idx].name();
       }
-      Integer status = row.getInteger(form.getDataIndex(EVENT_NAME));
+      getWidget("Priority").getElement().setInnerText(text);
 
-      if (BeeUtils.isOrdinal(TaskEvent.class, status)) {
+      text = BeeConst.STRING_EMPTY;
+      idx = row.getInteger(form.getDataIndex(EVENT_NAME));
+
+      if (BeeUtils.isOrdinal(TaskEvent.class, idx)) {
         Long owner = row.getLong(form.getDataIndex("Owner"));
         Long executor = row.getLong(form.getDataIndex("Executor"));
 
@@ -304,14 +314,16 @@ public class TaskEventHandler {
           } else {
             Widget widget = getWidget(ev.name());
 
-            if (availableEvent(ev, status, owner, executor)) {
+            if (availableEvent(ev, idx, owner, executor)) {
               StyleUtils.unhideDisplay(widget);
             } else {
               StyleUtils.hideDisplay(widget);
             }
           }
         }
+        text = TaskEvent.values()[idx].name();
       }
+      getWidget(EVENT_NAME).getElement().setInnerText(text);
     }
 
     private Widget getWidget(String name) {
@@ -404,15 +416,11 @@ public class TaskEventHandler {
 
   private static void doApprove(final FormView form) {
     final TaskDialog dialog = new TaskDialog("Užduoties patvirtinimas");
-    dialog.addComment("Komentaras", false);
+    dialog.addComment("Komentaras", false, false);
     dialog.addAction("Patvirtinti", new ClickHandler() {
       @Override
       public void onClick(ClickEvent e) {
         String comment = dialog.getComment();
-        if (BeeUtils.isEmpty(comment)) {
-          Global.showError("Įveskite komentarą");
-          return;
-        }
         IsRow data = form.getRow();
         int evOld = data.getInteger(form.getDataIndex(EVENT_NAME));
         TaskEvent event = TaskEvent.APPROVED;
@@ -424,8 +432,10 @@ public class TaskEventHandler {
 
         ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
-        args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
+        if (!BeeUtils.isEmpty(comment)) {
+          args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
+        }
         createRequest(args, dialog, form);
       }
     });
@@ -434,7 +444,7 @@ public class TaskEventHandler {
 
   private static void doCancel(final FormView form) {
     final TaskDialog dialog = new TaskDialog("Užduoties nutraukimas");
-    dialog.addComment("Komentaras", false);
+    dialog.addComment("Komentaras", true, false);
     dialog.addAction("Nutraukti", new ClickHandler() {
       @Override
       public void onClick(ClickEvent e) {
@@ -464,7 +474,7 @@ public class TaskEventHandler {
 
   private static void doComment(final FormView form) {
     final TaskDialog dialog = new TaskDialog("Užduoties komentaras, laiko registracija");
-    dialog.addComment("Komentaras", true);
+    dialog.addComment("Komentaras", true, true);
     dialog.addAction("Išsaugoti", new ClickHandler() {
       @Override
       public void onClick(ClickEvent e) {
@@ -502,28 +512,13 @@ public class TaskEventHandler {
 
   private static void doComplete(final FormView form) {
     final TaskDialog dialog = new TaskDialog("Užduoties užbaigimas");
-    dialog.addComment("Komentaras", true);
+    dialog.addComment("Komentaras", true, true);
     dialog.addAction("Užbaigti", new ClickHandler() {
       @Override
       public void onClick(ClickEvent e) {
         String comment = dialog.getComment();
         if (BeeUtils.isEmpty(comment)) {
           Global.showError("Įveskite komentarą");
-          return;
-        }
-        int minutes = dialog.getMinutes();
-        if (!BeeUtils.isPositive(minutes)) {
-          Global.showError("Įveskite sugaištą laiką");
-          return;
-        }
-        Long type = dialog.getSelector();
-        if (BeeUtils.isEmpty(type)) {
-          Global.showError("Įveskite darbo tipą");
-          return;
-        }
-        Long date = dialog.getDate();
-        if (BeeUtils.isEmpty(date)) {
-          Global.showError("Įveskite atlikimo datą");
           return;
         }
         TaskEvent event = TaskEvent.COMPLETED;
@@ -544,9 +539,24 @@ public class TaskEventHandler {
         ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
-        args.addDataItem(CrmConstants.VAR_TASK_DURATION_DATE, BeeUtils.transform(date));
-        args.addDataItem(CrmConstants.VAR_TASK_DURATION_TIME, BeeUtils.transform(minutes));
-        args.addDataItem(CrmConstants.VAR_TASK_DURATION_TYPE, BeeUtils.transform(type));
+
+        int minutes = dialog.getMinutes();
+
+        if (BeeUtils.isPositive(minutes)) {
+          Long type = dialog.getSelector();
+          if (BeeUtils.isEmpty(type)) {
+            Global.showError("Įveskite darbo tipą");
+            return;
+          }
+          Long date = dialog.getDate();
+          if (BeeUtils.isEmpty(date)) {
+            Global.showError("Įveskite atlikimo datą");
+            return;
+          }
+          args.addDataItem(CrmConstants.VAR_TASK_DURATION_DATE, BeeUtils.transform(date));
+          args.addDataItem(CrmConstants.VAR_TASK_DURATION_TIME, BeeUtils.transform(minutes));
+          args.addDataItem(CrmConstants.VAR_TASK_DURATION_TYPE, BeeUtils.transform(type));
+        }
 
         createRequest(args, dialog, form);
       }
@@ -601,10 +611,10 @@ public class TaskEventHandler {
   }
 
   private static void doExtend(final FormView form) {
-    final TaskDialog dialog = new TaskDialog("Užduoties termino pratęsimas");
-    dialog.addDate("Pabaigos data", ValueType.DATETIME);
-    dialog.addComment("Komentaras", false);
-    dialog.addAction("Pratęsti terminą", new ClickHandler() {
+    final TaskDialog dialog = new TaskDialog("Užduoties termino keitimas");
+    dialog.addDate("Naujas terminas", ValueType.DATETIME, true);
+    dialog.addComment("Komentaras", false, false);
+    dialog.addAction("Keisti terminą", new ClickHandler() {
       @Override
       public void onClick(ClickEvent e) {
         Long newTerm = dialog.getDate();
@@ -614,15 +624,13 @@ public class TaskEventHandler {
         }
         IsRow data = form.getRow();
         Long oldTerm = data.getLong(form.getDataIndex("FinishTime"));
-        if (newTerm < oldTerm) {
+        if (BeeUtils.equals(newTerm, oldTerm)
+            || newTerm < BeeUtils.max(data.getLong(form.getDataIndex("StartTime")),
+                System.currentTimeMillis())) {
           Global.showError("Neteisingas terminas");
           return;
         }
         String comment = dialog.getComment();
-        if (BeeUtils.isEmpty(comment)) {
-          Global.showError("Įveskite komentarą");
-          return;
-        }
         BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.DATETIME, "FinishTime"));
         rs.setViewName(VIEW_NAME);
 
@@ -631,8 +639,10 @@ public class TaskEventHandler {
 
         ParameterList args = createParams(TaskEvent.EXTENDED.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
-        args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
+        if (!BeeUtils.isEmpty(comment)) {
+          args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
+        }
         createRequest(args, dialog, form);
       }
     });
@@ -640,10 +650,17 @@ public class TaskEventHandler {
   }
 
   private static void doForward(final FormView form) {
+    final IsRow data = form.getRow();
+    final Long owner = data.getLong(form.getDataIndex("Owner"));
+    final Long oldUser = data.getLong(form.getDataIndex("Executor"));
+
     final TaskDialog dialog = new TaskDialog("Užduoties persiuntimas");
-    dialog.addSelector("Vykdytojas", "Users", "FirstName");
-    dialog.addQuestion("Palikti siuntėją prie stebėtojų", true);
-    dialog.addComment("Komentaras", false);
+    dialog.addSelector("Vykdytojas", "Users", "FirstName", true);
+
+    if (!BeeUtils.equals(owner, oldUser)) {
+      dialog.addQuestion("Pašalinti siuntėją iš stebėtojų", false);
+    }
+    dialog.addComment("Komentaras", true, false);
     dialog.addAction("Persiųsti", new ClickHandler() {
       @Override
       public void onClick(ClickEvent e) {
@@ -652,8 +669,6 @@ public class TaskEventHandler {
           Global.showError("Įveskite vykdytoją");
           return;
         }
-        IsRow data = form.getRow();
-        Long oldUser = data.getLong(form.getDataIndex("Executor"));
         if (BeeUtils.equals(newUser, oldUser)) {
           Global.showError("Nurodėte tą patį vykdytoją");
           return;
@@ -673,7 +688,7 @@ public class TaskEventHandler {
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
-        if (dialog.getAnswer()) {
+        if (!BeeUtils.equals(owner, oldUser) && dialog.getAnswer()) {
           args.addDataItem(CrmConstants.VAR_TASK_OBSERVE, true);
         }
         createRequest(args, dialog, form);
@@ -684,15 +699,11 @@ public class TaskEventHandler {
 
   private static void doRenew(final FormView form) {
     final TaskDialog dialog = new TaskDialog("Užduoties grąžinimas vykdymui");
-    dialog.addComment("Komentaras", false);
+    dialog.addComment("Komentaras", false, false);
     dialog.addAction("Grąžinti vykdymui", new ClickHandler() {
       @Override
       public void onClick(ClickEvent e) {
         String comment = dialog.getComment();
-        if (BeeUtils.isEmpty(comment)) {
-          Global.showError("Įveskite komentarą");
-          return;
-        }
         IsRow data = form.getRow();
         int evOld = data.getInteger(form.getDataIndex(EVENT_NAME));
         BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, EVENT_NAME));
@@ -703,8 +714,10 @@ public class TaskEventHandler {
 
         ParameterList args = createParams(TaskEvent.RENEWED.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
-        args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
+        if (!BeeUtils.isEmpty(comment)) {
+          args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
+        }
         createRequest(args, dialog, form);
       }
     });
@@ -713,7 +726,7 @@ public class TaskEventHandler {
 
   private static void doSuspend(final FormView form) {
     final TaskDialog dialog = new TaskDialog("Užduoties sustabdymas");
-    dialog.addComment("Komentaras", false);
+    dialog.addComment("Komentaras", true, false);
     dialog.addAction("Sustabdyti", new ClickHandler() {
       @Override
       public void onClick(ClickEvent e) {

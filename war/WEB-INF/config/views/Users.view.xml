@@ -8,11 +8,11 @@
   <BeeColumns>
     <BeeSimpleColumn expression="Login" />
     <BeeSimpleColumn expression="Password" />
-    <BeeJoinColumn expression="Person" joinType="LEFT">
+    <BeeSimpleJoin expression="Person" joinType="LEFT">
       <BeeSimpleColumn expression="FirstName" />
       <BeeSimpleColumn expression="LastName" />
       <BeeSimpleColumn expression="DateOfBirth" />
-    </BeeJoinColumn>
+    </BeeSimpleJoin>
     <BeeSimpleColumn expression="Properties" />
     <BeeSimpleColumn expression="LastLogin" />
   </BeeColumns>

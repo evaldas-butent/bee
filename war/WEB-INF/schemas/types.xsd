@@ -19,8 +19,8 @@
 
   <xs:simpleType name="aggregateType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="MIN" />
       <xs:enumeration value="MAX" />
+      <xs:enumeration value="MIN" />
       <xs:enumeration value="SUM" />
       <xs:enumeration value="AVG" />
       <xs:enumeration value="COUNT" />
@@ -32,9 +32,9 @@
 
   <xs:simpleType name="joinType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="INNER" />
       <xs:enumeration value="LEFT" />
       <xs:enumeration value="RIGHT" />
+      <xs:enumeration value="INNER" />
       <xs:enumeration value="FULL" />
     </xs:restriction>
   </xs:simpleType>

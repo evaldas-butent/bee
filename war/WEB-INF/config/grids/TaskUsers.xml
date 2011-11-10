@@ -34,8 +34,6 @@
                 return "MEDIUM";
               case 2:
                 return "HIGH";
-              default:
-                return "UNKNOWN";
             }
           </function>
         </calc>
@@ -46,6 +44,8 @@
         <calc>
           <function>
             switch(row.Event) {
+              case 0:
+                return "ACTIVATED";
               case 1:
                 return "SUSPENDED";
               case 2:
@@ -54,8 +54,6 @@
                 return "APPROVED";
               case 4:
                 return "CANCELED";
-              default:
-                return "ACTIVATED";
             }
           </function>
         </calc>
@@ -72,7 +70,8 @@
           <function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</function>
         </calc>
       </BeeCalcColumn>
-      <BeeDataColumn name="FinishTime" source="FinishTime" caption="Pabaigos laikas" />
+      <BeeDataColumn name="StartTime" source="StartTime" caption="Pradžia" />
+      <BeeDataColumn name="FinishTime" source="FinishTime" caption="Terminas" />
     </columns>
 
     <rowStyle>

@@ -11,10 +11,10 @@
         <Label html="Numatoma trukmė:" />
       </cell>
       <cell>
-        <InputText />
+        <InputLong source="ExpectedDuration" />
       </cell>
       <cell>
-        <Label html="Prioritetas:" horizontalAlignment="right" />
+        <Label html="Prioritetas:" horizontalAlignment="right" class="bee-required" />
       </cell>
       <cell>
         <ListBox source="Priority" name="Priority" valueNumeric="true" style="width: 100px;" />
@@ -23,7 +23,7 @@
 
     <row>
       <cell>
-        <Label html="Pradžios data:" />
+        <Label html="Pradžia:" class="bee-required" />
       </cell>
       <cell>
         <InputDateTime source="StartTime" />
@@ -39,7 +39,7 @@
 
     <row>
       <cell>
-        <Label html="Pabaigos data:" class="bee-required" />
+        <Label html="Terminas:" class="bee-required" />
       </cell>
       <cell>
         <InputDateTime source="FinishTime" />

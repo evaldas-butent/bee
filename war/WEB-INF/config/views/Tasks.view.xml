@@ -10,28 +10,33 @@
     <BeeSimpleColumn expression="Task" />
     <BeeSimpleColumn expression="StartTime" />
     <BeeSimpleColumn expression="FinishTime" />
+    <BeeSimpleColumn expression="ExpectedDuration" />
     <BeeSimpleColumn expression="Event" />
-    <BeeJoinColumn name="Owner" expression="Owner" joinType="LEFT">
-      <BeeJoinColumn expression="Person" joinType="LEFT">
+    <BeeSimpleColumn expression="Owner" />
+    <BeeSimpleJoin expression="Owner" joinType="LEFT">
+      <BeeSimpleJoin expression="Person" joinType="LEFT">
         <BeeSimpleColumn name="OwnerFirstName" expression="FirstName" />
         <BeeSimpleColumn name="OwnerLastName" expression="LastName" />
-      </BeeJoinColumn>
-    </BeeJoinColumn>
-    <BeeJoinColumn name="Executor" expression="Executor" joinType="LEFT">
-      <BeeJoinColumn expression="Person" joinType="LEFT">
+      </BeeSimpleJoin>
+    </BeeSimpleJoin>
+    <BeeSimpleColumn expression="Executor" />
+    <BeeSimpleJoin expression="Executor" joinType="LEFT">
+      <BeeSimpleJoin expression="Person" joinType="LEFT">
         <BeeSimpleColumn name="ExecutorFirstName" expression="FirstName" />
         <BeeSimpleColumn name="ExecutorLastName" expression="LastName" />
-      </BeeJoinColumn>
-    </BeeJoinColumn>
-    <BeeJoinColumn name="Company" expression="Company" joinType="LEFT">
+      </BeeSimpleJoin>
+    </BeeSimpleJoin>
+    <BeeSimpleColumn expression="Company" />
+    <BeeSimpleJoin expression="Company" joinType="LEFT">
       <BeeSimpleColumn name="CompanyName" expression="Name" />
-    </BeeJoinColumn>
-    <BeeJoinColumn name="CompanyPerson" expression="CompanyPerson" joinType="LEFT">
-      <BeeJoinColumn expression="Person" joinType="LEFT">
+    </BeeSimpleJoin>
+    <BeeSimpleColumn expression="CompanyPerson" />
+    <BeeSimpleJoin expression="CompanyPerson" joinType="LEFT">
+      <BeeSimpleJoin expression="Person" joinType="LEFT">
         <BeeSimpleColumn name="PersonFirstName" expression="FirstName" />
         <BeeSimpleColumn name="PersonLastName" expression="LastName" />
-      </BeeJoinColumn>
-    </BeeJoinColumn>
+      </BeeSimpleJoin>
+    </BeeSimpleJoin>
   </BeeColumns>
 </BeeView>
  

@@ -24,10 +24,25 @@
       <Label name="Priority" class="bee-display"/>
     </cell>
   </row>
+  
+  <row>
+    <cell>
+      <Label html="Numatoma trukmė:" />
+    </cell>
+    <cell>
+      <LongLabel source="ExpectedDuration" class="bee-display" />
+    </cell>
+    <cell>
+      <Label html="Būsena" horizontalAlignment="right" />
+    </cell>
+    <cell>
+      <Label name="Event" class="bee-display" />
+    </cell>
+  </row>
 
   <row>
     <cell>
-      <Label html="Pradžios data:" />
+      <Label html="Pradžia:" />
     </cell>
     <cell>
       <DateTimeLabel source="StartTime" class="bee-display"/>
@@ -42,7 +57,7 @@
 
   <row>
     <cell>
-      <Label html="Pabaigos data:" />
+      <Label html="Terminas:" />
     </cell>
     <cell>
       <DateTimeLabel source="FinishTime" class="bee-display" />

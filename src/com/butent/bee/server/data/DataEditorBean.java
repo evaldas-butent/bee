@@ -125,7 +125,7 @@ public class DataEditorBean {
       response.addError("Can commit only one row at a time");
 
     } else if (view.isReadOnly()) {
-      response.addError("View", view.getName(), "is read only.");
+      response.addError("View", BeeUtils.bracket(view.getName()), "is read only.");
 
     } else {
       for (int i = 0; i < rs.getNumberOfColumns(); i++) {
@@ -134,6 +134,9 @@ public class DataEditorBean {
 
         if (!view.hasColumn(colName)) {
           response.addError("Unknown column:", BeeUtils.bracket(colName));
+          break;
+        } else if (view.isColReadOnly(colName)) {
+          response.addError("Column:", BeeUtils.bracket(colName), "is read only.");
           break;
         } else {
           String oldValue = row.getShadowString(i);
@@ -201,7 +204,7 @@ public class DataEditorBean {
     HasConditions wh = SqlUtils.or();
 
     if (view.isReadOnly()) {
-      return ResponseObject.error("View", view.getName(), "is read only.");
+      return ResponseObject.error("View", BeeUtils.bracket(view.getName()), "is read only.");
     }
     for (RowInfo row : rows) {
       wh.add(SqlUtils.and(

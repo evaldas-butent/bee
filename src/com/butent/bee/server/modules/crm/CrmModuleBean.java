@@ -137,7 +137,7 @@ public class CrmModuleBean implements BeeModule {
             if (resp.hasErrors()) {
               response = resp;
 
-            } else if (BeeUtils.isEmpty(reqInfo.getParameter(CrmConstants.VAR_TASK_OBSERVE))) {
+            } else if (!BeeUtils.isEmpty(reqInfo.getParameter(CrmConstants.VAR_TASK_OBSERVE))) {
               String tbl = "TaskUsers";
               qs.updateData(new SqlDelete(tbl)
                   .setWhere(SqlUtils.and(SqlUtils.equal(tbl, "Task", taskId),
@@ -195,7 +195,7 @@ public class CrmModuleBean implements BeeModule {
               BeeUtils.toLong(reqInfo.getParameter(CrmConstants.VAR_TASK_DURATION_DATE)))
           .addConstant("DurationType",
               BeeUtils.toLong(reqInfo.getParameter(CrmConstants.VAR_TASK_DURATION_TYPE)))
-          .addConstant("DurationInMinutes", minutes));
+          .addConstant("Duration", minutes));
     }
     long currentUser = usr.getCurrentUserId();
 
@@ -226,7 +226,7 @@ public class CrmModuleBean implements BeeModule {
           .setWhere(SqlUtils.and(SqlUtils.equal(tbl, "Task", taskId),
               SqlUtils.equal(tbl, "User", userId))));
     }
-    if (newVisit || BeeUtils.isEmpty(response.getResponse(-1L, logger))) {
+    if (newVisit || BeeUtils.isEmpty(response.getResponse(-1, logger))) {
       response = qs.insertDataWithResponse(new SqlInsert(tbl)
           .addConstant("Task", taskId)
           .addConstant("User", userId)

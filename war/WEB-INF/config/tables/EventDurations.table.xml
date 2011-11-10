@@ -9,6 +9,6 @@
   <BeeFields>
     <BeeField name="DurationType" type="LONG" notNull="true" relation="DurationTypes" />
     <BeeField name="DurationDate" type="DATE" notNull="true" />
-    <BeeField name="DurationInMinutes" type="INTEGER" notNull="true" />
+    <BeeField name="Duration" type="DATETIME" notNull="true" />
   </BeeFields>
 </BeeTable>
