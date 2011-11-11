@@ -118,7 +118,7 @@ public class BeeKeeper {
     });
 
     TaskEventHandler.register();
-    
+
     getMenu().registerMenuCallback("task_list", new MenuManager.MenuCallback() {
       public void onSelection(String parameters) {
         TaskList.open(parameters);

@@ -23,7 +23,7 @@ import com.butent.bee.shared.data.XmlView;
 import com.butent.bee.shared.data.XmlView.XmlAggregateColumn;
 import com.butent.bee.shared.data.XmlView.XmlColumn;
 import com.butent.bee.shared.data.XmlView.XmlExternalJoin;
-import com.butent.bee.shared.data.XmlView.XmlFilterColumn;
+import com.butent.bee.shared.data.XmlView.XmlHiddenColumn;
 import com.butent.bee.shared.data.XmlView.XmlOrder;
 import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
 import com.butent.bee.shared.data.XmlView.XmlSimpleJoin;
@@ -495,7 +495,7 @@ public class BeeView implements HasExtendedInfo {
         BeeField field = table.getField(col.expression);
         String colName = BeeUtils.ifString(col.name, field.getName());
         String aggregate = null;
-        boolean hidden = (col instanceof XmlFilterColumn);
+        boolean hidden = (col instanceof XmlHiddenColumn);
 
         if (col instanceof XmlAggregateColumn) {
           aggregate = ((XmlAggregateColumn) col).aggregate;

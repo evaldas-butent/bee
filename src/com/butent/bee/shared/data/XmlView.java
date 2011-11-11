@@ -3,7 +3,6 @@ package com.butent.bee.shared.data;
 import java.util.Collection;
 
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -16,8 +15,8 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 @XmlRootElement(name = "BeeView", namespace = DataUtils.DEFAULT_NAMESPACE)
 public class XmlView {
 
-  @XmlSeeAlso({XmlSimpleColumn.class, XmlFilterColumn.class, XmlAggregateColumn.class,
-      XmlSimpleJoin.class, XmlInternalJoin.class, XmlExternalJoin.class})
+  @XmlSeeAlso({XmlSimpleColumn.class, XmlHiddenColumn.class, XmlAggregateColumn.class,
+      XmlSimpleJoin.class, XmlAggregateJoin.class, XmlExternalJoin.class})
   public static class XmlColumn {
     @XmlAttribute
     public String expression;
@@ -31,8 +30,8 @@ public class XmlView {
     public String locale;
   }
 
-  @XmlRootElement(name = "BeeFilterColumn", namespace = DataUtils.DEFAULT_NAMESPACE)
-  public static class XmlFilterColumn extends XmlSimpleColumn {
+  @XmlRootElement(name = "BeeHiddenColumn", namespace = DataUtils.DEFAULT_NAMESPACE)
+  public static class XmlHiddenColumn extends XmlSimpleColumn {
   }
 
   @XmlRootElement(name = "BeeAggregateColumn", namespace = DataUtils.DEFAULT_NAMESPACE)
@@ -49,16 +48,17 @@ public class XmlView {
     public Collection<XmlColumn> columns;
   }
 
-  @XmlRootElement(name = "BeeInternalJoin", namespace = DataUtils.DEFAULT_NAMESPACE)
-  public static class XmlInternalJoin extends XmlSimpleJoin {
-  }
-
   @XmlRootElement(name = "BeeExternalJoin", namespace = DataUtils.DEFAULT_NAMESPACE)
   public static class XmlExternalJoin extends XmlSimpleJoin {
     @XmlAttribute
     public String source;
   }
 
+  @XmlRootElement(name = "BeeAggregateJoin", namespace = DataUtils.DEFAULT_NAMESPACE)
+  public static class XmlAggregateJoin extends XmlSimpleJoin {
+  }
+
+  @XmlRootElement(name = "OrderBy", namespace = DataUtils.DEFAULT_NAMESPACE)
   public static class XmlOrder {
     @XmlAttribute
     public String column;
@@ -81,6 +81,6 @@ public class XmlView {
   public Collection<XmlColumn> columns;
 
   @XmlElementWrapper(name = "BeeOrder", namespace = DataUtils.DEFAULT_NAMESPACE)
-  @XmlElement(name = "OrderBy", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlElementRef
   public Collection<XmlOrder> orders;
 }

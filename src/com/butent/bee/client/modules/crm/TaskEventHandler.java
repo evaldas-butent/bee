@@ -15,6 +15,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.StyleUtils;
@@ -119,7 +120,6 @@ public class TaskEventHandler {
   }
 
   private static class TaskDialog extends DialogBox {
-    private int row = -1;
     private FlexTable container = null;
     private InputDate date = null;
     private InputArea comment = null;
@@ -137,10 +137,15 @@ public class TaskEventHandler {
     }
 
     public void addAction(String caption, ClickHandler clickHandler) {
-      row++;
+      addAction(container, caption, clickHandler);
+    }
+
+    public void addAction(FlexTable parent, String caption, ClickHandler clickHandler) {
+      int row = parent.getRowCount();
+
       BeeButton button = new BeeButton(caption);
-      container.setWidget(row, 0, button);
-      FlexCellFormatter formater = container.getFlexCellFormatter();
+      parent.setWidget(row, 0, button);
+      FlexCellFormatter formater = parent.getFlexCellFormatter();
       formater.setColSpan(row, 0, 2);
       formater.setHorizontalAlignment(row, 0, HasHorizontalAlignment.ALIGN_CENTER);
 
@@ -148,59 +153,87 @@ public class TaskEventHandler {
     }
 
     public void addComment(String caption, boolean required, boolean showDuration) {
-      row++;
+      addComment(container, caption, required, showDuration);
+    }
+
+    public void addComment(FlexTable parent, String caption, boolean required, boolean showDuration) {
+      int row = parent.getRowCount();
+
       BeeLabel lbl = new BeeLabel(caption);
       if (required) {
-        lbl.setStyleName("bee-required");
+        lbl.setStyleName(StyleUtils.NAME_REQUIRED);
       }
-      container.setWidget(row, 0, lbl);
+      parent.setWidget(row, 0, lbl);
       comment = new InputArea();
       comment.setVisibleLines(5);
       comment.setCharacterWidth(40);
-      container.setWidget(row, 1, comment);
+      parent.setWidget(row, 1, comment);
 
       if (showDuration) {
         row++;
-        container.setWidget(row, 0, new BeeLabel("Sugaišta minučių"));
+        Disclosure panel = new Disclosure("Laiko registracija");
+        FlexTable flex = new FlexTable();
+        flex.setCellSpacing(5);
+        panel.setContentWidget(flex);
+        parent.getFlexCellFormatter().setColSpan(row, 0, 2);
+        parent.setWidget(row, 0, panel);
+
+        flex.setWidget(0, 0, new BeeLabel("Sugaišta minučių"));
         minutes = new InputSpinner(0, 0, 1440, 5);
         minutes.setWidth("4em");
-        container.setWidget(row, 1, minutes);
-        addSelector("Darbo tipas", "DurationTypes", "Name", false);
-        addDate("Atlikimo data", ValueType.DATE, false);
+        flex.setWidget(0, 1, minutes);
+        addSelector(flex, "Darbo tipas", "DurationTypes", "Name", false);
+        addDate(flex, "Atlikimo data", ValueType.DATE, false);
         date.setValue(TimeUtils.today(0).serialize());
       }
     }
 
     public void addDate(String caption, ValueType dateType, boolean required) {
-      row++;
+      addDate(container, caption, dateType, required);
+    }
+
+    public void addDate(FlexTable parent, String caption, ValueType dateType, boolean required) {
+      int row = parent.getRowCount();
+
       BeeLabel lbl = new BeeLabel(caption);
       if (required) {
-        lbl.setStyleName("bee-required");
+        lbl.setStyleName(StyleUtils.NAME_REQUIRED);
       }
-      container.setWidget(row, 0, lbl);
+      parent.setWidget(row, 0, lbl);
       date = new InputDate(dateType);
-      container.setWidget(row, 1, date);
+      parent.setWidget(row, 1, date);
     }
 
     public void addQuestion(String caption, boolean def) {
-      row++;
+      addQuestion(container, caption, def);
+    }
+
+    public void addQuestion(FlexTable parent, String caption, boolean def) {
+      int row = parent.getRowCount();
+
       question = new BeeCheckBox(caption);
       question.setValue(def);
-      container.setWidget(row, 1, question);
+      parent.setWidget(row, 1, question);
     }
 
     public void addSelector(String caption, String relView, String relColumn, boolean required) {
-      row++;
+      addSelector(container, caption, relView, relColumn, required);
+    }
+
+    public void addSelector(FlexTable parent, String caption, String relView, String relColumn,
+        boolean required) {
+      int row = parent.getRowCount();
+
       BeeLabel lbl = new BeeLabel(caption);
       if (required) {
-        lbl.setStyleName("bee-required");
+        lbl.setStyleName(StyleUtils.NAME_REQUIRED);
       }
-      container.setWidget(row, 0, lbl);
+      parent.setWidget(row, 0, lbl);
       BeeColumn col = new BeeColumn(ValueType.LONG, "Dummy");
       selector = new DataSelector(
           RelationInfo.create(Lists.newArrayList(col), null, col.getId(), relView, relColumn),
           true);
-      container.setWidget(row, 1, selector);
+      parent.setWidget(row, 1, selector);
     }
 
     public void display() {

@@ -6,8 +6,8 @@
   source="OrderItems"
   >
   <BeeColumns>
+    <BeeSimpleColumn expression="ItemID" />
     <BeeSimpleJoin expression="ItemID" joinType="LEFT">
-      <BeeSimpleColumn expression="ItemID" />
       <BeeSimpleColumn name="ItemIDName" expression="Name" />
       <BeeSimpleColumn name="ItemIDArticle" expression="Article" />
     </BeeSimpleJoin>

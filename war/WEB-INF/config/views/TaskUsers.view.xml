@@ -38,7 +38,7 @@
       </BeeSimpleJoin>
     </BeeSimpleJoin>
     <BeeExternalJoin source="TaskUsers" expression="Task" joinType="LEFT">
-        <BeeFilterColumn expression="User" />
+        <BeeHiddenColumn expression="User" />
         <BeeAggregateColumn expression="LastAccess" aggregate="MAX" />
     </BeeExternalJoin>
     <BeeExternalJoin source="TaskEvents" expression="Task" joinType="LEFT">

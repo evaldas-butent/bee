@@ -21,12 +21,12 @@
   <xs:element name="aggregate" type="bee:columnType" substitutionGroup="bee:column" abstract="true" />
 
   <xs:element name="BeeSimpleColumn" type="bee:simpleColumnType" substitutionGroup="bee:column" />
-  <xs:element name="BeeFilterColumn" type="bee:filterColumnType" substitutionGroup="bee:aggregate" />
+  <xs:element name="BeeHiddenColumn" type="bee:hiddenColumnType" substitutionGroup="bee:aggregate" />
   <xs:element name="BeeAggregateColumn" type="bee:aggregateColumnType" substitutionGroup="bee:aggregate" />
   
-  <xs:element name="BeeSimpleJoin" type="bee:joinColumnType" substitutionGroup="bee:column" />
-  <xs:element name="BeeInternalJoin" type="bee:joinInternalType" substitutionGroup="bee:aggregate" />
+  <xs:element name="BeeSimpleJoin" type="bee:joinSimpleType" substitutionGroup="bee:column" />
   <xs:element name="BeeExternalJoin" type="bee:joinExternalType" substitutionGroup="bee:aggregate" />
+  <xs:element name="BeeAggregateJoin" type="bee:joinAggregateType" substitutionGroup="bee:aggregate" />
 
   <xs:complexType name="columns">
     <xs:sequence>
@@ -59,7 +59,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="filterColumnType">
+  <xs:complexType name="hiddenColumnType">
     <xs:complexContent>
       <xs:extension base="bee:simpleColumnType" />
     </xs:complexContent>
@@ -73,7 +73,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="joinColumnType">
+  <xs:complexType name="joinSimpleType">
     <xs:complexContent>
       <xs:extension base="bee:columnType">
         <xs:sequence>
@@ -84,7 +84,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="joinInternalType">
+  <xs:complexType name="joinAggregateType">
     <xs:complexContent>
       <xs:extension base="bee:columnType">
         <xs:sequence>
@@ -97,7 +97,7 @@
 
   <xs:complexType name="joinExternalType">
     <xs:complexContent>
-      <xs:extension base="bee:joinInternalType">
+      <xs:extension base="bee:joinAggregateType">
         <xs:attribute name="source" type="bee:tableNameType" />
       </xs:extension>
     </xs:complexContent>

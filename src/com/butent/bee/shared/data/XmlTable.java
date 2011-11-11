@@ -10,6 +10,7 @@ import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -23,6 +24,7 @@ public class XmlTable {
   /**
    * Handles data field information storage in XML structure.
    */
+  @XmlRootElement(name = "BeeField", namespace = DataUtils.DEFAULT_NAMESPACE)
   public static class XmlField {
     @XmlAttribute
     public String name;
@@ -86,6 +88,7 @@ public class XmlTable {
   /**
    * Handles table key information storage in XML structure.
    */
+  @XmlRootElement(name = "BeeKey", namespace = DataUtils.DEFAULT_NAMESPACE)
   public static class XmlKey {
     @XmlAttribute
     public boolean unique;
@@ -140,11 +143,11 @@ public class XmlTable {
   public int y;
 
   @XmlElementWrapper(name = "BeeFields", namespace = DataUtils.DEFAULT_NAMESPACE)
-  @XmlElement(name = "BeeField", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlElementRef
   public List<XmlField> fields;
 
   @XmlElementWrapper(name = "BeeExtended", namespace = DataUtils.DEFAULT_NAMESPACE)
-  @XmlElement(name = "BeeField", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlElementRef
   public List<XmlField> extFields;
 
   @XmlElementWrapper(name = "BeeStates", namespace = DataUtils.DEFAULT_NAMESPACE)
@@ -152,7 +155,7 @@ public class XmlTable {
   public Set<String> states;
 
   @XmlElementWrapper(name = "BeeKeys", namespace = DataUtils.DEFAULT_NAMESPACE)
-  @XmlElement(name = "BeeKey", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlElementRef
   public Set<XmlKey> keys;
 
   private boolean safe = false;
