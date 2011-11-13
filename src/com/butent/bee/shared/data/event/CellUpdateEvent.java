@@ -33,14 +33,17 @@ public class CellUpdateEvent extends Event<CellUpdateEvent.Handler> implements D
   private final long rowId;
   private final long version;
 
-  private final String columnId;
+  private final String columnName;
+  private final int columnIndex;
   private final String value;
 
-  public CellUpdateEvent(String viewName, long rowId, long version, String columnId, String value) {
+  public CellUpdateEvent(String viewName, long rowId, long version,
+      String columnName, int columnIndex, String value) {
     this.viewName = viewName;
     this.rowId = rowId;
     this.version = version;
-    this.columnId = columnId;
+    this.columnName = columnName;
+    this.columnIndex = columnIndex;
     this.value = value;
   }
 
@@ -49,8 +52,12 @@ public class CellUpdateEvent extends Event<CellUpdateEvent.Handler> implements D
     return TYPE;
   }
 
-  public String getColumnId() {
-    return columnId;
+  public int getColumnIndex() {
+    return columnIndex;
+  }
+
+  public String getColumnName() {
+    return columnName;
   }
 
   public long getRowId() {

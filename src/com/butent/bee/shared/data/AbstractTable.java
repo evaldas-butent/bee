@@ -21,7 +21,6 @@ import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -246,19 +245,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   public int getColumnIndex(String columnId) {
-    if (!BeeUtils.isEmpty(columnId)) {
-      for (int i = 0; i < getNumberOfColumns(); i++) {
-        if (BeeUtils.same(getColumnId(i), columnId)) {
-          return i;
-        }
-      }
-      for (int i = 0; i < getNumberOfColumns(); i++) {
-        if (BeeUtils.same(getColumnLabel(i), columnId)) {
-          return i;
-        }
-      }
-    }
-    return BeeConst.UNDEF;
+    return DataUtils.getColumnIndex(columnId, getColumns());
   }
 
   public String getColumnLabel(int colIndex) {

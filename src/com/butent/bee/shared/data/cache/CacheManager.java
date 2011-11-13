@@ -387,7 +387,7 @@ public class CacheManager implements HandlesAllDataEvents {
     Entry entry = get(key);
     long rowId = event.getRowId();
     long version = event.getVersion();
-    String columnId = event.getColumnId();
+    String columnId = event.getColumnName();
     String value = event.getValue();
 
     if (entry.updateCell(rowId, version, columnId, value)) {

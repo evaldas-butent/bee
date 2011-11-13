@@ -172,6 +172,12 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
         }
         break;
 
+      case REQUERY:
+        if (getDataProvider() != null) {
+          getDataProvider().requery(false);
+        }  
+        break;
+        
       case ADD:
         getView().getContent().startNewRow();
         break;
@@ -224,7 +230,8 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
               BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
             } else {
               BeeKeeper.getBus().fireEvent(
-                  new CellUpdateEvent(getViewName(), rowId, row.getVersion(), columnId, newValue));
+                  new CellUpdateEvent(getViewName(), rowId, row.getVersion(), columnId,
+                      getDataProvider().getColumnIndex(columnId), newValue));
             }
           }
         });

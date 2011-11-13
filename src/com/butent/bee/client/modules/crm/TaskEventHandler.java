@@ -18,6 +18,7 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.FlexTable.FlexCellFormatter;
@@ -26,6 +27,7 @@ import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.DataView;
+import com.butent.bee.client.view.edit.EditFormEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
@@ -35,11 +37,14 @@ import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.modules.crm.CrmConstants;
@@ -313,11 +318,6 @@ public class TaskEventHandler {
     }
 
     @Override
-    public boolean onSaveChanges(FormView form, IsRow row) {
-      return false;
-    }
-
-    @Override
     public void onStartEdit(FormView form, IsRow row) {
       if (row == null) {
         return;
@@ -419,25 +419,47 @@ public class TaskEventHandler {
     return args;
   }
 
-  private static void createRequest(ParameterList args, final TaskDialog dialog, final FormView form) {
+  private static void createRequest(ParameterList args, final TaskDialog dialog,
+      final FormView form, final State state) {
+    if (dialog != null) {
+      DomUtils.enableChildren(dialog, false);
+    }
+
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
         Assert.notNull(response);
+        if (dialog != null) {
+          dialog.hide();
+        }
 
         if (response.hasErrors()) {
           Global.showError((Object[]) response.getErrors());
         } else {
           if (response.hasResponse(BeeRow.class)) {
-            dialog.hide();
-            form.updateRow(BeeRow.restore((String) response.getResponse()));
-
+            RowUpdateEvent rowUpdateEvent = new RowUpdateEvent(VIEW_NAME,
+                BeeRow.restore((String) response.getResponse()));
+            BeeKeeper.getBus().fireEvent(rowUpdateEvent);
+            
+            if (state == null) {
+              form.onRowUpdate(rowUpdateEvent);
+            } else {
+              form.fireEvent(new EditFormEvent(state));
+            }
           } else if (response.hasResponse(Long.class)) {
-            form.updateCell("LastAccess", (String) response.getResponse());
+            int dataIndex = form.getDataIndex(CrmConstants.COLUMN_LAST_ACCESS);
+            String newValue = (String) response.getResponse();
 
-            if (dialog != null) {
-              dialog.hide();
-              form.updateRow(form.getRow());
+            CellUpdateEvent cellUpdateEvent =
+                new CellUpdateEvent(VIEW_NAME, form.getRow().getId(), form.getRow().getVersion(),
+                    CrmConstants.COLUMN_LAST_ACCESS, dataIndex, newValue);
+            BeeKeeper.getBus().fireEvent(cellUpdateEvent);
+
+            if (state == null) {
+              form.getRow().setValue(dataIndex, newValue);
+              form.refresh();
+            } else {
+              form.fireEvent(new EditFormEvent(state));
             }
           } else {
             Global.showError("Unknown response");
@@ -469,7 +491,7 @@ public class TaskEventHandler {
         if (!BeeUtils.isEmpty(comment)) {
           args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
         }
-        createRequest(args, dialog, form);
+        createRequest(args, dialog, form, State.CHANGED);
       }
     });
     dialog.display();
@@ -499,7 +521,7 @@ public class TaskEventHandler {
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
-        createRequest(args, dialog, form);
+        createRequest(args, dialog, form, State.CHANGED);
       }
     });
     dialog.display();
@@ -537,7 +559,7 @@ public class TaskEventHandler {
           args.addDataItem(CrmConstants.VAR_TASK_DURATION_TIME, BeeUtils.transform(minutes));
           args.addDataItem(CrmConstants.VAR_TASK_DURATION_TYPE, BeeUtils.transform(type));
         }
-        createRequest(args, dialog, form);
+        createRequest(args, dialog, form, State.CHANGED);
       }
     });
     dialog.display();
@@ -591,7 +613,7 @@ public class TaskEventHandler {
           args.addDataItem(CrmConstants.VAR_TASK_DURATION_TYPE, BeeUtils.transform(type));
         }
 
-        createRequest(args, dialog, form);
+        createRequest(args, dialog, form, State.CHANGED);
       }
     });
     dialog.display();
@@ -640,6 +662,9 @@ public class TaskEventHandler {
       case RENEWED:
         doRenew(form);
         break;
+      
+      case ACTIVATED:
+        Assert.untouchable();
     }
   }
 
@@ -676,7 +701,7 @@ public class TaskEventHandler {
         if (!BeeUtils.isEmpty(comment)) {
           args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
         }
-        createRequest(args, dialog, form);
+        createRequest(args, dialog, form, State.CHANGED);
       }
     });
     dialog.display();
@@ -724,7 +749,7 @@ public class TaskEventHandler {
         if (!BeeUtils.equals(owner, oldUser) && dialog.getAnswer()) {
           args.addDataItem(CrmConstants.VAR_TASK_OBSERVE, true);
         }
-        createRequest(args, dialog, form);
+        createRequest(args, dialog, form, State.PENDING);
       }
     });
     dialog.display();
@@ -751,7 +776,7 @@ public class TaskEventHandler {
         if (!BeeUtils.isEmpty(comment)) {
           args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
         }
-        createRequest(args, dialog, form);
+        createRequest(args, dialog, form, State.CHANGED);
       }
     });
     dialog.display();
@@ -781,7 +806,7 @@ public class TaskEventHandler {
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
-        createRequest(args, dialog, form);
+        createRequest(args, dialog, form, State.CHANGED);
       }
     });
     dialog.display();
@@ -791,7 +816,7 @@ public class TaskEventHandler {
     ParameterList args = createParams(TaskEvent.VISITED.name());
     args.addDataItem(CrmConstants.VAR_TASK_ID, form.getRow().getId());
 
-    createRequest(args, null, form);
+    createRequest(args, null, form, null);
   }
 
   private TaskEventHandler() {

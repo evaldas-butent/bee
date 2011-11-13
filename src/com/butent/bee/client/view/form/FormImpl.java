@@ -30,6 +30,7 @@ import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditEndEvent;
+import com.butent.bee.client.view.edit.EditFormEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
@@ -37,6 +38,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.ActiveRowChangeEvent;
@@ -65,7 +67,7 @@ import java.util.logging.Level;
  * Handles such form events like warnings, deletions, visibility of elements etc.
  */
 
-public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler, HasDataTable {
+public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler {
 
   private class CreationCallback implements WidgetCallback {
     public void onFailure(String[] reason) {
@@ -289,6 +291,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return addHandler(handler, DataRequestEvent.getType());
   }
 
+  public HandlerRegistration addEditFormHandler(EditFormEvent.Handler handler) {
+    return addHandler(handler, EditFormEvent.getType());
+  }
+  
   public HandlerRegistration addLoadingStateChangeHandler(LoadingStateChangeEvent.Handler handler) {
     return addHandler(handler, LoadingStateChangeEvent.TYPE);
   }
@@ -392,18 +398,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public int getDataIndex(String source) {
-    int index = BeeConst.UNDEF;
-    if (BeeUtils.isEmpty(source) || getDataColumns() == null) {
-      return index;
-    }
-
-    for (int i = 0; i < getDataColumns().size(); i++) {
-      if (BeeUtils.same(source, getDataColumns().get(i).getId())) {
-        index = i;
-        break;
-      }
-    }
-    return index;
+    return DataUtils.getColumnIndex(source, getDataColumns());
   }
 
   public HasDataTable getDisplay() {
@@ -503,7 +498,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public void onCellUpdate(CellUpdateEvent event) {
     Assert.notNull(event);
     long version = event.getVersion();
-    String source = event.getColumnId();
+    String source = event.getColumnName();
     String value = event.getValue();
 
     IsRow rowValue = getRow();

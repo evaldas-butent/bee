@@ -63,8 +63,6 @@ public class FormFactory {
     
     boolean onPrepareForInsert(FormView form, DataView dataView, IsRow row);
 
-    boolean onSaveChanges(FormView form, IsRow row);
-    
     void onShow(Presenter presenter);
     
     void onStartEdit(FormView form, IsRow row);

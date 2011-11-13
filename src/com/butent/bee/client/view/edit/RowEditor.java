@@ -31,6 +31,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
@@ -394,12 +395,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
   }
 
   private int getDataIndex(String columnId) {
-    for (int i = 0; i < getDataColumns().size(); i++) {
-      if (BeeUtils.same(getDataColumns().get(i).getId(), columnId)) {
-        return i;
-      }
-    }
-    return BeeConst.UNDEF;
+    return DataUtils.getColumnIndex(columnId, getDataColumns());
   }
 
   private EditableColumn getEditableColumn(int index) {

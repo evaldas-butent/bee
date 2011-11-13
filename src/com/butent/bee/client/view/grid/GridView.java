@@ -4,7 +4,6 @@ import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
 import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
-import com.butent.bee.client.view.edit.HasEditFormHandlers;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.shared.data.BeeColumn;
@@ -20,8 +19,7 @@ import java.util.List;
  */
 
 public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandlers,
-    HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
-    HasEditFormHandlers, HasSaveChangesHandlers {
+    HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers {
 
   void applyOptions(String options);
 

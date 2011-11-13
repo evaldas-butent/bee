@@ -1504,7 +1504,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     Assert.notNull(event);
     long rowId = event.getRowId();
     long version = event.getVersion();
-    String source = event.getColumnId();
+    String source = event.getColumnName();
+    int dataIndex = event.getColumnIndex();
     String value = event.getValue();
 
     RowInfo selectedRowInfo = getSelectedRows().get(rowId);
@@ -1514,19 +1515,15 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     int row = getRowIndex(rowId);
     if (!isRowWithinBounds(row)) {
-      BeeKeeper.getLog().warning("onCellUpdate: row id", rowId, "is not visible");
-      return;
-    }
-
-    int col = getColumnIndexBySource(source);
-    if (!isColumnWithinBounds(col)) {
       return;
     }
 
     IsRow rowValue = getDataItem(row);
     rowValue.setVersion(version);
-    int dataIndex = getColumnInfo(col).getDataIndex();
     rowValue.setValue(dataIndex, value);
+    
+    int col = getColumnIndexBySource(source);
+    boolean isCol = isColumnWithinBounds(col);
 
     boolean checkZindex = false;
     if (getRowStyles() != null) {
@@ -1537,14 +1534,17 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         refreshCalculatedColumns(row);
         checkZindex = true;
       }
-
-      if (getColumnInfo(col).getDynStyles() != null) {
-        refreshCell(row, col);
-      } else {
-        updateCellContent(row, col);
+      
+      if (isCol) {
+        if (getColumnInfo(col).getDynStyles() != null) {
+          refreshCell(row, col);
+        } else {
+          updateCellContent(row, col);
+        }
       }
     }
-    if (checkZindex) {
+
+    if (checkZindex && isCol) {
       bringToFront(row, col);
     }
   }
@@ -1576,18 +1576,13 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     int row = getRowIndex(rowId);
     if (!isRowWithinBounds(row)) {
-      BeeKeeper.getLog().warning("onRowUpdate: row id", rowId, "is not visible");
       return;
     }
 
     IsRow rowValue = getDataItem(row);
     rowValue.setVersion(newRow.getVersion());
-
-    for (ColumnInfo columnInfo : columns) {
-      int dataIndex = columnInfo.getDataIndex();
-      if (dataIndex >= 0) {
-        rowValue.setValue(dataIndex, newRow.getString(dataIndex));
-      }
+    for (int i = 0; i < rowValue.getNumberOfCells(); i++) {
+      rowValue.setValue(i, newRow.getString(i));
     }
 
     refreshRow(row);

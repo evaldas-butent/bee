@@ -29,6 +29,7 @@ import com.butent.bee.client.grid.RowVersionColumn;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.presenter.Action;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
@@ -83,7 +84,7 @@ import java.util.logging.Level;
  */
 
 public class CellGridImpl extends Absolute implements GridView, SearchView, EditStartEvent.Handler,
-    EditEndEvent.Handler {
+    EditEndEvent.Handler, EditFormEvent.Handler {
 
   private class FilterUpdater implements ValueUpdater<String> {
     public void update(String value) {
@@ -663,6 +664,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
             if (isSingleForm()) {
               setNewRowFormContainerId(containerId);
             }
+            result.addEditFormHandler(CellGridImpl.this);
           }
         }
       });
@@ -843,6 +845,18 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       if (BeeUtils.inList(keyCode, KeyCodes.KEY_TAB, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN)) {
         getGrid().handleKeyboardNavigation(keyCode, event.hasModifiers());
       }
+    }
+  }
+
+  public void onEditForm(EditFormEvent event) {
+    Assert.notNull(event);
+    if (event.isCanceled()) {
+      formCancel();
+    } else if (event.isPending()) {
+      getViewPresenter().handleAction(Action.REQUERY);
+      closeEditForm();
+    } else {
+      closeEditForm();
     }
   }
 
@@ -1096,7 +1110,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
     return ok;
   }
-
+  
   private IsRow cloneRow(IsRow original) {
     String[] arr = new String[getDataColumns().size()];
     for (int i = 0; i < arr.length; i++) {
@@ -1107,6 +1121,13 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     result.setVersion(original.getVersion());
 
     return result;
+  }
+
+  private void closeEditForm() {
+    showForm(true, false);
+    showGrid(true);
+    fireEvent(new EditFormEvent(State.CLOSED));
+    getGrid().refocus();
   }
 
   private IsRow createEmptyRow() {
@@ -1161,10 +1182,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (isAdding()) {
       finishNewRow(null);
     } else {
-      showForm(true, false);
-      showGrid(true);
-      fireEvent(new EditFormEvent(State.CLOSED));
-      getGrid().refocus();
+      closeEditForm();
     }
   }
 
@@ -1181,19 +1199,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       prepareForInsert(row);
       // }
     } else {
-      showForm(true, false);
-      showGrid(true);
-      fireEvent(new EditFormEvent(State.CLOSED));
-      
-      boolean fire;
-      if (form.getFormCallback() != null) {
-        fire = form.getFormCallback().onSaveChanges(form, row);
-      } else {
-        fire = true;
-      }
-
-      saveChanges(row, fire);
-      getGrid().refocus();
+      closeEditForm();
+      saveChanges(row);
     }
   }
 
@@ -1417,7 +1424,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     fireEvent(new ReadyForInsertEvent(columns, values));
   }
 
-  private void saveChanges(IsRow newRow, boolean fire) {
+  private void saveChanges(IsRow newRow) {
     long rowId = newRow.getId();
     IsRow oldRow = getGrid().getRowById(rowId);
     if (oldRow == null) {
@@ -1444,7 +1451,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
     }
 
-    if (columns.size() > 0 && fire) {
+    if (columns.size() > 0) {
       fireEvent(new SaveChangesEvent(rowId, newRow.getVersion(), columns, oldValues, newValues));
     }
   }

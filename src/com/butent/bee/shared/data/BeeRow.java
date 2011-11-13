@@ -4,6 +4,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.StringArray;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -43,6 +44,13 @@ public class BeeRow extends StringRow implements BeeSerializable {
   public BeeRow(long id, long version, String[] row) {
     super(id, new StringArray(row));
     setVersion(version);
+  }
+
+  @Override
+  public BeeRow clone() {
+    BeeRow result = new BeeRow(getId(), getVersion(), ArrayUtils.copyOf(getValueArray()));
+    cloneProperties(result);
+    return result;
   }
 
   public void deserialize(String s) {

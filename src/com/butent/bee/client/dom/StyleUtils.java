@@ -236,9 +236,16 @@ public class StyleUtils {
   public static final String NAME_FOCUSED = "focused";
 
   public static final String NAME_UNSELECTABLE = "unselectable";
+
   public static final String NAME_CONTENT_BOX = "contentBox";
+  public static final String NAME_FLEX_BOX_HORIZONTAL = "flexBox-horizontal";
+  public static final String NAME_FLEX_BOX_VERTICAL = "flexBox-vertical";
+  public static final String NAME_FLEXIBLE = "flexible";
+  public static final String NAME_OCCUPY = "occupy";
+
   public static final String NAME_SCARY = "bee-afraid";
   public static final String NAME_SUPER_SCARY = "bee-very-afraid";
+  
   public static final String NAME_ERROR = "bee-error";
   public static final String NAME_REQUIRED = "bee-required";
 
@@ -1108,6 +1115,30 @@ public class StyleUtils {
   public static void makeAbsolute(UIObject obj) {
     Assert.notNull(obj);
     makeAbsolute(obj.getElement());
+  }
+
+  public static void makeFlexible(Element el) {
+    Assert.notNull(el);
+    el.addClassName(NAME_FLEXIBLE);
+  }
+
+  public static void makeFlexible(UIObject obj) {
+    Assert.notNull(obj);
+    obj.addStyleName(NAME_FLEXIBLE);
+  }
+  
+  public static void makeRelative(Element el) {
+    Assert.notNull(el);
+    el.getStyle().setPosition(Position.RELATIVE);
+  }
+
+  public static void makeRelative(String id) {
+    makeRelative(DomUtils.getElement(id));
+  }
+
+  public static void makeRelative(UIObject obj) {
+    Assert.notNull(obj);
+    makeRelative(obj.getElement());
   }
   
   public static Pair<Double, Unit> parseCssLength(String input) {

@@ -752,6 +752,10 @@ public class EventUtils {
     return isEventType(type, EVENT_TYPE_CLICK);
   }
 
+  public static boolean isDblClick(String type) {
+    return isEventType(type, EVENT_TYPE_DBL_CLICK);
+  }
+  
   public static boolean isEventType(String t1, String t2) {
     Assert.notEmpty(t1);
     Assert.notEmpty(t2);

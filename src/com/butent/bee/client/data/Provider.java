@@ -9,6 +9,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataRequestEvent;
@@ -77,10 +78,14 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     setCacheEnabled(true);
   }
 
+  public int getColumnIndex(String columnId) {
+    return DataUtils.getColumnIndex(columnId, getColumns());
+  }
+
   public List<BeeColumn> getColumns() {
     return columns;
   }
-
+  
   public String getIdColumnName() {
     return idColumnName;
   }

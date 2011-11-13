@@ -3,6 +3,7 @@ package com.butent.bee.shared.data.filter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Transformable;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowFilter;
@@ -107,14 +108,7 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
   }
 
   protected int getColumnIndex(String colName, List<? extends IsColumn> columns) {
-    Assert.notEmpty(columns);
-
-    for (int i = 0; i < columns.size(); i++) {
-      if (BeeUtils.same(colName, columns.get(i).getId())) {
-        return i;
-      }
-    }
-    return -1;
+    return DataUtils.getColumnIndex(colName, columns);
   }
 
   protected String serialize(Object obj) {

@@ -32,6 +32,14 @@ public class EditFormEvent extends GwtEvent<EditFormEvent.Handler> {
     return state;
   }
 
+  public boolean isCanceled() {
+    return State.CANCELED.equals(getState());
+  }
+  
+  public boolean isChanged() {
+    return State.CHANGED.equals(getState());
+  }
+
   public boolean isClosing() {
     return State.CLOSED.equals(getState());
   }
@@ -40,6 +48,10 @@ public class EditFormEvent extends GwtEvent<EditFormEvent.Handler> {
     return State.OPEN.equals(getState());
   }
 
+  public boolean isPending() {
+    return State.PENDING.equals(getState());
+  }
+  
   @Override
   protected void dispatch(Handler handler) {
     handler.onEditForm(this);

@@ -17,7 +17,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
-import com.butent.bee.client.cli.CliWidget;
+import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.composite.ButtonGroup;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.ResourceEditor;
@@ -30,7 +30,9 @@ import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.BlankTile;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Direction;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.TabbedPages;
@@ -573,10 +575,23 @@ public class ScreenImpl implements Screen {
         Lists.newArrayList("simple", "scroll", "cell")));
     adm.add(new RadioGroup(getElCell(), false, BeeKeeper.getStorage().checkEnum(getElCell(),
         TextCellType.TEXT_EDIT), TextCellType.values()));
-
-    adm.add(new CliWidget());
     
-    tp.add(adm, "Admin");
+    Flow admPanel = new Flow();
+    admPanel.addStyleName(StyleUtils.NAME_FLEX_BOX_VERTICAL);
+    
+    admPanel.add(adm);
+    
+    Simple shellContainer = new Simple();
+    StyleUtils.makeFlexible(shellContainer);
+    StyleUtils.makeRelative(shellContainer);
+    
+    Shell shell = new Shell();
+    shell.addStyleName(StyleUtils.NAME_OCCUPY);
+
+    shellContainer.setWidget(shell);
+    admPanel.add(shellContainer);
+    
+    tp.add(admPanel, "Admin");
 
     return tp;
   }

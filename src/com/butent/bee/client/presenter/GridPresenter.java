@@ -208,6 +208,10 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
       case REFRESH:
         getDataProvider().refresh();
         break;
+      
+      case REQUERY:
+        getDataProvider().requery(true);
+        break;
 
       case ADD:
         if (getView().isEnabled()) {
@@ -246,7 +250,8 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
               BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
             } else {
               BeeKeeper.getBus().fireEvent(
-                  new CellUpdateEvent(getViewName(), rowId, row.getVersion(), columnId, newValue));
+                  new CellUpdateEvent(getViewName(), rowId, row.getVersion(), columnId,
+                      getDataProvider().getColumnIndex(columnId), newValue));
             }
           }
         });

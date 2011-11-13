@@ -18,6 +18,37 @@ body, select {
   box-sizing: content-box;
 }
 
+.flexBox-horizontal {
+  display: box;
+  display: -moz-box;
+  display: -webkit-box;
+  -moz-box-orient: horizontal;
+  -webkit-box-orient: horizontal;
+  box-orient: horizontal;
+}
+.flexBox-vertical {
+  display: box;
+  display: -moz-box;
+  display: -webkit-box;
+  -moz-box-orient: vertical;
+  -webkit-box-orient: vertical;
+  box-orient: vertical;
+}
+
+.flexible {
+  box-flex: 1;
+  -moz-box-flex: 1;
+  -webkit-box-flex: 1;
+}
+
+.occupy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
 .bee-RadioButton input:checked + label {
   text-transform: uppercase;
 }
@@ -492,8 +523,7 @@ body, select {
   font-size: x-large;
 }  
 
-@-webkit-keyframes scary
-{
+@-webkit-keyframes scary {
   from {background-color: #cfc; font-size: 1em;}
   25% {background-color: crimson; font-size: 2.5em;}
   50% {background-color: violet; font-size: 3em;}

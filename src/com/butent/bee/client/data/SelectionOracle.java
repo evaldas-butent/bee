@@ -289,7 +289,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   }
 
   public void onCellUpdate(CellUpdateEvent event) {
-    if (isEventRelevant(event) && BeeUtils.containsSame(getViewColumns(), event.getColumnId())) {
+    if (isEventRelevant(event) && BeeUtils.containsSame(getViewColumns(), event.getColumnName())) {
       initViewData();
     }
   }

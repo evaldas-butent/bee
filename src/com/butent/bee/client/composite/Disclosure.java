@@ -22,6 +22,7 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 
 public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
@@ -96,7 +97,7 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
 
       add(iconImage);
       setWidget(widget);
-      
+
       setSpacing(3);
       setStyleName(STYLENAME_HEADER);
 
@@ -196,8 +197,8 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
     super();
 
     this.header = new Header(openImage, closedImage, headerWidget);
-    add(header);
-    add(contentWrapper);
+    super.add(header);
+    super.add(contentWrapper);
 
     setStyleName(STYLENAME_CONTAINER);
     setContentDisplay(false);
@@ -209,6 +210,19 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
 
   public Disclosure(Widget headerWidget) {
     this(DEFAULT_IMAGES.disclosureOpen(), DEFAULT_IMAGES.disclosureClosed(), headerWidget);
+  }
+
+  @Override
+  public void add(Widget w) {
+    Assert.notNull(w);
+
+    if (getHeaderWidget() == null) {
+      setHeaderWidget(w);
+    } else if (getContentWidget() == null) {
+      setContentWidget(w);
+    } else {
+      Assert.state(false, "Disclosure already contains header and content");
+    }
   }
 
   public HandlerRegistration addCloseHandler(CloseHandler<Disclosure> handler) {
@@ -237,6 +251,12 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
 
   public boolean isOpen() {
     return isOpen;
+  }
+
+  @Override
+  public boolean remove(Widget w) {
+    Assert.untouchable();
+    return false;
   }
 
   public void setAnimationDuration(int animationDuration) {

@@ -10,7 +10,6 @@ import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
 import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
-import com.butent.bee.client.view.edit.HasEditState;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -22,7 +21,7 @@ import java.util.List;
  * Contains necessary methods for form implementing classes.
  */
 
-public interface FormView extends DataView, HasEditState,
+public interface FormView extends DataView, HasDataTable,
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers {
 
   void applyOptions(String options);

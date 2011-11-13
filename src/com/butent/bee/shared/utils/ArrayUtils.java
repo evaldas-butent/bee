@@ -40,6 +40,17 @@ public class ArrayUtils {
     }
     return ok;
   }
+  
+  public static String[] copyOf(String[] original) {
+    if (original == null) {
+      return null;
+    }
+    String[] copy = new String[original.length];
+    for (int i = 0; i < original.length; i++) {
+      copy[i] = original[i];
+    }
+    return copy;
+  }
 
   /**
    * Copies an array. The specified {@code newLength} determines the length of the array.

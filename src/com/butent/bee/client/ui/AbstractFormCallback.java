@@ -25,10 +25,6 @@ public class AbstractFormCallback implements FormFactory.FormCallback {
     return true;
   }
 
-  public boolean onSaveChanges(FormView form, IsRow row) {
-    return true;
-  }
-  
   public void onShow(Presenter presenter) {
   }
 

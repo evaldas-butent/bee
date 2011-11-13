@@ -69,7 +69,7 @@ public class CachedProvider extends Provider {
       for (IsRow row : getTable().getRows()) {
         if (row.getId() == id) {
           row.setVersion(event.getVersion());
-          row.setValue(getTable().getColumnIndex(event.getColumnId()), event.getValue());
+          row.setValue(getTable().getColumnIndex(event.getColumnName()), event.getValue());
           break;
         }
       }
