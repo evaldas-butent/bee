@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlexTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../schemas/widget.xsd"
+
+  cellSpacing="10">
+
+  <row>
+    <cell>
+      <Label html="Telefonai" />
+    </cell>
+    <cell>
+      <InputText source="Phone" />
+    </cell>
+    <cell>
+      <Label html="El. paštas" horizontalAlignment="right" />
+    </cell>
+    <cell>
+      <InputText source="Email" />
+    </cell>
+  </row>
+  <row>
+    <cell>
+      <Label html="Adresas" />
+    </cell>
+    <cell colSpan="3">
+      <InputText source="Address" style="width:100%" />
+    </cell>
+  </row>
+  <row>
+    <cell>
+      <Label html="Pašto indeksas" />
+    </cell>
+    <cell>
+      <InputText source="PostIndex" />
+    </cell>
+    <cell>
+      <Label html="Interneto svetainė" horizontalAlignment="right" />
+    </cell>
+    <cell>
+      <InputText source="Website" />
+    </cell>
+  </row>
+  <row>
+    <cell>
+      <Label html="Miestas" />
+    </cell>
+    <cell>
+      <DataSelector source="CityName" relSource="City"
+        relView="Cities" relColumn="Name" />
+    </cell>
+    <cell>
+      <Label html="Šalis" horizontalAlignment="right" />
+    </cell>
+    <cell>
+      <TextLabel source="CountryName" />
+    </cell>
+  </row>
+</FlexTable>

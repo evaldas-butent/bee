@@ -21,7 +21,7 @@
           </function>
         </calc>
       </BeeCalcColumn>
-      <BeeDataColumn name="Task" source="Task" caption="Užduotis" />
+      <BeeDataColumn name="Description" source="Description" caption="Užduotis" />
       <BeeDataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
       <BeeCalcColumn name="Status" type="string" caption="Būsena" sortBy="Event">
         <calc>

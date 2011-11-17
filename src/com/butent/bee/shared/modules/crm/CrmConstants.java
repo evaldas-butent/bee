@@ -9,7 +9,7 @@ public class CrmConstants {
 
   public static enum TaskEvent {
     ACTIVATED, SUSPENDED, COMPLETED, APPROVED, CANCELED,
-    FORWARDED, EXTENDED, RENEWED, COMMENTED, VISITED
+    FORWARDED, EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED
   }
 
   public static final String CRM_MODULE = "CrmModule";

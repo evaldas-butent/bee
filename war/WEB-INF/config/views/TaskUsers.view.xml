@@ -7,7 +7,7 @@
   >
   <BeeColumns>
     <BeeSimpleColumn expression="Priority" />
-    <BeeSimpleColumn expression="Task" />
+    <BeeSimpleColumn expression="Description" />
     <BeeSimpleColumn expression="StartTime" />
     <BeeSimpleColumn expression="FinishTime" />
     <BeeSimpleColumn expression="ExpectedDuration" />

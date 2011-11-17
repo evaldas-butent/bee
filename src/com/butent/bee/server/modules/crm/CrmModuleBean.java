@@ -1,5 +1,7 @@
 package com.butent.bee.server.modules.crm;
 
+import com.google.common.collect.Maps;
+
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -12,6 +14,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.modules.crm.CrmConstants;
@@ -19,6 +22,7 @@ import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -157,6 +161,27 @@ public class CrmModuleBean implements BeeModule {
             BeeUtils.concat(" -> ",
                 TimeUtils.toDateTimeOrNull(oldTerm), TimeUtils.toDateTimeOrNull(newTerm)));
 
+        if (!response.hasErrors()) {
+          response = deb.commitRow(rs, true);
+        }
+        break;
+
+      case UPDATED:
+        rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
+        taskId = rs.getRow(0).getId();
+        Map<String, String> prm = Maps.newHashMap();
+        reqInfo.setParams(prm);
+
+        for (BeeColumn col : rs.getColumns()) {
+          String colName = col.getId();
+          String oldValue = rs.getShadowString(0, colName);
+          String value = rs.getString(0, colName);
+          prm.put(CrmConstants.VAR_TASK_COMMENT, BeeUtils.concat(" -> ", oldValue, value));
+
+          if (response == null || !response.hasErrors()) {
+            response = registerTaskEvent(taskId, time, reqInfo, event, colName);
+          }
+        }
         if (!response.hasErrors()) {
           response = deb.commitRow(rs, true);
         }

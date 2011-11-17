@@ -50,6 +50,12 @@
               case 8:
                 ev = "COMMENTED";
                 break;
+              case 9:
+                ev = "VISITED";
+                break;
+              case 10:
+                ev = "UPDATED";
+                break;
             }
             s = s + "\n" + ev;
             return s;

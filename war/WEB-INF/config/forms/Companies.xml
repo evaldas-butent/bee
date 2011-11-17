@@ -1,59 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeForm
-  xmlns="http://www.butent.com/bee"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="Companies" viewName="Companies" caption="Įmonės">
 
-  <LayoutPanel>
-    <layer height="60" heightUnit="%">
-      <ScrollPanel>
-        <FlexTable cellSpacing="10" style="width:100%">
-          <row>
-            <cell><Label html="Įmonė" /></cell>
-            <cell colSpan="3"><InputText source="Name" style="width:100%" /></cell>
-          </row>
-          <row>
-            <cell><Label html="Įm. kodas" /></cell>
-            <cell><InputText source="Code" style="width:100%" /></cell>
-            <cell><Label html="PVM kodas" horizontalAlignment="right" /></cell>
-            <cell><InputText source="VATCode" style="width:100%" /></cell>
-          </row>
-          <row>
-            <cell colSpan="4"><HtmlLabel html="KONTAKTINĖ INFORMACIJA&lt;hr&gt;" style="color:green" /></cell>
-          </row>
-          <row>
-            <cell><Label html="Telefonai" /></cell>
-            <cell><InputText source="Phone" style="width:100%" /></cell>
-            <cell><Label html="El. paštas" horizontalAlignment="right" /></cell>
-            <cell><InputText source="Email" style="width:100%" /></cell>
-          </row>
-          <row>
-            <cell><Label html="Adresas" /></cell>
-            <cell colSpan="3"><InputText source="Address" style="width:100%" /></cell>
-          </row>
-          <row>
-            <cell><Label html="Pašto indeksas" /></cell>
-            <cell><InputText source="PostIndex" style="width:100%" /></cell>
-            <cell><Label html="Interneto svetainė" horizontalAlignment="right" /></cell>
-            <cell><InputText source="Website" style="width:100%" /></cell>
-          </row>
-          <row>
-            <cell><Label html="Miestas" /></cell>
-            <cell>
-              <DataSelector source="CityName" relSource="City" relView="Cities" relColumn="Name"
-              style="width:100%" />
-            </cell>
-            <cell><Label html="Šalis" horizontalAlignment="right" /></cell>
-            <cell><TextLabel source="CountryName" /></cell>
-          </row>
-        </FlexTable>
-      </ScrollPanel>
-    </layer>
+  <FlowPanel class="flexBox-vertical">
+    <FlexTable cellSpacing="10">
+      <row>
+        <cell>
+          <Label html="Įmonė" />
+        </cell>
+        <cell colSpan="3">
+          <InputText source="Name" style="width:100%" />
+        </cell>
+      </row>
+      <row>
+        <cell>
+          <Label html="Įm. kodas" />
+        </cell>
+        <cell>
+          <InputText source="Code" />
+        </cell>
+        <cell>
+          <Label html="PVM kodas" horizontalAlignment="right" />
+        </cell>
+        <cell>
+          <InputText source="VATCode" />
+        </cell>
+      </row>
+      <row>
+        <cell colSpan="4">
+          <Disclosure html="KONTAKTINĖ INFORMACIJA" style="color:green">
+            <xi:include href="widgets/ContactInfo.xml" />
+          </Disclosure>
+        </cell>
+      </row>
+    </FlexTable>
 
-    <layer top="61" topUnit="%">
-      <ChildGrid name="CompanyPersons" relColumn="Company" />
-    </layer>
-  </LayoutPanel>
+    <ChildGrid class="flexible" name="CompanyPersons" relColumn="Company" />
+  </FlowPanel>
 </BeeForm>  

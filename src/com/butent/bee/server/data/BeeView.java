@@ -254,7 +254,8 @@ public class BeeView implements HasExtendedInfo {
       PropertyUtils.addChildren(info, key,
           "Table", getColumnTable(col), "Alias", getColumnSource(col),
           "Field", getColumnField(col), "Type", getColumnType(col), "Locale", getColumnLocale(col),
-          "Aggregate Function", getColumnAggregate(col), "ReadOnly", isColReadOnly(col),
+          "Aggregate Function", getColumnAggregate(col), "Hidden", isColHidden(col),
+          "ReadOnly", isColReadOnly(col),
           "Parent Column", getColumnParent(col), "Owner Alias", getColumnOwner(col));
     }
     if (order != null) {
@@ -357,6 +358,10 @@ public class BeeView implements HasExtendedInfo {
 
   public boolean hasColumn(String colName) {
     return !BeeUtils.isEmpty(colName) && columns.containsKey(BeeUtils.normalize(colName));
+  }
+
+  public boolean isColHidden(String colName) {
+    return getColumnInfo(colName).isHidden();
   }
 
   public boolean isColReadOnly(String colName) {
@@ -624,8 +629,16 @@ public class BeeView implements HasExtendedInfo {
         for (String col : columns.keySet()) {
           if (getColumnAggregate(col) != null && f.involvesColumn(col)) {
             ss.setHaving(condition);
-            return;
+            break;
           }
+        }
+        if (ss.getHaving() != null) {
+          for (String col : columns.keySet()) {
+            if (isColHidden(col) && f.involvesColumn(col)) {
+              ss.addGroup(getColumnSource(col), getColumnField(col));
+            }
+          }
+          return;
         }
       }
       ss.setWhere(condition);

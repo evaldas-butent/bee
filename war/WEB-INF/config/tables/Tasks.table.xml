@@ -8,7 +8,7 @@
   >
   <BeeFields>
     <BeeField name="Priority" type="INTEGER" notNull="true" />
-    <BeeField name="Task" type="TEXT" notNull="true" />
+    <BeeField name="Description" type="TEXT" notNull="true" />
     <BeeField name="StartTime" type="DATETIME" notNull="true" />
     <BeeField name="FinishTime" type="DATETIME" notNull="true" />
     <BeeField name="ExpectedDuration" type="DATETIME" />

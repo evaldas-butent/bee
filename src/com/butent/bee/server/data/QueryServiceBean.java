@@ -139,7 +139,7 @@ public class QueryServiceBean {
     if (BeeUtils.allEmpty(ss.getGroupBy(), ss.getUnion())) {
       res = getData(ss.copyOf().resetFields().resetOrder().addCount("cnt"));
     } else {
-      res = getData(new SqlSelect().addCount("cnt").addFrom(ss, "als"));
+      res = getData(new SqlSelect().addCount("cnt").addFrom(ss.resetOrder(), "als"));
     }
     if (res == null) {
       return -1;
@@ -294,7 +294,7 @@ public class QueryServiceBean {
     }
     return res.getValues(0);
   }
-  
+
   public List<BeeColumn> getViewColumns(final BeeView view) {
     Assert.notNull(view);
 
@@ -484,7 +484,7 @@ public class QueryServiceBean {
       }
       con = bds.getDs().getConnection();
       stmt = con.createStatement();
-      
+
       long start = System.nanoTime();
       boolean isResultSet = stmt.execute(sql);
       LogUtils.infoNow(logger, String.format("[%.6f]", (System.nanoTime() - start) / 1e9));

@@ -1,18 +1,111 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd" xmlns:xi="http://www.w3.org/2001/XInclude"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
 
   name="Tasks" viewName="Tasks" caption="Užduotys">
 
   <SplitPanel splitterSize="1">
     <west size="450">
       <FlowPanel>
-        <xi:include href="widgets/task_info.xml" />
+        <FlexTable cellSpacing="10">
+          <row>
+            <cell>
+              <Label html="Būsena" />
+            </cell>
+            <cell>
+              <Label name="Event" class="bee-display" />
+            </cell>
+            <cell>
+              <Label html="Prioritetas:" horizontalAlignment="right" />
+            </cell>
+            <cell>
+              <Label name="Priority" class="bee-display" />
+            </cell>
+          </row>
+
+          <row>
+            <cell colSpan="2">
+              <InlineLabel />
+            </cell>
+            <cell>
+              <Label html="Numatoma trukmė:" horizontalAlignment="right" />
+            </cell>
+            <cell>
+              <LongLabel source="ExpectedDuration" class="bee-display" />
+            </cell>
+          </row>
+
+          <row>
+            <cell>
+              <Label html="Pradžia:" />
+            </cell>
+            <cell>
+              <DateTimeLabel source="StartTime" class="bee-display" />
+            </cell>
+            <cell>
+              <Label html="Įmonė:" horizontalAlignment="right" />
+            </cell>
+            <cell>
+              <TextLabel source="CompanyName" class="bee-display" />
+            </cell>
+          </row>
+
+          <row>
+            <cell>
+              <Label html="Terminas:" />
+            </cell>
+            <cell>
+              <DateTimeLabel source="FinishTime" class="bee-display" />
+            </cell>
+            <cell>
+              <Label html="Asmuo:" horizontalAlignment="right" />
+            </cell>
+            <cell>
+              <TextLabel source="PersonFirstName" class="bee-display" />
+            </cell>
+          </row>
+
+          <row>
+            <cell>
+              <Label html="Užduotis:" />
+            </cell>
+            <cell colSpan="3">
+              <TextLabel source="Description" class="bee-display" style="width: 100%; min-height: 60px;" />
+            </cell>
+          </row>
+
+          <row>
+            <cell>
+              <Label html="Vykdytojas:" />
+            </cell>
+            <cell>
+              <TextLabel class="bee-display">
+                <calc>
+                  <function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLasttName || "")</function>
+                </calc>
+              </TextLabel>
+            </cell>
+            <cell>
+              <Label html="Autorius:" horizontalAlignment="right" />
+            </cell>
+            <cell>
+              <TextLabel class="bee-display">
+                <calc>
+                  <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
+                </calc>
+              </TextLabel>
+            </cell>
+          </row>
+        </FlexTable>
+
         <FlowPanel style="margin-top: 2ex;">
           <Button name="COMMENTED" html="Naujas komentaras" />
           <Button name="FORWARDED" html="Persiųsti" />
           <Button name="EXTENDED" html="Keisti terminą" />
+          <Button name="UPDATED" html="Koreguoti" />
         </FlowPanel>
+
+
         <FlowPanel style="margin-top: 2ex;">
           <Button name="SUSPENDED" html="Sustabdyti" />
           <Button name="CANCELED" html="Nutraukti" />
@@ -22,6 +115,7 @@
         </FlowPanel>
       </FlowPanel>
     </west>
+
     <center>
       <ChildGrid name="TaskEvents" relColumn="Task" />
     </center>
