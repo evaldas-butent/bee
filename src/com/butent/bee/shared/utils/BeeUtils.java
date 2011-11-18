@@ -387,6 +387,14 @@ public class BeeUtils {
 
     return s.toString();
   }
+  
+  public static <T> boolean contains(Collection<? extends T> col, T item) {
+    if (col == null) {
+      return false;
+    } else {
+      return col.contains(item);
+    }
+  }
 
   /**
    * Checks is there are equal elements in the Collections.

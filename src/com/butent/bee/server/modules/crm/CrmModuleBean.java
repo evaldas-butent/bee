@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.crm;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.data.BeeView;
@@ -13,10 +14,12 @@ import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -34,6 +37,9 @@ import javax.ejb.Stateless;
 @Stateless
 @LocalBean
 public class CrmModuleBean implements BeeModule {
+
+  private static final Splitter USER_ID_SPLITTER = 
+      Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
 
   private static Logger logger = Logger.getLogger(CrmModuleBean.class.getName());
 
@@ -82,32 +88,67 @@ public class CrmModuleBean implements BeeModule {
 
     switch (event) {
       case ACTIVATED:
-        BeeRowSet rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
-        response = deb.commitRow(rs, false);
+        BeeRowSet input = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
+        String executors = reqInfo.getParameter(CrmConstants.VAR_TASK_EXECUTORS);
+        String observers = reqInfo.getParameter(CrmConstants.VAR_TASK_OBSERVERS);
+        
+        int exIndex = DataUtils.getColumnIndex(CrmConstants.COLUMN_EXECUTOR, input.getColumns());
+        BeeView view = sys.getView(input.getViewName());
+        BeeRowSet result = null;
 
-        if (!response.hasErrors()) {
+        for (String exId : USER_ID_SPLITTER.split(executors)) {
+          input.getRow(0).setValue(exIndex, exId);
+          long executor = BeeUtils.toLong(exId);
+
+          response = deb.commitRow(input, false);
+          if (response.hasErrors()) {
+            break;
+          }
+          
           long taskId = ((BeeRow) response.getResponse()).getId();
           response = registerTaskEvent(taskId, time, reqInfo, event, null);
-
-          if (!response.hasErrors()) {
-            long executor = BeeUtils.toLong(rs.getString(0, "Executor"));
-
-            if (executor != currentUser) {
-              response = registerTaskVisit(taskId, executor, null, true);
-            }
-            if (!response.hasErrors()) {
-              BeeView view = sys.getView(rs.getViewName());
-              rs = sys.getViewData(view.getName(), view.getRowFilter(taskId), null, 0, 0);
-
-              if (rs.isEmpty()) {
-                String msg = "Optimistic lock exception";
-                logger.warning(msg);
-                response = ResponseObject.error(msg);
-              } else {
-                response.setResponse(rs.getRow(0));
-              }
+          if (response.hasErrors()) {
+            break;
+          }
+          
+          if (executor != currentUser) {
+            response = registerTaskVisit(taskId, executor, null, true);
+            if (response.hasErrors()) {
+              break;
             }
           }
+          
+          if (!BeeUtils.isEmpty(observers)) {
+            for (String obsId : USER_ID_SPLITTER.split(observers)) {
+              long observer = BeeUtils.toLong(obsId);
+              if (observer != currentUser && observer != executor) {
+                response = registerTaskVisit(taskId, observer, null, true);
+                if (response.hasErrors()) {
+                  break;
+                }
+              }
+            }
+            if (response.hasErrors()) {
+              break;
+            }
+          }
+
+          BeeRowSet rs = sys.getViewData(view.getName(), view.getRowFilter(taskId), null, 0, 0);
+          if (rs.isEmpty()) {
+            String msg = "Optimistic lock exception";
+            logger.warning(msg);
+            response = ResponseObject.error(msg);
+            break;
+          }
+          
+          if (result == null) {
+            result = new BeeRowSet(rs.getViewName(), rs.getColumns());
+          }
+          result.addRow(rs.getRow(0));
+        }
+        
+        if (response != null && !response.hasErrors()) {
+          response = ResponseObject.response(result); 
         }
         break;
 
@@ -124,7 +165,7 @@ public class CrmModuleBean implements BeeModule {
         break;
 
       case FORWARDED:
-        rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
+        BeeRowSet rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
         long taskId = rs.getRow(0).getId();
         long oldUser = BeeUtils.toLong(rs.getShadowString(0, "Executor"));
         long newUser = BeeUtils.toLong(rs.getString(0, "Executor"));

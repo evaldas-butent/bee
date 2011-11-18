@@ -8,6 +8,7 @@ import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.GridDescription;
 
@@ -28,9 +29,11 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   int estimatePageSize(int containerWidth, int containerHeight);
   
-  RowInfo getActiveRowInfo();
+  IsRow getActiveRowData();
 
   CellGrid getGrid();
+  
+  GridCallback getGridCallback();
 
   Collection<RowInfo> getSelectedRows();
 

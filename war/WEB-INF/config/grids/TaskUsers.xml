@@ -11,6 +11,7 @@
     <footer borderWidth="0"/>
 
     <columns>
+      <BeeSelectionColumn name="Select" caption="&#x25a3;" />
       <BeeCalcColumn name="Mode" type="string" caption="*">
         <calc>
           <function>

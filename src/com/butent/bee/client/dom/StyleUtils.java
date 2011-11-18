@@ -240,6 +240,7 @@ public class StyleUtils {
   public static final String NAME_CONTENT_BOX = "contentBox";
   public static final String NAME_FLEX_BOX_HORIZONTAL = "flexBox-horizontal";
   public static final String NAME_FLEX_BOX_VERTICAL = "flexBox-vertical";
+  public static final String NAME_FLEX_BOX_CENTER = "flexBox-center";
   public static final String NAME_FLEXIBLE = "flexible";
   public static final String NAME_OCCUPY = "occupy";
 
@@ -1671,6 +1672,20 @@ public class StyleUtils {
     setMinWidth(obj.getElement(), px);
   }
 
+  public static void setOpacity(Element el, double value) {
+    Assert.notNull(el);
+    el.getStyle().setOpacity(value);
+  }
+
+  public static void setOpacity(UIObject obj, double value) {
+    Assert.notNull(obj);
+    setOpacity(obj.getElement(), value);
+  }
+
+  public static void setOpacity(String id, double value) {
+    setOpacity(DomUtils.getElement(id), value);
+  }
+  
   public static void setOverflow(Element el, ScrollBars scroll, String value) {
     Assert.notNull(el);
     setOverflow(el.getStyle(), scroll, value);

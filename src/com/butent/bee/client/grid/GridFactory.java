@@ -309,7 +309,14 @@ public class GridFactory {
 
   public static GridCallback getGridCallback(String gridName) {
     Assert.notEmpty(gridName);
-    return gridCallbacks.get(BeeUtils.normalize(gridName));
+    GridCallback callback = gridCallbacks.get(BeeUtils.normalize(gridName));
+    if (callback != null) {
+      GridCallback instance = callback.getInstance();
+      if (instance != null) {
+        return instance;
+      }      
+    }
+    return callback;
   }
 
   public static void openGrid(String gridName) {

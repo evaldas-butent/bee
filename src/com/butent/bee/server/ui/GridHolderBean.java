@@ -401,6 +401,10 @@ public class GridHolderBean {
           ok = true;
         }
         break;
+        
+      case SELECTION:
+        ok = true;
+        break;
     }
 
     return ok;

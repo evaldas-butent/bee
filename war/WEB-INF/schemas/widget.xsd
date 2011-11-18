@@ -647,6 +647,7 @@
             <xs:element ref="bee:widget" />
           </xs:choice>
           <xs:attribute name="animate" type="xs:int" />
+          <xs:attribute name="open" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

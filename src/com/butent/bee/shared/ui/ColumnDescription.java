@@ -29,7 +29,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     RELATED("BeeRelColumn", false),
     CALCULATED("BeeCalcColumn", true),
     ID("BeeIdColumn", true),
-    VERSION("BeeVerColumn", true);
+    VERSION("BeeVerColumn", true),
+    SELECTION("BeeSelectionColumn", true);
 
     public static ColType getColType(String tagName) {
       if (!BeeUtils.isEmpty(tagName)) {

@@ -25,6 +25,13 @@ public abstract class ComparisonFilter extends Filter {
     COLUMN, OPERATOR, VALUE
   }
 
+  public static Filter compareId(String column, Operator op, long value) {
+    Assert.notEmpty(column);
+    Assert.notNull(op);
+
+    return new IdFilter(column, op, value);
+  }
+
   public static Filter compareId(String column, Operator op, String value) {
     Assert.notEmpty(column);
     Assert.notNull(op);

@@ -9,6 +9,9 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.ClosingEvent;
+import com.google.gwt.user.client.Window.ClosingHandler;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
 import com.butent.bee.client.communication.ResponseCallback;
@@ -36,7 +39,7 @@ import java.util.List;
  */
 
 public class Bee implements EntryPoint {
-
+  
   public void onModuleLoad() {
     BeeConst.setClient();
 
@@ -104,6 +107,12 @@ public class Bee implements EntryPoint {
     BeeKeeper.getScreen().updateSignature(userData.getUserSign());
 
     BeeKeeper.getBus().dispatchService(Service.REFRESH_MENU);
+    
+    Window.addWindowClosingHandler(new ClosingHandler() {
+      public void onWindowClosing(ClosingEvent event) {
+        event.setMessage("Don't leave me this way");
+      }
+    });
   }
   
   private void signIn() {

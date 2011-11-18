@@ -23,5 +23,15 @@ public class CrmConstants {
   public static final String VAR_TASK_DURATION_TIME = Service.RPC_VAR_PREFIX + "task_duration_time";
   public static final String VAR_TASK_DURATION_TYPE = Service.RPC_VAR_PREFIX + "task_duration_type";
 
+  public static final String VAR_TASK_EXECUTORS = Service.RPC_VAR_PREFIX + "task_executors";
+  public static final String VAR_TASK_OBSERVERS = Service.RPC_VAR_PREFIX + "task_observers";
+
   public static final String COLUMN_LAST_ACCESS = "LastAccess";
+
+  public static final String COLUMN_FIRST_NAME = "FirstName";
+  public static final String COLUMN_LAST_NAME = "LastName";
+  
+  public static final String COLUMN_USER_ID = "UserID";
+
+  public static final String COLUMN_EXECUTOR = "Executor";
 }

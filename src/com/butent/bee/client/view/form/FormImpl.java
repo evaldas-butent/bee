@@ -363,7 +363,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       setRow(getRowBuffer());
     }
 
-    refreshData(true);
+    refreshData(true, true);
     showChildren(true);
 
     if (rowValue != null) {
@@ -602,7 +602,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     Assert.notNull(newRow);
 
     setRow(newRow);
-    refreshData(false);
+    refreshData(false, false);
   }
 
   public void prepareForInsert() {
@@ -632,8 +632,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     fireEvent(new ReadyForInsertEvent(columns, values));
   }
 
-  public void refresh() {
-    refreshData(getRow() != null);
+  public void refresh(boolean refreshChildren) {
+    refreshData(refreshChildren, getRow() != null);
   }
 
   public void refreshCellContent(String columnSource) {
@@ -707,7 +707,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
     
     if (refresh) {
-      refresh();
+      refresh(true);
     }
   }
 
@@ -777,7 +777,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
 
     setRow(newRow);
-    refreshData(true);
+    refreshData(false, true);
     showChildren(false);
   }
 
@@ -813,12 +813,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
-  public void updateRow(IsRow rowValue) {
+  public void updateRow(IsRow rowValue, boolean refreshChildren) {
     setRow(rowValue);
-
-    refreshEditableWidgets();
-    refreshDisplayWidgets();
-    refreshChildWidgets(rowValue);
+    render(refreshChildren);
   }
 
   private boolean checkNewRow(IsRow rowValue) {
@@ -1070,13 +1067,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
-  private void refreshData(boolean focus) {
+  private void refreshData(boolean refreshChildren, boolean focus) {
     fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.PARTIALLY_LOADED);
-
-    refreshEditableWidgets();
-    refreshDisplayWidgets();
-    refreshChildWidgets(getRow());
-
+    render(refreshChildren);
     fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
 
     if (focus) {
@@ -1126,6 +1119,23 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  private void render(boolean refreshChildren) {
+    if (getFormCallback() != null) {
+      getFormCallback().beforeRefresh(this, getRow());
+    }
+
+    refreshEditableWidgets();
+    refreshDisplayWidgets();
+
+    if (refreshChildren) {
+      refreshChildWidgets(getRow());
+    }
+  
+    if (getFormCallback() != null) {
+      getFormCallback().afterRefresh(this, getRow());
+    }
+  }
+  
   private void setAdding(boolean adding) {
     this.adding = adding;
   }

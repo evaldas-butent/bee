@@ -23,4 +23,6 @@ public interface GridContainerView extends View {
       BeeRowSet rowSet, GridCallback gridCallback, Collection<UiOption> options);
 
   GridView getContent();
+  
+  int getFooterHeight();
 }

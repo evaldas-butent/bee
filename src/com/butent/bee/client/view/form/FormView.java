@@ -60,5 +60,5 @@ public interface FormView extends DataView, HasDataTable,
 
   void updateCell(String columnId, String newValue);
 
-  void updateRow(IsRow row);
+  void updateRow(IsRow row, boolean refreshChildren);
 }

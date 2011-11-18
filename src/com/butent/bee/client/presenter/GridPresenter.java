@@ -32,6 +32,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
@@ -155,6 +156,26 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     bind();
   }
 
+  public void deleteRow(IsRow row) {
+    Assert.notNull(row);
+    int z;
+    if (getGridCallback() != null) {
+      z = getGridCallback().beforeDeleteRow(this, row);
+      if (z < 0) {
+        return;
+      }
+    } else {
+      z = 0;
+    }
+
+    DeleteCallback deleteCallback = new DeleteCallback(row.getId(), row.getId());
+    if (z > 0) {
+      deleteCallback.execute();
+    } else {
+      Global.getMsgBoxen().confirm("Delete Row ?", deleteCallback, StyleUtils.NAME_SCARY);
+    }
+  }
+
   public List<BeeColumn> getDataColumns() {
     return getDataProvider().getColumns();
   }
@@ -193,13 +214,12 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
       case DELETE:
         if (getView().isEnabled()) {
-          RowInfo activeRowInfo = getView().getContent().getActiveRowInfo();
-          if (activeRowInfo != null
-              && getView().getContent().isRowEditable(activeRowInfo.getId(), true)) {
-            if (getView().getContent().isRowSelected(activeRowInfo.getId())) {
-              deleteRows(getView().getContent().getSelectedRows());
+          IsRow row = getView().getContent().getActiveRowData();
+          if (row != null && getView().getContent().isRowEditable(row.getId(), true)) {
+            if (getView().getContent().isRowSelected(row.getId())) {
+              deleteRows(row, getView().getContent().getSelectedRows());
             } else {
-              deleteRow(activeRowInfo.getId(), activeRowInfo.getVersion());
+              deleteRow(row);
             }
           }
         }
@@ -208,7 +228,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
       case REFRESH:
         getDataProvider().refresh();
         break;
-      
+
       case REQUERY:
         getDataProvider().requery(true);
         break;
@@ -222,6 +242,23 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
       default:
         BeeKeeper.getLog().info(action, "not implemented");
     }
+  }
+
+  public void onReadyForInsert(ReadyForInsertEvent event) {
+    setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
+
+    Queries.insert(getViewName(), event.getColumns(), event.getValues(), new Queries.RowCallback() {
+      public void onFailure(String[] reason) {
+        setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
+        showFailure("Insert Row", reason);
+        getView().getContent().finishNewRow(null);
+      }
+
+      public void onSuccess(BeeRow result) {
+        BeeKeeper.getBus().fireEvent(new RowInsertEvent(getViewName(), result));
+        getView().getContent().finishNewRow(result);
+      }
+    });
   }
 
   public void onReadyForUpdate(ReadyForUpdateEvent event) {
@@ -255,23 +292,6 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
             }
           }
         });
-  }
-
-  public void onReadyForInsert(ReadyForInsertEvent event) {
-    setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
-
-    Queries.insert(getViewName(), event.getColumns(), event.getValues(), new Queries.RowCallback() {
-      public void onFailure(String[] reason) {
-        setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
-        showFailure("Insert Row", reason);
-        getView().getContent().finishNewRow(null);
-      }
-
-      public void onSuccess(BeeRow result) {
-        BeeKeeper.getBus().fireEvent(new RowInsertEvent(getViewName(), result));
-        getView().getContent().finishNewRow(result);
-      }
-    });
   }
 
   public void onSaveChanges(SaveChangesEvent event) {
@@ -369,23 +389,33 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     return view;
   }
 
-  private void deleteRow(long rowId, long version) {
-    Global.getMsgBoxen().confirm("Delete Row ?", new DeleteCallback(rowId, version),
-        StyleUtils.NAME_SCARY);
-  }
-
-  private void deleteRows(Collection<RowInfo> rows) {
-    Assert.notNull(rows);
-    int count = rows.size();
-    Assert.isPositive(count);
-    if (count == 1) {
-      RowInfo rowInfo = BeeUtils.peek(rows);
-      deleteRow(rowInfo.getId(), rowInfo.getVersion());
+  private void deleteRows(IsRow activeRow, Collection<RowInfo> selectedRows) {
+    if (selectedRows.size() <= 1) {
+      deleteRow(activeRow);
       return;
     }
 
-    Global.getMsgBoxen().confirm(BeeUtils.concat(1, "Delete", count, "rows"),
-        Lists.newArrayList("SRSLY ?"), new DeleteCallback(rows), StyleUtils.NAME_SUPER_SCARY);
+    int z;
+    if (getGridCallback() != null) {
+      z = getGridCallback().beforeDeleteRows(this, activeRow, selectedRows);
+      if (z < 0) {
+        return;
+      }
+    } else {
+      z = 0;
+    }
+
+    DeleteCallback deleteCallback = new DeleteCallback(selectedRows);
+    if (z > 0) {
+      deleteCallback.execute();
+    } else {
+      Global.getMsgBoxen().confirm(BeeUtils.concat(1, "Delete", selectedRows.size(), "rows"),
+          Lists.newArrayList("SRSLY ?"), deleteCallback, StyleUtils.NAME_SUPER_SCARY);
+    }
+  }
+
+  private GridCallback getGridCallback() {
+    return getView().getContent().getGridCallback();
   }
 
   private Collection<SearchView> getSearchers() {

@@ -132,7 +132,7 @@ public enum FormWidget {
   DATE_LABEL("DateLabel", EnumSet.of(Type.DISPLAY)),
   DATE_TIME_LABEL("DateTimeLabel", EnumSet.of(Type.DISPLAY)),
   DECIMAL_LABEL("DecimalLabel", EnumSet.of(Type.DISPLAY)),
-  DISCLOSURE("Disclosure", EnumSet.of(Type.PANEL)),
+  DISCLOSURE("Disclosure", EnumSet.of(Type.HAS_CHILDREN)),
   DOUBLE_LABEL("DoubleLabel", EnumSet.of(Type.DISPLAY)),
   FLEX_TABLE("FlexTable", EnumSet.of(Type.TABLE)),
   FLOW_PANEL("FlowPanel", EnumSet.of(Type.HAS_CHILDREN)),
@@ -336,6 +336,7 @@ public enum FormWidget {
   private static final String ATTR_REL_COLUMN = "relColumn";
 
   private static final String ATTR_ANIMATE = "animate";
+  private static final String ATTR_OPEN = "open";
 
   private static final String ATTR_OPTIONS = "options";
 
@@ -518,11 +519,15 @@ public enum FormWidget {
         if (BeeUtils.isEmpty(html)) {
           widget = new Disclosure();
         } else {
-          widget = new Disclosure(html);
+          widget = new Disclosure(new BeeLabel(html));
         }
+
         String animate = attributes.get(ATTR_ANIMATE);
         if (BeeUtils.isInt(animate)) {
           ((Disclosure) widget).setAnimationDuration(BeeUtils.toInt(animate));
+        }
+        if (BeeConst.isTrue(attributes.get(ATTR_OPEN))) {
+          ((Disclosure) widget).setOpen(true);
         }
         break;
 
@@ -1695,16 +1700,6 @@ public enum FormWidget {
         && BeeUtils.inListSame(childTag, TAG_UP_FACE, TAG_DOWN_FACE, TAG_UP_HOVERING_FACE,
             TAG_DOWN_HOVERING_FACE, TAG_UP_DISABLED_FACE, TAG_DOWN_DISABLED_FACE)) {
       setFace((CustomButton) parent, childTag, child);
-    
-    } else if (this == DISCLOSURE) {
-      Widget w = createIfWidget(child, columns, widgetCallback, formCallback);
-      if (w != null && parent instanceof Disclosure) {
-        if (((Disclosure) parent).getHeaderWidget() == null) {
-          ((Disclosure) parent).setHeaderWidget(w);
-        } else if (((Disclosure) parent).getContentWidget() == null) {
-          ((Disclosure) parent).setContentWidget(w);
-        }
-      }
     }
   }
 

@@ -26,6 +26,7 @@ import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.RowIdColumn;
 import com.butent.bee.client.grid.RowVersionColumn;
+import com.butent.bee.client.grid.SelectionColumn;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Split;
@@ -93,6 +94,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
     }
   }
+
   private class NewRowCallback implements RowEditor.Callback {
     public void onCancel() {
       finishNewRow(null);
@@ -153,6 +155,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private boolean singleForm = false;
   private boolean adding = false;
 
+  private GridCallback gridCallback = null;
+  
   public CellGridImpl() {
     super();
   }
@@ -397,17 +401,18 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     if (redraw) {
-      getGrid().refresh();
+      getGrid().refresh(true);
     }
   }
 
   public void create(List<BeeColumn> dataCols, int rowCount, BeeRowSet rowSet,
-      GridDescription gridDescr, GridCallback gridCallback, boolean hasSearch) {
+      GridDescription gridDescr, GridCallback callback, boolean hasSearch) {
     Assert.notEmpty(dataCols);
     Assert.notNull(gridDescr);
-
-    if (gridCallback != null) {
-      gridCallback.beforeCreate(dataCols, rowCount, gridDescr, hasSearch);
+    
+    setGridCallback(callback);
+    if (callback != null) {
+      callback.beforeCreate(dataCols, rowCount, gridDescr, hasSearch);
     }
 
     setDataColumns(dataCols);
@@ -466,8 +471,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     columnDescriptions = gridDescr.getVisibleColumns();
-    if (gridCallback != null) {
-      gridCallback.beforeCreateColumns(dataCols, columnDescriptions);
+    if (callback != null) {
+      callback.beforeCreateColumns(dataCols, columnDescriptions);
     }
 
     String idName = gridDescr.getIdName();
@@ -482,8 +487,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     for (ColumnDescription columnDescr : columnDescriptions) {
       String columnId = columnDescr.getName();
-      if (gridCallback != null &&
-          !gridCallback.beforeCreateColumn(columnId, dataCols, columnDescr)) {
+      if (callback != null &&
+          !callback.beforeCreateColumn(columnId, dataCols, columnDescr)) {
         continue;
       }
 
@@ -568,6 +573,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
             column = calcColumn;
           }
           break;
+          
+        case SELECTION:
+          column = new SelectionColumn(getGrid());
+          source = null;
+          break;
       }
 
       if (column == null) {
@@ -615,8 +625,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         footer = null;
       }
 
-      if (gridCallback != null &&
-          !gridCallback.afterCreateColumn(columnId, column, header, footer)) {
+      if (callback != null &&
+          !callback.afterCreateColumn(columnId, column, header, footer)) {
         continue;
       }
 
@@ -624,8 +634,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       getGrid().setColumnInfo(columnId, columnDescr, dataCols);
     }
 
-    if (gridCallback != null) {
-      gridCallback.afterCreateColumns(getGrid());
+    if (callback != null) {
+      callback.afterCreateColumns(getGrid());
     }
 
     initNewRowColumns(gridDescr.getNewRowColumns());
@@ -690,8 +700,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       });
     }
 
-    if (gridCallback != null) {
-      gridCallback.afterCreate(getGrid());
+    if (callback != null) {
+      callback.afterCreate(getGrid());
     }
   }
 
@@ -723,9 +733,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
   }
 
-  public RowInfo getActiveRowInfo() {
-    IsRow row = getGrid().getActiveRowData();
-    return (row == null) ? null : new RowInfo(row);
+  public IsRow getActiveRowData() {
+    return getGrid().getActiveRowData();
   }
 
   public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
@@ -780,6 +789,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   public CellGrid getGrid() {
     return grid;
+  }
+
+  public GridCallback getGridCallback() {
+    return gridCallback;
   }
 
   public String getRelColumn() {
@@ -891,7 +904,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       showForm(true, true);
 
       IsRow row = cloneRow(rowValue);
-      getEditForm().updateRow(row);
+      getEditForm().updateRow(row, true);
 
       if (editableColumn != null) {
         Widget widget = getEditForm().getWidgetBySource(editableColumn.getColumnId());
@@ -1053,13 +1066,13 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       form.showChildren(false);
-      form.updateRow(newRow);
+      form.updateRow(newRow, false);
     } else {
       getNewRowWidget().start(newRow);
       StyleUtils.unhideDisplay(getNewRowWidget());
     }
   }
-
+  
   private boolean checkNewRow(IsRow row) {
     boolean ok = true;
     int count = 0;
@@ -1110,7 +1123,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
     return ok;
   }
-  
+
   private IsRow cloneRow(IsRow original) {
     String[] arr = new String[getDataColumns().size()];
     for (int i = 0; i < arr.length; i++) {
@@ -1482,6 +1495,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private void setFilterChangeHandler(ChangeHandler filterChangeHandler) {
     this.filterChangeHandler = filterChangeHandler;
+  }
+
+  private void setGridCallback(GridCallback gridCallback) {
+    this.gridCallback = gridCallback;
   }
 
   private void setNewRowColumns(List<String> newRowColumns) {

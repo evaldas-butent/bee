@@ -64,11 +64,13 @@
 
     <row>
       <cell>
-        <Label html="Vykdytojas:" class="bee-required" />
+        <Label html="Vykdytojai:" class="bee-required" />
       </cell>
       <cell>
-        <DataSelector source="ExecutorFirstName" relSource="Executor" relView="Users"
-          relColumn="FirstName" />
+        <ListBox name="ExecutorList" allItemsVisible="true" style="min-width: 160px;" />
+      </cell>
+      <cell>
+        <Button name="ExecutorAdd" html=".." />
       </cell>
     </row>
 

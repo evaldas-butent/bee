@@ -5,12 +5,17 @@ import java.util.EnumSet;
 import java.util.Set;
 
 public enum UiOption {
-  ROOT(EnumSet.of(Type.PAGING, Type.SEARCH, Type.WINDOW)),
-  CHILD(null),
-  EMBEDDED(EnumSet.of(Type.PAGING, Type.SEARCH));
+  ROOT(EnumSet.of(Type.PAGING, Type.SEARCH, Type.WINDOW, Type.HEADER)),
+  CHILD(EnumSet.of(Type.HEADER)),
+  EMBEDDED(EnumSet.of(Type.PAGING, Type.SEARCH, Type.HEADER)),
+  SELECTOR(EnumSet.of(Type.SEARCH));
   
   private enum Type {
-    PAGING, SEARCH, WINDOW
+    PAGING, SEARCH, WINDOW, HEADER
+  }
+
+  public static boolean hasHeader(Collection<UiOption> options) {
+    return hasType(options, Type.HEADER);
   }
 
   public static boolean hasPaging(Collection<UiOption> options) {

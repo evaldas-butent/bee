@@ -57,12 +57,18 @@ public class FormFactory {
   public interface FormCallback {
     void afterCreateWidget(String name, Widget widget);
 
+    void afterRefresh(FormView form, IsRow row);
+
     boolean beforeCreateWidget(String name, Element description);
+    
+    void beforeRefresh(FormView form, IsRow row);
+
+    FormCallback getInstance();
     
     boolean onLoad(Element formElement);
     
     boolean onPrepareForInsert(FormView form, DataView dataView, IsRow row);
-
+    
     void onShow(Presenter presenter);
     
     void onStartEdit(FormView form, IsRow row);
@@ -303,7 +309,14 @@ public class FormFactory {
   
   private static FormCallback getFormCallback(String formName) {
     Assert.notEmpty(formName);
-    return formCallbacks.get(BeeUtils.normalize(formName));
+    FormCallback callback = formCallbacks.get(BeeUtils.normalize(formName));
+    if (callback != null) {
+      FormCallback instance = callback.getInstance();
+      if (instance != null) {
+        return instance;
+      }
+    }
+    return callback;
   }
 
   private static FormDescription getFormDescription(String xml, FormCallback callback) {

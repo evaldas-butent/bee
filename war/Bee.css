@@ -22,18 +22,30 @@ body, select {
   display: box;
   display: -moz-box;
   display: -webkit-box;
+  box-orient: horizontal;
   -moz-box-orient: horizontal;
   -webkit-box-orient: horizontal;
-  box-orient: horizontal;
 }
 .flexBox-vertical {
   display: box;
   display: -moz-box;
   display: -webkit-box;
+  box-orient: vertical;
   -moz-box-orient: vertical;
   -webkit-box-orient: vertical;
-  box-orient: vertical;
 }
+
+.flexBox-center {
+  display: box;
+  display: -moz-box;
+  display: -webkit-box;
+  box-pack: center;
+  box-align: center;
+  -moz-box-pack: center;
+  -moz-box-align: center;
+  -webkit-box-pack: center;
+  -webkit-box-align: center;
+}  
 
 .flexible {
   box-flex: 1;

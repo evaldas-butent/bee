@@ -10,6 +10,7 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.grid.GridPanel;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
@@ -17,6 +18,7 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -24,11 +26,13 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -191,6 +195,13 @@ public class TaskList {
 
       return getType().equals(Type.ASSIGNED) && !BeeUtils.same(columnId, "Executor")
           || getType().equals(Type.DELEGATED) && !BeeUtils.same(columnId, "Owner");
+    }
+
+    @Override
+    public int beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
+        Collection<RowInfo> selectedRows) {
+      presenter.getView().getContent().notifyWarning("Verboten");
+      return -1;
     }
 
     @Override

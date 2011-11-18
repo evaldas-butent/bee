@@ -112,8 +112,13 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     boolean readOnly = BeeUtils.isTrue(gridDescription.isReadOnly());
 
-    DataHeaderView header = new DataHeaderImpl();
-    header.create(gridDescription.getCaption(), true, readOnly, options);
+    DataHeaderView header;
+    if (UiOption.hasHeader(options)) {
+      header = new DataHeaderImpl();
+      header.create(gridDescription.getCaption(), true, readOnly, options);
+    } else {
+      header = null;
+    }
 
     GridView content = new CellGridImpl();
     content.create(dataColumns, rowCount, rowSet, gridDescription, gridCallback, hasSearch());
@@ -133,9 +138,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     } else {
       scroller = null;
     }
-
-    addNorth(header.asWidget(), getHeaderHeight());
-    setHeaderDirection(Direction.NORTH);
+    
+    if (header != null) {
+      addNorth(header.asWidget(), getHeaderHeight());
+      setHeaderDirection(Direction.NORTH);
+    }
 
     if (footer != null) {
       addSouth(footer.asWidget(), getFooterHeight());
@@ -263,7 +270,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     getRowMessage().update(event.getRowValue());
     String message = getRowMessage().evaluate();
 
-    if (!BeeUtils.isEmpty(message)) {
+    if (hasHeader() && !BeeUtils.isEmpty(message)) {
       getHeader().setCaption(message);
     }
   }
@@ -401,7 +408,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       public void execute() {
         CellGrid grid = getContent().getGrid();
         if (!hasPaging()) {
-          grid.refresh();
+          grid.refresh(true);
           return;
         }
 
@@ -418,11 +425,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         int ds = grid.getDataSize();
         if (ps > 0 && ps < ds) {
           grid.getRowData().subList(ps, ds).clear();
-          grid.refresh();
+          grid.refresh(true);
         } else if (ps > 0 && ps > ds) {
           DataRequestEvent.fire(grid);
         } else {
-          grid.refresh();
+          grid.refresh(true);
         }
       }
     });

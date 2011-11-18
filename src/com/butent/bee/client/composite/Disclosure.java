@@ -21,9 +21,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Vertical;
-import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 
 public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
     HasCloseHandlers<Disclosure> {
@@ -55,7 +53,9 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
 
     @Override
     protected void onComplete() {
-      if (!opening) {
+      if (opening) {
+        curPanel.contentWrapper.getElement().getStyle().clearOpacity();
+      } else {
         curPanel.contentWrapper.setVisible(false);
       }
       StyleUtils.autoHeight(curPanel.contentWrapper);
@@ -79,6 +79,10 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
         height = scrollHeight - height;
       }
       height = Math.max(height, 1);
+      
+      double opacity = opening ? progress : 1 - progress;
+      StyleUtils.setOpacity(curPanel.contentWrapper, opacity);
+      
       StyleUtils.setHeight(curPanel.contentWrapper, height);
       StyleUtils.autoWidth(curPanel.contentWrapper);
     }
@@ -190,7 +194,7 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
   private boolean isOpen = false;
 
   public Disclosure() {
-    this(BeeConst.STRING_EMPTY);
+    this(null);
   }
 
   public Disclosure(ImageResource openImage, ImageResource closedImage, Widget headerWidget) {
@@ -202,10 +206,6 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
 
     setStyleName(STYLENAME_CONTAINER);
     setContentDisplay(false);
-  }
-
-  public Disclosure(String headerText) {
-    this(new BeeLabel(headerText));
   }
 
   public Disclosure(Widget headerWidget) {
