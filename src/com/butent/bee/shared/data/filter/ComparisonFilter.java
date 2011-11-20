@@ -33,15 +33,11 @@ public abstract class ComparisonFilter extends Filter {
   }
 
   public static Filter compareId(String column, Operator op, String value) {
-    Assert.notEmpty(column);
-    Assert.notNull(op);
-    Assert.notEmpty(value);
-
     if (!BeeUtils.isLong(value)) {
       LogUtils.warning(LogUtils.getDefaultLogger(), "Not an ID value:", value);
       return null;
     }
-    return new IdFilter(column, op, BeeUtils.toLong(value));
+    return compareId(column, op, BeeUtils.toLong(value));
   }
 
   public static Filter compareVersion(String column, Operator op, String value) {

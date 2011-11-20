@@ -3,7 +3,6 @@ package com.butent.bee.server.modules.crm;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 
-import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -14,6 +13,7 @@ import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -38,7 +38,7 @@ import javax.ejb.Stateless;
 @LocalBean
 public class CrmModuleBean implements BeeModule {
 
-  private static final Splitter USER_ID_SPLITTER = 
+  private static final Splitter USER_ID_SPLITTER =
       Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
 
   private static Logger logger = Logger.getLogger(CrmModuleBean.class.getName());
@@ -88,67 +88,47 @@ public class CrmModuleBean implements BeeModule {
 
     switch (event) {
       case ACTIVATED:
-        BeeRowSet input = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
+        BeeRowSet rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
         String executors = reqInfo.getParameter(CrmConstants.VAR_TASK_EXECUTORS);
         String observers = reqInfo.getParameter(CrmConstants.VAR_TASK_OBSERVERS);
-        
-        int exIndex = DataUtils.getColumnIndex(CrmConstants.COLUMN_EXECUTOR, input.getColumns());
-        BeeView view = sys.getView(input.getViewName());
-        BeeRowSet result = null;
+
+        int exIndex = DataUtils.getColumnIndex(CrmConstants.COL_EXECUTOR, rs.getColumns());
+        int cnt = 0;
 
         for (String exId : USER_ID_SPLITTER.split(executors)) {
-          input.getRow(0).setValue(exIndex, exId);
-          long executor = BeeUtils.toLong(exId);
+          rs.getRow(0).setValue(exIndex, exId);
 
-          response = deb.commitRow(input, false);
-          if (response.hasErrors()) {
-            break;
-          }
-          
-          long taskId = ((BeeRow) response.getResponse()).getId();
-          response = registerTaskEvent(taskId, time, reqInfo, event, null);
-          if (response.hasErrors()) {
-            break;
-          }
-          
-          if (executor != currentUser) {
-            response = registerTaskVisit(taskId, executor, null, true);
-            if (response.hasErrors()) {
-              break;
+          response = deb.commitRow(rs, false);
+
+          if (!response.hasErrors()) {
+            cnt++;
+            long taskId = ((BeeRow) response.getResponse()).getId();
+            long executor = BeeUtils.toLong(exId);
+            response = registerTaskEvent(taskId, time, reqInfo, event, null);
+
+            if (!response.hasErrors() && executor != currentUser) {
+              response = registerTaskVisit(taskId, executor, null, true);
             }
-          }
-          
-          if (!BeeUtils.isEmpty(observers)) {
-            for (String obsId : USER_ID_SPLITTER.split(observers)) {
-              long observer = BeeUtils.toLong(obsId);
-              if (observer != currentUser && observer != executor) {
-                response = registerTaskVisit(taskId, observer, null, true);
-                if (response.hasErrors()) {
-                  break;
+            if (!response.hasErrors() && !BeeUtils.isEmpty(observers)) {
+              for (String obsId : USER_ID_SPLITTER.split(observers)) {
+                long observer = BeeUtils.toLong(obsId);
+
+                if (observer != currentUser && observer != executor) {
+                  response = registerTaskVisit(taskId, observer, null, true);
+
+                  if (response.hasErrors()) {
+                    break;
+                  }
                 }
               }
+              if (response.hasErrors()) {
+                break;
+              }
             }
-            if (response.hasErrors()) {
-              break;
-            }
           }
-
-          BeeRowSet rs = sys.getViewData(view.getName(), view.getRowFilter(taskId), null, 0, 0);
-          if (rs.isEmpty()) {
-            String msg = "Optimistic lock exception";
-            logger.warning(msg);
-            response = ResponseObject.error(msg);
-            break;
-          }
-          
-          if (result == null) {
-            result = new BeeRowSet(rs.getViewName(), rs.getColumns());
-          }
-          result.addRow(rs.getRow(0));
         }
-        
-        if (response != null && !response.hasErrors()) {
-          response = ResponseObject.response(result); 
+        if (!response.hasErrors()) {
+          response = ResponseObject.response(cnt);
         }
         break;
 
@@ -165,24 +145,22 @@ public class CrmModuleBean implements BeeModule {
         break;
 
       case FORWARDED:
-        BeeRowSet rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
+        rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
         long taskId = rs.getRow(0).getId();
-        long oldUser = BeeUtils.toLong(rs.getShadowString(0, "Executor"));
-        long newUser = BeeUtils.toLong(rs.getString(0, "Executor"));
+        long oldUser = BeeUtils.toLong(rs.getShadowString(0, CrmConstants.COL_EXECUTOR));
+        long newUser = BeeUtils.toLong(rs.getString(0, CrmConstants.COL_EXECUTOR));
 
-        response = registerTaskEvent(taskId, time, reqInfo, event,
-            BeeUtils.concat(" -> ", usr.getUserSign(oldUser), usr.getUserSign(newUser)));
+        response = deb.commitRow(rs, false);
 
         if (!response.hasErrors()) {
-          response = deb.commitRow(rs, true);
+          response = registerTaskVisit(taskId, newUser, time - 1, false);
 
           if (!response.hasErrors()) {
-            ResponseObject resp = registerTaskVisit(taskId, newUser, null, false);
+            response = registerTaskEvent(taskId, time, reqInfo, event,
+                BeeUtils.concat(" -> ", usr.getUserSign(oldUser), usr.getUserSign(newUser)));
 
-            if (resp.hasErrors()) {
-              response = resp;
-
-            } else if (!BeeUtils.isEmpty(reqInfo.getParameter(CrmConstants.VAR_TASK_OBSERVE))) {
+            if (!response.hasErrors()
+                && !BeeUtils.isEmpty(reqInfo.getParameter(CrmConstants.VAR_TASK_OBSERVE))) {
               String tbl = "TaskUsers";
               qs.updateData(new SqlDelete(tbl)
                   .setWhere(SqlUtils.and(SqlUtils.equal(tbl, "Task", taskId),
@@ -198,12 +176,12 @@ public class CrmModuleBean implements BeeModule {
         String oldTerm = rs.getShadowString(0, "FinishTime");
         String newTerm = rs.getString(0, "FinishTime");
 
-        response = registerTaskEvent(taskId, time, reqInfo, event,
-            BeeUtils.concat(" -> ",
-                TimeUtils.toDateTimeOrNull(oldTerm), TimeUtils.toDateTimeOrNull(newTerm)));
+        response = deb.commitRow(rs, false);
 
         if (!response.hasErrors()) {
-          response = deb.commitRow(rs, true);
+          response = registerTaskEvent(taskId, time, reqInfo, event,
+              BeeUtils.concat(" -> ",
+                  TimeUtils.toDateTimeOrNull(oldTerm), TimeUtils.toDateTimeOrNull(newTerm)));
         }
         break;
 
@@ -236,12 +214,15 @@ public class CrmModuleBean implements BeeModule {
         rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_TASK_DATA));
         taskId = rs.getRow(0).getId();
 
-        response = registerTaskEvent(taskId, time, reqInfo, event, null);
+        response = deb.commitRow(rs, false);
 
         if (!response.hasErrors()) {
-          response = deb.commitRow(rs, true);
+          response = registerTaskEvent(taskId, time, reqInfo, event, null);
         }
         break;
+
+      case DELETED:
+        Assert.untouchable();
     }
     if (response.hasErrors()) {
       ctx.setRollbackOnly();
@@ -271,7 +252,7 @@ public class CrmModuleBean implements BeeModule {
           .addConstant("Publisher", currentUser)
           .addConstant("PublishTime", time)
           .addConstant("Comment", reqInfo.getParameter(CrmConstants.VAR_TASK_COMMENT))
-          .addConstant("Event", event.ordinal())
+          .addConstant(CrmConstants.COL_EVENT, event.ordinal())
           .addConstant("EventNote", eventNote)
           .addConstant("EventDuration", response == null ? null : (Long) response.getResponse()));
     }
@@ -288,7 +269,7 @@ public class CrmModuleBean implements BeeModule {
 
     if (!newVisit) {
       response = qs.updateDataWithResponse(new SqlUpdate(tbl)
-          .addConstant("LastAccess", time)
+          .addConstant(CrmConstants.COL_LAST_ACCESS, time)
           .setWhere(SqlUtils.and(SqlUtils.equal(tbl, "Task", taskId),
               SqlUtils.equal(tbl, "User", userId))));
     }
@@ -296,7 +277,7 @@ public class CrmModuleBean implements BeeModule {
       response = qs.insertDataWithResponse(new SqlInsert(tbl)
           .addConstant("Task", taskId)
           .addConstant("User", userId)
-          .addConstant("LastAccess", time));
+          .addConstant(CrmConstants.COL_LAST_ACCESS, time));
     }
     if (!response.hasErrors()) {
       response = ResponseObject.response(time);

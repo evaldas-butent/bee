@@ -56,6 +56,9 @@
               case 10:
                 ev = "UPDATED";
                 break;
+              case 10:
+                ev = "DELETED";
+                break;
             }
             s = s + "\n" + ev;
             return s;
@@ -96,7 +99,7 @@
             var s = "";
             
             if (row.Duration) {
-              s =  row.Duration.getTime() + " min" + "\n" + row.DurationType;
+              s =  row.Duration.getTime() + " min." + "\n" + row.DurationType;
             }
             return s;
           </function>

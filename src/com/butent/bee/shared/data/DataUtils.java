@@ -269,10 +269,10 @@ public class DataUtils {
 
   private static IsColumn detectColumn(String expr, List<? extends IsColumn> columns,
       String idColumnName, String versionColumnName) {
+
     if (BeeUtils.isEmpty(expr)) {
       return null;
     }
-
     IsColumn column = null;
     int len = 0;
 
@@ -285,7 +285,6 @@ public class DataUtils {
         }
       }
     }
-
     if (BeeUtils.hasLength(idColumnName, len + 1) && BeeUtils.startsWith(expr, idColumnName)) {
       column = new BeeColumn(ValueType.LONG, idColumnName);
       len = idColumnName.length();
@@ -298,9 +297,16 @@ public class DataUtils {
   }
 
   private static List<String> getParts(String expr, String pattern) {
-    String s = expr.replaceFirst("^\\s*\\(\\s*(.+)\\s*\\)\\s*$", "$1"); // Unparenthesize
-    if (!validPart(s) && validPart(expr)) {
-      s = expr;
+    String s = expr;
+    String ptrn = "^\\s*\\(\\s*(.+)\\s*\\)\\s*$"; // Unparenthesize
+    String x = s.replaceFirst(ptrn, "$1");
+
+    while (validPart(x)) {
+      s = x;
+      if (!x.matches(ptrn)) {
+        break;
+      }
+      x = x.replaceFirst(ptrn, "$1");
     }
     List<String> parts = Lists.newArrayList();
     int cnt = s.split(pattern).length;

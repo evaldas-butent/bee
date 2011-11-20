@@ -31,9 +31,7 @@
       </row>
       <row>
         <cell colSpan="4">
-          <Disclosure html="KONTAKTINĖ INFORMACIJA" style="color:green">
-            <xi:include href="widgets/ContactInfo.xml" />
-          </Disclosure>
+          <xi:include href="widgets/ContactInfo.xml" />
         </cell>
       </row>
     </FlexTable>

@@ -28,7 +28,7 @@
               <InlineLabel />
             </cell>
             <cell>
-              <Label html="Numatoma trukmė:" horizontalAlignment="right" />
+              <Label html="Numatoma trukmė min.:" horizontalAlignment="right" />
             </cell>
             <cell>
               <LongLabel source="ExpectedDuration" class="bee-display" />

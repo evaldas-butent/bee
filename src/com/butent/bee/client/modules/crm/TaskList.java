@@ -9,6 +9,7 @@ import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
@@ -27,6 +28,7 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
@@ -76,11 +78,13 @@ public class TaskList {
         andFilter.add(ComparisonFilter.isLess("FinishTime", dateTo));
       }
       if (isChecked("Updated")) {
-        andFilter.add(ComparisonFilter.compareWithColumn("LastAccess", Operator.LT, "LastPublish"));
+        andFilter.add(ComparisonFilter.compareWithColumn(CrmConstants.COL_LAST_ACCESS, Operator.LT,
+            "LastPublish"));
       }
       if (isChecked("Overdue")) {
         andFilter.add(ComparisonFilter.isLess("FinishTime", now),
-            ComparisonFilter.isEqual("Event", new IntegerValue(TaskEvent.ACTIVATED.ordinal())));
+            ComparisonFilter.isEqual(CrmConstants.COL_EVENT,
+                new IntegerValue(TaskEvent.ACTIVATED.ordinal())));
       } else {
         CompoundFilter orFilter = Filter.or();
 
@@ -88,7 +92,7 @@ public class TaskList {
           orFilter.add(ComparisonFilter.isMore("StartTime", now));
         }
         if (isChecked("Executing")) {
-          Filter flt = ComparisonFilter.isEqual("Event",
+          Filter flt = ComparisonFilter.isEqual(CrmConstants.COL_EVENT,
               new IntegerValue(TaskEvent.ACTIVATED.ordinal()));
 
           if (!isChecked("Scheduled")) {
@@ -98,7 +102,8 @@ public class TaskList {
         }
         for (TaskEvent flt : TaskEvent.values()) {
           if (isChecked(flt.name())) {
-            orFilter.add(ComparisonFilter.isEqual("Event", new IntegerValue(flt.ordinal())));
+            orFilter.add(ComparisonFilter.isEqual(CrmConstants.COL_EVENT,
+                new IntegerValue(flt.ordinal())));
           }
         }
         if (!orFilter.isEmpty()) {
@@ -193,14 +198,31 @@ public class TaskList {
     public boolean beforeCreateColumn(String columnId, List<BeeColumn> dataColumns,
         ColumnDescription columnDescription) {
 
-      return getType().equals(Type.ASSIGNED) && !BeeUtils.same(columnId, "Executor")
-          || getType().equals(Type.DELEGATED) && !BeeUtils.same(columnId, "Owner");
+      return getType().equals(Type.ASSIGNED)
+          && !BeeUtils.same(columnId, CrmConstants.COL_EXECUTOR)
+          || getType().equals(Type.DELEGATED)
+          && !BeeUtils.same(columnId, CrmConstants.COL_OWNER);
+    }
+
+    @Override
+    public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
+      Provider provider = presenter.getDataProvider();
+
+      if (!TaskEventHandler.availableEvent(TaskEvent.DELETED,
+          row.getInteger(provider.getColumnIndex(CrmConstants.COL_EVENT)),
+          row.getLong(provider.getColumnIndex(CrmConstants.COL_OWNER)),
+          row.getLong(provider.getColumnIndex(CrmConstants.COL_EXECUTOR)))) {
+
+        presenter.getView().getContent().notifyWarning("Verboten");
+        return -1;
+      }
+      return 0;
     }
 
     @Override
     public int beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
         Collection<RowInfo> selectedRows) {
-      presenter.getView().getContent().notifyWarning("Verboten");
+      presenter.deleteRow(activeRow);
       return -1;
     }
 
@@ -214,15 +236,15 @@ public class TaskList {
 
         switch (getType()) {
           case ASSIGNED:
-            filter.add(ComparisonFilter.isEqual("Executor", user));
+            filter.add(ComparisonFilter.isEqual(CrmConstants.COL_EXECUTOR, user));
             break;
           case DELEGATED:
-            filter.add(ComparisonFilter.isEqual("Owner", user),
-                ComparisonFilter.isNotEqual("Executor", user));
+            filter.add(ComparisonFilter.isEqual(CrmConstants.COL_OWNER, user),
+                ComparisonFilter.isNotEqual(CrmConstants.COL_EXECUTOR, user));
             break;
           case OBSERVED:
-            filter.add(ComparisonFilter.isNotEqual("Owner", user),
-                ComparisonFilter.isNotEqual("Executor", user));
+            filter.add(ComparisonFilter.isNotEqual(CrmConstants.COL_OWNER, user),
+                ComparisonFilter.isNotEqual(CrmConstants.COL_EXECUTOR, user));
             break;
         }
         gridDescription.setFilter(filter);

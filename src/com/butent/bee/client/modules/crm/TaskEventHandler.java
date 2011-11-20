@@ -86,9 +86,9 @@ public class TaskEventHandler {
       private UserCollector(List<IsRow> users, BeeListBox widget, List<BeeColumn> columns) {
         this.users = users;
         this.widget = widget;
-        
-        this.firstNameIndex = DataUtils.getColumnIndex(CrmConstants.COLUMN_FIRST_NAME, columns);
-        this.lastNameIndex = DataUtils.getColumnIndex(CrmConstants.COLUMN_LAST_NAME, columns);
+
+        this.firstNameIndex = DataUtils.getColumnIndex(CrmConstants.COL_FIRST_NAME, columns);
+        this.lastNameIndex = DataUtils.getColumnIndex(CrmConstants.COL_LAST_NAME, columns);
       }
 
       public void onSelection(List<IsRow> rows) {
@@ -113,7 +113,7 @@ public class TaskEventHandler {
 
     @Override
     public void afterCreateWidget(final String name, final Widget widget) {
-      if (BeeUtils.same(name, "Priority") && widget instanceof BeeListBox) {
+      if (BeeUtils.same(name, CrmConstants.COL_PRIORITY) && widget instanceof BeeListBox) {
         for (Priority priority : Priority.values()) {
           ((BeeListBox) widget).addItem(priority.name());
         }
@@ -168,40 +168,37 @@ public class TaskEventHandler {
     @Override
     public boolean onPrepareForInsert(FormView form, final DataView dataView, IsRow row) {
       Assert.noNulls(dataView, row);
-      
+
       if (executors.isEmpty()) {
         dataView.notifySevere("Pasirinkite vykdytoją");
         return false;
       }
-
       List<BeeColumn> columns = Lists.newArrayList();
       List<String> values = Lists.newArrayList();
 
       for (BeeColumn column : form.getDataColumns()) {
         String colName = column.getId();
         String value = row.getString(form.getDataIndex(colName));
-        
-        if (!BeeUtils.isEmpty(value) || BeeUtils.same(colName, CrmConstants.COLUMN_EXECUTOR)) {
+
+        if (!BeeUtils.isEmpty(value) || BeeUtils.same(colName, CrmConstants.COL_EXECUTOR)) {
           columns.add(column);
           values.add(value);
+
         } else if (BeeUtils.inListSame(colName, "StartTime", "FinishTime", "Description")) {
           dataView.notifySevere(colName + ": value required");
           return false;
         }
       }
-
-      BeeRowSet rs = new BeeRowSet(columns);
-      rs.setViewName(VIEW_NAME);
+      BeeRowSet rs = new BeeRowSet(VIEW_NAME, columns);
       rs.addRow(0, values.toArray(new String[0]));
 
       ParameterList args = createParams(TaskEvent.ACTIVATED.name());
       args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
-
       args.addDataItem(CrmConstants.VAR_TASK_EXECUTORS, joinUsers(executors));
+
       if (!observers.isEmpty()) {
         args.addDataItem(CrmConstants.VAR_TASK_OBSERVERS, joinUsers(observers));
       }
-
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
@@ -209,17 +206,13 @@ public class TaskEventHandler {
 
           if (response.hasErrors()) {
             dataView.notifySevere(response.getErrors());
-          } else if (response.hasResponse(BeeRowSet.class)) {
-            BeeRowSet rowSet = BeeRowSet.restore((String) response.getResponse());
-            if (rowSet.isEmpty()) {
-              dataView.notifySevere("Response empty");
-            } else if (rowSet.getNumberOfRows() == 1) {
-              dataView.finishNewRow(rowSet.getRow(0));
-            } else {
-              dataView.getViewPresenter().handleAction(Action.REQUERY);
-              dataView.finishNewRow(null);
-              resetUsers();
-            }
+
+          } else if (response.hasResponse(Integer.class)) {
+            dataView.notifyInfo("New tasks created", (String) response.getResponse());
+            dataView.getViewPresenter().handleAction(Action.REQUERY);
+            dataView.finishNewRow(null);
+            resetUsers();
+
           } else {
             dataView.notifySevere("Unknown response");
           }
@@ -230,18 +223,19 @@ public class TaskEventHandler {
 
     @Override
     public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-      newRow.setValue(form.getDataIndex("Owner"), BeeKeeper.getUser().getUserId());
+      newRow.setValue(form.getDataIndex(CrmConstants.COL_OWNER), BeeKeeper.getUser().getUserId());
       newRow.setValue(form.getDataIndex("StartTime"), System.currentTimeMillis());
-      newRow.setValue(form.getDataIndex(EVENT_NAME), TaskEvent.ACTIVATED.ordinal());
-      newRow.setValue(form.getDataIndex("Priority"), Priority.MEDIUM.ordinal());
+      newRow.setValue(form.getDataIndex(CrmConstants.COL_EVENT), TaskEvent.ACTIVATED.ordinal());
+      newRow.setValue(form.getDataIndex(CrmConstants.COL_PRIORITY), Priority.MEDIUM.ordinal());
     }
-    
+
     private Filter excludeUser(long userId) {
-      return ComparisonFilter.compareId(CrmConstants.COLUMN_USER_ID, Operator.NE, userId);
+      return ComparisonFilter.compareId(CrmConstants.COL_USER_ID, Operator.NE, userId);
     }
-    
+
     private String joinUsers(List<IsRow> users) {
       StringBuilder sb = new StringBuilder();
+
       for (IsRow row : users) {
         if (sb.length() > 0) {
           sb.append(BeeConst.CHAR_COMMA);
@@ -250,13 +244,14 @@ public class TaskEventHandler {
       }
       return sb.toString();
     }
-    
+
     private void removeUsers(List<IsRow> users, BeeListBox widget, boolean all) {
       if (all) {
         users.clear();
         widget.clear();
       } else {
-        int index = executorWidget.getSelectedIndex();
+        int index = widget.getSelectedIndex();
+
         if (BeeUtils.betweenExclusive(index, 0, widget.getItemCount())) {
           users.remove(index);
           widget.removeItem(index);
@@ -264,12 +259,12 @@ public class TaskEventHandler {
       }
       widget.setVisibleItemCount(Math.max(widget.getItemCount(), 1));
     }
-    
+
     private void resetUsers() {
       removeUsers(executors, executorWidget, true);
       removeUsers(observers, observerWidget, true);
     }
-    
+
     private void selectUsers(final boolean ex) {
       List<Filter> filters = Lists.newArrayList(excludeUser(BeeKeeper.getUser().getUserId()));
       for (IsRow row : executors) {
@@ -278,7 +273,7 @@ public class TaskEventHandler {
       for (IsRow row : observers) {
         filters.add(excludeUser(row.getId()));
       }
-      
+
       Queries.getRowSet("Users", null, CompoundFilter.and(filters), null, new RowSetCallback() {
         public void onFailure(String[] reason) {
         }
@@ -290,7 +285,7 @@ public class TaskEventHandler {
           }
 
           MultiSelector selector = new MultiSelector(ex ? "Vykdytojai" : "Stebėtojai", result,
-              Lists.newArrayList(CrmConstants.COLUMN_FIRST_NAME, CrmConstants.COLUMN_LAST_NAME),
+              Lists.newArrayList(CrmConstants.COL_FIRST_NAME, CrmConstants.COL_LAST_NAME),
               new UserCollector(ex ? executors : observers, ex ? executorWidget : observerWidget,
                   result.getColumns()));
           selector.center();
@@ -527,7 +522,8 @@ public class TaskEventHandler {
 
     @Override
     public void afterCreateWidget(String name, final Widget widget) {
-      if (!BeeUtils.isEmpty(name) && BeeUtils.inListSame(name, "Priority", EVENT_NAME)) {
+      if (!BeeUtils.isEmpty(name)
+          && BeeUtils.inListSame(name, CrmConstants.COL_PRIORITY, CrmConstants.COL_EVENT)) {
         setWidget(name, widget);
 
       } else if (widget instanceof HasClickHandlers) {
@@ -557,42 +553,34 @@ public class TaskEventHandler {
         return;
       }
       String text = BeeConst.STRING_EMPTY;
-      Integer idx = row.getInteger(form.getDataIndex("Priority"));
+      Integer idx = row.getInteger(form.getDataIndex(CrmConstants.COL_PRIORITY));
 
       if (BeeUtils.isOrdinal(Priority.class, idx)) {
         text = Priority.values()[idx].name();
       }
-      getWidget("Priority").getElement().setInnerText(text);
+      getWidget(CrmConstants.COL_PRIORITY).getElement().setInnerText(text);
 
       text = BeeConst.STRING_EMPTY;
-      idx = row.getInteger(form.getDataIndex(EVENT_NAME));
+      idx = row.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
 
       if (BeeUtils.isOrdinal(TaskEvent.class, idx)) {
-        Long owner = row.getLong(form.getDataIndex("Owner"));
-        Long executor = row.getLong(form.getDataIndex(CrmConstants.COLUMN_EXECUTOR));
+        Long owner = row.getLong(form.getDataIndex(CrmConstants.COL_OWNER));
+        Long executor = row.getLong(form.getDataIndex(CrmConstants.COL_EXECUTOR));
 
         for (TaskEvent ev : TaskEvent.values()) {
-          if (ev == TaskEvent.VISITED) {
-            doEvent(TaskEvent.VISITED, form);
+          Widget widget = getWidget(ev.name());
 
-          } else if (ev == TaskEvent.ACTIVATED) {
-            continue;
-
-          } else {
-            Widget widget = getWidget(ev.name());
-
-            if (widget != null) {
-              if (availableEvent(ev, idx, owner, executor)) {
-                StyleUtils.unhideDisplay(widget);
-              } else {
-                StyleUtils.hideDisplay(widget);
-              }
+          if (widget != null) {
+            if (availableEvent(ev, idx, owner, executor)) {
+              StyleUtils.unhideDisplay(widget);
+            } else {
+              StyleUtils.hideDisplay(widget);
             }
           }
         }
         text = TaskEvent.values()[idx].name();
       }
-      getWidget(EVENT_NAME).getElement().setInnerText(text);
+      getWidget(CrmConstants.COL_EVENT).getElement().setInnerText(text);
     }
 
     @Override
@@ -602,6 +590,11 @@ public class TaskEventHandler {
       } else {
         return new TaskEditHandler();
       }
+    }
+
+    @Override
+    public void onStartEdit(FormView form, IsRow row) {
+      doEvent(TaskEvent.VISITED, form);
     }
 
     private Widget getWidget(String name) {
@@ -614,20 +607,8 @@ public class TaskEventHandler {
   }
 
   private static final String VIEW_NAME = "TaskUsers";
-  private static final String EVENT_NAME = "Event";
 
-  public static void register() {
-    FormFactory.registerFormCallback("NewTask", new TaskCreateHandler());
-    FormFactory.registerFormCallback("Tasks", new TaskEditHandler());
-  }
-
-  private static boolean availableEvent(TaskEvent ev, int status, FormView form) {
-    IsRow row = form.getRow();
-    return availableEvent(ev, status, row.getLong(form.getDataIndex("Owner")),
-        row.getLong(form.getDataIndex(CrmConstants.COLUMN_EXECUTOR)));
-  }
-
-  private static boolean availableEvent(TaskEvent ev, Integer status, Long owner, Long executor) {
+  public static boolean availableEvent(TaskEvent ev, Integer status, Long owner, Long executor) {
     long user = BeeKeeper.getUser().getUserId();
 
     if (user != owner) {
@@ -643,6 +624,7 @@ public class TaskEventHandler {
       case COMMENTED:
       case VISITED:
       case ACTIVATED:
+      case DELETED:
         return true;
 
       case RENEWED:
@@ -665,6 +647,17 @@ public class TaskEventHandler {
     return true;
   }
 
+  public static void register() {
+    FormFactory.registerFormCallback("NewTask", new TaskCreateHandler());
+    FormFactory.registerFormCallback("Tasks", new TaskEditHandler());
+  }
+
+  private static boolean availableEvent(TaskEvent ev, int status, FormView form) {
+    IsRow row = form.getRow();
+    return availableEvent(ev, status, row.getLong(form.getDataIndex(CrmConstants.COL_OWNER)),
+        row.getLong(form.getDataIndex(CrmConstants.COL_EXECUTOR)));
+  }
+
   private static ParameterList createParams(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(CrmConstants.CRM_MODULE);
     args.addQueryItem(CrmConstants.CRM_METHOD, name);
@@ -680,10 +673,10 @@ public class TaskEventHandler {
       @Override
       public void onResponse(ResponseObject response) {
         Assert.notNull(response);
+
         if (dialog != null) {
           dialog.hide();
         }
-
         if (response.hasErrors()) {
           Global.showError((Object[]) response.getErrors());
         } else {
@@ -694,35 +687,39 @@ public class TaskEventHandler {
             if (BeeUtils.contains(actions, Action.CLOSE)) {
               form.fireEvent(new EditFormEvent(actions.contains(Action.REQUERY)
                   ? State.PENDING : State.CHANGED));
+
             } else if (BeeUtils.contains(actions, Action.REQUERY)) {
               form.updateRow(row, true);
+
             } else if (BeeUtils.contains(actions, Action.REFRESH)) {
               form.updateRow(row, false);
+
             } else {
               form.setRow(row);
             }
-
           } else if (response.hasResponse(Long.class)) {
-            int dataIndex = form.getDataIndex(CrmConstants.COLUMN_LAST_ACCESS);
+            int dataIndex = form.getDataIndex(CrmConstants.COL_LAST_ACCESS);
             String newValue = (String) response.getResponse();
 
             CellUpdateEvent cellUpdateEvent =
                 new CellUpdateEvent(VIEW_NAME, form.getRow().getId(), form.getRow().getVersion(),
-                    CrmConstants.COLUMN_LAST_ACCESS, dataIndex, newValue);
+                    CrmConstants.COL_LAST_ACCESS, dataIndex, newValue);
             BeeKeeper.getBus().fireEvent(cellUpdateEvent);
 
             if (BeeUtils.contains(actions, Action.CLOSE)) {
               form.fireEvent(new EditFormEvent(actions.contains(Action.REQUERY)
                   ? State.PENDING : State.CHANGED));
+
             } else {
               form.getRow().setValue(dataIndex, newValue);
+
               if (BeeUtils.contains(actions, Action.REQUERY)) {
                 form.refresh(true);
+
               } else if (BeeUtils.contains(actions, Action.REFRESH)) {
                 form.refresh(false);
               }
             }
-
           } else {
             Global.showError("Unknown response");
           }
@@ -739,13 +736,13 @@ public class TaskEventHandler {
       public void onClick(ClickEvent e) {
         String comment = dialog.getComment();
         IsRow data = form.getRow();
-        int evOld = data.getInteger(form.getDataIndex(EVENT_NAME));
+        int evOld = data.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
         TaskEvent event = TaskEvent.APPROVED;
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, EVENT_NAME));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, CrmConstants.COL_EVENT));
         rs.setViewName(VIEW_NAME);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, EVENT_NAME, BeeUtils.toString(event.ordinal()));
+        rs.preliminaryUpdate(0, CrmConstants.COL_EVENT, BeeUtils.toString(event.ordinal()));
 
         ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -771,13 +768,13 @@ public class TaskEventHandler {
           return;
         }
         IsRow data = form.getRow();
-        int evOld = data.getInteger(form.getDataIndex(EVENT_NAME));
+        int evOld = data.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
         TaskEvent event = TaskEvent.CANCELED;
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, EVENT_NAME));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, CrmConstants.COL_EVENT));
         rs.setViewName(VIEW_NAME);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, EVENT_NAME, BeeUtils.toString(event.ordinal()));
+        rs.preliminaryUpdate(0, CrmConstants.COL_EVENT, BeeUtils.toString(event.ordinal()));
 
         ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -841,17 +838,17 @@ public class TaskEventHandler {
         TaskEvent event = TaskEvent.COMPLETED;
         TaskEvent ev = event;
         IsRow data = form.getRow();
-        int evOld = data.getInteger(form.getDataIndex(EVENT_NAME));
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, EVENT_NAME));
+        int evOld = data.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, CrmConstants.COL_EVENT));
         rs.setViewName(VIEW_NAME);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
 
-        if (BeeUtils.equals(data.getLong(form.getDataIndex("Owner")),
+        if (BeeUtils.equals(data.getLong(form.getDataIndex(CrmConstants.COL_OWNER)),
             BeeKeeper.getUser().getUserId())) {
           ev = TaskEvent.APPROVED;
         }
-        rs.preliminaryUpdate(0, EVENT_NAME, BeeUtils.toString(ev.ordinal()));
+        rs.preliminaryUpdate(0, CrmConstants.COL_EVENT, BeeUtils.toString(ev.ordinal()));
 
         ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -882,9 +879,10 @@ public class TaskEventHandler {
   }
 
   private static void doEvent(final TaskEvent ev, final FormView form) {
-    Assert.notEmpty(form.getRow().getId());
+    IsRow row = form.getRow();
+    Assert.notEmpty(row.getId());
 
-    if (!availableEvent(ev, form.getRow().getInteger(form.getDataIndex(EVENT_NAME)), form)) {
+    if (!availableEvent(ev, row.getInteger(form.getDataIndex(CrmConstants.COL_EVENT)), form)) {
       Global.showError("Veiksmas neleidžiamas");
       return;
     }
@@ -930,6 +928,7 @@ public class TaskEventHandler {
         break;
 
       case ACTIVATED:
+      case DELETED:
         Assert.untouchable();
     }
   }
@@ -967,7 +966,7 @@ public class TaskEventHandler {
         if (!BeeUtils.isEmpty(comment)) {
           args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
         }
-        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE));
+        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REQUERY));
       }
     });
     dialog.display();
@@ -975,11 +974,11 @@ public class TaskEventHandler {
 
   private static void doForward(final FormView form) {
     final IsRow data = form.getRow();
-    final Long owner = data.getLong(form.getDataIndex("Owner"));
-    final Long oldUser = data.getLong(form.getDataIndex(CrmConstants.COLUMN_EXECUTOR));
+    final Long owner = data.getLong(form.getDataIndex(CrmConstants.COL_OWNER));
+    final Long oldUser = data.getLong(form.getDataIndex(CrmConstants.COL_EXECUTOR));
 
     final TaskDialog dialog = new TaskDialog("Užduoties persiuntimas");
-    dialog.addSelector("Vykdytojas", "Users", CrmConstants.COLUMN_FIRST_NAME, true);
+    dialog.addSelector("Vykdytojas", "Users", CrmConstants.COL_FIRST_NAME, true);
 
     if (!BeeUtils.equals(owner, oldUser)) {
       dialog.addQuestion("Pašalinti siuntėją iš stebėtojų", false);
@@ -1002,11 +1001,11 @@ public class TaskEventHandler {
           Global.showError("Įveskite komentarą");
           return;
         }
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.LONG, CrmConstants.COLUMN_EXECUTOR));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.LONG, CrmConstants.COL_EXECUTOR));
         rs.setViewName(VIEW_NAME);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(oldUser)});
-        rs.preliminaryUpdate(0, CrmConstants.COLUMN_EXECUTOR, BeeUtils.toString(newUser));
+        rs.preliminaryUpdate(0, CrmConstants.COL_EXECUTOR, BeeUtils.toString(newUser));
 
         ParameterList args = createParams(TaskEvent.FORWARDED.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -1029,12 +1028,13 @@ public class TaskEventHandler {
       public void onClick(ClickEvent e) {
         String comment = dialog.getComment();
         IsRow data = form.getRow();
-        int evOld = data.getInteger(form.getDataIndex(EVENT_NAME));
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, EVENT_NAME));
+        int evOld = data.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, CrmConstants.COL_EVENT));
         rs.setViewName(VIEW_NAME);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, EVENT_NAME, BeeUtils.toString(TaskEvent.ACTIVATED.ordinal()));
+        rs.preliminaryUpdate(0, CrmConstants.COL_EVENT,
+            BeeUtils.toString(TaskEvent.ACTIVATED.ordinal()));
 
         ParameterList args = createParams(TaskEvent.RENEWED.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -1060,13 +1060,13 @@ public class TaskEventHandler {
           return;
         }
         IsRow data = form.getRow();
-        int evOld = data.getInteger(form.getDataIndex(EVENT_NAME));
+        int evOld = data.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
         TaskEvent event = TaskEvent.SUSPENDED;
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, EVENT_NAME));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, CrmConstants.COL_EVENT));
         rs.setViewName(VIEW_NAME);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, EVENT_NAME, BeeUtils.toString(event.ordinal()));
+        rs.preliminaryUpdate(0, CrmConstants.COL_EVENT, BeeUtils.toString(event.ordinal()));
 
         ParameterList args = createParams(event.name());
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -1080,16 +1080,17 @@ public class TaskEventHandler {
 
   private static void doUpdate(final FormView form) {
     final IsRow data = form.getRow();
-    final int oldPriority = BeeUtils.unbox(data.getInteger(form.getDataIndex("Priority")));
+    final int oldPriority =
+        BeeUtils.unbox(data.getInteger(form.getDataIndex(CrmConstants.COL_PRIORITY)));
     final int oldTerm = BeeUtils.unbox(data.getInteger(form.getDataIndex("ExpectedDuration")));
     final long oldCompany = BeeUtils.unbox(data.getLong(form.getDataIndex("Company")));
     final long oldPerson = BeeUtils.unbox(data.getLong(form.getDataIndex("CompanyPerson")));
 
     final TaskDialog dialog = new TaskDialog("Užduoties koregavimas");
     dialog.addPriority("Prioritetas", oldPriority);
-    dialog.addMinutes("Numatoma trukmė", oldTerm, 0, 43200, 30);
+    dialog.addMinutes("Numatoma trukmė min.", oldTerm, 0, 43200, 30);
     dialog.addSelector("Įmonė", "Companies", "Name", false);
-    dialog.addSelector("PERSON", "Asmuo", "CompanyPersons", CrmConstants.COLUMN_FIRST_NAME, false);
+    dialog.addSelector("PERSON", "Asmuo", "CompanyPersons", CrmConstants.COL_FIRST_NAME, false);
     dialog.addAction("Išsaugoti", new ClickHandler() {
       @Override
       public void onClick(ClickEvent e) {
@@ -1099,7 +1100,7 @@ public class TaskEventHandler {
 
         int priority = dialog.getPriority();
         if (!BeeUtils.equals(oldPriority, priority)) {
-          cols.add(new BeeColumn(ValueType.INTEGER, "Priority"));
+          cols.add(new BeeColumn(ValueType.INTEGER, CrmConstants.COL_PRIORITY));
           old.add(BeeUtils.toString(oldPriority));
           vals.add(BeeUtils.toString(priority));
         }

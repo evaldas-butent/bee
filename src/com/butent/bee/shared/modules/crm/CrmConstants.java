@@ -9,7 +9,7 @@ public class CrmConstants {
 
   public static enum TaskEvent {
     ACTIVATED, SUSPENDED, COMPLETED, APPROVED, CANCELED,
-    FORWARDED, EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED
+    FORWARDED, EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED, DELETED
   }
 
   public static final String CRM_MODULE = "CrmModule";
@@ -26,12 +26,15 @@ public class CrmConstants {
   public static final String VAR_TASK_EXECUTORS = Service.RPC_VAR_PREFIX + "task_executors";
   public static final String VAR_TASK_OBSERVERS = Service.RPC_VAR_PREFIX + "task_observers";
 
-  public static final String COLUMN_LAST_ACCESS = "LastAccess";
+  public static final String COL_LAST_ACCESS = "LastAccess";
 
-  public static final String COLUMN_FIRST_NAME = "FirstName";
-  public static final String COLUMN_LAST_NAME = "LastName";
-  
-  public static final String COLUMN_USER_ID = "UserID";
+  public static final String COL_FIRST_NAME = "FirstName";
+  public static final String COL_LAST_NAME = "LastName";
 
-  public static final String COLUMN_EXECUTOR = "Executor";
+  public static final String COL_USER_ID = "UserID";
+  public static final String COL_EVENT = "Event";
+  public static final String COL_PRIORITY = "Priority";
+
+  public static final String COL_OWNER = "Owner";
+  public static final String COL_EXECUTOR = "Executor";
 }

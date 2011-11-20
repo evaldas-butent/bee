@@ -23,11 +23,6 @@
       </row>
       <row>
         <cell colSpan="4">
-          <HtmlLabel html="KONTAKTINĖ INFORMACIJA&lt;hr&gt;" style="color:green" />
-        </cell>
-      </row>
-      <row>
-        <cell colSpan="4">
           <xi:include href="widgets/ContactInfo.xml" />
         </cell>
       </row>
