@@ -2,6 +2,7 @@ package com.butent.bee.shared.ui;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
@@ -19,6 +20,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Implementation of a grid user interface component.
@@ -33,9 +35,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private enum Serial {
     NAME, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HAS_HEADERS, HAS_FOOTERS,
     CACHING, ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE,
-    READONLY, NEW_ROW_FORM, NEW_ROW_COLUMNS, EDIT_FORM, EDIT_IN_PLACE, EDIT_MODE,
-    HEADER, BODY, FOOTER, ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION,
-    SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH, COLUMNS
+    READONLY, NEW_ROW_FORM, NEW_ROW_COLUMNS, EDIT_FORM, EDIT_IN_PLACE,
+    ENABLED_ACTIONS, DISABLED_ACTIONS, HEADER, BODY, FOOTER, ROW_STYLES, ROW_MESSAGE,
+    ROW_EDITABLE, ROW_VALIDATION, SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH, COLUMNS
   }
 
   public static GridDescription restore(String s) {
@@ -69,7 +71,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Integer initialRowSetSize = null;
 
   private Boolean readOnly = null;
-  private String editMode = null;
 
   private String newRowForm = null;
   private String newRowColumns = null;
@@ -93,6 +94,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private final List<ColumnDescription> columns = Lists.newArrayList();
 
   private Map<String, Filter> parentFilters = null;
+  
+  private Set<Action> enabledActions = Sets.newHashSet();
+  private Set<Action> disabledActions = Sets.newHashSet();
 
   public GridDescription(String name, String viewName, String idName, String versionName) {
     Assert.notEmpty(name);
@@ -120,6 +124,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     String[] arr = Codec.beeDeserializeCollection(s);
     Serial[] members = Serial.values();
     Assert.lengthEquals(arr, members.length);
+    
+    String[] items;
 
     for (int i = 0; i < members.length; i++) {
       Serial member = members[i];
@@ -140,10 +146,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case COLUMNS:
           getColumns().clear();
-          String[] cols = Codec.beeDeserializeCollection(value);
+          items = Codec.beeDeserializeCollection(value);
 
-          if (!BeeUtils.isEmpty(cols)) {
-            for (String z : cols) {
+          if (!BeeUtils.isEmpty(items)) {
+            for (String z : items) {
               addColumn(ColumnDescription.restore(z));
             }
           }
@@ -215,9 +221,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_IN_PLACE:
           setEditInPlace(value);
           break;
-        case EDIT_MODE:
-          setEditMode(value);
-          break;
         case INITIAL_ROW_SET_SIZE:
           setInitialRowSetSize(BeeUtils.toIntOrNull(value));
           break;
@@ -235,6 +238,26 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case CACHING:
           setCaching(BeeUtils.toBooleanOrNull(value));
+          break;
+        case ENABLED_ACTIONS:
+          getEnabledActions().clear();
+          items = Codec.beeDeserializeCollection(value);
+
+          if (!BeeUtils.isEmpty(items)) {
+            for (String z : items) {
+              getEnabledActions().add(Action.restore(z));
+            }
+          }
+          break;
+        case DISABLED_ACTIONS:
+          getDisabledActions().clear();
+          items = Codec.beeDeserializeCollection(value);
+
+          if (!BeeUtils.isEmpty(items)) {
+            for (String z : items) {
+              getDisabledActions().add(Action.restore(z));
+            }
+          }
           break;
       }
     }
@@ -264,6 +287,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return columns;
   }
 
+  public Set<Action> getDisabledActions() {
+    return disabledActions;
+  }
+
   public String getEditForm() {
     return editForm;
   }
@@ -272,8 +299,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return editInPlace;
   }
 
-  public String getEditMode() {
-    return editMode;
+  public Set<Action> getEnabledActions() {
+    return enabledActions;
   }
 
   public Filter getFilter() {
@@ -315,7 +342,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "New Row Columns", getNewRowColumns(),
         "Edit Form", getEditForm(),
         "Edit In Place", getEditInPlace(),
-        "Edit Mode", getEditMode(),
+        "Enabled Actions", getEnabledActions(),
+        "Disabled Actions", getDisabledActions(),
         "Show Column Widths", showColumnWidths(),
         "Min Column Width", getMinColumnWidth(),
         "Max Column Width", getMaxColumnWidth());
@@ -569,9 +597,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_IN_PLACE:
           arr[i++] = getEditInPlace();
           break;
-        case EDIT_MODE:
-          arr[i++] = getEditMode();
-          break;
         case INITIAL_ROW_SET_SIZE:
           arr[i++] = getInitialRowSetSize();
           break;
@@ -589,6 +614,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case CACHING:
           arr[i++] = getCaching();
+          break;
+        case ENABLED_ACTIONS:
+          arr[i++] = getEnabledActions();
+          break;
+        case DISABLED_ACTIONS:
+          arr[i++] = getDisabledActions();
           break;
       }
     }
@@ -624,6 +655,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     setInitialRowSetSize(DataUtils.getMaxInitialRowSetSize());
   }
 
+  public void setDisabledActions(Set<Action> disabledActions) {
+    this.disabledActions = disabledActions;
+  }
+
   public void setEditForm(String editForm) {
     this.editForm = editForm;
   }
@@ -632,8 +667,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.editInPlace = editInPlace;
   }
 
-  public void setEditMode(String editMode) {
-    this.editMode = editMode;
+  public void setEnabledActions(Set<Action> enabledActions) {
+    this.enabledActions = enabledActions;
   }
 
   public void setFilter(Filter filter) {

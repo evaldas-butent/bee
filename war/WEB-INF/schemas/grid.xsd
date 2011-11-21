@@ -45,6 +45,8 @@
     <xs:attribute name="newRowColumns" type="xs:normalizedString" />
     <xs:attribute name="editForm" type="bee:nameType" />
     <xs:attribute name="editInPlace" type="xs:normalizedString" />
+    <xs:attribute name="enabledActions" type="bee:viewActions" />
+    <xs:attribute name="disabledActions" type="bee:viewActions" />
   </xs:complexType>
 
   <xs:complexType name="baseColumn">

@@ -3,8 +3,10 @@ package com.butent.bee.client.view;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.shared.ui.Action;
 
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * Contains requirements for data header implementing classes.
@@ -12,7 +14,8 @@ import java.util.Collection;
 
 public interface DataHeaderView extends View, LoadingStateChangeEvent.Handler {
   
-  void create(String caption, boolean hasData, boolean readOnly, Collection<UiOption> options);
+  void create(String caption, boolean hasData, boolean readOnly, Collection<UiOption> options,
+      Set<Action> enabledActions, Set<Action> disabledActions);
   
   String getCaption();
   

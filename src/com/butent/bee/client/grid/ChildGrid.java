@@ -172,7 +172,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
       createPresenter(getPendingRow());
     } else {
       updateFilter(getPendingRow());
-      getPresenter().getDataProvider().requery(false);
+      getPresenter().requery(false);
       resetState();
     }
   }
@@ -195,7 +195,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
 
   private void updateFilter(IsRow row) {
     if (getPresenter() != null) {
-      getPresenter().getDataProvider().setParentFilter(getId(), getFilter(row), false);
+      getPresenter().getDataProvider().setParentFilter(getId(), getFilter(row));
       getPresenter().getView().getContent().setRelId(getParentValue(row));
     }
   }

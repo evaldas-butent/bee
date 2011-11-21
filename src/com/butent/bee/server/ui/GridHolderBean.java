@@ -14,6 +14,7 @@ import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
@@ -97,7 +98,9 @@ public class GridHolderBean {
   private static final String ATTR_INITIAL_ROW_SET_SIZE = "initialRowSetSize";
 
   private static final String ATTR_READ_ONLY = "readOnly";
-  private static final String ATTR_EDIT_MODE = "editMode";
+  private static final String ATTR_ENABLED_ACTIONS = "enabledActions";
+  private static final String ATTR_DISABLED_ACTIONS = "disabledActions";
+
   private static final String ATTR_NEW_ROW_FORM = "newRowForm";
   private static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";
   private static final String ATTR_EDIT_FORM = "editForm";
@@ -698,9 +701,13 @@ public class GridHolderBean {
     if (readOnly != null) {
       dst.setReadOnly(readOnly);
     }
-    String editMode = src.getAttribute(ATTR_EDIT_MODE);
-    if (!BeeUtils.isEmpty(editMode)) {
-      dst.setEditMode(editMode);
+    String enabledActions = src.getAttribute(ATTR_ENABLED_ACTIONS);
+    if (!BeeUtils.isEmpty(enabledActions)) {
+      dst.setEnabledActions(Action.parse(enabledActions));
+    }
+    String disabledActions = src.getAttribute(ATTR_DISABLED_ACTIONS);
+    if (!BeeUtils.isEmpty(disabledActions)) {
+      dst.setDisabledActions(Action.parse(disabledActions));
     }
 
     String newRowForm = src.getAttribute(ATTR_NEW_ROW_FORM);

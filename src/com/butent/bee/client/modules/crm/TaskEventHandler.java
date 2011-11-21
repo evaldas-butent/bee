@@ -30,7 +30,6 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.FlexTable.FlexCellFormatter;
 import com.butent.bee.client.layout.Absolute;
-import com.butent.bee.client.presenter.Action;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiHelper;
@@ -63,6 +62,7 @@ import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.Priority;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.TimeUtils;
@@ -98,7 +98,6 @@ public class TaskEventHandler {
             widget.addItem(BeeUtils.concat(1, row.getString(firstNameIndex),
                 row.getString(lastNameIndex)));
           }
-          widget.setAllVisible();
         }
       }
     }
@@ -257,7 +256,6 @@ public class TaskEventHandler {
           widget.removeItem(index);
         }
       }
-      widget.setVisibleItemCount(Math.max(widget.getItemCount(), 1));
     }
 
     private void resetUsers() {

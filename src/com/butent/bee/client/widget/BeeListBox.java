@@ -54,6 +54,9 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
   
   private boolean valueNumeric = false;
   private int valueStartIndex = 0;
+  
+  private int minSize = BeeConst.UNDEF;
+  private int maxSize = BeeConst.UNDEF;
 
   public BeeListBox() {
     super();
@@ -86,10 +89,10 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
     }
   }
 
-  public BeeListBox(HasStringValue source, int cnt) {
+  public BeeListBox(HasStringValue source, int size) {
     this(source);
-    if (cnt > 0) {
-      setVisibleItemCount(cnt);
+    if (size > 0) {
+      setVisibleItemCount(size);
     }
   }
 
@@ -97,9 +100,14 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
     return addHandler(handler, EditStopEvent.getType());
   }
 
+  @Override
+  public void addItem(String item) {
+    super.addItem(item);
+    updateSize();
+  }
+
   public void addItems(Collection<String> items) {
     Assert.notNull(items);
-
     for (String it : items) {
       addItem(it);
     }
@@ -117,12 +125,26 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
     return addHandler(handler, ValueChangeEvent.getType());
   }
 
+  @Override
+  public void clear() {
+    super.clear();
+    updateSize();
+  }
+
   public String getId() {
     return DomUtils.getId(this);
   }
 
   public String getIdPrefix() {
     return "list";
+  }
+
+  public int getMaxSize() {
+    return maxSize;
+  }
+
+  public int getMinSize() {
+    return minSize;
   }
 
   public String getNormalizedValue() {
@@ -203,6 +225,12 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
     super.onBrowserEvent(event);
   }
 
+  @Override
+  public void removeItem(int index) {
+    super.removeItem(index);
+    updateSize();
+  }
+
   public void setAllVisible() {
     int cnt = getItemCount();
     if (cnt > 0) {
@@ -225,6 +253,14 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
       }
       addItems(items);
     }
+  }
+
+  public void setMaxSize(int maxSize) {
+    this.maxSize = maxSize;
+  }
+
+  public void setMinSize(int minSize) {
+    this.minSize = minSize;
   }
 
   public void setNullable(boolean nullable) {
@@ -275,6 +311,18 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
     setSelectedIndex(Math.max(getIndex(oldValue), 0));
   }
 
+  public void updateSize() {
+    int size = Math.max(getMinSize(), 1);
+    if (getMaxSize() > 0) {
+      size = Math.max(size, getItemCount());
+      size = Math.min(size, getMaxSize());
+    }
+    
+    if (size != getVisibleItemCount()) {
+      setVisibleItemCount(size);
+    }
+  }
+  
   public String validate() {
     return null;
   }
@@ -345,7 +393,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
   private boolean isEditorInitialized() {
     return editorInitialized;
   }
-  
+
   private boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }

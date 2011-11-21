@@ -33,6 +33,10 @@ public interface GridCallback {
   int beforeDeleteRow(GridPresenter presenter, IsRow row);
 
   int beforeDeleteRows(GridPresenter presenter, IsRow activeRow, Collection<RowInfo> selectedRows);
+
+  void beforeRefresh();
+
+  void beforeRequery();
   
   GridCallback getInstance();
   

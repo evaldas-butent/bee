@@ -30,7 +30,7 @@ import com.butent.bee.client.grid.SelectionColumn;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Split;
-import com.butent.bee.client.presenter.Action;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
@@ -115,7 +115,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private static final String NEW_ROW_CAPTION = "New Row";
   
-  private Presenter viewPresenter = null;
+  private GridPresenter viewPresenter = null;
 
   private ChangeHandler filterChangeHandler = null;
   private final FilterUpdater filterUpdater = new FilterUpdater();
@@ -149,8 +149,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private FormView editForm = null;
   private String editFormContainerId = null;
   private boolean editFormInitialized = false;
-
-  private String editMode = null;
 
   private boolean singleForm = false;
   private boolean adding = false;
@@ -464,10 +462,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
     if (gridDescr.getRowValidation() != null) {
       setRowValidation(Evaluator.create(gridDescr.getRowValidation(), null, dataCols));
-    }
-
-    if (!BeeUtils.isEmpty(gridDescr.getEditMode())) {
-      setEditMode(gridDescr.getEditMode());
     }
 
     columnDescriptions = gridDescr.getVisibleColumns();
@@ -807,7 +801,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return getGrid().getSelectedRows().values();
   }
 
-  public Presenter getViewPresenter() {
+  public GridPresenter getViewPresenter() {
     return viewPresenter;
   }
 
@@ -866,7 +860,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (event.isCanceled()) {
       formCancel();
     } else if (event.isPending()) {
-      getViewPresenter().handleAction(Action.REQUERY);
+      getViewPresenter().requery(true);
       closeEditForm();
     } else {
       closeEditForm();
@@ -975,14 +969,18 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   public void setViewPresenter(Presenter presenter) {
-    this.viewPresenter = presenter;
+    if (presenter instanceof GridPresenter) {
+      this.viewPresenter = (GridPresenter) presenter;
+    } else if (presenter == null) {
+      this.viewPresenter = null;
+    }
   }
 
   public void startNewRow() {
     if (!isEnabled() || getGrid().isReadOnly()) {
       return;
     }
-
+    
     boolean useForm = useFormForInsert();
 
     if (!useForm && getNewRowColumns() == null) {
@@ -1244,10 +1242,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return editInPlace;
   }
 
-  private String getEditMode() {
-    return editMode;
-  }
-
   private ChangeHandler getFilterChangeHandler() {
     return filterChangeHandler;
   }
@@ -1487,10 +1481,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private void setEditFormInitialized(boolean editFormInitialized) {
     this.editFormInitialized = editFormInitialized;
-  }
-
-  private void setEditMode(String editMode) {
-    this.editMode = editMode;
   }
 
   private void setFilterChangeHandler(ChangeHandler filterChangeHandler) {

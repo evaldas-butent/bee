@@ -298,7 +298,8 @@ public enum FormWidget {
 
   private static final String ATTR_MULTI_SELECT = "multiSelect";
   private static final String ATTR_ALL_ITEMS_VISIBLE = "allItemsVisible";
-  private static final String ATTR_VISIBLE_ITEM_COUNT = "visibleItemCount";
+  private static final String ATTR_MIN_SIZE = "minSize";
+  private static final String ATTR_MAX_SIZE = "maxSize";
 
   private static final String ATTR_VALUE_NUMERIC = "valueNumeric";
   private static final String ATTR_VALUE_START_INDEX = "valueStartIndex";
@@ -1007,14 +1008,25 @@ public enum FormWidget {
 
     if (attributes.size() > 0) {
       if (this == LIST_BOX && widget instanceof BeeListBox) {
+        int z = BeeUtils.toInt(attributes.get(ATTR_MIN_SIZE));
+        if (z > 0) {
+          ((BeeListBox) widget).setMinSize(z);
+        }
+        z = BeeUtils.toInt(attributes.get(ATTR_MAX_SIZE));
+        if (z > 0) {
+          ((BeeListBox) widget).setMaxSize(z);
+        }
+
         int cnt;
         if (BeeUtils.toBoolean(attributes.get(ATTR_ALL_ITEMS_VISIBLE))) {
           cnt = ((BeeListBox) widget).getItemCount();
         } else {
-          cnt = BeeUtils.toInt(attributes.get(ATTR_VISIBLE_ITEM_COUNT));
+          cnt = BeeUtils.toInt(attributes.get(ATTR_SIZE));
         }
         if (cnt > 0) {
           ((BeeListBox) widget).setVisibleItemCount(cnt);
+        } else {
+          ((BeeListBox) widget).updateSize();
         }
       }
     }

@@ -67,7 +67,7 @@
         <Label html="Vykdytojai:" class="bee-required" />
       </cell>
       <cell>
-        <ListBox name="ExecutorList" allItemsVisible="true" style="min-width: 160px;" />
+        <ListBox name="ExecutorList" minSize="2" maxSize="10" style="min-width: 160px;" />
       </cell>
       <cell>
         <Button name="ExecutorAdd" html=".." />
@@ -79,7 +79,7 @@
         <Label html="Stebėtojai:" />
       </cell>
       <cell>
-        <ListBox name="ObserverList" allItemsVisible="true" style="min-width: 160px;" />
+        <ListBox name="ObserverList" minSize="2" maxSize="10" style="min-width: 160px;" />
       </cell>
       <cell>
         <Button name="ObserverAdd" html=".." />

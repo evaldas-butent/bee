@@ -13,7 +13,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Complex;
-import com.butent.bee.client.presenter.Action;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.BeeCommand;
@@ -21,6 +20,7 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -124,7 +124,7 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
   }
 
   public void create(String caption, boolean hasData, boolean readOnly,
-      Collection<UiOption> options) {
+      Collection<UiOption> options, Set<Action> enabledActions, Set<Action> disabledActions) {
     Style style = getDefaultStyle();
     addStyleName(StyleUtils.WINDOW_HEADER);
     addStyleName(style.container());
@@ -138,25 +138,43 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     }
     addLeftTop(label, style.captionLeft(), style.captionTop());
     
-    int x = isWindow ? style.controlsRight() : style.closeRight();
+    boolean hasClose = hasAction(Action.CLOSE, isWindow, enabledActions, disabledActions);
+    
+    int x = hasClose ? style.controlsRight() : style.closeRight();
     int y = style.controlTop();
     int w = style.controlWidth();
 
     String cst = style.control();
-
-    addRightTop(createControl(Global.getImages().configure(), Action.CONFIGURE, cst), x, y);
-    addRightTop(createControl(Global.getImages().save(), Action.SAVE, cst), x += w, y);
-    if (isWindow) {
-      addRightTop(createControl(Global.getImages().bookmarkAdd(), Action.BOOKMARK, cst), x += w, y);
+    
+    if (hasAction(Action.CONFIGURE, true, enabledActions, disabledActions)) {
+      addRightTop(createControl(Global.getImages().configure(), Action.CONFIGURE, cst), x, y);
+      x += w;
+    }
+    if (hasAction(Action.SAVE, true, enabledActions, disabledActions)) {
+      addRightTop(createControl(Global.getImages().save(), Action.SAVE, cst), x, y);
+      x += w;
     }
 
-    if (hasData) {
-      if (!readOnly) {
-        addRightTop(createControl(Global.getImages().editDelete(), Action.DELETE, cst), x += w, y);
-        addRightTop(createControl(Global.getImages().editAdd(), Action.ADD, cst), x += w, y);
-      }
-      addRightTop(createControl(Global.getImages().reload(), Action.REFRESH, cst), x += w, y);
+    if (hasAction(Action.BOOKMARK, isWindow, enabledActions, disabledActions)) {
+      addRightTop(createControl(Global.getImages().bookmarkAdd(), Action.BOOKMARK, cst), x, y);
+      x += w;
+    }
 
+    if (hasAction(Action.DELETE, hasData && !readOnly, enabledActions, disabledActions)) {
+      addRightTop(createControl(Global.getImages().editDelete(), Action.DELETE, cst), x, y);
+      x += w;
+    }
+    if (hasAction(Action.ADD, hasData && !readOnly, enabledActions, disabledActions)) {
+      addRightTop(createControl(Global.getImages().editAdd(), Action.ADD, cst), x, y);
+      x += w;
+    }
+
+    if (hasAction(Action.REFRESH, hasData, enabledActions, disabledActions)) {
+      addRightTop(createControl(Global.getImages().reload(), Action.REFRESH, cst), x, y);
+      x += w;
+    }
+    
+    if (hasData) {
       BeeImage loadingIndicator = new BeeImage(Global.getImages().loading());
       setLoadingIndicatorId(loadingIndicator.getId());
       loadingIndicator.addStyleName(style.loadingIndicator());
@@ -164,7 +182,7 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
           x + style.loadingIndicatorRightMargin(), style.loadingIndicatorTop());
     }
     
-    if (isWindow) {
+    if (hasClose) {
       addRightTop(createControl(Global.getImages().close(), Action.CLOSE, style.close()),
           style.closeRight(), style.closeTop());
     }
@@ -248,6 +266,15 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
 
   private String getLoadingIndicatorId() {
     return loadingIndicatorId;
+  }
+  
+  private boolean hasAction(Action action, boolean def,
+      Set<Action> enabledActions, Set<Action> disabledActions) {
+    if (def) {
+      return !BeeUtils.contains(disabledActions, action);
+    } else {
+      return BeeUtils.contains(enabledActions, action);
+    }
   }
 
   private void setLoadingIndicatorId(String loadingIndicatorId) {

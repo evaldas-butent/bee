@@ -42,6 +42,7 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -226,11 +227,11 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
         break;
 
       case REFRESH:
-        getDataProvider().refresh();
+        refresh();
         break;
 
       case REQUERY:
-        getDataProvider().requery(true);
+        requery(true);
         break;
 
       case ADD:
@@ -323,6 +324,20 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
     getDataProvider().onUnload();
   }
+  
+  public void refresh() {
+    if (getGridCallback() != null) {
+      getGridCallback().beforeRefresh();
+    }
+    getDataProvider().refresh();
+  }
+
+  public void requery(boolean updateActiveRow) {
+    if (getGridCallback() != null) {
+      getGridCallback().beforeRequery();
+    }
+    getDataProvider().requery(updateActiveRow);
+  }
 
   private void bind() {
     GridContainerView view = getView();
@@ -369,7 +384,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
         String key = entry.getKey();
         Filter value = entry.getValue();
         if (!BeeUtils.isEmpty(key) && value != null) {
-          provider.setParentFilter(key, value, false);
+          provider.setParentFilter(key, value);
         }
       }
     }

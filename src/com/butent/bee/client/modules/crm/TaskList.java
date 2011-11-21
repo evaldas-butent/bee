@@ -117,8 +117,8 @@ public class TaskList {
       if (getGridPanel() == null) {
         return;
       }
-      getGridPanel().getPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(),
-          true);
+      updateFilter();
+      getGridPanel().getPresenter().requery(true);
     }
 
     @Override
@@ -143,6 +143,10 @@ public class TaskList {
           widget.setValue("true");
         }
       }
+    }
+    
+    public void updateFilter() {
+      getGridPanel().getPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter());
     }
 
     private Value getDateValue(String filter) {
@@ -224,6 +228,16 @@ public class TaskList {
         Collection<RowInfo> selectedRows) {
       presenter.deleteRow(activeRow);
       return -1;
+    }
+
+    @Override
+    public void beforeRefresh() {
+      formHandler.updateFilter();
+    }
+
+    @Override
+    public void beforeRequery() {
+      formHandler.updateFilter();
     }
 
     @Override

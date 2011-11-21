@@ -115,7 +115,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     DataHeaderView header;
     if (UiOption.hasHeader(options)) {
       header = new DataHeaderImpl();
-      header.create(gridDescription.getCaption(), true, readOnly, options);
+      header.create(gridDescription.getCaption(), true, readOnly, options,
+          gridDescription.getEnabledActions(), gridDescription.getDisabledActions());
     } else {
       header = null;
     }

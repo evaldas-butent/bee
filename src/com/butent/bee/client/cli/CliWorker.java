@@ -114,8 +114,16 @@ public class CliWorker {
 
   private static boolean cornified = false;
 
-  public static void clearLog() {
-    BeeKeeper.getLog().clear();
+  public static void clear(String args) {
+    if (BeeUtils.isEmpty(args) || BeeUtils.startsSame(args, "log")) {
+      BeeKeeper.getLog().clear();
+    } else if (BeeUtils.startsSame(args, "grids")) {
+      GridFactory.clearDescriptionCache();
+      BeeKeeper.getLog().info("grid cache cleared");
+    } else if (BeeUtils.startsSame(args, "cache")) {
+      Global.getCache().removeAll();
+      BeeKeeper.getLog().info("cache cleared");
+    }
   }
 
   public static void cornify(String[] arr) {
@@ -364,7 +372,7 @@ public class CliWorker {
     } else if (z.equals("charset")) {
       getCharsets();
     } else if (z.equals("clear")) {
-      clearLog();
+      clear(args);
     } else if (z.startsWith("client")) {
       showClientLocation();
     } else if (z.startsWith("conf")) {

@@ -189,6 +189,7 @@ public class AsyncCallback implements RequestCallback {
     finalizeResponse();
     
     if (BeeUtils.same(sid, BeeConst.NULL)) {
+      BeeKeeper.getBus().removeExitHandler();
       Window.Location.reload();
     }
   }

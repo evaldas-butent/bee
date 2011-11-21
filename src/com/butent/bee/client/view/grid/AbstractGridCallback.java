@@ -48,6 +48,12 @@ public class AbstractGridCallback implements GridCallback {
     return 0;
   }
 
+  public void beforeRefresh() {
+  }
+
+  public void beforeRequery() {
+  }
+
   public GridCallback getInstance() {
     return null;
   }

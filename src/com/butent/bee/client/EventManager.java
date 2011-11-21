@@ -3,6 +3,9 @@ package com.butent.bee.client;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.ClosingEvent;
+import com.google.gwt.user.client.Window.ClosingHandler;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.Event.Type;
@@ -37,6 +40,8 @@ public class EventManager implements Module {
   private BeeBlurHandler blurHandler = null;
 
   private final SimpleEventBus eventBus;
+  
+  private HandlerRegistration exitRegistry = null;
 
   public EventManager() {
     this.eventBus = new SimpleEventBus();
@@ -55,7 +60,7 @@ public class EventManager implements Module {
     Assert.notNull(w);
     w.addClickHandler(ensureClickHandler());
   }
-
+  
   public <H> HandlerRegistration addHandler(Type<H> type, H handler) {
     Assert.notNull(type);
     Assert.notNull(handler);
@@ -152,6 +157,16 @@ public class EventManager implements Module {
     return registry;
   }
 
+  public void registerExitHandler(final String message) {
+    Assert.notNull(message);
+    removeExitHandler();
+    this.exitRegistry = Window.addWindowClosingHandler(new ClosingHandler() {
+      public void onWindowClosing(ClosingEvent event) {
+        event.setMessage(message);
+      }
+    });
+  }
+  
   public HandlerRegistration registerMultiDeleteHandler(MultiDeleteEvent.Handler handler) {
     return MultiDeleteEvent.register(eventBus, handler);
   }
@@ -166,6 +181,13 @@ public class EventManager implements Module {
 
   public HandlerRegistration registerRowUpdateHandler(RowUpdateEvent.Handler handler) {
     return RowUpdateEvent.register(eventBus, handler);
+  }
+  
+  public void removeExitHandler() {
+    if (this.exitRegistry != null) {
+      this.exitRegistry.removeHandler();
+      this.exitRegistry = null;
+    }
   }
 
   public void start() {
