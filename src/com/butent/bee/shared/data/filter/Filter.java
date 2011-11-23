@@ -24,9 +24,17 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
     return new CompoundFilter(CompoundType.AND, filters);
   }
 
-  public static CompoundFilter and(Collection<Filter> filters) {
-    Assert.notNull(filters);
-    return and(filters.toArray(new Filter[0]));
+  public static Filter and(Collection<Filter> filters) {
+    if (filters == null || filters.isEmpty()) {
+      return null;
+    } else if (filters.size() == 1) {
+      for (Filter filter : filters) {
+        return filter;
+      }
+      return null;
+    } else {
+      return and(filters.toArray(new Filter[0]));
+    }
   }
 
   public static Filter isEmpty(String column) {
@@ -43,9 +51,17 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
     return new CompoundFilter(CompoundType.OR, filters);
   }
 
-  public static CompoundFilter or(Collection<Filter> filters) {
-    Assert.notNull(filters);
-    return or(filters.toArray(new Filter[0]));
+  public static Filter or(Collection<Filter> filters) {
+    if (filters == null || filters.isEmpty()) {
+      return null;
+    } else if (filters.size() == 1) {
+      for (Filter filter : filters) {
+        return filter;
+      }
+      return null;
+    } else {
+      return or(filters.toArray(new Filter[0]));
+    }
   }
 
   public static Filter restore(String s) {

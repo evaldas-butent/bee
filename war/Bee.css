@@ -46,6 +46,17 @@ body, select {
   -webkit-box-pack: center;
   -webkit-box-align: center;
 }  
+.flexBox-vertical-center {
+  display: box;
+  display: -moz-box;
+  display: -webkit-box;
+  box-orient: vertical;
+  -moz-box-orient: vertical;
+  -webkit-box-orient: vertical;
+  box-align: center;
+  -moz-box-align: center;
+  -webkit-box-align: center;
+}
 
 .flexible {
   box-flex: 1;

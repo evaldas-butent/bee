@@ -206,7 +206,7 @@ public class Queries {
   public static int getRowSet(String viewName, List<String> columns, RowSetCallback callback) {
     return getRowSet(viewName, columns, null, null, callback);
   }
-  
+
   public static int getRowSet(String viewName, List<String> columns, Filter filter, Order order,
       RowSetCallback callback) {
     return getRowSet(viewName, columns, filter, order, CachingPolicy.NONE, callback);
@@ -267,7 +267,7 @@ public class Queries {
       PropertyUtils.addProperties(lst, Service.VAR_VIEW_OFFSET, offset,
           Service.VAR_VIEW_LIMIT, limit);
     }
-    
+
     if (!BeeUtils.isEmpty(options)) {
       lst.addAll(options);
     }
@@ -316,6 +316,42 @@ public class Queries {
     });
   }
 
+  public static void insert(final BeeRowSet rowSet, final RowSetCallback callback) {
+    Assert.notNull(rowSet, "insert rows: rowSet is null");
+    Assert.notEmpty(rowSet.getViewName(), "insert rows: view name not specified");
+    Assert.isTrue(rowSet.getNumberOfColumns() > 0 && rowSet.getNumberOfRows() > 0,
+        "insert rows: rowSet empty");
+
+    BeeKeeper.getRpc().sendText(Service.INSERT_ROWS, Codec.beeSerialize(rowSet),
+        new ResponseCallback() {
+          public void onResponse(ResponseObject response) {
+            if (response.hasErrors()) {
+              if (callback == null) {
+                BeeKeeper.getScreen().notifySevere(response.getErrors());
+              } else {
+                callback.onFailure(response.getErrors());
+              }
+
+            } else if (response.hasResponse(BeeRowSet.class)) {
+              BeeRowSet result = BeeRowSet.restore((String) response.getResponse());
+              BeeKeeper.getLog().info(result.getViewName(), "inserted", result.getNumberOfRows(),
+                  "rows");
+              if (callback != null) {
+                callback.onSuccess(result);
+              }
+
+            } else {
+              String[] msg = {"insert rows:", rowSet.getViewName(), "invalid response"};
+              if (callback == null) {
+                BeeKeeper.getScreen().notifySevere(msg);
+              } else {
+                callback.onFailure(msg);
+              }
+            }
+          }
+        });
+  }
+
   public static boolean isResponseFromCache(int id) {
     return id == RESPONSE_FROM_CACHE;
   }
@@ -343,26 +379,26 @@ public class Queries {
           }
         });
   }
-  
+
   public static void update(String viewName, long rowId, long version, List<BeeColumn> columns,
       List<String> oldValues, List<String> newValues, RowCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(columns);
     Assert.notNull(oldValues);
     Assert.notNull(newValues);
-    
+
     int cc = columns.size();
     Assert.isPositive(cc);
     Assert.isTrue(cc == oldValues.size());
     Assert.isTrue(cc == newValues.size());
-    
+
     BeeRowSet rs = new BeeRowSet(columns);
     rs.setViewName(viewName);
     rs.addRow(rowId, version, oldValues.toArray(new String[0]));
     for (int i = 0; i < cc; i++) {
       rs.getRow(0).preliminaryUpdate(i, newValues.get(i));
     }
-    
+
     update(rs, true, callback);
   }
 

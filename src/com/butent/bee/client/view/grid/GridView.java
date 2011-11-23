@@ -34,6 +34,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   CellGrid getGrid();
   
   GridCallback getGridCallback();
+  
+  long getRelId();
 
   Collection<RowInfo> getSelectedRows();
 

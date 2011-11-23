@@ -1,7 +1,6 @@
 package com.butent.bee.shared.ui;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
@@ -19,7 +18,6 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -35,7 +33,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private enum Serial {
     NAME, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HAS_HEADERS, HAS_FOOTERS,
     CACHING, ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE,
-    READONLY, NEW_ROW_FORM, NEW_ROW_COLUMNS, EDIT_FORM, EDIT_IN_PLACE,
+    READONLY, NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_CAPTION, EDIT_FORM, EDIT_IN_PLACE,
     ENABLED_ACTIONS, DISABLED_ACTIONS, HEADER, BODY, FOOTER, ROW_STYLES, ROW_MESSAGE,
     ROW_EDITABLE, ROW_VALIDATION, SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH, COLUMNS
   }
@@ -74,6 +72,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private String newRowForm = null;
   private String newRowColumns = null;
+  private String newRowCaption = null;
   private String editForm = null;
   private String editInPlace = null;
 
@@ -93,8 +92,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private final List<ColumnDescription> columns = Lists.newArrayList();
 
-  private Map<String, Filter> parentFilters = null;
-  
   private Set<Action> enabledActions = Sets.newHashSet();
   private Set<Action> disabledActions = Sets.newHashSet();
 
@@ -180,6 +177,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case NEW_ROW_COLUMNS:
           setNewRowColumns(value);
+          break;
+        case NEW_ROW_CAPTION:
+          setNewRowCaption(value);
           break;
         case PAGING_THRESHOLD:
           setPagingThreshold(BeeUtils.toIntOrNull(value));
@@ -340,6 +340,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Read Only", isReadOnly(),
         "New Row Form", getNewRowForm(),
         "New Row Columns", getNewRowColumns(),
+        "New Row Caption", getNewRowCaption(),
         "Edit Form", getEditForm(),
         "Edit In Place", getEditInPlace(),
         "Enabled Actions", getEnabledActions(),
@@ -394,29 +395,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return info;
   }
 
-  public Filter getInitialFilter() {
-    List<Filter> lst = Lists.newArrayList();
-
-    if (getFilter() != null) {
-      lst.add(getFilter());
-    }
-    if (getParentFilters() != null && !getParentFilters().isEmpty()) {
-      for (Filter flt : getParentFilters().values()) {
-        if (flt != null) {
-          lst.add(flt);
-        }
-      }
-    }
-
-    if (lst.isEmpty()) {
-      return null;
-    } else if (lst.size() == 1) {
-      return lst.get(0);
-    } else {
-      return Filter.and(lst);
-    }
-  }
-
   public Integer getInitialRowSetSize() {
     return initialRowSetSize;
   }
@@ -433,6 +411,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return name;
   }
 
+  public String getNewRowCaption() {
+    return newRowCaption;
+  }
+
   public String getNewRowColumns() {
     return newRowColumns;
   }
@@ -447,10 +429,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public Integer getPagingThreshold() {
     return pagingThreshold;
-  }
-
-  public Map<String, Filter> getParentFilters() {
-    return parentFilters;
   }
 
   public Calculation getRowEditable() {
@@ -566,6 +544,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case NEW_ROW_COLUMNS:
           arr[i++] = getNewRowColumns();
+          break;
+        case NEW_ROW_CAPTION:
+          arr[i++] = getNewRowCaption();
           break;
         case PAGING_THRESHOLD:
           arr[i++] = getPagingThreshold();
@@ -703,6 +684,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.minColumnWidth = minColumnWidth;
   }
 
+  public void setNewRowCaption(String newRowCaption) {
+    this.newRowCaption = newRowCaption;
+  }
+
   public void setNewRowColumns(String newRowColumns) {
     this.newRowColumns = newRowColumns;
   }
@@ -717,14 +702,6 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setPagingThreshold(Integer pagingThreshold) {
     this.pagingThreshold = pagingThreshold;
-  }
-
-  public void setParentFilter(String key, Filter filter) {
-    Assert.notEmpty(key);
-    if (parentFilters == null) {
-      parentFilters = Maps.newHashMap();
-    }
-    parentFilters.put(key, filter);
   }
 
   public void setReadOnly(Boolean readOnly) {

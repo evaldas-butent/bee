@@ -6,12 +6,14 @@ import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface GridCallback {
 
@@ -22,6 +24,8 @@ public interface GridCallback {
 
   void afterCreateColumns(CellGrid grid);
   
+  boolean beforeAddRow(GridPresenter presenter);
+
   void beforeCreate(List<BeeColumn> dataColumns, int rowCount, GridDescription gridDescription,
       boolean hasSearch);
   
@@ -34,13 +38,19 @@ public interface GridCallback {
 
   int beforeDeleteRows(GridPresenter presenter, IsRow activeRow, Collection<RowInfo> selectedRows);
 
-  void beforeRefresh();
+  void beforeRefresh(GridPresenter presenter);
 
-  void beforeRequery();
+  void beforeRequery(GridPresenter presenter);
+
+  Map<String, Filter> getInitialFilters();
   
   GridCallback getInstance();
+  
+  boolean onClose(GridPresenter presenter);
   
   boolean onLoad(GridDescription gridDescription);
   
   void onShow(GridPresenter presenter);
+
+  boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow);
 }

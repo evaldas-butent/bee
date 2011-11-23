@@ -80,7 +80,7 @@
           <cell>
             <TextLabel class="bee-display">
               <calc>
-                <function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLasttName || "")</function>
+                <function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</function>
               </calc>
             </TextLabel>
           </cell>
@@ -98,20 +98,22 @@
       </FlexTable>
 
       <ChildGrid name="TaskObservers" relColumn="Task" class="flexible" style="margin: 2ex 10px;" />
+      
+      <FlowPanel class="flexBox-vertical-center">
+        <FlowPanel>
+          <Button name="COMMENTED" html="Naujas komentaras" />
+          <Button name="FORWARDED" html="Persiųsti" />
+          <Button name="EXTENDED" html="Keisti terminą" />
+          <Button name="UPDATED" html="Koreguoti" />
+        </FlowPanel>
 
-      <FlowPanel style="margin-left: 3em;">
-        <Button name="COMMENTED" html="Naujas komentaras" />
-        <Button name="FORWARDED" html="Persiųsti" />
-        <Button name="EXTENDED" html="Keisti terminą" />
-        <Button name="UPDATED" html="Koreguoti" />
-      </FlowPanel>
-
-      <FlowPanel style="margin: 2ex 0 2ex 3em;">
-        <Button name="SUSPENDED" html="Sustabdyti" />
-        <Button name="CANCELED" html="Nutraukti" />
-        <Button name="COMPLETED" html="Užbaigti" />
-        <Button name="APPROVED" html="Patvirtinti" />
-        <Button name="RENEWED" html="Grąžinti vykdymui" />
+        <FlowPanel style="margin: 2ex 0;">
+          <Button name="SUSPENDED" html="Sustabdyti" />
+          <Button name="CANCELED" html="Nutraukti" />
+          <Button name="COMPLETED" html="Užbaigti" />
+          <Button name="APPROVED" html="Patvirtinti" />
+          <Button name="RENEWED" html="Grąžinti vykdymui" />
+        </FlowPanel>
       </FlowPanel>
     </FlowPanel>
 

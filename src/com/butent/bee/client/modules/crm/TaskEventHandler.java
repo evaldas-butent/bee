@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.crm;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Style.Position;
@@ -27,15 +28,19 @@ import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.FlexTable.FlexCellFormatter;
 import com.butent.bee.client.layout.Absolute;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.DataHeaderView;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.edit.EditFormEvent;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeLabel;
@@ -52,13 +57,16 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RelationInfo;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.Priority;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
@@ -67,12 +75,201 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.TimeUtils;
 
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class TaskEventHandler {
+
+  private static class ObserverHandler extends AbstractGridCallback {
+    private Long owner = null;
+    private Long executor = null;
+
+    private ObserverHandler() {
+      super();
+    }
+
+    @Override
+    public boolean beforeAddRow(final GridPresenter presenter) {
+      if (!Objects.equal(BeeKeeper.getUser().getUserId(), getOwner())) {
+        presenter.getView().getContent().notifyWarning("Not an owner");
+        return false;
+      }
+
+      List<Filter> filters = Lists.newArrayList();
+      if (getOwner() != null) {
+        filters.add(excludeUser(getOwner()));
+      }
+      if (getExecutor() != null && !getExecutor().equals(getOwner())) {
+        filters.add(excludeUser(getExecutor()));
+      }
+      
+      int index = presenter.getDataProvider().getColumnIndex(CrmConstants.COL_USER);
+      for (IsRow row : presenter.getView().getContent().getGrid().getRowData()) {
+        filters.add(excludeUser(row.getLong(index)));
+      }
+      
+      final long task = presenter.getView().getContent().getRelId();
+      
+      Queries.getRowSet("Users", null, CompoundFilter.and(filters), null, new RowSetCallback() {
+        public void onFailure(String[] reason) {
+        }
+
+        public void onSuccess(final BeeRowSet result) {
+          if (result.isEmpty()) {
+            presenter.getView().getContent().notifyWarning("Everybody is watching you");
+            return;
+          }
+
+          MultiSelector selector = new MultiSelector("Stebėtojai", result,
+              Lists.newArrayList(CrmConstants.COL_FIRST_NAME, CrmConstants.COL_LAST_NAME),
+              new MultiSelector.SelectionCallback() {
+                public void onSelection(List<IsRow> rows) {
+                  addObservers(presenter, task, rows);
+                }
+              });
+          
+          Widget target = null;
+          if (result.getNumberOfRows() < 20) {
+            DataHeaderView header = presenter.getView().getHeader();
+            if (header != null) {
+              for (int i = header.getWidgetCount() - 1; i >= 0; i--) {
+                if (header.getWidget(i).isVisible()) {
+                  target = header.getWidget(i);
+                  break;
+                }
+              }
+            }
+          }
+          
+          if (target == null) {
+            selector.center();
+          } else {
+            selector.showRelativeTo(target);
+          }
+        }
+      });
+
+      return false;
+    }
+
+    @Override
+    public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
+      int result;
+      if (row == null) {
+        result = -1;
+      } else {
+        Long usr = BeeKeeper.getUser().getUserId();
+        Long obs = row.getLong(presenter.getDataProvider().getColumnIndex(CrmConstants.COL_USER));
+        
+        if (usr == null || obs == null || obs.equals(getOwner()) || obs.equals(getExecutor())) {
+          result = -1;
+        } else if (usr.equals(getOwner())) {
+          result = 0; 
+        } else if (usr.equals(obs)) {
+          result = 0;
+        } else {
+          presenter.getView().getContent().notifyWarning("the only limit is yourself");
+          result = -1;
+        }
+      }
+      return result;
+    }
+
+    @Override
+    public int beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
+        Collection<RowInfo> selectedRows) {
+      if (activeRow != null) {
+        presenter.deleteRow(activeRow);
+      }
+      return -1;
+    }
+
+    @Override
+    public void beforeRefresh(GridPresenter presenter) {
+      beforeRequery(presenter);
+    }
+
+    @Override
+    public void beforeRequery(GridPresenter presenter) {
+      for (Map.Entry<String, Filter> entry : getFilters().entrySet()) {
+        presenter.getDataProvider().setParentFilter(entry.getKey(), entry.getValue());
+      }
+    }
+
+    @Override
+    public Map<String, Filter> getInitialFilters() {
+      return getFilters();
+    }
+
+    private void addObservers(final GridPresenter presenter, long task, List<IsRow> users) {
+      if (BeeUtils.isEmpty(users)) {
+        return;
+      }
+      
+      List<BeeColumn> columns = 
+          Lists.newArrayList(new BeeColumn(ValueType.LONG, CrmConstants.COL_TASK),
+              new BeeColumn(ValueType.LONG, CrmConstants.COL_USER));
+      BeeRowSet rowSet = new BeeRowSet("TaskObservers", columns);
+      
+      for (IsRow row : users) {
+        rowSet.addRow(new BeeRow(0,
+            new String[] {BeeUtils.toString(task), BeeUtils.toString(row.getId())}));
+      }
+      
+      Queries.insert(rowSet, new RowSetCallback() {
+        public void onFailure(String[] reason) {
+          presenter.getView().getContent().notifySevere(reason);
+        }
+
+        public void onSuccess(BeeRowSet result) {
+          for (BeeRow row : result.getRows()) {
+            BeeKeeper.getBus().fireEvent(new RowInsertEvent(result.getViewName(), row));
+            presenter.getView().getContent().getGrid().insertRow(row);
+          }
+        }
+      });
+    }
+
+    private Long getExecutor() {
+      return executor;
+    }
+    
+    private Map<String, Filter> getFilters() {
+      Map<String, Filter> filters = Maps.newHashMap();
+
+      Filter filter;
+      if (getExecutor() == null) {
+        filter = null;
+      } else {
+        filter = ComparisonFilter.isNotEqual(CrmConstants.COL_USER, new LongValue(getExecutor()));
+      }
+      filters.put(CrmConstants.COL_EXECUTOR, filter);
+      
+      if (getOwner() == null || getOwner().equals(getExecutor())) {
+        filter = null;
+      } else {
+        filter = ComparisonFilter.isNotEqual(CrmConstants.COL_USER, new LongValue(getOwner()));
+      }
+      filters.put(CrmConstants.COL_OWNER, filter);
+      
+      return filters;
+    }
+    
+    private Long getOwner() {
+      return owner;
+    }
+    
+    private void setExecutor(Long executor) {
+      this.executor = executor;
+    }
+    
+    private void setOwner(Long owner) {
+      this.owner = owner;
+    }
+  }
 
   private static class TaskCreateHandler extends AbstractFormCallback {
 
@@ -228,10 +425,6 @@ public class TaskEventHandler {
       newRow.setValue(form.getDataIndex(CrmConstants.COL_PRIORITY), Priority.MEDIUM.ordinal());
     }
 
-    private Filter excludeUser(long userId) {
-      return ComparisonFilter.compareId(CrmConstants.COL_USER_ID, Operator.NE, userId);
-    }
-
     private String joinUsers(List<IsRow> users) {
       StringBuilder sb = new StringBuilder();
 
@@ -264,7 +457,11 @@ public class TaskEventHandler {
     }
 
     private void selectUsers(final boolean ex) {
-      List<Filter> filters = Lists.newArrayList(excludeUser(BeeKeeper.getUser().getUserId()));
+      List<Filter> filters = Lists.newArrayList();
+      if (!ex) {
+        filters.add(excludeUser(BeeKeeper.getUser().getUserId()));
+      }
+
       for (IsRow row : executors) {
         filters.add(excludeUser(row.getId()));
       }
@@ -513,16 +710,22 @@ public class TaskEventHandler {
       return null;
     }
   }
-
+  
   private static class TaskEditHandler extends AbstractFormCallback {
     private static int counter = 0;
+
     private Map<String, Widget> formWidgets = Maps.newHashMap();
+    private ObserverHandler observerHandler = null;
 
     @Override
     public void afterCreateWidget(String name, final Widget widget) {
-      if (!BeeUtils.isEmpty(name)
+      if (!BeeUtils.isEmpty(name) 
           && BeeUtils.inListSame(name, CrmConstants.COL_PRIORITY, CrmConstants.COL_EVENT)) {
         setWidget(name, widget);
+        
+      } else if (BeeUtils.same(name, "TaskObservers") && widget instanceof ChildGrid) {
+        setObserverHandler(new ObserverHandler());
+        ((ChildGrid) widget).setGridCallback(getObserverHandler());
 
       } else if (widget instanceof HasClickHandlers) {
         setWidget(name, widget);
@@ -582,6 +785,17 @@ public class TaskEventHandler {
     }
 
     @Override
+    public void beforeRefresh(FormView form, IsRow row) {
+      Long owner = (row == null) ? null : row.getLong(form.getDataIndex(CrmConstants.COL_OWNER));
+      Long exec = (row == null) ? null : row.getLong(form.getDataIndex(CrmConstants.COL_EXECUTOR));
+      
+      if (getObserverHandler() != null) {
+        getObserverHandler().setOwner(owner);
+        getObserverHandler().setExecutor(exec);
+      }
+    }
+
+    @Override
     public TaskEditHandler getInstance() {
       if (counter++ == 0) {
         return this;
@@ -595,8 +809,16 @@ public class TaskEventHandler {
       doEvent(TaskEvent.VISITED, form);
     }
 
+    private ObserverHandler getObserverHandler() {
+      return observerHandler;
+    }
+
     private Widget getWidget(String name) {
       return formWidgets.get(BeeUtils.normalize(name));
+    }
+
+    private void setObserverHandler(ObserverHandler observerHandler) {
+      this.observerHandler = observerHandler;
     }
 
     private void setWidget(String name, Widget widget) {
@@ -1147,6 +1369,10 @@ public class TaskEventHandler {
     createRequest(args, null, form, null);
   }
 
+  private static Filter excludeUser(long userId) {
+    return ComparisonFilter.compareId(CrmConstants.COL_USER_ID, Operator.NE, userId);
+  }
+  
   private TaskEventHandler() {
   }
 }

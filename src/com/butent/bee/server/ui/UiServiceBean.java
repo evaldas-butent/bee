@@ -29,6 +29,7 @@ import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.XmlState;
 import com.butent.bee.shared.data.XmlTable;
@@ -129,6 +130,8 @@ public class UiServiceBean {
       response = updateRow(reqInfo);
     } else if (BeeUtils.same(svc, Service.INSERT_ROW)) {
       response = insertRow(reqInfo);
+    } else if (BeeUtils.same(svc, Service.INSERT_ROWS)) {
+      response = insertRows(reqInfo);
     } else if (BeeUtils.same(svc, Service.GET_VIEW_INFO)) {
       response = getViewInfo(reqInfo);
     } else if (BeeUtils.same(svc, Service.GET_TABLE_INFO)) {
@@ -815,6 +818,29 @@ public class UiServiceBean {
     return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), true);
   }
 
+  private ResponseObject insertRows(RequestInfo reqInfo) {
+    BeeRowSet rowSet = BeeRowSet.restore(reqInfo.getContent());
+    if (rowSet == null || rowSet.isEmpty() || rowSet.getNumberOfColumns() <= 0
+        || !sys.isView(rowSet.getViewName())) {
+      return ResponseObject.error("insertRows:", "invalid rowSet");
+    }
+    
+    ResponseObject response = deb.commitRow(rowSet, 0, BeeRowSet.class);
+    if (response.hasErrors() || rowSet.getNumberOfRows() <= 1) {
+      return response;
+    }
+    BeeRowSet result = (BeeRowSet) response.getResponse();
+    
+    for (int i = 1; i < rowSet.getNumberOfRows(); i++) {
+      response = deb.commitRow(rowSet, i, BeeRow.class);
+      if (response.hasErrors()) {
+        return response;
+      }
+      result.addRow((BeeRow) response.getResponse());
+    }
+    return ResponseObject.response(result);
+  }
+  
   private ResponseObject menuInfo(RequestInfo reqInfo) {
     ResponseObject response = new ResponseObject();
     String mName = reqInfo.getParameter("menu_name");

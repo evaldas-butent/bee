@@ -351,18 +351,7 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
       }
     }
 
-    Filter filter;
-    switch (filters.size()) {
-      case 0:
-        filter = null;
-        break;
-      case 1:
-        filter = filters.get(0);
-        break;
-      default:
-        filter = Filter.and(filters);
-    }
-
+    Filter filter = Filter.and(filters);
     if (Objects.equal(filter, getLastFilter())) {
       BeeKeeper.getLog().info("filter not changed", filter);
       return;

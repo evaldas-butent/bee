@@ -101,19 +101,17 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       lst.add(getDataFilter());
     }
     if (!getParentFilters().isEmpty()) {
-      lst.addAll(getParentFilters().values());
+      for (Filter flt : getParentFilters().values()) {
+        if (flt != null) {
+          lst.add(flt);
+        }
+      }
     }
+
     if (filter != null) {
       lst.add(filter);
     }
-
-    if (lst.isEmpty()) {
-      return null;
-    } else if (lst.size() == 1) {
-      return lst.get(0);
-    } else {
-      return Filter.and(lst);
-    }
+    return Filter.and(lst);
   }
 
   public Filter getUserFilter() {

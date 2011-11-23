@@ -10,6 +10,7 @@ import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -18,17 +19,19 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.ui.GridDescription;
 
 import java.util.EnumSet;
+import java.util.Map;
 
 /**
  * Enables using data grids with data related to another source.
  */
 
-public class ChildGrid extends ResizePanel implements HasEnabled {
-
+public class ChildGrid extends ResizePanel implements HasEnabled, Launchable {
+  
+  private final String gridName;
   private final int parentIndex;
   private final String relSource;
 
-  private final GridCallback gridCallback;
+  private GridCallback gridCallback = null;
   private GridDescription gridDescription = null;
   private GridPresenter presenter = null;
 
@@ -37,26 +40,13 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
 
   public ChildGrid(String gridName, int parentIndex, String relSource) {
     super();
+    this.gridName = gridName;
     this.parentIndex = parentIndex;
     this.relSource = relSource;
 
     this.gridCallback = GridFactory.getGridCallback(gridName);
 
     addStyleName("bee-child-grid");
-
-    GridFactory.getGrid(gridName, new GridFactory.DescriptionCallback() {
-      public void onFailure(String[] reason) {
-        BeeKeeper.getScreen().notifySevere(reason);
-      }
-
-      public void onSuccess(GridDescription result) {
-        if (getGridCallback() != null && !getGridCallback().onLoad(result)) {
-          return;
-        }
-        setGridDescription(result);
-        resolveState();
-      }
-    });
   }
 
   @Override
@@ -75,6 +65,22 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
     return getPresenter().getView().isEnabled();
   }
 
+  public void launch() {
+    GridFactory.getGrid(getGridName(), new GridFactory.DescriptionCallback() {
+      public void onFailure(String[] reason) {
+        BeeKeeper.getScreen().notifySevere(reason);
+      }
+
+      public void onSuccess(GridDescription result) {
+        if (getGridCallback() != null && !getGridCallback().onLoad(result)) {
+          return;
+        }
+        setGridDescription(result);
+        resolveState();
+      }
+    });
+  }
+
   public void refresh(IsRow parentRow, Boolean parentEnabled) {
     setPendingRow(parentRow);
     setPendingEnabled(parentEnabled);
@@ -87,9 +93,17 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
     }
   }
 
+  public void setGridCallback(GridCallback gridCallback) {
+    this.gridCallback = gridCallback;
+  }
+  
   private void createPresenter(final IsRow row) {
     final String viewName = getGridDescription().getViewName();
-    Filter filter = Filter.and(getGridDescription().getFilter(), getFilter(row));
+
+    final Map<String, Filter> initialFilters =
+        (getGridCallback() == null) ? null : getGridCallback().getInitialFilters();
+    Filter filter = Filter.and(getFilter(row),
+        GridFactory.getInitialQueryFilter(getGridDescription(), initialFilters));
 
     Queries.getRowSet(viewName, null, filter, getGridDescription().getOrder(),
         getGridDescription().getCachingPolicy(), new Queries.RowSetCallback() {
@@ -99,7 +113,8 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
           public void onSuccess(BeeRowSet rowSet) {
             Assert.notNull(rowSet);
             GridPresenter gp = new GridPresenter(viewName, rowSet.getNumberOfRows(),
-                rowSet, true, getGridDescription(), getGridCallback(), EnumSet.of(UiOption.CHILD));
+                rowSet, true, getGridDescription(), getGridCallback(), initialFilters,
+                EnumSet.of(UiOption.CHILD));
 
             gp.getView().getContent().setRelColumn(getRelSource());
             gp.getView().getContent().getGrid().setPageSize(BeeConst.UNDEF, false, false);
@@ -127,6 +142,10 @@ public class ChildGrid extends ResizePanel implements HasEnabled {
 
   private GridDescription getGridDescription() {
     return gridDescription;
+  }
+
+  private String getGridName() {
+    return gridName;
   }
 
   private int getParentIndex() {

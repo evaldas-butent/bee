@@ -48,7 +48,7 @@ public class MultiSelector extends DialogBox {
     this.selectionCallback = selectionCallback;
     
     GridPresenter gp = new GridPresenter(rowSet.getViewName(), rowSet.getNumberOfRows(),
-        rowSet, false, createGridDescription(rowSet, columnNames), null,
+        rowSet, false, createGridDescription(rowSet, columnNames), null, null,
         EnumSet.of(UiOption.SELECTOR));
     setPresenter(gp);
     

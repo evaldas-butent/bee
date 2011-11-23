@@ -103,6 +103,7 @@ public class GridHolderBean {
 
   private static final String ATTR_NEW_ROW_FORM = "newRowForm";
   private static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";
+  private static final String ATTR_NEW_ROW_CAPTION = "newRowCaption";
   private static final String ATTR_EDIT_FORM = "editForm";
   private static final String ATTR_EDIT_IN_PLACE = "editInPlace";
 
@@ -717,6 +718,10 @@ public class GridHolderBean {
     String newRowColumns = src.getAttribute(ATTR_NEW_ROW_COLUMNS);
     if (!BeeUtils.isEmpty(newRowColumns)) {
       dst.setNewRowColumns(newRowColumns.trim());
+    }
+    String newRowCaption = src.getAttribute(ATTR_NEW_ROW_CAPTION);
+    if (!BeeUtils.isEmpty(newRowCaption)) {
+      dst.setNewRowCaption(newRowCaption.trim());
     }
 
     String editForm = src.getAttribute(ATTR_EDIT_FORM);

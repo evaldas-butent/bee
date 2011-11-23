@@ -231,13 +231,25 @@ public class TaskList {
     }
 
     @Override
-    public void beforeRefresh() {
+    public void beforeRefresh(GridPresenter presenter) {
       formHandler.updateFilter();
     }
 
     @Override
-    public void beforeRequery() {
+    public void beforeRequery(GridPresenter presenter) {
       formHandler.updateFilter();
+    }
+
+    @Override
+    public Map<String, Filter> getInitialFilters() {
+      Filter filter = formHandler.getFilter();
+      if (filter == null) {
+        return null; 
+      } else {
+        Map<String, Filter> filters = Maps.newHashMap();
+        filters.put(FILTER_KEY, filter);
+        return filters;
+      }
     }
 
     @Override
@@ -262,7 +274,6 @@ public class TaskList {
             break;
         }
         gridDescription.setFilter(filter);
-        gridDescription.setParentFilter(FILTER_KEY, formHandler.getFilter());
       }
       return true;
     }

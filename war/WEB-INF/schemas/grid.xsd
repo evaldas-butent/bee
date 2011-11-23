@@ -43,6 +43,7 @@
     <xs:attribute name="editMode" type="xs:normalizedString" />
     <xs:attribute name="newRowForm" type="bee:nameType" />
     <xs:attribute name="newRowColumns" type="xs:normalizedString" />
+    <xs:attribute name="newRowCaption" type="xs:string" />
     <xs:attribute name="editForm" type="bee:nameType" />
     <xs:attribute name="editInPlace" type="xs:normalizedString" />
     <xs:attribute name="enabledActions" type="bee:viewActions" />

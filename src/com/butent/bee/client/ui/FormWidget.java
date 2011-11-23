@@ -100,6 +100,7 @@ import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasNumberBounds;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.HasStage;
+import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
@@ -1031,11 +1032,14 @@ public enum FormWidget {
       }
     }
 
-    widgetCallback.onSuccess(widgetDescription);
     if (formCallback != null) {
       formCallback.afterCreateWidget(name, widget);
     }
+    if (widget instanceof Launchable) {
+      ((Launchable) widget).launch();
+    }
 
+    widgetCallback.onSuccess(widgetDescription);
     return widget;
   }
 

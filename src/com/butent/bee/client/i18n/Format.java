@@ -140,7 +140,7 @@ public class Format {
       DateTimeFormat.getFormat(PredefinedFormat.DATE_SHORT);
 
   private static DateTimeFormat defaultDateTimeFormat =
-      DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM);
+      DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT);
   
   public static DateTimeFormat getDateTimeFormat(String pattern) {
     Assert.notEmpty(pattern);

@@ -66,6 +66,7 @@ public class Service {
   public static final String UPDATE_CELL = DATA_SERVICE_PREFIX + "update_cell";
   public static final String UPDATE_ROW = DATA_SERVICE_PREFIX + "update_row";
   public static final String INSERT_ROW = DATA_SERVICE_PREFIX + "insert_row";
+  public static final String INSERT_ROWS = DATA_SERVICE_PREFIX + "insert_rows";
   public static final String GET_GRID = DATA_SERVICE_PREFIX + "get_grid";
   public static final String GET_FORM = DATA_SERVICE_PREFIX + "get_form";
 

@@ -98,7 +98,7 @@ public class DataEditorBean {
       return sb.append("\n.").toString();
     }
   }
-
+  
   private static Logger logger = Logger.getLogger(DataEditorBean.class.getName());
 
   @EJB
@@ -112,17 +112,26 @@ public class DataEditorBean {
 
   public ResponseObject commitRow(BeeRowSet rs, boolean returnAllFields) {
     Assert.notNull(rs);
+    if (rs.getNumberOfRows() != 1) {
+      return ResponseObject.error("Can commit only one row at a time");
+    }
+    return commitRow(rs, 0, returnAllFields ? BeeRow.class : RowInfo.class);
+  }
+  
+  public ResponseObject commitRow(BeeRowSet rs, int rowIndex, Class<?> returnType) {
+    Assert.notNull(rs);
+    if (!BeeUtils.betweenExclusive(rowIndex, 0, rs.getNumberOfRows())) {
+      return ResponseObject.error("commit row: row index", rowIndex, "row count",
+          rs.getNumberOfRows());
+    }
 
     ResponseObject response = new ResponseObject();
     BeeView view = sys.getView(rs.getViewName());
-    BeeRow row = rs.getRow(0);
+    BeeRow row = rs.getRow(rowIndex);
     Map<String, TableInfo> updates = Maps.newHashMap();
 
     if (!BeeUtils.isPositive(rs.getNumberOfColumns())) {
       response.addError("Nothing to commit");
-
-    } else if (rs.getNumberOfRows() != 1) {
-      response.addError("Can commit only one row at a time");
 
     } else if (view.isReadOnly()) {
       response.addError("View", BeeUtils.bracket(view.getName()), "is read only.");
@@ -175,16 +184,18 @@ public class DataEditorBean {
         id = commitTable(tblInfo, updates, view, response);
       }
       if (!response.hasErrors()) {
-        if (returnAllFields) {
+        if (RowInfo.class.equals(returnType)) {
+          response.setResponse(new BeeRow(id, tblInfo.version));
+        } else {
           BeeRowSet newRs = sys.getViewData(view.getName(), view.getRowFilter(id), null, 0, 0);
 
           if (newRs.isEmpty()) {
             response.addError("Optimistic lock exception");
+          } else if (BeeRowSet.class.equals(returnType)) {
+            response.setResponse(newRs);
           } else {
             response.setResponse(newRs.getRow(0));
           }
-        } else {
-          response.setResponse(new BeeRow(id, tblInfo.version));
         }
       }
     }

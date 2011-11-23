@@ -37,4 +37,7 @@ public class CrmConstants {
 
   public static final String COL_OWNER = "Owner";
   public static final String COL_EXECUTOR = "Executor";
+
+  public static final String COL_TASK = "Task";
+  public static final String COL_USER = "User";
 }

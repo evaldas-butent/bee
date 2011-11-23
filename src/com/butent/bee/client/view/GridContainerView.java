@@ -25,4 +25,6 @@ public interface GridContainerView extends View {
   GridView getContent();
   
   int getFooterHeight();
+  
+  DataHeaderView getHeader();  
 }

@@ -18,7 +18,7 @@ public enum Action implements BeeSerializable {
   public static Set<Action> parse(String s) {
     Set<Action> result = Sets.newHashSet();
     if (!BeeUtils.isEmpty(s)) {
-      for (String item : BeeUtils.toList(s)) {
+      for (String item : BeeUtils.NAME_SPLITTER.split(s)) {
         Action action = restore(item);
         if (action != null) {
           result.add(action);

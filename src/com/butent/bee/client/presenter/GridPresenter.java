@@ -143,18 +143,33 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
   private Filter lastFilter = null;
 
   public GridPresenter(String viewName, int rowCount, BeeRowSet rowSet, boolean async,
-      GridDescription gridDescription, GridCallback gridCallback, Collection<UiOption> options) {
+      GridDescription gridDescription, GridCallback gridCallback,
+      Map<String, Filter> initialFilters, Collection<UiOption> options) {
 
     this.gridContainer = createView(gridDescription, rowSet.getColumns(), rowCount, rowSet,
         gridCallback, options);
+    
     this.dataProvider =
         createProvider(gridContainer, viewName, rowSet.getColumns(),
             gridDescription.getIdName(), gridDescription.getVersionName(),
-            gridDescription.getFilter(), gridDescription.getParentFilters(), gridDescription
-                .getOrder(),
+            gridDescription.getFilter(), initialFilters, gridDescription.getOrder(),
             rowSet, async, gridDescription.getCachingPolicy());
 
     bind();
+  }
+  
+  public void addRow() {
+    if (getGridCallback() != null && !getGridCallback().beforeAddRow(this)) {
+      return;
+    }
+    getView().getContent().startNewRow();
+  }
+  
+  public void close() {
+    if (getGridCallback() != null && !getGridCallback().onClose(this)) {
+      return;
+    }
+    BeeKeeper.getScreen().closeView(getView());
   }
 
   public void deleteRow(IsRow row) {
@@ -169,7 +184,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
       z = 0;
     }
 
-    DeleteCallback deleteCallback = new DeleteCallback(row.getId(), row.getId());
+    DeleteCallback deleteCallback = new DeleteCallback(row.getId(), row.getVersion());
     if (z > 0) {
       deleteCallback.execute();
     } else {
@@ -202,8 +217,14 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     Assert.notNull(action);
 
     switch (action) {
+      case ADD:
+        if (getView().isEnabled()) {
+          addRow();
+        }
+        break;
+
       case CLOSE:
-        BeeKeeper.getScreen().closeView(getView());
+        close();
         break;
 
       case CONFIGURE:
@@ -232,12 +253,6 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
       case REQUERY:
         requery(true);
-        break;
-
-      case ADD:
-        if (getView().isEnabled()) {
-          getView().getContent().startNewRow();
-        }
         break;
 
       default:
@@ -327,14 +342,14 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
   
   public void refresh() {
     if (getGridCallback() != null) {
-      getGridCallback().beforeRefresh();
+      getGridCallback().beforeRefresh(this);
     }
     getDataProvider().refresh();
   }
 
   public void requery(boolean updateActiveRow) {
     if (getGridCallback() != null) {
-      getGridCallback().beforeRequery();
+      getGridCallback().beforeRequery(this);
     }
     getDataProvider().requery(updateActiveRow);
   }
@@ -363,7 +378,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
   private Provider createProvider(GridContainerView view, String viewName, List<BeeColumn> columns,
       String idColumnName, String versionColumnName, Filter dataFilter,
-      Map<String, Filter> parentFilters, Order order, BeeRowSet rowSet, boolean isAsync,
+      Map<String, Filter> initialFilters, Order order, BeeRowSet rowSet, boolean isAsync,
       CachingPolicy cachingPolicy) {
     Provider provider;
     GridView display = view.getContent();
@@ -379,8 +394,8 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
           idColumnName, versionColumnName, dataFilter, rowSet);
     }
 
-    if (parentFilters != null) {
-      for (Map.Entry<String, Filter> entry : parentFilters.entrySet()) {
+    if (initialFilters != null) {
+      for (Map.Entry<String, Filter> entry : initialFilters.entrySet()) {
         String key = entry.getKey();
         Filter value = entry.getValue();
         if (!BeeUtils.isEmpty(key) && value != null) {
@@ -483,18 +498,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
       }
     }
 
-    Filter filter;
-    switch (filters.size()) {
-      case 0:
-        filter = null;
-        break;
-      case 1:
-        filter = filters.get(0);
-        break;
-      default:
-        filter = Filter.and(filters);
-    }
-
+    Filter filter = Filter.and(filters);
     if (Objects.equal(filter, getLastFilter())) {
       BeeKeeper.getLog().info("filter not changed", filter);
       return;

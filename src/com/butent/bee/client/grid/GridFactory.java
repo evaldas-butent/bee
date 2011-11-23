@@ -40,6 +40,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.GridDescription;
@@ -318,6 +319,24 @@ public class GridFactory {
     }
     return callback;
   }
+  
+  public static Filter getInitialQueryFilter(GridDescription gridDescription, 
+      Map<String, Filter> initialFilters) {
+    List<Filter> filters = Lists.newArrayList();
+
+    if (gridDescription != null && gridDescription.getFilter() != null) {
+      filters.add(gridDescription.getFilter());
+    }
+    if (initialFilters != null) {
+      for (Filter filter : initialFilters.values()) {
+        if (filter != null) {
+          filters.add(filter);
+        }
+      }
+    }
+    
+    return Filter.and(filters);
+  }
 
   public static void openGrid(String gridName) {
     openGrid(gridName, getGridCallback(gridName));
@@ -477,9 +496,10 @@ public class GridFactory {
 
   private static void createPresenter(int rowCount, BeeRowSet rowSet, boolean async,
       GridDescription gridDescription, GridCallback gridCallback,
-      PresenterCallback presenterCallback, Collection<UiOption> options) {
+      PresenterCallback presenterCallback, Map<String, Filter> initialFilters,
+      Collection<UiOption> options) {
     GridPresenter presenter = new GridPresenter(gridDescription.getViewName(), rowCount, rowSet,
-        async, gridDescription, gridCallback, options);
+        async, gridDescription, gridCallback, initialFilters, options);
     if (gridCallback != null) {
       gridCallback.onShow(presenter);
     }
@@ -502,8 +522,12 @@ public class GridFactory {
     if (limit <= 0) {
       limit = DataUtils.getMaxInitialRowSetSize();
     }
-
-    Queries.getRowSet(gridDescription.getViewName(), null, gridDescription.getInitialFilter(),
+    
+    final Map<String, Filter> initialFilters =
+        (gridCallback == null) ? null : gridCallback.getInitialFilters();
+    Filter filter = getInitialQueryFilter(gridDescription, initialFilters);
+    
+    Queries.getRowSet(gridDescription.getViewName(), null, filter,
         gridDescription.getOrder(), 0, limit, gridDescription.getCachingPolicy(),
         PropertyUtils.createProperties(Service.VAR_VIEW_SIZE, threshold),
         new Queries.RowSetCallback() {
@@ -518,7 +542,7 @@ public class GridFactory {
             rc = Math.max(rc, rowSet.getNumberOfRows());
 
             createPresenter(rc, rowSet, async, gridDescription, gridCallback, presenterCallback,
-                options);
+                initialFilters, options);
           }
         });
   }
