@@ -398,7 +398,7 @@ public class GridHolderBean {
         break;
 
       case CALCULATED:
-        if (column.getCalc() == null || column.getCalc().isEmpty()) {
+        if (column.getCalc() == null) {
           LogUtils.warning(logger, viewName, "column", column.getName(),
               "calculation not specified");
         } else {

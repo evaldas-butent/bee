@@ -11,53 +11,19 @@
     <footer borderWidth="0"/>
 
     <columns>
-      <BeeSelectionColumn name="Select" caption="&#x25a3;" />
-      <BeeCalcColumn name="Mode" type="string" caption="*">
-        <calc>
-          <function>
-            if (!row.LastAccess) {
-              return "N";
-            } else if(row.LastAccess &lt; row.LastPublish) {
-              return "U";
-            }
-            return "";
-          </function>
-        </calc>
+      <BeeSelectionColumn name="Select" caption="x" />
+      <BeeCalcColumn name="Mode" type="string" caption="&#160;" cell="html"
+        horizontalAlignment="center" width="15">
+        <calc><lambda>greenSmall, yellowSmall</lambda></calc>
       </BeeCalcColumn>
       <BeeIdColumn name="Id"  caption="ID" />
       <BeeCalcColumn name="Priority" type="string" caption="Prioritetas" sortBy="Priority">
-        <calc>
-          <function>
-            switch(row.Priority) {
-              case 0:
-                return "LOW";
-              case 1:
-                return "MEDIUM";
-              case 2:
-                return "HIGH";
-            }
-          </function>
-        </calc>
+        <calc><lambda/></calc>
       </BeeCalcColumn>
       <BeeDataColumn name="Description" source="Description" caption="Užduotis" />
       <BeeDataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
-      <BeeCalcColumn name="Status" type="string" caption="Būsena" sortBy="Event">
-        <calc>
-          <function>
-            switch(row.Event) {
-              case 0:
-                return "ACTIVATED";
-              case 1:
-                return "SUSPENDED";
-              case 2:
-                return "COMPLETED";
-              case 3:
-                return "APPROVED";
-              case 4:
-                return "CANCELED";
-            }
-          </function>
-        </calc>
+      <BeeCalcColumn name="Event" type="string" caption="Būsena" sortBy="Event">
+        <calc><lambda /></calc>
       </BeeCalcColumn>
       <BeeCalcColumn name="Owner" type="string" caption="Vadovas"
         sortBy="OwnerFirstName, OwnerLastName" searchBy="OwnerFirstName, OwnerLastName">
@@ -77,7 +43,7 @@
 
     <rowStyle>
       <style>
-        <inline>="color:red"</inline>
+        <inline>color: red;</inline>
       </style>
       <condition>
         <expression>row.Event == 0 &amp;&amp; row.FinishTime &lt; new Date()</expression>
@@ -85,7 +51,7 @@
     </rowStyle>
     <rowStyle>
       <style>
-        <inline>="color:black"</inline>
+        <inline>color: black;</inline>
       </style>
       <condition>
         <expression>row.Event == 0</expression>
@@ -93,7 +59,7 @@
     </rowStyle>
     <rowStyle>
       <style>
-        <inline>="color:gray"</inline>
+        <inline>color: gray;</inline>
       </style>
       <condition>
         <expression>true</expression>

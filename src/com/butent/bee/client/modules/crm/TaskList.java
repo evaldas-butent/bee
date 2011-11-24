@@ -4,19 +4,32 @@ import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Provider;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.grid.AbstractColumn;
+import com.butent.bee.client.grid.ColumnFooter;
+import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.resources.Images;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.utils.Evaluator.Evaluation;
+import com.butent.bee.client.utils.Evaluator.Parameters;
+import com.butent.bee.client.utils.AbstractEvaluation;
+import com.butent.bee.client.utils.HasEvaluation;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
+import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -29,6 +42,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.crm.CrmConstants;
+import com.butent.bee.shared.modules.crm.CrmConstants.Priority;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
@@ -79,7 +93,7 @@ public class TaskList {
       }
       if (isChecked("Updated")) {
         andFilter.add(ComparisonFilter.compareWithColumn(CrmConstants.COL_LAST_ACCESS, Operator.LT,
-            "LastPublish"));
+            CrmConstants.COL_LAST_PUBLISH));
       }
       if (isChecked("Overdue")) {
         andFilter.add(ComparisonFilter.isLess("FinishTime", now),
@@ -144,7 +158,7 @@ public class TaskList {
         }
       }
     }
-    
+
     public void updateFilter() {
       getGridPanel().getPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter());
     }
@@ -199,6 +213,73 @@ public class TaskList {
     }
 
     @Override
+    public boolean afterCreateColumn(String columnId, AbstractColumn<?> column,
+        ColumnHeader header, ColumnFooter footer) {
+
+      if (BeeUtils.same(columnId, CrmConstants.COL_PRIORITY)) {
+        if (column instanceof HasEvaluation) {
+          ((HasEvaluation) column).setEvaluation(PRIORITY_NAME);
+        }
+
+      } else if (BeeUtils.same(columnId, CrmConstants.COL_EVENT)) {
+        if (column instanceof HasEvaluation) {
+          ((HasEvaluation) column).setEvaluation(EVENT_NAME);
+        }
+
+      } else if (BeeUtils.same(columnId, "Mode") && column instanceof HasEvaluation) {
+        ((HasEvaluation) column).setEvaluation(new AbstractEvaluation() {
+          private Widget modeNew = null;
+          private Widget modeUpd = null;
+
+          @Override
+          public String eval(Parameters parameters) {
+            Long access = parameters.getLong(CrmConstants.COL_LAST_ACCESS);
+            if (access == null) {
+              return getHtml(modeNew);
+            }
+
+            Long publish = parameters.getLong(CrmConstants.COL_LAST_PUBLISH);
+            if (access < publish) {
+              return getHtml(modeUpd);
+            }
+            return BeeConst.STRING_EMPTY;
+          }
+          
+          @Override
+          public void setOptions(String options) {
+            if (!BeeUtils.isEmpty(options)) {
+              int idx = 0;
+              for (String mode : BeeUtils.NAME_SPLITTER.split(options)) {
+                ImageResource resource = Images.get(mode);
+                Widget widget = (resource == null) ? new BeeLabel(mode) : new BeeImage(resource);
+                switch (idx++) {
+                  case 0:
+                    modeNew = widget;
+                    break;
+                  case 1:
+                    modeUpd = widget;
+                    break;
+                }
+              }
+            }
+          }
+
+          private String getHtml(Widget widget) {
+            if (widget == null) {
+              return null;
+            } else if (widget instanceof BeeLabel) {
+              return widget.getElement().getInnerHTML();
+            } else {
+              DomUtils.createId(widget, "mode");
+              return widget.getElement().getString();
+            }
+          }
+        });
+      }
+      return true;
+    }
+
+    @Override
     public boolean beforeCreateColumn(String columnId, List<BeeColumn> dataColumns,
         ColumnDescription columnDescription) {
 
@@ -244,7 +325,7 @@ public class TaskList {
     public Map<String, Filter> getInitialFilters() {
       Filter filter = formHandler.getFilter();
       if (filter == null) {
-        return null; 
+        return null;
       } else {
         Map<String, Filter> filters = Maps.newHashMap();
         filters.put(FILTER_KEY, filter);
@@ -304,6 +385,20 @@ public class TaskList {
   }
 
   private static final String FILTER_KEY = "f1";
+
+  private static final Evaluation PRIORITY_NAME = new AbstractEvaluation() {
+    @Override
+    public String eval(Parameters parameters) {
+      return BeeUtils.getName(Priority.class, parameters.getInteger(CrmConstants.COL_PRIORITY));
+    }
+  };
+
+  private static final Evaluation EVENT_NAME = new AbstractEvaluation() {
+    @Override
+    public String eval(Parameters parameters) {
+      return BeeUtils.getName(TaskEvent.class, parameters.getInteger(CrmConstants.COL_EVENT));
+    }
+  };
 
   public static void open(String args) {
     Type type = null;

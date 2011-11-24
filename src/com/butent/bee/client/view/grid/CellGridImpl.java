@@ -550,7 +550,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
         case CALCULATED:
           Calculation calc = columnDescr.getCalc();
-          if (calc != null && !calc.isEmpty()) {
+          if (calc != null) {
             Cell<String> cell =
                 (cellType == null) ? new CalculatedCell() : GridFactory.createCell(cellType);
             CalculatedColumn calcColumn = new CalculatedColumn(cell, columnDescr.getValueType(),

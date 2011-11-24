@@ -189,9 +189,13 @@ public class JsUtils {
   }-*/;
 
   public static native String getProperty(JavaScriptObject obj, String p) /*-{
-    return obj[p];
+    return String(obj[p]);
   }-*/;
 
+  public static native int getPropertyInt(JavaScriptObject obj, String p) /*-{
+    return obj[p] || 0;
+  }-*/;
+  
   public static native boolean hasProperty(JavaScriptObject obj, String p) /*-{
     var ok;
 

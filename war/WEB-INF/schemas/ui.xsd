@@ -16,6 +16,7 @@
     <xs:choice>
       <xs:element name="expression" type="xs:normalizedString" />
       <xs:element name="function" type="xs:string" />
+      <xs:element name="lambda" type="xs:normalizedString" />
     </xs:choice>
   </xs:complexType>
 
@@ -158,21 +159,9 @@
       <xs:enumeration value="accept" />
       <xs:enumeration value="add" />
       <xs:enumeration value="arrowDown" />
-      <xs:enumeration value="arrowDownDisabled" />
-      <xs:enumeration value="arrowDownHover" />
-      <xs:enumeration value="arrowDownPressed" />
       <xs:enumeration value="arrowLeft" />
-      <xs:enumeration value="arrowLeftDisabled" />
-      <xs:enumeration value="arrowLeftHover" />
-      <xs:enumeration value="arrowLeftPressed" />
       <xs:enumeration value="arrowRight" />
-      <xs:enumeration value="arrowRightDisabled" />
-      <xs:enumeration value="arrowRightHover" />
-      <xs:enumeration value="arrowRightPressed" />
       <xs:enumeration value="arrowUp" />
-      <xs:enumeration value="arrowUpDisabled" />
-      <xs:enumeration value="arrowUpHover" />
-      <xs:enumeration value="arrowUpPressed" />
       <xs:enumeration value="ascending" />
       <xs:enumeration value="bookmark" />
       <xs:enumeration value="bookmark_add" />
@@ -187,6 +176,8 @@
       <xs:enumeration value="exit" />
       <xs:enumeration value="first" />
       <xs:enumeration value="forward" />
+      <xs:enumeration value="green" />
+      <xs:enumeration value="greenSmall" />
       <xs:enumeration value="html" />
       <xs:enumeration value="last" />
       <xs:enumeration value="loading" />
@@ -195,16 +186,17 @@
       <xs:enumeration value="ok" />
       <xs:enumeration value="play" />
       <xs:enumeration value="previous" />
+      <xs:enumeration value="red" />
+      <xs:enumeration value="redSmall" />
       <xs:enumeration value="redo" />
       <xs:enumeration value="refresh" />
       <xs:enumeration value="reload" />
       <xs:enumeration value="rewind" />
       <xs:enumeration value="save" />
       <xs:enumeration value="search" />
-      <xs:enumeration value="slider" />
-      <xs:enumeration value="sliderDisabled" />
-      <xs:enumeration value="sliderSliding" />
       <xs:enumeration value="undo" />
+      <xs:enumeration value="yellow" />
+      <xs:enumeration value="yellowSmall" />
     </xs:restriction>
   </xs:simpleType>
   

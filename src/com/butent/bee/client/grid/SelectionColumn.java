@@ -2,6 +2,7 @@ package com.butent.bee.client.grid;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.Cell.Context;
+import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.data.IsRow;
@@ -14,10 +15,10 @@ public class SelectionColumn extends AbstractColumn<Boolean> {
   private final CellGrid grid;
   
   public SelectionColumn(CellGrid grid) {
-    this(grid, new BooleanCell());
+    this(grid, new SimpleBooleanCell());
   }
   
-  public SelectionColumn(CellGrid grid, Cell<Boolean> cell) {
+  private SelectionColumn(CellGrid grid, Cell<Boolean> cell) {
     super(cell);
     this.grid = grid;
     setHorizontalAlignment(ALIGN_CENTER);
@@ -46,6 +47,10 @@ public class SelectionColumn extends AbstractColumn<Boolean> {
   @Override
   public ValueType getValueType() {
     return ValueType.BOOLEAN;
+  }
+  
+  public void update(Element cellElement, boolean value) {
+    ((SimpleBooleanCell) getCell()).update(cellElement, value);
   }
 
   private CellGrid getGrid() {

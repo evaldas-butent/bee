@@ -80,8 +80,7 @@ public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
   }
 
   public boolean validState() {
-    return getStyle() != null && !getStyle().isEmpty()
-        && getCondition() != null && !getCondition().isEmpty();
+    return getStyle() != null && !getStyle().isEmpty() && getCondition() != null;
   }
 
   private void setCondition(Calculation condition) {

@@ -8,6 +8,7 @@ import com.google.gwt.core.client.JsDate;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
@@ -74,6 +75,17 @@ public class Evaluator extends Calculation {
       return dataColumns;
     }
 
+    public Integer getInteger(String columnId) {
+      if (getLastRow() == null) {
+        return null;
+      }
+      int index = DataUtils.getColumnIndex(columnId, getDataColumns());
+      if (BeeConst.isUndef(index)) {
+        return null;
+      }
+      return getLastRow().getInteger(index);
+    }
+
     public String getLastCellValue() {
       return lastCellValue;
     }
@@ -90,6 +102,17 @@ public class Evaluator extends Calculation {
       return lastRow;
     }
 
+    public Long getLong(String columnId) {
+      if (getLastRow() == null) {
+        return null;
+      }
+      int index = DataUtils.getColumnIndex(columnId, getDataColumns());
+      if (BeeConst.isUndef(index)) {
+        return null;
+      }
+      return getLastRow().getLong(index);
+    }
+
     public double getRowId() {
       return rowId;
     }
@@ -104,6 +127,17 @@ public class Evaluator extends Calculation {
 
     public JsDate getRowVersion() {
       return rowVersion;
+    }
+
+    public String getString(String columnId) {
+      if (getLastRow() == null) {
+        return null;
+      }
+      int index = DataUtils.getColumnIndex(columnId, getDataColumns());
+      if (BeeConst.isUndef(index)) {
+        return null;
+      }
+      return getLastRow().getString(index);
     }
 
     public void setCellNewValue(ValueType type, String newValue) {
@@ -165,6 +199,12 @@ public class Evaluator extends Calculation {
       this.rowVersion = rowVersion;
     }
   }
+  
+  public interface Evaluation {
+    String eval(Parameters parameters);
+    
+    void setOptions(String options);
+  }
 
   /**
    * Requires implementing classes to have methods for getting and setting value change related
@@ -181,6 +221,8 @@ public class Evaluator extends Calculation {
 
     List<? extends IsColumn> getDataColumns();
 
+    Integer getInteger(String columnId);
+    
     String getLastCellValue();
 
     String getLastNewValue();
@@ -189,6 +231,8 @@ public class Evaluator extends Calculation {
 
     IsRow getLastRow();
 
+    Long getLong(String columnId);
+    
     double getRowId();
 
     double getRowIndex();
@@ -196,6 +240,8 @@ public class Evaluator extends Calculation {
     JavaScriptObject getRowValues();
 
     JsDate getRowVersion();
+    
+    String getString(String columnId); 
 
     void setCellNewValue(ValueType type, String newValue);
 
@@ -231,11 +277,11 @@ public class Evaluator extends Calculation {
 
   public static Evaluator create(Calculation calc, String colName,
       List<? extends IsColumn> dataColumns) {
-    if (calc == null || calc.isEmpty()) {
+    if (calc == null) {
       return null;
     }
 
-    Evaluator evaluator = new Evaluator(calc.getExpression(), calc.getFunction());
+    Evaluator evaluator = new Evaluator(calc.getExpression(), calc.getFunction(), calc.getLambda());
     if (dataColumns != null && !dataColumns.isEmpty()) {
       evaluator.init(colName, dataColumns);
     }
@@ -255,9 +301,11 @@ public class Evaluator extends Calculation {
   private Parameters parameters = null;
 
   private final JavaScriptObject interpeter;
+  
+  private Evaluation evaluation = null;
 
-  private Evaluator(String expression, String function) {
-    super(expression, function);
+  private Evaluator(String expression, String function, String lambda) {
+    super(expression, function, lambda);
 
     if (!BeeUtils.isEmpty(expression)) {
       this.interpeter = createExprInterpreter(expression);
@@ -269,7 +317,13 @@ public class Evaluator extends Calculation {
   }
 
   public String evaluate() {
-    return evaluate(getInterpeter());
+    if (getEvaluation() == null) {
+      return evaluate(getInterpeter());
+    } else if (getParameters() == null) {
+      return null;
+    } else {
+      return getEvaluation().eval(getParameters());
+    }
   }
 
   public String evaluate(JavaScriptObject fnc) {
@@ -288,6 +342,10 @@ public class Evaluator extends Calculation {
       s = null;
     }
     return s;
+  }
+
+  public Evaluation getEvaluation() {
+    return evaluation;
   }
 
   public void init(String colName, List<? extends IsColumn> dataColumns) {
@@ -350,6 +408,13 @@ public class Evaluator extends Calculation {
         pfx + CELL_OBJECT + PROPERTY_SEPARATOR + PROPERTY_NEW_VALUE + sfx, value);
 
     return result;
+  }
+
+  public void setEvaluation(Evaluation evaluation) {
+    this.evaluation = evaluation;
+    if (this.evaluation != null) {
+      this.evaluation.setOptions(getLambda());
+    }
   }
 
   public void setParameters(Parameters parameters) {

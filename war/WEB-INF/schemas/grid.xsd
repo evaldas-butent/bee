@@ -130,7 +130,7 @@
 
   <xs:simpleType name="widthType">
     <xs:restriction base="xs:positiveInteger">
-      <xs:minInclusive value="16" />
+      <xs:minInclusive value="12" />
       <xs:maxInclusive value="999" />
     </xs:restriction>
   </xs:simpleType>

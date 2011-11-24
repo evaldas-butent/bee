@@ -137,13 +137,27 @@ public class XmlUtils {
 
   public static Calculation getCalculation(Element element) {
     Assert.notNull(element);
+    
+    String expr = null;
+    String func = null;
+    String lamb = null;
+    
+    for (Element child : getChildrenElements(element)) {
+      String tag = child.getTagName();
+      String text = getText(child);
+      if (BeeUtils.isEmpty(text)) {
+        continue;
+      }
 
-    String expr = getText(getFirstChildElement(element, Calculation.TAG_EXPRESSION));
-    String func = getText(getFirstChildElement(element, Calculation.TAG_FUNCTION));
-    if (BeeUtils.allEmpty(expr, func)) {
-      return null;
+      if (BeeUtils.same(tag, Calculation.TAG_EXPRESSION)) {
+        expr = text;
+      } else if (BeeUtils.same(tag, Calculation.TAG_FUNCTION)) {
+        func = text;
+      } else if (BeeUtils.same(tag, Calculation.TAG_LAMBDA)) {
+        lamb = text;
+      }
     }
-    return new Calculation(expr, func);
+    return new Calculation(expr, func, lamb);
   }
 
   public static Calculation getCalculation(Element parent, String tagName) {

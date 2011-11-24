@@ -118,6 +118,12 @@ public class Images {
 
     @Source("forward.png")
     ImageResource forward();
+    
+    @Source("green.gif")
+    ImageResource green();
+
+    @Source("greenSmall.gif")
+    ImageResource greenSmall();
 
     @Source("html.png")
     ImageResource html();
@@ -143,9 +149,15 @@ public class Images {
     @Source("previous.png")
     ImageResource previous();
 
+    @Source("red.gif")
+    ImageResource red();
+
     @Source("redo.png")
     ImageResource redo();
 
+    @Source("redSmall.gif")
+    ImageResource redSmall();
+    
     @Source("refresh.png")
     ImageResource refresh();
 
@@ -172,6 +184,12 @@ public class Images {
 
     @Source("undo.png")
     ImageResource undo();
+
+    @Source("yellow.gif")
+    ImageResource yellow();
+
+    @Source("yellowSmall.gif")
+    ImageResource yellowSmall();
   }
 
   private static final Map<String, ImageResource> map = Maps.newHashMap();
@@ -240,6 +258,9 @@ public class Images {
 
     map.put(key("forward"), resources.forward());
 
+    map.put(key("green"), resources.green());
+    map.put(key("greenSmall"), resources.greenSmall());
+
     map.put(key("html"), resources.html());
 
     map.put(key("last"), resources.last());
@@ -255,6 +276,9 @@ public class Images {
     map.put(key("play"), resources.play());
 
     map.put(key("previous"), resources.previous());
+
+    map.put(key("red"), resources.red());
+    map.put(key("redSmall"), resources.redSmall());
 
     map.put(key("redo"), resources.redo());
 
@@ -272,6 +296,9 @@ public class Images {
     map.put(key("sliderSliding"), resources.sliderSliding());
 
     map.put(key("undo"), resources.undo());
+
+    map.put(key("yellow"), resources.yellow());
+    map.put(key("yellowSmall"), resources.yellowSmall());
   }
 
   private static String key(String name) {

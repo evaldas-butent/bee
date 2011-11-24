@@ -27,6 +27,7 @@ public class CrmConstants {
   public static final String VAR_TASK_OBSERVERS = Service.RPC_VAR_PREFIX + "task_observers";
 
   public static final String COL_LAST_ACCESS = "LastAccess";
+  public static final String COL_LAST_PUBLISH = "LastPublish";
 
   public static final String COL_FIRST_NAME = "FirstName";
   public static final String COL_LAST_NAME = "LastName";

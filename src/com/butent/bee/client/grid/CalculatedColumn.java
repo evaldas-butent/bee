@@ -11,6 +11,8 @@ import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.utils.Evaluator.Evaluation;
+import com.butent.bee.client.utils.HasEvaluation;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.HasPrecision;
@@ -27,7 +29,7 @@ import com.butent.bee.shared.utils.TimeUtils;
  */
 
 public class CalculatedColumn extends AbstractColumn<String> implements HasDateTimeFormat,
-    HasNumberFormat, HasPrecision, HasScale {
+    HasNumberFormat, HasPrecision, HasScale, HasEvaluation {
 
   private final ValueType valueType;
   private final Evaluator evaluator;
@@ -105,6 +107,12 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
 
   public void setDateTimeFormat(DateTimeFormat format) {
     this.dateTimeformat = format;
+  }
+
+  public void setEvaluation(Evaluation evaluation) {
+    if (getEvaluator() != null) {
+      getEvaluator().setEvaluation(evaluation);
+    }
   }
 
   public void setNumberFormat(NumberFormat format) {

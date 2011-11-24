@@ -921,6 +921,19 @@ public class BeeUtils {
     return key;
   }
   
+  public static <E extends Enum<?>> String getName(Class<E> clazz, Integer idx) {
+    if (clazz == null || idx == null || idx < 0) {
+      return null;
+    }
+
+    E[] constants = clazz.getEnumConstants();
+    if (constants != null && idx < constants.length) {
+      return constants[idx].name();
+    } else {
+      return null;
+    }
+  }
+  
   /**
    * Gets a prefix from a String, where separator sets that the prefix will end at the first
    * occurrence of the separator.

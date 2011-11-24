@@ -44,6 +44,7 @@ import com.butent.bee.client.grid.AbstractColumn;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.SelectionColumn;
 import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.StyleDescriptor;
 import com.butent.bee.client.view.edit.EditStartEvent;
@@ -1211,6 +1212,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return rowData;
   }
   
+  public ConditionalStyle getRowStyles() {
+    return rowStyles;
+  }
+
   public LinkedHashMap<Long, RowInfo> getSelectedRows() {
     return selectedRows;
   }
@@ -1357,7 +1362,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   public boolean isRowSelected(long rowId) {
     return getSelectedRows().containsKey(rowId);
   }
-
+  
   public boolean isSortable(String columnId) {
     ColumnInfo info = getColumnInfo(columnId);
     if (info == null) {
@@ -1365,7 +1370,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
     return info.getColumn().isSortable();
   }
-  
+
   @Override
   public void onBrowserEvent(Event event) {
     super.onBrowserEvent(event);
@@ -1379,7 +1384,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       return;
     }
     Element target = Element.as(eventTarget);
-
+    
     TargetType targetType = null;
     String rowIdx = null;
     int row = BeeConst.UNDEF;
@@ -1496,11 +1501,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         }
 
         int keyCode = event.getKeyCode();
-        if (keyCode == KeyCodes.KEY_ENTER || keyCode == KeyCodes.KEY_DELETE) {
+        if (handleKey(keyCode, EventUtils.hasModifierKey(event), row, col, target)) {
+          EventUtils.eatEvent(event);
+        } else if (getColumnInfo(col).isSelection()) {
+          EventUtils.eatEvent(event);
+          selectRow(row, rowValue);
+        } else if (keyCode == KeyCodes.KEY_ENTER || keyCode == KeyCodes.KEY_DELETE) {
           EventUtils.eatEvent(event);
           startEditing(rowValue, col, target, EditorFactory.getStartKey(keyCode));
-        } else if (handleKey(keyCode, EventUtils.hasModifierKey(event), row, col, target)) {
-          EventUtils.eatEvent(event);
         }
         return;
 
@@ -1571,7 +1579,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       bringToFront(row, col);
     }
   }
-
+  
   public void onMultiDelete(MultiDeleteEvent event) {
     Assert.notNull(event);
     for (RowInfo rowInfo : event.getRows()) {
@@ -1579,7 +1587,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
     setRowCount(getRowCount() - event.getRows().size(), true);
   }
-  
+
   public void onRowDelete(RowDeleteEvent event) {
     Assert.notNull(event);
     deleteRow(event.getRowId());
@@ -2244,7 +2252,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       getResizedCells().rowKeySet().remove(rowId);
     }
   }
-
+  
   private int estimateBodyCellWidth(int rowIndex, int col, IsRow rowValue,
       AbstractColumn<?> column, Font font) {
     SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
@@ -2254,16 +2262,16 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     return Rulers.getLineWidth(cellHtml.asString(), font);
   }
-  
+
   private <T extends IsRow> int estimateColumnWidth(int col, boolean update) {
     return estimateColumnWidth(col, getRowData(), update);
   }
-
+  
   private <T extends IsRow> int estimateColumnWidth(int col, List<T> values, boolean update) {
     Assert.notNull(values);
     return estimateColumnWidth(col, values, values.size(), update);
   }
-  
+
   private <T extends IsRow> int estimateColumnWidth(int col, List<T> values, int length,
       boolean update) {
     Assert.notNull(values);
@@ -2861,10 +2869,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   private String getRowSelector(String rowIdx) {
     return Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_ROW, rowIdx);
-  }
-
-  private ConditionalStyle getRowStyles() {
-    return rowStyles;
   }
 
   private int getRowWidth(String rowIdx) {
@@ -4116,7 +4120,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     for (int col = 0; col < getColumnCount(); col++) {
       if (getColumnInfo(col).isSelection()) {
-        refreshCell(rowIndex, col);
+        AbstractColumn<?> column = getColumnInfo(col).getColumn();
+        if (column instanceof SelectionColumn) {
+          ((SelectionColumn) column).update(getCellElement(rowIndex, col), !wasSelected);
+        } else {
+          refreshCell(rowIndex, col);
+        }
       }
     }
     

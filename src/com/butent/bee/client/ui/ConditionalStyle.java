@@ -4,6 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.utils.Evaluator.Evaluation;
+import com.butent.bee.client.utils.HasEvaluation;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
@@ -17,7 +19,7 @@ import java.util.List;
  * Enables using conditional CSS styles for elements of user interface.
  */
 
-public class ConditionalStyle {
+public class ConditionalStyle implements HasEvaluation {
 
   private class Entry {
     private final StyleDescriptor styleDescriptor;
@@ -110,6 +112,14 @@ public class ConditionalStyle {
   public StyleDescriptor getStyleDescriptor(IsRow rowValue, int rowIndex, int colIndex,
       ValueType cellType, String cellValue) {
     return getStyleDescriptor(rowValue, rowIndex, colIndex, true, cellType, cellValue);
+  }
+
+  public void setEvaluation(Evaluation evaluation) {
+    for (Entry entry : getEntries()) {
+      if (entry.getEvaluator() != null) {
+        entry.getEvaluator().setEvaluation(evaluation);
+      }
+    }
   }
 
   private void addEntry(Entry entry) {
