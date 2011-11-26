@@ -14,8 +14,14 @@
   <item id="observed_tasks" parent="task_menu" order="30" text="Stebimos" service="task_list" parameters="o" />
   <item id="duration_types" parent="task_menu" order="100" text="Darbų tipai" service="grid" parameters="DurationTypes" separators="*" />
 
-  <item id="process_menu" order="40" text="Procesai" />
+  <item id="project_menu" order="40" text="Projektai" />
+  <item id="controled_projects" parent="project_menu" order="10" text="Valdomi" service="grid" parameters="UserProjects" />
+  <item id="observed_projects" parent="project_menu" order="20" text="Stebimi" service="grid" parameters="UserProjects" />
+  <item id="project_types" parent="project_menu" order="100" text="Projektų tipai" service="grid" parameters="ProjectTypes" separators="*" />
+
+  <item id="process_menu" order="50" text="Procesai" />
   <item id="tasks" parent="process_menu" order="10" text="Užduotys" service="grid" parameters="Tasks" />
+  <item id="projects" parent="process_menu" order="20" text="Projektai" service="grid" parameters="Projects" />
 
   <item id="adm_menu" order="200" text="Administravimas" />
   <item id="roles" parent="adm_menu" order="10" text="Rolės" service="grid" parameters="Roles" />

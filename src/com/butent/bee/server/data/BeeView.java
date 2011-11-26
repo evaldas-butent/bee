@@ -526,11 +526,9 @@ public class BeeView implements HasExtendedInfo {
 
   private IsCondition getCondition(ColumnIsEmptyFilter flt) {
     String colName = flt.getColumn();
-    String als = getColumnSource(colName);
-    String fld = getColumnField(colName);
 
-    return SqlUtils.or(SqlUtils.isNull(als, fld),
-        SqlUtils.equal(als, fld, getColumnType(colName).getEmptyValue()));
+    return SqlUtils.or(SqlUtils.isNull(getSqlExpression(colName)),
+        SqlUtils.equal(getSqlExpression(colName), getColumnType(colName).getEmptyValue()));
   }
 
   private IsCondition getCondition(ColumnValueFilter flt) {

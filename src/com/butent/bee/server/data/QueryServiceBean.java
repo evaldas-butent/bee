@@ -103,6 +103,11 @@ public class QueryServiceBean {
     return sqlEngine;
   }
 
+  public boolean dbExists(String source, IsCondition where) {
+    return dbRowCount(new SqlSelect()
+        .addConstant(null, "dummy").addFrom(source).setWhere(where)) > 0;
+  }
+
   public SimpleRowSet dbFields(String dbName, String dbSchema, String table) {
     return getData(SqlUtils.dbFields(dbName, dbSchema, table));
   }

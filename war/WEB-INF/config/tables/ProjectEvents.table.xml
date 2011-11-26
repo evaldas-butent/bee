@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/table.xsd"
+
+  name="ProjectEvents"
+  idName="ProjectEventID"
+  x="559" y="5"
+  >
+  <BeeFields>
+    <BeeField name="Project" type="LONG" notNull="true" relation="Projects" cascade="DELETE" />
+    <BeeField name="Publisher" type="LONG" notNull="true" relation="Users" />
+    <BeeField name="PublishTime" type="DATETIME" notNull="true" />
+    <BeeField name="Comment" type="TEXT" />
+    <BeeField name="Event" type="INTEGER" notNull="true" />
+    <BeeField name="EventNote" type="STRING" precision="100" />
+  </BeeFields>
+  <BeeKeys>
+    <BeeKey>
+      <KeyField>Event</KeyField>
+    </BeeKey>
+  </BeeKeys>
+</BeeTable>

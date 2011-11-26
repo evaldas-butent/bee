@@ -37,6 +37,11 @@
         <BeeSimpleColumn name="PersonLastName" expression="LastName" />
       </BeeSimpleJoin>
     </BeeSimpleJoin>
+    <BeeSimpleJoin expression="ProjectStage" joinType="LEFT">
+      <BeeSimpleJoin expression="Project" joinType="LEFT">
+        <BeeSimpleColumn expression="Name" name="ProjectName" />
+      </BeeSimpleJoin>
+    </BeeSimpleJoin>
     <BeeExternalJoin source="TaskUsers" expression="Task" joinType="LEFT">
         <BeeHiddenColumn expression="User" />
         <BeeAggregateColumn expression="LastAccess" aggregate="MAX" />

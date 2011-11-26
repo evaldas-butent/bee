@@ -7,6 +7,11 @@ public class CrmConstants {
     LOW, MEDIUM, HIGH
   }
 
+  public static enum ProjectEvent {
+    CREATED, ACTIVATED, SUSPENDED, COMPLETED, CANCELED,
+    EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED, DELETED
+  }
+
   public static enum TaskEvent {
     ACTIVATED, SUSPENDED, COMPLETED, APPROVED, CANCELED,
     FORWARDED, EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED, DELETED
@@ -15,6 +20,9 @@ public class CrmConstants {
   public static final String CRM_MODULE = "CrmModule";
   public static final String CRM_METHOD = CRM_MODULE + "Method";
 
+  public static final String CRM_TASK_PREFIX = "task_";
+  public static final String CRM_PROJECT_PREFIX = "project_";
+
   public static final String VAR_TASK_ID = Service.RPC_VAR_PREFIX + "task_id";
   public static final String VAR_TASK_DATA = Service.RPC_VAR_PREFIX + "task_data";
   public static final String VAR_TASK_COMMENT = Service.RPC_VAR_PREFIX + "task_comment";
@@ -22,9 +30,14 @@ public class CrmConstants {
   public static final String VAR_TASK_DURATION_DATE = Service.RPC_VAR_PREFIX + "task_duration_date";
   public static final String VAR_TASK_DURATION_TIME = Service.RPC_VAR_PREFIX + "task_duration_time";
   public static final String VAR_TASK_DURATION_TYPE = Service.RPC_VAR_PREFIX + "task_duration_type";
-
   public static final String VAR_TASK_EXECUTORS = Service.RPC_VAR_PREFIX + "task_executors";
   public static final String VAR_TASK_OBSERVERS = Service.RPC_VAR_PREFIX + "task_observers";
+
+  public static final String VAR_PROJECT_ID = Service.RPC_VAR_PREFIX + "project_id";
+  public static final String VAR_PROJECT_DATA = Service.RPC_VAR_PREFIX + "project_data";
+  public static final String VAR_PROJECT_COMMENT = Service.RPC_VAR_PREFIX + "project_comment";
+
+  public static final String TBL_TASK_USERS = "TaskUsers";
 
   public static final String COL_LAST_ACCESS = "LastAccess";
   public static final String COL_LAST_PUBLISH = "LastPublish";
@@ -39,6 +52,7 @@ public class CrmConstants {
   public static final String COL_OWNER = "Owner";
   public static final String COL_EXECUTOR = "Executor";
 
+  public static final String COL_PROJECT = "Project";
   public static final String COL_TASK = "Task";
   public static final String COL_USER = "User";
 }

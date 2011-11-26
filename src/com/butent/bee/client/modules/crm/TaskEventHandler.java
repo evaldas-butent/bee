@@ -105,14 +105,14 @@ public class TaskEventHandler {
       if (getExecutor() != null && !getExecutor().equals(getOwner())) {
         filters.add(excludeUser(getExecutor()));
       }
-      
+
       int index = presenter.getDataProvider().getColumnIndex(CrmConstants.COL_USER);
       for (IsRow row : presenter.getView().getContent().getGrid().getRowData()) {
         filters.add(excludeUser(row.getLong(index)));
       }
-      
+
       final long task = presenter.getView().getContent().getRelId();
-      
+
       Queries.getRowSet("Users", null, CompoundFilter.and(filters), null, new RowSetCallback() {
         public void onFailure(String[] reason) {
         }
@@ -130,7 +130,7 @@ public class TaskEventHandler {
                   addObservers(presenter, task, rows);
                 }
               });
-          
+
           Widget target = null;
           if (result.getNumberOfRows() < 20) {
             DataHeaderView header = presenter.getView().getHeader();
@@ -143,7 +143,7 @@ public class TaskEventHandler {
               }
             }
           }
-          
+
           if (target == null) {
             selector.center();
           } else {
@@ -163,11 +163,11 @@ public class TaskEventHandler {
       } else {
         Long usr = BeeKeeper.getUser().getUserId();
         Long obs = row.getLong(presenter.getDataProvider().getColumnIndex(CrmConstants.COL_USER));
-        
+
         if (usr == null || obs == null || obs.equals(getOwner()) || obs.equals(getExecutor())) {
           result = -1;
         } else if (usr.equals(getOwner())) {
-          result = 0; 
+          result = 0;
         } else if (usr.equals(obs)) {
           result = 0;
         } else {
@@ -208,17 +208,17 @@ public class TaskEventHandler {
       if (BeeUtils.isEmpty(users)) {
         return;
       }
-      
-      List<BeeColumn> columns = 
+
+      List<BeeColumn> columns =
           Lists.newArrayList(new BeeColumn(ValueType.LONG, CrmConstants.COL_TASK),
               new BeeColumn(ValueType.LONG, CrmConstants.COL_USER));
       BeeRowSet rowSet = new BeeRowSet("TaskObservers", columns);
-      
+
       for (IsRow row : users) {
         rowSet.addRow(new BeeRow(0,
             new String[] {BeeUtils.toString(task), BeeUtils.toString(row.getId())}));
       }
-      
+
       Queries.insert(rowSet, new RowSetCallback() {
         public void onFailure(String[] reason) {
           presenter.getView().getContent().notifySevere(reason);
@@ -236,7 +236,7 @@ public class TaskEventHandler {
     private Long getExecutor() {
       return executor;
     }
-    
+
     private Map<String, Filter> getFilters() {
       Map<String, Filter> filters = Maps.newHashMap();
 
@@ -247,25 +247,25 @@ public class TaskEventHandler {
         filter = ComparisonFilter.isNotEqual(CrmConstants.COL_USER, new LongValue(getExecutor()));
       }
       filters.put(CrmConstants.COL_EXECUTOR, filter);
-      
+
       if (getOwner() == null || getOwner().equals(getExecutor())) {
         filter = null;
       } else {
         filter = ComparisonFilter.isNotEqual(CrmConstants.COL_USER, new LongValue(getOwner()));
       }
       filters.put(CrmConstants.COL_OWNER, filter);
-      
+
       return filters;
     }
-    
+
     private Long getOwner() {
       return owner;
     }
-    
+
     private void setExecutor(Long executor) {
       this.executor = executor;
     }
-    
+
     private void setOwner(Long owner) {
       this.owner = owner;
     }
@@ -710,7 +710,7 @@ public class TaskEventHandler {
       return null;
     }
   }
-  
+
   private static class TaskEditHandler extends AbstractFormCallback {
     private static int counter = 0;
 
@@ -719,10 +719,10 @@ public class TaskEventHandler {
 
     @Override
     public void afterCreateWidget(String name, final Widget widget) {
-      if (!BeeUtils.isEmpty(name) 
+      if (!BeeUtils.isEmpty(name)
           && BeeUtils.inListSame(name, CrmConstants.COL_PRIORITY, CrmConstants.COL_EVENT)) {
         setWidget(name, widget);
-        
+
       } else if (BeeUtils.same(name, "TaskObservers") && widget instanceof ChildGrid) {
         setObserverHandler(new ObserverHandler());
         ((ChildGrid) widget).setGridCallback(getObserverHandler());
@@ -788,7 +788,7 @@ public class TaskEventHandler {
     public void beforeRefresh(FormView form, IsRow row) {
       Long owner = (row == null) ? null : row.getLong(form.getDataIndex(CrmConstants.COL_OWNER));
       Long exec = (row == null) ? null : row.getLong(form.getDataIndex(CrmConstants.COL_EXECUTOR));
-      
+
       if (getObserverHandler() != null) {
         getObserverHandler().setOwner(owner);
         getObserverHandler().setExecutor(exec);
@@ -880,7 +880,7 @@ public class TaskEventHandler {
 
   private static ParameterList createParams(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(CrmConstants.CRM_MODULE);
-    args.addQueryItem(CrmConstants.CRM_METHOD, name);
+    args.addQueryItem(CrmConstants.CRM_METHOD, CrmConstants.CRM_TASK_PREFIX + name);
     return args;
   }
 
@@ -1372,7 +1372,7 @@ public class TaskEventHandler {
   private static Filter excludeUser(long userId) {
     return ComparisonFilter.compareId(CrmConstants.COL_USER_ID, Operator.NE, userId);
   }
-  
+
   private TaskEventHandler() {
   }
 }

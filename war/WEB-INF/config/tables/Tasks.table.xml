@@ -17,6 +17,7 @@
     <BeeField name="Executor" type="LONG" notNull="true" relation="Users" />
     <BeeField name="Company" type="LONG" relation="Companies" />
     <BeeField name="CompanyPerson" type="LONG" relation="CompanyPersons" />
+    <BeeField name="ProjectStage" type="LONG" relation="ProjectStages" />
   </BeeFields>
   <BeeKeys>
     <BeeKey>

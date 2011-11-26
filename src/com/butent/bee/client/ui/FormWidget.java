@@ -20,6 +20,7 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConst
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.view.client.TreeViewModel;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
@@ -61,6 +62,7 @@ import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.resources.Images;
+import com.butent.bee.client.tree.BeeCellTree;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetCallback;
 import com.butent.bee.client.utils.JsonUtils;
@@ -183,7 +185,8 @@ public enum FormWidget {
   VALUE_SPINNER("ValueSpinner", EnumSet.of(Type.EDITABLE)),
   VERTICAL_PANEL("VerticalPanel", EnumSet.of(Type.CELL_VECTOR)),
   VIDEO("Video", EnumSet.of(Type.DISPLAY)),
-  VOLUME_SLIDER("VolumeSlider", EnumSet.of(Type.EDITABLE));
+  VOLUME_SLIDER("VolumeSlider", EnumSet.of(Type.EDITABLE)),
+  CELL_TREE("CellTree", EnumSet.of(Type.DISPLAY));
 
   /**
    * Contains a list of possible form element parameters like editable or focusable.
@@ -304,7 +307,7 @@ public enum FormWidget {
 
   private static final String ATTR_VALUE_NUMERIC = "valueNumeric";
   private static final String ATTR_VALUE_START_INDEX = "valueStartIndex";
-  
+
   private static final String ATTR_MIN = "min";
   private static final String ATTR_MAX = "max";
   private static final String ATTR_STEP = "step";
@@ -343,7 +346,7 @@ public enum FormWidget {
   private static final String ATTR_OPTIONS = "options";
 
   private static final String ATTR_EVENT = "event";
-  
+
   private static final String TAG_DYN_STYLE = "dynStyle";
   private static final String TAG_HANDLER = "handler";
 
@@ -373,7 +376,7 @@ public enum FormWidget {
   private static final String TAG_DOWN_HOVERING_FACE = "downHoveringFace";
   private static final String TAG_UP_DISABLED_FACE = "upDisabledFace";
   private static final String TAG_DOWN_DISABLED_FACE = "downDisabledFace";
-  
+
   public static FormWidget getByTagName(String tagName) {
     if (!BeeUtils.isEmpty(tagName)) {
       for (FormWidget widget : FormWidget.values()) {
@@ -454,7 +457,7 @@ public enum FormWidget {
       case CHILD_GRID:
         String relColumn = attributes.get(ATTR_REL_COLUMN);
         String source = attributes.get(ATTR_SOURCE);
-        int sourceIndex = BeeUtils.isEmpty(source) 
+        int sourceIndex = BeeUtils.isEmpty(source)
             ? DataUtils.ID_INDEX : DataUtils.getColumnIndex(source, columns);
 
         if (!BeeUtils.isEmpty(name) && !BeeUtils.isEmpty(relColumn)
@@ -516,7 +519,7 @@ public enum FormWidget {
           widget = new DecimalLabel(format);
         }
         break;
-        
+
       case DISCLOSURE:
         if (BeeUtils.isEmpty(html)) {
           widget = new Disclosure();
@@ -580,7 +583,7 @@ public enum FormWidget {
           widget = new Html(html);
         }
         break;
-      
+
       case HTML_PANEL:
         if (!children.isEmpty()) {
           StringBuilder sb = new StringBuilder();
@@ -937,6 +940,22 @@ public enum FormWidget {
           }
         }
         break;
+
+      case CELL_TREE:
+        widget = new BeeCellTree(new TreeViewModel() {
+          @Override
+          public <T> NodeInfo<?> getNodeInfo(T value) {
+            // TODO Auto-generated method stub
+            return null;
+          }
+
+          @Override
+          public boolean isLeaf(Object value) {
+            // TODO Auto-generated method stub
+            return false;
+          }
+        }, null);
+        break;
     }
 
     if (widget == null) {
@@ -969,7 +988,7 @@ public enum FormWidget {
           if (csd != null) {
             dynStyles.add(csd);
           }
-          
+
         } else if (BeeUtils.same(childTag, TAG_HANDLER)) {
           addHandler(widget, child.getAttribute(ATTR_EVENT), XmlUtils.getText(child));
 
@@ -1046,7 +1065,7 @@ public enum FormWidget {
   public boolean isChild() {
     return hasType(Type.IS_CHILD);
   }
-  
+
   public boolean isDisplay() {
     return hasType(Type.DISPLAY);
   }
@@ -1058,7 +1077,7 @@ public enum FormWidget {
   public boolean isFocusable() {
     return hasType(Type.FOCUSABLE);
   }
-  
+
   public boolean isGrid() {
     return hasType(Type.IS_GRID);
   }
@@ -1211,10 +1230,10 @@ public enum FormWidget {
         BeeKeeper.getLog().warning("update display:", getTagName(), "not supported");
     }
   }
-  
+
   private void addHandler(Widget widget, String event, String handler) {
     Assert.notNull(widget);
-    
+
     if (BeeUtils.isEmpty(event)) {
       BeeKeeper.getLog().warning("add handler:", BeeUtils.getClassName(widget.getClass()),
           DomUtils.getId(widget), "event type not specified");
@@ -1225,7 +1244,7 @@ public enum FormWidget {
           DomUtils.getId(widget), event, "event handler not specified");
       return;
     }
-    
+
     boolean ok = EventUtils.addDomHandler(widget, event, handler);
     if (!ok) {
       BeeKeeper.getLog().warning("add handler:", BeeUtils.getClassName(widget.getClass()),
