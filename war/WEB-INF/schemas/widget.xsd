@@ -655,6 +655,6 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="CellTree" type="bee:display" substitutionGroup="bee:widget" />
+  <xs:element name="Tree" type="bee:display" substitutionGroup="bee:widget" />
 
 </xs:schema>

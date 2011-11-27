@@ -20,7 +20,6 @@ import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConst
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.view.client.TreeViewModel;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
@@ -62,7 +61,7 @@ import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.resources.Images;
-import com.butent.bee.client.tree.BeeCellTree;
+import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetCallback;
 import com.butent.bee.client.utils.JsonUtils;
@@ -186,7 +185,7 @@ public enum FormWidget {
   VERTICAL_PANEL("VerticalPanel", EnumSet.of(Type.CELL_VECTOR)),
   VIDEO("Video", EnumSet.of(Type.DISPLAY)),
   VOLUME_SLIDER("VolumeSlider", EnumSet.of(Type.EDITABLE)),
-  CELL_TREE("CellTree", EnumSet.of(Type.DISPLAY));
+  TREE("Tree", EnumSet.of(Type.DISPLAY));
 
   /**
    * Contains a list of possible form element parameters like editable or focusable.
@@ -941,20 +940,8 @@ public enum FormWidget {
         }
         break;
 
-      case CELL_TREE:
-        widget = new BeeCellTree(new TreeViewModel() {
-          @Override
-          public <T> NodeInfo<?> getNodeInfo(T value) {
-            // TODO Auto-generated method stub
-            return null;
-          }
-
-          @Override
-          public boolean isLeaf(Object value) {
-            // TODO Auto-generated method stub
-            return false;
-          }
-        }, null);
+      case TREE:
+        widget = new BeeTree();
         break;
     }
 

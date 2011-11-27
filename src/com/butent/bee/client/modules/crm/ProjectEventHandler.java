@@ -8,6 +8,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasTreeItems;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -20,6 +21,8 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.FlexTable.FlexCellFormatter;
 import com.butent.bee.client.layout.Absolute;
+import com.butent.bee.client.tree.BeeTree;
+import com.butent.bee.client.tree.BeeTreeItem;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
@@ -32,6 +35,7 @@ import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
@@ -99,7 +103,7 @@ public class ProjectEventHandler {
           return false;
         }
       }
-      BeeRowSet rs = new BeeRowSet(VIEW_NAME, columns);
+      BeeRowSet rs = new BeeRowSet(VIEW_PROJECTS, columns);
       rs.addRow(0, values.toArray(new String[0]));
 
       ParameterList args = createArgs(ProjectEvent.CREATED.name());
@@ -134,6 +138,7 @@ public class ProjectEventHandler {
   }
 
   private static class ProjectDialog extends DialogBox {
+    private static final String TEXT = "text";
     private static final String COMMENT = "comment";
     private Map<String, Widget> dialogWidgets = Maps.newHashMap();
     private FlexTable container = null;
@@ -182,6 +187,24 @@ public class ProjectEventHandler {
       addComment(container, caption, required);
     }
 
+    public void addText(FlexTable parent, String caption, boolean required) {
+      int row = parent.getRowCount();
+
+      BeeLabel lbl = new BeeLabel(caption);
+      if (required) {
+        lbl.setStyleName(StyleUtils.NAME_REQUIRED);
+      }
+      parent.setWidget(row, 0, lbl);
+      InputText text = new InputText();
+      text.setWidth("100%");
+      parent.setWidget(row, 1, text);
+      dialogWidgets.put(TEXT, text);
+    }
+
+    public void addText(String caption, boolean required) {
+      addText(container, caption, required);
+    }
+
     public void display() {
       center();
 
@@ -199,6 +222,13 @@ public class ProjectEventHandler {
       }
       return null;
     }
+
+    public String getText() {
+      if (dialogWidgets.containsKey(TEXT)) {
+        return ((InputText) dialogWidgets.get(TEXT)).getValue();
+      }
+      return null;
+    }
   }
 
   private static class ProjectEditHandler extends AbstractFormCallback {
@@ -208,7 +238,7 @@ public class ProjectEventHandler {
     @Override
     public void afterCreateWidget(String name, final Widget widget) {
       if (!BeeUtils.isEmpty(name)
-          && BeeUtils.inListSame(name, CrmConstants.COL_PRIORITY, CrmConstants.COL_EVENT)) {
+          && BeeUtils.inListSame(name, CrmConstants.COL_PRIORITY, CrmConstants.COL_EVENT, "Stages")) {
         setWidget(name, widget);
 
       } else if (widget instanceof HasClickHandlers) {
@@ -226,6 +256,20 @@ public class ProjectEventHandler {
             @Override
             public void onClick(ClickEvent e) {
               doEvent(event, UiHelper.getForm(widget));
+            }
+          });
+        } else if (BeeUtils.same(name, "AddStage")) {
+          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent e) {
+              addStage(UiHelper.getForm(widget));
+            }
+          });
+        } else if (BeeUtils.same(name, "RemoveStage")) {
+          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent e) {
+              // removeStage();
             }
           });
         }
@@ -281,6 +325,32 @@ public class ProjectEventHandler {
       doEvent(ProjectEvent.VISITED, form);
     }
 
+    private void addStage(final FormView form) {
+      final ProjectDialog dialog = new ProjectDialog("Naujas etapas");
+      dialog.addText("Pavadinimas", true);
+      dialog.addComment("Aprašymas", false);
+      dialog.addAction("Sukurti", new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent e) {
+          String name = dialog.getText();
+
+          if (BeeUtils.isEmpty(name)) {
+            Global.showError("Įveskite pavadinimą");
+            return;
+          }
+          BeeTree stg = (BeeTree) getWidget("Stages");
+          HasTreeItems selected = stg.getSelectedItem();
+
+          if (selected == null) {
+            selected = stg;
+          }
+          selected.addItem(new BeeTreeItem(name));
+          dialog.hide();
+        }
+      });
+      dialog.display();
+    }
+
     private Widget getWidget(String name) {
       return formWidgets.get(BeeUtils.normalize(name));
     }
@@ -290,7 +360,7 @@ public class ProjectEventHandler {
     }
   }
 
-  private static final String VIEW_NAME = "UserProjects";
+  private static final String VIEW_PROJECTS = "UserProjects";
 
   public static boolean availableEvent(ProjectEvent ev, Integer status, Long owner) {
     long user = BeeKeeper.getUser().getUserId();
@@ -330,6 +400,19 @@ public class ProjectEventHandler {
     FormFactory.registerFormCallback("Project", new ProjectEditHandler());
   }
 
+  private static ParameterList addEventArgs(FormView form, ParameterList args, ProjectEvent event) {
+    IsRow data = form.getRow();
+    int evOld = data.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
+    BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, CrmConstants.COL_EVENT));
+    rs.setViewName(VIEW_PROJECTS);
+
+    rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
+    rs.preliminaryUpdate(0, CrmConstants.COL_EVENT, BeeUtils.toString(event.ordinal()));
+
+    args.addDataItem(CrmConstants.VAR_PROJECT_DATA, Codec.beeSerialize(rs));
+    return args;
+  }
+
   private static boolean availableEvent(ProjectEvent ev, int status, FormView form) {
     IsRow row = form.getRow();
     return availableEvent(ev, status, row.getLong(form.getDataIndex(CrmConstants.COL_OWNER)));
@@ -338,20 +421,6 @@ public class ProjectEventHandler {
   private static ParameterList createArgs(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(CrmConstants.CRM_MODULE);
     args.addQueryItem(CrmConstants.CRM_METHOD, CrmConstants.CRM_PROJECT_PREFIX + name);
-    return args;
-  }
-
-  private static ParameterList createEventArgs(FormView form, ProjectEvent event) {
-    IsRow data = form.getRow();
-    int evOld = data.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
-    BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, CrmConstants.COL_EVENT));
-    rs.setViewName(VIEW_NAME);
-
-    rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-    rs.preliminaryUpdate(0, CrmConstants.COL_EVENT, BeeUtils.toString(event.ordinal()));
-
-    ParameterList args = createArgs(event.name());
-    args.addDataItem(CrmConstants.VAR_PROJECT_DATA, Codec.beeSerialize(rs));
     return args;
   }
 
@@ -373,7 +442,7 @@ public class ProjectEventHandler {
         } else {
           if (response.hasResponse(BeeRow.class)) {
             BeeRow row = BeeRow.restore((String) response.getResponse());
-            BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_NAME, row));
+            BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_PROJECTS, row));
 
             if (BeeUtils.contains(actions, Action.CLOSE)) {
               form.fireEvent(new EditFormEvent(actions.contains(Action.REQUERY)
@@ -393,7 +462,8 @@ public class ProjectEventHandler {
             String newValue = (String) response.getResponse();
 
             CellUpdateEvent cellUpdateEvent =
-                new CellUpdateEvent(VIEW_NAME, form.getRow().getId(), form.getRow().getVersion(),
+                new CellUpdateEvent(VIEW_PROJECTS, form.getRow().getId(), form.getRow()
+                    .getVersion(),
                     CrmConstants.COL_LAST_ACCESS, dataIndex, newValue);
             BeeKeeper.getBus().fireEvent(cellUpdateEvent);
 
@@ -441,19 +511,20 @@ public class ProjectEventHandler {
         break;
 
       case SUSPENDED:
-        changeStatus(form, "Projekto sustabdymas", "Sustabdyti", ev);
+        changeStatus(form, "Projekto sustabdymas", "Sustabdyti", ev, createArgs(ev.name()));
         break;
 
       case CANCELED:
-        changeStatus(form, "Projekto nutraukimas", "Nutraukti", ev);
+        changeStatus(form, "Projekto nutraukimas", "Nutraukti", ev, createArgs(ev.name()));
         break;
 
       case COMPLETED:
-        changeStatus(form, "Projekto užbaigimas", "Užbaigti", ev);
+        changeStatus(form, "Projekto užbaigimas", "Užbaigti", ev, createArgs(ev.name()));
         break;
 
       case RENEWED:
-        changeStatus(form, "Projekto grąžinimas vykdymui", "Grąžinti vykdymui", ev);
+        changeStatus(form, "Projekto grąžinimas vykdymui", "Grąžinti vykdymui",
+            ProjectEvent.ACTIVATED, createArgs(ev.name()));
         break;
 
       case CREATED:
@@ -463,7 +534,7 @@ public class ProjectEventHandler {
   }
 
   private static void changeStatus(final FormView form, String caption, String buttonCaption,
-      final ProjectEvent event) {
+      final ProjectEvent event, final ParameterList args) {
     final ProjectDialog dialog = new ProjectDialog(caption);
     dialog.addComment("Komentaras", true);
     dialog.addAction(buttonCaption, new ClickHandler() {
@@ -475,7 +546,7 @@ public class ProjectEventHandler {
           Global.showError("Įveskite komentarą");
           return;
         }
-        ParameterList args = createEventArgs(form, event);
+        addEventArgs(form, args, event);
         args.addDataItem(CrmConstants.VAR_PROJECT_COMMENT, comment);
         createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REQUERY));
       }
@@ -487,7 +558,8 @@ public class ProjectEventHandler {
     Global.confirm("Perduoti projektą vykdymui?", new BeeCommand() {
       @Override
       public void execute() {
-        ParameterList args = createEventArgs(form, ProjectEvent.ACTIVATED);
+        ParameterList args = createArgs(ProjectEvent.ACTIVATED.name());
+        addEventArgs(form, args, ProjectEvent.ACTIVATED);
         createRequest(args, null, form, EnumSet.of(Action.CLOSE, Action.REQUERY));
       }
     });

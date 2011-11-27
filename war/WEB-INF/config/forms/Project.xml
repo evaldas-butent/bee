@@ -124,9 +124,10 @@
 
   <FlowPanel class="flexBox-horizontal" style="margin: 10px 0 0 0;">
     <FlowPanel>
-      <CellTree name="Stages" />
+      <Tree name="Stages" />
       <Button name="AddStage" html="Pridėti etapą" />
-      <Button name="AddStage" html="Pašalinti etapą" />
+      <Button name="RenameStage" html="Pervardinti etapą" />
+      <Button name="RemoveStage" html="Pašalinti etapą" />
     </FlowPanel>
     <ChildGrid name="Tasks" relColumn="Project" class="flexible" />
   </FlowPanel>
