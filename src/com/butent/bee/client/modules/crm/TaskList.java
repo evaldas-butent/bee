@@ -21,9 +21,9 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.resources.Images;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.utils.AbstractEvaluation;
 import com.butent.bee.client.utils.Evaluator.Evaluation;
 import com.butent.bee.client.utils.Evaluator.Parameters;
-import com.butent.bee.client.utils.AbstractEvaluation;
 import com.butent.bee.client.utils.HasEvaluation;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
@@ -43,6 +43,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.Priority;
+import com.butent.bee.shared.modules.crm.CrmConstants.ProjectEvent;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
@@ -244,7 +245,7 @@ public class TaskList {
             }
             return BeeConst.STRING_EMPTY;
           }
-          
+
           @Override
           public void setOptions(String options) {
             if (!BeeUtils.isEmpty(options)) {
@@ -339,7 +340,10 @@ public class TaskList {
 
       if (getUserId() != null && getType() != null) {
         Value user = new LongValue(getUserId());
-        CompoundFilter filter = Filter.and(ComparisonFilter.isEqual("User", user));
+        CompoundFilter filter = Filter.and(ComparisonFilter.isEqual("User", user),
+            CompoundFilter.or(Filter.isEmpty("ProjectStage"),
+                ComparisonFilter.isEqual("ProjectEvent",
+                    new IntegerValue(ProjectEvent.ACTIVATED.ordinal()))));
 
         switch (getType()) {
           case ASSIGNED:

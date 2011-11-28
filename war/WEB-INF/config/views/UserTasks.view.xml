@@ -2,12 +2,19 @@
 <BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/view.xsd"
 
-  name="TaskUsers"
+  name="UserTasks"
   source="Tasks"
   >
   <BeeColumns>
     <BeeSimpleColumn expression="Priority" />
     <BeeSimpleColumn expression="Description" />
+    <BeeHiddenColumn expression="ProjectStage" />
+    <BeeSimpleJoin expression="ProjectStage" joinType="LEFT">
+      <BeeSimpleJoin expression="Project" joinType="LEFT">
+        <BeeHiddenColumn expression="Event" name="ProjectEvent" />
+        <BeeSimpleColumn expression="Name" name="ProjectName" />
+      </BeeSimpleJoin>
+    </BeeSimpleJoin>
     <BeeSimpleColumn expression="StartTime" />
     <BeeSimpleColumn expression="FinishTime" />
     <BeeSimpleColumn expression="ExpectedDuration" />
@@ -35,11 +42,6 @@
       <BeeSimpleJoin expression="Person" joinType="LEFT">
         <BeeSimpleColumn name="PersonFirstName" expression="FirstName" />
         <BeeSimpleColumn name="PersonLastName" expression="LastName" />
-      </BeeSimpleJoin>
-    </BeeSimpleJoin>
-    <BeeSimpleJoin expression="ProjectStage" joinType="LEFT">
-      <BeeSimpleJoin expression="Project" joinType="LEFT">
-        <BeeSimpleColumn expression="Name" name="ProjectName" />
       </BeeSimpleJoin>
     </BeeSimpleJoin>
     <BeeExternalJoin source="TaskUsers" expression="Task" joinType="LEFT">

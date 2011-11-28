@@ -103,7 +103,7 @@ public class BeeKeeper {
   }
 
   public void register() {
-    FormFactory.registerFormCallback("Users", new AbstractFormCallback() {
+    FormFactory.registerFormCallback("User", new AbstractFormCallback() {
       @Override
       public void afterCreateWidget(String name, final Widget widget) {
         if (BeeUtils.same(name, "ChangePassword") && widget instanceof HasClickHandlers) {

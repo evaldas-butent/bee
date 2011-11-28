@@ -2,7 +2,7 @@
 <BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
 
-  <BeeGrid name="Users" viewName="Users" caption="Vartotojai" editForm="Users">
+  <BeeGrid name="Users" viewName="Users" caption="Vartotojai" editForm="User" newRowForm="User">
     <columns>
       <BeeIdColumn name="Id" caption="ID" />
       <BeeDataColumn name="Login" source="Login" caption="Prisijungimo vardas" />

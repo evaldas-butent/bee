@@ -35,7 +35,7 @@
       </AbsolutePanel>
     </north>
     <center>
-      <GridPanel name="TaskUsers" style="background-color: white;" />
+      <GridPanel name="UserTasks" style="background-color: white;" />
     </center>
   </SplitPanel>
 </BeeForm>

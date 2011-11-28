@@ -2,7 +2,7 @@
 <BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
   
-  name="Tasks" viewName="Tasks" caption="Užduotys">
+  name="Task" viewName="Tasks" caption="Užduotis">
 
   <FlowPanel class="flexBox-horizontal">
     <FlowPanel class="flexBox-vertical">
@@ -23,10 +23,10 @@
         </row>
 
         <row>
-          <cell colSpan="2">
+          <cell>
             <InlineLabel />
           </cell>
-          <cell>
+          <cell colSpan="2">
             <Label html="Numatoma trukmė min.:" horizontalAlignment="right" />
           </cell>
           <cell>

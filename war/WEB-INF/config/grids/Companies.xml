@@ -2,8 +2,8 @@
 <BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
 
-  <BeeGrid name="Companies" viewName="Companies" caption="Įmonės" editForm="Companies"
-    newRowForm="Companies">
+  <BeeGrid name="Companies" viewName="Companies" caption="Įmonės" editForm="Company"
+    newRowForm="Company">
     <columns>
       <BeeDataColumn name="Name" source="Name" caption="Įmonė" />
       <BeeDataColumn name="Code" source="Code" caption="Įm. kodas" />

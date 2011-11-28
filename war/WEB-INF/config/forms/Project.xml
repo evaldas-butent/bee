@@ -25,6 +25,18 @@
 
         <row>
           <cell>
+            <InlineLabel />
+          </cell>
+          <cell>
+            <Label html="Tipas:" horizontalAlignment="right"  />
+          </cell>
+          <cell colSpan="2">
+            <TextLabel source="TypeName" class="bee-display" style="width: 100%;" />
+          </cell>
+        </row>
+
+        <row>
+          <cell>
             <Label html="Pavadinimas:" />
           </cell>
           <cell colSpan="3">
@@ -100,14 +112,14 @@
         </row>
       </FlexTable>
 
-      <FlowPanel class="flexBox-horizontal" style="margin: 0px 10px 0px 10px; min-height: 100px">
+      <FlowPanel class="flexBox-horizontal" style="margin: 0px 10px 0px 10px">
         <VerticalPanel>
           <cell><Button name="COMMENTED" html="Naujas komentaras" /></cell>
           <cell><Button name="EXTENDED" html="Keisti terminą" /></cell>
           <cell><Button name="UPDATED" html="Koreguoti" /></cell>
         </VerticalPanel>
 
-        <ChildGrid name="ProjectUsers" relColumn="Project" class="flexible" />
+        <ChildGrid name="ProjectUsers" relColumn="Project" class="flexible" style="min-height: 100px" />
       
         <VerticalPanel>
           <cell><Button name="ACTIVATED" html="Perduoti vykdymui" /></cell>
@@ -122,12 +134,13 @@
     <ChildGrid name="ProjectEvents" relColumn="Project" class="flexible" />
   </FlowPanel>
 
-  <FlowPanel class="flexBox-horizontal" style="margin: 10px 0 0 0;">
+  <FlowPanel class="flexBox-horizontal flexible" style="margin: 10px 0 0 0;">
     <FlowPanel>
+      <Label html="ETAPAI" horizontalAlignment="center" />
       <Tree name="Stages" />
-      <Button name="AddStage" html="Pridėti etapą" />
-      <Button name="RenameStage" html="Pervardinti etapą" />
-      <Button name="RemoveStage" html="Pašalinti etapą" />
+      <Button name="AddStage" html="Pridėti" />
+      <Button name="RenameStage" html="Pervardinti" />
+      <Button name="RemoveStage" html="Pašalinti" />
     </FlowPanel>
     <ChildGrid name="Tasks" relColumn="Project" class="flexible" />
   </FlowPanel>

@@ -8,6 +8,12 @@
   <BeeColumns>
     <BeeSimpleColumn expression="Priority" />
     <BeeSimpleColumn expression="Description" />
+    <BeeSimpleJoin expression="ProjectStage" joinType="LEFT">
+      <BeeSimpleColumn expression="Project" />
+      <BeeSimpleJoin expression="Project" joinType="LEFT">
+        <BeeSimpleColumn expression="Name" name="ProjectName" />
+      </BeeSimpleJoin>
+    </BeeSimpleJoin>
     <BeeSimpleColumn expression="StartTime" />
     <BeeSimpleColumn expression="FinishTime" />
     <BeeSimpleColumn expression="ExpectedDuration" />
@@ -35,12 +41,6 @@
       <BeeSimpleJoin expression="Person" joinType="LEFT">
         <BeeSimpleColumn name="PersonFirstName" expression="FirstName" />
         <BeeSimpleColumn name="PersonLastName" expression="LastName" />
-      </BeeSimpleJoin>
-    </BeeSimpleJoin>
-    <BeeSimpleJoin expression="ProjectStage" joinType="LEFT">
-      <BeeSimpleColumn expression="Project" />
-      <BeeSimpleJoin expression="Project" joinType="LEFT">
-        <BeeSimpleColumn expression="Name" name="ProjectName" />
       </BeeSimpleJoin>
     </BeeSimpleJoin>
   </BeeColumns>

@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="Companies" viewName="Companies" caption="Įmonės">
+  name="Company" viewName="Companies" caption="Įmonė">
 
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="10">

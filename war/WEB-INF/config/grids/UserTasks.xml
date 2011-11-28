@@ -2,8 +2,8 @@
 <BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
 
-  <BeeGrid name="TaskUsers" viewName="TaskUsers" caption="Stebimos užduotys"
-    editForm="Tasks" newRowForm="NewTask" caching="false">
+  <BeeGrid name="UserTasks" viewName="UserTasks" caption="Stebimos užduotys"
+    editForm="Task" newRowForm="NewTask" caching="false">
     <header borderWidth="1 0" />
     <body height="20" borderWidth="0">
       <style><font>Verdana 12 px</font></style>
@@ -21,6 +21,7 @@
         <calc><lambda/></calc>
       </BeeCalcColumn>
       <BeeDataColumn name="Description" source="Description" caption="Užduotis" />
+      <BeeDataColumn name="Project" source="ProjectName" caption="Projektas" />
       <BeeDataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
       <BeeCalcColumn name="Event" type="string" caption="Būsena" sortBy="Event">
         <calc><lambda /></calc>
