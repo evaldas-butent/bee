@@ -17,6 +17,7 @@
     <xs:attribute name="name" type="bee:nameType" />
     <xs:attribute name="title" type="xs:string" />
     <xs:attribute name="html" type="xs:string" />
+    <xs:attribute name="options" type="xs:normalizedString" />
     <xs:attribute name="visible" type="xs:boolean" default="true" />
     <xs:attribute ref="xml:base" />
   </xs:complexType>
@@ -25,6 +26,7 @@
     <xs:complexContent>
       <xs:extension base="bee:widgetBase">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="css" type="bee:styleSheet" />
           <xs:element name="dynStyle" type="bee:conditionalStyle" />
           <xs:element name="handler" type="bee:eventHandler"/>
         </xs:choice>
@@ -623,7 +625,6 @@
           <xs:attribute name="relSource" type="bee:nameType" use="required" />
           <xs:attribute name="relView" type="bee:nameType" use="required" />
           <xs:attribute name="relColumn" type="bee:nameType" use="required" />
-          <xs:attribute name="options" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -656,5 +657,38 @@
   </xs:element>
 
   <xs:element name="Tree" type="bee:display" substitutionGroup="bee:widget" />
+
+  <xs:element name="Custom" type="bee:hasName" substitutionGroup="bee:widget" />
+  <xs:element name="CustomChild" type="bee:hasName" substitutionGroup="bee:widget" />
+
+  <xs:element name="CustomDisplay" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:restriction base="bee:display">
+          <xs:attribute name="name" type="bee:nameType" use="required" />
+        </xs:restriction>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="CustomEditable" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:restriction base="bee:editableWidget">
+          <xs:attribute name="name" type="bee:nameType" use="required" />
+        </xs:restriction>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="CustomFocusable" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:restriction base="bee:focusableWidget">
+          <xs:attribute name="name" type="bee:nameType" use="required" />
+        </xs:restriction>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
 
 </xs:schema>

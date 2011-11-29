@@ -240,7 +240,7 @@ public class TaskList {
             }
 
             Long publish = parameters.getLong(CrmConstants.COL_LAST_PUBLISH);
-            if (access < publish) {
+            if (publish != null && access < publish) {
               return getHtml(modeUpd);
             }
             return BeeConst.STRING_EMPTY;

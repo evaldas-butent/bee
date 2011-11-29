@@ -15,7 +15,6 @@ import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
@@ -23,6 +22,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetCallback;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.ui.HasParent;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.EvalHelper;
 import com.butent.bee.client.utils.Evaluator;
@@ -1061,8 +1061,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
     for (WidgetDescription widgetDescription : getChildWidgets()) {
       Widget widget = getWidget(widgetDescription.getWidgetId());
-      if (widget instanceof ChildGrid) {
-        ((ChildGrid) widget).refresh(rowValue, rowEnabled);
+      if (widget instanceof HasParent) {
+        ((HasParent) widget).refresh(rowValue, rowEnabled);
       }
     }
   }

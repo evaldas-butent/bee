@@ -54,6 +54,7 @@ public class GridHolderBean {
   private static final String TAG_GRID = "BeeGrid";
   private static final String TAG_COLUMNS = "columns";
 
+  private static final String TAG_CSS = "css";
   private static final String TAG_HEADER = "header";
   private static final String TAG_BODY = "body";
   private static final String TAG_FOOTER = "footer";
@@ -733,6 +734,21 @@ public class GridHolderBean {
       dst.setEditInPlace(editInPlace.trim());
     }
 
+    NodeList cssNodes = src.getElementsByTagName(TAG_CSS);
+    if (cssNodes != null && cssNodes.getLength() > 0) {
+      Map<String, String> styleSheets = Maps.newHashMap();
+      for (int i = 0; i < cssNodes.getLength(); i++) {
+        String name = ((Element) cssNodes.item(i)).getAttribute(ATTR_NAME);
+        String text = cssNodes.item(i).getTextContent();
+        if (!BeeUtils.isEmpty(name) && !BeeUtils.isEmpty(text)) {
+          styleSheets.put(name.trim(), text.trim());
+        }
+      }
+      if (!styleSheets.isEmpty()) {
+        dst.setStyleSheets(styleSheets);
+      }
+    }
+    
     GridComponentDescription header = getComponent(src, TAG_HEADER);
     if (header != null) {
       dst.setHeader(header);

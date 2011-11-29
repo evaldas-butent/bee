@@ -512,7 +512,8 @@ public class ScreenImpl implements Screen {
 
     tp.add(new BeeLabel(), "Recent");
 
-    BeeLayoutPanel dp = new BeeLayoutPanel();
+    Flow dp = new Flow();
+    StyleUtils.autoScroll(dp, ScrollBars.BOTH);
     tp.add(dp, Global.CONSTANTS.data(), Global.getDataInfoProvider().getDataInfoCreator());
     setDataPanel(dp);
 

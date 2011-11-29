@@ -1,6 +1,7 @@
 package com.butent.bee.shared.ui;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
@@ -18,6 +19,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -34,7 +36,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     NAME, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HAS_HEADERS, HAS_FOOTERS,
     CACHING, ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE,
     READONLY, NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_CAPTION, EDIT_FORM, EDIT_IN_PLACE,
-    ENABLED_ACTIONS, DISABLED_ACTIONS, HEADER, BODY, FOOTER, ROW_STYLES, ROW_MESSAGE,
+    ENABLED_ACTIONS, DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER, ROW_STYLES, ROW_MESSAGE,
     ROW_EDITABLE, ROW_VALIDATION, SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH, COLUMNS
   }
 
@@ -75,6 +77,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private String newRowCaption = null;
   private String editForm = null;
   private String editInPlace = null;
+  
+  private Map<String, String> styleSheets = null;
 
   private GridComponentDescription header = null;
   private GridComponentDescription body = null;
@@ -141,6 +145,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case READONLY:
           setReadOnly(BeeUtils.toBooleanOrNull(value));
           break;
+
         case COLUMNS:
           getColumns().clear();
           items = Codec.beeDeserializeCollection(value);
@@ -151,6 +156,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
             }
           }
           break;
+
         case ASYNC_THRESHOLD:
           setAsyncThreshold(BeeUtils.toIntOrNull(value));
           break;
@@ -193,6 +199,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case ROW_VALIDATION:
           setRowValidation(Calculation.restore(value));
           break;
+
         case ROW_STYLES:
           String[] styles = Codec.beeDeserializeCollection(value);
 
@@ -206,6 +213,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
             setRowStyles(lst);
           }
           break;
+
         case SEARCH_THRESHOLD:
           setSearchThreshold(BeeUtils.toIntOrNull(value));
           break;
@@ -239,6 +247,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case CACHING:
           setCaching(BeeUtils.toBooleanOrNull(value));
           break;
+
         case ENABLED_ACTIONS:
           getEnabledActions().clear();
           items = Codec.beeDeserializeCollection(value);
@@ -257,6 +266,20 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
             for (String z : items) {
               getDisabledActions().add(Action.restore(z));
             }
+          }
+          break;
+
+        case STYLE_SHEETS:
+          String[] css = Codec.beeDeserializeCollection(value);
+
+          if (BeeUtils.isEmpty(css)) {
+            setStyleSheets(null);
+          } else {
+            Map<String, String> map = Maps.newHashMap();
+            for (int j = 0; j < css.length - 1; j += 2) {
+              map.put(css[j], css[j + 1]);
+            }
+            setStyleSheets(map);
           }
           break;
       }
@@ -348,6 +371,17 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Show Column Widths", showColumnWidths(),
         "Min Column Width", getMinColumnWidth(),
         "Max Column Width", getMaxColumnWidth());
+    
+    if (getStyleSheets() != null && !getStyleSheets().isEmpty()) {
+      int cnt = getStyleSheets().size();
+      PropertyUtils.addExtended(info, "Style Sheets", BeeUtils.bracket(cnt));
+      int i = 0;
+      for (Map.Entry<String, String> entry : getStyleSheets().entrySet()) {
+        i++;
+        PropertyUtils.addExtended(info, "Style Sheet " + BeeUtils.progress(i, cnt),
+            entry.getKey(), entry.getValue());
+      }
+    }
 
     if (getHeader() != null) {
       PropertyUtils.appendChildrenToExtended(info, "Header", getHeader().getInfo());
@@ -449,6 +483,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public Integer getSearchThreshold() {
     return searchThreshold;
+  }
+
+  public Map<String, String> getStyleSheets() {
+    return styleSheets;
   }
 
   public String getVersionName() {
@@ -602,6 +640,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case DISABLED_ACTIONS:
           arr[i++] = getDisabledActions();
           break;
+        case STYLE_SHEETS:
+          arr[i++] = getStyleSheets();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -730,6 +771,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setShowColumnWidths(Boolean showColumnWidths) {
     this.showColumnWidths = showColumnWidths;
+  }
+
+  public void setStyleSheets(Map<String, String> styleSheets) {
+    this.styleSheets = styleSheets;
   }
 
   public Boolean showColumnWidths() {

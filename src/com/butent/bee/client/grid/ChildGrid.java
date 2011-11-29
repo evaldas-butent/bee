@@ -6,6 +6,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.layout.ResizePanel;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.HasParent;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.shared.Assert;
@@ -25,7 +26,7 @@ import java.util.Map;
  * Enables using data grids with data related to another source.
  */
 
-public class ChildGrid extends ResizePanel implements HasEnabled, Launchable {
+public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, HasParent {
   
   private final String gridName;
   private final int parentIndex;

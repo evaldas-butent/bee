@@ -267,4 +267,12 @@
     <xs:list itemType="bee:viewAction" />
   </xs:simpleType>
 
+  <xs:complexType name="styleSheet">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="name" type="xs:normalizedString" use="required" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
 </xs:schema>

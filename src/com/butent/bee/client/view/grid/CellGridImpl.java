@@ -424,6 +424,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     boolean showColumnWidths = false;
     List<ColumnDescription> columnDescriptions = null;
+    
+    if (gridDescr.getStyleSheets() != null) {
+      Global.addStyleSheets(gridDescr.getStyleSheets());
+    }
 
     if (hasHeaders && gridDescr.getHeader() != null) {
       getGrid().setHeaderComponent(gridDescr.getHeader());

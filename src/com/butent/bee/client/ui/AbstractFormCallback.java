@@ -24,6 +24,10 @@ public class AbstractFormCallback implements FormFactory.FormCallback {
   public void beforeRefresh(FormView form, IsRow row) {
   }
   
+  public Widget createCustomWidget(String name, Element description) {
+    return null;
+  }
+
   public FormCallback getInstance() {
     return null;
   }

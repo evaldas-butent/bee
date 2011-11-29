@@ -1,6 +1,8 @@
 package com.butent.bee.client;
 
+import com.google.common.collect.Maps;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.Event;
 
@@ -26,7 +28,6 @@ import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -47,12 +48,42 @@ public class Global implements Module {
   private static final InputBoxes inpBoxen = new InputBoxes();
   private static final DataInfoProvider dataInfoProvider = new DataInfoProvider();
 
-  private static final Map<String, Variable> vars = new HashMap<String, Variable>();
+  private static final Map<String, Variable> vars = Maps.newHashMap();
 
   private static final CacheManager cache = new CacheManager();
 
   private static final Images.Resources images = Images.createResources();
+  
+  private static final Map<String, String> styleSheets = Maps.newHashMap();
+  
+  public static void addStyleSheet(String name, String text) {
+    if (BeeUtils.isEmpty(name)) {
+      BeeKeeper.getLog().warning("style sheet name not specified");
+      return;
+    }
+    if (BeeUtils.isEmpty(text)) {
+      BeeKeeper.getLog().warning("style sheet text not specified");
+      return;
+    }
+    
+    String key = name.trim().toLowerCase();
+    String value = text.trim();
+    
+    if (!value.equals(styleSheets.get(key))) {
+      StyleInjector.inject(value);
+      styleSheets.put(key, value);
+    }
+  }
 
+  public static void addStyleSheets(Map<String, String> sheets) {
+    if (sheets == null) {
+      return;
+    }
+    for (Map.Entry<String, String> entry : sheets.entrySet()) {
+      addStyleSheet(entry.getKey(), entry.getValue());
+    }
+  }
+  
   public static void alert(Object... obj) {
     msgBoxen.alert(obj);
   }

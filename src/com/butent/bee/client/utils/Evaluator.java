@@ -8,6 +8,7 @@ import com.google.gwt.core.client.JsDate;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -200,10 +201,8 @@ public class Evaluator extends Calculation {
     }
   }
   
-  public interface Evaluation {
+  public interface Evaluation extends HasOptions {
     String eval(Parameters parameters);
-    
-    void setOptions(String options);
   }
 
   /**

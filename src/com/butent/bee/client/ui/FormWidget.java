@@ -23,6 +23,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.InputDate;
@@ -99,6 +100,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasNumberBounds;
+import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.HasStage;
 import com.butent.bee.shared.Launchable;
@@ -130,6 +132,11 @@ public enum FormWidget {
   CHILD_GRID("ChildGrid", EnumSet.of(Type.IS_CHILD, Type.IS_GRID)),
   COMPLEX_PANEL("ComplexPanel", EnumSet.of(Type.HAS_LAYERS)),
   CURRENCY_LABEL("CurrencyLabel", EnumSet.of(Type.DISPLAY)),
+  CUSTOM("Custom", EnumSet.of(Type.IS_CUSTOM)),
+  CUSTOM_CHILD("CustomChild", EnumSet.of(Type.IS_CUSTOM, Type.IS_CHILD)),
+  CUSTOM_DISPLAY("CustomDisplay", EnumSet.of(Type.IS_CUSTOM, Type.DISPLAY)),
+  CUSTOM_EDITABLE("CustomEditable", EnumSet.of(Type.IS_CUSTOM, Type.EDITABLE)),
+  CUSTOM_FOCUSABLE("CustomFocusable", EnumSet.of(Type.IS_CUSTOM, Type.FOCUSABLE, Type.EDITABLE)),
   DATA_SELECTOR("DataSelector", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.SELECTOR)),
   DATE_LABEL("DateLabel", EnumSet.of(Type.DISPLAY)),
   DATE_TIME_LABEL("DateTimeLabel", EnumSet.of(Type.DISPLAY)),
@@ -193,7 +200,7 @@ public enum FormWidget {
 
   private enum Type {
     FOCUSABLE, EDITABLE, IS_LABEL, DISPLAY, HAS_ONE_CHILD, HAS_CHILDREN, HAS_LAYERS,
-    TABLE, IS_CHILD, IS_GRID, PANEL, CELL_VECTOR, INPUT, SELECTOR
+    TABLE, IS_CHILD, IS_GRID, PANEL, CELL_VECTOR, INPUT, SELECTOR, IS_CUSTOM
   }
 
   private class HeaderAndContent {
@@ -346,6 +353,7 @@ public enum FormWidget {
 
   private static final String ATTR_EVENT = "event";
 
+  private static final String TAG_CSS = "css";
   private static final String TAG_DYN_STYLE = "dynStyle";
   private static final String TAG_HANDLER = "handler";
 
@@ -475,6 +483,16 @@ public enum FormWidget {
           widget = new DecimalLabel(Format.getDefaultCurrencyFormat());
         } else {
           widget = new DecimalLabel(format);
+        }
+        break;
+        
+      case CUSTOM:
+      case CUSTOM_CHILD:
+      case CUSTOM_DISPLAY:
+      case CUSTOM_EDITABLE:
+      case CUSTOM_FOCUSABLE:
+        if (formCallback != null) {
+          widget = formCallback.createCustomWidget(name, description);
         }
         break;
 
@@ -970,7 +988,10 @@ public enum FormWidget {
       for (Element child : children) {
         String childTag = child.getTagName();
 
-        if (BeeUtils.same(childTag, TAG_DYN_STYLE)) {
+        if (BeeUtils.same(childTag, TAG_CSS)) {
+          Global.addStyleSheet(child.getAttribute(ATTR_NAME), XmlUtils.getText(child));
+          
+        } else if (BeeUtils.same(childTag, TAG_DYN_STYLE)) {
           ConditionalStyleDeclaration csd = XmlUtils.getConditionalStyle(child);
           if (csd != null) {
             dynStyles.add(csd);
@@ -1737,9 +1758,15 @@ public enum FormWidget {
         StyleUtils.updateClasses(widget, value);
       } else if (BeeUtils.same(name, ATTR_STYLE)) {
         StyleUtils.apply(widget.getElement().getStyle(), value);
+
       } else if (BeeUtils.same(name, ATTR_TITLE)) {
         widget.setTitle(value);
 
+      } else if (BeeUtils.same(name, ATTR_OPTIONS)) {
+        if (widget instanceof HasOptions) {
+          ((HasOptions) widget).setOptions(value);
+        }
+        
       } else if (BeeUtils.same(name, ATTR_TAB_INDEX)) {
         if (widget instanceof Focusable) {
           ((Focusable) widget).setTabIndex(BeeUtils.toInt(value));

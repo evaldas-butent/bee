@@ -63,6 +63,8 @@ public class FormFactory {
     
     void beforeRefresh(FormView form, IsRow row);
 
+    Widget createCustomWidget(String name, Element description);
+    
     FormCallback getInstance();
     
     boolean onLoad(Element formElement);
