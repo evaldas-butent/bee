@@ -98,12 +98,26 @@ public class CrmModuleBean implements BeeModule {
       switch (event) {
         case CREATED:
           BeeRowSet rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_PROJECT_DATA));
+          String observers = reqInfo.getParameter(CrmConstants.VAR_PROJECT_OBSERVERS);
           response = deb.commitRow(rs, false);
 
           if (!response.hasErrors()) {
             long projectId = ((BeeRow) response.getResponse()).getId();
             response = registerProjectEvent(projectId, time, reqInfo, event, null);
 
+            if (!response.hasErrors() && !BeeUtils.isEmpty(observers)) {
+              for (String obsId : USER_ID_SPLITTER.split(observers)) {
+                long observer = BeeUtils.toLong(obsId);
+
+                if (observer != currentUser) {
+                  response = registerProjectVisit(projectId, observer, null, true);
+
+                  if (response.hasErrors()) {
+                    break;
+                  }
+                }
+              }
+            }
             if (!response.hasErrors()) {
               BeeView view = sys.getView(rs.getViewName());
               rs = sys.getViewData(view.getName(), view.getRowFilter(projectId), null, 0, 0);

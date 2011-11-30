@@ -15,6 +15,10 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.composite.MultiSelector.SelectionCallback;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
@@ -46,6 +50,11 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.CompoundFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.Priority;
@@ -55,6 +64,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.TimeUtils;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -65,12 +75,31 @@ public class ProjectEventHandler {
   private static class ProjectCreateHandler extends AbstractFormCallback {
     private static int counter = 0;
 
+    private final UserCollector observers = new UserCollector();
+
     @Override
     public void afterCreateWidget(final String name, final Widget widget) {
       if (BeeUtils.same(name, CrmConstants.COL_PRIORITY) && widget instanceof BeeListBox) {
         for (Priority priority : Priority.values()) {
           ((BeeListBox) widget).addItem(priority.name());
         }
+      } else if (BeeUtils.same(name, "Observers") && widget instanceof BeeListBox) {
+        observers.setWidget((BeeListBox) widget);
+
+      } else if (BeeUtils.same(name, "ObserverAdd") && widget instanceof HasClickHandlers) {
+        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            observers.addUsers();
+          }
+        });
+      } else if (BeeUtils.same(name, "ObserverDelete") && widget instanceof HasClickHandlers) {
+        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            observers.removeUsers();
+          }
+        });
       }
     }
 
@@ -109,6 +138,9 @@ public class ProjectEventHandler {
       ParameterList args = createArgs(ProjectEvent.CREATED.name());
       args.addDataItem(CrmConstants.VAR_PROJECT_DATA, Codec.beeSerialize(rs));
 
+      if (!observers.isEmpty()) {
+        args.addDataItem(CrmConstants.VAR_PROJECT_OBSERVERS, observers.getUsers());
+      }
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
@@ -130,6 +162,7 @@ public class ProjectEventHandler {
 
     @Override
     public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+      observers.init(null);
       newRow.setValue(form.getDataIndex(CrmConstants.COL_OWNER), BeeKeeper.getUser().getUserId());
       newRow.setValue(form.getDataIndex("StartDate"), TimeUtils.today(0).getDay());
       newRow.setValue(form.getDataIndex(CrmConstants.COL_EVENT), ProjectEvent.CREATED.ordinal());
@@ -235,11 +268,16 @@ public class ProjectEventHandler {
     private static int counter = 0;
     private Map<String, Widget> formWidgets = Maps.newHashMap();
 
+    private final UserCollector observers = new UserCollector();
+
     @Override
     public void afterCreateWidget(String name, final Widget widget) {
       if (!BeeUtils.isEmpty(name)
           && BeeUtils.inListSame(name, CrmConstants.COL_PRIORITY, CrmConstants.COL_EVENT, "Stages")) {
         setWidget(name, widget);
+
+      } else if (BeeUtils.same(name, "Observers") && widget instanceof BeeListBox) {
+        observers.setWidget((BeeListBox) widget);
 
       } else if (widget instanceof HasClickHandlers) {
         setWidget(name, widget);
@@ -256,6 +294,20 @@ public class ProjectEventHandler {
             @Override
             public void onClick(ClickEvent e) {
               doEvent(event, UiHelper.getForm(widget));
+            }
+          });
+        } else if (BeeUtils.same(name, "ObserverAdd")) {
+          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              observers.addUsers();
+            }
+          });
+        } else if (BeeUtils.same(name, "ObserverDelete")) {
+          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+              observers.removeUsers();
             }
           });
         } else if (BeeUtils.same(name, "AddStage")) {
@@ -281,15 +333,10 @@ public class ProjectEventHandler {
       if (row == null) {
         return;
       }
-      String text = BeeConst.STRING_EMPTY;
       Integer idx = row.getInteger(form.getDataIndex(CrmConstants.COL_PRIORITY));
+      getWidget(CrmConstants.COL_PRIORITY).getElement()
+          .setInnerText(BeeUtils.getName(Priority.class, idx));
 
-      if (BeeUtils.isOrdinal(Priority.class, idx)) {
-        text = Priority.values()[idx].name();
-      }
-      getWidget(CrmConstants.COL_PRIORITY).getElement().setInnerText(text);
-
-      text = BeeConst.STRING_EMPTY;
       idx = row.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
 
       if (BeeUtils.isOrdinal(ProjectEvent.class, idx)) {
@@ -306,9 +353,9 @@ public class ProjectEventHandler {
             }
           }
         }
-        text = ProjectEvent.values()[idx].name();
       }
-      getWidget(CrmConstants.COL_EVENT).getElement().setInnerText(text);
+      getWidget(CrmConstants.COL_EVENT).getElement()
+          .setInnerText(BeeUtils.getName(ProjectEvent.class, idx));
     }
 
     @Override
@@ -322,6 +369,11 @@ public class ProjectEventHandler {
 
     @Override
     public void onStartEdit(FormView form, IsRow row) {
+      observers.init(Filter.and(
+          ComparisonFilter.isEqual(CrmConstants.COL_PROJECT, new LongValue(row.getId())),
+          ComparisonFilter.isNotEqual(CrmConstants.COL_USER,
+              new LongValue(row.getLong(form.getDataIndex(CrmConstants.COL_OWNER))))));
+
       doEvent(ProjectEvent.VISITED, form);
     }
 
@@ -357,6 +409,126 @@ public class ProjectEventHandler {
 
     private void setWidget(String name, Widget widget) {
       formWidgets.put(BeeUtils.normalize(name), widget);
+    }
+  }
+
+  private static class UserCollector {
+    private final List<IsRow> users = Lists.newArrayList();
+    private BeeListBox widget;
+
+    private void addUsers() {
+      Filter flt = excludeUser(BeeKeeper.getUser().getUserId());
+
+      if (!isEmpty()) {
+        flt = Filter.and(flt);
+
+        for (IsRow row : users) {
+          ((CompoundFilter) flt).add(excludeUser(row.getId()));
+        }
+      }
+      Queries.getRowSet("Users", null, flt, null, new RowSetCallback() {
+        @Override
+        public void onFailure(String[] reason) {
+          Global.showError((Object[]) reason);
+        }
+
+        @Override
+        public void onSuccess(BeeRowSet result) {
+          if (result.isEmpty()) {
+            Global.showError("No more heroes any more");
+            return;
+          }
+          final int firstNameIndex = result.getColumnIndex(CrmConstants.COL_FIRST_NAME);
+          final int lastNameIndex = result.getColumnIndex(CrmConstants.COL_LAST_NAME);
+
+          MultiSelector selector = new MultiSelector("Stebėtojai", result,
+              Lists.newArrayList(CrmConstants.COL_FIRST_NAME, CrmConstants.COL_LAST_NAME),
+              new SelectionCallback() {
+                @Override
+                public void onSelection(List<IsRow> rows) {
+                  if (!BeeUtils.isEmpty(rows)) {
+                    for (IsRow row : rows) {
+                      users.add(row);
+                      widget.addItem(BeeUtils.concat(1, row.getString(firstNameIndex),
+                          row.getString(lastNameIndex)));
+                    }
+                  }
+                }
+              });
+          selector.center();
+        }
+      });
+    }
+
+    private Filter excludeUser(long userId) {
+      return ComparisonFilter.compareId(CrmConstants.COL_USER_ID, Operator.NE, userId);
+    }
+
+    private String getUsers() {
+      StringBuilder sb = new StringBuilder();
+
+      for (IsRow row : users) {
+        if (sb.length() > 0) {
+          sb.append(BeeConst.CHAR_COMMA);
+        }
+        sb.append(row.getId());
+      }
+      return sb.toString();
+    }
+
+    private void init(Filter flt) {
+      users.clear();
+      widget.clear();
+
+      if (flt != null) {
+        Queries.getRowSet("ProjectUsers", null, flt, null, new RowSetCallback() {
+          @Override
+          public void onFailure(String[] reason) {
+            Global.showError((Object[]) reason);
+          }
+
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            if (result.isEmpty()) {
+              return;
+            }
+            int firstNameIndex = result.getColumnIndex(CrmConstants.COL_FIRST_NAME);
+            int lastNameIndex = result.getColumnIndex(CrmConstants.COL_LAST_NAME);
+
+            for (IsRow row : result.getRows()) {
+              users.add(row);
+              widget.addItem(BeeUtils.concat(1, row.getString(firstNameIndex),
+                  row.getString(lastNameIndex)));
+            }
+          }
+        });
+      }
+    }
+
+    private boolean isEmpty() {
+      return users.isEmpty();
+    }
+
+    private void removeUsers() {
+      List<Integer> indexes = Lists.newArrayList();
+
+      for (int i = 0; i < widget.getItemCount(); i++) {
+        if (widget.isItemSelected(i)) {
+          indexes.add(i);
+        }
+      }
+      if (!indexes.isEmpty()) {
+        Collections.reverse(indexes);
+
+        for (int idx : indexes) {
+          users.remove(idx);
+          widget.removeItem(idx);
+        }
+      }
+    }
+
+    private void setWidget(BeeListBox widget) {
+      this.widget = widget;
     }
   }
 

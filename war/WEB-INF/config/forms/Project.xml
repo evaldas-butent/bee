@@ -113,15 +113,32 @@
       </FlexTable>
 
       <FlowPanel class="flexBox-horizontal" style="margin: 0px 10px 0px 10px">
-        <VerticalPanel>
+        <VerticalPanel horizontalAlignment="center">
           <cell><Button name="COMMENTED" html="Naujas komentaras" /></cell>
           <cell><Button name="EXTENDED" html="Keisti terminą" /></cell>
           <cell><Button name="UPDATED" html="Koreguoti" /></cell>
         </VerticalPanel>
 
-        <ChildGrid name="ProjectUsers" relColumn="Project" class="flexible" style="min-height: 100px" />
-      
-        <VerticalPanel>
+        <FlexTable cellPadding="0" cellSpacing="0">
+          <row>
+            <cell horizontalAlignment="right">
+              <Label html="Stebėtojai" />
+            </cell>
+            <cell>
+              <FlowPanel>
+                <Button name="ObserverAdd" html="+" />
+                <Button name="ObserverDelete" html="-" />
+              </FlowPanel>
+            </cell>
+          </row>
+          <row>
+            <cell colSpan="2">
+              <ListBox name="Observers" multiSelect="true" minSize="2" maxSize="5" style="width: 200px" />
+            </cell>
+          </row>
+        </FlexTable>
+
+        <VerticalPanel horizontalAlignment="center">
           <cell><Button name="ACTIVATED" html="Perduoti vykdymui" /></cell>
           <cell><Button name="SUSPENDED" html="Sustabdyti" /></cell>
           <cell><Button name="CANCELED" html="Nutraukti" /></cell>

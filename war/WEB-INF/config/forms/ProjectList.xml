@@ -2,31 +2,30 @@
 <BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
   
-  name="TaskList" caption="Užduotys">
+  name="ProjectList" caption="Projektai">
 
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal-center" style="background-color: #f8f8f8; font-family: Tahoma; font-size: 12px;">
       <FlowPanel>
-        <CheckBox name="Scheduled" html="Suplanuotos" />
-        <CheckBox name="Executing" html="Vykdomos" />
-        <CheckBox name="Suspended" html="Sustabdytos" />
-        <CheckBox name="Completed" html="Įvykdytos" />
-        <CheckBox name="Canceled" html="Nutrauktos" />
-        <CheckBox name="Approved" html="Baigtos" />
+        <CheckBox name="Created" html="Suplanuoti" />
+        <CheckBox name="Activated" html="Vykdomi" />
+        <CheckBox name="Suspended" html="Sustabdyti" />
+        <CheckBox name="Canceled" html="Nutraukti" />
+        <CheckBox name="Completed" html="Baigti" />
       </FlowPanel>
       <SimplePanel class="flexible flexBox-vertical-center">
         <VerticalPanel>
           <cell>
-            <CheckBox name="Overdue" html="Tik vėluojančios" style="color: red;" />
+            <CheckBox name="Overdue" html="Tik vėluojantys" style="color: red;" />
           </cell>
           <cell>
-            <CheckBox name="Updated" html="Tik pasikeitusios" />
+            <CheckBox name="Changed" html="Tik pasikeitę" />
           </cell>
         </VerticalPanel>
       </SimplePanel>
       <Button name="Filter" html="Filtruoti" />
     </FlowPanel>
 
-    <GridPanel class="flexible" name="UserTasks" style="background-color: white;" />
+    <GridPanel class="flexible" name="UserProjects" style="background-color: white;" />
   </FlowPanel>
 </BeeForm>

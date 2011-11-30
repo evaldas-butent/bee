@@ -84,17 +84,10 @@ public class TaskList {
       CompoundFilter andFilter = Filter.and();
       Value now = new LongValue(new DateTime().getTime());
 
-      Value dateFrom = getDateValue("DateFrom");
-      if (dateFrom != null) {
-        andFilter.add(ComparisonFilter.isMoreEqual("FinishTime", dateFrom));
-      }
-      Value dateTo = getDateValue("DateTo");
-      if (dateTo != null) {
-        andFilter.add(ComparisonFilter.isLess("FinishTime", dateTo));
-      }
       if (isChecked("Updated")) {
-        andFilter.add(ComparisonFilter.compareWithColumn(CrmConstants.COL_LAST_ACCESS, Operator.LT,
-            CrmConstants.COL_LAST_PUBLISH));
+        andFilter.add(Filter.or(Filter.isEmpty(CrmConstants.COL_LAST_ACCESS),
+            ComparisonFilter.compareWithColumn(CrmConstants.COL_LAST_ACCESS, Operator.LT,
+                CrmConstants.COL_LAST_PUBLISH)));
       }
       if (isChecked("Overdue")) {
         andFilter.add(ComparisonFilter.isLess("FinishTime", now),
@@ -162,20 +155,6 @@ public class TaskList {
 
     public void updateFilter() {
       getGridPanel().getPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter());
-    }
-
-    private Value getDateValue(String filter) {
-      Value date = null;
-      String name = BeeUtils.normalize(filter);
-
-      if (filterWidgets.containsKey(name)) {
-        String dt = filterWidgets.get(name).getNormalizedValue();
-
-        if (!BeeUtils.isEmpty(dt)) {
-          date = new LongValue(BeeUtils.toLong(dt));
-        }
-      }
-      return date;
     }
 
     private GridPanel getGridPanel() {
@@ -340,7 +319,7 @@ public class TaskList {
 
       if (getUserId() != null && getType() != null) {
         Value user = new LongValue(getUserId());
-        CompoundFilter filter = Filter.and(ComparisonFilter.isEqual("User", user),
+        CompoundFilter filter = Filter.and(ComparisonFilter.isEqual(CrmConstants.COL_USER, user),
             CompoundFilter.or(Filter.isEmpty("ProjectStage"),
                 ComparisonFilter.isEqual("ProjectEvent",
                     new IntegerValue(ProjectEvent.ACTIVATED.ordinal()))));

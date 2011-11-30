@@ -34,7 +34,6 @@ body, select {
   -moz-box-orient: vertical;
   -webkit-box-orient: vertical;
 }
-
 .flexBox-center {
   display: box;
   display: -moz-box;
@@ -53,6 +52,17 @@ body, select {
   box-orient: vertical;
   -moz-box-orient: vertical;
   -webkit-box-orient: vertical;
+  box-align: center;
+  -moz-box-align: center;
+  -webkit-box-align: center;
+}
+.flexBox-horizontal-center {
+  display: box;
+  display: -moz-box;
+  display: -webkit-box;
+  box-orient: horizontal;
+  -moz-box-orient: horizontal;
+  -webkit-box-orient: horizontal;
   box-align: center;
   -moz-box-align: center;
   -webkit-box-align: center;

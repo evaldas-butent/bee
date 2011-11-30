@@ -68,5 +68,20 @@
         <InputArea source="Description" style="width: 100%; height: 60px;" />
       </cell>
     </row>
+
+    <row>
+      <cell>
+        <Label html="Stebėtojai:" />
+      </cell>
+      <cell>
+        <ListBox name="Observers" multiSelect="true" minSize="2" maxSize="10" style="width: 100%;" />
+      </cell>
+      <cell colSpan="2" >
+        <VerticalPanel>
+          <cell><Button name="ObserverAdd" html="+" /></cell>
+          <cell><Button name="ObserverDelete" html="-" /></cell>
+        </VerticalPanel>
+      </cell>
+    </row>
   </FlexTable>
 </BeeForm>  

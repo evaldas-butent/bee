@@ -36,8 +36,10 @@ public class CrmConstants {
   public static final String VAR_PROJECT_ID = Service.RPC_VAR_PREFIX + "project_id";
   public static final String VAR_PROJECT_DATA = Service.RPC_VAR_PREFIX + "project_data";
   public static final String VAR_PROJECT_COMMENT = Service.RPC_VAR_PREFIX + "project_comment";
+  public static final String VAR_PROJECT_OBSERVERS = Service.RPC_VAR_PREFIX + "project_observers";
 
   public static final String TBL_TASK_USERS = "TaskUsers";
+  public static final String TBL_PROJECT_USERS = "ProjectUsers";
 
   public static final String COL_LAST_ACCESS = "LastAccess";
   public static final String COL_LAST_PUBLISH = "LastPublish";

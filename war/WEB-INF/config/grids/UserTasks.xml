@@ -11,7 +11,6 @@
     <footer borderWidth="0"/>
 
     <columns>
-      <BeeSelectionColumn name="Select" caption="x" />
       <BeeCalcColumn name="Mode" type="string" caption="&#160;" cell="html"
         horizontalAlignment="center" width="15">
         <calc><lambda>greenSmall, yellowSmall</lambda></calc>

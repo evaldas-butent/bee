@@ -11,56 +11,19 @@
     <footer borderWidth="0"/>
 
     <columns>
-      <BeeSelectionColumn name="Select" caption="x" />
-      <BeeCalcColumn name="Mode" type="string" caption="*">
-        <calc>
-          <function>
-            if (!row.LastAccess) {
-              return "N";
-            } else if(row.LastAccess &lt; row.LastPublish) {
-              return "U";
-            }
-            return "";
-          </function>
-        </calc>
+      <BeeCalcColumn name="Mode" type="string" caption="&#160;" cell="html"
+        horizontalAlignment="center" width="15">
+        <calc><lambda>greenSmall, yellowSmall</lambda></calc>
       </BeeCalcColumn>
       <BeeIdColumn name="Id"  caption="ID" />
       <BeeCalcColumn name="Priority" type="string" caption="Prioritetas" sortBy="Priority">
-        <calc>
-          <function>
-            switch(row.Priority) {
-              case 0:
-                return "LOW";
-              case 1:
-                return "MEDIUM";
-              case 2:
-                return "HIGH";
-            }
-          </function>
-        </calc>
+        <calc><lambda /></calc>
       </BeeCalcColumn>
       <BeeDataColumn name="Type" source="TypeName" caption="Tipas" />
       <BeeDataColumn name="Name" source="Name" caption="Pavadinimas" />
       <BeeDataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
-      <BeeCalcColumn name="Status" type="string" caption="Būsena" sortBy="Event">
-        <calc>
-          <function>
-            switch(row.Event) {
-              case 0:
-                return "CREATED";
-              case 1:
-                return "ACTIVATED";
-              case 2:
-                return "SUSPENDED";
-              case 3:
-                return "COMPLETED";
-              case 4:
-                return "APPROVED";
-              case 5:
-                return "CANCELED";
-            }
-          </function>
-        </calc>
+      <BeeCalcColumn name="Event" type="string" caption="Būsena" sortBy="Event">
+        <calc><lambda /></calc>
       </BeeCalcColumn>
       <BeeCalcColumn name="Owner" type="string" caption="Vadovas"
         sortBy="OwnerFirstName, OwnerLastName" searchBy="OwnerFirstName, OwnerLastName">

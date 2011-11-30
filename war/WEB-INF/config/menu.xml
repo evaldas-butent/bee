@@ -15,8 +15,8 @@
   <item id="duration_types" parent="task_menu" order="100" text="Darbų tipai" service="grid" parameters="DurationTypes" separators="*" />
 
   <item id="project_menu" order="40" text="Projektai" />
-  <item id="controled_projects" parent="project_menu" order="10" text="Valdomi" service="grid" parameters="UserProjects" />
-  <item id="observed_projects" parent="project_menu" order="20" text="Stebimi" service="grid" parameters="UserProjects" />
+  <item id="controled_projects" parent="project_menu" order="10" text="Valdomi" service="project_list" parameters="c" />
+  <item id="observed_projects" parent="project_menu" order="20" text="Stebimi" service="project_list" parameters="o" />
   <item id="project_types" parent="project_menu" order="100" text="Projektų tipai" service="grid" parameters="ProjectTypes" separators="*" />
 
   <item id="process_menu" order="50" text="Procesai" />
