@@ -42,11 +42,13 @@ import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.ListSequence;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
@@ -86,14 +88,16 @@ public class ProjectEventHandler {
       } else if (BeeUtils.same(name, "Observers") && widget instanceof BeeListBox) {
         observers.setWidget((BeeListBox) widget);
 
-      } else if (BeeUtils.same(name, "ObserverAdd") && widget instanceof HasClickHandlers) {
+      } else if (BeeUtils.same(name, CrmConstants.SVC_ADD_OBSERVERS)
+          && widget instanceof HasClickHandlers) {
         ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
             observers.addUsers();
           }
         });
-      } else if (BeeUtils.same(name, "ObserverDelete") && widget instanceof HasClickHandlers) {
+      } else if (BeeUtils.same(name, CrmConstants.SVC_REMOVE_OBSERVERS)
+          && widget instanceof HasClickHandlers) {
         ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
           @Override
           public void onClick(ClickEvent event) {
@@ -162,7 +166,7 @@ public class ProjectEventHandler {
 
     @Override
     public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-      observers.init(null);
+      observers.requery(null);
       newRow.setValue(form.getDataIndex(CrmConstants.COL_OWNER), BeeKeeper.getUser().getUserId());
       newRow.setValue(form.getDataIndex("StartDate"), TimeUtils.today(0).getDay());
       newRow.setValue(form.getDataIndex(CrmConstants.COL_EVENT), ProjectEvent.CREATED.ordinal());
@@ -268,16 +272,20 @@ public class ProjectEventHandler {
     private static int counter = 0;
     private Map<String, Widget> formWidgets = Maps.newHashMap();
 
+    private final StageCollector stages = new StageCollector();
     private final UserCollector observers = new UserCollector();
 
     @Override
     public void afterCreateWidget(String name, final Widget widget) {
       if (!BeeUtils.isEmpty(name)
-          && BeeUtils.inListSame(name, CrmConstants.COL_PRIORITY, CrmConstants.COL_EVENT, "Stages")) {
+          && BeeUtils.inListSame(name, CrmConstants.COL_PRIORITY, CrmConstants.COL_EVENT)) {
         setWidget(name, widget);
 
       } else if (BeeUtils.same(name, "Observers") && widget instanceof BeeListBox) {
         observers.setWidget((BeeListBox) widget);
+
+      } else if (BeeUtils.same(name, "Stages") && widget instanceof BeeTree) {
+        stages.setWidget((BeeTree) widget);
 
       } else if (widget instanceof HasClickHandlers) {
         setWidget(name, widget);
@@ -296,32 +304,39 @@ public class ProjectEventHandler {
               doEvent(event, UiHelper.getForm(widget));
             }
           });
-        } else if (BeeUtils.same(name, "ObserverAdd")) {
+        } else if (BeeUtils.same(name, CrmConstants.SVC_ADD_OBSERVERS)) {
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
               observers.addUsers();
             }
           });
-        } else if (BeeUtils.same(name, "ObserverDelete")) {
+        } else if (BeeUtils.same(name, CrmConstants.SVC_REMOVE_OBSERVERS)) {
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent event) {
               observers.removeUsers();
             }
           });
-        } else if (BeeUtils.same(name, "AddStage")) {
+        } else if (BeeUtils.same(name, CrmConstants.SVC_ADD_STAGE)) {
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent e) {
-              addStage(UiHelper.getForm(widget));
+              stages.addStage();
             }
           });
-        } else if (BeeUtils.same(name, "RemoveStage")) {
+        } else if (BeeUtils.same(name, CrmConstants.SVC_REMOVE_STAGE)) {
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent e) {
-              // removeStage();
+              stages.removeStage();
+            }
+          });
+        } else if (BeeUtils.same(name, CrmConstants.SVC_EDIT_STAGE)) {
+          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent e) {
+              stages.editStage();
             }
           });
         }
@@ -338,10 +353,9 @@ public class ProjectEventHandler {
           .setInnerText(BeeUtils.getName(Priority.class, idx));
 
       idx = row.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
+      Long owner = row.getLong(form.getDataIndex(CrmConstants.COL_OWNER));
 
       if (BeeUtils.isOrdinal(ProjectEvent.class, idx)) {
-        Long owner = row.getLong(form.getDataIndex(CrmConstants.COL_OWNER));
-
         for (ProjectEvent ev : ProjectEvent.values()) {
           Widget widget = getWidget(ev.name());
 
@@ -353,9 +367,24 @@ public class ProjectEventHandler {
             }
           }
         }
+        getWidget(CrmConstants.COL_EVENT).getElement()
+            .setInnerText(BeeUtils.getName(ProjectEvent.class, idx));
       }
-      getWidget(CrmConstants.COL_EVENT).getElement()
-          .setInnerText(BeeUtils.getName(ProjectEvent.class, idx));
+      Long user = BeeKeeper.getUser().getUserId();
+
+      for (String name : new String[] {CrmConstants.SVC_ADD_OBSERVERS,
+          CrmConstants.SVC_REMOVE_OBSERVERS, CrmConstants.SVC_ADD_STAGE,
+          CrmConstants.SVC_REMOVE_STAGE, CrmConstants.SVC_EDIT_STAGE}) {
+
+        Widget widget = getWidget(name);
+        if (widget != null) {
+          if (user == owner) {
+            StyleUtils.unhideDisplay(widget);
+          } else {
+            StyleUtils.hideDisplay(widget);
+          }
+        }
+      }
     }
 
     @Override
@@ -369,15 +398,24 @@ public class ProjectEventHandler {
 
     @Override
     public void onStartEdit(FormView form, IsRow row) {
-      observers.init(Filter.and(
-          ComparisonFilter.isEqual(CrmConstants.COL_PROJECT, new LongValue(row.getId())),
-          ComparisonFilter.isNotEqual(CrmConstants.COL_USER,
-              new LongValue(row.getLong(form.getDataIndex(CrmConstants.COL_OWNER))))));
-
       doEvent(ProjectEvent.VISITED, form);
+      observers.requery(row.getId());
     }
 
-    private void addStage(final FormView form) {
+    private Widget getWidget(String name) {
+      return formWidgets.get(BeeUtils.normalize(name));
+    }
+
+    private void setWidget(String name, Widget widget) {
+      formWidgets.put(BeeUtils.normalize(name), widget);
+    }
+  }
+
+  private static class StageCollector {
+    private Long projectId;
+    private BeeTree widget;
+
+    private void addStage() {
       final ProjectDialog dialog = new ProjectDialog("Naujas etapas");
       dialog.addText("Pavadinimas", true);
       dialog.addComment("Aprašymas", false);
@@ -390,40 +428,65 @@ public class ProjectEventHandler {
             Global.showError("Įveskite pavadinimą");
             return;
           }
-          BeeTree stg = (BeeTree) getWidget("Stages");
-          HasTreeItems selected = stg.getSelectedItem();
+          HasTreeItems selected = widget.getSelectedItem();
 
           if (selected == null) {
-            selected = stg;
+            selected = widget;
           }
-          selected.addItem(new BeeTreeItem(name));
+          selected.addItem(new BeeTreeItem(name, null));
           dialog.hide();
         }
       });
       dialog.display();
     }
 
-    private Widget getWidget(String name) {
-      return formWidgets.get(BeeUtils.normalize(name));
+    private void doRequest(String service, String ids) {
+      ParameterList args = createArgs(service);
+      args.addDataItem(CrmConstants.VAR_PROJECT_ID, projectId);
+      args.addDataItem(CrmConstants.VAR_PROJECT_OBSERVERS, ids);
+
+      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          Assert.notNull(response);
+
+          if (response.hasErrors()) {
+            Global.showError((Object[]) response.getErrors());
+          } else if (response.hasResponse(IsRow.class)) {
+            // requery(projectId);
+          } else {
+            Global.showError("Unknown response");
+          }
+        }
+      });
     }
 
-    private void setWidget(String name, Widget widget) {
-      formWidgets.put(BeeUtils.normalize(name), widget);
+    private void editStage() {
+      Global.showError("Not implemented yet");
+    }
+
+    private void removeStage() {
+      Global.showError("Not implemented yet");
+    }
+
+    private void setWidget(BeeTree widget) {
+      this.widget = widget;
     }
   }
 
   private static class UserCollector {
-    private final List<IsRow> users = Lists.newArrayList();
+    private Long projectId;
+    private final List<Long> users = Lists.newArrayList();
     private BeeListBox widget;
 
     private void addUsers() {
-      Filter flt = excludeUser(BeeKeeper.getUser().getUserId());
+      CompoundFilter flt = null;
 
       if (!isEmpty()) {
-        flt = Filter.and(flt);
+        flt = Filter.and();
 
-        for (IsRow row : users) {
-          ((CompoundFilter) flt).add(excludeUser(row.getId()));
+        for (Long userId : users) {
+          flt.add(ComparisonFilter.compareId(CrmConstants.COL_USER_ID, Operator.NE, userId));
         }
       }
       Queries.getRowSet("Users", null, flt, null, new RowSetCallback() {
@@ -433,25 +496,26 @@ public class ProjectEventHandler {
         }
 
         @Override
-        public void onSuccess(BeeRowSet result) {
+        public void onSuccess(final BeeRowSet result) {
           if (result.isEmpty()) {
             Global.showError("No more heroes any more");
             return;
           }
-          final int firstNameIndex = result.getColumnIndex(CrmConstants.COL_FIRST_NAME);
-          final int lastNameIndex = result.getColumnIndex(CrmConstants.COL_LAST_NAME);
-
           MultiSelector selector = new MultiSelector("Stebėtojai", result,
               Lists.newArrayList(CrmConstants.COL_FIRST_NAME, CrmConstants.COL_LAST_NAME),
               new SelectionCallback() {
                 @Override
                 public void onSelection(List<IsRow> rows) {
-                  if (!BeeUtils.isEmpty(rows)) {
+                  if (!BeeUtils.isEmpty(projectId)) {
+                    List<Long> usrList = Lists.newArrayList();
+
                     for (IsRow row : rows) {
-                      users.add(row);
-                      widget.addItem(BeeUtils.concat(1, row.getString(firstNameIndex),
-                          row.getString(lastNameIndex)));
+                      usrList.add(row.getId());
                     }
+                    doRequest(CrmConstants.SVC_ADD_OBSERVERS, getUsers(usrList));
+
+                  } else {
+                    updateUsers(new ListSequence<IsRow>(rows), result.getColumns());
                   }
                 }
               });
@@ -460,28 +524,89 @@ public class ProjectEventHandler {
       });
     }
 
-    private Filter excludeUser(long userId) {
-      return ComparisonFilter.compareId(CrmConstants.COL_USER_ID, Operator.NE, userId);
+    private String getUsers() {
+      return getUsers(users);
     }
 
-    private String getUsers() {
+    private String getUsers(List<Long> userList) {
       StringBuilder sb = new StringBuilder();
 
-      for (IsRow row : users) {
+      for (Long userId : userList) {
         if (sb.length() > 0) {
           sb.append(BeeConst.CHAR_COMMA);
         }
-        sb.append(row.getId());
+        sb.append(userId);
       }
       return sb.toString();
     }
 
-    private void init(Filter flt) {
+    private boolean isEmpty() {
+      return users.isEmpty();
+    }
+
+    private void removeUsers() {
+      final List<Integer> indexes = Lists.newArrayList();
+
+      for (int i = 0; i < widget.getItemCount(); i++) {
+        if (widget.isItemSelected(i)) {
+          indexes.add(i);
+        }
+      }
+      if (!indexes.isEmpty()) {
+        if (!BeeUtils.isEmpty(projectId)) {
+          Global.confirm(BeeUtils.concat(1, "Pašalinti", indexes.size(), "stebėtojus?"),
+              new BeeCommand() {
+                @Override
+                public void execute() {
+                  List<Long> usrList = Lists.newArrayList();
+
+                  for (int idx : indexes) {
+                    usrList.add(users.get(idx));
+                  }
+                  doRequest(CrmConstants.SVC_REMOVE_OBSERVERS, getUsers(usrList));
+                }
+              });
+        } else {
+          Collections.reverse(indexes);
+
+          for (int idx : indexes) {
+            users.remove(idx);
+            widget.removeItem(idx);
+          }
+        }
+      }
+    }
+
+    private void doRequest(String service, String ids) {
+      ParameterList args = createArgs(service);
+      args.addDataItem(CrmConstants.VAR_PROJECT_ID, projectId);
+      args.addDataItem(CrmConstants.VAR_PROJECT_OBSERVERS, ids);
+
+      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          Assert.notNull(response);
+
+          if (response.hasErrors()) {
+            Global.showError((Object[]) response.getErrors());
+          } else if (response.hasResponse(Integer.class)) {
+            requery(projectId);
+          } else {
+            Global.showError("Unknown response");
+          }
+        }
+      });
+    }
+
+    private void requery(Long project) {
+      this.projectId = project;
       users.clear();
       widget.clear();
 
-      if (flt != null) {
-        Queries.getRowSet("ProjectUsers", null, flt, null, new RowSetCallback() {
+      if (!BeeUtils.isEmpty(projectId)) {
+        Filter flt = ComparisonFilter.isEqual(CrmConstants.COL_PROJECT, new LongValue(projectId));
+
+        Queries.getRowSet(CrmConstants.TBL_PROJECT_USERS, null, flt, null, new RowSetCallback() {
           @Override
           public void onFailure(String[] reason) {
             Global.showError((Object[]) reason);
@@ -492,50 +617,43 @@ public class ProjectEventHandler {
             if (result.isEmpty()) {
               return;
             }
-            int firstNameIndex = result.getColumnIndex(CrmConstants.COL_FIRST_NAME);
-            int lastNameIndex = result.getColumnIndex(CrmConstants.COL_LAST_NAME);
-
-            for (IsRow row : result.getRows()) {
-              users.add(row);
-              widget.addItem(BeeUtils.concat(1, row.getString(firstNameIndex),
-                  row.getString(lastNameIndex)));
-            }
+            updateUsers(result.getRows(), result.getColumns());
           }
         });
-      }
-    }
-
-    private boolean isEmpty() {
-      return users.isEmpty();
-    }
-
-    private void removeUsers() {
-      List<Integer> indexes = Lists.newArrayList();
-
-      for (int i = 0; i < widget.getItemCount(); i++) {
-        if (widget.isItemSelected(i)) {
-          indexes.add(i);
-        }
-      }
-      if (!indexes.isEmpty()) {
-        Collections.reverse(indexes);
-
-        for (int idx : indexes) {
-          users.remove(idx);
-          widget.removeItem(idx);
-        }
       }
     }
 
     private void setWidget(BeeListBox widget) {
       this.widget = widget;
     }
+
+    private void updateUsers(ListSequence<? extends IsRow> rows, List<BeeColumn> columns) {
+      int firstNameIndex = DataUtils.getColumnIndex(CrmConstants.COL_FIRST_NAME, columns);
+      int lastNameIndex = DataUtils.getColumnIndex(CrmConstants.COL_LAST_NAME, columns);
+      int userIndex = DataUtils.getColumnIndex(CrmConstants.COL_USER, columns);
+
+      if (!BeeUtils.isEmpty(rows)) {
+        for (IsRow row : rows) {
+          String usr = BeeUtils.concat(1, row.getString(firstNameIndex),
+              row.getString(lastNameIndex));
+
+          if (userIndex < 0) {
+            users.add(row.getId());
+          } else {
+            users.add(row.getLong(userIndex));
+            int lastAccessIndex = DataUtils.getColumnIndex(CrmConstants.COL_LAST_ACCESS, columns);
+            usr = BeeUtils.concat(1, usr, BeeUtils.parenthesize(row.getDateTime(lastAccessIndex)));
+          }
+          widget.addItem(usr);
+        }
+      }
+    }
   }
 
   private static final String VIEW_PROJECTS = "UserProjects";
 
   public static boolean availableEvent(ProjectEvent ev, Integer status, Long owner) {
-    long user = BeeKeeper.getUser().getUserId();
+    Long user = BeeKeeper.getUser().getUserId();
 
     if (user != owner) {
       return (ev == ProjectEvent.COMMENTED || ev == ProjectEvent.VISITED);

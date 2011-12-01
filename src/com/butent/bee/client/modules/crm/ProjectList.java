@@ -290,14 +290,15 @@ public class ProjectList {
 
       if (getUserId() != null && getType() != null) {
         Value user = new LongValue(getUserId());
-        CompoundFilter filter = Filter.and(ComparisonFilter.isEqual(CrmConstants.COL_USER, user));
+        Filter filter = null;
 
         switch (getType()) {
           case CONTROLED:
-            filter.add(ComparisonFilter.isEqual(CrmConstants.COL_OWNER, user));
+            filter = ComparisonFilter.isEqual(CrmConstants.COL_OWNER, user);
             break;
           case OBSERVED:
-            filter.add(ComparisonFilter.isNotEqual(CrmConstants.COL_OWNER, user));
+            filter = Filter.and(ComparisonFilter.isEqual(CrmConstants.COL_USER, user),
+                ComparisonFilter.isNotEqual(CrmConstants.COL_OWNER, user));
             break;
         }
         gridDescription.setFilter(filter);

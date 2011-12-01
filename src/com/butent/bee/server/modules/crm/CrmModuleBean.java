@@ -10,6 +10,7 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -84,92 +85,125 @@ public class CrmModuleBean implements BeeModule {
 
   private ResponseObject doProjectEvent(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
-    ProjectEvent event;
 
-    try {
-      event = ProjectEvent.valueOf(svc);
-    } catch (Exception e) {
-      event = null;
-    }
-    if (event != null) {
+    if (BeeUtils.same(svc, CrmConstants.SVC_ADD_OBSERVERS)) {
+      int cnt = 0;
+      long projectId = BeeUtils.toLong(reqInfo.getParameter(CrmConstants.VAR_PROJECT_ID));
+      String observers = reqInfo.getParameter(CrmConstants.VAR_PROJECT_OBSERVERS);
+
+      for (String obsId : USER_ID_SPLITTER.split(observers)) {
+        response = registerProjectVisit(projectId, BeeUtils.toLong(obsId), null, true);
+        if (response.hasErrors()) {
+          break;
+        }
+        cnt++;
+      }
+      if (!response.hasErrors()) {
+        response = ResponseObject.response(cnt);
+      }
+    } else if (BeeUtils.same(svc, CrmConstants.SVC_REMOVE_OBSERVERS)) {
+      long projectId = BeeUtils.toLong(reqInfo.getParameter(CrmConstants.VAR_PROJECT_ID));
+      String observers = reqInfo.getParameter(CrmConstants.VAR_PROJECT_OBSERVERS);
+
+      HasConditions usrClause = SqlUtils.or();
+      IsCondition cond = SqlUtils.and(SqlUtils.equal(CrmConstants.TBL_PROJECT_USERS,
+          CrmConstants.COL_PROJECT, projectId), usrClause);
+
+      for (String obsId : USER_ID_SPLITTER.split(observers)) {
+        usrClause.add(SqlUtils.equal(CrmConstants.TBL_PROJECT_USERS, CrmConstants.COL_USER,
+            BeeUtils.toLong(obsId)));
+      }
+      response = qs.updateDataWithResponse(new SqlDelete(CrmConstants.TBL_PROJECT_USERS)
+          .setWhere(cond));
+
+    } else {
       long time = System.currentTimeMillis();
       long currentUser = usr.getCurrentUserId();
+      ProjectEvent event;
 
-      switch (event) {
-        case CREATED:
-          BeeRowSet rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_PROJECT_DATA));
-          String observers = reqInfo.getParameter(CrmConstants.VAR_PROJECT_OBSERVERS);
-          response = deb.commitRow(rs, false);
+      try {
+        event = ProjectEvent.valueOf(svc);
+      } catch (Exception e) {
+        event = null;
+      }
+      if (event != null) {
+        switch (event) {
+          case CREATED:
+            BeeRowSet rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_PROJECT_DATA));
+            String observers = reqInfo.getParameter(CrmConstants.VAR_PROJECT_OBSERVERS);
+            response = deb.commitRow(rs, false);
 
-          if (!response.hasErrors()) {
-            long projectId = ((BeeRow) response.getResponse()).getId();
-            response = registerProjectEvent(projectId, time, reqInfo, event, null);
+            if (!response.hasErrors()) {
+              long projectId = ((BeeRow) response.getResponse()).getId();
+              response = registerProjectEvent(projectId, time, reqInfo, event, null);
 
-            if (!response.hasErrors() && !BeeUtils.isEmpty(observers)) {
-              for (String obsId : USER_ID_SPLITTER.split(observers)) {
-                long observer = BeeUtils.toLong(obsId);
+              if (!response.hasErrors() && !BeeUtils.isEmpty(observers)) {
+                for (String obsId : USER_ID_SPLITTER.split(observers)) {
+                  long observer = BeeUtils.toLong(obsId);
 
-                if (observer != currentUser) {
-                  response = registerProjectVisit(projectId, observer, null, true);
+                  if (observer != currentUser) {
+                    response = registerProjectVisit(projectId, observer, null, true);
 
-                  if (response.hasErrors()) {
-                    break;
+                    if (response.hasErrors()) {
+                      break;
+                    }
                   }
                 }
               }
-            }
-            if (!response.hasErrors()) {
-              BeeView view = sys.getView(rs.getViewName());
-              rs = sys.getViewData(view.getName(), view.getRowFilter(projectId), null, 0, 0);
+              if (!response.hasErrors()) {
+                BeeView view = sys.getView(rs.getViewName());
+                rs = sys.getViewData(view.getName(), view.getRowFilter(projectId), null, 0, 0);
 
-              if (rs.isEmpty()) {
-                String msg = "Optimistic lock exception";
-                logger.warning(msg);
-                response = ResponseObject.error(msg);
-              } else {
-                response.setResponse(rs.getRow(0));
+                if (rs.isEmpty()) {
+                  String msg = "Optimistic lock exception";
+                  logger.warning(msg);
+                  response = ResponseObject.error(msg);
+                } else {
+                  response.setResponse(rs.getRow(0));
+                }
               }
             }
-          }
-          break;
+            break;
 
-        case VISITED:
-          response = registerProjectVisit(
-              BeeUtils.toLong(reqInfo.getParameter(CrmConstants.VAR_PROJECT_ID)),
-              currentUser, time, false);
-          break;
+          case VISITED:
+            response = registerProjectVisit(
+                BeeUtils.toLong(reqInfo.getParameter(CrmConstants.VAR_PROJECT_ID)),
+                currentUser, time, false);
+            break;
 
-        case COMMENTED:
-          response = registerProjectEvent(
-              BeeUtils.toLong(reqInfo.getParameter(CrmConstants.VAR_PROJECT_ID)),
-              time, reqInfo, event, null);
-          break;
+          case COMMENTED:
+            response = registerProjectEvent(
+                BeeUtils.toLong(reqInfo.getParameter(CrmConstants.VAR_PROJECT_ID)),
+                time, reqInfo, event, null);
+            break;
 
-        case ACTIVATED:
-        case SUSPENDED:
-        case CANCELED:
-        case COMPLETED:
-        case RENEWED:
-          rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_PROJECT_DATA));
-          long projectId = rs.getRow(0).getId();
+          case ACTIVATED:
+          case SUSPENDED:
+          case CANCELED:
+          case COMPLETED:
+          case RENEWED:
+            rs = BeeRowSet.restore(reqInfo.getParameter(CrmConstants.VAR_PROJECT_DATA));
+            long projectId = rs.getRow(0).getId();
 
-          response = deb.commitRow(rs, false);
+            response = deb.commitRow(rs, false);
 
-          if (!response.hasErrors()) {
-            response = registerProjectEvent(projectId, time, reqInfo, event, null);
-          }
-          break;
+            if (!response.hasErrors()) {
+              response = registerProjectEvent(projectId, time, reqInfo, event, null);
+            }
+            break;
 
-        case DELETED:
-          Assert.untouchable();
+          case DELETED:
+            Assert.untouchable();
+        }
       }
-      if (response.hasErrors()) {
-        ctx.setRollbackOnly();
-      }
-    } else {
+    }
+    if (response == null) {
       String msg = BeeUtils.concat(1, "Project service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
+
+    } else if (response.hasErrors()) {
+      ctx.setRollbackOnly();
     }
     return response;
   }
@@ -361,16 +395,16 @@ public class CrmModuleBean implements BeeModule {
   private ResponseObject registerProjectVisit(long projectId, long userId, Long time,
       boolean newVisit) {
     ResponseObject response = null;
-    String tbl = "ProjectUsers";
 
     if (!newVisit) {
-      response = qs.updateDataWithResponse(new SqlUpdate(tbl)
+      response = qs.updateDataWithResponse(new SqlUpdate(CrmConstants.TBL_PROJECT_USERS)
           .addConstant(CrmConstants.COL_LAST_ACCESS, time)
-          .setWhere(SqlUtils.and(SqlUtils.equal(tbl, CrmConstants.COL_PROJECT, projectId),
-              SqlUtils.equal(tbl, CrmConstants.COL_USER, userId))));
+          .setWhere(SqlUtils.and(
+              SqlUtils.equal(CrmConstants.TBL_PROJECT_USERS, CrmConstants.COL_PROJECT, projectId),
+              SqlUtils.equal(CrmConstants.TBL_PROJECT_USERS, CrmConstants.COL_USER, userId))));
     }
     if (newVisit || BeeUtils.isEmpty(response.getResponse(-1, logger))) {
-      response = qs.insertDataWithResponse(new SqlInsert(tbl)
+      response = qs.insertDataWithResponse(new SqlInsert(CrmConstants.TBL_PROJECT_USERS)
           .addConstant(CrmConstants.COL_PROJECT, projectId)
           .addConstant(CrmConstants.COL_USER, userId)
           .addConstant(CrmConstants.COL_LAST_ACCESS, time));

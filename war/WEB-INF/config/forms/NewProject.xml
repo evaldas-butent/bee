@@ -78,8 +78,8 @@
       </cell>
       <cell colSpan="2" >
         <VerticalPanel>
-          <cell><Button name="ObserverAdd" html="+" /></cell>
-          <cell><Button name="ObserverDelete" html="-" /></cell>
+          <cell><Button name="AddObservers" html="+" /></cell>
+          <cell><Button name="RemoveObservers" html="-" /></cell>
         </VerticalPanel>
       </cell>
     </row>

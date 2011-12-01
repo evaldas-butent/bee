@@ -38,6 +38,12 @@ public class CrmConstants {
   public static final String VAR_PROJECT_COMMENT = Service.RPC_VAR_PREFIX + "project_comment";
   public static final String VAR_PROJECT_OBSERVERS = Service.RPC_VAR_PREFIX + "project_observers";
 
+  public static final String SVC_ADD_OBSERVERS = "AddObservers";
+  public static final String SVC_REMOVE_OBSERVERS = "RemoveObservers";
+  public static final String SVC_ADD_STAGE = "AddStage";
+  public static final String SVC_REMOVE_STAGE = "RemoveStage";
+  public static final String SVC_EDIT_STAGE = "EditStage";
+
   public static final String TBL_TASK_USERS = "TaskUsers";
   public static final String TBL_PROJECT_USERS = "ProjectUsers";
 

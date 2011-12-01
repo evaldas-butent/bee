@@ -319,10 +319,9 @@ public class TaskList {
 
       if (getUserId() != null && getType() != null) {
         Value user = new LongValue(getUserId());
-        CompoundFilter filter = Filter.and(ComparisonFilter.isEqual(CrmConstants.COL_USER, user),
-            CompoundFilter.or(Filter.isEmpty("ProjectStage"),
-                ComparisonFilter.isEqual("ProjectEvent",
-                    new IntegerValue(ProjectEvent.ACTIVATED.ordinal()))));
+        CompoundFilter filter = Filter.and(CompoundFilter.or(Filter.isEmpty("ProjectStage"),
+            ComparisonFilter.isEqual("ProjectEvent",
+                new IntegerValue(ProjectEvent.ACTIVATED.ordinal()))));
 
         switch (getType()) {
           case ASSIGNED:
@@ -333,7 +332,8 @@ public class TaskList {
                 ComparisonFilter.isNotEqual(CrmConstants.COL_EXECUTOR, user));
             break;
           case OBSERVED:
-            filter.add(ComparisonFilter.isNotEqual(CrmConstants.COL_OWNER, user),
+            filter.add(ComparisonFilter.isEqual(CrmConstants.COL_USER, user),
+                ComparisonFilter.isNotEqual(CrmConstants.COL_OWNER, user),
                 ComparisonFilter.isNotEqual(CrmConstants.COL_EXECUTOR, user));
             break;
         }
