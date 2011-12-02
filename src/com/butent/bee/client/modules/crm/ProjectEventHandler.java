@@ -9,6 +9,7 @@ import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasTreeItems;
+import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -18,6 +19,8 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.MultiSelector.SelectionCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.IntCallback;
+import com.butent.bee.client.data.Queries.RowCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
@@ -400,6 +403,7 @@ public class ProjectEventHandler {
     public void onStartEdit(FormView form, IsRow row) {
       doEvent(ProjectEvent.VISITED, form);
       observers.requery(row.getId());
+      stages.requery(row.getId());
     }
 
     private Widget getWidget(String name) {
@@ -415,50 +419,77 @@ public class ProjectEventHandler {
     private Long projectId;
     private BeeTree widget;
 
+    private void addBranch(HasTreeItems parent, Long parentId,
+        Map<Long, List<Long>> hierarchy, Map<Long, IsRow> items, int nameIndex) {
+
+      List<Long> branch = hierarchy.get(parentId);
+
+      if (branch != null) {
+        for (Long leaf : branch) {
+          IsRow item = items.get(leaf);
+          BeeTreeItem treeItem = new BeeTreeItem(item.getString(nameIndex), item);
+          parent.addItem(treeItem);
+          addBranch(treeItem, item.getId(), hierarchy, items, nameIndex);
+        }
+      }
+    }
+
     private void addStage() {
       final ProjectDialog dialog = new ProjectDialog("Naujas etapas");
       dialog.addText("Pavadinimas", true);
       dialog.addComment("Aprašymas", false);
-      dialog.addAction("Sukurti", new ClickHandler() {
-        @Override
-        public void onClick(ClickEvent e) {
-          String name = dialog.getText();
+      dialog.addAction("Sukurti",
+          new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent e) {
+              final String name = dialog.getText();
 
-          if (BeeUtils.isEmpty(name)) {
-            Global.showError("Įveskite pavadinimą");
-            return;
-          }
-          HasTreeItems selected = widget.getSelectedItem();
+              if (BeeUtils.isEmpty(name)) {
+                Global.showError("Įveskite pavadinimą");
+                return;
+              }
+              List<BeeColumn> columns = Lists.newArrayList();
+              List<String> values = Lists.newArrayList();
 
-          if (selected == null) {
-            selected = widget;
-          }
-          selected.addItem(new BeeTreeItem(name, null));
-          dialog.hide();
-        }
-      });
+              columns.add(new BeeColumn(ValueType.TEXT, "Name"));
+              values.add(name);
+
+              String descr = dialog.getComment();
+
+              if (!BeeUtils.isEmpty(descr)) {
+                columns.add(new BeeColumn(ValueType.TEXT, "Description"));
+                values.add(descr);
+              }
+              columns.add(new BeeColumn(ValueType.LONG, CrmConstants.COL_PROJECT));
+              values.add(BeeUtils.toString(projectId));
+
+              final HasTreeItems owner;
+              TreeItem selected = widget.getSelectedItem();
+
+              if (selected != null) {
+                owner = selected;
+                columns.add(new BeeColumn(ValueType.LONG, "Parent"));
+                values.add(BeeUtils.toString(((IsRow) selected.getUserObject()).getId()));
+              } else {
+                owner = widget;
+              }
+
+              Queries.insert(CrmConstants.TBL_PROJECT_STAGES, columns, values,
+                  new RowCallback() {
+                    @Override
+                    public void onFailure(String[] reason) {
+                      Global.showError((Object[]) reason);
+                    }
+
+                    @Override
+                    public void onSuccess(BeeRow result) {
+                      owner.addItem(new BeeTreeItem(name, result));
+                      dialog.hide();
+                    }
+                  });
+            }
+          });
       dialog.display();
-    }
-
-    private void doRequest(String service, String ids) {
-      ParameterList args = createArgs(service);
-      args.addDataItem(CrmConstants.VAR_PROJECT_ID, projectId);
-      args.addDataItem(CrmConstants.VAR_PROJECT_OBSERVERS, ids);
-
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          Assert.notNull(response);
-
-          if (response.hasErrors()) {
-            Global.showError((Object[]) response.getErrors());
-          } else if (response.hasResponse(IsRow.class)) {
-            // requery(projectId);
-          } else {
-            Global.showError("Unknown response");
-          }
-        }
-      });
     }
 
     private void editStage() {
@@ -466,7 +497,74 @@ public class ProjectEventHandler {
     }
 
     private void removeStage() {
-      Global.showError("Not implemented yet");
+      TreeItem selected = widget.getSelectedItem();
+      if (selected == null) {
+        return;
+      }
+      if (selected.getChildCount() > 0) {
+        Global.showError("Negalima pašalinti etapo, susidedančio iš kitų etapų");
+        return;
+      }
+      final IsRow data = (IsRow) selected.getUserObject();
+
+      Global.confirm("Pašalinti etapą?",
+          new BeeCommand() {
+            @Override
+            public void execute() {
+              Queries.deleteRow(CrmConstants.TBL_PROJECT_STAGES, data.getId(), data.getVersion(),
+                  new IntCallback() {
+                    @Override
+                    public void onFailure(String[] reason) {
+                      Global.showError((Object[]) reason);
+                    }
+
+                    @Override
+                    public void onSuccess(Integer result) {
+                      requery(projectId);
+                    }
+                  });
+            }
+          });
+    }
+
+    private void requery(Long project) {
+      this.projectId = project;
+      widget.clear();
+
+      if (!BeeUtils.isEmpty(projectId)) {
+        Filter flt = ComparisonFilter.isEqual(CrmConstants.COL_PROJECT, new LongValue(projectId));
+
+        Queries.getRowSet(CrmConstants.TBL_PROJECT_STAGES, null, flt, null,
+            new RowSetCallback() {
+              @Override
+              public void onFailure(String[] reason) {
+                Global.showError((Object[]) reason);
+              }
+
+              @Override
+              public void onSuccess(BeeRowSet result) {
+                if (result.isEmpty()) {
+                  return;
+                }
+                int parentIndex = result.getColumnIndex("Parent");
+                Map<Long, List<Long>> hierarchy = Maps.newHashMap();
+                Map<Long, IsRow> items = Maps.newHashMap();
+
+                for (IsRow row : result.getRows()) {
+                  Long parent = row.getLong(parentIndex);
+                  List<Long> childs = hierarchy.get(parent);
+
+                  if (childs == null) {
+                    childs = Lists.newArrayList();
+                    hierarchy.put(parent, childs);
+                  }
+                  childs.add(row.getId());
+                  items.put(row.getId(), row);
+                }
+                addBranch(widget, null, hierarchy, items, result.getColumnIndex("Name"));
+              }
+            });
+      }
     }
 
     private void setWidget(BeeTree widget) {
@@ -524,6 +622,27 @@ public class ProjectEventHandler {
       });
     }
 
+    private void doRequest(String service, String ids) {
+      ParameterList args = createArgs(service);
+      args.addDataItem(CrmConstants.VAR_PROJECT_ID, projectId);
+      args.addDataItem(CrmConstants.VAR_PROJECT_OBSERVERS, ids);
+
+      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          Assert.notNull(response);
+
+          if (response.hasErrors()) {
+            Global.showError((Object[]) response.getErrors());
+          } else if (response.hasResponse(Integer.class)) {
+            requery(projectId);
+          } else {
+            Global.showError("Unknown response");
+          }
+        }
+      });
+    }
+
     private String getUsers() {
       return getUsers(users);
     }
@@ -575,27 +694,6 @@ public class ProjectEventHandler {
           }
         }
       }
-    }
-
-    private void doRequest(String service, String ids) {
-      ParameterList args = createArgs(service);
-      args.addDataItem(CrmConstants.VAR_PROJECT_ID, projectId);
-      args.addDataItem(CrmConstants.VAR_PROJECT_OBSERVERS, ids);
-
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          Assert.notNull(response);
-
-          if (response.hasErrors()) {
-            Global.showError((Object[]) response.getErrors());
-          } else if (response.hasResponse(Integer.class)) {
-            requery(projectId);
-          } else {
-            Global.showError("Unknown response");
-          }
-        }
-      });
     }
 
     private void requery(Long project) {

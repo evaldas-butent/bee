@@ -167,7 +167,7 @@
       <ChildGrid name="ProjectEvents" relColumn="Project" class="flexible" />
     </FlowPanel>
 
-    <FlowPanel class="flexBox-horizontal flexible" style="margin: 10px 0 0 0;">
+    <FlowPanel class="flexBox-horizontal flexible" style="margin: 10px 0 0 10px;">
       <FlexTable cellPadding="0" cellSpacing="0">
         <row>
           <cell>
@@ -183,10 +183,11 @@
         </row>
         <row>
           <cell colSpan="2">
-            <Tree name="Stages" />
+            <Tree name="Stages" style="width: 250px; background-color: #f8f8f8;" />
           </cell>
         </row>
       </FlexTable>
+
       <ChildGrid name="Tasks" relColumn="Project" class="flexible" />
     </FlowPanel>
   </FlowPanel>

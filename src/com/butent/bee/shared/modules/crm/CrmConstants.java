@@ -46,6 +46,7 @@ public class CrmConstants {
 
   public static final String TBL_TASK_USERS = "TaskUsers";
   public static final String TBL_PROJECT_USERS = "ProjectUsers";
+  public static final String TBL_PROJECT_STAGES = "ProjectStages";
 
   public static final String COL_LAST_ACCESS = "LastAccess";
   public static final String COL_LAST_PUBLISH = "LastPublish";

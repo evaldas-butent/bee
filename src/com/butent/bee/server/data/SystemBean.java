@@ -791,7 +791,6 @@ public class SystemBean {
     XmlView xmlView = new XmlView();
     xmlView.name = tblName;
     xmlView.source = tblName;
-    xmlView.readOnly = true;
     xmlView.columns = columns;
 
     return new BeeView(xmlView, tableCache);
