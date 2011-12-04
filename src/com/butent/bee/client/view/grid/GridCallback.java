@@ -1,9 +1,12 @@
 package com.butent.bee.client.view.grid;
 
+import com.google.gwt.xml.client.Element;
+
 import com.butent.bee.client.grid.AbstractColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.WidgetCallback;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
@@ -15,7 +18,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public interface GridCallback {
+public interface GridCallback extends WidgetCallback {
 
   void afterCreate(CellGrid grid);
 
@@ -42,6 +45,8 @@ public interface GridCallback {
 
   void beforeRequery(GridPresenter presenter);
 
+  String getCaption();
+  
   Map<String, Filter> getInitialFilters();
   
   GridCallback getInstance();
@@ -49,6 +54,8 @@ public interface GridCallback {
   boolean onClose(GridPresenter presenter);
   
   boolean onLoad(GridDescription gridDescription);
+
+  boolean onLoadExtWidget(Element root);
   
   void onShow(GridPresenter presenter);
 

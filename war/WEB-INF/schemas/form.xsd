@@ -5,8 +5,6 @@
   <xs:include schemaLocation="types.xsd" />
   <xs:include schemaLocation="widget.xsd" />
 
-  <xs:element name="BeeForm" type="bee:form" />
-
   <xs:complexType name="form">
     <xs:sequence>
       <xs:element ref="bee:widget" />
@@ -20,5 +18,12 @@
     <xs:attribute name="asyncThreshold" type="xs:nonNegativeInteger" default="100" />
     <xs:attribute name="searchThreshold" type="xs:nonNegativeInteger" default="2" />
   </xs:complexType>
+
+  <xs:element name="BeeForm" type="bee:form">
+    <xs:unique name="uniqueWidgetName">
+      <xs:selector xpath=".//*" />
+      <xs:field xpath="@name" />
+    </xs:unique>
+  </xs:element>
 
 </xs:schema>

@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
-
-  <BeeGrid name="Roles" viewName="Roles" caption="Rolės">
-    <columns>
-      <BeeDataColumn name="Name" source="Name" caption="Rolė" />
-    </columns>
-  </BeeGrid>
-</BeeGrids>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd"
+  name="Roles" viewName="Roles" caption="Rolės">
+  <columns>
+    <BeeDataColumn name="Name" source="Name" caption="Rolė" />
+  </columns>
+</BeeGrid>

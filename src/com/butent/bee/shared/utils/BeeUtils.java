@@ -840,7 +840,9 @@ public class BeeUtils {
 
   public static <E extends Enum<?>> E getConstant(Class<E> clazz, String name) {
     Assert.notNull(clazz);
-    Assert.notEmpty(name);
+    if (isEmpty(name)) {
+      return null;
+    }
 
     E result = null;
 
@@ -2279,6 +2281,14 @@ public class BeeUtils {
       z.append(proper(x, null));
     }
     return z.toString();
+  }
+  
+  public static String quote(String s) {
+    if (s == null) {
+      return BeeConst.STRING_QUOT + BeeConst.STRING_QUOT;
+    } else {
+      return BeeConst.STRING_QUOT + s.trim() + BeeConst.STRING_QUOT;
+    }
   }
 
   public static double randomDouble(double min, double max) {

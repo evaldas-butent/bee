@@ -64,6 +64,7 @@ public class BeeConst {
   public static final String STRING_MINUS = "-";
   public static final String STRING_PLUS = "+";
   public static final String STRING_ALL = "*";
+  public static final String STRING_QUOT = "\"";
 
   public static final String STRING_FALSE = Boolean.toString(false);
   public static final String STRING_TRUE = Boolean.toString(true);

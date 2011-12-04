@@ -1,5 +1,8 @@
 package com.butent.bee.client.view.grid;
 
+import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.xml.client.Element;
+
 import com.butent.bee.client.grid.AbstractColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -28,6 +31,9 @@ public class AbstractGridCallback implements GridCallback {
   public void afterCreateColumns(CellGrid grid) {
   }
 
+  public void afterCreateWidget(String name, Widget widget) {
+  }
+
   public boolean beforeAddRow(GridPresenter presenter) {
     return true;
   }
@@ -45,6 +51,10 @@ public class AbstractGridCallback implements GridCallback {
       List<ColumnDescription> columnDescriptions) {
   }
 
+  public boolean beforeCreateWidget(String name, Element description) {
+    return true;
+  }
+
   public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
     return 0;
   }
@@ -60,6 +70,14 @@ public class AbstractGridCallback implements GridCallback {
   public void beforeRequery(GridPresenter presenter) {
   }
 
+  public Widget createCustomWidget(String name, Element description) {
+    return null;
+  }
+  
+  public String getCaption() {
+    return null;
+  }
+
   public Map<String, Filter> getInitialFilters() {
     return null;
   }
@@ -73,6 +91,10 @@ public class AbstractGridCallback implements GridCallback {
   }
 
   public boolean onLoad(GridDescription gridDescription) {
+    return true;
+  }
+
+  public boolean onLoadExtWidget(Element root) {
     return true;
   }
 

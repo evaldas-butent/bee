@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE BeeForm [
+  <!ENTITY separator '<hr style="width: 97&#37;; border-color: lightgreen; border-width: 5px;"/>'>
+  <!ENTITY left "margin-left: 20px;">
+  <!ENTITY width "400">
+  <!ENTITY axis "Y">
+  <!ENTITY duration "5s">
+  <!ENTITY rotClass "rotate-&axis;-&duration;">
+]>
+<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
+  name="EntCss" caption="Entities, CSS">
+
+  <FlowPanel class="&rotClass;">
+    <css id="w&width;">
+      .width-&width; {width: &width;px;}
+    </css>
+    <css id="&rotClass;">
+      .&rotClass; &gt; img, .&rotClass; &gt; div, .&rotClass; &gt; button {
+        -webkit-animation: rotate&axis; &duration; linear infinite;
+      }
+    </css>
+
+    <InputText class="width-&width;" style="&left;" />
+    &separator;
+    <InputText class="width-&width;" style="&left;" />
+    &separator;
+    <Label html="label" class="width-&width;" style="&left; font-size: large;" />
+    <Button html="button" style="&left;" />
+    &separator;
+    <Image resource="butent" style="&left;" />
+  </FlowPanel>
+
+</BeeForm>

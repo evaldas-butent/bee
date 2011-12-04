@@ -28,7 +28,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,9 +54,11 @@ public class GridHolderBean {
   private static final String TAG_COLUMNS = "columns";
 
   private static final String TAG_CSS = "css";
+
   private static final String TAG_HEADER = "header";
   private static final String TAG_BODY = "body";
   private static final String TAG_FOOTER = "footer";
+
   private static final String TAG_ROW_STYLE = "rowStyle";
   private static final String TAG_ROW_MESSAGE = "rowMessage";
   private static final String TAG_ROW_EDITABLE = "rowEditable";
@@ -77,6 +78,8 @@ public class GridHolderBean {
 
   private static final String TAG_EDITOR = "editor";
   private static final String TAG_ITEM = "item";
+
+  private static final Set<String> WIDGET_TAGS = Sets.newHashSet("north", "south", "west", "east");
 
   private static final String ATTR_NAME = "name";
   private static final String ATTR_CAPTION = "caption";
@@ -137,6 +140,8 @@ public class GridHolderBean {
   private static final String ATTR_SORT_BY = "sortBy";
 
   private static final String ATTR_CELL = "cell";
+
+  private static final String ATTR_ID = "id";
 
   private static Logger logger = Logger.getLogger(GridHolderBean.class.getName());
 
@@ -226,22 +231,19 @@ public class GridHolderBean {
 
     if (!BeeUtils.isEmpty(resource)) {
       boolean loaded = false;
-      Collection<GridDescription> grids = loadGrids(resource, Config.getSchemaPath(GRID_SCHEMA));
+      GridDescription grid = loadGrid(resource, Config.getSchemaPath(GRID_SCHEMA));
 
-      if (!BeeUtils.isEmpty(grids)) {
-        for (GridDescription grid : grids) {
-          if (!BeeUtils.same(grid.getName(), gridName)) {
-            LogUtils.warning(logger, "Grid name doesn't match resource name:", gridName, resource);
-          } else if (loaded) {
-            LogUtils.warning(logger, resource, "Dublicate grid name:", gridName);
-          } else if (grid.isEmpty()) {
-            LogUtils.warning(logger, resource, "Grid has no columns defined:", gridName);
-          } else {
-            loaded = true;
-            registerGrid(grid);
-          }
+      if (grid != null) {
+        if (!BeeUtils.same(grid.getName(), gridName)) {
+          LogUtils.warning(logger, "Grid name doesn't match resource name:", gridName, resource);
+        } else if (grid.isEmpty()) {
+          LogUtils.warning(logger, resource, "Grid has no columns defined:", gridName);
+        } else {
+          loaded = true;
+          registerGrid(grid);
         }
       }
+
       if (loaded) {
         LogUtils.info(logger, "Loaded grid [", gridName, "] description from", resource);
       } else {
@@ -406,7 +408,7 @@ public class GridHolderBean {
           ok = true;
         }
         break;
-        
+
       case SELECTION:
         ok = true;
         break;
@@ -415,85 +417,88 @@ public class GridHolderBean {
     return ok;
   }
 
-  private Collection<GridDescription> loadGrids(String resource, String schema) {
-    Document xml = XmlUtils.getXmlResource(resource, schema);
-    if (BeeUtils.isEmpty(xml)) {
+  private GridDescription loadGrid(String resource, String schema) {
+    Document doc = XmlUtils.getXmlResource(resource, schema);
+    if (doc == null) {
       return null;
     }
 
-    Collection<GridDescription> grids = Lists.newArrayList();
-    Element root = xml.getDocumentElement();
-    NodeList gridNodes = root.getElementsByTagName(TAG_GRID);
-
-    for (int i = 0; i < gridNodes.getLength(); i++) {
-      Element gridElement = (Element) gridNodes.item(i);
-
-      String gridName = gridElement.getAttribute(ATTR_NAME);
-      String viewName = gridElement.getAttribute(ATTR_VIEW_NAME);
-
-      if (BeeUtils.isEmpty(gridName)) {
-        LogUtils.warning(logger, "Grid attribute", ATTR_NAME, "not found");
-        continue;
-      }
-      if (!sys.isView(viewName)) {
-        LogUtils.warning(logger, "Grid", gridName, "unrecognized view name:", viewName);
-        continue;
-      }
-
-      BeeView view = sys.getView(viewName);
-
-      GridDescription grid = new GridDescription(gridName, viewName, view.getSourceIdName(),
-          view.getSourceVersionName());
-      xmlToGrid(gridElement, grid, view);
-
-      Element container = XmlUtils.getFirstChildElement(gridElement, TAG_COLUMNS);
-      if (container == null) {
-        LogUtils.warning(logger, "Grid", gridName, "tag", TAG_COLUMNS, "not found");
-        continue;
-      }
-      List<Element> columns = XmlUtils.getChildrenElements(container);
-      if (columns == null || columns.isEmpty()) {
-        LogUtils.warning(logger, "Grid", gridName, "tag", TAG_COLUMNS, "has no children");
-        continue;
-      }
-
-      for (int j = 0; j < columns.size(); j++) {
-        Element columnElement = columns.get(j);
-
-        String colTag = columnElement.getTagName();
-        ColType colType = ColType.getColType(colTag);
-        String colName = columnElement.getAttribute(ATTR_NAME);
-
-        if (colType == null) {
-          LogUtils.warning(logger, "Grid", gridName, "column", j, colName,
-              "type", colTag, "not recognized");
-          continue;
-        }
-        if (BeeUtils.isEmpty(colName)) {
-          LogUtils.warning(logger, "Grid", gridName, "column", j, colTag, "name not specified");
-          continue;
-        }
-        if (grid.hasColumn(colName)) {
-          LogUtils.warning(logger, "Grid", gridName, "column", j, colTag,
-              "duplicate column name:", colName);
-          continue;
-        }
-
-        ColumnDescription column = new ColumnDescription(colType, colName);
-        xmlToColumn(columnElement, column);
-
-        if (initColumn(view, column)) {
-          grid.addColumn(column);
-        }
-      }
-
-      if (grid.isEmpty()) {
-        LogUtils.warning(logger, "Grid", gridName, "has no columns");
-        continue;
-      }
-      grids.add(grid);
+    Element gridElement = doc.getDocumentElement();
+    if (gridElement == null) {
+      return null;
     }
-    return grids;
+    if (!BeeUtils.same(gridElement.getTagName(), TAG_GRID)) {
+      LogUtils.warning(logger, "unrecognized grid element tag name", gridElement.getTagName());
+      return null;
+    }
+
+    String gridName = gridElement.getAttribute(ATTR_NAME);
+    String viewName = gridElement.getAttribute(ATTR_VIEW_NAME);
+
+    if (BeeUtils.isEmpty(gridName)) {
+      LogUtils.warning(logger, "Grid attribute", ATTR_NAME, "not found");
+      return null;
+    }
+    if (!sys.isView(viewName)) {
+      LogUtils.warning(logger, "Grid", gridName, "unrecognized view name:", viewName);
+      return null;
+    }
+
+    BeeView view = sys.getView(viewName);
+
+    GridDescription grid = new GridDescription(gridName, viewName, view.getSourceIdName(),
+        view.getSourceVersionName());
+    xmlToGrid(gridElement, grid, view);
+
+    NodeList columnGroups = gridElement.getElementsByTagName(TAG_COLUMNS);
+    if (XmlUtils.isEmpty(columnGroups)) {
+      LogUtils.warning(logger, "Grid", gridName, "tag", TAG_COLUMNS, "not found");
+      return null;
+    }
+    List<Element> columns = Lists.newArrayList();
+    for (int i = 0; i < columnGroups.getLength(); i++) {
+      columns.addAll(XmlUtils.getChildrenElements(columnGroups.item(i)));
+    }
+    if (columns.isEmpty()) {
+      LogUtils.warning(logger, "Grid", gridName, "has no columns");
+      return null;
+    }
+
+    for (int i = 0; i < columns.size(); i++) {
+      Element columnElement = columns.get(i);
+
+      String colTag = columnElement.getTagName();
+      ColType colType = ColType.getColType(colTag);
+      String colName = columnElement.getAttribute(ATTR_NAME);
+
+      if (colType == null) {
+        LogUtils.warning(logger, "Grid", gridName, "column", i, colName,
+            "type", colTag, "not recognized");
+        continue;
+      }
+      if (BeeUtils.isEmpty(colName)) {
+        LogUtils.warning(logger, "Grid", gridName, "column", i, colTag, "name not specified");
+        continue;
+      }
+      if (grid.hasColumn(colName)) {
+        LogUtils.warning(logger, "Grid", gridName, "column", i, colTag,
+            "duplicate column name:", colName);
+        continue;
+      }
+
+      ColumnDescription column = new ColumnDescription(colType, colName);
+      xmlToColumn(columnElement, column);
+
+      if (initColumn(view, column)) {
+        grid.addColumn(column);
+      }
+    }
+
+    if (grid.isEmpty()) {
+      LogUtils.warning(logger, "Grid", gridName, "has no columns");
+      return null;
+    }
+    return grid;
   }
 
   private void registerGrid(GridDescription grid) {
@@ -738,7 +743,7 @@ public class GridHolderBean {
     if (cssNodes != null && cssNodes.getLength() > 0) {
       Map<String, String> styleSheets = Maps.newHashMap();
       for (int i = 0; i < cssNodes.getLength(); i++) {
-        String name = ((Element) cssNodes.item(i)).getAttribute(ATTR_NAME);
+        String name = ((Element) cssNodes.item(i)).getAttribute(ATTR_ID);
         String text = cssNodes.item(i).getTextContent();
         if (!BeeUtils.isEmpty(name) && !BeeUtils.isEmpty(text)) {
           styleSheets.put(name.trim(), text.trim());
@@ -749,6 +754,15 @@ public class GridHolderBean {
       }
     }
     
+    List<Element> widgetElements = XmlUtils.getChildrenElements(src, WIDGET_TAGS);
+    if (!widgetElements.isEmpty()) {
+      List<String> widgets = Lists.newArrayList();
+      for (Element widgetElement : widgetElements) {
+        widgets.add(XmlUtils.toString(widgetElement, false));
+      }
+      dst.setWidgets(widgets);
+    }
+
     GridComponentDescription header = getComponent(src, TAG_HEADER);
     if (header != null) {
       dst.setHeader(header);

@@ -20,7 +20,7 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
-import com.butent.bee.client.ui.FormFactory.WidgetCallback;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HasParent;
 import com.butent.bee.client.ui.WidgetDescription;
@@ -69,7 +69,7 @@ import java.util.logging.Level;
 
 public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler {
 
-  private class CreationCallback implements WidgetCallback {
+  private class CreationCallback implements WidgetDescriptionCallback {
     public void onFailure(String[] reason) {
       BeeKeeper.getLog().severe(ArrayUtils.join(reason, 1));
     }

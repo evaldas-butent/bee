@@ -1,99 +1,99 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd"
+  name="DataTypes" viewName="DataTypes" maxColumnWidth="500" caption="Types"
+  asyncThreshold="50" filter="Integer > 0" order="Integer desc, Version">
 
-  <BeeGrid name="DataTypes" viewName="DataTypes" maxColumnWidth="500" caption="Types"
-    asyncThreshold="50" filter="Integer > 0" order="Integer desc, Version">
-    <header borderWidth="2">
+  <header borderWidth="2">
+    <style>
+      <inline>background-color: #f6cef5;</inline>
+      <font>medium</font>
+    </style>
+  </header>
+  <body maxHeight="100" />
+  <footer height="30" />
+
+  <columns>
+    <BeeIdColumn name="Id" caption="ID" showWidth="false" horizontalAlignment="left">
       <style>
-        <inline>background-color: #f6cef5;</inline>
-        <font>medium</font>
+        <headerStyle>
+          <class>bee-Button</class>
+        </headerStyle>
+        <bodyStyle>
+          <inline>background-color: lightgray;</inline>
+          <font>Courier</font>
+        </bodyStyle>
+        <dynStyle>
+          <style>
+            <inline>border-radius: [rowIndex]px;</inline>
+          </style>
+          <condition>
+            <expression>rowIndex != 0</expression>
+          </condition>
+        </dynStyle>
       </style>
-    </header>
-    <body maxHeight="100" />
-    <footer height="30" />
+    </BeeIdColumn>
 
-    <columns>
-      <BeeIdColumn name="Id" caption="ID" showWidth="false" horizontalAlignment="left">
-        <style>
-          <headerStyle>
-            <class>bee-Button</class>
-          </headerStyle>
-          <bodyStyle>
-            <inline>background-color: lightgray;</inline>
-            <font>Courier</font>
-          </bodyStyle>
-          <dynStyle>
-            <style>
-              <inline>border-radius: [rowIndex]px;</inline>
-            </style>
-            <condition>
-              <expression>rowIndex != 0</expression>
-            </condition>
-          </dynStyle>
-        </style>
-      </BeeIdColumn>
+    <BeeVerColumn name="Version">
+      <style>
+        <bodyStyle>
+          <inline>color: darkblue;</inline>
+          <font>small italic</font>
+        </bodyStyle>
+      </style>
+    </BeeVerColumn>
 
-      <BeeVerColumn name="Version">
-        <style>
-          <bodyStyle>
-            <inline>color: darkblue;</inline>
-            <font>small italic</font>
-          </bodyStyle>
-        </style>
-      </BeeVerColumn>
+    <BeeCalcColumn name="Calc1" type="date" caption="Ver Dt" format="date_short"
+      width="80" source="Version">
+      <calc>
+        <expression>rowVersion</expression>
+      </calc>
+    </BeeCalcColumn>
 
-      <BeeCalcColumn name="Calc1" type="date" caption="Ver Dt" format="date_short" width="80"
-        source="Version">
-        <calc>
-          <expression>rowVersion</expression>
-        </calc>
-      </BeeCalcColumn>
-      
-      <BeeDataColumn name="Bbb" source="Boolean" />
+    <BeeDataColumn name="Bbb" source="Boolean" />
 
-      <BeeDataColumn name="Iii" source="Integer" minValue="-10000" maxValue="1e6" >
-        <editable>
-          <expression>cell.value &lt; row.Long</expression>
-        </editable>
-        <editor type="spinner" stepValue="100" />
-      </BeeDataColumn>
+    <BeeDataColumn name="Iii" source="Integer" minValue="-10000" maxValue="1e6">
+      <editable>
+        <expression>cell.value &lt; row.Long</expression>
+      </editable>
+      <editor type="spinner" stepValue="100" />
+    </BeeDataColumn>
 
-      <BeeDataColumn name="Lll" source="Long" showWidth="false" minWidth="40">
-        <style>
-          <dynStyle>
-            <style>
-              <inline>color: red</inline>
-            </style>
-            <condition>
-              <expression>row.Long &lt; 0</expression>
-            </condition>
-          </dynStyle>
-          <dynStyle>
-            <style>
-              <inline>color: green</inline>
-            </style>
-            <condition>
-              <function>
+    <BeeDataColumn name="Lll" source="Long" showWidth="false" minWidth="40">
+      <style>
+        <dynStyle>
+          <style>
+            <inline>color: red</inline>
+          </style>
+          <condition>
+            <expression>row.Long &lt; 0</expression>
+          </condition>
+        </dynStyle>
+        <dynStyle>
+          <style>
+            <inline>color: green</inline>
+          </style>
+          <condition>
+            <function>
                 var z = cell.value;
                 return z &gt; 0;
               </function>
-            </condition>
-          </dynStyle>
-        </style>
-        <editor type="long" />
-      </BeeDataColumn>
+          </condition>
+        </dynStyle>
+      </style>
+      <editor type="long" />
+    </BeeDataColumn>
 
-      <BeeCalcColumn name="Calc2" type="decimal" caption="Math" scale="4" sortBy="Long, Date">
-        <calc>
-          <expression>(row.Long &gt; 0) ? Math.log(row.Long) : row.Long / 1000</expression>
-        </calc>
-      </BeeCalcColumn>
+    <BeeCalcColumn name="Calc2" type="decimal" caption="Math" scale="4" sortBy="Long, Date">
+      <calc>
+        <expression>(row.Long &gt; 0) ? Math.log(row.Long) : row.Long / 1000</expression>
+      </calc>
+    </BeeCalcColumn>
 
-      <BeeDataColumn name="Nnn" source="Numeric" format="0.0%" caption="Percent">
-        <editor type="number" format="#.000" onEntry="select" />
-        <validation>
-          <function>
+    <BeeDataColumn name="Nnn" source="Numeric" format="0.0%" caption="Percent">
+      <editor type="number" format="#.000" onEntry="select" />
+      <validation>
+        <function>
             var maxDiff = 1000;
             if (Math.abs((cell.oldValue || 0) - (cell.newValue || 0)) > maxDiff) {
               return "difference between old " + cell.oldValue + " and new " + cell.newValue + " cannot exceed " + maxDiff; 
@@ -101,46 +101,45 @@
               return null;
             }
           </function>
-        </validation>
-      </BeeDataColumn>
+      </validation>
+    </BeeDataColumn>
 
-      <BeeDataColumn name="Dec" source="Currency" width="168">
-        <style>
-          <bodyStyle>
-            <inline>letter-spacing: 5px;</inline>
-          </bodyStyle>
-        </style>
-        <editor type="number" />
-      </BeeDataColumn>
+    <BeeDataColumn name="Dec" source="Currency" width="168">
+      <style>
+        <bodyStyle>
+          <inline>letter-spacing: 5px;</inline>
+        </bodyStyle>
+      </style>
+      <editor type="number" />
+    </BeeDataColumn>
 
-      <BeeDataColumn name="Sss" source="String" sortable="false">
-        <editor type="picker" height="116">
-          <item>123 www</item>
-          <item>Bitinas ; &lt;img src="test.png"&gt;</item>
-          <item>ccc ddd</item>
-          <item>beehive ; &lt;a href="http://www.butent.com"&gt;Būtent&lt;/a&gt;</item>
-        </editor>
-        <carry>
-          <expression>'cell.value'</expression>
-        </carry>
-      </BeeDataColumn>
+    <BeeDataColumn name="Sss" source="String" sortable="false">
+      <editor type="picker" height="116">
+        <item>123 www</item>
+        <item>Bitinas ; &lt;img src="test.png"&gt;</item>
+        <item>ccc ddd</item>
+        <item>beehive ; &lt;a href="http://www.butent.com"&gt;Būtent&lt;/a&gt;</item>
+      </editor>
+      <carry>
+        <expression>'cell.value'</expression>
+      </carry>
+    </BeeDataColumn>
 
-      <BeeDataColumn name="Char" source="Char">
-        <editor type="list">
-          <item>abc</item>
-          <item>def</item>
-          <item>xyz</item>
-        </editor>
-      </BeeDataColumn>
+    <BeeDataColumn name="Char" source="Char">
+      <editor type="list">
+        <item>abc</item>
+        <item>def</item>
+        <item>xyz</item>
+      </editor>
+    </BeeDataColumn>
 
-      <BeeDataColumn name="Mmm" source="Memo" width="200" cell="html">
-        <editor type="rich" />
-      </BeeDataColumn>
+    <BeeDataColumn name="Mmm" source="Memo" width="200" cell="html">
+      <editor type="rich" />
+    </BeeDataColumn>
 
-      <BeeCalcColumn name="Calc3" type="string" caption="typeof" width="100"
-        searchBy="String, Char">
-        <calc>
-          <function>
+    <BeeCalcColumn name="Calc3" type="string" caption="typeof" width="100" searchBy="String, Char">
+      <calc>
+        <function>
             var s = "";
             for (var p in row) {
               var z = row[p];
@@ -148,65 +147,64 @@
             }
             return s;
           </function>
-        </calc>
-      </BeeCalcColumn>
+      </calc>
+    </BeeCalcColumn>
 
-      <BeeDataColumn name="Ddd" source="Date" minValue="2000 1 1" maxValue="2012 12 21"
-        horizontalAlignment="center">
-        <style>
-          <footerStyle>
-            <class>bee-afraid</class>
-          </footerStyle>
-        </style>
-        <editor type="date" minWidth="100" />
-        <carry>
-          <function>return new Date();</function>
-        </carry>
-      </BeeDataColumn>
-
-      <BeeDataColumn name="Ttt" source="DateTime" format="yyyy-MM-dd HH:mm:ss">
-        <style>
-          <bodyStyle>
-            <inline>-webkit-transform:rotateY(180deg);</inline>
-          </bodyStyle>
-        </style>
-        <editor type="datetime" onEntry="home" />
-      </BeeDataColumn>
-    </columns>
-
-    <rowStyle>
+    <BeeDataColumn name="Ddd" source="Date" minValue="2000 1 1" maxValue="2012 12 21"
+      horizontalAlignment="center">
       <style>
-        <inline>="color: rgb(" + rowIndex * 10 + "," + rowIndex * 5 + ",0)"</inline>
+        <footerStyle>
+          <class>bee-afraid</class>
+        </footerStyle>
       </style>
-      <condition>
-        <expression>new Date().getMinutes() % 15 != 0</expression>
-      </condition>
-    </rowStyle>
-    <rowStyle>
+      <editor type="date" minWidth="100" />
+      <carry>
+        <function>return new Date();</function>
+      </carry>
+    </BeeDataColumn>
+
+    <BeeDataColumn name="Ttt" source="DateTime" format="yyyy-MM-dd HH:mm:ss">
       <style>
-        <inline>="opacity: " + 30 / (new Date().getSeconds() + 30)</inline>
+        <bodyStyle>
+          <inline>-webkit-transform:rotateY(180deg);</inline>
+        </bodyStyle>
       </style>
-      <condition>
-        <expression>true</expression>
-      </condition>
-    </rowStyle>
+      <editor type="datetime" onEntry="home" />
+    </BeeDataColumn>
+  </columns>
 
-    <rowMessage>
-      <function>return String(rowId) + '  ' + rowVersion.toLocaleTimeString()</function>
-    </rowMessage>
+  <rowStyle>
+    <style>
+      <inline>="color: rgb(" + rowIndex * 10 + "," + rowIndex * 5 + ",0)"</inline>
+    </style>
+    <condition>
+      <expression>new Date().getMinutes() % 15 != 0</expression>
+    </condition>
+  </rowStyle>
+  <rowStyle>
+    <style>
+      <inline>="opacity: " + 30 / (new Date().getSeconds() + 30)</inline>
+    </style>
+    <condition>
+      <expression>true</expression>
+    </condition>
+  </rowStyle>
 
-    <rowEditable>
-      <expression>row.Date == null || row.Date &gt;= new Date(2008, 0, 1)</expression>
-    </rowEditable>
-    
-    <rowValidation>
-      <function>
+  <rowMessage>
+    <function>return String(rowId) + '  ' + rowVersion.toLocaleTimeString()</function>
+  </rowMessage>
+
+  <rowEditable>
+    <expression>row.Date == null || row.Date &gt;= new Date(2008, 0, 1)</expression>
+  </rowEditable>
+
+  <rowValidation>
+    <function>
         if (row.Integer + row.Long + row.Double &gt; 0) {
           return null;
         }
         return "sum 'Integer+Long+Double' must be positive";
       </function>
-    </rowValidation>
+  </rowValidation>
 
-  </BeeGrid>
-</BeeGrids>
+</BeeGrid>

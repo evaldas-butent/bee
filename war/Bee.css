@@ -568,6 +568,19 @@ body, select {
   -webkit-animation: scary 100s linear infinite alternate;
 }
 
+@-webkit-keyframes rotateX {
+  from {-webkit-transform: rotateX(0deg);}
+  to {-webkit-transform: rotateX(360deg);}
+}
+@-webkit-keyframes rotateY {
+  from {-webkit-transform: rotateY(0deg);}
+  to {-webkit-transform: rotateY(360deg);}
+}
+@-webkit-keyframes rotateZ {
+  from {-webkit-transform: rotateZ(0deg);}
+  to {-webkit-transform: rotateZ(360deg);}
+}
+
 .bee-error {
   color: red;
 }

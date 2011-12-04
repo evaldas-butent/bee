@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
-
-  <BeeGrid name="PersonCompanies" viewName="CompanyPersons" caption="Įmonių kontaktai">
-    <columns>
-      <BeeRelColumn name="CompanyName" source="CompanyName" caption="Įmonė" relSource="Company" relColumn="Name" />
-      <BeeDataColumn name="Position" source="Position" caption="Pareigos" />
-      <BeeDataColumn name="Phone" source="Phone" caption="Tel." />
-      <BeeDataColumn name="Email" source="Email" caption="El. paštas" />
-    </columns>
-  </BeeGrid>
-</BeeGrids>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd" name="PersonCompanies"
+  viewName="CompanyPersons" caption="Įmonių kontaktai">
+  <columns>
+    <BeeRelColumn name="CompanyName" source="CompanyName" caption="Įmonė" relSource="Company"
+      relColumn="Name" />
+    <BeeDataColumn name="Position" source="Position" caption="Pareigos" />
+    <BeeDataColumn name="Phone" source="Phone" caption="Tel." />
+    <BeeDataColumn name="Email" source="Email" caption="El. paštas" />
+  </columns>
+</BeeGrid>

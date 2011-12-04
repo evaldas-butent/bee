@@ -325,7 +325,15 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="CheckBox" type="bee:editableWidget" substitutionGroup="bee:widget" />
+  <xs:element name="CheckBox" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:editableWidget">
+          <xs:attribute name="checked" type="xs:boolean" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
 
   <xs:complexType name="internalLink">
     <xs:complexContent>
@@ -690,5 +698,7 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
+  
+  <xs:element name="hr" type="bee:widgetType" substitutionGroup="bee:widget" />
 
 </xs:schema>

@@ -70,8 +70,8 @@ public class Bee implements EntryPoint {
     }
 
     BeeKeeper.getRpc().makePostRequest(Service.LOGIN,
-        XmlUtils.createString(Service.XML_TAG_DATA,
-            Service.VAR_LOGIN, userName, Service.VAR_PASSWORD, Codec.md5(password)),
+        XmlUtils.createString(Service.XML_TAG_DATA, Service.VAR_LOGIN, userName.trim(),
+            Service.VAR_PASSWORD, Codec.md5(password.trim())),
         new ResponseCallback() {
           public void onResponse(ResponseObject response) {
             if (response == null) {

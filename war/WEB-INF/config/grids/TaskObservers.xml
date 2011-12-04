@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeGrids xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd">
-
-  <BeeGrid name="TaskObservers" viewName="TaskObservers" caching="false"
-    caption="Stebėtojai" hasFooters="false" hasHeaders="false"
-    readOnly="true" enabledActions="add delete" disabledActions="save configure">
-    <body borderWidth="0" />
-    <columns>
-      <BeeDataColumn name="FirstName" source="FirstName" caption="Vardas" />
-      <BeeDataColumn name="LasName" source="LastName" caption="Pavardė" />
-      <BeeDataColumn name="LastAccess" source="LastAccess" caption="Laikas" />
-    </columns>
-  </BeeGrid>
-</BeeGrids>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd"
+  name="TaskObservers" viewName="TaskObservers" caching="false"
+  caption="Stebėtojai" hasFooters="false" hasHeaders="false"
+  readOnly="true" enabledActions="add delete" disabledActions="save configure">
+  <body borderWidth="0" />
+  <columns>
+    <BeeDataColumn name="FirstName" source="FirstName" caption="Vardas" />
+    <BeeDataColumn name="LasName" source="LastName" caption="Pavardė" />
+    <BeeDataColumn name="LastAccess" source="LastAccess" caption="Laikas" />
+  </columns>
+</BeeGrid>

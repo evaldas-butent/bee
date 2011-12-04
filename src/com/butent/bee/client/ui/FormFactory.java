@@ -54,17 +54,12 @@ import java.util.Map;
 
 public class FormFactory {
 
-  public interface FormCallback {
-    void afterCreateWidget(String name, Widget widget);
+  public interface FormCallback extends WidgetCallback {
 
     void afterRefresh(FormView form, IsRow row);
 
-    boolean beforeCreateWidget(String name, Element description);
-    
     void beforeRefresh(FormView form, IsRow row);
 
-    Widget createCustomWidget(String name, Element description);
-    
     FormCallback getInstance();
     
     boolean onLoad(Element formElement);
@@ -81,7 +76,7 @@ public class FormFactory {
   public interface FormViewCallback extends Callback<FormView, String[]> {
   }
   
-  public interface WidgetCallback extends Callback<WidgetDescription, String[]> {
+  public interface WidgetDescriptionCallback extends Callback<WidgetDescription, String[]> {
   }
 
   private static final String ATTR_TYPE = "type";
@@ -91,43 +86,12 @@ public class FormFactory {
   private static final Map<String, FormCallback> formCallbacks = Maps.newHashMap();
   
   public static Widget createForm(FormDescription formDescription, List<BeeColumn> columns,
-      WidgetCallback widgetCallback, FormCallback formCallback) {
+      WidgetDescriptionCallback widgetDescriptionCallback, FormCallback formCallback) {
     Assert.notNull(formDescription);
-    Assert.notNull(widgetCallback);
-
-    List<Element> children = XmlUtils.getChildrenElements(formDescription.getFormElement());
-    if (BeeUtils.isEmpty(children)) {
-      BeeKeeper.getLog().severe("createForm: form element has no children");
-      return null;
-    }
-
-    Element root = null;
-    FormWidget formWidget = null;
-    int count = 0;
-
-    for (Element child : children) {
-      FormWidget fw = FormWidget.getByTagName(child.getTagName());
-      if (fw != null) {
-        root = child;
-        formWidget = fw;
-        count++;
-      }
-    }
-
-    if (count <= 0) {
-      BeeKeeper.getLog().severe("createForm: root widget not found");
-      return null;
-    }
-    if (count > 1) {
-      BeeKeeper.getLog().severe("createForm: form element has", count, "root widgets");
-      return null;
-    }
-
-    Widget form = formWidget.create(root, columns, widgetCallback, formCallback);
-    if (form == null) {
-      BeeKeeper.getLog().severe("createForm: cannot create root widget", formWidget);
-    }
-    return form;
+    Assert.notNull(widgetDescriptionCallback);
+    
+    return createWidget(formDescription.getFormElement(), columns, widgetDescriptionCallback,
+        formCallback, "createForm:");
   }
 
   public static void createFormView(final String name, final List<BeeColumn> columns,
@@ -158,6 +122,46 @@ public class FormFactory {
     createFormView(name, columns, getFormCallback(name), viewCallback);
   }
 
+  public static Widget createWidget(Element parent, List<BeeColumn> columns,
+      WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback,
+      String messagePrefix) {
+    Assert.notNull(parent);
+
+    List<Element> children = XmlUtils.getChildrenElements(parent);
+    if (BeeUtils.isEmpty(children)) {
+      BeeKeeper.getLog().severe(messagePrefix, "element has no children");
+      return null;
+    }
+
+    Element root = null;
+    FormWidget formWidget = null;
+    int count = 0;
+
+    for (Element child : children) {
+      FormWidget fw = FormWidget.getByTagName(child.getTagName());
+      if (fw != null) {
+        root = child;
+        formWidget = fw;
+        count++;
+      }
+    }
+
+    if (count <= 0) {
+      BeeKeeper.getLog().severe(messagePrefix, "root widget not found");
+      return null;
+    }
+    if (count > 1) {
+      BeeKeeper.getLog().severe(messagePrefix, "element has", count, "root widgets");
+      return null;
+    }
+
+    Widget widget = formWidget.create(root, columns, widgetDescriptionCallback, widgetCallback);
+    if (widget == null) {
+      BeeKeeper.getLog().severe(messagePrefix, "cannot create root widget", formWidget);
+    }
+    return widget;
+  }
+  
   public static EditorDescription getEditorDescription(Element element) {
     Assert.notNull(element);
 

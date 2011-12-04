@@ -37,7 +37,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     CACHING, ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE,
     READONLY, NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_CAPTION, EDIT_FORM, EDIT_IN_PLACE,
     ENABLED_ACTIONS, DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER, ROW_STYLES, ROW_MESSAGE,
-    ROW_EDITABLE, ROW_VALIDATION, SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH, COLUMNS
+    ROW_EDITABLE, ROW_VALIDATION, SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
+    COLUMNS, WIDGETS
   }
 
   public static GridDescription restore(String s) {
@@ -98,6 +99,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private Set<Action> enabledActions = Sets.newHashSet();
   private Set<Action> disabledActions = Sets.newHashSet();
+  
+  private List<String> widgets = Lists.newArrayList();
 
   public GridDescription(String name, String viewName, String idName, String versionName) {
     Assert.notEmpty(name);
@@ -282,6 +285,17 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
             setStyleSheets(map);
           }
           break;
+
+        case WIDGETS:
+          getWidgets().clear();
+          items = Codec.beeDeserializeCollection(value);
+
+          if (!BeeUtils.isEmpty(items)) {
+            for (String z : items) {
+              getWidgets().add(z);
+            }
+          }
+          break;
       }
     }
   }
@@ -383,6 +397,15 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
       }
     }
 
+    if (getWidgets() != null && !getWidgets().isEmpty()) {
+      int cnt = getWidgets().size();
+      PropertyUtils.addExtended(info, "Widgets", BeeUtils.bracket(cnt));
+      int i = 0;
+      for (String w : getWidgets()) {
+        PropertyUtils.addExtended(info, "Widget", BeeUtils.progress(++i, cnt), w);
+      }
+    }
+    
     if (getHeader() != null) {
       PropertyUtils.appendChildrenToExtended(info, "Header", getHeader().getInfo());
     }
@@ -507,6 +530,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return result;
   }
 
+  public List<String> getWidgets() {
+    return widgets;
+  }
+
   public boolean hasColumn(String colName) {
     Assert.notNull(colName);
     for (ColumnDescription column : getColumns()) {
@@ -523,6 +550,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public Boolean hasHeaders() {
     return hasHeaders;
+  }
+  
+  public boolean hasWidgets() {
+    return getWidgets() != null && !getWidgets().isEmpty();
   }
 
   public boolean isEmpty() {
@@ -642,6 +673,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case STYLE_SHEETS:
           arr[i++] = getStyleSheets();
+          break;
+        case WIDGETS:
+          arr[i++] = getWidgets();
           break;
       }
     }
@@ -775,6 +809,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setStyleSheets(Map<String, String> styleSheets) {
     this.styleSheets = styleSheets;
+  }
+
+  public void setWidgets(List<String> widgets) {
+    this.widgets = widgets;
   }
 
   public Boolean showColumnWidths() {

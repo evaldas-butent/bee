@@ -49,6 +49,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -322,7 +323,7 @@ public class XmlUtils {
     return lst;
   }
 
-  public static List<Element> getChildrenElements(Element parent) {
+  public static List<Element> getChildrenElements(Node parent) {
     Assert.notNull(parent);
     List<Element> result = Lists.newArrayList();
 
@@ -340,6 +341,25 @@ public class XmlUtils {
     return result;
   }
 
+  public static List<Element> getChildrenElements(Node parent, Collection<String> tagNames) {
+    Assert.notNull(parent);
+    Assert.notNull(tagNames);
+    List<Element> result = Lists.newArrayList();
+
+    NodeList nodes = parent.getChildNodes();
+    if (isEmpty(nodes)) {
+      return result;
+    }
+
+    for (int i = 0; i < nodes.getLength(); i++) {
+      Node node = nodes.item(i);
+      if (isElement(node) && BeeUtils.containsSame(tagNames, ((Element) node).getTagName())) {
+        result.add((Element) node);
+      }
+    }
+    return result;
+  }
+  
   public static List<Property> getCommentInfo(Comment comm) {
     Assert.notNull(comm);
     List<Property> lst = new ArrayList<Property>();
@@ -849,6 +869,10 @@ public class XmlUtils {
     }
     return lst;
   }
+  
+  public static boolean isEmpty(NodeList nodes) {
+    return nodes == null || nodes.getLength() <= 0;
+  }
 
   public static String marshal(Object obj, String schemaPath) {
     Assert.notNull(obj);
@@ -872,7 +896,8 @@ public class XmlUtils {
     return result.toString();
   }
 
-  public static String toString(Document doc, boolean indent) {
+  public static String toString(Node nd, boolean indent) {
+    Assert.notNull(nd);
     Transformer transformer;
     try {
       transformer = xsltFactory.newTransformer();
@@ -890,13 +915,13 @@ public class XmlUtils {
 
     StringWriter writer = new StringWriter();
     try {
-      transformer.transform(new DOMSource(doc), new StreamResult(writer));
+      transformer.transform(new DOMSource(nd), new StreamResult(writer));
     } catch (TransformerException ex) {
       LogUtils.severe(logger, ex);
     }
     return writer.getBuffer().toString();
   }
-
+  
   @SuppressWarnings("unchecked")
   public static <T> T unmarshal(Class<T> clazz, String resource, String schemaPath) {
     T result = null;

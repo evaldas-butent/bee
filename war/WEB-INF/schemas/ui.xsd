@@ -266,11 +266,17 @@
   <xs:simpleType name="viewActions">
     <xs:list itemType="bee:viewAction" />
   </xs:simpleType>
+  
+  <xs:simpleType name="cssRuleSet">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="(\s*\.[a-z]\S{2,}.*\{\s*([a-z\-]{3,}:.*\S;\s*)+\}\s*)+" />
+    </xs:restriction>
+  </xs:simpleType>
 
   <xs:complexType name="styleSheet">
     <xs:simpleContent>
-      <xs:extension base="xs:string">
-        <xs:attribute name="name" type="xs:normalizedString" use="required" />
+      <xs:extension base="bee:cssRuleSet">
+        <xs:attribute name="id" type="xs:ID" use="required" />
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>

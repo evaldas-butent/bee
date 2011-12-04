@@ -6,7 +6,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -15,12 +14,9 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.AbstractColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
-import com.butent.bee.client.grid.GridPanel;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.resources.Images;
-import com.butent.bee.client.ui.AbstractFormCallback;
-import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.utils.AbstractEvaluation;
 import com.butent.bee.client.utils.Evaluator.Evaluation;
 import com.butent.bee.client.utils.Evaluator.Parameters;
@@ -55,140 +51,18 @@ import java.util.Map;
 
 public class TaskList {
 
-  private static class FormHandler extends AbstractFormCallback implements ClickHandler {
-
-    private final Type type;
-    private GridPanel gridPanel = null;
-    private Map<String, Editor> filterWidgets = Maps.newHashMap();
-
-    private FormHandler(Type type) {
-      super();
-      this.type = type;
-    }
-
-    @Override
-    public void afterCreateWidget(String name, Widget widget) {
-      if (widget instanceof GridPanel) {
-        setGridPanel((GridPanel) widget);
-        getGridPanel().setGridCallback(new GridHandler(getType(), this));
-
-      } else if (widget instanceof HasClickHandlers && BeeUtils.same(name, "Filter")) {
-        ((HasClickHandlers) widget).addClickHandler(this);
-
-      } else if (widget instanceof Editor) {
-        this.filterWidgets.put(BeeUtils.normalize(name), (Editor) widget);
-      }
-    }
-
-    public Filter getFilter() {
-      CompoundFilter andFilter = Filter.and();
-      Value now = new LongValue(new DateTime().getTime());
-
-      if (isChecked("Updated")) {
-        andFilter.add(Filter.or(Filter.isEmpty(CrmConstants.COL_LAST_ACCESS),
-            ComparisonFilter.compareWithColumn(CrmConstants.COL_LAST_ACCESS, Operator.LT,
-                CrmConstants.COL_LAST_PUBLISH)));
-      }
-      if (isChecked("Overdue")) {
-        andFilter.add(ComparisonFilter.isLess("FinishTime", now),
-            ComparisonFilter.isEqual(CrmConstants.COL_EVENT,
-                new IntegerValue(TaskEvent.ACTIVATED.ordinal())));
-      } else {
-        CompoundFilter orFilter = Filter.or();
-
-        if (isChecked("Scheduled")) {
-          orFilter.add(ComparisonFilter.isMore("StartTime", now));
-        }
-        if (isChecked("Executing")) {
-          Filter flt = ComparisonFilter.isEqual(CrmConstants.COL_EVENT,
-              new IntegerValue(TaskEvent.ACTIVATED.ordinal()));
-
-          if (!isChecked("Scheduled")) {
-            flt = Filter.and(flt, ComparisonFilter.isLessEqual("StartTime", now));
-          }
-          orFilter.add(flt);
-        }
-        for (TaskEvent flt : TaskEvent.values()) {
-          if (isChecked(flt.name())) {
-            orFilter.add(ComparisonFilter.isEqual(CrmConstants.COL_EVENT,
-                new IntegerValue(flt.ordinal())));
-          }
-        }
-        if (!orFilter.isEmpty()) {
-          andFilter.add(orFilter);
-        }
-      }
-      return andFilter.isEmpty() ? null : andFilter;
-    }
-
-    public void onClick(ClickEvent event) {
-      if (getGridPanel() == null) {
-        return;
-      }
-      updateFilter();
-      getGridPanel().getPresenter().requery(true);
-    }
-
-    @Override
-    public boolean onLoad(Element formElement) {
-      formElement.setAttribute("caption", getType().getCaption());
-      return true;
-    }
-
-    @Override
-    public void onShow(Presenter presenter) {
-      Editor widget = filterWidgets.get(BeeUtils.normalize("Executing"));
-      if (widget != null) {
-        widget.setValue("true");
-      }
-      widget = filterWidgets.get(BeeUtils.normalize("Suspended"));
-      if (widget != null) {
-        widget.setValue("true");
-      }
-      if (getType() == Type.DELEGATED) {
-        widget = filterWidgets.get(BeeUtils.normalize("Completed"));
-        if (widget != null) {
-          widget.setValue("true");
-        }
-      }
-    }
-
-    public void updateFilter() {
-      getGridPanel().getPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter());
-    }
-
-    private GridPanel getGridPanel() {
-      return gridPanel;
-    }
-
-    private Type getType() {
-      return type;
-    }
-
-    private boolean isChecked(String filter) {
-      String name = BeeUtils.normalize(filter);
-
-      if (filterWidgets.containsKey(name)) {
-        return BeeUtils.toBoolean(filterWidgets.get(name).getNormalizedValue());
-      }
-      return false;
-    }
-
-    private void setGridPanel(GridPanel gridPanel) {
-      this.gridPanel = gridPanel;
-    }
-  }
-
   private static class GridHandler extends AbstractGridCallback {
 
     private final Type type;
-    private final FormHandler formHandler;
     private final Long userId;
 
-    private GridHandler(Type type, FormHandler formHandler) {
+    private final Map<String, Editor> filterWidgets = Maps.newHashMap();
+    
+    private GridPresenter gridPresenter = null;
+
+    private GridHandler(Type type) {
       super();
       this.type = type;
-      this.formHandler = formHandler;
       this.userId = BeeKeeper.getUser().getUserId();
     }
 
@@ -260,6 +134,26 @@ public class TaskList {
     }
 
     @Override
+    public void afterCreateWidget(String name, Widget widget) {
+      if (widget instanceof HasClickHandlers && BeeUtils.same(name, "Filter")) {
+        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+          public void onClick(ClickEvent event) {
+            if (getGridPresenter() != null) {
+              updateFilter(getGridPresenter());
+              getGridPresenter().requery(true);
+            }
+          }
+        });
+
+      } else if (widget instanceof Editor) {
+        if (Type.DELEGATED.equals(getType()) && BeeUtils.same(name, "Completed")) {
+          ((Editor) widget).setValue(BeeConst.STRING_TRUE);
+        }
+        this.filterWidgets.put(BeeUtils.normalize(name), (Editor) widget);
+      }
+    }
+
+    @Override
     public boolean beforeCreateColumn(String columnId, List<BeeColumn> dataColumns,
         ColumnDescription columnDescription) {
 
@@ -293,30 +187,42 @@ public class TaskList {
 
     @Override
     public void beforeRefresh(GridPresenter presenter) {
-      formHandler.updateFilter();
+      updateFilter(presenter);
     }
 
     @Override
     public void beforeRequery(GridPresenter presenter) {
-      formHandler.updateFilter();
+      updateFilter(presenter);
     }
 
     @Override
-    public Map<String, Filter> getInitialFilters() {
-      Filter filter = formHandler.getFilter();
-      if (filter == null) {
+    public String getCaption() {
+      if (getType() == null) {
         return null;
       } else {
-        Map<String, Filter> filters = Maps.newHashMap();
-        filters.put(FILTER_KEY, filter);
-        return filters;
+        return getType().getCaption();
       }
     }
 
     @Override
-    public boolean onLoad(GridDescription gridDescription) {
-      gridDescription.setCaption(null);
+    public Map<String, Filter> getInitialFilters() {
+      CompoundFilter filter = Filter.or();
+      filter.add(Filter.and(getEventFilter(TaskEvent.ACTIVATED),
+          ComparisonFilter.isLessEqual(CrmConstants.COL_START_TIME,
+              new LongValue(new DateTime().getTime()))));
+      filter.add(getEventFilter(TaskEvent.SUSPENDED));
 
+      if (Type.DELEGATED.equals(getType())) {
+        filter.add(getEventFilter(TaskEvent.COMPLETED));
+      }
+
+      Map<String, Filter> result = Maps.newHashMap();
+      result.put(FILTER_KEY, filter);
+      return result;
+    }
+
+    @Override
+    public boolean onLoad(GridDescription gridDescription) {
       if (getUserId() != null && getType() != null) {
         Value user = new LongValue(getUserId());
         CompoundFilter filter = Filter.and(CompoundFilter.or(Filter.isEmpty("ProjectStage"),
@@ -342,12 +248,86 @@ public class TaskList {
       return true;
     }
 
+    @Override
+    public void onShow(GridPresenter presenter) {
+      setGridPresenter(presenter);
+    }
+    
+    private Filter getEventFilter(TaskEvent te) {
+      if (te == null) {
+        return null;
+      } else {
+        return ComparisonFilter.isEqual(CrmConstants.COL_EVENT, new IntegerValue(te.ordinal()));
+      }
+    }
+
+    private Filter getFilter() {
+      CompoundFilter andFilter = Filter.and();
+      Value now = new LongValue(new DateTime().getTime());
+
+      if (isChecked("Updated")) {
+        andFilter.add(Filter.or(Filter.isEmpty(CrmConstants.COL_LAST_ACCESS),
+            ComparisonFilter.compareWithColumn(CrmConstants.COL_LAST_ACCESS, Operator.LT,
+                CrmConstants.COL_LAST_PUBLISH)));
+      }
+      if (isChecked("Overdue")) {
+        andFilter.add(ComparisonFilter.isLess(CrmConstants.COL_FINISH_TIME, now),
+            getEventFilter(TaskEvent.ACTIVATED));
+      } else {
+        CompoundFilter orFilter = Filter.or();
+
+        if (isChecked("Scheduled")) {
+          orFilter.add(ComparisonFilter.isMore(CrmConstants.COL_START_TIME, now));
+        }
+        if (isChecked("Executing")) {
+          Filter flt = getEventFilter(TaskEvent.ACTIVATED);
+
+          if (!isChecked("Scheduled")) {
+            flt = Filter.and(flt, ComparisonFilter.isLessEqual(CrmConstants.COL_START_TIME, now));
+          }
+          orFilter.add(flt);
+        }
+        for (TaskEvent te : TaskEvent.values()) {
+          if (isChecked(te.name())) {
+            orFilter.add(getEventFilter(te));
+          }
+        }
+        if (!orFilter.isEmpty()) {
+          andFilter.add(orFilter);
+        }
+      }
+      return andFilter.isEmpty() ? null : andFilter;
+    }
+
+    private GridPresenter getGridPresenter() {
+      return gridPresenter;
+    }
+
     private Type getType() {
       return type;
     }
 
     private Long getUserId() {
       return userId;
+    }
+
+    private boolean isChecked(String filter) {
+      String name = BeeUtils.normalize(filter);
+
+      if (filterWidgets.containsKey(name)) {
+        return BeeUtils.toBoolean(filterWidgets.get(name).getNormalizedValue());
+      }
+      return false;
+    }
+
+    private void setGridPresenter(GridPresenter gridPresenter) {
+      this.gridPresenter = gridPresenter;
+    }
+
+    private void updateFilter(GridPresenter presenter) {
+      if (presenter != null) {
+        presenter.getDataProvider().setParentFilter(FILTER_KEY, getFilter());
+      }
     }
   }
 
@@ -396,7 +376,7 @@ public class TaskList {
     if (type == null) {
       Global.showError("Type not recognized:", args);
     } else {
-      FormFactory.openForm("TaskList", new FormHandler(type));
+      GridFactory.openGrid("UserTasks", new GridHandler(type));
     }
   }
 
