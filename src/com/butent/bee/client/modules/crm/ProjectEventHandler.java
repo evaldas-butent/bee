@@ -208,7 +208,7 @@ public class ProjectEventHandler {
       addAction(container, caption, clickHandler);
     }
 
-    public void addComment(FlexTable parent, String caption, boolean required) {
+    public void addComment(FlexTable parent, String caption, String value, boolean required) {
       int row = parent.getRowCount();
 
       BeeLabel lbl = new BeeLabel(caption);
@@ -219,15 +219,16 @@ public class ProjectEventHandler {
       InputArea comment = new InputArea();
       comment.setVisibleLines(5);
       comment.setCharacterWidth(40);
+      comment.setValue(value);
       parent.setWidget(row, 1, comment);
       dialogWidgets.put(COMMENT, comment);
     }
 
-    public void addComment(String caption, boolean required) {
-      addComment(container, caption, required);
+    public void addComment(String caption, String value, boolean required) {
+      addComment(container, caption, value, required);
     }
 
-    public void addText(FlexTable parent, String caption, boolean required) {
+    public void addText(FlexTable parent, String caption, String value, boolean required) {
       int row = parent.getRowCount();
 
       BeeLabel lbl = new BeeLabel(caption);
@@ -237,12 +238,13 @@ public class ProjectEventHandler {
       parent.setWidget(row, 0, lbl);
       InputText text = new InputText();
       text.setWidth("100%");
+      text.setValue(value);
       parent.setWidget(row, 1, text);
       dialogWidgets.put(TEXT, text);
     }
 
-    public void addText(String caption, boolean required) {
-      addText(container, caption, required);
+    public void addText(String caption, String value, boolean required) {
+      addText(container, caption, value, required);
     }
 
     public void display() {
@@ -418,6 +420,7 @@ public class ProjectEventHandler {
   private static class StageCollector {
     private Long projectId;
     private BeeTree widget;
+    private List<BeeColumn> stageColumns;
 
     private void addBranch(HasTreeItems parent, Long parentId,
         Map<Long, List<Long>> hierarchy, Map<Long, IsRow> items, int nameIndex) {
@@ -436,8 +439,8 @@ public class ProjectEventHandler {
 
     private void addStage() {
       final ProjectDialog dialog = new ProjectDialog("Naujas etapas");
-      dialog.addText("Pavadinimas", true);
-      dialog.addComment("Aprašymas", false);
+      dialog.addText("Pavadinimas", "", true);
+      dialog.addComment("Aprašymas", "", false);
       dialog.addAction("Sukurti",
           new ClickHandler() {
             @Override
@@ -493,7 +496,67 @@ public class ProjectEventHandler {
     }
 
     private void editStage() {
-      Global.showError("Not implemented yet");
+      final TreeItem selected = widget.getSelectedItem();
+
+      if (selected == null) {
+        return;
+      }
+      final IsRow item = (IsRow) selected.getUserObject();
+
+      final ProjectDialog dialog = new ProjectDialog("Etapo koregavimas");
+      final String oldName = item.getString(DataUtils.getColumnIndex("Name", stageColumns));
+      final String oldDescr = item.getString(DataUtils.getColumnIndex("Description", stageColumns));
+      dialog.addText("Pavadinimas", oldName, true);
+      dialog.addComment("Aprašymas", oldDescr, false);
+      dialog.addAction("Išsaugoti",
+          new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent e) {
+              final String name = dialog.getText();
+
+              if (BeeUtils.isEmpty(name)) {
+                Global.showError("Įveskite pavadinimą");
+                return;
+              }
+              List<BeeColumn> columns = Lists.newArrayList();
+              List<String> oldValues = Lists.newArrayList();
+              List<String> values = Lists.newArrayList();
+
+              if (!BeeUtils.equals(oldName, name)) {
+                columns.add(new BeeColumn(ValueType.TEXT, "Name"));
+                oldValues.add(oldName);
+                values.add(name);
+              }
+              String descr = dialog.getComment();
+
+              if (!BeeUtils.equals(oldDescr, descr)) {
+                columns.add(new BeeColumn(ValueType.TEXT, "Description"));
+                oldValues.add(oldDescr);
+                values.add(descr);
+              }
+              if (columns.isEmpty()) {
+                Global.showError("Nėra pakeitimų");
+                return;
+              }
+              Queries.update(CrmConstants.TBL_PROJECT_STAGES, item.getId(), item.getVersion(),
+                  columns, oldValues, values,
+                  new RowCallback() {
+                    @Override
+                    public void onFailure(String[] reason) {
+                      Global.showError((Object[]) reason);
+                    }
+
+                    @Override
+                    public void onSuccess(BeeRow result) {
+                      selected.setText(
+                          result.getString(DataUtils.getColumnIndex("Name", stageColumns)));
+                      selected.setUserObject(result);
+                      dialog.hide();
+                    }
+                  });
+            }
+          });
+      dialog.display();
     }
 
     private void removeStage() {
@@ -543,6 +606,8 @@ public class ProjectEventHandler {
 
               @Override
               public void onSuccess(BeeRowSet result) {
+                stageColumns = result.getColumns();
+
                 if (result.isEmpty()) {
                   return;
                 }
@@ -924,7 +989,7 @@ public class ProjectEventHandler {
   private static void changeStatus(final FormView form, String caption, String buttonCaption,
       final ProjectEvent event, final ParameterList args) {
     final ProjectDialog dialog = new ProjectDialog(caption);
-    dialog.addComment("Komentaras", true);
+    dialog.addComment("Komentaras", "", true);
     dialog.addAction(buttonCaption, new ClickHandler() {
       @Override
       public void onClick(ClickEvent e) {
@@ -955,7 +1020,7 @@ public class ProjectEventHandler {
 
   private static void doComment(final FormView form) {
     final ProjectDialog dialog = new ProjectDialog("Užduoties komentaras");
-    dialog.addComment("Komentaras", true);
+    dialog.addComment("Komentaras", "", true);
     dialog.addAction("Išsaugoti", new ClickHandler() {
       @Override
       public void onClick(ClickEvent e) {
