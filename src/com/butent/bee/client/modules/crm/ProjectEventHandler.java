@@ -6,6 +6,8 @@ import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasTreeItems;
@@ -292,6 +294,9 @@ public class ProjectEventHandler {
       } else if (BeeUtils.same(name, "Stages") && widget instanceof BeeTree) {
         stages.setWidget((BeeTree) widget);
 
+      } else if (BeeUtils.same(name, "StageDescription")) {
+        stages.setDesctiptionWidget(widget);
+
       } else if (widget instanceof HasClickHandlers) {
         setWidget(name, widget);
         ProjectEvent ev;
@@ -421,6 +426,7 @@ public class ProjectEventHandler {
     private Long projectId;
     private BeeTree widget;
     private List<BeeColumn> stageColumns;
+    private Widget descriptionWidget;
 
     private void addBranch(HasTreeItems parent, Long parentId,
         Map<Long, List<Long>> hierarchy, Map<Long, IsRow> items, int nameIndex) {
@@ -435,6 +441,10 @@ public class ProjectEventHandler {
           addBranch(treeItem, item.getId(), hierarchy, items, nameIndex);
         }
       }
+    }
+
+    public void setDesctiptionWidget(Widget descriptionWidget) {
+      this.descriptionWidget = descriptionWidget;
     }
 
     private void addStage() {
@@ -551,12 +561,22 @@ public class ProjectEventHandler {
                       selected.setText(
                           result.getString(DataUtils.getColumnIndex("Name", stageColumns)));
                       selected.setUserObject(result);
+                      refreshDescription(result);
                       dialog.hide();
                     }
                   });
             }
           });
       dialog.display();
+    }
+
+    private void refreshDescription(IsRow item) {
+      String descr = "";
+
+      if (item != null) {
+        descr = item.getString(DataUtils.getColumnIndex("Description", stageColumns));
+      }
+      descriptionWidget.getElement().setInnerText(descr);
     }
 
     private void removeStage() {
@@ -593,6 +613,7 @@ public class ProjectEventHandler {
     private void requery(Long project) {
       this.projectId = project;
       widget.clear();
+      refreshDescription(null);
 
       if (!BeeUtils.isEmpty(projectId)) {
         Filter flt = ComparisonFilter.isEqual(CrmConstants.COL_PROJECT, new LongValue(projectId));
@@ -634,6 +655,13 @@ public class ProjectEventHandler {
 
     private void setWidget(BeeTree widget) {
       this.widget = widget;
+
+      widget.addSelectionHandler(new SelectionHandler<TreeItem>() {
+        @Override
+        public void onSelection(SelectionEvent<TreeItem> event) {
+          refreshDescription((IsRow) event.getSelectedItem().getUserObject());
+        }
+      });
     }
   }
 

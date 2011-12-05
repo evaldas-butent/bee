@@ -188,7 +188,20 @@
         </row>
       </FlexTable>
 
-      <ChildGrid name="Tasks" relColumn="Project" class="flexible" />
+      <FlowPanel class="flexBox-vertical flexible">
+        <FlexTable cellSpacing="10">
+          <row>
+            <cell>
+              <Label html="Etapo aprašymas:" />
+            </cell>
+            <cell>
+              <TextLabel name="StageDescription" class="bee-display" style="white-space: pre-wrap;" />
+            </cell>
+          </row>
+        </FlexTable>
+        
+        <ChildGrid name="Tasks" relColumn="Project" class="flexible" />
+      </FlowPanel>
     </FlowPanel>
   </FlowPanel>
 </BeeForm>  
