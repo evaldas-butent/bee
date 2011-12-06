@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+  
+  name="UserProjects" viewName="UserProjects" caption="Stebimi projektai"
+  editForm="Project" newRowForm="NewProject"
+  caching="false">
+  
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <font>Verdana 12 px</font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <BeeCalcColumn name="Mode" type="string" caption="&#160;" cell="html"
+      horizontalAlignment="center" width="15">
+      <calc>
+        <lambda>greenSmall, yellowSmall</lambda>
+      </calc>
+    </BeeCalcColumn>
+    <BeeIdColumn name="Id" caption="ID" />
+    <BeeCalcColumn name="Priority" type="string" caption="Prioritetas" sortBy="Priority">
+      <calc>
+        <lambda />
+      </calc>
+    </BeeCalcColumn>
+    <BeeDataColumn name="Type" source="TypeName" caption="Tipas" />
+    <BeeDataColumn name="Name" source="Name" caption="Pavadinimas" />
+    <BeeDataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
+    <BeeCalcColumn name="Event" type="string" caption="Būsena" sortBy="Event">
+      <calc>
+        <lambda />
+      </calc>
+    </BeeCalcColumn>
+    <BeeCalcColumn name="Owner" type="string" caption="Vadovas" sortBy="OwnerFirstName, OwnerLastName"
+      searchBy="OwnerFirstName, OwnerLastName">
+      <calc>
+        <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
+      </calc>
+    </BeeCalcColumn>
+    <BeeDataColumn name="StartDate" source="StartDate" caption="Pradžia" />
+    <BeeDataColumn name="FinishDate" source="FinishDate" caption="Terminas" />
+  </columns>
+
+  <rowStyle>
+    <style>
+      <inline>="color:red"</inline>
+    </style>
+    <condition>
+      <expression>row.Event == 1 &amp;&amp; row.FinishDate &lt; new Date()</expression>
+    </condition>
+  </rowStyle>
+  <rowStyle>
+    <style>
+      <inline>="color:black"</inline>
+    </style>
+    <condition>
+      <expression>row.Event &lt; 2</expression>
+    </condition>
+  </rowStyle>
+  <rowStyle>
+    <style>
+      <inline>="color:gray"</inline>
+    </style>
+    <condition>
+      <expression>true</expression>
+    </condition>
+  </rowStyle>
+</BeeGrid>

@@ -39,7 +39,8 @@ import java.util.Set;
  */
 
 @SuppressWarnings("hiding")
-public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasExtendedInfo {
+public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslations,
+    HasExtendedInfo {
 
   public class BeeField {
     private final String name;
@@ -757,6 +758,7 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
   private static final String FOREIGN_KEY_PREFIX = "FK_";
   private static final String TRIGGER_PREFIX = "TR_";
 
+  private final String moduleName;
   private final String name;
   private final String idName;
   private final String versionName;
@@ -773,12 +775,13 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
 
   private boolean active = false;
 
-  BeeTable(String name, String idName, String versionName) {
+  BeeTable(String moduleName, String name, String idName, String versionName) {
     Assert.notEmpty(name);
     Assert.notEmpty(idName);
     Assert.notEmpty(versionName);
     Assert.state(!BeeUtils.same(idName, versionName));
 
+    this.moduleName = moduleName;
     this.name = name;
     this.idName = idName;
     this.versionName = versionName;
@@ -839,7 +842,7 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
 
   public List<ExtendedProperty> getInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
-    PropertyUtils.addProperties(info, false, "Name", getName(),
+    PropertyUtils.addProperties(info, false, "Module Name", getModuleName(), "Name", getName(),
         "Id Name", getIdName(), "Version Name", getVersionName(), "active", isActive());
 
     info.add(new ExtendedProperty("Fields", BeeUtils.toString(fields.size())));
@@ -920,6 +923,12 @@ public class BeeTable implements HasExtFields, HasStates, HasTranslations, HasEx
     return flds;
   }
 
+  @Override
+  public String getModuleName() {
+    return moduleName;
+  }
+
+  @Override
   public String getName() {
     return name;
   }

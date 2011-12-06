@@ -52,7 +52,7 @@ import java.util.Set;
  * for doing operations with them.
  */
 
-public class BeeView implements HasExtendedInfo {
+public class BeeView implements BeeObject, HasExtendedInfo {
 
   private class ColumnInfo {
     private final String colName;
@@ -117,6 +117,7 @@ public class BeeView implements HasExtendedInfo {
     INNER, RIGHT, LEFT, FULL;
   }
 
+  private final String moduleName;
   private final String name;
   private final BeeTable source;
   private final String sourceAlias;
@@ -127,8 +128,9 @@ public class BeeView implements HasExtendedInfo {
   private Filter filter = null;
   private Order order = null;
 
-  BeeView(XmlView xmlView, Map<String, BeeTable> tables) {
+  BeeView(String moduleName, XmlView xmlView, Map<String, BeeTable> tables) {
     Assert.notNull(xmlView);
+    this.moduleName = moduleName;
     this.name = xmlView.name;
     Assert.notEmpty(name);
 
@@ -242,9 +244,10 @@ public class BeeView implements HasExtendedInfo {
   public List<ExtendedProperty> getInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
 
-    PropertyUtils.addProperties(info, false, "Name", getName(), "Source", getSourceName(),
-        "Source Alias", getSourceAlias(), "Source Id Name", getSourceIdName(),
-        "Source Version Name", getSourceVersionName(), "Filter", BeeUtils.transform(getFilter()),
+    PropertyUtils.addProperties(info, false, "Module Name", getModuleName(), "Name", getName(),
+        "Source", getSourceName(), "Source Alias", getSourceAlias(),
+        "Source Id Name", getSourceIdName(), "Source Version Name", getSourceVersionName(),
+        "Filter", BeeUtils.transform(getFilter()),
         "Read Only", isReadOnly(), "Query", query.getQuery(), "Columns", columns.size());
 
     int i = 0;
@@ -270,6 +273,12 @@ public class BeeView implements HasExtendedInfo {
     return info;
   }
 
+  @Override
+  public String getModuleName() {
+    return moduleName;
+  }
+
+  @Override
   public String getName() {
     return name;
   }

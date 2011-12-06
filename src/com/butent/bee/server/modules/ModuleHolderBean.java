@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.Config;
@@ -9,6 +10,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -30,6 +32,22 @@ public class ModuleHolderBean {
   public ResponseObject doModule(RequestInfo reqInfo) {
     Assert.notNull(reqInfo);
     return getModule(reqInfo.getService()).doService(reqInfo);
+  }
+
+  public Collection<String> getModules() {
+    return ImmutableSet.copyOf(modules.keySet());
+  }
+
+  public String getResourcePath(String moduleName, String... resources) {
+    Assert.notNull(resources);
+    Assert.notEmpty(resources);
+    String resource = BeeUtils.concat("/", resources);
+
+    if (!BeeUtils.isEmpty(moduleName)) {
+      resource = BeeUtils.concat("/",
+          PROPERTY_MODULES, getModule(moduleName).getResourcePath(), resource);
+    }
+    return resource;
   }
 
   public boolean hasModule(String moduleName) {
@@ -57,11 +75,16 @@ public class ModuleHolderBean {
         try {
           BeeModule module =
               (BeeModule) InitialContext.doLookup("java:global/Bee/" + mod + "Bean");
+          String moduleName = module.getName();
 
-          if (BeeUtils.isEmpty(module.getName())) {
+          if (BeeUtils.isEmpty(moduleName)) {
             LogUtils.severe(logger, "Module", BeeUtils.bracket(mod), "does not have name");
+
+          } else if (modules.containsKey(moduleName)) {
+            LogUtils.severe(logger, "Dublicate module name:", BeeUtils.bracket(moduleName));
+
           } else {
-            modules.put(module.getName(), module);
+            modules.put(moduleName, module);
             LogUtils.info(logger, "Registered module:", BeeUtils.bracket(mod));
           }
         } catch (NamingException ex) {

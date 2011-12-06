@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="Person" viewName="Persons" caption="Asmuo">
+
+  <FlowPanel class="flexBox-vertical">
+    <FlexTable cellSpacing="10" style="width:100%">
+      <row>
+        <cell>
+          <Label html="Vardas" />
+        </cell>
+        <cell>
+          <InputText style="width:100%" source="FirstName" />
+        </cell>
+        <cell>
+          <Label html="Pavardė" horizontalAlignment="right" />
+        </cell>
+        <cell>
+          <InputText style="width:100%" source="LastName" />
+        </cell>
+      </row>
+      <row>
+        <cell colSpan="4">
+          <xi:include href="widgets/ContactInfo.widget.xml" />
+        </cell>
+      </row>
+    </FlexTable>
+
+    <ChildGrid class="flexible" name="PersonCompanies" relColumn="Person" />
+  </FlowPanel>
+</BeeForm>  

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+  
+  name="TaskUsers"
+  idName="TaskUserID"
+  x="453" y="208"
+  >
+  <BeeFields>
+    <BeeField name="Task" type="LONG" notNull="true" relation="Tasks" cascade="DELETE" />
+    <BeeField name="User" type="LONG" notNull="true" relation="Users" cascade="DELETE" />
+    <BeeField name="LastAccess" type="DATETIME" />
+  </BeeFields>
+  <BeeKeys>
+    <BeeKey unique="true">
+      <KeyField>Task</KeyField>
+      <KeyField>User</KeyField>
+    </BeeKey>
+  </BeeKeys>
+</BeeTable>

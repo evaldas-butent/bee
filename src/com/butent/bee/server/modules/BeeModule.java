@@ -5,7 +5,9 @@ import com.butent.bee.shared.communication.ResponseObject;
 
 public interface BeeModule {
 
+  ResponseObject doService(RequestInfo reqInfo);
+
   String getName();
 
-  ResponseObject doService(RequestInfo reqInfo);
+  String getResourcePath();
 }

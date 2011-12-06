@@ -83,6 +83,11 @@ public class CrmModuleBean implements BeeModule {
     return CrmConstants.CRM_MODULE;
   }
 
+  @Override
+  public String getResourcePath() {
+    return getName();
+  }
+
   private ResponseObject doProjectEvent(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
 

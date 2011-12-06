@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+
+  name="Tasks"
+  idName="TaskID"
+  x="741" y="101"
+  >
+  <BeeFields>
+    <BeeField name="Priority" type="INTEGER" notNull="true" />
+    <BeeField name="Description" type="TEXT" notNull="true" />
+    <BeeField name="StartTime" type="DATETIME" notNull="true" />
+    <BeeField name="FinishTime" type="DATETIME" notNull="true" />
+    <BeeField name="ExpectedDuration" type="DATETIME" />
+    <BeeField name="Event" type="INTEGER" notNull="true" />
+    <BeeField name="Owner" type="LONG" notNull="true" relation="Users" />
+    <BeeField name="Executor" type="LONG" notNull="true" relation="Users" />
+    <BeeField name="Company" type="LONG" relation="Companies" />
+    <BeeField name="CompanyPerson" type="LONG" relation="CompanyPersons" />
+    <BeeField name="ProjectStage" type="LONG" relation="ProjectStages" />
+  </BeeFields>
+  <BeeKeys>
+    <BeeKey>
+      <KeyField>Priority</KeyField>
+    </BeeKey>
+    <BeeKey>
+      <KeyField>StartTime</KeyField>
+    </BeeKey>
+    <BeeKey>
+      <KeyField>FinishTime</KeyField>
+    </BeeKey>
+    <BeeKey>
+      <KeyField>Event</KeyField>
+    </BeeKey>
+  </BeeKeys>
+</BeeTable>

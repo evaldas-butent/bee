@@ -75,7 +75,7 @@ public class UiServiceBean {
   private static Logger logger = Logger.getLogger(UiServiceBean.class.getName());
 
   @EJB
-  UiHolderBean holder;
+  UiHolderBean ui;
   @EJB
   QueryServiceBean qs;
   @EJB
@@ -87,7 +87,7 @@ public class UiServiceBean {
   @EJB
   UserServiceBean usr;
   @EJB
-  GridHolderBean grd;
+  GridLoaderBean grd;
   @EJB
   DataSourceBean dsb;
 
@@ -399,8 +399,8 @@ public class UiServiceBean {
           widgetElement.setAttribute("name", source);
           widgetElement.setAttribute("relColumn", relColumn);
 
-          if (grd.isGrid(source)) {
-            if (sys.getView(grd.getGrid(source).getViewName()).hasColumn(relColumn)) {
+          if (ui.isGrid(source)) {
+            if (sys.getView(ui.getGrid(source).getViewName()).hasColumn(relColumn)) {
               isColumn = true;
             } else {
               LogUtils.warning(logger, "import form", formName, "widget", dstType,
@@ -532,7 +532,7 @@ public class UiServiceBean {
     designer.types.add(typeGroup);
 
     for (String tableName : sys.getTableNames()) {
-      XmlTable xmlTable = sys.getXmlTable(tableName);
+      XmlTable xmlTable = sys.getXmlTable(sys.getTable(tableName).getModuleName(), tableName);
 
       if (xmlTable != null) {
         Collection<XmlField> fields = Lists.newArrayList();
@@ -589,7 +589,7 @@ public class UiServiceBean {
   private ResponseObject formInfo(RequestInfo reqInfo) {
     String fName = reqInfo.getParameter("form_name");
 
-    UiComponent form = holder.getForm(fName);
+    UiComponent form = ui.getUiForm(fName);
 
     if (BeeUtils.isEmpty(form)) {
       String msg = "Form name not recognized: " + fName;
@@ -638,51 +638,36 @@ public class UiServiceBean {
 
   private ResponseObject getForm(RequestInfo reqInfo) {
     String formName = reqInfo.getContent();
+
     if (BeeUtils.isEmpty(formName)) {
-      return ResponseObject.error("Form name not specified");
+      return ResponseObject.error("Which form?");
     }
-
-    String formPath = "forms/";
-    String formExt = XmlUtils.defaultXmlExtension;
-
-    String fileName = Config.getPath(formPath + formName + "." + formExt);
-    if (BeeUtils.isEmpty(fileName)) {
-      return ResponseObject.error("form not found:", formName);
+    if (ui.isForm(formName)) {
+      return ui.getForm(formName);
     }
-
-    Document doc = XmlUtils.getXmlResource(fileName, Config.getSchemaPath("form.xsd"));
-    if (doc == null) {
-      return ResponseObject.error("cannot parse xml:", fileName);
-    }
-    
-    String xml = XmlUtils.toString(doc, false);
-    if (xml == null || xml.isEmpty()) {
-      return ResponseObject.error("cannot transform xml to string:", fileName);
-    }
-    return ResponseObject.response(xml);
+    return ResponseObject.error("Form", formName, "not found");
   }
 
   private ResponseObject getGrid(RequestInfo reqInfo) {
     String gridName = reqInfo.getContent();
+
     if (BeeUtils.isEmpty(gridName)) {
       return ResponseObject.error("Which grid?");
     }
-
-    if (grd.isGrid(gridName)) {
-      return ResponseObject.response(grd.getGrid(gridName));
+    if (ui.isGrid(gridName)) {
+      return ResponseObject.response(ui.getGrid(gridName));
     }
     if (sys.isView(gridName)) {
-      return ResponseObject.response(grd.getDefaultGrid(sys.getView(gridName), true));
+      return ResponseObject.response(grd.getDefaultGrid(sys.getView(gridName)));
     }
-
-    return ResponseObject.error("grid", gridName, "not found");
+    return ResponseObject.error("Grid", gridName, "not found");
   }
 
   private ResponseObject getStates() {
     List<XmlState> states = Lists.newArrayList();
 
     for (String stateName : sys.getStateNames()) {
-      XmlState xmlState = sys.getXmlState(stateName);
+      XmlState xmlState = sys.getXmlState(sys.getState(stateName).getModuleName(), stateName);
 
       if (xmlState != null) {
         states.add(xmlState);
@@ -824,13 +809,13 @@ public class UiServiceBean {
         || !sys.isView(rowSet.getViewName())) {
       return ResponseObject.error("insertRows:", "invalid rowSet");
     }
-    
+
     ResponseObject response = deb.commitRow(rowSet, 0, BeeRowSet.class);
     if (response.hasErrors() || rowSet.getNumberOfRows() <= 1) {
       return response;
     }
     BeeRowSet result = (BeeRowSet) response.getResponse();
-    
+
     for (int i = 1; i < rowSet.getNumberOfRows(); i++) {
       response = deb.commitRow(rowSet, i, BeeRow.class);
       if (response.hasErrors()) {
@@ -840,14 +825,14 @@ public class UiServiceBean {
     }
     return ResponseObject.response(result);
   }
-  
+
   private ResponseObject menuInfo(RequestInfo reqInfo) {
     ResponseObject response = new ResponseObject();
     String mName = reqInfo.getParameter("menu_name");
     String lRoot = reqInfo.getParameter("root_layout");
     String lItem = reqInfo.getParameter("item_layout");
 
-    UiComponent menu = holder.getMenu(mName, lRoot, lItem, Config.getPath("menu.xml"));
+    UiComponent menu = ui.getUiMenu(mName, lRoot, lItem, Config.getPath("menu.xml"));
 
     if (BeeUtils.isEmpty(menu)) {
       String msg = "Error initializing menu: " + mName;
@@ -881,7 +866,7 @@ public class UiServiceBean {
       response.addInfo("Views OK");
 
     } else if (BeeUtils.same(cmd, "grids")) {
-      grd.initGrids();
+      ui.initGrids();
       response.addInfo("Grids OK");
 
     } else if (BeeUtils.startsSame(cmd, "setState")) {
@@ -946,7 +931,8 @@ public class UiServiceBean {
             String xml = XmlUtils.marshal(xmlTable, schemaPath);
             xmlResponse.append(xml).append("\n");
             XmlTable userTable = sys.loadXmlTable(xml);
-            XmlTable configTable = sys.getXmlTable(tblName, false);
+            XmlTable configTable =
+                sys.getXmlTable(sys.getTable(tblName).getModuleName(), tblName, false);
             XmlTable diffTable = null;
 
             if (configTable == null) {
@@ -971,7 +957,8 @@ public class UiServiceBean {
         }
       }
       for (String tblName : updates.keySet()) {
-        String path = new File(Config.USER_DIR, SysObject.TABLE.getFilePath(tblName)).getPath();
+        String path = new File(Config.USER_DIR, SysObject.TABLE.getPath() + "/"
+            + SysObject.TABLE.getFileName(tblName)).getPath();
         XmlTable diffTable = updates.get(tblName);
 
         if (diffTable == null) {
@@ -1012,7 +999,8 @@ public class UiServiceBean {
         } else {
           try {
             XmlState userState = sys.loadXmlState(XmlUtils.marshal(xmlState, schemaPath));
-            XmlState configState = sys.getXmlState(stateName, false);
+            XmlState configState =
+                sys.getXmlState(sys.getState(stateName).getModuleName(), stateName, false);
             XmlState diffState = null;
 
             if (configState == null) {
@@ -1047,7 +1035,8 @@ public class UiServiceBean {
         }
       }
       for (String stateName : updates.keySet()) {
-        String path = new File(Config.USER_DIR, SysObject.STATE.getFilePath(stateName)).getPath();
+        String path = new File(Config.USER_DIR, SysObject.STATE.getPath() + "/"
+            + SysObject.STATE.getFileName(stateName)).getPath();
         XmlState diffState = updates.get(stateName);
 
         if (diffState == null) {

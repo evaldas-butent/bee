@@ -10,7 +10,8 @@ import org.junit.Test;
 public class TestXmlState {
   @Test
   public void testRead() {
-    String resource = Config.getPath(SysObject.STATE.getFilePath("Visible"), true);
+    String resource = Config.getPath(SysObject.STATE.getPath() + "/"
+        + SysObject.STATE.getFileName("Visible"), true);
     String schemaSource = SysObject.STATE.getSchemaPath();
 
     if (!BeeUtils.isEmpty(resource)) {

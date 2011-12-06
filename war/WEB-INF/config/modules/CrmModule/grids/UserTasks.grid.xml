@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+  
+  name="UserTasks" viewName="UserTasks" caption="Užduotys"
+  editForm="Task" newRowForm="NewTask"
+  caching="false">
+  
+  <north size="40">
+    <FlowPanel class="flexBox-horizontal-center" style="background-color: #f8f8f8; font-family: Tahoma; font-size: 12px;">
+      <FlowPanel>
+        <CheckBox name="Scheduled" html="Suplanuotos" />
+        <CheckBox name="Executing" html="Vykdomos" checked="true" />
+        <CheckBox name="Suspended" html="Sustabdytos" checked="true" />
+        <CheckBox name="Completed" html="Įvykdytos" />
+        <CheckBox name="Canceled" html="Nutrauktos" />
+        <CheckBox name="Approved" html="Baigtos" />
+      </FlowPanel>
+      <SimplePanel class="flexible flexBox-vertical-center">
+        <VerticalPanel>
+          <cell>
+            <CheckBox name="Overdue" html="Tik vėluojančios" style="color: red;" />
+          </cell>
+          <cell>
+            <CheckBox name="Updated" html="Tik pasikeitusios" />
+          </cell>
+        </VerticalPanel>
+      </SimplePanel>
+      <Button name="Filter" html="Filtruoti" />
+    </FlowPanel>
+  </north>
+  
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <font>Verdana 12 px</font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <BeeCalcColumn name="Mode" type="string" caption="&#160;" cell="html"
+      horizontalAlignment="center" width="15">
+      <calc>
+        <lambda>greenSmall, yellowSmall</lambda>
+      </calc>
+    </BeeCalcColumn>
+    <BeeIdColumn name="Id" caption="ID" />
+    <BeeCalcColumn name="Priority" type="string" caption="Prioritetas" sortBy="Priority">
+      <calc>
+        <lambda />
+      </calc>
+    </BeeCalcColumn>
+    <BeeDataColumn name="Description" source="Description" caption="Užduotis" />
+    <BeeDataColumn name="Project" source="ProjectName" caption="Projektas" />
+    <BeeDataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
+    <BeeCalcColumn name="Event" type="string" caption="Būsena" sortBy="Event">
+      <calc>
+        <lambda />
+      </calc>
+    </BeeCalcColumn>
+    <BeeCalcColumn name="Owner" type="string" caption="Vadovas" sortBy="OwnerFirstName, OwnerLastName"
+      searchBy="OwnerFirstName, OwnerLastName">
+      <calc>
+        <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
+      </calc>
+    </BeeCalcColumn>
+    <BeeCalcColumn name="Executor" type="string" caption="Vykdytojas"
+      sortBy="ExecutorFirstName, ExecutorLastName" searchBy="ExecutorFirstName, ExecutorLastName">
+      <calc>
+        <function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</function>
+      </calc>
+    </BeeCalcColumn>
+    <BeeDataColumn name="StartTime" source="StartTime" caption="Pradžia" />
+    <BeeDataColumn name="FinishTime" source="FinishTime" caption="Terminas" />
+  </columns>
+
+  <rowStyle>
+    <style>
+      <inline>color: red;</inline>
+    </style>
+    <condition>
+      <expression>row.Event == 0 &amp;&amp; row.FinishTime &lt; new Date()</expression>
+    </condition>
+  </rowStyle>
+  <rowStyle>
+    <style>
+      <inline>color: black;</inline>
+    </style>
+    <condition>
+      <expression>row.Event == 0</expression>
+    </condition>
+  </rowStyle>
+  <rowStyle>
+    <style>
+      <inline>color: gray;</inline>
+    </style>
+    <condition>
+      <expression>true</expression>
+    </condition>
+  </rowStyle>
+</BeeGrid>

@@ -10,7 +10,8 @@ import org.junit.Test;
 public class TestXmlView {
   @Test
   public void testRead() {
-    String resource = Config.getPath(SysObject.VIEW.getFilePath("Users"), true);
+    String resource = Config.getPath(SysObject.VIEW.getPath() + "/"
+        + SysObject.VIEW.getFileName("Users"), true);
     String schemaSource = SysObject.VIEW.getSchemaPath();
 
     if (!BeeUtils.isEmpty(resource)) {

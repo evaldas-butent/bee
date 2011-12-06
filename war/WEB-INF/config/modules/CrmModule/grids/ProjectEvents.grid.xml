@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+  
+  name="ProjectEvents" viewName="ProjectEvents" caption="Įvykių istorija"
+  readOnly="true" order="ProjectEventID desc" caching="false">
+  
+  <body height="48" borderWidth="0">
+    <style>
+      <font>Tahoma 11 px</font>
+    </style>
+  </body>
+  <columns>
+    <BeeCalcColumn name="Publisher" type="string" caption="Paskelbta" width="120">
+      <style>
+        <bodyStyle>
+          <inline>white-space: pre-wrap;</inline>
+        </bodyStyle>
+      </style>
+      <calc>
+        <function>
+            var s = row.PublishTime.getFullYear() + "." + (row.PublishTime.getMonth() + 1)
+                  + (row.PublishTime.getDate() >= 10 ? "." : ".0")
+                  + row.PublishTime.getDate() + " " + row.PublishTime.toLocaleTimeString() + "\n"
+                  + (row.PublisherFirstName || "") + " " + (row.PublisherLastName || "");
+            var ev = "";
+            
+            switch(row.Event) {
+              case 0:
+                ev = "CREATED";
+                break;
+              case 1:
+                ev = "ACTIVATED";
+                break;
+              case 2:
+                ev = "SUSPENDED";
+                break;
+              case 3:
+                ev = "COMPLETED";
+                break;
+              case 4:
+                ev = "CANCELED";
+                break;
+              case 5:
+                ev = "EXTENDED";
+                break;
+              case 6:
+                ev = "RENEWED";
+                break;
+              case 7:
+                ev = "COMMENTED";
+                break;
+              case 8:
+                ev = "VISITED";
+                break;
+              case 9:
+                ev = "UPDATED";
+                break;
+              case 10:
+                ev = "DELETED";
+                break;
+            }
+            s = s + "\n" + ev;
+            return s;
+          </function>
+      </calc>
+    </BeeCalcColumn>
+    <BeeCalcColumn name="Comment" type="string" caption="Komentaras" width="240">
+      <style>
+        <bodyStyle>
+          <inline>white-space: pre-wrap;</inline>
+        </bodyStyle>
+      </style>
+      <calc>
+        <function>
+            var s = "";
+            
+            if (row.EventNote) {
+              s = row.EventNote;
+            }
+            if (row.Comment) {
+              if (s) {
+                s = s + "\n";
+              }
+              s = s + row.Comment;
+            }
+            return s;
+          </function>
+      </calc>
+    </BeeCalcColumn>
+  </columns>
+</BeeGrid>

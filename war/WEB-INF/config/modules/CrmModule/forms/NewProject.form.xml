@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+  
+  name="NewProject" caption="Naujas projektas">
+
+  <FlexTable cellSpacing="10">
+
+    <row>
+      <cell>
+        <Label html="Tipas:" class="bee-required" />
+      </cell>
+      <cell>
+        <DataSelector source="TypeName" relSource="ProjectType" relView="ProjectTypes" relColumn="Name"></DataSelector>
+      </cell>
+      <cell>
+        <Label html="Prioritetas:" horizontalAlignment="right" class="bee-required" />
+      </cell>
+      <cell>
+        <ListBox source="Priority" name="Priority" valueNumeric="true" style="width: 100px;" />
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <Label html="Pavadinimas:" class="bee-required" />
+      </cell>
+      <cell colSpan="3">
+        <InputText source="Name" style="width: 100%;" />
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <Label html="Pradžia:" class="bee-required" />
+      </cell>
+      <cell>
+        <InputDate source="StartDate" />
+      </cell>
+      <cell>
+        <Label html="Įmonė:" horizontalAlignment="right" />
+      </cell>
+      <cell>
+        <DataSelector source="CompanyName" relSource="Company" relView="Companies"
+          relColumn="Name" />
+      </cell>
+    </row>
+
+    <row>
+      <cell>
+        <Label html="Terminas:" class="bee-required" />
+      </cell>
+      <cell>
+        <InputDate source="FinishDate" />
+      </cell>
+      <cell>
+        <Label html="Asmuo:" horizontalAlignment="right" />
+      </cell>
+      <cell>
+        <DataSelector source="PersonFirstName" relSource="CompanyPerson" relView="CompanyPersons"
+          relColumn="FirstName" />
+      </cell>
+    </row>
+
+    <row>
+      <cell>
+        <Label html="Aprašymas:" />
+      </cell>
+      <cell colSpan="3">
+        <InputArea source="Description" style="width: 100%; height: 60px;" />
+      </cell>
+    </row>
+
+    <row>
+      <cell>
+        <Label html="Stebėtojai:" />
+      </cell>
+      <cell>
+        <ListBox name="Observers" multiSelect="true" minSize="2" maxSize="10" style="width: 100%;" />
+      </cell>
+      <cell colSpan="2" >
+        <VerticalPanel>
+          <cell><Button name="AddObservers" html="+" /></cell>
+          <cell><Button name="RemoveObservers" html="-" /></cell>
+        </VerticalPanel>
+      </cell>
+    </row>
+  </FlexTable>
+</BeeForm>  

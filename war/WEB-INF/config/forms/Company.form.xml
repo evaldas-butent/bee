@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="Company" viewName="Companies" caption="Įmonė">
+
+  <FlowPanel class="flexBox-vertical">
+    <FlexTable cellSpacing="10">
+      <row>
+        <cell>
+          <Label html="Įmonė" />
+        </cell>
+        <cell colSpan="3">
+          <InputText source="Name" style="width:100%" />
+        </cell>
+      </row>
+      <row>
+        <cell>
+          <Label html="Įm. kodas" />
+        </cell>
+        <cell>
+          <InputText source="Code" />
+        </cell>
+        <cell>
+          <Label html="PVM kodas" horizontalAlignment="right" />
+        </cell>
+        <cell>
+          <InputText source="VATCode" />
+        </cell>
+      </row>
+      <row>
+        <cell colSpan="4">
+          <xi:include href="widgets/ContactInfo.widget.xml" />
+        </cell>
+      </row>
+    </FlexTable>
+
+    <ChildGrid class="flexible" name="CompanyPersons" relColumn="Company" />
+  </FlowPanel>
+</BeeForm>  

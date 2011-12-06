@@ -14,6 +14,7 @@ import com.butent.bee.server.data.BeeTable.BeeKey;
 import com.butent.bee.server.data.BeeTable.BeeTrigger;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.NameUtils;
+import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.sql.HasFrom;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
@@ -86,14 +87,13 @@ public class SystemBean {
       this.path = path;
     }
 
-    public String getFilePath(String objName) {
+    public String getFileName(String objName) {
       Assert.notEmpty(objName);
-      return getPath() +
-          BeeUtils.concat(".", objName, name().toLowerCase(), XmlUtils.defaultXmlExtension);
+      return BeeUtils.concat(".", objName, name().toLowerCase(), XmlUtils.defaultXmlExtension);
     }
 
     public String getPath() {
-      return path + "/";
+      return path;
     }
 
     public String getSchemaPath() {
@@ -109,6 +109,8 @@ public class SystemBean {
   QueryServiceBean qs;
   @EJB
   UserServiceBean usr;
+  @EJB
+  ModuleHolderBean moduleBean;
 
   private String dbName;
   private String dbSchema;
@@ -297,7 +299,7 @@ public class SystemBean {
 
     if (BeeUtils.isEmpty(view)) {
       view = getDefaultView(viewName);
-      registerView(view);
+      register(view, viewCache);
     }
     return view;
   }
@@ -338,11 +340,11 @@ public class SystemBean {
     return qs.dbRowCount(getView(viewName).getQuery(filter, null));
   }
 
-  public XmlState getXmlState(String stateName) {
+  public XmlState getXmlState(String moduleName, String stateName) {
     Assert.notEmpty(stateName);
 
-    XmlState xmlState = getXmlState(stateName, false);
-    XmlState userState = getXmlState(stateName, true);
+    XmlState xmlState = getXmlState(moduleName, stateName, false);
+    XmlState userState = getXmlState(moduleName, stateName, true);
 
     if (xmlState == null) {
       xmlState = userState;
@@ -352,9 +354,10 @@ public class SystemBean {
     return xmlState;
   }
 
-  public XmlState getXmlState(String stateName, boolean userMode) {
+  public XmlState getXmlState(String moduleName, String stateName, boolean userMode) {
     Assert.notEmpty(stateName);
-    String resource = SysObject.STATE.getFilePath(stateName);
+    String resource = moduleBean.getResourcePath(moduleName,
+        SysObject.STATE.getPath(), SysObject.STATE.getFileName(stateName));
 
     if (userMode) {
       resource = Config.getUserPath(resource);
@@ -364,11 +367,11 @@ public class SystemBean {
     return loadXmlState(resource);
   }
 
-  public XmlTable getXmlTable(String tableName) {
+  public XmlTable getXmlTable(String moduleName, String tableName) {
     Assert.notEmpty(tableName);
 
-    XmlTable xmlTable = getXmlTable(tableName, false);
-    XmlTable userTable = getXmlTable(tableName, true);
+    XmlTable xmlTable = getXmlTable(moduleName, tableName, false);
+    XmlTable userTable = getXmlTable(moduleName, tableName, true);
 
     if (xmlTable == null) {
       xmlTable = userTable;
@@ -378,9 +381,10 @@ public class SystemBean {
     return xmlTable;
   }
 
-  public XmlTable getXmlTable(String tableName, boolean userMode) {
+  public XmlTable getXmlTable(String moduleName, String tableName, boolean userMode) {
     Assert.notEmpty(tableName);
-    String resource = SysObject.TABLE.getFilePath(tableName);
+    String resource = moduleBean.getResourcePath(moduleName,
+        SysObject.TABLE.getPath(), SysObject.TABLE.getFileName(tableName));
 
     if (userMode) {
       resource = Config.getUserPath(resource);
@@ -390,11 +394,11 @@ public class SystemBean {
     return loadXmlTable(resource);
   }
 
-  public XmlView getXmlView(String viewName) {
+  public XmlView getXmlView(String moduleName, String viewName) {
     Assert.notEmpty(viewName);
 
-    XmlView xmlView = getXmlView(viewName, false);
-    XmlView userView = getXmlView(viewName, true);
+    XmlView xmlView = getXmlView(moduleName, viewName, false);
+    XmlView userView = getXmlView(moduleName, viewName, true);
 
     if (userView != null) {
       xmlView = userView;
@@ -402,9 +406,10 @@ public class SystemBean {
     return xmlView;
   }
 
-  public XmlView getXmlView(String viewName, boolean userMode) {
+  public XmlView getXmlView(String moduleName, String viewName, boolean userMode) {
     Assert.notEmpty(viewName);
-    String resource = SysObject.VIEW.getFilePath(viewName);
+    String resource = moduleBean.getResourcePath(moduleName,
+        SysObject.VIEW.getPath(), SysObject.VIEW.getFileName(viewName));
 
     if (userMode) {
       resource = Config.getUserPath(resource);
@@ -793,7 +798,7 @@ public class SystemBean {
     xmlView.source = tblName;
     xmlView.columns = columns;
 
-    return new BeeView(xmlView, tableCache);
+    return new BeeView(getTable(tblName).getModuleName(), xmlView, tableCache);
   }
 
   private Collection<BeeState> getStates() {
@@ -860,17 +865,24 @@ public class SystemBean {
         break;
     }
     int cnt = 0;
-    Collection<File> paths = Lists.newArrayList();
+    Collection<File> roots = Lists.newArrayList();
+    List<String> modules = Lists.newArrayList((String) null);
+    modules.addAll(moduleBean.getModules());
 
-    if (Config.CONFIG_DIR != null) {
-      paths.add(Config.CONFIG_DIR);
-    }
-    if (Config.USER_DIR != null) {
-      paths.add(Config.USER_DIR);
-    }
-    if (!BeeUtils.isEmpty(paths)) {
+    for (String moduleName : modules) {
+      roots.clear();
+      String modulePath = moduleBean.getResourcePath(moduleName, obj.getPath());
+
+      File root = new File(Config.CONFIG_DIR, modulePath);
+      if (FileUtils.isDirectory(root)) {
+        roots.add(root);
+      }
+      root = new File(Config.USER_DIR, modulePath);
+      if (FileUtils.isDirectory(root)) {
+        roots.add(root);
+      }
       List<File> resources =
-          FileUtils.findFiles(obj.getFilePath("*"), paths, null, null, true, true);
+          FileUtils.findFiles(obj.getFileName("*"), roots, null, null, false, true);
 
       if (!BeeUtils.isEmpty(resources)) {
         Set<String> objects = Sets.newHashSet();
@@ -886,13 +898,13 @@ public class SystemBean {
 
           switch (obj) {
             case STATE:
-              isOk = initState(objectName);
+              isOk = initState(moduleName, objectName);
               break;
             case TABLE:
-              isOk = initTable(objectName);
+              isOk = initTable(moduleName, objectName);
               break;
             case VIEW:
-              isOk = initView(objectName);
+              isOk = initView(moduleName, objectName);
               break;
           }
           if (isOk) {
@@ -908,37 +920,37 @@ public class SystemBean {
     }
   }
 
-  private boolean initState(String stateName) {
+  private boolean initState(String moduleName, String stateName) {
     Assert.notEmpty(stateName);
     BeeState state = null;
-    XmlState xmlState = getXmlState(stateName);
+    XmlState xmlState = getXmlState(moduleName, stateName);
 
     if (xmlState != null) {
       if (!BeeUtils.same(xmlState.name, stateName)) {
         LogUtils.warning(logger, "State name doesn't match resource name:", xmlState.name);
       } else {
-        state = new BeeState(xmlState.name, xmlState.userMode, xmlState.roleMode, xmlState.checked);
+        state = new BeeState(moduleName, xmlState.name, xmlState.userMode, xmlState.roleMode,
+            xmlState.checked);
       }
     }
     if (state != null) {
-      registerState(state);
-      LogUtils.info(logger, "Registered state", BeeUtils.bracket(state.getName()));
+      register(state, stateCache);
     } else {
-      unregisterState(stateName);
+      unregister(stateName, stateCache);
     }
     return state != null;
   }
 
-  private boolean initTable(String tableName) {
+  private boolean initTable(String moduleName, String tableName) {
     Assert.notEmpty(tableName);
     BeeTable table = null;
-    XmlTable xmlTable = getXmlTable(tableName);
+    XmlTable xmlTable = getXmlTable(moduleName, tableName);
 
     if (xmlTable != null) {
       if (!BeeUtils.same(xmlTable.name, tableName)) {
         LogUtils.warning(logger, "Table name doesn't match resource name:", xmlTable.name);
       } else {
-        table = new BeeTable(xmlTable.name, xmlTable.idName, xmlTable.versionName);
+        table = new BeeTable(moduleName, xmlTable.name, xmlTable.idName, xmlTable.versionName);
         String tbl = table.getName();
 
         for (int i = 0; i < 2; i++) {
@@ -1028,18 +1040,17 @@ public class SystemBean {
       }
     }
     if (table != null) {
-      registerTable(table);
-      LogUtils.info(logger, "Registered table", BeeUtils.bracket(table.getName()));
+      register(table, tableCache);
     } else {
-      unregisterTable(tableName);
+      unregister(tableName, tableCache);
     }
     return table != null;
   }
 
-  private boolean initView(String viewName) {
+  private boolean initView(String moduleName, String viewName) {
     Assert.notEmpty(viewName);
     BeeView view = null;
-    XmlView xmlView = getXmlView(viewName);
+    XmlView xmlView = getXmlView(moduleName, viewName);
 
     if (xmlView != null) {
       if (!BeeUtils.same(xmlView.name, viewName)) {
@@ -1050,7 +1061,7 @@ public class SystemBean {
         if (!isTable(src)) {
           LogUtils.warning(logger, "Unrecognized view source:", xmlView.name, src);
         } else {
-          view = new BeeView(xmlView, tableCache);
+          view = new BeeView(moduleName, xmlView, tableCache);
 
           if (view.isEmpty()) {
             LogUtils.warning(logger, "View has no columns defined:", view.getName());
@@ -1060,10 +1071,9 @@ public class SystemBean {
       }
     }
     if (view != null) {
-      registerView(view);
-      LogUtils.info(logger, "Registered view", BeeUtils.bracket(view.getName()));
+      register(view, viewCache);
     } else {
-      unregisterView(viewName);
+      unregister(viewName, viewCache);
     }
     return view != null;
   }
@@ -1178,39 +1188,26 @@ public class SystemBean {
     table.setActive(true);
   }
 
-  private void registerState(BeeState state) {
-    if (!BeeUtils.isEmpty(state)) {
-      stateCache.put(BeeUtils.normalize(state.getName()), state);
+  private <T extends BeeObject> void register(T object, Map<String, T> cache) {
+    if (!BeeUtils.isEmpty(object)) {
+      String name = BeeUtils.getClassName(object.getClass());
+      String objectName = object.getName();
+      String moduleName = BeeUtils.parenthesize(object.getModuleName());
+      T existingObject = cache.get(BeeUtils.normalize(objectName));
+
+      if (existingObject != null) {
+        LogUtils.warning(logger, moduleName, "Dublicate", name, "name:",
+            BeeUtils.bracket(objectName), BeeUtils.parenthesize(existingObject.getModuleName()));
+      } else {
+        cache.put(BeeUtils.normalize(objectName), object);
+        LogUtils.info(logger, moduleName, "Registered", name, BeeUtils.bracket(objectName));
+      }
     }
   }
 
-  private void registerTable(BeeTable table) {
-    if (!BeeUtils.isEmpty(table)) {
-      tableCache.put(BeeUtils.normalize(table.getName()), table);
-    }
-  }
-
-  private void registerView(BeeView view) {
-    if (!BeeUtils.isEmpty(view)) {
-      viewCache.put(BeeUtils.normalize(view.getName()), view);
-    }
-  }
-
-  private void unregisterState(String stateName) {
-    if (!BeeUtils.isEmpty(stateName)) {
-      stateCache.remove(BeeUtils.normalize(stateName));
-    }
-  }
-
-  private void unregisterTable(String tableName) {
-    if (!BeeUtils.isEmpty(tableName)) {
-      tableCache.remove(BeeUtils.normalize(tableName));
-    }
-  }
-
-  private void unregisterView(String viewName) {
-    if (!BeeUtils.isEmpty(viewName)) {
-      viewCache.remove(BeeUtils.normalize(viewName));
+  private void unregister(String objectName, Map<String, ? extends BeeObject> cache) {
+    if (!BeeUtils.isEmpty(objectName)) {
+      cache.remove(BeeUtils.normalize(objectName));
     }
   }
 }
