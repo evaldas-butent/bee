@@ -18,6 +18,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.Shell;
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.ButtonGroup;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.ResourceEditor;
@@ -44,7 +45,6 @@ import com.butent.bee.client.ui.GwtUiCreator;
 import com.butent.bee.client.ui.MenuService;
 import com.butent.bee.client.ui.StateService;
 import com.butent.bee.client.utils.BeeCommand;
-import com.butent.bee.client.utils.ServiceCommand;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.search.SearchBox;
 import com.butent.bee.client.widget.BeeButton;
@@ -58,6 +58,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Stage;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -106,7 +107,7 @@ public class ScreenImpl implements Screen {
 
   private final String elGrid = "el-grid-type";
   private final String elCell = "el-cell-type";
-  
+
   private BeeCheckBox logToggle = null;
   private final String logVisible = "log-visible";
 
@@ -361,10 +362,10 @@ public class ScreenImpl implements Screen {
     if (w != null) {
       p.add(w, ScrollBars.BOTH);
     }
-    
+
     getRootPanel().add(p);
     setScreenPanel(p);
-    
+
     if (getLogToggle() != null && !getLogToggle().getValue()) {
       BeeKeeper.getLog().hide();
     }
@@ -422,24 +423,24 @@ public class ScreenImpl implements Screen {
         Window.open("http://www.butent.com", "", "");
       }
     });
-    
+
     cp.addLeftTop(img, 4, 0);
-    
+
     FlexTable searchContainer = new FlexTable();
     searchContainer.addStyleName("bee-MainSearchContainer");
-    
+
     SearchBox box = new SearchBox("search");
     box.addStyleName("bee-MainSearchBox");
     searchContainer.setWidget(0, 0, box);
-    
+
     BeeImage go = new BeeImage(Global.getImages().search());
     go.addStyleName("bee-MainSearchGo");
     searchContainer.setWidget(0, 1, go);
-    
+
     InternalLink opt = new InternalLink("search options", "");
     opt.addStyleName("bee-MainSearchOptions");
     searchContainer.setWidget(1, 0, opt);
-    
+
     cp.addLeftTop(searchContainer, 100, 4);
 
     BeeLayoutPanel mp = new BeeLayoutPanel();
@@ -450,7 +451,7 @@ public class ScreenImpl implements Screen {
     StyleUtils.setBottom(mp, 1);
 
     setMenuPanel(mp);
-    
+
     BeeLabel user = new BeeLabel();
     user.addStyleName("bee-UserSignature");
 
@@ -461,7 +462,18 @@ public class ScreenImpl implements Screen {
       @Override
       public void execute() {
         Global.confirm(BeeKeeper.getUser().getUserSign(), "Sign out",
-            new ServiceCommand(Service.LOGOUT));
+            new BeeCommand() {
+              @Override
+              public void execute() {
+                BeeKeeper.getRpc().makeGetRequest(Service.LOGOUT,
+                    new ResponseCallback() {
+                      @Override
+                      public void onResponse(ResponseObject response) {
+                        Window.Location.reload();
+                      }
+                    });
+              }
+            });
       }
     });
     cp.addRightTop(out, 2, 2);
@@ -548,7 +560,7 @@ public class ScreenImpl implements Screen {
       }
     });
     fp.setWidget(r + 1, 0, log);
-    
+
     setLogToggle(log);
 
     tp.add(fp, "Options");
@@ -576,22 +588,22 @@ public class ScreenImpl implements Screen {
         Lists.newArrayList("simple", "scroll", "cell")));
     adm.add(new RadioGroup(getElCell(), false, BeeKeeper.getStorage().checkEnum(getElCell(),
         TextCellType.TEXT_EDIT), TextCellType.values()));
-    
+
     Flow admPanel = new Flow();
     admPanel.addStyleName(StyleUtils.NAME_FLEX_BOX_VERTICAL);
-    
+
     admPanel.add(adm);
-    
+
     Simple shellContainer = new Simple();
     StyleUtils.makeFlexible(shellContainer);
     StyleUtils.makeRelative(shellContainer);
-    
+
     Shell shell = new Shell();
     shell.addStyleName(StyleUtils.NAME_OCCUPY);
 
     shellContainer.setWidget(shell);
     admPanel.add(shellContainer);
-    
+
     tp.add(admPanel, "Admin");
 
     return tp;
@@ -705,7 +717,7 @@ public class ScreenImpl implements Screen {
       return !(p.getParent() instanceof TilePanel);
     }
   }
-  
+
   private void setActivePanel(TilePanel p) {
     activePanel = p;
   }

@@ -5,11 +5,18 @@
       <web-resource-name>All resources</web-resource-name>
       <url-pattern>/*</url-pattern>
     </web-resource-collection>
+    <auth-constraint>
+      <role-name>BEEUser</role-name>
+    </auth-constraint>
   </security-constraint>
   <login-config>
-    <auth-method>BASIC</auth-method>
+    <auth-method>FORM</auth-method>
     <realm-name>DBRealm</realm-name>
-  </login-config>
+    <form-login-config>
+      <form-login-page>/login.jsp</form-login-page>
+      <form-error-page>/loginError.jsp</form-error-page>
+    </form-login-config>
+ </login-config>
   
   <servlet>
     <servlet-name>BeeServlet</servlet-name>

@@ -29,7 +29,7 @@ public class ServletSessionListener implements HttpSessionListener {
 
   @Override
   public void sessionDestroyed(HttpSessionEvent se) {
-    Object loginName = se.getSession().getAttribute(Service.VAR_LOGIN);
+    Object loginName = se.getSession().getAttribute(Service.VAR_USER);
 
     if (loginName != null) {
       try {

@@ -22,7 +22,9 @@ import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 
@@ -73,9 +75,19 @@ public class AsyncCallback implements RequestCallback {
       finalizeResponse();
       return;
     }
-
     String sid = resp.getHeader(Service.RPC_VAR_SID);
-    BeeKeeper.getUser().setSessionId(sid);
+
+    if (!BeeUtils.isEmpty(sid)) {
+      BeeKeeper.getUser().setSessionId(sid);
+
+      String usr = resp.getHeader(Service.RPC_VAR_USER);
+
+      if (!BeeUtils.isEmpty(usr)) {
+        UserData userData = UserData.restore(Codec.decodeBase64(usr));
+        BeeKeeper.getUser().setUserData(userData);
+        BeeKeeper.getScreen().updateSignature(userData.getUserSign());
+      }
+    }
 
     ContentType ctp = CommUtils.getContentType(resp.getHeader(Service.RPC_VAR_CTP));
 
@@ -187,7 +199,7 @@ public class AsyncCallback implements RequestCallback {
         (info == null) ? BeeConst.STRING_EMPTY : BeeUtils.bracket(info.getCompletedTime()),
         BeeUtils.bracket(duration.getCompletedTime()));
     finalizeResponse();
-    
+
     if (BeeUtils.same(sid, BeeConst.NULL)) {
       BeeKeeper.getBus().removeExitHandler();
       Window.Location.reload();

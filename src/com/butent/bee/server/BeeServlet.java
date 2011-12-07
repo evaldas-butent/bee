@@ -78,85 +78,42 @@ public class BeeServlet extends HttpServlet {
         LogUtils.info(logger, reqInfo.getContent());
       }
     }
-
-    HttpSession session = req.getSession(false);
-    boolean loggedIn = (session != null);
+    HttpSession session = req.getSession(true);
 
     String reqSid = reqInfo.getParameter(Service.RPC_VAR_SID);
-    String currentSid = loggedIn ? session.getId() : null;
-    String respSid = null;
+    String currentSid = session.getId();
 
     ResponseObject response = null;
     ResponseBuffer buff = new ResponseBuffer(sep);
 
-    if (BeeUtils.same(svc, Service.LOGOUT)) {
-      if (loggedIn) {
-        response = logout(req, session);
-      } else {
-        response = ResponseObject.error("Not logged in");
-      }
-      respSid = BeeConst.NULL;
-    
-    } else if (BeeUtils.same(svc, Service.LOGIN)) {
-      if (loggedIn) {
-        response = logout(req, session);
-      } else {
-        response = new ResponseObject();
-      }
+    boolean doLogout = BeeUtils.same(svc, Service.LOGOUT);
 
-      String usr = reqInfo.getParameter(Service.VAR_LOGIN);
-      String pwd = reqInfo.getParameter(Service.VAR_PASSWORD);
+    if (!doLogout) {
+      if (BeeUtils.isEmpty(reqSid)) {
+        response = dispatcher.doLogin(reqInfo.getLocale());
 
-      try {
-        req.login(usr, pwd);
-        ResponseObject ro = dispatcher.doLogin(reqInfo.getLocale());
-
-        if (ro.hasErrors()) {
-          for (String error : ro.getErrors()) {
-            response.addError(error);
-          }
-          req.logout();
-          session = req.getSession(false);
-          if (session != null) {
-            session.invalidate();
-          }
+        if (response.hasErrors()) {
+          doLogout = true;
+          LogUtils.severe(logger, (Object[]) response.getErrors());
         } else {
-          session = req.getSession(true);
-          session.setAttribute(Service.VAR_LOGIN, req.getRemoteUser());
-          respSid = session.getId();
-          LogUtils.infoNow(logger, "session id:", respSid);
+          session.setAttribute(Service.VAR_USER, req.getRemoteUser());
 
-          if (ro.hasWarnings()) {
-            for (String warning : ro.getWarnings()) {
-              response.addWarning(warning);
-            }
-          }
-          if (ro.hasNotifications()) {
-            for (String note : ro.getNotifications()) {
-              response.addInfo(note);
-            }
-          }
-          response.setResponse(ro.getResponse());
+          resp.setHeader(Service.RPC_VAR_SID, session.getId());
+          resp.setHeader(Service.RPC_VAR_USER,
+              Codec.encodeBase64(Codec.beeSerialize(response.getResponse())));
+
+          LogUtils.infoNow(logger, "session id:", session.getId());
         }
-      } catch (ServletException e) {
-        response.addError(e);
+      } else if (!BeeUtils.same(reqSid, currentSid)) {
+        doLogout = true;
+        LogUtils.severe(logger, "session id:", "request =", reqSid, "current =", currentSid);
       }
-
-    } else if (!BeeUtils.same(reqSid, currentSid)) {
-      LogUtils.warning(logger, "session id:", "request =", reqSid, "current =", currentSid);
-      if (loggedIn) {
-        response = logout(req, session);
-      } else {
-        response = ResponseObject.error("request:", reqSid, "current:", currentSid);
-      }
-      respSid = BeeConst.NULL;
-      
+    }
+    if (doLogout) {
+      response = logout(req, session);
     } else {
-      respSid = currentSid;
       response = dispatcher.doService(svc, dsn, reqInfo, buff);
     }
-
-    resp.setHeader(Service.RPC_VAR_SID, respSid);
     resp.setHeader(Service.RPC_VAR_QID, rid);
 
     resp.setHeader("Cache-Control", "no-cache");

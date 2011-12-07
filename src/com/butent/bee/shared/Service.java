@@ -32,8 +32,6 @@ public class Service {
 
   public static final String INVOKE = RPC_SERVICE_PREFIX + "invoke";
 
-  public static final String GET_LOGIN = COMPOSITE_SERVICE_PREFIX + "get_login";
-  public static final String LOGIN = RPC_SERVICE_PREFIX + "login";
   public static final String LOGOUT = RPC_SERVICE_PREFIX + "logout";
 
   public static final String LOAD_MENU = RPC_SERVICE_PREFIX + "load_menu";
@@ -81,6 +79,7 @@ public class Service {
   public static final String RPC_VAR_OPT = RPC_VAR_SYS_PREFIX + "opt";
   public static final String RPC_VAR_LOC = RPC_VAR_SYS_PREFIX + "loc";
   public static final String RPC_VAR_RESP = RPC_VAR_SYS_PREFIX + "ro";
+  public static final String RPC_VAR_USER = RPC_VAR_SYS_PREFIX + "usr";
 
   public static final String RPC_VAR_CNT = RPC_VAR_SYS_PREFIX + "cnt";
   public static final String RPC_VAR_COLS = RPC_VAR_SYS_PREFIX + "c_c";
@@ -98,8 +97,7 @@ public class Service {
 
   public static final String RPC_VAR_METH = RPC_VAR_SYS_PREFIX + "meth";
 
-  public static final String VAR_LOGIN = RPC_VAR_PREFIX + "login";
-  public static final String VAR_PASSWORD = RPC_VAR_PREFIX + "password";
+  public static final String VAR_USER = RPC_VAR_PREFIX + "user";
 
   public static final String VAR_CLASS_NAME = RPC_VAR_PREFIX + "class_name";
   public static final String VAR_PACKAGE_LIST = RPC_VAR_PREFIX + "package_list";
