@@ -45,7 +45,14 @@ public class AsyncCallback implements RequestCallback {
     int statusCode = resp.getStatusCode();
     boolean debug = Global.isDebug();
 
-    int id = BeeUtils.toInt(resp.getHeader(Service.RPC_VAR_QID));
+    String qid = resp.getHeader(Service.RPC_VAR_QID);
+
+    if (qid == null) {
+      BeeKeeper.getBus().removeExitHandler();
+      Window.Location.reload();
+      return;
+    }
+    int id = BeeUtils.toInt(qid);
     RpcInfo info = BeeKeeper.getRpc().getRpcInfo(id);
     String svc = (info == null) ? BeeConst.STRING_EMPTY : info.getService();
 
@@ -199,11 +206,6 @@ public class AsyncCallback implements RequestCallback {
         (info == null) ? BeeConst.STRING_EMPTY : BeeUtils.bracket(info.getCompletedTime()),
         BeeUtils.bracket(duration.getCompletedTime()));
     finalizeResponse();
-
-    if (BeeUtils.same(sid, BeeConst.NULL)) {
-      BeeKeeper.getBus().removeExitHandler();
-      Window.Location.reload();
-    }
   }
 
   private void dispatchInvocation(String svc, RpcInfo info, String txt, int mc,

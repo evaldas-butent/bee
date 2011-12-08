@@ -18,7 +18,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.Shell;
-import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.ButtonGroup;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.ResourceEditor;
@@ -45,6 +44,7 @@ import com.butent.bee.client.ui.GwtUiCreator;
 import com.butent.bee.client.ui.MenuService;
 import com.butent.bee.client.ui.StateService;
 import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.ServiceCommand;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.view.search.SearchBox;
 import com.butent.bee.client.widget.BeeButton;
@@ -58,7 +58,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Stage;
-import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -462,18 +461,7 @@ public class ScreenImpl implements Screen {
       @Override
       public void execute() {
         Global.confirm(BeeKeeper.getUser().getUserSign(), "Sign out",
-            new BeeCommand() {
-              @Override
-              public void execute() {
-                BeeKeeper.getRpc().makeGetRequest(Service.LOGOUT,
-                    new ResponseCallback() {
-                      @Override
-                      public void onResponse(ResponseObject response) {
-                        Window.Location.reload();
-                      }
-                    });
-              }
-            });
+            new ServiceCommand(Service.LOGOUT));
       }
     });
     cp.addRightTop(out, 2, 2);

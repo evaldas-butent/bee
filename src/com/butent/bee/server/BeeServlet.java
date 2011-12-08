@@ -30,6 +30,7 @@ import javax.servlet.http.HttpSession;
 
 @SuppressWarnings("serial")
 public class BeeServlet extends HttpServlet {
+
   private static Logger logger = Logger.getLogger(BeeServlet.class.getName());
 
   @EJB
@@ -113,8 +114,8 @@ public class BeeServlet extends HttpServlet {
       response = logout(req, session);
     } else {
       response = dispatcher.doService(svc, dsn, reqInfo, buff);
+      resp.setHeader(Service.RPC_VAR_QID, rid);
     }
-    resp.setHeader(Service.RPC_VAR_QID, rid);
 
     resp.setHeader("Cache-Control", "no-cache");
     resp.setHeader("Pragma", "no-cache");

@@ -1,5 +1,6 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-<html xmlns="[http://www.w3.org/1999/xhtml" ] xml:lang="en">
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<!doctype html>
+<html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>to BEE or not to BEE</title>
@@ -10,12 +11,33 @@ body, select {
   font-size: small;
 }
 .bee-SignIn-Popup {
-  background-color: whitesmoke;
-  border: 1px solid #e5e5e5;
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  display: box;
+  display: -moz-box;
+  display: -webkit-box;
+  box-pack: center;
+  box-align: center;
+  -moz-box-pack: center;
+  -moz-box-align: center;
+  -webkit-box-pack: center;
+  -webkit-box-align: center;
 }
 .bee-SignIn-Panel {
+  background-color: whitesmoke;
+  border: 1px solid #e5e5e5;
   width: 400px;
   height: 320px;	
+}
+.bee-Error-Caption {
+  font-size: 16px;
+  color: red;
+  position: absolute;
+  right: 20px;
+  top: 20px;
 }
 .bee-SignIn-Caption {
   font-size: 16px;
@@ -72,47 +94,48 @@ body, select {
 </style>
 </head>
 <body>
-<div style="position: absolute; overflow-x: visible; overflow-y: visible; left: 441px; top: 280px; visibility: visible; " class="bee-SignIn-Popup" id="popup-2">
-<div class="popupContent">	
-<div
-		style="overflow-x: hidden; overflow-y: hidden; position: relative;"
-		id="absolute-3" class="bee-SignIn-Panel">
-	<form method="post" action="j_security_check">
-		<div class="bee-Label bee-SignIn-Caption" id="lbl-5">Būtent CRM</div>
-		<div class="bee-Label bee-SignIn-Label bee-SignIn-User" id="lbl-7">Prisijungimo
-			vardas</div>
-		<input type="text" id="txt-8" name="j_username"
-			class="bee-InputText bee-SignIn-Input bee-SignIn-User">
-		<div class="bee-Label bee-SignIn-Label bee-SignIn-Password"
-			id="lbl-10">Slaptažodis</div>
-		<input type="password" id="pswd-11" name="j_password"
-			class="bee-InputPassword bee-SignIn-Input bee-SignIn-Password"><span
-			id="rg-12" class="bee-RadioGroup bee-SignIn-Language"><span
-			class="bee-RadioButton bee-RadioButton-horizontal" id="rb-13"><input
-				type="radio" name="optiongroup1" value="0" id="gwt-uid-1"
-				tabindex="0" checked=""><label for="gwt-uid-1">lt</label></span><span
-			class="bee-RadioButton bee-RadioButton-horizontal" id="rb-14"><input
-				type="radio" name="optiongroup1" value="1" id="gwt-uid-2"
-				tabindex="0"><label for="gwt-uid-2">lv</label></span><span
-			class="bee-RadioButton bee-RadioButton-horizontal" id="rb-15"><input
-				type="radio" name="optiongroup1" value="2" id="gwt-uid-3"
-				tabindex="0"><label for="gwt-uid-3">et</label></span><span
-			class="bee-RadioButton bee-RadioButton-horizontal" id="rb-16"><input
-				type="radio" name="optiongroup1" value="3" id="gwt-uid-4"
-				tabindex="0"><label for="gwt-uid-4">en</label></span><span
-			class="bee-RadioButton bee-RadioButton-horizontal" id="rb-17"><input
-				type="radio" name="optiongroup1" value="4" id="gwt-uid-5"
-				tabindex="0"><label for="gwt-uid-5">de</label></span><span
-			class="bee-RadioButton bee-RadioButton-horizontal" id="rb-18"><input
-				type="radio" name="optiongroup1" value="5" id="gwt-uid-6"
-				tabindex="0"><label for="gwt-uid-6">ru</label></span><span
-			class="bee-RadioButton bee-RadioButton-horizontal" id="rb-19"><input
-				type="radio" name="optiongroup1" value="6" id="gwt-uid-7"
-				tabindex="0"><label for="gwt-uid-7">pl</label></span></span>
-		<input type="submit" class="bee-SignIn-Button" id="bu-20" value="Prisijungti" />
-      </form>
-	</div>
-</div>
+<div class="bee-SignIn-Popup">
+  <div class="bee-SignIn-Panel" style="overflow-x: hidden; overflow-y: hidden; position:relative;">
+    <form method="post" action="j_security_check">
+    <div class="bee-SignIn-Caption">Būtent CRM</div>
+<%
+String usr = request.getParameter("j_username");
+if (usr != null && !usr.trim().isEmpty()) {
+%>
+    <div class="bee-Error-Caption">Bandykite dar kartą</div>
+<%
+}
+%>
+    <div class="bee-SignIn-Label bee-SignIn-User">Prisijungimo vardas</div>
+    <input type="text" class="bee-SignIn-Input bee-SignIn-User" name="j_username">
+    <div class="bee-SignIn-Label bee-SignIn-Password">Slaptažodis</div>
+    <input type="password" class="bee-SignIn-Input bee-SignIn-Password" name="j_password">
+    <span class="bee-RadioGroup bee-SignIn-Language">
+      <span class="bee-RadioButton bee-RadioButton-horizontal">
+        <input type="radio" name="lang" value="0" id="lt" checked="checked"><label for="lt">lt</label>
+      </span>
+      <span class="bee-RadioButton bee-RadioButton-horizontal">
+        <input type="radio" name="lang" value="1" id="lv"><label for="lv">lv</label>
+      </span>
+      <span class="bee-RadioButton bee-RadioButton-horizontal">
+        <input type="radio" name="lang" value="2" id="et"><label for="et">et</label>
+      </span>
+      <span class="bee-RadioButton bee-RadioButton-horizontal">
+        <input type="radio" name="lang" value="3" id="en"><label for="en">en</label>
+      </span>
+      <span class="bee-RadioButton bee-RadioButton-horizontal">
+        <input type="radio" name="lang" value="4" id="de"><label for="de">de</label>
+      </span>
+      <span class="bee-RadioButton bee-RadioButton-horizontal">
+        <input type="radio" name="lang" value="5" id="ru"><label for="ru">ru</label>
+      </span>
+      <span class="bee-RadioButton bee-RadioButton-horizontal">
+        <input type="radio" name="lang" value="6" id="pl"><label for="pl">pl</label>
+      </span>
+    </span>
+    <input type="submit" class="bee-SignIn-Button" value="Prisijungti" />
+    </form>
+  </div>
 </div>
 </body>
 </html>
