@@ -284,9 +284,13 @@ public class ProjectEventHandler {
 
     @Override
     public void afterCreateWidget(String name, final Widget widget) {
-      if (!BeeUtils.isEmpty(name)
-          && BeeUtils.inListSame(name, CrmConstants.COL_PRIORITY, CrmConstants.COL_EVENT)) {
+      if (BeeUtils.same(name, CrmConstants.COL_EVENT)) {
         setWidget(name, widget);
+      
+      } else if (BeeUtils.same(name, CrmConstants.COL_PRIORITY) && widget instanceof BeeListBox) {
+        for (Priority priority : Priority.values()) {
+          ((BeeListBox) widget).addItem(priority.name());
+        }
 
       } else if (BeeUtils.same(name, "Observers") && widget instanceof BeeListBox) {
         observers.setWidget((BeeListBox) widget);
@@ -358,11 +362,8 @@ public class ProjectEventHandler {
       if (row == null) {
         return;
       }
-      Integer idx = row.getInteger(form.getDataIndex(CrmConstants.COL_PRIORITY));
-      getWidget(CrmConstants.COL_PRIORITY).getElement()
-          .setInnerText(BeeUtils.getName(Priority.class, idx));
 
-      idx = row.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
+      Integer idx = row.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
       Long owner = row.getLong(form.getDataIndex(CrmConstants.COL_OWNER));
 
       if (BeeUtils.isOrdinal(ProjectEvent.class, idx)) {
@@ -1010,6 +1011,7 @@ public class ProjectEventHandler {
 
       case CREATED:
       case DELETED:
+      case UPDATED:
         Assert.untouchable();
     }
   }

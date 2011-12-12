@@ -13,12 +13,22 @@ import java.util.Set;
  * Contains requirements for data header implementing classes.
  */
 
-public interface DataHeaderView extends View, LoadingStateChangeEvent.Handler, IndexedPanel {
+public interface HeaderView extends View, LoadingStateChangeEvent.Handler, IndexedPanel {
   
   void create(String caption, boolean hasData, boolean readOnly, Collection<UiOption> options,
       Set<Action> enabledActions, Set<Action> disabledActions);
+
+  void addCaptionStyle(String style);
   
   String getCaption();
   
+  int getHeight();
+
+  void removeCaptionStyle(String style);
+  
   void setCaption(String caption);
+
+  void setMessage(String message);
+
+  void showAction(Action action, boolean visible);
 }

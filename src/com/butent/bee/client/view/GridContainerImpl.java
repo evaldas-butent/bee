@@ -125,9 +125,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private String headerId = null;
   private String scrollerId = null;
 
-  private int headerHeight = 22;
-  private int footerHeight = 32;
-
   private int scrollerWidth = DomUtils.getScrollbarWidth() + 1;
 
   private boolean hasPaging = false;
@@ -137,8 +134,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   
   private boolean adding = false;
   private boolean enabled = true;
-  
-  private String currentCaption = null;
   
   private final List<ExtWidget> extWidgets = Lists.newArrayList();
   
@@ -187,9 +182,9 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     boolean readOnly = BeeUtils.isTrue(gridDescription.isReadOnly());
 
-    DataHeaderView header;
+    HeaderView header;
     if (UiOption.hasHeader(options)) {
-      header = new DataHeaderImpl();
+      header = new HeaderImpl();
       String caption = (gridCallback == null) ? null : gridCallback.getCaption();
       if (caption == null) {
         caption = gridDescription.getCaption();
@@ -203,11 +198,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     GridView content = new CellGridImpl();
     content.create(dataColumns, rowCount, rowSet, gridDescription, gridCallback, hasSearch());
 
-    DataFooterView footer;
+    FooterView footer;
     ScrollPager scroller;
 
     if (hasPaging() || hasSearch()) {
-      footer = new DataFooterImpl();
+      footer = new FooterImpl();
       footer.create(rowCount, hasPaging(), true, hasSearch());
     } else {
       footer = null;
@@ -231,13 +226,13 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     
     addExtWidgets(Component.HEADER);
     if (header != null) {
-      addNorth(header.asWidget(), getHeaderHeight());
+      addNorth(header.asWidget(), header.getHeight());
       setHeaderId(header.getWidgetId());
     }
 
     addExtWidgets(Component.FOOTER);
     if (footer != null) {
-      addSouth(footer.asWidget(), getFooterHeight());
+      addSouth(footer.asWidget(), footer.getHeight());
       setFooterId(footer.getWidgetId());
     }
 
@@ -263,14 +258,14 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return (GridView) getCenter();
   }
 
-  public DataHeaderView getHeader() {
+  public HeaderView getHeader() {
     if (BeeUtils.isEmpty(getHeaderId())) {
       return null;
     }
     for (Widget widget : getChildren()) {
-      if (widget instanceof DataHeaderView
+      if (widget instanceof HeaderView
           && BeeUtils.same(widget.getElement().getId(), getHeaderId())) {
-        return (DataHeaderView) widget;
+        return (HeaderView) widget;
       }
     }
     return null;
@@ -322,10 +317,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public void onAddEnd(AddEndEvent event) {
-    if (hasHeader()) {
-      getHeader().setCaption(getCurrentCaption());
-    }
-    
     showChildren(true);
     setAdding(false);
   }
@@ -333,11 +324,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   public void onAddStart(AddStartEvent event) {
     setAdding(true);
     showChildren(false);
-    
-    if (hasHeader() && !BeeUtils.isEmpty(event.getCaption())) {
-      setCurrentCaption(getHeader().getCaption());
-      getHeader().setCaption(event.getCaption());
-    }
   }
 
   @Override
@@ -555,10 +541,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       int h = containerHeight;
 
       if (hasHeader()) {
-        h -= getHeaderHeight();
+        h -= getHeader().getHeight();
       }
       if (hasFooter()) {
-        h -= getFooterHeight();
+        h -= getFooter().getHeight();
       }
       if (hasScroller()) {
         w -= getScrollerWidth();
@@ -577,37 +563,25 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return BeeConst.UNDEF;
   }
 
-  private String getCurrentCaption() {
-    return currentCaption;
-  }
-
   private List<ExtWidget> getExtWidgets() {
     return extWidgets;
   }
   
-  private DataFooterView getFooter() {
+  private FooterView getFooter() {
     if (BeeUtils.isEmpty(getFooterId())) {
       return null;
     }
     for (Widget widget : getChildren()) {
-      if (widget instanceof DataFooterView 
+      if (widget instanceof FooterView 
           && BeeUtils.same(widget.getElement().getId(), getFooterId())) {
-        return (DataFooterView) widget;
+        return (FooterView) widget;
       }
     }
     return null;
   }
   
-  private int getFooterHeight() {
-    return footerHeight;
-  }
-
   private String getFooterId() {
     return footerId;
-  }
-  
-  private int getHeaderHeight() {
-    return headerHeight;
   }
   
   private String getHeaderId() {
@@ -667,10 +641,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     this.adding = adding;
   }
 
-  private void setCurrentCaption(String currentCaption) {
-    this.currentCaption = currentCaption;
-  }
-
   private void setFooterId(String footerId) {
     this.footerId = footerId;
   }
@@ -697,12 +667,15 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private void showChildren(boolean show) {
     if (hasHeader()) {
-      getHeader().setEnabled(show);
+      HeaderView header = getHeader();
+      if (header != null) {
+        setWidgetSize(header.asWidget(), show ? header.getHeight() : 0);
+      }
     }
     if (hasFooter()) {
-      DataFooterView footer = getFooter();
+      FooterView footer = getFooter();
       if (footer != null) {
-        setWidgetSize(footer.asWidget(), show ? getFooterHeight() : 0);
+        setWidgetSize(footer.asWidget(), show ? footer.getHeight() : 0);
       }
     }
     if (hasScroller()) {

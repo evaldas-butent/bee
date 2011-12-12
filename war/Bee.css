@@ -402,6 +402,9 @@ body, select {
   font-size: medium;
   font-weight: bolder;
 }
+.bee-WindowMessage {
+  margin-left: 1em;
+}
 
 .bee-FooterCell {
   position: absolute;
@@ -767,6 +770,13 @@ body, select {
 .bee-RowEditor {
   border-collapse: collapse;
 }
+.bee-RowEditorCaption {
+  padding: 2px 0 4px;
+  text-align: center;
+  color: green;
+  font-size: medium;
+  font-weight: bolder;
+}
 
 .bee-RowEditor tr:nth-child(odd) {
   background: #ffe;
@@ -774,8 +784,11 @@ body, select {
 .bee-RowEditor tr:nth-child(even) {
   background: #f3f7fb;
 }
+.bee-RowEditor tr:first-of-type {
+  background-color: #eee;
+}
 .bee-RowEditor tr:last-of-type {
-  background: inherit;
+  background: #eee;
 }
 
 .bee-RowEditorLabel {
@@ -810,8 +823,15 @@ body, select {
   background-color: #ecf6ce;
 }
 
-.bee-GridFormCommandPanel {
-  background-color: #e8e8d7;
+.bee-GridFormCaption {
+  font-size: medium;
+  font-style: italic;
+}
+.bee-GridFormCaption-newRow {
+  color: green;
+}
+.bee-GridFormCaption-edit {
+  color: brown;
 }
 
 .bee-Form {
@@ -821,6 +841,9 @@ body, select {
   top: 0;
   bottom: 0;
   overflow: auto;
+}
+.bee-Form-disabled {
+  background-color: rgba(128, 192, 192, 0.25);
 }
 
 .bee-Frame {

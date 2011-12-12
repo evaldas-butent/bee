@@ -104,6 +104,9 @@ public class Images {
     @Source("descending.gif")
     ImageResource descending();
 
+    @Source("edit.png")
+    ImageResource edit();
+    
     @Source("edit_add.png")
     ImageResource editAdd();
 
@@ -248,6 +251,8 @@ public class Images {
     map.put(key("delete"), resources.delete());
 
     map.put(key("descending"), resources.descending());
+
+    map.put(key("edit"), resources.edit());
 
     map.put(key("edit_add"), resources.editAdd());
     map.put(key("edit_delete"), resources.editDelete());

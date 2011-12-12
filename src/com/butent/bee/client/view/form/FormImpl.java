@@ -86,6 +86,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         onFailure(new String[] {"widget type is null", id});
         return;
       }
+      
+      if (!BeeUtils.isEmpty(id)) {
+        getWidgetIds().add(id);
+      }
 
       if (type.isDisplay()) {
         String source = result.getSource();
@@ -231,6 +235,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       return widgetId;
     }
   }
+  
+  private static final String STYLE_FORM = "bee-Form";
+  private static final String STYLE_DISABLED = "bee-Form-disabled";
 
   private static final String NEW_ROW_CAPTION = "Create New";
   
@@ -264,6 +271,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private FormCallback formCallback = null;
 
   private final CreationCallback creationCallback = new CreationCallback();
+  private final List<String> widgetIds = Lists.newArrayList();
 
   private final Set<DisplayWidget> displayWidgets = Sets.newHashSet();
   private final List<EditableWidget> editableWidgets = Lists.newArrayList();
@@ -347,7 +355,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
 
     StyleUtils.makeAbsolute(root);
-    root.addStyleName("bee-Form");
+    root.addStyleName(STYLE_FORM);
     setRootWidget(root);
 
     add(root);
@@ -644,21 +652,19 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public void setEnabled(boolean enabled) {
-    this.enabled = enabled;
-
-    for (EditableWidget editableWidget : getEditableWidgets()) {
-      Editor editor = editableWidget.getEditor();
-      if (editor != null && editor.isEnabled() != enabled) {
-        editor.setEnabled(enabled);
-      }
+    if (this.enabled == enabled) {
+      return;
     }
-
-    for (WidgetDescription widgetDescription : getChildWidgets()) {
-      Widget widget = getWidget(widgetDescription.getWidgetId());
+    this.enabled = enabled;
+    
+    for (String id : getWidgetIds()) {
+      Widget widget = getWidget(id);
       if (widget instanceof HasEnabled && enabled != ((HasEnabled) widget).isEnabled()) {
         ((HasEnabled) widget).setEnabled(enabled);
       }
     }
+    
+    getRootWidget().setStyleName(STYLE_DISABLED, !enabled);
   }
 
   public void setPageSize(int size, boolean fireScopeChange, boolean fireDataRequest) {
@@ -967,6 +973,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  private List<String> getWidgetIds() {
+    return widgetIds;
+  }
+  
   private boolean hasChildren() {
     return !getChildWidgets().isEmpty();
   }

@@ -1,6 +1,6 @@
 package com.butent.bee.client.view;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Maps;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
@@ -9,35 +9,37 @@ import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Complex;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * Implements styling and user command capture for data headers.
  */
 
-public class DataHeaderImpl extends Complex implements DataHeaderView {
+public class HeaderImpl extends Complex implements HeaderView {
 
   /**
    * Specifies which styling resources to use for a data header implementation.
    */
 
   public interface Resources extends ClientBundle {
-    @Source("DataHeaderImpl.css")
+    @Source("HeaderImpl.css")
     Style headerStyle();
   }
 
@@ -90,6 +92,8 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
       }
     }
   }
+  
+  private static final int HEIGHT = 22;
 
   private static Resources defaultResources = null;
   private static Style defaultStyle = null;
@@ -113,14 +117,19 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
 
   private String loadingIndicatorId = null;
 
-  private final String captionId;
+  private final InlineLabel captionWidget = new InlineLabel();
+  private final InlineLabel messageWidget = new InlineLabel();
 
   private boolean enabled = true;
-  private final Set<String> actionControls = Sets.newHashSet();
+  private final Map<Action, String> actionControls = Maps.newHashMap();
 
-  public DataHeaderImpl() {
+  public HeaderImpl() {
     super();
-    this.captionId = DomUtils.createUniqueId("caption");
+  }
+  
+  public void addCaptionStyle(String style) {
+    Assert.notEmpty(style);
+    captionWidget.addStyleName(style);
   }
 
   public void create(String caption, boolean hasData, boolean readOnly,
@@ -130,13 +139,17 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     addStyleName(style.container());
     
     boolean isWindow = UiOption.isWindow(options);
-
-    BeeLabel label = new BeeLabel(BeeUtils.trim(caption));
-    label.setId(captionId);
+    
+    captionWidget.setText(BeeUtils.trim(caption));
     if (isWindow) {
-      label.addStyleName(StyleUtils.WINDOW_CAPTION);
+      captionWidget.addStyleName(StyleUtils.WINDOW_CAPTION);
     }
-    addLeftTop(label, style.captionLeft(), style.captionTop());
+    messageWidget.addStyleName(StyleUtils.WINDOW_MESSAGE);
+    
+    Flow panel = new Flow();
+    panel.add(captionWidget);
+    panel.add(messageWidget);
+    addLeftTop(panel, style.captionLeft(), style.captionTop());
     
     boolean hasClose = hasAction(Action.CLOSE, isWindow, enabledActions, disabledActions);
     
@@ -146,12 +159,17 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
 
     String cst = style.control();
     
-    if (hasAction(Action.CONFIGURE, true, enabledActions, disabledActions)) {
+    if (hasAction(Action.CONFIGURE, false, enabledActions, disabledActions)) {
       addRightTop(createControl(Global.getImages().configure(), Action.CONFIGURE, cst), x, y);
       x += w;
     }
-    if (hasAction(Action.SAVE, true, enabledActions, disabledActions)) {
+
+    if (hasAction(Action.SAVE, false, enabledActions, disabledActions)) {
       addRightTop(createControl(Global.getImages().save(), Action.SAVE, cst), x, y);
+      x += w;
+    }
+    if (hasAction(Action.EDIT, false, enabledActions, disabledActions)) {
+      addRightTop(createControl(Global.getImages().edit(), Action.EDIT, cst), x, y);
       x += w;
     }
 
@@ -187,9 +205,13 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
           style.closeRight(), style.closeTop());
     }
   }
-
+  
   public String getCaption() {
-    return DomUtils.getHtml(captionId);
+    return captionWidget.getText();
+  }
+
+  public int getHeight() {
+    return HEIGHT;
   }
 
   public Presenter getViewPresenter() {
@@ -218,8 +240,13 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     }
   }
 
+  public void removeCaptionStyle(String style) {
+    Assert.notEmpty(style);
+    captionWidget.removeStyleName(style);
+  }
+
   public void setCaption(String caption) {
-    DomUtils.setHtml(captionId, BeeUtils.trim(caption));
+    captionWidget.setText(BeeUtils.trim(caption));
   }
 
   public void setEnabled(boolean enabled) {
@@ -231,7 +258,7 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     for (int i = 0; i < getWidgetCount(); i++) {
       Widget child = getWidget(i);
       if (child instanceof HasId
-          && BeeUtils.containsSame(getActionControls(), ((HasId) child).getId())) {
+          && BeeUtils.containsSame(getActionControls().values(), ((HasId) child).getId())) {
         if (child instanceof HasEnabled) {
           ((HasEnabled) child).setEnabled(enabled);
         }
@@ -244,23 +271,44 @@ public class DataHeaderImpl extends Complex implements DataHeaderView {
     }
   }
 
+  public void setMessage(String message) {
+    messageWidget.setText(BeeUtils.trim(message));
+  }
+
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
 
+  public void showAction(Action action, boolean visible) {
+    Assert.notNull(action);
+    String widgetId = getActionControls().get(action);
+    if (BeeUtils.isEmpty(widgetId)) {
+      if (visible) {
+        BeeKeeper.getLog().warning("showAction:", action.name(), "widget not found");
+      }
+      return;
+    }
+    
+    if (visible) {
+      StyleUtils.unhideDisplay(widgetId);
+    } else {
+      StyleUtils.hideDisplay(widgetId);
+    }
+  }
+  
   private Widget createControl(ImageResource image, Action action, String styleName) {
     BeeImage control = new BeeImage(image, new ActionListener(action));
     if (!BeeUtils.isEmpty(styleName)) {
       control.addStyleName(styleName);
     }
 
-    if (action != null && action != Action.CLOSE) {
-      getActionControls().add(control.getId());
+    if (action != null) {
+      getActionControls().put(action, control.getId());
     }
     return control;
   }
 
-  private Set<String> getActionControls() {
+  private Map<Action, String> getActionControls() {
     return actionControls;
   }
 

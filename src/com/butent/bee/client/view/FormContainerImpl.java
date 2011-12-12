@@ -45,8 +45,6 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   private String footerId = null;
   private String commandId = null;
 
-  private int headerHeight = 22;
-  private int footerHeight = 32;
   private int commandHeight = 36;
 
   private boolean hasSearch = false;
@@ -101,26 +99,26 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
     setHasSearch(hasData() && rowCount >= formDescription.getSearchThreshold());
 
-    DataHeaderView header = new DataHeaderImpl();
+    HeaderView header = new HeaderImpl();
     header.create(formDescription.getCaption(), hasData(), formDescription.isReadOnly(),
         EnumSet.of(UiOption.ROOT), null, null);
 
     FormView content = new FormImpl();
     content.create(formDescription, dataColumns, callback);
 
-    DataFooterView footer;
+    FooterView footer;
     if (hasData()) {
-      footer = new DataFooterImpl();
+      footer = new FooterImpl();
       footer.create(rowCount, true, false, hasSearch());
     } else {
       footer = null;
     }
 
-    addNorth(header.asWidget(), getHeaderHeight());
+    addNorth(header.asWidget(), header.getHeight());
     setHeaderId(header.getWidgetId());
 
     if (footer != null) {
-      addSouth(footer.asWidget(), getFooterHeight());
+      addSouth(footer.asWidget(), footer.getHeight());
       setFooterId(footer.getWidgetId());
     }
     
@@ -186,36 +184,28 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     return (FormView) getCenter();
   }
 
-  public DataFooterView getFooter() {
+  public FooterView getFooter() {
     if (BeeUtils.isEmpty(getFooterId())) {
       return null;
     }
     for (Widget widget : getChildren()) {
-      if (widget instanceof DataFooterView) {
-        return (DataFooterView) widget;
+      if (widget instanceof FooterView) {
+        return (FooterView) widget;
       }
     }
     return null;
   }
 
-  public int getFooterHeight() {
-    return footerHeight;
-  }
-
-  public DataHeaderView getHeader() {
+  public HeaderView getHeader() {
     if (BeeUtils.isEmpty(getHeaderId())) {
       return null;
     }
     for (Widget widget : getChildren()) {
-      if (widget instanceof DataHeaderView) {
-        return (DataHeaderView) widget;
+      if (widget instanceof HeaderView) {
+        return (HeaderView) widget;
       }
     }
     return null;
-  }
-
-  public int getHeaderHeight() {
-    return headerHeight;
   }
 
   @Override
@@ -277,7 +267,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       getHeader().setEnabled(true);
     }
     if (hasFooter()) {
-      setWidgetSize(getFooter().asWidget(), getFooterHeight());
+      setWidgetSize(getFooter().asWidget(), getFooter().getHeight());
       getFooter().asWidget().setVisible(true);
       getFooter().setEnabled(true);
     }
@@ -312,14 +302,6 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     DomUtils.enableChildren(this, enabled);
   }
   
-  public void setFooterHeight(int footerHeight) {
-    this.footerHeight = footerHeight;
-  }
-
-  public void setHeaderHeight(int headerHeight) {
-    this.headerHeight = headerHeight;
-  }
-
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
     for (Widget child : getChildren()) {

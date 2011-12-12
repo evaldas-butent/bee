@@ -30,13 +30,15 @@ import com.butent.bee.client.grid.SelectionColumn;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.presenter.AbstractPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.view.HeaderImpl;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -50,7 +52,6 @@ import com.butent.bee.client.view.edit.RowEditor;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.search.SearchView;
-import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
@@ -66,6 +67,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -75,6 +77,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -95,6 +98,56 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
   }
 
+  private class GridFormPresenter extends AbstractPresenter {
+    private final HeaderView header;
+
+    private GridFormPresenter(HeaderView header) {
+      super();
+      this.header = header;
+    }
+
+    public void handleAction(Action action) {
+      if (action == null) {
+        return;
+      }
+      
+      switch (action) {
+        case CLOSE:
+          formCancel();
+          break;
+        case EDIT:
+          getEditForm().setEnabled(true);
+          hideAction(action);
+          break;
+        case SAVE:
+          formConfirm();
+          break;
+        default:  
+      }
+    }
+    
+    private void hideAction(Action action) {
+      header.showAction(action, false);
+    }
+    
+    private void setCaption(String caption) {
+      header.setCaption(caption);
+    }
+
+    private void setMessage(String message) {
+      header.setMessage(message);
+    }
+    
+    private void showAction(Action action) {
+      header.showAction(action, true);
+    }
+    
+    private void updateCaptionStyle(boolean edit) {
+      header.removeCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, !edit));
+      header.addCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, edit));
+    }
+  }
+  
   private class NewRowCallback implements RowEditor.Callback {
     public void onCancel() {
       finishNewRow(null);
@@ -107,8 +160,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
   }
 
-  private static final String STYLE_FORM_COMMAND_PANEL = "bee-GridFormCommandPanel";
   private static final String STYLE_FORM_CONTAINER = "bee-GridFormContainer";
+  private static final String STYLE_FORM_HEADER = "bee-GridFormHeader";
+  private static final String STYLE_FORM_CAPTION = "bee-GridFormCaption";
 
   private static final String SUFFIX_EDIT = "-edit";
   private static final String SUFFIX_NEW_ROW = "-newRow";
@@ -146,8 +200,12 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private String newRowFormContainerId = null;
   private boolean newRowFormInitialized = false;
 
-  private final Set<String> editInPlace = Sets.newHashSet();
   private FormView editForm = null;
+  private boolean editMode = false;
+  private Evaluator editMessage = null;
+  private boolean editShowId = false;
+  private final Set<String> editInPlace = Sets.newHashSet();
+
   private String editFormContainerId = null;
   private boolean editFormInitialized = false;
 
@@ -654,9 +712,12 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     add(getGrid());
     add(getNotification());
+    
+    setEditMode(BeeUtils.unbox(gridDescr.getEditMode()));
 
     String editFormName = gridDescr.getEditForm();
     String newRowFormName = gridDescr.getNewRowForm();
+
     setSingleForm(!BeeUtils.isEmpty(editFormName) && BeeUtils.same(newRowFormName, editFormName));
 
     if (!BeeUtils.isEmpty(editFormName)) {
@@ -667,7 +728,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
         public void onSuccess(FormView result) {
           if (result != null) {
-            String containerId = createFormContainer(result, true);
+            String containerId = createFormContainer(result, true, null, getGrid().isReadOnly(),
+                hasEditMode());
             setEditFormContainerId(containerId);
             setEditForm(result);
 
@@ -678,7 +740,12 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           }
         }
       });
-      
+
+      if (gridDescr.getEditMessage() != null) {
+        setEditMessage(Evaluator.create(gridDescr.getEditMessage(), null, dataCols));
+      }
+      setEditShowId(BeeUtils.unbox(gridDescr.getEditShowId()));
+
       if (!BeeUtils.isEmpty(gridDescr.getEditInPlace())) {
         getEditInPlace().addAll(BeeUtils.toList(gridDescr.getEditInPlace()));
       }
@@ -692,7 +759,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
         public void onSuccess(FormView result) {
           if (result != null) {
-            String containerId = createFormContainer(result, false);
+            String containerId = createFormContainer(result, false, getNewRowCaption(),
+                getGrid().isReadOnly(), hasEditMode());
             setNewRowFormContainerId(containerId);
             setNewRowForm(result);
           }
@@ -903,10 +971,22 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       showGrid(false);
       showForm(true, true);
 
+      GridFormPresenter presenter = (GridFormPresenter) getEditForm().getViewPresenter();
+      if (isSingleForm()) {
+        presenter.setCaption(getEditForm().getCaption());
+        presenter.updateCaptionStyle(true);
+      }
+      updateEditFormMessage(presenter, rowValue);
+
+      if (hasEditMode()) {
+        presenter.showAction(Action.EDIT);
+        getEditForm().setEnabled(false);
+      }
+      
       IsRow row = cloneRow(rowValue);
       getEditForm().updateRow(row, true);
-
-      if (editableColumn != null) {
+      
+      if (editableColumn != null && !hasEditMode()) {
         Widget widget = getEditForm().getWidgetBySource(editableColumn.getColumnId());
         if (widget instanceof Focusable && widget.isVisible()) {
           ((Focusable) widget).setFocus(true);
@@ -1046,13 +1126,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     showGrid(false);
     StyleUtils.autoScroll(this, ScrollBars.BOTH);
     
-    String caption;
-    if (getNewRowForm() == null) {
-      caption = getNewRowCaption();
-    } else {
-      caption = BeeUtils.ifString(getNewRowForm().getCaption(), getNewRowCaption());
-    }
-    fireEvent(new AddStartEvent(caption));
+    fireEvent(new AddStartEvent(null));
 
     setAdding(true);
 
@@ -1062,7 +1136,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         columns.add(getEditableColumn(columnId));
       }
 
-      setNewRowWidget(new RowEditor(getDataColumns(), getRelations(), columns,
+      setNewRowWidget(new RowEditor(getNewRowCaption(), getDataColumns(), getRelations(), columns,
           getNewRowCallback(), this, getElement(), this));
       add(getNewRowWidget());
     }
@@ -1072,6 +1146,17 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       FormView form = getForm(false);
       if (form.getFormCallback() != null) {
         form.getFormCallback().onStartNewRow(form, oldRow, newRow);
+      }
+
+      if (isSingleForm() && form.getViewPresenter() instanceof GridFormPresenter) {
+        GridFormPresenter presenter = (GridFormPresenter) form.getViewPresenter();
+        presenter.setCaption(getNewRowCaption());
+        presenter.setMessage(null);
+        presenter.updateCaptionStyle(false);
+        if (hasEditMode()) {
+          presenter.hideAction(Action.EDIT);
+          form.setEnabled(true);
+        }
       }
 
       form.showChildren(false);
@@ -1157,39 +1242,33 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return new BeeRow(0, arr);
   }
 
-  private String createFormContainer(FormView formView, final boolean edit) {
-    BeeImage confirm = new BeeImage(Global.getImages().ok(), new BeeCommand() {
-      @Override
-      public void execute() {
-        formConfirm();
-      }
-    });
+  private String createFormContainer(FormView formView, boolean edit, String defaultCaption,
+      boolean readOnly, boolean editable) {
+    HeaderView formHeader = new HeaderImpl();
+    formHeader.asWidget().addStyleName(STYLE_FORM_HEADER);
+    formHeader.asWidget().addStyleName(getFormStyle(STYLE_FORM_HEADER, edit));
 
-    BeeImage cancel = new BeeImage(Global.getImages().cancel(), new BeeCommand() {
-      @Override
-      public void execute() {
-        formCancel();
-      }
-    });
-
-    Absolute panel = new Absolute();
-    panel.addStyleName(STYLE_FORM_COMMAND_PANEL);
-    panel.addStyleName(STYLE_FORM_COMMAND_PANEL + (edit ? SUFFIX_EDIT : SUFFIX_NEW_ROW));
-
-    panel.add(confirm);
-    panel.add(cancel);
-
-    StyleUtils.setLeft(confirm, 10);
-    StyleUtils.setRight(cancel, 10);
-    StyleUtils.makeAbsolute(confirm);
-    StyleUtils.makeAbsolute(cancel);
+    String caption = BeeUtils.ifString(formView.getCaption(), defaultCaption);
+    EnumSet<Action> actions;
+    if (!edit) {
+      actions = EnumSet.of(Action.SAVE, Action.CLOSE);
+    } else if (readOnly) {
+      actions = EnumSet.of(Action.CLOSE);
+    } else if (editable) {
+      actions = EnumSet.of(Action.EDIT, Action.SAVE, Action.CLOSE);
+    } else {
+      actions = EnumSet.of(Action.SAVE, Action.CLOSE);
+    }
+    formHeader.create(caption, false, false, null, actions, null);
+    formHeader.addCaptionStyle(STYLE_FORM_CAPTION);
+    formHeader.addCaptionStyle(getFormStyle(STYLE_FORM_CAPTION , edit));
 
     Split container = new Split(0);
     StyleUtils.makeAbsolute(container);
     container.addStyleName(STYLE_FORM_CONTAINER);
-    container.addStyleName(STYLE_FORM_CONTAINER + (edit ? SUFFIX_EDIT : SUFFIX_NEW_ROW));
+    container.addStyleName(getFormStyle(STYLE_FORM_CONTAINER, edit));
 
-    container.addSouth(panel, 36);
+    container.addNorth(formHeader.asWidget(), formHeader.getHeight());
     container.add(formView.asWidget());
 
     add(container);
@@ -1197,6 +1276,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     container.setVisible(false);
     formView.setEditing(true);
 
+    GridFormPresenter presenter = new GridFormPresenter(formHeader);
+    formHeader.setViewPresenter(presenter);
+    formView.setViewPresenter(presenter);
+    
     return container.getId();
   }
 
@@ -1253,10 +1336,18 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return editInPlace;
   }
 
+  private Evaluator getEditMessage() {
+    return editMessage;
+  }
+
+  private boolean getEditShowId() {
+    return editShowId;
+  }
+
   private ChangeHandler getFilterChangeHandler() {
     return filterChangeHandler;
   }
-
+  
   private FilterUpdater getFilterUpdater() {
     return filterUpdater;
   }
@@ -1267,6 +1358,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     } else {
       return getNewRowForm();
     }
+  }
+
+  private String getFormStyle(String base, boolean edit) {
+    return base + (edit ? SUFFIX_EDIT : SUFFIX_NEW_ROW);
   }
 
   private NewRowCallback getNewRowCallback() {
@@ -1320,6 +1415,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private Evaluator getRowValidation() {
     return rowValidation;
+  }
+
+  private boolean hasEditMode() {
+    return editMode;
   }
 
   private void initNewRowColumns(String columnNames) {
@@ -1498,6 +1597,18 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     this.editFormInitialized = editFormInitialized;
   }
 
+  private void setEditMessage(Evaluator editMessage) {
+    this.editMessage = editMessage;
+  }
+
+  private void setEditMode(boolean editMode) {
+    this.editMode = editMode;
+  }
+
+  private void setEditShowId(boolean editShowId) {
+    this.editShowId = editShowId;
+  }
+
   private void setFilterChangeHandler(ChangeHandler filterChangeHandler) {
     this.filterChangeHandler = filterChangeHandler;
   }
@@ -1529,7 +1640,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private void setNewRowWidget(RowEditor newRowWidget) {
     this.newRowWidget = newRowWidget;
   }
-
+  
   private void setRowEditable(Evaluator rowEditable) {
     this.rowEditable = rowEditable;
   }
@@ -1574,11 +1685,28 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     StyleUtils.setZIndex(getNotification(), getGrid().getZIndex() + 1);
     getNotification().show(level, messages);
   }
-  
+
   private void updateCell(IsRow rowValue, IsColumn dataColumn, String oldValue, String newValue,
       boolean rowMode) {
     getGrid().preliminaryUpdate(rowValue.getId(), dataColumn.getId(), newValue);
     fireEvent(new ReadyForUpdateEvent(rowValue, dataColumn, oldValue, newValue, rowMode));
+  }
+
+  private void updateEditFormMessage(GridFormPresenter presenter, IsRow row) {
+    if (getEditMessage() == null && !getEditShowId()) {
+      return;
+    }
+    
+    String message = null;
+    if (getEditMessage() != null) {
+      getEditMessage().update(row);
+      message = getEditMessage().evaluate();
+    }
+    if (getEditShowId() && row != null) {
+      message = BeeUtils.concat(1, message, BeeUtils.bracket(row.getId()));
+    }
+    
+    presenter.setMessage(message);
   }
 
   private boolean useFormForEdit(String columnId) {
@@ -1590,7 +1718,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
     return !BeeUtils.containsSame(getEditInPlace(), columnId);
   }
-
+  
   private boolean useFormForInsert() {
     return getForm(false) != null;
   }

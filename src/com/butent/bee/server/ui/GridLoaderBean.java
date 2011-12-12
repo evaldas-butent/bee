@@ -55,6 +55,7 @@ public class GridLoaderBean {
   private static final String TAG_ROW_MESSAGE = "rowMessage";
   private static final String TAG_ROW_EDITABLE = "rowEditable";
   private static final String TAG_ROW_VALIDATION = "rowValidation";
+  private static final String TAG_EDIT_MESSAGE = "editMessage";
 
   private static final String TAG_STYLE = "style";
   private static final String TAG_HEADER_STYLE = "headerStyle";
@@ -100,7 +101,10 @@ public class GridLoaderBean {
   private static final String ATTR_NEW_ROW_FORM = "newRowForm";
   private static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";
   private static final String ATTR_NEW_ROW_CAPTION = "newRowCaption";
+
   private static final String ATTR_EDIT_FORM = "editForm";
+  private static final String ATTR_EDIT_MODE = "editMode";
+  private static final String ATTR_EDIT_SHOW_ID = "editShowId";
   private static final String ATTR_EDIT_IN_PLACE = "editInPlace";
 
   private static final String ATTR_WIDTH = "width";
@@ -638,6 +642,18 @@ public class GridLoaderBean {
     String editForm = src.getAttribute(ATTR_EDIT_FORM);
     if (!BeeUtils.isEmpty(editForm)) {
       dst.setEditForm(editForm);
+    }
+    Boolean editMode = XmlUtils.getAttributeBoolean(src, ATTR_EDIT_MODE);
+    if (editMode != null) {
+      dst.setEditMode(editMode);
+    }
+    Calculation editMessage = XmlUtils.getCalculation(src, TAG_EDIT_MESSAGE);
+    if (editMessage != null) {
+      dst.setEditMessage(editMessage);
+    }
+    Boolean editShowId = XmlUtils.getAttributeBoolean(src, ATTR_EDIT_SHOW_ID);
+    if (editShowId != null) {
+      dst.setEditShowId(editShowId);
     }
     String editInPlace = src.getAttribute(ATTR_EDIT_IN_PLACE);
     if (!BeeUtils.isEmpty(editInPlace)) {

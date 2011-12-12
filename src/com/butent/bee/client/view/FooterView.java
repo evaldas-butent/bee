@@ -7,6 +7,8 @@ import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
  * options.
  */
 
-public interface DataFooterView extends View, SelectionCountChangeEvent.Handler {
+public interface FooterView extends View, SelectionCountChangeEvent.Handler {
   void create(int rowCount, boolean addPaging, boolean showPageSize, boolean addSearch);
+  
+  int getHeight();
 }

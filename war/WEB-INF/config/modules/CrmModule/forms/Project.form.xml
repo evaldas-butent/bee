@@ -1,208 +1,148 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE BeeForm [
+  <!ENTITY MARGIN_LEFT "margin-left: 1em;">
+  <!ENTITY MARGIN_TOP "margin-top: 1ex;">
+
+  <!ENTITY ROW_STYLE "margin-bottom: 1ex;">
+  <!ENTITY LABEL_STYLE "&MARGIN_LEFT; margin-right: 1em;">
+  <!ENTITY LEFT_LABEL_STYLE "&LABEL_STYLE; display: inline-block; min-width: 100px;">
+  <!ENTITY DISPLAY_STYLE "display: inline-block; padding: 2px; border: 1px solid #aaa; margin-left: 2px;">
+  <!ENTITY BUTTON_STYLE "background-color: #109610; color: white; font-family: Georgia;">
+]>
+
 <BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
   
   name="Project" viewName="Projects" caption="Projektas">
-
+  
   <FlowPanel class="flexBox-vertical">
-    <FlowPanel class="flexBox-horizontal">
-      <FlowPanel>
-        <FlexTable cellSpacing="10">
-          <row>
-            <cell>
-              <Label html="Būsena" />
-            </cell>
-            <cell>
-              <Label name="Event" class="bee-display" />
-            </cell>
-            <cell>
-              <Label html="Prioritetas:" horizontalAlignment="right" />
-            </cell>
-            <cell>
-              <Label name="Priority" class="bee-display" />
-            </cell>
-          </row>
-
-          <row>
-            <cell>
-              <InlineLabel />
-            </cell>
-            <cell>
-              <Label html="Tipas:" horizontalAlignment="right" />
-            </cell>
-            <cell colSpan="2">
-              <TextLabel source="TypeName" class="bee-display" style="width: 100%;" />
-            </cell>
-          </row>
-
-          <row>
-            <cell>
-              <Label html="Pavadinimas:" />
-            </cell>
-            <cell colSpan="3">
-              <TextLabel source="Name" class="bee-display" style="width: 100%;" />
-            </cell>
-          </row>
-
-          <row>
-            <cell colSpan="2">
-              <InlineLabel />
-            </cell>
-            <cell>
-              <Label html="Numatoma trukmė min.:" horizontalAlignment="right" />
-            </cell>
-            <cell>
-              <LongLabel source="ExpectedDuration" class="bee-display" />
-            </cell>
-          </row>
-
-          <row>
-            <cell>
-              <Label html="Pradžia:" />
-            </cell>
-            <cell>
-              <DateLabel source="StartDate" class="bee-display" />
-            </cell>
-            <cell>
-              <Label html="Įmonė:" horizontalAlignment="right" />
-            </cell>
-            <cell>
-              <TextLabel source="CompanyName" class="bee-display" />
-            </cell>
-          </row>
-
-          <row>
-            <cell>
-              <Label html="Terminas:" />
-            </cell>
-            <cell>
-              <DateLabel source="FinishDate" class="bee-display" />
-            </cell>
-            <cell>
-              <Label html="Asmuo:" horizontalAlignment="right" />
-            </cell>
-            <cell>
-              <TextLabel source="PersonFirstName" class="bee-display" />
-            </cell>
-          </row>
-
-          <row>
-            <cell>
-              <Label html="Aprašymas:" />
-            </cell>
-            <cell colSpan="3">
-              <TextLabel source="Description" class="bee-display" style="width: 100%; min-height: 60px;" />
-            </cell>
-          </row>
-
-          <row>
-            <cell colSpan="2">
-              <InlineLabel />
-            </cell>
-            <cell>
-              <Label html="Autorius:" horizontalAlignment="right" />
-            </cell>
-            <cell>
-              <TextLabel class="bee-display">
-                <calc>
-                  <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
-                </calc>
-              </TextLabel>
-            </cell>
-          </row>
-        </FlexTable>
-
-        <FlowPanel class="flexBox-horizontal" style="margin: 0px 10px 0px 10px">
-          <FlexTable cellPadding="0" cellSpacing="0">
-            <row>
-              <cell>
-                <Label html="Stebėtojai" />
-              </cell>
-              <cell horizontalAlignment="right">
-                <FlowPanel>
-                  <Button name="AddObservers" html="+" />
-                  <Button name="RemoveObservers" html="-" />
-                </FlowPanel>
-              </cell>
-            </row>
-            <row>
-              <cell colSpan="2">
-                <ListBox name="Observers" multiSelect="true" minSize="2" maxSize="5"
-                  style="width: 250px" />
-              </cell>
-            </row>
-          </FlexTable>
-
-          <VerticalPanel horizontalAlignment="center">
-            <cell>
-              <Button name="COMMENTED" html="Naujas komentaras" />
-            </cell>
-            <cell>
-              <Button name="EXTENDED" html="Keisti terminą" />
-            </cell>
-            <cell>
-              <Button name="UPDATED" html="Koreguoti" />
-            </cell>
-          </VerticalPanel>
-
-          <VerticalPanel horizontalAlignment="center">
-            <cell>
-              <Button name="ACTIVATED" html="Perduoti vykdymui" />
-            </cell>
-            <cell>
-              <Button name="SUSPENDED" html="Sustabdyti" />
-            </cell>
-            <cell>
-              <Button name="CANCELED" html="Nutraukti" />
-            </cell>
-            <cell>
-              <Button name="COMPLETED" html="Užbaigti" />
-            </cell>
-            <cell>
-              <Button name="RENEWED" html="Grąžinti vykdymui" />
-            </cell>
-          </VerticalPanel>
+    <FlowPanel class="flexBox-horizontal" style="&MARGIN_TOP;">
+      <FlowPanel class="flexible" style="min-width: 600px;">
+        <FlowPanel style="&ROW_STYLE; ">
+          <InlineLabel html="Pavadinimas:" style="&LEFT_LABEL_STYLE;" />
+          <InputText source="Name" style="width: 400px;" />
         </FlowPanel>
-      </FlowPanel>
 
-      <ChildGrid name="ProjectEvents" relColumn="Project" class="flexible" />
-    </FlowPanel>
+        <FlowPanel style="&ROW_STYLE;">
+          <InlineLabel html="Būsena:" style="&LEFT_LABEL_STYLE;" />
+          <InlineLabel name="Event" style="&DISPLAY_STYLE;" />
+          <InlineLabel html="Pradžia:" style="&LABEL_STYLE;" />
+          <DateLabel source="StartDate" style="&DISPLAY_STYLE;" />
+          <InlineLabel html="Terminas:" style="&LABEL_STYLE;" />
+          <DateLabel source="FinishDate" style="&DISPLAY_STYLE;" />
+        </FlowPanel>
 
-    <FlowPanel class="flexBox-horizontal flexible" style="margin: 10px 0 0 10px;">
-      <FlexTable cellPadding="0" cellSpacing="0">
-        <row>
+        <HorizontalPanel style="&ROW_STYLE;">
           <cell>
-            <Label html="Etapai" />
+            <Label html="Įmonė:" style="&LEFT_LABEL_STYLE;" />
           </cell>
-          <cell horizontalAlignment="right">
-            <FlowPanel>
-              <Button name="AddStage" html="+" />
-              <Button name="RemoveStage" html="-" />
-              <Button name="EditStage" html=".." />
-            </FlowPanel>
+          <cell>
+            <DataSelector source="CompanyName" relSource="Company" relView="Companies"
+                relColumn="Name" style="width: 300px;" />
           </cell>
-        </row>
-        <row>
-          <cell colSpan="2">
-            <Tree name="Stages" style="width: 250px; background-color: #f8f8f8;" />
-          </cell>
-        </row>
-      </FlexTable>
+        </HorizontalPanel>
+      </FlowPanel>      
 
-      <FlowPanel class="flexBox-vertical flexible">
-        <FlexTable cellSpacing="10">
-          <row>
-            <cell>
-              <Label html="Etapo aprašymas:" />
-            </cell>
-            <cell>
-              <TextLabel name="StageDescription" class="bee-display" style="white-space: pre-wrap;" />
-            </cell>
-          </row>
-        </FlexTable>
-        
-        <ChildGrid name="Tasks" relColumn="Project" class="flexible" />
+      <FlowPanel class="flexible" style="margin-right: 1em;">
+        <Button name="COMMENTED" html="Naujas komentaras" style="&BUTTON_STYLE;" />
+        <Button name="EXTENDED" html="Keisti terminą" style="&BUTTON_STYLE;" />
+        <Button name="ACTIVATED" html="Perduoti vykdymui" style="&BUTTON_STYLE;" />
+        <Button name="SUSPENDED" html="Sustabdyti" style="&BUTTON_STYLE;" />
+        <Button name="CANCELED" html="Nutraukti" style="&BUTTON_STYLE;" />
+        <Button name="COMPLETED" html="Užbaigti" style="&BUTTON_STYLE;" />
+        <Button name="RENEWED" html="Grąžinti vykdymui" style="&BUTTON_STYLE;" />
       </FlowPanel>
     </FlowPanel>
+
+    <TabbedPages barHeight="24" class="flexible" style="&MARGIN_TOP;">
+      <page>
+        <text>Papildoma informacija</text>
+        <FlowPanel style="&MARGIN_TOP;">
+          <FlowPanel style="&ROW_STYLE; ">
+            <InlineLabel html="Prioritetas:" style="&LEFT_LABEL_STYLE;" />
+            <ListBox source="Priority" name="Priority" valueNumeric="true" style="width: 100px;" />
+            <InlineLabel html="Numatoma trukmė min.:" style="&LABEL_STYLE;" />
+            <InputLong source="ExpectedDuration" style="width: 60px;" />
+          </FlowPanel>  
+
+          <HorizontalPanel style="&ROW_STYLE;">
+            <cell>
+              <Label html="Tipas:" style="&LEFT_LABEL_STYLE;" />
+            </cell>
+            <cell>
+              <DataSelector source="TypeName" relSource="ProjectType" relView="ProjectTypes"
+                relColumn="Name" />
+            </cell>
+          </HorizontalPanel>  
+          <HorizontalPanel style="&ROW_STYLE;">
+            <cell>
+              <Label html="Asmuo:" style="&LEFT_LABEL_STYLE;" />
+            </cell>
+            <cell>
+              <DataSelector source="PersonFirstName" relSource="CompanyPerson" relView="CompanyPersons"
+                relColumn="FirstName" />
+            </cell>
+          </HorizontalPanel>  
+
+          <HorizontalPanel style="&ROW_STYLE; ">
+            <cell>
+              <Label html="Aprašymas:" style="&LEFT_LABEL_STYLE;" />
+            </cell>
+            <cell>
+              <InputArea source="Description" style="min-width: 500px; min-height: 100px;" />
+            </cell>
+          </HorizontalPanel>
+        </FlowPanel>
+      </page>
+
+      <page>
+        <text>Stebėtojai</text>
+        <FlowPanel style="&MARGIN_TOP;">
+          <FlowPanel style="&ROW_STYLE; ">
+            <InlineLabel html="Autorius:" style="&LEFT_LABEL_STYLE;" />
+            <TextLabel style="&DISPLAY_STYLE;">
+              <calc>
+                <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
+              </calc>
+            </TextLabel>
+          </FlowPanel>
+
+          <FlowPanel style="&ROW_STYLE; &MARGIN_LEFT;">
+            <ListBox name="Observers" multiSelect="true" minSize="2" style="width: 250px" />
+            <Button name="AddObservers" html="+" style="width: 2em; &MARGIN_LEFT;" />
+            <Button name="RemoveObservers" html="-" style="width: 2em; &MARGIN_LEFT;" />
+          </FlowPanel>
+        </FlowPanel>
+      </page>
+
+      <page>
+        <text>Įvykių istorija</text>
+        <ChildGrid name="ProjectEvents" relColumn="Project" />
+      </page>
+
+      <page>
+        <text>Etapai</text>
+        <FlowPanel class="flexBox-horizontal" style="&MARGIN_TOP;">
+          <FlowPanel style="&MARGIN_LEFT;">
+            <FlowPanel style="&ROW_STYLE;">
+              <Button name="AddStage" html="+" style="width: 2em;" />
+              <Button name="RemoveStage" html="-" style="width: 2em; &MARGIN_LEFT;" />
+              <Button name="EditStage" html=".." style="width: 2em; &MARGIN_LEFT;" />
+            </FlowPanel>
+            <Tree name="Stages" style="background-color: #f8f8f8;" />
+          </FlowPanel>
+
+          <FlowPanel class="flexible flexBox-vertical" style="&MARGIN_LEFT;">
+            <FlowPanel style="&ROW_STYLE;">
+              <InlineLabel html="Etapo aprašymas:" style="&LABEL_STYLE;" />
+              <TextLabel name="StageDescription" style="&DISPLAY_STYLE; white-space: pre-wrap;" />
+            </FlowPanel>  
+
+            <ChildGrid name="Tasks" relColumn="Project" class="flexible" />
+          </FlowPanel>
+        </FlowPanel>
+      </page>
+    </TabbedPages>
+
   </FlowPanel>
 </BeeForm>  

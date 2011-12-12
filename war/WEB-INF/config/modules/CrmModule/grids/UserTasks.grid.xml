@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
   name="UserTasks" viewName="UserTasks" caption="Užduotys"
-  editForm="Task" newRowForm="NewTask"
+  editForm="Task" editShowId="true" newRowForm="NewTask"
   caching="false">
   
   <north size="40">

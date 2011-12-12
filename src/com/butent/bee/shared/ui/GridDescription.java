@@ -35,7 +35,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private enum Serial {
     NAME, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HAS_HEADERS, HAS_FOOTERS,
     CACHING, ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE,
-    READONLY, NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_CAPTION, EDIT_FORM, EDIT_IN_PLACE,
+    READONLY, NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_CAPTION,
+    EDIT_FORM, EDIT_MODE, EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_IN_PLACE,
     ENABLED_ACTIONS, DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER, ROW_STYLES, ROW_MESSAGE,
     ROW_EDITABLE, ROW_VALIDATION, SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
     COLUMNS, WIDGETS
@@ -76,7 +77,11 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private String newRowForm = null;
   private String newRowColumns = null;
   private String newRowCaption = null;
+
   private String editForm = null;
+  private Boolean editMode = null;
+  private Calculation editMessage = null;
+  private Boolean editShowId = null;
   private String editInPlace = null;
   
   private Map<String, String> styleSheets = null;
@@ -229,6 +234,15 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_FORM:
           setEditForm(value);
           break;
+        case EDIT_MODE:
+          setEditMode(BeeUtils.toBooleanOrNull(value));
+          break;
+        case EDIT_MESSAGE:
+          setRowMessage(Calculation.restore(value));
+          break;
+        case EDIT_SHOW_ID:
+          setEditShowId(BeeUtils.toBooleanOrNull(value));
+          break;
         case EDIT_IN_PLACE:
           setEditInPlace(value);
           break;
@@ -336,6 +350,18 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return editInPlace;
   }
 
+  public Calculation getEditMessage() {
+    return editMessage;
+  }
+
+  public Boolean getEditMode() {
+    return editMode;
+  }
+
+  public Boolean getEditShowId() {
+    return editShowId;
+  }
+
   public Set<Action> getEnabledActions() {
     return enabledActions;
   }
@@ -379,6 +405,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "New Row Columns", getNewRowColumns(),
         "New Row Caption", getNewRowCaption(),
         "Edit Form", getEditForm(),
+        "Edit Mode", getEditMode(),
+        "Edit Show Id", getEditShowId(),
         "Edit In Place", getEditInPlace(),
         "Enabled Actions", getEnabledActions(),
         "Disabled Actions", getDisabledActions(),
@@ -439,6 +467,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
       PropertyUtils.appendChildrenToExtended(info, "Row Validation", getRowValidation().getInfo());
     }
 
+    if (getEditMessage() != null) {
+      PropertyUtils.appendChildrenToExtended(info, "Edit Message", getEditMessage().getInfo());
+    }
+    
     int cc = getColumnCount();
     PropertyUtils.addExtended(info, "Column Count", BeeUtils.bracket(cc));
 
@@ -533,7 +565,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public List<String> getWidgets() {
     return widgets;
   }
-
+  
   public boolean hasColumn(String colName) {
     Assert.notNull(colName);
     for (ColumnDescription column : getColumns()) {
@@ -551,7 +583,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public Boolean hasHeaders() {
     return hasHeaders;
   }
-  
+
   public boolean hasWidgets() {
     return getWidgets() != null && !getWidgets().isEmpty();
   }
@@ -644,6 +676,15 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_FORM:
           arr[i++] = getEditForm();
           break;
+        case EDIT_MODE:
+          arr[i++] = getEditMode();
+          break;
+        case EDIT_MESSAGE:
+          arr[i++] = getEditMessage();
+          break;
+        case EDIT_SHOW_ID:
+          arr[i++] = getEditShowId();
+          break;
         case EDIT_IN_PLACE:
           arr[i++] = getEditInPlace();
           break;
@@ -721,6 +762,18 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setEditInPlace(String editInPlace) {
     this.editInPlace = editInPlace;
+  }
+
+  public void setEditMessage(Calculation editMessage) {
+    this.editMessage = editMessage;
+  }
+
+  public void setEditMode(Boolean editMode) {
+    this.editMode = editMode;
+  }
+
+  public void setEditShowId(Boolean editShowId) {
+    this.editShowId = editShowId;
   }
 
   public void setEnabledActions(Set<Action> enabledActions) {

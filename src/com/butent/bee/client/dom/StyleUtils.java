@@ -145,10 +145,14 @@ public class StyleUtils {
 
   public static final String ACTIVE_BLANK = "bee-activeBlank";
   public static final String ACTIVE_CONTENT = "bee-activeContent";
+
   public static final String CONFIG_PANEL = "bee-configPanel";
+  
   public static final String DND_SOURCE = "bee-dndSource";
   public static final String DND_OVER = "bee-dndOver";
+
   public static final String WINDOW_CAPTION = "bee-WindowCaption";
+  public static final String WINDOW_MESSAGE = "bee-WindowMessage";
   public static final String WINDOW_HEADER = "bee-WindowHeader";
   public static final String WINDOW_FOOTER = "bee-WindowFooter";
 
@@ -324,6 +328,10 @@ public class StyleUtils {
 
   public static void addStyleDependentName(Element el, String style) {
     setStyleDependentName(el, style, true);
+  }
+  
+  public static void addStyleName(String id, String style) {
+    setStyleName(DomUtils.getElement(id), style, true);
   }
 
   public static void alwaysScroll(Element el, ScrollBars scroll) {
@@ -1249,6 +1257,10 @@ public class StyleUtils {
 
   public static void removeStyleDependentName(Element el, String style) {
     setStyleDependentName(el, style, false);
+  }
+  
+  public static void removeStyleName(String id, String style) {
+    setStyleName(DomUtils.getElement(id), style, false);
   }
   
   public static void setAppearance(Element el, String classes, String styles) {

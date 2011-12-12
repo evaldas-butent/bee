@@ -26,13 +26,13 @@ import java.util.Collection;
  * Implements styling and user command capture for data footers.
  */
 
-public class DataFooterImpl extends Absolute implements DataFooterView, HasNavigation, HasSearch {
+public class FooterImpl extends Absolute implements FooterView, HasNavigation, HasSearch {
 
   /**
    * Specifies which styling resources to use for a data footer implementation.
    */
   public interface Resources extends ClientBundle {
-    @Source("DataFooterImpl.css")
+    @Source("FooterImpl.css")
     Style footerStyle();
   }
 
@@ -57,6 +57,8 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
     int top();
   }
 
+  private static final int HEIGHT = 32;
+  
   private static Resources defaultResources = null;
   private static Style defaultStyle = null;
 
@@ -85,7 +87,7 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
 
   private boolean enabled = true;
   
-  public DataFooterImpl() {
+  public FooterImpl() {
     super();
     addStyleName(StyleUtils.WINDOW_FOOTER);
   }
@@ -126,6 +128,10 @@ public class DataFooterImpl extends Absolute implements DataFooterView, HasNavig
       add(selectionCounter);
       selectionCounterId = selectionCounter.getId();
     }
+  }
+
+  public int getHeight() {
+    return HEIGHT;
   }
 
   public Collection<PagerView> getPagers() {

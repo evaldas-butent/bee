@@ -2,9 +2,26 @@
 <BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
-  name="UserProjects" viewName="UserProjects" caption="Stebimi projektai"
-  editForm="Project" newRowForm="NewProject"
+  name="UserProjects" viewName="UserProjects" caption="Projektai"
+  editForm="Project" editMode="true" newRowForm="NewProject"
   caching="false">
+  
+  <north size="40">
+    <FlowPanel class="flexBox-horizontal-center" style="background-color: #f8f8f8; font-family: Tahoma; font-size: 12px;">
+      <FlowPanel>
+        <CheckBox name="Created" html="Suplanuoti" checked="true" />
+        <CheckBox name="Activated" html="Vykdomi" checked="true" />
+        <CheckBox name="Suspended" html="Sustabdyti" checked="true" />
+        <CheckBox name="Canceled" html="Nutraukti" />
+        <CheckBox name="Completed" html="Baigti" />
+      </FlowPanel>
+      <FlowPanel class="flexible flexBox-vertical-center">
+        <CheckBox name="Overdue" html="Tik vėluojantys" style="color: red;" />
+        <CheckBox name="Changed" html="Tik pasikeitę" />
+      </FlowPanel>
+      <Button name="Filter" html="Filtruoti" />
+    </FlowPanel>
+  </north>  
   
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">

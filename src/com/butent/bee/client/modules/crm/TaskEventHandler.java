@@ -36,7 +36,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.view.DataHeaderView;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.edit.EditFormEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -133,7 +133,7 @@ public class TaskEventHandler {
 
           Widget target = null;
           if (result.getNumberOfRows() < 20) {
-            DataHeaderView header = presenter.getView().getHeader();
+            HeaderView header = presenter.getView().getHeader();
             if (header != null) {
               for (int i = header.getWidgetCount() - 1; i >= 0; i--) {
                 if (header.getWidget(i).isVisible()) {

@@ -79,12 +79,14 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
   public static int minCellWidth = 25;
 
   private static final String STYLE_ROW_EDITOR = "bee-RowEditor";
+  private static final String STYLE_CAPTION = "bee-RowEditorCaption";
+
   private static final String STYLE_LABEL = "bee-RowEditorLabel";
-
   private static final String STYLE_CELL = "bee-RowEditorCell";
-  private static final String STYLE_ACTIVE_LABEL = "bee-RowEditorActiveLabel";
 
+  private static final String STYLE_ACTIVE_LABEL = "bee-RowEditorActiveLabel";
   private static final String STYLE_ACTIVE_CELL = "bee-RowEditorActiveCell";
+
   private static final String STYLE_CONFIRM = "bee-RowEditorConfirm";
   private static final String STYLE_CANCEL = "bee-RowEditorCancel";
 
@@ -101,12 +103,13 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
   private final Element editorBox;
 
   private IsRow row = null;
-
+  
+  private int startIndex = 0;
   private int activeIndex = BeeConst.UNDEF;
 
   private boolean editing = false;
 
-  public RowEditor(List<BeeColumn> dataColumns, Set<RelationInfo> relations,
+  public RowEditor(String caption, List<BeeColumn> dataColumns, Set<RelationInfo> relations,
       List<EditableColumn> editableColumns, Callback callback,
       HasWidgets editorContainer, Element containerElement,
       NotificationListener notificationListener) {
@@ -129,7 +132,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     editorBox.getStyle().setPaddingLeft(0.5, Unit.EM);
     editorBox.getStyle().setPaddingRight(0.5, Unit.EM);
 
-    create();
+    create(caption);
 
     addStyleName(STYLE_ROW_EDITOR);
     sinkEvents(Event.ONCLICK + Event.ONKEYDOWN + Event.ONKEYPRESS);
@@ -329,15 +332,25 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     }
   }
 
-  private void create() {
+  private void create(String caption) {
     BeeLabel label;
-    Html cell;
+    int r = 0;
 
+    if (!BeeUtils.isEmpty(caption)) {
+      label = new BeeLabel(caption);
+      label.addStyleName(STYLE_CAPTION);
+      setWidget(r, 0, label);
+      getFlexCellFormatter().setColSpan(r, 0, 2);
+      r++;
+    }
+    setStartIndex(r);
+
+    Html cell;
     for (int i = 0; i < getSize(); i++) {
       label = new BeeLabel(getEditableColumn(i).getCaption());
       label.addStyleName(STYLE_LABEL);
-      setWidget(i, 0, label);
-      getCellFormatter().setVerticalAlignment(i, 0, HasVerticalAlignment.ALIGN_TOP);
+      setWidget(r, 0, label);
+      getCellFormatter().setVerticalAlignment(r, 0, HasVerticalAlignment.ALIGN_TOP);
 
       cell = new Html();
       cell.setStyleName(STYLE_CELL);
@@ -347,7 +360,8 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
         StyleUtils.setTextAlign(cell, HasHorizontalAlignment.ALIGN_RIGHT);
       }
       cell.getElement().setTabIndex(0);
-      setWidget(i, 1, cell);
+      setWidget(r, 1, cell);
+      r++;
     }
 
     BeeImage confirm = new BeeImage(Global.getImages().ok(), new ConfirmCommand());
@@ -355,7 +369,6 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     confirm.addStyleName(STYLE_CONFIRM);
     cancel.addStyleName(STYLE_CANCEL);
 
-    int r = getSize();
     setWidget(r, 0, confirm);
     setWidget(r, 1, cancel);
     getCellFormatter().setHorizontalAlignment(r, 1, HasHorizontalAlignment.ALIGN_RIGHT);
@@ -371,7 +384,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
 
   private Widget getCell(int index) {
     if (isIndex(index)) {
-      return getWidget(index, 1);
+      return getWidget(index + getStartIndex(), 1);
     } else {
       return null;
     }
@@ -416,7 +429,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
 
   private Widget getLabel(int index) {
     if (isIndex(index)) {
-      return getWidget(index, 0);
+      return getWidget(index + getStartIndex(), 0);
     } else {
       return null;
     }
@@ -440,6 +453,10 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
 
   private int getSize() {
     return getEditableColumns().size();
+  }
+
+  private int getStartIndex() {
+    return startIndex;
   }
 
   private boolean isCellActive(int index) {
@@ -543,6 +560,10 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
 
   private void setRow(IsRow row) {
     this.row = row;
+  }
+
+  private void setStartIndex(int startIndex) {
+    this.startIndex = startIndex;
   }
 
   private void startEdit(int index, Element sourceElement, int charCode) {

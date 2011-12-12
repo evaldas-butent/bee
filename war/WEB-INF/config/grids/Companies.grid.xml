@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd"
-  name="Companies" viewName="Companies" caption="Įmonės" editForm="Company" newRowForm="Company">
+
+  name="Companies" viewName="Companies" caption="Įmonės" editForm="Company" newRowForm="Company"
+  newRowCaption="Nauja Įmonė">
   <columns>
     <BeeDataColumn name="Name" source="Name" caption="Įmonė" />
     <BeeDataColumn name="Code" source="Code" caption="Įm. kodas" />

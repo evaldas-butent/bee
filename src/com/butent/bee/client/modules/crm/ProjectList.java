@@ -6,7 +6,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -15,12 +14,9 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.AbstractColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
-import com.butent.bee.client.grid.GridPanel;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.resources.Images;
-import com.butent.bee.client.ui.AbstractFormCallback;
-import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.utils.AbstractEvaluation;
 import com.butent.bee.client.utils.Evaluator.Evaluation;
 import com.butent.bee.client.utils.Evaluator.Parameters;
@@ -49,125 +45,23 @@ import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
 public class ProjectList {
 
-  private static class FormHandler extends AbstractFormCallback {
-    private final Type type;
-    private GridPanel gridPanel = null;
-    private Map<String, Editor> filterWidgets = Maps.newHashMap();
-
-    private FormHandler(Type type) {
-      super();
-      this.type = type;
-    }
-
-    @Override
-    public void afterCreateWidget(String name, Widget widget) {
-      if (widget instanceof GridPanel) {
-        setGridPanel((GridPanel) widget);
-        getGridPanel().setGridCallback(new GridHandler(this));
-
-      } else if (widget instanceof HasClickHandlers && BeeUtils.same(name, "Filter")) {
-        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            if (getGridPanel() == null) {
-              return;
-            }
-            updateFilter();
-            getGridPanel().getPresenter().requery(true);
-          }
-        });
-      } else if (widget instanceof Editor) {
-        this.filterWidgets.put(BeeUtils.normalize(name), (Editor) widget);
-      }
-    }
-
-    public Filter getFilter() {
-      CompoundFilter andFilter = Filter.and();
-      Value now = new IntegerValue(new JustDate().getDay());
-
-      if (isChecked("Changed")) {
-        andFilter.add(Filter.or(Filter.isEmpty(CrmConstants.COL_LAST_ACCESS),
-            ComparisonFilter.compareWithColumn(CrmConstants.COL_LAST_ACCESS, Operator.LT,
-                CrmConstants.COL_LAST_PUBLISH)));
-      }
-      if (isChecked("Overdue")) {
-        andFilter.add(ComparisonFilter.isLess("FinishDate", now),
-            ComparisonFilter.isEqual(CrmConstants.COL_EVENT,
-                new IntegerValue(ProjectEvent.ACTIVATED.ordinal())));
-      } else {
-        CompoundFilter orFilter = Filter.or();
-
-        for (ProjectEvent flt : ProjectEvent.values()) {
-          if (isChecked(flt.name())) {
-            orFilter.add(ComparisonFilter.isEqual(CrmConstants.COL_EVENT,
-                new IntegerValue(flt.ordinal())));
-          }
-        }
-        if (!orFilter.isEmpty()) {
-          andFilter.add(orFilter);
-        }
-      }
-      return andFilter.isEmpty() ? null : andFilter;
-    }
-
-    @Override
-    public boolean onLoad(Element formElement) {
-      formElement.setAttribute("caption", getType().getCaption());
-      return true;
-    }
-
-    @Override
-    public void onShow(Presenter presenter) {
-      for (ProjectEvent flt : EnumSet.of(ProjectEvent.CREATED, ProjectEvent.ACTIVATED,
-          ProjectEvent.SUSPENDED)) {
-
-        Editor widget = filterWidgets.get(BeeUtils.normalize(flt.name()));
-        if (widget != null) {
-          widget.setValue("true");
-        }
-      }
-    }
-
-    public void updateFilter() {
-      getGridPanel().getPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter());
-    }
-
-    private GridPanel getGridPanel() {
-      return gridPanel;
-    }
-
-    private Type getType() {
-      return type;
-    }
-
-    private boolean isChecked(String filter) {
-      String name = BeeUtils.normalize(filter);
-
-      if (filterWidgets.containsKey(name)) {
-        return BeeUtils.toBoolean(filterWidgets.get(name).getNormalizedValue());
-      }
-      return false;
-    }
-
-    private void setGridPanel(GridPanel gridPanel) {
-      this.gridPanel = gridPanel;
-    }
-  }
-
   private static class GridHandler extends AbstractGridCallback {
 
-    private final FormHandler formHandler;
+    private final Type type;
     private final Long userId;
 
-    private GridHandler(FormHandler formHandler) {
+    private final Map<String, Editor> filterWidgets = Maps.newHashMap();
+
+    private GridPresenter gridPresenter = null;
+    
+    private GridHandler(Type type) {
       super();
-      this.formHandler = formHandler;
+      this.type = type;
       this.userId = BeeKeeper.getUser().getUserId();
     }
 
@@ -236,6 +130,23 @@ public class ProjectList {
     }
 
     @Override
+    public void afterCreateWidget(String name, Widget widget) {
+      if (widget instanceof HasClickHandlers && BeeUtils.same(name, "Filter")) {
+        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            if (getGridPresenter() != null) {
+              updateFilter(getGridPresenter());
+              getGridPresenter().requery(true);
+            }
+          }
+        });
+      } else if (widget instanceof Editor) {
+        this.filterWidgets.put(BeeUtils.normalize(name), (Editor) widget);
+      }
+    }
+    
+    @Override
     public boolean beforeCreateColumn(String columnId, List<BeeColumn> dataColumns,
         ColumnDescription columnDescription) {
       return getType().equals(Type.OBSERVED) || !BeeUtils.same(columnId, CrmConstants.COL_OWNER);
@@ -264,24 +175,30 @@ public class ProjectList {
 
     @Override
     public void beforeRefresh(GridPresenter presenter) {
-      formHandler.updateFilter();
+      updateFilter(presenter);
     }
 
     @Override
     public void beforeRequery(GridPresenter presenter) {
-      formHandler.updateFilter();
+      updateFilter(presenter);
     }
 
     @Override
-    public Map<String, Filter> getInitialFilters() {
-      Filter filter = formHandler.getFilter();
-      if (filter == null) {
+    public String getCaption() {
+      if (getType() == null) {
         return null;
       } else {
-        Map<String, Filter> filters = Maps.newHashMap();
-        filters.put(FILTER_KEY, filter);
-        return filters;
+        return getType().getCaption();
       }
+    }
+    
+    @Override
+    public Map<String, Filter> getInitialFilters() {
+      Filter filter = Filter.or(getEventFilter(ProjectEvent.CREATED),
+          getEventFilter(ProjectEvent.ACTIVATED), getEventFilter(ProjectEvent.SUSPENDED));
+      Map<String, Filter> filters = Maps.newHashMap();
+      filters.put(FILTER_KEY, filter);
+      return filters;
     }
 
     @Override
@@ -306,12 +223,75 @@ public class ProjectList {
       return true;
     }
 
-    private Type getType() {
-      return formHandler.getType();
+    @Override
+    public void onShow(GridPresenter presenter) {
+      setGridPresenter(presenter);
     }
 
+    private Filter getEventFilter(ProjectEvent pe) {
+      if (pe == null) {
+        return null;
+      } else {
+        return ComparisonFilter.isEqual(CrmConstants.COL_EVENT, new IntegerValue(pe.ordinal()));
+      }
+    }
+    
+    private Filter getFilter() {
+      CompoundFilter andFilter = Filter.and();
+      Value now = new IntegerValue(new JustDate().getDay());
+
+      if (isChecked("Changed")) {
+        andFilter.add(Filter.or(Filter.isEmpty(CrmConstants.COL_LAST_ACCESS),
+            ComparisonFilter.compareWithColumn(CrmConstants.COL_LAST_ACCESS, Operator.LT,
+                CrmConstants.COL_LAST_PUBLISH)));
+      }
+      if (isChecked("Overdue")) {
+        andFilter.add(ComparisonFilter.isLess("FinishDate", now),
+            getEventFilter(ProjectEvent.ACTIVATED));
+      } else {
+        CompoundFilter orFilter = Filter.or();
+
+        for (ProjectEvent pe : ProjectEvent.values()) {
+          if (isChecked(pe.name())) {
+            orFilter.add(getEventFilter(pe));
+          }
+        }
+        if (!orFilter.isEmpty()) {
+          andFilter.add(orFilter);
+        }
+      }
+      return andFilter.isEmpty() ? null : andFilter;
+    }
+
+    private GridPresenter getGridPresenter() {
+      return gridPresenter;
+    }
+
+    private Type getType() {
+      return type;
+    }
+    
     private Long getUserId() {
       return userId;
+    }
+
+    private boolean isChecked(String filter) {
+      String name = BeeUtils.normalize(filter);
+
+      if (filterWidgets.containsKey(name)) {
+        return BeeUtils.toBoolean(filterWidgets.get(name).getNormalizedValue());
+      }
+      return false;
+    }
+
+    private void setGridPresenter(GridPresenter gridPresenter) {
+      this.gridPresenter = gridPresenter;
+    }
+
+    private void updateFilter(GridPresenter presenter) {
+      if (presenter != null) {
+        presenter.getDataProvider().setParentFilter(FILTER_KEY, getFilter());
+      }
     }
   }
 
@@ -359,7 +339,7 @@ public class ProjectList {
     if (type == null) {
       Global.showError("Type not recognized:", args);
     } else {
-      FormFactory.openForm("ProjectList", new FormHandler(type));
+      GridFactory.openGrid("UserProjects", new GridHandler(type));
     }
   }
 

@@ -42,7 +42,7 @@ import com.butent.bee.client.ui.HasTextDimensions;
 import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
@@ -550,7 +550,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     input.addStyleName(getStyle(embedded, STYLE_INPUT));
     add(input);
 
-    BeeLabel label = new BeeLabel(getSearchSymbol());
+    InlineLabel label = new InlineLabel(getSearchSymbol());
     label.addStyleName(getStyle(embedded, STYLE_TYPE));
     add(label);
 

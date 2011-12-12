@@ -13,7 +13,7 @@ import java.util.Set;
  */
 
 public enum Action implements BeeSerializable {
-  ADD, BOOKMARK, CLOSE, CONFIGURE, DELETE, REFRESH, REQUERY, SAVE;
+  ADD, BOOKMARK, CLOSE, CONFIGURE, DELETE, EDIT, REFRESH, REQUERY, SAVE;
   
   public static Set<Action> parse(String s) {
     Set<Action> result = Sets.newHashSet();
