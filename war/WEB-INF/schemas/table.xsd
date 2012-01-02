@@ -4,7 +4,12 @@
   
   <xs:include schemaLocation="types.xsd"/>
 
-  <xs:element name="BeeTable" type="bee:table" />
+  <xs:element name="BeeTable" type="bee:table">
+    <xs:unique name="uniqueFieldName">
+      <xs:selector xpath=".//*" />
+      <xs:field xpath="@name" />
+    </xs:unique>
+  </xs:element>
 
   <xs:complexType name="table">
     <xs:sequence>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+
+  name="OrderCargo" viewName="OrderCargo" caption="Kroviniai"
+  >
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <font>Verdana 12 px</font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <BeeDataColumn name="Cargo" source="Cargo" caption="Krovinys" />
+    <BeeDataColumn name="Weight" source="Weight" caption="Svoris" />
+    <BeeDataColumn name="Volume" source="Volume" caption="Tūris" />
+    <BeeDataColumn name="Palettes" source="Palettes" caption="Padėklų sk." />
+    <BeeDataColumn name="LoadingDate" source="LoadingDate" caption="Pakrovimo data" />
+    <BeeRelColumn name="LoadingCountryName" source="LoadingCountryName" relSource="LoadingCountry"
+                  relColumn="Name" caption="Pakrovimo šalis" />
+    <BeeDataColumn name="LoadingRamp" source="LoadingRamp" caption="Pakrovimo vieta" />
+    <BeeDataColumn name="LoadingTerminal" source="LoadingTerminal" caption="Pakrovimo terminalas" />
+    <BeeDataColumn name="UnloadingDate" source="UnloadingDate" caption="Iškrovimo data" />
+    <BeeRelColumn name="UnloadingCountryName" source="UnloadingCountry" relSource="UnloadingCountry"
+                  relColumn="Name" caption="Iškrovimo šalis" />
+    <BeeDataColumn name="UnloadingRamp" source="UnloadingRamp" caption="Iškrovimo vieta" />
+    <BeeDataColumn name="UnloadingTerminal" source="UnloadingTerminal" caption="Iškrovimo terminalas" />
+    <BeeDataColumn name="Number" source="Number" caption="Numeris" />
+    <BeeDataColumn name="Cmr" source="Cmr" caption="CMR" />
+    <BeeDataColumn name="Notes" source="Notes" caption="Pastabos" />
+  </columns>
+</BeeGrid>

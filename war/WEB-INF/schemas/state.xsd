@@ -4,7 +4,12 @@
   
   <xs:include schemaLocation="types.xsd"/>
 
-  <xs:element name="BeeState" type="bee:stateType" />
+  <xs:element name="BeeState" type="bee:stateType">
+    <xs:unique name="uniqueStateName">
+      <xs:selector xpath=".//*" />
+      <xs:field xpath="@name" />
+    </xs:unique>
+  </xs:element>
 
   <xs:complexType name="stateType">
     <xs:attribute name="name" use="required" type="bee:stateNameType" />

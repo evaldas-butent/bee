@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+
+  name="OrderCargo"
+  idName="CargoID"
+  x="741" y="101"
+  >
+  <BeeFields>
+    <BeeField name="Order" type="LONG" relation="TripOrders" notNull="true" cascade="DELETE" />
+    <BeeField name="LoadingDate" type="DATE" />
+    <BeeField name="LoadingCountry" type="LONG" relation="Countries" />
+    <BeeField name="LoadingRamp" type="STRING" precision="50" />
+    <BeeField name="LoadingTerminal" type="STRING" precision="30" />
+    <BeeField name="UnloadingDate" type="DATE" />
+    <BeeField name="UnloadingCountry" type="LONG" relation="Countries" />
+    <BeeField name="UnloadingRamp" type="STRING" precision="50" />
+    <BeeField name="UnloadingTerminal" type="STRING" precision="30" />
+    <BeeField name="Cargo" type="STRING" precision="100" notNull="true" />
+    <BeeField name="Weight" type="INTEGER" />
+    <BeeField name="Volume" type="DECIMAL" precision="7" scale="3" />
+    <BeeField name="Palettes" type="INTEGER" />
+    <BeeField name="Number" type="STRING" precision="20" />
+    <BeeField name="Cmr" type="STRING" precision="20" />
+    <BeeField name="Notes" type="TEXT" />
+  </BeeFields>
+</BeeTable>

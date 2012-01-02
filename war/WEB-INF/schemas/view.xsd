@@ -98,7 +98,7 @@
   <xs:complexType name="joinExternalType">
     <xs:complexContent>
       <xs:extension base="bee:joinAggregateType">
-        <xs:attribute name="source" type="bee:tableNameType" />
+        <xs:attribute name="source" type="bee:tableNameType" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

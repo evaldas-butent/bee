@@ -17,7 +17,7 @@ public class CrmConstants {
     FORWARDED, EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED, DELETED
   }
 
-  public static final String CRM_MODULE = "CrmModule";
+  public static final String CRM_MODULE = "Crm";
   public static final String CRM_METHOD = CRM_MODULE + "Method";
 
   public static final String CRM_TASK_PREFIX = "task_";
@@ -73,4 +73,7 @@ public class CrmConstants {
   public static final String COL_ORDER = "Order";
 
   public static final String COL_CATEGORY = "Category";
+
+  private CrmConstants() {
+  }
 }

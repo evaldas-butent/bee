@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+  
+  name="TripOrder" viewName="TripOrders" caption="Transporto užsakymas"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <FlexTable cellSpacing="10">
+      <row>
+        <cell><Label html="Data" class="bee-required" /></cell>
+        <cell><InputDateTime source="Date" /></cell>
+        <cell><Label html="Užsakymo Nr." horizontalAlignment="right" class="bee-required" /></cell>
+        <cell><InputText source="OrderNo" /></cell>
+      </row>
+      <row>
+        <cell><InlineLabel/></cell>
+        <cell><Label html="Užsakovas" horizontalAlignment="right" class="bee-required" /></cell>
+        <cell colSpan="2">
+          <DataSelector source="CustomerName" relSource="Customer" relView="Companies"
+                        relColumn="Name" />
+        </cell>
+      </row>
+      <row>
+        <cell><InlineLabel/></cell>
+        <cell><Label html="Mokėtojas" horizontalAlignment="right" /></cell>
+        <cell colSpan="2">
+          <DataSelector source="PayerName" relSource="Payer" relView="Companies"
+                        relColumn="Name" />
+        </cell>
+      </row>
+    </FlexTable>
+
+    <ChildGrid class="flexible" name="OrderCargo" relColumn="Order"/>
+  </FlowPanel>
+</BeeForm>  

@@ -1,12 +1,15 @@
 package com.butent.bee.server.ui;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.StateService;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
+import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.IdGeneratorBean;
@@ -57,6 +60,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
@@ -499,7 +503,24 @@ public class UiServiceBean {
     return ResponseObject.response(result);
   }
 
-  private ResponseObject buildDbSchema() {
+  private void buildDbList(String root, Set<String> tables) {
+    if (tables.contains(BeeUtils.normalize(root))) {
+      return;
+    }
+    tables.add(BeeUtils.normalize(root));
+
+    for (String tbl : sys.getTableNames()) {
+      if (!tables.contains(BeeUtils.normalize(tbl))) {
+        for (BeeField field : sys.getTableFields(tbl)) {
+          if (BeeUtils.same(field.getRelation(), root)) {
+            buildDbList(tbl, tables);
+          }
+        }
+      }
+    }
+  }
+
+  private ResponseObject buildDbSchema(Iterable<String> roots) {
     XmlSqlDesigner designer = new XmlSqlDesigner();
     designer.types = Lists.newArrayList();
     designer.tables = Lists.newArrayList();
@@ -531,7 +552,15 @@ public class UiServiceBean {
 
     designer.types.add(typeGroup);
 
-    for (String tableName : sys.getTableNames()) {
+    Set<String> tables = Sets.newHashSet();
+
+    if (roots == null || !roots.iterator().hasNext()) {
+      roots = sys.getTableNames();
+    }
+    for (String root : roots) {
+      buildDbList(root, tables);
+    }
+    for (String tableName : tables) {
       XmlTable xmlTable = sys.getXmlTable(sys.getTable(tableName).getModuleName(), tableName);
 
       if (xmlTable != null) {
@@ -890,11 +919,8 @@ public class UiServiceBean {
     } else if (BeeUtils.startsSame(cmd, "schema")) {
       String schema = cmd.substring("schema".length()).trim();
 
-      if (BeeUtils.isEmpty(schema)) {
-        response = buildDbSchema();
-      } else {
-        response = saveDbSchema(schema);
-      }
+      response = buildDbSchema(Splitter.onPattern("[ ,]").trimResults().omitEmptyStrings()
+          .split(schema));
     } else {
       if (sys.isTable(cmd)) {
         sys.rebuildTable(cmd);

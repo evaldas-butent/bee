@@ -28,6 +28,10 @@
   <item id="doc_tree" parent="doc_menu" order="20" text="Medis" service="form" parameters="DocumentTree" />
   <item id="documents" parent="doc_menu" order="30" text="Dokumentai" service="grid" parameters="Documents" separators="*" />
 
+  <item id="transport_menu" order="70" text="Transportas" />
+  <item id="orders" parent="transport_menu" order="10" text="Užsakymai" service="grid" parameters="TripOrders" />
+  <item id="trips" parent="transport_menu" order="20" text="Reisai" service="grid" parameters="Trips" />
+
   <item id="adm_menu" order="200" text="Administravimas" />
   <item id="roles" parent="adm_menu" order="10" text="Rolės" service="grid" parameters="Roles" />
   <item id="users" parent="adm_menu" order="20" text="Vartotojai" service="grid" parameters="Users" />

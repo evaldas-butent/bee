@@ -49,13 +49,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   }
 
   @Test
-  public void testAddName() {
-    assertEquals("hello=BLOB", beeUtils.addName("hello", BeeType.BLOB));
-    assertEquals("", beeUtils.addName("hello", null));
-    assertEquals("BLOB", beeUtils.addName("", BeeType.BLOB));
-  }
-
-  @Test
   public void testAllEmpty() {
     assertEquals(false, beeUtils.allEmpty(5, 4, "3", 2, null, 10.0, 11));
     assertEquals(false, beeUtils.allEmpty(5, 4, "3", 2, "null", 10.0, 11));
@@ -730,9 +723,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
     Map<String, Integer> testValue6 = new HashMap<String, Integer>();
 
-    List<BeeType> testc1 = new ArrayList<BeeType>();
-    testc1.add(BeeType.BLOB);
-
     assertEquals(5, beeUtils.length(mas1));
     assertEquals(6, beeUtils.length(mas2));
     assertEquals(8, beeUtils.length(mas4));
@@ -741,7 +731,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     assertEquals(5, beeUtils.length(mas));
     assertEquals(6, beeUtils.length("getout"));
     assertEquals(0, beeUtils.length(testValue6));
-    assertEquals(1, beeUtils.length(testc1));
     assertEquals(4, beeUtils.length(intmas));
     assertEquals(0, beeUtils.length(1));
     assertEquals(2, beeUtils.length(b));
@@ -1127,7 +1116,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     List<Object> testc4 = new ArrayList<Object>();
     List<Object> testc5 = new ArrayList<Object>();
 
-    testc1.add((BeeType.BLOB));
     testc1.add((BeeType.BOOLEAN));
     testc1.add(BeeType.INT);
     testc1.add(BeeType.CHAR);
@@ -1163,7 +1151,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     Vector<Object> testc4 = new Vector<Object>();
     Vector<Object> testc5 = new Vector<Object>();
 
-    testc1.add((BeeType.BLOB));
     testc1.add((BeeType.BOOLEAN));
     testc1.add(BeeType.INT);
     testc1.add(BeeType.CHAR);

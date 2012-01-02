@@ -90,14 +90,14 @@ public class TestRowComparator {
     assertEquals(true, obj11.compare(strMas111, strMas112) < 0);
 
     int[] d = {0, 1, 3};
-    BeeType[] d1 = {BeeType.BLOB, BeeType.ENUM};
+    BeeType[] d1 = {BeeType.ENUM};
     RowComparator obj12 = new RowComparator(d, true, d1);
     String[] strMas121 = {"this", "is", "a", "string"};
     String[] strMas122 = {"this", "is", "beetype", "Not string"};
     assertEquals(37, obj12.compare(strMas121, strMas122));
 
     int[] e = {0, 1, 3};
-    BeeType[] e1 = {BeeType.BLOB, BeeType.ENUM};
+    BeeType[] e1 = {BeeType.ENUM};
     boolean[] boolmas = {true, false, true};
     RowComparator obj13 = new RowComparator(e, boolmas, e1);
     Integer[] intMas131 = {15, 6, 8, 7, 1, 2};
@@ -119,7 +119,7 @@ public class TestRowComparator {
     assertEquals(-7, obj15.compare(intMas151, intMas152));
 
     int[] h = {0, -1, -3};
-    BeeType[] h1 = {BeeType.BLOB, BeeType.INT};
+    BeeType[] h1 = {BeeType.INT};
     boolean[] boolmash = {true, false, true};
     RowComparator obj16 = new RowComparator(h, boolmash, h1);
     Integer[] intMas161 = {15, 6, 8, 7, 1, 2};

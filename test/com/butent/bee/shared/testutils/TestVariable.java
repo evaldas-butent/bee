@@ -197,19 +197,6 @@ public class TestVariable {
   }
 
   @Test
-  public final void testToString() {
-    var = new Variable("TestUnit", BeeType.BLOB, "1.0");
-
-    assertEquals("caption=TestUnit;type=BLOB;value=1.0", var.toString());
-  }
-
-  @Test
-  public final void testTransform() {
-    var = new Variable("TestUnit", BeeType.BLOB, "1.0");
-    assertEquals("caption=TestUnit;type=BLOB;value=1.0", var.transform());
-  }
-
-  @Test
   public final void testVariable() {
     var = new Variable();
     assertEquals(BeeType.UNKNOWN, var.getType());
@@ -252,12 +239,6 @@ public class TestVariable {
 
   @Test
   public final void testVariableStringBeeTypeString() {
-    var = new Variable("Var1", BeeType.BLOB, "blobas");
-
-    assertEquals("Var1", var.getCaption());
-    assertEquals(BeeType.BLOB, var.getType());
-    assertEquals("blobas", var.getValue());
-
     var = new Variable(null, BeeType.BOOLEAN, "true");
 
     assertEquals(null, var.getCaption());
@@ -281,19 +262,7 @@ public class TestVariable {
   }
 
   @Test
-  public final void testVariableStringBeeTypeStringBeeWidget() {
-    var = new Variable("Var8", BeeType.FILE, "/@vmlinuz", BeeWidget.AREA);
-
-    assertEquals("Var8", var.getCaption());
-    assertEquals(BeeType.FILE, var.getType());
-    assertEquals("/@vmlinuz", var.getValue());
-    assertEquals(BeeWidget.AREA, var.getWidget());
-    assertNull(var.getItems());
-  }
-
-  @Test
   public final void testVariableStringBeeTypeStringBeeWidgetStringArray() {
-
     var = new Variable("Var10", BeeType.INT, "100", BeeWidget.BUTTON_GROUP,
         "one");
     assertEquals("Var10", var.getCaption());

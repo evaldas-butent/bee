@@ -1,6 +1,5 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.utils.ArrayUtils;
 
@@ -33,7 +32,6 @@ public class TestArrayUtils {
   private static long[] longMas1 = {1, 2, 3, 4, 5};
   private static float[] floatMas1 = {
       (float) 1.5, (float) 2.4, (float) 3.3, (float) 4.2, (float) 5.1};
-  private BeeType[] beeMas1 = {BeeType.BLOB, BeeType.BOOLEAN, BeeType.ENUM};
 
   @Before
   public void setUp() throws Exception {
@@ -123,7 +121,6 @@ public class TestArrayUtils {
   @Test
   public void testGetQuietly() {
     assertEquals("simple", ArrayUtils.getQuietly(strMas1, 3));
-    assertEquals(BeeType.BLOB, ArrayUtils.getQuietly(beeMas1, 0));
     assertEquals(null, ArrayUtils.getQuietly(null, 5));
   }
 

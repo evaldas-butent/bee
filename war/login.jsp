@@ -119,11 +119,10 @@ function goPswd(ev) {
 <body onload="setFocus()">
 <div class="bee-SignIn-Popup">
   <div class="bee-SignIn-Panel" style="overflow-x: hidden; overflow-y: hidden; position:relative;">
-    <form method="post" action="j_security_check">
+    <form method="post" action="j_security_check" accept-charset="UTF-8">
     <div class="bee-SignIn-Caption">Būtent CRM</div>
 <%
-String usr = request.getParameter("j_username");
-if (usr != null && !usr.trim().isEmpty()) {
+if (request.getParameter("fail") != null) {
 %>
     <div class="bee-Error-Caption">Bandykite dar kartą</div>
 <%

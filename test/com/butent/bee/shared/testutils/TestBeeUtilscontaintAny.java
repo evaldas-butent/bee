@@ -63,17 +63,14 @@ public class TestBeeUtilscontaintAny extends TestCase {
   public void setUp() throws Exception {
     BeeType a = null;
     BeeType b = null;
-    testc1.add(a.BLOB);
     testc1.add(a.BOOLEAN);
     testc1.add(a.DOUBLE);
     testc1.add(a.NUMBER);
 
     testc2.add(b.BYTE);
-    testc2.add(b.FILE);
     testc2.add(b.FLOAT);
     testc2.add(b.INT);
 
-    testc5.add(a.BLOB);
     testc6.add(a.UNKNOWN);
   }
 

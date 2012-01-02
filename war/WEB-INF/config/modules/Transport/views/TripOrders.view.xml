@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="TripOrders"
+  source="TripOrders"
+  >
+  <BeeColumns>
+    <BeeSimpleColumn expression="Date" />
+    <BeeSimpleColumn expression="OrderNo" />
+    <BeeSimpleColumn expression="Customer" />
+    <BeeSimpleJoin joinType="LEFT" expression="Customer">
+      <BeeSimpleColumn expression="Name" name="CustomerName" />
+    </BeeSimpleJoin>
+    <BeeSimpleColumn expression="Payer" />
+    <BeeSimpleJoin joinType="LEFT" expression="Payer">
+      <BeeSimpleColumn expression="Name" name="PayerName" />
+    </BeeSimpleJoin>
+    <BeeExternalJoin source="OrderCargo" expression="Order" joinType="LEFT">
+      <BeeHiddenColumn expression="Cargo" />
+      <BeeAggregateColumn aggregate="MIN" expression="Cargo" name="MinCargo" />
+      <BeeAggregateColumn aggregate="MAX" expression="Cargo" name="MaxCargo" />
+      <BeeAggregateColumn aggregate="COUNT" expression="Cargo" name="CntCargo" />
+      <BeeAggregateColumn aggregate="SUM" expression="Weight" />
+      <BeeAggregateColumn aggregate="SUM" expression="Volume" />
+      <BeeAggregateColumn aggregate="SUM" expression="Palettes" />
+    </BeeExternalJoin>
+  </BeeColumns>
+  <BeeOrder>
+    <OrderBy column="Date" />
+  </BeeOrder>
+</BeeView>

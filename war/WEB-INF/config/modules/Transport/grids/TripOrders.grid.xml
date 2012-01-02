@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+
+  name="TripOrders" viewName="TripOrders" caption="Užsakymai" newRowForm="TripOrder" editForm="TripOrder"
+  newRowCaption="Naujas užsakymas"
+  >
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <font>Verdana 12 px</font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <BeeDataColumn name="Date" source="Date" caption="Data" />
+    <BeeDataColumn name="OrderNo" source="OrderNo" caption="Užsakymo numeris" />
+    <BeeDataColumn name="Customer" source="CustomerName" caption="Užsakovas" />
+    <BeeDataColumn name="Payer" source="PayerName" caption="Mokėtojas" />
+    <BeeCalcColumn name="Cargo" type="string" caption="Kroviniai" searchBy="Cargo">
+      <calc>
+        <function>
+          if (!row.MinCargo) {
+            return row.MaxCargo;
+          
+          } else if(!row.MaxCargo || row.MinCargo == row.MaxCargo) {
+            return row.MinCargo;
+          
+          } else {
+            return row.MinCargo + ", " + row.MaxCargo + (row.CntCargo > 2 ? ", ...": "");
+          }
+        </function>
+      </calc>
+    </BeeCalcColumn>
+    <BeeDataColumn name="Weight" source="Weight" caption="Svoris" />
+    <BeeDataColumn name="Volume" source="Volume" caption="Tūris" />
+    <BeeDataColumn name="Palettes" source="Palettes" caption="Padėklų sk." />
+  </columns>
+</BeeGrid>
