@@ -6,7 +6,7 @@
 <title>to BEE or not to BEE</title>
 
 <style type="text/css">
-body, select {
+body {
   font-family: Arial, sans-serif;
   font-size: small;
 }
@@ -92,8 +92,31 @@ body, select {
   text-transform: uppercase;
 }
 </style>
+<script type="text/javascript">
+function setFocus() {
+  var inp = document.getElementById('user');
+  if (inp && (inp.value == null || inp.value == '')) {
+    inp.focus();
+  } else {
+    inp = document.getElementById('pswd');
+    if (inp) {
+      inp.focus();
+    }
+  }
+}
+function goPswd(ev) {
+  if (ev.keyCode && ev.keyCode == 13) {
+    var p = document.getElementById('pswd');
+    if (p) {
+      p.focus();
+      return false;
+    }
+  }
+  return true;
+}
+</script>
 </head>
-<body>
+<body onload="setFocus()">
 <div class="bee-SignIn-Popup">
   <div class="bee-SignIn-Panel" style="overflow-x: hidden; overflow-y: hidden; position:relative;">
     <form method="post" action="j_security_check">
@@ -107,9 +130,10 @@ if (usr != null && !usr.trim().isEmpty()) {
 }
 %>
     <div class="bee-SignIn-Label bee-SignIn-User">Prisijungimo vardas</div>
-    <input type="text" class="bee-SignIn-Input bee-SignIn-User" name="j_username">
+    <input type="text" class="bee-SignIn-Input bee-SignIn-User" name="j_username" id="user"
+      onkeydown="return goPswd(event)">
     <div class="bee-SignIn-Label bee-SignIn-Password">Slaptažodis</div>
-    <input type="password" class="bee-SignIn-Input bee-SignIn-Password" name="j_password">
+    <input type="password" class="bee-SignIn-Input bee-SignIn-Password" name="j_password" id="pswd">
     <span class="bee-RadioGroup bee-SignIn-Language">
       <span class="bee-RadioButton bee-RadioButton-horizontal">
         <input type="radio" name="lang" value="0" id="lt" checked="checked"><label for="lt">lt</label>

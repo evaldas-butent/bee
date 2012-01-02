@@ -67,4 +67,10 @@ public class CrmConstants {
   public static final String COL_PROJECT = "Project";
   public static final String COL_TASK = "Task";
   public static final String COL_USER = "User";
+
+  public static final String COL_NAME = "Name";
+  public static final String COL_PARENT = "Parent";
+  public static final String COL_ORDER = "Order";
+
+  public static final String COL_CATEGORY = "Category";
 }

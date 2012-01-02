@@ -10,15 +10,15 @@ import com.butent.bee.client.i18n.Format;
 
 public class IntegerLabel extends NumberLabel<Integer> {
 
-  public IntegerLabel() {
-    super(Format.getDefaultIntegerFormat());
+  public IntegerLabel(boolean inline) {
+    super(Format.getDefaultIntegerFormat(), inline);
   }
 
-  public IntegerLabel(NumberFormat format) {
-    super(format);
+  public IntegerLabel(NumberFormat format, boolean inline) {
+    super(format, inline);
   }
 
-  public IntegerLabel(String pattern) {
-    super(pattern);
+  public IntegerLabel(String pattern, boolean inline) {
+    super(pattern, inline);
   }
 }

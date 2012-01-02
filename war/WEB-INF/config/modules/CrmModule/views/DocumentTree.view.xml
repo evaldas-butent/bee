@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="DocumentTree"
+  source="DocumentTree"
+  >
+  <BeeColumns>
+    <BeeSimpleColumn expression="Parent" />
+    <BeeSimpleColumn expression="Order" />
+    <BeeSimpleColumn expression="Name" />
+    <BeeSimpleJoin joinType="LEFT" expression="Parent">
+      <BeeSimpleColumn name="ParentOrder" expression="Order" />
+    </BeeSimpleJoin>
+  </BeeColumns>
+  <BeeOrder>
+    <OrderBy column="ParentOrder" />
+    <OrderBy column="Order" />
+  </BeeOrder>
+</BeeView>

@@ -48,6 +48,8 @@ public class WidgetDescription implements HasInfo {
   private String minValue = null;
   private String maxValue = null;
   private Boolean required = null;
+  
+  private boolean disablable = false;
 
   public WidgetDescription(FormWidget widgetType, String widgetId) {
     this.widgetType = widgetType;
@@ -168,6 +170,10 @@ public class WidgetDescription implements HasInfo {
     return (getWidgetId() == null) ? 0 : getWidgetId().trim().hashCode();
   }
   
+  public boolean isDisablable() {
+    return disablable;
+  }
+
   public Boolean isReadOnly() {
     return readOnly;
   }
@@ -222,6 +228,10 @@ public class WidgetDescription implements HasInfo {
 
   public void setCarry(Calculation carry) {
     this.carry = carry;
+  }
+
+  public void setDisablable(boolean disablable) {
+    this.disablable = disablable;
   }
 
   public void setDynStyles(Collection<ConditionalStyleDeclaration> dynStyles) {

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="Files"
+  source="Files"
+  >
+  <BeeColumns>
+    <BeeSimpleColumn expression="Document" />
+    <BeeSimpleColumn expression="FileDate" />
+    <BeeSimpleColumn expression="FileVersion" />
+    <BeeSimpleColumn expression="Name" />
+    <BeeSimpleColumn expression="Description" />
+    <BeeSimpleColumn expression="Hash" />
+    <BeeSimpleColumn expression="Mime" />
+  </BeeColumns>
+  <BeeOrder>
+    <OrderBy column="FileDate" />
+    <OrderBy column="Name" />
+  </BeeOrder>
+</BeeView>
+ 

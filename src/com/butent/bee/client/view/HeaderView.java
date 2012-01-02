@@ -23,6 +23,8 @@ public interface HeaderView extends View, LoadingStateChangeEvent.Handler, Index
   String getCaption();
   
   int getHeight();
+  
+  boolean hasAction(Action action);
 
   void removeCaptionStyle(String style);
   

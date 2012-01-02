@@ -12,8 +12,8 @@ public class ValueLabel<T> extends BeeLabel implements TakesValue<T> {
   protected T value;
   private final Renderer<? super T> renderer;
 
-  public ValueLabel(Renderer<? super T> renderer) {
-    super();
+  public ValueLabel(Renderer<? super T> renderer, boolean inline) {
+    super(inline);
     this.renderer = renderer;
   }
 

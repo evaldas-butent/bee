@@ -12,16 +12,16 @@ import com.butent.bee.shared.JustDate;
 
 public class DateLabel extends ValueLabel<JustDate> implements HasDateTimeFormat {
 
-  public DateLabel() {
-    super(new DateRenderer());
+  public DateLabel(boolean inline) {
+    super(new DateRenderer(), inline);
   }
 
-  public DateLabel(DateTimeFormat format) {
-    super(new DateRenderer(format));
+  public DateLabel(DateTimeFormat format, boolean inline) {
+    super(new DateRenderer(format), inline);
   }
 
-  public DateLabel(String pattern) {
-    super(new DateRenderer(pattern));
+  public DateLabel(String pattern, boolean inline) {
+    super(new DateRenderer(pattern), inline);
   }
 
   public DateTimeFormat getDateTimeFormat() {

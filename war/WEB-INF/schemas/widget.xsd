@@ -14,11 +14,12 @@
 
   <xs:complexType name="widgetBase">
     <xs:attributeGroup ref="bee:appearance" />
-    <xs:attribute name="name" type="bee:nameType" />
+    <xs:attribute name="name" type="xs:normalizedString" />
     <xs:attribute name="title" type="xs:string" />
     <xs:attribute name="html" type="xs:string" />
     <xs:attribute name="options" type="xs:normalizedString" />
     <xs:attribute name="visible" type="xs:boolean" default="true" />
+    <xs:attribute name="disablable" type="xs:boolean" default="true" />
     <xs:attribute ref="xml:base" />
   </xs:complexType>
 
@@ -349,26 +350,35 @@
   <xs:element name="Label" type="bee:labelType" substitutionGroup="bee:widget" />
   <xs:element name="InlineLabel" type="bee:labelType" substitutionGroup="bee:widget" />
 
-  <xs:element name="TextLabel" type="bee:display" substitutionGroup="bee:widget" />
   <xs:element name="HtmlLabel" type="bee:display" substitutionGroup="bee:widget" />
+  
+  <xs:complexType name="valueLabel">
+    <xs:complexContent>
+      <xs:extension base="bee:display">
+        <xs:attribute name="inline" type="xs:boolean" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
 
-  <xs:element name="IntegerLabel" type="bee:display" substitutionGroup="bee:widget" />
-  <xs:element name="LongLabel" type="bee:display" substitutionGroup="bee:widget" />
-  <xs:element name="DoubleLabel" type="bee:display" substitutionGroup="bee:widget" />
-  <xs:element name="CurrencyLabel" type="bee:display" substitutionGroup="bee:widget" />
+  <xs:element name="TextLabel" type="bee:valueLabel" substitutionGroup="bee:widget" />
+
+  <xs:element name="IntegerLabel" type="bee:valueLabel" substitutionGroup="bee:widget" />
+  <xs:element name="LongLabel" type="bee:valueLabel" substitutionGroup="bee:widget" />
+  <xs:element name="DoubleLabel" type="bee:valueLabel" substitutionGroup="bee:widget" />
+  <xs:element name="CurrencyLabel" type="bee:valueLabel" substitutionGroup="bee:widget" />
 
   <xs:element name="DecimalLabel" substitutionGroup="bee:widget">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="bee:display">
+        <xs:extension base="bee:valueLabel">
           <xs:attribute name="scale" type="xs:unsignedByte" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="DateLabel" type="bee:display" substitutionGroup="bee:widget" />
-  <xs:element name="DateTimeLabel" type="bee:display" substitutionGroup="bee:widget" />
+  <xs:element name="DateLabel" type="bee:valueLabel" substitutionGroup="bee:widget" />
+  <xs:element name="DateTimeLabel" type="bee:valueLabel" substitutionGroup="bee:widget" />
 
   <xs:element name="Meter" substitutionGroup="bee:widget">
     <xs:complexType>
@@ -489,7 +499,7 @@
   <xs:complexType name="hasName">
     <xs:complexContent>
       <xs:restriction base="bee:widgetType">
-        <xs:attribute name="name" type="bee:nameType" use="required" />
+        <xs:attribute name="name" type="xs:normalizedString" use="required" />
       </xs:restriction>
     </xs:complexContent>
   </xs:complexType>
@@ -673,7 +683,7 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:restriction base="bee:display">
-          <xs:attribute name="name" type="bee:nameType" use="required" />
+          <xs:attribute name="name" type="xs:normalizedString" use="required" />
         </xs:restriction>
       </xs:complexContent>
     </xs:complexType>
@@ -683,7 +693,7 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:restriction base="bee:editableWidget">
-          <xs:attribute name="name" type="bee:nameType" use="required" />
+          <xs:attribute name="name" type="xs:normalizedString" use="required" />
         </xs:restriction>
       </xs:complexContent>
     </xs:complexType>
@@ -693,12 +703,22 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:restriction base="bee:focusableWidget">
-          <xs:attribute name="name" type="bee:nameType" use="required" />
+          <xs:attribute name="name" type="xs:normalizedString" use="required" />
         </xs:restriction>
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
   
   <xs:element name="hr" type="bee:widgetType" substitutionGroup="bee:widget" />
+
+  <xs:element name="InputFile" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:widgetType">
+          <xs:attribute name="multiple" type="xs:boolean" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
 
 </xs:schema>

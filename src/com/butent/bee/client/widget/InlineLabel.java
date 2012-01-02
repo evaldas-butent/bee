@@ -1,7 +1,5 @@
 package com.butent.bee.client.widget;
 
-import com.google.gwt.dom.client.Document;
-
 /**
  * Enables using inline label user interface component.
  */
@@ -9,7 +7,7 @@ import com.google.gwt.dom.client.Document;
 public class InlineLabel extends BeeLabel {
 
   public InlineLabel() {
-    super(Document.get().createSpanElement());
+    super(true);
   }
 
   public InlineLabel(HorizontalAlignmentConstant align) {

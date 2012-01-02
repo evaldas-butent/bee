@@ -10,15 +10,15 @@ import com.butent.bee.client.i18n.Format;
 
 public class LongLabel extends NumberLabel<Long> {
 
-  public LongLabel() {
-    super(Format.getDefaultLongFormat());
+  public LongLabel(boolean inline) {
+    super(Format.getDefaultLongFormat(), inline);
   }
 
-  public LongLabel(NumberFormat format) {
-    super(format);
+  public LongLabel(NumberFormat format, boolean inline) {
+    super(format, inline);
   }
 
-  public LongLabel(String pattern) {
-    super(pattern);
+  public LongLabel(String pattern, boolean inline) {
+    super(pattern, inline);
   }
 }

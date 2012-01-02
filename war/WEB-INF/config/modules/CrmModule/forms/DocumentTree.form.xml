@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+  
+  name="DocumentTree" caption="Dokumentų medis" enabledActions="add delete edit refresh">
+  <Tree name="Tree" />
+</BeeForm>  

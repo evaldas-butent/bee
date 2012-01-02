@@ -858,64 +858,6 @@ body, select {
   font-size: x-small;
 }
 
-.bee-SignIn-Popup {
-  background-color: whitesmoke;
-  border: 1px solid #e5e5e5;
-}
-.bee-SignIn-Panel {
-  width: 400px;
-  height: 320px;	
-}
-.bee-SignIn-Caption {
-  font-size: 16px;
-  color: #222;
-  position: absolute;
-  left: 20px;
-  top: 20px;
-}
-.bee-SignIn-Label {
-  font-size: 13px;
-  font-weight: bold;
-  color: #222;
-  position: absolute;
-  right: 220px;
-}
-.bee-SignIn-Input {
-  font-size: 15px;
-  height: 32px;
-  padding-left: 8px;
-  border: 1px solid #d9d9d9;
-  border-top: 1px solid silver;
-  background-color: #faffbd;
-  position: absolute;
-  left: 200px;
-  right: 20px;
-}
-.bee-SignIn-User {
-  top: 80px;
-}
-.bee-SignIn-Password {
-  top: 140px;
-}
-.bee-SignIn-Language {
-  font-size: 15px;
-  position: absolute;
-  left: 20px;
-  top: 220px;
-}
-.bee-SignIn-Button {
-  font-size: 13px;
-  font-weight: bold;
-  height: 32px;
-  padding-left: 8px;
-  padding-right: 8px;
-  color: white;
-  background-color: #4d90fe;
-  position: absolute;
-  right: 20px;
-  bottom: 20px;
-}
-
 .bee-required:after {
   content: " *";
   color: red;
@@ -937,7 +879,8 @@ body, select {
 }
 
 .gwt-TreeItem-selected {
-  background-color: #ffffaa;
+  background-color: #ffa;
+  font-weight: bolder;
 }
 
 .gwt-SplitLayoutPanel-HDragger {

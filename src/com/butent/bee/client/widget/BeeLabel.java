@@ -1,5 +1,6 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Label;
 
@@ -15,6 +16,10 @@ public class BeeLabel extends Label implements HasId {
   public BeeLabel() {
     super();
     init();
+  }
+  
+  public BeeLabel(boolean inline) {
+    this(inline ? Document.get().createSpanElement() : Document.get().createDivElement());
   }
 
   public BeeLabel(Element element) {

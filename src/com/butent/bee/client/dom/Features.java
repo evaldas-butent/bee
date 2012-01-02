@@ -1208,11 +1208,19 @@ public class Features {
   }
 
   private static native boolean testXhrCrossDomain() /*-{
-    return "withCredentials" in new XMLHttpRequest;
+    if ($wnd.XMLHttpRequest) {
+      return "withCredentials" in new $wnd.XMLHttpRequest;
+    } else {
+      return false;
+    }
   }-*/;
 
   private static native boolean testXhrUploadProgress() /*-{
-    return "upload" in new XMLHttpRequest;
+    if ($wnd.XMLHttpRequest) {
+      return "upload" in new $wnd.XMLHttpRequest;
+    } else {
+      return false;
+    }
   }-*/;
 
   private Features() {

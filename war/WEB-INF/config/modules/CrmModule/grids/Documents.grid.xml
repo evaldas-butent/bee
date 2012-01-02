@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+  
+  name="Documents" viewName="Documents" caption="Dokumentai" 
+  newRowForm="NewDocument" editForm="Document">
+  
+  <west size="200">
+    <Tree name="Tree" />
+  </west>
+  
+  <columns>
+    <BeeIdColumn name="Id" />
+    <BeeDataColumn name="DocumentDate" source="DocumentDate" caption="Data" />
+    <BeeDataColumn name="Number" source="Number" caption="Numeris" />
+    <BeeDataColumn name="Name" source="Name" caption="Pavadinimas" />
+    <BeeDataColumn name="TypeName" source="TypeName" caption="Tipas" />
+    <BeeDataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
+    <BeeDataColumn name="Expires" source="Expires" caption="Galioja iki" />
+  </columns>
+</BeeGrid>

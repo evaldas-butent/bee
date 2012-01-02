@@ -18,6 +18,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentC
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.Widget;
@@ -82,6 +83,7 @@ import com.butent.bee.client.widget.InlineInternalLink;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputBoolean;
+import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.client.widget.InputInteger;
 import com.butent.bee.client.widget.InputLong;
 import com.butent.bee.client.widget.InputNumber;
@@ -163,6 +165,7 @@ public enum FormWidget {
   INPUT_DATE_TIME("InputDateTime", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_DECIMAL("InputDecimal", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_DOUBLE("InputDouble", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
+  INPUT_FILE("InputFile", EnumSet.of(Type.INPUT)),
   INPUT_INTEGER("InputInteger", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_LONG("InputLong", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_SLIDER("InputSlider", EnumSet.of(Type.EDITABLE, Type.INPUT)),
@@ -266,7 +269,9 @@ public enum FormWidget {
   private static final String ATTR_HTML = "html";
   private static final String ATTR_TITLE = "title";
   private static final String ATTR_VISIBLE = "visible";
+  private static final String ATTR_DISABLABLE = "disablable";
 
+  private static final String ATTR_INLINE = "inline";
   private static final String ATTR_FORMAT = "format";
   private static final String ATTR_SCALE = "scale";
   private static final String ATTR_HORIZONTAL_ALIGNMENT = "horizontalAlignment";
@@ -358,6 +363,7 @@ public enum FormWidget {
   private static final String ATTR_ID = "id";
 
   private static final String ATTR_CHECKED = "checked";
+  private static final String ATTR_MULTIPLE = "multiple";
 
   private static final String TAG_CSS = "css";
   private static final String TAG_DYN_STYLE = "dynStyle";
@@ -435,6 +441,7 @@ public enum FormWidget {
     String min;
     String max;
     String step;
+    boolean inline;
 
     Widget widget = null;
 
@@ -487,10 +494,11 @@ public enum FormWidget {
 
       case CURRENCY_LABEL:
         format = attributes.get(ATTR_FORMAT);
+        inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
-          widget = new DecimalLabel(Format.getDefaultCurrencyFormat());
+          widget = new DecimalLabel(Format.getDefaultCurrencyFormat(), inline);
         } else {
-          widget = new DecimalLabel(format);
+          widget = new DecimalLabel(format, inline);
         }
         break;
 
@@ -520,28 +528,31 @@ public enum FormWidget {
 
       case DATE_LABEL:
         format = attributes.get(ATTR_FORMAT);
+        inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
-          widget = new DateLabel();
+          widget = new DateLabel(inline);
         } else {
-          widget = new DateLabel(format);
+          widget = new DateLabel(format, inline);
         }
         break;
 
       case DATE_TIME_LABEL:
         format = attributes.get(ATTR_FORMAT);
+        inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
-          widget = new DateTimeLabel();
+          widget = new DateTimeLabel(inline);
         } else {
-          widget = new DateTimeLabel(format);
+          widget = new DateTimeLabel(format, inline);
         }
         break;
 
       case DECIMAL_LABEL:
         format = attributes.get(ATTR_FORMAT);
+        inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
-          widget = new DecimalLabel(BeeUtils.toInt(attributes.get(ATTR_SCALE)));
+          widget = new DecimalLabel(BeeUtils.toInt(attributes.get(ATTR_SCALE)), inline);
         } else {
-          widget = new DecimalLabel(format);
+          widget = new DecimalLabel(format, inline);
         }
         break;
 
@@ -563,10 +574,11 @@ public enum FormWidget {
 
       case DOUBLE_LABEL:
         format = attributes.get(ATTR_FORMAT);
+        inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
-          widget = new DoubleLabel();
+          widget = new DoubleLabel(inline);
         } else {
-          widget = new DoubleLabel(format);
+          widget = new DoubleLabel(format, inline);
         }
         break;
 
@@ -689,6 +701,13 @@ public enum FormWidget {
         ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(attributes.get(ATTR_FORMAT),
             Format.getDefaultDoubleFormat()));
         break;
+      
+      case INPUT_FILE:
+        widget = new InputFile(BeeConst.isTrue(attributes.get(ATTR_MULTIPLE)));
+        if (!BeeUtils.isEmpty(name)) {
+          ((InputFile) widget).setName(name.trim());
+        }
+        break;
 
       case INPUT_INTEGER:
         widget = new InputInteger();
@@ -724,10 +743,11 @@ public enum FormWidget {
 
       case INTEGER_LABEL:
         format = attributes.get(ATTR_FORMAT);
+        inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
-          widget = new IntegerLabel();
+          widget = new IntegerLabel(inline);
         } else {
-          widget = new IntegerLabel(format);
+          widget = new IntegerLabel(format, inline);
         }
         break;
 
@@ -760,10 +780,11 @@ public enum FormWidget {
 
       case LONG_LABEL:
         format = attributes.get(ATTR_FORMAT);
+        inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
-          widget = new LongLabel();
+          widget = new LongLabel(inline);
         } else {
-          widget = new LongLabel(format);
+          widget = new LongLabel(format, inline);
         }
         break;
 
@@ -880,7 +901,7 @@ public enum FormWidget {
         break;
 
       case TEXT_LABEL:
-        widget = new TextLabel();
+        widget = new TextLabel(BeeUtils.toBoolean(attributes.get(ATTR_INLINE)));
         break;
 
       case TOGGLE:
@@ -988,6 +1009,8 @@ public enum FormWidget {
 
     WidgetDescription widgetDescription = new WidgetDescription(this,
         (widget instanceof HasId) ? ((HasId) widget).getId() : DomUtils.getId(widget));
+    
+    boolean disablable = widget instanceof HasEnabled;
 
     if (attributes.size() > 0) {
       setAttributes(widget, attributes);
@@ -997,7 +1020,12 @@ public enum FormWidget {
         UiHelper.setNumberBounds((HasNumberBounds) widget, widgetDescription.getMinValue(),
             widgetDescription.getMaxValue());
       }
+      if (disablable && BeeConst.isFalse(attributes.get(ATTR_DISABLABLE))) {
+        disablable = false;
+      }
     }
+    
+    widgetDescription.setDisablable(disablable);
 
     List<ConditionalStyleDeclaration> dynStyles = Lists.newArrayList();
     Calculation calc;

@@ -548,7 +548,7 @@ public class TaskEventHandler {
         parent.setWidget(row, 0, panel);
 
         addMinutes(flex, "Sugaišta minučių", 0, 0, 1440, 5);
-        addSelector(SELECTOR, flex, "Darbo tipas", "DurationTypes", "Name", false);
+        addSelector(SELECTOR, flex, "Darbo tipas", "DurationTypes", CrmConstants.COL_NAME, false);
         addDate(flex, "Atlikimo data", ValueType.DATE, false, new Long(TimeUtils.today(0).getDay()));
       }
     }
@@ -1309,7 +1309,7 @@ public class TaskEventHandler {
     final TaskDialog dialog = new TaskDialog("Užduoties koregavimas");
     dialog.addPriority("Prioritetas", oldPriority);
     dialog.addMinutes("Numatoma trukmė min.", oldTerm, 0, 43200, 30);
-    dialog.addSelector("Įmonė", "Companies", "Name", false);
+    dialog.addSelector("Įmonė", "Companies", CrmConstants.COL_NAME, false);
     dialog.addSelector("PERSON", "Asmuo", "CompanyPersons", CrmConstants.COL_FIRST_NAME, false);
     dialog.addAction("Išsaugoti", new ClickHandler() {
       @Override

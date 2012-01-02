@@ -19,7 +19,6 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
-import com.butent.bee.client.widget.BeeFileUpload;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.BeeRadioButton;
 import com.butent.bee.client.widget.InputInteger;
@@ -203,10 +202,6 @@ public class InputBoxes {
 
       } else {
         switch (tp) {
-          case FILE:
-            inp = new BeeFileUpload(var);
-            ok = true;
-            break;
           case BOOLEAN:
             if (BeeUtils.isEmpty(z)) {
               inp = new SimpleBoolean(var);

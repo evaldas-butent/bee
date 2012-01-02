@@ -87,8 +87,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         return;
       }
       
-      if (!BeeUtils.isEmpty(id)) {
-        getWidgetIds().add(id);
+      if (result.isDisablable() && !BeeUtils.isEmpty(id)) {
+        getDisablableWidgets().add(id);
       }
 
       if (type.isDisplay()) {
@@ -271,7 +271,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private FormCallback formCallback = null;
 
   private final CreationCallback creationCallback = new CreationCallback();
-  private final List<String> widgetIds = Lists.newArrayList();
+  private final List<String> disablableWidgets = Lists.newArrayList();
 
   private final Set<DisplayWidget> displayWidgets = Sets.newHashSet();
   private final List<EditableWidget> editableWidgets = Lists.newArrayList();
@@ -484,6 +484,18 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return enabled;
   }
 
+  public boolean isForeign(String columnId) {
+    if (BeeUtils.isEmpty(columnId)) {
+      return false;
+    }
+    EditableWidget editableWidget = getEditableWidget(columnId);
+    if (editableWidget == null) {
+      return false;
+    } else {
+      return editableWidget.isForeign();
+    }
+  }
+
   public boolean isRowEditable(boolean warn) {
     if (getRow() == null || isReadOnly() || !isEnabled()) {
       return false;
@@ -657,7 +669,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
     this.enabled = enabled;
     
-    for (String id : getWidgetIds()) {
+    for (String id : getDisablableWidgets()) {
       Widget widget = getWidget(id);
       if (widget instanceof HasEnabled && enabled != ((HasEnabled) widget).isEnabled()) {
         ((HasEnabled) widget).setEnabled(enabled);
@@ -857,12 +869,12 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
     return ok;
   }
-
+  
   private IsRow createEmptyRow() {
     String[] arr = new String[getDataColumns().size()];
     return new BeeRow(0, arr);
   }
-  
+
   private void fireDataRequest() {
     fireEvent(new DataRequestEvent());
   }
@@ -923,11 +935,15 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private Set<WidgetDescription> getChildWidgets() {
     return childWidgets;
   }
-
+  
   private CreationCallback getCreationCallback() {
     return creationCallback;
   }
-  
+
+  private List<String> getDisablableWidgets() {
+    return disablableWidgets;
+  }
+
   private Set<DisplayWidget> getDisplayWidgets() {
     return displayWidgets;
   }
@@ -973,10 +989,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
-  private List<String> getWidgetIds() {
-    return widgetIds;
-  }
-  
   private boolean hasChildren() {
     return !getChildWidgets().isEmpty();
   }
@@ -987,18 +999,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private boolean isAdding() {
     return adding;
-  }
-
-  private boolean isForeign(String columnId) {
-    if (BeeUtils.isEmpty(columnId)) {
-      return false;
-    }
-    EditableWidget editableWidget = getEditableWidget(columnId);
-    if (editableWidget == null) {
-      return false;
-    } else {
-      return editableWidget.isForeign();
-    }
   }
 
   private boolean isReadOnly() {

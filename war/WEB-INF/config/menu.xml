@@ -23,6 +23,11 @@
   <item id="tasks" parent="process_menu" order="10" text="Užduotys" service="grid" parameters="Tasks" />
   <item id="projects" parent="process_menu" order="20" text="Projektai" service="grid" parameters="Projects" />
 
+  <item id="doc_menu" order="60" text="Dokumentai" />
+  <item id="doc_types" parent="doc_menu" order="10" text="Tipai" service="grid" parameters="DocumentTypes" />
+  <item id="doc_tree" parent="doc_menu" order="20" text="Medis" service="form" parameters="DocumentTree" />
+  <item id="documents" parent="doc_menu" order="30" text="Dokumentai" service="grid" parameters="Documents" separators="*" />
+
   <item id="adm_menu" order="200" text="Administravimas" />
   <item id="roles" parent="adm_menu" order="10" text="Rolės" service="grid" parameters="Roles" />
   <item id="users" parent="adm_menu" order="20" text="Vartotojai" service="grid" parameters="Users" />

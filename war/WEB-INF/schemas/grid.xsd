@@ -49,6 +49,7 @@
     <xs:attribute name="newRowCaption" type="xs:string" />
     <xs:attribute name="editForm" type="bee:nameType" />
     <xs:attribute name="editMode" type="xs:boolean" />
+    <xs:attribute name="editSave" type="xs:boolean" default="true" />
     <xs:attribute name="editShowId" type="xs:boolean" />
     <xs:attribute name="editInPlace" type="xs:normalizedString" />
     <xs:attribute name="enabledActions" type="bee:viewActions" />

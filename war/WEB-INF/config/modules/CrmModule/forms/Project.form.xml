@@ -27,9 +27,9 @@
           <InlineLabel html="Būsena:" style="&LEFT_LABEL_STYLE;" />
           <InlineLabel name="Event" style="&DISPLAY_STYLE;" />
           <InlineLabel html="Pradžia:" style="&LABEL_STYLE;" />
-          <DateLabel source="StartDate" style="&DISPLAY_STYLE;" />
+          <DateLabel source="StartDate" inline="true" style="&DISPLAY_STYLE;" />
           <InlineLabel html="Terminas:" style="&LABEL_STYLE;" />
-          <DateLabel source="FinishDate" style="&DISPLAY_STYLE;" />
+          <DateLabel source="FinishDate" inline="true" style="&DISPLAY_STYLE;" />
         </FlowPanel>
 
         <HorizontalPanel style="&ROW_STYLE;">
@@ -44,7 +44,7 @@
       </FlowPanel>      
 
       <FlowPanel class="flexible" style="margin-right: 1em;">
-        <Button name="COMMENTED" html="Naujas komentaras" style="&BUTTON_STYLE;" />
+        <Button name="COMMENTED" html="Naujas komentaras" style="&BUTTON_STYLE;" disablable="false" />
         <Button name="EXTENDED" html="Keisti terminą" style="&BUTTON_STYLE;" />
         <Button name="ACTIVATED" html="Perduoti vykdymui" style="&BUTTON_STYLE;" />
         <Button name="SUSPENDED" html="Sustabdyti" style="&BUTTON_STYLE;" />

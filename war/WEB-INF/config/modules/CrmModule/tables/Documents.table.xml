@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+
+  name="Documents"
+  idName="DocumentID"
+  >
+  <BeeFields>
+    <BeeField name="DocumentDate" type="DATETIME" notNull="true" />
+    <BeeField name="Expires" type="DATETIME" />
+    <BeeField name="Number" type="STRING" precision="30" />
+    <BeeField name="RegistrationNumber" type="STRING" precision="30" />
+    <BeeField name="Type" type="LONG" notNull="true" relation="DocumentTypes" />
+    <BeeField name="Category" type="LONG" notNull="true" relation="DocumentTree" />
+    <BeeField name="Place" type="STRING" precision="100" />
+    <BeeField name="Company" type="LONG" relation="Companies" />
+    <BeeField name="CompanyPerson" type="LONG" relation="CompanyPersons" />
+    <BeeField name="Project" type="LONG" relation="Projects" />
+    <BeeField name="Name" type="STRING" precision="100" notNull="true" />
+    <BeeField name="Description" type="TEXT" />
+  </BeeFields>
+</BeeTable>

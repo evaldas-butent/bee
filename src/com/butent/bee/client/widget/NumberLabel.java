@@ -11,13 +11,13 @@ import com.butent.bee.client.i18n.NumberRenderer;
 
 public class NumberLabel<T extends Number> extends ValueLabel<T> implements HasNumberFormat {
 
-  public NumberLabel(NumberFormat format) {
-    super(new NumberRenderer(format));
+  public NumberLabel(NumberFormat format, boolean inline) {
+    super(new NumberRenderer(format), inline);
     init();
   }
 
-  public NumberLabel(String pattern) {
-    super(new NumberRenderer(pattern));
+  public NumberLabel(String pattern, boolean inline) {
+    super(new NumberRenderer(pattern), inline);
     init();
   }
 

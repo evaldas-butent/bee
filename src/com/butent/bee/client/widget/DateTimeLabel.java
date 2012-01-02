@@ -12,16 +12,16 @@ import com.butent.bee.shared.DateTime;
 
 public class DateTimeLabel extends ValueLabel<DateTime> implements HasDateTimeFormat {
 
-  public DateTimeLabel() {
-    super(new DateTimeRenderer());
+  public DateTimeLabel(boolean inline) {
+    super(new DateTimeRenderer(), inline);
   }
 
-  public DateTimeLabel(DateTimeFormat format) {
-    super(new DateTimeRenderer(format));
+  public DateTimeLabel(DateTimeFormat format, boolean inline) {
+    super(new DateTimeRenderer(format), inline);
   }
 
-  public DateTimeLabel(String pattern) {
-    super(new DateTimeRenderer(pattern));
+  public DateTimeLabel(String pattern, boolean inline) {
+    super(new DateTimeRenderer(pattern), inline);
   }
 
   public DateTimeFormat getDateTimeFormat() {

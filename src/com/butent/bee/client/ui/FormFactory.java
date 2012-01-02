@@ -27,7 +27,7 @@ import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeButton;
-import com.butent.bee.client.widget.BeeFileUpload;
+import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
@@ -41,6 +41,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -55,8 +56,12 @@ import java.util.Map;
 public class FormFactory {
 
   public interface FormCallback extends WidgetCallback {
+    
+    void afterAction(Action action, FormPresenter presenter);
 
     void afterRefresh(FormView form, IsRow row);
+
+    boolean beforeAction(Action action, FormPresenter presenter);
 
     void beforeRefresh(FormView form, IsRow row);
 
@@ -208,7 +213,7 @@ public class FormFactory {
 
     row++;
     container.setWidget(row, 0, new BeeLabel("Design File"));
-    final BeeFileUpload upload = new BeeFileUpload();
+    final InputFile upload = new InputFile();
     upload.setName(Service.VAR_FILE_NAME);
     container.setWidget(row, 1, upload);
 

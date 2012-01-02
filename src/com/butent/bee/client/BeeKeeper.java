@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.modules.crm.DocumentHandler;
 import com.butent.bee.client.modules.crm.ProjectEventHandler;
 import com.butent.bee.client.modules.crm.ProjectList;
 import com.butent.bee.client.modules.crm.TaskEventHandler;
@@ -118,18 +119,22 @@ public class BeeKeeper {
         }
       }
     });
+
     TaskEventHandler.register();
     getMenu().registerMenuCallback("task_list", new MenuManager.MenuCallback() {
       public void onSelection(String parameters) {
         TaskList.open(parameters);
       }
     });
+
     ProjectEventHandler.register();
     getMenu().registerMenuCallback("project_list", new MenuManager.MenuCallback() {
       public void onSelection(String parameters) {
         ProjectList.open(parameters);
       }
     });
+    
+    DocumentHandler.register();
   }
 
   public void start() {

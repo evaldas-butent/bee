@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+  
+  name="Files" viewName="Files" caption="Bylos">
+  
+  <columns>
+    <BeeDataColumn name="FileDate" source="FileDate" caption="Data" />
+    <BeeDataColumn name="FileVersion" source="FileVersion" caption="Versija" />
+    <BeeDataColumn name="Name" source="Name" caption="Pavadinimas" />
+    <BeeDataColumn name="Description" source="Description" caption="Aprašymas" />
+    <BeeDataColumn name="Mime" source="Mime" caption="Tipas" />
+    <BeeDataColumn name="Hash" source="Hash" caption="Kodas" readOnly="true" />
+  </columns>
+</BeeGrid>

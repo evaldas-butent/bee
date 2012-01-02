@@ -147,6 +147,10 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
   @Override
   public void handleAction(Action action) {
     Assert.notNull(action);
+    
+    if (getFormCallback() != null && !getFormCallback().beforeAction(action, this)) {
+      return;
+    }
 
     switch (action) {
       case CLOSE:
@@ -161,30 +165,38 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
         break;
 
       case DELETE:
-        RowInfo activeRowInfo = getView().getContent().getActiveRowInfo();
-        if (activeRowInfo != null && getView().getContent().isRowEditable(true)) {
-          deleteRow(activeRowInfo.getId(), activeRowInfo.getVersion());
+        if (hasData()) {
+          RowInfo activeRowInfo = getView().getContent().getActiveRowInfo();
+          if (activeRowInfo != null && getView().getContent().isRowEditable(true)) {
+            deleteRow(activeRowInfo.getId(), activeRowInfo.getVersion());
+          }
         }
         break;
 
       case REFRESH:
-        if (getDataProvider() != null) {
+        if (hasData()) {
           getDataProvider().refresh();
         }
         break;
 
       case REQUERY:
-        if (getDataProvider() != null) {
+        if (hasData()) {
           getDataProvider().requery(false);
         }  
         break;
         
       case ADD:
-        getView().getContent().startNewRow();
+        if (hasData()) {
+          getView().getContent().startNewRow();
+        }
         break;
 
       default:
         BeeKeeper.getLog().info(action, "not implemented");
+    }
+    
+    if (getFormCallback() != null) {
+      getFormCallback().afterAction(action, this);
     }
   }
 
@@ -304,6 +316,10 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
   private void deleteRow(long rowId, long version) {
     Global.getMsgBoxen().confirm("Delete Record ?", new DeleteCallback(rowId, version),
         StyleUtils.NAME_SCARY);
+  }
+  
+  private FormCallback getFormCallback() {
+    return getView().getContent().getFormCallback();
   }
 
   private Collection<SearchView> getSearchers() {

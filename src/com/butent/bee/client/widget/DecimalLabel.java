@@ -12,15 +12,15 @@ import java.math.BigDecimal;
 
 public class DecimalLabel extends NumberLabel<BigDecimal> {
 
-  public DecimalLabel(int scale) {
-    super(Format.getDecimalFormat(scale));
+  public DecimalLabel(int scale, boolean inline) {
+    super(Format.getDecimalFormat(scale), inline);
   }
 
-  public DecimalLabel(NumberFormat format) {
-    super(format);
+  public DecimalLabel(NumberFormat format, boolean inline) {
+    super(format, inline);
   }
 
-  public DecimalLabel(String pattern) {
-    super(pattern);
+  public DecimalLabel(String pattern, boolean inline) {
+    super(pattern, inline);
   }
 }

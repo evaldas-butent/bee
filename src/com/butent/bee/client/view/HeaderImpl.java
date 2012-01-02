@@ -222,6 +222,14 @@ public class HeaderImpl extends Complex implements HeaderView {
     return getId();
   }
 
+  public boolean hasAction(Action action) {
+    if (action == null) {
+      return false;
+    } else {
+      return getActionControls().containsKey(action);
+    }
+  }
+      
   public boolean isEnabled() {
     return enabled;
   }

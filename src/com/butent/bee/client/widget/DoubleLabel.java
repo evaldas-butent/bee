@@ -10,15 +10,15 @@ import com.butent.bee.client.i18n.Format;
 
 public class DoubleLabel extends NumberLabel<Double> {
 
-  public DoubleLabel() {
-    super(Format.getDefaultDoubleFormat());
+  public DoubleLabel(boolean inline) {
+    super(Format.getDefaultDoubleFormat(), inline);
   }
 
-  public DoubleLabel(NumberFormat format) {
-    super(format);
+  public DoubleLabel(NumberFormat format, boolean inline) {
+    super(format, inline);
   }
 
-  public DoubleLabel(String pattern) {
-    super(pattern);
+  public DoubleLabel(String pattern, boolean inline) {
+    super(pattern, inline);
   }
 }

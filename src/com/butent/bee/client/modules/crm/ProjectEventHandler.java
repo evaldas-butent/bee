@@ -136,7 +136,8 @@ public class ProjectEventHandler {
           columns.add(column);
           values.add(value);
 
-        } else if (BeeUtils.inListSame(colName, "ProjectType", "StartDate", "FinishDate", "Name")) {
+        } else if (BeeUtils.inListSame(colName, "ProjectType", "StartDate", "FinishDate",
+            CrmConstants.COL_NAME)) {
           dataView.notifySevere(colName + ": value required");
           return false;
         }
@@ -286,7 +287,7 @@ public class ProjectEventHandler {
     public void afterCreateWidget(String name, final Widget widget) {
       if (BeeUtils.same(name, CrmConstants.COL_EVENT)) {
         setWidget(name, widget);
-      
+
       } else if (BeeUtils.same(name, CrmConstants.COL_PRIORITY) && widget instanceof BeeListBox) {
         for (Priority priority : Priority.values()) {
           ((BeeListBox) widget).addItem(priority.name());
@@ -465,7 +466,7 @@ public class ProjectEventHandler {
               List<BeeColumn> columns = Lists.newArrayList();
               List<String> values = Lists.newArrayList();
 
-              columns.add(new BeeColumn(ValueType.TEXT, "Name"));
+              columns.add(new BeeColumn(ValueType.TEXT, CrmConstants.COL_NAME));
               values.add(name);
 
               String descr = dialog.getComment();
@@ -482,7 +483,7 @@ public class ProjectEventHandler {
 
               if (selected != null) {
                 owner = selected;
-                columns.add(new BeeColumn(ValueType.LONG, "Parent"));
+                columns.add(new BeeColumn(ValueType.LONG, CrmConstants.COL_PARENT));
                 values.add(BeeUtils.toString(((IsRow) selected.getUserObject()).getId()));
               } else {
                 owner = widget;
@@ -515,7 +516,8 @@ public class ProjectEventHandler {
       final IsRow item = (IsRow) selected.getUserObject();
 
       final ProjectDialog dialog = new ProjectDialog("Etapo koregavimas");
-      final String oldName = item.getString(DataUtils.getColumnIndex("Name", stageColumns));
+      final String oldName = item.getString(DataUtils.getColumnIndex(CrmConstants.COL_NAME,
+          stageColumns));
       final String oldDescr = item.getString(DataUtils.getColumnIndex("Description", stageColumns));
       dialog.addText("Pavadinimas", oldName, true);
       dialog.addComment("Aprašymas", oldDescr, false);
@@ -534,7 +536,7 @@ public class ProjectEventHandler {
               List<String> values = Lists.newArrayList();
 
               if (!BeeUtils.equals(oldName, name)) {
-                columns.add(new BeeColumn(ValueType.TEXT, "Name"));
+                columns.add(new BeeColumn(ValueType.TEXT, CrmConstants.COL_NAME));
                 oldValues.add(oldName);
                 values.add(name);
               }
@@ -559,8 +561,8 @@ public class ProjectEventHandler {
 
                     @Override
                     public void onSuccess(BeeRow result) {
-                      selected.setText(
-                          result.getString(DataUtils.getColumnIndex("Name", stageColumns)));
+                      selected.setText(result.getString(DataUtils.getColumnIndex(
+                          CrmConstants.COL_NAME, stageColumns)));
                       selected.setUserObject(result);
                       refreshDescription(result);
                       dialog.hide();
@@ -633,7 +635,7 @@ public class ProjectEventHandler {
                 if (result.isEmpty()) {
                   return;
                 }
-                int parentIndex = result.getColumnIndex("Parent");
+                int parentIndex = result.getColumnIndex(CrmConstants.COL_PARENT);
                 Map<Long, List<Long>> hierarchy = Maps.newHashMap();
                 Map<Long, IsRow> items = Maps.newHashMap();
 
@@ -648,7 +650,8 @@ public class ProjectEventHandler {
                   childs.add(row.getId());
                   items.put(row.getId(), row);
                 }
-                addBranch(widget, null, hierarchy, items, result.getColumnIndex("Name"));
+                addBranch(widget, null, hierarchy, items, result
+                    .getColumnIndex(CrmConstants.COL_NAME));
               }
             });
       }

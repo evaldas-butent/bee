@@ -104,6 +104,7 @@ public class GridLoaderBean {
 
   private static final String ATTR_EDIT_FORM = "editForm";
   private static final String ATTR_EDIT_MODE = "editMode";
+  private static final String ATTR_EDIT_SAVE = "editSave";
   private static final String ATTR_EDIT_SHOW_ID = "editShowId";
   private static final String ATTR_EDIT_IN_PLACE = "editInPlace";
 
@@ -646,6 +647,10 @@ public class GridLoaderBean {
     Boolean editMode = XmlUtils.getAttributeBoolean(src, ATTR_EDIT_MODE);
     if (editMode != null) {
       dst.setEditMode(editMode);
+    }
+    Boolean editSave = XmlUtils.getAttributeBoolean(src, ATTR_EDIT_SAVE);
+    if (editSave != null) {
+      dst.setEditSave(editSave);
     }
     Calculation editMessage = XmlUtils.getCalculation(src, TAG_EDIT_MESSAGE);
     if (editMessage != null) {

@@ -6,8 +6,11 @@ import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Set;
 
 /**
  * Manages xml descriptions of forms.
@@ -26,6 +29,9 @@ public class FormDescription implements HasViewName {
   private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
   private static final String ATTR_SEARCH_THRESHOLD = "searchThreshold";
 
+  private static final String ATTR_ENABLED_ACTIONS = "enabledActions";
+  private static final String ATTR_DISABLED_ACTIONS = "disabledActions";
+  
   private final Element formElement;
 
   public FormDescription(Element formElement) {
@@ -49,6 +55,24 @@ public class FormDescription implements HasViewName {
     return BeeUtils.trim(caption);
   }
 
+  public Set<Action> getDisabledActions() {
+    String actions = getFormElement().getAttribute(ATTR_DISABLED_ACTIONS);
+    if (BeeUtils.isEmpty(actions)) {
+      return null;
+    } else {
+      return Action.parse(actions);
+    }
+  }
+  
+  public Set<Action> getEnabledActions() {
+    String actions = getFormElement().getAttribute(ATTR_ENABLED_ACTIONS);
+    if (BeeUtils.isEmpty(actions)) {
+      return null;
+    } else {
+      return Action.parse(actions);
+    }
+  }
+  
   public Calculation getRowEditable() {
     return XmlUtils.getCalculation(getFormElement(), TAG_ROW_EDITABLE);
   }

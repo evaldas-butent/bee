@@ -8,8 +8,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class TextLabel extends ValueLabel<String> {
 
-  public TextLabel() {
-    super(null);
+  public TextLabel(boolean inline) {
+    super(null, inline);
   }
 
   @Override
