@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+  
+  name="Persons"
+  idName="PersonID"
+  x="304" y="276"
+  >
+  <BeeFields>
+    <BeeField name="FirstName" type="STRING" precision="30" notNull="true" />
+    <BeeField name="LastName" type="STRING" precision="30" />
+    <BeeField name="DateOfBirth" type="DATE" />
+    <BeeField name="Contact" type="LONG" unique="true" relation="Contacts" />
+  </BeeFields>
+</BeeTable>

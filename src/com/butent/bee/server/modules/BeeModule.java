@@ -5,6 +5,8 @@ import com.butent.bee.shared.communication.ResponseObject;
 
 public interface BeeModule {
 
+  String dependsOn();
+
   ResponseObject doService(RequestInfo reqInfo);
 
   String getName();

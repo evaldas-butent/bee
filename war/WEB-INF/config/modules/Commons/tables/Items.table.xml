@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+
+  name="Items"
+  idName="ItemID"
+  >
+  <BeeFields>
+    <BeeField name="Name" type="STRING" precision="100" notNull="true" />
+    <BeeField name="Unit" type="LONG" notNull="true" relation="Units" />
+    <BeeField name="Article" type="STRING" precision="30" unique="true" />
+    <BeeField name="Barcode" type="STRING" precision="30" unique="true" />
+    <BeeField name="Price" type="DECIMAL" precision="15" scale="5" />
+    <BeeField name="Currency" type="LONG" relation="Currencies" />
+    <BeeField name="IsService" type="BOOLEAN" />
+  </BeeFields>
+  <BeeStates>
+    <BeeState>Marked</BeeState>
+  </BeeStates>
+</BeeTable>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+  
+  name="Countries" viewName="Countries" caption="Šalys"
+  >
+  <columns>
+    <BeeDataColumn name="Name" source="Name" caption="Šalis" />
+    <BeeDataColumn name="Code" source="Code" caption="Kodas" />
+  </columns>
+</BeeGrid>

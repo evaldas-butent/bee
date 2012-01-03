@@ -3,6 +3,7 @@ package com.butent.bee.server.modules.transport;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.modules.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -16,6 +17,11 @@ import javax.ejb.Stateless;
 public class TransportModuleBean implements BeeModule {
 
   private static Logger logger = Logger.getLogger(TransportModuleBean.class.getName());
+
+  @Override
+  public String dependsOn() {
+    return CommonsConstants.COMMONS_MODULE;
+  }
 
   @Override
   public ResponseObject doService(RequestInfo reqInfo) {

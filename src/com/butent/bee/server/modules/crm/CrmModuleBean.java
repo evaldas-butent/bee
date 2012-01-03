@@ -23,6 +23,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.modules.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.ProjectEvent;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
@@ -57,6 +58,11 @@ public class CrmModuleBean implements BeeModule {
   QueryServiceBean qs;
   @Resource
   EJBContext ctx;
+
+  @Override
+  public String dependsOn() {
+    return CommonsConstants.COMMONS_MODULE;
+  }
 
   @Override
   public ResponseObject doService(RequestInfo reqInfo) {

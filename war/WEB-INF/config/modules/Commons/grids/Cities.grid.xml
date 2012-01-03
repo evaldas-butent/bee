@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+  
+  name="Cities" viewName="Cities" caption="Miestai"
+  maxColumnWidth="300"
+  >
+  <columns>
+    <BeeDataColumn name="City" source="Name" caption="Miestas" />
+
+    <BeeRelColumn name="Country" source="CountryName" relSource="Country" relColumn="Name"
+      caption="Šalis">
+      <editor type="selector" width="200" visibleLines="12"
+        options="{&quot;showLimit&quot;: true, &quot;searchType&quot;: &quot;contains&quot;}" />
+    </BeeRelColumn>
+
+    <BeeVerColumn name="Version" caption="Paskutinio koregavimo data" />
+  </columns>
+</BeeGrid>

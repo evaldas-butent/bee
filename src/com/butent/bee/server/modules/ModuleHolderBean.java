@@ -1,12 +1,15 @@
 package com.butent.bee.server.modules;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.modules.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
@@ -24,7 +27,9 @@ import javax.naming.NamingException;
 @Singleton
 @Lock(LockType.READ)
 public class ModuleHolderBean {
+  private static final Splitter SPLITTER = Splitter.on(",").omitEmptyStrings().trimResults();
   private static final String PROPERTY_MODULES = "Modules";
+  private static final String MODULE_BEAN_PREFIX = "ModuleBean";
   private static Logger logger = Logger.getLogger(ModuleHolderBean.class.getName());
 
   private final Map<String, BeeModule> modules = Maps.newHashMap();
@@ -63,35 +68,48 @@ public class ModuleHolderBean {
   @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
+    Collection<String> mods = Sets.newHashSet(CommonsConstants.COMMONS_MODULE);
     String moduleList = Config.getProperty(PROPERTY_MODULES);
 
     if (!BeeUtils.isEmpty(moduleList)) {
-      for (String mod : moduleList.split(",")) {
-        mod = mod.trim();
+      for (String mod : SPLITTER.split(moduleList)) {
+        mods.add(mod);
+      }
+    }
+    for (String mod : mods) {
+      try {
+        BeeModule module =
+            (BeeModule) InitialContext.doLookup("java:global/Bee/" + mod + MODULE_BEAN_PREFIX);
+        String moduleName = module.getName();
 
-        if (BeeUtils.isEmpty(mod)) {
-          continue;
+        if (BeeUtils.isEmpty(moduleName)) {
+          LogUtils.severe(logger, "Module", BeeUtils.bracket(mod), "does not have name");
+
+        } else if (modules.containsKey(moduleName)) {
+          LogUtils.severe(logger, "Dublicate module name:", BeeUtils.bracket(moduleName));
+
+        } else {
+          modules.put(moduleName, module);
+          LogUtils.info(logger, "Registered module:", BeeUtils.bracket(moduleName));
         }
-        try {
-          BeeModule module =
-              (BeeModule) InitialContext.doLookup("java:global/Bee/" + mod + "Bean");
-          String moduleName = module.getName();
+      } catch (NamingException ex) {
+        LogUtils.severe(logger, "Module not found:", BeeUtils.bracket(mod));
 
-          if (BeeUtils.isEmpty(moduleName)) {
-            LogUtils.severe(logger, "Module", BeeUtils.bracket(mod), "does not have name");
+      } catch (ClassCastException ex) {
+        LogUtils.severe(logger, "Not a module:", BeeUtils.bracket(mod));
+      }
+    }
+    for (String mod : getModules()) {
+      moduleList = getModule(mod).dependsOn();
 
-          } else if (modules.containsKey(moduleName)) {
-            LogUtils.severe(logger, "Dublicate module name:", BeeUtils.bracket(moduleName));
-
-          } else {
-            modules.put(moduleName, module);
-            LogUtils.info(logger, "Registered module:", BeeUtils.bracket(mod));
+      if (!BeeUtils.isEmpty(moduleList)) {
+        for (String depends : SPLITTER.split(moduleList)) {
+          if (!hasModule(depends)) {
+            LogUtils.severe(logger, "Module dependency error:", "Module", BeeUtils.bracket(mod),
+                "depends on nonexistent module", BeeUtils.bracket(depends));
+            modules.remove(mod);
+            break;
           }
-        } catch (NamingException ex) {
-          LogUtils.severe(logger, "Module not found:", BeeUtils.bracket(mod));
-
-        } catch (ClassCastException ex) {
-          LogUtils.severe(logger, "Not a module:", BeeUtils.bracket(mod));
         }
       }
     }

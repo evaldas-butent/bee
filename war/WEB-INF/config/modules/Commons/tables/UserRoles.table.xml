@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+
+  name="UserRoles"
+  idName="UserRoleID"
+   x="82" y="13"
+  >
+  <BeeFields>
+    <BeeField name="User" type="LONG" notNull="true" relation="Users" cascade="DELETE" />
+    <BeeField name="Role" type="LONG" notNull="true" relation="Roles" cascade="DELETE" />
+  </BeeFields>
+  <BeeKeys>
+    <BeeKey unique="true">
+      <KeyField>User</KeyField>
+      <KeyField>Role</KeyField>
+    </BeeKey>
+  </BeeKeys>
+</BeeTable>

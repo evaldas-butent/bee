@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+  
+  name="User" viewName="Users" caption="Vartotojas"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <FlexTable cellSpacing="10">
+      <row>
+        <cell><Label html="Prisijungimo vardas" /></cell>
+        <cell><InputText source="Login" style="width:150px" /></cell>
+        <cell horizontalAlignment="center" colSpan="2">
+          <Button html="Pakeisti slaptažodį" name="ChangePassword" />
+        </cell>
+        <cell><Label html="Parametrai" /></cell>
+      </row>
+      <row>
+        <cell><Label html="Vardas" /></cell>
+        <cell><InputText source="FirstName" style="width:150px" /></cell>
+        <cell><Label html="Pavardė" horizontalAlignment="right" /></cell>
+        <cell><InputText source="LastName" style="width:150px" /></cell>
+        <cell rowSpan="3"><InputArea source="Properties" style="width:200px; height:100%" /></cell>
+      </row>
+      <row>
+        <cell colSpan="2"><Label html="" /></cell>
+        <cell><Label html="Gimimo data" horizontalAlignment="right" /></cell>
+        <cell><InputDate source="DateOfBirth" /></cell>
+      </row>
+    </FlexTable>
+
+    <ChildGrid class="flexible" name="UserRoles" relColumn="User" style="width:300px" />
+  </FlowPanel>
+</BeeForm>  

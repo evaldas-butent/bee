@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="Users"
+  source="Users"
+  >
+  <BeeColumns>
+    <BeeSimpleColumn expression="Login" />
+    <BeeSimpleColumn expression="Password" />
+    <BeeSimpleJoin expression="Person" joinType="LEFT">
+      <BeeSimpleColumn expression="FirstName" />
+      <BeeSimpleColumn expression="LastName" />
+      <BeeSimpleColumn expression="DateOfBirth" />
+    </BeeSimpleJoin>
+    <BeeSimpleColumn expression="Properties" />
+    <BeeSimpleColumn expression="LastLogin" />
+  </BeeColumns>
+  <BeeOrder>
+    <OrderBy column="Login" />
+  </BeeOrder>
+</BeeView>
+ 

@@ -460,6 +460,14 @@ public class SystemBean {
   @Lock(LockType.WRITE)
   public void initTables() {
     initObjects(SysObject.TABLE);
+
+    for (BeeTable table : getTables()) {
+      for (BeeForeignKey fKey : table.getForeignKeys()) {
+        Assert.state(isTable(fKey.getRefTable()), BeeUtils.concat(1,
+            "Unknown field", BeeUtils.bracket(table.getName() + "." + fKey.getKeyField()),
+            "relation:", BeeUtils.bracket(fKey.getRefTable())));
+      }
+    }
     initDbTriggers();
     initDatabase(BeeUtils.ifString(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));
     initViews();
@@ -866,10 +874,8 @@ public class SystemBean {
     }
     int cnt = 0;
     Collection<File> roots = Lists.newArrayList();
-    List<String> modules = Lists.newArrayList((String) null);
-    modules.addAll(moduleBean.getModules());
 
-    for (String moduleName : modules) {
+    for (String moduleName : moduleBean.getModules()) {
       roots.clear();
       String modulePath = moduleBean.getResourcePath(moduleName, obj.getPath());
 

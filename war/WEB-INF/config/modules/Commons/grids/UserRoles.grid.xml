@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+  
+  name="UserRoles" viewName="UserRoles" caption="Rolės"
+  newRowColumns="RoleName" hasHeaders="false"
+  >
+  <columns>
+    <BeeRelColumn name="RoleName" source="RoleName" relSource="Role" relColumn="Name"
+      caption="Rolė" width="100" />
+  </columns>
+</BeeGrid>

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<BeeState xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/state.xsd"
-
-  name="Visible"
-  roleMode="true"
-  checked="true"
-/>
