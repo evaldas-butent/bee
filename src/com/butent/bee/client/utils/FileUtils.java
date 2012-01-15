@@ -74,6 +74,16 @@ public class FileUtils {
     Assert.notNull(uiObj);
     return getFileInfo(uiObj.getElement());
   }
+  
+  public static native boolean hasFiles(JavaScriptObject obj) /*-{
+    if (obj == null) {
+      return false;
+    } else if (obj.files) {
+      return obj.files.length > 0;
+    } else {
+      return false;
+    }
+  }-*/;
 
   private static native JsArrayMixed getFileInfoArray(JavaScriptObject obj) /*-{
     var arr = new Array();

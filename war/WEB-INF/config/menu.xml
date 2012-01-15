@@ -24,9 +24,11 @@
   <item id="projects" parent="process_menu" order="20" text="Projektai" service="grid" parameters="Projects" />
 
   <item id="doc_menu" order="60" text="Dokumentai" />
-  <item id="doc_types" parent="doc_menu" order="10" text="Tipai" service="grid" parameters="DocumentTypes" />
-  <item id="doc_tree" parent="doc_menu" order="20" text="Medis" service="form" parameters="DocumentTree" />
-  <item id="documents" parent="doc_menu" order="30" text="Dokumentai" service="grid" parameters="Documents" separators="*" />
+  <item id="documents" parent="doc_menu" order="10" text="Dokumentai" service="grid" parameters="Documents" />
+  <item id="doc_tree" parent="doc_menu" order="20" text="Kategorijos" service="form" parameters="DocumentTree" separators="*" />
+  <item id="doc_types" parent="doc_menu" order="30" text="Tipai" service="grid" parameters="DocumentTypes" separators="*" />
+  <item id="doc_types" parent="doc_menu" order="40" text="Grupės" service="grid" parameters="DocumentGroups" />
+  <item id="doc_types" parent="doc_menu" order="50" text="Vietos" service="grid" parameters="DocumentPlaces" />
 
   <item id="transport_menu" order="70" text="Transportas" />
   <item id="orders" parent="transport_menu" order="10" text="Užsakymai" service="grid" parameters="TripOrders" />

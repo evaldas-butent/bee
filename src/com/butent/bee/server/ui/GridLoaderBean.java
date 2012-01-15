@@ -222,15 +222,23 @@ public class GridLoaderBean {
       LogUtils.warning(logger, "Grid attribute", ATTR_NAME, "not found");
       return null;
     }
-    if (!sys.isView(viewName)) {
-      LogUtils.warning(logger, "Grid", gridName, "unrecognized view name:", viewName);
-      return null;
-    }
+    
+    BeeView view;
+    GridDescription grid;
+    
+    if (BeeUtils.isEmpty(viewName)) {
+      view = null;
+      grid = new GridDescription(gridName);      
+    } else {
+      if (!sys.isView(viewName)) {
+        LogUtils.warning(logger, "Grid", gridName, "unrecognized view name:", viewName);
+        return null;
+      }
 
-    BeeView view = sys.getView(viewName);
-
-    GridDescription grid = new GridDescription(gridName, viewName, view.getSourceIdName(),
+      view = sys.getView(viewName);
+      grid = new GridDescription(gridName, viewName, view.getSourceIdName(),
         view.getSourceVersionName());
+    }
     xmlToGrid(gridElement, grid, view);
 
     NodeList columnGroups = gridElement.getElementsByTagName(TAG_COLUMNS);
@@ -338,10 +346,12 @@ public class GridLoaderBean {
   }
 
   private boolean initColumn(BeeView view, ColumnDescription column) {
-    Assert.notNull(view);
     Assert.notNull(column);
-    boolean ok = false;
+    if (view == null) {
+      return true;
+    }
 
+    boolean ok = false;
     String viewName = view.getName();
     String source = column.getSource();
 
@@ -559,14 +569,16 @@ public class GridLoaderBean {
     if (!BeeUtils.isEmpty(caption)) {
       dst.setCaption(caption.trim());
     }
-
-    String filter = src.getAttribute(ATTR_FILTER);
-    if (!BeeUtils.isEmpty(filter)) {
-      dst.setFilter(view.parseFilter(filter.trim()));
-    }
-    String order = src.getAttribute(ATTR_ORDER);
-    if (!BeeUtils.isEmpty(order)) {
-      dst.setOrder(view.parseOrder(order.trim()));
+    
+    if (view != null) {
+      String filter = src.getAttribute(ATTR_FILTER);
+      if (!BeeUtils.isEmpty(filter)) {
+        dst.setFilter(view.parseFilter(filter.trim()));
+      }
+      String order = src.getAttribute(ATTR_ORDER);
+      if (!BeeUtils.isEmpty(order)) {
+        dst.setOrder(view.parseOrder(order.trim()));
+      }
     }
 
     Integer minColumnWidth = XmlUtils.getAttributeInteger(src, ATTR_MIN_COLUMN_WIDTH);

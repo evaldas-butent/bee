@@ -268,7 +268,7 @@ public class UiHelper {
   }
   
   public static boolean validate(String oldValue, String newValue, Evaluator validation,
-      IsRow row, int colIndex, ValueType type, String minValue, String maxValue,
+      IsRow row, int colIndex, ValueType type, boolean nullable, String minValue, String maxValue,
       NotificationListener notificationListener) {
     if (BeeUtils.equalsTrimRight(oldValue, newValue)) {
       return true;
@@ -283,6 +283,10 @@ public class UiHelper {
       }
     }
 
+    if (errorMessage == null && !nullable && BeeUtils.isEmpty(newValue)) {
+      errorMessage = "Value required";
+    }
+    
     if (errorMessage == null && (!BeeUtils.isEmpty(minValue) || !BeeUtils.isEmpty(maxValue))) {
       Value value = Value.parseValue(type, newValue, false);
 

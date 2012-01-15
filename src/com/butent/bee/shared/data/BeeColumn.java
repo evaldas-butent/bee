@@ -75,6 +75,11 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     this(type, label, label);
   }
 
+  public BeeColumn(ValueType type, String label, boolean nillable) {
+    this(type, label, label);
+    setNullable(nillable ? NULLABLE : NO_NULLS);
+  }
+  
   public BeeColumn(ValueType type, String label, String id) {
     super(type, label, id);
     setName(BeeUtils.ifString(label, id));

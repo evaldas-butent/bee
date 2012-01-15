@@ -1,5 +1,7 @@
 package com.butent.bee.client.view;
 
+import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
+
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.view.grid.GridView;
@@ -15,7 +17,7 @@ import java.util.List;
  * and get it's content.
  */
 
-public interface GridContainerView extends View {
+public interface GridContainerView extends View, HasAllDragAndDropHandlers {
 
   void bind();
 

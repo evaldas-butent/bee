@@ -51,12 +51,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return grid;
   }
 
-  private String name;
+  private String name = null;
   private String caption = null;
 
-  private String viewName;
-  private String idName;
-  private String versionName;
+  private String viewName = null;
+  private String idName = null;
+  private String versionName = null;
 
   private Filter filter = null;
   private Order order = null;
@@ -107,10 +107,14 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Set<Action> disabledActions = Sets.newHashSet();
   
   private List<String> widgets = Lists.newArrayList();
+  
+  public GridDescription(String name) {
+    Assert.notEmpty(name);
+    this.name = name;
+  }
 
   public GridDescription(String name, String viewName, String idName, String versionName) {
     Assert.notEmpty(name);
-    Assert.notEmpty(viewName);
 
     this.name = name;
     this.viewName = viewName;

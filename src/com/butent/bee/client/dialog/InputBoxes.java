@@ -154,6 +154,14 @@ public class InputBoxes {
     }
   }
 
+  /*
+  public void inputString(String caption, String prompt, StringCallback callback,
+      String defaultValue, int maxLength, int width, Unit widthUnit, int timeout,
+      boolean showConfirm, boolean showCancel, WidgetInitializer initializer) {
+    Assert.notNull(callback);
+  }
+  */
+
   public void inputVars(Stage bst, String cap, Variable... vars) {
     Assert.notNull(vars);
     Assert.parameterCount(vars.length + 1, 2);

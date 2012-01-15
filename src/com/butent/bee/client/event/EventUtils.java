@@ -20,8 +20,10 @@ import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
+import com.google.gwt.event.dom.client.DragDropEventBase;
 import com.google.gwt.event.dom.client.DragEndEvent;
 import com.google.gwt.event.dom.client.DragEndHandler;
+import com.google.gwt.event.dom.client.DragEnterHandler;
 import com.google.gwt.event.dom.client.DragEvent;
 import com.google.gwt.event.dom.client.DragHandler;
 import com.google.gwt.event.dom.client.DragLeaveEvent;
@@ -44,6 +46,7 @@ import com.google.gwt.event.dom.client.GestureEndEvent;
 import com.google.gwt.event.dom.client.GestureEndHandler;
 import com.google.gwt.event.dom.client.GestureStartEvent;
 import com.google.gwt.event.dom.client.GestureStartHandler;
+import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
 import com.google.gwt.event.dom.client.HasBlurHandlers;
 import com.google.gwt.event.dom.client.HasCanPlayThroughHandlers;
 import com.google.gwt.event.dom.client.HasChangeHandlers;
@@ -118,12 +121,11 @@ import com.google.gwt.event.dom.client.TouchStartHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.media.dom.client.MediaError;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.Features;
-import com.butent.bee.client.event.DndEvent.TYPE;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.view.form.FormView;
@@ -134,7 +136,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -204,22 +205,29 @@ public class EventUtils {
 
   public static final int KEY_INSERT = 45;
 
-  private static boolean dnd;
+  public static final String PROPERTY_DROP_EFFECT = "dropEffect";
+  public static final String PROPERTY_EFFECT_ALLOWED = "effectAllowed";
 
-  private static JavaScriptObject onDnd;
+  public static final String EFFECT_COPY = "copy";
+  public static final String EFFECT_MOVE = "move";
 
-  private static final Map<String, HasDragStartHandler> dndSources = Maps.newHashMap();
-  private static final Map<String, HasDropHandler> dndTargets = Maps.newHashMap();
-
+  public static final String DEFAULT_DND_DATA_FORMAT = "text/plain";
+  
   private static final Map<String, JavaScriptObject> domHandlers = Maps.newHashMap();
-
-  static {
-    dnd = Features.supportsDnd() && Features.supportsDndEvents();
-    if (dnd) {
-      initDnd();
+  
+  public static void addClassName(NativeEvent ev, String className) {
+    Assert.notEmpty(className);
+    Element element = getEventTargetElement(ev);
+    if (element != null) {
+      element.addClassName(className);
     }
   }
 
+  public static void addClassName(HasNativeEvent ev, String className) {
+    Assert.notNull(ev);
+    addClassName(ev.getNativeEvent(), className);
+  }
+  
   public static boolean addDomHandler(final Widget widget, String type, String body) {
     Assert.notNull(widget);
     Assert.notEmpty(type);
@@ -774,16 +782,16 @@ public class EventUtils {
     return isEventType(type, EVENT_TYPE_KEY_DOWN);
   }
 
-  public static boolean isKeyEvent(int type) {
-    return (type & Event.KEYEVENTS) != 0;
-  }
-
   public static boolean isKeyEvent(Event ev) {
     if (ev == null) {
       return false;
     } else {
       return isKeyEvent(ev.getTypeInt());
     }
+  }
+
+  public static boolean isKeyEvent(int type) {
+    return (type & Event.KEYEVENTS) != 0;
   }
 
   public static boolean isKeyPress(String type) {
@@ -832,10 +840,6 @@ public class EventUtils {
     logEvent(ev, false, null);
   }
 
-  public static void logEvent(NativeEvent ev, String title) {
-    logEvent(ev, false, title);
-  }
-
   public static void logEvent(NativeEvent ev, boolean detailed, String title) {
     Assert.notNull(ev);
     if (!BeeUtils.isEmpty(title)) {
@@ -854,87 +858,90 @@ public class EventUtils {
     }
   }
 
-  public static boolean makeDndSource(Element elem, HasDragStartHandler handler) {
-    if (!dnd) {
+  public static void logEvent(NativeEvent ev, String title) {
+    logEvent(ev, false, title);
+  }
+
+  public static boolean makeDndSource(HasAllDragAndDropHandlers widget, DragStartHandler handler) {
+    if (!DragDropEventBase.isSupported()) {
       return false;
     }
-    Assert.notNull(elem);
+    Assert.notNull(widget);
     Assert.notNull(handler);
-
-    String id = DomUtils.ensureId(elem, "dnd");
-    if (isDndSource(id)) {
-      return true;
+    
+    if (widget instanceof UIObject) {
+      DomUtils.setDraggable((UIObject) widget);
     }
-
-    DomUtils.setDraggable(elem);
-    sinkDragStart(elem);
-
-    if (handler instanceof HasDragHandler) {
-      sinkDrag(elem);
+    
+    widget.addDragStartHandler(handler);
+    if (handler instanceof DragHandler) {
+      widget.addDragHandler((DragHandler) handler);
     }
-    if (handler instanceof HasDragEndHandler) {
-      sinkDragEnd(elem);
+    if (handler instanceof DragEndHandler) {
+      widget.addDragEndHandler((DragEndHandler) handler);
     }
-
-    dndSources.put(id, handler);
     return true;
   }
-
-  public static boolean makeDndTarget(Element elem, HasDropHandler handler) {
-    if (!dnd) {
+  
+  public static boolean makeDndTarget(HasAllDragAndDropHandlers widget, DropHandler handler) {
+    if (!DragDropEventBase.isSupported()) {
       return false;
     }
-
-    String id = DomUtils.ensureId(elem, "dnd");
-    if (isDndTarget(id)) {
-      return true;
+    Assert.notNull(widget);
+    Assert.notNull(handler);
+    
+    widget.addDropHandler(handler);
+    if (handler instanceof DragEnterHandler) {
+      widget.addDragEnterHandler((DragEnterHandler) handler);
     }
-
-    sinkDrop(elem);
-    sinkDragEnter(elem);
-    sinkDragOver(elem);
-
-    if (handler instanceof HasDragLeaveHandler) {
-      sinkDragLeave(elem);
+    if (handler instanceof DragOverHandler) {
+      widget.addDragOverHandler((DragOverHandler) handler);
     }
-
-    dndTargets.put(id, handler);
+    if (handler instanceof DragLeaveHandler) {
+      widget.addDragLeaveHandler((DragLeaveHandler) handler);
+    }
     return true;
   }
-
-  public static void removeDndHandler(Object handler) {
-    Assert.notNull(handler);
-
-    if (handler instanceof HasDragStartHandler) {
-      removeDndSource((HasDragStartHandler) handler);
-    }
-    if (handler instanceof HasDropHandler) {
-      removeDndTarget((HasDropHandler) handler);
+  
+  public static void removeClassName(NativeEvent ev, String className) {
+    Assert.notEmpty(className);
+    Element element = getEventTargetElement(ev);
+    if (element != null) {
+      element.removeClassName(className);
     }
   }
 
-  public static void removeDndSource(HasDragStartHandler handler) {
-    BeeUtils.removeValue(dndSources, handler);
+  public static void removeClassName(HasNativeEvent ev, String className) {
+    Assert.notNull(ev);
+    removeClassName(ev.getNativeEvent(), className);
+  }
+  
+  public static void setDndData(DragDropEventBase<?> event, String data) {
+    setDndData(event, DEFAULT_DND_DATA_FORMAT, data);
+  }
+  
+  public static void setDndData(DragDropEventBase<?> event, String format, String data) {
+    Assert.notNull(event);
+    Assert.notEmpty(format);
+    Assert.notEmpty(data);
+    
+    event.setData(format, data);
+  }
+  
+  public static void setDropEffect(DragDropEventBase<?> event, String effect) {
+    Assert.notNull(event);
+    Assert.notEmpty(effect);
+    
+    JsUtils.setProperty(event.getDataTransfer(), PROPERTY_DROP_EFFECT, effect);
   }
 
-  public static void removeDndTarget(HasDropHandler handler) {
-    BeeUtils.removeValue(dndTargets, handler);
+  public static void setEffectAllowed(DragDropEventBase<?> event, String effect) {
+    Assert.notNull(event);
+    Assert.notEmpty(effect);
+    
+    JsUtils.setProperty(event.getDataTransfer(), PROPERTY_EFFECT_ALLOWED, effect);
   }
-
-  public static List<Property> showDnd() {
-    List<Property> lst = new ArrayList<Property>();
-
-    for (String id : dndSources.keySet()) {
-      lst.add(new Property(id, dndTargets.containsKey(id) ? "S+T" : "S"));
-    }
-    for (String id : dndTargets.keySet()) {
-      if (!dndSources.containsKey(id)) {
-        lst.add(new Property(id, "T"));
-      }
-    }
-    return lst;
-  }
-
+  
   public static void sinkChildEvents(Element parent, String childTag, int eventBits) {
     Assert.notNull(parent);
     Assert.notEmpty(childTag);
@@ -946,10 +953,6 @@ public class EventUtils {
     for (int i = 0; i < lst.getLength(); i++) {
       Event.sinkEvents(lst.getItem(i), eventBits);
     }
-  }
-
-  public static boolean supportsDnd() {
-    return dnd;
   }
 
   public static String transformCloseEvent(CloseEvent<?> ev) {
@@ -1051,87 +1054,6 @@ public class EventUtils {
     return JsUtils.createFunction("event, target, row, rowId, rowVersion", body);
   }
 
-  private static boolean dispatchDnd(DndEvent evt) {
-    boolean ret = false;
-    if (evt == null) {
-      BeeKeeper.getLog().severe("dnd: event is null");
-      return ret;
-    }
-
-    EventTarget eventTarget = evt.getEventTarget();
-    if (eventTarget == null) {
-      BeeKeeper.getLog().severe("dnd: event target is null");
-      return ret;
-    }
-
-    String id = Element.as(eventTarget).getId();
-    if (BeeUtils.isEmpty(id)) {
-      BeeKeeper.getLog().severe("dnd: element has no id");
-      return ret;
-    }
-
-    TYPE type = evt.getDndType();
-    if (type == null) {
-      BeeKeeper.getLog().severe("dnd: event type", evt.getType(), "not recognized");
-      return ret;
-    }
-
-    if (type.isSourceEvent()) {
-      HasDragStartHandler sourceHandler = dndSources.get(id);
-      if (sourceHandler == null) {
-        BeeKeeper.getLog().severe("dnd: source handler not found, id", id);
-        return ret;
-      }
-
-      switch (type) {
-        case DRAGSTART:
-          ret = sourceHandler.onDragStart(evt);
-          break;
-        case DRAG:
-          ret = ((HasDragHandler) sourceHandler).onDrag(evt);
-          break;
-        case DRAGEND:
-          ret = ((HasDragEndHandler) sourceHandler).onDragEnd(evt);
-          break;
-        default:
-          Assert.untouchable(transformEvent(evt));
-      }
-
-    } else {
-      HasDropHandler targetHandler = dndTargets.get(id);
-      if (targetHandler == null) {
-        BeeKeeper.getLog().severe("dnd: target handler not found, id", id);
-        return ret;
-      }
-
-      switch (type) {
-        case DROP:
-          ret = targetHandler.onDrop(evt);
-          break;
-        case DRAGENTER:
-          if (targetHandler instanceof HasDragEnterHandler) {
-            ret = ((HasDragEnterHandler) targetHandler).onDragEnter(evt);
-          } else {
-            ret = targetHandler.onDrop(evt);
-          }
-          break;
-        case DRAGOVER:
-          if (targetHandler instanceof HasDragOverHandler) {
-            ret = ((HasDragOverHandler) targetHandler).onDragOver(evt);
-          } else {
-            ret = targetHandler.onDrop(evt);
-          }
-          break;
-        case DRAGLEAVE:
-          ret = ((HasDragLeaveHandler) targetHandler).onDragLeave(evt);
-          break;
-        default:
-          Assert.untouchable(transformEvent(evt));
-      }
-    }
-    return ret;
-  }
-
   private static void dispatchDomHandler(Widget widget, JavaScriptObject handler,
       HasNativeEvent event) {
     JavaScriptObject row;
@@ -1183,48 +1105,6 @@ public class EventUtils {
     }
     return handler;
   }
-
-  private static native void initDnd() /*-{
-    @com.butent.bee.client.event.EventUtils::onDnd = $entry(function(evt) {
-      return @com.butent.bee.client.event.EventUtils::dispatchDnd(Lcom/butent/bee/client/event/DndEvent;)(evt);
-    });
-  }-*/;
-
-  private static boolean isDndSource(String id) {
-    return dndSources.containsKey(id);
-  }
-
-  private static boolean isDndTarget(String id) {
-    return dndTargets.containsKey(id);
-  }
-
-  private static native String sinkDrag(Element elem) /*-{
-    elem.ondrag = @com.butent.bee.client.event.EventUtils::onDnd;
-  }-*/;
-
-  private static native String sinkDragEnd(Element elem) /*-{
-    elem.ondragend = @com.butent.bee.client.event.EventUtils::onDnd;
-  }-*/;
-
-  private static native String sinkDragEnter(Element elem) /*-{
-    elem.ondragenter = @com.butent.bee.client.event.EventUtils::onDnd;
-  }-*/;
-
-  private static native String sinkDragLeave(Element elem) /*-{
-    elem.ondragleave = @com.butent.bee.client.event.EventUtils::onDnd;
-  }-*/;
-
-  private static native String sinkDragOver(Element elem) /*-{
-    elem.ondragover = @com.butent.bee.client.event.EventUtils::onDnd;
-  }-*/;
-
-  private static native String sinkDragStart(Element elem) /*-{
-    elem.ondragstart = @com.butent.bee.client.event.EventUtils::onDnd;
-  }-*/;
-
-  private static native String sinkDrop(Element elem) /*-{
-    elem.ondrop = @com.butent.bee.client.event.EventUtils::onDnd;
-  }-*/;
 
   private static String transformEventTarget(EventTarget et) {
     if (et == null) {

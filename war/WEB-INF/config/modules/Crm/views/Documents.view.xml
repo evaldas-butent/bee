@@ -14,11 +14,18 @@
     <BeeSimpleJoin joinType="LEFT" expression="Type">
       <BeeSimpleColumn name="TypeName" expression="Name" />
     </BeeSimpleJoin>
+    <BeeSimpleColumn expression="Group" />
+    <BeeSimpleJoin joinType="LEFT" expression="Group">
+      <BeeSimpleColumn name="GroupName" expression="Name" />
+    </BeeSimpleJoin>
     <BeeSimpleColumn expression="Category" />
     <BeeSimpleJoin joinType="LEFT" expression="Category">
       <BeeSimpleColumn name="CategoryName" expression="Name" />
     </BeeSimpleJoin>
     <BeeSimpleColumn expression="Place" />
+    <BeeSimpleJoin joinType="LEFT" expression="Type">
+      <BeeSimpleColumn name="PlaceName" expression="Name" />
+    </BeeSimpleJoin>
     <BeeSimpleColumn expression="Project" />
     <BeeSimpleJoin expression="Project" joinType="LEFT">
       <BeeSimpleColumn expression="Name" name="ProjectName" />

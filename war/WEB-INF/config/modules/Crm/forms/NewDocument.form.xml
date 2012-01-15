@@ -1,112 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd" name="NewDocument"
-  caption="Naujas dokumentas">
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="NewDocument" caption="Naujas dokumentas">
 
-  <FlowPanel name="form">
-    <FlexTable cellSpacing="10">
-      <row>
-        <cell>
-          <Label html="Dokumento data:" class="bee-required" />
-        </cell>
-        <cell>
-          <InputDateTime source="DocumentDate" />
-        </cell>
-        <cell>
-          <Label html="Galioja iki:" horizontalAlignment="right" />
-        </cell>
-        <cell>
-          <InputDateTime source="Expires" />
-        </cell>
-      </row>
-
-      <row>
-        <cell>
-          <Label html="Numeris:" />
-        </cell>
-        <cell>
-          <InputText source="Number" />
-        </cell>
-        <cell>
-          <Label html="Registracijos numeris:" horizontalAlignment="right" />
-        </cell>
-        <cell>
-          <InputText source="RegistrationNumber" />
-        </cell>
-      </row>
-
-      <row>
-        <cell>
-          <Label html="Tipas:" class="bee-required" />
-        </cell>
-        <cell>
-          <DataSelector source="TypeName" relSource="Type" relView="DocumentTypes"
-            relColumn="Name" />
-        </cell>
-        <cell>
-          <Label html="Vieta:" horizontalAlignment="right" />
-        </cell>
-        <cell>
-          <InputText source="Place" />
-        </cell>
-      </row>
-
-      <row>
-        <cell>
-          <Label html="Kategorija:" class="bee-required" />
-        </cell>
-        <cell>
-          <DataSelector source="CategoryName" relSource="Category" relView="DocumentTree"
-            relColumn="Name" />
-        </cell>
-        <cell>
-          <Label html="Įmonė:" horizontalAlignment="right" />
-        </cell>
-        <cell>
-          <DataSelector source="CompanyName" relSource="Company" relView="Companies"
-            relColumn="Name" />
-        </cell>
-      </row>
-
-      <row>
-        <cell>
-          <Label html="Projektas:" />
-        </cell>
-        <cell>
-          <DataSelector source="ProjectName" relSource="Project" relView="Projects"
-            relColumn="Name" />
-        </cell>
-        <cell>
-          <Label html="Asmuo:" horizontalAlignment="right" />
-        </cell>
-        <cell>
-          <DataSelector source="PersonFirstName" relSource="CompanyPerson" relView="CompanyPersons"
-            relColumn="FirstName" />
-        </cell>
-      </row>
-
-      <row>
-        <cell>
-          <Label html="Pavadinimas:" class="bee-required" />
-        </cell>
-        <cell colSpan="3">
-          <InputText source="Name" style="width: 100%;" />
-        </cell>
-      </row>
-
-      <row>
-        <cell>
-          <Label html="Aprašymas:" />
-        </cell>
-        <cell colSpan="3">
-          <InputArea source="Description" style="width: 100%; height: 60px;" />
-        </cell>
-      </row>
-    </FlexTable>
-
-    <FlowPanel style="margin-left: 2em; margin-top: 2ex;">
-      <InputFile name="newfiles" multiple="true" />
-      <ListBox name="info" minSize="2" maxSize="10" style="width: 600px; margin-top: 1ex; display: block;" />
-    </FlowPanel>
+  <FlowPanel class="flexBox-vertical">
+    <xi:include href="widgets/DocumentFields.widget.xml" />
+    <InputFile name="input" multiple="true" style="visibility: hidden;" />
+    <GridPanel name="NewFiles" class="flexible" style="margin: 1ex 10px;" />
   </FlowPanel>
-</BeeForm>  
+</BeeForm>

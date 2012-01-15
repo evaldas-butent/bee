@@ -14,7 +14,6 @@ import com.google.gwt.view.client.MultiSelectionModel;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.data.CachedProvider;
 import com.butent.bee.client.data.KeyProvider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
@@ -458,14 +457,11 @@ public class GridFactory {
       grid.addColumn(label, i, null, column, new ColumnHeader(label, label, false));
     }
 
-    @SuppressWarnings("unused")
-    CachedProvider provider = new CachedProvider(grid, table);
-
     grid.setReadOnly(true);
 
     grid.setHeaderCellHeight(23);
     grid.setBodyCellHeight(20);
-    grid.estimateColumnWidths(table.getRows().getList(), Math.min(r, 20));
+    grid.estimateColumnWidths(table.getRows().getList(), 0, Math.min(r, 20));
     grid.estimateHeaderWidths(true);
 
     grid.setRowCount(r, false);
@@ -517,18 +513,35 @@ public class GridFactory {
   private static void getInitialRowSet(final GridDescription gridDescription,
       final GridCallback gridCallback, final PresenterCallback presenterCallback,
       final Collection<UiOption> options) {
+
+    final Map<String, Filter> initialFilters =
+        (gridCallback == null) ? null : gridCallback.getInitialFilters();
+    Filter filter = getInitialQueryFilter(gridDescription, initialFilters);
+    
+    String viewName = gridDescription.getViewName();
+    if (BeeUtils.isEmpty(viewName)) {
+      BeeRowSet brs = null;
+      if (gridCallback != null) {
+        brs = gridCallback.getInitialRowSet();
+      }
+      
+      if (brs == null) {
+        BeeKeeper.getLog().severe("grid", gridDescription.getName(), "has no initial data");
+      } else {
+        createPresenter(brs.getNumberOfRows(), brs, false, gridDescription, gridCallback,
+            presenterCallback, initialFilters, options);
+      }
+      return;
+    }
+    
     final int threshold = BeeUtils.unbox(gridDescription.getAsyncThreshold());
     int limit = BeeUtils.unbox(gridDescription.getInitialRowSetSize());
     if (limit <= 0) {
       limit = DataUtils.getMaxInitialRowSetSize();
     }
     
-    final Map<String, Filter> initialFilters =
-        (gridCallback == null) ? null : gridCallback.getInitialFilters();
-    Filter filter = getInitialQueryFilter(gridDescription, initialFilters);
-    
-    Queries.getRowSet(gridDescription.getViewName(), null, filter,
-        gridDescription.getOrder(), 0, limit, gridDescription.getCachingPolicy(),
+    Queries.getRowSet(viewName, null, filter, gridDescription.getOrder(), 0, limit,
+        gridDescription.getCachingPolicy(),
         PropertyUtils.createProperties(Service.VAR_VIEW_SIZE, threshold),
         new Queries.RowSetCallback() {
           public void onFailure(String[] reason) {

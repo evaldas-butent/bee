@@ -6,6 +6,7 @@ import com.butent.bee.client.view.add.HasAddStartHandlers;
 import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
@@ -29,7 +30,13 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   int estimatePageSize(int containerWidth, int containerHeight);
   
+  void formCancel();
+  
+  void formConfirm();
+  
   IsRow getActiveRowData();
+
+  FormView getForm(boolean edit);
 
   CellGrid getGrid();
   

@@ -189,8 +189,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (caption == null) {
         caption = gridDescription.getCaption();
       }
-      header.create(caption, true, readOnly, options, gridDescription.getEnabledActions(),
-          gridDescription.getDisabledActions());
+      header.create(caption, !BeeUtils.isEmpty(gridDescription.getViewName()), readOnly, options,
+          gridDescription.getEnabledActions(), gridDescription.getDisabledActions());
     } else {
       header = null;
     }

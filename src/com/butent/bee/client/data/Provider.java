@@ -179,6 +179,9 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   }
 
   public void refresh() {
+    if (BeeUtils.isEmpty(getViewName())) {
+      return;
+    }
     startLoading();
     Global.getCache().removeQuietly(getViewName());
 

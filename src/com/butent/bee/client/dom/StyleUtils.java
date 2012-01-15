@@ -150,6 +150,7 @@ public class StyleUtils {
   
   public static final String DND_SOURCE = "bee-dndSource";
   public static final String DND_OVER = "bee-dndOver";
+  public static final String DROP_AREA = "bee-dropArea";
 
   public static final String WINDOW_CAPTION = "bee-WindowCaption";
   public static final String WINDOW_MESSAGE = "bee-WindowMessage";

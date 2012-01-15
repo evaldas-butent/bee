@@ -607,6 +607,6 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   private boolean validate(String oldValue, String newValue) {
     return UiHelper.validate(oldValue, newValue, getValidation(), getRowValue(), getColIndex(),
-        getDataType(), getMinValue(), getMaxValue(), getNotificationListener());
+        getDataType(), isNullable(), getMinValue(), getMaxValue(), getNotificationListener());
   }
 }

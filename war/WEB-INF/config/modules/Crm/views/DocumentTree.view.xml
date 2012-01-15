@@ -12,6 +12,9 @@
     <BeeSimpleJoin joinType="LEFT" expression="Parent">
       <BeeSimpleColumn name="ParentOrder" expression="Order" />
     </BeeSimpleJoin>
+    <BeeExternalJoin source="Documents" joinType="LEFT" expression="Category">
+      <BeeAggregateColumn name="DocumentCount" aggregate="COUNT" expression="Category" />
+    </BeeExternalJoin>
   </BeeColumns>
   <BeeOrder>
     <OrderBy column="ParentOrder" />

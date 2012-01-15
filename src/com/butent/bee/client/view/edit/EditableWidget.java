@@ -401,6 +401,6 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
 
   private boolean validate(String oldValue, String newValue) {
     return UiHelper.validate(oldValue, newValue, getValidation(), getRowValue(),
-        getIndexForUpdate(), getDataType(), getMinValue(), getMaxValue(), getForm());
+        getIndexForUpdate(), getDataType(), isNullable(), getMinValue(), getMaxValue(), getForm());
   }
 }

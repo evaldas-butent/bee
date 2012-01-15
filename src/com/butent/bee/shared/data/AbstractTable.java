@@ -169,7 +169,9 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   public void clearCell(int rowIndex, int colIndex) {
     getRow(rowIndex).clearCell(colIndex);
   }
-
+  
+  public abstract void clearRows();
+  
   public void clearValue(int rowIndex, int colIndex) {
     IsCell cell = getCell(rowIndex, colIndex);
     cell.clearValue();
@@ -695,8 +697,6 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   protected abstract void assertRowIndex(int rowIndex);
-
-  protected abstract void clearRows();
 
   protected void cloneColumns(IsTable<RowType, ColType> cloneTable) {
     cloneTable.setColumns(getColumns());

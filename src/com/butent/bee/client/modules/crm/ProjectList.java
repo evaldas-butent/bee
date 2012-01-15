@@ -57,10 +57,7 @@ public class ProjectList {
 
     private final Map<String, Editor> filterWidgets = Maps.newHashMap();
 
-    private GridPresenter gridPresenter = null;
-    
     private GridHandler(Type type) {
-      super();
       this.type = type;
       this.userId = BeeKeeper.getUser().getUserId();
     }
@@ -223,11 +220,6 @@ public class ProjectList {
       return true;
     }
 
-    @Override
-    public void onShow(GridPresenter presenter) {
-      setGridPresenter(presenter);
-    }
-
     private Filter getEventFilter(ProjectEvent pe) {
       if (pe == null) {
         return null;
@@ -263,10 +255,6 @@ public class ProjectList {
       return andFilter.isEmpty() ? null : andFilter;
     }
 
-    private GridPresenter getGridPresenter() {
-      return gridPresenter;
-    }
-
     private Type getType() {
       return type;
     }
@@ -282,10 +270,6 @@ public class ProjectList {
         return BeeUtils.toBoolean(filterWidgets.get(name).getNormalizedValue());
       }
       return false;
-    }
-
-    private void setGridPresenter(GridPresenter gridPresenter) {
-      this.gridPresenter = gridPresenter;
     }
 
     private void updateFilter(GridPresenter presenter) {

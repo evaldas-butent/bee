@@ -13,5 +13,6 @@
     <BeeField name="Description" type="TEXT" />
     <BeeField name="Hash" type="STRING" precision="100" />
     <BeeField name="Mime" type="STRING" precision="100" />
+    <BeeField name="Owner" type="LONG" notNull="true" relation="Users" />
   </BeeFields>
 </BeeTable>

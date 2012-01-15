@@ -1023,13 +1023,13 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return false;
   }
 
-  public <T extends IsRow> void estimateColumnWidths() {
-    estimateColumnWidths(getRowData(), getDataSize());
+  public void estimateColumnWidths() {
+    estimateColumnWidths(getRowData(), 0, getDataSize());
   }
 
-  public <T extends IsRow> void estimateColumnWidths(List<T> values, int length) {
+  public <T extends IsRow> void estimateColumnWidths(List<T> values, int start, int end) {
     for (int i = 0; i < getColumnCount(); i++) {
-      estimateColumnWidth(i, values, length, true);
+      estimateColumnWidth(i, values, start, end, true);
     }
   }
 
@@ -1336,6 +1336,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
     setRowCount(rc + 1, true);
 
+    if (rc <= ps || ps <= 0) {
+      estimateColumnWidths(getRowData(), nr, nr + 1);
+    }
+    
     this.activeRow = nr;
     if (getActiveColumn() < 0) {
       this.activeColumn = 0;
@@ -2269,11 +2273,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   
   private <T extends IsRow> int estimateColumnWidth(int col, List<T> values, boolean update) {
     Assert.notNull(values);
-    return estimateColumnWidth(col, values, values.size(), update);
+    return estimateColumnWidth(col, values, 0, values.size(), update);
   }
 
-  private <T extends IsRow> int estimateColumnWidth(int col, List<T> values, int length,
-      boolean update) {
+  private <T extends IsRow> int estimateColumnWidth(int col, List<T> values,
+      int start, int end, boolean update) {
     Assert.notNull(values);
 
     ColumnInfo columnInfo = getColumnInfo(col);
@@ -2281,7 +2285,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     Font font = Font.merge(getBodyComponent().getFont(), columnInfo.getBodyFont());
 
     int width = 0;
-    for (int i = 0; i < length; i++) {
+    for (int i = start; i < end; i++) {
       IsRow rowValue = values.get(i);
       if (rowValue == null) {
         continue;

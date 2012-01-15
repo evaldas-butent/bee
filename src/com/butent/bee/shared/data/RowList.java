@@ -27,6 +27,11 @@ public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> e
   }
 
   @Override
+  public void clearRows() {
+    getRows().clear();
+  }
+
+  @Override
   public int getNumberOfRows() {
     return getRows().getLength();
   }
@@ -71,11 +76,6 @@ public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> e
   @Override
   protected void assertRowIndex(int rowIndex) {
     Assert.isIndex(getRows(), rowIndex);
-  }
-
-  @Override
-  protected void clearRows() {
-    getRows().clear();
   }
 
   @Override

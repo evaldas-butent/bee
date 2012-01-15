@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.Notification;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
@@ -29,16 +30,13 @@ import com.butent.bee.client.grid.RowVersionColumn;
 import com.butent.bee.client.grid.SelectionColumn;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Absolute;
-import com.butent.bee.client.layout.Split;
-import com.butent.bee.client.presenter.AbstractPresenter;
+import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Evaluator;
-import com.butent.bee.client.view.HeaderImpl;
-import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -98,67 +96,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
   }
 
-  private class GridFormPresenter extends AbstractPresenter {
-    private final HeaderView header;
-
-    private GridFormPresenter(HeaderView header) {
-      super();
-      this.header = header;
-    }
-
-    public void handleAction(Action action) {
-      if (action == null) {
-        return;
-      }
-      
-      switch (action) {
-        case CLOSE:
-          formCancel();
-          break;
-        case EDIT:
-          getEditForm().setEnabled(true);
-          hideAction(action);
-          if (hasEditSave()) {
-            showAction(Action.SAVE);
-          }
-          break;
-        case SAVE:
-          formConfirm();
-          break;
-        default:  
-      }
-    }
-    
-    private boolean hasAction(Action action) {
-      return header.hasAction(action);
-    }
-    
-    private void hideAction(Action action) {
-      header.showAction(action, false);
-    }
-    
-    private void setCaption(String caption) {
-      header.setCaption(caption);
-    }
-
-    private void setMessage(String message) {
-      header.setMessage(message);
-    }
-    
-    private void showAction(Action action) {
-      header.showAction(action, true);
-    }
-
-    private void showAction(Action action, boolean visible) {
-      header.showAction(action, visible);
-    }
-    
-    private void updateCaptionStyle(boolean edit) {
-      header.removeCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, !edit));
-      header.addCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, edit));
-    }
-  }
-  
   private class NewRowCallback implements RowEditor.Callback {
     public void onCancel() {
       finishNewRow(null);
@@ -170,13 +107,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
     }
   }
-
-  private static final String STYLE_FORM_CONTAINER = "bee-GridFormContainer";
-  private static final String STYLE_FORM_HEADER = "bee-GridFormHeader";
-  private static final String STYLE_FORM_CAPTION = "bee-GridFormCaption";
-
-  private static final String SUFFIX_EDIT = "-edit";
-  private static final String SUFFIX_NEW_ROW = "-newRow";
 
   private static final String DEFAULT_NEW_ROW_CAPTION = "New Row";
   
@@ -812,6 +742,32 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
   }
 
+  public void formCancel() {
+    if (isAdding()) {
+      finishNewRow(null);
+    } else {
+      closeEditForm();
+    }
+  }
+
+  public void formConfirm() {
+    FormView form = getForm(!isAdding());
+    IsRow row = form.getRow();
+
+    if (isAdding()) {
+      if (form.getFormCallback() != null && 
+          !form.getFormCallback().onPrepareForInsert(form, this, row)) {
+        return;
+      }
+      // TODO if (checkNewRow(row)) {
+      prepareForInsert(row);
+      // }
+    } else {
+      closeEditForm();
+      saveChanges(row);
+    }
+  }
+
   public IsRow getActiveRowData() {
     return getGrid().getActiveRowData();
   }
@@ -864,6 +820,14 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
     }
     return filter;
+  }
+
+  public FormView getForm(boolean edit) {
+    if (edit || isSingleForm()) {
+      return getEditForm();
+    } else {
+      return getNewRowForm();
+    }
   }
 
   public CellGrid getGrid() {
@@ -1077,7 +1041,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
   }
-
+  
   public void setRelColumn(String relColumn) {
     this.relColumn = relColumn;
   }
@@ -1093,7 +1057,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       this.viewPresenter = null;
     }
   }
-  
+
   public void startNewRow() {
     if (!isEnabled() || isReadOnly()) {
       return;
@@ -1277,10 +1241,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   private String createFormContainer(FormView formView, boolean edit, String defaultCaption) {
-    HeaderView formHeader = new HeaderImpl();
-    formHeader.asWidget().addStyleName(STYLE_FORM_HEADER);
-    formHeader.asWidget().addStyleName(getFormStyle(STYLE_FORM_HEADER, edit));
-
     String caption = BeeUtils.ifString(formView.getCaption(), defaultCaption);
     EnumSet<Action> actions = EnumSet.of(Action.CLOSE);
     if (!edit) {
@@ -1294,54 +1254,17 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
     }
 
-    formHeader.create(caption, false, false, null, actions, null);
-    formHeader.addCaptionStyle(STYLE_FORM_CAPTION);
-    formHeader.addCaptionStyle(getFormStyle(STYLE_FORM_CAPTION , edit));
-
-    Split container = new Split(0);
-    StyleUtils.makeAbsolute(container);
-    container.addStyleName(STYLE_FORM_CONTAINER);
-    container.addStyleName(getFormStyle(STYLE_FORM_CONTAINER, edit));
-
-    container.addNorth(formHeader.asWidget(), formHeader.getHeight());
-    container.add(formView.asWidget());
+    GridFormPresenter gfp = new GridFormPresenter(this, formView, caption, actions, edit,
+        hasEditSave());
+    Widget container = gfp.getWidget();
 
     add(container);
-
     container.setVisible(false);
+
     formView.setEditing(true);
-
-    GridFormPresenter presenter = new GridFormPresenter(formHeader);
-    formHeader.setViewPresenter(presenter);
-    formView.setViewPresenter(presenter);
+    formView.setViewPresenter(gfp);
     
-    return container.getId();
-  }
-
-  private void formCancel() {
-    if (isAdding()) {
-      finishNewRow(null);
-    } else {
-      closeEditForm();
-    }
-  }
-
-  private void formConfirm() {
-    FormView form = getForm(!isAdding());
-    IsRow row = form.getRow();
-
-    if (isAdding()) {
-      if (form.getFormCallback() != null && 
-          !form.getFormCallback().onPrepareForInsert(form, this, row)) {
-        return;
-      }
-      // TODO if (checkNewRow(row)) {
-      prepareForInsert(row);
-      // }
-    } else {
-      closeEditForm();
-      saveChanges(row);
-    }
+    return DomUtils.getId(container);
   }
 
   private List<BeeColumn> getDataColumns() {
@@ -1374,29 +1297,17 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private Evaluator getEditMessage() {
     return editMessage;
   }
-
+  
   private boolean getEditShowId() {
     return editShowId;
   }
-  
+
   private ChangeHandler getFilterChangeHandler() {
     return filterChangeHandler;
   }
 
   private FilterUpdater getFilterUpdater() {
     return filterUpdater;
-  }
-
-  private FormView getForm(boolean edit) {
-    if (edit || isSingleForm()) {
-      return getEditForm();
-    } else {
-      return getNewRowForm();
-    }
-  }
-
-  private String getFormStyle(String base, boolean edit) {
-    return base + (edit ? SUFFIX_EDIT : SUFFIX_NEW_ROW);
   }
 
   private NewRowCallback getNewRowCallback() {

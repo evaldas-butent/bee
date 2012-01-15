@@ -38,6 +38,8 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
   void addWarning(DataWarning warning);
 
   void clearCell(int rowIndex, int colIndex);
+  
+  void clearRows();
 
   void clearValue(int rowIndex, int colIndex);
 

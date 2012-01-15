@@ -8,9 +8,11 @@ import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.WidgetCallback;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 
@@ -20,13 +22,19 @@ import java.util.Map;
 
 public interface GridCallback extends WidgetCallback {
 
+  void afterAction(Action action, GridPresenter presenter);
+  
   void afterCreate(CellGrid grid);
 
   boolean afterCreateColumn(String columnId, AbstractColumn<?> column, ColumnHeader header,
       ColumnFooter footer);
 
   void afterCreateColumns(CellGrid grid);
+
+  void afterDeleteRow(long rowId);
   
+  boolean beforeAction(Action action, GridPresenter presenter);
+
   boolean beforeAddRow(GridPresenter presenter);
 
   void beforeCreate(List<BeeColumn> dataColumns, int rowCount, GridDescription gridDescription,
@@ -47,7 +55,11 @@ public interface GridCallback extends WidgetCallback {
 
   String getCaption();
   
+  GridPresenter getGridPresenter();
+  
   Map<String, Filter> getInitialFilters();
+  
+  BeeRowSet getInitialRowSet();
   
   GridCallback getInstance();
   
@@ -60,4 +72,6 @@ public interface GridCallback extends WidgetCallback {
   void onShow(GridPresenter presenter);
 
   boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow);
+  
+  void setGridPresenter(GridPresenter gridPresenter);  
 }

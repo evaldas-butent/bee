@@ -2,12 +2,6 @@ package com.butent.bee.client.modules.crm;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
-import com.google.gwt.event.dom.client.DragOverEvent;
-import com.google.gwt.event.dom.client.DragOverHandler;
-import com.google.gwt.event.dom.client.DropEvent;
-import com.google.gwt.event.dom.client.DropHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Window;
@@ -16,23 +10,20 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.presenter.FormPresenter;
-import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.tree.BeeTreeItem;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
-import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.FileUtils.FileInfo;
-import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
-import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -48,60 +39,42 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.List;
 import java.util.Map;
 
 public class DocumentHandler {
 
-  private static class CreationHandler extends AbstractFormCallback implements ChangeHandler,
-      DragOverHandler, DropHandler {
+  private static class CreationHandler extends AbstractFormCallback {
 
-    private final List<FileInfo> files = Lists.newArrayList();
-    private BeeListBox infoWidget = null;
+    private FileCollector collector = null;
 
     private CreationHandler() {
     }
 
     @Override
     public void afterCreateWidget(String name, Widget widget) {
-      if (BeeUtils.same(name, "form") && widget instanceof Flow) {
-        ((Flow) widget).addDragOverHandler(this);
-        ((Flow) widget).addDropHandler(this);
+      if (widget instanceof GridPanel) {
+        ((GridPanel) widget).setGridCallback(getCollector());
       } else if (widget instanceof InputFile) {
-        ((InputFile) widget).addChangeHandler(this);
-      } else if (BeeUtils.same(name, "info") && widget instanceof BeeListBox) {
-        setInfoWidget((BeeListBox) widget);
+        getCollector().setInputWidget((InputFile) widget);
       }
     }
-
-    public List<FileInfo> getFiles() {
-      return files;
-    }
-
+    
     @Override
-    public void onChange(ChangeEvent event) {
-      if (event.getSource() instanceof InputFile) {
-        addFiles(FileUtils.getFileInfo(((InputFile) event.getSource())));
-      }
-    }
-
-    public void onDragOver(DragOverEvent event) {
-      EventUtils.eatEvent(event);
-      JsUtils.setProperty(event.getDataTransfer(), "dropEffect", "copy");
-    }
-
-    public void onDrop(DropEvent event) {
-      EventUtils.eatEvent(event);
-      addFiles(FileUtils.getFileInfo(event.getDataTransfer()));
+    public CreationHandler getInstance() {
+      CreationHandler instance = new CreationHandler();
+      instance.setCollector(new FileCollector());
+      return instance;
     }
 
     @Override
     public boolean onPrepareForInsert(final FormView form, final DataView dataView, IsRow row) {
       Assert.noNulls(dataView, row);
 
-      if (getFiles().isEmpty()) {
-        dataView.notifySevere("Pasirinkite bylas");
+      if (getCollector().getFiles().isEmpty()) {
+        dataView.notifyWarning("Pasirinkite bylas");
         return false;
       }
 
@@ -118,7 +91,8 @@ public class DocumentHandler {
         if (!BeeUtils.isEmpty(value)) {
           columns.add(column);
           values.add(value);
-        } else if (BeeUtils.inListSame(colName, "DocumentDate", "Type", CrmConstants.COL_CATEGORY,
+        } else if (BeeUtils.inListSame(colName, CrmConstants.COL_DOCUMENT_DATE,
+            CrmConstants.COL_TYPE, CrmConstants.COL_GROUP, CrmConstants.COL_CATEGORY,
             CrmConstants.COL_NAME)) {
           dataView.notifySevere(colName + ": value required");
           return false;
@@ -132,7 +106,7 @@ public class DocumentHandler {
 
         public void onSuccess(BeeRow result) {
           dataView.finishNewRow(result);
-          sendFiles(result.getId(), result.getLong(form.getDataIndex(CrmConstants.COL_CATEGORY)));
+          sendFiles(result.getId());
         }
       });
       return false;
@@ -140,41 +114,26 @@ public class DocumentHandler {
 
     @Override
     public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-      getFiles().clear();
-      refreshInfoWidget();
+      getCollector().clear();
 
-      newRow.setValue(form.getDataIndex("DocumentDate"), System.currentTimeMillis());
+      newRow.setValue(form.getDataIndex(CrmConstants.COL_DOCUMENT_DATE),
+          System.currentTimeMillis());
       if (oldRow != null) {
         copyValues(form, oldRow, newRow,
-            Lists.newArrayList("Type", "TypeName", "Category", "CategoryName"));
-      }
-    }
-
-    private void addFiles(List<FileInfo> fileInfos) {
-      if (fileInfos == null || fileInfos.isEmpty()) {
-        return;
-      }
-
-      int cnt = 0;
-      for (FileInfo info : fileInfos) {
-        if (!containsFile(info)) {
-          getFiles().add(info);
-          cnt++;
+            Lists.newArrayList(CrmConstants.COL_TYPE, CrmConstants.COL_TYPE_NAME,
+                CrmConstants.COL_GROUP, CrmConstants.COL_GROUP_NAME,
+                CrmConstants.COL_CATEGORY, CrmConstants.COL_CATEGORY_NAME));
+      } else if (form.getViewPresenter() instanceof GridFormPresenter) {
+        GridCallback gcb = ((GridFormPresenter) form.getViewPresenter()).getGridCallback();
+        if (gcb instanceof DocumentGridHandler) {
+          IsRow categoryRow = ((DocumentGridHandler) gcb).getSelectedCategory();
+          if (categoryRow != null) {
+            newRow.setValue(form.getDataIndex(CrmConstants.COL_CATEGORY), categoryRow.getId());
+            newRow.setValue(form.getDataIndex(CrmConstants.COL_CATEGORY_NAME),
+                categoryRow.getString(treeViewNameIndex));
+          }
         }
       }
-
-      if (cnt > 0) {
-        refreshInfoWidget();
-      }
-    }
-
-    private boolean containsFile(FileInfo info) {
-      for (FileInfo fi : getFiles()) {
-        if (BeeUtils.same(fi.getName(), info.getName())) {
-          return true;
-        }
-      }
-      return false;
     }
 
     private void copyValues(FormView form, IsRow oldRow, IsRow newRow, List<String> colNames) {
@@ -187,32 +146,21 @@ public class DocumentHandler {
         }
       }
     }
-
-    private BeeListBox getInfoWidget() {
-      return infoWidget;
+    
+    private FileCollector getCollector() {
+      return collector;
     }
 
-    private void refreshInfoWidget() {
-      if (getInfoWidget() == null) {
-        return;
-      }
-
-      getInfoWidget().clear();
-      if (getFiles().isEmpty()) {
-        return;
-      }
-
-      for (FileInfo info : getFiles()) {
-        getInfoWidget().addItem(BeeUtils.concat(BeeConst.DEFAULT_LIST_SEPARATOR, info.getName(),
-            info.getSize(), info.getLastModifiedDate(), info.getType()));
-      }
+    private void setCollector(FileCollector collector) {
+      this.collector = collector;
     }
 
-    private void sendFiles(long docId, Long category) {
-      List<BeeColumn> columns = Lists.newArrayList(new BeeColumn(ValueType.LONG, "Document"),
-          new BeeColumn(ValueType.DATETIME, "FileDate"),
-          new BeeColumn(ValueType.TEXT, CrmConstants.COL_NAME),
-          new BeeColumn(ValueType.TEXT, "Mime"));
+    private void sendFiles(long docId) {
+      List<BeeColumn> columns =
+          Lists.newArrayList(new BeeColumn(ValueType.LONG, CrmConstants.COL_DOCUMENT),
+              new BeeColumn(ValueType.DATETIME, CrmConstants.COL_FILE_DATE),
+              new BeeColumn(ValueType.TEXT, CrmConstants.COL_NAME),
+              new BeeColumn(ValueType.TEXT, CrmConstants.COL_MIME));
 
       String[] values = new String[columns.size()];
       values[0] = BeeUtils.toString(docId);
@@ -221,9 +169,8 @@ public class DocumentHandler {
       int nameIndex = 2;
       int mimeIndex = 3;
 
-      for (FileInfo info : getFiles()) {
-        values[dateIndex] = (info.getLastModifiedDate() == null)
-            ? null : info.getLastModifiedDate().serialize();
+      for (FileInfo info : getCollector().getFiles().values()) {
+        values[dateIndex] = TimeUtils.normalize(info.getLastModifiedDate());
         values[nameIndex] = BeeUtils.trim(info.getName());
         values[mimeIndex] = BeeUtils.trim(info.getType());
 
@@ -238,18 +185,13 @@ public class DocumentHandler {
             });
       }
     }
-
-    private void setInfoWidget(BeeListBox infoWidget) {
-      this.infoWidget = infoWidget;
-    }
   }
 
   private static class DocumentGridHandler extends AbstractGridCallback implements
       SelectionHandler<TreeItem> {
 
     private static final String FILTER_KEY = "f1";
-
-    private GridPresenter gridPresenter = null;
+    private IsRow selectedCategory = null;
 
     private DocumentGridHandler() {
     }
@@ -257,25 +199,30 @@ public class DocumentHandler {
     @Override
     public void afterCreateWidget(String name, Widget widget) {
       if (widget instanceof BeeTree) {
-        populateTree((BeeTree) widget, new BeeTreeItem(ROOT_LABEL), null);
+        populateTree((BeeTree) widget, new BeeTreeItem(ROOT_LABEL));
         ((BeeTree) widget).addSelectionHandler(this);
       }
     }
 
-    public void onSelection(SelectionEvent<TreeItem> event) {
-      if (event == null) {
-        return;
-      }
-      if (getGridPresenter() != null) {
-        getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY,
-            getFilter(getItemId(event.getSelectedItem())));
-        getGridPresenter().requery(true);
-      }
+    @Override
+    public DocumentGridHandler getInstance() {
+      return new DocumentGridHandler();
     }
 
-    @Override
-    public void onShow(GridPresenter presenter) {
-      setGridPresenter(presenter);
+    public void onSelection(SelectionEvent<TreeItem> event) {
+      if (event != null && getGridPresenter() != null) {
+        Long category;
+        if (event.getSelectedItem().getUserObject() instanceof IsRow) {
+          setSelectedCategory((IsRow) event.getSelectedItem().getUserObject());
+          category = getSelectedCategory().getId();
+        } else {
+          setSelectedCategory(null);
+          category = null;
+        }
+
+        getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(category));
+        getGridPresenter().requery(true);
+      }
     }
 
     private Filter getFilter(Long category) {
@@ -286,12 +233,12 @@ public class DocumentHandler {
       }
     }
 
-    private GridPresenter getGridPresenter() {
-      return gridPresenter;
+    private IsRow getSelectedCategory() {
+      return selectedCategory;
     }
 
-    private void setGridPresenter(GridPresenter gridPresenter) {
-      this.gridPresenter = gridPresenter;
+    private void setSelectedCategory(IsRow selectedCategory) {
+      this.selectedCategory = selectedCategory;
     }
   }
 
@@ -301,8 +248,6 @@ public class DocumentHandler {
 
     private BeeTree treeWidget = null;
     private final BeeTreeItem rootItem = new BeeTreeItem(ROOT_LABEL);
-
-    private final List<BeeColumn> columns = Lists.newArrayList();
 
     private TreeHandler() {
     }
@@ -354,7 +299,7 @@ public class DocumentHandler {
     }
 
     private void add() {
-      if (getTreeWidget() == null || getColumns().isEmpty()) {
+      if (getTreeWidget() == null || TREE_VIEW_COLUMNS.isEmpty()) {
         return;
       }
 
@@ -370,14 +315,13 @@ public class DocumentHandler {
 
       int ord = 0;
       for (int i = 0; i < parentItem.getChildCount(); i++) {
-        ord = Math.max(ord,
-            BeeUtils.toInt(getString(parentItem.getChild(i), CrmConstants.COL_ORDER)));
+        ord = Math.max(ord, BeeUtils.toInt(getString(parentItem.getChild(i), treeViewOrderIndex)));
       }
 
       List<BeeColumn> cols = Lists.newArrayList();
       List<String> values = Lists.newArrayList();
 
-      for (BeeColumn column : getColumns()) {
+      for (BeeColumn column : TREE_VIEW_COLUMNS) {
         String columnId = column.getId();
 
         if (BeeUtils.same(columnId, CrmConstants.COL_NAME)) {
@@ -398,7 +342,7 @@ public class DocumentHandler {
         }
 
         public void onSuccess(BeeRow result) {
-          parentItem.addItem(new BeeTreeItem(name.trim(), result));
+          parentItem.addItem(createTreeItem(result));
           if (!parentItem.getState()) {
             parentItem.setState(true);
           }
@@ -406,18 +350,13 @@ public class DocumentHandler {
       });
     }
 
-    private List<BeeColumn> getColumns() {
-      return columns;
-    }
-
     private BeeTreeItem getRootItem() {
       return rootItem;
     }
 
-    private String getString(TreeItem item, String columnId) {
-      if (item.getUserObject() instanceof IsRow) {
-        return ((IsRow) item.getUserObject()).getString(DataUtils.getColumnIndex(columnId,
-            getColumns()));
+    private String getString(TreeItem item, int index) {
+      if (item.getUserObject() instanceof IsRow && index >= 0) {
+        return ((IsRow) item.getUserObject()).getString(index);
       } else {
         return null;
       }
@@ -431,22 +370,7 @@ public class DocumentHandler {
       if (getTreeWidget() == null) {
         return;
       }
-
-      populateTree(getTreeWidget(), getRootItem(), new Queries.RowSetCallback() {
-        public void onFailure(String[] reason) {
-        }
-
-        public void onSuccess(BeeRowSet result) {
-          setColumns(result.getColumns());
-        }
-      });
-    }
-
-    private void setColumns(List<BeeColumn> cols) {
-      if (!this.columns.isEmpty()) {
-        this.columns.clear();
-      }
-      this.columns.addAll(cols);
+      populateTree(getTreeWidget(), getRootItem());
     }
 
     private void setTreeWidget(BeeTree treeWidget) {
@@ -459,12 +383,30 @@ public class DocumentHandler {
   private static final String FILE_VIEW_NAME = "Files";
 
   private static final String ROOT_LABEL = "Kategorijos";
+  private static final List<BeeColumn> TREE_VIEW_COLUMNS = Lists.newArrayList();
+
+  private static int treeViewParentIndex = BeeConst.UNDEF;
+  private static int treeViewOrderIndex = BeeConst.UNDEF;
+  private static int treeViewNameIndex = BeeConst.UNDEF;
+  private static int treeViewCountIndex = BeeConst.UNDEF;
 
   public static void register() {
     FormFactory.registerFormCallback("DocumentTree", new TreeHandler());
     GridFactory.registerGridCallback("Documents", new DocumentGridHandler());
 
     FormFactory.registerFormCallback("NewDocument", new CreationHandler());
+  }
+
+  private static BeeTreeItem createTreeItem(IsRow row) {
+    String html = BeeUtils.concat(1, row.getString(treeViewOrderIndex),
+        row.getString(treeViewNameIndex));
+
+    int count = BeeUtils.toInt(row.getString(treeViewCountIndex));
+    if (count > 0) {
+      html = html + BeeConst.STRING_SPACE + BeeUtils.bracket(count);
+    }
+
+    return new BeeTreeItem(html, row);
   }
 
   private static Long getItemId(TreeItem item) {
@@ -475,36 +417,27 @@ public class DocumentHandler {
     }
   }
 
-  private static void populateTree(final BeeTree tree, final BeeTreeItem root,
-      final Queries.RowSetCallback rowSetCallback) {
+  private static void populateTree(final BeeTree tree, final BeeTreeItem root) {
     Queries.getRowSet(TREE_VIEW_NAME, null, new Queries.RowSetCallback() {
       public void onFailure(String[] reason) {
         BeeKeeper.getScreen().notifySevere(reason);
-        if (rowSetCallback != null) {
-          rowSetCallback.onFailure(reason);
-        }
       }
 
       public void onSuccess(BeeRowSet result) {
-        if (rowSetCallback != null) {
-          rowSetCallback.onSuccess(result);
-        }
+        setTreeViewColumns(result.getColumns());
 
         tree.clear();
         root.removeItems();
         tree.addItem(root);
 
         if (!result.isEmpty()) {
-          int parentIndex = result.getColumnIndex(CrmConstants.COL_PARENT);
-          int nameIndex = result.getColumnIndex(CrmConstants.COL_NAME);
-
           Map<Long, TreeItem> treeItems = Maps.newHashMap();
           List<IsRow> pendingRows = Lists.newArrayList();
 
           for (IsRow row : result.getRows()) {
-            Long pId = row.getLong(parentIndex);
+            Long pId = row.getLong(treeViewParentIndex);
             if (pId == null) {
-              BeeTreeItem item = new BeeTreeItem(row.getString(nameIndex), row);
+              BeeTreeItem item = createTreeItem(row);
               root.addItem(item);
               treeItems.put(row.getId(), item);
             } else {
@@ -518,13 +451,13 @@ public class DocumentHandler {
             pendingRows.clear();
 
             for (IsRow row : rows) {
-              Long pId = row.getLong(parentIndex);
+              Long pId = row.getLong(treeViewParentIndex);
               TreeItem parentItem = treeItems.get(pId);
 
               if (parentItem == null) {
                 pendingRows.add(row);
               } else {
-                BeeTreeItem item = new BeeTreeItem(row.getString(nameIndex), row);
+                BeeTreeItem item = createTreeItem(row);
                 parentItem.addItem(item);
                 treeItems.put(row.getId(), item);
               }
@@ -540,6 +473,17 @@ public class DocumentHandler {
         }
       }
     });
+  }
+
+  private static void setTreeViewColumns(List<BeeColumn> columns) {
+    if (TREE_VIEW_COLUMNS.isEmpty()) {
+      TREE_VIEW_COLUMNS.addAll(columns);
+
+      treeViewParentIndex = DataUtils.getColumnIndex(CrmConstants.COL_PARENT, columns);
+      treeViewOrderIndex = DataUtils.getColumnIndex(CrmConstants.COL_ORDER, columns);
+      treeViewNameIndex = DataUtils.getColumnIndex(CrmConstants.COL_NAME, columns);
+      treeViewCountIndex = DataUtils.getColumnIndex(CrmConstants.COL_DOCUMENT_COUNT, columns);
+    }
   }
 
   private DocumentHandler() {

@@ -4,6 +4,7 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.gwt.i18n.shared.DateTimeFormat;
 
+import com.butent.bee.shared.AbstractDate;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
@@ -248,6 +249,14 @@ public class TimeUtils {
     return new JustDate(year, month, Grego.monthLength(year, month) + 1);
   }
   
+  public static String normalize(AbstractDate x) {
+    if (x == null) {
+      return null;
+    } else {
+      return x.serialize();
+    }
+  }
+  
   /**
    * Left pads and integer {@code number} by adding "0" to size of two.
    * 
@@ -341,7 +350,7 @@ public class TimeUtils {
     }
     return x.getDateTime().getTime() == y.getDateTime().getTime();
   }
-
+  
   public static JustDate startOfMonth() {
     JustDate date = new JustDate();
     int dom = date.getDom();

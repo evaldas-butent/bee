@@ -6,11 +6,15 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
 import com.google.gwt.event.dom.client.DoubleClickHandler;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.event.dom.client.DragEndEvent;
+import com.google.gwt.event.dom.client.DragEnterEvent;
+import com.google.gwt.event.dom.client.DragEvent;
+import com.google.gwt.event.dom.client.DragLeaveEvent;
+import com.google.gwt.event.dom.client.DragOverEvent;
+import com.google.gwt.event.dom.client.DragStartEvent;
+import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -21,9 +25,8 @@ import com.butent.bee.client.composite.ValueSpinner;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.event.DndEvent;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.event.HasAllDndHandlers;
+import com.butent.bee.client.event.HandlesAllDndEvents;
 import com.butent.bee.client.grid.scrolltable.ScrollTable.ResizePolicy;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Scroll;
@@ -214,7 +217,7 @@ public class ScrollTableConfig {
     }
   }
 
-  private class DndHandler implements HasAllDndHandlers {
+  private class DndHandler implements HandlesAllDndEvents {
     private String sourceId = null;
     private String targetId = null;
     private Scroll panel = null;
@@ -223,11 +226,11 @@ public class ScrollTableConfig {
     private int bottom = -1;
     private int maxScroll = -1;
 
-    public boolean onDrag(DndEvent event) {
+    public void onDrag(DragEvent event) {
       if (panel == null || maxScroll <= 0) {
-        return true;
+        return;
       }
-      int y = event.getClientY();
+      int y = event.getNativeEvent().getClientY();
       int pos = panel.getVerticalScrollPosition();
 
       if (y < top && pos > 0) {
@@ -235,42 +238,37 @@ public class ScrollTableConfig {
       } else if (y > bottom && pos < maxScroll) {
         panel.setVerticalScrollPosition(Math.min(pos + y - bottom, maxScroll));
       }
-      return true;
     }
 
-    public boolean onDragEnd(DndEvent event) {
-      event.getElement().removeClassName(StyleUtils.DND_SOURCE);
+    public void onDragEnd(DragEndEvent event) {
+      EventUtils.getEventTargetElement(event).removeClassName(StyleUtils.DND_SOURCE);
       if (!BeeUtils.isEmpty(sourceId) && !BeeUtils.isEmpty(targetId)
           && !BeeUtils.same(sourceId, targetId)) {
         moveColumn(sourceId, targetId);
       }
-      return true;
     }
 
-    public boolean onDragEnter(DndEvent event) {
-      Element elem = event.getElement();
+    public void onDragEnter(DragEnterEvent event) {
+      Element elem = EventUtils.getEventTargetElement(event).cast();
       if (isTarget(elem)) {
         elem.addClassName(StyleUtils.DND_OVER);
       }
-      return true;
     }
 
-    public boolean onDragLeave(DndEvent event) {
-      Element elem = event.getElement();
+    public void onDragLeave(DragLeaveEvent event) {
+      Element elem = EventUtils.getEventTargetElement(event).cast();
       if (isTarget(elem)) {
         elem.removeClassName(StyleUtils.DND_OVER);
       }
-      return true;
     }
 
-    public boolean onDragOver(DndEvent event) {
-      event.setDropEffect(DndEvent.EFFECT_MOVE);
-      event.preventDefault();
-      return false;
+    public void onDragOver(DragOverEvent event) {
+      EventUtils.eatEvent(event);
+      EventUtils.setDropEffect(event, EventUtils.EFFECT_MOVE);
     }
 
-    public boolean onDragStart(DndEvent event) {
-      Element elem = event.getElement();
+    public void onDragStart(DragStartEvent event) {
+      Element elem = EventUtils.getEventTargetElement(event).cast();
       sourceId = elem.getId();
       targetId = null;
 
@@ -282,21 +280,18 @@ public class ScrollTableConfig {
       }
 
       elem.addClassName(StyleUtils.DND_SOURCE);
-      event.setData(sourceId);
-      event.setEffectAllowed(DndEvent.EFFECT_MOVE);
-
-      return true;
+      EventUtils.setDndData(event, sourceId);
+      EventUtils.setEffectAllowed(event, EventUtils.EFFECT_MOVE);
     }
 
-    public boolean onDrop(DndEvent event) {
-      Element elem = event.getElement();
-      event.stopPropagation();
+    public void onDrop(DropEvent event) {
+      EventUtils.eatEvent(event);
+      Element elem = EventUtils.getEventTargetElement(event).cast();
 
       if (isTarget(elem)) {
         elem.removeClassName(StyleUtils.DND_OVER);
         targetId = elem.getId();
       }
-      return false;
     }
 
     private boolean isTarget(Element elem) {
@@ -310,12 +305,6 @@ public class ScrollTableConfig {
 
     private void setPanel(Scroll panel) {
       this.panel = panel;
-    }
-  }
-
-  private class PopupCloseHandler implements CloseHandler<PopupPanel> {
-    public void onClose(CloseEvent<PopupPanel> event) {
-      EventUtils.removeDndHandler(dndHandler);
     }
   }
 
@@ -621,8 +610,8 @@ public class ScrollTableConfig {
       cRef[i].setOrder(cp.append(new ValueSpinner(i, 0, columnCount - 1), cx + 24, cy, 48));
 
       BeeLabel cap = new BeeLabel(scrollTable.getColumnCaption(i, false));
-      EventUtils.makeDndSource(cap.getElement(), dndHandler);
-      EventUtils.makeDndTarget(cap.getElement(), dndHandler);
+      EventUtils.makeDndSource(cap, dndHandler);
+      EventUtils.makeDndTarget(cap, dndHandler);
       cRef[i].setCap(cp.append(cap, cx + 80, cy, xDat - cx - 84));
 
       BeeLabel fit = new BeeLabel(BeeUtils.toString(columnWidth[i].getDataWidth()),
@@ -694,7 +683,6 @@ public class ScrollTableConfig {
     popup.setStyleName(StyleUtils.CONFIG_PANEL);
     popup.enableGlass();
 
-    popup.addCloseHandler(new PopupCloseHandler());
     popup.setPopupPositionAndShow(new PopupPosition());
 
     totalWidths();

@@ -20,19 +20,19 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
 
   private StringRowArray rows = null;
 
-  public StringMatrix(String[][] data, String... columnLabels) {
-    super(columnLabels);
-    rows = new StringRowArray(new StringRow[data.length]);
-    for (int i = 0; i < data.length; i++) {
-      rows.set(i, new StringRow(i + 1, new StringArray(data[i])));
-    }
-  }
-
   public StringMatrix(List<String[]> data, String... columnLabels) {
     super(columnLabels);
     rows = new StringRowArray(new StringRow[data.size()]);
     for (int i = 0; i < data.size(); i++) {
       rows.set(i, new StringRow(i + 1, new StringArray(data.get(i))));
+    }
+  }
+
+  public StringMatrix(String[][] data, String... columnLabels) {
+    super(columnLabels);
+    rows = new StringRowArray(new StringRow[data.length]);
+    for (int i = 0; i < data.length; i++) {
+      rows.set(i, new StringRow(i + 1, new StringArray(data[i])));
     }
   }
   
@@ -52,6 +52,11 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
   private StringMatrix(StringRowArray rows) {
     super();
     this.rows = rows;
+  }
+
+  @Override
+  public void clearRows() {
+    getRows().clear();
   }
 
   @Override
@@ -132,11 +137,6 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
   @Override
   protected void assertRowIndex(int rowIndex) {
     Assert.isIndex(rows, rowIndex);
-  }
-
-  @Override
-  protected void clearRows() {
-    getRows().clear();
   }
 
   @Override

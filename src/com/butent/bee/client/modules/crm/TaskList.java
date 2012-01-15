@@ -58,10 +58,7 @@ public class TaskList {
 
     private final Map<String, Editor> filterWidgets = Maps.newHashMap();
     
-    private GridPresenter gridPresenter = null;
-
     private GridHandler(Type type) {
-      super();
       this.type = type;
       this.userId = BeeKeeper.getUser().getUserId();
     }
@@ -248,11 +245,6 @@ public class TaskList {
       return true;
     }
 
-    @Override
-    public void onShow(GridPresenter presenter) {
-      setGridPresenter(presenter);
-    }
-    
     private Filter getEventFilter(TaskEvent te) {
       if (te == null) {
         return null;
@@ -299,10 +291,6 @@ public class TaskList {
       return andFilter.isEmpty() ? null : andFilter;
     }
 
-    private GridPresenter getGridPresenter() {
-      return gridPresenter;
-    }
-
     private Type getType() {
       return type;
     }
@@ -318,10 +306,6 @@ public class TaskList {
         return BeeUtils.toBoolean(filterWidgets.get(name).getNormalizedValue());
       }
       return false;
-    }
-
-    private void setGridPresenter(GridPresenter gridPresenter) {
-      this.gridPresenter = gridPresenter;
     }
 
     private void updateFilter(GridPresenter presenter) {

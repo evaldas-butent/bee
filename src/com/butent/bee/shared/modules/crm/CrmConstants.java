@@ -69,10 +69,27 @@ public class CrmConstants {
   public static final String COL_USER = "User";
 
   public static final String COL_NAME = "Name";
+  public static final String COL_DESCRIPTION = "Description";
+
   public static final String COL_PARENT = "Parent";
   public static final String COL_ORDER = "Order";
 
   public static final String COL_CATEGORY = "Category";
+  public static final String COL_CATEGORY_NAME = "CategoryName";
+  public static final String COL_TYPE = "Type";
+  public static final String COL_TYPE_NAME = "TypeName";
+  public static final String COL_GROUP = "Group";
+  public static final String COL_GROUP_NAME = "GroupName";
+
+  public static final String COL_FILE_DATE = "FileDate";
+  public static final String COL_FILE_VERSION = "FileVersion";
+
+  public static final String COL_SIZE = "Size";
+  public static final String COL_MIME = "Mime";
+
+  public static final String COL_DOCUMENT = "Document";
+  public static final String COL_DOCUMENT_DATE = "DocumentDate";
+  public static final String COL_DOCUMENT_COUNT = "DocumentCount";
 
   private CrmConstants() {
   }

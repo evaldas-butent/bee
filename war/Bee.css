@@ -310,6 +310,21 @@ body, select {
   background: pink;
 }
 
+.bee-dropArea {
+  background: white;
+  border: 2px dashed #bbb;
+  text-align: center;
+  padding-top: 4ex;
+}
+.bee-dropArea:before {
+  content: "Drop Files"; 
+  font-size: x-large;
+  color: #bbb;
+}
+.bee-dropArea > div {
+  visibility: hidden;
+}
+
 .bee-ValueSpinner {
   width: 60px;
 }

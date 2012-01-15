@@ -13,6 +13,12 @@
     <BeeSimpleColumn expression="Description" />
     <BeeSimpleColumn expression="Hash" />
     <BeeSimpleColumn expression="Mime" />
+    <BeeSimpleJoin expression="Owner" joinType="LEFT">
+      <BeeSimpleJoin expression="Person" joinType="LEFT">
+        <BeeSimpleColumn name="OwnerFirstName" expression="FirstName" />
+        <BeeSimpleColumn name="OwnerLastName" expression="LastName" />
+      </BeeSimpleJoin>
+    </BeeSimpleJoin>
   </BeeColumns>
   <BeeOrder>
     <OrderBy column="FileDate" />

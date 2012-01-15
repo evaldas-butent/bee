@@ -921,13 +921,19 @@ public class UiServiceBean {
 
       response = buildDbSchema(Splitter.onPattern("[ ,]").trimResults().omitEmptyStrings()
           .split(schema));
-    } else {
-      if (sys.isTable(cmd)) {
-        sys.rebuildTable(cmd);
-        response.addInfo("Rebuild", cmd, "OK");
+
+    } else if (!BeeUtils.isEmpty(cmd)) {
+      String tbl = BeeUtils.getWord(cmd, 0);
+      if (sys.isTable(tbl)) {
+        String opt = BeeUtils.getWord(cmd, 1);
+        sys.rebuildTable(tbl, !BeeConst.STRING_MINUS.equals(opt));
+        response.addInfo("Rebuild", tbl, opt, "OK");
       } else {
-        response.addError("Unknown table:", cmd);
+        response.addError("Unknown table:", tbl);
       }
+
+    } else {
+      response.addError("Rebuild what");
     }
     return response;
   }

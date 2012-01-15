@@ -9,6 +9,13 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.event.dom.client.DomEvent;
+import com.google.gwt.event.dom.client.DragEndEvent;
+import com.google.gwt.event.dom.client.DragEnterEvent;
+import com.google.gwt.event.dom.client.DragEvent;
+import com.google.gwt.event.dom.client.DragLeaveEvent;
+import com.google.gwt.event.dom.client.DragOverEvent;
+import com.google.gwt.event.dom.client.DragStartEvent;
+import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.HasScrollHandlers;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
@@ -26,9 +33,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.event.DndEvent;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.event.HasAllDndHandlers;
+import com.butent.bee.client.event.HandlesAllDndEvents;
 import com.butent.bee.client.grid.FlexTable.FlexCellFormatter;
 import com.butent.bee.client.grid.scrolltable.model.TableModel;
 import com.butent.bee.client.grid.scrolltable.model.TableModel.Callback;
@@ -37,6 +43,7 @@ import com.butent.bee.client.grid.scrolltable.model.TableModelHelper.Response;
 import com.butent.bee.client.grid.scrolltable.property.FooterProperty;
 import com.butent.bee.client.grid.scrolltable.property.HeaderProperty;
 import com.butent.bee.client.grid.scrolltable.render.FixedWidthGridBulkRenderer;
+import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
@@ -159,7 +166,7 @@ public class ScrollTable extends ComplexPanel implements
     }
   }
 
-  private class DndWorker implements HasAllDndHandlers {
+  private class DndWorker implements HandlesAllDndEvents  {
     private String sourceId;
     private String parentId;
     private String targetId;
@@ -168,8 +175,8 @@ public class ScrollTable extends ComplexPanel implements
     private int width;
     private int right;
 
-    public boolean onDrag(DndEvent event) {
-      int x = event.getClientX();
+    public void onDrag(DragEvent event) {
+      int x = event.getNativeEvent().getClientX();
       if (x < left && lastScrollLeft > 0) {
         lastScrollLeft = Math.max(lastScrollLeft + x - left, 0);
         doScroll();
@@ -177,11 +184,10 @@ public class ScrollTable extends ComplexPanel implements
         lastScrollLeft = Math.min(lastScrollLeft + x - right, left + width - right);
         doScroll();
       }
-      return true;
     }
 
-    public boolean onDragEnd(DndEvent event) {
-      event.getElement().removeClassName(StyleUtils.DND_SOURCE);
+    public void onDragEnd(DragEndEvent event) {
+      EventUtils.getEventTargetElement(event).removeClassName(StyleUtils.DND_SOURCE);
 
       if (BeeUtils.context(columnIdSeparator, sourceId)
           && BeeUtils.context(columnIdSeparator, targetId)) {
@@ -191,34 +197,29 @@ public class ScrollTable extends ComplexPanel implements
         tableDefinition.moveColumnDef(srcId, dstId);
         reload();
       }
-
-      return true;
     }
 
-    public boolean onDragEnter(DndEvent event) {
-      Element elem = event.getElement();
+    public void onDragEnter(DragEnterEvent event) {
+      Element elem = EventUtils.getEventTargetElement(event).cast();
       if (isTarget(elem)) {
         elem.addClassName(StyleUtils.DND_OVER);
       }
-      return true;
     }
 
-    public boolean onDragLeave(DndEvent event) {
-      Element elem = event.getElement();
+    public void onDragLeave(DragLeaveEvent event) {
+      Element elem = EventUtils.getEventTargetElement(event).cast();
       if (isTarget(elem)) {
         elem.removeClassName(StyleUtils.DND_OVER);
       }
-      return true;
     }
 
-    public boolean onDragOver(DndEvent event) {
-      event.setDropEffect(DndEvent.EFFECT_MOVE);
-      event.preventDefault();
-      return false;
+    public void onDragOver(DragOverEvent event) {
+      EventUtils.eatEvent(event);
+      EventUtils.setDropEffect(event, EventUtils.EFFECT_MOVE);
     }
 
-    public boolean onDragStart(DndEvent event) {
-      Element elem = event.getElement();
+    public void onDragStart(DragStartEvent event) {
+      Element elem = EventUtils.getEventTargetElement(event).cast();
       sourceId = elem.getId();
       parentId = DomUtils.getParentId(elem, true);
       targetId = null;
@@ -231,22 +232,19 @@ public class ScrollTable extends ComplexPanel implements
         event.preventDefault();
       } else {
         elem.addClassName(StyleUtils.DND_SOURCE);
-        event.setData(sourceId);
-        event.setEffectAllowed(DndEvent.EFFECT_MOVE);
+        EventUtils.setDndData(event, sourceId);
+        EventUtils.setEffectAllowed(event, EventUtils.EFFECT_MOVE);
       }
-
-      return true;
     }
 
-    public boolean onDrop(DndEvent event) {
-      Element elem = event.getElement();
-      event.stopPropagation();
+    public void onDrop(DropEvent event) {
+      EventUtils.eatEvent(event);
+      Element elem = EventUtils.getEventTargetElement(event).cast();
 
       if (isTarget(elem)) {
         elem.removeClassName(StyleUtils.DND_OVER);
         targetId = elem.getId();
       }
-      return false;
     }
 
     private boolean isTarget(Element elem) {
@@ -492,7 +490,7 @@ public class ScrollTable extends ComplexPanel implements
   private FixedWidthFlexTable headerTable = null;
   private Element headerWrapper;
 
-  private boolean headersObsolete;
+  private boolean headersObsolete = false;
   private int lastScrollLeft = 0;
 
   private MouseResizeWorker resizeWorker = new MouseResizeWorker();
@@ -1062,7 +1060,6 @@ public class ScrollTable extends ComplexPanel implements
 
   protected void onDataTableRendered() {
     if (headersObsolete) {
-      EventUtils.removeDndHandler(dndWorker);
       refreshHeaderTable();
       refreshFooterTable();
       headersObsolete = false;
@@ -1085,14 +1082,6 @@ public class ScrollTable extends ComplexPanel implements
         load();
       }
     });
-  }
-
-  @Override
-  protected void onUnload() {
-    if (!BeeKeeper.getScreen().isTemporaryDetach()) {
-      EventUtils.removeDndHandler(dndWorker);
-    }
-    super.onUnload();
   }
 
   protected void refreshFooterTable() {
@@ -1490,15 +1479,14 @@ public class ScrollTable extends ComplexPanel implements
         if (header instanceof Widget) {
           table.setWidget(row, cell, (Widget) header);
         } else {
-          String cap = header.toString();
+          BeeLabel cap = new BeeLabel(header.toString());
           int id = info.getColumnId();
-          table.setHTML(row, cell, cap);
+          table.setWidget(row, cell, cap);
 
-          if (!BeeUtils.isEmpty(cap) && id >= 0) {
-            Element elem = formatter.getElement(row, cell);
-            elem.setId(generateHeaderId(id, isHeader));
-            EventUtils.makeDndSource(elem, dndWorker);
-            EventUtils.makeDndTarget(elem, dndWorker);
+          if (id >= 0) {
+            cap.setId(generateHeaderId(id, isHeader));
+            EventUtils.makeDndSource(cap, dndWorker);
+            EventUtils.makeDndTarget(cap, dndWorker);
           }
         }
 

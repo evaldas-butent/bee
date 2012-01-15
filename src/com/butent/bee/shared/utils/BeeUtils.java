@@ -1033,6 +1033,19 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
+  
+  public static String getWord(String s, int idx) {
+    if (isEmpty(s) || idx < 0) {
+      return null;
+    }
+    int i = 0;
+    for (String w : NAME_SPLITTER.split(s)) {
+      if (idx == i++) {
+        return w;
+      }
+    }
+    return null;
+  }
 
   public static boolean hasLength(CharSequence cs, int min) {
     if (cs == null) {

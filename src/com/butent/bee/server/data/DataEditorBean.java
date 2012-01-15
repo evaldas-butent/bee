@@ -379,7 +379,7 @@ public class DataEditorBean {
         bitMap.put(bit, Longs.contains(bits, bit));
       }
       if (table.updateStateActive(state, Longs.toArray(bitMap.keySet()))) {
-        sys.rebuildTable(table.getName());
+        sys.rebuildTable(table.getName(), true);
       }
       SqlUpdate su = table.updateState(id, state, bitMap);
 

@@ -84,11 +84,11 @@ import java.util.Set;
 public class TaskEventHandler {
 
   private static class ObserverHandler extends AbstractGridCallback {
+
     private Long owner = null;
     private Long executor = null;
 
     private ObserverHandler() {
-      super();
     }
 
     @Override

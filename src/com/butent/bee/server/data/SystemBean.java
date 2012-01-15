@@ -122,7 +122,7 @@ public class SystemBean {
     BeeTable table = getTable(tblName);
 
     if (!table.isActive()) {
-      rebuildTable(table);
+      rebuildTable(table, true);
     }
   }
 
@@ -545,13 +545,13 @@ public class SystemBean {
 
     for (BeeTable table : getTables()) {
       if (table.isActive()) {
-        rebuildTable(table);
+        rebuildTable(table, true);
       }
     }
   }
 
-  public void rebuildTable(String tblName) {
-    rebuildTable(getTable(tblName));
+  public void rebuildTable(String tblName, boolean ref) {
+    rebuildTable(getTable(tblName), ref);
   }
 
   public SqlSelect verifyStates(SqlSelect query, String tblName, String tblAlias, String... states) {
@@ -1095,7 +1095,7 @@ public class SystemBean {
   }
 
   @Lock(LockType.WRITE)
-  private void rebuildTable(BeeTable table) {
+  private void rebuildTable(BeeTable table, boolean ref) {
     table.setActive(false);
     String tblMain = table.getName();
     Map<String, String> rebuilds = createTable(table);
@@ -1120,11 +1120,14 @@ public class SystemBean {
           foreignKeys.add(fKey);
         }
       }
-      for (BeeTable other : getTables()) {
-        if (!BeeUtils.same(other.getName(), tblMain) && other.isActive()) {
-          for (BeeForeignKey fKey : other.getForeignKeys()) {
-            if (BeeUtils.same(fKey.getRefTable(), tblMain)) {
-              foreignKeys.add(fKey);
+      
+      if (ref) {
+        for (BeeTable other : getTables()) {
+          if (!BeeUtils.same(other.getName(), tblMain) && other.isActive()) {
+            for (BeeForeignKey fKey : other.getForeignKeys()) {
+              if (BeeUtils.same(fKey.getRefTable(), tblMain)) {
+                foreignKeys.add(fKey);
+              }
             }
           }
         }

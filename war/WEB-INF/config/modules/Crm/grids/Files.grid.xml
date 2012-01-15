@@ -11,5 +11,11 @@
     <BeeDataColumn name="Description" source="Description" caption="Aprašymas" />
     <BeeDataColumn name="Mime" source="Mime" caption="Tipas" />
     <BeeDataColumn name="Hash" source="Hash" caption="Kodas" readOnly="true" />
+    <BeeCalcColumn name="Owner" type="string" caption="Registratorius"
+      sortBy="OwnerLastName, OwnerFirstName" searchBy="OwnerFirstName, OwnerLastName">
+      <calc>
+        <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
+      </calc>
+    </BeeCalcColumn>
   </columns>
 </BeeGrid>

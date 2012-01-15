@@ -39,15 +39,23 @@ public class CachedProvider extends Provider {
   private final Set<Long> filteredRowIds = Sets.newHashSet();
   private final List<IsRow> viewRows = Lists.newArrayList();
 
-  public CachedProvider(HasDataTable display, IsTable<?, ?> table) {
-    this(display, null, null, null, null, null, table);
-  }
-
   public CachedProvider(HasDataTable display, String viewName, List<BeeColumn> columns,
       String idColumnName, String versionColumnName, Filter dataFilter, IsTable<?, ?> table) {
     super(display, viewName, columns, idColumnName, versionColumnName, dataFilter);
     Assert.notNull(table);
     this.table = table;
+  }
+  
+  public void clear() {
+    if (getTable().getNumberOfRows() > 0) {
+      getTable().clearRows();
+      getFilteredRowIds().clear();
+      getViewRows().clear();
+      
+      getDisplay().setPageStart(0, false, false);
+      getDisplay().setRowCount(0, true);
+      getDisplay().setRowData(getRowList(), true);
+    }
   }
 
   public int getRowCount() {
@@ -190,9 +198,19 @@ public class CachedProvider extends Provider {
     refresh();
   }
 
-  @Override
-  protected void onRequest(boolean updateActiveRow) {
-    updateDisplay(updateActiveRow);
+  protected void applyFilter(Filter newFilter) {
+    getFilteredRowIds().clear();
+    getViewRows().clear();
+
+    if (newFilter != null) {
+      List<? extends IsColumn> columns = getTable().getColumns();
+      for (IsRow row : getTable().getRows()) {
+        if (newFilter.isMatch(columns, row)) {
+          filteredRowIds.add(row.getId());
+          viewRows.add(row);
+        }
+      }
+    }
   }
 
   @Override
@@ -225,19 +243,9 @@ public class CachedProvider extends Provider {
     });
   }
 
-  private void applyFilter(Filter newFilter) {
-    getFilteredRowIds().clear();
-    getViewRows().clear();
-
-    if (newFilter != null) {
-      List<? extends IsColumn> columns = getTable().getColumns();
-      for (IsRow row : getTable().getRows()) {
-        if (newFilter.isMatch(columns, row)) {
-          filteredRowIds.add(row.getId());
-          viewRows.add(row);
-        }
-      }
-    }
+  @Override
+  protected void onRequest(boolean updateActiveRow) {
+    updateDisplay(updateActiveRow);
   }
 
   private void deleteRow(long rowId) {

@@ -30,7 +30,7 @@
     </xs:sequence>
     <xs:attribute name="name" type="bee:nameType" use="required" />
     <xs:attribute name="caption" type="xs:string" />
-    <xs:attribute name="viewName" type="bee:nameType" use="required" />
+    <xs:attribute name="viewName" type="bee:nameType" />
     <xs:attribute name="filter" type="xs:normalizedString" />
     <xs:attribute name="order" type="xs:normalizedString" />
     <xs:attribute name="minColumnWidth" type="bee:columnWidth" />

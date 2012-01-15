@@ -15,6 +15,7 @@
     <BeeDataColumn name="Number" source="Number" caption="Numeris" />
     <BeeDataColumn name="Name" source="Name" caption="Pavadinimas" />
     <BeeDataColumn name="TypeName" source="TypeName" caption="Tipas" />
+    <BeeDataColumn name="GroupName" source="GroupName" caption="Grupė" />
     <BeeDataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
     <BeeDataColumn name="Expires" source="Expires" caption="Galioja iki" />
   </columns>

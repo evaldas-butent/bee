@@ -385,8 +385,6 @@ public class CliWorker {
       showDateFormat();
     } else if (z.startsWith("dim")) {
       showDimensions();
-    } else if (z.equals("dnd")) {
-      showDnd();
     } else if (z.equals("dt")) {
       showDate(arr);
     } else if (BeeUtils.inList(z, "dir", "file", "get", "download", "src")) {
@@ -919,22 +917,6 @@ public class CliWorker {
       Global.modalGrid(caption, data);
     } else {
       BeeKeeper.getScreen().showGrid(data);
-    }
-  }
-
-  public static void showDnd() {
-    if (!EventUtils.supportsDnd()) {
-      BeeKeeper.getLog().warning("dnd not supported");
-      return;
-    }
-
-    List<Property> lst = EventUtils.showDnd();
-    if (BeeUtils.isEmpty(lst)) {
-      Global.showDialog("dnd mappings empty");
-    } else if (showModal(lst.size())) {
-      Global.modalGrid(BeeUtils.concat(1, "Dnd", BeeUtils.bracket(lst.size())), lst);
-    } else {
-      BeeKeeper.getScreen().showGrid(lst);
     }
   }
 

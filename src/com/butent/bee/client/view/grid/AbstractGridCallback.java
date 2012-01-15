@@ -8,9 +8,11 @@ import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 
@@ -19,6 +21,11 @@ import java.util.List;
 import java.util.Map;
 
 public class AbstractGridCallback implements GridCallback {
+
+  private GridPresenter gridPresenter = null;
+  
+  public void afterAction(Action action, GridPresenter presenter) {
+  }
 
   public void afterCreate(CellGrid grid) {
   }
@@ -32,6 +39,13 @@ public class AbstractGridCallback implements GridCallback {
   }
 
   public void afterCreateWidget(String name, Widget widget) {
+  }
+
+  public void afterDeleteRow(long rowId) {
+  }
+
+  public boolean beforeAction(Action action, GridPresenter presenter) {
+    return true;
   }
 
   public boolean beforeAddRow(GridPresenter presenter) {
@@ -78,7 +92,15 @@ public class AbstractGridCallback implements GridCallback {
     return null;
   }
 
+  public GridPresenter getGridPresenter() {
+    return gridPresenter;
+  }
+
   public Map<String, Filter> getInitialFilters() {
+    return null;
+  }
+
+  public BeeRowSet getInitialRowSet() {
     return null;
   }
 
@@ -103,5 +125,9 @@ public class AbstractGridCallback implements GridCallback {
 
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
     return true;
+  }
+
+  public void setGridPresenter(GridPresenter gridPresenter) {
+    this.gridPresenter = gridPresenter;
   }
 }
