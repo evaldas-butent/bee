@@ -68,8 +68,8 @@ public class MultiSelector extends DialogBox {
         100, Window.getClientHeight() * 3 / 4);
 
     Split panel = new Split(0);
-    DomUtils.setWidth(panel, width);
-    DomUtils.setHeight(panel, height);
+    StyleUtils.setWidth(panel, width);
+    StyleUtils.setHeight(panel, height);
     
     Flow footer = new Flow();
     footer.addStyleName(StyleUtils.NAME_FLEX_BOX_CENTER);

@@ -6,6 +6,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Stores all default values (databases, boolean, separators etc.).
  */
 public class BeeConst {
+
   public enum SqlEngine {
     MYSQL("MySQL"), MSSQL("Microsoft SQL Server"), ORACLE("Oracle"), POSTGRESQL("PostgreSQL"),
     GENERIC(null);
@@ -151,6 +152,8 @@ public class BeeConst {
   public static final String HTML_NBSP = "&nbsp;";
 
   public static final int MAX_SCALE = 20;
+
+  public static final double DOUBLE_UNDEF = -1.0d;
   public static final double DOUBLE_ZERO = 0.0d;
   public static final double DOUBLE_ONE = 1.0d;
   public static final float FLOAT_ZERO = 0.0f;

@@ -642,14 +642,14 @@ public class ScrollTableConfig {
       cy += colInfoHeight;
     }
 
-    DomUtils.setWidth(cp, w - 20);
-    DomUtils.setHeight(cp, cy);
+    StyleUtils.setWidth(cp, w - 20);
+    StyleUtils.setHeight(cp, cy);
 
     z = colInfoTop + colInfoHeight * 10;
     if (cy > z) {
       Scroll sp = new Scroll(cp);
       panel.append(sp, 0, y, w);
-      DomUtils.setHeight(sp, z);
+      StyleUtils.setHeight(sp, z);
       y += z;
       dndHandler.setPanel(sp);
     } else {
@@ -675,8 +675,8 @@ public class ScrollTableConfig {
 
     y += 40 + yMrg;
 
-    DomUtils.setWidth(panel, w);
-    DomUtils.setHeight(panel, y);
+    StyleUtils.setWidth(panel, w);
+    StyleUtils.setHeight(panel, y);
 
     popup = new Popup(true, true);
     popup.setWidget(panel);

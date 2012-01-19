@@ -615,6 +615,7 @@ body, select {
   border-bottom: 1px solid #ddd;
   font-size: medium;
   font-weight: bolder;
+  min-height: 10px;
 }
 
 .bee-DialogBox .Close {
@@ -891,6 +892,27 @@ body, select {
 }
 .bee-Disclosure-content {
   margin-left: 12px;
+}
+
+.bee-InputPanel {
+  position: relative;
+  min-height: 100px;
+}
+.bee-InputString {
+  margin: 1ex 0;
+  width: 256px;
+}
+.bee-InputConfirm, .bee-InputCancel {
+  font-family: Tahoma;
+  width: 80px;
+  position: absolute;
+  bottom: 3px;
+}
+.bee-InputConfirm {
+  right: 90px;
+}
+.bee-InputCancel {
+  right: 5px;
 }
 
 .gwt-TreeItem-selected {

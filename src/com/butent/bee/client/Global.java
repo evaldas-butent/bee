@@ -3,6 +3,7 @@ package com.butent.bee.client;
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.StyleInjector;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.Event;
 
@@ -10,9 +11,11 @@ import com.butent.bee.client.data.DataInfoProvider;
 import com.butent.bee.client.data.DataInfoProvider.DataInfoCallback;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.MessageBoxes;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.resources.Images;
+import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -53,9 +56,9 @@ public class Global implements Module {
   private static final CacheManager cache = new CacheManager();
 
   private static final Images.Resources images = Images.createResources();
-  
+
   private static final Map<String, String> styleSheets = Maps.newHashMap();
-  
+
   public static void addStyleSheet(String name, String text) {
     if (BeeUtils.isEmpty(name)) {
       BeeKeeper.getLog().warning("style sheet name not specified");
@@ -65,10 +68,10 @@ public class Global implements Module {
       BeeKeeper.getLog().warning("style sheet text not specified");
       return;
     }
-    
+
     String key = name.trim().toLowerCase();
     String value = text.trim();
-    
+
     if (!value.equals(styleSheets.get(key))) {
       StyleInjector.inject(value);
       styleSheets.put(key, value);
@@ -83,7 +86,7 @@ public class Global implements Module {
       addStyleSheet(entry.getKey(), entry.getValue());
     }
   }
-  
+
   public static void alert(Object... obj) {
     msgBoxen.alert(obj);
   }
@@ -103,7 +106,7 @@ public class Global implements Module {
   public static void confirm(String caption, String message, BeeCommand command) {
     msgBoxen.confirm(caption, message, command);
   }
-  
+
   public static void confirm(String caption, List<String> messages, BeeCommand command) {
     msgBoxen.confirm(caption, messages, command);
   }
@@ -111,11 +114,11 @@ public class Global implements Module {
   public static void confirm(String message, BeeCommand command) {
     msgBoxen.confirm(message, command);
   }
-  
+
   public static void confirm(List<String> messages, BeeCommand command) {
     msgBoxen.confirm(null, messages, command);
   }
-  
+
   public static void createVar(String name, String caption) {
     createVar(name, caption, BeeType.STRING, BeeConst.STRING_EMPTY);
   }
@@ -138,7 +141,7 @@ public class Global implements Module {
   public static CacheManager getCache() {
     return cache;
   }
-  
+
   public static void getDataInfo(String viewName, DataInfoCallback callback) {
     getDataInfoProvider().getDataInfo(viewName, callback);
   }
@@ -203,6 +206,29 @@ public class Global implements Module {
 
   public static void inform(Object... obj) {
     msgBoxen.showInfo(obj);
+  }
+
+  public static void inputString(String caption, String prompt, StringCallback callback) {
+    inputString(caption, prompt, callback, null);
+  }
+
+  public static void inputString(String caption, String prompt, StringCallback callback,
+      String defaultValue) {
+    inputString(caption, prompt, callback, defaultValue,
+        BeeConst.UNDEF, BeeConst.DOUBLE_UNDEF, null);
+  }
+
+  public static void inputString(String caption, String prompt, StringCallback callback,
+      String defaultValue, int maxLength, double width, Unit widthUnit) {
+    inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
+        BeeConst.UNDEF, true, true, null);
+  }
+
+  public static void inputString(String caption, String prompt, StringCallback callback,
+      String defaultValue, int maxLength, double width, Unit widthUnit, int timeout,
+      boolean showConfirm, boolean showCancel, WidgetInitializer initializer) {
+    inpBoxen.inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
+        timeout, showConfirm, showCancel, initializer);
   }
 
   public static void inputVars(Stage bst, String cap, String... names) {

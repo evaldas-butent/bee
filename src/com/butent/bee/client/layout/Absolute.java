@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.shared.HasId;
 
 /**
@@ -38,7 +39,7 @@ public class Absolute extends AbsolutePanel implements HasId {
 
   public String append(Widget w, int left, int top, int width) {
     super.add(w, left, top);
-    DomUtils.setWidth(w, width);
+    StyleUtils.setWidth(w, width);
     return DomUtils.getId(w);
   }
 

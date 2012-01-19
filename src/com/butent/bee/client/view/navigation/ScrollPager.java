@@ -5,7 +5,6 @@ import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Scroll;
@@ -31,8 +30,8 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
 
   public ScrollPager() {
     Widget widget = new Html();
-    DomUtils.setWidth(widget, 0);
-    DomUtils.setHeight(widget, 0);
+    StyleUtils.setWidth(widget, 0);
+    StyleUtils.setHeight(widget, 0);
 
     Scroll scroll = new Scroll(widget);
     initWidget(scroll);
@@ -147,7 +146,7 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
     if (h >= 0 && h != lastHeight) {
       lastHeight = h;
       int z = (h < maxHeight) ? (int) h : maxHeight;
-      DomUtils.setHeight(getInnerWidget(), z);
+      StyleUtils.setHeight(getInnerWidget(), z);
     }
   }
 

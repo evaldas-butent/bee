@@ -1632,17 +1632,6 @@ public class DomUtils {
     setDraggable(obj.getElement());
   }
 
-  public static Widget setHeight(Widget w, int height) {
-    return setHeight(w, height, Unit.PX);
-  }
-
-  public static Widget setHeight(Widget w, int height, Unit unit) {
-    Assert.notNull(w);
-    Assert.nonNegative(height);
-    w.getElement().getStyle().setHeight(height, unit);
-    return w;
-  }
-
   public static void setHtml(String id, String html) {
     Element elem = getElement(id);
     elem.setInnerHTML(html);
@@ -1749,17 +1738,6 @@ public class DomUtils {
   public static void setText(String id, String text) {
     Element elem = getElement(id);
     elem.setInnerText(text);
-  }
-
-  public static Widget setWidth(Widget w, int width) {
-    return setWidth(w, width, Unit.PX);
-  }
-
-  public static Widget setWidth(Widget w, int width, Unit unit) {
-    Assert.notNull(w);
-    Assert.nonNegative(width);
-    w.getElement().getStyle().setWidth(width, unit);
-    return w;
   }
 
   public static String transform(Object obj) {

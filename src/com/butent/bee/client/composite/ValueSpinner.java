@@ -17,6 +17,7 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.TextBox;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -286,15 +287,15 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     int w = BeeUtils.max(incrWidth, decrWidth);
     if (panelWidth < w * 2) {
       panelWidth = BeeUtils.max(w * 2, 60);
-      DomUtils.setWidth(this, panelWidth);
+      StyleUtils.setWidth(this, panelWidth);
     }
     int h = BeeUtils.max(boxHeight, incrHeight + decrHeight + 2);
     if (panelHeight != h) {
-      DomUtils.setHeight(this, h);
+      StyleUtils.setHeight(this, h);
     }
 
     setWidgetPosition(valueBox, 0, 0);
-    DomUtils.setWidth(valueBox, panelWidth - w - 5);
+    StyleUtils.setWidth(valueBox, panelWidth - w - 5);
 
     setWidgetPosition(spinner.getIncrementArrow(), panelWidth - w, 0);
     setWidgetPosition(spinner.getDecrementArrow(), panelWidth - w, h - decrHeight);

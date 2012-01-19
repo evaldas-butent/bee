@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeImage;
@@ -170,7 +171,7 @@ public class SimplePager extends AbstractPager {
     layout.add(widgetPrev);
 
     int maxWidth = Rulers.getLineWidth(createText(maxRowCount, maxRowCount, maxRowCount));
-    DomUtils.setWidth(widgetInfo, maxWidth);
+    StyleUtils.setWidth(widgetInfo, maxWidth);
     widgetInfo.addStyleName(style.pageInfo());
     layout.add(widgetInfo);
     layout.setCellHorizontalAlignment(widgetInfo, HasHorizontalAlignment.ALIGN_CENTER);

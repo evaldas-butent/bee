@@ -43,6 +43,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcList;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.data.JsData;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.ComputedStyles;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
@@ -68,6 +69,7 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.tree.BeeTree;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Browser;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.utils.XmlUtils;
@@ -84,6 +86,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ContentType;
@@ -413,8 +416,10 @@ public class CliWorker {
       showElement(v, arr);
     } else if (z.equals("import")) {
       FormFactory.importForm(args);
-    } else if (BeeUtils.inList(z, "inp", "input")) {
-      showInput();
+    } else if (z.startsWith("inp") && z.contains("type")) {
+      showInputTypes();
+    } else if (z.startsWith("inp") && z.contains("box") || z.equals("prompt")) {
+      showInputBox(arr);
     } else if (BeeUtils.inList(z, "keys", "pk")) {
       getKeys(arr);
     } else if (z.startsWith("like") && arr.length >= 3) {
@@ -1015,7 +1020,117 @@ public class CliWorker {
     }
   }
 
-  public static void showInput() {
+  public static void showInputBox(String[] arr) {
+    String caption = null;
+    String prompt = null;
+    String defaultValue = null;
+    int maxLength = BeeConst.UNDEF;
+    double width = BeeConst.DOUBLE_UNDEF;
+    Unit widthUnit = null;
+    int timeout = BeeConst.UNDEF;
+    boolean showConfirm = true;
+    boolean showCancel = true;
+    
+    boolean required = true;
+    
+    final Holder<String> widgetName = new Holder<String>(null);
+    final Holder<String> widgetStyle = new Holder<String>("background-color:green");
+
+    String v;
+
+    for (int i = 1; i < BeeUtils.length(arr); i++) {
+      if (arr[i].length() < 2) {
+        continue;
+      }
+      char k = arr[i].toLowerCase().charAt(0);
+      if (arr[i].charAt(1) == '=') {
+        v = arr[i].substring(2).trim();
+      } else {
+        v = arr[i].substring(1).trim();
+      }
+      if (BeeUtils.isEmpty(v)) {
+        continue;
+      }
+
+      switch (k) {
+        case 'c':
+          caption = v;
+          break;
+        case 'p':
+          prompt = v;
+          break;
+        case 'd':
+          defaultValue = v;
+          break;
+        case 'm':
+          maxLength = BeeUtils.toInt(v);
+          break;
+        case 'w':
+          width = BeeUtils.toDouble(v);
+          break;
+        case 'u':
+          widthUnit = StyleUtils.parseUnit(v);
+          break;
+        case 't':
+          timeout = BeeUtils.toInt(v);
+          break;
+        case 'y':
+          showConfirm = BeeUtils.toBoolean(v);
+          break;
+        case 'n':
+          showCancel = BeeUtils.toBoolean(v);
+          break;
+        case 'r':
+          required = BeeUtils.toBoolean(v);
+          break;
+        case 'i':
+          widgetName.setValue(v);
+          break;
+        case 's':
+          widgetStyle.setValue(v);
+          break;
+        default:
+          BeeKeeper.getLog().info("option not recognized", i, arr[i], k, v);
+      }
+    }
+
+    Global.inputString(caption, prompt,
+        new StringCallback(required) {
+          @Override
+          public void onCancel() {
+            BeeKeeper.getLog().info("cancel");
+          }
+          
+          @Override
+          public void onSuccess(String value) {
+            BeeKeeper.getLog().info("success", value);
+          }
+
+          @Override
+          public void onTimeout(String value) {
+            BeeKeeper.getLog().info("timeout", value);
+          }
+
+          @Override
+          public boolean validate(String value) {
+            if (BeeUtils.isEmpty(value)) {
+              return super.validate(value);
+            } else {
+              return value.indexOf('x') < 0;
+            }
+          }
+        }, defaultValue, maxLength, width, widthUnit, timeout, showConfirm, showCancel,
+        new WidgetInitializer() {
+          public void initialize(String name, Widget widget) {
+            if (BeeUtils.context(widgetName.getValue(), name)) {
+              StyleUtils.setAppearance(widget, null, widgetStyle.getValue());
+              BeeKeeper.getLog().info(name, StyleUtils.getCssText(widget));
+            }
+          }
+        });
+  }
+
+  public static void showInputTypes() {
     FlexTable table = new FlexTable();
     table.setCellSpacing(3);
 
@@ -1827,8 +1942,8 @@ public class CliWorker {
       }
 
       List<Property> info = Lists.newArrayList();
-      List<Property> lst;      
-      
+      List<Property> lst;
+
       if (elem.getStyle() != null) {
         lst = StyleUtils.getStyleInfo(elem.getStyle());
         if (!BeeUtils.isEmpty(lst)) {
@@ -1836,7 +1951,7 @@ public class CliWorker {
           info.addAll(lst);
         }
       }
-      
+
       lst = new ComputedStyles(elem).getInfo();
       if (!BeeUtils.isEmpty(lst)) {
         info.add(new Property("computed style", BeeUtils.bracket(lst.size())));

@@ -316,6 +316,8 @@ public class StyleUtils {
 
   private static final char NAME_DELIMITER = '-';
 
+  private static final Unit DEFAULT_UNIT = Unit.PX;
+  
   public static int addClassName(NodeList<Element> nodes, String className) {
     Assert.notNull(nodes);
     Assert.notEmpty(className);
@@ -407,7 +409,7 @@ public class StyleUtils {
   }
 
   public static SafeStyles buildBorderBottomWidth(int width) {
-    return buildBorderBottomWidth(width, Unit.PX);
+    return buildBorderBottomWidth(width, DEFAULT_UNIT);
   }
 
   public static SafeStyles buildBorderBottomWidth(String value) {
@@ -419,7 +421,7 @@ public class StyleUtils {
   }
 
   public static SafeStyles buildBorderLeftWidth(int width) {
-    return buildBorderLeftWidth(width, Unit.PX);
+    return buildBorderLeftWidth(width, DEFAULT_UNIT);
   }
 
   public static SafeStyles buildBorderLeftWidth(String value) {
@@ -431,7 +433,7 @@ public class StyleUtils {
   }
 
   public static SafeStyles buildBorderRightWidth(int width) {
-    return buildBorderRightWidth(width, Unit.PX);
+    return buildBorderRightWidth(width, DEFAULT_UNIT);
   }
 
   public static SafeStyles buildBorderRightWidth(String value) {
@@ -443,7 +445,7 @@ public class StyleUtils {
   }
 
   public static SafeStyles buildBorderTopWidth(int width) {
-    return buildBorderTopWidth(width, Unit.PX);
+    return buildBorderTopWidth(width, DEFAULT_UNIT);
   }
 
   public static SafeStyles buildBorderTopWidth(String value) {
@@ -455,7 +457,7 @@ public class StyleUtils {
   }
 
   public static SafeStyles buildBorderWidth(int width) {
-    return buildBorderWidth(width, Unit.PX);
+    return buildBorderWidth(width, DEFAULT_UNIT);
   }
 
   public static SafeStyles buildBorderWidth(String value) {
@@ -472,8 +474,7 @@ public class StyleUtils {
 
   public static SafeStyles buildFontSize(double size, Unit unit) {
     Assert.isPositive(size);
-    Assert.notNull(unit);
-    return buildStyle(CSS_FONT_SIZE, toCssLength(size, unit));
+    return buildStyle(CSS_FONT_SIZE, toCssLength(size, normalizeUnit(unit)));
   }
 
   public static SafeStyles buildFontSize(FontSize size) {
@@ -501,7 +502,7 @@ public class StyleUtils {
   }
 
   public static SafeStyles buildHeight(int height) {
-    return buildHeight(height, Unit.PX);
+    return buildHeight(height, DEFAULT_UNIT);
   }
   
   public static SafeStyles buildLeft(double value, Unit unit) {
@@ -509,7 +510,7 @@ public class StyleUtils {
   }
 
   public static SafeStyles buildLeft(int left) {
-    return buildLeft(left, Unit.PX);
+    return buildLeft(left, DEFAULT_UNIT);
   }
 
   public static SafeStyles buildMargin(String value) {
@@ -549,7 +550,7 @@ public class StyleUtils {
   }
   
   public static SafeStyles buildTop(int top) {
-    return buildTop(top, Unit.PX);
+    return buildTop(top, DEFAULT_UNIT);
   }
   
   public static SafeStyles buildWidth(double value, Unit unit) {
@@ -557,7 +558,7 @@ public class StyleUtils {
   }
 
   public static SafeStyles buildWidth(int width) {
-    return buildWidth(width, Unit.PX);
+    return buildWidth(width, DEFAULT_UNIT);
   }
 
   public static SafeStyles buildZIndex(int value) {
@@ -758,7 +759,7 @@ public class StyleUtils {
     Assert.notNull(st);
 
     if (!isZero(st.getLeft())) {
-      st.setLeft(0, Unit.PX);
+      st.setLeft(0, DEFAULT_UNIT);
     }
     if (hasProperty(st, STYLE_RIGHT)) {
       st.clearRight();
@@ -781,7 +782,7 @@ public class StyleUtils {
     Assert.notNull(st);
 
     if (!isZero(st.getTop())) {
-      st.setTop(0, Unit.PX);
+      st.setTop(0, DEFAULT_UNIT);
     }
     if (hasProperty(st, STYLE_BOTTOM)) {
       st.clearBottom();
@@ -1354,7 +1355,7 @@ public class StyleUtils {
 
   public static void setBottom(Style st, int px) {
     Assert.notNull(st);
-    st.setBottom(px, Unit.PX);
+    st.setBottom(px, DEFAULT_UNIT);
   }
 
   public static void setBottom(String id, int px) {
@@ -1419,8 +1420,7 @@ public class StyleUtils {
   public static void setFontSize(Element el, double size, Unit unit) {
     Assert.notNull(el);
     Assert.isPositive(size);
-    Assert.notNull(unit);
-    el.getStyle().setFontSize(size, unit);
+    el.getStyle().setFontSize(size, normalizeUnit(unit));
   }
 
   public static void setFontSize(Element el, FontSize size) {
@@ -1483,7 +1483,7 @@ public class StyleUtils {
 
   public static void setHeight(Style st, int px) {
     Assert.notNull(st);
-    st.setHeight(px, Unit.PX);
+    st.setHeight(px, DEFAULT_UNIT);
   }
 
   public static void setHeight(String id, int px) {
@@ -1495,6 +1495,25 @@ public class StyleUtils {
     setHeight(obj.getElement(), px);
   }
 
+  public static void setHeight(Element el, double value, Unit unit) {
+    Assert.notNull(el);
+    setHeight(el.getStyle(), value, unit);
+  }
+
+  public static void setHeight(Style st, double value, Unit unit) {
+    Assert.notNull(st);
+    st.setHeight(value, normalizeUnit(unit));
+  }
+
+  public static void setHeight(String id, double value, Unit unit) {
+    setHeight(DomUtils.getElement(id), value, unit);
+  }
+
+  public static void setHeight(UIObject obj, double value, Unit unit) {
+    Assert.notNull(obj);
+    setHeight(obj.getElement(), value, unit);
+  }
+  
   public static void setHorizontalPadding(Element el, int px) {
     Assert.notNull(el);
     setHorizontalPadding(el.getStyle(), px);
@@ -1506,14 +1525,13 @@ public class StyleUtils {
   }
 
   public static void setHorizontalPadding(Style st, int px) {
-    setHorizontalPadding(st, px, Unit.PX);
+    setHorizontalPadding(st, px, DEFAULT_UNIT);
   }
 
   public static void setHorizontalPadding(Style st, double value, Unit unit) {
     Assert.notNull(st);
-    Assert.notNull(unit);
-    st.setPaddingLeft(value, unit);
-    st.setPaddingRight(value, unit);
+    st.setPaddingLeft(value, normalizeUnit(unit));
+    st.setPaddingRight(value, normalizeUnit(unit));
   }
 
   public static void setHorizontalPadding(String id, int px) {
@@ -1541,7 +1559,7 @@ public class StyleUtils {
 
   public static void setLeft(Style st, int px) {
     Assert.notNull(st);
-    st.setLeft(px, Unit.PX);
+    st.setLeft(px, DEFAULT_UNIT);
   }
 
   public static void setLeft(String id, int px) {
@@ -1566,8 +1584,7 @@ public class StyleUtils {
   public static void setMaxHeight(Style st, double value, Unit unit) {
     Assert.notNull(st);
     Assert.isPositive(value);
-    Assert.notNull(unit);
-    st.setProperty(STYLE_MAX_HEIGHT, value, unit);
+    st.setProperty(STYLE_MAX_HEIGHT, value, normalizeUnit(unit));
   }
 
   public static void setMaxHeight(Style st, int px) {
@@ -1599,8 +1616,7 @@ public class StyleUtils {
   public static void setMaxWidth(Style st, double value, Unit unit) {
     Assert.notNull(st);
     Assert.isPositive(value);
-    Assert.notNull(unit);
-    st.setProperty(STYLE_MAX_WIDTH, value, unit);
+    st.setProperty(STYLE_MAX_WIDTH, value, normalizeUnit(unit));
   }
 
   public static void setMaxWidth(Style st, int px) {
@@ -1632,8 +1648,7 @@ public class StyleUtils {
   public static void setMinHeight(Style st, double value, Unit unit) {
     Assert.notNull(st);
     Assert.isPositive(value);
-    Assert.notNull(unit);
-    st.setProperty(STYLE_MIN_HEIGHT, value, unit);
+    st.setProperty(STYLE_MIN_HEIGHT, value, normalizeUnit(unit));
   }
 
   public static void setMinHeight(Style st, int px) {
@@ -1665,8 +1680,7 @@ public class StyleUtils {
   public static void setMinWidth(Style st, double value, Unit unit) {
     Assert.notNull(st);
     Assert.isPositive(value);
-    Assert.notNull(unit);
-    st.setProperty(STYLE_MIN_WIDTH, value, unit);
+    st.setProperty(STYLE_MIN_WIDTH, value, normalizeUnit(unit));
   }
 
   public static void setMinWidth(Style st, int px) {
@@ -1741,10 +1755,10 @@ public class StyleUtils {
 
   public static void setRectangle(Style st, int left, int top, int width, int height) {
     Assert.notNull(st);
-    st.setLeft(left, Unit.PX);
-    st.setTop(top, Unit.PX);
-    st.setWidth(width, Unit.PX);
-    st.setHeight(height, Unit.PX);
+    st.setLeft(left, DEFAULT_UNIT);
+    st.setTop(top, DEFAULT_UNIT);
+    st.setWidth(width, DEFAULT_UNIT);
+    st.setHeight(height, DEFAULT_UNIT);
   }
 
   public static void setRectangle(String id, int left, int top, int width, int height) {
@@ -1763,7 +1777,7 @@ public class StyleUtils {
 
   public static void setRight(Style st, int px) {
     Assert.notNull(st);
-    st.setRight(px, Unit.PX);
+    st.setRight(px, DEFAULT_UNIT);
   }
 
   public static void setRight(String id, int px) {
@@ -1782,8 +1796,8 @@ public class StyleUtils {
 
   public static void setSize(Style st, int width, int height) {
     Assert.notNull(st);
-    st.setWidth(width, Unit.PX);
-    st.setHeight(height, Unit.PX);
+    st.setWidth(width, DEFAULT_UNIT);
+    st.setHeight(height, DEFAULT_UNIT);
   }
 
   public static void setSize(String id, int width, int height) {
@@ -1820,9 +1834,8 @@ public class StyleUtils {
       double value, Unit unit) {
     Assert.notNull(nodes);
     Assert.notEmpty(name);
-    Assert.notNull(unit);
 
-    return setStyleProperty(nodes, name, value + unit.getType());
+    return setStyleProperty(nodes, name, value + normalizeUnit(unit).getType());
   }
 
   public static int setStyleProperty(NodeList<Element> nodes, String name, String value) {
@@ -1870,7 +1883,7 @@ public class StyleUtils {
 
   public static void setTop(Style st, int px) {
     Assert.notNull(st);
-    st.setTop(px, Unit.PX);
+    st.setTop(px, DEFAULT_UNIT);
   }
 
   public static void setTop(String id, int px) {
@@ -1905,7 +1918,7 @@ public class StyleUtils {
 
   public static void setWidth(Style st, int px) {
     Assert.notNull(st);
-    st.setWidth(px, Unit.PX);
+    st.setWidth(px, DEFAULT_UNIT);
   }
 
   public static void setWidth(String id, int px) {
@@ -1917,6 +1930,25 @@ public class StyleUtils {
     setWidth(obj.getElement(), px);
   }
 
+  public static void setWidth(Element el, double value, Unit unit) {
+    Assert.notNull(el);
+    setWidth(el.getStyle(), value, unit);
+  }
+
+  public static void setWidth(Style st, double value, Unit unit) {
+    Assert.notNull(st);
+    st.setWidth(value, normalizeUnit(unit));
+  }
+
+  public static void setWidth(String id, double value, Unit unit) {
+    setWidth(DomUtils.getElement(id), value, unit);
+  }
+
+  public static void setWidth(UIObject obj, double value, Unit unit) {
+    Assert.notNull(obj);
+    setWidth(obj.getElement(), value, unit);
+  }
+  
   public static void setWordWrap(Element el, boolean wrap) {
     Assert.notNull(el);
     setWordWrap(el.getStyle(), wrap);
@@ -1951,8 +1983,7 @@ public class StyleUtils {
   }
 
   public static String toCssLength(double value, Unit unit) {
-    Assert.notNull(unit);
-    return BeeUtils.toString(value) + unit.getType();
+    return BeeUtils.toString(value) + normalizeUnit(unit).getType();
   }
   
   public static SafeStyles toSafeStyles(String s) {
@@ -2168,6 +2199,10 @@ public class StyleUtils {
       }
     }
     return ok;
+  }
+
+  private static Unit normalizeUnit(Unit unit) {
+    return (unit == null) ? DEFAULT_UNIT : unit;
   }
   
   private static List<Property> parseStyles(String styles) {

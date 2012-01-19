@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.RequiresResize;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -190,21 +191,21 @@ public class VolumeSlider extends Absolute implements RequiresResize {
       int h = BeeUtils.max(panelHeight, barHeight, leftHeight, rightHeight,
           DomUtils.getTextBoxClientHeight());
       if (panelHeight < h) {
-        DomUtils.setHeight(this, h);
+        StyleUtils.setHeight(this, h);
       }
       if (barHeight < h) {
-        DomUtils.setHeight(progressBar, h);
+        StyleUtils.setHeight(progressBar, h);
       }
 
       int w = leftWidth + rightWidth + spacing * 2 + padding * 2;
       if (barWidth <= 0 || panelWidth - w != barWidth) {
         barWidth = (panelWidth > w) ? panelWidth - w : w;
-        DomUtils.setWidth(progressBar, barWidth);
+        StyleUtils.setWidth(progressBar, barWidth);
         progressBar.redraw();
       }
       if (panelWidth - w != barWidth) {
         panelWidth = w + barWidth;
-        DomUtils.setWidth(this, panelWidth);
+        StyleUtils.setWidth(this, panelWidth);
       }
 
       setWidgetPosition(spinner.getDecrementArrow(), padding, (h - leftHeight) / 2);
