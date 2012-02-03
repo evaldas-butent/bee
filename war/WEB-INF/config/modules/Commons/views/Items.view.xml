@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="Items" source="Items"
+  >
+  <BeeColumns>
+    <BeeSimpleColumn expression="Name" />
+    <BeeSimpleColumn expression="Unit" />
+    <BeeSimpleJoin joinType="LEFT" expression="Unit">
+      <BeeSimpleColumn expression="Name" name="UnitName" />
+    </BeeSimpleJoin>
+    <BeeSimpleColumn expression="Article" />
+    <BeeSimpleColumn expression="Barcode" />
+    <BeeSimpleColumn expression="Price" />
+    <BeeSimpleColumn expression="Currency" />
+    <BeeSimpleJoin joinType="LEFT" expression="Currency">
+      <BeeSimpleColumn expression="Name" name="CurrencyName" />
+    </BeeSimpleJoin>
+    <BeeExternalJoin source="ItemCategories" joinType="LEFT" expression="Item">
+      <BeeHiddenColumn expression="Category" />
+      <BeeAggregateColumn aggregate="COUNT" expression="Category" name="Categories" />
+    </BeeExternalJoin>
+    <BeeSimpleColumn expression="IsService"/>
+  </BeeColumns>
+  <BeeOrder>
+    <OrderBy column="Name" />
+  </BeeOrder>
+</BeeView>
+ 

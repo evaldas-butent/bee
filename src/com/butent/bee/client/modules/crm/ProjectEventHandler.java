@@ -300,7 +300,7 @@ public class ProjectEventHandler {
         stages.setWidget((BeeTree) widget);
 
       } else if (BeeUtils.same(name, "StageDescription")) {
-        stages.setDesctiptionWidget(widget);
+        stages.setDescriptionWidget(widget);
 
       } else if (widget instanceof HasClickHandlers) {
         setWidget(name, widget);
@@ -445,7 +445,7 @@ public class ProjectEventHandler {
       }
     }
 
-    public void setDesctiptionWidget(Widget descriptionWidget) {
+    public void setDescriptionWidget(Widget descriptionWidget) {
       this.descriptionWidget = descriptionWidget;
     }
 
@@ -650,8 +650,8 @@ public class ProjectEventHandler {
                   childs.add(row.getId());
                   items.put(row.getId(), row);
                 }
-                addBranch(widget, null, hierarchy, items, result
-                    .getColumnIndex(CrmConstants.COL_NAME));
+                addBranch(widget, null, hierarchy, items,
+                    result.getColumnIndex(CrmConstants.COL_NAME));
               }
             });
       }

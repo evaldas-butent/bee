@@ -9,7 +9,7 @@ import com.butent.bee.server.Config;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.modules.CommonsConstants;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 

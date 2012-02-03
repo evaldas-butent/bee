@@ -6,10 +6,16 @@
   idName="CategoryID"
   >
   <BeeFields>
-    <BeeField name="Name" type="STRING" precision="60" notNull="true" unique="true" />
+    <BeeField name="Name" type="STRING" precision="60" notNull="true" />
     <BeeField name="Parent" type="LONG" relation="Categories" />
   </BeeFields>
   <BeeStates>
     <BeeState>Marked</BeeState>
   </BeeStates>
+  <BeeKeys>
+    <BeeKey unique="true">
+      <KeyField>Parent</KeyField>
+      <KeyField>Name</KeyField>
+    </BeeKey>
+  </BeeKeys>
 </BeeTable>

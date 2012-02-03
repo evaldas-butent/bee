@@ -1,8 +1,13 @@
 <?xml version = "1.0" encoding="UTF-8" standalone="yes"?>
 <BeeMenu>
   <item id="ref_menu" order="10" text="Žinynai" />
-  <item id="miestai" parent="ref_menu" order="20" text="Miestai" service="grid" parameters="Cities" />
-  <item id="salys" parent="ref_menu" order="30" text="Šalys" service="grid" parameters="Countries" />
+  <item id="goods" parent="ref_menu" order="10" text="Prekės" service="items" parameters="g" />
+  <item id="services" parent="ref_menu" order="20" text="Paslaugos" service="items" parameters="s" />
+  <item id="categories" parent="ref_menu" order="30" text="Prekių kategorijos" service="grid" parameters="Categories" separators="*" />
+  <item id="units" parent="ref_menu" order="40" text="Mato vienetai" service="grid" parameters="Units" separators="*" />
+  <item id="currencies" parent="ref_menu" order="50" text="Valiutos" service="grid" parameters="Currencies" separators="*" />
+  <item id="cities" parent="ref_menu" order="60" text="Miestai" service="grid" parameters="Cities" separators="*" />
+  <item id="countries" parent="ref_menu" order="70" text="Šalys" service="grid" parameters="Countries" />
 
   <item id="cont_menu" order="20" text="Kontaktai" />
   <item id="clients" parent="cont_menu" order="10" text="Klientai" service="grid" parameters="Companies" />

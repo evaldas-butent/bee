@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+  
+  name="Items" viewName="Items" caption="Prekės"
+  newRowForm="Item" editForm="Item" editShowId="true"
+  newRowCaption="Naujiena"
+  >
+  <west size="200" splitterSize="2">
+    <Tree name="Categories" />
+  </west>
+  
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <font>Verdana 12 px</font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <BeeDataColumn name="Name" source="Name" caption="Pavadinimas" />
+    <BeeRelColumn name="Unit" source="UnitName" caption="Mato v." 
+                  relSource="Unit" relColumn="Name" />
+    <BeeDataColumn name="Article" source="Article" caption="Artikulas" />
+    <BeeDataColumn name="Barcode" source="Barcode" caption="Barkodas" />
+    <BeeDataColumn name="Price" source="Price" caption="Pard. kaina" />
+    <BeeRelColumn name="Currency" source="CurrencyName" caption="Val." 
+                  relSource="Currency" relColumn="Name" />
+  </columns>
+</BeeGrid>

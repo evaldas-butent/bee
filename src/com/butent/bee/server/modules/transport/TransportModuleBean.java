@@ -3,7 +3,7 @@ package com.butent.bee.server.modules.transport;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.modules.CommonsConstants;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 

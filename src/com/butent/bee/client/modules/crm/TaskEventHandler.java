@@ -36,8 +36,8 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.DataView;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.edit.EditFormEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
@@ -419,6 +419,7 @@ public class TaskEventHandler {
 
     @Override
     public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+      resetUsers();
       newRow.setValue(form.getDataIndex(CrmConstants.COL_OWNER), BeeKeeper.getUser().getUserId());
       newRow.setValue(form.getDataIndex("StartTime"), System.currentTimeMillis());
       newRow.setValue(form.getDataIndex(CrmConstants.COL_EVENT), TaskEvent.ACTIVATED.ordinal());

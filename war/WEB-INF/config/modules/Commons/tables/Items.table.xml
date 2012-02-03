@@ -17,4 +17,9 @@
   <BeeStates>
     <BeeState>Marked</BeeState>
   </BeeStates>
+  <BeeKeys>
+    <BeeKey>
+      <KeyField>IsService</KeyField>
+    </BeeKey>
+  </BeeKeys>
 </BeeTable>
