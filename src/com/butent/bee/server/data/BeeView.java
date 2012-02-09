@@ -29,6 +29,7 @@ import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
 import com.butent.bee.shared.data.XmlView.XmlSimpleJoin;
 import com.butent.bee.shared.data.filter.ColumnColumnFilter;
 import com.butent.bee.shared.data.filter.ColumnIsEmptyFilter;
+import com.butent.bee.shared.data.filter.ColumnNotEmptyFilter;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
@@ -220,6 +221,9 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
       } else if (BeeUtils.getClassName(ColumnIsEmptyFilter.class).equals(clazz)) {
         return getCondition((ColumnIsEmptyFilter) flt);
+
+      } else if (BeeUtils.getClassName(ColumnNotEmptyFilter.class).equals(clazz)) {
+        return getCondition((ColumnNotEmptyFilter) flt);
 
       } else if (BeeUtils.getClassName(CompoundFilter.class).equals(clazz)) {
         return getCondition((CompoundFilter) flt);
@@ -535,9 +539,37 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   private IsCondition getCondition(ColumnIsEmptyFilter flt) {
     String colName = flt.getColumn();
+    SqlDataType type = getColumnType(colName);
+    IsCondition cond = SqlUtils.isNull(getSqlExpression(colName));
 
-    return SqlUtils.or(SqlUtils.isNull(getSqlExpression(colName)),
-        SqlUtils.equal(getSqlExpression(colName), getColumnType(colName).getEmptyValue()));
+    switch (type) {
+      case DATE:
+      case DATETIME:
+        break;
+
+      default:
+        cond = SqlUtils.or(cond, SqlUtils.equal(getSqlExpression(colName), type.getEmptyValue()));
+        break;
+    }
+    return cond;
+  }
+
+  private IsCondition getCondition(ColumnNotEmptyFilter flt) {
+    String colName = flt.getColumn();
+    SqlDataType type = getColumnType(colName);
+    IsCondition cond = SqlUtils.notNull(getSqlExpression(colName));
+
+    switch (type) {
+      case DATE:
+      case DATETIME:
+        break;
+
+      default:
+        cond = SqlUtils.and(cond,
+            SqlUtils.notEqual(getSqlExpression(colName), type.getEmptyValue()));
+        break;
+    }
+    return cond;
   }
 
   private IsCondition getCondition(ColumnValueFilter flt) {

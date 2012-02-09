@@ -7,7 +7,7 @@
   >
   <BeeFields>
     <BeeField name="Item" type="LONG" notNull="true" relation="Items" cascade="DELETE" />
-    <BeeField name="Category" type="LONG" notNull="true" relation="Categories" />
+    <BeeField name="Category" type="LONG" notNull="true" relation="CategoryTree" />
   </BeeFields>
   <BeeKeys>
     <BeeKey unique="true">

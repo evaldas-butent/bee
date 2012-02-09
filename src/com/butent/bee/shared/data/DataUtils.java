@@ -226,8 +226,9 @@ public class DataUtils {
           value = value.replaceFirst(pattern, "$1").trim();
         }
         Operator operator = Operator.detectOperator(value);
+        boolean isOperator = !BeeUtils.isEmpty(operator);
 
-        if (!BeeUtils.isEmpty(operator)) {
+        if (isOperator) {
           value = value.replaceFirst("^\\" + operator.toTextString() + "\\s*", "");
         } else {
           if (ValueType.isString(column.getType())) {
@@ -246,6 +247,9 @@ public class DataUtils {
 
         } else if (column2 != null) {
           flt = ComparisonFilter.compareWithColumn(column, operator, column2);
+
+        } else if (BeeUtils.isEmpty(value) && !isOperator) {
+          flt = Filter.notEmpty(colName);
 
         } else {
           value = value.replaceFirst("^\"(.*)\"$", "$1") // Unquote

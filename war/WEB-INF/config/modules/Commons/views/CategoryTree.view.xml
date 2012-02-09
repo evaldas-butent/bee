@@ -2,8 +2,8 @@
 <BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
 
-  name="Categories"
-  source="Categories"
+  name="CategoryTree"
+  source="CategoryTree"
   >
   <BeeColumns>
     <BeeSimpleColumn expression="Name" />

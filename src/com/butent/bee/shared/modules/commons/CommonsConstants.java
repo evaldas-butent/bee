@@ -17,7 +17,7 @@ public class CommonsConstants {
   public static final String SVC_REMOVE_CATEGORIES = COMMONS_ITEM_PREFIX + "RemoveCategories";
 
   public static final String TBL_ITEMS = "Items";
-  public static final String TBL_CATEGORIES = "Categories";
+  public static final String TBL_CATEGORIES = "CategoryTree";
   public static final String TBL_ITEM_CATEGORIES = "ItemCategories";
 
   public static final String COL_NAME = "Name";

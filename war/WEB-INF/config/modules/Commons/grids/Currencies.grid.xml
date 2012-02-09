@@ -3,6 +3,7 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
   name="Currencies" viewName="Currencies" caption="Valiutos"
+  newRowForm="Currency" newRowCaption="Nauja valiuta" editForm="Currency"
   >
   <columns>
     <BeeDataColumn name="Currency" source="Name" caption="Valiuta" />

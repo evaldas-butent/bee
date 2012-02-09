@@ -2,7 +2,7 @@
 <BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
-  name="Categories" viewName="Categories" caption="Prekių kategorijos"
+  name="CategoryTree" viewName="CategoryTree" caption="Prekių kategorijos"
   >
   <columns>
     <BeeDataColumn name="Name" source="Name" caption="Kategorija" />

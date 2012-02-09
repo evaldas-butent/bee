@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+
+  name="OrderServices" viewName="OrderServices" caption="Paslaugos"
+  newRowColumns="ItemName, Quantity, Price, CurrencyName"
+  >
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <font>Verdana 12 px</font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <BeeRelColumn name="ItemName" source="ItemName" relSource="Item"
+                  relView="Services" relColumn="Name" caption="Paslauga" />
+    <BeeDataColumn name="UnitName" source="UnitName" caption="Mato v." readOnly="true" />
+    <BeeDataColumn name="Quantity" source="Quantity" caption="Kiekis" />
+    <BeeDataColumn name="Price" source="Price" caption="Kaina" format="#.00" />
+    <BeeRelColumn name="CurrencyName" source="CurrencyName" relSource="Currency"
+                  relColumn="Name" caption="Val." />
+    <BeeCalcColumn type="decimal" name="Total" caption="Suma" format="#.00">
+      <calc><expression>row.Quantity * row.Price</expression></calc>
+    </BeeCalcColumn>
+  </columns>
+</BeeGrid>

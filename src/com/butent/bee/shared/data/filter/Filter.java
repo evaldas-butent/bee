@@ -47,6 +47,11 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
     return new CompoundFilter(CompoundType.NOT, filter);
   }
 
+  public static Filter notEmpty(String column) {
+    Assert.notEmpty(column);
+    return new ColumnNotEmptyFilter(column);
+  }
+
   public static CompoundFilter or(Filter... filters) {
     return new CompoundFilter(CompoundType.OR, filters);
   }
@@ -93,6 +98,9 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
 
     } else if (BeeUtils.getClassName(ColumnIsEmptyFilter.class).equals(clazz)) {
       flt = new ColumnIsEmptyFilter();
+
+    } else if (BeeUtils.getClassName(ColumnNotEmptyFilter.class).equals(clazz)) {
+      flt = new ColumnNotEmptyFilter();
 
     } else if (BeeUtils.getClassName(CompoundFilter.class).equals(clazz)) {
       flt = new CompoundFilter();

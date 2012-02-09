@@ -2,7 +2,8 @@
 <BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
 
-  name="TripOrders" viewName="TripOrders" caption="Užsakymai" newRowForm="TripOrder" editForm="TripOrder"
+  name="TripOrders" viewName="TripOrders" caption="Užsakymai"
+  newRowForm="TripOrder" editForm="TripOrder"
   newRowCaption="Naujas užsakymas"
   >
   <header borderWidth="1 0" />

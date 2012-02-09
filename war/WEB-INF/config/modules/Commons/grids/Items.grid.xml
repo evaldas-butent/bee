@@ -2,7 +2,7 @@
 <BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
-  name="Items" viewName="Items" caption="Prekės"
+  name="Items" viewName="Items"
   newRowForm="Item" editForm="Item" editShowId="true"
   newRowCaption="Naujiena"
   >

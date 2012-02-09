@@ -43,8 +43,13 @@ public abstract class ComparisonFilter extends Filter {
   public static Filter compareVersion(String column, Operator op, String value) {
     Assert.notEmpty(column);
     Assert.notNull(op);
-    Assert.notEmpty(value);
-    return new VersionFilter(column, op, DateTime.parse(value).getTime());
+    DateTime time = DateTime.parse(value);
+
+    if (time == null) {
+      LogUtils.warning(LogUtils.getDefaultLogger(), "Not a DATETIME value:", value);
+      return null;
+    }
+    return new VersionFilter(column, op, time.getTime());
   }
 
   public static Filter compareWithColumn(String leftColumn, Operator op, String rightColumn) {

@@ -5,31 +5,35 @@
   name="TripOrder" viewName="TripOrders" caption="Transporto užsakymas"
   >
   <FlowPanel class="flexBox-vertical">
-    <FlexTable cellSpacing="10">
-      <row>
-        <cell><Label html="Data" class="bee-required" /></cell>
-        <cell><InputDateTime source="Date" /></cell>
-        <cell><Label html="Užsakymo Nr." horizontalAlignment="right" class="bee-required" /></cell>
-        <cell><InputText source="OrderNo" /></cell>
-      </row>
-      <row>
-        <cell><InlineLabel/></cell>
-        <cell><Label html="Užsakovas" horizontalAlignment="right" class="bee-required" /></cell>
-        <cell colSpan="2">
-          <DataSelector source="CustomerName" relSource="Customer" relView="Companies"
-                        relColumn="Name" />
-        </cell>
-      </row>
-      <row>
-        <cell><InlineLabel/></cell>
-        <cell><Label html="Mokėtojas" horizontalAlignment="right" /></cell>
-        <cell colSpan="2">
-          <DataSelector source="PayerName" relSource="Payer" relView="Companies"
-                        relColumn="Name" />
-        </cell>
-      </row>
-    </FlexTable>
+    <FlowPanel class="flexBox-horizontal">
+      <FlexTable cellSpacing="10">
+        <row>
+          <cell><Label html="Data" horizontalAlignment="right" class="bee-required" /></cell>
+          <cell><InputDateTime source="Date" /></cell>
+        </row>
+        <row>
+          <cell><Label html="Užsakymo Nr." horizontalAlignment="right" class="bee-required" /></cell>
+          <cell><InputText source="OrderNo" /></cell>
+        </row>
+        <row>
+          <cell><Label html="Užsakovas" horizontalAlignment="right" class="bee-required" /></cell>
+          <cell>
+            <DataSelector source="CustomerName" relSource="Customer" relView="Companies"
+                          relColumn="Name" />
+          </cell>
+        </row>
+        <row>
+          <cell><Label html="Mokėtojas" horizontalAlignment="right" /></cell>
+          <cell>
+            <DataSelector source="PayerName" relSource="Payer" relView="Companies"
+                          relColumn="Name" />
+          </cell>
+        </row>
+      </FlexTable>
+
+      <ChildGrid class="flexible" name="OrderServices" relColumn="Order"/>
+    </FlowPanel>
 
     <ChildGrid class="flexible" name="OrderCargo" relColumn="Order"/>
   </FlowPanel>
-</BeeForm>  
+</BeeForm>

@@ -2,12 +2,12 @@
 <BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
 
-  name="Categories"
+  name="CategoryTree"
   idName="CategoryID"
   >
   <BeeFields>
     <BeeField name="Name" type="STRING" precision="60" notNull="true" />
-    <BeeField name="Parent" type="LONG" relation="Categories" />
+    <BeeField name="Parent" type="LONG" relation="CategoryTree" />
   </BeeFields>
   <BeeStates>
     <BeeState>Marked</BeeState>

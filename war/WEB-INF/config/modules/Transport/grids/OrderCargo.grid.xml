@@ -23,7 +23,7 @@
     <BeeDataColumn name="LoadingRamp" source="LoadingRamp" caption="Pakrovimo vieta" />
     <BeeDataColumn name="LoadingTerminal" source="LoadingTerminal" caption="Pakrovimo terminalas" />
     <BeeDataColumn name="UnloadingDate" source="UnloadingDate" caption="Iškrovimo data" />
-    <BeeRelColumn name="UnloadingCountryName" source="UnloadingCountry" relSource="UnloadingCountry"
+    <BeeRelColumn name="UnloadingCountryName" source="UnloadingCountryName" relSource="UnloadingCountry"
                   relColumn="Name" caption="Iškrovimo šalis" />
     <BeeDataColumn name="UnloadingRamp" source="UnloadingRamp" caption="Iškrovimo vieta" />
     <BeeDataColumn name="UnloadingTerminal" source="UnloadingTerminal" caption="Iškrovimo terminalas" />
