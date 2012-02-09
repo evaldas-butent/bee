@@ -48,6 +48,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import org.w3c.dom.Document;
@@ -898,6 +899,36 @@ public class UiServiceBean {
       ui.initGrids();
       response.addInfo("Grids OK");
 
+    } else if (BeeUtils.startsSame(cmd, "check")) {
+      String err = null;
+      List<String> tbls = Lists.newArrayList();
+      int idx = -1;
+
+      for (String w : BeeUtils.NAME_SPLITTER.split(cmd)) {
+        idx++;
+
+        if (idx == 0) {
+          continue;
+        } else if (idx == 1 && BeeUtils.same(w, "all")) {
+          break;
+        } else if (!sys.isTable(w)) {
+          err = BeeUtils.concat(1, "Unknown table:", w);
+          break;
+        } else {
+          tbls.add(w);
+        }
+      }
+      if (BeeUtils.isEmpty(err)) {
+        List<Property> resp = sys.checkTables(tbls.toArray(new String[0]));
+
+        if (BeeUtils.isEmpty(resp)) {
+          response.addWarning("No changes in table structure");
+        } else {
+          response.setResponse(resp);
+        }
+      } else {
+        response.addError(err);
+      }
     } else if (BeeUtils.startsSame(cmd, "setState")) {
       String[] arr = cmd.split(" ", 5);
       String tbl = arr[1];

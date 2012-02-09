@@ -48,6 +48,8 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.io.File;
 import java.util.Collection;
@@ -124,6 +126,22 @@ public class SystemBean {
     if (!table.isActive()) {
       rebuildTable(table, true);
     }
+  }
+
+  public List<Property> checkTables(String... tbls) {
+    List<Property> diff = Lists.newArrayList();
+    Collection<String> tables;
+
+    if (BeeUtils.isEmpty(tbls)) {
+      initTables();
+      tables = getTableNames();
+    } else {
+      tables = Lists.newArrayList(tbls);
+    }
+    for (String tbl : tables) {
+      createTable(getTable(tbl), diff);
+    }
+    return diff;
   }
 
   public ResponseObject editStateRoles(String tblName, String stateName) {
@@ -603,7 +621,7 @@ public class SystemBean {
     }
   }
 
-  private Map<String, String> createTable(BeeTable table) {
+  private Map<String, String> createTable(BeeTable table, List<Property> diff) {
     String tblName = table.getName();
     Map<String, SqlCreate> newTables = Maps.newHashMap();
 
@@ -650,7 +668,12 @@ public class SystemBean {
       boolean update = !qs.isDbTable(getDbName(), getDbSchema(), tblName);
 
       if (update) {
-        makeStructureChanges(sc);
+        if (diff != null) {
+          PropertyUtils.addProperty(diff, tblName, "DOES NOT EXIST");
+          return null;
+        } else {
+          makeStructureChanges(sc);
+        }
       } else {
         tblBackup = tblName + "_BAK";
         LogUtils.info(logger, "Checking indexes...");
@@ -663,15 +686,27 @@ public class SystemBean {
             if (ArrayUtils.contains(key.getName(), keys)) {
               c++;
             } else {
-              update = true;
-              LogUtils.warning(logger, "INDEX", key.getName(), "NOT IN", keys);
-              break;
+              String msg = BeeUtils.concat(1, "INDEX", key.getName(), "NOT IN", keys);
+              LogUtils.warning(logger, msg);
+
+              if (diff != null) {
+                PropertyUtils.addProperty(diff, tblName, msg);
+              } else {
+                update = true;
+                break;
+              }
             }
           }
         }
         if (!update && keys.length > c) {
-          update = true;
-          LogUtils.warning(logger, "TOO MANY INDEXES");
+          String msg = "TOO MANY INDEXES";
+          LogUtils.warning(logger, msg);
+
+          if (diff != null) {
+            PropertyUtils.addProperty(diff, tblName, msg);
+          } else {
+            update = true;
+          }
         }
       }
       if (!update) {
@@ -688,15 +723,27 @@ public class SystemBean {
             if (ArrayUtils.contains(fKey.getName(), fKeys)) {
               c++;
             } else {
-              update = true;
-              LogUtils.warning(logger, "FOREIGN KEY", fKey.getName(), "NOT IN", fKeys);
-              break;
+              String msg = BeeUtils.concat(1, "FOREIGN KEY", fKey.getName(), "NOT IN", fKeys);
+              LogUtils.warning(logger, msg);
+
+              if (diff != null) {
+                PropertyUtils.addProperty(diff, tblName, msg);
+              } else {
+                update = true;
+                break;
+              }
             }
           }
         }
         if (!update && fKeys.length > c) {
-          update = true;
-          LogUtils.warning(logger, "TOO MANY FOREIGN KEYS");
+          String msg = "TOO MANY FOREIGN KEYS";
+          LogUtils.warning(logger, msg);
+
+          if (diff != null) {
+            PropertyUtils.addProperty(diff, tblName, msg);
+          } else {
+            update = true;
+          }
         }
       }
       if (!update) {
@@ -710,15 +757,27 @@ public class SystemBean {
             if (ArrayUtils.contains(trigger.getName(), triggers)) {
               c++;
             } else {
-              update = true;
-              LogUtils.warning(logger, "TRIGGER", trigger.getName(), "NOT IN", triggers);
-              break;
+              String msg = BeeUtils.concat(1, "TRIGGER", trigger.getName(), "NOT IN", triggers);
+              LogUtils.warning(logger, msg);
+
+              if (diff != null) {
+                PropertyUtils.addProperty(diff, tblName, msg);
+              } else {
+                update = true;
+                break;
+              }
             }
           }
         }
         if (!update && triggers.length > c) {
-          update = true;
-          LogUtils.warning(logger, "TOO MANY TRIGGERS");
+          String msg = "TOO MANY TRIGGERS";
+          LogUtils.warning(logger, msg);
+
+          if (diff != null) {
+            PropertyUtils.addProperty(diff, tblName, msg);
+          } else {
+            update = true;
+          }
         }
       }
       if (!BeeUtils.isEmpty(tblBackup)) {
@@ -731,8 +790,14 @@ public class SystemBean {
         SimpleRowSet newFields = qs.dbFields(getDbName(), getDbSchema(), tblBackup);
 
         if (!update && oldFields.getNumberOfRows() != newFields.getNumberOfRows()) {
-          update = true;
-          LogUtils.warning(logger, "FIELD COUNT DOESN'T MATCH");
+          String msg = "FIELD COUNT DOESN'T MATCH";
+          LogUtils.warning(logger, msg);
+
+          if (diff != null) {
+            PropertyUtils.addProperty(diff, tblName, msg);
+          } else {
+            update = true;
+          }
         }
         if (!update) {
           LogUtils.info(logger, "Checking fields...");
@@ -743,10 +808,18 @@ public class SystemBean {
             for (String info : oldFieldInfo.keySet()) {
               if (!BeeUtils.same(info, SqlConstants.TBL_NAME)
                   && !BeeUtils.equals(oldFieldInfo.get(info), newFieldInfo.get(info))) {
-                update = true;
-                LogUtils.warning(logger, "FIELD", oldFieldInfo.get(SqlConstants.FLD_NAME) + ":",
+
+                String msg = BeeUtils.concat(1, "FIELD",
+                    oldFieldInfo.get(SqlConstants.FLD_NAME) + ":",
                     info, oldFieldInfo.get(info), "!=", newFieldInfo.get(info));
-                break;
+                LogUtils.warning(logger, msg);
+
+                if (diff != null) {
+                  PropertyUtils.addProperty(diff, tblName, msg);
+                } else {
+                  update = true;
+                  break;
+                }
               }
             }
             if (update) {
@@ -1098,7 +1171,7 @@ public class SystemBean {
   private void rebuildTable(BeeTable table, boolean ref) {
     table.setActive(false);
     String tblMain = table.getName();
-    Map<String, String> rebuilds = createTable(table);
+    Map<String, String> rebuilds = createTable(table, null);
 
     if (rebuilds.containsKey(tblMain)) {
       Collection<BeeKey> keys = Lists.newArrayList();
@@ -1120,7 +1193,6 @@ public class SystemBean {
           foreignKeys.add(fKey);
         }
       }
-      
       if (ref) {
         for (BeeTable other : getTables()) {
           if (!BeeUtils.same(other.getName(), tblMain) && other.isActive()) {

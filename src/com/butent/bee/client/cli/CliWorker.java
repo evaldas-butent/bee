@@ -749,6 +749,9 @@ public class CliWorker {
             FormFactory.parseForm("<BeeForm><ResizePanel><Frame url=\"" + url
                 + "\" /></ResizePanel></BeeForm>");
           }
+        } else if (response.hasResponse()) {
+          BeeKeeper.getScreen().showGrid(
+              PropertyUtils.restoreProperties((String) response.getResponse()));
         }
       }
     });
@@ -1030,9 +1033,9 @@ public class CliWorker {
     int timeout = BeeConst.UNDEF;
     boolean showConfirm = true;
     boolean showCancel = true;
-    
+
     boolean required = true;
-    
+
     final Holder<String> widgetName = new Holder<String>(null);
     final Holder<String> widgetStyle = new Holder<String>("background-color:green");
 
@@ -1100,7 +1103,7 @@ public class CliWorker {
           public void onCancel() {
             BeeKeeper.getLog().info("cancel");
           }
-          
+
           @Override
           public void onSuccess(String value) {
             BeeKeeper.getLog().info("success", value);
