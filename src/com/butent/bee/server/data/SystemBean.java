@@ -686,7 +686,9 @@ public class SystemBean {
             if (ArrayUtils.contains(key.getName(), keys)) {
               c++;
             } else {
-              String msg = BeeUtils.concat(1, "INDEX", key.getName(), "NOT IN", keys);
+              String msg = BeeUtils.concat(1, "INDEX", key.getName(),
+                  BeeUtils.parenthesize(ArrayUtils.transform(key.getKeyFields())), "NOT IN",
+                  BeeUtils.parenthesize(ArrayUtils.transform(keys)));
               LogUtils.warning(logger, msg);
 
               if (diff != null) {
@@ -723,7 +725,10 @@ public class SystemBean {
             if (ArrayUtils.contains(fKey.getName(), fKeys)) {
               c++;
             } else {
-              String msg = BeeUtils.concat(1, "FOREIGN KEY", fKey.getName(), "NOT IN", fKeys);
+              String msg = BeeUtils.concat(1, "FOREIGN KEY", fKey.getName(),
+                  BeeUtils.parenthesize(BeeUtils.concat(" ON DELETE ",
+                      fKey.getKeyField() + "->" + fKey.getRefTable(), fKey.getCascade())),
+                  "NOT IN", BeeUtils.parenthesize(ArrayUtils.transform(fKeys)));
               LogUtils.warning(logger, msg);
 
               if (diff != null) {
@@ -757,7 +762,8 @@ public class SystemBean {
             if (ArrayUtils.contains(trigger.getName(), triggers)) {
               c++;
             } else {
-              String msg = BeeUtils.concat(1, "TRIGGER", trigger.getName(), "NOT IN", triggers);
+              String msg = BeeUtils.concat(1, "TRIGGER", trigger.getName(), "NOT IN",
+                  BeeUtils.parenthesize(ArrayUtils.transform(triggers)));
               LogUtils.warning(logger, msg);
 
               if (diff != null) {
@@ -789,41 +795,61 @@ public class SystemBean {
         SimpleRowSet oldFields = qs.dbFields(getDbName(), getDbSchema(), tblName);
         SimpleRowSet newFields = qs.dbFields(getDbName(), getDbSchema(), tblBackup);
 
-        if (!update && oldFields.getNumberOfRows() != newFields.getNumberOfRows()) {
-          String msg = "FIELD COUNT DOESN'T MATCH";
-          LogUtils.warning(logger, msg);
-
-          if (diff != null) {
-            PropertyUtils.addProperty(diff, tblName, msg);
-          } else {
-            update = true;
-          }
-        }
         if (!update) {
           LogUtils.info(logger, "Checking fields...");
-          int i = 0;
-          for (Map<String, String> oldFieldInfo : oldFields) {
-            Map<String, String> newFieldInfo = newFields.getRow(i++);
+          int c = 0;
 
-            for (String info : oldFieldInfo.keySet()) {
-              if (!BeeUtils.same(info, SqlConstants.TBL_NAME)
-                  && !BeeUtils.equals(oldFieldInfo.get(info), newFieldInfo.get(info))) {
+          for (Map<String, String> newFieldInfo : newFields) {
+            Map<String, String> oldFieldInfo = null;
+            String fldName = newFieldInfo.get(SqlConstants.FLD_NAME);
 
-                String msg = BeeUtils.concat(1, "FIELD",
-                    oldFieldInfo.get(SqlConstants.FLD_NAME) + ":",
-                    info, oldFieldInfo.get(info), "!=", newFieldInfo.get(info));
-                LogUtils.warning(logger, msg);
-
-                if (diff != null) {
-                  PropertyUtils.addProperty(diff, tblName, msg);
-                } else {
-                  update = true;
-                  break;
-                }
+            for (Map<String, String> oldInfo : oldFields) {
+              if (BeeUtils.same(oldInfo.get(SqlConstants.FLD_NAME), fldName)) {
+                c++;
+                oldFieldInfo = oldInfo;
+                break;
               }
             }
-            if (update) {
-              break;
+            if (oldFieldInfo != null) {
+              for (String info : oldFieldInfo.keySet()) {
+                if (!BeeUtils.same(info, SqlConstants.TBL_NAME)
+                    && !BeeUtils.equals(oldFieldInfo.get(info), newFieldInfo.get(info))) {
+
+                  String msg = BeeUtils.concat(1, "FIELD", fldName + ":",
+                      info, oldFieldInfo.get(info), "!=", newFieldInfo.get(info));
+                  LogUtils.warning(logger, msg);
+
+                  if (diff != null) {
+                    PropertyUtils.addProperty(diff, tblName, msg);
+                  } else {
+                    update = true;
+                    break;
+                  }
+                }
+              }
+              if (update) {
+                break;
+              }
+            } else {
+              String msg = BeeUtils.concat(1, "FIELD", fldName, "DOES NOT EXIST");
+              LogUtils.warning(logger, msg);
+
+              if (diff != null) {
+                PropertyUtils.addProperty(diff, tblName, msg);
+              } else {
+                update = true;
+                break;
+              }
+            }
+          }
+          if (!update && oldFields.getNumberOfRows() > c) {
+            String msg = "TOO MANY FIELDS";
+            LogUtils.warning(logger, msg);
+
+            if (diff != null) {
+              PropertyUtils.addProperty(diff, tblName, msg);
+            } else {
+              update = true;
             }
           }
         }
