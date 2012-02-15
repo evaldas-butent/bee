@@ -7,7 +7,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -21,8 +20,8 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.tree.BeeTree;
-import com.butent.bee.client.tree.BeeTreeItem;
+import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
@@ -352,9 +351,9 @@ public class CommonEventHandler {
 
     @Override
     public void afterCreateWidget(String name, Widget widget) {
-      if (widget instanceof BeeTree && BeeUtils.same(name, "Categories")) {
-        populateCategories((BeeTree) widget);
-        ((BeeTree) widget).addSelectionHandler(this);
+      if (widget instanceof Tree && BeeUtils.same(name, "Categories")) {
+        populateCategories((Tree) widget);
+        ((Tree) widget).addSelectionHandler(this);
       }
     }
 
@@ -419,7 +418,7 @@ public class CommonEventHandler {
       return selectedCategory;
     }
 
-    private void populateCategories(final BeeTree tree) {
+    private void populateCategories(final Tree tree) {
       Queries.getRowSet(CommonsConstants.TBL_CATEGORIES, null, new Queries.RowSetCallback() {
         public void onFailure(String[] reason) {
           BeeKeeper.getScreen().notifySevere(reason);
@@ -428,7 +427,7 @@ public class CommonEventHandler {
         public void onSuccess(BeeRowSet result) {
           nameIndex = result.getColumnIndex(CommonsConstants.COL_NAME);
           tree.clear();
-          tree.addItem(new BeeTreeItem("*"));
+          tree.addItem(new TreeItem("*"));
 
           if (!result.isEmpty()) {
             int parentIndex = result.getColumnIndex("Parent");
@@ -439,7 +438,7 @@ public class CommonEventHandler {
             for (IsRow row : result.getRows()) {
               Long pId = row.getLong(parentIndex);
               if (pId == null) {
-                BeeTreeItem item = new BeeTreeItem(row.getString(nameIndex), row);
+                TreeItem item = new TreeItem(row.getString(nameIndex), row);
                 tree.addItem(item);
                 treeItems.put(row.getId(), item);
               } else {
@@ -459,7 +458,7 @@ public class CommonEventHandler {
                 if (parentItem == null) {
                   pendingRows.add(row);
                 } else {
-                  BeeTreeItem item = new BeeTreeItem(row.getString(nameIndex), row);
+                  TreeItem item = new TreeItem(row.getString(nameIndex), row);
                   parentItem.addItem(item);
                   treeItems.put(row.getId(), item);
                 }

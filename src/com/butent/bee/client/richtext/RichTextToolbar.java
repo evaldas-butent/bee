@@ -12,7 +12,6 @@ import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.RichTextArea;
@@ -20,6 +19,7 @@ import com.google.gwt.user.client.ui.RichTextArea.Formatter;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -33,8 +33,6 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.Toggle;
-import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Handles a rich text editor toolbar with all the buttons for formatting the text.
@@ -140,16 +138,19 @@ public class RichTextToolbar extends Vertical implements HasEnabled {
         formatter.setJustification(RichTextArea.Justification.RIGHT);
 
       } else if (sender == insertImage) {
-        String url = Window.prompt("Enter an image URL:", "http://");
-        if (!BeeUtils.isEmpty(url)) {
-          formatter.insertImage(url.trim());
-        }
+        Global.inputString("Image URL", null, new StringCallback() {
+          @Override
+          public void onSuccess(String value) {
+            formatter.insertImage(value);
+          }}, "http://");
 
       } else if (sender == createLink) {
-        String url = Window.prompt("Enter a link URL:", "http://");
-        if (!BeeUtils.isEmpty(url)) {
-          formatter.createLink(url.trim());
-        }
+        Global.inputString("Link URL", null, new StringCallback() {
+          @Override
+          public void onSuccess(String value) {
+            formatter.createLink(value);
+          }}, "http://");
+
       } else if (sender == removeLink) {
         formatter.removeLink();
 
@@ -166,10 +167,12 @@ public class RichTextToolbar extends Vertical implements HasEnabled {
         updateStatus();
 
       } else if (sender == insertHtml) {
-        String html = Window.prompt("Enter HTML:", BeeConst.STRING_EMPTY);
-        if (!BeeUtils.isEmpty(html)) {
-          formatter.insertHTML(html.trim());
-        }
+        Global.inputString("Html", new StringCallback() {
+          @Override
+          public void onSuccess(String value) {
+            formatter.insertHTML(value);
+          }});
+
       } else if (sender == undo) {
         formatter.undo();
       } else if (sender == redo) {

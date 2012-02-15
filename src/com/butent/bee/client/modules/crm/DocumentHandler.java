@@ -4,18 +4,18 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.GridFormPresenter;
-import com.butent.bee.client.tree.BeeTree;
-import com.butent.bee.client.tree.BeeTreeItem;
+import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
@@ -198,9 +198,9 @@ public class DocumentHandler {
 
     @Override
     public void afterCreateWidget(String name, Widget widget) {
-      if (widget instanceof BeeTree) {
-        populateTree((BeeTree) widget, new BeeTreeItem(ROOT_LABEL));
-        ((BeeTree) widget).addSelectionHandler(this);
+      if (widget instanceof Tree) {
+        populateTree((Tree) widget, new TreeItem(ROOT_LABEL));
+        ((Tree) widget).addSelectionHandler(this);
       }
     }
 
@@ -246,16 +246,16 @@ public class DocumentHandler {
 
     private static int counter = 0;
 
-    private BeeTree treeWidget = null;
-    private final BeeTreeItem rootItem = new BeeTreeItem(ROOT_LABEL);
+    private Tree treeWidget = null;
+    private final TreeItem rootItem = new TreeItem(ROOT_LABEL);
 
     private TreeHandler() {
     }
 
     @Override
     public void afterCreateWidget(String name, Widget widget) {
-      if (widget instanceof BeeTree) {
-        setTreeWidget((BeeTree) widget);
+      if (widget instanceof Tree) {
+        setTreeWidget((Tree) widget);
         refresh();
       }
     }
@@ -271,7 +271,13 @@ public class DocumentHandler {
           break;
 
         case ADD:
-          add();
+          Global.inputString("Nauja kategorija", new StringCallback() {
+            @Override
+            public void onSuccess(String value) {
+              add(value);
+            }
+          });
+
           result = false;
           break;
 
@@ -298,12 +304,10 @@ public class DocumentHandler {
       }
     }
 
-    private void add() {
+    private void add(String name) {
       if (getTreeWidget() == null || TREE_VIEW_COLUMNS.isEmpty()) {
         return;
       }
-
-      final String name = Window.prompt("Nauja kategorija:", BeeConst.STRING_EMPTY);
       if (BeeUtils.isEmpty(name)) {
         return;
       }
@@ -350,7 +354,7 @@ public class DocumentHandler {
       });
     }
 
-    private BeeTreeItem getRootItem() {
+    private TreeItem getRootItem() {
       return rootItem;
     }
 
@@ -362,7 +366,7 @@ public class DocumentHandler {
       }
     }
 
-    private BeeTree getTreeWidget() {
+    private Tree getTreeWidget() {
       return treeWidget;
     }
 
@@ -373,7 +377,7 @@ public class DocumentHandler {
       populateTree(getTreeWidget(), getRootItem());
     }
 
-    private void setTreeWidget(BeeTree treeWidget) {
+    private void setTreeWidget(Tree treeWidget) {
       this.treeWidget = treeWidget;
     }
   }
@@ -397,7 +401,7 @@ public class DocumentHandler {
     FormFactory.registerFormCallback("NewDocument", new CreationHandler());
   }
 
-  private static BeeTreeItem createTreeItem(IsRow row) {
+  private static TreeItem createTreeItem(IsRow row) {
     String html = BeeUtils.concat(1, row.getString(treeViewOrderIndex),
         row.getString(treeViewNameIndex));
 
@@ -406,7 +410,7 @@ public class DocumentHandler {
       html = html + BeeConst.STRING_SPACE + BeeUtils.bracket(count);
     }
 
-    return new BeeTreeItem(html, row);
+    return new TreeItem(html, row);
   }
 
   private static Long getItemId(TreeItem item) {
@@ -417,7 +421,7 @@ public class DocumentHandler {
     }
   }
 
-  private static void populateTree(final BeeTree tree, final BeeTreeItem root) {
+  private static void populateTree(final Tree tree, final TreeItem root) {
     Queries.getRowSet(TREE_VIEW_NAME, null, new Queries.RowSetCallback() {
       public void onFailure(String[] reason) {
         BeeKeeper.getScreen().notifySevere(reason);
@@ -437,7 +441,7 @@ public class DocumentHandler {
           for (IsRow row : result.getRows()) {
             Long pId = row.getLong(treeViewParentIndex);
             if (pId == null) {
-              BeeTreeItem item = createTreeItem(row);
+              TreeItem item = createTreeItem(row);
               root.addItem(item);
               treeItems.put(row.getId(), item);
             } else {
@@ -457,7 +461,7 @@ public class DocumentHandler {
               if (parentItem == null) {
                 pendingRows.add(row);
               } else {
-                BeeTreeItem item = createTreeItem(row);
+                TreeItem item = createTreeItem(row);
                 parentItem.addItem(item);
                 treeItems.put(row.getId(), item);
               }

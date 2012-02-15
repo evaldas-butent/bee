@@ -902,20 +902,20 @@ body, select {
   margin: 1ex 0;
   width: 256px;
 }
-.bee-InputConfirm, .bee-InputCancel {
+.bee-InputCommandGroup {
+  position: absolute;
+  right: 5px;
+  bottom: 3px;
+ }
+.bee-InputCommand {
   font-family: Tahoma;
   width: 80px;
-  position: absolute;
-  bottom: 3px;
-}
-.bee-InputConfirm {
-  right: 90px;
 }
 .bee-InputCancel {
-  right: 5px;
-}
+  margin-left: 1em;
+}  
 
-.gwt-TreeItem-selected {
+.bee-TreeItem-selected {
   background-color: #ffa;
   font-weight: bolder;
 }

@@ -208,6 +208,10 @@ public class Global implements Module {
     msgBoxen.showInfo(obj);
   }
 
+  public static void inputString(String caption, StringCallback callback) {
+    inputString(caption, null, callback);
+  }
+  
   public static void inputString(String caption, String prompt, StringCallback callback) {
     inputString(caption, prompt, callback, null);
   }
@@ -221,14 +225,14 @@ public class Global implements Module {
   public static void inputString(String caption, String prompt, StringCallback callback,
       String defaultValue, int maxLength, double width, Unit widthUnit) {
     inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
-        BeeConst.UNDEF, true, true, null);
+        BeeConst.UNDEF, "OK", "Cancel", null);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback,
       String defaultValue, int maxLength, double width, Unit widthUnit, int timeout,
-      boolean showConfirm, boolean showCancel, WidgetInitializer initializer) {
+      String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
     inpBoxen.inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
-        timeout, showConfirm, showCancel, initializer);
+        timeout, confirmHtml, cancelHtml, initializer);
   }
 
   public static void inputVars(Stage bst, String cap, String... names) {

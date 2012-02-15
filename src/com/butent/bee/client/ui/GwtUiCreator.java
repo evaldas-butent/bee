@@ -19,8 +19,8 @@ import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.menu.MenuSeparator;
-import com.butent.bee.client.tree.BeeTree;
-import com.butent.bee.client.tree.BeeTreeItem;
+import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeLabel;
@@ -271,12 +271,12 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createTree(UiTree tree) {
-    BeeTree widget = new BeeTree();
+    Tree widget = new Tree();
     widget.setTitle(tree.getId());
 
     if (tree.hasChilds()) {
       for (UiComponent child : tree.getChilds()) {
-        BeeTreeItem item = new BeeTreeItem(child.getCaption());
+        TreeItem item = new TreeItem(child.getCaption());
 
         if (child.hasChilds()) {
           Object childWidget = child.createInstance(this);

@@ -64,7 +64,7 @@ import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.resources.Images;
-import com.butent.bee.client.tree.BeeTree;
+import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.utils.XmlUtils;
@@ -992,7 +992,7 @@ public enum FormWidget {
         break;
 
       case TREE:
-        widget = new BeeTree();
+        widget = new Tree();
         break;
     }
 

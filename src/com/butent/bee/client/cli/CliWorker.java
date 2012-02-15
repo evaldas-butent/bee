@@ -67,7 +67,7 @@ import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TilePanel;
-import com.butent.bee.client.tree.BeeTree;
+import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Browser;
@@ -1031,8 +1031,8 @@ public class CliWorker {
     double width = BeeConst.DOUBLE_UNDEF;
     Unit widthUnit = null;
     int timeout = BeeConst.UNDEF;
-    boolean showConfirm = true;
-    boolean showCancel = true;
+    String confirmHtml = "OK";
+    String cancelHtml = "Cancel";
 
     boolean required = true;
 
@@ -1078,10 +1078,10 @@ public class CliWorker {
           timeout = BeeUtils.toInt(v);
           break;
         case 'y':
-          showConfirm = BeeUtils.toBoolean(v);
+          confirmHtml = BeeConst.isFalse(v) ? null : v; 
           break;
         case 'n':
-          showCancel = BeeUtils.toBoolean(v);
+          cancelHtml = BeeConst.isFalse(v) ? null : v;
           break;
         case 'r':
           required = BeeUtils.toBoolean(v);
@@ -1122,7 +1122,7 @@ public class CliWorker {
               return value.indexOf('x') < 0;
             }
           }
-        }, defaultValue, maxLength, width, widthUnit, timeout, showConfirm, showCancel,
+        }, defaultValue, maxLength, width, widthUnit, timeout, confirmHtml, cancelHtml,
         new WidgetInitializer() {
           public void initialize(String name, Widget widget) {
             if (BeeUtils.context(widgetName.getValue(), name)) {
@@ -1735,7 +1735,7 @@ public class CliWorker {
       Global.showDialog("no tiles vailable");
     }
 
-    BeeTree tree = new BeeTree();
+    Tree tree = new Tree();
     tree.addItem(((TilePanel) tiles).getTree(null, true));
 
     Global.inform(tree);

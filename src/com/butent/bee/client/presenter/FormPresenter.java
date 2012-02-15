@@ -7,7 +7,6 @@ import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -16,6 +15,7 @@ import com.butent.bee.client.data.AsyncProvider;
 import com.butent.bee.client.data.CachedProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
@@ -158,10 +158,12 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
         break;
 
       case CONFIGURE:
-        String options = Window.prompt("Options", "");
-        if (!BeeUtils.isEmpty(options)) {
-          getView().getContent().applyOptions(options);
-        }
+        Global.inputString("Options", new StringCallback() {
+          @Override
+          public void onSuccess(String value) {
+            getView().getContent().applyOptions(value);
+          }
+        });
         break;
 
       case DELETE:

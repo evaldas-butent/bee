@@ -5,8 +5,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.tree.BeeTree;
-import com.butent.bee.client.tree.BeeTreeItem;
+import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.shared.Assert;
@@ -24,8 +24,8 @@ import java.util.Map.Entry;
 public class MenuService extends CompositeService {
 
   public static Widget buidComponentTree(UiComponent c) {
-    BeeTree root = new BeeTree();
-    BeeTreeItem item = new BeeTreeItem(c.getId());
+    Tree root = new Tree();
+    TreeItem item = new TreeItem(c.getId());
     fillBranch(item, c);
 
     root.addItem(item);
@@ -33,12 +33,12 @@ public class MenuService extends CompositeService {
     return root;
   }
 
-  private static void fillBranch(BeeTreeItem item, UiComponent c) {
+  private static void fillBranch(TreeItem item, UiComponent c) {
     item.addItem("Class = " + c.getClass().getName());
     item.addItem("Caption = " + c.getCaption());
 
     if (!BeeUtils.isEmpty(c.getProperties())) {
-      BeeTreeItem prp = new BeeTreeItem("Properties");
+      TreeItem prp = new TreeItem("Properties");
       BeeListBox lst = new BeeListBox();
 
       for (Entry<String, String> entry : c.getProperties().entrySet()) {
@@ -50,10 +50,10 @@ public class MenuService extends CompositeService {
     }
 
     if (c.hasChilds()) {
-      BeeTreeItem cc = new BeeTreeItem("Childs");
+      TreeItem cc = new TreeItem("Childs");
 
       for (UiComponent chld : c.getChilds()) {
-        BeeTreeItem itm = new BeeTreeItem(chld.getId());
+        TreeItem itm = new TreeItem(chld.getId());
         fillBranch(itm, chld);
         cc.addItem(itm);
       }

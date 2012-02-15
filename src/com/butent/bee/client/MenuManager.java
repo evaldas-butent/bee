@@ -16,8 +16,8 @@ import com.butent.bee.client.menu.MenuSeparator;
 import com.butent.bee.client.menu.MenuTreeViewModel;
 import com.butent.bee.client.tree.BeeCellBrowser;
 import com.butent.bee.client.tree.BeeCellTree;
-import com.butent.bee.client.tree.BeeTree;
-import com.butent.bee.client.tree.BeeTreeItem;
+import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.BeeDuration;
 import com.butent.bee.client.widget.BeeCellList;
@@ -293,8 +293,8 @@ public class MenuManager implements Module {
         ((TabbedPages) rw).add(cw, txt);
       }
 
-    } else if (rw instanceof BeeTree) {
-      BeeTreeItem it = new BeeTreeItem(txt);
+    } else if (rw instanceof Tree) {
+      TreeItem it = new TreeItem(txt);
 
       if (cw == null) {
         it.setUserObject(new MenuCommand(svc, opt));
@@ -302,7 +302,7 @@ public class MenuManager implements Module {
         it.addItem(cw);
       }
 
-      ((BeeTree) rw).addItem(it);
+      ((Tree) rw).addItem(it);
     }
   }
 
@@ -366,7 +366,7 @@ public class MenuManager implements Module {
       w = new TabbedPages(20, Unit.PX);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TREE)) {
-      w = new BeeTree(new MenuSelectionHandler());
+      w = new Tree(new MenuSelectionHandler());
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_CELL_TREE)) {
       w = new BeeCellTree(new MenuTreeViewModel(new MenuDataProvider(entries),

@@ -46,16 +46,19 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.AbstractImagePrototype.ImagePrototypeElement;
+import com.google.gwt.user.client.ui.impl.FocusImpl;
 import com.google.gwt.user.client.ui.Accessibility;
-import com.google.gwt.user.client.ui.AttachDetachException;
-import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasAnimation;
-import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.IsWidget;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.WidgetCollection;
+
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.shared.HasId;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,20 +80,16 @@ import java.util.Map;
  * <dd>a selected tree item</dd>
  * </dl>
  */
-public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets.ForIsWidget,
+public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     Focusable, HasAnimation, HasAllKeyHandlers,
     HasAllFocusHandlers, HasSelectionHandlers<TreeItem>,
     HasOpenHandlers<TreeItem>, HasCloseHandlers<TreeItem>,
-    HasAllMouseHandlers {
+    HasAllMouseHandlers, HasId {
   /*
    * For compatibility with UiBinder interface HasTreeItems should be declared
    * before HasWidgets, so that corresponding parser will run first and add
    * TreeItem children as items, not as widgets.
    */
-
-  public static AbstractImagePrototype treeClosed = null;
-  public static AbstractImagePrototype treeLeaf = null;
-  public static AbstractImagePrototype treeOpen = null;
 
   /**
    * A ClientBundle that provides images for this widget.
@@ -102,6 +101,10 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
 
     ImageResource treeOpen();
   }
+  public static AbstractImagePrototype treeClosed = null;
+  public static AbstractImagePrototype treeLeaf = null;
+
+  public static AbstractImagePrototype treeOpen = null;
 
   private static final int OTHER_KEY_DOWN = 63233;
   private static final int OTHER_KEY_LEFT = 63234;
@@ -201,6 +204,20 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
     init(useLeafImages);
   }
 
+  public Tree(SelectionHandler<TreeItem> handler) {
+    this();
+    addSelectionHandler(handler);
+  }
+  
+  /**
+   * Overloaded version for IsWidget.
+   * 
+   * @see #add(Widget)
+   */
+  public void add(IsWidget w) {
+    this.add(asWidgetOrNull(w));
+  }
+
   /**
    * Adds the widget as a root tree item.
    * 
@@ -209,15 +226,6 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
    */
   public void add(Widget widget) {
     addItem(widget);
-  }
-
-  /**
-   * Overloaded version for IsWidget.
-   * 
-   * @see #add(Widget)
-   */
-  public void add(IsWidget w) {
-    this.add(asWidgetOrNull(w));
   }
 
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
@@ -233,13 +241,21 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
   }
 
   /**
-   * Adds a simple tree item containing the specified html.
+   * Adds an item to the root level of this tree.
    * 
-   * @param itemHtml the text of the item to be added
-   * @return the item that was added
+   * @param isItem the wrapper of item to be added
    */
-  public TreeItem addItem(String itemHtml) {
-    return root.addItem(itemHtml);
+  public void addItem(IsTreeItem isItem) {
+    root.addItem(isItem);
+  }
+
+  /**
+   * Overloaded version for IsWidget.
+   * 
+   * @see #addItem(Widget)
+   */
+  public TreeItem addItem(IsWidget w) {
+    return this.addItem(asWidgetOrNull(w));
   }
 
   /**
@@ -253,21 +269,22 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
   }
 
   /**
+   * Adds a simple tree item containing the specified html.
+   * 
+   * @param itemHtml the text of the item to be added
+   * @return the item that was added
+   */
+  public TreeItem addItem(String itemHtml) {
+    return root.addItem(itemHtml);
+  }
+
+  /**
    * Adds an item to the root level of this tree.
    * 
    * @param item the item to be added
    */
   public void addItem(TreeItem item) {
     root.addItem(item);
-  }
-
-  /**
-   * Adds an item to the root level of this tree.
-   * 
-   * @param isItem the wrapper of item to be added
-   */
-  public void addItem(IsTreeItem isItem) {
-    root.addItem(isItem);
   }
 
   /**
@@ -278,15 +295,6 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
    */
   public TreeItem addItem(Widget widget) {
     return root.addItem(widget);
-  }
-
-  /**
-   * Overloaded version for IsWidget.
-   * 
-   * @see #addItem(Widget)
-   */
-  public TreeItem addItem(IsWidget w) {
-    return this.addItem(asWidgetOrNull(w));
   }
 
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
@@ -370,6 +378,14 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
     }
   }
 
+  public String getId() {
+    return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "tree";
+  }
+
   /**
    * Gets the top-level tree item at the specified index.
    * 
@@ -399,20 +415,7 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
   }
 
   public int getTabIndex() {
-    return FocusPanel.impl.getTabIndex(focusable);
-  }
-
-  /**
-   * Inserts a child tree item at the specified index containing the specified
-   * text.
-   * 
-   * @param beforeIndex the index where the item will be inserted
-   * @param itemText the text to be added
-   * @return the item that was added
-   * @throws IndexOutOfBoundsException if the index is out of range
-   */
-  public TreeItem insertItem(int beforeIndex, String itemText) {
-    return root.insertItem(beforeIndex, itemText);
+    return FocusImpl.getFocusImplForPanel().getTabIndex(focusable);
   }
 
   /**
@@ -426,6 +429,19 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
    */
   public TreeItem insertItem(int beforeIndex, SafeHtml itemHtml) {
     return root.insertItem(beforeIndex, itemHtml);
+  }
+
+  /**
+   * Inserts a child tree item at the specified index containing the specified
+   * text.
+   * 
+   * @param beforeIndex the index where the item will be inserted
+   * @param itemText the text to be added
+   * @return the item that was added
+   * @throws IndexOutOfBoundsException if the index is out of range
+   */
+  public TreeItem insertItem(int beforeIndex, String itemText) {
+    return root.insertItem(beforeIndex, itemText);
   }
 
   /**
@@ -457,9 +473,11 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
   }
 
   public Iterator<Widget> iterator() {
-    final Widget[] widgets = new Widget[childWidgets.size()];
-    childWidgets.keySet().toArray(widgets);
-    return WidgetIterators.createWidgetIterator(this, widgets);
+    WidgetCollection widgetCollection = new WidgetCollection(this);
+    for (Widget widget : childWidgets.keySet()) {
+      widgetCollection.add(widget);
+    }
+    return widgetCollection.iterator();
   }
 
   @Override
@@ -557,6 +575,15 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
     super.onBrowserEvent(event);
   }
 
+  /**
+   * Overloaded version for IsWidget.
+   * 
+   * @see #remove(Widget)
+   */
+  public boolean remove(IsWidget w) {
+    return this.remove(w.asWidget());
+  }
+
   public boolean remove(Widget w) {
     // Validate.
     TreeItem item = childWidgets.get(w);
@@ -567,24 +594,6 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
     // Delegate to TreeItem.setWidget, which performs correct removal.
     item.setWidget(null);
     return true;
-  }
-
-  /**
-   * Overloaded version for IsWidget.
-   * 
-   * @see #remove(Widget)
-   */
-  public boolean remove(IsWidget w) {
-    return this.remove(w.asWidget());
-  }
-
-  /**
-   * Removes an item from the root level of this tree.
-   * 
-   * @param item the item to be removed
-   */
-  public void removeItem(TreeItem item) {
-    root.removeItem(item);
   }
 
   /**
@@ -600,6 +609,15 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
   }
 
   /**
+   * Removes an item from the root level of this tree.
+   * 
+   * @param item the item to be removed
+   */
+  public void removeItem(TreeItem item) {
+    root.removeItem(item);
+  }
+
+  /**
    * Removes all items from the root level of this tree.
    */
   public void removeItems() {
@@ -609,7 +627,7 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
   }
 
   public void setAccessKey(char key) {
-    FocusPanel.impl.setAccessKey(focusable, key);
+    FocusImpl.getFocusImplForPanel().setAccessKey(focusable, key);
   }
 
   public void setAnimationEnabled(boolean enable) {
@@ -618,10 +636,14 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
 
   public void setFocus(boolean focus) {
     if (focus) {
-      FocusPanel.impl.focus(focusable);
+      FocusImpl.getFocusImplForPanel().focus(focusable);
     } else {
-      FocusPanel.impl.blur(focusable);
+      FocusImpl.getFocusImplForPanel().blur(focusable);
     }
+  }
+
+  public void setId(String id) {
+    DomUtils.setId(this, id);
   }
 
   /**
@@ -655,7 +677,7 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
   }
 
   public void setTabIndex(int index) {
-    FocusPanel.impl.setTabIndex(focusable, index);
+    FocusImpl.getFocusImplForPanel().setTabIndex(focusable, index);
   }
 
   /**
@@ -672,8 +694,7 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
   @Override
   protected void doAttachChildren() {
     try {
-      AttachDetachException.tryCommand(this,
-          AttachDetachException.attachCommand);
+      super.doAttachChildren();
     } finally {
       DOM.setEventListener(focusable, this);
     }
@@ -682,8 +703,7 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
   @Override
   protected void doDetachChildren() {
     try {
-      AttachDetachException.tryCommand(this,
-          AttachDetachException.detachCommand);
+      super.doDetachChildren();
     } finally {
       DOM.setEventListener(focusable, null);
     }
@@ -722,7 +742,7 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
   void adopt(Widget widget, TreeItem treeItem) {
     assert (!childWidgets.containsKey(widget));
     childWidgets.put(widget, treeItem);
-    widget.setParent(this);
+    adopt(widget);
   }
 
   void fireStateChanged(TreeItem item, boolean open) {
@@ -758,13 +778,13 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
     }
   }
 
-  void orphan(Widget widget) {
+  void orphanWidget(Widget widget) {
     // Validation should already be done.
     assert (widget.getParent() == this);
 
     // Orphan.
     try {
-      widget.setParent(null);
+      orphan(widget);
     } finally {
       // Logical detach.
       childWidgets.remove(widget);
@@ -883,8 +903,8 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
     return topClosedParent;
   }
 
-  private void init(boolean useLeafImages) {
-    setImages(useLeafImages);
+  private void init(boolean useLeafImage) {
+    setImages(useLeafImage);
     setElement(DOM.createDiv());
 
     DOM.setStyleAttribute(getElement(), "position", "relative");
@@ -894,7 +914,7 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
     // forcing the element that is positioned relatively to 'have layout'
     DOM.setStyleAttribute(getElement(), "zoom", "1");
 
-    focusable = FocusPanel.impl.createFocusable();
+    focusable = FocusImpl.getFocusImplForPanel().createFocusable();
     DOM.setStyleAttribute(focusable, "fontSize", "0");
     DOM.setStyleAttribute(focusable, "position", "absolute");
 
@@ -916,6 +936,8 @@ public class Tree extends Widget implements HasTreeItems.ForIsWidget, HasWidgets
     root.setTree(this);
     setStyleName("bee-Tree");
 
+    DomUtils.createId(this, getIdPrefix());
+    
     // Add a11y role "tree"
     Accessibility.setRole(getElement(), Accessibility.ROLE_TREE);
     Accessibility.setRole(focusable, Accessibility.ROLE_TREEITEM);

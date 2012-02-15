@@ -7,7 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
-import com.butent.bee.client.tree.BeeTreeItem;
+import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.utils.JreEmulation;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
@@ -80,8 +80,8 @@ public class TilePanel extends Split {
     return idx;
   }
 
-  public BeeTreeItem getTree(String prefix, boolean splitters) {
-    BeeTreeItem root = new BeeTreeItem(BeeUtils.concat(1, prefix, getId()));
+  public TreeItem getTree(String prefix, boolean splitters) {
+    TreeItem root = new TreeItem(BeeUtils.concat(1, prefix, getId()));
 
     for (Widget child : getChildren()) {
       if (!splitters && isSplitter(child)) {

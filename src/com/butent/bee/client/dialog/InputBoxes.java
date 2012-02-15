@@ -171,6 +171,7 @@ public class InputBoxes {
   public static final String WIDGET_PROMPT = "prompt";
   public static final String WIDGET_INPUT = "input";
   public static final String WIDGET_ERROR = "error";
+  public static final String WIDGET_COMMAND_GROUP = "commandGroup";
   public static final String WIDGET_CONFIRM = "confirm";
   public static final String WIDGET_CANCEL = "cancel";
 
@@ -178,12 +179,14 @@ public class InputBoxes {
   private static final String STYLE_INPUT_PROMPT = "bee-InputPrompt";
   private static final String STYLE_INPUT_STRING = "bee-InputString";
   private static final String STYLE_INPUT_ERROR = "bee-InputError";
+  private static final String STYLE_INPUT_COMMAND_GROUP = "bee-InputCommandGroup";
+  private static final String STYLE_INPUT_COMMAND = "bee-InputCommand";
   private static final String STYLE_INPUT_CONFIRM = "bee-InputConfirm";
   private static final String STYLE_INPUT_CANCEL = "bee-InputCancel";
 
   public void inputString(String caption, String prompt, final StringCallback callback,
       String defaultValue, int maxLength, double width, Unit widthUnit, final int timeout,
-      boolean showConfirm, boolean showCancel, WidgetInitializer initializer) {
+      String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
     Assert.notNull(callback);
 
     final Holder<State> state = new Holder<State>(State.OPEN);
@@ -192,7 +195,7 @@ public class InputBoxes {
     if (!BeeUtils.isEmpty(caption)) {
       dialog.setText(caption.trim());
     }
-    
+
     final Timer timer = (timeout > 0) ? new Timer() {
       @Override
       public void run() {
@@ -267,50 +270,62 @@ public class InputBoxes {
       initializer.initialize(WIDGET_ERROR, error);
     }
     panel.add(error);
-    
-    if (showConfirm) {
-      BeeButton confirm = new BeeButton("OK");
-      confirm.addStyleName(STYLE_INPUT_CONFIRM);
 
-      confirm.addClickHandler(new ClickHandler() {
-        public void onClick(ClickEvent event) {
-          String message = callback.getMessage(input.getValue());
-          if (BeeUtils.isEmpty(message)) {
-            state.setValue(State.CONFIRMED);
-            dialog.hide();
-          } else {
-            error.setText(message);
+    if (!BeeUtils.allEmpty(confirmHtml, cancelHtml)) {
+      Flow commandGroup = new Flow();
+      commandGroup.addStyleName(STYLE_INPUT_COMMAND_GROUP);
+
+      if (!BeeUtils.isEmpty(confirmHtml)) {
+        BeeButton confirm = new BeeButton(confirmHtml);
+        confirm.addStyleName(STYLE_INPUT_COMMAND);
+        confirm.addStyleName(STYLE_INPUT_CONFIRM);
+
+        confirm.addClickHandler(new ClickHandler() {
+          public void onClick(ClickEvent event) {
+            String message = callback.getMessage(input.getValue());
+            if (BeeUtils.isEmpty(message)) {
+              state.setValue(State.CONFIRMED);
+              dialog.hide();
+            } else {
+              error.setText(message);
+            }
           }
+        });
+
+        if (initializer != null) {
+          initializer.initialize(WIDGET_CONFIRM, confirm);
         }
-      });
-
-      if (initializer != null) {
-        initializer.initialize(WIDGET_CONFIRM, confirm);
+        commandGroup.add(confirm);
       }
-      panel.add(confirm);
-    }
 
-    if (showCancel) {
-      BeeButton cancel = new BeeButton("Cancel");
-      cancel.addStyleName(STYLE_INPUT_CANCEL);
+      if (!BeeUtils.isEmpty(cancelHtml)) {
+        BeeButton cancel = new BeeButton(cancelHtml);
+        cancel.addStyleName(STYLE_INPUT_COMMAND);
+        cancel.addStyleName(STYLE_INPUT_CANCEL);
 
-      cancel.addClickHandler(new ClickHandler() {
-        public void onClick(ClickEvent event) {
-          state.setValue(State.CANCELED);
-          dialog.hide();
+        cancel.addClickHandler(new ClickHandler() {
+          public void onClick(ClickEvent event) {
+            state.setValue(State.CANCELED);
+            dialog.hide();
+          }
+        });
+
+        if (initializer != null) {
+          initializer.initialize(WIDGET_CANCEL, cancel);
         }
-      });
-
-      if (initializer != null) {
-        initializer.initialize(WIDGET_CANCEL, cancel);
+        commandGroup.add(cancel);
       }
-      panel.add(cancel);
+      
+      if (initializer != null) {
+        initializer.initialize(WIDGET_COMMAND_GROUP, commandGroup);
+      }
+      panel.add(commandGroup);
     }
 
     if (initializer != null) {
       initializer.initialize(WIDGET_PANEL, panel);
     }
-    
+
     dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
       public void onClose(CloseEvent<PopupPanel> event) {
         if (timer != null) {
@@ -334,9 +349,9 @@ public class InputBoxes {
 
     dialog.setWidget(panel);
     dialog.center();
-    
+
     input.setFocus(true);
-    
+
     if (timer != null) {
       timer.schedule(timeout);
     }

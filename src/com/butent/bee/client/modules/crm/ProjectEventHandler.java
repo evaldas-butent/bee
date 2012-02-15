@@ -10,8 +10,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasTreeItems;
-import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -30,8 +28,9 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.FlexTable.FlexCellFormatter;
 import com.butent.bee.client.layout.Absolute;
-import com.butent.bee.client.tree.BeeTree;
-import com.butent.bee.client.tree.BeeTreeItem;
+import com.butent.bee.client.tree.HasTreeItems;
+import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
@@ -296,8 +295,8 @@ public class ProjectEventHandler {
       } else if (BeeUtils.same(name, "Observers") && widget instanceof BeeListBox) {
         observers.setWidget((BeeListBox) widget);
 
-      } else if (BeeUtils.same(name, "Stages") && widget instanceof BeeTree) {
-        stages.setWidget((BeeTree) widget);
+      } else if (BeeUtils.same(name, "Stages") && widget instanceof Tree) {
+        stages.setWidget((Tree) widget);
 
       } else if (BeeUtils.same(name, "StageDescription")) {
         stages.setDescriptionWidget(widget);
@@ -426,7 +425,7 @@ public class ProjectEventHandler {
 
   private static class StageCollector {
     private Long projectId;
-    private BeeTree widget;
+    private Tree widget;
     private List<BeeColumn> stageColumns;
     private Widget descriptionWidget;
 
@@ -438,7 +437,7 @@ public class ProjectEventHandler {
       if (branch != null) {
         for (Long leaf : branch) {
           IsRow item = items.get(leaf);
-          BeeTreeItem treeItem = new BeeTreeItem(item.getString(nameIndex), item);
+          TreeItem treeItem = new TreeItem(item.getString(nameIndex), item);
           parent.addItem(treeItem);
           addBranch(treeItem, item.getId(), hierarchy, items, nameIndex);
         }
@@ -498,7 +497,7 @@ public class ProjectEventHandler {
 
                     @Override
                     public void onSuccess(BeeRow result) {
-                      owner.addItem(new BeeTreeItem(name, result));
+                      owner.addItem(new TreeItem(name, result));
                       dialog.hide();
                     }
                   });
@@ -657,7 +656,7 @@ public class ProjectEventHandler {
       }
     }
 
-    private void setWidget(BeeTree widget) {
+    private void setWidget(Tree widget) {
       this.widget = widget;
 
       widget.addSelectionHandler(new SelectionHandler<TreeItem>() {
