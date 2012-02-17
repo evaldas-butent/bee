@@ -235,7 +235,7 @@ body, select {
   color: green;
 }
 
-.bee-Tree, .bee-CellTree {
+.bee-CellTree {
   overflow: auto;
 }
 
@@ -915,9 +915,15 @@ body, select {
   margin-left: 1em;
 }  
 
+.bee-TreeItem {
+  padding: 1px 0px;
+  margin: 0px;
+  white-space: nowrap;
+  cursor: hand;
+  cursor: pointer;
+}
 .bee-TreeItem-selected {
-  background-color: #ffa;
-  font-weight: bolder;
+  background-color: #ebeff9;
 }
 
 .gwt-SplitLayoutPanel-HDragger {

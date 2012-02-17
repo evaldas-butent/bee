@@ -94,7 +94,8 @@ public class TilePanel extends Split {
       if (child instanceof TilePanel) {
         root.addItem(((TilePanel) child).getTree(s, splitters));
       } else {
-        root.addText(s, JreEmulation.getSimpleName(child), DomUtils.getId(child));
+        root.addItem(BeeUtils.concat(1, s, JreEmulation.getSimpleName(child),
+            DomUtils.getId(child)));
       }
     }
     return root;

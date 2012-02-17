@@ -366,7 +366,8 @@ public class MenuManager implements Module {
       w = new TabbedPages(20, Unit.PX);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TREE)) {
-      w = new Tree(new MenuSelectionHandler());
+      w = new Tree();
+      ((Tree) w).addSelectionHandler(new MenuSelectionHandler());
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_CELL_TREE)) {
       w = new BeeCellTree(new MenuTreeViewModel(new MenuDataProvider(entries),

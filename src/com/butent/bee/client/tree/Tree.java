@@ -40,24 +40,22 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.AbstractImagePrototype.ImagePrototypeElement;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
-import com.google.gwt.user.client.ui.Accessibility;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasAnimation;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.WidgetCollection;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 
 import java.util.ArrayList;
@@ -66,44 +64,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-/**
- * A standard hierarchical tree widget. The tree contains a hierarchy of
- * {@link com.google.gwt.user.client.ui.TreeItem TreeItems} that the user can
- * open, close, and select.
- * </p> <h3>CSS Style Rules</h3>
- * <dl>
- * <dt>.bee-Tree</dt>
- * <dd>the tree itself</dd>
- * <dt>.bee-Tree .bee-TreeItem</dt>
- * <dd>a tree item</dd>
- * <dt>.bee-Tree .bee-TreeItem-selected</dt>
- * <dd>a selected tree item</dd>
- * </dl>
- */
-public class Tree extends Panel implements HasTreeItems.ForIsWidget,
+public class Tree extends Panel implements HasTreeItems,
     Focusable, HasAnimation, HasAllKeyHandlers,
     HasAllFocusHandlers, HasSelectionHandlers<TreeItem>,
     HasOpenHandlers<TreeItem>, HasCloseHandlers<TreeItem>,
     HasAllMouseHandlers, HasId {
-  /*
-   * For compatibility with UiBinder interface HasTreeItems should be declared
-   * before HasWidgets, so that corresponding parser will run first and add
-   * TreeItem children as items, not as widgets.
-   */
 
-  /**
-   * A ClientBundle that provides images for this widget.
-   */
   public interface Resources extends ClientBundle {
     ImageResource treeClosed();
-
     ImageResource treeLeaf();
-
     ImageResource treeOpen();
   }
+
   public static AbstractImagePrototype treeClosed = null;
   public static AbstractImagePrototype treeLeaf = null;
-
   public static AbstractImagePrototype treeOpen = null;
 
   private static final int OTHER_KEY_DOWN = 63233;
@@ -120,7 +94,8 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
 
   static native boolean shouldTreeDelegateFocusToElement(Element elem) /*-{
     var name = elem.nodeName;
-    return ((name == "SELECT") || (name == "INPUT") || (name == "TEXTAREA") || (name == "OPTION") || (name == "BUTTON") || (name == "LABEL"));
+    return ((name == "SELECT") || (name == "INPUT") || (name == "TEXTAREA") 
+      || (name == "OPTION") || (name == "BUTTON") || (name == "LABEL"));
   }-*/;
 
   private static boolean isArrowKey(int code) {
@@ -139,10 +114,6 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     }
   }
 
-  /**
-   * Normalized key codes. Also switches KEY_RIGHT and KEY_LEFT in RTL
-   * languages.
-   */
   private static int standardizeKeycode(int code) {
     switch (code) {
       case OTHER_KEY_DOWN:
@@ -158,6 +129,7 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
         code = KeyCodes.KEY_LEFT;
         break;
     }
+
     if (LocaleInfo.getCurrentLocale().isRTL()) {
       if (code == KeyCodes.KEY_RIGHT) {
         code = KeyCodes.KEY_LEFT;
@@ -168,9 +140,6 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     return code;
   }
 
-  /**
-   * Map of TreeItem.widget -> TreeItem.
-   */
   private final Map<Widget, TreeItem> childWidgets = new HashMap<Widget, TreeItem>();
 
   private TreeItem curSelection;
@@ -187,43 +156,14 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
 
   private boolean useLeafImages;
 
-  /**
-   * Constructs an empty tree.
-   */
   public Tree() {
     init(false);
   }
 
-  /**
-   * Constructs a tree. If this tree does not use leaf images,
-   * the width of the Resources's leaf image will control the leaf indent.
-   * 
-   * @param useLeafImages use leaf images from bundle
-   */
   public Tree(boolean useLeafImages) {
     init(useLeafImages);
   }
 
-  public Tree(SelectionHandler<TreeItem> handler) {
-    this();
-    addSelectionHandler(handler);
-  }
-  
-  /**
-   * Overloaded version for IsWidget.
-   * 
-   * @see #add(Widget)
-   */
-  public void add(IsWidget w) {
-    this.add(asWidgetOrNull(w));
-  }
-
-  /**
-   * Adds the widget as a root tree item.
-   * 
-   * @see com.google.gwt.user.client.ui.HasWidgets#add(com.google.gwt.user.client.ui.Widget)
-   * @param widget widget to add.
-   */
   public void add(Widget widget) {
     addItem(widget);
   }
@@ -240,59 +180,14 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     return addDomHandler(handler, FocusEvent.getType());
   }
 
-  /**
-   * Adds an item to the root level of this tree.
-   * 
-   * @param isItem the wrapper of item to be added
-   */
-  public void addItem(IsTreeItem isItem) {
-    root.addItem(isItem);
-  }
-
-  /**
-   * Overloaded version for IsWidget.
-   * 
-   * @see #addItem(Widget)
-   */
-  public TreeItem addItem(IsWidget w) {
-    return this.addItem(asWidgetOrNull(w));
-  }
-
-  /**
-   * Adds a simple tree item containing the specified html.
-   * 
-   * @param itemHtml the html of the item to be added
-   * @return the item that was added
-   */
-  public TreeItem addItem(SafeHtml itemHtml) {
-    return root.addItem(itemHtml);
-  }
-
-  /**
-   * Adds a simple tree item containing the specified html.
-   * 
-   * @param itemHtml the text of the item to be added
-   * @return the item that was added
-   */
   public TreeItem addItem(String itemHtml) {
     return root.addItem(itemHtml);
   }
 
-  /**
-   * Adds an item to the root level of this tree.
-   * 
-   * @param item the item to be added
-   */
   public void addItem(TreeItem item) {
     root.addItem(item);
   }
 
-  /**
-   * Adds a new tree item containing the specified widget.
-   * 
-   * @param widget the widget to be added
-   * @return the new item
-   */
   public TreeItem addItem(Widget widget) {
     return root.addItem(widget);
   }
@@ -337,24 +232,10 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     return addHandler(handler, OpenEvent.getType());
   }
 
-  public HandlerRegistration addSelectionHandler(
-      SelectionHandler<TreeItem> handler) {
+  public HandlerRegistration addSelectionHandler(SelectionHandler<TreeItem> handler) {
     return addHandler(handler, SelectionEvent.getType());
   }
 
-  /**
-   * Adds a simple tree item containing the specified text.
-   * 
-   * @param itemText the text of the item to be added
-   * @return the item that was added
-   */
-  public TreeItem addTextItem(String itemText) {
-    return root.addTextItem(itemText);
-  }
-
-  /**
-   * Clears all tree items from the current tree.
-   */
   public void clear() {
     int size = root.getChildCount();
     for (int i = size - 1; i >= 0; i--) {
@@ -362,10 +243,6 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     }
   }
 
-  /**
-   * Ensures that the currently-selected item is visible, opening its parents
-   * and scrolling the tree as necessary.
-   */
   public void ensureSelectedItemVisible() {
     if (curSelection == null) {
       return;
@@ -386,30 +263,14 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     return "tree";
   }
 
-  /**
-   * Gets the top-level tree item at the specified index.
-   * 
-   * @param index the index to be retrieved
-   * @return the item at that index
-   */
   public TreeItem getItem(int index) {
     return root.getChild(index);
   }
 
-  /**
-   * Gets the number of items contained at the root of this tree.
-   * 
-   * @return this tree's item count
-   */
   public int getItemCount() {
     return root.getChildCount();
   }
 
-  /**
-   * Gets the currently selected item.
-   * 
-   * @return the selected item
-   */
   public TreeItem getSelectedItem() {
     return curSelection;
   }
@@ -418,52 +279,14 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     return FocusImpl.getFocusImplForPanel().getTabIndex(focusable);
   }
 
-  /**
-   * Inserts a child tree item at the specified index containing the specified
-   * html.
-   * 
-   * @param beforeIndex the index where the item will be inserted
-   * @param itemHtml the html of the item to be added
-   * @return the item that was added
-   * @throws IndexOutOfBoundsException if the index is out of range
-   */
-  public TreeItem insertItem(int beforeIndex, SafeHtml itemHtml) {
-    return root.insertItem(beforeIndex, itemHtml);
-  }
-
-  /**
-   * Inserts a child tree item at the specified index containing the specified
-   * text.
-   * 
-   * @param beforeIndex the index where the item will be inserted
-   * @param itemText the text to be added
-   * @return the item that was added
-   * @throws IndexOutOfBoundsException if the index is out of range
-   */
   public TreeItem insertItem(int beforeIndex, String itemText) {
     return root.insertItem(beforeIndex, itemText);
   }
 
-  /**
-   * Inserts an item into the root level of this tree.
-   * 
-   * @param beforeIndex the index where the item will be inserted
-   * @param item the item to be added
-   * @throws IndexOutOfBoundsException if the index is out of range
-   */
   public void insertItem(int beforeIndex, TreeItem item) {
     root.insertItem(beforeIndex, item);
   }
 
-  /**
-   * Inserts a child tree item at the specified index containing the specified
-   * widget.
-   * 
-   * @param beforeIndex the index where the item will be inserted
-   * @param widget the widget to be added
-   * @return the item that was added
-   * @throws IndexOutOfBoundsException if the index is out of range
-   */
   public TreeItem insertItem(int beforeIndex, Widget widget) {
     return root.insertItem(beforeIndex, widget);
   }
@@ -575,15 +398,6 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     super.onBrowserEvent(event);
   }
 
-  /**
-   * Overloaded version for IsWidget.
-   * 
-   * @see #remove(Widget)
-   */
-  public boolean remove(IsWidget w) {
-    return this.remove(w.asWidget());
-  }
-
   public boolean remove(Widget w) {
     // Validate.
     TreeItem item = childWidgets.get(w);
@@ -596,30 +410,10 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     return true;
   }
 
-  /**
-   * Removes an item from the root level of this tree.
-   * 
-   * @param isItem the wrapper of item to be removed
-   */
-  public void removeItem(IsTreeItem isItem) {
-    if (isItem != null) {
-      TreeItem item = isItem.asTreeItem();
-      removeItem(item);
-    }
-  }
-
-  /**
-   * Removes an item from the root level of this tree.
-   * 
-   * @param item the item to be removed
-   */
   public void removeItem(TreeItem item) {
     root.removeItem(item);
   }
 
-  /**
-   * Removes all items from the root level of this tree.
-   */
   public void removeItems() {
     while (getItemCount() > 0) {
       removeItem(getItem(0));
@@ -646,23 +440,10 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     DomUtils.setId(this, id);
   }
 
-  /**
-   * Selects a specified item.
-   * 
-   * @param item the item to be selected, or <code>null</code> to deselect all
-   *          items
-   */
   public void setSelectedItem(TreeItem item) {
     setSelectedItem(item, true);
   }
 
-  /**
-   * Selects a specified item.
-   * 
-   * @param item the item to be selected, or <code>null</code> to deselect all
-   *          items
-   * @param fireEvents <code>true</code> to allow selection events to be fired
-   */
   public void setSelectedItem(TreeItem item, boolean fireEvents) {
     if (item == null) {
       if (curSelection == null) {
@@ -680,11 +461,6 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     FocusImpl.getFocusImplForPanel().setTabIndex(focusable, index);
   }
 
-  /**
-   * Iterator of tree items.
-   * 
-   * @return the iterator
-   */
   public Iterator<TreeItem> treeItemIterator() {
     List<TreeItem> accum = new ArrayList<TreeItem>();
     root.addTreeItems(accum);
@@ -709,29 +485,8 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     }
   }
 
-  /**
-   * Indicates if keyboard navigation is enabled for the Tree and for a given
-   * TreeItem. Subclasses of Tree can override this function to selectively
-   * enable or disable keyboard navigation.
-   * 
-   * @param currentItem the currently selected TreeItem
-   * @return <code>true</code> if the Tree will response to arrow keys by
-   *         changing the currently selected item
-   */
-  protected boolean isKeyboardNavigationEnabled(TreeItem currentItem) {
+  protected boolean isKeyboardNavigationEnabled() {
     return true;
-  }
-
-  /**
-   * <b>Affected Elements:</b>
-   * <ul>
-   * <li>-root = The root {@link TreeItem}.</li>
-   * </ul>
-   */
-  @Override
-  protected void onEnsureDebugId(String baseID) {
-    super.onEnsureDebugId(baseID);
-    root.ensureDebugId(baseID + "-root");
   }
 
   @Override
@@ -740,7 +495,7 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
   }
 
   void adopt(Widget widget, TreeItem treeItem) {
-    assert (!childWidgets.containsKey(widget));
+    Assert.isFalse(childWidgets.containsKey(widget));
     childWidgets.put(widget, treeItem);
     adopt(widget);
   }
@@ -753,18 +508,10 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     }
   }
 
-  /*
-   * This method exists solely to support unit tests.
-   */
-  Map<Widget, TreeItem> getChildWidgets() {
-    return childWidgets;
-  }
-
   void maybeUpdateSelection(TreeItem itemThatChangedState, boolean isItemOpening) {
     /**
-     * If we just closed the item, let's check to see if this item is the parent
-     * of the currently selected item. If so, we should make this item the
-     * currently selected selected item.
+     * If we just closed the item, let's check to see if this item is the parent of the currently
+     * selected item. If so, we should make this item the currently selected selected item.
      */
     if (!isItemOpening) {
       TreeItem tempItem = curSelection;
@@ -779,33 +526,17 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
   }
 
   void orphanWidget(Widget widget) {
-    // Validation should already be done.
-    assert (widget.getParent() == this);
-
-    // Orphan.
     try {
       orphan(widget);
     } finally {
-      // Logical detach.
       childWidgets.remove(widget);
     }
   }
 
-  /**
-   * Called only from {@link TreeItem}: Shows the closed image on that tree
-   * item.
-   * 
-   * @param treeItem the tree item
-   */
   void showClosedImage(TreeItem treeItem) {
     showImage(treeItem, treeClosed);
   }
 
-  /**
-   * Called only from {@link TreeItem}: Shows the leaf image on a tree item.
-   * 
-   * @param treeItem the tree item
-   */
   void showLeafImage(TreeItem treeItem) {
     if (useLeafImages || treeItem.isFullNode()) {
       showImage(treeItem, treeLeaf);
@@ -816,20 +547,11 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     }
   }
 
-  /**
-   * Called only from {@link TreeItem}: Shows the open image on a tree item.
-   * 
-   * @param treeItem the tree item
-   */
   void showOpenImage(TreeItem treeItem) {
     showImage(treeItem, treeOpen);
   }
 
-  /**
-   * Collects parents going up the element tree, terminated at the tree root.
-   */
-  private void collectElementChain(ArrayList<Element> chain, Element hRoot,
-      Element hElem) {
+  private void collectElementChain(ArrayList<Element> chain, Element hRoot, Element hElem) {
     if ((hElem == null) || (hElem == hRoot)) {
       return;
     }
@@ -884,13 +606,6 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     return findItemByChain(chain, idx + 1, rootItem);
   }
 
-  /**
-   * Get the top parent above this {@link TreeItem} that is in closed state. In
-   * other words, get the parent that is guaranteed to be visible.
-   * 
-   * @param item
-   * @return the closed parent, or null if all parents are opened
-   */
   private TreeItem getTopClosedParent(TreeItem item) {
     TreeItem topClosedParent = null;
     TreeItem parent = item.getParentItem();
@@ -937,15 +652,11 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     setStyleName("bee-Tree");
 
     DomUtils.createId(this, getIdPrefix());
-    
-    // Add a11y role "tree"
-    Accessibility.setRole(getElement(), Accessibility.ROLE_TREE);
-    Accessibility.setRole(focusable, Accessibility.ROLE_TREEITEM);
   }
 
   private void keyboardNavigation(Event event) {
     // Handle keyboard events if keyboard navigation is enabled
-    if (isKeyboardNavigationEnabled(curSelection)) {
+    if (isKeyboardNavigationEnabled()) {
       int code = DOM.eventGetKeyCode(event);
 
       switch (standardizeKeycode(code)) {
@@ -1001,9 +712,6 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     }
   }
 
-  /**
-   * Move the tree focus to the specified selected item.
-   */
   private void moveFocus() {
     Focusable focusableWidget = curSelection.getFocusable();
     if (focusableWidget != null) {
@@ -1038,19 +746,12 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
       // Scroll it into view.
       DOM.scrollIntoView(focusable);
 
-      // Update ARIA attributes to reflect the information from the
-      // newly-selected item.
-      updateAriaAttributes();
-
       // Ensure Focus is set, as focus may have been previously delegated by
       // tree.
       setFocus(true);
     }
   }
 
-  /**
-   * Moves to the next item, going into children as if dig is enabled.
-   */
   private void moveSelectionDown(TreeItem sel, boolean dig) {
     if (sel == root) {
       return;
@@ -1080,9 +781,6 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
     }
   }
 
-  /**
-   * Moves the selected item up one.
-   */
   private void moveSelectionUp(TreeItem sel) {
     // Find a parent that is visible
     TreeItem topClosedParent = getTopClosedParent(sel);
@@ -1153,75 +851,5 @@ public class Tree extends Panel implements HasTreeItems.ForIsWidget,
       // Otherwise, simply apply the prototype to the existing element.
       proto.applyTo(child.<ImagePrototypeElement> cast());
     }
-  }
-
-  private void updateAriaAttributes() {
-
-    Element curSelectionContentElem = curSelection.getContentElem();
-
-    // Set the 'aria-level' state. To do this, we need to compute the level of
-    // the currently selected item.
-
-    // We initialize itemLevel to -1 because the level value is zero-based.
-    // Note that the root node is not a part of the TreeItem hierachy, and we
-    // do not consider the root node to have a designated level. The level of
-    // the root's children is level 0, its children's children is level 1, etc.
-
-    int curSelectionLevel = -1;
-    TreeItem tempItem = curSelection;
-
-    while (tempItem != null) {
-      tempItem = tempItem.getParentItem();
-      ++curSelectionLevel;
-    }
-
-    Accessibility.setState(curSelectionContentElem, Accessibility.STATE_LEVEL,
-        String.valueOf(curSelectionLevel + 1));
-
-    // Set the 'aria-setsize' and 'aria-posinset' states. To do this, we need to
-    // compute the the number of siblings that the currently selected item has,
-    // and the item's position among its siblings.
-
-    TreeItem curSelectionParent = curSelection.getParentItem();
-    if (curSelectionParent == null) {
-      curSelectionParent = root;
-    }
-
-    Accessibility.setState(curSelectionContentElem,
-        Accessibility.STATE_SETSIZE,
-        String.valueOf(curSelectionParent.getChildCount()));
-
-    int curSelectionIndex = curSelectionParent.getChildIndex(curSelection);
-
-    Accessibility.setState(curSelectionContentElem,
-        Accessibility.STATE_POSINSET, String.valueOf(curSelectionIndex + 1));
-
-    // Set the 'aria-expanded' state. This depends on the state of the currently
-    // selected item.
-    // If the item has no children, we remove the 'aria-expanded' state.
-
-    if (curSelection.getChildCount() == 0) {
-      Accessibility.removeState(curSelectionContentElem,
-          Accessibility.STATE_EXPANDED);
-    } else {
-      if (curSelection.getState()) {
-        Accessibility.setState(curSelectionContentElem,
-            Accessibility.STATE_EXPANDED, "true");
-      } else {
-        Accessibility.setState(curSelectionContentElem,
-            Accessibility.STATE_EXPANDED, "false");
-      }
-    }
-
-    // Make sure that 'aria-selected' is true.
-
-    Accessibility.setState(curSelectionContentElem,
-        Accessibility.STATE_SELECTED, "true");
-
-    // Update the 'aria-activedescendant' state for the focusable element to
-    // match the id of the currently selected item
-
-    Accessibility.setState(focusable, Accessibility.STATE_ACTIVEDESCENDANT,
-        DOM.getElementAttribute(curSelectionContentElem, "id"));
   }
 }

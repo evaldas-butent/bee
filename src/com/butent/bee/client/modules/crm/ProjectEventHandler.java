@@ -560,7 +560,7 @@ public class ProjectEventHandler {
 
                     @Override
                     public void onSuccess(BeeRow result) {
-                      selected.setText(result.getString(DataUtils.getColumnIndex(
+                      selected.setHtml(result.getString(DataUtils.getColumnIndex(
                           CrmConstants.COL_NAME, stageColumns)));
                       selected.setUserObject(result);
                       refreshDescription(result);

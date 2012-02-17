@@ -4,46 +4,21 @@ import com.google.gwt.animation.client.Animation;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.i18n.client.LocaleInfo;
-import com.google.gwt.safehtml.client.HasSafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.ui.Accessibility;
 import com.google.gwt.user.client.ui.Focusable;
-import com.google.gwt.user.client.ui.HasHTML;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * An item that can be contained within a {@link com.google.gwt.user.client.ui.Tree}.
- * 
- * Each tree item is assigned a unique DOM id in order to support ARIA. See
- * {@link com.google.gwt.user.client.ui.Accessibility} for more information.
- * 
- * <p>
- * <h3>Example</h3>
- * {@example com.google.gwt.examples.TreeExample}
- * </p>
- */
-public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
-    HasHTML, HasSafeHtml, HasId {
-  /*
-   * For compatibility with UiBinder interface HasTreeItems should be declared
-   * before HasHTML, so that children items and widgets are processed before
-   * interpreting HTML. 
-   */
+public class TreeItem extends UIObject implements HasTreeItems, HasId {
 
-  /**
-   * Implementation class for {@link TreeItem}.
-   */
   public static class TreeItemImpl {
     public TreeItemImpl() {
       initializeClonableElements();
@@ -65,9 +40,6 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
       }
     }
 
-    /**
-     * Setup clonable elements.
-     */
     void initializeClonableElements() {
       if (GWT.isClient()) {
         // Create the base table element that will be cloned.
@@ -92,7 +64,6 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
         // Simulates padding from table element.
         DOM.setStyleAttribute(BASE_BARE_ELEM, "padding", "3px");
         DOM.appendChild(BASE_BARE_ELEM, contentElem);
-        Accessibility.setRole(contentElem, Accessibility.ROLE_TREEITEM);
       }
     }
   }
@@ -212,9 +183,6 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
   // is supplied.
   static final int IMAGE_PAD = 7;
 
-  /**
-   * The duration of the animation.
-   */
   private static final int ANIMATION_DURATION = 200;
 
   /**
@@ -232,21 +200,18 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
   /**
    * The structured table to hold images.
    */
-
   private static Element BASE_INTERNAL_ELEM;
+
   /**
    * The base tree item element that will be cloned.
    */
   private static Element BASE_BARE_ELEM;
 
-  private static TreeItemImpl impl = GWT.create(TreeItemImpl.class);
+  private static TreeItemImpl impl = new TreeItemImpl();
 
   private ArrayList<TreeItem> children;
   private Element contentElem, childSpanElem, imageHolder;
 
-  /**
-   * Indicates that this item is a root item in a tree.
-   */
   private boolean isRoot;
 
   private boolean open;
@@ -259,30 +224,13 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
 
   private Widget widget;
 
-  /**
-   * Creates an empty tree item.
-   */
   public TreeItem() {
     this(false);
   }
 
-  /**
-   * Constructs a tree item with the given HTML.
-   * 
-   * @param html the item's HTML
-   */
-  public TreeItem(SafeHtml html) {
-    this(html.asString());
-  }
-
-  /**
-   * Constructs a tree item with the given HTML.
-   * 
-   * @param html the item's HTML
-   */
   public TreeItem(String html) {
     this();
-    setHTML(html);
+    setHtml(html);
   }
 
   public TreeItem(String html, Object obj) {
@@ -290,21 +238,11 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
     setUserObject(obj);
   }
 
-  /**
-   * Constructs a tree item with the given <code>Widget</code>.
-   * 
-   * @param widget the item's widget
-   */
   public TreeItem(Widget widget) {
     this();
     setWidget(widget);
   }
   
-  /**
-   * Creates an empty tree item.
-   * 
-   * @param isRoot true if this item is the root of a tree
-   */
   TreeItem(boolean isRoot) {
     this.isRoot = isRoot;
     Element elem = DOM.clone(BASE_BARE_ELEM, true);
@@ -321,45 +259,12 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
     }
   }
 
-  /**
-   * Adds another item as a child to this one.
-   * 
-   * @param isItem the wrapper of item to be added
-   */
-  public void addItem(IsTreeItem isItem) {
-    TreeItem item = isItem.asTreeItem();
-    addItem(item);
-  }
-
-  /**
-   * Adds a child tree item containing the specified html.
-   * 
-   * @param itemHtml the item's HTML
-   * @return the item that was added
-   */
-  public TreeItem addItem(SafeHtml itemHtml) {
-    TreeItem ret = new TreeItem(itemHtml);
-    addItem(ret);
-    return ret;
-  }
-
-  /**
-   * Adds a child tree item containing the specified html.
-   * 
-   * @param itemHtml the text to be added
-   * @return the item that was added
-   */
   public TreeItem addItem(String itemHtml) {
     TreeItem ret = new TreeItem(itemHtml);
     addItem(ret);
     return ret;
   }
 
-  /**
-   * Adds another item as a child to this one.
-   * 
-   * @param item the item to be added
-   */
   public void addItem(TreeItem item) {
     // If this is the item's parent, removing the item will affect the child
     // count.
@@ -367,61 +272,18 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
     insertItem(getChildCount(), item);
   }
 
-  /**
-   * Adds a child tree item containing the specified widget.
-   * 
-   * @param w the widget to be added
-   * @return the item that was added
-   */
   public TreeItem addItem(Widget w) {
     TreeItem ret = new TreeItem(w);
     addItem(ret);
     return ret;
   }
 
-  public TreeItem addText(Object... obj) {
-    Assert.notNull(obj);
-    Assert.parameterCount(obj.length, 1);
-    return addItem(BeeUtils.concat(1, obj));
-  }
-  
-  /**
-   * Adds a child tree item containing the specified text.
-   * 
-   * @param itemText the text of the item to be added
-   * @return the item that was added
-   */
-  public TreeItem addTextItem(String itemText) {
-    TreeItem ret = new TreeItem();
-    ret.setText(itemText);
-    addItem(ret);
-    return ret;
-  }
-
-  public TreeItem asTreeItem() {
-    return this;
-  }
-
-  /**
-   * Gets the child at the specified index.
-   * 
-   * @param index the index to be retrieved
-   * @return the item at that index
-   */
-
   public TreeItem getChild(int index) {
     if ((index < 0) || (index >= getChildCount())) {
       return null;
     }
-
     return children.get(index);
   }
-
-  /**
-   * Gets the number of children contained in this item.
-   * 
-   * @return this item's child count.
-   */
 
   public int getChildCount() {
     if (children == null) {
@@ -430,22 +292,11 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
     return children.size();
   }
 
-  /**
-   * Gets the index of the specified child item.
-   * 
-   * @param child the child item to be found
-   * @return the child's index, or <code>-1</code> if none is found
-   */
-
   public int getChildIndex(TreeItem child) {
     if (children == null) {
       return -1;
     }
     return children.indexOf(child);
-  }
-
-  public String getHTML() {
-    return DOM.getInnerHTML(contentElem);
   }
 
   public String getId() {
@@ -456,104 +307,39 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
     return "treeitem";
   }
 
-  /**
-   * Gets this item's parent.
-   * 
-   * @return the parent item
-   */
   public TreeItem getParentItem() {
     return parent;
   }
 
-  /**
-   * Gets whether this item's children are displayed.
-   * 
-   * @return <code>true</code> if the item is open
-   */
   public boolean getState() {
     return open;
   }
 
-  public String getText() {
-    return DOM.getInnerText(contentElem);
-  }
-
-  /**
-   * Gets the tree that contains this item.
-   * 
-   * @return the containing tree
-   */
   public final Tree getTree() {
     return tree;
   }
 
-  /**
-   * Gets the user-defined object associated with this item.
-   * 
-   * @return the item's user-defined object
-   */
   public Object getUserObject() {
     return userObject;
   }
 
-  /**
-   * Gets the <code>Widget</code> associated with this tree item.
-   * 
-   * @return the widget
-   */
   public Widget getWidget() {
     return widget;
   }
 
-  /**
-   * Inserts a child tree item at the specified index containing the specified
-   * text.
-   * 
-   * @param beforeIndex the index where the item will be inserted
-   * @param itemHtml the item's HTML
-   * @return the item that was added
-   * @throws IndexOutOfBoundsException if the index is out of range
-   */
-  public TreeItem insertItem(int beforeIndex, SafeHtml itemHtml)
-      throws IndexOutOfBoundsException {
-    TreeItem ret = new TreeItem(itemHtml);
-    insertItem(beforeIndex, ret);
-    return ret;
-  }
-
-  /**
-   * Inserts a child tree item at the specified index containing the specified
-   * text.
-   * 
-   * @param beforeIndex the index where the item will be inserted
-   * @param itemText the text to be added
-   * @return the item that was added
-   * @throws IndexOutOfBoundsException if the index is out of range
-   */
-  public TreeItem insertItem(int beforeIndex, String itemText)
-      throws IndexOutOfBoundsException {
+  public TreeItem insertItem(int beforeIndex, String itemText) {
     TreeItem ret = new TreeItem(itemText);
     insertItem(beforeIndex, ret);
     return ret;
   }
 
-  /**
-   * Inserts an item as a child to this one.
-   * 
-   * @param beforeIndex the index where the item will be inserted
-   * @param item the item to be added
-   * @throws IndexOutOfBoundsException if the index is out of range
-   */
-  public void insertItem(int beforeIndex, TreeItem item)
-      throws IndexOutOfBoundsException {
+  public void insertItem(int beforeIndex, TreeItem item) {
     // Detach item from existing parent.
     maybeRemoveItemFromParent(item);
 
     // Check the index after detaching in case this item was already the parent.
     int childCount = getChildCount();
-    if (beforeIndex < 0 || beforeIndex > childCount) {
-      throw new IndexOutOfBoundsException();
-    }
+    Assert.betweenInclusive(beforeIndex, 0, childCount);
 
     if (children == null) {
       initChildren();
@@ -590,34 +376,16 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
     }
   }
 
-  /**
-   * Inserts a child tree item at the specified index containing the specified
-   * widget.
-   * 
-   * @param beforeIndex the index where the item will be inserted
-   * @param w the widget to be added
-   * @return the item that was added
-   * @throws IndexOutOfBoundsException if the index is out of range
-   */
-  public TreeItem insertItem(int beforeIndex, Widget w)
-      throws IndexOutOfBoundsException {
+  public TreeItem insertItem(int beforeIndex, Widget w) {
     TreeItem ret = new TreeItem(w);
     insertItem(beforeIndex, ret);
     return ret;
   }
 
-  /**
-   * Determines whether this item is currently selected.
-   * 
-   * @return <code>true</code> if it is selected
-   */
   public boolean isSelected() {
     return selected;
   }
 
-  /**
-   * Removes this item from its tree.
-   */
   public void remove() {
     if (parent != null) {
       // If this item has a parent, remove self from it.
@@ -629,23 +397,6 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
     }
   }
 
-  /**
-   * Removes one of this item's children.
-   * 
-   * @param isItem the wrapper of item to be removed
-   */
-  public void removeItem(IsTreeItem isItem) {
-    if (isItem != null) {
-      TreeItem item = isItem.asTreeItem();
-      removeItem(item);
-    }
-  }
-
-  /**
-   * Removes one of this item's children.
-   * 
-   * @param item the item to be removed
-   */
   public void removeItem(TreeItem item) {
     // Validate.
     if (children == null || !children.contains(item)) {
@@ -672,20 +423,13 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
     }
   }
 
-  /**
-   * Removes all of this item's children.
-   */
   public void removeItems() {
     while (getChildCount() > 0) {
       removeItem(getChild(0));
     }
   }
 
-  public void setHTML(SafeHtml html) {
-    setHTML(html.asString());
-  }
-
-  public void setHTML(String html) {
+  public void setHtml(String html) {
     setWidget(null);
     DOM.setInnerHTML(contentElem, html);
   }
@@ -694,12 +438,6 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
     DomUtils.setId(this, id);
   }
 
-  /**
-   * Selects or deselects this item.
-   * 
-   * @param selected <code>true</code> to select the item, <code>false</code> to
-   *          deselect it
-   */
   public void setSelected(boolean selected) {
     if (this.selected == selected) {
       return;
@@ -708,21 +446,10 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
     setStyleName(getContentElem(), "bee-TreeItem-selected", selected);
   }
 
-  /**
-   * Sets whether this item's children are displayed.
-   * 
-   * @param open whether the item is open
-   */
   public void setState(boolean open) {
     setState(open, true);
   }
 
-  /**
-   * Sets whether this item's children are displayed.
-   * 
-   * @param open whether the item is open
-   * @param fireEvents <code>true</code> to allow open/close events to be
-   */
   public void setState(boolean open, boolean fireEvents) {
     if (open && getChildCount() == 0) {
       return;
@@ -739,25 +466,10 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
     }
   }
 
-  public void setText(String text) {
-    setWidget(null);
-    DOM.setInnerText(contentElem, text);
-  }
-
-  /**
-   * Sets the user-defined object associated with this item.
-   * 
-   * @param userObj the item's user-defined object
-   */
   public void setUserObject(Object userObj) {
     userObject = userObj;
   }
 
-  /**
-   * Sets the current widget. Any existing child widget will be removed.
-   * 
-   * @param newWidget Widget to set
-   */
   public void setWidget(Widget newWidget) {
     // Detach new child from old parent.
     if (newWidget != null) {
@@ -819,33 +531,6 @@ public class TreeItem extends UIObject implements IsTreeItem, HasTreeItems,
       return (Focusable) w;
     } else {
       return null;
-    }
-  }
-
-  /**
-   * <b>Affected Elements:</b>
-   * <ul>
-   * <li>-content = The text or {@link Widget} next to the image.</li>
-   * <li>-child# = The child at the specified index.</li>
-   * </ul>
-   * 
-   * @see UIObject#onEnsureDebugId(String)
-   */
-  @Override
-  protected void onEnsureDebugId(String baseID) {
-    super.onEnsureDebugId(baseID);
-    ensureDebugId(contentElem, baseID, "content");
-    if (imageHolder != null) {
-      // The image itself may or may not exist.
-      ensureDebugId(imageHolder, baseID, "image");
-    }
-
-    if (children != null) {
-      int childCount = 0;
-      for (TreeItem child : children) {
-        child.ensureDebugId(baseID + "-child" + childCount);
-        childCount++;
-      }
     }
   }
 
