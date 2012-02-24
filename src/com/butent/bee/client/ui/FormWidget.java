@@ -13,12 +13,12 @@ import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.CustomButton;
 import com.google.gwt.user.client.ui.CustomButton.Face;
 import com.google.gwt.user.client.ui.Focusable;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
-import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.Widget;
@@ -63,11 +63,16 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.Vertical;
+import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.resources.Images;
+import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.utils.XmlUtils;
+import com.butent.bee.client.view.TreeContainer;
+import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeFrame;
 import com.butent.bee.client.widget.BeeImage;
@@ -388,6 +393,8 @@ public enum FormWidget {
   private static final String TAG_STACK = "stack";
   private static final String TAG_PAGE = "page";
   private static final String TAG_OPTION = "option";
+  private static final String TAG_TREE_ITEM = "TreeItem";
+  private static final String TAG_TREE_SOURCE = "TreeSource";
 
   private static final String TAG_UP_FACE = "upFace";
   private static final String TAG_DOWN_FACE = "downFace";
@@ -701,7 +708,7 @@ public enum FormWidget {
         ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(attributes.get(ATTR_FORMAT),
             Format.getDefaultDoubleFormat()));
         break;
-      
+
       case INPUT_FILE:
         widget = new InputFile(BeeConst.isTrue(attributes.get(ATTR_MULTIPLE)));
         if (!BeeUtils.isEmpty(name)) {
@@ -992,7 +999,12 @@ public enum FormWidget {
         break;
 
       case TREE:
-        widget = new Tree();
+        if (children.size() > 0 && BeeUtils.same(children.get(0).getTagName(), TAG_TREE_SOURCE)) {
+          widget = new TreeContainer(BeeUtils.toBoolean(attributes.get("hideActions")),
+              attributes.get("rootItem"));
+        } else {
+          widget = new Tree();
+        }
         break;
     }
 
@@ -1009,7 +1021,7 @@ public enum FormWidget {
 
     WidgetDescription widgetDescription = new WidgetDescription(this,
         (widget instanceof HasId) ? ((HasId) widget).getId() : DomUtils.getId(widget));
-    
+
     boolean disablable = widget instanceof HasEnabled;
 
     if (attributes.size() > 0) {
@@ -1024,7 +1036,7 @@ public enum FormWidget {
         disablable = false;
       }
     }
-    
+
     widgetDescription.setDisablable(disablable);
 
     List<ConditionalStyleDeclaration> dynStyles = Lists.newArrayList();
@@ -1794,6 +1806,29 @@ public enum FormWidget {
         && BeeUtils.inListSame(childTag, TAG_UP_FACE, TAG_DOWN_FACE, TAG_UP_HOVERING_FACE,
             TAG_DOWN_HOVERING_FACE, TAG_UP_DISABLED_FACE, TAG_DOWN_DISABLED_FACE)) {
       setFace((CustomButton) parent, childTag, child);
+
+    } else if (this == TREE) {
+      if (parent instanceof Tree) {
+        processTree((Tree) parent, child);
+
+      } else if (parent instanceof TreeView) {
+        ((TreeView) parent).setViewPresenter(new TreePresenter((TreeView) parent,
+            child.getAttribute(ATTR_SOURCE), child.getAttribute("parentColumn"),
+            child.getAttribute("itemColumn"), XmlUtils.getCalculation(child, TAG_CALC),
+            child.getAttribute("editForm"), child.getAttribute("newItemForm")));
+      }
+    }
+  }
+
+  private void processTree(HasTreeItems parent, Element child) {
+    if (!BeeUtils.same(child.getTagName(), TAG_TREE_ITEM)) {
+      return;
+    }
+    TreeItem item = new TreeItem(child.getAttribute(ATTR_HTML));
+    parent.addItem(item);
+
+    for (Element chld : XmlUtils.getChildrenElements(child)) {
+      processTree(item, chld);
     }
   }
 

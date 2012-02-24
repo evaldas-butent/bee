@@ -37,6 +37,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.XmlState;
 import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
@@ -735,7 +736,7 @@ public class UiServiceBean {
 
     Filter filter = null;
     if (!BeeUtils.isEmpty(rowId)) {
-      filter = sys.getView(viewName).getRowFilter(BeeUtils.toLong(rowId));
+      filter = ComparisonFilter.compareId(BeeUtils.toLong(rowId));
     } else if (!BeeUtils.isEmpty(where)) {
       filter = Filter.restore(where);
     }

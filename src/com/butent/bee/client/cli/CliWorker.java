@@ -1078,7 +1078,7 @@ public class CliWorker {
           timeout = BeeUtils.toInt(v);
           break;
         case 'y':
-          confirmHtml = BeeConst.isFalse(v) ? null : v; 
+          confirmHtml = BeeConst.isFalse(v) ? null : v;
           break;
         case 'n':
           cancelHtml = BeeConst.isFalse(v) ? null : v;
@@ -1124,11 +1124,12 @@ public class CliWorker {
           }
         }, defaultValue, maxLength, width, widthUnit, timeout, confirmHtml, cancelHtml,
         new WidgetInitializer() {
-          public void initialize(String name, Widget widget) {
+          public Widget initialize(String name, Widget widget) {
             if (BeeUtils.context(widgetName.getValue(), name)) {
               StyleUtils.setAppearance(widget, null, widgetStyle.getValue());
               BeeKeeper.getLog().info(name, StyleUtils.getCssText(widget));
             }
+            return widget;
           }
         });
   }

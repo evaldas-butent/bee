@@ -51,11 +51,11 @@ import java.util.List;
 public class GridContainerImpl extends Split implements GridContainerView, HasNavigation,
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler,
     EditFormEvent.Handler {
-  
+
   private enum Component {
     HEADER, FOOTER, SCROLLER, CONTENT
   }
-  
+
   private class ExtWidget {
     private final Widget widget;
 
@@ -63,7 +63,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     private final int size;
     private final ScrollBars scrollBars;
     private final Integer splSize;
-    
+
     private final Component precedes;
     private final boolean hidable;
 
@@ -94,7 +94,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     private Integer getSplSize() {
       return splSize;
     }
-    
+
     private int getTotalSize() {
       return getSize() + BeeUtils.toNonNegativeInt(getSplSize());
     }
@@ -106,7 +106,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     private boolean isHidable() {
       return hidable;
     }
-    
+
     private boolean precedesFooter() {
       return Component.FOOTER.equals(precedes);
     }
@@ -118,7 +118,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private static final String ATTR_PRECEDES = "precedes";
   private static final String ATTR_HIDABLE = "hidable";
-  
+
   private Presenter viewPresenter = null;
 
   private String footerId = null;
@@ -131,12 +131,12 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private boolean hasSearch = false;
 
   private Evaluator rowMessage = null;
-  
+
   private boolean adding = false;
   private boolean enabled = true;
-  
+
   private final List<ExtWidget> extWidgets = Lists.newArrayList();
-  
+
   public GridContainerImpl() {
     this(-1);
   }
@@ -164,10 +164,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (getRowMessage() != null) {
       getContent().getGrid().addActiveRowChangeHandler(this);
     }
-    
+
     getContent().addAddStartHandler(this);
     getContent().addAddEndHandler(this);
-    
+
     getContent().addEditFormHandler(this);
   }
 
@@ -213,7 +213,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     } else {
       scroller = null;
     }
-    
+
     getExtWidgets().clear();
     if (gridDescription.hasWidgets()) {
       for (String xml : gridDescription.getWidgets()) {
@@ -223,7 +223,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         }
       }
     }
-    
+
     addExtWidgets(Component.HEADER);
     if (header != null) {
       addNorth(header.asWidget(), header.getHeight());
@@ -402,7 +402,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
     for (Widget widget : getChildren()) {
-      if (widget instanceof View) {
+      if (widget instanceof View && ((View) widget).getViewPresenter() == null) {
         ((View) widget).setViewPresenter(viewPresenter);
       }
     }
@@ -425,7 +425,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
             pager.start(grid);
           }
         }
-        
+
         int ps = Math.min(estimatePageSize(), grid.getRowCount());
         grid.setPageSize(ps, true, false);
 
@@ -441,7 +441,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       }
     });
   }
-  
+
   @Override
   protected void onUnload() {
     if (getViewPresenter() != null) {
@@ -457,7 +457,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     boolean head = Component.HEADER.equals(before);
     boolean foot = Component.FOOTER.equals(before);
-    
+
     boolean ok;
     for (ExtWidget extWidget : getExtWidgets()) {
       if (extWidget.precedesHeader()) {
@@ -467,7 +467,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       } else {
         ok = !head && !foot;
       }
-      
+
       if (ok) {
         add(extWidget.getWidget(), extWidget.getDirection(), extWidget.getSize(),
             extWidget.getScrollBars(), extWidget.getSplSize());
@@ -480,7 +480,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (doc == null) {
       return null;
     }
-    
+
     Element root = doc.getDocumentElement();
     if (root == null) {
       BeeKeeper.getLog().severe("ext widget: document element not found", xml);
@@ -489,32 +489,32 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (gridCallback != null && !gridCallback.onLoadExtWidget(root)) {
       return null;
     }
-    
+
     String tagName = root.getTagName();
     Direction direction = BeeUtils.getConstant(Direction.class, tagName);
     if (!validDirection(direction, false)) {
       BeeKeeper.getLog().severe("ext widget: invalid root tag name", BeeUtils.quote(tagName));
       return null;
     }
-    
+
     int size = BeeUtils.unbox(XmlUtils.getAttributeInteger(root, FormWidget.ATTR_SIZE));
     if (size <= 0) {
       BeeKeeper.getLog().severe("ext widget size must be positive integer");
       return null;
     }
-    
+
     Widget widget = FormFactory.createWidget(root, null, null, gridCallback, "create ext widget:");
     if (widget == null) {
       return null;
     }
-    
+
     ScrollBars scrollBars = XmlUtils.getAttributeScrollBars(root, FormWidget.ATTR_SCROLL_BARS,
         ScrollBars.NONE);
     Integer splSize = XmlUtils.getAttributeInteger(root, FormWidget.ATTR_SPLITTER_SIZE);
-    
+
     Component precedes = BeeUtils.getConstant(Component.class, root.getAttribute(ATTR_PRECEDES));
-    boolean hidable = !BeeUtils.isFalse(XmlUtils.getAttributeBoolean(root, ATTR_HIDABLE)); 
-    
+    boolean hidable = !BeeUtils.isFalse(XmlUtils.getAttributeBoolean(root, ATTR_HIDABLE));
+
     return new ExtWidget(widget, direction, size, scrollBars, splSize, precedes, hidable);
   }
 
@@ -549,7 +549,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (hasScroller()) {
         w -= getScrollerWidth();
       }
-      
+
       for (ExtWidget extWidget : getExtWidgets()) {
         if (extWidget.getDirection().isHorizontal()) {
           w -= extWidget.getTotalSize();
@@ -557,7 +557,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
           h -= extWidget.getTotalSize();
         }
       }
-      
+
       return content.estimatePageSize(w, h);
     }
     return BeeConst.UNDEF;
@@ -566,24 +566,24 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private List<ExtWidget> getExtWidgets() {
     return extWidgets;
   }
-  
+
   private FooterView getFooter() {
     if (BeeUtils.isEmpty(getFooterId())) {
       return null;
     }
     for (Widget widget : getChildren()) {
-      if (widget instanceof FooterView 
+      if (widget instanceof FooterView
           && BeeUtils.same(widget.getElement().getId(), getFooterId())) {
         return (FooterView) widget;
       }
     }
     return null;
   }
-  
+
   private String getFooterId() {
     return footerId;
   }
-  
+
   private String getHeaderId() {
     return headerId;
   }
@@ -597,7 +597,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       return null;
     }
     for (Widget widget : getChildren()) {
-      if (widget instanceof ScrollPager 
+      if (widget instanceof ScrollPager
           && BeeUtils.same(widget.getElement().getId(), getScrollerId())) {
         return (ScrollPager) widget;
       }

@@ -25,23 +25,29 @@ public abstract class ComparisonFilter extends Filter {
     COLUMN, OPERATOR, VALUE
   }
 
-  public static Filter compareId(String column, Operator op, long value) {
-    Assert.notEmpty(column);
-    Assert.notNull(op);
-
-    return new IdFilter(column, op, value);
+  public static Filter compareId(long value) {
+    return compareId(Operator.EQ, value);
   }
 
-  public static Filter compareId(String column, Operator op, String value) {
+  public static Filter compareId(Operator op, long value) {
+    Assert.notNull(op);
+
+    return new IdFilter(op, value);
+  }
+
+  public static Filter compareId(Operator op, String value) {
     if (!BeeUtils.isLong(value)) {
       LogUtils.warning(LogUtils.getDefaultLogger(), "Not an ID value:", value);
       return null;
     }
-    return compareId(column, op, BeeUtils.toLong(value));
+    return compareId(op, BeeUtils.toLong(value));
   }
 
-  public static Filter compareVersion(String column, Operator op, String value) {
-    Assert.notEmpty(column);
+  public static Filter compareVersion(String value) {
+    return compareVersion(Operator.EQ, value);
+  }
+
+  public static Filter compareVersion(Operator op, String value) {
     Assert.notNull(op);
     DateTime time = DateTime.parse(value);
 
@@ -49,7 +55,7 @@ public abstract class ComparisonFilter extends Filter {
       LogUtils.warning(LogUtils.getDefaultLogger(), "Not a DATETIME value:", value);
       return null;
     }
-    return new VersionFilter(column, op, time.getTime());
+    return new VersionFilter(op, time.getTime());
   }
 
   public static Filter compareWithColumn(String leftColumn, Operator op, String rightColumn) {

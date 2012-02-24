@@ -1371,7 +1371,7 @@ public class TaskEventHandler {
   }
 
   private static Filter excludeUser(long userId) {
-    return ComparisonFilter.compareId(CrmConstants.COL_USER_ID, Operator.NE, userId);
+    return ComparisonFilter.compareId(Operator.NE, userId);
   }
 
   private TaskEventHandler() {

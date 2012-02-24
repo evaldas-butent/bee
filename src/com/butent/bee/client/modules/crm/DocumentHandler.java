@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.crm;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -9,40 +8,33 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridPanel;
-import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.GridFormPresenter;
-import com.butent.bee.client.tree.Tree;
-import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.utils.FileUtils.FileInfo;
 import com.butent.bee.client.view.DataView;
+import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.modules.crm.CrmConstants;
-import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.List;
-import java.util.Map;
 
 public class DocumentHandler {
 
@@ -61,7 +53,7 @@ public class DocumentHandler {
         getCollector().setInputWidget((InputFile) widget);
       }
     }
-    
+
     @Override
     public CreationHandler getInstance() {
       CreationHandler instance = new CreationHandler();
@@ -113,24 +105,43 @@ public class DocumentHandler {
     }
 
     @Override
-    public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+    public void onStartNewRow(final FormView form, IsRow oldRow, final IsRow newRow) {
       getCollector().clear();
 
       newRow.setValue(form.getDataIndex(CrmConstants.COL_DOCUMENT_DATE),
           System.currentTimeMillis());
+
       if (oldRow != null) {
         copyValues(form, oldRow, newRow,
             Lists.newArrayList(CrmConstants.COL_TYPE, CrmConstants.COL_TYPE_NAME,
                 CrmConstants.COL_GROUP, CrmConstants.COL_GROUP_NAME,
                 CrmConstants.COL_CATEGORY, CrmConstants.COL_CATEGORY_NAME));
+
       } else if (form.getViewPresenter() instanceof GridFormPresenter) {
         GridCallback gcb = ((GridFormPresenter) form.getViewPresenter()).getGridCallback();
+
         if (gcb instanceof DocumentGridHandler) {
-          IsRow categoryRow = ((DocumentGridHandler) gcb).getSelectedCategory();
-          if (categoryRow != null) {
-            newRow.setValue(form.getDataIndex(CrmConstants.COL_CATEGORY), categoryRow.getId());
-            newRow.setValue(form.getDataIndex(CrmConstants.COL_CATEGORY_NAME),
-                categoryRow.getString(treeViewNameIndex));
+          final IsRow category = ((DocumentGridHandler) gcb).getSelectedCategory();
+
+          if (category != null) {
+            Queries.getRowSet(CATEGORY_VIEW_NAME, Lists.newArrayList(CrmConstants.COL_NAME),
+                ComparisonFilter.compareId(category.getId()), null,
+                new RowSetCallback() {
+                  @Override
+                  public void onFailure(String[] reason) {
+                    Global.showError((Object[]) reason);
+                  }
+
+                  @Override
+                  public void onSuccess(BeeRowSet result) {
+                    if (result.getNumberOfRows() != 1) {
+                      return;
+                    }
+                    newRow.setValue(form.getDataIndex(CrmConstants.COL_CATEGORY), category.getId());
+                    newRow.setValue(form.getDataIndex(CrmConstants.COL_CATEGORY_NAME),
+                        result.getString(0, CrmConstants.COL_NAME));
+                  }
+                });
           }
         }
       }
@@ -146,7 +157,7 @@ public class DocumentHandler {
         }
       }
     }
-    
+
     private FileCollector getCollector() {
       return collector;
     }
@@ -188,19 +199,15 @@ public class DocumentHandler {
   }
 
   private static class DocumentGridHandler extends AbstractGridCallback implements
-      SelectionHandler<TreeItem> {
+      SelectionHandler<IsRow> {
 
     private static final String FILTER_KEY = "f1";
     private IsRow selectedCategory = null;
 
-    private DocumentGridHandler() {
-    }
-
     @Override
     public void afterCreateWidget(String name, Widget widget) {
-      if (widget instanceof Tree) {
-        populateTree((Tree) widget, new TreeItem(ROOT_LABEL));
-        ((Tree) widget).addSelectionHandler(this);
+      if (widget instanceof TreeView && BeeUtils.same(name, "Tree")) {
+        ((TreeView) widget).addSelectionHandler(this);
       }
     }
 
@@ -209,17 +216,14 @@ public class DocumentHandler {
       return new DocumentGridHandler();
     }
 
-    public void onSelection(SelectionEvent<TreeItem> event) {
+    public void onSelection(SelectionEvent<IsRow> event) {
       if (event != null && getGridPresenter() != null) {
-        Long category;
-        if (event.getSelectedItem().getUserObject() instanceof IsRow) {
-          setSelectedCategory((IsRow) event.getSelectedItem().getUserObject());
-          category = getSelectedCategory().getId();
-        } else {
-          setSelectedCategory(null);
-          category = null;
-        }
+        Long category = null;
+        setSelectedCategory(event.getSelectedItem());
 
+        if (getSelectedCategory() != null) {
+          category = getSelectedCategory().getId();
+        }
         getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(category));
         getGridPresenter().requery(true);
       }
@@ -242,252 +246,13 @@ public class DocumentHandler {
     }
   }
 
-  private static class TreeHandler extends AbstractFormCallback {
-
-    private static int counter = 0;
-
-    private Tree treeWidget = null;
-    private final TreeItem rootItem = new TreeItem(ROOT_LABEL);
-
-    private TreeHandler() {
-    }
-
-    @Override
-    public void afterCreateWidget(String name, Widget widget) {
-      if (widget instanceof Tree) {
-        setTreeWidget((Tree) widget);
-        refresh();
-      }
-    }
-
-    @Override
-    public boolean beforeAction(Action action, FormPresenter presenter) {
-      boolean result;
-
-      switch (action) {
-        case REFRESH:
-          refresh();
-          result = false;
-          break;
-
-        case ADD:
-          Global.inputString("Nauja kategorija", new StringCallback() {
-            @Override
-            public void onSuccess(String value) {
-              add(value);
-            }
-          });
-
-          result = false;
-          break;
-
-        case DELETE:
-          result = false;
-          break;
-
-        case EDIT:
-          result = false;
-          break;
-
-        default:
-          result = true;
-      }
-      return result;
-    }
-
-    @Override
-    public FormCallback getInstance() {
-      if (counter++ == 0) {
-        return this;
-      } else {
-        return new TreeHandler();
-      }
-    }
-
-    private void add(String name) {
-      if (getTreeWidget() == null || TREE_VIEW_COLUMNS.isEmpty()) {
-        return;
-      }
-      if (BeeUtils.isEmpty(name)) {
-        return;
-      }
-
-      final TreeItem parentItem = (getTreeWidget().getSelectedItem() == null)
-          ? getRootItem() : getTreeWidget().getSelectedItem();
-
-      Long pId = getItemId(parentItem);
-
-      int ord = 0;
-      for (int i = 0; i < parentItem.getChildCount(); i++) {
-        ord = Math.max(ord, BeeUtils.toInt(getString(parentItem.getChild(i), treeViewOrderIndex)));
-      }
-
-      List<BeeColumn> cols = Lists.newArrayList();
-      List<String> values = Lists.newArrayList();
-
-      for (BeeColumn column : TREE_VIEW_COLUMNS) {
-        String columnId = column.getId();
-
-        if (BeeUtils.same(columnId, CrmConstants.COL_NAME)) {
-          cols.add(column);
-          values.add(name.trim());
-        } else if (BeeUtils.same(columnId, CrmConstants.COL_ORDER)) {
-          cols.add(column);
-          values.add(BeeUtils.toString(++ord));
-        } else if (BeeUtils.same(columnId, CrmConstants.COL_PARENT) && pId != null) {
-          cols.add(column);
-          values.add(BeeUtils.toString(pId));
-        }
-      }
-
-      Queries.insert(TREE_VIEW_NAME, cols, values, new Queries.RowCallback() {
-        public void onFailure(String[] reason) {
-          BeeKeeper.getScreen().notifySevere(reason);
-        }
-
-        public void onSuccess(BeeRow result) {
-          parentItem.addItem(createTreeItem(result));
-          if (!parentItem.getState()) {
-            parentItem.setState(true);
-          }
-        }
-      });
-    }
-
-    private TreeItem getRootItem() {
-      return rootItem;
-    }
-
-    private String getString(TreeItem item, int index) {
-      if (item.getUserObject() instanceof IsRow && index >= 0) {
-        return ((IsRow) item.getUserObject()).getString(index);
-      } else {
-        return null;
-      }
-    }
-
-    private Tree getTreeWidget() {
-      return treeWidget;
-    }
-
-    private void refresh() {
-      if (getTreeWidget() == null) {
-        return;
-      }
-      populateTree(getTreeWidget(), getRootItem());
-    }
-
-    private void setTreeWidget(Tree treeWidget) {
-      this.treeWidget = treeWidget;
-    }
-  }
-
-  private static final String TREE_VIEW_NAME = "DocumentTree";
+  private static final String CATEGORY_VIEW_NAME = "DocumentTree";
   private static final String DOCUMENT_VIEW_NAME = "Documents";
   private static final String FILE_VIEW_NAME = "Files";
 
-  private static final String ROOT_LABEL = "Kategorijos";
-  private static final List<BeeColumn> TREE_VIEW_COLUMNS = Lists.newArrayList();
-
-  private static int treeViewParentIndex = BeeConst.UNDEF;
-  private static int treeViewOrderIndex = BeeConst.UNDEF;
-  private static int treeViewNameIndex = BeeConst.UNDEF;
-  private static int treeViewCountIndex = BeeConst.UNDEF;
-
   public static void register() {
-    FormFactory.registerFormCallback("DocumentTree", new TreeHandler());
     GridFactory.registerGridCallback("Documents", new DocumentGridHandler());
-
     FormFactory.registerFormCallback("NewDocument", new CreationHandler());
-  }
-
-  private static TreeItem createTreeItem(IsRow row) {
-    String html = BeeUtils.concat(1, row.getString(treeViewOrderIndex),
-        row.getString(treeViewNameIndex));
-
-    int count = BeeUtils.toInt(row.getString(treeViewCountIndex));
-    if (count > 0) {
-      html = html + BeeConst.STRING_SPACE + BeeUtils.bracket(count);
-    }
-
-    return new TreeItem(html, row);
-  }
-
-  private static Long getItemId(TreeItem item) {
-    if (item != null && item.getUserObject() instanceof IsRow) {
-      return ((IsRow) item.getUserObject()).getId();
-    } else {
-      return null;
-    }
-  }
-
-  private static void populateTree(final Tree tree, final TreeItem root) {
-    Queries.getRowSet(TREE_VIEW_NAME, null, new Queries.RowSetCallback() {
-      public void onFailure(String[] reason) {
-        BeeKeeper.getScreen().notifySevere(reason);
-      }
-
-      public void onSuccess(BeeRowSet result) {
-        setTreeViewColumns(result.getColumns());
-
-        tree.clear();
-        root.removeItems();
-        tree.addItem(root);
-
-        if (!result.isEmpty()) {
-          Map<Long, TreeItem> treeItems = Maps.newHashMap();
-          List<IsRow> pendingRows = Lists.newArrayList();
-
-          for (IsRow row : result.getRows()) {
-            Long pId = row.getLong(treeViewParentIndex);
-            if (pId == null) {
-              TreeItem item = createTreeItem(row);
-              root.addItem(item);
-              treeItems.put(row.getId(), item);
-            } else {
-              pendingRows.add(row);
-            }
-          }
-
-          while (!pendingRows.isEmpty()) {
-            int cnt = pendingRows.size();
-            List<IsRow> rows = Lists.newArrayList(pendingRows);
-            pendingRows.clear();
-
-            for (IsRow row : rows) {
-              Long pId = row.getLong(treeViewParentIndex);
-              TreeItem parentItem = treeItems.get(pId);
-
-              if (parentItem == null) {
-                pendingRows.add(row);
-              } else {
-                TreeItem item = createTreeItem(row);
-                parentItem.addItem(item);
-                treeItems.put(row.getId(), item);
-              }
-            }
-            if (pendingRows.size() >= cnt) {
-              break;
-            }
-          }
-
-          if (!root.getState()) {
-            root.setState(true);
-          }
-        }
-      }
-    });
-  }
-
-  private static void setTreeViewColumns(List<BeeColumn> columns) {
-    if (TREE_VIEW_COLUMNS.isEmpty()) {
-      TREE_VIEW_COLUMNS.addAll(columns);
-
-      treeViewParentIndex = DataUtils.getColumnIndex(CrmConstants.COL_PARENT, columns);
-      treeViewOrderIndex = DataUtils.getColumnIndex(CrmConstants.COL_ORDER, columns);
-      treeViewNameIndex = DataUtils.getColumnIndex(CrmConstants.COL_NAME, columns);
-      treeViewCountIndex = DataUtils.getColumnIndex(CrmConstants.COL_DOCUMENT_COUNT, columns);
-    }
   }
 
   private DocumentHandler() {

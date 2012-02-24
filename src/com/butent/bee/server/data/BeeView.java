@@ -31,11 +31,9 @@ import com.butent.bee.shared.data.filter.ColumnColumnFilter;
 import com.butent.bee.shared.data.filter.ColumnIsEmptyFilter;
 import com.butent.bee.shared.data.filter.ColumnNotEmptyFilter;
 import com.butent.bee.shared.data.filter.ColumnValueFilter;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.IdFilter;
-import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.filter.VersionFilter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -317,7 +315,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     if (o != null) {
       for (Order.Column ordCol : o.getColumns()) {
         for (String col : ordCol.getSources()) {
-          if (hasColumn(col) && (activeCols == null || activeCols.contains(getColumnName(col)))) {
+          if (hasColumn(col) && (activeCols == null
+              || getColumnAggregate(col) == null
+              || activeCols.contains(getColumnName(col)))) {
+
             if (getColumnAggregate(col) != null) {
               alias = null;
               colName = getColumnName(col);
@@ -347,10 +348,6 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       ss.addOrder(src, idCol);
     }
     return ss.addFields(src, idCol, verCol);
-  }
-
-  public Filter getRowFilter(long rowId) {
-    return ComparisonFilter.compareId(getSourceIdName(), Operator.EQ, BeeUtils.toString(rowId));
   }
 
   public String getSourceAlias() {

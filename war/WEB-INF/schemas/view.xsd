@@ -47,7 +47,7 @@
   <xs:complexType name="simpleColumnType">
     <xs:complexContent>
       <xs:extension base="bee:columnType">
-        <xs:attribute name="name" type="bee:nameType" />
+        <xs:attribute name="name" type="bee:fieldNameType" />
         <xs:attribute name="locale">
           <xs:simpleType>
             <xs:restriction base="xs:string">

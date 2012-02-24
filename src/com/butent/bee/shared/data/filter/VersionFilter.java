@@ -15,8 +15,8 @@ public class VersionFilter extends ColumnValueFilter {
     super();
   }
 
-  protected VersionFilter(String column, Operator operator, long value) {
-    super(column, operator, new LongValue(value));
+  protected VersionFilter(Operator operator, long value) {
+    super("VERSION", operator, new LongValue(value));
   }
 
   @Override

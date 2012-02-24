@@ -315,7 +315,7 @@ public class InputBoxes {
         }
         commandGroup.add(cancel);
       }
-      
+
       if (initializer != null) {
         initializer.initialize(WIDGET_COMMAND_GROUP, commandGroup);
       }

@@ -7,7 +7,9 @@
   newRowCaption="Naujiena"
   >
   <west size="200" splitterSize="2">
-    <Tree name="Categories" />
+    <Tree name="Categories" hideActions="true" rootItem="Kategorijos">
+      <TreeSource source="CategoryTree" parentColumn="Parent" itemColumn="Name" />
+    </Tree>
   </west>
   
   <header borderWidth="1 0" />

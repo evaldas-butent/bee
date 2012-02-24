@@ -15,8 +15,8 @@ public class IdFilter extends ColumnValueFilter {
     super();
   }
 
-  protected IdFilter(String column, Operator operator, long value) {
-    super(column, operator, new LongValue(value));
+  protected IdFilter(Operator operator, long value) {
+    super("ID", operator, new LongValue(value));
   }
 
   @Override

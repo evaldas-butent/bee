@@ -23,6 +23,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.ProjectEvent;
@@ -163,7 +164,8 @@ public class CrmModuleBean implements BeeModule {
               }
               if (!response.hasErrors()) {
                 BeeView view = sys.getView(rs.getViewName());
-                rs = sys.getViewData(view.getName(), view.getRowFilter(projectId), null, 0, 0);
+                rs = sys.getViewData(view.getName(),
+                    ComparisonFilter.compareId(projectId), null, 0, 0);
 
                 if (rs.isEmpty()) {
                   String msg = "Optimistic lock exception";

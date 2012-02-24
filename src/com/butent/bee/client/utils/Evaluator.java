@@ -200,7 +200,7 @@ public class Evaluator extends Calculation {
       this.rowVersion = rowVersion;
     }
   }
-  
+
   public interface Evaluation extends HasOptions {
     String eval(Parameters parameters);
   }
@@ -221,7 +221,7 @@ public class Evaluator extends Calculation {
     List<? extends IsColumn> getDataColumns();
 
     Integer getInteger(String columnId);
-    
+
     String getLastCellValue();
 
     String getLastNewValue();
@@ -231,7 +231,7 @@ public class Evaluator extends Calculation {
     IsRow getLastRow();
 
     Long getLong(String columnId);
-    
+
     double getRowId();
 
     double getRowIndex();
@@ -239,8 +239,8 @@ public class Evaluator extends Calculation {
     JavaScriptObject getRowValues();
 
     JsDate getRowVersion();
-    
-    String getString(String columnId); 
+
+    String getString(String columnId);
 
     void setCellNewValue(ValueType type, String newValue);
 
@@ -288,19 +288,17 @@ public class Evaluator extends Calculation {
   }
 
   public static native JavaScriptObject createExprInterpreter(String xpr) /*-{
-    return new Function("row", "rowId", "rowVersion", "rowIndex", "colName", "colIndex", "cell",
-        "return eval(" + xpr + ");");
+    return new Function("row", "rowId", "rowVersion", "rowIndex", "colName", "colIndex", "cell", "return " + xpr + ";");
   }-*/;
 
   public static native JavaScriptObject createFuncInterpreter(String fnc) /*-{
-    return new Function("row", "rowId", "rowVersion", "rowIndex", "colName", "colIndex", "cell",
-        fnc);
+    return new Function("row", "rowId", "rowVersion", "rowIndex", "colName", "colIndex", "cell", fnc);
   }-*/;
 
   private Parameters parameters = null;
 
   private final JavaScriptObject interpeter;
-  
+
   private Evaluation evaluation = null;
 
   private Evaluator(String expression, String function, String lambda) {

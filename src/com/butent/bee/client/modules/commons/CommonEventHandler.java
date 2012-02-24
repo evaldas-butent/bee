@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.commons;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -20,13 +21,12 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.tree.Tree;
-import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.DataView;
+import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.view.grid.GridCallback;
@@ -66,7 +66,7 @@ public class CommonEventHandler {
         flt = Filter.and();
 
         for (Long categoryId : categories) {
-          flt.add(ComparisonFilter.compareId("CategoryID", Operator.NE, categoryId));
+          flt.add(ComparisonFilter.compareId(Operator.NE, categoryId));
         }
       }
       Queries.getRowSet(CommonsConstants.TBL_CATEGORIES, null, flt, null, new RowSetCallback() {
@@ -95,7 +95,13 @@ public class CommonEventHandler {
                     doRequest(CommonsConstants.SVC_ADD_CATEGORIES, getCategories(categoryList));
 
                   } else {
-                    updateCategories(rows, result.getColumnIndex(CommonsConstants.COL_NAME), null);
+                    Map<Long, String> data = Maps.newLinkedHashMap();
+                    int nameIndex = result.getColumnIndex(CommonsConstants.COL_NAME);
+
+                    for (IsRow row : rows) {
+                      data.put(row.getId(), row.getString(nameIndex));
+                    }
+                    updateCategories(data);
                   }
                 }
               });
@@ -198,9 +204,14 @@ public class CommonEventHandler {
                 if (result.isEmpty()) {
                   return;
                 }
-                updateCategories(result.getRows(),
-                    result.getColumnIndex(CommonsConstants.COL_NAME),
-                    result.getColumnIndex(CommonsConstants.COL_CATEGORY));
+                Map<Long, String> data = Maps.newLinkedHashMap();
+                int nameIndex = result.getColumnIndex(CommonsConstants.COL_NAME);
+                int idIndex = result.getColumnIndex(CommonsConstants.COL_CATEGORY);
+
+                for (IsRow row : result.getRows()) {
+                  data.put(row.getLong(idIndex), row.getString(nameIndex));
+                }
+                updateCategories(data);
               }
             });
       }
@@ -210,17 +221,11 @@ public class CommonEventHandler {
       this.widget = widget;
     }
 
-    private void updateCategories(Iterable<? extends IsRow> rows, int nameIndex, Integer idIndex) {
-      if (!BeeUtils.isEmpty(rows)) {
-        for (IsRow row : rows) {
-          String category = row.getString(nameIndex);
-
-          if (idIndex == null) {
-            categories.add(row.getId());
-          } else {
-            categories.add(row.getLong(idIndex));
-          }
-          widget.addItem(category);
+    private void updateCategories(Map<Long, String> data) {
+      if (!BeeUtils.isEmpty(data)) {
+        for (Map.Entry<Long, String> row : data.entrySet()) {
+          categories.add(row.getKey());
+          widget.addItem(row.getValue());
         }
       }
     }
@@ -327,10 +332,27 @@ public class CommonEventHandler {
           if (grd.showServices()) {
             newRow.setValue(form.getDataIndex(CommonsConstants.COL_SERVICE), 1);
           }
-          IsRow category = grd.getSelectedCategory();
+          final IsRow category = grd.getSelectedCategory();
 
           if (category != null) {
-            categories.updateCategories(Lists.newArrayList(category), grd.nameIndex, null);
+            Queries.getRowSet(CommonsConstants.TBL_CATEGORIES,
+                Lists.newArrayList(CommonsConstants.COL_NAME),
+                ComparisonFilter.compareId(category.getId()), null,
+                new RowSetCallback() {
+                  @Override
+                  public void onFailure(String[] reason) {
+                    Global.showError((Object[]) reason);
+                  }
+
+                  @Override
+                  public void onSuccess(BeeRowSet result) {
+                    if (result.getNumberOfRows() != 1) {
+                      return;
+                    }
+                    categories.updateCategories(ImmutableMap.of(category.getId(),
+                        result.getString(0, CommonsConstants.COL_NAME)));
+                  }
+                });
           }
         }
       }
@@ -338,11 +360,10 @@ public class CommonEventHandler {
   }
 
   private static class ItemGridHandler extends AbstractGridCallback
-      implements SelectionHandler<TreeItem> {
+      implements SelectionHandler<IsRow> {
 
     private static final String FILTER_KEY = "f1";
     private final boolean services;
-    private int nameIndex = BeeConst.UNDEF;
     private IsRow selectedCategory = null;
 
     private ItemGridHandler(boolean showServices) {
@@ -351,9 +372,8 @@ public class CommonEventHandler {
 
     @Override
     public void afterCreateWidget(String name, Widget widget) {
-      if (widget instanceof Tree && BeeUtils.same(name, "Categories")) {
-        populateCategories((Tree) widget);
-        ((Tree) widget).addSelectionHandler(this);
+      if (widget instanceof TreeView && BeeUtils.same(name, "Categories")) {
+        ((TreeView) widget).addSelectionHandler(this);
       }
     }
 
@@ -379,18 +399,16 @@ public class CommonEventHandler {
       return true;
     }
 
-    public void onSelection(SelectionEvent<TreeItem> event) {
+    public void onSelection(SelectionEvent<IsRow> event) {
       if (event == null) {
         return;
       }
       if (getGridPresenter() != null) {
         Long category = null;
+        setSelectedCategory(event.getSelectedItem());
 
-        if (event.getSelectedItem().getUserObject() instanceof IsRow) {
-          setSelectedCategory((IsRow) event.getSelectedItem().getUserObject());
+        if (getSelectedCategory() != null) {
           category = getSelectedCategory().getId();
-        } else {
-          setSelectedCategory(null);
         }
         getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(category));
         getGridPresenter().requery(true);
@@ -416,60 +434,6 @@ public class CommonEventHandler {
 
     private IsRow getSelectedCategory() {
       return selectedCategory;
-    }
-
-    private void populateCategories(final Tree tree) {
-      Queries.getRowSet(CommonsConstants.TBL_CATEGORIES, null, new Queries.RowSetCallback() {
-        public void onFailure(String[] reason) {
-          BeeKeeper.getScreen().notifySevere(reason);
-        }
-
-        public void onSuccess(BeeRowSet result) {
-          nameIndex = result.getColumnIndex(CommonsConstants.COL_NAME);
-          tree.clear();
-          tree.addItem(new TreeItem("*"));
-
-          if (!result.isEmpty()) {
-            int parentIndex = result.getColumnIndex("Parent");
-
-            Map<Long, TreeItem> treeItems = Maps.newHashMap();
-            List<IsRow> pendingRows = Lists.newArrayList();
-
-            for (IsRow row : result.getRows()) {
-              Long pId = row.getLong(parentIndex);
-              if (pId == null) {
-                TreeItem item = new TreeItem(row.getString(nameIndex), row);
-                tree.addItem(item);
-                treeItems.put(row.getId(), item);
-              } else {
-                pendingRows.add(row);
-              }
-            }
-
-            while (!pendingRows.isEmpty()) {
-              int cnt = pendingRows.size();
-              List<IsRow> rows = Lists.newArrayList(pendingRows);
-              pendingRows.clear();
-
-              for (IsRow row : rows) {
-                Long pId = row.getLong(parentIndex);
-                TreeItem parentItem = treeItems.get(pId);
-
-                if (parentItem == null) {
-                  pendingRows.add(row);
-                } else {
-                  TreeItem item = new TreeItem(row.getString(nameIndex), row);
-                  parentItem.addItem(item);
-                  treeItems.put(row.getId(), item);
-                }
-              }
-              if (pendingRows.size() >= cnt) {
-                break;
-              }
-            }
-          }
-        }
-      });
     }
 
     private void setSelectedCategory(IsRow selectedCategory) {

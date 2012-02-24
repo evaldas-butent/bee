@@ -20,6 +20,7 @@ import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -98,7 +99,7 @@ public class DataEditorBean {
       return sb.append("\n.").toString();
     }
   }
-  
+
   private static Logger logger = Logger.getLogger(DataEditorBean.class.getName());
 
   @EJB
@@ -117,7 +118,7 @@ public class DataEditorBean {
     }
     return commitRow(rs, 0, returnAllFields ? BeeRow.class : RowInfo.class);
   }
-  
+
   public ResponseObject commitRow(BeeRowSet rs, int rowIndex, Class<?> returnType) {
     Assert.notNull(rs);
     if (!BeeUtils.betweenExclusive(rowIndex, 0, rs.getNumberOfRows())) {
@@ -187,7 +188,8 @@ public class DataEditorBean {
         if (RowInfo.class.equals(returnType)) {
           response.setResponse(new BeeRow(id, tblInfo.version));
         } else {
-          BeeRowSet newRs = sys.getViewData(view.getName(), view.getRowFilter(id), null, 0, 0);
+          BeeRowSet newRs = sys.getViewData(view.getName(),
+              ComparisonFilter.compareId(id), null, 0, 0);
 
           if (newRs.isEmpty()) {
             response.addError("Optimistic lock exception");
@@ -608,7 +610,8 @@ public class DataEditorBean {
       }
     }
     Assert.notEmpty(id);
-    Map<String, String> res = qs.getRow(ss.setWhere(view.getCondition(view.getRowFilter(id))));
+    Map<String, String> res = qs.getRow(ss
+        .setWhere(view.getCondition(ComparisonFilter.compareId(id))));
 
     if (BeeUtils.isEmpty(res)) {
       return false;

@@ -10,8 +10,8 @@ import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.add.AddEndEvent;
@@ -122,7 +122,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       addSouth(footer.asWidget(), footer.getHeight());
       setFooterId(footer.getWidgetId());
     }
-    
+
     if (hasData()) {
       BeeImage confirm = new BeeImage(Global.getImages().ok(), new BeeCommand() {
         @Override
@@ -137,21 +137,21 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
           getContent().finishNewRow(null);
         }
       });
-    
+
       Absolute panel = new Absolute();
       panel.add(confirm);
       panel.add(cancel);
-    
+
       StyleUtils.setLeft(confirm, 10);
       StyleUtils.setRight(cancel, 10);
       StyleUtils.makeAbsolute(confirm);
       StyleUtils.makeAbsolute(cancel);
-    
+
       addSouth(panel, 0);
       setCommandId(panel.getId());
       panel.setVisible(false);
     }
-    
+
     add(content.asWidget(), ScrollBars.BOTH);
 
     if (hasData()) {
@@ -165,7 +165,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   public int getCommandHeight() {
     return commandHeight;
   }
-  
+
   public Widget getCommandPanel() {
     if (BeeUtils.isEmpty(getCommandId())) {
       return null;
@@ -249,7 +249,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   public boolean isEnabled() {
     return enabled;
   }
-  
+
   public void onActiveRowChange(ActiveRowChangeEvent event) {
     if (event == null || event.getRowValue() == null || getRowMessage() == null) {
       return;
@@ -275,7 +275,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
     showNewRowCommands(false);
   }
-  
+
   public void onAddStart(AddStartEvent event) {
     if (hasHeader() && !BeeUtils.isEmpty(event.getCaption())) {
       getHeader().setEnabled(false);
@@ -287,7 +287,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       getFooter().asWidget().setVisible(false);
       setWidgetSize(getFooter().asWidget(), 0);
     }
-    
+
     showNewRowCommands(true);
   }
 
@@ -302,11 +302,11 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     this.enabled = enabled;
     DomUtils.enableChildren(this, enabled);
   }
-  
+
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
     for (Widget child : getChildren()) {
-      if (child instanceof View) {
+      if (child instanceof View && ((View) child).getViewPresenter() == null) {
         ((View) child).setViewPresenter(viewPresenter);
       }
     }
@@ -402,7 +402,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   private void setRowMessage(Evaluator rowMessage) {
     this.rowMessage = rowMessage;
   }
-  
+
   private void showNewRowCommands(boolean show) {
     Widget widget = getCommandPanel();
     if (widget != null) {

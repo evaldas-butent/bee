@@ -680,7 +680,7 @@ public class ProjectEventHandler {
         flt = Filter.and();
 
         for (Long userId : users) {
-          flt.add(ComparisonFilter.compareId(CrmConstants.COL_USER_ID, Operator.NE, userId));
+          flt.add(ComparisonFilter.compareId(Operator.NE, userId));
         }
       }
       Queries.getRowSet("Users", null, flt, null, new RowSetCallback() {

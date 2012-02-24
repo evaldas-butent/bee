@@ -415,12 +415,13 @@ public class QueryServiceBean {
     ResponseObject res = processSql(query.getQuery(), new SqlHandler<ResponseObject>() {
       @Override
       public ResponseObject processError(SQLException ex) {
-        return ResponseObject.error(ex);
+        return ResponseObject.error(ex).setResponse(-1);
       }
 
       @Override
       public ResponseObject processResultSet(ResultSet rs) throws SQLException {
-        return ResponseObject.error("Data modification query must not return a ResultSet");
+        return ResponseObject.error("Data modification query must not return a ResultSet")
+            .setResponse(-1);
       }
 
       @Override
@@ -430,7 +431,7 @@ public class QueryServiceBean {
     });
 
     if (res == null) {
-      res = ResponseObject.error("System error. Check server log for more details");
+      res = ResponseObject.error("System error. Check server log for more details").setResponse(-1);
     }
     return res;
   }
