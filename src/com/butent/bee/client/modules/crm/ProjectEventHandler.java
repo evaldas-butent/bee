@@ -19,8 +19,6 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.MultiSelector.SelectionCallback;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.IntCallback;
-import com.butent.bee.client.data.Queries.RowCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
@@ -28,15 +26,14 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.FlexTable.FlexCellFormatter;
 import com.butent.bee.client.layout.Absolute;
-import com.butent.bee.client.tree.HasTreeItems;
-import com.butent.bee.client.tree.Tree;
-import com.butent.bee.client.tree.TreeItem;
+import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.DataView;
+import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.EditFormEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeButton;
@@ -230,25 +227,6 @@ public class ProjectEventHandler {
       addComment(container, caption, value, required);
     }
 
-    public void addText(FlexTable parent, String caption, String value, boolean required) {
-      int row = parent.getRowCount();
-
-      BeeLabel lbl = new BeeLabel(caption);
-      if (required) {
-        lbl.setStyleName(StyleUtils.NAME_REQUIRED);
-      }
-      parent.setWidget(row, 0, lbl);
-      InputText text = new InputText();
-      text.setWidth("100%");
-      text.setValue(value);
-      parent.setWidget(row, 1, text);
-      dialogWidgets.put(TEXT, text);
-    }
-
-    public void addText(String caption, String value, boolean required) {
-      addText(container, caption, value, required);
-    }
-
     public void display() {
       center();
 
@@ -275,12 +253,12 @@ public class ProjectEventHandler {
     }
   }
 
-  private static class ProjectEditHandler extends AbstractFormCallback {
+  private static class ProjectEditHandler extends AbstractFormCallback
+      implements SelectionHandler<IsRow> {
     private static int counter = 0;
     private Map<String, Widget> formWidgets = Maps.newHashMap();
-
-    private final StageCollector stages = new StageCollector();
     private final UserCollector observers = new UserCollector();
+    private TreePresenter stageTree = null;
 
     @Override
     public void afterCreateWidget(String name, final Widget widget) {
@@ -295,11 +273,12 @@ public class ProjectEventHandler {
       } else if (BeeUtils.same(name, "Observers") && widget instanceof BeeListBox) {
         observers.setWidget((BeeListBox) widget);
 
-      } else if (BeeUtils.same(name, "Stages") && widget instanceof Tree) {
-        stages.setWidget((Tree) widget);
+      } else if (BeeUtils.same(name, "Stages") && widget instanceof TreeView) {
+        ((TreeView) widget).addSelectionHandler(this);
+        stageTree = ((TreeView) widget).getTreePresenter();
 
       } else if (BeeUtils.same(name, "StageDescription")) {
-        stages.setDescriptionWidget(widget);
+        setWidget(name, widget);
 
       } else if (widget instanceof HasClickHandlers) {
         setWidget(name, widget);
@@ -330,27 +309,6 @@ public class ProjectEventHandler {
             @Override
             public void onClick(ClickEvent event) {
               observers.removeUsers();
-            }
-          });
-        } else if (BeeUtils.same(name, CrmConstants.SVC_ADD_STAGE)) {
-          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent e) {
-              stages.addStage();
-            }
-          });
-        } else if (BeeUtils.same(name, CrmConstants.SVC_REMOVE_STAGE)) {
-          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent e) {
-              stages.removeStage();
-            }
-          });
-        } else if (BeeUtils.same(name, CrmConstants.SVC_EDIT_STAGE)) {
-          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent e) {
-              stages.editStage();
             }
           });
         }
@@ -384,8 +342,7 @@ public class ProjectEventHandler {
       Long user = BeeKeeper.getUser().getUserId();
 
       for (String name : new String[] {CrmConstants.SVC_ADD_OBSERVERS,
-          CrmConstants.SVC_REMOVE_OBSERVERS, CrmConstants.SVC_ADD_STAGE,
-          CrmConstants.SVC_REMOVE_STAGE, CrmConstants.SVC_EDIT_STAGE}) {
+          CrmConstants.SVC_REMOVE_OBSERVERS}) {
 
         Widget widget = getWidget(name);
         if (widget != null) {
@@ -408,10 +365,21 @@ public class ProjectEventHandler {
     }
 
     @Override
+    public void onSelection(SelectionEvent<IsRow> event) {
+      String text = "";
+
+      if (BeeUtils.allNotEmpty(event.getSelectedItem(), stageTree, stageTree.getDataColumns())) {
+        text = event.getSelectedItem()
+            .getString(DataUtils.getColumnIndex("Description", stageTree.getDataColumns()));
+      }
+      getWidget("StageDescription").getElement().setInnerText(text);
+    }
+
+    @Override
     public void onStartEdit(FormView form, IsRow row) {
       doEvent(ProjectEvent.VISITED, form);
       observers.requery(row.getId());
-      stages.requery(row.getId());
+      getWidget("StageDescription").getElement().setInnerText("");
     }
 
     private Widget getWidget(String name) {
@@ -420,251 +388,6 @@ public class ProjectEventHandler {
 
     private void setWidget(String name, Widget widget) {
       formWidgets.put(BeeUtils.normalize(name), widget);
-    }
-  }
-
-  private static class StageCollector {
-    private Long projectId;
-    private Tree widget;
-    private List<BeeColumn> stageColumns;
-    private Widget descriptionWidget;
-
-    private void addBranch(HasTreeItems parent, Long parentId,
-        Map<Long, List<Long>> hierarchy, Map<Long, IsRow> items, int nameIndex) {
-
-      List<Long> branch = hierarchy.get(parentId);
-
-      if (branch != null) {
-        for (Long leaf : branch) {
-          IsRow item = items.get(leaf);
-          TreeItem treeItem = new TreeItem(item.getString(nameIndex), item);
-          parent.addItem(treeItem);
-          addBranch(treeItem, item.getId(), hierarchy, items, nameIndex);
-        }
-      }
-    }
-
-    public void setDescriptionWidget(Widget descriptionWidget) {
-      this.descriptionWidget = descriptionWidget;
-    }
-
-    private void addStage() {
-      final ProjectDialog dialog = new ProjectDialog("Naujas etapas");
-      dialog.addText("Pavadinimas", "", true);
-      dialog.addComment("Aprašymas", "", false);
-      dialog.addAction("Sukurti",
-          new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent e) {
-              final String name = dialog.getText();
-
-              if (BeeUtils.isEmpty(name)) {
-                Global.showError("Įveskite pavadinimą");
-                return;
-              }
-              List<BeeColumn> columns = Lists.newArrayList();
-              List<String> values = Lists.newArrayList();
-
-              columns.add(new BeeColumn(ValueType.TEXT, CrmConstants.COL_NAME));
-              values.add(name);
-
-              String descr = dialog.getComment();
-
-              if (!BeeUtils.isEmpty(descr)) {
-                columns.add(new BeeColumn(ValueType.TEXT, "Description"));
-                values.add(descr);
-              }
-              columns.add(new BeeColumn(ValueType.LONG, CrmConstants.COL_PROJECT));
-              values.add(BeeUtils.toString(projectId));
-
-              final HasTreeItems owner;
-              TreeItem selected = widget.getSelectedItem();
-
-              if (selected != null) {
-                owner = selected;
-                columns.add(new BeeColumn(ValueType.LONG, CrmConstants.COL_PARENT));
-                values.add(BeeUtils.toString(((IsRow) selected.getUserObject()).getId()));
-              } else {
-                owner = widget;
-              }
-
-              Queries.insert(CrmConstants.TBL_PROJECT_STAGES, columns, values,
-                  new RowCallback() {
-                    @Override
-                    public void onFailure(String[] reason) {
-                      Global.showError((Object[]) reason);
-                    }
-
-                    @Override
-                    public void onSuccess(BeeRow result) {
-                      owner.addItem(new TreeItem(name, result));
-                      dialog.hide();
-                    }
-                  });
-            }
-          });
-      dialog.display();
-    }
-
-    private void editStage() {
-      final TreeItem selected = widget.getSelectedItem();
-
-      if (selected == null) {
-        return;
-      }
-      final IsRow item = (IsRow) selected.getUserObject();
-
-      final ProjectDialog dialog = new ProjectDialog("Etapo koregavimas");
-      final String oldName = item.getString(DataUtils.getColumnIndex(CrmConstants.COL_NAME,
-          stageColumns));
-      final String oldDescr = item.getString(DataUtils.getColumnIndex("Description", stageColumns));
-      dialog.addText("Pavadinimas", oldName, true);
-      dialog.addComment("Aprašymas", oldDescr, false);
-      dialog.addAction("Išsaugoti",
-          new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent e) {
-              final String name = dialog.getText();
-
-              if (BeeUtils.isEmpty(name)) {
-                Global.showError("Įveskite pavadinimą");
-                return;
-              }
-              List<BeeColumn> columns = Lists.newArrayList();
-              List<String> oldValues = Lists.newArrayList();
-              List<String> values = Lists.newArrayList();
-
-              if (!BeeUtils.equals(oldName, name)) {
-                columns.add(new BeeColumn(ValueType.TEXT, CrmConstants.COL_NAME));
-                oldValues.add(oldName);
-                values.add(name);
-              }
-              String descr = dialog.getComment();
-
-              if (!BeeUtils.equals(oldDescr, descr)) {
-                columns.add(new BeeColumn(ValueType.TEXT, "Description"));
-                oldValues.add(oldDescr);
-                values.add(descr);
-              }
-              if (columns.isEmpty()) {
-                Global.showError("Nėra pakeitimų");
-                return;
-              }
-              Queries.update(CrmConstants.TBL_PROJECT_STAGES, item.getId(), item.getVersion(),
-                  columns, oldValues, values,
-                  new RowCallback() {
-                    @Override
-                    public void onFailure(String[] reason) {
-                      Global.showError((Object[]) reason);
-                    }
-
-                    @Override
-                    public void onSuccess(BeeRow result) {
-                      selected.setHtml(result.getString(DataUtils.getColumnIndex(
-                          CrmConstants.COL_NAME, stageColumns)));
-                      selected.setUserObject(result);
-                      refreshDescription(result);
-                      dialog.hide();
-                    }
-                  });
-            }
-          });
-      dialog.display();
-    }
-
-    private void refreshDescription(IsRow item) {
-      String descr = "";
-
-      if (item != null) {
-        descr = item.getString(DataUtils.getColumnIndex("Description", stageColumns));
-      }
-      descriptionWidget.getElement().setInnerText(descr);
-    }
-
-    private void removeStage() {
-      TreeItem selected = widget.getSelectedItem();
-      if (selected == null) {
-        return;
-      }
-      if (selected.getChildCount() > 0) {
-        Global.showError("Negalima pašalinti etapo, susidedančio iš kitų etapų");
-        return;
-      }
-      final IsRow data = (IsRow) selected.getUserObject();
-
-      Global.confirm("Pašalinti etapą?",
-          new BeeCommand() {
-            @Override
-            public void execute() {
-              Queries.deleteRow(CrmConstants.TBL_PROJECT_STAGES, data.getId(), data.getVersion(),
-                  new IntCallback() {
-                    @Override
-                    public void onFailure(String[] reason) {
-                      Global.showError((Object[]) reason);
-                    }
-
-                    @Override
-                    public void onSuccess(Integer result) {
-                      requery(projectId);
-                    }
-                  });
-            }
-          });
-    }
-
-    private void requery(Long project) {
-      this.projectId = project;
-      widget.clear();
-      refreshDescription(null);
-
-      if (!BeeUtils.isEmpty(projectId)) {
-        Filter flt = ComparisonFilter.isEqual(CrmConstants.COL_PROJECT, new LongValue(projectId));
-
-        Queries.getRowSet(CrmConstants.TBL_PROJECT_STAGES, null, flt, null,
-            new RowSetCallback() {
-              @Override
-              public void onFailure(String[] reason) {
-                Global.showError((Object[]) reason);
-              }
-
-              @Override
-              public void onSuccess(BeeRowSet result) {
-                stageColumns = result.getColumns();
-
-                if (result.isEmpty()) {
-                  return;
-                }
-                int parentIndex = result.getColumnIndex(CrmConstants.COL_PARENT);
-                Map<Long, List<Long>> hierarchy = Maps.newHashMap();
-                Map<Long, IsRow> items = Maps.newHashMap();
-
-                for (IsRow row : result.getRows()) {
-                  Long parent = row.getLong(parentIndex);
-                  List<Long> childs = hierarchy.get(parent);
-
-                  if (childs == null) {
-                    childs = Lists.newArrayList();
-                    hierarchy.put(parent, childs);
-                  }
-                  childs.add(row.getId());
-                  items.put(row.getId(), row);
-                }
-                addBranch(widget, null, hierarchy, items,
-                    result.getColumnIndex(CrmConstants.COL_NAME));
-              }
-            });
-      }
-    }
-
-    private void setWidget(Tree widget) {
-      this.widget = widget;
-
-      widget.addSelectionHandler(new SelectionHandler<TreeItem>() {
-        @Override
-        public void onSelection(SelectionEvent<TreeItem> event) {
-          refreshDescription((IsRow) event.getSelectedItem().getUserObject());
-        }
-      });
     }
   }
 

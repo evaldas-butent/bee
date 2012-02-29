@@ -2,9 +2,8 @@ package com.butent.bee.client.presenter;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsDate;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -12,19 +11,25 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.utils.BeeCommand;
-import com.butent.bee.client.utils.EvalHelper;
-import com.butent.bee.client.utils.JsUtils;
+import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.TreeView;
+import com.butent.bee.client.view.form.FormImpl;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -34,89 +39,43 @@ import java.util.Map;
 
 public class TreePresenter implements Presenter {
 
-  private static class Evaluator {
-    private final JavaScriptObject interpreter;
-    private JavaScriptObject rowValues;
-    private List<? extends IsColumn> columns;
-
-    public Evaluator(Calculation calc, String itemName) {
-      JavaScriptObject jso = null;
-
-      if (calc != null) {
-        if (!BeeUtils.isEmpty(calc.getExpression())) {
-          jso = createInterpreter(calc.getExpression(), true);
-        } else if (!BeeUtils.isEmpty(calc.getFunction())) {
-          jso = createInterpreter(calc.getFunction(), false);
-        }
-      }
-      if (jso == null) {
-        jso = createInterpreter(
-            BeeUtils.isEmpty(itemName) ? "'ID=' + rowId" : "row." + itemName, true);
-      }
-      this.interpreter = jso;
-    }
-
-    public String evaluate(IsRow item) {
-      EvalHelper.toJso(columns, item, rowValues);
-      return doEval(interpreter, rowValues, item.getId(), JsDate.create(item.getVersion()));
-    }
-
-    public List<? extends IsColumn> getColumns() {
-      return columns;
-    }
-
-    public void setColumns(List<? extends IsColumn> columns) {
-      this.columns = columns;
-      this.rowValues = EvalHelper.createJso(columns);
-    }
-
-    private JavaScriptObject createInterpreter(String xpr, boolean isExpression) {
-      String body;
-
-      if (isExpression) {
-        body = "return " + xpr + ";";
-      } else {
-        body = xpr;
-      }
-      return JsUtils.createFunction("row, rowId, rowVersion", body);
-    }
-
-    private native String doEval(JavaScriptObject fnc, JavaScriptObject row, double rowId,
-        JsDate rowVersion) /*-{
-      try {
-        var result = fnc(row, rowId, rowVersion);
-        if (result == null) {
-          return result;
-        }
-        if (result.getTime) {
-          return String(result.getTime());
-        }
-        return String(result);
-      } catch (err) {
-        return err;
-      }
-    }-*/;
-  }
-
   private final TreeView treeView;
   private final String source;
   private final String parentName;
   private final String itemName;
-  private final Evaluator evaluator;
-  private final String editor;
-  private final String creator;
+  private final String relName;
+  private final Calculation calculation;
+  private List<BeeColumn> dataColumns = null;
+  private Evaluator evaluator = null;
+  private final Element editor;
+  private Long relId = null;
+  private FormView formView = null;
 
   public TreePresenter(TreeView view, String source, String parentName,
-      String itemName, Calculation calc, String editorForm, String creatorForm) {
+      String itemName, String relName, Calculation calc, Element form) {
+
     this.treeView = view;
     this.source = source;
-    this.evaluator = new Evaluator(calc, itemName);
     this.parentName = parentName;
     this.itemName = itemName;
-    this.editor = editorForm;
-    this.creator = BeeUtils.ifString(creatorForm, editorForm);
+    this.relName = relName;
+    this.editor = form;
 
-    requery();
+    String expr = BeeUtils.isEmpty(itemName) ? "'ID=' + rowId" : "row." + itemName;
+
+    if (calc == null) {
+      this.calculation = new Calculation(expr, null, null);
+    } else {
+      this.calculation = new Calculation(calc.hasExpressionOrFunction() ? calc.getExpression()
+          : expr, calc.getFunction(), calc.getLambda());
+    }
+    if (BeeUtils.isEmpty(relName)) {
+      requery();
+    }
+  }
+
+  public List<BeeColumn> getDataColumns() {
+    return dataColumns;
   }
 
   @Override
@@ -161,31 +120,35 @@ public class TreePresenter implements Presenter {
     getView().setViewPresenter(null);
   }
 
+  public void updateRelation(Long parentId) {
+    this.relId = parentId;
+    requery();
+  }
+
   private void addBranch(Long parentId, Map<Long, List<Long>> hierarchy, Map<Long, IsRow> items) {
     List<Long> branch = hierarchy.get(parentId);
 
     if (branch != null) {
       for (Long leaf : branch) {
         IsRow item = items.get(leaf);
-        getView().addItem(parentId, evaluator.evaluate(item), item);
+        getView().addItem(parentId, evaluate(item), item);
         addBranch(item.getId(), hierarchy, items);
       }
     }
   }
 
   private void addItem() {
-    if (!BeeUtils.isEmpty(creator)) {
-      BeeKeeper.getScreen().notifySevere("Creator form not implemented");
+    if (!BeeUtils.isEmpty(relName) && relId == null) {
       return;
-
-    } else if (!BeeUtils.isEmpty(itemName)) {
+    }
+    if (!BeeUtils.isEmpty(itemName)) {
       final Long parentId;
       String prompt = null;
       IsRow parent = getView().getSelectedItem();
 
       if (parent != null) {
         parentId = parent.getId();
-        prompt = evaluator.evaluate(parent);
+        prompt = evaluate(parent);
       } else {
         parentId = null;
       }
@@ -199,6 +162,10 @@ public class TreePresenter implements Presenter {
             columns.add(new BeeColumn(parentName));
             values.add(BeeUtils.toString(parentId));
           }
+          if (!BeeUtils.isEmpty(relName)) {
+            columns.add(new BeeColumn(relName));
+            values.add(BeeUtils.toString(relId));
+          }
           columns.add(new BeeColumn(itemName));
           values.add(value);
 
@@ -210,11 +177,16 @@ public class TreePresenter implements Presenter {
 
             @Override
             public void onSuccess(BeeRow result) {
-              getView().addItem(parentId, evaluator.evaluate(result), result);
+              getView().addItem(parentId, evaluate(result), result);
             }
           });
         }
       });
+
+    } else if (!BeeUtils.isEmpty(editor)) {
+      BeeKeeper.getScreen().notifySevere("Editor form not implemented");
+      return;
+
     } else {
       BeeKeeper.getScreen().notifySevere("Creator form or item name not specified");
       return;
@@ -222,8 +194,25 @@ public class TreePresenter implements Presenter {
   }
 
   private void editItem() {
+    if (!BeeUtils.isEmpty(relName) && relId == null) {
+      return;
+    }
     if (!BeeUtils.isEmpty(editor)) {
-      BeeKeeper.getScreen().notifySevere("Editor form not implemented");
+      if (getView().getSelectedItem() == null) {
+        return;
+      }
+      if (formView == null) {
+        formView = new FormImpl();
+        formView.create(new FormDescription(editor), getDataColumns(), null);
+      }
+      formView.updateRow(getView().getSelectedItem(), false);
+
+      DialogBox dialog = new DialogBox(formView.getCaption());
+      dialog.setAnimationEnabled(true);
+
+      dialog.setWidget(formView);
+
+      dialog.center();
       return;
 
     } else if (!BeeUtils.isEmpty(itemName)) {
@@ -231,7 +220,7 @@ public class TreePresenter implements Presenter {
       if (item == null) {
         return;
       }
-      int itemIndex = DataUtils.getColumnIndex(itemName, evaluator.getColumns());
+      int itemIndex = DataUtils.getColumnIndex(itemName, getDataColumns());
 
       if (BeeUtils.equals(itemIndex, BeeConst.UNDEF)) {
         BeeKeeper.getScreen().notifySevere("Item column not found", itemName);
@@ -252,7 +241,7 @@ public class TreePresenter implements Presenter {
 
                 @Override
                 public void onSuccess(BeeRow result) {
-                  getView().updateItem(evaluator.evaluate(result), result);
+                  getView().updateItem(evaluate(result), result);
                 }
               });
         }
@@ -263,12 +252,26 @@ public class TreePresenter implements Presenter {
     }
   }
 
+  private String evaluate(IsRow row) {
+    if (BeeUtils.allNotEmpty(evaluator, row)) {
+      evaluator.update(row);
+      return evaluator.evaluate();
+    }
+    return null;
+  }
+
   private TreeView getView() {
     return treeView;
   }
 
   private void requery() {
-    Queries.getRowSet(source, null, new RowSetCallback() {
+    Filter flt = null;
+
+    if (!BeeUtils.isEmpty(relName)) {
+      flt = ComparisonFilter.compareWithValue(relName, Operator.EQ,
+          new LongValue(relId == null ? BeeConst.UNDEF : relId));
+    }
+    Queries.getRowSet(source, null, flt, null, new RowSetCallback() {
       @Override
       public void onFailure(String[] reason) {
         BeeKeeper.getScreen().notifySevere(reason);
@@ -276,7 +279,10 @@ public class TreePresenter implements Presenter {
 
       @Override
       public void onSuccess(BeeRowSet result) {
-        evaluator.setColumns(result.getColumns());
+        if (evaluator == null) {
+          dataColumns = result.getColumns();
+          evaluator = Evaluator.create(calculation, itemName, getDataColumns());
+        }
         getView().removeItems();
 
         if (result.isEmpty()) {

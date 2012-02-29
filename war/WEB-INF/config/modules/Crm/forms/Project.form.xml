@@ -123,14 +123,22 @@
       <page>
         <text>Etapai</text>
         <FlowPanel class="flexBox-horizontal" style="&MARGIN_TOP;">
-          <FlowPanel style="&MARGIN_LEFT;">
-            <FlowPanel style="&ROW_STYLE;">
-              <Button name="AddStage" html="+" style="width: 2em;" />
-              <Button name="RemoveStage" html="-" style="width: 2em; &MARGIN_LEFT;" />
-              <Button name="EditStage" html=".." style="width: 2em; &MARGIN_LEFT;" />
-            </FlowPanel>
-            <Tree name="Stages" style="background-color: #f8f8f8;" />
-          </FlowPanel>
+          <ChildTree name="Stages" source="ProjectStages" parentColumn="Parent" relColumn="Project"
+                     itemColumn="Name" rootItem="Projekto etapai" style="background-color: #f8f8f8;">
+
+            <form name="Etapo koregavimas">
+              <FlexTable>
+                <row>
+                  <cell><Label html="Etapas" /></cell>
+                  <cell><InputText source="Name" /></cell>
+                </row>
+                <row>
+                  <cell><Label html="Aprašymas" /></cell>
+                  <cell><InputArea source="Description" /></cell>
+                </row>
+              </FlexTable>
+            </form>
+          </ChildTree>
 
           <FlowPanel class="flexible flexBox-vertical" style="&MARGIN_LEFT;">
             <FlowPanel style="&ROW_STYLE;">

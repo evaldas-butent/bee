@@ -40,13 +40,9 @@ public class CrmConstants {
 
   public static final String SVC_ADD_OBSERVERS = "AddObservers";
   public static final String SVC_REMOVE_OBSERVERS = "RemoveObservers";
-  public static final String SVC_ADD_STAGE = "AddStage";
-  public static final String SVC_REMOVE_STAGE = "RemoveStage";
-  public static final String SVC_EDIT_STAGE = "EditStage";
 
   public static final String TBL_TASK_USERS = "TaskUsers";
   public static final String TBL_PROJECT_USERS = "ProjectUsers";
-  public static final String TBL_PROJECT_STAGES = "ProjectStages";
 
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";

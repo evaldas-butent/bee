@@ -11,6 +11,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
@@ -90,7 +91,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     } else {
       this.rootItem = null;
     }
-    renderNoData();
+    showNoData();
   }
 
   @Override
@@ -105,7 +106,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     HasTreeItems parentItem = items.containsKey(parentId) ? items.get(parentId) : getRoot();
     parentItem.addItem(treeItem);
 
-    renderNoData();
+    showNoData();
   }
 
   @Override
@@ -120,6 +121,14 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       return null;
     }
     return (IsRow) selected.getUserObject();
+  }
+
+  @Override
+  public TreePresenter getTreePresenter() {
+    if (viewPresenter instanceof TreePresenter) {
+      return (TreePresenter) viewPresenter;
+    }
+    return null;
   }
 
   @Override
@@ -143,6 +152,19 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   }
 
   @Override
+  public void refresh(IsRow parentRow, Boolean parentEnabled) {
+    Long id = null;
+
+    if (parentRow != null) {
+      id = parentRow.getId();
+    }
+    if (getTreePresenter() != null) {
+      getTreePresenter().updateRelation(id);
+    }
+    setEnabled(parentEnabled);
+  }
+
+  @Override
   public void removeItem(IsRow item) {
     Assert.notNull(item);
     Assert.contains(items, item.getId());
@@ -152,7 +174,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     removeFromCache(treeItem);
     treeItem.remove();
 
-    renderNoData();
+    showNoData();
   }
 
   @Override
@@ -160,7 +182,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     getRoot().removeItems();
     items.clear();
 
-    renderNoData();
+    showNoData();
   }
 
   @Override
@@ -203,7 +225,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     items.remove(((IsRow) item.getUserObject()).getId());
   }
 
-  private void renderNoData() {
+  private void showNoData() {
     noData.setVisible(BeeUtils.isEmpty(getTree().getItemCount()));
   }
 }

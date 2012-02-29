@@ -21,6 +21,7 @@ import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
@@ -37,6 +38,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
@@ -335,24 +337,8 @@ public class CommonEventHandler {
           final IsRow category = grd.getSelectedCategory();
 
           if (category != null) {
-            Queries.getRowSet(CommonsConstants.TBL_CATEGORIES,
-                Lists.newArrayList(CommonsConstants.COL_NAME),
-                ComparisonFilter.compareId(category.getId()), null,
-                new RowSetCallback() {
-                  @Override
-                  public void onFailure(String[] reason) {
-                    Global.showError((Object[]) reason);
-                  }
-
-                  @Override
-                  public void onSuccess(BeeRowSet result) {
-                    if (result.getNumberOfRows() != 1) {
-                      return;
-                    }
-                    categories.updateCategories(ImmutableMap.of(category.getId(),
-                        result.getString(0, CommonsConstants.COL_NAME)));
-                  }
-                });
+            categories.updateCategories(ImmutableMap.of(category.getId(),
+                grd.getCategoryValue(category, CommonsConstants.COL_NAME)));
           }
         }
       }
@@ -365,6 +351,7 @@ public class CommonEventHandler {
     private static final String FILTER_KEY = "f1";
     private final boolean services;
     private IsRow selectedCategory = null;
+    private TreePresenter categoryTree = null;
 
     private ItemGridHandler(boolean showServices) {
       this.services = showServices;
@@ -374,6 +361,7 @@ public class CommonEventHandler {
     public void afterCreateWidget(String name, Widget widget) {
       if (widget instanceof TreeView && BeeUtils.same(name, "Categories")) {
         ((TreeView) widget).addSelectionHandler(this);
+        categoryTree = ((TreeView) widget).getTreePresenter();
       }
     }
 
@@ -422,6 +410,13 @@ public class CommonEventHandler {
 
     public boolean showServices() {
       return services;
+    }
+
+    private String getCategoryValue(IsRow category, String colName) {
+      if (BeeUtils.allNotEmpty(category, categoryTree, categoryTree.getDataColumns())) {
+        return category.getString(DataUtils.getColumnIndex(colName, categoryTree.getDataColumns()));
+      }
+      return null;
     }
 
     private Filter getFilter(Long category) {

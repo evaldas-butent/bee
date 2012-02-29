@@ -202,7 +202,9 @@ public enum FormWidget {
   VERTICAL_PANEL("VerticalPanel", EnumSet.of(Type.CELL_VECTOR)),
   VIDEO("Video", EnumSet.of(Type.DISPLAY)),
   VOLUME_SLIDER("VolumeSlider", EnumSet.of(Type.EDITABLE)),
-  TREE("Tree", EnumSet.of(Type.DISPLAY));
+  TREE("Tree", EnumSet.of(Type.FOCUSABLE)),
+  DATA_TREE("DataTree", EnumSet.of(Type.FOCUSABLE)),
+  CHILD_TREE("ChildTree", EnumSet.of(Type.IS_CHILD, Type.FOCUSABLE));
 
   private class HeaderAndContent {
     private final String headerTag;
@@ -394,7 +396,6 @@ public enum FormWidget {
   private static final String TAG_PAGE = "page";
   private static final String TAG_OPTION = "option";
   private static final String TAG_TREE_ITEM = "TreeItem";
-  private static final String TAG_TREE_SOURCE = "TreeSource";
 
   private static final String TAG_UP_FACE = "upFace";
   private static final String TAG_DOWN_FACE = "downFace";
@@ -999,12 +1000,19 @@ public enum FormWidget {
         break;
 
       case TREE:
-        if (children.size() > 0 && BeeUtils.same(children.get(0).getTagName(), TAG_TREE_SOURCE)) {
-          widget = new TreeContainer(BeeUtils.toBoolean(attributes.get("hideActions")),
-              attributes.get("rootItem"));
-        } else {
-          widget = new Tree();
-        }
+        widget = new Tree();
+        break;
+
+      case DATA_TREE:
+      case CHILD_TREE:
+        widget = new TreeContainer(BeeUtils.toBoolean(attributes.get("hideActions")),
+            attributes.get("rootItem"));
+
+        ((TreeView) widget).setViewPresenter(new TreePresenter((TreeView) widget,
+            attributes.get(ATTR_SOURCE), attributes.get("parentColumn"),
+            attributes.get("itemColumn"), attributes.get("relColumn"),
+            XmlUtils.getCalculation(description, TAG_CALC),
+            XmlUtils.getFirstChildElement(description, "form")));
         break;
     }
 
@@ -1807,16 +1815,8 @@ public enum FormWidget {
             TAG_DOWN_HOVERING_FACE, TAG_UP_DISABLED_FACE, TAG_DOWN_DISABLED_FACE)) {
       setFace((CustomButton) parent, childTag, child);
 
-    } else if (this == TREE) {
-      if (parent instanceof Tree) {
-        processTree((Tree) parent, child);
-
-      } else if (parent instanceof TreeView) {
-        ((TreeView) parent).setViewPresenter(new TreePresenter((TreeView) parent,
-            child.getAttribute(ATTR_SOURCE), child.getAttribute("parentColumn"),
-            child.getAttribute("itemColumn"), XmlUtils.getCalculation(child, TAG_CALC),
-            child.getAttribute("editForm"), child.getAttribute("newItemForm")));
-      }
+    } else if (this == TREE && parent instanceof Tree) {
+      processTree((Tree) parent, child);
     }
   }
 

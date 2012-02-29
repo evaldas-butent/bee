@@ -4,7 +4,6 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
   
   name="CategoryTree" caption="Kategorijų medis">
-  <Tree name="Categories">
-    <TreeSource source="CategoryTree" parentColumn="Parent" itemColumn="Name" />
-  </Tree>
+
+  <DataTree name="Categories" source="CategoryTree" parentColumn="Parent" itemColumn="Name" />
 </BeeForm>  

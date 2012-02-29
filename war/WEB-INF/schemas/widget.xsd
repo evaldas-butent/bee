@@ -674,40 +674,54 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="Tree" substitutionGroup="bee:widget">
+  <xs:element name="DataTree" type="bee:dataTree" substitutionGroup="bee:widget" />
+
+  <xs:element name="ChildTree" substitutionGroup="bee:widget">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="bee:focusableWidget">
-          <xs:choice>
-            <xs:element name="TreeSource">
-              <xs:complexType>
-                <xs:sequence>
-                  <xs:element name="calc" type="bee:calcType" minOccurs="0" maxOccurs="1" />
-                </xs:sequence>
-                <xs:attribute name="source" type="bee:tableNameType" use="required" />
-                <xs:attribute name="parentColumn" type="bee:fieldNameType" use="required" />
-                <xs:attribute name="itemColumn" type="bee:fieldNameType" />
-                <xs:attribute name="editForm" type="bee:nameType" />
-                <xs:attribute name="newItemForm" type="bee:nameType" />
-              </xs:complexType>
-            </xs:element>
-            <xs:sequence>
-              <xs:element name="TreeItem" type="bee:treeItem" minOccurs="0" maxOccurs="unbounded" />
-            </xs:sequence>
-          </xs:choice>
-          <xs:attribute name="hideActions" type="xs:boolean" />
-          <xs:attribute name="rootItem" type="xs:string" />
+        <xs:extension base="bee:dataTree">
+          <xs:attribute name="relColumn" type="bee:nameType" use="required" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
 
-  <xs:complexType name="treeItem">
-    <xs:sequence>
-      <xs:element name="TreeItem" type="bee:treeItem" minOccurs="0" maxOccurs="unbounded" />
-    </xs:sequence>
-    <xs:attribute name="html" type="xs:normalizedString" use="required" />
+  <xs:complexType name="dataTree">
+    <xs:complexContent>
+      <xs:extension base="bee:focusableWidget">
+        <xs:sequence>
+          <xs:element name="calc" type="bee:calcType" minOccurs="0" maxOccurs="1" />
+          <xs:element name="form" type="bee:hasOneChild" minOccurs="0" maxOccurs="1" />
+        </xs:sequence>
+        <xs:attribute name="source" type="bee:tableNameType" use="required" />
+        <xs:attribute name="parentColumn" type="bee:fieldNameType" use="required" />
+        <xs:attribute name="itemColumn" type="bee:fieldNameType" />
+        <xs:attribute name="hideActions" type="xs:boolean" />
+        <xs:attribute name="rootItem" type="xs:string" />
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
+  
+  <xs:element name="Tree" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:focusableWidget">
+          <xs:sequence>
+            <xs:element ref="bee:TreeItem" minOccurs="0" maxOccurs="unbounded" />
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="TreeItem">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="bee:TreeItem" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attribute name="html" type="xs:normalizedString" use="required" />
+    </xs:complexType>
+  </xs:element>
 
   <xs:element name="Custom" type="bee:hasName" substitutionGroup="bee:widget" />
   <xs:element name="CustomChild" type="bee:hasName" substitutionGroup="bee:widget" />

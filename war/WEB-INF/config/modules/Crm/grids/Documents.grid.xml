@@ -6,13 +6,12 @@
   newRowForm="NewDocument" editForm="Document">
   
   <west size="200">
-    <Tree name="Tree" rootItem="Kategorijos" hideActions="true">
-      <TreeSource source="DocumentTree" parentColumn="Parent">
-        <calc>
-          <expression>row.Name + (row.DocumentCount != 0 ? ' [' + row.DocumentCount + ']' : '')</expression>
-        </calc>
-      </TreeSource>
-    </Tree>
+    <DataTree name="Tree" source="DocumentTree" parentColumn="Parent"
+              rootItem="Kategorijos" hideActions="true">
+      <calc>
+        <expression>row.Name + (row.DocumentCount != 0 ? ' [' + row.DocumentCount + ']' : '')</expression>
+      </calc>
+    </DataTree>
   </west>
   
   <columns>

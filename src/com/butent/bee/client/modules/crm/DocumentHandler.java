@@ -6,12 +6,11 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.presenter.GridFormPresenter;
+import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.utils.FileUtils.FileInfo;
@@ -24,7 +23,7 @@ import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -121,27 +120,12 @@ public class DocumentHandler {
         GridCallback gcb = ((GridFormPresenter) form.getViewPresenter()).getGridCallback();
 
         if (gcb instanceof DocumentGridHandler) {
-          final IsRow category = ((DocumentGridHandler) gcb).getSelectedCategory();
+          IsRow category = ((DocumentGridHandler) gcb).getSelectedCategory();
 
           if (category != null) {
-            Queries.getRowSet(CATEGORY_VIEW_NAME, Lists.newArrayList(CrmConstants.COL_NAME),
-                ComparisonFilter.compareId(category.getId()), null,
-                new RowSetCallback() {
-                  @Override
-                  public void onFailure(String[] reason) {
-                    Global.showError((Object[]) reason);
-                  }
-
-                  @Override
-                  public void onSuccess(BeeRowSet result) {
-                    if (result.getNumberOfRows() != 1) {
-                      return;
-                    }
-                    newRow.setValue(form.getDataIndex(CrmConstants.COL_CATEGORY), category.getId());
-                    newRow.setValue(form.getDataIndex(CrmConstants.COL_CATEGORY_NAME),
-                        result.getString(0, CrmConstants.COL_NAME));
-                  }
-                });
+            newRow.setValue(form.getDataIndex(CrmConstants.COL_CATEGORY), category.getId());
+            newRow.setValue(form.getDataIndex(CrmConstants.COL_CATEGORY_NAME),
+                ((DocumentGridHandler) gcb).getCategoryValue(category, CrmConstants.COL_NAME));
           }
         }
       }
@@ -203,11 +187,13 @@ public class DocumentHandler {
 
     private static final String FILTER_KEY = "f1";
     private IsRow selectedCategory = null;
+    private TreePresenter categoryTree = null;
 
     @Override
     public void afterCreateWidget(String name, Widget widget) {
       if (widget instanceof TreeView && BeeUtils.same(name, "Tree")) {
         ((TreeView) widget).addSelectionHandler(this);
+        categoryTree = ((TreeView) widget).getTreePresenter();
       }
     }
 
@@ -229,6 +215,13 @@ public class DocumentHandler {
       }
     }
 
+    private String getCategoryValue(IsRow category, String colName) {
+      if (BeeUtils.allNotEmpty(category, categoryTree, categoryTree.getDataColumns())) {
+        return category.getString(DataUtils.getColumnIndex(colName, categoryTree.getDataColumns()));
+      }
+      return null;
+    }
+
     private Filter getFilter(Long category) {
       if (category == null) {
         return null;
@@ -246,7 +239,6 @@ public class DocumentHandler {
     }
   }
 
-  private static final String CATEGORY_VIEW_NAME = "DocumentTree";
   private static final String DOCUMENT_VIEW_NAME = "Documents";
   private static final String FILE_VIEW_NAME = "Files";
 
