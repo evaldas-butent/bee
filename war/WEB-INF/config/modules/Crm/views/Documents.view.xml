@@ -23,7 +23,7 @@
       <BeeSimpleColumn name="CategoryName" expression="Name" />
     </BeeSimpleJoin>
     <BeeSimpleColumn expression="Place" />
-    <BeeSimpleJoin joinType="LEFT" expression="Type">
+    <BeeSimpleJoin joinType="LEFT" expression="Place">
       <BeeSimpleColumn name="PlaceName" expression="Name" />
     </BeeSimpleJoin>
     <BeeSimpleColumn expression="Project" />

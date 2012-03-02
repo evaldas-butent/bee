@@ -896,16 +896,19 @@ body, select {
 
 .bee-InputPanel {
   position: relative;
-  min-height: 100px;
+  min-height: 50px;
 }
 .bee-InputString {
   margin: 1ex 0;
   width: 256px;
 }
+.bee-InputError {
+  margin-top: 1ex;
+}  
 .bee-InputCommandGroup {
-  position: absolute;
-  right: 5px;
-  bottom: 3px;
+  position: relative;
+  text-align: right;
+  margin-top: 1ex;
  }
 .bee-InputCommand {
   font-family: Tahoma;
@@ -1054,4 +1057,15 @@ body, select {
   font-weight: bold;
   padding: 0px 4px;
   outline: none;
+}
+
+.bee-TreeView {
+  overflow: auto;
+  background-color: #f8f8f8;
+}
+.bee-TreeView-actions {
+  text-align: right;
+}
+.bee-TreeView-rootItem {
+  font-weight: bold;
 }

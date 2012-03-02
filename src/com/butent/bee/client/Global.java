@@ -2,14 +2,15 @@ package com.butent.bee.client;
 
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.Event;
 
 import com.butent.bee.client.data.DataInfoProvider;
 import com.butent.bee.client.data.DataInfoProvider.DataInfoCallback;
 import com.butent.bee.client.dialog.InputBoxes;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
@@ -211,7 +212,7 @@ public class Global implements Module {
   public static void inputString(String caption, StringCallback callback) {
     inputString(caption, null, callback);
   }
-  
+
   public static void inputString(String caption, String prompt, StringCallback callback) {
     inputString(caption, prompt, callback, null);
   }
@@ -248,6 +249,15 @@ public class Global implements Module {
 
   public static void inputVars(Stage bst, String cap, Variable... variables) {
     inpBoxen.inputVars(bst, cap, variables);
+  }
+
+  public static void inputWidget(String caption, Widget input, InputCallback callback) {
+    inpBoxen.inputWidget(caption, input, callback, BeeConst.UNDEF, "OK", "Cancel", null);
+  }
+
+  public static void inputWidget(String caption, Widget input, InputCallback callback,
+      int timeout, String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
+    inpBoxen.inputWidget(caption, input, callback, timeout, confirmHtml, cancelHtml, initializer);
   }
 
   public static boolean isDebug() {

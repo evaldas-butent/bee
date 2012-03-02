@@ -680,7 +680,7 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="bee:dataTree">
-          <xs:attribute name="relColumn" type="bee:nameType" use="required" />
+          <xs:attribute name="relationColumn" type="bee:nameType" use="required" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -695,7 +695,7 @@
         </xs:sequence>
         <xs:attribute name="source" type="bee:tableNameType" use="required" />
         <xs:attribute name="parentColumn" type="bee:fieldNameType" use="required" />
-        <xs:attribute name="itemColumn" type="bee:fieldNameType" />
+        <xs:attribute name="orderColumn" type="bee:fieldNameType" />
         <xs:attribute name="hideActions" type="xs:boolean" />
         <xs:attribute name="rootItem" type="xs:string" />
       </xs:extension>

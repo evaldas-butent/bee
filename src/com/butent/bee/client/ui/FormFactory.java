@@ -27,8 +27,8 @@ import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeButton;
-import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -56,7 +56,7 @@ import java.util.Map;
 public class FormFactory {
 
   public interface FormCallback extends WidgetCallback {
-    
+
     void afterAction(Action action, FormPresenter presenter);
 
     void afterRefresh(FormView form, IsRow row);
@@ -66,13 +66,13 @@ public class FormFactory {
     void beforeRefresh(FormView form, IsRow row);
 
     FormCallback getInstance();
-    
+
     boolean onLoad(Element formElement);
-    
+
     boolean onPrepareForInsert(FormView form, DataView dataView, IsRow row);
-    
+
     void onShow(Presenter presenter);
-    
+
     void onStartEdit(FormView form, IsRow row);
 
     void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow);
@@ -80,21 +80,21 @@ public class FormFactory {
 
   public interface FormViewCallback extends Callback<FormView, String[]> {
   }
-  
+
   public interface WidgetDescriptionCallback extends Callback<WidgetDescription, String[]> {
   }
 
   private static final String ATTR_TYPE = "type";
-  
+
   private static final String TAG_ITEM = "item";
 
   private static final Map<String, FormCallback> formCallbacks = Maps.newHashMap();
-  
+
   public static Widget createForm(FormDescription formDescription, List<BeeColumn> columns,
       WidgetDescriptionCallback widgetDescriptionCallback, FormCallback formCallback) {
     Assert.notNull(formDescription);
     Assert.notNull(widgetDescriptionCallback);
-    
+
     return createWidget(formDescription.getFormElement(), columns, widgetDescriptionCallback,
         formCallback, "createForm:");
   }
@@ -103,25 +103,25 @@ public class FormFactory {
       final FormCallback formCallback, final FormViewCallback viewCallback) {
     Assert.notEmpty(name);
     Assert.notNull(viewCallback);
-    
+
     getForm(name, new ResponseCallback() {
       public void onResponse(ResponseObject response) {
         if (response.hasResponse(String.class)) {
           FormDescription fd = getFormDescription((String) response.getResponse(), formCallback);
           if (fd == null) {
-            viewCallback.onFailure(new String[]{"form", name, "decription not created"});
+            viewCallback.onFailure(new String[] {"form", name, "decription not created"});
           } else {
             FormView view = new FormImpl();
-            view.create(fd, columns, formCallback);
+            view.create(fd, columns, formCallback, true);
             viewCallback.onSuccess(view);
           }
         } else {
-          viewCallback.onFailure(new String[]{"get form", name, "response not a string"});
+          viewCallback.onFailure(new String[] {"get form", name, "response not a string"});
         }
       }
     });
   }
-  
+
   public static void createFormView(String name, List<BeeColumn> columns,
       FormViewCallback viewCallback) {
     createFormView(name, columns, getFormCallback(name), viewCallback);
@@ -166,7 +166,7 @@ public class FormFactory {
     }
     return widget;
   }
-  
+
   public static EditorDescription getEditorDescription(Element element) {
     Assert.notNull(element);
 
@@ -267,11 +267,11 @@ public class FormFactory {
 
     inputName.setFocus(true);
   }
-  
+
   public static void openForm(String name) {
     openForm(name, getFormCallback(name));
   }
-  
+
   public static void openForm(String name, final FormCallback formCallback) {
     getForm(name, new ResponseCallback() {
       public void onResponse(ResponseObject response) {
@@ -305,7 +305,7 @@ public class FormFactory {
       }
     });
   }
-  
+
   public static void registerFormCallback(String formName, FormCallback callback) {
     Assert.notEmpty(formName);
     formCallbacks.put(BeeUtils.normalize(formName), callback);
@@ -314,10 +314,10 @@ public class FormFactory {
   private static void getForm(String name, ResponseCallback responseCallback) {
     Assert.notEmpty(name);
     Assert.notNull(responseCallback);
-    
+
     BeeKeeper.getRpc().sendText(Service.GET_FORM, BeeUtils.trim(name), responseCallback);
   }
-  
+
   private static FormCallback getFormCallback(String formName) {
     Assert.notEmpty(formName);
     FormCallback callback = formCallbacks.get(BeeUtils.normalize(formName));
@@ -342,14 +342,14 @@ public class FormFactory {
       BeeKeeper.getLog().severe("xml form element not found");
       return null;
     }
-    
+
     if (callback != null && !callback.onLoad(formElement)) {
       return null;
     }
 
     return new FormDescription(formElement);
   }
-  
+
   private static void getInitialRowSet(final String viewName, final int rowCount,
       final FormDescription formDescription, final FormCallback callback) {
     int limit = formDescription.getAsyncThreshold();

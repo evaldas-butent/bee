@@ -203,10 +203,8 @@ public class UiHolderBean {
     }
     int cnt = 0;
     Collection<File> roots = Lists.newArrayList();
-    List<String> modules = Lists.newArrayList((String) null);
-    modules.addAll(moduleBean.getModules());
 
-    for (String moduleName : modules) {
+    for (String moduleName : moduleBean.getModules()) {
       roots.clear();
       String modulePath = moduleBean.getResourcePath(moduleName, obj.getPath());
 
@@ -241,7 +239,7 @@ public class UiHolderBean {
               isOk = initForm(moduleName, objectName);
               break;
             case MENU:
-              // isOk = initView(moduleName, objectName);
+              // isOk = initMenu(moduleName, objectName);
               break;
           }
           if (isOk) {

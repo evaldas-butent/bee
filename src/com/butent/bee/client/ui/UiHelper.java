@@ -4,10 +4,13 @@ import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
+import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
@@ -40,7 +43,7 @@ public class UiHelper {
   private static final String ALIGN_START = "start";
   private static final String ALIGN_CENTER = "center";
   private static final String ALIGN_END = "end";
-  
+
   private static final Set<HorizontalAlignmentConstant> HORIZONTAL_ALIGNMENT_CONSTANTS =
       Sets.newHashSet(HasHorizontalAlignment.ALIGN_LEFT, HasHorizontalAlignment.ALIGN_CENTER,
           HasHorizontalAlignment.ALIGN_RIGHT, HasHorizontalAlignment.ALIGN_JUSTIFY,
@@ -48,9 +51,9 @@ public class UiHelper {
           HasHorizontalAlignment.ALIGN_DEFAULT);
 
   private static final Set<VerticalAlignmentConstant> VERTICAL_ALIGNMENT_CONSTANTS =
-    Sets.newHashSet(HasVerticalAlignment.ALIGN_TOP, HasVerticalAlignment.ALIGN_MIDDLE,
-        HasVerticalAlignment.ALIGN_BOTTOM);
-  
+      Sets.newHashSet(HasVerticalAlignment.ALIGN_TOP, HasVerticalAlignment.ALIGN_MIDDLE,
+          HasVerticalAlignment.ALIGN_BOTTOM);
+
   public static void doEditorAction(Editor widget, String value, char charCode,
       EditorAction action) {
     Assert.notNull(widget);
@@ -61,7 +64,7 @@ public class UiHelper {
     } else {
       acceptChar = Character.isLetterOrDigit(charCode);
     }
-    String charValue = acceptChar ? BeeUtils.toString(charCode) : BeeConst.STRING_EMPTY;  
+    String charValue = acceptChar ? BeeUtils.toString(charCode) : BeeConst.STRING_EMPTY;
 
     String v;
 
@@ -111,6 +114,23 @@ public class UiHelper {
     }
   }
 
+  public static boolean focus(Widget target) {
+    if (target instanceof HasOneWidget) {
+      return focus(((HasOneWidget) target).getWidget());
+
+    } else if (target instanceof HasWidgets) {
+      for (Widget child : (HasWidgets) target) {
+        if (focus(child)) {
+          return true;
+        }
+      }
+    } else if (target instanceof Focusable) {
+      ((Focusable) target).setFocus(true);
+      return true;
+    }
+    return false;
+  }
+
   public static HorizontalAlignmentConstant getDefaultHorizontalAlignment(ValueType type) {
     if (type == null) {
       return null;
@@ -149,7 +169,7 @@ public class UiHelper {
     }
     return null;
   }
-  
+
   public static boolean isSave(NativeEvent event) {
     if (event == null) {
       return false;
@@ -204,7 +224,7 @@ public class UiHelper {
     }
     return align;
   }
-  
+
   public static void registerSave(UIObject obj) {
     Assert.notNull(obj);
     obj.sinkEvents(Event.ONKEYDOWN);
@@ -227,7 +247,7 @@ public class UiHelper {
       obj.setHorizontalAlignment(align);
     }
   }
-  
+
   public static void setNumberBounds(HasNumberBounds obj, String min, String max) {
     Assert.notNull(obj);
     if (BeeUtils.isDouble(min)) {
@@ -247,26 +267,26 @@ public class UiHelper {
       obj.setVerticalAlignment(align);
     }
   }
-  
+
   public static void updateForm(String widgetId, String columnId, String value) {
     Assert.notEmpty(widgetId);
     Assert.notEmpty(columnId);
-    
+
     Widget widget = DomUtils.getWidget(widgetId);
     if (widget == null) {
       BeeKeeper.getLog().severe("update form:", widgetId, "widget not found");
       return;
     }
-    
+
     FormView form = getForm(widget);
     if (form == null) {
       BeeKeeper.getLog().severe("update form:", widgetId, columnId, value, "form not found");
       return;
     }
-    
+
     form.updateCell(columnId, value);
   }
-  
+
   public static boolean validate(String oldValue, String newValue, Evaluator validation,
       IsRow row, int colIndex, ValueType type, boolean nullable, String minValue, String maxValue,
       NotificationListener notificationListener) {
@@ -286,7 +306,7 @@ public class UiHelper {
     if (errorMessage == null && !nullable && BeeUtils.isEmpty(newValue)) {
       errorMessage = "Value required";
     }
-    
+
     if (errorMessage == null && (!BeeUtils.isEmpty(minValue) || !BeeUtils.isEmpty(maxValue))) {
       Value value = Value.parseValue(type, newValue, false);
 
@@ -309,7 +329,7 @@ public class UiHelper {
       return false;
     }
   }
-  
+
   private UiHelper() {
   }
 }

@@ -123,18 +123,20 @@
       <page>
         <text>Etapai</text>
         <FlowPanel class="flexBox-horizontal" style="&MARGIN_TOP;">
-          <ChildTree name="Stages" source="ProjectStages" parentColumn="Parent" relColumn="Project"
-                     itemColumn="Name" rootItem="Projekto etapai" style="background-color: #f8f8f8;">
-
+          <ChildTree name="Stages" source="ProjectStages" parentColumn="Parent" 
+                     relationColumn="Project" rootItem="Projekto etapai">
+           <calc>
+             <expression>row.Name</expression>                    
+           </calc>
             <form name="Etapo koregavimas">
               <FlexTable>
                 <row>
-                  <cell><Label html="Etapas" /></cell>
-                  <cell><InputText source="Name" /></cell>
+                  <cell><Label html="Etapas" horizontalAlignment="right" class="bee-required" /></cell>
+                  <cell><InputText source="Name" style="width: 25em" required="true" /></cell>
                 </row>
                 <row>
-                  <cell><Label html="Aprašymas" /></cell>
-                  <cell><InputArea source="Description" /></cell>
+                  <cell><Label html="Aprašymas" horizontalAlignment="right" /></cell>
+                  <cell><InputArea source="Description" style="width: 25em; height: 10ex" /></cell>
                 </row>
               </FlexTable>
             </form>

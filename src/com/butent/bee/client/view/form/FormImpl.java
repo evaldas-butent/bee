@@ -3,6 +3,7 @@ package com.butent.bee.client.view.form;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
@@ -86,7 +87,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         onFailure(new String[] {"widget type is null", id});
         return;
       }
-      
+
       if (result.isDisablable() && !BeeUtils.isEmpty(id)) {
         getDisablableWidgets().add(id);
       }
@@ -235,12 +236,12 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       return widgetId;
     }
   }
-  
+
   private static final String STYLE_FORM = "bee-Form";
   private static final String STYLE_DISABLED = "bee-Form-disabled";
 
   private static final String NEW_ROW_CAPTION = "Create New";
-  
+
   private Presenter viewPresenter = null;
 
   private Widget rootWidget = null;
@@ -265,7 +266,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private JavaScriptObject rowJso = null;
 
   private boolean readOnly = false;
-  
+
   private String caption = null;
 
   private FormCallback formCallback = null;
@@ -281,6 +282,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public FormImpl() {
     super();
+  }
+
+  public FormImpl(Position position) {
+    super(position);
   }
 
   public HandlerRegistration addActiveRowChangeHandler(ActiveRowChangeEvent.Handler handler) {
@@ -302,7 +307,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public HandlerRegistration addEditFormHandler(EditFormEvent.Handler handler) {
     return addHandler(handler, EditFormEvent.getType());
   }
-  
+
   public HandlerRegistration addLoadingStateChangeHandler(LoadingStateChangeEvent.Handler handler) {
     return addHandler(handler, LoadingStateChangeEvent.TYPE);
   }
@@ -332,7 +337,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public void create(FormDescription formDescription, List<BeeColumn> dataCols,
-      FormCallback callback) {
+      FormCallback callback, boolean addStyle) {
     Assert.notNull(formDescription);
     setDataColumns(dataCols);
     setHasData(!BeeUtils.isEmpty(dataCols));
@@ -353,9 +358,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     if (root == null) {
       return;
     }
-
-    StyleUtils.makeAbsolute(root);
-    root.addStyleName(STYLE_FORM);
+    if (addStyle) {
+      StyleUtils.makeAbsolute(root);
+      root.addStyleName(STYLE_FORM);
+    }
     setRootWidget(root);
 
     add(root);
@@ -668,14 +674,14 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       return;
     }
     this.enabled = enabled;
-    
+
     for (String id : getDisablableWidgets()) {
       Widget widget = getWidget(id);
       if (widget instanceof HasEnabled && enabled != ((HasEnabled) widget).isEnabled()) {
         ((HasEnabled) widget).setEnabled(enabled);
       }
     }
-    
+
     getRootWidget().setStyleName(STYLE_DISABLED, !enabled);
   }
 
@@ -687,9 +693,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     if (start == getPageStart()) {
       return;
     }
-    
+
     this.pageStart = start;
-    
+
     if (fireScopeChange) {
       fireScopeChange();
     }
@@ -723,7 +729,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     } else {
       setRow(values.get(0));
     }
-    
+
     if (refresh) {
       refresh(true);
     }
@@ -869,7 +875,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
     return ok;
   }
-  
+
   private IsRow createEmptyRow() {
     String[] arr = new String[getDataColumns().size()];
     return new BeeRow(0, arr);
@@ -935,7 +941,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private Set<WidgetDescription> getChildWidgets() {
     return childWidgets;
   }
-  
+
   private CreationCallback getCreationCallback() {
     return creationCallback;
   }
@@ -1140,12 +1146,12 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     if (refreshChildren) {
       refreshChildWidgets(getRow());
     }
-  
+
     if (getFormCallback() != null) {
       getFormCallback().afterRefresh(this, getRow());
     }
   }
-  
+
   private void setAdding(boolean adding) {
     this.adding = adding;
   }

@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.SimplePanel;
 
@@ -87,6 +88,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
     if (!BeeUtils.isEmpty(root)) {
       this.rootItem = new TreeItem(root);
+      DOM.getFirstChild(this.rootItem.getElement()).addClassName(STYLE_NAME + "-rootItem");
       getTree().addItem(this.rootItem);
     } else {
       this.rootItem = null;
@@ -95,7 +97,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   }
 
   @Override
-  public void addItem(Long parentId, String text, IsRow item) {
+  public void addItem(Long parentId, String text, IsRow item, boolean focus) {
     Assert.notNull(item);
     long id = item.getId();
     Assert.state(!items.containsKey(id), "Item already exists in a tree: " + id);
@@ -106,6 +108,13 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     HasTreeItems parentItem = items.containsKey(parentId) ? items.get(parentId) : getRoot();
     parentItem.addItem(treeItem);
 
+    if (focus) {
+      getTree().setSelectedItem(treeItem);
+      getTree().ensureSelectedItemVisible();
+
+    } else if (rootItem != null && !rootItem.getState()) {
+      rootItem.setState(true);
+    }
     showNoData();
   }
 
@@ -171,6 +180,9 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
     TreeItem treeItem = items.get(item.getId());
 
+    if (treeItem.isSelected()) {
+      getTree().setSelectedItem(treeItem.getParentItem());
+    }
     removeFromCache(treeItem);
     treeItem.remove();
 
@@ -182,6 +194,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     getRoot().removeItems();
     items.clear();
 
+    getTree().setSelectedItem(rootItem);
     showNoData();
   }
 
@@ -208,6 +221,10 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
     treeItem.setHtml(text);
     treeItem.setUserObject(item);
+
+    if (treeItem.isSelected()) {
+      getTree().setSelectedItem(treeItem);
+    }
   }
 
   private HasTreeItems getRoot() {

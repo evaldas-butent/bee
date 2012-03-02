@@ -8,7 +8,7 @@ import com.butent.bee.shared.data.IsRow;
 
 public interface TreeView extends View, HasParent, HasSelectionHandlers<IsRow> {
 
-  void addItem(Long parentId, String text, IsRow item);
+  void addItem(Long parentId, String text, IsRow item, boolean focus);
 
   IsRow getSelectedItem();
 

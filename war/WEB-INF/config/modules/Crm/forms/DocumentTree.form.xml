@@ -5,5 +5,15 @@
   
   name="DocumentTree" caption="Dokumentų medis">
 
-  <DataTree name="Tree" source="DocumentTree" parentColumn="Parent" itemColumn="Name" />
+  <DataTree name="Tree" source="DocumentTree" parentColumn="Parent" orderColumn="Order">
+    <calc>
+      <expression>row.Name</expression>
+    </calc>
+    <form name="Kategorijos koregavimas">
+      <FlowPanel>
+        <Label html="Kategorija" class="bee-required" />
+        <InputText source="Name" style="width: 20em" />
+      </FlowPanel>
+    </form>
+  </DataTree>
 </BeeForm>  

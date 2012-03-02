@@ -26,10 +26,11 @@ public interface FormView extends DataView, HasDataTable,
 
   void applyOptions(String options);
 
-  void create(FormDescription formDescription, List<BeeColumn> dataColumns, FormCallback callback);
+  void create(FormDescription formDescription, List<BeeColumn> dataColumns, FormCallback callback,
+      boolean addStyle);
 
   RowInfo getActiveRowInfo();
-  
+
   String getCaption();
 
   List<BeeColumn> getDataColumns();
@@ -51,7 +52,7 @@ public interface FormView extends DataView, HasDataTable,
   void prepareForInsert();
 
   void refreshCellContent(String columnSource);
-  
+
   void setRow(IsRow row);
 
   void showChildren(boolean show);

@@ -1010,7 +1010,7 @@ public enum FormWidget {
 
         ((TreeView) widget).setViewPresenter(new TreePresenter((TreeView) widget,
             attributes.get(ATTR_SOURCE), attributes.get("parentColumn"),
-            attributes.get("itemColumn"), attributes.get("relColumn"),
+            attributes.get("orderColumn"), attributes.get("relationColumn"),
             XmlUtils.getCalculation(description, TAG_CALC),
             XmlUtils.getFirstChildElement(description, "form")));
         break;

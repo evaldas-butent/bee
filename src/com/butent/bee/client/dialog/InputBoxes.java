@@ -13,6 +13,7 @@ import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FileUpload;
+import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.ListBox;
@@ -26,6 +27,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
@@ -464,6 +466,157 @@ public class InputBoxes {
 
     if (fw != null) {
       fw.setFocus(true);
+    }
+  }
+
+  public void inputWidget(String caption, Widget input, final InputCallback callback,
+      final int timeout, String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
+    Assert.notNull(input);
+    Assert.notNull(callback);
+
+    final Holder<State> state = new Holder<State>(State.OPEN);
+
+    final DialogBox dialog = new DialogBox();
+    if (!BeeUtils.isEmpty(caption)) {
+      dialog.setText(caption.trim());
+    }
+
+    final Timer timer = (timeout > 0) ? new Timer() {
+      @Override
+      public void run() {
+        state.setValue(State.EXPIRED);
+        dialog.hide();
+      }
+    } : null;
+
+    Flow panel = new Flow();
+    panel.addStyleName(STYLE_INPUT_PANEL);
+
+    final BeeLabel error = new BeeLabel();
+    error.addStyleName(STYLE_INPUT_ERROR);
+    error.addStyleName(StyleUtils.NAME_ERROR);
+
+    FocusPanel fp = new FocusPanel(input);
+
+    fp.addKeyDownHandler(new KeyDownHandler() {
+      @Override
+      public void onKeyDown(KeyDownEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+          EventUtils.eatEvent(event);
+          state.setValue(State.CANCELED);
+          dialog.hide();
+          return;
+
+        } else if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+          String message = callback.getErrorMessage();
+          if (BeeUtils.isEmpty(message)) {
+            EventUtils.eatEvent(event);
+            state.setValue(State.CONFIRMED);
+            dialog.hide();
+            return;
+          } else {
+            error.setText(message);
+          }
+        }
+        if (timer != null) {
+          timer.schedule(timeout);
+        }
+      }
+    });
+
+    if (initializer != null) {
+      initializer.initialize(WIDGET_INPUT, input);
+    }
+    panel.add(fp);
+
+    if (initializer != null) {
+      initializer.initialize(WIDGET_ERROR, error);
+    }
+    panel.add(error);
+
+    if (!BeeUtils.allEmpty(confirmHtml, cancelHtml)) {
+      Flow commandGroup = new Flow();
+      commandGroup.addStyleName(STYLE_INPUT_COMMAND_GROUP);
+
+      if (!BeeUtils.isEmpty(confirmHtml)) {
+        BeeButton confirm = new BeeButton(confirmHtml);
+        confirm.addStyleName(STYLE_INPUT_COMMAND);
+        confirm.addStyleName(STYLE_INPUT_CONFIRM);
+
+        confirm.addClickHandler(new ClickHandler() {
+          public void onClick(ClickEvent event) {
+            String message = callback.getErrorMessage();
+            if (BeeUtils.isEmpty(message)) {
+              state.setValue(State.CONFIRMED);
+              dialog.hide();
+            } else {
+              error.setText(message);
+            }
+          }
+        });
+
+        if (initializer != null) {
+          initializer.initialize(WIDGET_CONFIRM, confirm);
+        }
+        commandGroup.add(confirm);
+      }
+
+      if (!BeeUtils.isEmpty(cancelHtml)) {
+        BeeButton cancel = new BeeButton(cancelHtml);
+        cancel.addStyleName(STYLE_INPUT_COMMAND);
+        cancel.addStyleName(STYLE_INPUT_CANCEL);
+
+        cancel.addClickHandler(new ClickHandler() {
+          public void onClick(ClickEvent event) {
+            state.setValue(State.CANCELED);
+            dialog.hide();
+          }
+        });
+
+        if (initializer != null) {
+          initializer.initialize(WIDGET_CANCEL, cancel);
+        }
+        commandGroup.add(cancel);
+      }
+
+      if (initializer != null) {
+        initializer.initialize(WIDGET_COMMAND_GROUP, commandGroup);
+      }
+      panel.add(commandGroup);
+    }
+
+    if (initializer != null) {
+      initializer.initialize(WIDGET_PANEL, panel);
+    }
+
+    dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+      public void onClose(CloseEvent<PopupPanel> event) {
+        if (timer != null) {
+          timer.cancel();
+        }
+
+        switch (state.getValue()) {
+          case CONFIRMED:
+            callback.onSuccess();
+            break;
+          case EXPIRED:
+            callback.onTimeout();
+            break;
+          default:
+            callback.onCancel();
+        }
+      }
+    });
+
+    dialog.setAnimationEnabled(true);
+
+    dialog.setWidget(panel);
+    dialog.center();
+
+    UiHelper.focus(input);
+
+    if (timer != null) {
+      timer.schedule(timeout);
     }
   }
 }
