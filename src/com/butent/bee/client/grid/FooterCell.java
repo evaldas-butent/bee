@@ -1,5 +1,6 @@
 package com.butent.bee.client.grid;
 
+import com.google.common.collect.Sets;
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.core.client.GWT;
@@ -16,30 +17,50 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
-/**
- * Implements footer cells rendering and behavior management.
- */
+import java.util.Collection;
+import java.util.Set;
 
 public class FooterCell extends AbstractCell<String> {
-
-  /**
-   * Specifies footer cell's templates for safeHtml usage.
-   */
 
   public interface Template extends SafeHtmlTemplates {
     @Template("<input type=\"search\" value=\"{0}\" tabindex=\"-1\" class=\"bee-FooterCell\"></input>")
     SafeHtml input(String value);
   }
+  
+  private static final Set<String> requiredEvents = Sets.newHashSet(EventUtils.EVENT_TYPE_FOCUS,
+      EventUtils.EVENT_TYPE_BLUR);
 
-  private static Template template;
+  private static final Set<String> defaultEvents = Sets.newHashSet(EventUtils.EVENT_TYPE_KEY_DOWN);
+  private static Template template = null;
+
+  private static Set<String> prepareEvents(Collection<String> consumedEvents) {
+    Set<String> events = Sets.newHashSet(requiredEvents);
+    
+    if (consumedEvents == null || consumedEvents.size() == 0) {
+      events.addAll(defaultEvents);
+    } else {
+      events.addAll(consumedEvents);
+    }
+    
+    return events;
+  }
+
+  private String oldValue = null;
+  private String newValue = null;
 
   private boolean hasFocus = false;
-  private String oldValue = null;
 
-  public FooterCell() {
-    super(EventUtils.EVENT_TYPE_FOCUS, EventUtils.EVENT_TYPE_BLUR, EventUtils.EVENT_TYPE_CHANGE,
-        EventUtils.EVENT_TYPE_KEY_DOWN, EventUtils.EVENT_TYPE_KEY_UP);
+  public FooterCell(Collection<String> consumedEvents) {
+    super(prepareEvents(consumedEvents));
     init();
+  }
+
+  public String getNewValue() {
+    return newValue;
+  }
+
+  public String getOldValue() {
+    return oldValue;
   }
 
   @Override
@@ -51,53 +72,53 @@ public class FooterCell extends AbstractCell<String> {
   public void onBrowserEvent(Context context, Element parent, String value, NativeEvent event,
       ValueUpdater<String> valueUpdater) {
     EventTarget target = event.getEventTarget();
+    String type = event.getType();
+
     InputElement input;
     if (EventUtils.isInputElement(target)) {
       input = InputElement.as(Element.as(target));
     } else {
       input = DomUtils.getInputElement(parent);
     }
+    if (input == null) {
+      return;
+    }
 
-    String type = event.getType();
-
+    String v = getInputValue(input);
+    setNewValue(v);
+    
     if (EventUtils.isFocus(type)) {
       setHasFocus(true);
-      setOldValue(getInputValue(input));
+      setOldValue(v);
+
     } else if (EventUtils.isBlur(type)) {
       setHasFocus(false);
 
-    } else if (EventUtils.isChange(type)
-        || EventUtils.isKeyDown(type) && event.getKeyCode() == KeyCodes.KEY_ENTER) {
-      String newValue = getInputValue(input);
-      if (!BeeUtils.equalsTrim(getOldValue(), newValue) && valueUpdater != null) {
-        if (EventUtils.isKeyDown(type)) {
-          EventUtils.eatEvent(event);
+    } else if (valueUpdater != null && getConsumedEvents().contains(type)) {
+      if (EventUtils.isChange(type)) {
+        if (!BeeUtils.equalsTrim(getOldValue(), v)) {
+          setOldValue(v);
+          valueUpdater.update(v);
         }
-        setOldValue(newValue);
-        valueUpdater.update(newValue);
+      } else if (EventUtils.isKeyEvent(type) && event.getKeyCode() == KeyCodes.KEY_ENTER) {
+        EventUtils.eatEvent(event);
+        setOldValue(v);
+        valueUpdater.update(v);
       }
     }
   }
 
   @Override
   public void render(Context context, String value, SafeHtmlBuilder sb) {
-    if (value != null) {
-      sb.append(template.input(value));
-    } else {
-      sb.appendHtmlConstant("<input type=\"search\" tabindex=\"-1\" class=\"bee-FooterCell\"></input>");
-    }
+    sb.append(template.input(BeeUtils.trim(getNewValue())));
   }
-
+  
   private String getInputValue(InputElement input) {
     if (input == null) {
       return null;
     } else {
-      return input.getValue();
+      return BeeUtils.trim(input.getValue());
     }
-  }
-
-  private String getOldValue() {
-    return oldValue;
   }
 
   private boolean hasFocus() {
@@ -113,7 +134,11 @@ public class FooterCell extends AbstractCell<String> {
   private void setHasFocus(boolean hasFocus) {
     this.hasFocus = hasFocus;
   }
-  
+
+  private void setNewValue(String newValue) {
+    this.newValue = newValue;
+  }
+
   private void setOldValue(String oldValue) {
     this.oldValue = oldValue;
   }

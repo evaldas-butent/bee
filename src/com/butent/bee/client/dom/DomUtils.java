@@ -89,10 +89,12 @@ public class DomUtils {
   public static final String TAG_METER = "meter";
   public static final String TAG_OPTION = "option";
   public static final String TAG_PROGRESS = "progress";
+  public static final String TAG_SELECT = "select";
   public static final String TAG_SPAN = "span";
   public static final String TAG_SVG = "svg";
   public static final String TAG_TABLE = "table";
   public static final String TAG_TD = "td";
+  public static final String TAG_TEXT_AREA = "textarea";
   public static final String TAG_TH = "th";
   public static final String TAG_VIDEO = "video";
 
@@ -578,24 +580,46 @@ public class DomUtils {
     }
     return checkBoxOffsetWidth;
   }
+  
+  public static Widget getChild(Widget root, String id) {
+    Assert.notNull(root);
+    Assert.notEmpty(id);
+    
+    if (root.isAttached()) {
+      return getPhysicalChild(root, id);
+    } else {
+      return getLogicalChild(root, id);
+    }
+  }
 
-  public static Widget getChild(HasWidgets parent, String id) {
-    if (parent == null || BeeUtils.isEmpty(id)) {
+  public static Widget getChildByElement(Widget root, Element elem) {
+    if (root == null || elem == null) {
       return null;
     }
 
-    for (Widget child : parent) {
-      if (idEquals(child, id)) {
-        return child;
-      }
-      if (child instanceof HasWidgets) {
-        Widget grandchild = getChild((HasWidgets) child, id);
-        if (grandchild != null) {
-          return grandchild;
-        }
+    if (root.getElement() == elem) {
+      return root;
+    }
+    if (!root.getElement().isOrHasChild(elem)) {
+      return null;
+    }
+    if (root instanceof HasOneWidget) {
+      return getChildByElement(((HasOneWidget) root).getWidget(), elem);
+    }
+    if (!(root instanceof HasWidgets)) {
+      return root;
+    }
+
+    Widget ret = null;
+    Widget found;
+    for (Widget child : (HasWidgets) root) {
+      found = getChildByElement(child, elem);
+      if (found != null) {
+        ret = found;
+        break;
       }
     }
-    return null;
+    return ret;
   }
 
   public static Element getChildById(Element parent, String id) {
@@ -614,7 +638,7 @@ public class DomUtils {
     return null;
   }
   
-  public static int getChildOffsetHeight(HasWidgets parent, String id) {
+  public static int getChildOffsetHeight(Widget parent, String id) {
     Widget child = getChild(parent, id);
     if (child == null) {
       return BeeConst.UNDEF;
@@ -623,7 +647,7 @@ public class DomUtils {
     }
   }
 
-  public static int getChildOffsetWidth(HasWidgets parent, String id) {
+  public static int getChildOffsetWidth(Widget parent, String id) {
     Widget child = getChild(parent, id);
     if (child == null) {
       return BeeConst.UNDEF;
@@ -632,11 +656,23 @@ public class DomUtils {
     }
   }
   
+  public static Widget getChildQuietly(Widget root, String id) {
+    if (root == null || BeeUtils.isEmpty(id)) {
+      return null;
+    }
+
+    if (root.isAttached()) {
+      return getChildByElement(root, DOM.getElementById(id));
+    } else {
+      return getLogicalChild(root, id);
+    }
+  }
+ 
   public static NodeList<Element> getChildren(Element parent) {
     Assert.notNull(parent);
     return parent.getElementsByTagName(ALL_TAGS);
   }
- 
+
   public static List<Property> getChildrenInfo(Widget w) {
     Assert.notNull(w);
     List<Property> lst = new ArrayList<Property>();
@@ -676,11 +712,11 @@ public class DomUtils {
   public static String getDataRow(Element elem) {
     return elem.getAttribute(ATTRIBUTE_DATA_ROW);
   }
-
+  
   public static String getDataRow(UIObject obj) {
     return getAttribute(obj, ATTRIBUTE_DATA_ROW);
   }
-  
+
   public static Direction getDirection(String s) {
     Assert.notEmpty(s);
     Direction dir = null;
@@ -742,7 +778,7 @@ public class DomUtils {
   public static native NodeList<Element> getElementsByName(String name) /*-{
     return $doc.getElementsByName(name);
   }-*/;
-
+  
   public static List<Widget> getFocusableChildren(Widget parent) {
     List<Widget> result = Lists.newArrayList();
     if (parent == null) {
@@ -760,7 +796,7 @@ public class DomUtils {
     }
     return result;
   }
-  
+
   public static HeadElement getHead() {
     NodeList<Element> nodes = Document.get().getElementsByTagName(TAG_HEAD);
     if (nodes != null && nodes.getLength() > 0) {
@@ -768,12 +804,12 @@ public class DomUtils {
     }
     return null;
   }
-
+  
   public static String getHtml(String id) {
     Element elem = getElement(id);
     return elem.getInnerHTML();
   }
-  
+
   public static String getId(UIObject obj) {
     Assert.notNull(obj);
     return obj.getElement().getId();
@@ -830,10 +866,38 @@ public class DomUtils {
     return input;
   }
 
+  public static Widget getLogicalChild(Widget root, String id) {
+    if (root == null || BeeUtils.isEmpty(id)) {
+      return null;
+    }
+
+    if (idEquals(root, id)) {
+      return root;
+    }
+
+    if (root instanceof HasOneWidget) {
+      return getLogicalChild(((HasOneWidget) root).getWidget(), id);
+    }
+    if (!(root instanceof HasWidgets)) {
+      return null;
+    }
+
+    Widget ret = null;
+    Widget found;
+    for (Widget child : (HasWidgets) root) {
+      found = getLogicalChild(child, id);
+      if (found != null) {
+        ret = found;
+        break;
+      }
+    }
+    return ret;
+  }
+
   public static native String getNamespaceUri(Node nd) /*-{
     return nd.namespaceURI;
   }-*/;
-
+  
   public static native JsArray<ElementAttribute> getNativeAttributes(Element el) /*-{
     return el.attributes;
   }-*/;
@@ -858,7 +922,7 @@ public class DomUtils {
 
     return lst;
   }
-  
+
   public static native String getOuterHtml(Element elem) /*-{
     if (elem == undefined || elem == null) {
       return "";
@@ -886,7 +950,7 @@ public class DomUtils {
     Assert.notNull(widget.getParent(), "Widget is orphan");
     return widget.getParent().getElement().getClientWidth();
   }
-
+  
   public static String getParentId(Element elem, boolean find) {
     Assert.notNull(elem);
 
@@ -912,6 +976,11 @@ public class DomUtils {
     return lst;
   }
   
+  public static Widget getPhysicalChild(Widget root, String id) {
+    Assert.notNull(root);
+    return getChildByElement(root, getElement(id));
+  }
+
   public static int getRelativeLeft(Element parent, Element child) {
     Assert.notNull(parent);
     Assert.notNull(child);
@@ -951,7 +1020,7 @@ public class DomUtils {
     }
     return top;
   }
-  
+
   public static int getRowSpan(Element elem) {
     if (isTableCellElement(elem)) {
       return elem.getPropertyInt(ATTRIBUTE_ROW_SPAN);
@@ -996,7 +1065,7 @@ public class DomUtils {
   public static String getStage(Widget w) {
     return getAttribute(w, ATTRIBUTE_STAGE);
   }
-
+  
   public static int getTabIndex(Element el) {
     Assert.notNull(el);
     return el.getTabIndex();
@@ -1011,7 +1080,7 @@ public class DomUtils {
     Element elem = getElement(id);
     return elem.getInnerText();
   }
-  
+
   public static int getTextBoxClientHeight() {
     if (textBoxClientHeight <= 0) {
       calculateTextBoxSize();
@@ -1087,7 +1156,7 @@ public class DomUtils {
     Assert.notNull(elem);
     return elem.getPropertyInt(ATTRIBUTE_VALUE);
   }
-
+  
   public static int getValueInt(String id) {
     Element elem = getElement(id);
 
@@ -1119,42 +1188,7 @@ public class DomUtils {
   }
 
   public static Widget getWidget(String id) {
-    return getWidget(BeeKeeper.getScreen().getScreenPanel(), id);
-  }
-  
-  public static Widget getWidget(Widget root, Element elem) {
-    if (root == null || elem == null) {
-      return null;
-    }
-
-    if (root.getElement() == elem) {
-      return root;
-    }
-    if (!root.getElement().isOrHasChild(elem)) {
-      return null;
-    }
-    if (root instanceof HasOneWidget) {
-      return getWidget(((HasOneWidget) root).getWidget(), elem);
-    }
-    if (!(root instanceof HasWidgets)) {
-      return root;
-    }
-
-    Widget ret = null;
-    Widget found;
-    for (Widget child : (HasWidgets) root) {
-      found = getWidget(child, elem);
-      if (found != null) {
-        ret = found;
-        break;
-      }
-    }
-    return ret;
-  }
-
-  public static Widget getWidget(Widget root, String id) {
-    Assert.notNull(root);
-    return getWidget(root, getElement(id));
+    return getPhysicalChild(BeeKeeper.getScreen().getScreenPanel(), id);
   }
 
   public static int getWidgetCount(HasWidgets container) {
@@ -1184,17 +1218,6 @@ public class DomUtils {
         "Attached", w.isAttached());
 
     return lst;
-  }
-
-  public static Widget getWidgetQuietly(Widget root, String id) {
-    if (root == null || BeeUtils.isEmpty(id)) {
-      return null;
-    }
-    Element el = DOM.getElementById(id);
-    if (el == null) {
-      return null;
-    }
-    return getWidget(root, el);
   }
 
   public static boolean idEquals(Element el, String id) {

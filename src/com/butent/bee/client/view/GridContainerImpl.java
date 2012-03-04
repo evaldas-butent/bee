@@ -509,7 +509,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
 
     ScrollBars scrollBars = XmlUtils.getAttributeScrollBars(root, FormWidget.ATTR_SCROLL_BARS,
-        ScrollBars.NONE);
+        ScrollBars.BOTH);
     Integer splSize = XmlUtils.getAttributeInteger(root, FormWidget.ATTR_SPLITTER_SIZE);
 
     Component precedes = BeeUtils.getConstant(Component.class, root.getAttribute(ATTR_PRECEDES));

@@ -62,6 +62,8 @@ public interface GridCallback extends WidgetCallback {
   BeeRowSet getInitialRowSet();
   
   GridCallback getInstance();
+
+  String getRowCaption(IsRow row, boolean edit);
   
   boolean onClose(GridPresenter presenter);
   

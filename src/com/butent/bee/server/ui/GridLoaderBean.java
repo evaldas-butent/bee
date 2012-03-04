@@ -87,6 +87,7 @@ public class GridLoaderBean {
 
   private static final String ATTR_HAS_HEADERS = "hasHeaders";
   private static final String ATTR_HAS_FOOTERS = "hasFooters";
+  private static final String ATTR_FOOTER_EVENTS = "footerEvents";
 
   private static final String ATTR_CACHING = "caching";
   private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
@@ -107,6 +108,7 @@ public class GridLoaderBean {
   private static final String ATTR_EDIT_SAVE = "editSave";
   private static final String ATTR_EDIT_SHOW_ID = "editShowId";
   private static final String ATTR_EDIT_IN_PLACE = "editInPlace";
+  private static final String ATTR_EDIT_NEW_ROW = "editNewRow";
 
   private static final String ATTR_WIDTH = "width";
   private static final String ATTR_MIN_WIDTH = "minWidth";
@@ -598,6 +600,11 @@ public class GridLoaderBean {
     if (hasFooters != null) {
       dst.setHasFooters(hasFooters);
     }
+    String footerEvents = src.getAttribute(ATTR_FOOTER_EVENTS);
+    if (!BeeUtils.isEmpty(footerEvents)) {
+      dst.setFooterEvents(footerEvents);
+    }
+    
     Boolean showColumnWidths = XmlUtils.getAttributeBoolean(src, ATTR_SHOW_COLUMN_WIDTHS);
     if (showColumnWidths != null) {
       dst.setShowColumnWidths(showColumnWidths);
@@ -675,6 +682,10 @@ public class GridLoaderBean {
     String editInPlace = src.getAttribute(ATTR_EDIT_IN_PLACE);
     if (!BeeUtils.isEmpty(editInPlace)) {
       dst.setEditInPlace(editInPlace.trim());
+    }
+    Boolean editNewRow = XmlUtils.getAttributeBoolean(src, ATTR_EDIT_NEW_ROW);
+    if (editNewRow != null) {
+      dst.setEditNewRow(editNewRow);
     }
 
     NodeList cssNodes = src.getElementsByTagName(TAG_CSS);

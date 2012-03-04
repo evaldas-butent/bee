@@ -22,36 +22,21 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasHTML;
 import com.google.gwt.user.client.ui.IsWidget;
-import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.HasId;
 
-/**
- * Enables using a pop up window with several possible options for a user.
- */
-
-public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml {
-
-  /**
-   * Extends {@code HasHTML, HasSafeHtml, Is Widget}, sets requirements for captions.
-   */
+public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
 
   public interface Caption extends HasHTML, HasSafeHtml, IsWidget {
   }
-
-  /**
-   * Implements caption element in user dialog interface components.
-   */
 
   public static class CaptionImpl extends Html implements Caption {
     public CaptionImpl() {
@@ -86,11 +71,12 @@ public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml
   private final Vertical layout = new Vertical();
   private final Caption caption;
 
+  private final int clientLeft;
+  private final int clientTop;
+
   private boolean dragging;
   private int dragStartX, dragStartY;
   private int windowWidth;
-  private int clientLeft;
-  private int clientTop;
 
   private HandlerRegistration resizeHandlerRegistration;
 
@@ -125,9 +111,6 @@ public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml
     close.addStyleName(STYLE_CLOSE);
     this.container.add(close);
 
-    DomUtils.createId(this, getIdPrefix());
-    setStyleName(STYLE_CONTAINER);
-
     windowWidth = Window.getClientWidth();
     clientLeft = Document.get().getBodyOffsetLeft();
     clientTop = Document.get().getBodyOffsetTop();
@@ -154,10 +137,7 @@ public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml
     return caption.getHTML();
   }
 
-  public String getId() {
-    return DomUtils.getId(this);
-  }
-
+  @Override
   public String getIdPrefix() {
     return "dialog";
   }
@@ -167,12 +147,12 @@ public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml
   }
 
   @Override
-  public void hide() {
+  public void hide(boolean autoClosed) {
     if (resizeHandlerRegistration != null) {
       resizeHandlerRegistration.removeHandler();
       resizeHandlerRegistration = null;
     }
-    super.hide();
+    super.hide(autoClosed);
   }
 
   @Override
@@ -194,10 +174,6 @@ public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml
 
   public void setHTML(String html) {
     caption.setHTML(SafeHtmlUtils.fromTrustedString(html));
-  }
-
-  public void setId(String id) {
-    DomUtils.setId(this, id);
   }
 
   public void setText(String text) {
@@ -248,6 +224,11 @@ public class DialogBox extends PopupPanel implements HasId, HasHTML, HasSafeHtml
   protected void endDragging() {
     dragging = false;
     DOM.releaseCapture(getElement());
+  }
+
+  @Override
+  protected String getDefaultStyleName() {
+    return STYLE_CONTAINER;
   }
 
   @Override

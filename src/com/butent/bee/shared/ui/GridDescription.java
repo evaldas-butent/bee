@@ -36,10 +36,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     NAME, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HAS_HEADERS, HAS_FOOTERS,
     CACHING, ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE,
     READONLY, NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_CAPTION,
-    EDIT_FORM, EDIT_MODE, EDIT_SAVE, EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_IN_PLACE,
+    EDIT_FORM, EDIT_MODE, EDIT_SAVE, EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_IN_PLACE, EDIT_NEW_ROW,
     ENABLED_ACTIONS, DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER, ROW_STYLES, ROW_MESSAGE,
     ROW_EDITABLE, ROW_VALIDATION, SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
-    COLUMNS, WIDGETS
+    COLUMNS, WIDGETS, FOOTER_EVENTS
   }
 
   public static GridDescription restore(String s) {
@@ -63,6 +63,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private Boolean hasHeaders = null;
   private Boolean hasFooters = null;
+  private String footerEvents = null;
 
   private Boolean caching = null;
 
@@ -84,6 +85,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Calculation editMessage = null;
   private Boolean editShowId = null;
   private String editInPlace = null;
+  private Boolean editNewRow = null;
   
   private Map<String, String> styleSheets = null;
 
@@ -254,6 +256,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_IN_PLACE:
           setEditInPlace(value);
           break;
+        case EDIT_NEW_ROW:
+          setEditNewRow(BeeUtils.toBooleanOrNull(value));
+          break;
         case INITIAL_ROW_SET_SIZE:
           setInitialRowSetSize(BeeUtils.toIntOrNull(value));
           break;
@@ -318,6 +323,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
             }
           }
           break;
+        
+        case FOOTER_EVENTS:
+          setFooterEvents(value);
+          break;
       }
     }
   }
@@ -366,6 +375,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return editMode;
   }
 
+  public Boolean getEditNewRow() {
+    return editNewRow;
+  }
+
   public Boolean getEditSave() {
     return editSave;
   }
@@ -384,6 +397,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public GridComponentDescription getFooter() {
     return footer;
+  }
+
+  public String getFooterEvents() {
+    return footerEvents;
   }
 
   public GridComponentDescription getHeader() {
@@ -407,6 +424,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Order", getOrder(),
         "Has Headers", hasHeaders(),
         "Has Footers", hasFooters(),
+        "Footer Events", getFooterEvents(),
         "Caching", getCaching(),
         "Async Threshold", getAsyncThreshold(),
         "Paging Threshold", getPagingThreshold(),
@@ -421,6 +439,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Edit Save", getEditSave(),
         "Edit Show Id", getEditShowId(),
         "Edit In Place", getEditInPlace(),
+        "Edit New Row", getEditNewRow(),
         "Enabled Actions", getEnabledActions(),
         "Disabled Actions", getDisabledActions(),
         "Show Column Widths", showColumnWidths(),
@@ -560,7 +579,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public String getVersionName() {
     return versionName;
   }
-
+  
   public String getViewName() {
     return viewName;
   }
@@ -574,7 +593,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     }
     return result;
   }
-  
+
   public List<String> getWidgets() {
     return widgets;
   }
@@ -704,6 +723,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_IN_PLACE:
           arr[i++] = getEditInPlace();
           break;
+        case EDIT_NEW_ROW:
+          arr[i++] = getEditNewRow();
+          break;
         case INITIAL_ROW_SET_SIZE:
           arr[i++] = getInitialRowSetSize();
           break;
@@ -733,6 +755,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case WIDGETS:
           arr[i++] = getWidgets();
+          break;
+        case FOOTER_EVENTS:
+          arr[i++] = getFooterEvents();
           break;
       }
     }
@@ -788,6 +813,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.editMode = editMode;
   }
 
+  public void setEditNewRow(Boolean editNewRow) {
+    this.editNewRow = editNewRow;
+  }
+
   public void setEditSave(Boolean editSave) {
     this.editSave = editSave;
   }
@@ -806,6 +835,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setFooter(GridComponentDescription footer) {
     this.footer = footer;
+  }
+
+  public void setFooterEvents(String footerEvents) {
+    this.footerEvents = footerEvents;
   }
 
   public void setHasFooters(Boolean hasFooters) {
@@ -875,7 +908,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setSearchThreshold(Integer searchThreshold) {
     this.searchThreshold = searchThreshold;
   }
-
+  
   public void setShowColumnWidths(Boolean showColumnWidths) {
     this.showColumnWidths = showColumnWidths;
   }

@@ -56,7 +56,8 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
       return null;
     }
 
-    return new DateTime(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5], arr[6]);
+    return new DateTime(TimeUtils.normalizeYear(arr[0]), arr[1], arr[2],
+        arr[3], arr[4], arr[5], arr[6]);
   }
   
   public static DateTime restore(String s) {

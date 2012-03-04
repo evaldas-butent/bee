@@ -678,8 +678,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
 
     addStyleDependentName(barType.toString().toLowerCase());
 
-    DOM.setStyleAttribute(getElement(), "outline", "0px");
-    DOM.setElementAttribute(getElement(), "hideFocus", "true");
+    StyleUtils.hideOutline(outer);
 
     BeeKeeper.getBus().addBlurHandler(this, true);
   }

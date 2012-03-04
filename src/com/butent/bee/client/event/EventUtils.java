@@ -84,6 +84,7 @@ import com.google.gwt.event.dom.client.HasTouchCancelHandlers;
 import com.google.gwt.event.dom.client.HasTouchEndHandlers;
 import com.google.gwt.event.dom.client.HasTouchMoveHandlers;
 import com.google.gwt.event.dom.client.HasTouchStartHandlers;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyPressEvent;
@@ -741,6 +742,26 @@ public class EventUtils {
     return ev.getShiftKey() || ev.getCtrlKey() || ev.getAltKey() || ev.getMetaKey();
   }
 
+  public static boolean isArrowKey(NativeEvent ev) {
+    if (ev == null) {
+      return false;
+    } else {
+      return isArrowKey(ev.getKeyCode());
+    }
+  }
+  
+  public static boolean isArrowKey(int keyCode) {
+    switch (keyCode) {
+      case KeyCodes.KEY_DOWN:
+      case KeyCodes.KEY_LEFT:
+      case KeyCodes.KEY_RIGHT:
+      case KeyCodes.KEY_UP:
+        return true;
+      default:
+        return false;
+    }
+  }
+  
   public static boolean isBlur(String type) {
     return isEventType(type, EVENT_TYPE_BLUR);
   }
@@ -794,6 +815,10 @@ public class EventUtils {
     return (type & Event.KEYEVENTS) != 0;
   }
 
+  public static boolean isKeyEvent(String type) {
+    return isKeyDown(type) || isKeyPress(type) || isKeyUp(type);
+  }
+  
   public static boolean isKeyPress(String type) {
     return isEventType(type, EVENT_TYPE_KEY_PRESS);
   }

@@ -396,7 +396,6 @@ body, select {
   border-radius: 12px;
   padding: 5px;
   background: #eee;
-  z-index: 1024;
 }
 .bee-PopupGlass {
   background-color: #000;
@@ -606,7 +605,6 @@ body, select {
 .bee-DialogBox {
   border: 1px solid activeborder;
   border-radius: 2px;
-  z-index: 1024;
 }  
 
 .bee-DialogBox .Caption {
@@ -916,15 +914,38 @@ body, select {
 }
 .bee-InputCancel {
   margin-left: 1em;
-}  
+}
 
-.bee-TreeItem {
+.bee-Tree {
+  overflow: auto;
+}
+
+.bee-TreeItem-content {
   padding: 1px 0px;
   margin: 0px;
   white-space: nowrap;
-  cursor: hand;
   cursor: pointer;
+  display: inline;
 }
+
+.bee-TreeItem-child {
+  margin-left: 16px;
+}
+
+.bee-TreeItem-leafContainer {
+  padding-left: 7px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+.bee-TreeItem-branch {
+  white-space: nowrap;
+}
+
+.bee-TreeItem-imageCell, .bee-TreeItem-contentCell {
+  vertical-align: middle;
+}
+
 .bee-TreeItem-selected {
   background-color: #ebeff9;
 }

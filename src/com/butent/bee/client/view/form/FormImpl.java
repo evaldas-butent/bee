@@ -988,11 +988,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   private Widget getWidget(String id) {
-    if (isAttached()) {
-      return DomUtils.getWidgetQuietly(this, id);
-    } else {
-      return null;
-    }
+    return DomUtils.getChildQuietly(this, id);
   }
 
   private boolean hasChildren() {

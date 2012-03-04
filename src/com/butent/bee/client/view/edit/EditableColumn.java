@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.dialog.NotificationListener;
+import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.AbstractColumn;
@@ -310,6 +311,8 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     }
 
     StyleUtils.setZIndex(editorElement, zIndex);
+    Stacking.ensureLevel(zIndex);
+
     StyleUtils.unhideDisplay(editorElement);
     getEditor().setFocus(true);
 

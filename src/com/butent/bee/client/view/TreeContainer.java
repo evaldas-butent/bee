@@ -112,8 +112,8 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       getTree().setSelectedItem(treeItem);
       getTree().ensureSelectedItemVisible();
 
-    } else if (rootItem != null && !rootItem.getState()) {
-      rootItem.setState(true);
+    } else if (rootItem != null && !rootItem.isOpen()) {
+      rootItem.setOpen(true);
     }
     showNoData();
   }

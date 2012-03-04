@@ -17,7 +17,6 @@ import com.google.gwt.user.datepicker.client.DatePicker;
 
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.ui.UiHelper;
@@ -36,10 +35,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Date;
-
-/**
- * Manages user interface component for entering dates.
- */
 
 public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
@@ -89,7 +84,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
         hideDatePicker();
         getBox().setFocus(true);
-        
+
         fireEvent(new EditStopEvent(State.CHANGED));
       }
     });
@@ -260,23 +255,31 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
       return null;
     }
 
-    if (getDateTimeFormat() == null) {
-      if (AbstractDate.parse(v, getDateType()) == null) {
-        return "error parsing " + v.trim();
-      } else {
-        return null;
+    String msg = null;
+
+    if (getDateTimeFormat() != null) {
+      try {
+        Date date = getDateTimeFormat().parse(v.trim());
+        if (date == null) {
+          msg = "cannot parse " + v.trim();
+        }
+      } catch (IllegalArgumentException ex) {
+        msg = "format " + getDateTimeFormat().getPattern() + " cannot parse " + v.trim();
+      }
+
+      if (msg == null) {
+        return msg;
       }
     }
 
-    String msg = null;
-    try {
-      Date date = getDateTimeFormat().parse(v.trim());
-      if (date == null) {
-        msg = "cannot parse " + v.trim();
+    if (AbstractDate.parse(v, getDateType()) == null) {
+      if (msg == null) {
+        msg = "error parsing " + v.trim();
       }
-    } catch (IllegalArgumentException ex) {
-      msg = "format " + getDateTimeFormat().getPattern() + " cannot parse " + v.trim();
+    } else {
+      msg = null;
     }
+
     return msg;
   }
 
@@ -299,10 +302,18 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     if (BeeUtils.isEmpty(v)) {
       return null;
     }
+
+    AbstractDate date;
     if (getDateTimeFormat() == null) {
-      return AbstractDate.parse(v, getDateType());
+      date = null;
+    } else {
+      date = AbstractDate.fromJava(TimeUtils.parseQuietly(getDateTimeFormat(), v), getDateType());
     }
-    return AbstractDate.fromJava(TimeUtils.parseQuietly(getDateTimeFormat(), v), getDateType());
+
+    if (date == null) {
+      date = AbstractDate.parse(v, getDateType());
+    }
+    return date;
   }
 
   private DatePicker getDatePicker() {
@@ -318,10 +329,22 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     if (BeeUtils.isEmpty(v)) {
       return null;
     }
-    if (getDateTimeFormat() == null) {
-      return AbstractDate.parse(v, getDateType()).getJava();
+
+    Date date;
+    if (getDateTimeFormat() != null) {
+      date = TimeUtils.parseQuietly(getDateTimeFormat(), v);
+    } else {
+      date = null;
     }
-    return TimeUtils.parseQuietly(getDateTimeFormat(), v);
+
+    if (date == null) {
+      AbstractDate ad = AbstractDate.parse(v, getDateType());
+      if (ad != null) {
+        date = ad.getJava();
+      }
+    }
+
+    return date;
   }
 
   private Popup getPopup() {
@@ -495,14 +518,19 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
       case '+':
       case '-':
-        int incr = (charCode == '+') ? 1 : -1;
-        if (oldDate == null) {
-          newDate = TimeUtils.today(incr);
-        } else if (oldDate instanceof JustDate) {
-          newDate = new JustDate(oldDate.getDate().getDay() + incr);
-        } else if (oldDate instanceof DateTime) {
-          newDate = new DateTime(oldDate.getDateTime().getTime() + TimeUtils.MILLIS_PER_DAY * incr);
+        int cnt = TimeUtils.countFields(getBox().getValue());
+        if (cnt == 0 || cnt >= 3) {
+          int incr = (charCode == '+') ? 1 : -1;
+          if (oldDate == null) {
+            newDate = TimeUtils.today(incr);
+          } else if (oldDate instanceof JustDate) {
+            newDate = new JustDate(oldDate.getDate().getDay() + incr);
+          } else if (oldDate instanceof DateTime) {
+            newDate =
+                new DateTime(oldDate.getDateTime().getTime() + TimeUtils.MILLIS_PER_DAY * incr);
+          }
         }
+        break;
     }
 
     if (newDate == null) {
@@ -550,7 +578,6 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     getDatePicker().setCurrentMonth(date);
     getDatePicker().setValue(date);
 
-    StyleUtils.setZIndex(getPopup(), StyleUtils.getParentZIndex(getBox(), true, true) + 1);
     getPopup().showRelativeTo(getBox());
   }
 }

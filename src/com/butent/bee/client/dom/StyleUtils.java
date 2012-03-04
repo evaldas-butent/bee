@@ -143,6 +143,54 @@ public class StyleUtils {
     }
   }
 
+  public enum OutlineStyle implements HasCssName {
+    NONE {
+      public String getCssName() {
+        return BORDER_STYLE_NONE;
+      }
+    },
+    DOTTED {
+      public String getCssName() {
+        return BORDER_STYLE_DOTTED;
+      }
+    },
+    DASHED {
+      public String getCssName() {
+        return BORDER_STYLE_DASHED;
+      }
+    },
+    SOLID {
+      public String getCssName() {
+        return BORDER_STYLE_SOLID;
+      }
+    },
+    DOUBLE {
+      public String getCssName() {
+        return BORDER_STYLE_DOUBLE;
+      }
+    },
+    GROOVE {
+      public String getCssName() {
+        return BORDER_STYLE_GROOVE;
+      }
+    },
+    RIDGE {
+      public String getCssName() {
+        return BORDER_STYLE_RIDGE;
+      }
+    },
+    INSET {
+      public String getCssName() {
+        return BORDER_STYLE_INSET;
+      }
+    },
+    OUTSET {
+      public String getCssName() {
+        return BORDER_STYLE_OUTSET;
+      }
+    };
+  }
+  
   public static final String ACTIVE_BLANK = "bee-activeBlank";
   public static final String ACTIVE_CONTENT = "bee-activeContent";
 
@@ -279,6 +327,17 @@ public class StyleUtils {
   public static final String BORDER_SEPARATE = "separate";
 
   public static final String POSITION_ABSOLUTE = "absolute";
+
+  public static final String BORDER_STYLE_NONE = "none";
+  public static final String BORDER_STYLE_HIDDEN = "hidden";
+  public static final String BORDER_STYLE_DOTTED = "dotted";
+  public static final String BORDER_STYLE_DASHED = "dashed";
+  public static final String BORDER_STYLE_SOLID = "solid";
+  public static final String BORDER_STYLE_DOUBLE = "double";
+  public static final String BORDER_STYLE_GROOVE = "groove";
+  public static final String BORDER_STYLE_RIDGE = "ridge";
+  public static final String BORDER_STYLE_INSET = "inset";
+  public static final String BORDER_STYLE_OUTSET = "outset";
   
   public static final String CSS_BORDER_WIDTH = "border-width";
   public static final String CSS_BORDER_LEFT_WIDTH = "border-left-width";
@@ -1040,6 +1099,36 @@ public class StyleUtils {
     hideDisplay(obj.getElement());
   }
 
+  public static void hideOutline(Element el) {
+    Assert.notNull(el);
+    hideOutline(el.getStyle());
+  }
+
+  public static void hideOutline(Style st) {
+    setOutlineStyle(st, OutlineStyle.NONE);
+  }
+  
+  public static void hideOutline(String id) {
+    hideOutline(DomUtils.getElement(id));
+  }
+
+  public static void hideOutline(UIObject obj) {
+    Assert.notNull(obj);
+    hideOutline(obj.getElement());
+  }
+
+  public static void hideScroll(Element el) {
+    hideScroll(el, ScrollBars.BOTH);
+  }
+
+  public static void hideScroll(Style st) {
+    hideScroll(st, ScrollBars.BOTH);
+  }
+
+  public static void hideScroll(UIObject obj) {
+    hideScroll(obj, ScrollBars.BOTH);
+  }
+  
   public static void hideScroll(Element el, ScrollBars scroll) {
     Assert.notNull(el);
     hideScroll(el.getStyle(), scroll);
@@ -1444,20 +1533,20 @@ public class StyleUtils {
     setFontSize(obj.getElement(), size);
   }
 
-  public static void setFontSizePx(Element el, double size) {
+  public static void setFontSize(Element el, int size) {
     Assert.notNull(el);
-    setFontSizePx(el.getStyle(), size);
+    setFontSize(el.getStyle(), size);
   }
 
-  public static void setFontSizePx(Style st, double size) {
+  public static void setFontSize(Style st, int size) {
     Assert.notNull(st);
-    Assert.isPositive(size);
-    st.setFontSize(size, Unit.PX);
+    Assert.nonNegative(size);
+    st.setFontSize(size, DEFAULT_UNIT);
   }
 
-  public static void setFontSizePx(UIObject obj, double size) {
+  public static void setFontSize(UIObject obj, int size) {
     Assert.notNull(obj);
-    setFontSizePx(obj.getElement(), size);
+    setFontSize(obj.getElement(), size);
   }
 
   public static void setFontVariant(Element el, FontVariant variant) {
@@ -1711,6 +1800,26 @@ public class StyleUtils {
 
   public static void setOpacity(String id, double value) {
     setOpacity(DomUtils.getElement(id), value);
+  }
+
+  public static void setOutlineStyle(Element el, OutlineStyle value) {
+    Assert.notNull(el);
+    setOutlineStyle(el.getStyle(), value);
+  }
+
+  public static void setOutlineStyle(Style st, OutlineStyle value) {
+    Assert.notNull(st);
+    Assert.notNull(value);
+    st.setProperty(STYLE_OUTLINE_STYLE, value.getCssName());
+  }
+
+  public static void setOutlineStyle(String id, OutlineStyle value) {
+    setOutlineStyle(DomUtils.getElement(id), value);
+  }
+
+  public static void setOutlineStyle(UIObject obj, OutlineStyle value) {
+    Assert.notNull(obj);
+    setOutlineStyle(obj.getElement(), value);
   }
   
   public static void setOverflow(Element el, ScrollBars scroll, String value) {

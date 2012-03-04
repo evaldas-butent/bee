@@ -1,6 +1,7 @@
 package com.butent.bee.client.tree;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
@@ -37,7 +38,6 @@ import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.DOM;
@@ -48,15 +48,16 @@ import com.google.gwt.user.client.ui.AbstractImagePrototype.ImagePrototypeElemen
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasAnimation;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.WidgetCollection;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,104 +65,66 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class Tree extends Panel implements HasTreeItems,
-    Focusable, HasAnimation, HasAllKeyHandlers,
-    HasAllFocusHandlers, HasSelectionHandlers<TreeItem>,
-    HasOpenHandlers<TreeItem>, HasCloseHandlers<TreeItem>,
-    HasAllMouseHandlers, HasId {
+public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation,
+    HasAllKeyHandlers, HasAllFocusHandlers, HasSelectionHandlers<TreeItem>,
+    HasOpenHandlers<TreeItem>, HasCloseHandlers<TreeItem>, HasAllMouseHandlers, HasId {
 
   public interface Resources extends ClientBundle {
+    @Source("treeClosed.gif")
     ImageResource treeClosed();
-    ImageResource treeLeaf();
+
+    @Source("treeOpen.gif")
     ImageResource treeOpen();
   }
 
   public static AbstractImagePrototype treeClosed = null;
-  public static AbstractImagePrototype treeLeaf = null;
   public static AbstractImagePrototype treeOpen = null;
-
-  private static final int OTHER_KEY_DOWN = 63233;
-  private static final int OTHER_KEY_LEFT = 63234;
-  private static final int OTHER_KEY_RIGHT = 63235;
-  private static final int OTHER_KEY_UP = 63232;
 
   static {
     Resources resources = GWT.create(Resources.class);
     treeClosed = AbstractImagePrototype.create(resources.treeClosed());
-    treeLeaf = AbstractImagePrototype.create(resources.treeLeaf());
     treeOpen = AbstractImagePrototype.create(resources.treeOpen());
   }
 
-  static native boolean shouldTreeDelegateFocusToElement(Element elem) /*-{
-    var name = elem.nodeName;
-    return ((name == "SELECT") || (name == "INPUT") || (name == "TEXTAREA") 
-      || (name == "OPTION") || (name == "BUTTON") || (name == "LABEL"));
-  }-*/;
-
-  private static boolean isArrowKey(int code) {
-    switch (code) {
-      case OTHER_KEY_DOWN:
-      case OTHER_KEY_RIGHT:
-      case OTHER_KEY_UP:
-      case OTHER_KEY_LEFT:
-      case KeyCodes.KEY_DOWN:
-      case KeyCodes.KEY_RIGHT:
-      case KeyCodes.KEY_UP:
-      case KeyCodes.KEY_LEFT:
-        return true;
-      default:
-        return false;
+  static boolean shouldTreeDelegateFocusToElement(Element elem) {
+    if (elem == null) {
+      return false;
     }
-  }
-
-  private static int standardizeKeycode(int code) {
-    switch (code) {
-      case OTHER_KEY_DOWN:
-        code = KeyCodes.KEY_DOWN;
-        break;
-      case OTHER_KEY_RIGHT:
-        code = KeyCodes.KEY_RIGHT;
-        break;
-      case OTHER_KEY_UP:
-        code = KeyCodes.KEY_UP;
-        break;
-      case OTHER_KEY_LEFT:
-        code = KeyCodes.KEY_LEFT;
-        break;
-    }
-
-    if (LocaleInfo.getCurrentLocale().isRTL()) {
-      if (code == KeyCodes.KEY_RIGHT) {
-        code = KeyCodes.KEY_LEFT;
-      } else if (code == KeyCodes.KEY_LEFT) {
-        code = KeyCodes.KEY_RIGHT;
-      }
-    }
-    return code;
+    return BeeUtils.inList(elem.getTagName(), DomUtils.TAG_SELECT, DomUtils.TAG_INPUT,
+        DomUtils.TAG_TEXT_AREA, DomUtils.TAG_OPTION, DomUtils.TAG_BUTTON, DomUtils.TAG_LABEL);
   }
 
   private final Map<Widget, TreeItem> childWidgets = new HashMap<Widget, TreeItem>();
 
-  private TreeItem curSelection;
+  private TreeItem selectedItem = null;
 
-  private Element focusable;
-
-  private String indentValue;
+  private final Element focusable;
 
   private boolean isAnimationEnabled = false;
 
-  private boolean lastWasKeyDown;
-
-  private TreeItem root;
-
-  private boolean useLeafImages;
+  private final TreeItem root;
 
   public Tree() {
-    init(false);
-  }
+    setElement(DOM.createDiv());
 
-  public Tree(boolean useLeafImages) {
-    init(useLeafImages);
+    getElement().getStyle().setPosition(Position.RELATIVE);
+
+    focusable = FocusImpl.getFocusImplForPanel().createFocusable();
+
+    StyleUtils.makeAbsolute(focusable);
+    StyleUtils.hideOutline(focusable);
+    StyleUtils.setZIndex(focusable, -1);
+
+    getElement().appendChild(focusable);
+
+    sinkEvents(Event.ONMOUSEDOWN | Event.ONCLICK | Event.KEYEVENTS);
+    DOM.sinkEvents(focusable, Event.FOCUSEVENTS);
+
+    root = new TreeItem(true);
+    root.setTree(this);
+
+    setStyleName("bee-Tree");
+    DomUtils.createId(this, getIdPrefix());
   }
 
   public void add(Widget widget) {
@@ -205,7 +168,7 @@ public class Tree extends Panel implements HasTreeItems,
   }
 
   public HandlerRegistration addMouseDownHandler(MouseDownHandler handler) {
-    return addHandler(handler, MouseDownEvent.getType());
+    return addDomHandler(handler, MouseDownEvent.getType());
   }
 
   public HandlerRegistration addMouseMoveHandler(MouseMoveHandler handler) {
@@ -244,13 +207,13 @@ public class Tree extends Panel implements HasTreeItems,
   }
 
   public void ensureSelectedItemVisible() {
-    if (curSelection == null) {
+    if (getSelectedItem() == null) {
       return;
     }
 
-    TreeItem parent = curSelection.getParentItem();
+    TreeItem parent = getSelectedItem().getParentItem();
     while (parent != null) {
-      parent.setState(true);
+      parent.setOpen(true);
       parent = parent.getParentItem();
     }
   }
@@ -272,7 +235,7 @@ public class Tree extends Panel implements HasTreeItems,
   }
 
   public TreeItem getSelectedItem() {
-    return curSelection;
+    return selectedItem;
   }
 
   public int getTabIndex() {
@@ -304,108 +267,62 @@ public class Tree extends Panel implements HasTreeItems,
   }
 
   @Override
-  @SuppressWarnings("fallthrough")
   public void onBrowserEvent(Event event) {
-    int eventType = DOM.eventGetType(event);
-
-    switch (eventType) {
-      case Event.ONKEYDOWN: {
-        // If nothing's selected, select the first item.
-        if (curSelection == null) {
-          if (root.getChildCount() > 0) {
-            onSelection(root.getChild(0), true, true);
-          }
-          super.onBrowserEvent(event);
-          return;
-        }
-      }
-
-      // Intentional fallthrough.
-      case Event.ONKEYPRESS:
-      case Event.ONKEYUP:
-        // Issue 1890: Do not block history navigation via alt+left/right
-        if (DOM.eventGetAltKey(event) || DOM.eventGetMetaKey(event)) {
-          super.onBrowserEvent(event);
-          return;
-        }
-        break;
-    }
+    int eventType = event.getTypeInt();
 
     switch (eventType) {
       case Event.ONCLICK: {
-        Element e = DOM.eventGetTarget(event);
-        if (shouldTreeDelegateFocusToElement(e)) {
-          // The click event should have given focus to this element already.
-          // Avoid moving focus back up to the tree (so that focusable widgets
-          // attached to TreeItems can receive keyboard events).
-        } else if (curSelection != null) {
+        Element el = DOM.eventGetTarget(event);
+        if (!shouldTreeDelegateFocusToElement(el) && (getSelectedItem() != null)
+            && getSelectedItem().getContentElem().isOrHasChild(el)) {
           setFocus(true);
         }
         break;
       }
 
       case Event.ONMOUSEDOWN: {
-        // Currently, the way we're using image bundles causes extraneous events
-        // to be sunk on individual items' open/close images. This leads to an
-        // extra event reaching the Tree, which we will ignore here.
-        // Also, ignore middle and right clicks here.
         if ((DOM.eventGetCurrentTarget(event) == getElement())
             && (event.getButton() == Event.BUTTON_LEFT)) {
           elementClicked(DOM.eventGetTarget(event));
         }
         break;
       }
-      case Event.ONKEYDOWN: {
-        keyboardNavigation(event);
-        lastWasKeyDown = true;
-        break;
-      }
 
-      case Event.ONKEYPRESS: {
-        if (!lastWasKeyDown) {
-          keyboardNavigation(event);
+      case Event.ONKEYDOWN: {
+        if (getSelectedItem() == null) {
+          if (root.getChildCount() > 0) {
+            onSelection(root.getChild(0), true, true);
+          }
+        } else if (isKeyboardNavigationEnabled() && EventUtils.isArrowKey(event) &&
+            !event.getAltKey() && !event.getMetaKey()) {
+          navigate(event);
+          EventUtils.eatEvent(event);
         }
-        lastWasKeyDown = false;
         break;
       }
 
       case Event.ONKEYUP: {
-        if (DOM.eventGetKeyCode(event) == KeyCodes.KEY_TAB) {
-          ArrayList<Element> chain = new ArrayList<Element>();
+        if (event.getKeyCode() == KeyCodes.KEY_TAB) {
+          List<Element> chain = new ArrayList<Element>();
           collectElementChain(chain, getElement(), DOM.eventGetTarget(event));
           TreeItem item = findItemByChain(chain, 0, root);
           if (item != getSelectedItem()) {
             setSelectedItem(item, true);
           }
         }
-        lastWasKeyDown = false;
         break;
       }
     }
 
-    switch (eventType) {
-      case Event.ONKEYDOWN:
-      case Event.ONKEYUP: {
-        if (isArrowKey(DOM.eventGetKeyCode(event))) {
-          DOM.eventCancelBubble(event, true);
-          DOM.eventPreventDefault(event);
-          return;
-        }
-      }
-    }
-
-    // We must call super for all handlers.
     super.onBrowserEvent(event);
   }
 
   public boolean remove(Widget w) {
-    // Validate.
     TreeItem item = childWidgets.get(w);
     if (item == null) {
       return false;
     }
 
-    // Delegate to TreeItem.setWidget, which performs correct removal.
     item.setWidget(null);
     return true;
   }
@@ -425,7 +342,7 @@ public class Tree extends Panel implements HasTreeItems,
   }
 
   public void setAnimationEnabled(boolean enable) {
-    isAnimationEnabled = enable;
+    this.isAnimationEnabled = enable;
   }
 
   public void setFocus(boolean focus) {
@@ -446,11 +363,11 @@ public class Tree extends Panel implements HasTreeItems,
 
   public void setSelectedItem(TreeItem item, boolean fireEvents) {
     if (item == null) {
-      if (curSelection == null) {
+      if (getSelectedItem() == null) {
         return;
       }
-      curSelection.setSelected(false);
-      curSelection = null;
+      getSelectedItem().setSelected(false);
+      this.selectedItem = null;
       return;
     }
 
@@ -509,12 +426,8 @@ public class Tree extends Panel implements HasTreeItems,
   }
 
   void maybeUpdateSelection(TreeItem itemThatChangedState, boolean isItemOpening) {
-    /**
-     * If we just closed the item, let's check to see if this item is the parent of the currently
-     * selected item. If so, we should make this item the currently selected selected item.
-     */
     if (!isItemOpening) {
-      TreeItem tempItem = curSelection;
+      TreeItem tempItem = getSelectedItem();
       while (tempItem != null) {
         if (tempItem == itemThatChangedState) {
           setSelectedItem(itemThatChangedState);
@@ -537,21 +450,11 @@ public class Tree extends Panel implements HasTreeItems,
     showImage(treeItem, treeClosed);
   }
 
-  void showLeafImage(TreeItem treeItem) {
-    if (useLeafImages || treeItem.isFullNode()) {
-      showImage(treeItem, treeLeaf);
-    } else if (LocaleInfo.getCurrentLocale().isRTL()) {
-      DOM.setStyleAttribute(treeItem.getElement(), "paddingRight", indentValue);
-    } else {
-      DOM.setStyleAttribute(treeItem.getElement(), "paddingLeft", indentValue);
-    }
-  }
-
   void showOpenImage(TreeItem treeItem) {
     showImage(treeItem, treeOpen);
   }
 
-  private void collectElementChain(ArrayList<Element> chain, Element hRoot, Element hElem) {
+  private void collectElementChain(List<Element> chain, Element hRoot, Element hElem) {
     if ((hElem == null) || (hElem == hRoot)) {
       return;
     }
@@ -561,14 +464,13 @@ public class Tree extends Panel implements HasTreeItems,
   }
 
   private boolean elementClicked(Element hElem) {
-    ArrayList<Element> chain = new ArrayList<Element>();
+    List<Element> chain = new ArrayList<Element>();
     collectElementChain(chain, getElement(), hElem);
 
     TreeItem item = findItemByChain(chain, 0, root);
     if (item != null && item != root) {
-      if (item.getChildCount() > 0
-          && DOM.isOrHasChild(item.getImageElement(), hElem)) {
-        item.setState(!item.getState(), true);
+      if (item.getChildCount() > 0 && DOM.isOrHasChild(item.getImageElement(), hElem)) {
+        item.setOpen(!item.isOpen(), true);
         return true;
       } else if (DOM.isOrHasChild(item.getElement(), hElem)) {
         onSelection(item, true, !shouldTreeDelegateFocusToElement(hElem));
@@ -580,13 +482,13 @@ public class Tree extends Panel implements HasTreeItems,
   }
 
   private TreeItem findDeepestOpenChild(TreeItem item) {
-    if (!item.getState()) {
+    if (!item.isOpen()) {
       return item;
     }
     return findDeepestOpenChild(item.getChild(item.getChildCount() - 1));
   }
 
-  private TreeItem findItemByChain(ArrayList<Element> chain, int idx, TreeItem rootItem) {
+  private TreeItem findItemByChain(List<Element> chain, int idx, TreeItem rootItem) {
     if (idx == chain.size()) {
       return rootItem;
     }
@@ -607,10 +509,14 @@ public class Tree extends Panel implements HasTreeItems,
   }
 
   private TreeItem getTopClosedParent(TreeItem item) {
+    if (item == null) {
+      return null;
+    }
+
     TreeItem topClosedParent = null;
     TreeItem parent = item.getParentItem();
     while (parent != null && parent != root) {
-      if (!parent.getState()) {
+      if (!parent.isOpen()) {
         topClosedParent = parent;
       }
       parent = parent.getParentItem();
@@ -618,81 +524,14 @@ public class Tree extends Panel implements HasTreeItems,
     return topClosedParent;
   }
 
-  private void init(boolean useLeafImage) {
-    setImages(useLeafImage);
-    setElement(DOM.createDiv());
-
-    DOM.setStyleAttribute(getElement(), "position", "relative");
-
-    // Fix rendering problem with relatively-positioned elements and their
-    // children by
-    // forcing the element that is positioned relatively to 'have layout'
-    DOM.setStyleAttribute(getElement(), "zoom", "1");
-
-    focusable = FocusImpl.getFocusImplForPanel().createFocusable();
-    DOM.setStyleAttribute(focusable, "fontSize", "0");
-    DOM.setStyleAttribute(focusable, "position", "absolute");
-
-    // Hide focus outline in Mozilla/Webkit/Opera
-    DOM.setStyleAttribute(focusable, "outline", "0px");
-
-    // Hide focus outline in IE 6/7
-    DOM.setElementAttribute(focusable, "hideFocus", "true");
-
-    DOM.setIntStyleAttribute(focusable, "zIndex", -1);
-    DOM.appendChild(getElement(), focusable);
-
-    sinkEvents(Event.ONMOUSEDOWN | Event.ONCLICK | Event.KEYEVENTS);
-    DOM.sinkEvents(focusable, Event.FOCUSEVENTS);
-
-    // The 'root' item is invisible and serves only as a container
-    // for all top-level items.
-    root = new TreeItem(true);
-    root.setTree(this);
-    setStyleName("bee-Tree");
-
-    DomUtils.createId(this, getIdPrefix());
-  }
-
-  private void keyboardNavigation(Event event) {
-    // Handle keyboard events if keyboard navigation is enabled
-    if (isKeyboardNavigationEnabled()) {
-      int code = DOM.eventGetKeyCode(event);
-
-      switch (standardizeKeycode(code)) {
-        case KeyCodes.KEY_UP: {
-          moveSelectionUp(curSelection);
-          break;
-        }
-        case KeyCodes.KEY_DOWN: {
-          moveSelectionDown(curSelection, true);
-          break;
-        }
-        case KeyCodes.KEY_LEFT: {
-          maybeCollapseTreeItem();
-          break;
-        }
-        case KeyCodes.KEY_RIGHT: {
-          maybeExpandTreeItem();
-          break;
-        }
-        default: {
-          return;
-        }
-      }
-    }
-  }
-
   private void maybeCollapseTreeItem() {
-
-    TreeItem topClosedParent = getTopClosedParent(curSelection);
+    TreeItem topClosedParent = getTopClosedParent(getSelectedItem());
     if (topClosedParent != null) {
-      // Select the first visible parent if curSelection is hidden
       setSelectedItem(topClosedParent);
-    } else if (curSelection.getState()) {
-      curSelection.setState(false);
+    } else if (getSelectedItem().isOpen()) {
+      getSelectedItem().setOpen(false);
     } else {
-      TreeItem parent = curSelection.getParentItem();
+      TreeItem parent = getSelectedItem().getParentItem();
       if (parent != null) {
         setSelectedItem(parent);
       }
@@ -700,54 +539,40 @@ public class Tree extends Panel implements HasTreeItems,
   }
 
   private void maybeExpandTreeItem() {
-
-    TreeItem topClosedParent = getTopClosedParent(curSelection);
+    TreeItem topClosedParent = getTopClosedParent(getSelectedItem());
     if (topClosedParent != null) {
-      // Select the first visible parent if curSelection is hidden
       setSelectedItem(topClosedParent);
-    } else if (!curSelection.getState()) {
-      curSelection.setState(true);
-    } else if (curSelection.getChildCount() > 0) {
-      setSelectedItem(curSelection.getChild(0));
+    } else if (!getSelectedItem().isOpen()) {
+      getSelectedItem().setOpen(true);
+    } else if (getSelectedItem().getChildCount() > 0) {
+      setSelectedItem(getSelectedItem().getChild(0));
     }
   }
 
   private void moveFocus() {
-    Focusable focusableWidget = curSelection.getFocusable();
+    Focusable focusableWidget = getSelectedItem().getFocusable();
     if (focusableWidget != null) {
       focusableWidget.setFocus(true);
-      DOM.scrollIntoView(((Widget) focusableWidget).getElement());
+      ((Widget) focusableWidget).getElement().scrollIntoView();
     } else {
-      // Get the location and size of the given item's content element relative
-      // to the tree.
-      Element selectedElem = curSelection.getContentElem();
+      Element selectedElem = getSelectedItem().getContentElem();
       int containerLeft = getAbsoluteLeft();
       int containerTop = getAbsoluteTop();
 
-      int left = DOM.getAbsoluteLeft(selectedElem) - containerLeft;
-      int top = DOM.getAbsoluteTop(selectedElem) - containerTop;
-      int width = DOM.getElementPropertyInt(selectedElem, "offsetWidth");
-      int height = DOM.getElementPropertyInt(selectedElem, "offsetHeight");
+      int left = selectedElem.getAbsoluteLeft() - containerLeft;
+      int top = selectedElem.getAbsoluteTop() - containerTop;
+      int width = selectedElem.getOffsetWidth();
+      int height = selectedElem.getOffsetHeight();
 
-      // If the item is not visible, quite here
-      if (width == 0 || height == 0) {
-        DOM.setIntStyleAttribute(focusable, "left", 0);
-        DOM.setIntStyleAttribute(focusable, "top", 0);
+      if (width <= 0 || height <= 0) {
+        StyleUtils.setLeft(focusable, 0);
+        StyleUtils.setTop(focusable, 0);
         return;
       }
 
-      // Set the focusable element's position and size to exactly underlap the
-      // item's content element.
-      DOM.setStyleAttribute(focusable, "left", left + "px");
-      DOM.setStyleAttribute(focusable, "top", top + "px");
-      DOM.setStyleAttribute(focusable, "width", width + "px");
-      DOM.setStyleAttribute(focusable, "height", height + "px");
+      StyleUtils.setRectangle(focusable, left, top, width, height);
+      focusable.scrollIntoView();
 
-      // Scroll it into view.
-      DOM.scrollIntoView(focusable);
-
-      // Ensure Focus is set, as focus may have been previously delegated by
-      // tree.
       setFocus(true);
     }
   }
@@ -757,7 +582,6 @@ public class Tree extends Panel implements HasTreeItems,
       return;
     }
 
-    // Find a parent that is visible
     TreeItem topClosedParent = getTopClosedParent(sel);
     if (topClosedParent != null) {
       moveSelectionDown(topClosedParent, false);
@@ -770,7 +594,7 @@ public class Tree extends Panel implements HasTreeItems,
     }
     int idx = parent.getChildIndex(sel);
 
-    if (!dig || !sel.getState()) {
+    if (!dig || !sel.isOpen()) {
       if (idx < parent.getChildCount() - 1) {
         onSelection(parent.getChild(idx + 1), true, true);
       } else {
@@ -782,7 +606,6 @@ public class Tree extends Panel implements HasTreeItems,
   }
 
   private void moveSelectionUp(TreeItem sel) {
-    // Find a parent that is visible
     TreeItem topClosedParent = getTopClosedParent(sel);
     if (topClosedParent != null) {
       onSelection(topClosedParent, true, true);
@@ -803,40 +626,46 @@ public class Tree extends Panel implements HasTreeItems,
     }
   }
 
-  private void onSelection(TreeItem item, boolean fireEvents, boolean moveFocus) {
-    // 'root' isn't a real item, so don't let it be selected
-    // (some cases in the keyboard handler will try to do this)
-    if (item == root) {
-      return;
-    }
-
-    if (curSelection != null) {
-      curSelection.setSelected(false);
-    }
-    curSelection = item;
-
-    if (curSelection != null) {
-      if (moveFocus) {
-        moveFocus();
+  private void navigate(Event event) {
+    switch (event.getKeyCode()) {
+      case KeyCodes.KEY_UP: {
+        moveSelectionUp(getSelectedItem());
+        break;
       }
-      // Select the item and fire the selection event.
-      curSelection.setSelected(true);
-      if (fireEvents) {
-        SelectionEvent.fire(this, curSelection);
+      case KeyCodes.KEY_DOWN: {
+        moveSelectionDown(getSelectedItem(), true);
+        break;
+      }
+      case KeyCodes.KEY_LEFT: {
+        maybeCollapseTreeItem();
+        break;
+      }
+      case KeyCodes.KEY_RIGHT: {
+        maybeExpandTreeItem();
+        break;
       }
     }
   }
 
-  private void setImages(boolean useLeafImages) {
-    this.useLeafImages = useLeafImages;
+  private void onSelection(TreeItem item, boolean fireEvents, boolean moveFocus) {
+    if (item == root) {
+      return;
+    }
 
-    if (!useLeafImages) {
-      Image image = treeLeaf.createImage();
-      DOM.setStyleAttribute(image.getElement(), "visibility", "hidden");
-      RootPanel.get().add(image);
-      int size = image.getWidth() + TreeItem.IMAGE_PAD;
-      image.removeFromParent();
-      indentValue = (size) + "px";
+    if (getSelectedItem() != null) {
+      getSelectedItem().setSelected(false);
+    }
+    this.selectedItem = item;
+
+    if (item != null) {
+      if (moveFocus) {
+        moveFocus();
+      }
+
+      item.setSelected(true);
+      if (fireEvents) {
+        SelectionEvent.fire(this, item);
+      }
     }
   }
 
@@ -844,11 +673,8 @@ public class Tree extends Panel implements HasTreeItems,
     Element holder = treeItem.getImageHolderElement();
     Element child = DOM.getFirstChild(holder);
     if (child == null) {
-      // If no image element has been created yet, create one from the
-      // prototype.
       DOM.appendChild(holder, proto.createElement().<Element> cast());
     } else {
-      // Otherwise, simply apply the prototype to the existing element.
       proto.applyTo(child.<ImagePrototypeElement> cast());
     }
   }

@@ -51,6 +51,7 @@ import com.butent.bee.client.dom.Features;
 import com.butent.bee.client.dom.Font;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.dom.Selectors;
+import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
@@ -68,6 +69,7 @@ import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.tree.Tree;
+import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Browser;
@@ -462,6 +464,8 @@ public class CliWorker {
       doSql(args);
     } else if (z.equals("stack")) {
       showStack();
+    } else if (z.equals("stacking") || z.startsWith("zind") || z.startsWith("z-ind")) {
+      BeeKeeper.getScreen().showGrid(Stacking.getInfo());
     } else if (z.startsWith("stor")) {
       storage(arr);
     } else if (z.equals("style")) {
@@ -1736,8 +1740,11 @@ public class CliWorker {
       Global.showDialog("no tiles vailable");
     }
 
+    TreeItem item = ((TilePanel) tiles).getTree(null, true);
+    item.setOpenRecursive(true, false);
+
     Tree tree = new Tree();
-    tree.addItem(((TilePanel) tiles).getTree(null, true));
+    tree.addItem(item);
 
     Global.inform(tree);
   }
@@ -1835,7 +1842,7 @@ public class CliWorker {
       return;
     }
 
-    Widget widget = DomUtils.getWidget(BeeKeeper.getScreen().getScreenPanel(), id);
+    Widget widget = DomUtils.getWidget(id);
     if (widget == null) {
       Global.showError(id, "widget not found");
       return;

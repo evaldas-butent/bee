@@ -3102,6 +3102,13 @@ public class BeeUtils {
         + toLeadingZeroes((int) (millis % 1000), 3);
   }
 
+  public static Set<String> toSet(String s) {
+    if (s == null) {
+      return null;
+    }
+    return Sets.newHashSet(NAME_SPLITTER.split(s));
+  }
+  
   public static String toString(BigDecimal bd) {
     if (bd == null) {
       return null;

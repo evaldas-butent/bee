@@ -126,7 +126,7 @@ public class InputBoxes {
     }
 
     private Widget getWidget(HasNativeEvent event) {
-      return DomUtils.getWidget(getDialog(), EventUtils.getEventTargetElement(event));
+      return DomUtils.getChildByElement(getDialog(), EventUtils.getEventTargetElement(event));
     }
 
     private boolean navigate(Element current, boolean forward) {

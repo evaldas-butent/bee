@@ -551,7 +551,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
     Filter filter = Filter.and(filters);
     if (Objects.equal(filter, getLastFilter())) {
-      BeeKeeper.getLog().info("filter not changed", filter);
+      showInfo("filter not changed", BeeUtils.transform(filter));
       return;
     }
 

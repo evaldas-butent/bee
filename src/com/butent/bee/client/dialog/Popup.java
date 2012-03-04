@@ -3,6 +3,7 @@ package com.butent.bee.client.dialog;
 import com.google.gwt.user.client.ui.PopupPanel;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.shared.HasId;
 
 /**
@@ -39,12 +40,28 @@ public class Popup extends PopupPanel implements HasId {
     return "popup";
   }
 
+  @Override
+  public void hide(boolean autoClosed) {
+    Stacking.removeContext(this);
+    super.hide(autoClosed);
+  }
+
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
+  @Override
+  public void show() {
+    Stacking.addContext(this);
+    super.show();
+  }
+  
+  protected String getDefaultStyleName() {
+    return "bee-Popup";
+  }
+
   private void init() {
     DomUtils.createId(this, getIdPrefix());
-    setStyleName("bee-Popup");
+    setStyleName(getDefaultStyleName());
   }
 }

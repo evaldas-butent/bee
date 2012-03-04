@@ -35,7 +35,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
       return null;
     }
 
-    return new JustDate(arr[0], arr[1], arr[2]);
+    return new JustDate(TimeUtils.normalizeYear(arr[0]), arr[1], arr[2]);
   }
 
   private int day;

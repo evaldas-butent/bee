@@ -1163,10 +1163,7 @@ public enum FormWidget {
   }
 
   public void updateDisplay(Widget root, String id, String value) {
-    Assert.notNull(root);
-    Assert.notEmpty(id);
-
-    Widget widget = DomUtils.getWidget(root, id);
+    Widget widget = DomUtils.getChildQuietly(root, id);
     if (widget == null) {
       BeeKeeper.getLog().warning("update display:", id, "widget not found");
       return;

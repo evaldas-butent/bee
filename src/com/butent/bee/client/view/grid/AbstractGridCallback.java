@@ -108,6 +108,10 @@ public class AbstractGridCallback implements GridCallback {
     return null;
   }
 
+  public String getRowCaption(IsRow row, boolean edit) {
+    return null;
+  }
+
   public boolean onClose(GridPresenter presenter) {
     return true;
   }

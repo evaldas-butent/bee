@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
   name="UserProjects" viewName="UserProjects" caption="Projektai"
-  editForm="Project" editMode="true" newRowForm="NewProject"
+  editForm="Project" editMode="true" newRowForm="NewProject" editNewRow="true"
   caching="false">
   
   <north size="40">

@@ -232,7 +232,6 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
       }
       
       if (!isReady()) {
-        initDisplay();
         setReady(true);
       }
       getPopup().showRelativeTo(target);
@@ -839,11 +838,6 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     return hasMore;
   }
   
-  private void initDisplay() {
-    StyleUtils.setZIndex(getDisplay().getPopup(),
-        StyleUtils.getParentZIndex(this, true, true) + 1);
-  }
-
   private void initOptions(JSONObject options) {
     if (options == null) {
       return;

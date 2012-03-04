@@ -2,6 +2,7 @@ package com.butent.bee.shared.utils;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.gwt.i18n.shared.DateTimeFormat;
 
 import com.butent.bee.shared.AbstractDate;
@@ -110,6 +111,13 @@ public class TimeUtils {
         timePart.getHour(), timePart.getMinute(), timePart.getSecond(), timePart.getMillis());
   }
 
+  public static int countFields(CharSequence cs) {
+    if (BeeUtils.isEmpty(cs)) {
+      return 0;
+    }
+    return Iterables.size(FIELD_SPLITTER.split(cs));
+  }
+  
   /**
    * Gets the difference between {@code start} and {@code end}.
    * 
@@ -254,6 +262,14 @@ public class TimeUtils {
       return null;
     } else {
       return x.serialize();
+    }
+  }
+  
+  public static int normalizeYear(int year) {
+    if (year < 0 || year >= 100) {
+      return year;
+    } else {
+      return year + 2000;
     }
   }
   

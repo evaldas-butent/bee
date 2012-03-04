@@ -88,7 +88,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     
     setForm(formView);
 
-    Widget widget = DomUtils.getWidgetQuietly(rootWidget, getWidgetId());
+    Widget widget = DomUtils.getChildQuietly(rootWidget, getWidgetId());
     if (widget instanceof Editor) {
       setEditor((Editor) widget);
       getEditor().setNullable(isNullable());
@@ -275,27 +275,13 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       case KeyCodes.KEY_UP:
       case KeyCodes.KEY_DOWN:
         EventUtils.eatEvent(nativeEvent);
-
-        String oldValue = getOldValueForUpdate();
-        String newValue = getEditor().getNormalizedValue();
-
-        if (validate(oldValue, newValue)) {
-          getEditEndHandler().onEditEnd(new EditEndEvent(getRowValue(), getColumnForUpdate(),
-              oldValue, newValue, getRowModeForUpdate(), keyCode,
-              EventUtils.hasModifierKey(nativeEvent), getWidgetId()));
-        }
+        update(keyCode, EventUtils.hasModifierKey(nativeEvent));
         break;
     }
   }
 
   public void onValueChange(ValueChangeEvent<String> event) {
-    String oldValue = getOldValueForUpdate();
-    String newValue = event.getValue();
-
-    if (validate(oldValue, newValue)) {
-      getEditEndHandler().onEditEnd(new EditEndEvent(getRowValue(), getColumnForUpdate(),
-          oldValue, newValue, getRowModeForUpdate(), null, false, getWidgetId()));
-    } else {
+    if (!update(null, false)) {
       reset();
     }
   }
@@ -397,6 +383,27 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   
   private void setInitialized(boolean initialized) {
     this.initialized = initialized;
+  }
+  
+  private boolean update(Integer keyCode, boolean hasModifiers) {
+    String oldValue = getOldValueForUpdate();
+    String newValue = getEditor().getNormalizedValue();
+    
+//    BeeKeeper.getLog().info("key:", keyCode, "old:", oldValue, "new:", newValue);
+    
+    boolean eq = BeeUtils.equalsTrimRight(oldValue, newValue);
+    if (eq && keyCode == null) {
+      return true;
+    }
+    if (!eq && !validate(oldValue, newValue)) {
+      return false;
+    }
+
+    if (getEditEndHandler() != null) {
+      getEditEndHandler().onEditEnd(new EditEndEvent(getRowValue(), getColumnForUpdate(),
+          oldValue, newValue, getRowModeForUpdate(), keyCode, hasModifiers, getWidgetId()));
+    }
+    return true;
   }
 
   private boolean validate(String oldValue, String newValue) {

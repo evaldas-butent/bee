@@ -375,6 +375,11 @@ public class CommonEventHandler {
     }
 
     @Override
+    public String getRowCaption(IsRow row, boolean edit) {
+      return (edit ? "" : "Nauja ") + (showServices() ? "Paslauga" : "Prekė");
+    }
+
+    @Override
     public boolean onLoad(GridDescription gridDescription) {
       gridDescription.setCaption(null);
 

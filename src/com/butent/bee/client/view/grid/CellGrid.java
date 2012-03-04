@@ -37,6 +37,7 @@ import com.butent.bee.client.dom.Font;
 import com.butent.bee.client.dom.Rectangle;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.dom.Selectors;
+import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Modifiers;
@@ -4218,6 +4219,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   private void setZIndex(int zIndex) {
     this.zIndex = zIndex;
+    Stacking.ensureLevel(zIndex);
   }
 
   private void showColumnResizer(Element cellElement, int col) {
