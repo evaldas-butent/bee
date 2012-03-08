@@ -33,8 +33,8 @@ import com.google.gwt.user.client.ui.WidgetCollection;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
-import com.butent.bee.client.event.HasAfterAddHandler;
-import com.butent.bee.client.event.HasBeforeAddHandler;
+import com.butent.bee.client.ui.HandlesAfterAdd;
+import com.butent.bee.client.ui.HandlesBeforeAdd;
 import com.butent.bee.client.utils.JreEmulation;
 import com.butent.bee.client.widget.HorizontalSplitter;
 import com.butent.bee.client.widget.Splitter;
@@ -385,8 +385,8 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     }
 
     Widget w = child;
-    if (w instanceof HasBeforeAddHandler) {
-      w = ((HasBeforeAddHandler) w).onBeforeAdd(this);
+    if (w instanceof HandlesBeforeAdd) {
+      w = ((HandlesBeforeAdd) w).onBeforeAdd(this);
     }
 
     w.removeFromParent();
@@ -429,8 +429,8 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
       }
     }
 
-    if (w instanceof HasAfterAddHandler) {
-      ((HasAfterAddHandler) w).onAfterAdd(this);
+    if (w instanceof HandlesAfterAdd) {
+      ((HandlesAfterAdd) w).onAfterAdd(this);
     }
     animate(0);
   }

@@ -151,7 +151,7 @@ public class CachedProvider extends Provider {
       return;
     }
 
-    if (order == null || order.getSize() <= 0) {
+    if (order == null || order.isEmpty()) {
       getTable().sortByRowId(true);
     } else {
       List<Pair<Integer, Boolean>> sortList = Lists.newArrayList();

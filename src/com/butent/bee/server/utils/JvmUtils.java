@@ -84,7 +84,7 @@ public class JvmUtils {
     Set<Class<?>> loaded = getAllLoadedClasses();
     String z;
 
-    if (loaded.size() > 0) {
+    if (!loaded.isEmpty()) {
       Pattern p = null;
       boolean rx = false;
 
@@ -136,7 +136,7 @@ public class JvmUtils {
     }
 
     if (exact != null) {
-      if (found.size() > 0) {
+      if (!found.isEmpty()) {
         found.clear();
       }
       found.add(exact);

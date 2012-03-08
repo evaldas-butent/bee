@@ -78,7 +78,7 @@ public class MenuProvider {
       }
     }
 
-    if (lst.size() == 0) {
+    if (lst.isEmpty()) {
       String msg = "no visible menu items found";
       LogUtils.severe(logger, msg);
       buff.addSevere(msg);

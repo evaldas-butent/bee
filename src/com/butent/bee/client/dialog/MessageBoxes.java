@@ -42,11 +42,11 @@ public class MessageBoxes {
     Window.alert(BeeUtils.concat(BeeConst.CHAR_EOL, obj));
   }
 
-  public boolean close(Object src) {
+  public boolean close(Widget source) {
     boolean ok = false;
 
-    if (src instanceof Widget) {
-      PopupPanel p = DomUtils.parentPopup((Widget) src);
+    if (source != null) {
+      PopupPanel p = DomUtils.parentPopup(source);
       if (p != null) {
         p.hide();
         ok = true;

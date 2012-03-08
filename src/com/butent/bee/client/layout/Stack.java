@@ -5,8 +5,8 @@ import com.google.gwt.user.client.ui.StackLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.HasAfterAddHandler;
-import com.butent.bee.client.event.HasBeforeAddHandler;
+import com.butent.bee.client.ui.HandlesAfterAdd;
+import com.butent.bee.client.ui.HandlesBeforeAdd;
 import com.butent.bee.shared.HasId;
 
 /**
@@ -32,21 +32,21 @@ public class Stack extends StackLayoutPanel implements HasId {
   @Override
   public void insert(Widget child, Widget header, double headerSize, int beforeIndex) {
     Widget cw = child;
-    if (cw instanceof HasBeforeAddHandler) {
-      cw = ((HasBeforeAddHandler) cw).onBeforeAdd(this);
+    if (cw instanceof HandlesBeforeAdd) {
+      cw = ((HandlesBeforeAdd) cw).onBeforeAdd(this);
     }
     Widget hw = header;
-    if (hw instanceof HasBeforeAddHandler) {
-      hw = ((HasBeforeAddHandler) hw).onBeforeAdd(this);
+    if (hw instanceof HandlesBeforeAdd) {
+      hw = ((HandlesBeforeAdd) hw).onBeforeAdd(this);
     }
 
     super.insert(cw, hw, headerSize, beforeIndex);
 
-    if (cw instanceof HasAfterAddHandler) {
-      ((HasAfterAddHandler) cw).onAfterAdd(this);
+    if (cw instanceof HandlesAfterAdd) {
+      ((HandlesAfterAdd) cw).onAfterAdd(this);
     }
-    if (hw instanceof HasAfterAddHandler) {
-      ((HasAfterAddHandler) hw).onAfterAdd(this);
+    if (hw instanceof HandlesAfterAdd) {
+      ((HandlesAfterAdd) hw).onAfterAdd(this);
     }
   }
 

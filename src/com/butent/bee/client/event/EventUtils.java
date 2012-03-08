@@ -139,10 +139,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 import java.util.Map;
-
-/**
- * Contains core event processing methods.
- */
+import java.util.Set;
 
 public class EventUtils {
 
@@ -177,6 +174,8 @@ public class EventUtils {
   public static final String EVENT_TYPE_GESTURE_CHANGE = "gesturechange";
   public static final String EVENT_TYPE_GESTURE_END = "gestureend";
   public static final String EVENT_TYPE_GESTURE_START = "gesturestart";
+
+  public static final String EVENT_TYPE_INPUT = "input";
 
   public static final String EVENT_TYPE_KEY_DOWN = "keydown";
   public static final String EVENT_TYPE_KEY_PRESS = "keypress";
@@ -242,7 +241,7 @@ public class EventUtils {
       if (ok) {
         ((HasBlurHandlers) widget).addBlurHandler(new BlurHandler() {
           public void onBlur(BlurEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -252,7 +251,7 @@ public class EventUtils {
       if (ok) {
         ((HasCanPlayThroughHandlers) widget).addCanPlayThroughHandler(new CanPlayThroughHandler() {
           public void onCanPlayThrough(CanPlayThroughEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -262,7 +261,7 @@ public class EventUtils {
       if (ok) {
         ((HasChangeHandlers) widget).addChangeHandler(new ChangeHandler() {
           public void onChange(ChangeEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -272,7 +271,7 @@ public class EventUtils {
       if (ok) {
         ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
           public void onClick(ClickEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -282,7 +281,7 @@ public class EventUtils {
       if (ok) {
         ((HasContextMenuHandlers) widget).addContextMenuHandler(new ContextMenuHandler() {
           public void onContextMenu(ContextMenuEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -292,7 +291,7 @@ public class EventUtils {
       if (ok) {
         ((HasDoubleClickHandlers) widget).addDoubleClickHandler(new DoubleClickHandler() {
           public void onDoubleClick(DoubleClickEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -302,7 +301,7 @@ public class EventUtils {
       if (ok) {
         ((HasDragHandlers) widget).addDragHandler(new DragHandler() {
           public void onDrag(DragEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -312,7 +311,7 @@ public class EventUtils {
       if (ok) {
         ((HasDragEndHandlers) widget).addDragEndHandler(new DragEndHandler() {
           public void onDragEnd(DragEndEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -322,7 +321,7 @@ public class EventUtils {
       if (ok) {
         ((HasDragEndHandlers) widget).addDragEndHandler(new DragEndHandler() {
           public void onDragEnd(DragEndEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -332,7 +331,7 @@ public class EventUtils {
       if (ok) {
         ((HasDragLeaveHandlers) widget).addDragLeaveHandler(new DragLeaveHandler() {
           public void onDragLeave(DragLeaveEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -342,7 +341,7 @@ public class EventUtils {
       if (ok) {
         ((HasDragOverHandlers) widget).addDragOverHandler(new DragOverHandler() {
           public void onDragOver(DragOverEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -352,7 +351,7 @@ public class EventUtils {
       if (ok) {
         ((HasDragStartHandlers) widget).addDragStartHandler(new DragStartHandler() {
           public void onDragStart(DragStartEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -362,7 +361,7 @@ public class EventUtils {
       if (ok) {
         ((HasDropHandlers) widget).addDropHandler(new DropHandler() {
           public void onDrop(DropEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -372,7 +371,7 @@ public class EventUtils {
       if (ok) {
         ((HasEndedHandlers) widget).addEndedHandler(new EndedHandler() {
           public void onEnded(EndedEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -382,7 +381,7 @@ public class EventUtils {
       if (ok) {
         ((HasErrorHandlers) widget).addErrorHandler(new ErrorHandler() {
           public void onError(ErrorEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -392,7 +391,7 @@ public class EventUtils {
       if (ok) {
         ((HasFocusHandlers) widget).addFocusHandler(new FocusHandler() {
           public void onFocus(FocusEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -402,7 +401,7 @@ public class EventUtils {
       if (ok) {
         ((HasGestureChangeHandlers) widget).addGestureChangeHandler(new GestureChangeHandler() {
           public void onGestureChange(GestureChangeEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -412,7 +411,7 @@ public class EventUtils {
       if (ok) {
         ((HasGestureEndHandlers) widget).addGestureEndHandler(new GestureEndHandler() {
           public void onGestureEnd(GestureEndEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -422,7 +421,17 @@ public class EventUtils {
       if (ok) {
         ((HasGestureStartHandlers) widget).addGestureStartHandler(new GestureStartHandler() {
           public void onGestureStart(GestureStartEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
+          }
+        });
+      }
+
+    } else if (BeeUtils.same(type, EVENT_TYPE_INPUT)) {
+      ok = widget instanceof HasInputHandlers;
+      if (ok) {
+        ((HasInputHandlers) widget).addInputHandler(new InputHandler() {
+          public void onInput(InputEvent event) {
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -432,7 +441,7 @@ public class EventUtils {
       if (ok) {
         ((HasKeyDownHandlers) widget).addKeyDownHandler(new KeyDownHandler() {
           public void onKeyDown(KeyDownEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -442,7 +451,7 @@ public class EventUtils {
       if (ok) {
         ((HasKeyPressHandlers) widget).addKeyPressHandler(new KeyPressHandler() {
           public void onKeyPress(KeyPressEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -452,7 +461,7 @@ public class EventUtils {
       if (ok) {
         ((HasKeyUpHandlers) widget).addKeyUpHandler(new KeyUpHandler() {
           public void onKeyUp(KeyUpEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -462,7 +471,7 @@ public class EventUtils {
       if (ok) {
         ((HasLoadHandlers) widget).addLoadHandler(new LoadHandler() {
           public void onLoad(LoadEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -472,7 +481,7 @@ public class EventUtils {
       if (ok) {
         ((HasLoseCaptureHandlers) widget).addLoseCaptureHandler(new LoseCaptureHandler() {
           public void onLoseCapture(LoseCaptureEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -482,7 +491,7 @@ public class EventUtils {
       if (ok) {
         ((HasMouseDownHandlers) widget).addMouseDownHandler(new MouseDownHandler() {
           public void onMouseDown(MouseDownEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -492,7 +501,7 @@ public class EventUtils {
       if (ok) {
         ((HasMouseMoveHandlers) widget).addMouseMoveHandler(new MouseMoveHandler() {
           public void onMouseMove(MouseMoveEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -502,7 +511,7 @@ public class EventUtils {
       if (ok) {
         ((HasMouseOutHandlers) widget).addMouseOutHandler(new MouseOutHandler() {
           public void onMouseOut(MouseOutEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -512,7 +521,7 @@ public class EventUtils {
       if (ok) {
         ((HasMouseOverHandlers) widget).addMouseOverHandler(new MouseOverHandler() {
           public void onMouseOver(MouseOverEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -522,7 +531,7 @@ public class EventUtils {
       if (ok) {
         ((HasMouseUpHandlers) widget).addMouseUpHandler(new MouseUpHandler() {
           public void onMouseUp(MouseUpEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -532,7 +541,7 @@ public class EventUtils {
       if (ok) {
         ((HasMouseWheelHandlers) widget).addMouseWheelHandler(new MouseWheelHandler() {
           public void onMouseWheel(MouseWheelEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -542,7 +551,7 @@ public class EventUtils {
       if (ok) {
         ((HasProgressHandlers) widget).addProgressHandler(new ProgressHandler() {
           public void onProgress(ProgressEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -552,7 +561,7 @@ public class EventUtils {
       if (ok) {
         ((HasScrollHandlers) widget).addScrollHandler(new ScrollHandler() {
           public void onScroll(ScrollEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -562,7 +571,7 @@ public class EventUtils {
       if (ok) {
         ((HasTouchCancelHandlers) widget).addTouchCancelHandler(new TouchCancelHandler() {
           public void onTouchCancel(TouchCancelEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -572,7 +581,7 @@ public class EventUtils {
       if (ok) {
         ((HasTouchEndHandlers) widget).addTouchEndHandler(new TouchEndHandler() {
           public void onTouchEnd(TouchEndEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -582,7 +591,7 @@ public class EventUtils {
       if (ok) {
         ((HasTouchMoveHandlers) widget).addTouchMoveHandler(new TouchMoveHandler() {
           public void onTouchMove(TouchMoveEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -592,7 +601,7 @@ public class EventUtils {
       if (ok) {
         ((HasTouchStartHandlers) widget).addTouchStartHandler(new TouchStartHandler() {
           public void onTouchStart(TouchStartEvent event) {
-            dispatchDomHandler(widget, handler, event);
+            dispatchDomEvent(widget, handler, event);
           }
         });
       }
@@ -761,6 +770,14 @@ public class EventUtils {
         return false;
     }
   }
+
+  public static boolean isBitless(String type) {
+    if (BeeUtils.isEmpty(type)) {
+      return false;
+    }
+    return isDndEvent(type) || BeeUtils.inListSame(type, EVENT_TYPE_CAN_PLAY_THROUGH,
+        EVENT_TYPE_ENDED, EVENT_TYPE_PROGRESS);
+  }
   
   public static boolean isBlur(String type) {
     return isEventType(type, EVENT_TYPE_BLUR);
@@ -785,9 +802,18 @@ public class EventUtils {
     return isEventType(type, EVENT_TYPE_DBL_CLICK);
   }
   
+  public static boolean isDndEvent(String type) {
+    if (BeeUtils.isEmpty(type)) {
+      return false;
+    }
+    return BeeUtils.inListSame(type, EVENT_TYPE_DRAG, EVENT_TYPE_DRAG_END, EVENT_TYPE_DRAG_ENTER,
+        EVENT_TYPE_DRAG_LEAVE, EVENT_TYPE_DRAG_OVER, EVENT_TYPE_DRAG_START, EVENT_TYPE_DROP);
+  }
+
   public static boolean isEventType(String t1, String t2) {
-    Assert.notEmpty(t1);
-    Assert.notEmpty(t2);
+    if (BeeUtils.isEmpty(t1)) {
+      return false;
+    }
     return BeeUtils.same(t1, t2);
   }
 
@@ -797,6 +823,10 @@ public class EventUtils {
 
   public static boolean isInputElement(EventTarget et) {
     return isTargetTagName(et, DomUtils.TAG_INPUT);
+  }
+
+  public static boolean isInputEvent(String type) {
+    return isEventType(type, EVENT_TYPE_INPUT);
   }
 
   public static boolean isKeyDown(String type) {
@@ -979,7 +1009,33 @@ public class EventUtils {
       Event.sinkEvents(lst.getItem(i), eventBits);
     }
   }
+  
+  public static void sinkEvents(Widget widget, Set<String> types) {
+    Assert.notNull(widget);
+    if (BeeUtils.isEmpty(types)) {
+      return;
+    }
 
+    int eventsToSink = 0;
+
+    for (String type : types) {
+      if (isInputEvent(type)) {
+        Binder.sinkInput(widget);
+      } else if (isBitless(type)) {
+        widget.sinkBitlessEvent(type);
+      } else {
+        int z = Event.getTypeInt(type);
+        if (z > 0) {
+          eventsToSink |= z;
+        }
+      }
+    }
+
+    if (eventsToSink > 0) {
+      widget.sinkEvents(eventsToSink);
+    }
+  }
+  
   public static String transformCloseEvent(CloseEvent<?> ev) {
     if (ev == null) {
       return BeeConst.STRING_EMPTY;
@@ -1079,7 +1135,7 @@ public class EventUtils {
     return JsUtils.createFunction("event, target, row, rowId, rowVersion", body);
   }
 
-  private static void dispatchDomHandler(Widget widget, JavaScriptObject handler,
+  private static void dispatchDomEvent(Widget widget, JavaScriptObject handler,
       HasNativeEvent event) {
     JavaScriptObject row;
     double rowId;

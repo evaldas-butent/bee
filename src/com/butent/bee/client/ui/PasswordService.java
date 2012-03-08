@@ -1,7 +1,7 @@
 package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.view.form.FormView;
@@ -54,7 +54,7 @@ public class PasswordService extends CompositeService {
     } else if (stg.equals(STG_SAVE_PASS)) {
       ok = true;
       Assert.notNull(formView);
-      Global.closeDialog((GwtEvent<?>) params[0]);
+      Global.closeDialog((Widget) params[0]);
 
       if (!BeeUtils.isEmpty(oldPass)) {
         String oPass = varOld.getValue();

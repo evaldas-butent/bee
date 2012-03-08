@@ -26,32 +26,34 @@ public class FooterCell extends AbstractCell<String> {
     @Template("<input type=\"search\" value=\"{0}\" tabindex=\"-1\" class=\"bee-FooterCell\"></input>")
     SafeHtml input(String value);
   }
-  
-  private static final Set<String> requiredEvents = Sets.newHashSet(EventUtils.EVENT_TYPE_FOCUS,
-      EventUtils.EVENT_TYPE_BLUR);
 
-  private static final Set<String> defaultEvents = Sets.newHashSet(EventUtils.EVENT_TYPE_KEY_DOWN);
+  private static final Collection<String> requiredEvents = 
+      Sets.newHashSet(EventUtils.EVENT_TYPE_INPUT);
+  private static final Collection<String> defaultUpdaterEvents =
+      Sets.newHashSet(EventUtils.EVENT_TYPE_KEY_DOWN);
+
   private static Template template = null;
 
-  private static Set<String> prepareEvents(Collection<String> consumedEvents) {
+  private static Set<String> prepareEvents(Collection<String> updaterEvents) {
     Set<String> events = Sets.newHashSet(requiredEvents);
-    
-    if (consumedEvents == null || consumedEvents.size() == 0) {
-      events.addAll(defaultEvents);
+
+    if (updaterEvents == null || updaterEvents.isEmpty()) {
+      events.addAll(defaultUpdaterEvents);
     } else {
-      events.addAll(consumedEvents);
+      events.addAll(updaterEvents);
     }
-    
+
     return events;
   }
+
+  private final Collection<String> updaterEvents;
 
   private String oldValue = null;
   private String newValue = null;
 
-  private boolean hasFocus = false;
-
-  public FooterCell(Collection<String> consumedEvents) {
-    super(prepareEvents(consumedEvents));
+  public FooterCell(Collection<String> updaterEvents) {
+    super(prepareEvents(updaterEvents));
+    this.updaterEvents = BeeUtils.isEmpty(updaterEvents) ? defaultUpdaterEvents : updaterEvents;
     init();
   }
 
@@ -64,16 +66,11 @@ public class FooterCell extends AbstractCell<String> {
   }
 
   @Override
-  public boolean isEditing(Context context, Element parent, String value) {
-    return hasFocus();
-  }
-
-  @Override
   public void onBrowserEvent(Context context, Element parent, String value, NativeEvent event,
       ValueUpdater<String> valueUpdater) {
     EventTarget target = event.getEventTarget();
     String type = event.getType();
-
+    
     InputElement input;
     if (EventUtils.isInputElement(target)) {
       input = InputElement.as(Element.as(target));
@@ -85,26 +82,23 @@ public class FooterCell extends AbstractCell<String> {
     }
 
     String v = getInputValue(input);
-    setNewValue(v);
+    if (EventUtils.isInputEvent(type)) {
+      setNewValue(v);
+    }
     
-    if (EventUtils.isFocus(type)) {
-      setHasFocus(true);
-      setOldValue(v);
+    if (valueUpdater == null || !isUpdaterEvent(type)) {
+      return;
+    }
 
-    } else if (EventUtils.isBlur(type)) {
-      setHasFocus(false);
-
-    } else if (valueUpdater != null && getConsumedEvents().contains(type)) {
-      if (EventUtils.isChange(type)) {
-        if (!BeeUtils.equalsTrim(getOldValue(), v)) {
-          setOldValue(v);
-          valueUpdater.update(v);
-        }
-      } else if (EventUtils.isKeyEvent(type) && event.getKeyCode() == KeyCodes.KEY_ENTER) {
-        EventUtils.eatEvent(event);
+    if (EventUtils.isChange(type)) {
+      if (!BeeUtils.equalsTrim(getOldValue(), v)) {
         setOldValue(v);
         valueUpdater.update(v);
       }
+    } else if (EventUtils.isKeyEvent(type) && event.getKeyCode() == KeyCodes.KEY_ENTER) {
+      EventUtils.eatEvent(event);
+      setOldValue(v);
+      valueUpdater.update(v);
     }
   }
 
@@ -112,7 +106,7 @@ public class FooterCell extends AbstractCell<String> {
   public void render(Context context, String value, SafeHtmlBuilder sb) {
     sb.append(template.input(BeeUtils.trim(getNewValue())));
   }
-  
+
   private String getInputValue(InputElement input) {
     if (input == null) {
       return null;
@@ -121,18 +115,18 @@ public class FooterCell extends AbstractCell<String> {
     }
   }
 
-  private boolean hasFocus() {
-    return hasFocus;
-  }
-
   private void init() {
     if (template == null) {
       template = GWT.create(Template.class);
     }
   }
 
-  private void setHasFocus(boolean hasFocus) {
-    this.hasFocus = hasFocus;
+  private boolean isUpdaterEvent(String type) {
+    if (this.updaterEvents == null) {
+      return false;
+    } else {
+      return this.updaterEvents.contains(type);
+    }
   }
 
   private void setNewValue(String newValue) {

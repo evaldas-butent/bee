@@ -931,11 +931,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   public CellGrid() {
     setElement(Document.get().createDivElement());
 
-    Set<String> eventTypes = Sets.newHashSet(EventUtils.EVENT_TYPE_KEY_DOWN,
-        EventUtils.EVENT_TYPE_KEY_PRESS, EventUtils.EVENT_TYPE_CLICK,
-        EventUtils.EVENT_TYPE_MOUSE_DOWN, EventUtils.EVENT_TYPE_MOUSE_MOVE,
-        EventUtils.EVENT_TYPE_MOUSE_UP, EventUtils.EVENT_TYPE_MOUSE_OUT);
-    sinkEvents(eventTypes);
+    sinkEvents(Event.ONKEYDOWN | Event.ONKEYPRESS | Event.ONCLICK | Event.ONMOUSEDOWN
+        | Event.ONMOUSEMOVE | Event.ONMOUSEUP | Event.ONMOUSEOUT);
 
     setStyleName(STYLE_GRID);
     DomUtils.createId(this, getIdPrefix());
@@ -3149,7 +3146,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       }
     }
     if (!consumedEvents.isEmpty()) {
-      sinkEvents(consumedEvents);
+      EventUtils.sinkEvents(this, consumedEvents);
     }
   }
 
@@ -4322,23 +4319,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     StyleUtils.unhideDisplay(resizerElement);
     setResizerStatus(ResizerMode.VERTICAL);
     setResizerRow(rowIdx);
-  }
-
-  private void sinkEvents(Set<String> typeNames) {
-    if (typeNames == null) {
-      return;
-    }
-
-    int eventsToSink = 0;
-    for (String typeName : typeNames) {
-      int typeInt = Event.getTypeInt(typeName);
-      if (typeInt > 0) {
-        eventsToSink |= typeInt;
-      }
-    }
-    if (eventsToSink > 0) {
-      sinkEvents(eventsToSink);
-    }
   }
 
   private void startEditing(IsRow rowValue, int col, Element cellElement, int charCode) {

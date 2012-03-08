@@ -10,9 +10,9 @@ public class ColumnFooter extends Header<String> {
 
   private final List<String> sources;
 
-  public ColumnFooter(List<String> sources, Collection<String> consumedEvents, 
+  public ColumnFooter(List<String> sources, Collection<String> updaterEvents, 
       final ValueUpdater<String> valueUpdater) {
-    super(new FooterCell(consumedEvents));
+    super(new FooterCell(updaterEvents));
     this.sources = sources;
 
     setUpdater(valueUpdater);

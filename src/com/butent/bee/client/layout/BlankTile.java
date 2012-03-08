@@ -8,7 +8,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.RequiresResize;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.HasAfterAddHandler;
+import com.butent.bee.client.ui.HandlesAfterAdd;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.HasId;
@@ -18,7 +18,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Handles separate areas(tiles) of the layout.
  */
 
-public class BlankTile extends Composite implements HasAfterAddHandler, HasId, RequiresResize {
+public class BlankTile extends Composite implements HandlesAfterAdd, HasId, RequiresResize {
 
   private class UpdateCommand extends BeeCommand {
     @Override

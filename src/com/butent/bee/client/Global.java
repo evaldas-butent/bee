@@ -5,7 +5,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.web.bindery.event.shared.Event;
 
 import com.butent.bee.client.data.DataInfoProvider;
 import com.butent.bee.client.data.DataInfoProvider.DataInfoCallback;
@@ -96,11 +95,11 @@ public class Global implements Module {
     return GridFactory.cellTable(data, cellType, columnLabels);
   }
 
-  public static boolean closeDialog(Event<?> event) {
-    if (event == null) {
+  public static boolean closeDialog(Widget source) {
+    if (source == null) {
       return false;
     } else {
-      return msgBoxen.close(event.getSource());
+      return msgBoxen.close(source);
     }
   }
 
@@ -341,7 +340,7 @@ public class Global implements Module {
       for (String z : context) {
         keys.addAll(BeeUtils.getContext(z, names));
       }
-      if (keys.size() > 0) {
+      if (!keys.isEmpty()) {
         arr = new Variable[keys.size()];
         int idx = 0;
         for (String key : keys) {

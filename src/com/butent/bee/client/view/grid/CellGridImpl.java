@@ -796,7 +796,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       String versionColumnName) {
     List<ColumnFooter> footers = getGrid().getFooters();
 
-    if (footers == null || footers.size() <= 0) {
+    if (footers == null || footers.isEmpty()) {
       return null;
     }
     Filter filter = null;
@@ -1563,7 +1563,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
     }
 
-    if (columns.size() > 0) {
+    if (!columns.isEmpty()) {
       fireEvent(new SaveChangesEvent(rowId, newRow.getVersion(), columns, oldValues, newValues));
     }
   }

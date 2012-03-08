@@ -214,7 +214,7 @@ public class Order implements BeeSerializable, Transformable {
   }
 
   public void deserialize(String s) {
-    if (columns.size() > 0) {
+    if (!columns.isEmpty()) {
       columns.clear();
     }
     String[] cols = Codec.beeDeserializeCollection(s);

@@ -1,8 +1,6 @@
 package com.butent.bee.client;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.event.dom.client.BlurEvent;
-import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.Window.ClosingHandler;
@@ -12,8 +10,6 @@ import com.google.web.bindery.event.shared.Event.Type;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.google.web.bindery.event.shared.SimpleEventBus;
 
-import com.butent.bee.client.event.BeeBlurHandler;
-import com.butent.bee.client.event.BeeClickHandler;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
@@ -36,9 +32,6 @@ import java.util.List;
 
 public class EventManager implements Module {
 
-  private BeeClickHandler clickHandler = null;
-  private BeeBlurHandler blurHandler = null;
-
   private final SimpleEventBus eventBus;
   
   private HandlerRegistration exitRegistry = null;
@@ -47,20 +40,6 @@ public class EventManager implements Module {
     this.eventBus = new SimpleEventBus();
   }
 
-  public void addBlurHandler(Widget w, boolean sink) {
-    Assert.notNull(w);
-    if (sink) {
-      w.addDomHandler(ensureBlurHandler(), BlurEvent.getType());
-    } else {
-      w.addHandler(ensureBlurHandler(), BlurEvent.getType());
-    }
-  }
-
-  public void addClickHandler(HasClickHandlers w) {
-    Assert.notNull(w);
-    w.addClickHandler(ensureClickHandler());
-  }
-  
   public <H> HandlerRegistration addHandler(Type<H> type, H handler) {
     Assert.notNull(type);
     Assert.notNull(handler);
@@ -74,28 +53,28 @@ public class EventManager implements Module {
     return eventBus.addHandlerToSource(type, source, handler);
   }
 
-  public boolean dispatchService(Stage stage, Event<?> event) {
+  public boolean dispatchService(Stage stage, Widget source) {
     Assert.notNull(stage);
-    return dispatchService(stage.getService(), stage.getStage(), event);
+    return dispatchService(stage.getService(), stage.getStage(), source);
   }
 
   public boolean dispatchService(String svc) {
     return dispatchService(svc, null, null);
   }
   
-  public boolean dispatchService(String svc, String stg, Event<?> event) {
+  public boolean dispatchService(String svc, String stg, Widget source) {
     Assert.notEmpty(svc);
 
     if (CompositeService.isRegistered(svc)) {
-      return CompositeService.doService(svc, stg, event);
+      return CompositeService.doService(svc, stg, source);
 
     } else if (Service.isRpcService(svc)) {
       BeeKeeper.getRpc().makeGetRequest(svc);
       return true;
     } else if (Service.isUiService(svc)) {
-      return dispatchUiService(svc, event);
+      return dispatchUiService(svc, source);
     } else if (Service.isCompositeService(svc)) {
-      return dispatchCompositeService(svc, stg, event);
+      return dispatchCompositeService(svc, stg, source);
     } else {
       Global.showError("Unknown service type", svc);
       return false;
@@ -193,7 +172,7 @@ public class EventManager implements Module {
   public void start() {
   }
 
-  private boolean dispatchCompositeService(String svc, String stg, Event<?> event) {
+  private boolean dispatchCompositeService(String svc, String stg, Widget source) {
     Assert.notEmpty(svc);
     Assert.notEmpty(stg);
 
@@ -213,7 +192,7 @@ public class EventManager implements Module {
         } else if (cls.length() < 2) {
           Global.showError("Class name", cls, "too short");
         } else {
-          Global.closeDialog(event);
+          Global.closeDialog(source);
           BeeKeeper.getRpc().makePostRequest(Service.GET_CLASS_INFO,
               XmlUtils.createString(Service.XML_TAG_DATA,
                   Service.VAR_CLASS_NAME, cls, Service.VAR_PACKAGE_LIST, pck));
@@ -234,7 +213,7 @@ public class EventManager implements Module {
         if (BeeUtils.isEmpty(src)) {
           Global.showError("Source not specified");
         } else {
-          Global.closeDialog(event);
+          Global.closeDialog(source);
           BeeKeeper.getRpc().makePostRequest(Service.GET_XML_INFO,
               XmlUtils.fromVars(Service.XML_TAG_DATA,
                   Service.VAR_XML_SOURCE, Service.VAR_XML_TRANSFORM,
@@ -273,7 +252,7 @@ public class EventManager implements Module {
         if (BeeUtils.isEmpty(sql)) {
           Global.showError("Query not specified");
         } else {
-          Global.closeDialog(event);
+          Global.closeDialog(source);
           BeeKeeper.getRpc().makePostRequest(Service.DB_JDBC,
               XmlUtils.fromVars(Service.XML_TAG_DATA,
                   Service.VAR_JDBC_QUERY,
@@ -308,32 +287,18 @@ public class EventManager implements Module {
     return ok;
   }
 
-  private boolean dispatchUiService(String svc, Event<?> event) {
+  private boolean dispatchUiService(String svc, Widget source) {
     if (svc.equals(Service.CLOSE_DIALOG)) {
-      return Global.closeDialog(event);
+      return Global.closeDialog(source);
     } else if (svc.equals(Service.CONFIRM_DIALOG)) {
-      return Global.closeDialog(event);
+      return Global.closeDialog(source);
     } else if (svc.equals(Service.CANCEL_DIALOG)) {
-      return Global.closeDialog(event);
+      return Global.closeDialog(source);
     } else if (svc.equals(Service.REFRESH_MENU)) {
       return BeeKeeper.getMenu().drawMenu();
     } else {
       Global.showError("Unknown UI service", svc);
       return false;
     }
-  }
-
-  private BeeBlurHandler ensureBlurHandler() {
-    if (blurHandler == null) {
-      blurHandler = new BeeBlurHandler();
-    }
-    return blurHandler;
-  }
-
-  private BeeClickHandler ensureClickHandler() {
-    if (clickHandler == null) {
-      clickHandler = new BeeClickHandler();
-    }
-    return clickHandler;
   }
 }

@@ -6,8 +6,8 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Image;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.shared.HasId;
@@ -81,6 +81,9 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
   @Override
   public void onBrowserEvent(Event event) {
     if (isEnabled()) {
+      if (EventUtils.isClick(event) && getCommand() != null) {
+        getCommand().execute();
+      }
       super.onBrowserEvent(event);
     }
   }
@@ -116,7 +119,7 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
   private void initCommand(BeeCommand cmnd) {
     if (cmnd != null) {
       setCommand(cmnd);
-      BeeKeeper.getBus().addClickHandler(this);
+      sinkEvents(Event.ONCLICK);
     }
   }
 }

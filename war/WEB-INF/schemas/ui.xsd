@@ -222,6 +222,7 @@
       <xs:enumeration value="gesturechange" />
       <xs:enumeration value="gestureend" />
       <xs:enumeration value="gesturestart" />
+      <xs:enumeration value="input" />
       <xs:enumeration value="keydown" />
       <xs:enumeration value="keypress" />
       <xs:enumeration value="keyup" />

@@ -1,6 +1,6 @@
 package com.butent.bee.client.ui;
 
-import com.google.gwt.event.shared.GwtEvent;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -52,7 +52,7 @@ public class DsnService extends CompositeService {
       return ok;
 
     } else if (stg.equals(SVC_SWITCH_DSN)) {
-      Global.closeDialog((GwtEvent<?>) params[0]);
+      Global.closeDialog((Widget) params[0]);
       String dsnName = dsn.getValue();
 
       if (!BeeUtils.isEmpty(dsnName)) {

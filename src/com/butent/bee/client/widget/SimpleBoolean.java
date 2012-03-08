@@ -1,18 +1,17 @@
 package com.butent.bee.client.widget;
 
-import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.SimpleCheckBox;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.HasBeeClickHandler;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.shared.HasBooleanValue;
 
 /**
  * Implements a checkbox user interface component without label.
  */
 
-public class SimpleBoolean extends SimpleCheckBox implements BooleanWidget, HasBeeClickHandler {
+public class SimpleBoolean extends SimpleCheckBox implements BooleanWidget {
 
   private HasBooleanValue source = null;
 
@@ -30,7 +29,6 @@ public class SimpleBoolean extends SimpleCheckBox implements BooleanWidget, HasB
     this();
     if (source != null) {
       initSource(source);
-      addDefaultHandler();
     }
   }
 
@@ -46,9 +44,12 @@ public class SimpleBoolean extends SimpleCheckBox implements BooleanWidget, HasB
     return source;
   }
 
-  public boolean onBeeClick(ClickEvent event) {
-    updateSource(getValue());
-    return true;
+  @Override
+  public void onBrowserEvent(Event event) {
+    if (EventUtils.isClick(event)) {
+      updateSource(getValue());
+    }
+    super.onBrowserEvent(event);
   }
 
   public void setId(String id) {
@@ -59,13 +60,11 @@ public class SimpleBoolean extends SimpleCheckBox implements BooleanWidget, HasB
     this.source = source;
   }
 
-  private void addDefaultHandler() {
-    BeeKeeper.getBus().addClickHandler(this);
-  }
-
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-SimpleBoolean");
+    
+    sinkEvents(Event.ONCLICK);
   }
 
   private void initSource(HasBooleanValue src) {

@@ -9,7 +9,6 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Split;
@@ -70,7 +69,6 @@ public class GwtUiCreator implements UiCreator {
     String svc = button.getProperty("click_proc");
     if (!BeeUtils.isEmpty(svc)) {
       b.setService(svc);
-      BeeKeeper.getBus().addClickHandler(b);
     }
 
     createChilds(b, button);

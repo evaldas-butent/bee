@@ -1,8 +1,8 @@
 package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -65,14 +65,14 @@ public class FormService extends CompositeService {
         break;
 
       case SHOW_FORM:
-        GwtEvent<?> event = (GwtEvent<?>) params[0];
+        Widget source = (Widget) params[0];
         String fName = BeeUtils.trim(Global.getVarValue(fld));
 
         if (BeeUtils.isEmpty(fName)) {
           Global.showError("Form name not specified");
           ok = false;
         } else {
-          Global.closeDialog(event);
+          Global.closeDialog(source);
           BeeKeeper.getRpc().makePostRequest(Service.GET_X_FORM,
               XmlUtils.createString(Service.XML_TAG_DATA, fld, fName),
               new ResponseCallback() {

@@ -4,7 +4,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.SelectElement;
-import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
@@ -21,16 +20,14 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.event.HasAfterAddHandler;
-import com.butent.bee.client.event.HasBeeBlurHandler;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.menu.MenuItem.ITEM_TYPE;
+import com.butent.bee.client.ui.HandlesAfterAdd;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
@@ -43,8 +40,7 @@ import java.util.List;
  * Contains menu object and core menu handling methods like {@code addItem} or {@code doCommand}.
  */
 
-public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
-    HasBeeBlurHandler, CloseHandler<PopupPanel> {
+public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHandler<PopupPanel> {
 
   /**
    * Contains a list of possible menu types.
@@ -142,7 +138,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
   public MenuSeparator addSeparator(MenuSeparator separator) {
     return insertSeparator(separator, allItems.size());
   }
-  
+
   public void clearItems() {
     closeAll();
 
@@ -182,9 +178,9 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
       return null;
     }
   }
-  
+
   public int getItemCount() {
-    return items.size(); 
+    return items.size();
   }
 
   public List<MenuItem> getItems() {
@@ -281,19 +277,19 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     }
   }
 
-  public boolean onBeeBlur(BlurEvent event) {
-    if (childMenu == null) {
-      selectItem(null);
-    }
-
-    return true;
-  }
-
   @Override
   public void onBrowserEvent(Event event) {
     Element target = DOM.eventGetTarget(event);
     int type = DOM.eventGetType(event);
-
+    
+    if (type == Event.ONBLUR) {
+      if (childMenu == null) {
+        selectItem(null);
+      }
+      super.onBrowserEvent(event);
+      return;
+    }
+    
     if (EventUtils.isKeyEvent(type)) {
       hoverEnabled = false;
     } else if (type == Event.ONCLICK || type == Event.ONMOUSEWHEEL) {
@@ -661,7 +657,8 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     DOM.appendChild(outer, elem);
     setElement(outer);
 
-    sinkEvents(Event.ONCLICK | Event.ONKEYDOWN | Event.ONKEYPRESS | Event.ONMOUSEWHEEL);
+    sinkEvents(Event.ONCLICK | Event.ONKEYDOWN | Event.ONKEYPRESS | Event.ONMOUSEWHEEL
+        | Event.ONBLUR);
     if (hover) {
       sinkEvents(Event.ONMOUSEOVER | Event.ONMOUSEOUT);
     }
@@ -679,8 +676,6 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
     addStyleDependentName(barType.toString().toLowerCase());
 
     StyleUtils.hideOutline(outer);
-
-    BeeKeeper.getBus().addBlurHandler(this, true);
   }
 
   private MenuItem insertItem(MenuItem item, int beforeIndex) {
@@ -795,7 +790,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
 
   private boolean selectFirstItemIfNoneSelected() {
     if (selectedItem == null) {
-      if (items.size() > 0) {
+      if (!items.isEmpty()) {
         MenuItem item = items.get(0);
         selectItem(item);
       }
@@ -820,7 +815,7 @@ public class MenuBar extends Widget implements HasId, HasAfterAddHandler,
 
   private boolean selectLastItemIfNoneSelected() {
     if (selectedItem == null) {
-      if (items.size() > 0) {
+      if (!items.isEmpty()) {
         MenuItem item = items.get(items.size() - 1);
         selectItem(item);
       }

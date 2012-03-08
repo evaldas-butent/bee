@@ -44,7 +44,7 @@ public class VisualizationUtils {
       }
     }
 
-    if (lst.size() <= 0) {
+    if (lst.isEmpty()) {
       onLoad.run();
       return;
     }

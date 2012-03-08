@@ -2,10 +2,12 @@ package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Button;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.shared.HasId;
@@ -21,20 +23,12 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class BeeButton extends Button implements HasId, HasService, HasStage, HasCommand {
 
   private BeeCommand command = null;
-  private boolean defaultHandlerInitialized = false;
 
   public BeeButton() {
     super();
     init();
   }
 
-  public BeeButton(boolean addHandler) {
-    this();
-    if (addHandler) {
-      addDefaultHandler();
-    }
-  }
-  
   public BeeButton(Element element) {
     super(element);
     init();
@@ -93,10 +87,24 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     return DomUtils.getStage(this);
   }
 
+  @Override
+  public void onBrowserEvent(Event event) {
+    if (EventUtils.isClick(event)) {
+      if (getCommand() != null) {
+        getCommand().execute();
+      }
+      if (!BeeUtils.isEmpty(getService())) {
+        BeeKeeper.getBus().dispatchService(getService(), getStage(), this);
+      }
+    }
+
+    super.onBrowserEvent(event);
+  }
+  
   public void setCommand(BeeCommand command) {
     this.command = command;
     if (command != null) {
-      addDefaultHandler();
+      initEvents();
     }
   }
 
@@ -107,7 +115,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
   public void setService(String svc) {
     DomUtils.setService(this, svc);
     if (!BeeUtils.isEmpty(svc)) {
-      addDefaultHandler();
+      initEvents();
     }
   }
 
@@ -115,23 +123,12 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     DomUtils.setStage(this, stg);
   }
   
-  private void addDefaultHandler() {
-    if (!isDefaultHandlerInitialized()) {
-      BeeKeeper.getBus().addClickHandler(this);
-      setDefaultHandlerInitialized(true);
-    }
-  }
-
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-Button");
   }
-
-  private boolean isDefaultHandlerInitialized() {
-    return defaultHandlerInitialized;
-  }
-
-  private void setDefaultHandlerInitialized(boolean defaultHandlerInitialized) {
-    this.defaultHandlerInitialized = defaultHandlerInitialized;
+  
+  private void initEvents() {
+    sinkEvents(Event.ONCLICK);
   }
 }

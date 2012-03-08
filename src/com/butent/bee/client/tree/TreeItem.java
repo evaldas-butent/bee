@@ -313,7 +313,7 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
     item.setParentItem(null);
     getChildren().remove(item);
 
-    if (!isRoot && getChildren().size() == 0) {
+    if (!isRoot && getChildren().isEmpty()) {
       updateState(false, false);
     }
   }

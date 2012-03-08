@@ -1,10 +1,11 @@
 package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HTML;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.shared.HasId;
@@ -25,7 +26,7 @@ public class Html extends HTML implements HasId, HasCommand {
 
   public Html(Element element) {
     super(element);
-    if (element == null || BeeUtils.isEmpty(element.getId())) {
+    if (BeeUtils.isEmpty(element.getId())) {
       DomUtils.createId(this, getIdPrefix());
     }
   }
@@ -40,7 +41,6 @@ public class Html extends HTML implements HasId, HasCommand {
 
     if (cmnd != null) {
       setCommand(cmnd);
-      BeeKeeper.getBus().addClickHandler(this);
     }
   }
 
@@ -61,8 +61,19 @@ public class Html extends HTML implements HasId, HasCommand {
     return DomUtils.HTML_ID_PREFIX;
   }
 
+  @Override
+  public void onBrowserEvent(Event event) {
+    if (EventUtils.isClick(event) && getCommand() != null) {
+      getCommand().execute();
+    }
+    super.onBrowserEvent(event);
+  }
+
   public void setCommand(BeeCommand command) {
     this.command = command;
+    if (command != null) {
+      sinkEvents(Event.ONCLICK);
+    }
   }
 
   public void setId(String id) {

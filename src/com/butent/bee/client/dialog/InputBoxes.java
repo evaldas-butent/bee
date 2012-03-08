@@ -86,7 +86,7 @@ public class InputBoxes {
             EventUtils.eatEvent(event);
             EventUtils.getEventTargetElement(event).blur();
             if (getStage() != null) {
-              BeeKeeper.getBus().dispatchService(getStage(), event);
+              BeeKeeper.getBus().dispatchService(getStage(), dialog);
             } else {
               getDialog().hide();
             }

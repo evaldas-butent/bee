@@ -188,7 +188,7 @@ public class GridUtils {
     boolean fullySynced = false;
     int syncedColumns = 1;
 
-    while (columns.size() > 0 && w != 0) {
+    while (!columns.isEmpty() && w != 0) {
       double targetDiff = getTargetDiff(columns, syncedColumns, w);
 
       int totalRequired = 0;

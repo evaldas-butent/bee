@@ -208,7 +208,7 @@ public class Images {
 
   public static void init(Resources resources) {
     Assert.notNull(resources);
-    if (map.size() > 0) {
+    if (!map.isEmpty()) {
       map.clear();
     }
 

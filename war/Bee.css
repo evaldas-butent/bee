@@ -609,7 +609,7 @@ body, select {
 
 .bee-DialogBox .Caption {
   background-color: #e3e8f3;
-  padding: 4px 4px 4px 8px;
+  padding: 4px 20px 4px 8px;
   border-bottom: 1px solid #ddd;
   font-size: medium;
   font-weight: bolder;

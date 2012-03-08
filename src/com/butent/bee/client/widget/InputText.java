@@ -9,7 +9,10 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.TextBoxBase;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.HasInputHandlers;
+import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -23,7 +26,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements a text box that allows a single line of text to be entered.
  */
 
-public class InputText extends TextBoxBase implements Editor, HasCharacterFilter {
+public class InputText extends TextBoxBase implements Editor, HasCharacterFilter, HasInputHandlers {
 
   private HasStringValue source = null;
 
@@ -60,6 +63,10 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
 
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
+  }
+
+  public HandlerRegistration addInputHandler(InputHandler handler) {
+    return Binder.addInputHandler(this, handler);
   }
 
   public CharMatcher getCharMatcher() {

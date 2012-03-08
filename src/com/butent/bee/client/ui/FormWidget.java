@@ -1032,7 +1032,7 @@ public enum FormWidget {
 
     boolean disablable = widget instanceof HasEnabled;
 
-    if (attributes.size() > 0) {
+    if (!attributes.isEmpty()) {
       setAttributes(widget, attributes);
       widgetDescription.setAttributes(attributes);
 
@@ -1050,7 +1050,7 @@ public enum FormWidget {
     List<ConditionalStyleDeclaration> dynStyles = Lists.newArrayList();
     Calculation calc;
 
-    if (children.size() > 0) {
+    if (!children.isEmpty()) {
       for (Element child : children) {
         String childTag = child.getTagName();
 
@@ -1096,11 +1096,11 @@ public enum FormWidget {
       }
     }
 
-    if (dynStyles.size() > 0) {
+    if (!dynStyles.isEmpty()) {
       widgetDescription.setDynStyles(dynStyles);
     }
 
-    if (attributes.size() > 0) {
+    if (!attributes.isEmpty()) {
       if (this == LIST_BOX && widget instanceof BeeListBox) {
         int z = BeeUtils.toInt(attributes.get(ATTR_MIN_SIZE));
         if (z > 0) {
@@ -1455,7 +1455,7 @@ public enum FormWidget {
   }
 
   private void initMedia(MediaBase widget, Map<String, String> attributes) {
-    if (attributes == null || attributes.size() <= 0) {
+    if (attributes == null || attributes.isEmpty()) {
       widget.setAutoplay(false);
       widget.setControls(true);
       return;

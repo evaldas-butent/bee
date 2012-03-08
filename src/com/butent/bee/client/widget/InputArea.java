@@ -7,8 +7,11 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.TextArea;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.event.HasAfterSaveHandler;
+import com.butent.bee.client.event.HasInputHandlers;
+import com.butent.bee.client.event.InputHandler;
+import com.butent.bee.client.ui.HandlesAfterSave;
 import com.butent.bee.client.ui.HasTextDimensions;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.JsUtils;
@@ -23,7 +26,8 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements a text area that allows multiple lines of text to be entered.
  */
 
-public class InputArea extends TextArea implements Editor, HasAfterSaveHandler, HasTextDimensions {
+public class InputArea extends TextArea implements Editor, HandlesAfterSave, HasTextDimensions,
+    HasInputHandlers {
 
   private BeeResource resource = null;
 
@@ -32,9 +36,9 @@ public class InputArea extends TextArea implements Editor, HasAfterSaveHandler, 
   private boolean nullable = true;
 
   private boolean editing = false;
-  
+
   private boolean editorInitialized = false;
-  
+
   public InputArea() {
     super();
     init();
@@ -57,6 +61,10 @@ public class InputArea extends TextArea implements Editor, HasAfterSaveHandler, 
 
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
+  }
+
+  public HandlerRegistration addInputHandler(InputHandler handler) {
+    return Binder.addInputHandler(this, handler);
   }
 
   public String getDigest() {
@@ -192,7 +200,7 @@ public class InputArea extends TextArea implements Editor, HasAfterSaveHandler, 
   private boolean isEditorInitialized() {
     return editorInitialized;
   }
-  
+
   private void setEditorInitialized(boolean editorInitialized) {
     this.editorInitialized = editorInitialized;
   }

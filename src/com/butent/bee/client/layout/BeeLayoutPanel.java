@@ -7,8 +7,8 @@ import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.HasAfterAddHandler;
-import com.butent.bee.client.event.HasBeforeAddHandler;
+import com.butent.bee.client.ui.HandlesAfterAdd;
+import com.butent.bee.client.ui.HandlesBeforeAdd;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -35,16 +35,16 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
   public void add(Widget widget) {
     Assert.notNull(widget);
     Widget w = widget;
-    if (w instanceof HasBeforeAddHandler) {
-      w = ((HasBeforeAddHandler) w).onBeforeAdd(this);
+    if (w instanceof HandlesBeforeAdd) {
+      w = ((HandlesBeforeAdd) w).onBeforeAdd(this);
     }
 
     super.add(w);
     DomUtils.createId(getWidgetContainerElement(w), "container");
     getWidgetContainerElement(w).setClassName("bee-LayoutContainer");
 
-    if (w instanceof HasAfterAddHandler) {
-      ((HasAfterAddHandler) w).onAfterAdd(this);
+    if (w instanceof HandlesAfterAdd) {
+      ((HandlesAfterAdd) w).onAfterAdd(this);
     }
   }
 

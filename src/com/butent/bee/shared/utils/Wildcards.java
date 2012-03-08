@@ -458,7 +458,7 @@ public class Wildcards {
     Stack<int[]> backtrack = new Stack<int[]>();
 
     do {
-      if (backtrack.size() > 0) {
+      if (!backtrack.isEmpty()) {
         int[] positions = backtrack.pop();
         tokIdx = positions[0];
         inpIdx = positions[1];
@@ -506,7 +506,7 @@ public class Wildcards {
         return true;
       }
 
-    } while (backtrack.size() > 0);
+    } while (!backtrack.isEmpty());
 
     return false;
   }
