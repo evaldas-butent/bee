@@ -16,6 +16,7 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.view.CatchEvent;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
@@ -37,7 +38,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 import java.util.Map;
 
-public class TreePresenter implements Presenter {
+public class TreePresenter implements Presenter, CatchEvent.CatchHandler<IsRow> {
 
   private class CommitCallback implements RowCallback {
     private final boolean createMode;
@@ -96,6 +97,8 @@ public class TreePresenter implements Presenter {
       this.calculation = new Calculation(calc.hasExpressionOrFunction() ? calc.getExpression()
           : expr, calc.getFunction(), calc.getLambda());
     }
+    getView().addCatchHandler(this);
+
     if (BeeUtils.isEmpty(relationName)) {
       requery();
     }
@@ -143,6 +146,19 @@ public class TreePresenter implements Presenter {
   }
 
   @Override
+  public void onCatch(CatchEvent<IsRow> event) {
+    IsRow item = event.getPacket();
+    int parentIndex = DataUtils.getColumnIndex(parentName, getDataColumns());
+    IsRow destination = event.getDestination();
+
+    Queries.update(source, item.getId(), item.getVersion(),
+        Lists.newArrayList(getDataColumns().get(parentIndex)),
+        Lists.newArrayList(item.getString(parentIndex)),
+        Lists.newArrayList(destination == null ? null : BeeUtils.toString(destination.getId())),
+        new CommitCallback(false));
+  }
+
+  @Override
   public void onViewUnload() {
     getView().setViewPresenter(null);
   }
@@ -186,7 +202,6 @@ public class TreePresenter implements Presenter {
   private void edit(final IsRow item) {
     final boolean addMode = (item == null);
     final IsRow row;
-    boolean init = false;
 
     if (addMode) {
       row = new BeeRow(0, new String[getDataColumns().size()]);
@@ -199,11 +214,12 @@ public class TreePresenter implements Presenter {
       row = new BeeRow(item.getId(), item.getVersion(), arr);
     }
     if (formView == null) {
-      init = true;
       formView = new FormImpl(Position.RELATIVE);
       formView.create(new FormDescription(editor), getDataColumns(), null, false);
       formView.setEditing(true);
+      formView.start(null);
     }
+    formView.updateRow(row, false);
     String caption;
 
     if (addMode) {
@@ -261,10 +277,6 @@ public class TreePresenter implements Presenter {
         }
       }
     });
-    if (init) {
-      formView.start(null);
-    }
-    formView.updateRow(row, false);
   }
 
   private void editItem() {

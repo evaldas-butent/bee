@@ -774,7 +774,7 @@ public class ProjectEventHandler {
   }
 
   private static void doComment(final FormView form) {
-    final ProjectDialog dialog = new ProjectDialog("Užduoties komentaras");
+    final ProjectDialog dialog = new ProjectDialog("Projekto komentaras");
     dialog.addComment("Komentaras", "", true);
     dialog.addAction("Išsaugoti", new ClickHandler() {
       @Override

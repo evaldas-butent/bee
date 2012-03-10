@@ -1,9 +1,17 @@
 package com.butent.bee.client.tree;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.DataTransfer;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.DragEndEvent;
+import com.google.gwt.event.dom.client.DragEnterEvent;
+import com.google.gwt.event.dom.client.DragEvent;
+import com.google.gwt.event.dom.client.DragLeaveEvent;
+import com.google.gwt.event.dom.client.DragOverEvent;
+import com.google.gwt.event.dom.client.DragStartEvent;
+import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.HasAllFocusHandlers;
@@ -45,16 +53,19 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
 import com.google.gwt.user.client.ui.AbstractImagePrototype.ImagePrototypeElement;
-import com.google.gwt.user.client.ui.impl.FocusImpl;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasAnimation;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.WidgetCollection;
+import com.google.gwt.user.client.ui.impl.FocusImpl;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.utils.JsUtils;
+import com.butent.bee.client.view.CatchEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -67,7 +78,8 @@ import java.util.Map;
 
 public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation,
     HasAllKeyHandlers, HasAllFocusHandlers, HasSelectionHandlers<TreeItem>,
-    HasOpenHandlers<TreeItem>, HasCloseHandlers<TreeItem>, HasAllMouseHandlers, HasId {
+    CatchEvent.HasCatchHandlers<TreeItem>, HasOpenHandlers<TreeItem>, HasCloseHandlers<TreeItem>,
+    HasAllMouseHandlers, HasEnabled, HasId {
 
   public interface Resources extends ClientBundle {
     @Source("treeClosed.gif")
@@ -75,6 +87,150 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
 
     @Source("treeOpen.gif")
     ImageResource treeOpen();
+  }
+
+  private class DndHandler {
+
+    private TreeItem source = null;
+    private Element target = null;
+    private boolean rootOn = false;
+
+    public boolean handleEvent(Event event) {
+      DataTransfer dto = event.getDataTransfer();
+
+      if (dto == null) {
+        return false;
+      }
+      Element elem = EventUtils.getEventTargetElement(event).cast();
+      String ev = event.getType();
+
+      if (ev == DragStartEvent.getType().getName()) {
+        if (isEnabled()) {
+          source = getItemByContentId(elem.getId());
+        }
+        if (source == null) {
+          event.preventDefault();
+        } else {
+          elem.addClassName(StyleUtils.DND_SOURCE);
+          dto.setData(EventUtils.DEFAULT_DND_DATA_FORMAT, elem.getId());
+          JsUtils.setProperty(dto, EventUtils.PROPERTY_EFFECT_ALLOWED, EventUtils.EFFECT_MOVE);
+        }
+      } else if (ev == DragEvent.getType().getName()) {
+        if (rootTarget()) {
+          if (rootIn(event.getClientX(), event.getClientY())) {
+            rootOn();
+          } else {
+            rootOff();
+          }
+        } else {
+          rootOff();
+        }
+      } else if (ev == DragEndEvent.getType().getName()) {
+        if (rootTarget()) {
+          if (rootIn(event.getClientX(), event.getClientY())) {
+            rootOn();
+          } else {
+            rootOff();
+          }
+        } else {
+          rootOff();
+        }
+        elem.removeClassName(StyleUtils.DND_SOURCE);
+
+        if (rootOn || isTarget(target)) {
+          TreeItem destination = null;
+
+          if (rootOn) {
+            rootOff();
+            Tree.this.addItem(source);
+          } else {
+            destination = getItemByContentId(target.getId());
+            destination.addItem(source);
+          }
+          setSelectedItem(source);
+          ensureSelectedItemVisible();
+          CatchEvent.fire(Tree.this, source, destination);
+        }
+        source = null;
+        target = null;
+
+      } else if (ev == DragEnterEvent.getType().getName()) {
+        target = elem;
+
+        if (isTarget(elem)) {
+          elem.addClassName(StyleUtils.DND_OVER);
+          TreeItem item = getItemByContentId(elem.getId());
+
+          if (item != null && !item.isOpen()) {
+            item.setOpen(true);
+          }
+        }
+      } else if (ev == DragOverEvent.getType().getName()) {
+        EventUtils.eatEvent(event);
+        JsUtils.setProperty(dto, EventUtils.PROPERTY_DROP_EFFECT, EventUtils.EFFECT_MOVE);
+
+      } else if (ev == DragLeaveEvent.getType().getName()) {
+        if (isTarget(elem)) {
+          elem.removeClassName(StyleUtils.DND_OVER);
+        }
+        if (elem == target) {
+          target = null;
+        }
+      } else if (ev == DropEvent.getType().getName()) {
+        EventUtils.eatEvent(event);
+
+        if (isTarget(elem)) {
+          elem.removeClassName(StyleUtils.DND_OVER);
+          target = elem;
+        }
+      }
+      return true;
+    }
+
+    private boolean isTarget(Element elem) {
+      if (elem == null || source == null) {
+        return false;
+      }
+      TreeItem item = getItemByContentId(elem.getId());
+
+      if (item == null || item == source.getParentItem()) {
+        return false;
+      }
+      while (item != null) {
+        if (item == source) {
+          return false;
+        }
+        item = item.getParentItem();
+      }
+      return true;
+    }
+
+    private boolean rootIn(int x, int y) {
+      int top = Tree.this.getAbsoluteTop();
+      int left = Tree.this.getAbsoluteLeft();
+      int width = Tree.this.getOffsetWidth();
+      int height = Tree.this.getOffsetHeight();
+      return BeeUtils.betweenInclusive(x, left, left + width)
+          && BeeUtils.betweenInclusive(y, top, top + height);
+    }
+
+    private void rootOff() {
+      if (rootOn) {
+        Tree.this.getElement().removeClassName(StyleUtils.DND_OVER);
+        rootOn = false;
+      }
+    }
+
+    private void rootOn() {
+      if (!rootOn) {
+        Tree.this.getElement().addClassName(StyleUtils.DND_OVER);
+        rootOn = true;
+      }
+    }
+
+    private boolean rootTarget() {
+      return target == null && source.getParentItem() != null;
+    }
   }
 
   public static AbstractImagePrototype treeClosed = null;
@@ -103,6 +259,10 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
   private boolean isAnimationEnabled = false;
 
   private final TreeItem root;
+
+  private DndHandler dndHandler = null;
+
+  private boolean enabled = true;
 
   public Tree() {
     setElement(DOM.createDiv());
@@ -133,6 +293,11 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
 
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return addDomHandler(handler, BlurEvent.getType());
+  }
+
+  @Override
+  public HandlerRegistration addCatchHandler(CatchEvent.CatchHandler<TreeItem> handler) {
+    return addHandler(handler, CatchEvent.getType());
   }
 
   public HandlerRegistration addCloseHandler(CloseHandler<TreeItem> handler) {
@@ -258,6 +423,11 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     return isAnimationEnabled;
   }
 
+  @Override
+  public boolean isEnabled() {
+    return enabled;
+  }
+
   public Iterator<Widget> iterator() {
     WidgetCollection widgetCollection = new WidgetCollection(this);
     for (Widget widget : childWidgets.keySet()) {
@@ -268,6 +438,9 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
 
   @Override
   public void onBrowserEvent(Event event) {
+    if (handleDndEvent(event)) {
+      return;
+    }
     int eventType = event.getTypeInt();
 
     switch (eventType) {
@@ -343,6 +516,14 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
 
   public void setAnimationEnabled(boolean enable) {
     this.isAnimationEnabled = enable;
+  }
+
+  @Override
+  public void setEnabled(boolean enabled) {
+    if (enabled == isEnabled()) {
+      return;
+    }
+    this.enabled = enabled;
   }
 
   public void setFocus(boolean focus) {
@@ -508,6 +689,10 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     return findItemByChain(chain, idx + 1, rootItem);
   }
 
+  private TreeItem getItemByContentId(String contentId) {
+    return root.getItemByContentId(contentId);
+  }
+
   private TreeItem getTopClosedParent(TreeItem item) {
     if (item == null) {
       return null;
@@ -522,6 +707,13 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
       parent = parent.getParentItem();
     }
     return topClosedParent;
+  }
+
+  private boolean handleDndEvent(Event event) {
+    if (dndHandler == null) {
+      dndHandler = new DndHandler();
+    }
+    return dndHandler.handleEvent(event);
   }
 
   private void maybeCollapseTreeItem() {

@@ -1,5 +1,6 @@
 package com.butent.bee.client.view;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
@@ -17,6 +18,7 @@ import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.view.CatchEvent.CatchHandler;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.Assert;
@@ -24,9 +26,11 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.Map;
 
-public class TreeContainer extends Flow implements TreeView, SelectionHandler<TreeItem> {
+public class TreeContainer extends Flow implements TreeView, SelectionHandler<TreeItem>,
+    CatchEvent.CatchHandler<TreeItem> {
 
   private class ActionListener extends BeeCommand {
     private final Action action;
@@ -52,14 +56,16 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   private final TreeItem rootItem;
   private final Map<Long, TreeItem> items = Maps.newHashMap();
   private final Panel noData = new SimplePanel();
+  private final boolean hasActions;
 
   public TreeContainer(boolean hideActions, String root) {
     super();
 
     addStyleName(STYLE_NAME);
+    this.hasActions = !hideActions;
 
-    if (!hideActions) {
-      Panel hdr = new Flow();
+    if (hasActions) {
+      Flow hdr = new Flow();
       hdr.addStyleName(STYLE_NAME + "-actions");
 
       BeeImage img = new BeeImage(Global.getImages().editAdd(), new ActionListener(Action.ADD));
@@ -86,6 +92,9 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     getTree().addStyleName(STYLE_NAME + "-tree");
     getTree().addSelectionHandler(this);
 
+    if (hasActions) {
+      getTree().addCatchHandler(this);
+    }
     if (!BeeUtils.isEmpty(root)) {
       this.rootItem = new TreeItem(root);
       DOM.getFirstChild(this.rootItem.getElement()).addClassName(STYLE_NAME + "-rootItem");
@@ -97,12 +106,21 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   }
 
   @Override
+  public HandlerRegistration addCatchHandler(CatchHandler<IsRow> handler) {
+    return addHandler(handler, CatchEvent.getType());
+  }
+
+  @Override
   public void addItem(Long parentId, String text, IsRow item, boolean focus) {
     Assert.notNull(item);
     long id = item.getId();
     Assert.state(!items.containsKey(id), "Item already exists in a tree: " + id);
 
     TreeItem treeItem = new TreeItem(text, item);
+
+    if (hasActions) {
+      treeItem.makeDraggable();
+    }
     items.put(id, treeItem);
 
     HasTreeItems parentItem = items.containsKey(parentId) ? items.get(parentId) : getRoot();
@@ -121,6 +139,41 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   @Override
   public HandlerRegistration addSelectionHandler(SelectionHandler<IsRow> handler) {
     return addHandler(handler, SelectionEvent.getType());
+  }
+
+  @Override
+  public Collection<IsRow> getChildItems(IsRow item, boolean recurse) {
+    Assert.notNull(item);
+    Assert.contains(items, item.getId());
+
+    TreeItem treeItem = items.get(item.getId());
+    Collection<IsRow> childs = Lists.newArrayList();
+
+    if (treeItem.getChildCount() > 0) {
+      for (int i = 0; i < treeItem.getChildCount(); i++) {
+        TreeItem childTree = treeItem.getChild(i);
+        IsRow child = (IsRow) childTree.getUserObject();
+        childs.add(child);
+
+        if (recurse) {
+          childs.addAll(getChildItems(child, recurse));
+        }
+      }
+    }
+    return childs;
+  }
+
+  @Override
+  public IsRow getParentItem(IsRow item) {
+    Assert.notNull(item);
+    Assert.contains(items, item.getId());
+
+    TreeItem treeItem = items.get(item.getId());
+
+    if (treeItem.getParentItem() != null) {
+      return (IsRow) treeItem.getParentItem().getUserObject();
+    }
+    return null;
   }
 
   @Override
@@ -156,8 +209,23 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   }
 
   @Override
+  public void onCatch(CatchEvent<TreeItem> event) {
+    TreeItem destination = event.getDestination();
+
+    CatchEvent.fire(this, (IsRow) event.getPacket().getUserObject(),
+        destination == null ? null : (IsRow) destination.getUserObject());
+  }
+
+  @Override
   public void onSelection(SelectionEvent<TreeItem> event) {
-    SelectionEvent.fire(this, (IsRow) event.getSelectedItem().getUserObject());
+    IsRow item = null;
+
+    if (event == null) {
+      getTree().setSelectedItem(null);
+    } else {
+      item = (IsRow) event.getSelectedItem().getUserObject();
+    }
+    SelectionEvent.fire(this, item);
   }
 
   @Override
@@ -181,11 +249,10 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     TreeItem treeItem = items.get(item.getId());
 
     if (treeItem.isSelected()) {
-      getTree().setSelectedItem(treeItem.getParentItem());
+      onSelection(null);
     }
     removeFromCache(treeItem);
     treeItem.remove();
-
     showNoData();
   }
 
@@ -194,7 +261,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     getRoot().removeItems();
     items.clear();
 
-    getTree().setSelectedItem(rootItem);
+    onSelection(null);
     showNoData();
   }
 

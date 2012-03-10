@@ -1,6 +1,13 @@
 package com.butent.bee.client.tree;
 
 import com.google.gwt.animation.client.Animation;
+import com.google.gwt.event.dom.client.DragEndEvent;
+import com.google.gwt.event.dom.client.DragEnterEvent;
+import com.google.gwt.event.dom.client.DragEvent;
+import com.google.gwt.event.dom.client.DragLeaveEvent;
+import com.google.gwt.event.dom.client.DragOverEvent;
+import com.google.gwt.event.dom.client.DragStartEvent;
+import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Focusable;
@@ -12,6 +19,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -95,10 +103,10 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
   }
 
   private static final TreeItemAnimation itemAnimation = new TreeItemAnimation();
-  
-  private static final String STYLE_PREFIX = "bee-TreeItem-"; 
-  private static final String STYLE_BRANCH_CONTAINER = STYLE_PREFIX + "branchContainer"; 
-  private static final String STYLE_LEAF_CONTAINER = STYLE_PREFIX + "leafContainer"; 
+
+  private static final String STYLE_PREFIX = "bee-TreeItem-";
+  private static final String STYLE_BRANCH_CONTAINER = STYLE_PREFIX + "branchContainer";
+  private static final String STYLE_LEAF_CONTAINER = STYLE_PREFIX + "leafContainer";
 
   private static final Element BRANCH_ELEM;
   private static final Element CONTAINER_ELEM;
@@ -118,7 +126,7 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
     tbody.appendChild(tr);
     tr.appendChild(tdImg);
     tr.appendChild(tdContent);
-    
+
     CONTAINER_ELEM = DOM.createDiv();
     Element content = DOM.createDiv();
 
@@ -129,7 +137,7 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
   }
 
   private List<TreeItem> children = null;
-  
+
   private final Element contentElem;
   private Element childSpanElem = null;
   private Element imageHolder = null;
@@ -138,6 +146,7 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
 
   private boolean open = false;
   private boolean selected = false;
+  private boolean draggable = false;
 
   private TreeItem parentItem = null;
   private Tree tree = null;
@@ -252,10 +261,10 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
     if (getChildren() == null) {
       initChildren();
     }
-    
+
     setStyleName(item.getElement(), STYLE_PREFIX + "root", isRoot);
     setStyleName(item.getElement(), STYLE_PREFIX + "child", !isRoot);
-    
+
     Element childContainer = isRoot ? getTree().getElement() : getChildSpanElem();
     if (beforeIndex == childCount) {
       childContainer.appendChild(item.getElement());
@@ -286,6 +295,22 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
 
   public boolean isSelected() {
     return selected;
+  }
+
+  public void makeDraggable() {
+    if (draggable) {
+      return;
+    }
+    Element elem = getContentElem();
+    DOM.sinkBitlessEvent(elem, DragStartEvent.getType().getName());
+    DOM.sinkBitlessEvent(elem, DragEvent.getType().getName());
+    DOM.sinkBitlessEvent(elem, DragEndEvent.getType().getName());
+    DOM.sinkBitlessEvent(elem, DragEnterEvent.getType().getName());
+    DOM.sinkBitlessEvent(elem, DragOverEvent.getType().getName());
+    DOM.sinkBitlessEvent(elem, DragLeaveEvent.getType().getName());
+    DOM.sinkBitlessEvent(elem, DropEvent.getType().getName());
+    DomUtils.setDraggable(elem);
+    this.draggable = true;
   }
 
   public void remove() {
@@ -357,13 +382,13 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
     if (n <= 0) {
       return;
     }
-    
+
     setOpen(open, fireEvents);
     for (int i = 0; i < n; i++) {
       getChildren().get(i).setOpenRecursive(open, fireEvents);
     }
   }
-  
+
   public void setSelected(boolean selected) {
     if (this.selected == selected) {
       return;
@@ -443,6 +468,25 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
     return getImageHolder();
   }
 
+  TreeItem getItemByContentId(String contentId) {
+    Assert.notEmpty(contentId);
+    TreeItem treeItem = null;
+
+    if (BeeUtils.same(contentId, getContentElem().getId())) {
+      treeItem = this;
+
+    } else if (getChildCount() > 0) {
+      for (TreeItem item : getChildren()) {
+        treeItem = item.getItemByContentId(contentId);
+
+        if (treeItem != null) {
+          break;
+        }
+      }
+    }
+    return treeItem;
+  }
+
   void setTree(Tree newTree) {
     if (getTree() == newTree) {
       return;
@@ -485,10 +529,10 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
       Element tdContent = DOM.getNextSibling(tdImg);
 
       tdContent.appendChild(contentElem);
-      
+
       removeStyleName(STYLE_LEAF_CONTAINER);
       addStyleName(STYLE_BRANCH_CONTAINER);
-      
+
       setImageHolder(tdImg);
     }
   }
@@ -515,7 +559,7 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
     setChildSpanElem(DOM.createDiv());
     getElement().appendChild(getChildSpanElem());
     setStyleName(getChildSpanElem(), STYLE_PREFIX + "children");
-    
+
     this.children = new ArrayList<TreeItem>();
   }
 

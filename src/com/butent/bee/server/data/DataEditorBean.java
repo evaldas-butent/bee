@@ -139,7 +139,6 @@ public class DataEditorBean {
 
     } else {
       for (int i = 0; i < rs.getNumberOfColumns(); i++) {
-        ValueType colType = rs.getColumnType(i);
         String colName = rs.getColumnId(i);
 
         if (!view.hasColumn(colName)) {
@@ -150,6 +149,7 @@ public class DataEditorBean {
           break;
         } else {
           String oldValue = row.getShadowString(i);
+          ValueType colType = view.getColumnType(colName).toValueType();
           Object newValue = Value.parseValue(colType, row.getString(i), false).getObjectValue();
           String locale = view.getColumnLocale(colName);
 

@@ -6,9 +6,16 @@ import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.HasParent;
 import com.butent.bee.shared.data.IsRow;
 
-public interface TreeView extends View, HasParent, HasSelectionHandlers<IsRow> {
+import java.util.Collection;
+
+public interface TreeView extends View, HasParent, HasSelectionHandlers<IsRow>,
+    CatchEvent.HasCatchHandlers<IsRow> {
 
   void addItem(Long parentId, String text, IsRow item, boolean focus);
+
+  Collection<IsRow> getChildItems(IsRow item, boolean recurse);
+
+  IsRow getParentItem(IsRow item);
 
   IsRow getSelectedItem();
 
