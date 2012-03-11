@@ -129,13 +129,12 @@ public class FileCollector extends AbstractGridCallback implements DragOverHandl
   }
 
   public void onDragOver(DragOverEvent event) {
-    EventUtils.eatEvent(event);
     EventUtils.setDropEffect(event, EventUtils.EFFECT_COPY);
   }
 
   public void onDrop(DropEvent event) {
-    EventUtils.eatEvent(event);
-    
+    event.stopPropagation();
+
     setDndCounter(0);
     hideDropArea();
 

@@ -10,6 +10,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
@@ -129,6 +131,10 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
     return addHandler(handler, EditStopEvent.getType());
   }
 
+  public HandlerRegistration addFocusHandler(FocusHandler handler) {
+    return addDomHandler(handler, FocusEvent.getType());
+  }
+  
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
   }
@@ -200,26 +206,26 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
     if (EventUtils.isKeyDown(type)) {
       int keyCode = event.getKeyCode();
       if (navigate(keyCode)) {
-        EventUtils.eatEvent(event);
+        event.preventDefault();
         return;
       }
 
       if (keyCode == KeyCodes.KEY_ENTER) {
-        EventUtils.eatEvent(event);
+        event.preventDefault();
         fireEvent(new EditStopEvent(State.CHANGED));
       }
 
     } else if (EventUtils.isKeyPress(type)) {
       char charCode = (char) event.getCharCode();
       if (selectByChar(charCode, getSelectedIndex())) {
-        EventUtils.eatEvent(event);
+        event.preventDefault();
       }
 
     } else if (EventUtils.isMouseDown(type)) {
       EventTarget target = event.getEventTarget();
       for (int i = 0; i < getChildContainer().getChildCount(); i++) {
         if (EventUtils.equalsOrIsChild(getChildElement(i), target)) {
-          EventUtils.eatEvent(event);
+          event.preventDefault();
           setValue(getItemValue(i));
           fireEvent(new EditStopEvent(State.CHANGED));
           break;

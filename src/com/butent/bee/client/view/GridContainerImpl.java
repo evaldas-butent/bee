@@ -350,11 +350,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (target != null && scroller.getElement().isOrHasChild(Node.as(target))) {
         return;
       }
+
+      event.preventDefault();
       if (EventUtils.isInputElement(target)) {
-        EventUtils.eatEvent(event);
         return;
       }
-      EventUtils.eatEvent(event);
 
       int rc = display.getRowCount();
       int start = display.getPageStart();

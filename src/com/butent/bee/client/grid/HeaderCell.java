@@ -87,11 +87,11 @@ public class HeaderCell extends AbstractCell<String> {
       int col = context.getColumn();
       
       if (EventUtils.isTargetId(event.getEventTarget(), sortInfoId)) {
-        EventUtils.eatEvent(event);
+        event.preventDefault();
         grid.updateOrder(col, event);
 
       } else if (parent != null && EventUtils.hasModifierKey(event)) {
-        EventUtils.eatEvent(event);
+        event.preventDefault();
         int headerWidth = grid.estimateHeaderWidth(col, false);
 
         Element leftElement = DomUtils.getChildById(parent, sortInfoId);
@@ -111,7 +111,7 @@ public class HeaderCell extends AbstractCell<String> {
         }
         
       } else if (!showWidth || EventUtils.isTargetId(event.getEventTarget(), widthInfoId)) {
-        EventUtils.eatEvent(event);
+        event.preventDefault();
         grid.autoFitColumn(col);
       }
     }

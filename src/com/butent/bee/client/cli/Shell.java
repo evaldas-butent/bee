@@ -33,7 +33,7 @@ public class Shell extends InputArea {
           int p = getCursorPos();
           setValue(new StringBuilder(getValue()).insert(p, EOL).toString());
           setCursorPos(p + 1);
-          EventUtils.eatEvent(event);
+          event.preventDefault();
           return;
         }
       } else {
@@ -55,7 +55,7 @@ public class Shell extends InputArea {
         line = getValue().substring(start);
       }
       
-      EventUtils.eatEvent(event);
+      event.preventDefault();
       if (BeeUtils.isEmpty(line)) {
         return;
       }

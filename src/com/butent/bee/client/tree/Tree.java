@@ -166,7 +166,6 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
           }
         }
       } else if (ev == DragOverEvent.getType().getName()) {
-        EventUtils.eatEvent(event);
         JsUtils.setProperty(dto, EventUtils.PROPERTY_DROP_EFFECT, EventUtils.EFFECT_MOVE);
 
       } else if (ev == DragLeaveEvent.getType().getName()) {
@@ -177,7 +176,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
           target = null;
         }
       } else if (ev == DropEvent.getType().getName()) {
-        EventUtils.eatEvent(event);
+        event.stopPropagation();
 
         if (isTarget(elem)) {
           elem.removeClassName(StyleUtils.DND_OVER);
@@ -469,7 +468,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
         } else if (isKeyboardNavigationEnabled() && EventUtils.isArrowKey(event) &&
             !event.getAltKey() && !event.getMetaKey()) {
           navigate(event);
-          EventUtils.eatEvent(event);
+          event.preventDefault();
         }
         break;
       }

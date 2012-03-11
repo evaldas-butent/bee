@@ -230,7 +230,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
 
     if (EventUtils.isKeyDown(eventType)) {
       if (!isCellActive(index)) {
-        EventUtils.eatEvent(event);
+        event.preventDefault();
         refocus();
         return;
       }
@@ -239,21 +239,21 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
       boolean hasModifiers = EventUtils.hasModifierKey(event);
 
       if (keyCode == KeyCodes.KEY_ESCAPE) {
-        EventUtils.eatEvent(event);
+        event.preventDefault();
         getCallback().onCancel();
       } else if (keyCode == KeyCodes.KEY_ENTER && hasModifiers) {
-        EventUtils.eatEvent(event);
+        event.preventDefault();
         getCallback().onConfirm(getRow());
       } else if (keyCode == KeyCodes.KEY_ENTER || keyCode == KeyCodes.KEY_DELETE) {
-        EventUtils.eatEvent(event);
+        event.preventDefault();
         startEdit(index, target, EditorFactory.getStartKey(keyCode));
       } else if (handleKeyboardNavigation(keyCode, hasModifiers)) {
-        EventUtils.eatEvent(event);
+        event.preventDefault();
       }
 
     } else if (EventUtils.isKeyPress(eventType)) {
       int charCode = event.getCharCode();
-      EventUtils.eatEvent(event);
+      event.preventDefault();
       startEdit(index, target, charCode);
 
     } else if (EventUtils.isClick(event)) {

@@ -8,7 +8,6 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ValueUtils;
@@ -144,7 +143,7 @@ public class VolumeSlider extends Absolute implements RequiresResize {
       int z = event.getMouseWheelVelocityY();
       if (z != 0) {
         spinner.doStep(spinner.getValue(), z < 0);
-        EventUtils.eatEvent(event);
+        event.preventDefault();
       }
     }
 

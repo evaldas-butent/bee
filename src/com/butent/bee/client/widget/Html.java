@@ -32,8 +32,10 @@ public class Html extends HTML implements HasId, HasCommand {
   }
 
   public Html(String html) {
-    super(html);
-    init();
+    this();
+    if (!BeeUtils.isEmpty(html)) {
+      setHTML(html);
+    }
   }
 
   public Html(String html, BeeCommand cmnd) {

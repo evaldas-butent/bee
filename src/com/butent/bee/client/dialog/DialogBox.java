@@ -32,6 +32,7 @@ import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.utils.BeeUtils;
 
 public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
 
@@ -44,7 +45,7 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
     }
 
     public CaptionImpl(String html) {
-      super(html);
+      super(BeeUtils.trim(html));
     }
   }
 

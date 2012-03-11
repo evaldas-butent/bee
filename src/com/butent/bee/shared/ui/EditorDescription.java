@@ -2,6 +2,7 @@ package com.butent.bee.shared.ui;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.client.ui.HasTextDimensions;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
@@ -30,8 +31,6 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
   }
 
   private static final String ATTR_STEP_VALUE = "stepValue";
-  private static final String ATTR_CHARACTER_WIDTH = "characterWidth";
-  private static final String ATTR_VISIBLE_LINES = "visibleLines";
   private static final String ATTR_FORMAT = "format";
   private static final String ATTR_WIDTH = "width";
   private static final String ATTR_HEIGHT = "height";
@@ -276,9 +275,9 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
 
       if (BeeUtils.same(key, ATTR_STEP_VALUE)) {
         setStepValue(BeeUtils.toIntOrNull(value));
-      } else if (BeeUtils.same(key, ATTR_CHARACTER_WIDTH)) {
+      } else if (BeeUtils.same(key, HasTextDimensions.ATTR_CHARACTER_WIDTH)) {
         setCharacterWidth(BeeUtils.toIntOrNull(value));
-      } else if (BeeUtils.same(key, ATTR_VISIBLE_LINES)) {
+      } else if (BeeUtils.same(key, HasTextDimensions.ATTR_VISIBLE_LINES)) {
         setVisibleLines(BeeUtils.toIntOrNull(value));
       } else if (BeeUtils.same(key, ATTR_FORMAT)) {
         setFormat(value.trim());

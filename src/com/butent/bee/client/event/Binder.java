@@ -1,6 +1,10 @@
 package com.butent.bee.client.event;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
@@ -14,11 +18,25 @@ public class Binder {
   
   private static JavaScriptObject dispatcher;
 
+  public static HandlerRegistration addClickHandler(Widget widget, ClickHandler handler) {
+    Assert.notNull(widget, "addClickHandler: widget is null");
+    Assert.notNull(handler, "addClickHandler: handler is null");
+
+    return widget.addDomHandler(handler, ClickEvent.getType());
+  }
+  
   public static HandlerRegistration addInputHandler(Widget widget, InputHandler handler) {
     Assert.notNull(handler, "addInputHandler: handler is null");
     
     sinkInput(widget);
     return widget.addHandler(handler, InputEvent.getType());
+  }
+
+  public static HandlerRegistration addKeyDownHandler(Widget widget, KeyDownHandler handler) {
+    Assert.notNull(widget, "addKeyDownHandler: widget is null");
+    Assert.notNull(handler, "addKeyDownHandler: handler is null");
+
+    return widget.addDomHandler(handler, KeyDownEvent.getType());
   }
   
   public static void sinkInput(Element elem) {

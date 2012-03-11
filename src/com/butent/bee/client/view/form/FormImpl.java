@@ -7,6 +7,9 @@ import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Event.NativePreviewEvent;
+import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
@@ -16,6 +19,7 @@ import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormDescription;
@@ -43,6 +47,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.ActiveRowChangeEvent;
+import com.butent.bee.shared.data.event.ActiveWidgetChangeEvent;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataRequestEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
@@ -68,7 +73,8 @@ import java.util.logging.Level;
  * Handles such form events like warnings, deletions, visibility of elements etc.
  */
 
-public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler {
+public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler,
+    NativePreviewHandler {
 
   private class CreationCallback implements WidgetDescriptionCallback {
     public void onFailure(String[] reason) {
@@ -280,6 +286,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private final List<TabEntry> tabOrder = Lists.newArrayList();
 
+  private HandlerRegistration previewReg = null;
+  private int activeEditableIndex = BeeConst.UNDEF;
+
   public FormImpl() {
     super();
   }
@@ -470,7 +479,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public Widget getWidgetBySource(String source) {
     Assert.notEmpty(source);
-    EditableWidget editableWidget = getEditableWidget(source);
+    EditableWidget editableWidget = getEditableWidgetByColumn(source);
     if (editableWidget == null) {
       return null;
     } else {
@@ -494,7 +503,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     if (BeeUtils.isEmpty(columnId)) {
       return false;
     }
-    EditableWidget editableWidget = getEditableWidget(columnId);
+    EditableWidget editableWidget = getEditableWidgetByColumn(columnId);
     if (editableWidget == null) {
       return false;
     } else {
@@ -521,6 +530,19 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     showNote(Level.WARNING, messages);
   }
 
+  public void onActiveWidgetChange(ActiveWidgetChangeEvent event) {
+    if (event.isActive()) {
+      for (int i = 0; i < getEditableWidgets().size(); i++) {
+        if (BeeUtils.same(event.getWidgetId(), getEditableWidgets().get(i).getWidgetId())) {
+          setActiveEditableIndex(i);
+          break;
+        }
+      }
+    } else {
+      setActiveEditableIndex(BeeConst.UNDEF);
+    }
+  }
+
   public void onCellUpdate(CellUpdateEvent event) {
     Assert.notNull(event);
     long version = event.getVersion();
@@ -533,12 +555,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     rowValue.setValue(dataIndex, value);
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
-      if (!BeeUtils.same(source, editableWidget.getColumnId())) {
-        continue;
-      }
-
-      Editor editor = editableWidget.getEditor();
-      if (editor != null && !BeeUtils.equalsTrimRight(value, editor.getNormalizedValue())) {
+      if (BeeUtils.same(source, editableWidget.getColumnId())) {
         editableWidget.setValue(rowValue);
       }
     }
@@ -585,9 +602,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     String newValue = event.getNewValue();
 
     if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
+      BeeKeeper.getLog().debug(column.getId(), "old:", oldValue, "new:", newValue);
       if (isAdding() || isEditing()) {
         rowValue.setValue(index, newValue);
-        BeeKeeper.getLog().info(column.getId(), index, "old:", oldValue, "new:", newValue);
       } else {
         fireEvent(new ReadyForUpdateEvent(rowValue, column, oldValue, newValue, event.isRowMode()));
       }
@@ -616,6 +633,20 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public void onMultiDelete(MultiDeleteEvent event) {
     setRowCount(getRowCount() - event.getRows().size(), true);
+  }
+
+  public void onPreviewNativeEvent(NativePreviewEvent event) {
+    if (EventUtils.isMouseDown(event.getNativeEvent().getType())
+        && !BeeConst.isUndef(getActiveEditableIndex())) {
+
+      EditableWidget editableWidget = getEditableWidgets().get(getActiveEditableIndex());
+      if (!DomUtils.isOrHasChild(editableWidget.getWidgetId(),
+          EventUtils.getEventTargetElement(event))) {
+        if (!editableWidget.check(true)) {
+          event.cancel();
+        }
+      }
+    }
   }
 
   public void onRowDelete(RowDeleteEvent event) {
@@ -747,6 +778,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public void start(Integer count) {
     if (hasData()) {
+      if (!getTabOrder().isEmpty()) {
+        getTabOrder().clear();
+      }
+
       for (EditableWidget editableWidget : getEditableWidgets()) {
         editableWidget.bind(this, this, this);
 
@@ -842,6 +877,19 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     render(refreshChildren);
   }
 
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+    closePreview();
+    setPreviewReg(Event.addNativePreviewHandler(this));
+  }
+
+  @Override
+  protected void onUnload() {
+    closePreview();
+    super.onUnload();
+  }
+
   private boolean checkNewRow(IsRow rowValue) {
     boolean ok = true;
     int count = 0;
@@ -874,6 +922,13 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       ok = false;
     }
     return ok;
+  }
+
+  private void closePreview() {
+    if (getPreviewReg() != null) {
+      getPreviewReg().removeHandler();
+      setPreviewReg(null);
+    }
   }
 
   private IsRow createEmptyRow() {
@@ -938,6 +993,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  private int getActiveEditableIndex() {
+    return activeEditableIndex;
+  }
+
   private Set<WidgetDescription> getChildWidgets() {
     return childWidgets;
   }
@@ -954,7 +1013,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return displayWidgets;
   }
 
-  private EditableWidget getEditableWidget(String columnId) {
+  private EditableWidget getEditableWidgetByColumn(String columnId) {
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (BeeUtils.same(columnId, editableWidget.getColumnId())) {
         return editableWidget;
@@ -969,6 +1028,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private Notification getNotification() {
     return notification;
+  }
+
+  private HandlerRegistration getPreviewReg() {
+    return previewReg;
   }
 
   private Widget getRootWidget() {
@@ -1148,6 +1211,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  private void setActiveEditableIndex(int activeEditableIndex) {
+    this.activeEditableIndex = activeEditableIndex;
+  }
+
   private void setAdding(boolean adding) {
     this.adding = adding;
   }
@@ -1166,6 +1233,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private void setHasData(boolean hasData) {
     this.hasData = hasData;
+  }
+
+  private void setPreviewReg(HandlerRegistration previewReg) {
+    this.previewReg = previewReg;
   }
 
   private void setReadOnly(boolean readOnly) {

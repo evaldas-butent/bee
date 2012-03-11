@@ -226,6 +226,10 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
     return getChildren().indexOf(child);
   }
 
+  public Element getContentElem() {
+    return contentElem;
+  }
+
   public String getId() {
     return DomUtils.getId(this);
   }
@@ -453,10 +457,6 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
     }
   }
 
-  Element getContentElem() {
-    return contentElem;
-  }
-
   Element getImageElement() {
     return DOM.getFirstChild(getImageHolderElement());
   }
@@ -521,7 +521,7 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
   }
 
   private void convertToBranch() {
-    if (getImageHolder() == null) {
+    if (!isBranch()) {
       Element itemTable = DOM.clone(BRANCH_ELEM, true);
       getElement().appendChild(itemTable);
       Element tr = DOM.getFirstChild(DOM.getFirstChild(itemTable));
@@ -537,6 +537,20 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
     }
   }
 
+  private void convertToLeaf() {
+    if (isBranch()) {
+      contentElem.removeFromParent();
+      DomUtils.clear(getElement());
+      getElement().appendChild(contentElem);
+
+      removeStyleName(STYLE_BRANCH_CONTAINER);
+      addStyleName(STYLE_LEAF_CONTAINER);
+
+      setImageHolder(null);
+      setChildSpanElem(null);
+    }
+  }
+  
   private List<TreeItem> getChildren() {
     return children;
   }
@@ -591,8 +605,8 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
     }
 
     if (getChildCount() == 0) {
-      if (getChildSpanElem() != null) {
-        setVisible(getChildSpanElem(), false);
+      if (isBranch() && !isRoot) {
+        convertToLeaf();
       }
       return;
     }

@@ -263,7 +263,6 @@ public class ScrollTableConfig {
     }
 
     public void onDragOver(DragOverEvent event) {
-      EventUtils.eatEvent(event);
       EventUtils.setDropEffect(event, EventUtils.EFFECT_MOVE);
     }
 
@@ -285,8 +284,8 @@ public class ScrollTableConfig {
     }
 
     public void onDrop(DropEvent event) {
-      EventUtils.eatEvent(event);
       Element elem = EventUtils.getEventTargetElement(event).cast();
+      event.stopPropagation();
 
       if (isTarget(elem)) {
         elem.removeClassName(StyleUtils.DND_OVER);

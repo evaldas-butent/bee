@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.HandlesAllKeyEvents;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -256,7 +257,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
       if (isEmbedded() && !getDisplay().isShowing()) {
         if (keyCode == KeyCodes.KEY_DELETE && hasModifiers && isNullable()) {
-          EventUtils.eatEvent(event.getNativeEvent());
+          event.preventDefault();
           setValue(BeeConst.STRING_EMPTY);
           setSelectedValue(null);
         }
@@ -265,7 +266,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
       switch (keyCode) {
         case KeyCodes.KEY_DOWN:
-          EventUtils.eatEvent(event.getNativeEvent());
+          event.preventDefault();
           if (hasModifiers && hasMore()) {
             nextOffset();
           } else {
@@ -274,7 +275,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
           break;
 
         case KeyCodes.KEY_UP:
-          EventUtils.eatEvent(event.getNativeEvent());
+          event.preventDefault();
           if (hasModifiers && getOffset() > 0) {
             prevOffset();
           } else {
@@ -284,20 +285,20 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
         case KeyCodes.KEY_PAGEDOWN:
           if (hasMore()) {
-            EventUtils.eatEvent(event.getNativeEvent());
+            event.preventDefault();
             nextPage();
           }
           break;
 
         case KeyCodes.KEY_PAGEUP:
           if (getOffset() > 0) {
-            EventUtils.eatEvent(event.getNativeEvent());
+            event.preventDefault();
             prevPage();
           }
           break;
 
         case KeyCodes.KEY_ESCAPE:
-          EventUtils.eatEvent(event.getNativeEvent());
+          event.preventDefault();
           if (getDisplay().isItemSelected()) {
             getDisplay().cancelSelection();
           } else {
@@ -307,19 +308,19 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
         case KeyCodes.KEY_ENTER:
           if (getDisplay().handleKeyboardSelection(isInstant(), hasModifiers)) {
-            EventUtils.eatEvent(event.getNativeEvent());
+            event.preventDefault();
           }
           break;
 
         case KeyCodes.KEY_TAB:
-          EventUtils.eatEvent(event.getNativeEvent());
+          event.preventDefault();
           if (!getDisplay().selectCurrentSugestion()) {
             exit(true);
           }
           break;
           
         case 113:
-          EventUtils.eatEvent(event.getNativeEvent());
+          event.preventDefault();
           getOracle().rotateCaching();
           setLastRequest(null);
           askOracle();
@@ -589,11 +590,15 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   }
 
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
-    return null;
+    return getInput().addBlurHandler(handler);
   }
 
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
+  }
+  
+  public HandlerRegistration addFocusHandler(FocusHandler handler) {
+    return getInput().addFocusHandler(handler);
   }
 
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {

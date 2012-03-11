@@ -3,7 +3,10 @@ package com.butent.bee.client.richtext;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -58,17 +61,21 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
   }
 
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
-    return null;
+    return addDomHandler(handler, BlurEvent.getType());
   }
 
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
 
+  public HandlerRegistration addFocusHandler(FocusHandler handler) {
+    return addDomHandler(handler, FocusEvent.getType());
+  }
+  
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return getArea().addKeyDownHandler(handler);
   }
-
+  
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
   }

@@ -627,17 +627,6 @@ public class EventUtils {
     return Document.get().createKeyUpEvent(false, false, false, false, keyCode);
   }
 
-  public static void eatEvent(HasNativeEvent ev) {
-    Assert.notNull(ev);
-    eatEvent(ev.getNativeEvent());
-  }
-
-  public static void eatEvent(NativeEvent ev) {
-    Assert.notNull(ev);
-    ev.preventDefault();
-    ev.stopPropagation();
-  }
-
   public static boolean equalsOrIsChild(Element parent, EventTarget target) {
     if (parent == null || target == null) {
       return false;
@@ -875,6 +864,10 @@ public class EventUtils {
 
   public static boolean isMouseUp(String type) {
     return isEventType(type, EVENT_TYPE_MOUSE_UP);
+  }
+
+  public static boolean isMouseWheel(String type) {
+    return isEventType(type, EVENT_TYPE_MOUSE_WHEEL);
   }
 
   public static boolean isTargetId(EventTarget et, String id) {

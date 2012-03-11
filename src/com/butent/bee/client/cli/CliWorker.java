@@ -1041,7 +1041,7 @@ public class CliWorker {
     boolean required = true;
 
     final Holder<String> widgetName = new Holder<String>(null);
-    final Holder<String> widgetStyle = new Holder<String>("background-color:green");
+    final Holder<String> widgetStyle = Holder.of("background-color:green");
 
     String v;
 
@@ -1091,10 +1091,10 @@ public class CliWorker {
           required = BeeUtils.toBoolean(v);
           break;
         case 'i':
-          widgetName.setValue(v);
+          widgetName.set(v);
           break;
         case 's':
-          widgetStyle.setValue(v);
+          widgetStyle.set(v);
           break;
         default:
           BeeKeeper.getLog().info("option not recognized", i, arr[i], k, v);
@@ -1128,9 +1128,9 @@ public class CliWorker {
           }
         }, defaultValue, maxLength, width, widthUnit, timeout, confirmHtml, cancelHtml,
         new WidgetInitializer() {
-          public Widget initialize(String name, Widget widget) {
-            if (BeeUtils.context(widgetName.getValue(), name)) {
-              StyleUtils.setAppearance(widget, null, widgetStyle.getValue());
+          public Widget initialize(Widget widget, String name) {
+            if (BeeUtils.context(widgetName.get(), name)) {
+              StyleUtils.setAppearance(widget, null, widgetStyle.get());
               BeeKeeper.getLog().info(name, StyleUtils.getCssText(widget));
             }
             return widget;

@@ -214,7 +214,6 @@ public class ScrollTable extends ComplexPanel implements
     }
 
     public void onDragOver(DragOverEvent event) {
-      EventUtils.eatEvent(event);
       EventUtils.setDropEffect(event, EventUtils.EFFECT_MOVE);
     }
 
@@ -238,8 +237,8 @@ public class ScrollTable extends ComplexPanel implements
     }
 
     public void onDrop(DropEvent event) {
-      EventUtils.eatEvent(event);
       Element elem = EventUtils.getEventTargetElement(event).cast();
+      event.stopPropagation();
 
       if (isTarget(elem)) {
         elem.removeClassName(StyleUtils.DND_OVER);

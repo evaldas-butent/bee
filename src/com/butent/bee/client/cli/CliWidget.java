@@ -3,7 +3,6 @@ package com.butent.bee.client.cli;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -28,7 +27,7 @@ public class CliWidget extends InputText {
       return;
     }
 
-    EventUtils.eatEvent(event);
+    event.preventDefault();
     CliWorker.execute(getValue());
   }
 }

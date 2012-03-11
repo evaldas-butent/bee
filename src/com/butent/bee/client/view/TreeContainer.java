@@ -5,7 +5,6 @@ import com.google.common.collect.Maps;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.SimplePanel;
 
@@ -97,7 +96,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     }
     if (!BeeUtils.isEmpty(root)) {
       this.rootItem = new TreeItem(root);
-      DOM.getFirstChild(this.rootItem.getElement()).addClassName(STYLE_NAME + "-rootItem");
+      this.rootItem.getContentElem().addClassName(STYLE_NAME + "-rootItem");
       getTree().addItem(this.rootItem);
     } else {
       this.rootItem = null;

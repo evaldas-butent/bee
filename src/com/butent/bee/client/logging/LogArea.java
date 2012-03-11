@@ -24,7 +24,7 @@ public class LogArea extends Flow {
   public void onBrowserEvent(Event event) {
     if (EventUtils.hasModifierKey(event) && getWidgetCount() > 0) {
       Widget target = DomUtils.getChildByElement(this, Element.as(event.getEventTarget()));
-      EventUtils.eatEvent(event);
+      event.preventDefault();
 
       if (target == null || equals(target) || getWidgetCount() <= 1) {
         clear();

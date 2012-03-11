@@ -22,7 +22,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.ui.UiHelper;
@@ -182,7 +181,7 @@ public class RichTextToolbar extends Vertical implements HasEnabled {
 
     public void onKeyDown(KeyDownEvent event) {
       if (UiHelper.isSave(event.getNativeEvent())) {
-        EventUtils.eatEvent(event.getNativeEvent());
+        event.preventDefault();
         accept.execute();
       }
     }

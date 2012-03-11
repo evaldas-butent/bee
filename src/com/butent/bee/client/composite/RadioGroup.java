@@ -4,7 +4,11 @@ import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
 import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -136,15 +140,19 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   }
   
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
-    return null;
+    return addDomHandler(handler, BlurEvent.getType());
   }
 
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
 
+  public HandlerRegistration addFocusHandler(FocusHandler handler) {
+    return addDomHandler(handler, FocusEvent.getType());
+  }
+  
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
-    return null;
+    return addDomHandler(handler, KeyDownEvent.getType());
   }
 
   public void addOption(String label) {

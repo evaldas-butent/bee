@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.HasDataTable;
+import com.butent.bee.shared.data.event.ActiveWidgetChangeEvent;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.view.DataView;
@@ -21,7 +22,7 @@ import java.util.List;
  * Contains necessary methods for form implementing classes.
  */
 
-public interface FormView extends DataView, HasDataTable,
+public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,  
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers {
 
   void applyOptions(String options);

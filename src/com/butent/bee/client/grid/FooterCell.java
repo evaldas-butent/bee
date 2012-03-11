@@ -96,7 +96,7 @@ public class FooterCell extends AbstractCell<String> {
         valueUpdater.update(v);
       }
     } else if (EventUtils.isKeyEvent(type) && event.getKeyCode() == KeyCodes.KEY_ENTER) {
-      EventUtils.eatEvent(event);
+      event.preventDefault();
       setOldValue(v);
       valueUpdater.update(v);
     }

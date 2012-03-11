@@ -558,8 +558,17 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="InputArea" type="bee:editableWidget" substitutionGroup="bee:widget" />
   <xs:element name="InputText" type="bee:editableWidget" substitutionGroup="bee:widget" />
+
+  <xs:element name="InputArea" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:editableWidget">
+          <xs:attributeGroup ref="bee:textArea" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
 
   <xs:complexType name="editableInteger">
     <xs:complexContent>
@@ -643,6 +652,7 @@
           <xs:attribute name="relSource" type="bee:nameType" use="required" />
           <xs:attribute name="relView" type="bee:nameType" use="required" />
           <xs:attribute name="relColumn" type="bee:nameType" use="required" />
+          <xs:attributeGroup ref="bee:textArea" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

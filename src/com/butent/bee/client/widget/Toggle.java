@@ -125,17 +125,17 @@ public class Toggle extends CustomButton implements Editor {
       if (type == Event.ONKEYDOWN) {
         switch (event.getKeyCode()) {
           case KeyCodes.KEY_ENTER:
-            EventUtils.eatEvent(event);
+            event.preventDefault();
             onClick();
             break;
           case KeyCodes.KEY_ESCAPE:
             if (isEditing()) {
-              EventUtils.eatEvent(event);
+              event.preventDefault();
               fireEvent(new EditStopEvent(State.CANCELED));
             }
         }
       } else if (type == Event.ONKEYPRESS && event.getCharCode() >= BeeConst.CHAR_SPACE) {
-        EventUtils.eatEvent(event);
+        event.preventDefault();
         invert();
         return;
       } else {

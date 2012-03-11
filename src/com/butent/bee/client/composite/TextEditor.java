@@ -2,6 +2,8 @@ package com.butent.bee.client.composite;
 
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -61,6 +63,10 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions {
     return getArea().addEditStopHandler(handler);
   }
 
+  public HandlerRegistration addFocusHandler(FocusHandler handler) {
+    return getArea().addDomHandler(handler, FocusEvent.getType());
+  }
+  
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return getArea().addKeyDownHandler(handler);
   }
@@ -115,11 +121,11 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions {
     if (EventUtils.isMouseDown(event.getType())) {
       String id = EventUtils.getTargetId(event.getEventTarget());
       if (BeeUtils.same(id, getId())) {
-        EventUtils.eatEvent(event);
+        event.preventDefault();
         return;
       }
       if (BeeUtils.inListSame(id, getAcceptId(), getNoesId())) {
-        EventUtils.eatEvent(event);
+        event.preventDefault();
         State state = BeeUtils.same(id, getAcceptId()) ? State.CHANGED : State.CANCELED;
         getArea().fireEvent(new EditStopEvent(state));
         return;

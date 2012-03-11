@@ -932,7 +932,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     setElement(Document.get().createDivElement());
 
     sinkEvents(Event.ONKEYDOWN | Event.ONKEYPRESS | Event.ONCLICK | Event.ONMOUSEDOWN
-        | Event.ONMOUSEMOVE | Event.ONMOUSEUP | Event.ONMOUSEOUT);
+        | Event.ONMOUSEMOVE | Event.ONMOUSEUP | Event.ONMOUSEOUT | Event.ONMOUSEWHEEL);
 
     setStyleName(STYLE_GRID);
     DomUtils.createId(this, getIdPrefix());
@@ -1376,11 +1376,15 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   @Override
   public void onBrowserEvent(Event event) {
     super.onBrowserEvent(event);
+    String eventType = event.getType();
+
     if (isEditing()) {
+      if (EventUtils.isMouseWheel(eventType)) {
+        event.preventDefault();
+      }
       return;
     }
 
-    String eventType = event.getType();
     EventTarget eventTarget = event.getEventTarget();
     if (!Element.is(eventTarget)) {
       return;
@@ -1428,19 +1432,18 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     if (EventUtils.isMouseMove(eventType)) {
       if (handleMouseMove(event, target, targetType, rowIdx, col)) {
-        EventUtils.eatEvent(event);
         return;
       }
     } else if (EventUtils.isMouseDown(eventType)) {
       if (targetType == TargetType.RESIZER) {
         startResizing(event);
-        EventUtils.eatEvent(event);
+        event.preventDefault();
         return;
       }
     } else if (EventUtils.isMouseUp(eventType)) {
       if (isResizing()) {
         stopResizing();
-        EventUtils.eatEvent(event);
+        event.preventDefault();
         updatePageSize();
         return;
       }
@@ -1497,26 +1500,26 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
       } else if (EventUtils.isKeyDown(eventType)) {
         if (!isCellActive(row, col)) {
-          EventUtils.eatEvent(event);
+          event.preventDefault();
           refocus();
           return;
         }
 
         int keyCode = event.getKeyCode();
         if (handleKey(keyCode, EventUtils.hasModifierKey(event), row, col, target)) {
-          EventUtils.eatEvent(event);
+          event.preventDefault();
         } else if (getColumnInfo(col).isSelection()) {
-          EventUtils.eatEvent(event);
+          event.preventDefault();
           selectRow(row, rowValue);
         } else if (keyCode == KeyCodes.KEY_ENTER || keyCode == KeyCodes.KEY_DELETE) {
-          EventUtils.eatEvent(event);
+          event.preventDefault();
           startEditing(rowValue, col, target, EditorFactory.getStartKey(keyCode));
         }
         return;
 
       } else if (EventUtils.isKeyPress(eventType)) {
         int charCode = event.getCharCode();
-        EventUtils.eatEvent(event);
+        event.preventDefault();
 
         if (charCode == BeeConst.CHAR_SPACE) {
           selectRow(row, rowValue);

@@ -1911,6 +1911,15 @@ public enum FormWidget {
         } else if (widget instanceof BeeListBox) {
           ((BeeListBox) widget).setValueStartIndex(BeeUtils.toInt(value));
         }
+
+      } else if (BeeUtils.same(name, HasTextDimensions.ATTR_VISIBLE_LINES)) {
+        if (widget instanceof HasTextDimensions && BeeUtils.isPositiveInt(value)) {
+          ((HasTextDimensions) widget).setVisibleLines(BeeUtils.toInt(value));
+        }
+      } else if (BeeUtils.same(name, HasTextDimensions.ATTR_CHARACTER_WIDTH)) {
+        if (widget instanceof HasTextDimensions && BeeUtils.isPositiveInt(value)) {
+          ((HasTextDimensions) widget).setCharacterWidth(BeeUtils.toInt(value));
+        }
       }
     }
   }

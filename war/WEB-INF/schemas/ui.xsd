@@ -98,6 +98,11 @@
     <xs:attribute name="style" type="xs:string" />
   </xs:attributeGroup>
 
+  <xs:attributeGroup name="textArea">
+    <xs:attribute name="visibleLines" type="xs:positiveInteger" />
+    <xs:attribute name="characterWidth" type="xs:positiveInteger" />
+  </xs:attributeGroup>
+
   <xs:simpleType name="cellType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="html" />
@@ -112,8 +117,7 @@
     </xs:sequence>
     <xs:attribute name="type" type="bee:editorType" use="required" />
     <xs:attribute name="stepValue" type="xs:positiveInteger" />
-    <xs:attribute name="characterWidth" type="xs:positiveInteger" />
-    <xs:attribute name="visibleLines" type="xs:positiveInteger" />
+    <xs:attributeGroup ref="bee:textArea" />
     <xs:attribute name="format" type="xs:normalizedString" />
     <xs:attribute name="width" type="xs:positiveInteger" />
     <xs:attribute name="height" type="xs:positiveInteger" />

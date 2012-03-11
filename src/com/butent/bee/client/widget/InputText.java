@@ -121,7 +121,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   @Override
   public void onBrowserEvent(Event event) {
     if (EventUtils.isKeyPress(event.getType()) && !acceptChar((char) event.getCharCode())) {
-      EventUtils.eatEvent(event);
+      event.preventDefault();
       return;
     }
     

@@ -1,5 +1,6 @@
 package com.butent.bee.client.dialog;
 
+import com.google.common.base.Supplier;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -13,10 +14,13 @@ import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FileUpload;
-import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.FocusWidget;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasText;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -24,6 +28,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.Flow;
@@ -72,7 +77,7 @@ public class InputBoxes {
     public void onKeyDown(KeyDownEvent event) {
       switch (event.getNativeKeyCode()) {
         case KeyCodes.KEY_ESCAPE:
-          EventUtils.eatEvent(event);
+          event.preventDefault();
           getDialog().hide();
           break;
 
@@ -83,7 +88,7 @@ public class InputBoxes {
           }
 
           if (EventUtils.hasModifierKey(event.getNativeEvent())) {
-            EventUtils.eatEvent(event);
+            event.preventDefault();
             EventUtils.getEventTargetElement(event).blur();
             if (getStage() != null) {
               BeeKeeper.getBus().dispatchService(getStage(), dialog);
@@ -95,11 +100,11 @@ public class InputBoxes {
 
           if (widget instanceof InputText || widget instanceof ListBox) {
             if (navigate(EventUtils.getEventTargetElement(event), true)) {
-              EventUtils.eatEvent(event);
+              event.preventDefault();
             }
           } else if (widget instanceof BeeRadioButton) {
             if (!((BeeRadioButton) widget).getValue()) {
-              EventUtils.eatEvent(event);
+              event.preventDefault();
               ((BeeRadioButton) widget).setValue(true, true);
             }
           }
@@ -110,7 +115,7 @@ public class InputBoxes {
           if (!(getWidget(event) instanceof ListBox)) {
             if (navigate(EventUtils.getEventTargetElement(event),
                 event.getNativeKeyCode() == KeyCodes.KEY_DOWN)) {
-              EventUtils.eatEvent(event);
+              event.preventDefault();
             }
           }
           break;
@@ -133,14 +138,16 @@ public class InputBoxes {
       if (current == null) {
         return false;
       }
-      List<Widget> children = DomUtils.getFocusableChildren(getDialog());
+
+      List<Focusable> children = DomUtils.getFocusableChildren(getDialog());
       if (children == null || children.size() <= 1) {
         return false;
       }
 
       int index = BeeConst.UNDEF;
       for (int i = 0; i < children.size(); i++) {
-        if (children.get(i).getElement().isOrHasChild(current)) {
+        if (children.get(i) instanceof Widget
+            && ((Widget) children.get(i)).getElement().isOrHasChild(current)) {
           index = i;
           break;
         }
@@ -156,12 +163,7 @@ public class InputBoxes {
       }
 
       if (index >= 0 && index < children.size()) {
-        Widget child = children.get(index);
-        if (child instanceof FocusWidget) {
-          ((FocusWidget) child).setFocus(true);
-        } else {
-          child.getElement().focus();
-        }
+        children.get(index).setFocus(true);
         return true;
       } else {
         return false;
@@ -180,6 +182,7 @@ public class InputBoxes {
   private static final String STYLE_INPUT_PANEL = "bee-InputPanel";
   private static final String STYLE_INPUT_PROMPT = "bee-InputPrompt";
   private static final String STYLE_INPUT_STRING = "bee-InputString";
+  private static final String STYLE_INPUT_WIDGET = "bee-InputWidget";
   private static final String STYLE_INPUT_ERROR = "bee-InputError";
   private static final String STYLE_INPUT_COMMAND_GROUP = "bee-InputCommandGroup";
   private static final String STYLE_INPUT_COMMAND = "bee-InputCommand";
@@ -191,69 +194,67 @@ public class InputBoxes {
       String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
     Assert.notNull(callback);
 
-    final Holder<State> state = new Holder<State>(State.OPEN);
+    final Holder<State> state = Holder.of(State.OPEN);
 
-    final DialogBox dialog = new DialogBox();
-    if (!BeeUtils.isEmpty(caption)) {
-      dialog.setText(caption.trim());
-    }
+    final DialogBox dialog = new DialogBox(caption);
 
-    final Timer timer = (timeout > 0) ? new Timer() {
-      @Override
-      public void run() {
-        state.setValue(State.EXPIRED);
-        dialog.hide();
-      }
-    } : null;
+    final Timer timer = (timeout > 0) ? createTimer(dialog, state) : null;
 
-    Flow panel = new Flow();
+    Panel panel = new Flow();
     panel.addStyleName(STYLE_INPUT_PANEL);
 
     if (!BeeUtils.isEmpty(prompt)) {
       BeeLabel label = new BeeLabel(prompt.trim());
       label.addStyleName(STYLE_INPUT_PROMPT);
 
-      if (initializer != null) {
-        initializer.initialize(WIDGET_PROMPT, label);
-      }
-      panel.add(label);
+      UiHelper.add(panel, label, initializer, WIDGET_PROMPT);
     }
 
-    final BeeLabel error = new BeeLabel();
-    error.addStyleName(STYLE_INPUT_ERROR);
-    error.addStyleName(StyleUtils.NAME_ERROR);
-
-    final InputText input = new InputText();
-    input.addStyleName(STYLE_INPUT_STRING);
+    InputText box = new InputText();
+    box.addStyleName(STYLE_INPUT_STRING);
 
     if (!BeeUtils.isEmpty(defaultValue)) {
-      input.setValue(defaultValue.trim());
+      box.setValue(defaultValue.trim());
     }
     if (maxLength > 0) {
-      input.setMaxLength(maxLength);
+      box.setMaxLength(maxLength);
     }
     if (width > 0) {
-      StyleUtils.setWidth(input, width, widthUnit);
+      StyleUtils.setWidth(box, width, widthUnit);
     }
 
-    input.addKeyDownHandler(new KeyDownHandler() {
+    final Holder<Widget> input = new Holder<Widget>(box);
+
+    BeeLabel errorLabel = new BeeLabel();
+    errorLabel.addStyleName(STYLE_INPUT_ERROR);
+    errorLabel.addStyleName(StyleUtils.NAME_ERROR);
+
+    final Holder<Widget> errorDisplay = new Holder<Widget>(errorLabel);
+
+    final Supplier<String> errorSupplier = new Supplier<String>() {
+      public String get() {
+        return callback.getMessage(UiHelper.getValue(input.get()));
+      }
+    };
+
+    box.addKeyDownHandler(new KeyDownHandler() {
       public void onKeyDown(KeyDownEvent event) {
         if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
-          EventUtils.eatEvent(event);
-          state.setValue(State.CANCELED);
+          event.preventDefault();
+          state.set(State.CANCELED);
           dialog.hide();
           return;
         }
 
         if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-          String message = callback.getMessage(input.getValue());
+          String message = errorSupplier.get();
           if (BeeUtils.isEmpty(message)) {
-            EventUtils.eatEvent(event);
-            state.setValue(State.CONFIRMED);
+            event.preventDefault();
+            state.set(State.CONFIRMED);
             dialog.hide();
             return;
           } else {
-            error.setText(message);
+            showError(errorDisplay.get(), message);
           }
         }
 
@@ -263,70 +264,12 @@ public class InputBoxes {
       }
     });
 
-    if (initializer != null) {
-      initializer.initialize(WIDGET_INPUT, input);
-    }
-    panel.add(input);
+    UiHelper.add(panel, input, initializer, WIDGET_INPUT);
 
-    if (initializer != null) {
-      initializer.initialize(WIDGET_ERROR, error);
-    }
-    panel.add(error);
+    UiHelper.add(panel, errorDisplay, initializer, WIDGET_ERROR);
 
-    if (!BeeUtils.allEmpty(confirmHtml, cancelHtml)) {
-      Flow commandGroup = new Flow();
-      commandGroup.addStyleName(STYLE_INPUT_COMMAND_GROUP);
-
-      if (!BeeUtils.isEmpty(confirmHtml)) {
-        BeeButton confirm = new BeeButton(confirmHtml);
-        confirm.addStyleName(STYLE_INPUT_COMMAND);
-        confirm.addStyleName(STYLE_INPUT_CONFIRM);
-
-        confirm.addClickHandler(new ClickHandler() {
-          public void onClick(ClickEvent event) {
-            String message = callback.getMessage(input.getValue());
-            if (BeeUtils.isEmpty(message)) {
-              state.setValue(State.CONFIRMED);
-              dialog.hide();
-            } else {
-              error.setText(message);
-            }
-          }
-        });
-
-        if (initializer != null) {
-          initializer.initialize(WIDGET_CONFIRM, confirm);
-        }
-        commandGroup.add(confirm);
-      }
-
-      if (!BeeUtils.isEmpty(cancelHtml)) {
-        BeeButton cancel = new BeeButton(cancelHtml);
-        cancel.addStyleName(STYLE_INPUT_COMMAND);
-        cancel.addStyleName(STYLE_INPUT_CANCEL);
-
-        cancel.addClickHandler(new ClickHandler() {
-          public void onClick(ClickEvent event) {
-            state.setValue(State.CANCELED);
-            dialog.hide();
-          }
-        });
-
-        if (initializer != null) {
-          initializer.initialize(WIDGET_CANCEL, cancel);
-        }
-        commandGroup.add(cancel);
-      }
-
-      if (initializer != null) {
-        initializer.initialize(WIDGET_COMMAND_GROUP, commandGroup);
-      }
-      panel.add(commandGroup);
-    }
-
-    if (initializer != null) {
-      initializer.initialize(WIDGET_PANEL, panel);
-    }
+    addCommandGroup(dialog, panel, confirmHtml, cancelHtml, initializer, state, errorDisplay,
+        errorSupplier);
 
     dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
       public void onClose(CloseEvent<PopupPanel> event) {
@@ -334,12 +277,12 @@ public class InputBoxes {
           timer.cancel();
         }
 
-        switch (state.getValue()) {
+        switch (state.get()) {
           case CONFIRMED:
-            callback.onSuccess(BeeUtils.trim(input.getValue()));
+            callback.onSuccess(BeeUtils.trim(UiHelper.getValue(input.get())));
             break;
           case EXPIRED:
-            callback.onTimeout(BeeUtils.trim(input.getValue()));
+            callback.onTimeout(BeeUtils.trim(UiHelper.getValue(input.get())));
             break;
           default:
             callback.onCancel();
@@ -347,12 +290,12 @@ public class InputBoxes {
       }
     });
 
-    dialog.setAnimationEnabled(true);
+    UiHelper.setWidget(dialog, panel, initializer, WIDGET_PANEL);
 
-    dialog.setWidget(panel);
+    dialog.setAnimationEnabled(true);
     dialog.center();
 
-    input.setFocus(true);
+    UiHelper.focus(input.get());
 
     if (timer != null) {
       timer.schedule(timeout);
@@ -469,125 +412,67 @@ public class InputBoxes {
     }
   }
 
-  public void inputWidget(String caption, Widget input, final InputCallback callback,
+  public void inputWidget(String caption, Widget widget, final InputCallback callback,
       final int timeout, String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
-    Assert.notNull(input);
+    Assert.notNull(widget);
     Assert.notNull(callback);
 
-    final Holder<State> state = new Holder<State>(State.OPEN);
+    final Holder<State> state = Holder.of(State.OPEN);
 
-    final DialogBox dialog = new DialogBox();
-    if (!BeeUtils.isEmpty(caption)) {
-      dialog.setText(caption.trim());
-    }
+    final DialogBox dialog = new DialogBox(caption);
 
-    final Timer timer = (timeout > 0) ? new Timer() {
-      @Override
-      public void run() {
-        state.setValue(State.EXPIRED);
-        dialog.hide();
-      }
-    } : null;
+    final Timer timer = (timeout > 0) ? createTimer(dialog, state) : null;
 
     Flow panel = new Flow();
     panel.addStyleName(STYLE_INPUT_PANEL);
 
-    final BeeLabel error = new BeeLabel();
-    error.addStyleName(STYLE_INPUT_ERROR);
-    error.addStyleName(StyleUtils.NAME_ERROR);
+    widget.addStyleName(STYLE_INPUT_WIDGET);
+    UiHelper.add(panel, widget, initializer, WIDGET_INPUT);
 
-    FocusPanel fp = new FocusPanel(input);
+    final Holder<Widget> errorDisplay = new Holder<Widget>(null);
+    if (widget instanceof NotificationListener) {
+      errorDisplay.set(widget);
+    } else {
+      BeeLabel errorLabel = new BeeLabel();
+      errorLabel.addStyleName(STYLE_INPUT_ERROR);
+      errorLabel.addStyleName(StyleUtils.NAME_ERROR);
+      errorDisplay.set(errorLabel);
+      UiHelper.add(panel, errorDisplay, initializer, WIDGET_ERROR);
+    }
 
-    fp.addKeyDownHandler(new KeyDownHandler() {
-      @Override
+    final Supplier<String> errorSupplier = new Supplier<String>() {
+      public String get() {
+        return callback.getErrorMessage();
+      }
+    };
+
+    addCommandGroup(dialog, panel, confirmHtml, cancelHtml, initializer, state, errorDisplay,
+        errorSupplier);
+    
+    Binder.addKeyDownHandler(dialog, new KeyDownHandler() {
       public void onKeyDown(KeyDownEvent event) {
         if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
-          EventUtils.eatEvent(event);
-          state.setValue(State.CANCELED);
+          event.preventDefault();
+          state.set(State.CANCELED);
           dialog.hide();
           return;
-
-        } else if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-          String message = callback.getErrorMessage();
+        } else if (UiHelper.isSave(event.getNativeEvent())) {
+          String message = errorSupplier.get();
           if (BeeUtils.isEmpty(message)) {
-            EventUtils.eatEvent(event);
-            state.setValue(State.CONFIRMED);
+            event.preventDefault();
+            state.set(State.CONFIRMED);
             dialog.hide();
             return;
           } else {
-            error.setText(message);
+            showError(errorDisplay.get(), message);
           }
         }
+
         if (timer != null) {
           timer.schedule(timeout);
         }
       }
     });
-
-    if (initializer != null) {
-      initializer.initialize(WIDGET_INPUT, input);
-    }
-    panel.add(fp);
-
-    if (initializer != null) {
-      initializer.initialize(WIDGET_ERROR, error);
-    }
-    panel.add(error);
-
-    if (!BeeUtils.allEmpty(confirmHtml, cancelHtml)) {
-      Flow commandGroup = new Flow();
-      commandGroup.addStyleName(STYLE_INPUT_COMMAND_GROUP);
-
-      if (!BeeUtils.isEmpty(confirmHtml)) {
-        BeeButton confirm = new BeeButton(confirmHtml);
-        confirm.addStyleName(STYLE_INPUT_COMMAND);
-        confirm.addStyleName(STYLE_INPUT_CONFIRM);
-
-        confirm.addClickHandler(new ClickHandler() {
-          public void onClick(ClickEvent event) {
-            String message = callback.getErrorMessage();
-            if (BeeUtils.isEmpty(message)) {
-              state.setValue(State.CONFIRMED);
-              dialog.hide();
-            } else {
-              error.setText(message);
-            }
-          }
-        });
-
-        if (initializer != null) {
-          initializer.initialize(WIDGET_CONFIRM, confirm);
-        }
-        commandGroup.add(confirm);
-      }
-
-      if (!BeeUtils.isEmpty(cancelHtml)) {
-        BeeButton cancel = new BeeButton(cancelHtml);
-        cancel.addStyleName(STYLE_INPUT_COMMAND);
-        cancel.addStyleName(STYLE_INPUT_CANCEL);
-
-        cancel.addClickHandler(new ClickHandler() {
-          public void onClick(ClickEvent event) {
-            state.setValue(State.CANCELED);
-            dialog.hide();
-          }
-        });
-
-        if (initializer != null) {
-          initializer.initialize(WIDGET_CANCEL, cancel);
-        }
-        commandGroup.add(cancel);
-      }
-
-      if (initializer != null) {
-        initializer.initialize(WIDGET_COMMAND_GROUP, commandGroup);
-      }
-      panel.add(commandGroup);
-    }
-
-    if (initializer != null) {
-      initializer.initialize(WIDGET_PANEL, panel);
-    }
 
     dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
       public void onClose(CloseEvent<PopupPanel> event) {
@@ -595,7 +480,7 @@ public class InputBoxes {
           timer.cancel();
         }
 
-        switch (state.getValue()) {
+        switch (state.get()) {
           case CONFIRMED:
             callback.onSuccess();
             break;
@@ -608,15 +493,86 @@ public class InputBoxes {
       }
     });
 
-    dialog.setAnimationEnabled(true);
+    UiHelper.setWidget(dialog, panel, initializer, WIDGET_PANEL);
 
-    dialog.setWidget(panel);
+    dialog.setAnimationEnabled(true);
     dialog.center();
 
-    UiHelper.focus(input);
+    UiHelper.focus(widget);
 
     if (timer != null) {
       timer.schedule(timeout);
+    }
+  }
+
+  private boolean addCommandGroup(final PopupPanel dialog, HasWidgets panel, String confirmHtml,
+      String cancelHtml, WidgetInitializer initializer, final Holder<State> state,
+      final Holder<Widget> errorDisplay, final Supplier<String> errorSupplier) {
+    if (BeeUtils.allEmpty(confirmHtml, cancelHtml)) {
+      return false;
+    }
+
+    Panel commandGroup = new Flow();
+    commandGroup.addStyleName(STYLE_INPUT_COMMAND_GROUP);
+
+    if (!BeeUtils.isEmpty(confirmHtml)) {
+      BeeButton confirm = new BeeButton(confirmHtml);
+      confirm.addStyleName(STYLE_INPUT_COMMAND);
+      confirm.addStyleName(STYLE_INPUT_CONFIRM);
+
+      confirm.addClickHandler(new ClickHandler() {
+        public void onClick(ClickEvent event) {
+          String message = errorSupplier.get();
+          if (BeeUtils.isEmpty(message)) {
+            state.set(State.CONFIRMED);
+            dialog.hide();
+          } else {
+            showError(errorDisplay.get(), message);
+          }
+        }
+      });
+
+      UiHelper.add(commandGroup, confirm, initializer, WIDGET_CONFIRM);
+    }
+
+    if (!BeeUtils.isEmpty(cancelHtml)) {
+      BeeButton cancel = new BeeButton(cancelHtml);
+      cancel.addStyleName(STYLE_INPUT_COMMAND);
+      cancel.addStyleName(STYLE_INPUT_CANCEL);
+
+      cancel.addClickHandler(new ClickHandler() {
+        public void onClick(ClickEvent event) {
+          state.set(State.CANCELED);
+          dialog.hide();
+        }
+      });
+
+      UiHelper.add(commandGroup, cancel, initializer, WIDGET_CANCEL);
+    }
+
+    UiHelper.add(panel, commandGroup, initializer, WIDGET_COMMAND_GROUP);
+    return true;
+  }
+
+  private Timer createTimer(final PopupPanel dialog, final Holder<State> state) {
+    return new Timer() {
+      @Override
+      public void run() {
+        state.set(State.EXPIRED);
+        dialog.hide();
+      }
+    };
+  }
+
+  private void showError(Widget widget, String message) {
+    if (!BeeUtils.isEmpty(message)) {
+      if (widget instanceof HasText) {
+        ((HasText) widget).setText(message);
+      } else if (widget instanceof NotificationListener) {
+        ((NotificationListener) widget).notifySevere(message);
+      } else {
+        BeeKeeper.getScreen().notifySevere(message);
+      }
     }
   }
 }

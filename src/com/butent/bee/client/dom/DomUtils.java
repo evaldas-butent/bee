@@ -169,6 +169,13 @@ public class DomUtils {
     Assert.notNull(obj);
     DomUtils.preventSelection(obj.getElement());
   }
+  
+  public static void clear(Node nd) {
+    Assert.notNull(nd);
+    while (nd.getFirstChild() != null) {
+      nd.removeChild(nd.getFirstChild());
+    }
+  }
 
   public static void clearTitle(UIObject obj) {
     Assert.notNull(obj);
@@ -779,14 +786,14 @@ public class DomUtils {
     return $doc.getElementsByName(name);
   }-*/;
   
-  public static List<Widget> getFocusableChildren(Widget parent) {
-    List<Widget> result = Lists.newArrayList();
+  public static List<Focusable> getFocusableChildren(Widget parent) {
+    List<Focusable> result = Lists.newArrayList();
     if (parent == null) {
       return result;
     }
 
     if (parent instanceof Focusable) {
-      result.add(parent);
+      result.add((Focusable) parent);
     } else if (parent instanceof HasOneWidget) {
       result.addAll(getFocusableChildren(((HasOneWidget) parent).getWidget()));
     } else if (parent instanceof HasWidgets) {
@@ -1312,6 +1319,18 @@ public class DomUtils {
       return false;
     }
     return el.getTagName().equalsIgnoreCase(TAG_LABEL);
+  }
+  
+  public static boolean isOrHasChild(String id, Node nd) {
+    Assert.notEmpty(id);
+    Assert.notNull(nd);
+    
+    Element el = DOM.getElementById(id);
+    if (el == null) {
+      return false;
+    } else {
+      return el.isOrHasChild(nd);
+    }
   }
 
   public static boolean isTableCellElement(Element el) {

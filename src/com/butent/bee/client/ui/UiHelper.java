@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
@@ -26,6 +27,8 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasNumberBounds;
+import com.butent.bee.shared.HasStringValue;
+import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
@@ -53,6 +56,30 @@ public class UiHelper {
   private static final Set<VerticalAlignmentConstant> VERTICAL_ALIGNMENT_CONSTANTS =
       Sets.newHashSet(HasVerticalAlignment.ALIGN_TOP, HasVerticalAlignment.ALIGN_MIDDLE,
           HasVerticalAlignment.ALIGN_BOTTOM);
+
+  public static void add(HasWidgets container, Holder<Widget> holder,
+      WidgetInitializer initializer, String name) {
+    Assert.notNull(holder);
+    holder.set(add(container, holder.get(), initializer, name));
+  }
+
+  public static Widget add(HasWidgets container, Widget widget, WidgetInitializer initializer,
+      String name) {
+    if (container == null || widget == null) {
+      return null;
+    }
+
+    if (initializer == null) {
+      container.add(widget);
+      return widget;
+    }
+
+    Widget w = initializer.initialize(widget, name);
+    if (w != null) {
+      container.add(w);
+    }
+    return w;
+  }
 
   public static void doEditorAction(Editor widget, String value, char charCode,
       EditorAction action) {
@@ -169,6 +196,18 @@ public class UiHelper {
     }
     return null;
   }
+  
+  public static String getValue(Widget widget) {
+    if (widget instanceof Editor) {
+      return ((Editor) widget).getValue();
+    } else if (widget instanceof TextBoxBase) {
+      return ((TextBoxBase) widget).getValue();
+    } else if (widget instanceof HasStringValue) {
+      return ((HasStringValue) widget).getString();
+    } else {
+      return null;
+    }
+  }
 
   public static boolean isSave(NativeEvent event) {
     if (event == null) {
@@ -266,6 +305,30 @@ public class UiHelper {
     if (align != null) {
       obj.setVerticalAlignment(align);
     }
+  }
+
+  public static void setWidget(HasOneWidget container, Holder<Widget> holder,
+      WidgetInitializer initializer, String name) {
+    Assert.notNull(holder);
+    holder.set(setWidget(container, holder.get(), initializer, name));
+  }
+  
+  public static Widget setWidget(HasOneWidget container, Widget widget,
+      WidgetInitializer initializer, String name) {
+    if (container == null || widget == null) {
+      return null;
+    }
+
+    if (initializer == null) {
+      container.setWidget(widget);
+      return widget;
+    }
+
+    Widget w = initializer.initialize(widget, name);
+    if (w != null) {
+      container.setWidget(w);
+    }
+    return w;
   }
 
   public static void updateForm(String widgetId, String columnId, String value) {

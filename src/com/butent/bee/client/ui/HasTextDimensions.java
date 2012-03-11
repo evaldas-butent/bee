@@ -7,6 +7,9 @@ package com.butent.bee.client.ui;
 
 public interface HasTextDimensions {
 
+  String ATTR_CHARACTER_WIDTH = "characterWidth";
+  String ATTR_VISIBLE_LINES = "visibleLines";
+  
   int getCharacterWidth();
 
   int getVisibleLines();

@@ -2,6 +2,8 @@ package com.butent.bee.client.composite;
 
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
@@ -98,7 +100,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
       }
     });
 
-    sinkEvents(Event.ONCLICK + Event.ONKEYDOWN + Event.ONKEYPRESS);
+    sinkEvents(Event.ONCLICK + Event.ONKEYDOWN + Event.ONKEYPRESS + Event.ONBLUR);
   }
 
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
@@ -109,6 +111,10 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     return addHandler(handler, EditStopEvent.getType());
   }
 
+  public HandlerRegistration addFocusHandler(FocusHandler handler) {
+    return addDomHandler(handler, FocusEvent.getType());
+  }
+  
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
   }
@@ -170,7 +176,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
       return;
     }
     if (EventUtils.isClick(type)) {
-      EventUtils.eatEvent(event);
+      event.preventDefault();
       if (dp) {
         hideDatePicker();
       } else if (checkValue()) {
@@ -185,7 +191,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
       }
     } else if (EventUtils.isKeyPress(type)) {
       if (handleChar(event.getCharCode())) {
-        EventUtils.eatEvent(event);
+        event.preventDefault();
         return;
       }
     }

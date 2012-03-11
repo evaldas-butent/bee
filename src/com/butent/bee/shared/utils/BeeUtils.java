@@ -1683,6 +1683,10 @@ public class BeeUtils {
     return isDouble(s, BeeConst.DOUBLE_ZERO, false);
   }
 
+  public static boolean isPositiveInt(String s) {
+    return isInt(s) && toInt(s) > 0;
+  }
+  
   /**
    * Checks if the first character in a CharSequence is a prefix.
    * 

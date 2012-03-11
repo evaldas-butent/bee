@@ -281,7 +281,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
     switch (keyCode) {
       case KeyCodes.KEY_ESCAPE:
-        EventUtils.eatEvent(nativeEvent);
+        event.preventDefault();
         closeEditor(keyCode, EventUtils.hasModifierKey(nativeEvent));
         break;
 
@@ -289,7 +289,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       case KeyCodes.KEY_TAB:
       case KeyCodes.KEY_UP:
       case KeyCodes.KEY_DOWN:
-        EventUtils.eatEvent(nativeEvent);
+        event.preventDefault();
         endEdit(keyCode, EventUtils.hasModifierKey(nativeEvent));
         break;
     }
