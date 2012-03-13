@@ -5,8 +5,6 @@ import com.google.common.collect.Maps;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.SimplePanel;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
@@ -18,12 +16,10 @@ import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.CatchEvent.CatchHandler;
-import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.Map;
@@ -52,12 +48,10 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   private Presenter viewPresenter = null;
   private boolean enabled = true;
   private final Tree tree;
-  private final TreeItem rootItem;
   private final Map<Long, TreeItem> items = Maps.newHashMap();
-  private final Panel noData = new SimplePanel();
   private final boolean hasActions;
 
-  public TreeContainer(boolean hideActions, String root) {
+  public TreeContainer(String caption, boolean hideActions) {
     super();
 
     addStyleName(STYLE_NAME);
@@ -82,10 +76,7 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
       add(hdr);
     }
-    noData.setStyleName(CellGrid.STYLE_EMPTY);
-    add(noData);
-
-    this.tree = new Tree();
+    this.tree = new Tree(caption);
     add(tree);
 
     getTree().addStyleName(STYLE_NAME + "-tree");
@@ -94,14 +85,6 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     if (hasActions) {
       getTree().addCatchHandler(this);
     }
-    if (!BeeUtils.isEmpty(root)) {
-      this.rootItem = new TreeItem(root);
-      this.rootItem.getContentElem().addClassName(STYLE_NAME + "-rootItem");
-      getTree().addItem(this.rootItem);
-    } else {
-      this.rootItem = null;
-    }
-    showNoData();
   }
 
   @Override
@@ -122,17 +105,13 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     }
     items.put(id, treeItem);
 
-    HasTreeItems parentItem = items.containsKey(parentId) ? items.get(parentId) : getRoot();
+    HasTreeItems parentItem = items.containsKey(parentId) ? items.get(parentId) : getTree();
     parentItem.addItem(treeItem);
 
     if (focus) {
       getTree().setSelectedItem(treeItem);
       getTree().ensureSelectedItemVisible();
-
-    } else if (rootItem != null && !rootItem.isOpen()) {
-      rootItem.setOpen(true);
     }
-    showNoData();
   }
 
   @Override
@@ -221,7 +200,8 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
 
     if (event == null) {
       getTree().setSelectedItem(null);
-    } else {
+
+    } else if (event.getSelectedItem() != null) {
       item = (IsRow) event.getSelectedItem().getUserObject();
     }
     SelectionEvent.fire(this, item);
@@ -252,16 +232,13 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     }
     removeFromCache(treeItem);
     treeItem.remove();
-    showNoData();
   }
 
   @Override
   public void removeItems() {
-    getRoot().removeItems();
+    getTree().removeItems();
     items.clear();
-
     onSelection(null);
-    showNoData();
   }
 
   @Override
@@ -293,10 +270,6 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     }
   }
 
-  private HasTreeItems getRoot() {
-    return rootItem == null ? getTree() : rootItem;
-  }
-
   private Tree getTree() {
     return tree;
   }
@@ -306,9 +279,5 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       removeFromCache(item.getChild(i));
     }
     items.remove(((IsRow) item.getUserObject()).getId());
-  }
-
-  private void showNoData() {
-    noData.setVisible(BeeUtils.isEmpty(getTree().getItemCount()));
   }
 }

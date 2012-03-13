@@ -703,11 +703,11 @@
           <xs:element name="calc" type="bee:calcType" minOccurs="0" maxOccurs="1" />
           <xs:element name="form" type="bee:hasOneChild" minOccurs="0" maxOccurs="1" />
         </xs:sequence>
+        <xs:attribute name="caption" type="xs:string" use="required" />
         <xs:attribute name="source" type="bee:tableNameType" use="required" />
         <xs:attribute name="parentColumn" type="bee:fieldNameType" use="required" />
         <xs:attribute name="orderColumn" type="bee:fieldNameType" />
         <xs:attribute name="hideActions" type="xs:boolean" />
-        <xs:attribute name="rootItem" type="xs:string" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -719,6 +719,7 @@
           <xs:sequence>
             <xs:element ref="bee:TreeItem" minOccurs="0" maxOccurs="unbounded" />
           </xs:sequence>
+          <xs:attribute name="caption" type="xs:string" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

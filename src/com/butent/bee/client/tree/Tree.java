@@ -66,6 +66,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.view.CatchEvent;
+import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -92,8 +93,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
   private class DndHandler {
 
     private TreeItem source = null;
-    private Element target = null;
-    private boolean rootOn = false;
+    private boolean captionReady = false;
 
     public boolean handleEvent(Event event) {
       DataTransfer dto = event.getDataTransfer();
@@ -111,52 +111,57 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
         if (source == null) {
           event.preventDefault();
         } else {
+          prepareCaption();
           elem.addClassName(StyleUtils.DND_SOURCE);
           dto.setData(EventUtils.DEFAULT_DND_DATA_FORMAT, elem.getId());
           JsUtils.setProperty(dto, EventUtils.PROPERTY_EFFECT_ALLOWED, EventUtils.EFFECT_MOVE);
         }
       } else if (ev == DragEvent.getType().getName()) {
-        if (rootTarget()) {
-          if (rootIn(event.getClientX(), event.getClientY())) {
-            rootOn();
-          } else {
-            rootOff();
+        int border = 10;
+        int width = getOffsetWidth();
+        int left = getAbsoluteLeft();
+        int right = left + width;
+        int x = event.getClientX();
+        int height = getOffsetHeight();
+        int top = getAbsoluteTop();
+        int bottom = top + height;
+        int y = event.getClientY();
+
+        if (BeeUtils.betweenInclusive(x, left, right)
+            && BeeUtils.betweenInclusive(y, top, bottom)) {
+
+          int sLeft = getElement().getScrollLeft();
+
+          if (x <= left + border) {
+            if (sLeft > 0) {
+              getElement().setScrollLeft(Math.max(sLeft - (x - left), 0));
+            }
+          } else if (x >= right - border) {
+            int boundary = getElement().getScrollWidth() - width;
+
+            if (sLeft < boundary) {
+              getElement().setScrollLeft(Math.min(sLeft + (right - x), boundary));
+            }
           }
-        } else {
-          rootOff();
+          int sTop = getElement().getScrollTop();
+
+          if (y <= top + border) {
+            if (sTop > 0) {
+              getElement().setScrollTop(Math.max(sTop - (y - top), 0));
+            }
+          } else if (y >= bottom - border) {
+            int boundary = getElement().getScrollHeight() - height;
+
+            if (sTop < boundary) {
+              getElement().setScrollTop(Math.min(sTop + (bottom - y), boundary));
+            }
+          }
         }
       } else if (ev == DragEndEvent.getType().getName()) {
-        if (rootTarget()) {
-          if (rootIn(event.getClientX(), event.getClientY())) {
-            rootOn();
-          } else {
-            rootOff();
-          }
-        } else {
-          rootOff();
-        }
         elem.removeClassName(StyleUtils.DND_SOURCE);
-
-        if (rootOn || isTarget(target)) {
-          TreeItem destination = null;
-
-          if (rootOn) {
-            rootOff();
-            Tree.this.addItem(source);
-          } else {
-            destination = getItemByContentId(target.getId());
-            destination.addItem(source);
-          }
-          setSelectedItem(source);
-          ensureSelectedItemVisible();
-          CatchEvent.fire(Tree.this, source, destination);
-        }
         source = null;
-        target = null;
 
       } else if (ev == DragEnterEvent.getType().getName()) {
-        target = elem;
-
         if (isTarget(elem)) {
           elem.addClassName(StyleUtils.DND_OVER);
           TreeItem item = getItemByContentId(elem.getId());
@@ -172,15 +177,22 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
         if (isTarget(elem)) {
           elem.removeClassName(StyleUtils.DND_OVER);
         }
-        if (elem == target) {
-          target = null;
-        }
       } else if (ev == DropEvent.getType().getName()) {
         event.stopPropagation();
 
         if (isTarget(elem)) {
           elem.removeClassName(StyleUtils.DND_OVER);
-          target = elem;
+          TreeItem destination = null;
+
+          if (isCaption(elem)) {
+            Tree.this.addItem(source);
+          } else {
+            destination = getItemByContentId(elem.getId());
+            destination.addItem(source);
+          }
+          setSelectedItem(source);
+          ensureSelectedItemVisible();
+          CatchEvent.fire(Tree.this, source, destination);
         }
       }
       return true;
@@ -189,6 +201,9 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     private boolean isTarget(Element elem) {
       if (elem == null || source == null) {
         return false;
+      }
+      if (isCaption(elem)) {
+        return source.getParentItem() != null;
       }
       TreeItem item = getItemByContentId(elem.getId());
 
@@ -204,31 +219,17 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
       return true;
     }
 
-    private boolean rootIn(int x, int y) {
-      int top = Tree.this.getAbsoluteTop();
-      int left = Tree.this.getAbsoluteLeft();
-      int width = Tree.this.getOffsetWidth();
-      int height = Tree.this.getOffsetHeight();
-      return BeeUtils.betweenInclusive(x, left, left + width)
-          && BeeUtils.betweenInclusive(y, top, top + height);
-    }
-
-    private void rootOff() {
-      if (rootOn) {
-        Tree.this.getElement().removeClassName(StyleUtils.DND_OVER);
-        rootOn = false;
+    private void prepareCaption() {
+      if (!captionReady) {
+        if (caption != null) {
+          Element elem = caption.getElement();
+          DOM.sinkBitlessEvent(elem, DragEnterEvent.getType().getName());
+          DOM.sinkBitlessEvent(elem, DragOverEvent.getType().getName());
+          DOM.sinkBitlessEvent(elem, DragLeaveEvent.getType().getName());
+          DOM.sinkBitlessEvent(elem, DropEvent.getType().getName());
+        }
+        captionReady = true;
       }
-    }
-
-    private void rootOn() {
-      if (!rootOn) {
-        Tree.this.getElement().addClassName(StyleUtils.DND_OVER);
-        rootOn = true;
-      }
-    }
-
-    private boolean rootTarget() {
-      return target == null && source.getParentItem() != null;
     }
   }
 
@@ -257,6 +258,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
 
   private boolean isAnimationEnabled = false;
 
+  private final Widget caption;
   private final TreeItem root;
 
   private DndHandler dndHandler = null;
@@ -264,6 +266,10 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
   private boolean enabled = true;
 
   public Tree() {
+    this(null);
+  }
+
+  public Tree(String caption) {
     setElement(DOM.createDiv());
 
     getElement().getStyle().setPosition(Position.RELATIVE);
@@ -281,6 +287,14 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
 
     root = new TreeItem(true);
     root.setTree(this);
+
+    if (!BeeUtils.isEmpty(caption)) {
+      this.caption = new InlineLabel(caption);
+      this.caption.setStyleName("bee-Tree-caption");
+      getElement().appendChild(this.caption.getElement());
+    } else {
+      this.caption = null;
+    }
 
     setStyleName("bee-Tree");
     DomUtils.createId(this, getIdPrefix());
@@ -644,6 +658,13 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
   }
 
   private boolean elementClicked(Element hElem) {
+    if (isCaption(hElem)) {
+      if (getSelectedItem() != null) {
+        setSelectedItem(null);
+        SelectionEvent.fire(this, null);
+      }
+      return true;
+    }
     List<Element> chain = new ArrayList<Element>();
     collectElementChain(chain, getElement(), hElem);
 
@@ -713,6 +734,10 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
       dndHandler = new DndHandler();
     }
     return dndHandler.handleEvent(event);
+  }
+
+  private boolean isCaption(Element elem) {
+    return caption != null && elem == caption.getElement();
   }
 
   private void maybeCollapseTreeItem() {
@@ -839,7 +864,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
   }
 
   private void onSelection(TreeItem item, boolean fireEvents, boolean moveFocus) {
-    if (item == root) {
+    if (item == root || item == getSelectedItem()) {
       return;
     }
 

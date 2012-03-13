@@ -5,7 +5,7 @@
   
   name="DocumentTree" caption="Dokumentų medis">
 
-  <DataTree name="Tree" source="DocumentTree" parentColumn="Parent" orderColumn="Order">
+  <DataTree caption="Kategorijos" source="DocumentTree" parentColumn="Parent" orderColumn="Order">
     <calc>
       <expression>row.Name</expression>
     </calc>

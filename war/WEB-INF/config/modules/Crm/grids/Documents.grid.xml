@@ -6,8 +6,8 @@
   newRowForm="NewDocument" editForm="Document">
   
   <west size="200">
-    <DataTree name="Tree" source="DocumentTree" parentColumn="Parent"
-              rootItem="Kategorijos" hideActions="true">
+    <DataTree name="Tree" caption="Kategorijos" source="DocumentTree" parentColumn="Parent"
+              hideActions="true">
       <calc>
         <expression>row.Name + (row.DocumentCount != 0 ? ' [' + row.DocumentCount + ']' : '')</expression>
       </calc>

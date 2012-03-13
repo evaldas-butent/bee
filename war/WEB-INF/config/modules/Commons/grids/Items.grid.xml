@@ -7,8 +7,8 @@
   newRowCaption="Naujiena"
   >
   <west size="200" splitterSize="2">
-    <DataTree name="Categories" source="CategoryTree" parentColumn="Parent"
-              hideActions="true" rootItem="Kategorijos">
+    <DataTree name="Categories" caption="Kategorijos" source="CategoryTree" parentColumn="Parent"
+              hideActions="true">
       <calc>
         <expression>row.Name</expression>
       </calc>

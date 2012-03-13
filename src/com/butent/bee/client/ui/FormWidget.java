@@ -1000,13 +1000,13 @@ public enum FormWidget {
         break;
 
       case TREE:
-        widget = new Tree();
+        widget = new Tree(attributes.get("caption"));
         break;
 
       case DATA_TREE:
       case CHILD_TREE:
-        widget = new TreeContainer(BeeUtils.toBoolean(attributes.get("hideActions")),
-            attributes.get("rootItem"));
+        widget = new TreeContainer(attributes.get("caption"),
+            BeeUtils.toBoolean(attributes.get("hideActions")));
 
         ((TreeView) widget).setViewPresenter(new TreePresenter((TreeView) widget,
             attributes.get(ATTR_SOURCE), attributes.get("parentColumn"),

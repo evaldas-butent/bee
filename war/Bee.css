@@ -920,6 +920,11 @@ body, select {
   overflow: auto;
 }
 
+.bee-Tree-caption {
+  font-weight: bold;
+  cursor: pointer;
+}
+
 .bee-TreeItem-content {
   padding: 1px 0px;
   margin: 0px;
@@ -947,7 +952,7 @@ body, select {
 }
 
 .bee-TreeItem-selected {
-  background-color: #ebeff9;
+  background-color: yellow;
 }
 
 .gwt-SplitLayoutPanel-HDragger {
@@ -1085,7 +1090,4 @@ body, select {
 }
 .bee-TreeView-actions {
   text-align: right;
-}
-.bee-TreeView-rootItem {
-  font-weight: bold;
 }

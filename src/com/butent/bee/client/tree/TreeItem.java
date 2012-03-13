@@ -550,7 +550,7 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
       setChildSpanElem(null);
     }
   }
-  
+
   private List<TreeItem> getChildren() {
     return children;
   }

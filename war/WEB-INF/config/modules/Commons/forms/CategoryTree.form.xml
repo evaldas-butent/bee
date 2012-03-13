@@ -5,7 +5,7 @@
   
   name="CategoryTree" caption="Kategorijų medis">
 
-  <DataTree name="Categories" source="CategoryTree" parentColumn="Parent">
+  <DataTree caption="Kategorijos" source="CategoryTree" parentColumn="Parent">
     <calc>
       <expression>row.Name</expression>
     </calc>
