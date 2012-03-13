@@ -548,6 +548,7 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
 
       setImageHolder(null);
       setChildSpanElem(null);
+      setChildren(null);
     }
   }
 
@@ -574,7 +575,7 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
     getElement().appendChild(getChildSpanElem());
     setStyleName(getChildSpanElem(), STYLE_PREFIX + "children");
 
-    this.children = new ArrayList<TreeItem>();
+    setChildren(new ArrayList<TreeItem>());
   }
 
   private boolean isBranch() {
@@ -585,6 +586,10 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
     if ((item.getParentItem() != null) || (item.getTree() != null)) {
       item.remove();
     }
+  }
+
+  private void setChildren(List<TreeItem> children) {
+    this.children = children;
   }
 
   private void setChildSpanElem(Element childSpanElem) {

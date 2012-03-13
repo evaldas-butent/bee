@@ -287,6 +287,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private final List<TabEntry> tabOrder = Lists.newArrayList();
 
   private HandlerRegistration previewReg = null;
+  private String previewId = null;
+
   private int activeEditableIndex = BeeConst.UNDEF;
 
   public FormImpl() {
@@ -636,14 +638,20 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public void onPreviewNativeEvent(NativePreviewEvent event) {
-    if (EventUtils.isMouseDown(event.getNativeEvent().getType())
-        && !BeeConst.isUndef(getActiveEditableIndex())) {
-
-      EditableWidget editableWidget = getEditableWidgets().get(getActiveEditableIndex());
-      if (!DomUtils.isOrHasChild(editableWidget.getWidgetId(),
-          EventUtils.getEventTargetElement(event))) {
-        if (!editableWidget.check(true)) {
-          event.cancel();
+    if (EventUtils.isClick(event.getNativeEvent().getType())) {
+      if (!BeeUtils.isEmpty(getPreviewId())) {
+        setPreviewId(null);
+        event.cancel();
+      }
+    } else if (EventUtils.isMouseDown(event.getNativeEvent().getType())) {
+      if (!BeeConst.isUndef(getActiveEditableIndex())) {
+        EditableWidget editableWidget = getEditableWidgets().get(getActiveEditableIndex());
+        if (!DomUtils.isOrHasChild(editableWidget.getWidgetId(),
+            EventUtils.getEventTargetElement(event))) {
+          if (!editableWidget.check(true)) {
+            setPreviewId(editableWidget.getWidgetId());
+            event.cancel();
+          }
         }
       }
     }
@@ -1030,6 +1038,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return notification;
   }
 
+  private String getPreviewId() {
+    return previewId;
+  }
+
   private HandlerRegistration getPreviewReg() {
     return previewReg;
   }
@@ -1233,6 +1245,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private void setHasData(boolean hasData) {
     this.hasData = hasData;
+  }
+
+  private void setPreviewId(String previewId) {
+    this.previewId = previewId;
   }
 
   private void setPreviewReg(HandlerRegistration previewReg) {

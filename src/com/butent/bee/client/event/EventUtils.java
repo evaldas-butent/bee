@@ -870,6 +870,10 @@ public class EventUtils {
     return isEventType(type, EVENT_TYPE_MOUSE_WHEEL);
   }
 
+  public static boolean isMoveEvent(String type) {
+    return isMouseMove(type) || isMouseOut(type) || isMouseOver(type);
+  }
+  
   public static boolean isTargetId(EventTarget et, String id) {
     if (et == null || BeeUtils.isEmpty(id)) {
       return false;
@@ -890,11 +894,11 @@ public class EventUtils {
 
   public static void logEvent(NativeEvent ev, boolean detailed, String title) {
     Assert.notNull(ev);
-    if (!BeeUtils.isEmpty(title)) {
-      BeeKeeper.getLog().debug(title);
-    }
 
     if (detailed) {
+      if (!BeeUtils.isEmpty(title)) {
+        BeeKeeper.getLog().debug(title);
+      }
       List<Property> lst = getEventInfo(ev);
       for (Property el : lst) {
         BeeKeeper.getLog().debug(el.getName(), el.getValue());
@@ -902,7 +906,7 @@ public class EventUtils {
 
       BeeKeeper.getLog().addSeparator();
     } else {
-      BeeKeeper.getLog().debug(transformEvent(ev));
+      BeeKeeper.getLog().debug(title, transformEvent(ev));
     }
   }
 
