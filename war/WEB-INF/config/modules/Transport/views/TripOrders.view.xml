@@ -12,6 +12,13 @@
     <BeeSimpleJoin joinType="LEFT" expression="Customer">
       <BeeSimpleColumn expression="Name" name="CustomerName" />
     </BeeSimpleJoin>
+    <BeeSimpleColumn expression="CustomerPerson" />
+    <BeeSimpleJoin expression="CustomerPerson" joinType="LEFT">
+      <BeeSimpleJoin expression="Person" joinType="LEFT">
+        <BeeSimpleColumn name="PersonFirstName" expression="FirstName" />
+        <BeeSimpleColumn name="PersonLastName" expression="LastName" />
+      </BeeSimpleJoin>
+    </BeeSimpleJoin>
     <BeeSimpleColumn expression="Payer" />
     <BeeSimpleJoin joinType="LEFT" expression="Payer">
       <BeeSimpleColumn expression="Name" name="PayerName" />
@@ -23,7 +30,7 @@
       <BeeAggregateColumn aggregate="COUNT" expression="Cargo" name="CntCargo" />
       <BeeAggregateColumn aggregate="SUM" expression="Weight" />
       <BeeAggregateColumn aggregate="SUM" expression="Volume" />
-      <BeeAggregateColumn aggregate="SUM" expression="Palettes" />
+      <BeeAggregateColumn aggregate="SUM" expression="Quantity" />
     </BeeExternalJoin>
   </BeeColumns>
   <BeeOrder>

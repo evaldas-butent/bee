@@ -6,28 +6,28 @@
   source="OrderCargo"
   >
   <BeeColumns>
-    <BeeSimpleColumn expression="Order"/>
-    <BeeSimpleColumn expression="LoadingDate"/>
-    <BeeSimpleColumn expression="LoadingCountry"/>
+    <BeeSimpleColumn expression="Order" />
+    <BeeSimpleColumn expression="LoadingDate" />
+    <BeeSimpleColumn expression="LoadingCountry" />
     <BeeSimpleJoin joinType="LEFT" expression="LoadingCountry">
       <BeeSimpleColumn expression="Name" name="LoadingCountryName" />
     </BeeSimpleJoin>
-    <BeeSimpleColumn expression="LoadingRamp"/>
-    <BeeSimpleColumn expression="LoadingTerminal"/>
-    <BeeSimpleColumn expression="UnloadingDate"/>
-    <BeeSimpleColumn expression="UnloadingCountry"/>
+    <BeeSimpleColumn expression="LoadingPlace" />
+    <BeeSimpleColumn expression="LoadingTerminal" />
+    <BeeSimpleColumn expression="UnloadingDate" />
+    <BeeSimpleColumn expression="UnloadingCountry" />
     <BeeSimpleJoin joinType="LEFT" expression="UnloadingCountry">
       <BeeSimpleColumn expression="Name" name="UnloadingCountryName" />
     </BeeSimpleJoin>
-    <BeeSimpleColumn expression="UnloadingRamp"/>
-    <BeeSimpleColumn expression="UnloadingTerminal"/>
-    <BeeSimpleColumn expression="Cargo"/>
-    <BeeSimpleColumn expression="Weight"/>
-    <BeeSimpleColumn expression="Volume"/>
-    <BeeSimpleColumn expression="Palettes"/>
-    <BeeSimpleColumn expression="Number"/>
-    <BeeSimpleColumn expression="Cmr"/>
-    <BeeSimpleColumn expression="Notes"/>
+    <BeeSimpleColumn expression="UnloadingPlace" />
+    <BeeSimpleColumn expression="UnloadingTerminal" />
+    <BeeSimpleColumn expression="Cargo" />
+    <BeeSimpleColumn expression="Weight" />
+    <BeeSimpleColumn expression="Volume" />
+    <BeeSimpleColumn expression="Quantity" />
+    <BeeSimpleColumn expression="Number" />
+    <BeeSimpleColumn expression="Cmr" />
+    <BeeSimpleColumn expression="Notes" />
   </BeeColumns>
   <BeeOrder>
     <OrderBy column="LoadingDate" />

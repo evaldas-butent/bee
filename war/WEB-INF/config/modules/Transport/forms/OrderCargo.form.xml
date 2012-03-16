@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd" name="OrderCargo"
+  viewName="OrderCargo" caption="Krovinys">
+  <FlowPanel class="flexBox-vertical">
+    <FlexTable cellSpacing="10">
+      <row>
+        <cell colSpan="2">
+          <FlexTable>
+            <row>
+              <cell colSpan="2">
+                <Label html="Krovinys" horizontalAlignment="right" class="bee-required" />
+              </cell>
+              <cell colSpan="3">
+                <InputText source="Cargo" style="font-weight: bold; width: 100%" />
+              </cell>
+            </row>
+            <row>
+              <cell>
+                <Label html="CMR" horizontalAlignment="right" class="bee-required" />
+              </cell>
+              <cell>
+                <InputText source="Cmr" />
+              </cell>
+              <cell>
+                <Label html="Svoris" horizontalAlignment="right" />
+              </cell>
+              <cell>
+                <InputInteger source="Weight" />
+              </cell>
+              <cell>
+                <Label html="Pastabos" />
+              </cell>
+            </row>
+            <row>
+              <cell colSpan="3">
+                <Label html="Tūris" horizontalAlignment="right" />
+              </cell>
+              <cell>
+                <InputDecimal format="#.000" scale="3" source="Volume" />
+              </cell>
+              <cell rowSpan="2">
+                <InputArea source="Notes" characterWidth="30" style="height: 100%" />
+              </cell>
+            </row>
+            <row>
+              <cell colSpan="3">
+                <Label html="Kiekis" horizontalAlignment="right" />
+              </cell>
+              <cell>
+                <InputInteger source="Quantity" />
+              </cell>
+            </row>
+          </FlexTable>
+        </cell>
+      </row>
+      <row>
+        <cell>
+          <FlexTable>
+            <row>
+              <cell colSpan="2">
+                <Label html="Pakrovimas" horizontalAlignment="center" style="font-weight: bold;" />
+              </cell>
+            </row>
+            <row>
+              <cell>
+                <Label html="Data" horizontalAlignment="right" />
+              </cell>
+              <cell>
+                <InputDate source="LoadingDate" />
+              </cell>
+            </row>
+            <row>
+              <cell>
+                <Label html="Šalis" horizontalAlignment="right" />
+              </cell>
+              <cell>
+                <DataSelector source="LoadingCountryName" relSource="LoadingCountry"
+                  relView="Countries" relColumn="Name" />
+              </cell>
+            </row>
+            <row>
+              <cell>
+                <Label html="Vieta" horizontalAlignment="right" />
+              </cell>
+              <cell>
+                <InputText source="LoadingPlace" />
+              </cell>
+            </row>
+            <row>
+              <cell>
+                <Label html="Terminalas" horizontalAlignment="right" />
+              </cell>
+              <cell>
+                <InputText source="LoadingTerminal" />
+              </cell>
+            </row>
+          </FlexTable>
+        </cell>
+        <cell>
+          <FlexTable>
+            <row>
+              <cell colSpan="2">
+                <Label html="Iškrovimas" horizontalAlignment="center" style="font-weight: bold;" />
+              </cell>
+            </row>
+            <row>
+              <cell>
+                <Label html="Data" horizontalAlignment="right" />
+              </cell>
+              <cell>
+                <InputDate source="UnloadingDate" />
+              </cell>
+            </row>
+            <row>
+              <cell>
+                <Label html="Šalis" horizontalAlignment="right" />
+              </cell>
+              <cell>
+                <DataSelector source="UnloadingCountryName" relSource="UnloadingCountry"
+                  relView="Countries" relColumn="Name" />
+              </cell>
+            </row>
+            <row>
+              <cell>
+                <Label html="Vieta" horizontalAlignment="right" />
+              </cell>
+              <cell>
+                <InputText source="UnloadingPlace" />
+              </cell>
+            </row>
+            <row>
+              <cell>
+                <Label html="Terminalas" horizontalAlignment="right" />
+              </cell>
+              <cell>
+                <InputText source="UnloadingTerminal" />
+              </cell>
+            </row>
+          </FlexTable>
+        </cell>
+      </row>
+    </FlexTable>
+
+    <TabbedPages barHeight="24" class="flexible">
+      <page>
+        <text>Paslaugos</text>
+        <ChildGrid name="CargoServices" relColumn="Cargo" />
+      </page>
+      <page>
+        <text>Reisai</text>
+        <InlineLabel/>
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</BeeForm>

@@ -10,16 +10,16 @@
     <BeeField name="Order" type="LONG" relation="TripOrders" notNull="true" cascade="DELETE" />
     <BeeField name="LoadingDate" type="DATE" />
     <BeeField name="LoadingCountry" type="LONG" relation="Countries" />
-    <BeeField name="LoadingRamp" type="STRING" precision="50" />
+    <BeeField name="LoadingPlace" type="STRING" precision="50" />
     <BeeField name="LoadingTerminal" type="STRING" precision="30" />
     <BeeField name="UnloadingDate" type="DATE" />
     <BeeField name="UnloadingCountry" type="LONG" relation="Countries" />
-    <BeeField name="UnloadingRamp" type="STRING" precision="50" />
+    <BeeField name="UnloadingPlace" type="STRING" precision="50" />
     <BeeField name="UnloadingTerminal" type="STRING" precision="30" />
     <BeeField name="Cargo" type="STRING" precision="100" notNull="true" />
     <BeeField name="Weight" type="INTEGER" />
     <BeeField name="Volume" type="DECIMAL" precision="7" scale="3" />
-    <BeeField name="Palettes" type="INTEGER" />
+    <BeeField name="Quantity" type="INTEGER" />
     <BeeField name="Number" type="STRING" precision="20" />
     <BeeField name="Cmr" type="STRING" precision="20" />
     <BeeField name="Notes" type="TEXT" />

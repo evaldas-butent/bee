@@ -10,6 +10,7 @@
     <BeeField name="Date" type="DATETIME" notNull="true" />
     <BeeField name="OrderNo" type="STRING" precision="20" unique="true" notNull="true" />
     <BeeField name="Customer" type="LONG" relation="Companies" notNull="true" />
+    <BeeField name="CustomerPerson" type="LONG" relation="CompanyPersons" />
     <BeeField name="Payer" type="LONG" relation="Companies" />
   </BeeFields>
 </BeeTable>

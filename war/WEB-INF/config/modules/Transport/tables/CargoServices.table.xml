@@ -2,15 +2,17 @@
 <BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
 
-  name="OrderServices"
+  name="CargoServices"
   idName="ServiceID"
   x="741" y="101"
   >
   <BeeFields>
-    <BeeField name="Order" type="LONG" notNull="true" relation="TripOrders" cascade="DELETE" />
+    <BeeField name="Cargo" type="LONG" notNull="true" relation="OrderCargo" cascade="DELETE" />
     <BeeField name="Item" type="LONG" notNull="true" relation="Items" />
+    <BeeField name="Unit" type="LONG" notNull="true" relation="Units" />
     <BeeField name="Quantity" type="DOUBLE" notNull="true" />
     <BeeField name="Price" type="DECIMAL" precision="15" scale="5" />
     <BeeField name="Currency" type="LONG" relation="Currencies" />
+    <BeeField name="Expedition" type="BOOLEAN" />
   </BeeFields>
 </BeeTable>

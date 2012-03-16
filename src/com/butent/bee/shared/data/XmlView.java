@@ -28,6 +28,8 @@ public class XmlView {
     public String name;
     @XmlAttribute
     public String locale;
+    @XmlElementRef
+    public XmlExpression expr;
   }
 
   @XmlRootElement(name = "BeeHiddenColumn", namespace = DataUtils.DEFAULT_NAMESPACE)

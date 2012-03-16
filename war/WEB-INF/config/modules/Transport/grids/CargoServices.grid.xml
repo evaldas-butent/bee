@@ -2,8 +2,8 @@
 <BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
 
-  name="OrderServices" viewName="OrderServices" caption="Paslaugos"
-  newRowColumns="ItemName, Quantity, Price, CurrencyName"
+  name="CargoServices" viewName="CargoServices"
+  newRowColumns="Expedition, ItemName, UnitName, Quantity, Price, CurrencyName"
   >
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">
@@ -14,9 +14,11 @@
   <footer borderWidth="0" />
 
   <columns>
+    <BeeDataColumn name="Expedition" source="Expedition" caption="Eksp." />
     <BeeRelColumn name="ItemName" source="ItemName" relSource="Item"
                   relView="Services" relColumn="Name" caption="Paslauga" />
-    <BeeDataColumn name="UnitName" source="UnitName" caption="Mato v." readOnly="true" />
+    <BeeRelColumn name="UnitName" source="UnitName" relSource="Unit"
+                  relView="Units" relColumn="Name" caption="Mato v." />
     <BeeDataColumn name="Quantity" source="Quantity" caption="Kiekis" />
     <BeeDataColumn name="Price" source="Price" caption="Kaina" format="#.00" />
     <BeeRelColumn name="CurrencyName" source="CurrencyName" relSource="Currency"

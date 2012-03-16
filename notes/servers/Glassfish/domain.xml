@@ -25,7 +25,8 @@
       <resource-ref ref="jdbc/ms"></resource-ref>
       <resource-ref ref="jdbc/pg"></resource-ref>
     </server>
-  </servers>   <configs>
+  </servers>
+  <configs>
     <config name="server-config">
       <security-service activate-default-principal-to-role-mapping="true">
         <auth-realm name="DBRealm" classname="com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm">

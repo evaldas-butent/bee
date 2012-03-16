@@ -3,9 +3,11 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
 
   name="OrderCargo" viewName="OrderCargo" caption="Kroviniai"
+  newRowForm="OrderCargo" editForm="OrderCargo" editNewRow="true"
+  newRowCaption="Naujas krovinys"
   >
   <header borderWidth="1 0" />
-  <body height="20" borderWidth="0">
+  <body height="68" borderWidth="0">
     <style>
       <font>Verdana 12 px</font>
     </style>
@@ -16,19 +18,73 @@
     <BeeDataColumn name="Cargo" source="Cargo" caption="Krovinys" />
     <BeeDataColumn name="Weight" source="Weight" caption="Svoris" />
     <BeeDataColumn name="Volume" source="Volume" caption="Tūris" />
-    <BeeDataColumn name="Palettes" source="Palettes" caption="Padėklų sk." />
-    <BeeDataColumn name="LoadingDate" source="LoadingDate" caption="Pakrovimo data" />
-    <BeeRelColumn name="LoadingCountryName" source="LoadingCountryName" relSource="LoadingCountry"
-                  relColumn="Name" caption="Pakrovimo šalis" />
-    <BeeDataColumn name="LoadingRamp" source="LoadingRamp" caption="Pakrovimo vieta" />
-    <BeeDataColumn name="LoadingTerminal" source="LoadingTerminal" caption="Pakrovimo terminalas" />
-    <BeeDataColumn name="UnloadingDate" source="UnloadingDate" caption="Iškrovimo data" />
-    <BeeRelColumn name="UnloadingCountryName" source="UnloadingCountryName" relSource="UnloadingCountry"
-                  relColumn="Name" caption="Iškrovimo šalis" />
-    <BeeDataColumn name="UnloadingRamp" source="UnloadingRamp" caption="Iškrovimo vieta" />
-    <BeeDataColumn name="UnloadingTerminal" source="UnloadingTerminal" caption="Iškrovimo terminalas" />
+    <BeeDataColumn name="Quantity" source="Quantity" caption="Kiekis" />
+    <BeeCalcColumn name="Loading" type="string" cell="html" caption="Pakrovimas">
+      <calc>
+        <function>
+          var s = "";
+          var tr = "&lt;tr&gt;";
+          var tr_ = "&lt;/tr&gt;";
+          var tdc = "&lt;td align=\"right\" style=\"font-weight: bold;\"&gt;";
+          var td = "&lt;td&gt;";
+          var td_ = "&lt;/td&gt;";
+          
+          if (row.LoadingDate) {
+            s = s + tr + tdc + "Data:" + td_ + td + row.LoadingDate.toDateString() + td_ + tr_;
+          }
+          if (row.LoadingCountryName) {
+            s = s + tr + tdc + "Šalis:" + td_ + td + row.LoadingCountryName + td_ + tr_;
+          }
+          if (row.LoadingPlace) {
+            s = s + tr + tdc + "Vieta:" + td_ + td + row.LoadingPlace + td_ + tr_;
+          }
+          if (row.LoadingTerminal) {
+            s = s + tr + tdc + "Terminalas:" + td_ + td + row.LoadingTerminal + td_ + tr_;
+          }
+          if (s.length > 0) {
+            s = "&lt;table border=\"0\" style=\"border-collapse: collapse;\"&gt;" + s + "&lt;/table&gt;";
+          }
+          return s;
+        </function>
+      </calc>
+    </BeeCalcColumn>
+    <BeeCalcColumn name="Unloading" type="string" cell="html" caption="Iškrovimas">
+      <calc>
+        <function>
+          var s = "";
+          var tr = "&lt;tr&gt;";
+          var tr_ = "&lt;/tr&gt;";
+          var tdc = "&lt;td align=\"right\" style=\"font-weight: bold;\"&gt;";
+          var td = "&lt;td&gt;";
+          var td_ = "&lt;/td&gt;";
+          
+          if (row.UnloadingDate) {
+            s = s + tr + tdc + "Data:" + td_ + td + row.UnloadingDate.toDateString() + td_ + tr_;
+          }
+          if (row.UnloadingCountryName) {
+            s = s + tr + tdc + "Šalis:" + td_ + td + row.UnloadingCountryName + td_ + tr_;
+          }
+          if (row.UnloadingPlace) {
+            s = s + tr + tdc + "Vieta:" + td_ + td + row.UnloadingPlace + td_ + tr_;
+          }
+          if (row.UnloadingTerminal) {
+            s = s + tr + tdc + "Terminalas:" + td_ + td + row.UnloadingTerminal + td_ + tr_;
+          }
+          if (s.length > 0) {
+            s = "&lt;table border=\"0\" style=\"border-collapse: collapse;\"&gt;" + s + "&lt;/table&gt;";
+          }
+          return s;
+        </function>
+      </calc>
+    </BeeCalcColumn>
     <BeeDataColumn name="Number" source="Number" caption="Numeris" />
     <BeeDataColumn name="Cmr" source="Cmr" caption="CMR" />
-    <BeeDataColumn name="Notes" source="Notes" caption="Pastabos" />
+    <BeeDataColumn name="Notes" source="Notes" caption="Pastabos">
+      <style>
+        <bodyStyle>
+          <inline>white-space: pre-wrap;</inline>
+        </bodyStyle>
+      </style>
+    </BeeDataColumn>
   </columns>
 </BeeGrid>

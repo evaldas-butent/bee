@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
 
   name="TripOrders" viewName="TripOrders" caption="Užsakymai"
-  newRowForm="TripOrder" editForm="TripOrder"
+  newRowForm="TripOrder" editForm="TripOrder" editNewRow="true"
   newRowCaption="Naujas užsakymas"
   >
   <header borderWidth="1 0" />
@@ -36,6 +36,6 @@
     </BeeCalcColumn>
     <BeeDataColumn name="Weight" source="Weight" caption="Svoris" />
     <BeeDataColumn name="Volume" source="Volume" caption="Tūris" />
-    <BeeDataColumn name="Palettes" source="Palettes" caption="Padėklų sk." />
+    <BeeDataColumn name="Quantity" source="Quantity" caption="Kiekis" />
   </columns>
 </BeeGrid>

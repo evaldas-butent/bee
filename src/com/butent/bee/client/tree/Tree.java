@@ -132,28 +132,28 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
 
           int sLeft = getElement().getScrollLeft();
 
-          if (x <= left + border) {
+          if (x < left + border) {
             if (sLeft > 0) {
-              getElement().setScrollLeft(Math.max(sLeft - (x - left), 0));
+              getElement().setScrollLeft(Math.max(sLeft - (border - x + left), 0));
             }
-          } else if (x >= right - border) {
+          } else if (x > right - border) {
             int boundary = getElement().getScrollWidth() - width;
 
             if (sLeft < boundary) {
-              getElement().setScrollLeft(Math.min(sLeft + (right - x), boundary));
+              getElement().setScrollLeft(Math.min(sLeft + (border - right + x), boundary));
             }
           }
           int sTop = getElement().getScrollTop();
 
-          if (y <= top + border) {
+          if (y < top + border) {
             if (sTop > 0) {
-              getElement().setScrollTop(Math.max(sTop - (y - top), 0));
+              getElement().setScrollTop(Math.max(sTop - (border - y + top), 0));
             }
-          } else if (y >= bottom - border) {
+          } else if (y > bottom - border) {
             int boundary = getElement().getScrollHeight() - height;
 
             if (sTop < boundary) {
-              getElement().setScrollTop(Math.min(sTop + (bottom - y), boundary));
+              getElement().setScrollTop(Math.min(sTop + (border - bottom + y), boundary));
             }
           }
         }
@@ -661,6 +661,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     if (isCaption(hElem)) {
       if (getSelectedItem() != null) {
         setSelectedItem(null);
+        focus(caption.getElement());
         SelectionEvent.fire(this, null);
       }
       return true;
@@ -707,6 +708,27 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     }
 
     return findItemByChain(chain, idx + 1, rootItem);
+  }
+
+  private void focus(Element focusElem) {
+    int containerLeft = getAbsoluteLeft();
+    int containerTop = getAbsoluteTop();
+  
+    int left = focusElem.getAbsoluteLeft() - containerLeft;
+    int top = focusElem.getAbsoluteTop() - containerTop;
+    int width = focusElem.getOffsetWidth();
+    int height = focusElem.getOffsetHeight();
+  
+    if (width <= 0 || height <= 0) {
+      StyleUtils.setLeft(focusable, 0);
+      StyleUtils.setTop(focusable, 0);
+      return;
+    }
+  
+    StyleUtils.setRectangle(focusable, left, top, width, height);
+    focusable.scrollIntoView();
+  
+    setFocus(true);
   }
 
   private TreeItem getItemByContentId(String contentId) {
@@ -771,25 +793,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
       focusableWidget.setFocus(true);
       ((Widget) focusableWidget).getElement().scrollIntoView();
     } else {
-      Element selectedElem = getSelectedItem().getContentElem();
-      int containerLeft = getAbsoluteLeft();
-      int containerTop = getAbsoluteTop();
-
-      int left = selectedElem.getAbsoluteLeft() - containerLeft;
-      int top = selectedElem.getAbsoluteTop() - containerTop;
-      int width = selectedElem.getOffsetWidth();
-      int height = selectedElem.getOffsetHeight();
-
-      if (width <= 0 || height <= 0) {
-        StyleUtils.setLeft(focusable, 0);
-        StyleUtils.setTop(focusable, 0);
-        return;
-      }
-
-      StyleUtils.setRectangle(focusable, left, top, width, height);
-      focusable.scrollIntoView();
-
-      setFocus(true);
+      focus(getSelectedItem().getContentElem());
     }
   }
 
