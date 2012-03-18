@@ -1,24 +1,33 @@
 package com.butent.bee.server.data;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
+import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlConstants.SqlFunction;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.XmlExpression;
+import com.butent.bee.shared.data.XmlExpression.XmlCase;
+import com.butent.bee.shared.data.XmlExpression.XmlDivide;
+import com.butent.bee.shared.data.XmlExpression.XmlHasMember;
+import com.butent.bee.shared.data.XmlExpression.XmlHasMembers;
+import com.butent.bee.shared.data.XmlExpression.XmlMinus;
+import com.butent.bee.shared.data.XmlExpression.XmlMultiply;
+import com.butent.bee.shared.data.XmlExpression.XmlPlus;
+import com.butent.bee.shared.data.XmlExpression.XmlSwitch;
 import com.butent.bee.shared.data.XmlView;
 import com.butent.bee.shared.data.XmlView.XmlAggregateColumn;
 import com.butent.bee.shared.data.XmlView.XmlColumn;
@@ -42,6 +51,7 @@ import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -62,9 +72,11 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     private final boolean hidden;
     private final String parentName;
     private final String ownerAlias;
+    private final XmlExpression xmlExpression;
+    private IsExpression expression = null;
 
     public ColumnInfo(String alias, BeeField field, String colName, String locale,
-        SqlFunction aggregate, boolean hidden, String parent, String owner) {
+        SqlFunction aggregate, boolean hidden, String parent, String owner, XmlExpression expression) {
       this.colName = colName;
       this.alias = alias;
       this.field = field;
@@ -73,6 +85,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       this.hidden = hidden;
       this.parentName = parent;
       this.ownerAlias = owner;
+      this.xmlExpression = expression;
     }
 
     public SqlFunction getAggregate() {
@@ -81,6 +94,13 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
     public String getAlias() {
       return alias;
+    }
+
+    public IsExpression getExpression() {
+      if (expression == null) {
+        expression = parse(xmlExpression);
+      }
+      return expression;
     }
 
     public BeeField getField() {
@@ -103,12 +123,90 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       return parentName;
     }
 
+    public SqlDataType getType() {
+      if (xmlExpression != null) {
+        return xmlExpression.type;
+      } else {
+        return getField().getType();
+      }
+    }
+
     public boolean isHidden() {
       return hidden;
     }
 
     public boolean isReadOnly() {
-      return isHidden() || getAggregate() != null;
+      return isHidden() || getAggregate() != null || getExpression() != null;
+    }
+
+    private IsExpression parse(XmlExpression xmlExpr) {
+      if (xmlExpr == null) {
+        return null;
+      }
+      IsExpression expr = null;
+
+      if (xmlExpr instanceof XmlHasMember) {
+        IsExpression member = parse(((XmlHasMember) xmlExpr).member);
+
+        if (xmlExpr instanceof XmlSwitch) {
+          List<IsExpression> cases = Lists.newArrayList();
+
+          for (XmlCase xmlCase : ((XmlSwitch) xmlExpr).cases) {
+            cases.add(parse(xmlCase.members.get(0)));
+            cases.add(parse(xmlCase.members.get(1)));
+          }
+          if (!BeeUtils.isEmpty(((XmlSwitch) xmlExpr).elseExpression)) {
+            cases.add(parse(((XmlSwitch) xmlExpr).elseExpression.get(0)));
+          }
+          expr = SqlUtils.sqlCase(member, cases.toArray());
+        }
+      } else if (xmlExpr instanceof XmlHasMembers) {
+        List<IsExpression> members = Lists.newArrayList();
+
+        for (XmlExpression z : ((XmlHasMembers) xmlExpr).members) {
+          members.add(parse(z));
+        }
+        if (xmlExpr instanceof XmlPlus) {
+          expr = SqlUtils.plus(members.toArray(new IsExpression[0]));
+        } else if (xmlExpr instanceof XmlMinus) {
+          expr = SqlUtils.minus(members.toArray(new IsExpression[0]));
+        } else if (xmlExpr instanceof XmlMultiply) {
+          expr = SqlUtils.multiply(members.toArray(new IsExpression[0]));
+        } else if (xmlExpr instanceof XmlDivide) {
+          expr = SqlUtils.divide(members.toArray(new IsExpression[0]));
+        }
+      } else if (xmlExpr.content != null && !xmlExpr.content.replaceAll("\\s", "").isEmpty()) {
+        List<Object> x = Lists.newArrayList();
+        String xpr = xmlExpr.content;
+        String regex = "^(.*)\"(\\w+)\"(.*)$";
+
+        while (xpr.matches(regex)) {
+          String s = xpr.replaceFirst(regex, "$3");
+          String col = xpr.replaceFirst(regex, "$2");
+          xpr = xpr.replaceFirst(regex, "$1");
+
+          if (!BeeUtils.isEmpty(s)) {
+            x.add(s);
+          }
+          if (hasColumn(col)) {
+            x.add(")");
+            IsExpression xp = getSqlExpression(col);
+            x.add(xp);
+            x.add("(");
+          } else {
+            x.add("\"" + col + "\"");
+          }
+        }
+        if (!BeeUtils.isEmpty(xpr)) {
+          x.add(xpr);
+        }
+        Collections.reverse(x);
+        expr = SqlUtils.expression(x.toArray());
+      }
+      if (expr == null) {
+        Assert.unsupported(BeeUtils.getClassName(xmlExpr.getClass()));
+      }
+      return expr;
     }
   }
 
@@ -142,6 +240,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     this.query = new SqlSelect().addFrom(getSourceName(), getSourceAlias());
 
     addColumns(source, getSourceAlias(), xmlView.columns, null, tables);
+    setColumns();
     setGrouping();
 
     if (!BeeUtils.isEmpty(xmlView.filter)) {
@@ -164,8 +263,18 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return getColumnNames().size();
   }
 
+  public IsExpression getColumnExpression(String colName) {
+    return getColumnInfo(colName).getExpression();
+  }
+
   public String getColumnField(String colName) {
-    return getColumnInfo(colName).getField().getName();
+    String fldName = null;
+    BeeField field = getColumnInfo(colName).getField();
+
+    if (field != null) {
+      fldName = field.getName();
+    }
+    return fldName;
   }
 
   public String getColumnLocale(String colName) {
@@ -200,11 +309,17 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   public String getColumnTable(String colName) {
-    return getColumnInfo(colName).getField().getTable();
+    String tblName = null;
+    BeeField field = getColumnInfo(colName).getField();
+
+    if (field != null) {
+      tblName = field.getTable();
+    }
+    return tblName;
   }
 
   public SqlDataType getColumnType(String colName) {
-    return getColumnInfo(colName).getField().getType();
+    return getColumnInfo(colName).getType();
   }
 
   public IsCondition getCondition(Filter flt) {
@@ -261,6 +376,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           "Field", getColumnField(col), "Type", getColumnType(col), "Locale", getColumnLocale(col),
           "Aggregate Function", getColumnAggregate(col), "Hidden", isColHidden(col),
           "ReadOnly", isColReadOnly(col),
+          "Expression", isColCalculated(col) ? getColumnExpression(col)
+              .getSqlString(SqlBuilderFactory.getBuilder(SqlEngine.GENERIC)) : null,
           "Parent Column", getColumnParent(col), "Owner Alias", getColumnOwner(col));
     }
     if (order != null) {
@@ -298,8 +415,11 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       activeCols = Sets.newHashSet();
 
       for (String col : cols) {
-        setColumn(ss, col);
-        activeCols.add(getColumnName(col));
+        if (!isColHidden(col)) {
+          String colName = getColumnName(col);
+          ss.addExpr(getSqlExpression(col), colName);
+          activeCols.add(colName);
+        }
       }
     }
     setFilter(ss, flt);
@@ -315,13 +435,16 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     if (o != null) {
       for (Order.Column ordCol : o.getColumns()) {
         for (String col : ordCol.getSources()) {
-          if (hasColumn(col) && (activeCols == null
-              || getColumnAggregate(col) == null
-              || activeCols.contains(getColumnName(col)))) {
-
-            if (getColumnAggregate(col) != null) {
+          if (hasColumn(col)) {
+            if (isColAggregate(col) || isColCalculated(col)) {
               alias = null;
               colName = getColumnName(col);
+
+              if (isColHidden(col) || !BeeUtils.contains(activeCols, colName)) {
+                LogUtils.warning(LogUtils.getDefaultLogger(), "view: ", getName(),
+                    "order by:", col, ". Column not in field list");
+                continue;
+              }
             } else {
               alias = getColumnSource(col);
               colName = getColumnField(col);
@@ -333,7 +456,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
           } else {
             LogUtils.warning(LogUtils.getDefaultLogger(), "view: ", getName(), "order by:", col,
-                "column not reccognized");
+                ". Column not recognized");
             continue;
           }
           if (!ordCol.isAscending()) {
@@ -368,6 +491,14 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public boolean hasColumn(String colName) {
     return !BeeUtils.isEmpty(colName) && columns.containsKey(BeeUtils.normalize(colName));
+  }
+
+  public boolean isColAggregate(String colName) {
+    return getColumnAggregate(colName) != null;
+  }
+
+  public boolean isColCalculated(String colName) {
+    return getColumnExpression(colName) != null;
   }
 
   public boolean isColHidden(String colName) {
@@ -411,38 +542,40 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   private void addColumn(String alias, BeeField field, String colName, String locale,
-      String aggregateType, boolean hidden, String parent) {
-    String fldName = field.getName();
+      String aggregateType, boolean hidden, String parent, XmlExpression expression) {
 
     Assert.state(!BeeUtils.inListSame(colName, getSourceIdName(), getSourceVersionName()),
         BeeUtils.concat(1, "Reserved column name:", getName(), colName));
     Assert.state(!hasColumn(colName),
         BeeUtils.concat(1, "Dublicate column name:", getName(), colName));
 
-    BeeTable table = field.getOwner();
     String ownerAlias = null;
-
-    if (!BeeUtils.isEmpty(locale)) {
-      if (field.isTranslatable()) {
-        ownerAlias = alias;
-        alias = table.joinTranslationField(query, ownerAlias, field, locale);
-      } else {
-        LogUtils.warning(LogUtils.getDefaultLogger(),
-            "Field is not translatable:", table.getName() + "." + fldName,
-            "View:", getName());
-        return;
-      }
-    } else if (field.isExtended()) {
-      ownerAlias = alias;
-      alias = table.joinExtField(query, ownerAlias, field);
-    }
     SqlFunction aggregate = null;
 
+    if (expression == null) {
+      BeeTable table = field.getOwner();
+
+      if (!BeeUtils.isEmpty(locale)) {
+        if (field.isTranslatable()) {
+          ownerAlias = alias;
+          alias = table.joinTranslationField(query, ownerAlias, field, locale);
+        } else {
+          LogUtils.warning(LogUtils.getDefaultLogger(),
+              "Field is not translatable:", table.getName() + "." + field.getName(),
+              "View:", getName());
+          return;
+        }
+      } else if (field.isExtended()) {
+        ownerAlias = alias;
+        alias = table.joinExtField(query, ownerAlias, field);
+      }
+    }
     if (!BeeUtils.isEmpty(aggregateType)) {
       aggregate = SqlFunction.valueOf(aggregateType);
     }
     columns.put(BeeUtils.normalize(colName),
-        new ColumnInfo(alias, field, colName, locale, aggregate, hidden, parent, ownerAlias));
+        new ColumnInfo(alias, field, colName, locale, aggregate, hidden, parent, ownerAlias,
+            expression));
   }
 
   private void addColumns(BeeTable table, String alias, Collection<XmlColumn> cols, String parent,
@@ -502,23 +635,24 @@ public class BeeView implements BeeObject, HasExtendedInfo {
             break;
         }
         String colName = SqlUtils.uniqueName();
-        addColumn(als, field, colName, null, null, true, parent);
+        addColumn(als, field, colName, null, null, true, parent, null);
         addColumns(relTable, relAls, col.columns, colName, tables);
 
       } else if (column instanceof XmlSimpleColumn) {
         XmlSimpleColumn col = (XmlSimpleColumn) column;
-        BeeField field = table.getField(col.expression);
-        String colName = BeeUtils.ifString(col.name, field.getName());
+
+        String colName = BeeUtils.ifString(col.name, col.expression);
         String aggregate = null;
         boolean hidden = (col instanceof XmlHiddenColumn);
 
         if (col instanceof XmlAggregateColumn) {
           aggregate = ((XmlAggregateColumn) col).aggregate;
         }
-        addColumn(alias, field, colName, col.locale, aggregate, hidden, parent);
-
-        if (!hidden) {
-          setColumn(query, colName);
+        if (col.expr != null) {
+          addColumn(null, null, colName, null, aggregate, hidden, null, col.expr);
+        } else {
+          addColumn(alias, table.getField(col.expression), colName, col.locale, aggregate, hidden,
+              parent, null);
         }
       }
     }
@@ -606,7 +740,11 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   private IsExpression getSqlExpression(String colName) {
-    IsExpression expr = SqlUtils.field(getColumnSource(colName), getColumnField(colName));
+    IsExpression expr = getColumnExpression(colName);
+
+    if (expr == null) {
+      expr = SqlUtils.field(getColumnSource(colName), getColumnField(colName));
+    }
     SqlFunction aggregate = getColumnAggregate(colName);
 
     if (aggregate != null) {
@@ -615,43 +753,9 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return expr;
   }
 
-  private void setColumn(SqlSelect ss, String col) {
-    String alias = getColumnSource(col);
-    String fldName = getColumnField(col);
-    String colName = getColumnName(col);
-    SqlFunction aggregate = getColumnAggregate(col);
-
-    if (aggregate == null) {
-      ss.addField(alias, fldName, colName);
-    } else {
-      switch (aggregate) {
-        case MIN:
-          ss.addMin(alias, fldName, colName);
-          break;
-        case MAX:
-          ss.addMax(alias, fldName, colName);
-          break;
-        case SUM:
-          ss.addSum(alias, fldName, colName);
-          break;
-        case AVG:
-          ss.addAvg(alias, fldName, colName);
-          break;
-        case COUNT:
-          ss.addCount(alias, fldName, colName);
-          break;
-        case SUM_DISTINCT:
-          ss.addSumDistinct(alias, fldName, colName);
-          break;
-        case AVG_DISTINCT:
-          ss.addAvgDistinct(alias, fldName, colName);
-          break;
-        case COUNT_DISTINCT:
-          ss.addCountDistinct(alias, fldName, colName);
-          break;
-        default:
-          Assert.unsupported();
-      }
+  private void setColumns() {
+    for (String colName : getColumnNames()) {
+      query.addExpr(getSqlExpression(colName), colName);
     }
   }
 
@@ -663,15 +767,15 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
       if (hasAggregate) {
         for (String col : columns.keySet()) {
-          if (getColumnAggregate(col) != null && f.involvesColumn(col)) {
+          if (isColAggregate(col) && f.involvesColumn(col)) {
             ss.setHaving(condition);
             break;
           }
         }
         if (ss.getHaving() != null) {
           for (String col : columns.keySet()) {
-            if (isColHidden(col) && f.involvesColumn(col)) {
-              ss.addGroup(getColumnSource(col), getColumnField(col));
+            if (isColHidden(col) && !isColCalculated(col) && f.involvesColumn(col)) {
+              ss.addGroup(getSqlExpression(col));
             }
           }
           return;
@@ -682,20 +786,20 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   private void setGrouping() {
-    Multimap<String, String> group = HashMultimap.create();
+    List<String> group = Lists.newArrayList();
 
     for (String col : getColumnNames()) {
-      if (getColumnAggregate(col) != null) {
+      if (isColAggregate(col)) {
         hasAggregate = true;
-      } else {
-        group.put(getColumnSource(col), getColumnField(col));
+      } else if (!isColCalculated(col)) {
+        group.add(col);
       }
     }
     if (hasAggregate) {
       query.addGroup(getSourceAlias(), getSourceIdName(), getSourceVersionName());
 
-      for (String alias : group.keySet()) {
-        query.addGroup(alias, group.get(alias).toArray(new String[0]));
+      for (String col : group) {
+        query.addGroup(getSqlExpression(col));
       }
     }
   }

@@ -17,7 +17,7 @@ public class XmlView {
 
   @XmlSeeAlso({XmlSimpleColumn.class, XmlHiddenColumn.class, XmlAggregateColumn.class,
       XmlSimpleJoin.class, XmlAggregateJoin.class, XmlExternalJoin.class})
-  public static class XmlColumn {
+  public abstract static class XmlColumn {
     @XmlAttribute
     public String expression;
   }

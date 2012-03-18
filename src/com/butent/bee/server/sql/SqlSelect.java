@@ -384,6 +384,15 @@ public class SqlSelect extends HasFrom<SqlSelect> {
     return getReference();
   }
 
+  public void addGroup(IsExpression... group) {
+    if (BeeUtils.isEmpty(groupList)) {
+      groupList = Lists.newArrayList();
+    }
+    for (IsExpression grp : group) {
+      groupList.add(grp);
+    }
+  }
+
   /**
    * Adds a MAX function with a specified expression {@code expr} and alias {@code alias}.
    * 
@@ -851,15 +860,6 @@ public class SqlSelect extends HasFrom<SqlSelect> {
       fieldList = Lists.newArrayList();
     }
     fieldList.add(fieldEntry);
-  }
-
-  private void addGroup(IsExpression... group) {
-    if (BeeUtils.isEmpty(groupList)) {
-      groupList = Lists.newArrayList();
-    }
-    for (IsExpression grp : group) {
-      groupList.add(grp);
-    }
   }
 
   private void addOrder(Boolean desc, String source, String... fields) {

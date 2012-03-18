@@ -17,7 +17,7 @@
             </row>
             <row>
               <cell>
-                <Label html="CMR" horizontalAlignment="right" class="bee-required" />
+                <Label html="CMR" horizontalAlignment="right" />
               </cell>
               <cell>
                 <InputText source="Cmr" />
@@ -33,7 +33,13 @@
               </cell>
             </row>
             <row>
-              <cell colSpan="3">
+              <cell>
+                <Label html="Numeris" horizontalAlignment="right" />
+              </cell>
+              <cell>
+                <InputText source="Number" />
+              </cell>
+              <cell>
                 <Label html="Tūris" horizontalAlignment="right" />
               </cell>
               <cell>

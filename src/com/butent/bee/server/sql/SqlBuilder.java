@@ -426,16 +426,16 @@ public abstract class SqlBuilder {
 
         switch (function) {
           case PLUS:
-            op = "+";
+            op = " + ";
             break;
           case MINUS:
-            op = "-";
+            op = " - ";
             break;
           case MULTIPLY:
-            op = "*";
+            op = " * ";
             break;
           case DIVIDE:
-            op = "/";
+            op = " / ";
             break;
           default:
             op = "";

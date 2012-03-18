@@ -1,0 +1,135 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
+  xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
+
+  <xs:include schemaLocation="types.xsd" />
+
+  <xs:element name="expression" abstract="true" />
+
+  <xs:element name="number" substitutionGroup="bee:expression">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="bee:isExpression">
+          <xs:attribute name="type" type="bee:dataType" fixed="DOUBLE" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="string" substitutionGroup="bee:expression">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="bee:isExpression">
+          <xs:attribute name="type" type="bee:dataType" fixed="STRING" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="boolean" substitutionGroup="bee:expression">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="bee:isExpression">
+          <xs:attribute name="type" type="bee:dataType" fixed="BOOLEAN" />
+        </xs:extension>
+      </xs:simpleContent> 
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="date" substitutionGroup="bee:expression">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="bee:isExpression">
+          <xs:attribute name="type" type="bee:dataType" fixed="DATE" />
+        </xs:extension>
+      </xs:simpleContent> 
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="datetime" substitutionGroup="bee:expression">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="bee:isExpression">
+          <xs:attribute name="type" type="bee:dataType" fixed="DATETIME" />
+        </xs:extension>
+      </xs:simpleContent> 
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="plus" type="bee:hasNumbers" substitutionGroup="bee:expression" />
+  <xs:element name="minus" type="bee:hasNumbers" substitutionGroup="bee:expression" />
+  <xs:element name="multiply" type="bee:hasNumbers" substitutionGroup="bee:expression" />
+  <xs:element name="divide" type="bee:hasNumbers" substitutionGroup="bee:expression" />
+
+  <xs:element name="round" substitutionGroup="bee:expression">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:hasNumber">
+          <xs:attribute name="precision" type="xs:unsignedByte" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="cast" substitutionGroup="bee:expression">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:hasMember">
+          <xs:attribute name="precision" type="xs:unsignedByte" />
+          <xs:attribute name="scale" type="xs:unsignedByte" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="switch" substitutionGroup="bee:expression">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:hasMember">
+          <xs:sequence>
+            <xs:element name="case" minOccurs="1" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element ref="bee:expression" minOccurs="2" maxOccurs="2" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+            <xs:element name="else" minOccurs="1" maxOccurs="1">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element ref="bee:expression" minOccurs="1" maxOccurs="1" />
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="hasMember">
+    <xs:sequence>
+      <xs:element ref="bee:expression" minOccurs="1" maxOccurs="1" />
+    </xs:sequence>
+    <xs:attribute name="type" type="bee:dataType" use="required" />
+  </xs:complexType>
+
+  <xs:complexType name="hasNumber">
+    <xs:sequence>
+      <xs:element ref="bee:expression" minOccurs="1" maxOccurs="1" />
+    </xs:sequence>
+    <xs:attribute name="type" type="bee:dataType" fixed="DOUBLE" />
+  </xs:complexType>
+
+  <xs:complexType name="hasNumbers">
+    <xs:sequence>
+      <xs:element ref="bee:expression" minOccurs="2" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="type" type="bee:dataType" fixed="DOUBLE" />
+  </xs:complexType>
+
+  <xs:simpleType name="isExpression">
+    <xs:restriction base="xs:token">
+      <xs:minLength value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

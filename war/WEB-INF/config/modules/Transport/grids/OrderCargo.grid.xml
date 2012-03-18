@@ -86,5 +86,15 @@
         </bodyStyle>
       </style>
     </BeeDataColumn>
+    <BeeCalcColumn name="Total" type="double" caption="Suma">
+      <calc>
+        <expression>row.MinCurr == row.MaxCurr ? row.Total : null</expression>
+      </calc>
+    </BeeCalcColumn>
+    <BeeCalcColumn name="Curr" type="string" caption="Val.">
+      <calc>
+        <expression>row.MinCurr == row.MaxCurr ? row.MaxCurr : null</expression>
+      </calc>
+    </BeeCalcColumn>
   </columns>
 </BeeGrid>

@@ -28,6 +28,29 @@
     <BeeSimpleColumn expression="Number" />
     <BeeSimpleColumn expression="Cmr" />
     <BeeSimpleColumn expression="Notes" />
+    <BeeExternalJoin source="CargoServices" joinType="LEFT" expression="Cargo">
+      <BeeHiddenColumn expression="Quantity" name="Qty" />
+      <BeeHiddenColumn expression="Price" />
+      <BeeHiddenColumn expression="QuantityPrice">
+        <number>"Qty" * "Price"</number>
+      </BeeHiddenColumn>
+      <BeeAggregateColumn expression="Total" aggregate="SUM">
+          <minus>
+            <number>"QuantityPrice" - "QuantityPrice" / 100 * "Weight"</number>
+            <switch type="DOUBLE">
+              <string>"Cmr"</string>
+              <case><string>'a'</string><number>1</number></case>
+              <case><string>'b'</string><number>"Volume"</number></case>
+              <case><string>"Number"</string><number>100</number></case>
+              <else><number>0</number></else>
+            </switch>
+          </minus>
+      </BeeAggregateColumn>
+      <BeeAggregateJoin joinType="LEFT" expression="Currency">
+        <BeeAggregateColumn expression="Name" aggregate="MIN" name="MinCurr" />
+        <BeeAggregateColumn expression="Name" aggregate="MAX" name="MaxCurr" />
+      </BeeAggregateJoin>
+    </BeeExternalJoin>
   </BeeColumns>
   <BeeOrder>
     <OrderBy column="LoadingDate" />

@@ -3,6 +3,7 @@
   xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
 
   <xs:include schemaLocation="types.xsd" />
+  <xs:include schemaLocation="expressions.xsd" />
 
   <xs:element name="BeeView">
     <xs:complexType>
@@ -120,47 +121,4 @@
     <xs:attribute name="column" type="bee:fieldNameType" use="required" />
     <xs:attribute name="descending" type="xs:boolean" />
   </xs:complexType>
-
-
-
-
-
-  <xs:element name="expression" abstract="true" />
-
-  <xs:element name="plus" type="bee:hasMembers" substitutionGroup="bee:expression" />
-  <xs:element name="minus" type="bee:hasMembers" substitutionGroup="bee:expression" />
-  <xs:element name="multiply" type="bee:hasMembers" substitutionGroup="bee:expression" />
-  <xs:element name="divide" type="bee:hasMembers" substitutionGroup="bee:expression" />
-
-  <xs:element name="expr" substitutionGroup="bee:expression">
-    <xs:simpleType>
-      <xs:restriction base="xs:token">
-        <xs:minLength value="1" />
-      </xs:restriction>
-    </xs:simpleType>
-  </xs:element>
-
-  <xs:element name="round" substitutionGroup="bee:expression">
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="bee:hasMember">
-          <xs:attribute name="precision" type="xs:unsignedByte" />
-        </xs:extension>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
-
-  <xs:complexType name="hasMember" mixed="false">
-    <xs:sequence>
-      <xs:element ref="bee:expression" minOccurs="1" maxOccurs="1" />
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="hasMembers">
-    <xs:sequence>
-      <xs:element ref="bee:expression" minOccurs="2" maxOccurs="unbounded" />
-    </xs:sequence>
-  </xs:complexType>
-
-
 </xs:schema>

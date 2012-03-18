@@ -412,7 +412,7 @@ public class SqlUtils {
     params.put("caseElse", pairs[pairs.length - 1]);
 
     for (int i = 0; i < (pairs.length - 1) / 2; i++) {
-      params.put("case" + i, constant(pairs[i * 2]));
+      params.put("case" + i, pairs[i * 2]);
       params.put("value" + i, pairs[i * 2 + 1]);
     }
     return new FunctionExpression(SqlFunction.CASE, params);
