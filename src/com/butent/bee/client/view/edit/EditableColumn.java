@@ -193,9 +193,20 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return editorDescription;
   }
 
+  public int getIndexForUpdate() {
+    return isForeign() ? getRelationInfo().getDataIndex() : getColIndex();
+  }
+  
+  public String getMaxValue() {
+    return maxValue;
+  }
+
+  public String getMinValue() {
+    return minValue;
+  }
+
   public String getOldValueForUpdate(IsRow row) {
-    int index = isForeign() ? getRelationInfo().getDataIndex() : getColIndex();
-    return row.getString(index);
+    return row.getString(getIndexForUpdate());
   }
 
   public RelationInfo getRelationInfo() {
@@ -206,10 +217,18 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return isForeign();
   }
 
+  public ValueType getTypeForUpdate() {
+    return getColumnForUpdate().getType();
+  }
+  
   public AbstractColumn<?> getUiColumn() {
     return uiColumn;
   }
-
+  
+  public Evaluator getValidation() {
+    return validation;
+  }
+  
   public boolean hasCarry() {
     return getCarry() != null;
   }
@@ -218,7 +237,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   public int hashCode() {
     return getColIndex();
   }
-  
+
   public boolean isCellEditable(IsRow row, boolean warn) {
     if (row == null) {
       return false;
@@ -236,7 +255,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     }
     return ok;
   }
-  
+
   public boolean isForeign() {
     return getRelationInfo() != null;
   }
@@ -318,7 +337,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
     getEditor().setEditing(true);
 
-    String oldValue = (row == null) ? null : row.getString(getColIndex());
+    String oldValue = (row == null) ? null : getOldValueForUpdate(row);
     EditorAction onEntry =
         (getEditorDescription() == null) ? null : getEditorDescription().getOnEntry();
 
@@ -493,7 +512,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       }
 
       String newValue = getEditor().getNormalizedValue();
-      if (!validate(oldValue, newValue)) {
+      if (!validate(oldValue, newValue, false)) {
         return false;
       }
 
@@ -551,14 +570,6 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return editable;
   }
 
-  private String getMaxValue() {
-    return maxValue;
-  }
-
-  private String getMinValue() {
-    return minValue;
-  }
-
   private NotificationListener getNotificationListener() {
     return notificationListener;
   }
@@ -569,10 +580,6 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   private State getState() {
     return state;
-  }
-
-  private Evaluator getValidation() {
-    return validation;
   }
 
   private void initEditor() {
@@ -608,8 +615,9 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     this.state = state;
   }
 
-  private boolean validate(String oldValue, String newValue) {
-    return UiHelper.validate(oldValue, newValue, getValidation(), getRowValue(), getColIndex(),
-        getDataType(), isNullable(), getMinValue(), getMaxValue(), getNotificationListener());
+  private boolean validate(String oldValue, String newValue, boolean force) {
+    return UiHelper.validateCell(oldValue, newValue, getValidation(), getRowValue(),
+        getIndexForUpdate(), getTypeForUpdate(), isNullable(), getMinValue(), getMaxValue(),
+        getCaption(), getNotificationListener(), force);
   }
 }

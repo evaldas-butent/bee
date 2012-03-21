@@ -1,21 +1,44 @@
 package com.butent.bee.client.view;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.search.SearchView;
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
-
-/**
- * Gets pagers and searchers for views.
- */
+import java.util.List;
 
 public class ViewHelper {
+  
+  public static Filter getFilter(HasSearch container, Provider dataProvider) {
+    Assert.notNull(container);
+    Assert.notNull(dataProvider);
+
+    Collection<SearchView> searchers = container.getSearchers();
+    if (BeeUtils.isEmpty(searchers)) {
+      return null;
+    }
+
+    List<Filter> filters = Lists.newArrayListWithCapacity(searchers.size());
+    for (SearchView search : searchers) {
+      Filter flt = search.getFilter(dataProvider.getColumns(), dataProvider.getIdColumnName(),
+          dataProvider.getVersionColumnName());
+      if (flt != null && !filters.contains(flt)) {
+        filters.add(flt);
+      }
+    }
+    return Filter.and(filters);
+  }
 
   public static Collection<PagerView> getPagers(HasWidgets container) {
+    Assert.notNull(container);
     Collection<PagerView> pagers = Sets.newHashSet();
 
     for (Widget widget : container) {
@@ -34,6 +57,7 @@ public class ViewHelper {
   }
 
   public static Collection<SearchView> getSearchers(HasWidgets container) {
+    Assert.notNull(container);
     Collection<SearchView> searchers = Sets.newHashSet();
 
     for (Widget widget : container) {

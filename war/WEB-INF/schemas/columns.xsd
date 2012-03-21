@@ -12,7 +12,6 @@
   <xs:complexType name="columnList">
     <xs:choice minOccurs="1" maxOccurs="unbounded">
       <xs:element name="BeeDataColumn" type="bee:dataColumn" />
-      <xs:element name="BeeRelColumn" type="bee:relatedColumn" />
       <xs:element name="BeeCalcColumn" type="bee:calculatedColumn" />
       <xs:element name="BeeIdColumn" type="bee:column" />
       <xs:element name="BeeVerColumn" type="bee:column" />
@@ -62,16 +61,6 @@
       <xs:extension base="bee:baseColumn">
         <xs:attribute name="minValue" type="xs:normalizedString" />
         <xs:attribute name="maxValue" type="xs:normalizedString" />
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:complexType name="relatedColumn">
-    <xs:complexContent>
-      <xs:extension base="bee:baseColumn">
-        <xs:attribute name="relSource" type="bee:nameType" use="required" />
-        <xs:attribute name="relView" type="bee:nameType" />
-        <xs:attribute name="relColumn" type="bee:nameType" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

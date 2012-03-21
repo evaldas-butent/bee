@@ -7,8 +7,7 @@
   <columns>
     <BeeDataColumn name="Unit" source="Name" caption="Mato vienetas" />
     <BeeDataColumn name="Factor" source="Factor" caption="Koeficientas" />
-    <BeeRelColumn name="BaseUnit" source="BaseUnitName" caption="Pagrindinis mv." 
-      relSource="BaseUnit" relColumn="Name" />
+    <BeeDataColumn name="BaseUnit" source="BaseUnitName" caption="Pagrindinis mv." />
     <BeeDataColumn name="Caption" source="Caption" caption="Pavadinimas" />
   </columns>
 </BeeGrid>

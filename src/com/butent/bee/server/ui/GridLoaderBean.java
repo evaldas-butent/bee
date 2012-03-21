@@ -127,10 +127,6 @@ public class GridLoaderBean {
   private static final String ATTR_MIN_VALUE = "minValue";
   private static final String ATTR_MAX_VALUE = "maxValue";
 
-  private static final String ATTR_REL_SOURCE = "relSource";
-  private static final String ATTR_REL_VIEW = "relView";
-  private static final String ATTR_REL_COLUMN = "relColumn";
-
   private static final String ATTR_TYPE = "type";
   private static final String ATTR_PRECISION = "precision";
   private static final String ATTR_SCALE = "scale";
@@ -165,19 +161,17 @@ public class GridLoaderBean {
 
     ColumnDescription columnDescription;
     for (String colName : view.getColumnNames()) {
-      String relSource = view.getColumnParent(colName);
-
-      if (BeeUtils.isEmpty(relSource)) {
-        columnDescription = new ColumnDescription(ColType.DATA, colName);
-      } else {
-        columnDescription = new ColumnDescription(ColType.RELATED, colName);
-        relSources.add(relSource);
-
-        columnDescription.setRelSource(relSource);
-        columnDescription.setRelView(view.getColumnTable(colName));
-        columnDescription.setRelColumn(view.getColumnField(colName));
-      }
+      columnDescription = new ColumnDescription(ColType.DATA, colName);
       columnDescription.setSource(colName);
+
+      if (view.isColReadOnly(colName)) {
+        columnDescription.setReadOnly(true);
+      } else {
+        setRelation(view, colName, columnDescription);
+        if (!BeeUtils.isEmpty(columnDescription.getRelSource())) {
+          relSources.add(columnDescription.getRelSource());
+        }
+      }
 
       columns.put(BeeUtils.normalize(colName), columnDescription);
     }
@@ -224,13 +218,13 @@ public class GridLoaderBean {
       LogUtils.warning(logger, "Grid attribute", ATTR_NAME, "not found");
       return null;
     }
-    
+
     BeeView view;
     GridDescription grid;
-    
+
     if (BeeUtils.isEmpty(viewName)) {
       view = null;
-      grid = new GridDescription(gridName);      
+      grid = new GridDescription(gridName);
     } else {
       if (!sys.isView(viewName)) {
         LogUtils.warning(logger, "Grid", gridName, "unrecognized view name:", viewName);
@@ -239,7 +233,7 @@ public class GridLoaderBean {
 
       view = sys.getView(viewName);
       grid = new GridDescription(gridName, viewName, view.getSourceIdName(),
-        view.getSourceVersionName());
+          view.getSourceVersionName());
     }
     xmlToGrid(gridElement, grid, view);
 
@@ -347,80 +341,43 @@ public class GridLoaderBean {
     return editor;
   }
 
-  private boolean initColumn(BeeView view, ColumnDescription column) {
-    Assert.notNull(column);
+  private boolean initColumn(BeeView view, ColumnDescription columnDescription) {
+    Assert.notNull(columnDescription);
     if (view == null) {
       return true;
     }
 
     boolean ok = false;
     String viewName = view.getName();
-    String source = column.getSource();
+    String source = columnDescription.getSource();
 
-    switch (column.getColType()) {
+    switch (columnDescription.getColType()) {
       case ID:
-        column.setSource(view.getSourceIdName());
+        columnDescription.setSource(view.getSourceIdName());
         ok = true;
         break;
 
       case VERSION:
-        column.setSource(view.getSourceVersionName());
+        columnDescription.setSource(view.getSourceVersionName());
         ok = true;
         break;
 
       case DATA:
         if (view.hasColumn(source)) {
+          if (view.isColReadOnly(source)) {
+            columnDescription.setReadOnly(true);
+          } else {
+            setRelation(view, source, columnDescription);
+          }
           ok = true;
         } else {
           LogUtils.warning(logger, viewName, "unrecognized view column:", source);
         }
         break;
 
-      case RELATED:
-        if (!view.hasColumn(source)) {
-          LogUtils.warning(logger, viewName, "unrecognized view column:", source);
-          return ok;
-        }
-        String relSource = column.getRelSource();
-        if (!view.hasColumn(relSource)) {
-          LogUtils.warning(logger, viewName, "unrecognized relation column:", relSource);
-          return ok;
-        }
-        String relTable =
-            sys.getRelation(view.getColumnTable(relSource), view.getColumnField(relSource));
-        if (BeeUtils.isEmpty(relTable)) {
-          LogUtils.warning(logger, viewName, "not a relation column:", relSource);
-          return ok;
-        }
-        String relView = column.getRelView();
-        if (BeeUtils.isEmpty(relView)) {
-          relView = relTable;
-          column.setRelView(relView);
-
-        } else if (!sys.isView(relView)) {
-          LogUtils.warning(logger, "unrecognized relation view name:", relView);
-          return ok;
-
-        } else {
-          String table = sys.getView(relView).getSourceName();
-
-          if (!BeeUtils.same(table, relTable)) {
-            LogUtils.warning(logger, "relation column and relation view sources doesn't match:",
-                relTable, "!=", table);
-            return ok;
-          }
-        }
-        String relColumn = column.getRelColumn();
-        if (!sys.getView(relView).hasColumn(relColumn)) {
-          LogUtils.warning(logger, relView, "unrecognized related column:", relColumn);
-          return ok;
-        }
-        ok = true;
-        break;
-
       case CALCULATED:
-        if (column.getCalc() == null) {
-          LogUtils.warning(logger, viewName, "column", column.getName(),
+        if (columnDescription.getCalc() == null) {
+          LogUtils.warning(logger, viewName, "column", columnDescription.getName(),
               "calculation not specified");
         } else {
           ok = true;
@@ -433,6 +390,15 @@ public class GridLoaderBean {
     }
 
     return ok;
+  }
+
+  private void setRelation(BeeView view, String colName, ColumnDescription columnDescription) {
+    String parentColumn = view.getColumnParent(colName);
+    if (!BeeUtils.isEmpty(parentColumn)) {
+      columnDescription.setRelSource(view.getColumnField(parentColumn));
+      columnDescription.setRelView(view.getColumnTable(colName));
+      columnDescription.setRelColumn(view.getColumnField(colName));
+    }
   }
 
   private void xmlToColumn(Element src, ColumnDescription dst) {
@@ -482,13 +448,6 @@ public class GridLoaderBean {
           dst.setMinValue(value.trim());
         } else if (BeeUtils.same(key, ATTR_MAX_VALUE)) {
           dst.setMaxValue(value.trim());
-
-        } else if (BeeUtils.same(key, ATTR_REL_SOURCE)) {
-          dst.setRelSource(value.trim());
-        } else if (BeeUtils.same(key, ATTR_REL_VIEW)) {
-          dst.setRelView(value.trim());
-        } else if (BeeUtils.same(key, ATTR_REL_COLUMN)) {
-          dst.setRelColumn(value.trim());
 
         } else if (BeeUtils.same(key, ATTR_TYPE)) {
           dst.setValueType(ValueType.getByTypeCode(value));
@@ -571,7 +530,7 @@ public class GridLoaderBean {
     if (!BeeUtils.isEmpty(caption)) {
       dst.setCaption(caption.trim());
     }
-    
+
     if (view != null) {
       String filter = src.getAttribute(ATTR_FILTER);
       if (!BeeUtils.isEmpty(filter)) {
@@ -604,7 +563,7 @@ public class GridLoaderBean {
     if (!BeeUtils.isEmpty(footerEvents)) {
       dst.setFooterEvents(footerEvents);
     }
-    
+
     Boolean showColumnWidths = XmlUtils.getAttributeBoolean(src, ATTR_SHOW_COLUMN_WIDTHS);
     if (showColumnWidths != null) {
       dst.setShowColumnWidths(showColumnWidths);

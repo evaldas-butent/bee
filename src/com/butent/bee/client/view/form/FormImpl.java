@@ -28,6 +28,7 @@ import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HasParent;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.EvalHelper;
 import com.butent.bee.client.utils.Evaluator;
@@ -253,6 +254,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private Widget rootWidget = null;
 
   private Evaluator rowEditable = null;
+  private Evaluator rowValidation = null;
 
   private final Notification notification = new Notification();
 
@@ -355,9 +357,14 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     setFormCallback(callback);
 
     if (hasData()) {
-      Calculation rec = formDescription.getRowEditable();
-      if (rec != null) {
-        setRowEditable(Evaluator.create(rec, null, dataCols));
+      Calculation calc = formDescription.getRowEditable();
+      if (calc != null) {
+        setRowEditable(Evaluator.create(calc, null, dataCols));
+      }
+
+      calc = formDescription.getRowValidation();
+      if (calc != null) {
+        setRowValidation(Evaluator.create(calc, null, dataCols));
       }
     }
 
@@ -648,7 +655,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         EditableWidget editableWidget = getEditableWidgets().get(getActiveEditableIndex());
         if (!DomUtils.isOrHasChild(editableWidget.getWidgetId(),
             EventUtils.getEventTargetElement(event))) {
-          if (!editableWidget.check(true)) {
+          if (!editableWidget.checkForUpdate(true)) {
             setPreviewId(editableWidget.getWidgetId());
             event.cancel();
           }
@@ -674,7 +681,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     if (getFormCallback() != null && !getFormCallback().onPrepareForInsert(this, this, getRow())) {
       return;
     }
-    if (!checkNewRow(getRow())) {
+    if (!validate(true)) {
       return;
     }
 
@@ -692,8 +699,12 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         values.add(value);
       }
     }
-
-    Assert.notEmpty(columns);
+    
+    if (columns.isEmpty()) {
+      notifySevere("New Row", "all columns cannot be empty");
+      return;
+    }
+    
     fireEvent(new ReadyForInsertEvent(columns, values));
   }
 
@@ -885,6 +896,23 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     render(refreshChildren);
   }
 
+  public boolean validate(boolean force) {
+    boolean ok = true;
+
+    for (EditableWidget editableWidget : getEditableWidgets()) {
+      if (!editableWidget.validate(force)) {
+        ok = false;
+        break;
+      }
+    }
+    
+    if (ok && getRow() != null) {
+      ok = UiHelper.validateRow(getRow(), getRowValidation(), this);
+    }
+    
+    return ok;
+  }
+
   @Override
   protected void onLoad() {
     super.onLoad();
@@ -896,40 +924,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   protected void onUnload() {
     closePreview();
     super.onUnload();
-  }
-
-  private boolean checkNewRow(IsRow rowValue) {
-    boolean ok = true;
-    int count = 0;
-
-    if (getEditableWidgets().isEmpty()) {
-      notifySevere("New Row", "columns not available");
-      ok = false;
-    }
-
-    if (ok) {
-      List<String> captions = Lists.newArrayList();
-      for (EditableWidget editableWidget : getEditableWidgets()) {
-        String value = rowValue.getString(editableWidget.getIndexForUpdate());
-        if (BeeUtils.isEmpty(value)) {
-          if (!editableWidget.isNullable()) {
-            captions.add(editableWidget.getCaption());
-            ok = false;
-          }
-        } else {
-          count++;
-        }
-      }
-      if (!ok) {
-        notifySevere(BeeUtils.transformCollection(captions), "Value required");
-      }
-    }
-
-    if (ok && count <= 0) {
-      notifySevere("New Row", "all columns cannot be empty");
-      ok = false;
-    }
-    return ok;
   }
 
   private void closePreview() {
@@ -1056,6 +1050,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private Evaluator getRowEditable() {
     return rowEditable;
+  }
+
+  private Evaluator getRowValidation() {
+    return rowValidation;
   }
 
   private List<TabEntry> getTabOrder() {
@@ -1273,6 +1271,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private void setRowJso(JavaScriptObject rowJso) {
     this.rowJso = rowJso;
+  }
+
+  private void setRowValidation(Evaluator rowValidation) {
+    this.rowValidation = rowValidation;
   }
 
   private void showNote(Level level, String... messages) {

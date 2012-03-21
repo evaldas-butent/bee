@@ -8,11 +8,10 @@
   <columns>
     <BeeDataColumn name="City" source="Name" caption="Miestas" />
 
-    <BeeRelColumn name="Country" source="CountryName" relSource="Country" relColumn="Name"
-      caption="Šalis">
+    <BeeDataColumn name="Country" source="CountryName" caption="Šalis">
       <editor type="selector" width="200" visibleLines="12"
         options="{&quot;showLimit&quot;: true, &quot;searchType&quot;: &quot;contains&quot;}" />
-    </BeeRelColumn>
+    </BeeDataColumn>
 
     <BeeVerColumn name="Version" caption="Paskutinio koregavimo data" />
   </columns>

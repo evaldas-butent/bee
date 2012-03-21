@@ -115,7 +115,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     }
   }
   
-  public boolean check(boolean reset) {
+  public boolean checkForUpdate(boolean reset) {
     boolean ok = update(null, false);
     if (!ok && reset) {
       reset();
@@ -220,6 +220,10 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return isForeign();
   }
 
+  public ValueType getTypeForUpdate() {
+    return getColumnForUpdate().getType();
+  }
+  
   public String getWidgetId() {
     return getWidgetDescription().getWidgetId();
   }
@@ -349,6 +353,16 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       }
     }
   }
+  
+  public boolean validate(boolean force) {
+    String oldValue = getOldValueForUpdate();
+    String newValue = getEditor().getNormalizedValue();
+    
+    if (!force && BeeUtils.equalsTrimRight(oldValue, newValue)) {
+      return true;
+    }
+    return validate(oldValue, newValue, force);
+  }
 
   private Evaluator getCarry() {
     return carry;
@@ -432,7 +446,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     if (eq && keyCode == null) {
       return true;
     }
-    if (!eq && !validate(oldValue, newValue)) {
+    if (!eq && !validate(oldValue, newValue, false)) {
       return false;
     }
 
@@ -443,8 +457,9 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return true;
   }
 
-  private boolean validate(String oldValue, String newValue) {
-    return UiHelper.validate(oldValue, newValue, getValidation(), getRowValue(),
-        getIndexForUpdate(), getDataType(), isNullable(), getMinValue(), getMaxValue(), getForm());
+  private boolean validate(String oldValue, String newValue, boolean force) {
+    return UiHelper.validateCell(oldValue, newValue, getValidation(), getRowValue(),
+        getIndexForUpdate(), getTypeForUpdate(), isNullable(), getMinValue(), getMaxValue(),
+        getCaption(), getForm(), force);
   }
 }

@@ -23,6 +23,7 @@ import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasSearch;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
@@ -58,7 +59,7 @@ import java.util.Set;
  */
 
 public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
-    ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler {
+    ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasSearch {
 
   private class DeleteCallback extends BeeCommand {
     private final Collection<RowInfo> rows;
@@ -233,6 +234,17 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     return lastFilter;
   }
 
+  public Collection<SearchView> getSearchers() {
+    Collection<SearchView> searchers;
+
+    if (getView() instanceof HasSearch) {
+      searchers = ((HasSearch) getView()).getSearchers();
+    } else {
+      searchers = null;
+    }
+    return searchers;
+  }
+
   public GridContainerView getView() {
     return gridContainer;
   }
@@ -387,9 +399,15 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     if (getGridCallback() != null) {
       getGridCallback().beforeRefresh(this);
     }
-    getDataProvider().refresh();
-  }
 
+    Filter filter = ViewHelper.getFilter(this, getDataProvider());
+    if (Objects.equal(filter, getLastFilter())) {
+      getDataProvider().refresh();
+    } else {
+      applyFilter(filter);
+    }
+  }
+  
   public void requery(boolean updateActiveRow) {
     if (getGridCallback() != null) {
       getGridCallback().beforeRequery(this);
@@ -401,6 +419,12 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     if (getGridCallback() != null) {
       getGridCallback().afterDeleteRow(rowId);
     }
+  }
+
+  private void applyFilter(Filter filter) {
+    setLastFilter(filter);
+    Queries.getRowCount(getViewName(), getDataProvider().getQueryFilter(filter),
+        new FilterCallback(filter));
   }
 
   private void bind() {
@@ -499,19 +523,12 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     return getView().getContent().getGridCallback();
   }
 
-  private Collection<SearchView> getSearchers() {
-    Collection<SearchView> searchers;
-
-    if (getView() instanceof HasSearch) {
-      searchers = ((HasSearch) getView()).getSearchers();
-    } else {
-      searchers = null;
-    }
-    return searchers;
-  }
-
   private String getViewName() {
     return getDataProvider().getViewName();
+  }
+  
+  private void setLastFilter(Filter lastFilter) {
+    this.lastFilter = lastFilter;
   }
 
   private void setLoadingState(LoadingStateChangeEvent.LoadingState loadingState) {
@@ -537,26 +554,11 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
   }
 
   private void updateFilter() {
-    Collection<SearchView> searchers = getSearchers();
-    Assert.notNull(searchers);
-
-    List<Filter> filters = Lists.newArrayListWithCapacity(searchers.size());
-    for (SearchView search : searchers) {
-      Filter flt = search.getFilter(getDataColumns(), getDataProvider().getIdColumnName(),
-          getDataProvider().getVersionColumnName());
-      if (flt != null && !filters.contains(flt)) {
-        filters.add(flt);
-      }
-    }
-
-    Filter filter = Filter.and(filters);
+    Filter filter = ViewHelper.getFilter(this, getDataProvider());
     if (Objects.equal(filter, getLastFilter())) {
       showInfo("filter not changed", BeeUtils.transform(filter));
-      return;
+    } else {
+      applyFilter(filter);
     }
-
-    lastFilter = filter;
-    Queries.getRowCount(getViewName(), getDataProvider().getQueryFilter(filter),
-        new FilterCallback(filter));
   }
 }

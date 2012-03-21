@@ -191,6 +191,9 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     if (getPresenter() == null) {
       createPresenter(getPendingRow());
     } else {
+      getPresenter().getView().getContent().getGrid().deactivate();
+      getPresenter().getView().getContent().ensureGridVisible();
+
       updateFilter(getPendingRow());
       getPresenter().requery(false);
       resetState();

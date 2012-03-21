@@ -23,6 +23,7 @@ import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
 import com.butent.bee.client.view.HasSearch;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -51,7 +52,7 @@ import java.util.Set;
  */
 
 public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
-    ReadyForUpdateEvent.Handler, HasViewName {
+    ReadyForUpdateEvent.Handler, HasViewName, HasSearch {
 
   private class DeleteCallback extends BeeCommand {
     private final long rowId;
@@ -127,6 +128,17 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
 
   public Filter getLastFilter() {
     return lastFilter;
+  }
+
+  public Collection<SearchView> getSearchers() {
+    Collection<SearchView> searchers;
+
+    if (getView() instanceof HasSearch) {
+      searchers = ((HasSearch) getView()).getSearchers();
+    } else {
+      searchers = null;
+    }
+    return searchers;
   }
 
   public FormContainerView getView() {
@@ -314,25 +326,14 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
     view.create(formDescription, columns, rowCount, callback);
     return view;
   }
-
+  
   private void deleteRow(long rowId, long version) {
     Global.getMsgBoxen().confirm("Delete Record ?", new DeleteCallback(rowId, version),
         StyleUtils.NAME_SCARY);
   }
-  
+
   private FormCallback getFormCallback() {
     return getView().getContent().getFormCallback();
-  }
-
-  private Collection<SearchView> getSearchers() {
-    Collection<SearchView> searchers;
-
-    if (getView() instanceof HasSearch) {
-      searchers = ((HasSearch) getView()).getSearchers();
-    } else {
-      searchers = null;
-    }
-    return searchers;
   }
 
   private boolean hasData() {
@@ -358,18 +359,7 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
   }
 
   private void updateFilter() {
-    Collection<SearchView> searchers = getSearchers();
-    Assert.notNull(searchers);
-
-    List<Filter> filters = Lists.newArrayListWithCapacity(searchers.size());
-    for (SearchView search : searchers) {
-      Filter flt = search.getFilter(getDataProvider().getColumns(), null, null);
-      if (flt != null && !filters.contains(flt)) {
-        filters.add(flt);
-      }
-    }
-
-    Filter filter = Filter.and(filters);
+    Filter filter = ViewHelper.getFilter(this, getDataProvider());
     if (Objects.equal(filter, getLastFilter())) {
       BeeKeeper.getLog().info("filter not changed", filter);
       return;

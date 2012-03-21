@@ -27,6 +27,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
       GridDescription gridDescription, GridCallback gridCallback, boolean hasSearch);
+  
+  void ensureGridVisible();
 
   int estimatePageSize(int containerWidth, int containerHeight);
   

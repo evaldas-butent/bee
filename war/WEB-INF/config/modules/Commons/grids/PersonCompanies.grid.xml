@@ -5,8 +5,7 @@
   name="PersonCompanies" viewName="CompanyPersons" caption="Įmonių kontaktai"
   >
   <columns>
-    <BeeRelColumn name="CompanyName" source="CompanyName" caption="Įmonė" relSource="Company"
-      relColumn="Name" />
+    <BeeDataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
     <BeeDataColumn name="Position" source="Position" caption="Pareigos" />
     <BeeDataColumn name="Phone" source="Phone" caption="Tel." />
     <BeeDataColumn name="Email" source="Email" caption="El. paštas" />

@@ -196,7 +196,7 @@ public class UiHelper {
     }
     return null;
   }
-  
+
   public static String getValue(Widget widget) {
     if (widget instanceof Editor) {
       return ((Editor) widget).getValue();
@@ -312,7 +312,7 @@ public class UiHelper {
     Assert.notNull(holder);
     holder.set(setWidget(container, holder.get(), initializer, name));
   }
-  
+
   public static Widget setWidget(HasOneWidget container, Widget widget,
       WidgetInitializer initializer, String name) {
     if (container == null || widget == null) {
@@ -350,10 +350,10 @@ public class UiHelper {
     form.updateCell(columnId, value);
   }
 
-  public static boolean validate(String oldValue, String newValue, Evaluator validation,
+  public static boolean validateCell(String oldValue, String newValue, Evaluator validation,
       IsRow row, int colIndex, ValueType type, boolean nullable, String minValue, String maxValue,
-      NotificationListener notificationListener) {
-    if (BeeUtils.equalsTrimRight(oldValue, newValue)) {
+      String caption, NotificationListener notificationListener, boolean force) {
+    if (!force && BeeUtils.equalsTrimRight(oldValue, newValue)) {
       return true;
     }
     String errorMessage = null;
@@ -387,7 +387,27 @@ public class UiHelper {
       return true;
     } else {
       if (notificationListener != null) {
-        notificationListener.notifySevere(errorMessage);
+        notificationListener.notifySevere(caption, errorMessage);
+      }
+      return false;
+    }
+  }
+
+  public static boolean validateRow(IsRow row, Evaluator validation,
+      NotificationListener notificationListener) {
+    Assert.notNull(row);
+    if (validation == null) {
+      return true;
+    }
+
+    validation.update(row);
+    String message = validation.evaluate();
+
+    if (BeeUtils.isEmpty(message)) {
+      return true;
+    } else {
+      if (notificationListener != null) {
+        notificationListener.notifySevere(message);
       }
       return false;
     }

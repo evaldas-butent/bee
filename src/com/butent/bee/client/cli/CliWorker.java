@@ -128,6 +128,9 @@ public class CliWorker {
     } else if (BeeUtils.startsSame(args, "cache")) {
       Global.getCache().removeAll();
       BeeKeeper.getLog().info("cache cleared");
+    } else if (BeeUtils.startsSame(args, "rpc")) {
+      BeeKeeper.getRpc().getRpcList().clear();
+      BeeKeeper.getLog().info("rpc list cleared");
     }
   }
 

@@ -63,4 +63,6 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   void updateCell(String columnId, String newValue);
 
   void updateRow(IsRow row, boolean refreshChildren);
+  
+  boolean validate(boolean force);
 }

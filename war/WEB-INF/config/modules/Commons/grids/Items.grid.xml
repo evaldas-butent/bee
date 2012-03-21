@@ -25,12 +25,10 @@
 
   <columns>
     <BeeDataColumn name="Name" source="Name" caption="Pavadinimas" />
-    <BeeRelColumn name="Unit" source="UnitName" caption="Mato v." 
-                  relSource="Unit" relColumn="Name" />
+    <BeeDataColumn name="Unit" source="UnitName" caption="Mato v." />
     <BeeDataColumn name="Article" source="Article" caption="Artikulas" />
     <BeeDataColumn name="Barcode" source="Barcode" caption="Barkodas" />
     <BeeDataColumn name="Price" source="Price" caption="Pard. kaina" />
-    <BeeRelColumn name="Currency" source="CurrencyName" caption="Val." 
-                  relSource="Currency" relColumn="Name" />
+    <BeeDataColumn name="Currency" source="CurrencyName" caption="Val." />
   </columns>
 </BeeGrid>

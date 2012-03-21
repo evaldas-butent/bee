@@ -29,7 +29,7 @@ public class GridFormPresenter extends AbstractPresenter {
   private final GridView gridView;
   
   private final HeaderView header;
-  private final Widget container;
+  private final Split container;
   
   private final boolean editSave;
 
@@ -43,6 +43,10 @@ public class GridFormPresenter extends AbstractPresenter {
     this.header.setViewPresenter(this);
     
     this.editSave = editSave;
+  }
+  
+  public FormView getForm() {
+    return (FormView) container.getCenter();
   }
 
   public GridCallback getGridCallback() {
@@ -63,6 +67,7 @@ public class GridFormPresenter extends AbstractPresenter {
       case CLOSE:
         gridView.formCancel();
         break;
+
       case EDIT:
         gridView.getForm(true).setEnabled(true);
         hideAction(action);
@@ -70,9 +75,13 @@ public class GridFormPresenter extends AbstractPresenter {
           showAction(Action.SAVE);
         }
         break;
+
       case SAVE:
-        gridView.formConfirm();
+        if (getForm().validate(true)) {
+          gridView.formConfirm();
+        }
         break;
+
       default:  
     }
   }
@@ -106,7 +115,7 @@ public class GridFormPresenter extends AbstractPresenter {
     header.addCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, edit));
   }
   
-  private Widget createContainer(HeaderView headerView, FormView formView, boolean edit) {
+  private Split createContainer(HeaderView headerView, FormView formView, boolean edit) {
     Split formContainer = new Split(0);
     StyleUtils.makeAbsolute(formContainer);
     formContainer.addStyleName(STYLE_FORM_CONTAINER);

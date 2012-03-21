@@ -6,7 +6,6 @@
   newRowColumns="RoleName" hasHeaders="false"
   >
   <columns>
-    <BeeRelColumn name="RoleName" source="RoleName" relSource="Role" relColumn="Name"
-      caption="Rolė" width="100" />
+    <BeeDataColumn name="RoleName" source="RoleName" caption="Rolė" width="100" />
   </columns>
 </BeeGrid>

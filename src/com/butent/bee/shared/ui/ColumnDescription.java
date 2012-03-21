@@ -20,13 +20,8 @@ import java.util.List;
 
 public class ColumnDescription implements BeeSerializable, HasInfo {
 
-  /**
-   * Contains a list of possible column types (data, related, calculated etc).
-   */
-
   public enum ColType {
     DATA("BeeDataColumn", false),
-    RELATED("BeeRelColumn", false),
     CALCULATED("BeeCalcColumn", true),
     ID("BeeIdColumn", true),
     VERSION("BeeVerColumn", true),
@@ -467,6 +462,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   
   public Boolean hasFooter() {
     return hasFooter;
+  }
+  
+  public boolean isForeign() {
+    return !BeeUtils.isEmpty(getRelSource());
   }
 
   public Boolean isReadOnly() {
