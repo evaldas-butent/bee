@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
 
   name="Services" source="Items"
   filter="IsService"
   >
-  <BeeColumns>
-    <BeeSimpleColumn expression="Name" />
-    <BeeSimpleJoin joinType="LEFT" expression="Unit">
-      <BeeSimpleColumn expression="Name" name="UnitName" />
-    </BeeSimpleJoin>
-    <BeeSimpleColumn expression="Article" />
-    <BeeSimpleColumn expression="Barcode" />
-    <BeeSimpleColumn expression="Price" />
-    <BeeSimpleJoin joinType="LEFT" expression="Currency">
-      <BeeSimpleColumn expression="Name" name="CurrencyName" />
-    </BeeSimpleJoin>
-    <BeeHiddenColumn expression="IsService"/>
-  </BeeColumns>
-  <BeeOrder>
+  <Columns>
+    <SimpleColumn name="Name" />
+    <SimpleJoin joinType="LEFT" name="Unit">
+      <SimpleColumn name="Name" alias="UnitName" />
+    </SimpleJoin>
+    <SimpleColumn name="Article" />
+    <SimpleColumn name="Barcode" />
+    <SimpleColumn name="Price" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+    <HiddenColumn name="IsService"/>
+  </Columns>
+  <Order>
     <OrderBy column="Name" />
-  </BeeOrder>
-</BeeView>
+  </Order>
+</View>
  

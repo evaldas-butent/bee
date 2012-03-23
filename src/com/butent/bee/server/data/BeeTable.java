@@ -101,6 +101,10 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       return type;
     }
 
+    public boolean hasEditableRelation() {
+      return BeeUtils.allNotEmpty(isUnique(), getRelation()) && BeeUtils.isEmpty(getCascade());
+    }
+
     public boolean isExtended() {
       return extended;
     }

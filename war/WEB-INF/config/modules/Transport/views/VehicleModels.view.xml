@@ -2,18 +2,18 @@
 <View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
 
-  name="Cities"
-  source="Cities"
+  name="VehicleModels"
+  source="VehicleModels"
   >
   <Columns>
     <SimpleColumn name="Name" />
-    <SimpleColumn name="Country" />
-    <SimpleJoin name="Country" joinType="LEFT">
-      <SimpleColumn alias="CountryName" name="Name" />
+    <SimpleColumn name="Parent" />
+    <SimpleJoin joinType="LEFT" name="Parent">
+      <SimpleColumn name="Name" alias="ParentName" />
     </SimpleJoin>
   </Columns>
   <Order>
-    <OrderBy column="CountryName" />
+    <OrderBy column="ParentName" />
     <OrderBy column="Name" />
   </Order>
 </View>

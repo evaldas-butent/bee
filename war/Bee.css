@@ -38,12 +38,12 @@ body, select {
   display: box;
   display: -moz-box;
   display: -webkit-box;
-  box-pack: center;
   box-align: center;
-  -moz-box-pack: center;
   -moz-box-align: center;
-  -webkit-box-pack: center;
   -webkit-box-align: center;
+  box-pack: center;
+  -moz-box-pack: center;
+  -webkit-box-pack: center;
 }  
 .flexBox-vertical-center {
   display: box;
@@ -55,6 +55,9 @@ body, select {
   box-align: center;
   -moz-box-align: center;
   -webkit-box-align: center;
+  box-pack: justify;
+  -moz-box-pack: justify;
+  -webkit-box-pack: justify;
 }
 .flexBox-horizontal-center {
   display: box;
@@ -66,6 +69,9 @@ body, select {
   box-align: center;
   -moz-box-align: center;
   -webkit-box-align: center;
+  box-pack: justify;
+  -moz-box-pack: justify;
+  -webkit-box-pack: justify;
 }
 
 .flexible, .bee-TreeView-tree {
@@ -736,7 +742,7 @@ body, select {
 
 .bee-DataSelector-embedded {
   width: 200px;
-  height: 28px;
+  height: 23px;
 }
 
 .bee-DataSelector-input {

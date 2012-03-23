@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
 
   name="CurrencyRates"
   source="CurrencyRates"
   >
-  <BeeColumns>
-    <BeeSimpleColumn expression="Currency" />
-    <BeeSimpleColumn expression="Date" />
-    <BeeSimpleColumn expression="Quantity" />
-    <BeeSimpleColumn expression="Rate" />
-    <BeeSimpleColumn expression="BaseCurrency" />
-    <BeeSimpleJoin joinType="LEFT" expression="BaseCurrency">
-      <BeeSimpleColumn expression="Name" name="BaseCurrencyName"/>
-    </BeeSimpleJoin>
-  </BeeColumns>
-  <BeeOrder>
+  <Columns>
+    <SimpleColumn name="Currency" />
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Quantity" />
+    <SimpleColumn name="Rate" />
+    <SimpleColumn name="BaseCurrency" />
+    <SimpleJoin joinType="LEFT" name="BaseCurrency">
+      <SimpleColumn name="Name" alias="BaseCurrencyName"/>
+    </SimpleJoin>
+  </Columns>
+  <Order>
     <OrderBy column="Date" />
-  </BeeOrder>
-</BeeView>
+  </Order>
+</View>
  

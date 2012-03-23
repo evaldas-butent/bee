@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
 
   name="TripOrders" viewName="TripOrders" caption="Užsakymai"
-  newRowForm="TripOrder" editForm="TripOrder" editNewRow="true"
+  newRowForm="TripOrder" editForm="TripOrder" editNewRow="true" editShowId="true"
   newRowCaption="Naujas užsakymas"
   >
   <header borderWidth="1 0" />
@@ -17,8 +17,17 @@
   <columns>
     <BeeDataColumn name="Date" source="Date" caption="Data" />
     <BeeDataColumn name="OrderNo" source="OrderNo" caption="Užsakymo numeris" />
+    <BeeCalcColumn name="Status" type="string" caption="Būsena" sortBy="Status">
+      <calc><lambda /></calc>
+    </BeeCalcColumn>
     <BeeDataColumn name="Customer" source="CustomerName" caption="Užsakovas" />
     <BeeDataColumn name="Payer" source="PayerName" caption="Mokėtojas" />
+    <BeeCalcColumn name="Manager" type="string" caption="Vadybininkas"
+      sortBy="ManagerFirstName, ManagerLastName" searchBy="ManagerFirstName, ManagerLastName">
+      <calc>
+        <function>return (row.ManagerFirstName || "") + " " + (row.ManagerLastName || "")</function>
+      </calc>
+    </BeeCalcColumn>
     <BeeCalcColumn name="Cargo" type="string" caption="Kroviniai" searchBy="Cargo">
       <calc>
         <function>

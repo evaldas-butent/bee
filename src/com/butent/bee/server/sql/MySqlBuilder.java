@@ -87,6 +87,14 @@ class MySqlBuilder extends SqlBuilder {
         }
         return BeeUtils.concat(1, sql, "AS", dataType + ")");
 
+      case CONCAT:
+        StringBuilder xpr = new StringBuilder(BeeUtils.transform(params.get("member" + 0)));
+
+        for (int i = 1; i < params.size(); i++) {
+          xpr.append(", ").append(params.get("member" + i));
+        }
+        return "CONCAT(" + xpr.toString() + ")";
+
       default:
         return super.sqlFunction(function, params);
     }

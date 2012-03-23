@@ -766,8 +766,12 @@ public class UiServiceBean {
     String viewName = reqInfo.getParameter(0);
     List<ExtendedProperty> info = Lists.newArrayList();
 
-    if (sys.isView(viewName)) {
-      info.addAll(sys.getView(viewName).getInfo());
+    if (!BeeUtils.isEmpty(viewName)) {
+      if (sys.isView(viewName)) {
+        info.addAll(sys.getView(viewName).getInfo());
+      } else {
+        return ResponseObject.warning("Unknown view name:", viewName);
+      }
     } else {
       for (String name : sys.getViewNames()) {
         PropertyUtils.appendWithPrefix(info, name, sys.getView(name).getInfo());

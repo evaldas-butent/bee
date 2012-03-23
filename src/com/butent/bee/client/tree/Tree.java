@@ -713,21 +713,19 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
   private void focus(Element focusElem) {
     int containerLeft = getAbsoluteLeft();
     int containerTop = getAbsoluteTop();
-  
+
     int left = focusElem.getAbsoluteLeft() - containerLeft;
     int top = focusElem.getAbsoluteTop() - containerTop;
     int width = focusElem.getOffsetWidth();
     int height = focusElem.getOffsetHeight();
-  
+
     if (width <= 0 || height <= 0) {
       StyleUtils.setLeft(focusable, 0);
       StyleUtils.setTop(focusable, 0);
       return;
     }
-  
     StyleUtils.setRectangle(focusable, left, top, width, height);
     focusable.scrollIntoView();
-  
     setFocus(true);
   }
 

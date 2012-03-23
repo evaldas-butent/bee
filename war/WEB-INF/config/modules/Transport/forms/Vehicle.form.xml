@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE BeeForm [
+  <!ENTITY LABEL_STYLE "margin-right: 1em;">
+  <!ENTITY LEFT_LABEL_STYLE "&LABEL_STYLE; display: inline-block; min-width: 70px; text-align: right">
+]>
+<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+  
+  name="Vehicle" viewName="Vehicles" caption="Transporto priemonė"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <FlowPanel class="flexBox-horizontal-center">
+      <InlineLabel html="Valst.Nr." class="bee-required" style="font-weight: bold; &LEFT_LABEL_STYLE;" />
+      <InputText source="Number" />
+      <InlineLabel html="Modelis" class="bee-required" style="&LABEL_STYLE;" />
+      <DataSelector source="ModelName" relSource="Model" relView="VehicleModels" relColumn="Name"
+                    class="flexible" style="min-width: 50px;" />
+      <InlineLabel html="Tipas" class="bee-required" style="&LABEL_STYLE;" />
+      <DataSelector source="TypeName" relSource="Type" relView="VehicleTypes" relColumn="Name"
+                    class="flexible" style="min-width: 50px;" />
+    </FlowPanel>
+    
+    <FlowPanel class="flexBox-horizontal">
+      <FlowPanel class="flexBox-vertical flexible">
+        <FlowPanel class="flexBox-horizontal-center">
+          <InlineLabel html="Savininkas" style="&LEFT_LABEL_STYLE;" />
+          <DataSelector source="OwnerName" relSource="Owner" relView="Companies" relColumn="Name"
+                        class="flexible" style="min-width: 50px;" />
+          <InlineLabel html="Pagaminimo data" style="&LABEL_STYLE;" />
+          <InputDate source="ProductionDate" style="width: 7em" />
+        </FlowPanel>
+        
+        <FlowPanel class="flexBox-horizontal-center">
+          <FlowPanel>
+            <InlineLabel html="Kėbulo Nr." style="&LEFT_LABEL_STYLE;" />
+            <InputText source="BodyNumber" />
+          </FlowPanel>
+          <FlowPanel>
+            <InlineLabel html="Svoris Neto" style="&LABEL_STYLE;" />
+            <InputInteger source="Netto" style="width: 5em" />
+          </FlowPanel>
+          <FlowPanel>
+            <InlineLabel html="Svoris Bruto" style="&LABEL_STYLE;" />
+            <InputInteger source="Brutto" style="width: 5em" />
+          </FlowPanel>
+        </FlowPanel>
+        
+        <FlowPanel class="flexBox-horizontal-center">
+          <InlineLabel html="Variklio Nr." style="&LEFT_LABEL_STYLE;" />
+          <SimplePanel style="position: relative; height: 23px; min-width: 50px;" class="flexible">
+            <InputInteger source="EngineNumber" class="occupy" />
+          </SimplePanel>
+          <InlineLabel html="Galia kW" style="&LABEL_STYLE;" />
+          <InputText source="Power" style="width: 2em" />
+          <InlineLabel html="Darbinis tūris cm&#x00b3;" style="&LABEL_STYLE;" />
+          <InputInteger source="EngineVolume" style="width: 4em" />
+        </FlowPanel>
+      </FlowPanel>
+      
+      <FlowPanel class="flexBox-vertical">
+        <Label html="Pastabos" style="&LABEL_STYLE;" />
+        <SimplePanel style="position: relative; width: 15em;" class="flexible">
+          <InputArea source="Notes" class="occupy" />
+        </SimplePanel>
+      </FlowPanel>
+    </FlowPanel>
+
+    <TabbedPages barHeight="24" class="flexible">
+      <page>
+        <text>Papildoma informacija</text>
+        <InlineLabel/>
+      </page>
+      <page>
+        <text>Remontai, tech. apžiūros</text>
+        <InlineLabel/>
+      </page>
+      <page>
+        <text>Reisai</text>
+        <InlineLabel/>
+      </page>
+      <page>
+        <text>Kortelės</text>
+        <InlineLabel/>
+      </page>
+      <page>
+        <text>Autodalys</text>
+        <InlineLabel/>
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</BeeForm>

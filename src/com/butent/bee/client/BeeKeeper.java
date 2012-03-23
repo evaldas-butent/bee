@@ -13,6 +13,7 @@ import com.butent.bee.client.modules.crm.ProjectEventHandler;
 import com.butent.bee.client.modules.crm.ProjectList;
 import com.butent.bee.client.modules.crm.TaskEventHandler;
 import com.butent.bee.client.modules.crm.TaskList;
+import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.FormFactory;
@@ -136,6 +137,7 @@ public class BeeKeeper {
     });
 
     DocumentHandler.register();
+    TransportHandler.register();
 
     CommonEventHandler.register();
     getMenu().registerMenuCallback("items", new MenuManager.MenuCallback() {

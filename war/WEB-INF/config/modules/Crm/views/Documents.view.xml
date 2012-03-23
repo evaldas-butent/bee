@@ -1,48 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
 
   name="Documents"
   source="Documents"
   >
-  <BeeColumns>
-    <BeeSimpleColumn expression="DocumentDate" />
-    <BeeSimpleColumn expression="Expires" />
-    <BeeSimpleColumn expression="Number" />
-    <BeeSimpleColumn expression="RegistrationNumber" />
-    <BeeSimpleColumn expression="Type" />
-    <BeeSimpleJoin joinType="LEFT" expression="Type">
-      <BeeSimpleColumn name="TypeName" expression="Name" />
-    </BeeSimpleJoin>
-    <BeeSimpleColumn expression="Group" />
-    <BeeSimpleJoin joinType="LEFT" expression="Group">
-      <BeeSimpleColumn name="GroupName" expression="Name" />
-    </BeeSimpleJoin>
-    <BeeSimpleColumn expression="Category" />
-    <BeeSimpleJoin joinType="LEFT" expression="Category">
-      <BeeSimpleColumn name="CategoryName" expression="Name" />
-    </BeeSimpleJoin>
-    <BeeSimpleColumn expression="Place" />
-    <BeeSimpleJoin joinType="LEFT" expression="Place">
-      <BeeSimpleColumn name="PlaceName" expression="Name" />
-    </BeeSimpleJoin>
-    <BeeSimpleColumn expression="Project" />
-    <BeeSimpleJoin expression="Project" joinType="LEFT">
-      <BeeSimpleColumn expression="Name" name="ProjectName" />
-    </BeeSimpleJoin>
-    <BeeSimpleColumn expression="Company" />
-    <BeeSimpleJoin expression="Company" joinType="LEFT">
-      <BeeSimpleColumn name="CompanyName" expression="Name" />
-    </BeeSimpleJoin>
-    <BeeSimpleColumn expression="CompanyPerson" />
-    <BeeSimpleJoin expression="CompanyPerson" joinType="LEFT">
-      <BeeSimpleJoin expression="Person" joinType="LEFT">
-        <BeeSimpleColumn name="PersonFirstName" expression="FirstName" />
-        <BeeSimpleColumn name="PersonLastName" expression="LastName" />
-      </BeeSimpleJoin>
-    </BeeSimpleJoin>
-    <BeeSimpleColumn expression="Name" />
-    <BeeSimpleColumn expression="Description" />
-  </BeeColumns>
-</BeeView>
+  <Columns>
+    <SimpleColumn name="DocumentDate" />
+    <SimpleColumn name="Expires" />
+    <SimpleColumn name="Number" />
+    <SimpleColumn name="RegistrationNumber" />
+    <SimpleColumn name="Type" />
+    <SimpleJoin joinType="LEFT" name="Type">
+      <SimpleColumn alias="TypeName" name="Name" />
+    </SimpleJoin>
+    <SimpleColumn name="Group" />
+    <SimpleJoin joinType="LEFT" name="Group">
+      <SimpleColumn alias="GroupName" name="Name" />
+    </SimpleJoin>
+    <SimpleColumn name="Category" />
+    <SimpleJoin joinType="LEFT" name="Category">
+      <SimpleColumn alias="CategoryName" name="Name" />
+    </SimpleJoin>
+    <SimpleColumn name="Place" />
+    <SimpleJoin joinType="LEFT" name="Place">
+      <SimpleColumn alias="PlaceName" name="Name" />
+    </SimpleJoin>
+    <SimpleColumn name="Project" />
+    <SimpleJoin name="Project" joinType="LEFT">
+      <SimpleColumn name="Name" alias="ProjectName" />
+    </SimpleJoin>
+    <SimpleColumn name="Company" />
+    <SimpleJoin name="Company" joinType="LEFT">
+      <SimpleColumn alias="CompanyName" name="Name" />
+    </SimpleJoin>
+    <SimpleColumn name="CompanyPerson" />
+    <SimpleJoin name="CompanyPerson" joinType="LEFT">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn alias="PersonFirstName" name="FirstName" />
+        <SimpleColumn alias="PersonLastName" name="LastName" />
+      </SimpleJoin>
+    </SimpleJoin>
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Description" />
+  </Columns>
+</View>
  

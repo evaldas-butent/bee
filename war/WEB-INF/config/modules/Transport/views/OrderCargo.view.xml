@@ -1,58 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
 
   name="OrderCargo"
   source="OrderCargo"
   >
-  <BeeColumns>
-    <BeeSimpleColumn expression="Order" />
-    <BeeSimpleColumn expression="LoadingDate" />
-    <BeeSimpleColumn expression="LoadingCountry" />
-    <BeeSimpleJoin joinType="LEFT" expression="LoadingCountry">
-      <BeeSimpleColumn expression="Name" name="LoadingCountryName" />
-    </BeeSimpleJoin>
-    <BeeSimpleColumn expression="LoadingPlace" />
-    <BeeSimpleColumn expression="LoadingTerminal" />
-    <BeeSimpleColumn expression="UnloadingDate" />
-    <BeeSimpleColumn expression="UnloadingCountry" />
-    <BeeSimpleJoin joinType="LEFT" expression="UnloadingCountry">
-      <BeeSimpleColumn expression="Name" name="UnloadingCountryName" />
-    </BeeSimpleJoin>
-    <BeeSimpleColumn expression="UnloadingPlace" />
-    <BeeSimpleColumn expression="UnloadingTerminal" />
-    <BeeSimpleColumn expression="Cargo" />
-    <BeeSimpleColumn expression="Weight" />
-    <BeeSimpleColumn expression="Volume" />
-    <BeeSimpleColumn expression="Quantity" />
-    <BeeSimpleColumn expression="Number" />
-    <BeeSimpleColumn expression="Cmr" />
-    <BeeSimpleColumn expression="Notes" />
-    <BeeExternalJoin source="CargoServices" joinType="LEFT" expression="Cargo">
-      <BeeHiddenColumn expression="Quantity" name="Qty" />
-      <BeeHiddenColumn expression="Price" />
-      <BeeHiddenColumn expression="QuantityPrice">
-        <number>"Qty" * "Price"</number>
-      </BeeHiddenColumn>
-      <BeeAggregateColumn expression="Total" aggregate="SUM">
-          <minus>
-            <number>"QuantityPrice" - "QuantityPrice" / 100 * "Weight"</number>
-            <switch type="DOUBLE">
-              <string>"Cmr"</string>
-              <case><string>'a'</string><number>1</number></case>
-              <case><string>'b'</string><number>"Volume"</number></case>
-              <case><string>"Number"</string><number>100</number></case>
-              <else><number>0</number></else>
-            </switch>
-          </minus>
-      </BeeAggregateColumn>
-      <BeeAggregateJoin joinType="LEFT" expression="Currency">
-        <BeeAggregateColumn expression="Name" aggregate="MIN" name="MinCurr" />
-        <BeeAggregateColumn expression="Name" aggregate="MAX" name="MaxCurr" />
-      </BeeAggregateJoin>
-    </BeeExternalJoin>
-  </BeeColumns>
-  <BeeOrder>
+  <Columns>
+    <SimpleColumn name="Order" />
+    <SimpleColumn name="LoadingDate" />
+    <SimpleColumn name="LoadingCountry" />
+    <SimpleJoin joinType="LEFT" name="LoadingCountry">
+      <SimpleColumn name="Name" alias="LoadingCountryName" />
+    </SimpleJoin>
+    <SimpleColumn name="LoadingPlace" />
+    <SimpleColumn name="LoadingTerminal" />
+    <SimpleColumn name="UnloadingDate" />
+    <SimpleColumn name="UnloadingCountry" />
+    <SimpleJoin joinType="LEFT" name="UnloadingCountry">
+      <SimpleColumn name="Name" alias="UnloadingCountryName" />
+    </SimpleJoin>
+    <SimpleColumn name="UnloadingPlace" />
+    <SimpleColumn name="UnloadingTerminal" />
+    <SimpleColumn name="Cargo" />
+    <SimpleColumn name="Weight" />
+    <SimpleColumn name="Volume" />
+    <SimpleColumn name="Quantity" />
+    <SimpleColumn name="Number" />
+    <SimpleColumn name="Cmr" />
+    <SimpleColumn name="Notes" />
+    <ExternalJoin source="CargoServices" joinType="LEFT" name="Cargo">
+      <HiddenColumn name="Quantity" alias="Qty" />
+      <HiddenColumn name="Price" />
+      <AggregateColumn name="Total" aggregate="SUM">
+        <cast type="DECIMAL" precision="12" scale="2">
+          <number>"Qty" * "Price"</number>
+        </cast>
+      </AggregateColumn>
+      <AggregateJoin joinType="LEFT" name="Currency">
+        <AggregateColumn name="Name" aggregate="MIN" alias="MinCurr" />
+        <AggregateColumn name="Name" aggregate="MAX" alias="MaxCurr" />
+      </AggregateJoin>
+    </ExternalJoin>
+  </Columns>
+  <Order>
     <OrderBy column="LoadingDate" />
-  </BeeOrder>
-</BeeView>
+  </Order>
+</View>

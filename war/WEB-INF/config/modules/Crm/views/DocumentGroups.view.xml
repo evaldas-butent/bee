@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
 
   name="DocumentGroups"
   source="DocumentGroups"
   >
-  <BeeColumns>
-    <BeeSimpleColumn expression="Name" />
-  </BeeColumns>
-  <BeeOrder>
+  <Columns>
+    <SimpleColumn name="Name" />
+  </Columns>
+  <Order>
     <OrderBy column="Name" />
-  </BeeOrder>
-</BeeView>
+  </Order>
+</View>

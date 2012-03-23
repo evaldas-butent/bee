@@ -38,6 +38,8 @@
   <item id="transport_menu" order="70" text="Transportas" />
   <item id="orders" parent="transport_menu" order="10" text="Užsakymai" service="grid" parameters="TripOrders" />
   <item id="trips" parent="transport_menu" order="20" text="Reisai" service="grid" parameters="Trips" />
+  <item id="types" parent="transport_menu" order="30" text="Transporto tipai" service="grid" parameters="VehicleTypes" separators="*" />
+  <item id="vehicles" parent="transport_menu" order="40" text="Transporto priemonės" service="grid" parameters="Vehicles" />
 
   <item id="adm_menu" order="200" text="Administravimas" />
   <item id="roles" parent="adm_menu" order="10" text="Rolės" service="grid" parameters="Roles" />

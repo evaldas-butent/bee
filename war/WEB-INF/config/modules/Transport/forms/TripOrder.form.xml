@@ -9,10 +9,16 @@
       <row>
         <cell><Label html="Data" horizontalAlignment="right" class="bee-required" /></cell>
         <cell><InputDateTime source="Date" /></cell>
+          <cell>
+            <Label html="Būsena" horizontalAlignment="right" />
+          </cell>
+          <cell>
+            <Label name="Status" class="bee-display" />
+          </cell>
       </row>
       <row>
         <cell><Label html="Užsakymo Nr." horizontalAlignment="right" class="bee-required" /></cell>
-        <cell><InputText source="OrderNo" /></cell>
+        <cell colSpan="3"><InputText source="OrderNo" /></cell>
       </row>
       <row>
         <cell><Label html="Užsakovas" horizontalAlignment="right" class="bee-required" /></cell>
@@ -20,19 +26,26 @@
           <DataSelector source="CustomerName" relSource="Customer" relView="Companies"
                         relColumn="Name" />
         </cell>
-      <cell>
-        <Label html="Kontaktas:" horizontalAlignment="right" />
-      </cell>
-      <cell>
-        <DataSelector source="PersonFirstName" relSource="CustomerPerson" relView="CompanyPersons"
-          relColumn="FirstName" />
-      </cell>
-      </row>
-      <row>
         <cell><Label html="Mokėtojas" horizontalAlignment="right" /></cell>
-        <cell>
+        <cell colSpan="3">
           <DataSelector source="PayerName" relSource="Payer" relView="Companies"
                         relColumn="Name" />
+        </cell>
+      </row>
+      <row>
+        <cell>
+          <Label html="Kontaktas:" horizontalAlignment="right" />
+        </cell>
+        <cell>
+          <DataSelector source="PersonFirstName" relSource="CustomerPerson" relView="CompanyPersons"
+            relColumn="FirstName" />
+        </cell>
+        <cell>
+          <Label html="Vadybininkas:" horizontalAlignment="right" />
+        </cell>
+        <cell>
+          <DataSelector source="ManagerFirstName" relSource="Manager" relView="Users"
+            relColumn="FirstName" />
         </cell>
       </row>
     </FlexTable>

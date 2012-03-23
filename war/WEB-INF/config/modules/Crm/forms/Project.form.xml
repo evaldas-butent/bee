@@ -125,9 +125,9 @@
         <FlowPanel class="flexBox-horizontal" style="&MARGIN_TOP;">
           <ChildTree name="Stages" source="ProjectStages" parentColumn="Parent" 
                      relationColumn="Project" caption="Projekto etapai">
-           <calc>
-             <expression>row.Name</expression>                    
-           </calc>
+            <calc>
+              <expression>row.Name</expression>                    
+            </calc>
             <form name="Etapo koregavimas">
               <FlexTable>
                 <row>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="Vehicles"
+  source="Vehicles"
+  >
+  <Columns>
+    <SimpleColumn name="Type" />
+    <SimpleJoin name="Type" joinType="LEFT">
+      <SimpleColumn name="Name" alias="TypeName" />
+    </SimpleJoin>
+    <SimpleColumn name="Model" />
+    <SimpleJoin name="Model" joinType="LEFT">
+      <HiddenColumn name="Name" />
+      <SimpleJoin name="Parent" joinType="LEFT">
+        <HiddenColumn name="Name" alias="ParentName" />
+      </SimpleJoin>
+      <SimpleColumn name="ModelName">
+        <concat>
+          <string>"ParentName"</string>
+          <string>' '</string>
+          <string>"Name"</string>
+        </concat>
+      </SimpleColumn>
+    </SimpleJoin>
+    <SimpleColumn name="Number" />
+    <SimpleColumn name="BodyNumber" />
+    <SimpleColumn name="EngineNumber" />
+    <SimpleColumn name="EngineVolume" />
+    <SimpleColumn name="ProductionDate" />
+    <SimpleColumn name="Speedometer" />
+    <SimpleColumn name="TankCapacity" />
+    <SimpleColumn name="Power" />
+    <SimpleColumn name="Netto" />
+    <SimpleColumn name="Brutto" />
+    <SimpleColumn name="Owner" />
+    <SimpleJoin name="Owner" joinType="LEFT">
+      <SimpleColumn name="Name" alias="OwnerName" />
+    </SimpleJoin>
+    <SimpleColumn name="Notes" />
+  </Columns>
+  <Order>
+    <OrderBy column="Type" />
+    <OrderBy column="Model" />
+    <OrderBy column="Number" />
+  </Order>
+</View>
+ 

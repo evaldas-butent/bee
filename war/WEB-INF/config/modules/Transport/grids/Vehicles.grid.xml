@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+  
+  name="Vehicles" viewName="Vehicles"
+  newRowForm="Vehicle" editForm="Vehicle"
+  newRowCaption="Nauja transporto priemonė"
+  >
+  <west size="150" splitterSize="2">
+    <DataTree name="VehicleModels" caption="Modeliai" source="VehicleModels" parentColumn="Parent">
+      <calc>
+        <expression>row.Name</expression>
+      </calc>
+      <form name="Modelio koregavimas">
+        <FlowPanel>
+          <Label html="Modelis" class="bee-required" />
+          <InputText source="Name" style="width: 20em" />
+        </FlowPanel>
+      </form>
+    </DataTree>
+  </west>
+  
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <font>Verdana 12 px</font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <BeeDataColumn name="Type" source="TypeName" caption="Tipas" />
+    <BeeDataColumn name="Model" source="ModelName" caption="Modelis" />
+    <BeeDataColumn name="Number" source="Number" caption="Valst.Nr." />
+    <BeeDataColumn name="Owner" source="OwnerName" caption="Savininkas" />
+    <BeeDataColumn name="ProductionDate" source="ProductionDate" caption="Pag. data" />
+    <BeeDataColumn name="Power" source="Power" caption="Galia kW" />
+    <BeeDataColumn name="EngineVolume" source="EngineVolume" caption="Tūris cm&#x00b3;" />
+  </columns>
+</BeeGrid>

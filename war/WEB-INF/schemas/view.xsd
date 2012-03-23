@@ -5,10 +5,10 @@
   <xs:include schemaLocation="types.xsd" />
   <xs:include schemaLocation="expressions.xsd" />
 
-  <xs:element name="BeeView">
+  <xs:element name="View">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="BeeColumns" minOccurs="1" maxOccurs="1">
+        <xs:element name="Columns" minOccurs="1" maxOccurs="1">
           <xs:complexType>
             <xs:choice maxOccurs="unbounded">
               <xs:element ref="bee:common" />
@@ -16,7 +16,7 @@
             </xs:choice>
           </xs:complexType>
         </xs:element>
-        <xs:element name="BeeOrder" minOccurs="0" maxOccurs="1">
+        <xs:element name="Order" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:sequence>
               <xs:element name="OrderBy" type="bee:order" maxOccurs="unbounded" />
@@ -35,16 +35,16 @@
   <xs:element name="simple" type="bee:column" abstract="true" />
   <xs:element name="aggregate" type="bee:column" abstract="true" />
 
-  <xs:element name="BeeSimpleColumn" type="bee:columnSimple" substitutionGroup="bee:simple" />
-  <xs:element name="BeeHiddenColumn" type="bee:columnHidden" substitutionGroup="bee:common" />
-  <xs:element name="BeeAggregateColumn" type="bee:columnAggregate" substitutionGroup="bee:aggregate" />
+  <xs:element name="SimpleColumn" type="bee:columnSimple" substitutionGroup="bee:simple" />
+  <xs:element name="HiddenColumn" type="bee:columnHidden" substitutionGroup="bee:common" />
+  <xs:element name="AggregateColumn" type="bee:columnAggregate" substitutionGroup="bee:aggregate" />
 
-  <xs:element name="BeeSimpleJoin" type="bee:joinSimple" substitutionGroup="bee:simple" />
-  <xs:element name="BeeExternalJoin" type="bee:joinExternal" substitutionGroup="bee:common" />
-  <xs:element name="BeeAggregateJoin" type="bee:joinAggregate" substitutionGroup="bee:aggregate" />
+  <xs:element name="SimpleJoin" type="bee:joinSimple" substitutionGroup="bee:simple" />
+  <xs:element name="ExternalJoin" type="bee:joinExternal" substitutionGroup="bee:common" />
+  <xs:element name="AggregateJoin" type="bee:joinAggregate" substitutionGroup="bee:aggregate" />
 
   <xs:complexType name="column">
-    <xs:attribute name="expression" type="bee:fieldNameType" use="required" />
+    <xs:attribute name="name" type="bee:fieldNameType" use="required" />
   </xs:complexType>
 
   <xs:complexType name="columnSimple">
@@ -53,7 +53,7 @@
         <xs:sequence>
           <xs:element ref="bee:expression" minOccurs="0" maxOccurs="1" />
         </xs:sequence>
-        <xs:attribute name="name" type="bee:fieldNameType" />
+        <xs:attribute name="alias" type="bee:fieldNameType" />
         <xs:attribute name="locale">
           <xs:simpleType>
             <xs:restriction base="xs:string">

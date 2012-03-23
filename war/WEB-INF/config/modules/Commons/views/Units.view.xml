@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
 
   name="Units" source="Units"
   >
-  <BeeColumns>
-    <BeeSimpleColumn expression="Name" />
-    <BeeSimpleColumn expression="Caption" />
-    <BeeSimpleColumn expression="BaseUnit" />
-    <BeeSimpleJoin joinType="LEFT" expression="BaseUnit">
-      <BeeSimpleColumn expression="Name" name="BaseUnitName" />
-    </BeeSimpleJoin>
-    <BeeSimpleColumn expression="Factor" />
-  </BeeColumns>
-  <BeeOrder>
+  <Columns>
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Caption" />
+    <SimpleColumn name="BaseUnit" />
+    <SimpleJoin joinType="LEFT" name="BaseUnit">
+      <SimpleColumn name="Name" alias="BaseUnitName" />
+    </SimpleJoin>
+    <SimpleColumn name="Factor" />
+  </Columns>
+  <Order>
     <OrderBy column="Name" />
-  </BeeOrder>
-</BeeView>
+  </Order>
+</View>
  

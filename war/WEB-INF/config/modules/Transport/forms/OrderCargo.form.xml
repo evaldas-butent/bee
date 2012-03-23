@@ -43,7 +43,7 @@
                 <Label html="Tūris" horizontalAlignment="right" />
               </cell>
               <cell>
-                <InputDecimal format="#.000" scale="3" source="Volume" />
+                <InputDecimal format="#.000" scale="1" source="Volume" />
               </cell>
               <cell rowSpan="2">
                 <InputArea source="Notes" characterWidth="30" style="height: 100%" />

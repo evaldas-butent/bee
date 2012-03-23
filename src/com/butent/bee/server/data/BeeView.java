@@ -20,12 +20,16 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.XmlExpression;
+import com.butent.bee.shared.data.XmlExpression.XmlBulk;
 import com.butent.bee.shared.data.XmlExpression.XmlCase;
+import com.butent.bee.shared.data.XmlExpression.XmlCast;
+import com.butent.bee.shared.data.XmlExpression.XmlConcat;
 import com.butent.bee.shared.data.XmlExpression.XmlDivide;
 import com.butent.bee.shared.data.XmlExpression.XmlHasMember;
 import com.butent.bee.shared.data.XmlExpression.XmlHasMembers;
 import com.butent.bee.shared.data.XmlExpression.XmlMinus;
 import com.butent.bee.shared.data.XmlExpression.XmlMultiply;
+import com.butent.bee.shared.data.XmlExpression.XmlNvl;
 import com.butent.bee.shared.data.XmlExpression.XmlPlus;
 import com.butent.bee.shared.data.XmlExpression.XmlSwitch;
 import com.butent.bee.shared.data.XmlView;
@@ -98,13 +102,27 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
     public IsExpression getExpression() {
       if (expression == null) {
-        expression = parse(xmlExpression);
+        expression = parse(xmlExpression, Sets.newHashSet(getName()));
       }
       return expression;
     }
 
     public BeeField getField() {
       return field;
+    }
+
+    public int getLevel() {
+      int level = 0;
+
+      if (!BeeUtils.isEmpty(getParent())) {
+        ColumnInfo parent = getColumnInfo(getParent());
+
+        if (!parent.getField().hasEditableRelation()) {
+          level = 1;
+        }
+        level = level + parent.getLevel();
+      }
+      return level;
     }
 
     public String getLocale() {
@@ -125,7 +143,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
     public SqlDataType getType() {
       if (xmlExpression != null) {
-        return xmlExpression.type;
+        return SqlDataType.valueOf(xmlExpression.type);
       } else {
         return getField().getType();
       }
@@ -139,32 +157,36 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       return isHidden() || getAggregate() != null || getExpression() != null;
     }
 
-    private IsExpression parse(XmlExpression xmlExpr) {
+    private IsExpression parse(XmlExpression xmlExpr, Set<String> history) {
       if (xmlExpr == null) {
         return null;
       }
       IsExpression expr = null;
 
       if (xmlExpr instanceof XmlHasMember) {
-        IsExpression member = parse(((XmlHasMember) xmlExpr).member);
+        IsExpression member = parse(((XmlHasMember) xmlExpr).member, history);
 
         if (xmlExpr instanceof XmlSwitch) {
+          XmlSwitch sw = (XmlSwitch) xmlExpr;
           List<IsExpression> cases = Lists.newArrayList();
 
-          for (XmlCase xmlCase : ((XmlSwitch) xmlExpr).cases) {
-            cases.add(parse(xmlCase.members.get(0)));
-            cases.add(parse(xmlCase.members.get(1)));
+          for (XmlCase xmlCase : sw.cases) {
+            cases.add(parse(xmlCase.whenExpression, history));
+            cases.add(parse(xmlCase.thenExpression.member, history));
           }
-          if (!BeeUtils.isEmpty(((XmlSwitch) xmlExpr).elseExpression)) {
-            cases.add(parse(((XmlSwitch) xmlExpr).elseExpression.get(0)));
-          }
+          cases.add(parse(sw.elseExpression.member, history));
+
           expr = SqlUtils.sqlCase(member, cases.toArray());
+
+        } else if (xmlExpr instanceof XmlCast) {
+          XmlCast cast = (XmlCast) xmlExpr;
+          expr = SqlUtils.cast(member, SqlDataType.valueOf(cast.type), cast.precision, cast.scale);
         }
       } else if (xmlExpr instanceof XmlHasMembers) {
         List<IsExpression> members = Lists.newArrayList();
 
         for (XmlExpression z : ((XmlHasMembers) xmlExpr).members) {
-          members.add(parse(z));
+          members.add(parse(z, history));
         }
         if (xmlExpr instanceof XmlPlus) {
           expr = SqlUtils.plus(members.toArray(new IsExpression[0]));
@@ -174,9 +196,16 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           expr = SqlUtils.multiply(members.toArray(new IsExpression[0]));
         } else if (xmlExpr instanceof XmlDivide) {
           expr = SqlUtils.divide(members.toArray(new IsExpression[0]));
+        } else if (xmlExpr instanceof XmlBulk) {
+          expr = SqlUtils.expression(members.toArray());
+        } else if (xmlExpr instanceof XmlNvl) {
+          expr = SqlUtils.nvl(members.toArray(new IsExpression[0]));
+        } else if (xmlExpr instanceof XmlConcat) {
+          expr = SqlUtils.concat(members.toArray(new IsExpression[0]));
         }
       } else if (xmlExpr.content != null && !xmlExpr.content.replaceAll("\\s", "").isEmpty()) {
         List<Object> x = Lists.newArrayList();
+        x.add(")");
         String xpr = xmlExpr.content;
         String regex = "^(.*)\"(\\w+)\"(.*)$";
 
@@ -189,10 +218,18 @@ public class BeeView implements BeeObject, HasExtendedInfo {
             x.add(s);
           }
           if (hasColumn(col)) {
-            x.add(")");
+            ColumnInfo info = getColumnInfo(col);
+            Assert.state(!history.contains(info.getName()),
+                BeeUtils.concat(1, "Parsing cycle detected.",
+                    "View:", BeeView.this.getName(), "Column:", info.getName()));
+
+            if (info.expression == null) {
+              history.add(info.getName());
+              info.expression = parse(info.xmlExpression, history);
+              history.remove(info.getName());
+            }
             IsExpression xp = getSqlExpression(col);
             x.add(xp);
-            x.add("(");
           } else {
             x.add("\"" + col + "\"");
           }
@@ -200,6 +237,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         if (!BeeUtils.isEmpty(xpr)) {
           x.add(xpr);
         }
+        x.add("(");
         Collections.reverse(x);
         expr = SqlUtils.expression(x.toArray());
       }
@@ -275,6 +313,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       fldName = field.getName();
     }
     return fldName;
+  }
+
+  public int getColumnLevel(String colName) {
+    return getColumnInfo(colName).getLevel();
   }
 
   public String getColumnLocale(String colName) {
@@ -375,7 +417,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           "Table", getColumnTable(col), "Alias", getColumnSource(col),
           "Field", getColumnField(col), "Type", getColumnType(col), "Locale", getColumnLocale(col),
           "Aggregate Function", getColumnAggregate(col), "Hidden", isColHidden(col),
-          "ReadOnly", isColReadOnly(col),
+          "ReadOnly", isColReadOnly(col), "Level", getColumnLevel(col),
           "Expression", isColCalculated(col) ? getColumnExpression(col)
               .getSqlString(SqlBuilderFactory.getBuilder(SqlEngine.GENERIC)) : null,
           "Parent Column", getColumnParent(col), "Owner Alias", getColumnOwner(col));
@@ -597,7 +639,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           relTable = tables.get(BeeUtils.normalize(((XmlExternalJoin) col).source));
           Assert.notEmpty(relTable);
           als = relAls;
-          field = relTable.getField(col.expression);
+          field = relTable.getField(col.name);
 
           if (field.isExtended()) {
             LogUtils.warning(LogUtils.getDefaultLogger(),
@@ -607,7 +649,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           }
           join = SqlUtils.join(alias, table.getIdName(), relAls, field.getName());
         } else {
-          field = table.getField(col.expression);
+          field = table.getField(col.name);
 
           if (field.isExtended()) {
             als = table.joinExtField(query, alias, field);
@@ -641,7 +683,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       } else if (column instanceof XmlSimpleColumn) {
         XmlSimpleColumn col = (XmlSimpleColumn) column;
 
-        String colName = BeeUtils.ifString(col.name, col.expression);
+        String colName = BeeUtils.ifString(col.alias, col.name);
         String aggregate = null;
         boolean hidden = (col instanceof XmlHiddenColumn);
 
@@ -651,7 +693,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         if (col.expr != null) {
           addColumn(null, null, colName, null, aggregate, hidden, null, col.expr);
         } else {
-          addColumn(alias, table.getField(col.expression), colName, col.locale, aggregate, hidden,
+          addColumn(alias, table.getField(col.name), colName, col.locale, aggregate, hidden,
               parent, null);
         }
       }

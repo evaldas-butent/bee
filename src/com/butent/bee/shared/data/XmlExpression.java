@@ -1,41 +1,42 @@
 package com.butent.bee.shared.data;
 
-import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.XmlExpression.XmlBoolean;
+import com.butent.bee.shared.data.XmlExpression.XmlBulk;
 import com.butent.bee.shared.data.XmlExpression.XmlCase;
 import com.butent.bee.shared.data.XmlExpression.XmlCast;
+import com.butent.bee.shared.data.XmlExpression.XmlConcat;
 import com.butent.bee.shared.data.XmlExpression.XmlDate;
 import com.butent.bee.shared.data.XmlExpression.XmlDatetime;
 import com.butent.bee.shared.data.XmlExpression.XmlDivide;
 import com.butent.bee.shared.data.XmlExpression.XmlMinus;
 import com.butent.bee.shared.data.XmlExpression.XmlMultiply;
 import com.butent.bee.shared.data.XmlExpression.XmlNumber;
+import com.butent.bee.shared.data.XmlExpression.XmlNvl;
 import com.butent.bee.shared.data.XmlExpression.XmlPlus;
-import com.butent.bee.shared.data.XmlExpression.XmlRound;
 import com.butent.bee.shared.data.XmlExpression.XmlString;
 import com.butent.bee.shared.data.XmlExpression.XmlSwitch;
 
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlValue;
 
 @XmlSeeAlso({
     XmlNumber.class, XmlString.class, XmlBoolean.class, XmlDate.class, XmlDatetime.class,
-    XmlPlus.class, XmlMinus.class, XmlMultiply.class, XmlDivide.class, XmlRound.class,
-    XmlCast.class, XmlSwitch.class, XmlCase.class})
+    XmlPlus.class, XmlMinus.class, XmlMultiply.class, XmlDivide.class, XmlBulk.class,
+    XmlCast.class, XmlSwitch.class, XmlCase.class, XmlNvl.class, XmlConcat.class})
 public abstract class XmlExpression {
 
-  public abstract static class XmlHasMember extends XmlExpression {
+  public static class XmlHasMember extends XmlExpression {
     @XmlElementRef
     public XmlExpression member;
   }
 
-  public abstract static class XmlHasMembers extends XmlExpression {
+  public static class XmlHasMembers extends XmlExpression {
     @XmlElementRef
     public List<XmlExpression> members;
   }
@@ -76,10 +77,8 @@ public abstract class XmlExpression {
   public static class XmlDivide extends XmlHasMembers {
   }
 
-  @XmlRootElement(name = "round", namespace = DataUtils.DEFAULT_NAMESPACE)
-  public static class XmlRound extends XmlHasMember {
-    @XmlAttribute
-    public int precision;
+  @XmlRootElement(name = "bulk", namespace = DataUtils.DEFAULT_NAMESPACE)
+  public static class XmlBulk extends XmlHasMembers {
   }
 
   @XmlRootElement(name = "cast", namespace = DataUtils.DEFAULT_NAMESPACE)
@@ -94,19 +93,28 @@ public abstract class XmlExpression {
   public static class XmlSwitch extends XmlHasMember {
     @XmlElementRef
     public List<XmlCase> cases;
-    @XmlElementWrapper(name = "else", namespace = DataUtils.DEFAULT_NAMESPACE)
-    @XmlElementRef
-    public List<XmlExpression> elseExpression;
+    @XmlElement(name = "else", namespace = DataUtils.DEFAULT_NAMESPACE)
+    public XmlHasMember elseExpression;
   }
 
   @XmlRootElement(name = "case", namespace = DataUtils.DEFAULT_NAMESPACE)
   public static class XmlCase {
     @XmlElementRef
-    public List<XmlExpression> members;
+    public XmlExpression whenExpression;
+    @XmlElement(name = "then", namespace = DataUtils.DEFAULT_NAMESPACE)
+    public XmlHasMember thenExpression;
+  }
+
+  @XmlRootElement(name = "nvl", namespace = DataUtils.DEFAULT_NAMESPACE)
+  public static class XmlNvl extends XmlHasMembers {
+  }
+
+  @XmlRootElement(name = "concat", namespace = DataUtils.DEFAULT_NAMESPACE)
+  public static class XmlConcat extends XmlHasMembers {
   }
 
   @XmlValue
   public String content;
   @XmlAttribute
-  public SqlDataType type;
+  public String type;
 }

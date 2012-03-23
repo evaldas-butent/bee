@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
 
   name="UserRoles"
   source="UserRoles"
   >
-  <BeeColumns>
-    <BeeSimpleColumn expression="User" />
-    <BeeSimpleColumn expression="Role" />
-    <BeeSimpleJoin expression="Role" joinType="INNER">
-      <BeeSimpleColumn name="RoleName" expression="Name" />
-    </BeeSimpleJoin>
-  </BeeColumns>
-  <BeeOrder>
+  <Columns>
+    <SimpleColumn name="User" />
+    <SimpleColumn name="Role" />
+    <SimpleJoin name="Role" joinType="INNER">
+      <SimpleColumn alias="RoleName" name="Name" />
+    </SimpleJoin>
+  </Columns>
+  <Order>
     <OrderBy column="RoleName" />
-  </BeeOrder>
-</BeeView>
+  </Order>
+</View>
  

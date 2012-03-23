@@ -446,6 +446,22 @@ public abstract class SqlBuilder {
         }
         return function != SqlFunction.BULK
             ? BeeUtils.parenthesize(xpr.toString()) : xpr.toString();
+
+      case NVL:
+        xpr = new StringBuilder(BeeUtils.transform(params.get("member" + 0)));
+
+        for (int i = 1; i < params.size(); i++) {
+          xpr.append(", ").append(params.get("member" + i));
+        }
+        return "COALESCE(" + xpr.toString() + ")";
+
+      case CONCAT:
+        xpr = new StringBuilder(BeeUtils.transform(params.get("member" + 0)));
+
+        for (int i = 1; i < params.size(); i++) {
+          xpr.append(" || ").append(params.get("member" + i));
+        }
+        return xpr.toString();
     }
     Assert.untouchable();
     return null;

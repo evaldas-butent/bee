@@ -897,7 +897,7 @@ public class SystemBean {
 
     for (BeeField field : getTableFields(tblName)) {
       XmlColumn column = new XmlSimpleColumn();
-      column.expression = field.getName();
+      column.name = field.getName();
       columns.add(column);
     }
     XmlView xmlView = new XmlView();
@@ -927,28 +927,23 @@ public class SystemBean {
       Map<String, List<String[]>> tr = Maps.newHashMap();
 
       for (BeeField field : table.getFields()) {
-        if (field.isUnique()) {
+        if (field.hasEditableRelation()) {
+          String tblName = field.getTable();
           String relTable = field.getRelation();
 
-          if (!BeeUtils.isEmpty(relTable) && BeeUtils.isEmpty(field.getCascade())) {
-            String tblName = field.getTable();
-            String fldName = field.getName();
-            String relField = getIdName(relTable);
+          List<String[]> entry = tr.get(tblName);
 
-            List<String[]> entry = tr.get(tblName);
-
-            if (BeeUtils.isEmpty(entry)) {
-              entry = Lists.newArrayList();
-              tr.put(tblName, entry);
-            }
-            entry.add(new String[] {fldName, relTable, relField});
-            /*
-             * <declare name="aa" value="<OLD/>.<name value="fldName"/>" /> <if> <condition> <var
-             * value="aa"/> IS NOT NULL </condition> <ifTrue> <delete target="relTable"> <where>
-             * <equal source="relTable" field="relField" value="" /> </where> </delete> </ifTrue>
-             * </if>
-             */
+          if (BeeUtils.isEmpty(entry)) {
+            entry = Lists.newArrayList();
+            tr.put(tblName, entry);
           }
+          entry.add(new String[] {field.getName(), relTable, getIdName(relTable)});
+          /*
+           * <declare name="aa" value="<OLD/>.<name value="fldName"/>" /> <if> <condition> <var
+           * value="aa"/> IS NOT NULL </condition> <ifTrue> <delete target="relTable"> <where>
+           * <equal source="relTable" field="relField" value="" /> </where> </delete> </ifTrue>
+           * </if>
+           */
         }
       }
       for (String tblName : tr.keySet()) {

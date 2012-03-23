@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeView xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
 
   name="TaskObservers"
   source="TaskUsers"
   >
-  <BeeColumns>
-    <BeeSimpleColumn expression="Task" />
-    <BeeSimpleColumn expression="User" />
-    <BeeSimpleJoin expression="User" joinType="LEFT">
-      <BeeSimpleJoin expression="Person" joinType="LEFT">
-        <BeeSimpleColumn expression="FirstName" />
-        <BeeSimpleColumn expression="LastName" />
-      </BeeSimpleJoin>
-    </BeeSimpleJoin>
-    <BeeSimpleColumn expression="LastAccess" />
-  </BeeColumns>
-  <BeeOrder>
+  <Columns>
+    <SimpleColumn name="Task" />
+    <SimpleColumn name="User" />
+    <SimpleJoin name="User" joinType="LEFT">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn name="FirstName" />
+        <SimpleColumn name="LastName" />
+      </SimpleJoin>
+    </SimpleJoin>
+    <SimpleColumn name="LastAccess" />
+  </Columns>
+  <Order>
     <OrderBy column="LastName" />
     <OrderBy column="FirstName" />
-  </BeeOrder>
-</BeeView>
+  </Order>
+</View>
  

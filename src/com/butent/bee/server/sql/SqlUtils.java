@@ -52,6 +52,12 @@ public class SqlUtils {
     return new ComparisonCondition(op, expr, value);
   }
 
+  public static IsExpression concat(IsExpression... members) {
+    Assert.minLength(members, 2);
+    Assert.noNulls((Object[]) members);
+    return new FunctionExpression(SqlFunction.CONCAT, getMemberMap((Object[]) members));
+  }
+
   public static IsExpression constant(Object constant) {
     return new ConstantExpression(Value.getValue(constant));
   }
@@ -385,6 +391,12 @@ public class SqlUtils {
 
   public static IsCondition notNull(String src, String fld) {
     return notNull(field(src, fld));
+  }
+
+  public static IsExpression nvl(IsExpression... members) {
+    Assert.minLength(members, 2);
+    Assert.noNulls((Object[]) members);
+    return new FunctionExpression(SqlFunction.NVL, getMemberMap((Object[]) members));
   }
 
   public static HasConditions or(IsCondition... conditions) {

@@ -1,6 +1,7 @@
 package com.butent.bee.server.sql;
 
 import com.butent.bee.server.sql.SqlConstants.SqlDataType;
+import com.butent.bee.server.sql.SqlConstants.SqlFunction;
 import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -75,6 +76,22 @@ class MsSqlBuilder extends SqlBuilder {
           "WHERE", queryAlias + "." + idAlias, ">", offset);
     }
     return sql;
+  }
+
+  @Override
+  protected String sqlFunction(SqlFunction function, Map<String, Object> params) {
+    switch (function) {
+      case CONCAT:
+        StringBuilder xpr = new StringBuilder(BeeUtils.transform(params.get("member" + 0)));
+
+        for (int i = 1; i < params.size(); i++) {
+          xpr.append(" + ").append(params.get("member" + i));
+        }
+        return xpr.toString();
+
+      default:
+        return super.sqlFunction(function, params);
+    }
   }
 
   @Override
