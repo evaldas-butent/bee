@@ -11,6 +11,13 @@
     <SimpleJoin joinType="LEFT" name="Parent">
       <SimpleColumn name="Name" alias="ParentName" />
     </SimpleJoin>
+    <SimpleColumn name="ModelName">
+      <concat>
+        <nvl type="STRING"><string>"ParentName"</string><string>''</string></nvl>
+        <string>' '</string>
+        <string>"Name"</string>
+      </concat>
+    </SimpleColumn>
   </Columns>
   <Order>
     <OrderBy column="ParentName" />

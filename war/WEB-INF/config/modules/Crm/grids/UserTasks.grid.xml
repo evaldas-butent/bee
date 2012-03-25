@@ -16,16 +16,14 @@
         <CheckBox name="Canceled" html="Nutrauktos" />
         <CheckBox name="Approved" html="Baigtos" />
       </FlowPanel>
-      <SimplePanel class="flexible flexBox-vertical-center">
-        <VerticalPanel>
-          <cell>
-            <CheckBox name="Overdue" html="Tik vėluojančios" style="color: red;" />
-          </cell>
-          <cell>
-            <CheckBox name="Updated" html="Tik pasikeitusios" />
-          </cell>
-        </VerticalPanel>
-      </SimplePanel>
+      <FlowPanel class="flexBox-vertical">
+        <SimplePanel>
+          <CheckBox name="Overdue" html="Tik vėluojančios" style="color: red;" />
+        </SimplePanel>
+        <SimplePanel>
+          <CheckBox name="Updated" html="Tik pasikeitusios" />
+        </SimplePanel>
+      </FlowPanel>
       <Button name="Filter" html="Filtruoti" />
     </FlowPanel>
   </north>

@@ -482,7 +482,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
               alias = null;
               colName = getColumnName(col);
 
-              if (isColHidden(col) || !BeeUtils.contains(activeCols, colName)) {
+              if (isColHidden(col)
+                  || (!BeeUtils.isEmpty(activeCols) && !BeeUtils.contains(activeCols, colName))) {
                 LogUtils.warning(LogUtils.getDefaultLogger(), "view: ", getName(),
                     "order by:", col, ". Column not in field list");
                 continue;

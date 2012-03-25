@@ -18,7 +18,7 @@
       </SimpleJoin>
       <SimpleColumn name="ModelName">
         <concat>
-          <string>"ParentName"</string>
+          <nvl type="STRING"><string>"ParentName"</string><string>''</string></nvl>
           <string>' '</string>
           <string>"Name"</string>
         </concat>
@@ -41,8 +41,8 @@
     <SimpleColumn name="Notes" />
   </Columns>
   <Order>
-    <OrderBy column="Type" />
-    <OrderBy column="Model" />
+    <OrderBy column="TypeName" />
+    <OrderBy column="ModelName" />
     <OrderBy column="Number" />
   </Order>
 </View>
