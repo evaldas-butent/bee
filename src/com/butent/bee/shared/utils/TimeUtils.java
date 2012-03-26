@@ -91,6 +91,14 @@ public class TimeUtils {
       date.setDay(date.getDay() + amount);
     }
   }
+
+  public static void addHour(DateTime date, int amount) {
+    add(date, HOUR, amount);
+  }
+
+  public static void addMinute(DateTime date, int amount) {
+    add(date, MINUTE, amount);
+  }
   
   public static DateTime combine(Date datePart, DateTime timePart) {
     if (datePart == null) {
@@ -246,15 +254,28 @@ public class TimeUtils {
     }
   }
 
+  public static JustDate nextDay(HasDateValue ref) {
+    return nextDay(ref, 1);
+  }
+  
+  public static JustDate nextDay(HasDateValue ref, int increment) {
+    Assert.notNull(ref);
+    return new JustDate(ref.getDate().getDay() + increment);
+  }
+  
   public static JustDate nextMonth() {
-    return nextMonth(new DateTime());
+    return nextMonth(new DateTime(), 1);
   }
 
   public static JustDate nextMonth(HasDateValue ref) {
+    return nextMonth(ref, 1);
+  }
+  
+  public static JustDate nextMonth(HasDateValue ref, int increment) {
     Assert.notNull(ref);
     int year = ref.getYear();
     int month = ref.getMonth();
-    return new JustDate(year, month, Grego.monthLength(year, month) + 1);
+    return new JustDate(year, month, Grego.monthLength(year, month) + increment);
   }
   
   public static String normalize(AbstractDate x) {

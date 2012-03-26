@@ -13,10 +13,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
-/**
- * Implements NSEW (North, South, East, West) management element.
- */
-
 public class BeeLayoutPanel extends LayoutPanel implements HasId {
   
   public static Unit defaultUnit = Unit.PX;

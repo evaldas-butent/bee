@@ -961,12 +961,124 @@ body, select {
   background-color: yellow;
 }
 
+.bee-TreeView {
+  background-color: #f8f8f8;
+}
+.bee-TreeView-actions {
+  text-align: right;
+}
+
+.bee-DatePicker {
+  border: 1px solid #ccc;
+  border-top: 1px solid #999;
+  cursor: default;
+}
+.bee-DatePicker td, .bee-DatePicker-monthSelector td:focus {
+  outline: none;
+}
+
+.bee-DatePicker-days {
+  width: 100%;
+  background: white;
+}
+.bee-DatePicker-day, .bee-DatePicker-weekdayLabel, .bee-DatePicker-weekendLabel {
+  font-size: 85%;
+  text-align: center;
+  padding: 4px;
+  outline: none;
+  font-weight:bold;
+  color: #333;
+  border-right: 1px solid #EDEDED;
+  border-bottom: 1px solid #EDEDED;
+}
+.bee-DatePicker-weekdayLabel, .bee-DatePicker-weekendLabel {
+  background: #fff;
+  padding: 0px 4px 2px;
+  cursor: default;
+  color: #666;
+  font-size: 70%;
+  font-weight: normal;
+}
+.bee-DatePicker-day {
+  padding: 4px 7px;
+  cursor: pointer;
+}
+.bee-DatePicker-dayIsToday {
+  padding: 3px;
+  color: blue;
+}
+.bee-DatePicker-dayIsWeekend {
+  background: #f7f7f7;
+}
+.bee-DatePicker-dayIsFiller {
+  color: #999;
+  font-weight: normal;
+}
+.bee-DatePicker-dayIsValue {
+  background: #d7dfe8;
+}
+.bee-DatePicker-dayIsDisabled {
+  color: #AAAAAA;
+  font-style: italic;
+}
+.bee-DatePicker-dayIsHighlighted {
+  background: #F0E68C;
+}
+.bee-DatePicker-dayIsValueAndHighlighted {
+  background: #d7dfe8;
+}
+
+.bee-DatePicker-monthSelector {
+  width: 100%;
+  padding: 1px 0 5px 0;
+  background: #fff;
+}
+.bee-DatePicker-month {
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+  font-size: 100%;
+  font-weight: bold;
+  color: #333;
+}
+.bee-DatePicker-previousButton, .bee-DatePicker-nextButton {
+  font-size: 120%;
+  line-height: 1em;
+  color: #3a6aad;
+  cursor: pointer;
+  font-weight: bold;
+  padding: 0px 4px;
+  outline: none;
+}
+
+.bee-TabBar-item {
+  margin-left: 4px;
+  padding: 4px 8px 4px 8px;
+  cursor: pointer;
+  cursor: hand;
+  background-color: whiteSmoke;
+  color: #444;
+  font-weight: normal;
+  text-align: center;
+  border: 1px solid #ccc;
+  -moz-border-radius: 3px 3px 0px 0px;
+  border-radius: 3px 3px 0px 0px;
+}
+.bee-TabBar-item-selected {
+  cursor: default;
+  background-color: #eee;
+  color: #333;
+  font-weight: bold;
+  border: 1px solid #ccc;
+} 
+.bee-TabBar-item-disabled {
+  cursor: default;
+  color: #999;
+}
+
 .gwt-SplitLayoutPanel-HDragger {
   background: #f6cef5;
   cursor: col-resize;
-}
-
-.gwt-StackLayoutPanel {
 }
 
 .gwt-StackLayoutPanel .gwt-StackLayoutPanelHeader {
@@ -1007,93 +1119,4 @@ body, select {
   background: #f90;
   color: white;
   cursor: default;
-}
-
-.gwt-DatePicker {
-  border: 1px solid #ccc;
-  border-top: 1px solid #999;
-  cursor: default;
-}
-.gwt-DatePicker td, .datePickerMonthSelector td:focus {
-  outline: none;
-}
-.datePickerDays {
-  width: 100%;
-  background: white;
-}
-.datePickerDay, .datePickerWeekdayLabel, .datePickerWeekendLabel {
-  font-size: 85%;
-  text-align: center;
-  padding: 4px;
-  outline: none;
-  font-weight:bold;
-  color: #333;
-  border-right: 1px solid #EDEDED;
-  border-bottom: 1px solid #EDEDED;
-}
-.datePickerWeekdayLabel, .datePickerWeekendLabel {
-  background: #fff;
-  padding: 0px 4px 2px;
-  cursor: default;
-  color: #666;
-  font-size: 70%;
-  font-weight: normal;
-}
-.datePickerDay {
-  padding: 4px 7px;
-  cursor: pointer;
-}
-.datePickerDayIsToday {
-  padding: 3px;
-  color: blue;
-}
-.datePickerDayIsWeekend {
-  background: #f7f7f7;
-}
-.datePickerDayIsFiller {
-  color: #999;
-  font-weight: normal;
-}
-.datePickerDayIsValue {
-  background: #d7dfe8;
-}
-.datePickerDayIsDisabled {
-  color: #AAAAAA;
-  font-style: italic;
-}
-.datePickerDayIsHighlighted {
-  background: #F0E68C;
-}
-.datePickerDayIsValueAndHighlighted {
-  background: #d7dfe8;
-}
-
-.datePickerMonthSelector {
-  width: 100%;
-  padding: 1px 0 5px 0;
-  background: #fff;
-}
-.datePickerMonth {
-  text-align: center;
-  vertical-align: middle;
-  white-space: nowrap;
-  font-size: 100%;
-  font-weight: bold;
-  color: #333;
-}
-.datePickerPreviousButton, .datePickerNextButton {
-  font-size: 120%;
-  line-height: 1em;
-  color: #3a6aad;
-  cursor: pointer;
-  font-weight: bold;
-  padding: 0px 4px;
-  outline: none;
-}
-
-.bee-TreeView {
-  background-color: #f8f8f8;
-}
-.bee-TreeView-actions {
-  text-align: right;
 }

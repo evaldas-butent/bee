@@ -556,7 +556,7 @@ public class ScrollTableConfig {
     y += 30 + yMrg;
 
     int ww = 50;
-    int xDat = w - ww * 5 - DomUtils.getScrollbarWidth() - xMrg;
+    int xDat = w - ww * 5 - DomUtils.getScrollBarWidth() - xMrg;
     int xCur = xDat + ww;
     int xMin = xCur + ww;
     int xPref = xMin + ww;

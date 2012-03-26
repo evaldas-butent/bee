@@ -145,8 +145,8 @@ public class DomUtils {
 
   private static int idCounter = 0;
 
-  private static int scrollbarWidth = -1;
-  private static int scrollbarHeight = -1;
+  private static int scrollBarWidth = -1;
+  private static int scrollBarHeight = -1;
 
   private static int textBoxOffsetWidth = -1;
   private static int textBoxOffsetHeight = -1;
@@ -1036,18 +1036,18 @@ public class DomUtils {
     }
   }
 
-  public static int getScrollbarHeight() {
-    if (scrollbarHeight <= 0) {
-      calculateScrollbarSize();
+  public static int getScrollBarHeight() {
+    if (scrollBarHeight <= 0) {
+      calculateScrollBarSize();
     }
-    return scrollbarHeight;
+    return scrollBarHeight;
   }
 
-  public static int getScrollbarWidth() {
-    if (scrollbarWidth <= 0) {
-      calculateScrollbarSize();
+  public static int getScrollBarWidth() {
+    if (scrollBarWidth <= 0) {
+      calculateScrollBarSize();
     }
-    return scrollbarWidth;
+    return scrollBarWidth;
   }
 
   public static String getService(Widget w) {
@@ -1857,7 +1857,7 @@ public class DomUtils {
     body.removeChild(elem);
   }
 
-  private static void calculateScrollbarSize() {
+  private static void calculateScrollBarSize() {
     Element elem = DOM.createDiv();
     elem.getStyle().setVisibility(Visibility.HIDDEN);
     elem.getStyle().setWidth(100, Unit.PX);
@@ -1877,8 +1877,8 @@ public class DomUtils {
 
     body.removeChild(elem);
 
-    scrollbarWidth = w1 - w2;
-    scrollbarHeight = h1 - h2;
+    scrollBarWidth = w1 - w2;
+    scrollBarHeight = h1 - h2;
   }
 
   private static void calculateTextBoxSize() {

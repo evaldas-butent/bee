@@ -15,8 +15,8 @@ import com.google.gwt.i18n.shared.DateTimeFormat;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.datepicker.client.DatePicker;
 
+import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -75,14 +75,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
     datePicker.addValueChangeHandler(new ValueChangeHandler<Date>() {
       public void onValueChange(ValueChangeEvent<Date> event) {
-        AbstractDate newValue = AbstractDate.fromJava(event.getValue(), getDateType());
-        if (newValue instanceof DateTime) {
-          AbstractDate oldValue = getDate();
-          if (oldValue != null) {
-            newValue = TimeUtils.combine(newValue, oldValue.getDateTime());
-          }
-        }
-        setValue(newValue);
+        setDate(event.getValue());
 
         hideDatePicker();
         getBox().setFocus(true);
@@ -133,6 +126,28 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
   public String getIdPrefix() {
     return "date-box";
+  }
+
+  public Date getJava() {
+    String v = getBox().getValue();
+    if (BeeUtils.isEmpty(v)) {
+      return null;
+    }
+
+    Date date;
+    if (getDateTimeFormat() != null) {
+      date = TimeUtils.parseQuietly(getDateTimeFormat(), v);
+    } else {
+      date = null;
+    }
+
+    if (date == null) {
+      AbstractDate ad = AbstractDate.parse(v, getDateType());
+      if (ad != null) {
+        date = ad.getJava();
+      }
+    }
+    return date;
   }
 
   public String getNormalizedValue() {
@@ -198,9 +213,20 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
     super.onBrowserEvent(event);
   }
-
+  
   public void setAccessKey(char key) {
     getBox().setAccessKey(key);
+  }
+
+  public void setDate(Date date) {
+    AbstractDate newValue = AbstractDate.fromJava(date, getDateType());
+    if (newValue instanceof DateTime) {
+      AbstractDate oldValue = getDate();
+      if (oldValue != null) {
+        newValue = TimeUtils.combine(newValue, oldValue.getDateTime());
+      }
+    }
+    setValue(newValue);
   }
 
   public void setDateTimeFormat(DateTimeFormat format) {
@@ -328,29 +354,6 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
   private ValueType getDateType() {
     return dateType;
-  }
-
-  private Date getJava() {
-    String v = getBox().getValue();
-    if (BeeUtils.isEmpty(v)) {
-      return null;
-    }
-
-    Date date;
-    if (getDateTimeFormat() != null) {
-      date = TimeUtils.parseQuietly(getDateTimeFormat(), v);
-    } else {
-      date = null;
-    }
-
-    if (date == null) {
-      AbstractDate ad = AbstractDate.parse(v, getDateType());
-      if (ad != null) {
-        date = ad.getJava();
-      }
-    }
-
-    return date;
   }
 
   private Popup getPopup() {

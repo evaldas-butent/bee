@@ -62,9 +62,9 @@ public class MultiSelector extends DialogBox {
     int width = gp.getView().getContent().getGrid().getBodyWidth();
     int height = gp.getView().getContent().getGrid().getChildrenHeight();
     
-    width = BeeUtils.limit(width + DomUtils.getScrollbarWidth() + 2,
+    width = BeeUtils.limit(width + DomUtils.getScrollBarWidth() + 2,
         100, Window.getClientWidth() * 3 / 4);
-    height = BeeUtils.limit(height + 60 + DomUtils.getScrollbarHeight() + 2,
+    height = BeeUtils.limit(height + 60 + DomUtils.getScrollBarHeight() + 2,
         100, Window.getClientHeight() * 3 / 4);
 
     Split panel = new Split(0);

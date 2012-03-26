@@ -293,7 +293,7 @@ public class BeeUtils {
       return BeeConst.COMPARE_MORE;
     }
   }
-
+  
   public static int compare(long x1, long x2) {
     if (x1 == x2) {
       return BeeConst.COMPARE_EQUAL;
@@ -303,7 +303,7 @@ public class BeeUtils {
       return BeeConst.COMPARE_MORE;
     }
   }
-
+  
   /**
    * Compares objects {@code x1} and {@code x2}. This method allows to compare values even if one or
    * both of the specified values are {@code null}.
@@ -327,7 +327,7 @@ public class BeeUtils {
       return x1.toString().compareTo(x2.toString());
     }
   }
-
+  
   /**
    * Compares the two specified String values.
    * 
@@ -387,7 +387,7 @@ public class BeeUtils {
 
     return s.toString();
   }
-  
+
   public static <T> boolean contains(Collection<? extends T> col, T item) {
     if (col == null) {
       return false;
@@ -473,7 +473,7 @@ public class BeeUtils {
     }
     return false;
   }
-
+  
   public static boolean containsWhitespace(CharSequence cs) {
     if (cs == null) {
       return false;
@@ -922,7 +922,7 @@ public class BeeUtils {
     }
     return key;
   }
-  
+
   public static <E extends Enum<?>> String getName(Class<E> clazz, Integer idx) {
     if (clazz == null || idx == null || idx < 0) {
       return null;
@@ -935,7 +935,7 @@ public class BeeUtils {
       return null;
     }
   }
-  
+
   /**
    * Gets a prefix from a String, where separator sets that the prefix will end at the first
    * occurrence of the separator.
@@ -991,7 +991,7 @@ public class BeeUtils {
     }
     return null;
   }
-
+  
   /**
    * Separates a string with separator value. Returns a string that goes after the separator.
    * 
@@ -1012,7 +1012,7 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
-
+  
   /**
    * Separates a string with separator value. Returns a string that goes after the separator.
    * 
@@ -1033,7 +1033,7 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
-  
+
   public static String getWord(String s, int idx) {
     if (isEmpty(s) || idx < 0) {
       return null;
@@ -1053,7 +1053,7 @@ public class BeeUtils {
     }
     return cs.length() >= min;
   }
-  
+
   /**
    * @param x Object to check
    * @param def Objects {@code x} default value to set
@@ -1092,7 +1092,7 @@ public class BeeUtils {
     }
     return z;
   }
-
+  
   /**
    * Transforms the Object to a String and increments the value by 1.
    * 
@@ -1112,7 +1112,7 @@ public class BeeUtils {
   public static String increment(String s) {
     return Integer.toString(toInt(s) + 1);
   }
-
+  
   public static int indexOf(List<String> lst, String s) {
     if (isEmpty(lst)) {
       return BeeConst.UNDEF;
@@ -1606,6 +1606,14 @@ public class BeeUtils {
     return ok;
   }
 
+  public static <T> boolean isLeq(Comparable<T> x1, Comparable<T> x2) {
+    return compare(x1, x2) <= 0;
+  }
+
+  public static <T> boolean isLess(Comparable<T> x1, Comparable<T> x2) {
+    return compare(x1, x2) < 0;
+  }
+
   /**
    * Checks if a Double value can be transformed to a Long value.
    * 
@@ -1629,6 +1637,14 @@ public class BeeUtils {
       ok = false;
     }
     return ok;
+  }
+
+  public static <T> boolean isMeq(Comparable<T> x1, Comparable<T> x2) {
+    return compare(x1, x2) >= 0;
+  }
+
+  public static <T> boolean isMore(Comparable<T> x1, Comparable<T> x2) {
+    return compare(x1, x2) > 0;
   }
 
   public static boolean isNonNegative(Double d) {

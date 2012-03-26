@@ -207,6 +207,12 @@ public class CrmModuleBean implements BeeModule {
 
           case DELETED:
             Assert.untouchable();
+            break;
+
+          case EXTENDED:
+          case UPDATED:
+            // TODO        
+            break;
         }
       }
     }

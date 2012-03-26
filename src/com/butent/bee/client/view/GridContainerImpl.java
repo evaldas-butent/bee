@@ -125,7 +125,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private String headerId = null;
   private String scrollerId = null;
 
-  private int scrollerWidth = DomUtils.getScrollbarWidth() + 1;
+  private int scrollerWidth = DomUtils.getScrollBarWidth() + 1;
 
   private boolean hasPaging = false;
   private boolean hasSearch = false;

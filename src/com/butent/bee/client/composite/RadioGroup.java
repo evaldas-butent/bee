@@ -290,6 +290,18 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   public void setNullable(boolean nullable) {
   }
+  
+  public void setSelectedIndex(int newIndex) {
+    int oldIndex = getSelectedIndex();
+
+    if (newIndex != oldIndex) {
+      if (isIndex(newIndex)) {
+        getOption(newIndex).setValue(true);
+      } else if (isIndex(oldIndex)) {
+        getOption(oldIndex).setValue(false);
+      }
+    }
+  }
 
   public void setTabIndex(int index) {
   }

@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.calendar.demo.CalendarPanel;
 import com.butent.bee.client.modules.commons.CommonEventHandler;
 import com.butent.bee.client.modules.crm.DocumentHandler;
 import com.butent.bee.client.modules.crm.ProjectEventHandler;
@@ -143,6 +144,12 @@ public class BeeKeeper {
     getMenu().registerMenuCallback("items", new MenuManager.MenuCallback() {
       public void onSelection(String parameters) {
         CommonEventHandler.openItems(parameters);
+      }
+    });
+
+    getMenu().registerMenuCallback("calendar", new MenuManager.MenuCallback() {
+      public void onSelection(String parameters) {
+        getScreen().updateActivePanel(new CalendarPanel(14, false));
       }
     });
   }

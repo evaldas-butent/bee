@@ -738,6 +738,11 @@ public class ProjectEventHandler {
       case DELETED:
       case UPDATED:
         Assert.untouchable();
+        break;
+
+      case EXTENDED:
+        // TODO
+        break;
     }
   }
 

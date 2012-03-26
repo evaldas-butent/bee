@@ -37,6 +37,7 @@ import com.butent.bee.client.Settings;
 import com.butent.bee.client.ajaxloader.AjaxKeyRepository;
 import com.butent.bee.client.ajaxloader.AjaxLoader;
 import com.butent.bee.client.ajaxloader.ClientLocation;
+import com.butent.bee.client.calendar.demo.CalendarPanel;
 import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -373,6 +374,8 @@ public class CliWorker {
       showBrowser(arr);
     } else if (z.equals("cache")) {
       BeeKeeper.getScreen().showGrid(Global.getCache().getInfo());
+    } else if (z.startsWith("cal")) {
+      showCalendar(arr);
     } else if (z.equals("canvas")) {
       new CanvasDemo().start();
     } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
@@ -809,6 +812,21 @@ public class CliWorker {
     BeeKeeper.getScreen().showGrid(info);
   }
 
+  public static void showCalendar(String[] arr) {
+    int days = 14;
+    boolean multi = false;
+
+    for (int i = 1; i < BeeUtils.length(arr); i++) {
+      if (BeeUtils.isDigit(arr[i])) {
+        days = BeeUtils.toInt(arr[i]);
+      } else if (arr[i].contains("m")) {
+        multi = true;
+      }
+    }
+
+    BeeKeeper.getScreen().updateActivePanel(new CalendarPanel(days, multi));
+  }
+  
   public static void showClientLocation() {
     AjaxLoader.load(new Runnable() {
       public void run() {
@@ -925,8 +943,8 @@ public class CliWorker {
         "CheckBox client height", DomUtils.getCheckBoxClientHeight(),
         "CheckBox offset width", DomUtils.getCheckBoxOffsetWidth(),
         "CheckBox offset height", DomUtils.getCheckBoxOffsetHeight(),
-        "Scrollbar width", DomUtils.getScrollbarWidth(),
-        "Scrollbar height", DomUtils.getScrollbarHeight());
+        "Scrollbar width", DomUtils.getScrollBarWidth(),
+        "Scrollbar height", DomUtils.getScrollBarHeight());
 
     if (showModal(data.size())) {
       Global.modalGrid(caption, data);

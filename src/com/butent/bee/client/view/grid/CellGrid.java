@@ -1080,7 +1080,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     if (checkWidth) {
       int width = getBodyWidth();
       if (width <= 0 || width > containerWidth) {
-        availableBodyHeight -= DomUtils.getScrollbarHeight();
+        availableBodyHeight -= DomUtils.getScrollBarHeight();
       }
     }
 

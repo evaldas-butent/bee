@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Edges;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 
@@ -42,6 +43,15 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
     super.add(child, getElement());
   }
 
+  public void add(Widget child, Edges edges) {
+    Assert.notNull(child);
+    if (edges != null && !edges.isEmpty()) {
+      setChildPosition(child);
+      edges.applyPosition(child);
+    }
+    add(child);
+  }
+  
   public void addLeftBottom(Widget child, int left, int bottom) {
     addLeftBottom(child, left, Unit.PX, bottom, Unit.PX);
   }

@@ -599,8 +599,8 @@ public class ScrollTable extends ComplexPanel implements
 
   public int getAvailableWidth() {
     int clientWidth = absoluteElem.getClientWidth();
-    int scrollbarWidth = DomUtils.getScrollbarWidth();
-    clientWidth -= scrollbarWidth + 1;
+    int scrollBarWidth = DomUtils.getScrollBarWidth();
+    clientWidth -= scrollBarWidth + 1;
 
     return clientWidth;
   }
