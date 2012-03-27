@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+
+  name="FuelCosts" viewName="FuelCosts" caption="Kuro sąnaudos"
+  >
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <font>Verdana 12 px</font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <BeeDataColumn name="DateFrom" source="DateFrom" caption="Nuo" />
+    <BeeDataColumn name="DateTo" source="DateTo" caption="Iki" />
+    <BeeDataColumn name="FuelName" source="FuelName" caption="Kuras" />
+    <BeeDataColumn name="Summer" source="Summer" caption="Vasara l/100km" format="#.00"  />
+    <BeeDataColumn name="Winter" source="Winter" caption="Žiema l/100km" format="#.00"  />
+    <BeeDataColumn name="TonneKilometer" source="TonneKilometer" caption="Tonkilometris" format="#.0000"  />
+  </columns>
+</BeeGrid>

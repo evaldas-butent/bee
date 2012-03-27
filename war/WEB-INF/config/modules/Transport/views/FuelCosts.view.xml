@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="FuelCosts"
+  source="FuelCosts"
+  >
+  <Columns>
+    <SimpleColumn name="Vehicle"/>
+    <SimpleColumn name="DateFrom"/>
+    <SimpleColumn name="DateTo"/>
+    <SimpleColumn name="Fuel"/>
+    <SimpleJoin joinType="LEFT" name="Fuel">
+      <SimpleColumn name="Name" alias="FuelName" />
+    </SimpleJoin>
+    <SimpleColumn name="Summer" />
+    <SimpleColumn name="Winter" />
+    <SimpleColumn name="TonneKilometer" />
+  </Columns>
+  <Order>
+    <OrderBy column="DateFrom" descending="true"/>
+  </Order>
+</View>

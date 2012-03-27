@@ -27,6 +27,9 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
@@ -59,8 +62,10 @@ public class TreePresenter implements Presenter, CatchEvent.CatchHandler<IsRow> 
       if (createMode) {
         Long parentId = result.getLong(DataUtils.getColumnIndex(parentName, getDataColumns()));
         getView().addItem(parentId, text, result, true);
+        BeeKeeper.getBus().fireEvent(new RowInsertEvent(source, result));
       } else {
         getView().updateItem(text, result);
+        BeeKeeper.getBus().fireEvent(new RowUpdateEvent(source, result));
       }
     }
   }
@@ -367,6 +372,7 @@ public class TreePresenter implements Presenter, CatchEvent.CatchHandler<IsRow> 
                 @Override
                 public void onSuccess(Integer result) {
                   getView().removeItem(data);
+                  BeeKeeper.getBus().fireEvent(new RowDeleteEvent(source, data.getId()));
                 }
               });
         }

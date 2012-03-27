@@ -10,10 +10,4 @@
     <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />
     <BeeField name="Parent" type="LONG" relation="VehicleModels" />
   </BeeFields>
-  <BeeKeys>
-    <BeeKey unique="true">
-      <KeyField>Parent</KeyField>
-      <KeyField>Name</KeyField>
-    </BeeKey>
-  </BeeKeys>
 </BeeTable>

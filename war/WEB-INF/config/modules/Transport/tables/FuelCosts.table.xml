@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+
+  name="FuelCosts"
+  idName="CostID"
+  x="0" y="0"
+  >
+  <BeeFields>
+    <BeeField name="Vehicle" type="LONG" notNull="true" relation="Vehicles" cascade="DELETE" />
+    <BeeField name="DateFrom" type="DATE" />
+    <BeeField name="DateTo" type="DATE" />
+    <BeeField name="Fuel" type="LONG" notNull="true" relation="Items" />
+    <BeeField name="Summer" type="DECIMAL" precision="6" scale="2" notNull="true" />
+    <BeeField name="Winter" type="DECIMAL" precision="6" scale="2" notNull="true" />
+    <BeeField name="TonneKilometer" type="DECIMAL" precision="6" scale="4" />
+  </BeeFields>
+</BeeTable>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="SpareParts"
+  source="SpareParts"
+  >
+  <Columns>
+    <SimpleColumn name="Type" />
+    <SimpleJoin name="Type" joinType="LEFT">
+      <HiddenColumn name="Name" />
+      <SimpleJoin name="Parent" joinType="LEFT">
+        <HiddenColumn name="Name" alias="ParentName" />
+      </SimpleJoin>
+      <SimpleColumn name="TypeName">
+        <concat>
+          <nvl type="STRING"><string>"ParentName"</string><string>''</string></nvl>
+          <string>' '</string>
+          <string>"Name"</string>
+        </concat>
+      </SimpleColumn>
+    </SimpleJoin>
+    <SimpleColumn name="Number" />
+    <SimpleColumn name="Description" />
+    <SimpleColumn name="Run" />
+    <SimpleColumn name="Obtained" />
+    <SimpleColumn name="WrittenOff" />
+    <SimpleColumn name="Notes" />
+  </Columns>
+  <Order>
+    <OrderBy column="TypeName" />
+    <OrderBy column="Number" />
+  </Order>
+</View>
+ 

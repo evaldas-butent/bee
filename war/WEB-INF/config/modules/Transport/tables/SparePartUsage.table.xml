@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+
+  name="SparePartUsage"
+  idName="UsageID"
+  x="0" y="0"
+  >
+  <BeeFields>
+    <BeeField name="Part" type="LONG" notNull="true" relation="SpareParts" />
+    <BeeField name="Vehicle" type="LONG" notNull="true" relation="Vehicles" />
+    <BeeField name="Mounted" type="DATE" notNull="true" />
+    <BeeField name="Removed" type="DATE" />
+    <BeeField name="Note" type="STRING" precision="50" />
+  </BeeFields>
+</BeeTable>

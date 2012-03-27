@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+  
+  name="SpareParts" viewName="SpareParts"
+  caption="Keičiamos dalys" newRowCaption="Nauja dalis"
+  >
+  <west size="150" splitterSize="2">
+    <DataTree name="SparePartTypes" caption="Tipai" source="SparePartTypes" parentColumn="Parent">
+      <calc>
+        <expression>row.Name</expression>
+      </calc>
+      <form name="Tipo koregavimas">
+        <FlowPanel>
+          <Label html="Tipas" class="bee-required" />
+          <InputText source="Name" style="width: 20em" />
+        </FlowPanel>
+      </form>
+    </DataTree>
+  </west>
+  
+  <south size="200" splitterSize="2">
+    <GridPanel name="SparePartUsage" />
+  </south>
+  
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <font>Verdana 12 px</font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <BeeDataColumn name="Type" source="TypeName" caption="Tipas" />
+    <BeeDataColumn name="Number" source="Number" caption="Numeris" />
+    <BeeDataColumn name="Description" source="Description" caption="Aprašymas" />
+    <BeeDataColumn name="Run" source="Run" caption="Pradinė rida" />
+    <BeeDataColumn name="Obtained" source="Obtained" caption="Gauta" />
+    <BeeDataColumn name="WrittenOff" source="WrittenOff" caption="Nurašyta" />
+    <BeeDataColumn name="Notes" source="Notes" caption="Pastabos" />
+  </columns>
+</BeeGrid>

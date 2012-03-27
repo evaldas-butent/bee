@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+
+  name="Repairs" viewName="Repairs" caption="Remontų istorija"
+  >
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <font>Verdana 12 px</font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <BeeDataColumn name="Date" source="Date" caption="Data" />
+    <BeeDataColumn name="ItemName" source="ItemName" caption="Paslauga" />
+    <BeeDataColumn name="UnitName" source="UnitName" caption="Mato v." />
+    <BeeDataColumn name="Quantity" source="Quantity" caption="Kiekis" />
+    <BeeDataColumn name="Price" source="Price" caption="Kaina" format="#.00" />
+    <BeeDataColumn name="CurrencyName" source="CurrencyName" caption="Val." />
+    <BeeCalcColumn type="decimal" name="Total" caption="Suma" format="#.00">
+      <calc><expression>row.Quantity * row.Price</expression></calc>
+    </BeeCalcColumn>
+    <BeeDataColumn name="Note" source="Note" caption="Pastaba" />
+    <BeeDataColumn name="Run" source="Run" caption="Rida" />
+    <BeeDataColumn name="DocumentNo" source="DocumentNo" caption="Dok.Nr." />
+    <BeeDataColumn name="SupplierName" source="SupplierName" caption="Tiekėjas" />
+    <BeeDataColumn name="CountryName" source="CountryName" caption="Šalis" />
+  </columns>
+</BeeGrid>

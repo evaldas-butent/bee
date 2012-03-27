@@ -8,7 +8,6 @@ import com.butent.bee.client.grid.AbstractColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
@@ -18,7 +17,8 @@ import com.butent.bee.client.utils.HasEvaluation;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
-import com.butent.bee.client.view.grid.GridCallback;
+import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -27,6 +27,8 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 public class TransportHandler {
 
@@ -79,22 +81,65 @@ public class TransportHandler {
     }
   }
 
-  private static class VehicleFormHandler extends AbstractFormCallback {
+  private static class SparePartsGridHandler extends AbstractGridCallback
+      implements SelectionHandler<IsRow> {
+
+    private static final String FILTER_KEY = "f1";
+    private IsRow selectedType = null;
+
     @Override
-    public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-      if (form.getViewPresenter() instanceof GridFormPresenter) {
-        GridCallback gcb = ((GridFormPresenter) form.getViewPresenter()).getGridCallback();
-
-        if (gcb instanceof VehiclesGridHandler) {
-          IsRow model = ((VehiclesGridHandler) gcb).getSelectedModel();
-
-          if (model != null) {
-            newRow.setValue(form.getDataIndex("Model"), model.getId());
-            newRow.setValue(form.getDataIndex("ModelName"),
-                ((VehiclesGridHandler) gcb).getModelValue(model, "ModelName"));
-          }
-        }
+    public void afterCreateWidget(String name, Widget widget) {
+      if (widget instanceof TreeView && BeeUtils.same(name, "SparePartTypes")) {
+        ((TreeView) widget).addSelectionHandler(this);
       }
+    }
+
+    @Override
+    public SparePartsGridHandler getInstance() {
+      return new SparePartsGridHandler();
+    }
+
+    public void onSelection(SelectionEvent<IsRow> event) {
+      if (event == null) {
+        return;
+      }
+      if (getGridPresenter() != null) {
+        Long type = null;
+        setSelectedType(event.getSelectedItem());
+
+        if (getSelectedType() != null) {
+          type = getSelectedType().getId();
+        }
+        getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(type));
+        getGridPresenter().requery(true);
+      }
+    }
+
+    @Override
+    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+      IsRow type = getSelectedType();
+
+      if (type != null) {
+        List<BeeColumn> cols = getGridPresenter().getDataColumns();
+        newRow.setValue(DataUtils.getColumnIndex("Type", cols), type.getId());
+      }
+      return true;
+    }
+
+    private Filter getFilter(Long type) {
+      if (type == null) {
+        return null;
+      } else {
+        return ComparisonFilter.isEqual("Type", new LongValue(type));
+      }
+    }
+
+    private IsRow getSelectedType() {
+      return selectedType;
+    }
+
+    private void setSelectedType(IsRow selectedType) {
+      this.selectedType = selectedType;
     }
   }
 
@@ -134,6 +179,19 @@ public class TransportHandler {
       }
     }
 
+    @Override
+    public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
+      IsRow model = getSelectedModel();
+
+      if (model != null) {
+        List<BeeColumn> cols = getGridPresenter().getDataColumns();
+        newRow.setValue(DataUtils.getColumnIndex("Model", cols), model.getId());
+        newRow.setValue(DataUtils.getColumnIndex("ModelName", cols),
+            getModelValue(model, "ModelName"));
+      }
+      return true;
+    }
+
     private Filter getFilter(Long model) {
       if (model == null) {
         return null;
@@ -142,9 +200,9 @@ public class TransportHandler {
       }
     }
 
-    private String getModelValue(IsRow category, String colName) {
-      if (BeeUtils.allNotEmpty(category, modelTree, modelTree.getDataColumns())) {
-        return category.getString(DataUtils.getColumnIndex(colName, modelTree.getDataColumns()));
+    private String getModelValue(IsRow model, String colName) {
+      if (BeeUtils.allNotEmpty(model, modelTree, modelTree.getDataColumns())) {
+        return model.getString(DataUtils.getColumnIndex(colName, modelTree.getDataColumns()));
       }
       return null;
     }
@@ -162,7 +220,7 @@ public class TransportHandler {
     GridFactory.registerGridCallback("TripOrders", new OrdersGridHandler());
     FormFactory.registerFormCallback("TripOrder", new OrderFormHandler());
     GridFactory.registerGridCallback("Vehicles", new VehiclesGridHandler());
-    FormFactory.registerFormCallback("Vehicle", new VehicleFormHandler());
+    GridFactory.registerGridCallback("SpareParts", new SparePartsGridHandler());
   }
 
   private TransportHandler() {

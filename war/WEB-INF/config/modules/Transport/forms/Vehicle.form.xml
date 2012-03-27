@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE BeeForm [
-  <!ENTITY LABEL_STYLE "margin-right: 1em;">
-  <!ENTITY LEFT_LABEL_STYLE "&LABEL_STYLE; display: inline-block; min-width: 70px; text-align: right">
+  <!ENTITY LABEL_STYLE "margin-right: 1em; margin-left: 1em;">
+  <!ENTITY LEFT_LABEL_STYLE "margin-right: 1em; display: inline-block; min-width: 70px; text-align: right">
+  <!ENTITY ROW_STYLE "margin-bottom: 1ex;">
 ]>
 <BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
@@ -9,7 +10,7 @@
   name="Vehicle" viewName="Vehicles" caption="Transporto priemonė"
   >
   <FlowPanel class="flexBox-vertical">
-    <FlowPanel class="flexBox-horizontal-center">
+    <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
       <InlineLabel html="Valst.Nr." class="bee-required" style="font-weight: bold; &LEFT_LABEL_STYLE;" />
       <InputText source="Number" />
       <InlineLabel html="Modelis" class="bee-required" style="&LABEL_STYLE;" />
@@ -22,7 +23,7 @@
     
     <FlowPanel class="flexBox-horizontal">
       <FlowPanel class="flexBox-vertical flexible">
-        <FlowPanel class="flexBox-horizontal-center">
+        <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
           <InlineLabel html="Savininkas" style="&LEFT_LABEL_STYLE;" />
           <DataSelector source="OwnerName" relSource="Owner" relView="Companies" relColumn="Name"
                         class="flexible" style="min-width: 50px;" />
@@ -30,7 +31,7 @@
           <InputDate source="ProductionDate" style="width: 7em" />
         </FlowPanel>
         
-        <FlowPanel class="flexBox-horizontal-center">
+        <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
           <FlowPanel>
             <InlineLabel html="Kėbulo Nr." style="&LEFT_LABEL_STYLE;" />
             <InputText source="BodyNumber" />
@@ -45,7 +46,7 @@
           </FlowPanel>
         </FlowPanel>
         
-        <FlowPanel class="flexBox-horizontal-center">
+        <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
           <InlineLabel html="Variklio Nr." style="&LEFT_LABEL_STYLE;" />
           <SimplePanel style="position: relative; height: 23px; min-width: 50px;" class="flexible">
             <InputInteger source="EngineNumber" class="occupy" />
@@ -57,33 +58,46 @@
         </FlowPanel>
       </FlowPanel>
       
-      <FlowPanel class="flexBox-vertical">
-        <Label html="Pastabos" style="&LABEL_STYLE;" />
+      <FlowPanel class="flexBox-vertical" style="&ROW_STYLE; margin-left: 1em;">
+        <Label html="Pastabos" />
         <SimplePanel style="position: relative; width: 15em;" class="flexible">
           <InputArea source="Notes" class="occupy" />
         </SimplePanel>
       </FlowPanel>
     </FlowPanel>
 
-    <TabbedPages barHeight="24" class="flexible">
+    <TabbedPages barHeight="24" class="flexible" style="margin-top: 1ex;">
       <page>
         <text>Papildoma informacija</text>
-        <InlineLabel/>
+        <FlowPanel class="flexBox-horizontal">
+          <FlowPanel class="flexBox-vertical flexible" style="-webkit-box-align: end; margin-right: 1em;">
+            <FlowPanel>
+              <InlineLabel html="Kuro balko talpa l" style="&LABEL_STYLE;" />
+              <InputInteger source="TankCapacity" style="width: 2em" />
+            </FlowPanel>
+            <FlowPanel>
+              <InlineLabel html="Spidometro skalė" style="&LABEL_STYLE;" />
+              <InputInteger source="Speedometer" style="width: 5em" />
+            </FlowPanel>
+          </FlowPanel>
+
+          <ChildGrid name="FuelCosts" relColumn="Vehicle" class="flexible" style="min-width: 200px;" />
+        </FlowPanel>
       </page>
       <page>
-        <text>Remontai, tech. apžiūros</text>
-        <InlineLabel/>
+        <text>Remontai, servisas</text>
+        <ChildGrid name="Repairs" relColumn="Vehicle" />
       </page>
       <page>
         <text>Reisai</text>
         <InlineLabel/>
       </page>
       <page>
-        <text>Kortelės</text>
+        <text>Dokumentai</text>
         <InlineLabel/>
       </page>
       <page>
-        <text>Autodalys</text>
+        <text>Keičiamos dalys</text>
         <InlineLabel/>
       </page>
     </TabbedPages>
