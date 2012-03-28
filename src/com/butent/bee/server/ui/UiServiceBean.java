@@ -768,13 +768,13 @@ public class UiServiceBean {
 
     if (!BeeUtils.isEmpty(viewName)) {
       if (sys.isView(viewName)) {
-        info.addAll(sys.getView(viewName).getInfo());
+        info.addAll(sys.getView(viewName).getExtendedInfo());
       } else {
         return ResponseObject.warning("Unknown view name:", viewName);
       }
     } else {
       for (String name : sys.getViewNames()) {
-        PropertyUtils.appendWithPrefix(info, name, sys.getView(name).getInfo());
+        PropertyUtils.appendWithPrefix(info, name, sys.getView(name).getExtendedInfo());
       }
     }
     return ResponseObject.response(info);

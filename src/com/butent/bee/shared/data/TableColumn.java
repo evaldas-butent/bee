@@ -33,10 +33,6 @@ public class TableColumn implements HasInfo, IsColumn {
     this(type, null, null);
   }
 
-  public TableColumn(ValueType type, String label) {
-    this(type, label, null);
-  }
-
   public TableColumn(ValueType type, String label, String id) {
     this.type = type;
     this.label = label;

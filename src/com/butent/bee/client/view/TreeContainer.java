@@ -20,6 +20,7 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.Map;
@@ -51,8 +52,11 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   private final Map<Long, TreeItem> items = Maps.newHashMap();
   private final boolean hasActions;
 
-  public TreeContainer(String caption, boolean hideActions) {
+  private final String parentName;
+
+  public TreeContainer(String parentName, String caption, boolean hideActions) {
     super();
+    this.parentName = parentName;
 
     addStyleName(STYLE_NAME);
     this.hasActions = !hideActions;
@@ -181,6 +185,10 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
     return getId();
   }
 
+  public boolean hasFosterParent(String fosterParent) {
+    return BeeUtils.same(fosterParent, parentName);
+  }
+  
   @Override
   public boolean isEnabled() {
     return enabled;
@@ -205,19 +213,6 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       item = (IsRow) event.getSelectedItem().getUserObject();
     }
     SelectionEvent.fire(this, item);
-  }
-
-  @Override
-  public void refresh(IsRow parentRow, Boolean parentEnabled) {
-    Long id = null;
-
-    if (parentRow != null) {
-      id = parentRow.getId();
-    }
-    if (getTreePresenter() != null) {
-      getTreePresenter().updateRelation(id);
-    }
-    setEnabled(parentEnabled);
   }
 
   @Override
@@ -253,6 +248,21 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
   @Override
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
+  }
+
+  @Override
+  public void takeCare(String fosterParent, IsRow parentRow, Boolean parentEnabled) {
+    if (hasFosterParent(fosterParent)) {
+      Long id = null;
+
+      if (parentRow != null) {
+        id = parentRow.getId();
+      }
+      if (getTreePresenter() != null) {
+        getTreePresenter().updateRelation(id);
+      }
+      setEnabled(parentEnabled);
+    }
   }
 
   @Override

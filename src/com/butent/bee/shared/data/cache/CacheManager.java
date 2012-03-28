@@ -50,7 +50,7 @@ public class CacheManager implements HandlesAllDataEvents {
       this.columns = columns;
     }
 
-    public List<ExtendedProperty> getInfo() {
+    public List<ExtendedProperty> getExtendedInfo() {
       List<ExtendedProperty> info = Lists.newArrayList();
 
       info.add(new ExtendedProperty("View Name", viewName));
@@ -321,14 +321,14 @@ public class CacheManager implements HandlesAllDataEvents {
     return ok;
   }
 
-  public List<ExtendedProperty> getInfo() {
+  public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
     info.add(new ExtendedProperty("Cache", "Entries", BeeUtils.toString(entries.size())));
 
     int idx = 0;
     for (Entry entry : entries.values()) {
       PropertyUtils.appendWithPrefix(info, BeeUtils.progress(++idx, entries.size()),
-          entry.getInfo());
+          entry.getExtendedInfo());
     }
     return info;
   }

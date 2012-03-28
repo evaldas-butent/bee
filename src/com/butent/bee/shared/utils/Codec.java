@@ -6,6 +6,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.value.BooleanValue;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -20,8 +21,7 @@ public class Codec {
   private static final String SERIALIZATION_COLLECTION = "c";
   private static final String SERIALIZATION_SEPARATOR = ";";
   private static final char[] HEX_CHARS = new char[] {
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
-      'e', 'f'};
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
   private static final MessageDigest MD5;
   private static int mdChunk = 0;
@@ -663,6 +663,10 @@ public class Codec {
     byte[] arr = MD5.digest();
     return toHex(arr);
   }
+  
+  public static String pack(boolean value) {
+    return value ? BooleanValue.S_TRUE : BooleanValue.S_FALSE; 
+  }
 
   /**
    * Serializes an Object using a default serialization separator.
@@ -885,6 +889,16 @@ public class Codec {
         sb.append(toHex(arr[i]));
       }
       return sb.toString();
+    }
+  }
+  
+  public static boolean unpack(String value) {
+    if (BooleanValue.S_TRUE.equals(value)) {
+      return true;
+    } else if (BooleanValue.S_FALSE.equals(value)) {
+      return false;
+    } else {
+      return BeeUtils.toBoolean(value);
     }
   }
 

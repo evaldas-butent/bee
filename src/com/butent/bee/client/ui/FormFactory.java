@@ -95,8 +95,8 @@ public class FormFactory {
     Assert.notNull(formDescription);
     Assert.notNull(widgetDescriptionCallback);
 
-    return createWidget(formDescription.getFormElement(), columns, widgetDescriptionCallback,
-        formCallback, "createForm:");
+    return createWidget(formDescription.getName(), formDescription.getFormElement(), columns,
+        widgetDescriptionCallback, formCallback, "createForm:");
   }
 
   public static void createFormView(final String name, final List<BeeColumn> columns,
@@ -111,7 +111,7 @@ public class FormFactory {
           if (fd == null) {
             viewCallback.onFailure(new String[] {"form", name, "decription not created"});
           } else {
-            FormView view = new FormImpl();
+            FormView view = new FormImpl(name);
             view.create(fd, columns, formCallback, true);
             viewCallback.onSuccess(view);
           }
@@ -127,7 +127,7 @@ public class FormFactory {
     createFormView(name, columns, getFormCallback(name), viewCallback);
   }
 
-  public static Widget createWidget(Element parent, List<BeeColumn> columns,
+  public static Widget createWidget(String rootName, Element parent, List<BeeColumn> columns,
       WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback,
       String messagePrefix) {
     Assert.notNull(parent);
@@ -160,7 +160,8 @@ public class FormFactory {
       return null;
     }
 
-    Widget widget = formWidget.create(root, columns, widgetDescriptionCallback, widgetCallback);
+    Widget widget = formWidget.create(rootName, root, columns, widgetDescriptionCallback,
+        widgetCallback);
     if (widget == null) {
       BeeKeeper.getLog().severe(messagePrefix, "cannot create root widget", formWidget);
     }

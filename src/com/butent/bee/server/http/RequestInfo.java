@@ -118,19 +118,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
     return dsn;
   }
 
-  public Map<String, String> getHeaders() {
-    return headers;
-  }
-
-  public String getHeadersAsString() {
-    return BeeUtils.transformMap(headers);
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public List<ExtendedProperty> getInfo() {
+  public List<ExtendedProperty> getExtendedInfo() {
     if (request == null) {
       return null;
     }
@@ -203,6 +191,18 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
         "is Secure", request.isSecure());
 
     return reqInfo;
+  }
+
+  public Map<String, String> getHeaders() {
+    return headers;
+  }
+
+  public String getHeadersAsString() {
+    return BeeUtils.transformMap(headers);
+  }
+
+  public String getId() {
+    return id;
   }
 
   public String getLocale() {

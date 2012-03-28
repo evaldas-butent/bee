@@ -14,7 +14,7 @@ public class Shell extends InputArea {
   public Shell() {
     super();
     addStyleName("bee-Shell");
-    sinkEvents(Event.ONKEYDOWN | Event.ONDBLCLICK);
+    sinkEvents(Event.ONKEYDOWN | Event.ONCLICK);
   }
 
   @Override
@@ -37,7 +37,7 @@ public class Shell extends InputArea {
           return;
         }
       } else {
-        ok = EventUtils.isDblClick(type);
+        ok = EventUtils.isClick(type) && event.getAltKey();
       }
     }
     

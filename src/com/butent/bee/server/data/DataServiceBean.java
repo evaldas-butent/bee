@@ -164,9 +164,9 @@ public class DataServiceBean {
         return;
       }
 
-      buff.addMessage("Connection Holdability:", cHo, before, v1,
-          JdbcUtils.holdabilityAsString(v1), after, v2,
-          JdbcUtils.holdabilityAsString(v2));
+      buff.addMessage("Connection Holdability:", cHo,
+          before, v1, JdbcUtils.holdabilityAsString(v1),
+          after, v2, JdbcUtils.holdabilityAsString(v2));
     }
 
     if (!BeeUtils.isEmpty(cTi)) {
@@ -180,9 +180,9 @@ public class DataServiceBean {
         return;
       }
 
-      buff.addMessage("Connection Transaction Isolation:", cTi, before, v1,
-          JdbcUtils.transactionIsolationAsString(v1), after, v2,
-          JdbcUtils.transactionIsolationAsString(v2));
+      buff.addMessage("Connection Transaction Isolation:", cTi,
+          before, v1, JdbcUtils.transactionIsolationAsString(v1),
+          after, v2, JdbcUtils.transactionIsolationAsString(v2));
     }
 
     if (BeeUtils.isBoolean(cRo)) {
@@ -267,8 +267,9 @@ public class DataServiceBean {
         return;
       }
 
-      buff.addMessage("Statement Fetch Direction:", sFd, before, v1,
-          JdbcUtils.fetchDirectionAsString(v1), after, v2, JdbcUtils.fetchDirectionAsString(v2));
+      buff.addMessage("Statement Fetch Direction:", sFd,
+          before, v1, JdbcUtils.fetchDirectionAsString(v1),
+          after, v2, JdbcUtils.fetchDirectionAsString(v2));
     }
 
     if (!BeeUtils.isEmpty(sFs)) {
@@ -295,8 +296,7 @@ public class DataServiceBean {
           return;
         }
 
-        buff.addMessage("Statement Fetch Size:", sFs, BeeUtils.bracket(vu),
-            before, v1, after, v2);
+        buff.addMessage("Statement Fetch Size:", sFs, BeeUtils.bracket(vu), before, v1, after, v2);
       }
     }
 
@@ -349,8 +349,7 @@ public class DataServiceBean {
           return;
         }
 
-        buff.addMessage("Statement Max Rows:", sMr, BeeUtils.bracket(vu),
-            before, v1, after, v2);
+        buff.addMessage("Statement Max Rows:", sMr, BeeUtils.bracket(vu), before, v1, after, v2);
       }
     }
 
@@ -404,8 +403,7 @@ public class DataServiceBean {
       bc.revert(conn);
       buff.addErrors(bs.getErrors());
       if (rs == null) {
-        buff.addMessage(Level.SEVERE, BeeUtils.bracket(sql),
-            "result set not created");
+        buff.addMessage(Level.SEVERE, BeeUtils.bracket(sql), "result set not created");
       }
       JdbcUtils.closeResultSet(rs);
       JdbcUtils.closeStatement(stmt);
@@ -432,8 +430,9 @@ public class DataServiceBean {
         return;
       }
 
-      buff.addMessage("Result Set Fetch Direction:", rFd, before, v1,
-          JdbcUtils.fetchDirectionAsString(v1), after, v2, JdbcUtils.fetchDirectionAsString(v2));
+      buff.addMessage("Result Set Fetch Direction:", rFd,
+          before, v1, JdbcUtils.fetchDirectionAsString(v1),
+          after, v2, JdbcUtils.fetchDirectionAsString(v2));
     }
 
     if (!BeeUtils.isEmpty(rFs)) {
@@ -464,8 +463,7 @@ public class DataServiceBean {
           return;
         }
 
-        buff.addMessage("Result Set Fetch Size:", rFs, BeeUtils.bracket(vu),
-            before, v1, after, v2);
+        buff.addMessage("Result Set Fetch Size:", rFs, BeeUtils.bracket(vu), before, v1, after, v2);
       }
     }
 
@@ -479,8 +477,7 @@ public class DataServiceBean {
       DateTime end = new DateTime();
 
       buff.addLine(enter.toTimeString(), start.toTimeString(), end.toTimeString());
-      buff.addLine(ret, rc,
-          BeeUtils.bracket(BeeUtils.toSeconds(end.getTime() - start.getTime())),
+      buff.addLine(ret, rc, BeeUtils.bracket(BeeUtils.toSeconds(end.getTime() - start.getTime())),
           "type", JdbcUtils.getTypeInfo(rs));
       buff.addLine("memory", BeeUtils.addName("executeQuery", memQ1 - memQ2),
           BeeUtils.addName(ret, memC1 - memC2));

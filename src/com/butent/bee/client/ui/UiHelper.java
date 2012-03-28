@@ -158,6 +158,19 @@ public class UiHelper {
     return false;
   }
 
+  public static void foster(Widget target, String parentName, IsRow parentRow,
+      Boolean parentEnabled) {
+    if (target instanceof FosterChild) {
+      ((FosterChild) target).takeCare(parentName, parentRow, parentEnabled);
+    } else if (target instanceof HasOneWidget) {
+      foster(((HasOneWidget) target).getWidget(), parentName, parentRow, parentEnabled);
+    } else if (target instanceof HasWidgets) {
+      for (Widget child : (HasWidgets) target) {
+        foster(child, parentName, parentRow, parentEnabled);
+      }
+    }
+  }
+  
   public static HorizontalAlignmentConstant getDefaultHorizontalAlignment(ValueType type) {
     if (type == null) {
       return null;
@@ -209,6 +222,22 @@ public class UiHelper {
     }
   }
 
+  public static boolean isFosterCare(Widget widget, String parentName) {
+    if (widget instanceof FosterChild) {
+      return ((FosterChild) widget).hasFosterParent(parentName);
+    } else if (widget instanceof HasOneWidget) {
+      return isFosterCare(((HasOneWidget) widget).getWidget(), parentName);
+
+    } else if (widget instanceof HasWidgets) {
+      for (Widget child : (HasWidgets) widget) {
+        if (isFosterCare(child, parentName)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  
   public static boolean isSave(NativeEvent event) {
     if (event == null) {
       return false;

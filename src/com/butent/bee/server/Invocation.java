@@ -39,7 +39,7 @@ public class Invocation {
 
   public void connectionInfo(RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notNull(reqInfo);
-    buff.addExtendedProperties(reqInfo.getInfo());
+    buff.addExtendedProperties(reqInfo.getExtendedInfo());
   }
 
   public void loaderInfo(ResponseBuffer buff) {

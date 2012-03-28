@@ -5,9 +5,12 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
 
@@ -15,7 +18,7 @@ import java.util.List;
  * Enables to get main information about data objects, like row count, ID column etc.
  */
 
-public class DataInfo implements BeeSerializable, Comparable<DataInfo> {
+public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExtendedInfo {
 
   public static DataInfo restore(String s) {
     Assert.notEmpty(s);
@@ -94,6 +97,24 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo> {
 
   public List<BeeColumn> getColumns() {
     return columns;
+  }
+
+  public List<ExtendedProperty> getExtendedInfo() {
+    List<ExtendedProperty> result = Lists.newArrayList();
+    PropertyUtils.addProperties(result, false,
+        "Name", getName(),
+        "Id Column", getIdColumn(),
+        "Version Column", getVersionColumn(),
+        "Row Count", getRowCount(),
+        "Column Count", getColumnCount());
+    
+    int cc = getColumnCount();
+    for (int i = 0; i < cc; i++) {
+      BeeColumn column = getColumns().get(i);
+      PropertyUtils.appendChildrenToExtended(result, BeeUtils.progress(i + 1, cc, column.getId()),
+          column.getInfo());
+    }
+    return result;
   }
 
   public String getIdColumn() {

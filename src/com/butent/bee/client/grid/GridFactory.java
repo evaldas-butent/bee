@@ -404,7 +404,7 @@ public class GridFactory {
       if (isGridDescriptionCached(name)) {
         GridDescription gridDescription = descriptionCache.get(gridDescriptionKey(name));
         if (gridDescription != null) {
-          BeeKeeper.getScreen().showGrid(gridDescription.getInfo());
+          BeeKeeper.getScreen().showGrid(gridDescription.getExtendedInfo());
           return;
         } else {
           BeeKeeper.getLog().warning("grid", name, "description was not found");
@@ -461,7 +461,7 @@ public class GridFactory {
 
     grid.setHeaderCellHeight(23);
     grid.setBodyCellHeight(20);
-    grid.estimateColumnWidths(table.getRows().getList(), 0, Math.min(r, 20));
+    grid.estimateColumnWidths(table.getRows().getList(), 0, Math.min(r, 50));
     grid.estimateHeaderWidths(true);
 
     grid.setRowCount(r, false);

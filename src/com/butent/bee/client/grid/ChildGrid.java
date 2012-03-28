@@ -6,7 +6,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.layout.ResizePanel;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.ui.HasParent;
+import com.butent.bee.client.ui.FosterChild;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.shared.Assert;
@@ -18,6 +18,7 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
 import java.util.Map;
@@ -26,9 +27,11 @@ import java.util.Map;
  * Enables using data grids with data related to another source.
  */
 
-public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, HasParent {
+public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, FosterChild {
   
   private final String gridName;
+  private final String parentName;
+  
   private final int parentIndex;
   private final String relSource;
 
@@ -39,8 +42,9 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
   private IsRow pendingRow = null;
   private Boolean pendingEnabled = null;
 
-  public ChildGrid(String gridName, int parentIndex, String relSource) {
+  public ChildGrid(String parentName, String gridName, int parentIndex, String relSource) {
     super();
+    this.parentName = parentName;
     this.gridName = gridName;
     this.parentIndex = parentIndex;
     this.relSource = relSource;
@@ -57,6 +61,10 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
 
   public GridPresenter getPresenter() {
     return presenter;
+  }
+
+  public boolean hasFosterParent(String fosterParent) {
+    return BeeUtils.same(fosterParent, getParentName());
   }
 
   public boolean isEnabled() {
@@ -82,12 +90,6 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     });
   }
 
-  public void refresh(IsRow parentRow, Boolean parentEnabled) {
-    setPendingRow(parentRow);
-    setPendingEnabled(parentEnabled);
-    resolveState();
-  }
-
   public void setEnabled(boolean enabled) {
     if (getPresenter() != null) {
       getPresenter().getView().setEnabled(enabled);
@@ -97,7 +99,15 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
   public void setGridCallback(GridCallback gridCallback) {
     this.gridCallback = gridCallback;
   }
-  
+
+  public void takeCare(String fosterParent, IsRow parentRow, Boolean parentEnabled) {
+    if (hasFosterParent(fosterParent)) {
+      setPendingRow(parentRow);
+      setPendingEnabled(parentEnabled);
+      resolveState();
+    }
+  }
+
   private void createPresenter(final IsRow row) {
     final String viewName = getGridDescription().getViewName();
 
@@ -132,7 +142,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
           }
         });
   }
-
+  
   private Filter getFilter(IsRow row) {
     return ComparisonFilter.isEqual(getRelSource(), new LongValue(getParentValue(row)));
   }
@@ -151,6 +161,10 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
 
   private int getParentIndex() {
     return parentIndex;
+  }
+
+  private String getParentName() {
+    return parentName;
   }
 
   private long getParentValue(IsRow row) {

@@ -166,11 +166,11 @@ public class GridLoaderBean {
 
       if (view.isColReadOnly(colName)) {
         columnDescription.setReadOnly(true);
-      } else {
-        setRelation(view, colName, columnDescription);
-        if (!BeeUtils.isEmpty(columnDescription.getRelSource())) {
-          relSources.add(columnDescription.getRelSource());
-        }
+      }
+
+      setRelation(view, colName, columnDescription);
+      if (!BeeUtils.isEmpty(columnDescription.getRelSource())) {
+        relSources.add(columnDescription.getRelSource());
       }
 
       columns.put(BeeUtils.normalize(colName), columnDescription);
@@ -366,9 +366,8 @@ public class GridLoaderBean {
         if (view.hasColumn(source)) {
           if (view.isColReadOnly(source)) {
             columnDescription.setReadOnly(true);
-          } else {
-            setRelation(view, source, columnDescription);
           }
+          setRelation(view, source, columnDescription);
           ok = true;
         } else {
           LogUtils.warning(logger, viewName, "unrecognized view column:", source);
@@ -394,10 +393,21 @@ public class GridLoaderBean {
 
   private void setRelation(BeeView view, String colName, ColumnDescription columnDescription) {
     String parentColumn = view.getColumnParent(colName);
-    if (!BeeUtils.isEmpty(parentColumn)) {
-      columnDescription.setRelSource(view.getColumnField(parentColumn));
-      columnDescription.setRelView(view.getColumnTable(colName));
-      columnDescription.setRelColumn(view.getColumnField(colName));
+    if (BeeUtils.isEmpty(parentColumn)) {
+      return;
+    }
+
+    int level = view.getColumnLevel(colName);
+    if (level <= 0) {
+      return;
+    }
+
+    columnDescription.setRelSource(view.getColumnField(parentColumn));
+    columnDescription.setRelView(view.getColumnTable(colName));
+    columnDescription.setRelColumn(view.getColumnField(colName));
+    
+    if (level > 1 && columnDescription.isReadOnly() == null) {
+      columnDescription.setReadOnly(true);
     }
   }
 

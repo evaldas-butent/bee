@@ -103,7 +103,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
   private final Element editorBox;
 
   private IsRow row = null;
-  
+
   private int startIndex = 0;
   private int activeIndex = BeeConst.UNDEF;
 
@@ -585,7 +585,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     if (ValueType.BOOLEAN.equals(editableColumn.getDataType())
         && BeeUtils
             .inList(charCode, EditorFactory.START_MOUSE_CLICK, EditorFactory.START_KEY_ENTER)
-        && editableColumn.getRelationInfo() == null) {
+        && !editableColumn.isForeign()) {
 
       String oldValue = getRow().getString(editableColumn.getColIndex());
       Boolean b = !BeeUtils.toBoolean(oldValue);

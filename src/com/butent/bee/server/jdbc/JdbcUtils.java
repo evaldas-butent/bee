@@ -596,7 +596,6 @@ public class JdbcUtils {
       String name = rsmd.getColumnName(idx);
       String label = rsmd.getColumnLabel(idx);
       col.setId(BeeUtils.ifString(label, name));
-      col.setName(name);
       col.setLabel(label);
 
       col.setSchema(rsmd.getSchemaName(idx));

@@ -219,7 +219,7 @@ public class TreePresenter implements Presenter, CatchEvent.CatchHandler<IsRow> 
       row = new BeeRow(item.getId(), item.getVersion(), arr);
     }
     if (formView == null) {
-      formView = new FormImpl(Position.RELATIVE);
+      formView = new FormImpl(FormDescription.getName(editor), Position.RELATIVE);
       formView.create(new FormDescription(editor), getDataColumns(), null, false);
       formView.setEditing(true);
       formView.start(null);

@@ -391,27 +391,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return enabledActions;
   }
 
-  public Filter getFilter() {
-    return filter;
-  }
-
-  public GridComponentDescription getFooter() {
-    return footer;
-  }
-
-  public String getFooterEvents() {
-    return footerEvents;
-  }
-
-  public GridComponentDescription getHeader() {
-    return header;
-  }
-
-  public String getIdName() {
-    return idName;
-  }
-
-  public List<ExtendedProperty> getInfo() {
+  public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
 
     PropertyUtils.addProperties(info, false,
@@ -514,6 +494,26 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           column.getInfo());
     }
     return info;
+  }
+
+  public Filter getFilter() {
+    return filter;
+  }
+
+  public GridComponentDescription getFooter() {
+    return footer;
+  }
+
+  public String getFooterEvents() {
+    return footerEvents;
+  }
+
+  public GridComponentDescription getHeader() {
+    return header;
+  }
+
+  public String getIdName() {
+    return idName;
   }
 
   public Integer getInitialRowSetSize() {

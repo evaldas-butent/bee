@@ -606,7 +606,7 @@ public class BeeConnection {
         ok = false;
       }
     } catch (SQLFeatureNotSupportedException ex) {
-      LogUtils.warning(logger, "ReadOnly", BeeUtils.toString(ro), ex);
+      LogUtils.warning(logger, "Read Only", BeeUtils.toString(ro), ex);
       ok = false;
     } catch (SQLException ex) {
       handleError(ex);

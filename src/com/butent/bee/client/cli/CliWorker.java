@@ -43,6 +43,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcList;
 import com.butent.bee.client.composite.SliderBar;
+import com.butent.bee.client.data.DataInfoProvider;
 import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.ComputedStyles;
@@ -97,6 +98,7 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.BooleanValue;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -318,7 +320,7 @@ public class CliWorker {
     String p2 = ArrayUtils.getQuietly(arr, 1);
 
     if (BeeUtils.same(p1, "screen")) {
-      BeeKeeper.getScreen().showGrid(screen.getInfo());
+      BeeKeeper.getScreen().showGrid(screen.getExtendedInfo());
       return;
     }
 
@@ -373,7 +375,7 @@ public class CliWorker {
     } else if (z.equals("browser") || z.startsWith("wind")) {
       showBrowser(arr);
     } else if (z.equals("cache")) {
-      BeeKeeper.getScreen().showGrid(Global.getCache().getInfo());
+      BeeKeeper.getScreen().showGrid(Global.getCache().getExtendedInfo());
     } else if (z.startsWith("cal")) {
       showCalendar(arr);
     } else if (z.equals("canvas")) {
@@ -386,6 +388,8 @@ public class CliWorker {
       clear(args);
     } else if (z.startsWith("client")) {
       showClientLocation();
+    } else if (z.startsWith("col") && arr.length == 2) {
+      showDataInfo(arr[1]);
     } else if (z.startsWith("conf")) {
       BeeKeeper.getRpc().invoke("configInfo");
     } else if (z.startsWith("conn") || z.equals("http")) {
@@ -837,6 +841,19 @@ public class CliWorker {
                 "Country", location.getCountry(), "Country Code", location.getCountryCode(),
                 "Latitude", location.getLatitude(), "Longitude", location.getLongitude(),
                 "Region", location.getRegion()));
+      }
+    });
+  }
+  
+  public static void showDataInfo(String viewName) {
+    if (BeeUtils.isEmpty(viewName)) {
+      BeeKeeper.getLog().severe("showDataInfo: viewName not specified");
+      return;
+    }
+    
+    Global.getDataInfo(viewName, new DataInfoProvider.DataInfoCallback() {
+      public void onSuccess(DataInfo result) {
+         BeeKeeper.getScreen().showGrid(result.getExtendedInfo());
       }
     });
   }

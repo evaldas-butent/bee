@@ -8,7 +8,5 @@ public interface DataView extends View, NotificationListener, HasEditFormHandler
 
   void finishNewRow(IsRow row);
 
-  boolean isForeign(String columnId);
-  
   void startNewRow();
 }

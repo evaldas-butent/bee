@@ -286,7 +286,7 @@ public class SystemBean {
   }
 
   public List<ExtendedProperty> getTableInfo(String tblName) {
-    return getTable(tblName).getInfo();
+    return getTable(tblName).getExtendedInfo();
   }
 
   public Collection<String> getTableNames() {

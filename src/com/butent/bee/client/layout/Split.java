@@ -118,10 +118,6 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     add(widget, ScrollBars.NONE);
   }
 
-  public void add(Widget widget, ScrollBars scroll) {
-    insert(widget, Direction.CENTER, 0, null, scroll, -1);
-  }
-
   public void add(Widget widget, Direction direction, Integer size, ScrollBars scrollBars,
       Integer splSize) {
     Assert.notNull(widget);
@@ -131,6 +127,10 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
 
     int z = (splSize == null) ? getSplitterSize() : BeeUtils.unbox(splSize);
     insert(widget, direction, size.doubleValue(), null, scrollBars, z);
+  }
+
+  public void add(Widget widget, ScrollBars scroll) {
+    insert(widget, Direction.CENTER, 0, null, scroll, -1);
   }
 
   public HandlerRegistration addDragEndHandler(DragEndHandler handler) {
@@ -287,16 +287,8 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     return lst;
   }
 
-  public String getId() {
-    return DomUtils.getId(this);
-  }
-
-  public String getIdPrefix() {
-    return "split";
-  }
-
   @Override
-  public List<ExtendedProperty> getInfo() {
+  public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     PropertyUtils.addChildren(lst, JreEmulation.getSimpleName(this),
@@ -316,6 +308,14 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
       PropertyUtils.appendChildrenToExtended(lst, name, getChildInfo(w));
     }
     return lst;
+  }
+
+  public String getId() {
+    return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "split";
   }
 
   public int getSplitterSize() {

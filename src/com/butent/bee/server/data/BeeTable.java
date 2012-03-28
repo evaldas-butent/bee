@@ -284,14 +284,6 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
   }
 
-  /**
-   * Contains available database key types.
-   */
-
-  private enum KeyTypes {
-    PRIMARY, UNIQUE, INDEX
-  }
-
   private class ExtSingleTable implements HasExtFields {
 
     private final String extIdName = getIdName();
@@ -389,6 +381,14 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       su.addConstant(field.getName(), newValue);
       return su;
     }
+  }
+
+  /**
+   * Contains available database key types.
+   */
+
+  private enum KeyTypes {
+    PRIMARY, UNIQUE, INDEX
   }
 
   private class StateSingleTable<T extends Number> implements HasStates {
@@ -818,33 +818,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     return translationSource.createTranslationTable(query, field);
   }
 
-  @Override
-  public String getExtTable(BeeField field) {
-    return extSource.getExtTable(field);
-  }
-
-  public BeeField getField(String fldName) {
-    Assert.state(hasField(fldName), BeeUtils.concat(1, "Unknown field name:", getName(), fldName));
-    return fields.get(BeeUtils.normalize(fldName));
-  }
-
-  public int getFieldCount() {
-    return fields.size();
-  }
-
-  public Collection<BeeField> getFields() {
-    return ImmutableList.copyOf(fields.values());
-  }
-
-  public Collection<BeeForeignKey> getForeignKeys() {
-    return ImmutableList.copyOf(foreignKeys.values());
-  }
-
-  public String getIdName() {
-    return idName;
-  }
-
-  public List<ExtendedProperty> getInfo() {
+  public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
     PropertyUtils.addProperties(info, false, "Module Name", getModuleName(), "Name", getName(),
         "Id Name", getIdName(), "Version Name", getVersionName(), "active", isActive());
@@ -912,6 +886,32 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     return info;
   }
 
+  @Override
+  public String getExtTable(BeeField field) {
+    return extSource.getExtTable(field);
+  }
+
+  public BeeField getField(String fldName) {
+    Assert.state(hasField(fldName), BeeUtils.concat(1, "Unknown field name:", getName(), fldName));
+    return fields.get(BeeUtils.normalize(fldName));
+  }
+
+  public int getFieldCount() {
+    return fields.size();
+  }
+
+  public Collection<BeeField> getFields() {
+    return ImmutableList.copyOf(fields.values());
+  }
+
+  public Collection<BeeForeignKey> getForeignKeys() {
+    return ImmutableList.copyOf(foreignKeys.values());
+  }
+
+  public String getIdName() {
+    return idName;
+  }
+
   public Collection<BeeKey> getKeys() {
     return ImmutableList.copyOf(keys.values());
   }
@@ -964,15 +964,15 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     return versionName;
   }
 
-  public boolean hasField(String fldName) {
-    return !BeeUtils.isEmpty(fldName) && fields.containsKey(BeeUtils.normalize(fldName));
-  }
-
   public boolean hasField(BeeField field) {
     if (BeeUtils.isEmpty(field) || !hasField(field.getName())) {
       return false;
     }
     return getField(field.getName()) == field;
+  }
+
+  public boolean hasField(String fldName) {
+    return !BeeUtils.isEmpty(fldName) && fields.containsKey(BeeUtils.normalize(fldName));
   }
 
   public boolean hasState(BeeState state) {

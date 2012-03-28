@@ -73,10 +73,11 @@ public class DocumentHandler {
       List<String> values = Lists.newArrayList();
 
       for (BeeColumn column : form.getDataColumns()) {
-        String colName = column.getId();
-        if (form.isForeign(colName)) {
+        if (column.isReadOnly() || column.isForeign()) {
           continue;
         }
+
+        String colName = column.getId();
         String value = row.getString(form.getDataIndex(colName));
 
         if (!BeeUtils.isEmpty(value)) {

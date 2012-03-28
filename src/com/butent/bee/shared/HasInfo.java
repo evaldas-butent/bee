@@ -10,5 +10,4 @@ import java.util.List;
 
 public interface HasInfo {
   List<Property> getInfo();
-
 }

@@ -510,6 +510,7 @@
         <xs:extension base="bee:hasName">
           <xs:attribute name="relColumn" type="bee:nameType" use="required" />
           <xs:attribute name="source" type="bee:nameType" />
+          <xs:attribute name="parentName" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -708,6 +709,7 @@
         <xs:attribute name="parentColumn" type="bee:fieldNameType" use="required" />
         <xs:attribute name="orderColumn" type="bee:fieldNameType" />
         <xs:attribute name="hideActions" type="xs:boolean" />
+        <xs:attribute name="parentName" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

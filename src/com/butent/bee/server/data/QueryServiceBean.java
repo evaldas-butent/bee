@@ -23,7 +23,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
@@ -321,7 +320,7 @@ public class QueryServiceBean {
         for (BeeColumn col : rsCols) {
           String colName = col.getId();
           if (view.hasColumn(colName)) {
-            col.setType(view.getColumnType(colName).toValueType());
+            initColumn(view, colName, col);
             columns.add(col);
           }
         }
@@ -360,7 +359,7 @@ public class QueryServiceBean {
       }
     });
   }
-
+  
   public long insertData(SqlInsert si) {
     return insertDataWithResponse(si).getResponse(-1L, logger);
   }
@@ -470,6 +469,15 @@ public class QueryServiceBean {
     return res;
   }
 
+  private void initColumn(BeeView view, String colName, BeeColumn column) {
+    column.setType(view.getColumnType(colName).toValueType());
+
+    if (view.isColReadOnly(colName)) {
+      column.setReadOnly(true);
+    }
+    column.setLevel(view.getColumnLevel(colName));
+  }
+  
   private <T> T processSql(String sql, SqlHandler<T> callback) {
     Assert.notEmpty(sql);
     Assert.notEmpty(callback);
@@ -513,8 +521,7 @@ public class QueryServiceBean {
     return result;
   }
 
-  private BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view)
-      throws SQLException {
+  private BeeRowSet rsToBeeRowSet(ResultSet rs, BeeView view) throws SQLException {
     BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
     List<BeeColumn> columns = Lists.newArrayList();
     int idIndex = -1;
@@ -525,21 +532,12 @@ public class QueryServiceBean {
         String colName = col.getId();
 
         if (view.hasColumn(colName)) {
-          switch (view.getColumnType(colName)) {
-            case BOOLEAN:
-              col.setType(ValueType.BOOLEAN);
-              break;
-            case DATE:
-              col.setType(ValueType.DATE);
-              break;
-            case DATETIME:
-              col.setType(ValueType.DATETIME);
-              break;
-            default:
-          }
+          initColumn(view, colName, col);
+
         } else if (BeeUtils.same(colName, view.getSourceIdName())) {
           idIndex = col.getIndex();
           continue;
+        
         } else if (BeeUtils.same(colName, view.getSourceVersionName())) {
           versionIndex = col.getIndex();
           continue;

@@ -396,11 +396,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return null;
   }
 
-  public Filter getFilter() {
-    return filter;
-  }
-
-  public List<ExtendedProperty> getInfo() {
+  public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
 
     PropertyUtils.addProperties(info, false, "Module Name", getModuleName(), "Name", getName(),
@@ -417,7 +413,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           "Table", getColumnTable(col), "Alias", getColumnSource(col),
           "Field", getColumnField(col), "Type", getColumnType(col), "Locale", getColumnLocale(col),
           "Aggregate Function", getColumnAggregate(col), "Hidden", isColHidden(col),
-          "ReadOnly", isColReadOnly(col), "Level", getColumnLevel(col),
+          "Read Only", isColReadOnly(col), "Level", getColumnLevel(col),
           "Expression", isColCalculated(col) ? getColumnExpression(col)
               .getSqlString(SqlBuilderFactory.getBuilder(SqlEngine.GENERIC)) : null,
           "Parent Column", getColumnParent(col), "Owner Alias", getColumnOwner(col));
@@ -434,6 +430,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return info;
   }
 
+  public Filter getFilter() {
+    return filter;
+  }
+
   @Override
   public String getModuleName() {
     return moduleName;
@@ -442,10 +442,6 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   @Override
   public String getName() {
     return name;
-  }
-
-  public SqlSelect getQuery(String... cols) {
-    return getQuery(null, null, cols);
   }
 
   public SqlSelect getQuery(Filter flt, Order ord, String... cols) {
@@ -514,6 +510,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       ss.addOrder(src, idCol);
     }
     return ss.addFields(src, idCol, verCol);
+  }
+
+  public SqlSelect getQuery(String... cols) {
+    return getQuery(null, null, cols);
   }
 
   public String getSourceAlias() {

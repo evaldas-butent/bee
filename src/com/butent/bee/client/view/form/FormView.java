@@ -41,6 +41,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   HasDataTable getDisplay();
 
   FormCallback getFormCallback();
+  
+  String getFormName();
 
   IsRow getRow();
 

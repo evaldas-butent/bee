@@ -109,6 +109,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   private static final String DEFAULT_NEW_ROW_CAPTION = "New Row";
+  
+  private final String gridName;
 
   private GridPresenter viewPresenter = null;
 
@@ -158,8 +160,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private GridCallback gridCallback = null;
 
-  public CellGridImpl() {
+  public CellGridImpl(String gridName) {
     super();
+    this.gridName = gridName;
   }
 
   public HandlerRegistration addAddEndHandler(AddEndEvent.Handler handler) {
@@ -869,6 +872,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return gridCallback;
   }
 
+  public String getGridName() {
+    return gridName;
+  }
+
   public String getRelColumn() {
     return relColumn;
   }
@@ -891,10 +898,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   public boolean isEnabled() {
     return enabled;
-  }
-
-  public boolean isForeign(String columnId) {
-    return !BeeUtils.isEmpty(getRelSource(columnId));
   }
 
   public boolean isRowEditable(long rowId, boolean warn) {
@@ -1047,7 +1050,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     if (ValueType.BOOLEAN.equals(editableColumn.getDataType())
         && BeeUtils.inList(event.getCharCode(), EditorFactory.START_MOUSE_CLICK,
-            EditorFactory.START_KEY_ENTER) && editableColumn.getRelationInfo() == null) {
+            EditorFactory.START_KEY_ENTER) && !editableColumn.isForeign()) {
 
       String oldValue = rowValue.getString(editableColumn.getColIndex());
       Boolean b = !BeeUtils.toBoolean(oldValue);
@@ -1338,19 +1341,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return relations;
   }
 
-  private String getRelSource(String columnId) {
-    if (BeeUtils.isEmpty(columnId) || BeeUtils.isEmpty(getRelations())) {
-      return null;
-    }
-
-    for (RelationInfo relationInfo : getRelations()) {
-      if (BeeUtils.same(relationInfo.getSource(), columnId)) {
-        return relationInfo.getRelSource();
-      }
-    }
-    return null;
-  }
-
   private String getRowCaption(IsRow row, boolean edit) {
     if (getGridCallback() == null) {
       return null;
@@ -1463,9 +1453,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     List<String> values = Lists.newArrayList();
 
     for (int i = 0; i < getDataColumns().size(); i++) {
-      if (!BeeUtils.isEmpty(getRelColumn())
-          && BeeUtils.same(getRelColumn(), getDataColumns().get(i).getId())) {
-        columns.add(getDataColumns().get(i));
+      BeeColumn dataColumn = getDataColumns().get(i);
+      if (!BeeUtils.isEmpty(getRelColumn()) && BeeUtils.same(getRelColumn(), dataColumn.getId())) {
+        columns.add(dataColumn);
         values.add(BeeUtils.toString(getRelId()));
         continue;
       }
@@ -1475,7 +1465,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         continue;
       }
 
-      if (!isForeign(getDataColumns().get(i).getId())) {
+      if (!dataColumn.isReadOnly() && !dataColumn.isForeign()) {
         columns.add(getDataColumns().get(i));
         values.add(value);
       }

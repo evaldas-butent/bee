@@ -1,12 +1,16 @@
 package com.butent.bee.shared.data;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -17,14 +21,14 @@ import java.util.List;
  * id and parameters management.
  */
 
-public class BeeColumn extends TableColumn implements BeeSerializable, Transformable {
+public class BeeColumn extends TableColumn implements BeeSerializable, Transformable, HasExtendedInfo {
 
   /**
    * Contains a list of parameters for column serialization.
    */
 
   private enum Serial {
-    ID, NAME, LABEL, VALUE_TYPE, PRECISION, SCALE, ISNULL
+    ID, LABEL, VALUE_TYPE, PRECISION, SCALE, ISNULL, READ_ONLY, LEVEL
   }
 
   public static final int NO_NULLS = 0;
@@ -39,8 +43,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
 
   private int index = BeeConst.UNDEF;
 
-  private String name = null;
-
   private String schema = null;
   private String catalog = null;
   private String table = null;
@@ -52,37 +54,39 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   private int displaySize = BeeConst.UNDEF;
 
   private int nullable = NULLABLE_UNKNOWN;
+
   private boolean signed = false;
   private boolean autoIncrement = false;
   private boolean caseSensitive = false;
 
   private boolean currency = false;
-  private boolean definitelyWritable = false;
-  private boolean readOnly = false;
   private boolean searchable = false;
 
+  private boolean readOnly = false;
   private boolean writable = false;
+  private boolean definitelyWritable = false;
+  
+  private int level = 0;
 
   public BeeColumn() {
     super(ValueType.TEXT);
   }
 
-  public BeeColumn(String name) {
-    this(ValueType.TEXT, name, name);
+  public BeeColumn(String id) {
+    this(ValueType.TEXT, id, id);
   }
 
-  public BeeColumn(ValueType type, String label) {
-    this(type, label, label);
+  public BeeColumn(ValueType type, String id) {
+    this(type, id, id);
   }
 
-  public BeeColumn(ValueType type, String label, boolean nillable) {
-    this(type, label, label);
+  public BeeColumn(ValueType type, String id, boolean nillable) {
+    this(type, id, id);
     setNullable(nillable ? NULLABLE : NO_NULLS);
   }
   
   public BeeColumn(ValueType type, String label, String id) {
     super(type, label, id);
-    setName(BeeUtils.ifString(label, id));
   }
 
   public BeeColumn clone() {
@@ -97,7 +101,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     }
 
     result.setIndex(getIndex());
-    result.setName(getName());
     result.setSchema(getSchema());
     result.setCatalog(getCatalog());
     result.setTable(getTable());
@@ -133,9 +136,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
         case ID:
           setId(value);
           break;
-        case NAME:
-          setName(value);
-          break;
         case LABEL:
           setLabel(value);
           break;
@@ -150,6 +150,12 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
           break;
         case ISNULL:
           setNullable(BeeUtils.toInt(value));
+          break;
+        case READ_ONLY:
+          setReadOnly(Codec.unpack(value));
+          break;
+        case LEVEL:
+          setLevel(BeeUtils.toInt(value));
           break;
       }
     }
@@ -167,40 +173,54 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     return displaySize;
   }
 
+  public List<ExtendedProperty> getExtendedInfo() {
+    List<Property> lst = getInfo();
+
+    PropertyUtils.addProperties(lst,
+        "Index", valueAsString(getIndex()),
+        "Schema", getSchema(),
+        "Catalog", getCatalog(),
+        "Table", getTable(),
+        "Class", getClazz(),
+        "Sql Type", getSqlType(),
+        "Type Name", getTypeName(),
+        "Display Size", valueAsString(getDisplaySize()),
+        "Signed", valueAsString(isSigned()),
+        "Auto Increment", valueAsString(isAutoIncrement()),
+        "Case Sensitive", isCaseSensitive(),
+        "Currency", valueAsString(isCurrency()),
+        "Searchable", isSearchable(),
+        "Writable", isWritable(),
+        "Definitely Writable", isDefinitelyWritable(),
+        "Pattern", getPattern());
+
+    if (getProperties() != null) {
+      lst.addAll(getProperties().getInfo());
+    }
+    
+    List<ExtendedProperty> result = Lists.newArrayList();
+    PropertyUtils.appendChildrenToExtended(result, getId(), lst);
+    
+    return result;
+  }
+
   public int getIndex() {
     return index;
   }
 
   public List<Property> getInfo() {
-    List<Property> lst = super.getInfo();
-
-    PropertyUtils.addProperties(lst,
-        "index", valueAsString(getIndex()),
-        "name", getName(),
-        "schema", getSchema(),
-        "catalog", getCatalog(),
-        "table", getTable(),
-        "class", getClazz(),
-        "sql type", getSqlType(),
-        "type name", getTypeName(),
-        "display size", valueAsString(getDisplaySize()),
-        "precision", valueAsString(getPrecision()),
-        "scale", valueAsString(getScale()),
-        "nullable", BeeUtils.concat(1, getNullable(), nullableAsString()),
-        "signed", valueAsString(isSigned()),
-        "auto increment", valueAsString(isAutoIncrement()),
-        "case sensitive", isCaseSensitive(),
-        "currency", valueAsString(isCurrency()),
-        "searchable", isSearchable(),
-        "read only", isReadOnly(),
-        "writable", isWritable(),
-        "definitely writable", isDefinitelyWritable());
-
-    return lst;
+    return PropertyUtils.createProperties("Id", getId(),
+        "Label", getLabel(),
+        "Type", getType(),
+        "Precision", valueAsString(getPrecision()),
+        "Scale", valueAsString(getScale()),
+        "Nullable", nullableAsString(),
+        "Read Only", isReadOnly(),
+        "Level", getLevel());
   }
 
-  public String getName() {
-    return name;
+  public int getLevel() {
+    return level;
   }
 
   public int getNullable() {
@@ -237,6 +257,10 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
 
   public boolean isDefinitelyWritable() {
     return definitelyWritable;
+  }
+  
+  public boolean isForeign() {
+    return getLevel() > 0;
   }
 
   public boolean isNullable() {
@@ -284,9 +308,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
         case ID:
           arr[i++] = getId();
           break;
-        case NAME:
-          arr[i++] = getName();
-          break;
         case LABEL:
           arr[i++] = getLabel();
           break;
@@ -301,6 +322,12 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
           break;
         case ISNULL:
           arr[i++] = getNullable();
+          break;
+        case READ_ONLY:
+          arr[i++] = Codec.pack(isReadOnly());
+          break;
+        case LEVEL:
+          arr[i++] = getLevel();
           break;
       }
     }
@@ -339,8 +366,8 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     this.index = index;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setLevel(int level) {
+    this.level = level;
   }
 
   public void setNullable(int nullable) {
@@ -393,7 +420,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   }
 
   private boolean validState() {
-    return !BeeUtils.isEmpty(getName());
+    return !BeeUtils.isEmpty(getId());
   }
 
   private String valueAsString(boolean v) {

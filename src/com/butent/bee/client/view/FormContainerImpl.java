@@ -104,7 +104,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
         EnumSet.of(UiOption.ROOT), formDescription.getEnabledActions(),
         formDescription.getDisabledActions());
 
-    FormView content = new FormImpl();
+    FormView content = new FormImpl(formDescription.getName());
     content.create(formDescription, dataColumns, callback, true);
 
     FooterView footer;

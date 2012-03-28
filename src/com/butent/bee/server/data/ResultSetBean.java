@@ -20,12 +20,13 @@ import javax.ejb.Stateless;
 
 @Stateless
 public class ResultSetBean {
+
   private static final Logger logger = Logger.getLogger(ResultSetBean.class.getName());
   private static final BeeColumn[] metaCols;
 
   static {
     String[] arr = new String[] {
-        "index", "id", "name", "label", "schema", "catalog", "table", "class", "sql type",
+        "index", "id", "label", "schema", "catalog", "table", "class", "sql type",
         "type name", "type", "precision", "scale", "nullable", "pattern", "display size", "signed",
         "auto increment", "case sensitive", "currency", "searchable", "read only", "writable",
         "definitely writable", "properties"};
@@ -68,7 +69,7 @@ public class ResultSetBean {
     for (int i = 0; i < c; i++) {
       z = cols[i];
 
-      buff.add(z.getIndex(), z.getId(), z.getName(), z.getLabel(), z.getSchema(), z.getCatalog(),
+      buff.add(z.getIndex(), z.getId(), z.getLabel(), z.getSchema(), z.getCatalog(),
           z.getTable(), z.getClazz(), z.getSqlType(), z.getTypeName(), z.getType(),
           z.getPrecision(), z.getScale(), z.getNullable(), z.getPattern(), z.getDisplaySize(),
           z.isSigned(), z.isAutoIncrement(), z.isCaseSensitive(), z.isCurrency(), z.isSearchable(),

@@ -20,7 +20,7 @@
   </west>
   
   <south size="200" splitterSize="2">
-    <GridPanel name="SparePartUsage" />
+    <ChildGrid name="SparePartUsage" relColumn="Part" parentName="SpareParts" />
   </south>
   
   <header borderWidth="1 0" />

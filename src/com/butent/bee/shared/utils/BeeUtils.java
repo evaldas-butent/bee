@@ -2276,6 +2276,10 @@ public class BeeUtils {
     return Integer.toString(pos) + BeeConst.DEFAULT_PROGRESS_SEPARATOR + Integer.toString(tot);
   }
 
+  public static String progress(int pos, int tot, String message) {
+    return concat(BeeConst.STRING_SPACE, progress(pos, tot), message);
+  }
+  
   /**
    * Separates the String {@code s} to an array with a specified separator. Capitalizes each array
    * element's first letter and converts other to lower-case.

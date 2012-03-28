@@ -192,7 +192,7 @@ public class BeeResultSet implements Transformable {
     BeeColumn[] arr = getColumns();
     if (!BeeUtils.isEmpty(arr)) {
       for (BeeColumn col : arr) {
-        PropertyUtils.appendChildrenToExtended(lst, col.getName(), col.getInfo());
+        PropertyUtils.appendExtended(lst, col.getExtendedInfo());
       }
     }
 

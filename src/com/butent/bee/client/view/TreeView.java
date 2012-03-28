@@ -3,12 +3,12 @@ package com.butent.bee.client.view;
 import com.google.gwt.event.logical.shared.HasSelectionHandlers;
 
 import com.butent.bee.client.presenter.TreePresenter;
-import com.butent.bee.client.ui.HasParent;
+import com.butent.bee.client.ui.FosterChild;
 import com.butent.bee.shared.data.IsRow;
 
 import java.util.Collection;
 
-public interface TreeView extends View, HasParent, HasSelectionHandlers<IsRow>,
+public interface TreeView extends View, FosterChild, HasSelectionHandlers<IsRow>,
     CatchEvent.HasCatchHandlers<IsRow> {
 
   void addItem(Long parentId, String text, IsRow item, boolean focus);
