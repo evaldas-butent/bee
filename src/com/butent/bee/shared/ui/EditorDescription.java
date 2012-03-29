@@ -2,7 +2,6 @@ package com.butent.bee.shared.ui;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.ui.HasTextDimensions;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
@@ -26,7 +25,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
    */
 
   private enum Serial {
-    TYPE, STEP_VALUE, CHARACTER_WIDTH, VISIBLE_LINES, FORMAT,
+    TYPE, VALUE_START_INDEX, STEP_VALUE, CHARACTER_WIDTH, VISIBLE_LINES, FORMAT,
     WIDTH, HEIGHT, MIN_WIDTH, MIN_HEIGHT, ON_ENTRY, OPTIONS, ITEMS
   }
 
@@ -53,6 +52,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private EditorType type;
 
+  private Integer valueStartIndex = null;
   private Integer stepValue = null;
 
   private Integer characterWidth = null;
@@ -94,6 +94,9 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
       switch (member) {
         case TYPE:
           setType(EditorType.getByTypeCode(value));
+          break;
+        case VALUE_START_INDEX:
+          setValueStartIndex(BeeUtils.toIntOrNull(value));
           break;
         case STEP_VALUE:
           setStepValue(BeeUtils.toIntOrNull(value));
@@ -153,6 +156,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(
         "Type", getType(),
+        "Value Start Index", getValueStartIndex(),
         "Step Value", getStepValue(),
         "Character Width", getCharacterWidth(),
         "Visible Lines", getVisibleLines(),
@@ -206,6 +210,10 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
     return type;
   }
 
+  public Integer getValueStartIndex() {
+    return valueStartIndex;
+  }
+
   public Integer getVisibleLines() {
     return visibleLines;
   }
@@ -222,6 +230,9 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
       switch (members[i]) {
         case TYPE:
           arr[i] = (getType() == null) ? null : getType().getTypeCode();
+          break;
+        case VALUE_START_INDEX:
+          arr[i] = getValueStartIndex();
           break;
         case STEP_VALUE:
           arr[i] = getStepValue();
@@ -273,7 +284,9 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
         continue;
       }
 
-      if (BeeUtils.same(key, ATTR_STEP_VALUE)) {
+      if (BeeUtils.same(key, HasValueStartIndex.ATTR_VALUE_START_INDEX)) {
+        setValueStartIndex(BeeUtils.toIntOrNull(value));
+      } else if (BeeUtils.same(key, ATTR_STEP_VALUE)) {
         setStepValue(BeeUtils.toIntOrNull(value));
       } else if (BeeUtils.same(key, HasTextDimensions.ATTR_CHARACTER_WIDTH)) {
         setCharacterWidth(BeeUtils.toIntOrNull(value));
@@ -339,6 +352,10 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private void setType(EditorType type) {
     this.type = type;
+  }
+
+  private void setValueStartIndex(Integer valueStartIndex) {
+    this.valueStartIndex = valueStartIndex;
   }
 
   private void setVisibleLines(Integer visibleLines) {

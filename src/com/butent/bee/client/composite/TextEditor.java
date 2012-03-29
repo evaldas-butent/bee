@@ -13,7 +13,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Absolute;
-import com.butent.bee.client.ui.HasTextDimensions;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
@@ -22,6 +21,7 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**

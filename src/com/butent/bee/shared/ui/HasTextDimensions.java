@@ -1,4 +1,4 @@
-package com.butent.bee.client.ui;
+package com.butent.bee.shared.ui;
 
 /**
  * Requires implementing classes to have methods to get and set parameters for character width and

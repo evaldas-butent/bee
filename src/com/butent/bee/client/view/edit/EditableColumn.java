@@ -196,7 +196,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   public int getIndexForUpdate() {
     return isForeign() ? getRelationInfo().getDataIndex() : getColIndex();
   }
-  
+
   public String getMaxValue() {
     return maxValue;
   }
@@ -220,15 +220,15 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   public ValueType getTypeForUpdate() {
     return getColumnForUpdate().getType();
   }
-  
+
   public AbstractColumn<?> getUiColumn() {
     return uiColumn;
   }
-  
+
   public Evaluator getValidation() {
     return validation;
   }
-  
+
   public boolean hasCarry() {
     return getCarry() != null;
   }
@@ -530,7 +530,8 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
     String format = null;
     if (getEditorDescription() != null) {
-      setEditor(EditorFactory.getEditor(getEditorDescription(), isNullable(), getRelationInfo()));
+      setEditor(EditorFactory.getEditor(getEditorDescription(), getDataType(), isNullable(),
+          getRelationInfo()));
       format = getEditorDescription().getFormat();
     } else if (isForeign()) {
       setEditor(new DataSelector(getRelationInfo(), false));

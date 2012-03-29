@@ -27,6 +27,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -35,7 +36,8 @@ import java.util.List;
  * Enables to use a user interface component, consisting of a group of radio buttons.
  */
 
-public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boolean> {
+public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boolean>,
+    HasValueStartIndex {
 
   public static int getValue(String name) {
     int v = BeeConst.UNDEF;
@@ -73,7 +75,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   private Variable variable = null;
 
   private int valueStartIndex = 0;
-  
+
   public RadioGroup(String name, boolean vertical) {
     super();
     Assert.notEmpty(name);
@@ -138,7 +140,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     this(vertical);
     addButtons(opt, value);
   }
-  
+
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return addDomHandler(handler, BlurEvent.getType());
   }
@@ -150,7 +152,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return addDomHandler(handler, FocusEvent.getType());
   }
-  
+
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
   }
@@ -230,7 +232,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   public int getValueStartIndex() {
     return valueStartIndex;
   }
-  
+
   public boolean handlesKey(int keyCode) {
     return false;
   }
@@ -290,7 +292,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   public void setNullable(boolean nullable) {
   }
-  
+
   public void setSelectedIndex(int newIndex) {
     int oldIndex = getSelectedIndex();
 

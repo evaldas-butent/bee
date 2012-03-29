@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/grid.xsd"
-  name="DataTypes" viewName="DataTypes" maxColumnWidth="500" caption="Types"
-  asyncThreshold="50" filter="Integer > 0" order="Integer desc, Version">
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd" name="DataTypes"
+  viewName="DataTypes" maxColumnWidth="500" caption="Types" asyncThreshold="50" filter="Integer > 0"
+  order="Integer desc, Version" footerEvents="change">
 
   <header borderWidth="2">
     <style>
@@ -57,6 +57,21 @@
         <expression>cell.value &lt; row.Long</expression>
       </editable>
       <editor type="spinner" stepValue="100" />
+    </BeeDataColumn>
+
+    <BeeDataColumn name="Nlist" source="Integer">
+      <editor type="list" valueStartIndex="2">
+        <item>aaa</item>
+        <item>bbb</item>
+        <item>ccc</item>
+        <item>ddd</item>
+        <item>eee</item>
+        <item>fff</item>
+        <item>ggg</item>
+        <item>hhh</item>
+        <item>iii</item>
+        <item>jjj</item>
+      </editor>
     </BeeDataColumn>
 
     <BeeDataColumn name="Lll" source="Long" showWidth="false" minWidth="40">
@@ -121,7 +136,7 @@
         <item>beehive ; &lt;a href="http://www.butent.com"&gt;Būtent&lt;/a&gt;</item>
       </editor>
       <carry>
-        <expression>'cell.value'</expression>
+        <expression>cell.value</expression>
       </carry>
     </BeeDataColumn>
 

@@ -39,7 +39,6 @@ import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.menu.MenuItem;
-import com.butent.bee.client.ui.HasTextDimensions;
 import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -52,6 +51,7 @@ import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;

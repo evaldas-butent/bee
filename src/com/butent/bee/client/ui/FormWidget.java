@@ -119,6 +119,8 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
+import com.butent.bee.shared.ui.HasTextDimensions;
+import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
@@ -180,7 +182,7 @@ public enum FormWidget {
   LABEL("Label", EnumSet.of(Type.IS_LABEL)),
   LAYOUT_PANEL("LayoutPanel", EnumSet.of(Type.HAS_LAYERS)),
   LINK("Link", EnumSet.of(Type.DISPLAY)),
-  LIST_BOX("ListBox", EnumSet.of(Type.EDITABLE)),
+  LIST_BOX("ListBox", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
   LONG_LABEL("LongLabel", EnumSet.of(Type.DISPLAY)),
   METER("Meter", EnumSet.of(Type.DISPLAY)),
   PROGRESS("Progress", EnumSet.of(Type.DISPLAY)),
@@ -326,7 +328,6 @@ public enum FormWidget {
   private static final String ATTR_MAX_SIZE = "maxSize";
 
   private static final String ATTR_VALUE_NUMERIC = "valueNumeric";
-  private static final String ATTR_VALUE_START_INDEX = "valueStartIndex";
 
   private static final String ATTR_MIN = "min";
   private static final String ATTR_MAX = "max";
@@ -1908,11 +1909,10 @@ public enum FormWidget {
           ((InputInteger) widget).setStepValue(BeeUtils.toInt(value));
         }
 
-      } else if (BeeUtils.same(name, ATTR_VALUE_START_INDEX) && BeeUtils.isDigit(value)) {
-        if (widget instanceof RadioGroup) {
-          ((RadioGroup) widget).setValueStartIndex(BeeUtils.toInt(value));
-        } else if (widget instanceof BeeListBox) {
-          ((BeeListBox) widget).setValueStartIndex(BeeUtils.toInt(value));
+      } else if (BeeUtils.same(name, HasValueStartIndex.ATTR_VALUE_START_INDEX)
+          && BeeUtils.isDigit(value)) {
+        if (widget instanceof HasValueStartIndex) {
+          ((HasValueStartIndex) widget).setValueStartIndex(BeeUtils.toInt(value));
         }
 
       } else if (BeeUtils.same(name, HasTextDimensions.ATTR_VISIBLE_LINES)) {

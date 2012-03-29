@@ -8,7 +8,6 @@ import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.StringPicker;
 import com.butent.bee.client.composite.TextEditor;
 import com.butent.bee.client.richtext.RichTextEditor;
-import com.butent.bee.client.ui.HasTextDimensions;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.widget.BeeListBox;
@@ -32,6 +31,8 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
+import com.butent.bee.shared.ui.HasTextDimensions;
+import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -161,14 +162,14 @@ public class EditorFactory {
     return editor;
   }
 
-  public static Editor getEditor(EditorDescription description, boolean nullable,
-      RelationInfo relationInfo) {
+  public static Editor getEditor(EditorDescription description, ValueType valueType,
+      boolean nullable,  RelationInfo relationInfo) {
     Assert.notNull(description);
-    EditorType type = description.getType();
-    Assert.notNull(type);
+    EditorType editorType = description.getType();
+    Assert.notNull(editorType);
 
     Editor editor = null;
-    switch (type) {
+    switch (editorType) {
       case AREA:
         editor = new InputArea();
         break;
@@ -187,6 +188,7 @@ public class EditorFactory {
 
       case LIST:
         editor = new BeeListBox();
+        ((BeeListBox) editor).setValueNumeric(ValueType.isNumeric(valueType));
         break;
 
       case LONG:
@@ -232,9 +234,13 @@ public class EditorFactory {
     Assert.notNull(editor);
     editor.setNullable(nullable);
 
+    if (editor instanceof HasValueStartIndex && description.getValueStartIndex() != null) {
+      ((HasValueStartIndex) editor).setValueStartIndex(description.getValueStartIndex());
+    }
     if (editor instanceof HasNumberStep && description.getStepValue() != null) {
       ((HasNumberStep) editor).setStepValue(description.getStepValue());
     }
+
     if (editor instanceof HasItems && description.getItems() != null) {
       ((HasItems) editor).setItems(description.getItems());
     }

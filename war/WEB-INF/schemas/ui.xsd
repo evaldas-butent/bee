@@ -116,6 +116,7 @@
       <xs:element name="item" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
     <xs:attribute name="type" type="bee:editorType" use="required" />
+    <xs:attribute name="valueStartIndex" type="xs:nonNegativeInteger" />
     <xs:attribute name="stepValue" type="xs:positiveInteger" />
     <xs:attributeGroup ref="bee:textArea" />
     <xs:attribute name="format" type="xs:normalizedString" />

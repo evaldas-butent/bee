@@ -1,14 +1,11 @@
 package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.ListBox;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -16,7 +13,6 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
@@ -24,6 +20,7 @@ import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -32,31 +29,23 @@ import java.util.Collection;
  * Implements a list box user interface component that presents a list of choices to the user.
  */
 
-public class BeeListBox extends ListBox implements Editor, HasItems {
-  
-  public static int changeTimeout = 200;
+public class BeeListBox extends ListBox implements Editor, HasItems, HasValueStartIndex {
 
   private HasStringValue source = null;
-
-  private boolean valueChangeHandlerInitialized = false;
 
   private boolean nullable = true;
 
   private boolean editing = false;
 
   private boolean editorInitialized = false;
-  
-  private boolean changePending = false;
-  
-  private Timer changeTimer = null;
-  
-  private int startChar = 0;
-  
+
   private boolean valueNumeric = false;
   private int valueStartIndex = 0;
-  
+
   private int minSize = BeeConst.UNDEF;
   private int maxSize = BeeConst.UNDEF;
+  
+  private boolean changePending = false;
 
   public BeeListBox() {
     super();
@@ -114,14 +103,6 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
   }
 
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
-    if (!valueChangeHandlerInitialized) {
-      valueChangeHandlerInitialized = true;
-      addChangeHandler(new ChangeHandler() {
-        public void onChange(ChangeEvent event) {
-          ValueChangeEvent.fire(BeeListBox.this, getValue());
-        }
-      });
-    }
     return addHandler(handler, ValueChangeEvent.getType());
   }
 
@@ -176,7 +157,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
   }
 
   public boolean handlesKey(int keyCode) {
-    return keyCode != KeyCodes.KEY_TAB;
+    return BeeUtils.inList(keyCode, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN);
   }
 
   public boolean isEditing() {
@@ -193,35 +174,22 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
 
   @Override
   public void onBrowserEvent(Event event) {
-    if (isEditing() && EventUtils.isKeyUp(event.getType())) {
-      switch (event.getKeyCode()) {
-        case KeyCodes.KEY_ESCAPE:
-          setChangePending(false);
-          fireEvent(new EditStopEvent(State.CANCELED));
-          return;
-        case KeyCodes.KEY_ENTER:
-          if (getStartChar() == EditorFactory.START_KEY_ENTER) {
-            setStartChar(0);
-          } else if (!isChangePending()) {
-            fireEvent(new EditStopEvent(State.CHANGED));
-            return;
-          }
-      }
-
-    } else if (EventUtils.isChange(event.getType())) {
+    if (EventUtils.isChange(event.getType())) {
+      setChangePending(true);
       if (getSource() != null) {
-        getSource().setValue(getValue(getSelectedIndex()));
+        getSource().setValue(getValue());
       }
-      if (isEditing() && !isChangePending()) {
-        if (changeTimer != null && changeTimeout > 0) {
-          setChangePending(true);
-          changeTimer.schedule(changeTimeout);
-        } else {
-          fireEvent(new EditStopEvent(State.CHANGED));
-        }
+      ValueChangeEvent.fire(this, getValue());
+
+    } else if (EventUtils.isMouseDown(event.getType())) {
+      setChangePending(false);
+    } else if (EventUtils.isMouseUp(event.getType())) {
+      if (isChangePending() && isEditing()) {
+        setChangePending(false);
+        fireEvent(new EditStopEvent(State.CHANGED));
       }
     }
-    
+
     super.onBrowserEvent(event);
   }
 
@@ -292,9 +260,6 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
   }
 
   public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
-    setStartChar(charCode);
-    setChangePending(false);
-
     if (!isEditorInitialized()) {
       initEditor();
       setEditorInitialized(true);
@@ -317,12 +282,12 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
       size = Math.max(size, getItemCount());
       size = Math.min(size, getMaxSize());
     }
-    
+
     if (size != getVisibleItemCount()) {
       setVisibleItemCount(size);
     }
   }
-  
+
   public String validate() {
     return null;
   }
@@ -332,7 +297,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
     if (text == null) {
       return index;
     }
-    
+
     if (isValueNumeric()) {
       if (BeeUtils.isDigit(BeeUtils.trim(text))) {
         int z = BeeUtils.toInt(text) - getValueStartIndex();
@@ -340,7 +305,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
           index = z;
         }
       }
-    } else { 
+    } else {
       for (int i = 0; i < getItemCount(); i++) {
         if (BeeUtils.same(getValue(i), text)) {
           index = i;
@@ -351,30 +316,14 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
     return index;
   }
 
-  private int getStartChar() {
-    return startChar;
-  }
-
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-ListBox");
-    sinkEvents(Event.ONCHANGE);
+    sinkEvents(Event.ONCHANGE | Event.ONMOUSEDOWN | Event.ONMOUSEUP);
   }
 
   private void initEditor() {
     getElement().addClassName(StyleUtils.NAME_CONTENT_BOX);
-    sinkEvents(Event.ONKEYUP);
-    
-    if (changeTimeout > 0) {
-      this.changeTimer = new Timer() {
-        @Override
-        public void run() {
-          if (isChangePending()) {
-            fireEvent(new EditStopEvent(State.CHANGED));
-          }
-        }
-      };
-    }
   }
 
   private void initVar(Variable var) {
@@ -404,9 +353,5 @@ public class BeeListBox extends ListBox implements Editor, HasItems {
 
   private void setEditorInitialized(boolean editorInitialized) {
     this.editorInitialized = editorInitialized;
-  }
-
-  private void setStartChar(int startChar) {
-    this.startChar = startChar;
   }
 }

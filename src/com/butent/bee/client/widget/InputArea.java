@@ -11,7 +11,6 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.HasInputHandlers;
 import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.ui.HandlesAfterSave;
-import com.butent.bee.client.ui.HasTextDimensions;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.view.edit.EditStopEvent;
@@ -19,6 +18,7 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
