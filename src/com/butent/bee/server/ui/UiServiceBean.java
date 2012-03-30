@@ -176,7 +176,7 @@ public class UiServiceBean {
     }
 
     Document dstDoc = XmlUtils.createDocument();
-    Element formElement = dstDoc.createElement("BeeForm");
+    Element formElement = dstDoc.createElement("Form");
     formElement.setAttribute("xmlns", "http://www.butent.com/bee");
     formElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
     formElement.setAttribute("xsi:schemaLocation",

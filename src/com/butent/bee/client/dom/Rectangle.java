@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.UIObject;
 
+import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Transformable;
@@ -14,7 +15,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Enables to create rectangle objects and manage their size and style.
  */
 
-public class Rectangle implements Transformable {
+public class Rectangle implements Transformable, HasDimensions {
 
   private static final Unit DEFAULT_UNIT = Unit.PX;
 

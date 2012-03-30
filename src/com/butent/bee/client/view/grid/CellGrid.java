@@ -761,10 +761,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
       switch (resizerMode) {
         case HORIZONTAL:
-          showColumnResizer(element, colIdx);
+          if (!showColumnResizer(element, colIdx)) {
+            pending = true;
+          }
           break;
         case VERTICAL:
-          showRowResizer(element, rowIdx);
+          if (!showRowResizer(element, rowIdx)) {
+            pending = true;
+          }
           break;
       }
     }
@@ -1691,7 +1695,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     updateCellContent(row, col);
   }
-  
+
   public int resizeColumn(int col, int newWidth) {
     int oldWidth = getColumnWidth(col);
     return resizeColumnWidth(col, oldWidth, newWidth - oldWidth);
@@ -4226,7 +4230,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     Stacking.ensureLevel(zIndex);
   }
 
-  private void showColumnResizer(Element cellElement, int col) {
+  private boolean showColumnResizer(Element cellElement, int col) {
     int x = cellElement.getOffsetLeft() + cellElement.getOffsetWidth();
     int y = cellElement.getOffsetTop();
     int h = cellElement.getOffsetHeight();
@@ -4240,6 +4244,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     int height = (barWidth > 0) ? getChildrenHeight() : h;
 
     Element resizerElement = getResizerContainer();
+    if (resizerElement == null) {
+      return false;
+    }
+
     StyleUtils.setRectangle(resizerElement, left, top, width, height);
     StyleUtils.setZIndex(resizerElement, incrementZIndex());
     resizerElement.setClassName(StyleUtils.buildClasses(STYLE_RESIZER, STYLE_RESIZER_HORIZONTAL));
@@ -4273,9 +4281,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     StyleUtils.unhideDisplay(resizerElement);
     setResizerStatus(ResizerMode.HORIZONTAL);
     setResizerCol(col);
+
+    return true;
   }
 
-  private void showRowResizer(Element cellElement, String rowIdx) {
+  private boolean showRowResizer(Element cellElement, String rowIdx) {
     int x = cellElement.getOffsetLeft();
     int y = cellElement.getOffsetTop() + cellElement.getOffsetHeight();
     int w = cellElement.getOffsetWidth();
@@ -4289,6 +4299,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     int width = (barHeight > 0) ? getRowWidth(rowIdx) : w;
 
     Element resizerElement = getResizerContainer();
+    if (resizerElement == null) {
+      return false;
+    }
+
     StyleUtils.setRectangle(resizerElement, left, top, width, height);
     StyleUtils.setZIndex(resizerElement, incrementZIndex());
     resizerElement.setClassName(StyleUtils.buildClasses(STYLE_RESIZER, STYLE_RESIZER_VERTICAL));
@@ -4326,6 +4340,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     StyleUtils.unhideDisplay(resizerElement);
     setResizerStatus(ResizerMode.VERTICAL);
     setResizerRow(rowIdx);
+
+    return true;
   }
 
   private void startEditing(IsRow rowValue, int col, Element cellElement, int charCode) {

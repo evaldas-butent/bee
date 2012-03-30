@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
   name="SpareParts" viewName="SpareParts"
@@ -32,12 +32,12 @@
   <footer borderWidth="0" />
 
   <columns>
-    <BeeDataColumn name="Type" source="TypeName" caption="Tipas" />
-    <BeeDataColumn name="Number" source="Number" caption="Numeris" />
-    <BeeDataColumn name="Description" source="Description" caption="Aprašymas" />
-    <BeeDataColumn name="Run" source="Run" caption="Pradinė rida" />
-    <BeeDataColumn name="Obtained" source="Obtained" caption="Gauta" />
-    <BeeDataColumn name="WrittenOff" source="WrittenOff" caption="Nurašyta" />
-    <BeeDataColumn name="Notes" source="Notes" caption="Pastabos" />
+    <DataColumn name="Type" source="TypeName" caption="Tipas" />
+    <DataColumn name="Number" source="Number" caption="Numeris" />
+    <DataColumn name="Description" source="Description" caption="Aprašymas" />
+    <DataColumn name="Run" source="Run" caption="Pradinė rida" />
+    <DataColumn name="Obtained" source="Obtained" caption="Gauta" />
+    <DataColumn name="WrittenOff" source="WrittenOff" caption="Nurašyta" />
+    <DataColumn name="Notes" source="Notes" caption="Pastabos" />
   </columns>
-</BeeGrid>
+</Grid>

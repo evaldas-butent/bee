@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
 
   name="TripOrders" viewName="TripOrders" caption="Užsakymai"
@@ -15,20 +15,20 @@
   <footer borderWidth="0" />
 
   <columns>
-    <BeeDataColumn name="Date" source="Date" caption="Data" />
-    <BeeDataColumn name="OrderNo" source="OrderNo" caption="Užsakymo numeris" />
-    <BeeCalcColumn name="Status" type="string" caption="Būsena" sortBy="Status">
+    <DataColumn name="Date" source="Date" caption="Data" />
+    <DataColumn name="OrderNo" source="OrderNo" caption="Užsakymo numeris" />
+    <CalcColumn name="Status" type="string" caption="Būsena" sortBy="Status">
       <calc><lambda /></calc>
-    </BeeCalcColumn>
-    <BeeDataColumn name="Customer" source="CustomerName" caption="Užsakovas" />
-    <BeeDataColumn name="Payer" source="PayerName" caption="Mokėtojas" />
-    <BeeCalcColumn name="Manager" type="string" caption="Vadybininkas"
+    </CalcColumn>
+    <DataColumn name="Customer" source="CustomerName" caption="Užsakovas" />
+    <DataColumn name="Payer" source="PayerName" caption="Mokėtojas" />
+    <CalcColumn name="Manager" type="string" caption="Vadybininkas"
       sortBy="ManagerFirstName, ManagerLastName" searchBy="ManagerFirstName, ManagerLastName">
       <calc>
         <function>return (row.ManagerFirstName || "") + " " + (row.ManagerLastName || "")</function>
       </calc>
-    </BeeCalcColumn>
-    <BeeCalcColumn name="Cargo" type="string" caption="Kroviniai" searchBy="Cargo">
+    </CalcColumn>
+    <CalcColumn name="Cargo" type="string" caption="Kroviniai" searchBy="Cargo">
       <calc>
         <function>
           if (!row.MinCargo) {
@@ -42,9 +42,9 @@
           }
         </function>
       </calc>
-    </BeeCalcColumn>
-    <BeeDataColumn name="Weight" source="Weight" caption="Svoris" />
-    <BeeDataColumn name="Volume" source="Volume" caption="Tūris" />
-    <BeeDataColumn name="Quantity" source="Quantity" caption="Kiekis" />
+    </CalcColumn>
+    <DataColumn name="Weight" source="Weight" caption="Svoris" />
+    <DataColumn name="Volume" source="Volume" caption="Tūris" />
+    <DataColumn name="Quantity" source="Quantity" caption="Kiekis" />
   </columns>
-</BeeGrid>
+</Grid>

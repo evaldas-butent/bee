@@ -263,6 +263,10 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   }
 
   public void onAddEnd(AddEndEvent event) {
+    if (event.isPopup()) {
+      return;
+    }
+
     if (hasHeader()) {
       getHeader().setCaption(getCurrentCaption());
       getHeader().setEnabled(true);
@@ -277,6 +281,10 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   }
 
   public void onAddStart(AddStartEvent event) {
+    if (event.isPopup()) {
+      return;
+    }
+
     if (hasHeader() && !BeeUtils.isEmpty(event.getCaption())) {
       getHeader().setEnabled(false);
       setCurrentCaption(getHeader().getCaption());

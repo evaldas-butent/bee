@@ -293,13 +293,8 @@ public enum FormWidget {
   private static final String ATTR_UNIT = "unit";
   private static final String ATTR_TAB_INDEX = "tabIndex";
 
-  private static final String ATTR_WIDTH = "width";
-  private static final String ATTR_WIDTH_UNIT = "widthUnit";
-  private static final String ATTR_HEIGHT = "height";
-  private static final String ATTR_HEIGHT_UNIT = "heightUnit";
   private static final String ATTR_LEFT = "left";
   private static final String ATTR_LEFT_UNIT = "leftUnit";
-
   private static final String ATTR_RIGHT = "right";
   private static final String ATTR_RIGHT_UNIT = "rightUnit";
   private static final String ATTR_TOP = "top";
@@ -1396,13 +1391,6 @@ public enum FormWidget {
     return null;
   }
 
-  private Dimensions getDimensions(Element description) {
-    return new Dimensions(XmlUtils.getAttributeDouble(description, ATTR_WIDTH),
-        XmlUtils.getAttributeUnit(description, ATTR_WIDTH_UNIT),
-        XmlUtils.getAttributeDouble(description, ATTR_HEIGHT),
-        XmlUtils.getAttributeUnit(description, ATTR_HEIGHT_UNIT));
-  }
-
   private Edges getEdges(Element description) {
     return new Edges(XmlUtils.getAttributeDouble(description, ATTR_TOP),
         XmlUtils.getAttributeUnit(description, ATTR_TOP_UNIT),
@@ -1535,7 +1523,7 @@ public enum FormWidget {
           ((HasWidgets) parent).add(w);
 
           Edges edges = getEdges(child);
-          Dimensions dimensions = getDimensions(child);
+          Dimensions dimensions = XmlUtils.getDimensions(child);
 
           if (parent instanceof BeeLayoutPanel) {
             ((BeeLayoutPanel) parent).setHorizontalLayout(w,
@@ -1564,11 +1552,11 @@ public enum FormWidget {
         if (BeeUtils.isDigit(idx)) {
           int c = BeeUtils.toInt(idx);
 
-          Double width = XmlUtils.getAttributeDouble(child, ATTR_WIDTH);
+          Double width = XmlUtils.getAttributeDouble(child, HasDimensions.ATTR_WIDTH);
           if (BeeUtils.isPositive(width)) {
             ((HtmlTable) parent).getColumnFormatter().setWidth(c,
                 StyleUtils.toCssLength(width,
-                    XmlUtils.getAttributeUnit(child, ATTR_WIDTH_UNIT, Unit.PX)));
+                    XmlUtils.getAttributeUnit(child, HasDimensions.ATTR_WIDTH_UNIT, Unit.PX)));
           }
           StyleUtils.setAppearance(((HtmlTable) parent).getColumnFormatter().getElement(c),
               child.getAttribute(ATTR_CLASS), child.getAttribute(ATTR_STYLE));
@@ -1625,7 +1613,7 @@ public enum FormWidget {
             }
           }
 
-          Dimensions dimensions = getDimensions(cell);
+          Dimensions dimensions = XmlUtils.getDimensions(cell);
           z = dimensions.getCssWidth();
           if (!BeeUtils.isEmpty(z)) {
             ((HtmlTable) parent).getCellFormatter().setWidth(r, c, z);
@@ -1717,7 +1705,7 @@ public enum FormWidget {
               }
             }
 
-            Dimensions dimensions = getDimensions(child);
+            Dimensions dimensions = XmlUtils.getDimensions(child);
             z = dimensions.getCssWidth();
             if (!BeeUtils.isEmpty(z)) {
               ((CellPanel) parent).setCellWidth(w, z);

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
   name="CurrencyRates" viewName="CurrencyRates" caption="Kursai"
   >
   <columns>
-    <BeeDataColumn name="Date" source="Date" caption="Data" />
-    <BeeDataColumn name="Quantity" source="Quantity" caption="Kiekis" />
-    <BeeDataColumn name="Rate" source="Rate" caption="Kursas" />
-    <BeeDataColumn name="BaseCurrency" source="BaseCurrencyName" caption="Valiuta" />
+    <DataColumn name="Date" source="Date" caption="Data" />
+    <DataColumn name="Quantity" source="Quantity" caption="Kiekis" />
+    <DataColumn name="Rate" source="Rate" caption="Kursas" />
+    <DataColumn name="BaseCurrency" source="BaseCurrencyName" caption="Valiuta" />
   </columns>
-</BeeGrid>
+</Grid>

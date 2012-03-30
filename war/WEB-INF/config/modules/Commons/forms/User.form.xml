@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
   
   name="User" viewName="Users" caption="Vartotojas"
+  width="70" widthUnit="%" height="5" heightUnit="cm"
   >
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="10">
@@ -30,4 +31,4 @@
 
     <ChildGrid class="flexible" name="UserRoles" relColumn="User" style="width:300px" />
   </FlowPanel>
-</BeeForm>  
+</Form>  

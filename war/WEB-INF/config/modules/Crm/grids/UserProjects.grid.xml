@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
   name="UserProjects" viewName="UserProjects" caption="Projektai"
@@ -32,34 +32,34 @@
   <footer borderWidth="0" />
 
   <columns>
-    <BeeCalcColumn name="Mode" type="string" caption="&#160;" cell="html"
+    <CalcColumn name="Mode" type="string" caption="&#160;" cell="html"
       horizontalAlignment="center" width="15">
       <calc>
         <lambda>greenSmall, yellowSmall</lambda>
       </calc>
-    </BeeCalcColumn>
-    <BeeIdColumn name="Id" caption="ID" />
-    <BeeCalcColumn name="Priority" type="string" caption="Prioritetas" sortBy="Priority">
+    </CalcColumn>
+    <IdColumn name="Id" caption="ID" />
+    <CalcColumn name="Priority" type="string" caption="Prioritetas" sortBy="Priority">
       <calc>
         <lambda />
       </calc>
-    </BeeCalcColumn>
-    <BeeDataColumn name="Type" source="TypeName" caption="Tipas" />
-    <BeeDataColumn name="Name" source="Name" caption="Pavadinimas" />
-    <BeeDataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
-    <BeeCalcColumn name="Event" type="string" caption="Būsena" sortBy="Event">
+    </CalcColumn>
+    <DataColumn name="Type" source="TypeName" caption="Tipas" />
+    <DataColumn name="Name" source="Name" caption="Pavadinimas" />
+    <DataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
+    <CalcColumn name="Event" type="string" caption="Būsena" sortBy="Event">
       <calc>
         <lambda />
       </calc>
-    </BeeCalcColumn>
-    <BeeCalcColumn name="Owner" type="string" caption="Vadovas" sortBy="OwnerFirstName, OwnerLastName"
+    </CalcColumn>
+    <CalcColumn name="Owner" type="string" caption="Vadovas" sortBy="OwnerFirstName, OwnerLastName"
       searchBy="OwnerFirstName, OwnerLastName">
       <calc>
         <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
       </calc>
-    </BeeCalcColumn>
-    <BeeDataColumn name="StartDate" source="StartDate" caption="Pradžia" />
-    <BeeDataColumn name="FinishDate" source="FinishDate" caption="Terminas" />
+    </CalcColumn>
+    <DataColumn name="StartDate" source="StartDate" caption="Pradžia" />
+    <DataColumn name="FinishDate" source="FinishDate" caption="Terminas" />
   </columns>
 
   <rowStyle>
@@ -86,4 +86,4 @@
       <expression>true</expression>
     </condition>
   </rowStyle>
-</BeeGrid>
+</Grid>

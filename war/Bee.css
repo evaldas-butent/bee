@@ -403,10 +403,9 @@ body, select {
   padding: 5px;
   background: #eee;
 }
-.bee-PopupGlass {
+.bee-Popup-glass {
   background-color: #000;
   opacity: 0.3;
-  filter: alpha(opacity=30);
 }
 
 .bee-WindowHeader {
@@ -842,6 +841,9 @@ body, select {
 .bee-GridFormContainer-newRow {
   background-color: #ecf6ce;
 }
+.bee-GridFormContainer-edit {
+  background-color: #fafafa;
+}
 
 .bee-GridFormCaption {
   font-size: medium;
@@ -1074,6 +1076,15 @@ body, select {
 .bee-TabBar-item-disabled {
   cursor: default;
   color: #999;
+}
+
+.bee-ModalForm {
+  border: 1px solid activeborder;
+  border-radius: 2px;
+}
+.bee-ModalForm-glass {
+  background-color: white;
+  opacity: 0.7;
 }
 
 .gwt-SplitLayoutPanel-HDragger {

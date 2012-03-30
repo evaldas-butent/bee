@@ -23,8 +23,11 @@ public class AddEndEvent extends GwtEvent<AddEndEvent.Handler> {
     return TYPE;
   }
 
-  public AddEndEvent() {
+  private final boolean popup;
+  
+  public AddEndEvent(boolean popup) {
     super();
+    this.popup = popup;
   }
 
   @Override
@@ -32,6 +35,10 @@ public class AddEndEvent extends GwtEvent<AddEndEvent.Handler> {
     return TYPE;
   }
 
+  public boolean isPopup() {
+    return popup;
+  }
+  
   @Override
   protected void dispatch(Handler handler) {
     handler.onAddEnd(this);

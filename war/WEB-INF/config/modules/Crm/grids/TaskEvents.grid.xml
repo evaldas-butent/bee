@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
   name="TaskEvents" viewName="TaskEvents" caption="Įvykių istorija"
@@ -12,7 +12,7 @@
   </body>
 
   <columns>
-    <BeeCalcColumn name="Publisher" type="string" caption="Paskelbta" width="120">
+    <CalcColumn name="Publisher" type="string" caption="Paskelbta" width="120">
       <style>
         <bodyStyle>
           <inline>white-space: pre-wrap;</inline>
@@ -68,8 +68,8 @@
             return s;
           </function>
       </calc>
-    </BeeCalcColumn>
-    <BeeCalcColumn name="Comment" type="string" caption="Komentaras" width="240">
+    </CalcColumn>
+    <CalcColumn name="Comment" type="string" caption="Komentaras" width="240">
       <style>
         <bodyStyle>
           <inline>white-space: pre-wrap;</inline>
@@ -91,8 +91,8 @@
             return s;
           </function>
       </calc>
-    </BeeCalcColumn>
-    <BeeCalcColumn name="Duration" type="string" caption="Sugaištas laikas" width="100">
+    </CalcColumn>
+    <CalcColumn name="Duration" type="string" caption="Sugaištas laikas" width="100">
       <style>
         <bodyStyle>
           <inline>white-space: pre-wrap;</inline>
@@ -108,6 +108,6 @@
             return s;
           </function>
       </calc>
-    </BeeCalcColumn>
+    </CalcColumn>
   </columns>
-</BeeGrid>
+</Grid>

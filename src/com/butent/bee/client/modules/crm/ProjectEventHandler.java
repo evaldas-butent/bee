@@ -32,9 +32,9 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.view.ActionEvent;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.TreeView;
-import com.butent.bee.client.view.edit.EditFormEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
@@ -44,7 +44,6 @@ import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.ListSequence;
-import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -652,8 +651,7 @@ public class ProjectEventHandler {
             BeeKeeper.getBus().fireEvent(new RowUpdateEvent(VIEW_PROJECTS, row));
 
             if (BeeUtils.contains(actions, Action.CLOSE)) {
-              form.fireEvent(new EditFormEvent(actions.contains(Action.REQUERY)
-                  ? State.PENDING : State.CHANGED));
+              form.fireEvent(new ActionEvent(actions));
 
             } else if (BeeUtils.contains(actions, Action.REQUERY)) {
               form.updateRow(row, true);
@@ -668,15 +666,13 @@ public class ProjectEventHandler {
             int dataIndex = form.getDataIndex(CrmConstants.COL_LAST_ACCESS);
             String newValue = (String) response.getResponse();
 
-            CellUpdateEvent cellUpdateEvent =
-                new CellUpdateEvent(VIEW_PROJECTS, form.getRow().getId(), form.getRow()
-                    .getVersion(),
-                    CrmConstants.COL_LAST_ACCESS, dataIndex, newValue);
+            CellUpdateEvent cellUpdateEvent =  new CellUpdateEvent(VIEW_PROJECTS,
+                form.getRow().getId(), form.getRow().getVersion(), CrmConstants.COL_LAST_ACCESS,
+                dataIndex, newValue);
             BeeKeeper.getBus().fireEvent(cellUpdateEvent);
 
             if (BeeUtils.contains(actions, Action.CLOSE)) {
-              form.fireEvent(new EditFormEvent(actions.contains(Action.REQUERY)
-                  ? State.PENDING : State.CHANGED));
+              form.fireEvent(new ActionEvent(actions));
 
             } else {
               form.getRow().setValue(dataIndex, newValue);

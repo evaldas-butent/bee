@@ -166,7 +166,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     }
 
     private boolean isShowing() {
-      return getPopup().isShowing() && getPopup().isVisible();
+      return getPopup().isShowing();
     }
 
     private void moveSelectionDown() {
@@ -204,7 +204,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     private void showSuggestions(Response response, UIObject target) {
       Collection<Suggestion> suggestions = response.getSuggestions();
       if (BeeUtils.isEmpty(suggestions)) {
-        getPopup().setVisible(false);
+        getPopup().hide();
         return;
       }
 
@@ -239,8 +239,6 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     }
 
     private void start() {
-      getPopup().show();
-      getPopup().setVisible(false);
       setReady(false);
     }
   }

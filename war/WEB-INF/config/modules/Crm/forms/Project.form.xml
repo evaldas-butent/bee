@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE BeeForm [
+<!DOCTYPE Form [
   <!ENTITY MARGIN_LEFT "margin-left: 1em;">
   <!ENTITY MARGIN_TOP "margin-top: 1ex;">
 
@@ -10,7 +10,7 @@
   <!ENTITY BUTTON_STYLE "background-color: #109610; color: white; font-family: Georgia;">
 ]>
 
-<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
   
   name="Project" viewName="Projects" caption="Projektas">
@@ -155,4 +155,4 @@
     </TabbedPages>
 
   </FlowPanel>
-</BeeForm>  
+</Form>  

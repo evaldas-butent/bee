@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
   name="UserTasks" viewName="UserTasks" caption="Užduotys"
-  editForm="Task" editShowId="true" editSave="false" newRowForm="NewTask"
+  editForm="Task" editShowId="true" editSave="false" newRowForm="NewTask" newRowPopup="true"
   caching="false">
   
   <north size="40">
@@ -37,40 +37,40 @@
   <footer borderWidth="0" />
 
   <columns>
-    <BeeCalcColumn name="Mode" type="string" caption="&#160;" cell="html"
+    <CalcColumn name="Mode" type="string" caption="&#160;" cell="html"
       horizontalAlignment="center" width="15">
       <calc>
         <lambda>greenSmall, yellowSmall</lambda>
       </calc>
-    </BeeCalcColumn>
-    <BeeIdColumn name="Id" caption="ID" />
-    <BeeCalcColumn name="Priority" type="string" caption="Prioritetas" sortBy="Priority">
+    </CalcColumn>
+    <IdColumn name="Id" caption="ID" />
+    <CalcColumn name="Priority" type="string" caption="Prioritetas" sortBy="Priority">
       <calc>
         <lambda />
       </calc>
-    </BeeCalcColumn>
-    <BeeDataColumn name="Description" source="Description" caption="Užduotis" />
-    <BeeDataColumn name="Project" source="ProjectName" caption="Projektas" />
-    <BeeDataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
-    <BeeCalcColumn name="Event" type="string" caption="Būsena" sortBy="Event">
+    </CalcColumn>
+    <DataColumn name="Description" source="Description" caption="Užduotis" />
+    <DataColumn name="Project" source="ProjectName" caption="Projektas" />
+    <DataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
+    <CalcColumn name="Event" type="string" caption="Būsena" sortBy="Event">
       <calc>
         <lambda />
       </calc>
-    </BeeCalcColumn>
-    <BeeCalcColumn name="Owner" type="string" caption="Vadovas" sortBy="OwnerFirstName, OwnerLastName"
+    </CalcColumn>
+    <CalcColumn name="Owner" type="string" caption="Vadovas" sortBy="OwnerFirstName, OwnerLastName"
       searchBy="OwnerFirstName, OwnerLastName">
       <calc>
         <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
       </calc>
-    </BeeCalcColumn>
-    <BeeCalcColumn name="Executor" type="string" caption="Vykdytojas"
+    </CalcColumn>
+    <CalcColumn name="Executor" type="string" caption="Vykdytojas"
       sortBy="ExecutorFirstName, ExecutorLastName" searchBy="ExecutorFirstName, ExecutorLastName">
       <calc>
         <function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</function>
       </calc>
-    </BeeCalcColumn>
-    <BeeDataColumn name="StartTime" source="StartTime" caption="Pradžia" />
-    <BeeDataColumn name="FinishTime" source="FinishTime" caption="Terminas" />
+    </CalcColumn>
+    <DataColumn name="StartTime" source="StartTime" caption="Pradžia" />
+    <DataColumn name="FinishTime" source="FinishTime" caption="Terminas" />
   </columns>
 
   <rowStyle>
@@ -97,4 +97,4 @@
       <expression>true</expression>
     </condition>
   </rowStyle>
-</BeeGrid>
+</Grid>

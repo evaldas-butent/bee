@@ -28,7 +28,7 @@ public class Popup extends PopupPanel implements HasId {
   }
 
   public void enableGlass() {
-    setGlassStyleName("bee-PopupGlass");
+    setGlassStyleName(getDefaultStyleName() + "-glass");
     setGlassEnabled(true);
   }
 

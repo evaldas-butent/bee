@@ -18,9 +18,12 @@ public class EditFormEvent extends GwtEvent<EditFormEvent.Handler> {
   }
 
   private final State state;
+  private final boolean popup;
 
-  public EditFormEvent(State state) {
+  public EditFormEvent(State state, boolean popup) {
+    super();
     this.state = state;
+    this.popup = popup;
   }
 
   @Override
@@ -51,7 +54,11 @@ public class EditFormEvent extends GwtEvent<EditFormEvent.Handler> {
   public boolean isPending() {
     return State.PENDING.equals(getState());
   }
-  
+
+  public boolean isPopup() {
+    return popup;
+  }
+
   @Override
   protected void dispatch(Handler handler) {
     handler.onEditForm(this);

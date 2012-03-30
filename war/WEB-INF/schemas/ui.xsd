@@ -76,9 +76,9 @@
   </xs:simpleType>
 
   <xs:attributeGroup name="dimension">
-    <xs:attribute name="width" type="bee:positiveDecimal" />
+    <xs:attribute name="width" type="xs:decimal" />
     <xs:attribute name="widthUnit" type="bee:cssUnit" />
-    <xs:attribute name="height" type="bee:positiveDecimal" />
+    <xs:attribute name="height" type="xs:decimal" />
     <xs:attribute name="heightUnit" type="bee:cssUnit" />
   </xs:attributeGroup>
 

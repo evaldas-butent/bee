@@ -52,10 +52,6 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
     add(child);
   }
   
-  public void addLeftBottom(Widget child, int left, int bottom) {
-    addLeftBottom(child, left, Unit.PX, bottom, Unit.PX);
-  }
-
   public void addLeftBottom(Widget child, double left, Unit leftUnit, double bottom,
       Unit bottomUnit) {
     Assert.notNull(child);
@@ -65,10 +61,54 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
     add(child);
   }
 
-  public void addLeftTop(Widget child, int left, int top) {
-    addLeftTop(child, left, Unit.PX, top, Unit.PX);
+  public void addLeftBottom(Widget child, int left, int bottom) {
+    addLeftBottom(child, left, Unit.PX, bottom, Unit.PX);
   }
 
+  public void addLeftRightTop(Widget child, double left, Unit leftUnit,
+      double right, Unit rightUnit, double top, Unit topUnit) {
+    Assert.notNull(child);
+    setChildPosition(child);
+    setChildLeft(child, left, leftUnit);
+    setChildRight(child, right, rightUnit);
+    setChildTop(child, top, topUnit);
+    add(child);
+  }
+  
+  public void addLeftRightTop(Widget child, int left, int right, int top) {
+    addLeftRightTop(child, left, Unit.PX, right, Unit.PX, top, Unit.PX);
+  }
+
+  public void addLeftRightTopBottom(Widget child, double left, Unit leftUnit,
+      double right, Unit rightUnit, double top, Unit topUnit, double bottom, Unit bottomUnit) {
+    Assert.notNull(child);
+    setChildPosition(child);
+    setChildLeft(child, left, leftUnit);
+    setChildRight(child, right, rightUnit);
+    setChildTop(child, top, topUnit);
+    setChildBottom(child, bottom, bottomUnit);
+    add(child);
+  }
+  
+  public void addLeftRightTopBottom(Widget child, int left, int right, int top, int bottom) {
+    addLeftRightTopBottom(child, left, Unit.PX, right, Unit.PX, top, Unit.PX, bottom, Unit.PX);
+  }
+
+  public void addLeftRightTopHeight(Widget child, double left, Unit leftUnit,
+      double right, Unit rightUnit, double top, Unit topUnit, double height, Unit heightUnit) {
+    Assert.notNull(child);
+    setChildPosition(child);
+    setChildLeft(child, left, leftUnit);
+    setChildRight(child, right, rightUnit);
+    setChildTop(child, top, topUnit);
+    setChildHeight(child, height, heightUnit);
+    add(child);
+  }
+  
+  public void addLeftRightTopHeight(Widget child, int left, int right, int top, int height) {
+    addLeftRightTopHeight(child, left, Unit.PX, right, Unit.PX, top, Unit.PX, height, Unit.PX);
+  }
+  
   public void addLeftTop(Widget child, double left, Unit leftUnit, double top, Unit topUnit) {
     Assert.notNull(child);
     setChildPosition(child);
@@ -76,11 +116,11 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
     setChildTop(child, top, topUnit);
     add(child);
   }
-
-  public void addRightBottom(Widget child, int right, int bottom) {
-    addRightBottom(child, right, Unit.PX, bottom, Unit.PX);
+  
+  public void addLeftTop(Widget child, int left, int top) {
+    addLeftTop(child, left, Unit.PX, top, Unit.PX);
   }
-
+  
   public void addRightBottom(Widget child, double right, Unit rightUnit, double bottom,
       Unit bottomUnit) {
     Assert.notNull(child);
@@ -90,16 +130,38 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
     add(child);
   }
 
-  public void addRightTop(Widget child, int right, int top) {
-    addRightTop(child, right, Unit.PX, top, Unit.PX);
+  public void addRightBottom(Widget child, int right, int bottom) {
+    addRightBottom(child, right, Unit.PX, bottom, Unit.PX);
   }
-
+  
   public void addRightTop(Widget child, double right, Unit rightUnit, double top, Unit topUnit) {
     Assert.notNull(child);
     setChildPosition(child);
     setChildRight(child, right, rightUnit);
     setChildTop(child, top, topUnit);
     add(child);
+  }
+
+  public void addRightTop(Widget child, int right, int top) {
+    addRightTop(child, right, Unit.PX, top, Unit.PX);
+  }
+
+  public void addTopBottomFillHorizontal(Widget child, double top, Unit topUnit,
+      double bottom, Unit bottomUnit) {
+    addLeftRightTopBottom(child, 0, Unit.PX, 0, Unit.PX, top, topUnit, bottom, bottomUnit);
+  }
+
+  public void addTopBottomFillHorizontal(Widget child, int top, int bottom) {
+    addTopBottomFillHorizontal(child, top, Unit.PX, bottom, Unit.PX);
+  }
+
+  public void addTopHeightFillHorizontal(Widget child, double top, Unit topUnit,
+      double height, Unit heightUnit) {
+    addLeftRightTopHeight(child, 0, Unit.PX, 0, Unit.PX, top, topUnit, height, heightUnit);
+  }
+
+  public void addTopHeightFillHorizontal(Widget child, int top, int height) {
+    addTopHeightFillHorizontal(child, top, Unit.PX, height, Unit.PX);
   }
 
   public String getId() {
@@ -130,6 +192,10 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
     child.getElement().getStyle().setBottom(value, unit);
   }
 
+  private void setChildHeight(Widget child, double value, Unit unit) {
+    child.getElement().getStyle().setHeight(value, unit);
+  }
+  
   private void setChildLeft(Widget child, double value, Unit unit) {
     child.getElement().getStyle().setLeft(value, unit);
   }

@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
   name="Currencies" viewName="Currencies" caption="Valiutos"
   newRowForm="Currency" newRowCaption="Nauja valiuta" editForm="Currency"
+  newRowPopup="true" editPopup="true"
   >
   <columns>
-    <BeeDataColumn name="Currency" source="Name" caption="Valiuta" />
-    <BeeDataColumn name="Caption" source="Caption" caption="Pavadinimas" />
-    <BeeDataColumn name="MinorName" source="MinorName" caption="Smulki" />
-    <BeeDataColumn name="MinorCaption" source="MinorCaption" caption="Smulkios pav." />
+    <DataColumn name="Currency" source="Name" caption="Valiuta" />
+    <DataColumn name="Caption" source="Caption" caption="Pavadinimas" />
+    <DataColumn name="MinorName" source="MinorName" caption="Smulki" />
+    <DataColumn name="MinorCaption" source="MinorCaption" caption="Smulkios pav." />
   </columns>
-</BeeGrid>
+</Grid>

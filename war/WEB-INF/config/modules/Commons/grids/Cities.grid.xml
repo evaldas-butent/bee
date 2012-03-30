@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
   name="Cities" viewName="Cities" caption="Miestai"
   maxColumnWidth="300"
   >
   <columns>
-    <BeeDataColumn name="City" source="Name" caption="Miestas" />
+    <DataColumn name="City" source="Name" caption="Miestas" />
 
-    <BeeDataColumn name="Country" source="CountryName" caption="Šalis">
+    <DataColumn name="Country" source="CountryName" caption="Šalis">
       <editor type="selector" width="200" visibleLines="12"
         options="{&quot;showLimit&quot;: true, &quot;searchType&quot;: &quot;contains&quot;}" />
-    </BeeDataColumn>
+    </DataColumn>
 
-    <BeeVerColumn name="Version" caption="Paskutinio koregavimo data" />
+    <VerColumn name="Version" caption="Paskutinio koregavimo data" />
   </columns>
-</BeeGrid>
+</Grid>

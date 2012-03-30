@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
 
   name="CargoServices" viewName="CargoServices"
@@ -14,14 +14,14 @@
   <footer borderWidth="0" />
 
   <columns>
-    <BeeDataColumn name="Expedition" source="Expedition" caption="Eksp." />
-    <BeeDataColumn name="ItemName" source="ItemName" caption="Paslauga" />
-    <BeeDataColumn name="UnitName" source="UnitName" caption="Mato v." />
-    <BeeDataColumn name="Quantity" source="Quantity" caption="Kiekis" />
-    <BeeDataColumn name="Price" source="Price" caption="Kaina" format="#.00" />
-    <BeeDataColumn name="CurrencyName" source="CurrencyName" caption="Val." />
-    <BeeCalcColumn type="decimal" name="Total" caption="Suma" format="#.00">
+    <DataColumn name="Expedition" source="Expedition" caption="Eksp." />
+    <DataColumn name="ItemName" source="ItemName" caption="Paslauga" />
+    <DataColumn name="UnitName" source="UnitName" caption="Mato v." />
+    <DataColumn name="Quantity" source="Quantity" caption="Kiekis" />
+    <DataColumn name="Price" source="Price" caption="Kaina" format="#.00" />
+    <DataColumn name="CurrencyName" source="CurrencyName" caption="Val." />
+    <CalcColumn type="decimal" name="Total" caption="Suma" format="#.00">
       <calc><expression>row.Quantity * row.Price</expression></calc>
-    </BeeCalcColumn>
+    </CalcColumn>
   </columns>
-</BeeGrid>
+</Grid>

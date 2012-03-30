@@ -3,6 +3,7 @@
   xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
 
   <xs:include schemaLocation="types.xsd" />
+  <xs:include schemaLocation="ui.xsd" />
   <xs:include schemaLocation="widget.xsd" />
 
   <xs:complexType name="form">
@@ -20,9 +21,10 @@
     <xs:attribute name="searchThreshold" type="xs:nonNegativeInteger" default="2" />
     <xs:attribute name="enabledActions" type="bee:viewActions" />
     <xs:attribute name="disabledActions" type="bee:viewActions" />
+    <xs:attributeGroup ref="bee:dimension" />
   </xs:complexType>
 
-  <xs:element name="BeeForm" type="bee:form">
+  <xs:element name="Form" type="bee:form">
     <xs:unique name="uniqueWidgetName">
       <xs:selector xpath=".//*" />
       <xs:field xpath="@name" />

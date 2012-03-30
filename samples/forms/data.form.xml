@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
   name="Data" caption="Data Binding, Events" viewName="DataTypes">
   
@@ -264,4 +264,4 @@
     <expression>row.Date == null || row.Date &gt;= new Date(2005, 0, 1)</expression>
   </rowEditable>
 
-</BeeForm>
+</Form>

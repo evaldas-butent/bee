@@ -4,6 +4,7 @@ import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
 import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
+import com.butent.bee.client.view.edit.HasEditFormHandlers;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.client.view.edit.HasSaveChangesHandlers;
 import com.butent.bee.client.view.form.FormView;
@@ -21,31 +22,32 @@ import java.util.List;
  */
 
 public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandlers,
-    HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers {
+    HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers,
+    HasEditFormHandlers {
 
   void applyOptions(String options);
 
   void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
       GridDescription gridDescription, GridCallback gridCallback, boolean hasSearch);
-  
+
   void ensureGridVisible();
 
   int estimatePageSize(int containerWidth, int containerHeight);
-  
+
   void formCancel();
-  
+
   void formConfirm();
-  
+
   IsRow getActiveRowData();
 
   FormView getForm(boolean edit);
 
   CellGrid getGrid();
-  
+
   GridCallback getGridCallback();
-  
+
   String getGridName();
-  
+
   long getRelId();
 
   Collection<RowInfo> getSelectedRows();
@@ -57,6 +59,6 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   void refreshCellContent(long rowId, String columnSource);
 
   void setRelColumn(String relColumn);
-  
+
   void setRelId(long relId);
 }

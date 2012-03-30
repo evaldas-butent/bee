@@ -50,6 +50,10 @@ public class Stacking {
   public static int getMaxLevel() {
     return maxLevel;
   }
+  
+  public static int getWidgetCount() {
+    return widgetLevels.size();
+  }
 
   public static int nextLevel() {
     return ++maxLevel;

@@ -11,11 +11,11 @@
 
   <xs:complexType name="columnList">
     <xs:choice minOccurs="1" maxOccurs="unbounded">
-      <xs:element name="BeeDataColumn" type="bee:dataColumn" />
-      <xs:element name="BeeCalcColumn" type="bee:calculatedColumn" />
-      <xs:element name="BeeIdColumn" type="bee:column" />
-      <xs:element name="BeeVerColumn" type="bee:column" />
-      <xs:element name="BeeSelectionColumn" type="bee:column" />
+      <xs:element name="DataColumn" type="bee:dataColumn" />
+      <xs:element name="CalcColumn" type="bee:calculatedColumn" />
+      <xs:element name="IdColumn" type="bee:column" />
+      <xs:element name="VerColumn" type="bee:column" />
+      <xs:element name="SelectionColumn" type="bee:column" />
     </xs:choice>
     <xs:attribute ref="xml:base" />
   </xs:complexType>

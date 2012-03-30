@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
 
   name="Companies" viewName="Companies" caption="Įmonės"
   editForm="Company" newRowForm="Company" newRowCaption="Nauja Įmonė"
+  editPopup="true" newRowPopup="true"
   >
   <columns>
-    <BeeDataColumn name="Name" source="Name" caption="Įmonė" />
-    <BeeDataColumn name="Code" source="Code" caption="Įm. kodas" />
-    <BeeDataColumn name="Phone" source="Phone" caption="Tel." />
-    <BeeDataColumn name="Email" source="Email" caption="El. paštas" />
-    <BeeDataColumn name="Address" source="Address" caption="Adresas" />
-    <BeeDataColumn name="City" source="CityName" caption="Miestas" />
-    <BeeDataColumn name="Country" source="CountryName" caption="Šalis" readOnly="true" />
+    <DataColumn name="Name" source="Name" caption="Įmonė" />
+    <DataColumn name="Code" source="Code" caption="Įm. kodas" />
+    <DataColumn name="Phone" source="Phone" caption="Tel." />
+    <DataColumn name="Email" source="Email" caption="El. paštas" />
+    <DataColumn name="Address" source="Address" caption="Adresas" />
+    <DataColumn name="City" source="CityName" caption="Miestas" />
+    <DataColumn name="Country" source="CountryName" caption="Šalis" readOnly="true" />
   </columns>
-</BeeGrid>
+</Grid>

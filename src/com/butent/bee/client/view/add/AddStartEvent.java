@@ -24,10 +24,12 @@ public class AddStartEvent extends GwtEvent<AddStartEvent.Handler> {
   }
   
   private final String caption;
+  private final boolean popup;
 
-  public AddStartEvent(String caption) {
+  public AddStartEvent(String caption, boolean popup) {
     super();
     this.caption = caption;
+    this.popup = popup;
   }
 
   @Override
@@ -37,6 +39,10 @@ public class AddStartEvent extends GwtEvent<AddStartEvent.Handler> {
 
   public String getCaption() {
     return caption;
+  }
+
+  public boolean isPopup() {
+    return popup;
   }
 
   @Override

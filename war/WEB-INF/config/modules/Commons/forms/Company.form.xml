@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="Company" viewName="Companies" caption="Įmonė"
+  name="Company" viewName="Companies" caption="Įmonė" height="500"
   >
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="10">
@@ -38,4 +38,4 @@
 
     <ChildGrid class="flexible" name="CompanyPersons" relColumn="Company" />
   </FlowPanel>
-</BeeForm>  
+</Form>  

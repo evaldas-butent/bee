@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
   name="Items" viewName="Items"
-  newRowForm="Item" editForm="Item" editShowId="true"
-  newRowCaption="Naujiena"
+  newRowForm="Item" editForm="Item" editShowId="true" newRowCaption="Naujiena"
+  newRowPopup="true" editPopup="true"
   >
   <west size="200" splitterSize="2">
     <DataTree name="Categories" caption="Kategorijos" source="CategoryTree" parentColumn="Parent"
@@ -24,11 +24,11 @@
   <footer borderWidth="0" />
 
   <columns>
-    <BeeDataColumn name="Name" source="Name" caption="Pavadinimas" />
-    <BeeDataColumn name="Unit" source="UnitName" caption="Mato v." />
-    <BeeDataColumn name="Article" source="Article" caption="Artikulas" />
-    <BeeDataColumn name="Barcode" source="Barcode" caption="Barkodas" />
-    <BeeDataColumn name="Price" source="Price" caption="Pard. kaina" />
-    <BeeDataColumn name="Currency" source="CurrencyName" caption="Val." />
+    <DataColumn name="Name" source="Name" caption="Pavadinimas" />
+    <DataColumn name="Unit" source="UnitName" caption="Mato v." />
+    <DataColumn name="Article" source="Article" caption="Artikulas" />
+    <DataColumn name="Barcode" source="Barcode" caption="Barkodas" />
+    <DataColumn name="Price" source="Price" caption="Pard. kaina" />
+    <DataColumn name="Currency" source="CurrencyName" caption="Val." />
   </columns>
-</BeeGrid>
+</Grid>

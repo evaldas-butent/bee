@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
   
-  name="Currency" viewName="Currencies" caption="Valiuta"
+  name="Currency" viewName="Currencies" caption="Valiuta" height="50" heightUnit="%" width="600"
   >
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="10">
@@ -22,4 +22,4 @@
 
     <ChildGrid class="flexible" name="CurrencyRates" relColumn="Currency" />
   </FlowPanel>
-</BeeForm>  
+</Form>  

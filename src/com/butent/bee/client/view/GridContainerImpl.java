@@ -331,13 +331,17 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public void onAddEnd(AddEndEvent event) {
-    showChildren(true);
+    if (!event.isPopup()) {
+      showChildren(true);
+    }
     setAdding(false);
   }
 
   public void onAddStart(AddStartEvent event) {
     setAdding(true);
-    showChildren(false);
+    if (!event.isPopup()) {
+      showChildren(false);
+    }
   }
 
   @Override
@@ -390,9 +394,9 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public void onEditForm(EditFormEvent event) {
-    if (event.isOpening()) {
+    if (event.isOpening() && !event.isPopup()) {
       showChildren(false);
-    } else if (event.isClosing()) {
+    } else if (event.isClosing() && !event.isPopup()) {
       showChildren(true);
     }
   }

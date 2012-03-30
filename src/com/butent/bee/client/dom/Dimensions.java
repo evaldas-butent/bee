@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.UIObject;
 
+import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
@@ -20,27 +21,28 @@ import java.util.List;
  * Contains information about application height and width, both current and max values.
  */
 
-public class Dimensions implements HasInfo {
+public class Dimensions implements HasInfo, HasDimensions {
 
   private static final Unit DEFAULT_UNIT = Unit.PX;
 
-  private Unit heightUnit = null;
-  private Double heightValue = null;
-
-  private Unit maxHeightUnit = null;
-  private Double maxHeightValue = null;
-
-  private Unit maxWidthUnit = null;
-  private Double maxWidthValue = null;
-
-  private Unit minHeightUnit = null;
-  private Double minHeightValue = null;
-
-  private Unit minWidthUnit = null;
-  private Double minWidthValue = null;
+  public static Unit normalizeUnit(Unit unit) {
+    return (unit == null) ? DEFAULT_UNIT : unit;
+  }
 
   private Unit widthUnit = null;
   private Double widthValue = null;
+  private Unit heightUnit = null;
+  private Double heightValue = null;
+
+  private Unit minHeightUnit = null;
+  private Double minHeightValue = null;
+  private Unit minWidthUnit = null;
+  private Double minWidthValue = null;
+
+  private Unit maxHeightUnit = null;
+  private Double maxHeightValue = null;
+  private Unit maxWidthUnit = null;
+  private Double maxWidthValue = null;
 
   public Dimensions() {
   }
@@ -131,7 +133,7 @@ public class Dimensions implements HasInfo {
     Assert.notNull(obj);
     applyTo(obj.getElement());
   }
-
+  
   public String getCssHeight() {
     if (hasHeight()) {
       return toCssLength(getHeightValue(), normalizeUnit(getHeightUnit()));
@@ -139,7 +141,7 @@ public class Dimensions implements HasInfo {
       return BeeConst.STRING_EMPTY;
     }
   }
-  
+
   public String getCssWidth() {
     if (hasWidth()) {
       return toCssLength(getWidthValue(), normalizeUnit(getWidthUnit()));
@@ -225,11 +227,11 @@ public class Dimensions implements HasInfo {
   public Unit getWidthUnit() {
     return widthUnit;
   }
-
+  
   public Double getWidthValue() {
     return widthValue;
   }
-  
+
   public boolean hasHeight() {
     return BeeUtils.isPositive(getHeightValue());
   }
@@ -237,13 +239,13 @@ public class Dimensions implements HasInfo {
   public boolean hasWidth() {
     return BeeUtils.isPositive(getWidthValue());
   }
-
+  
   public boolean isEmpty() {
     return getWidthValue() == null && getHeightValue() == null 
         && getMinWidthValue() == null && getMinHeightValue() == null
         && getMaxWidthValue() == null && getMaxHeightValue() == null;
   }
-  
+
   public void removeFrom(Element el) {
     Assert.notNull(el);
     removeFrom(el.getStyle());
@@ -325,10 +327,6 @@ public class Dimensions implements HasInfo {
 
   public void setWidthValue(Double widthValue) {
     this.widthValue = widthValue;
-  }
-
-  private Unit normalizeUnit(Unit unit) {
-    return (unit == null) ? DEFAULT_UNIT : unit;
   }
   
   private void setFromStyle(Style style) {

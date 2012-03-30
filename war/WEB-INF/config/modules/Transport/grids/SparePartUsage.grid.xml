@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
   name="SparePartUsage" viewName="SparePartUsage" caption="Panaudojimo istorija"
   >
   <columns>
-    <BeeDataColumn name="ModelName" source="ModelName" caption="Modelis" readOnly="true" />
-    <BeeDataColumn name="Number" source="Number" caption="Valst.Nr." />
-    <BeeDataColumn name="Mounted" source="Mounted" caption="Uždėta" />
-    <BeeDataColumn name="Removed" source="Removed" caption="Nuimta" />
-    <BeeDataColumn name="Note" source="Note" caption="Pastaba" />
+    <DataColumn name="ModelName" source="ModelName" caption="Modelis" readOnly="true" />
+    <DataColumn name="Number" source="Number" caption="Valst.Nr." />
+    <DataColumn name="Mounted" source="Mounted" caption="Uždėta" />
+    <DataColumn name="Removed" source="Removed" caption="Nuimta" />
+    <DataColumn name="Note" source="Note" caption="Pastaba" />
   </columns>
-</BeeGrid>
+</Grid>

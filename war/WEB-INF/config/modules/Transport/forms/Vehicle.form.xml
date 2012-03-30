@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE BeeForm [
+<!DOCTYPE Form [
   <!ENTITY LABEL_STYLE "margin-right: 1em; margin-left: 1em;">
   <!ENTITY LEFT_LABEL_STYLE "margin-right: 1em; display: inline-block; min-width: 70px; text-align: right">
   <!ENTITY ROW_STYLE "margin-bottom: 1ex;">
 ]>
-<BeeForm xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
   
   name="Vehicle" viewName="Vehicles" caption="Transporto priemonė"
@@ -102,4 +102,4 @@
       </page>
     </TabbedPages>
   </FlowPanel>
-</BeeForm>
+</Form>

@@ -2,7 +2,6 @@ package com.butent.bee.client.presenter;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
@@ -219,7 +218,7 @@ public class TreePresenter implements Presenter, CatchEvent.CatchHandler<IsRow> 
       row = new BeeRow(item.getId(), item.getVersion(), arr);
     }
     if (formView == null) {
-      formView = new FormImpl(FormDescription.getName(editor), Position.RELATIVE);
+      formView = new FormImpl(FormDescription.getName(editor));
       formView.create(new FormDescription(editor), getDataColumns(), null, false);
       formView.setEditing(true);
       formView.start(null);

@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
   name="NewFiles" caption="Bylos" enabledActions="add delete">
   
   <columns>
-    <BeeDataColumn name="FileDate" source="FileDate" caption="Data" required="true" />
-    <BeeDataColumn name="FileVersion" source="FileVersion" caption="Versija" />
-    <BeeDataColumn name="Name" source="Name" caption="Pavadinimas" required="true" />
-    <BeeDataColumn name="Description" source="Description" caption="Aprašymas" width="100">
+    <DataColumn name="FileDate" source="FileDate" caption="Data" required="true" />
+    <DataColumn name="FileVersion" source="FileVersion" caption="Versija" />
+    <DataColumn name="Name" source="Name" caption="Pavadinimas" required="true" />
+    <DataColumn name="Description" source="Description" caption="Aprašymas" width="100">
       <editor type="area" />
-    </BeeDataColumn>
-    <BeeDataColumn name="Size" source="Size" caption="Dydis" readOnly="true" />
-    <BeeDataColumn name="Mime" source="Mime" caption="Tipas" />
+    </DataColumn>
+    <DataColumn name="Size" source="Size" caption="Dydis" readOnly="true" />
+    <DataColumn name="Mime" source="Mime" caption="Tipas" />
   </columns>
-</BeeGrid>
+</Grid>

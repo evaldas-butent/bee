@@ -42,7 +42,7 @@ import javax.ejb.Stateless;
 @Stateless
 public class GridLoaderBean {
 
-  private static final String TAG_GRID = "BeeGrid";
+  private static final String TAG_GRID = "Grid";
   private static final String TAG_COLUMNS = "columns";
 
   private static final String TAG_CSS = "css";
@@ -102,6 +102,7 @@ public class GridLoaderBean {
   private static final String ATTR_NEW_ROW_FORM = "newRowForm";
   private static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";
   private static final String ATTR_NEW_ROW_CAPTION = "newRowCaption";
+  private static final String ATTR_NEW_ROW_POPUP = "newRowPopup";
 
   private static final String ATTR_EDIT_FORM = "editForm";
   private static final String ATTR_EDIT_MODE = "editMode";
@@ -109,6 +110,7 @@ public class GridLoaderBean {
   private static final String ATTR_EDIT_SHOW_ID = "editShowId";
   private static final String ATTR_EDIT_IN_PLACE = "editInPlace";
   private static final String ATTR_EDIT_NEW_ROW = "editNewRow";
+  private static final String ATTR_EDIT_POPUP = "editPopup";
 
   private static final String ATTR_WIDTH = "width";
   private static final String ATTR_MIN_WIDTH = "minWidth";
@@ -627,6 +629,10 @@ public class GridLoaderBean {
     if (!BeeUtils.isEmpty(newRowCaption)) {
       dst.setNewRowCaption(newRowCaption.trim());
     }
+    Boolean newRowPopup = XmlUtils.getAttributeBoolean(src, ATTR_NEW_ROW_POPUP);
+    if (newRowPopup != null) {
+      dst.setNewRowPopup(newRowPopup);
+    }
 
     String editForm = src.getAttribute(ATTR_EDIT_FORM);
     if (!BeeUtils.isEmpty(editForm)) {
@@ -655,6 +661,10 @@ public class GridLoaderBean {
     Boolean editNewRow = XmlUtils.getAttributeBoolean(src, ATTR_EDIT_NEW_ROW);
     if (editNewRow != null) {
       dst.setEditNewRow(editNewRow);
+    }
+    Boolean editPopup = XmlUtils.getAttributeBoolean(src, ATTR_EDIT_POPUP);
+    if (editPopup != null) {
+      dst.setEditPopup(editPopup);
     }
 
     NodeList cssNodes = src.getElementsByTagName(TAG_CSS);

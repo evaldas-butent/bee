@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeGrid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
   name="Files" viewName="Files" caption="Bylos">
   
   <columns>
-    <BeeDataColumn name="FileDate" source="FileDate" caption="Data" />
-    <BeeDataColumn name="FileVersion" source="FileVersion" caption="Versija" />
-    <BeeDataColumn name="Name" source="Name" caption="Pavadinimas" />
-    <BeeDataColumn name="Description" source="Description" caption="Aprašymas" />
-    <BeeDataColumn name="Mime" source="Mime" caption="Tipas" />
-    <BeeDataColumn name="Hash" source="Hash" caption="Kodas" readOnly="true" />
-    <BeeCalcColumn name="Owner" type="string" caption="Registratorius"
+    <DataColumn name="FileDate" source="FileDate" caption="Data" />
+    <DataColumn name="FileVersion" source="FileVersion" caption="Versija" />
+    <DataColumn name="Name" source="Name" caption="Pavadinimas" />
+    <DataColumn name="Description" source="Description" caption="Aprašymas" />
+    <DataColumn name="Mime" source="Mime" caption="Tipas" />
+    <DataColumn name="Hash" source="Hash" caption="Kodas" readOnly="true" />
+    <CalcColumn name="Owner" type="string" caption="Registratorius"
       sortBy="OwnerLastName, OwnerFirstName" searchBy="OwnerFirstName, OwnerLastName">
       <calc>
         <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
       </calc>
-    </BeeCalcColumn>
+    </CalcColumn>
   </columns>
-</BeeGrid>
+</Grid>

@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
@@ -17,6 +18,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dialog.Notification;
+import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -32,11 +34,11 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.EvalHelper;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.view.ActionEvent;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditEndEvent;
-import com.butent.bee.client.view.edit.EditFormEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
@@ -294,15 +296,20 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private String previewId = null;
 
   private int activeEditableIndex = BeeConst.UNDEF;
+  
+  private Dimensions dimensions = null;
 
   public FormImpl(String formName) {
-    super();
-    this.formName = formName;
+    this(formName, Position.RELATIVE);
   }
 
   public FormImpl(String formName, Position position) {
     super(position);
     this.formName = formName;
+  }
+
+  public HandlerRegistration addActionHandler(ActionEvent.Handler handler) {
+    return addHandler(handler, ActionEvent.getType());
   }
 
   public HandlerRegistration addActiveRowChangeHandler(ActiveRowChangeEvent.Handler handler) {
@@ -319,10 +326,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public HandlerRegistration addDataRequestHandler(DataRequestEvent.Handler handler) {
     return addHandler(handler, DataRequestEvent.getType());
-  }
-
-  public HandlerRegistration addEditFormHandler(EditFormEvent.Handler handler) {
-    return addHandler(handler, EditFormEvent.getType());
   }
 
   public HandlerRegistration addLoadingStateChangeHandler(LoadingStateChangeEvent.Handler handler) {
@@ -374,6 +377,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
     setReadOnly(formDescription.isReadOnly());
     setCaption(formDescription.getCaption());
+    
+    setDimensions(formDescription.getDimensions());
 
     Widget root = FormFactory.createForm(formDescription, dataCols, getCreationCallback(),
         callback);
@@ -381,7 +386,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       return;
     }
     if (addStyle) {
-      StyleUtils.makeAbsolute(root);
       root.addStyleName(STYLE_FORM);
     }
     setRootWidget(root);
@@ -391,7 +395,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public void finishNewRow(IsRow rowValue) {
-    fireEvent(new AddEndEvent());
+    fireEvent(new AddEndEvent(false));
 
     if (rowValue != null) {
       setRow(rowValue);
@@ -447,6 +451,14 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public String getFormName() {
     return formName;
+  }
+
+  public Unit getHeightUnit() {
+    return (getDimensions() == null) ? null : getDimensions().getHeightUnit();
+  }
+
+  public Double getHeightValue() {
+    return (getDimensions() == null) ? null : getDimensions().getHeightValue();
   }
 
   public int getPageSize() {
@@ -506,6 +518,14 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public String getWidgetId() {
     return getId();
+  }
+
+  public Unit getWidthUnit() {
+    return (getDimensions() == null) ? null : getDimensions().getWidthUnit();
+  }
+
+  public Double getWidthValue() {
+    return (getDimensions() == null) ? null : getDimensions().getWidthValue();
   }
 
   public boolean isEditing() {
@@ -827,7 +847,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public void startNewRow() {
     setAdding(true);
-    fireEvent(new AddStartEvent(NEW_ROW_CAPTION));
+    fireEvent(new AddStartEvent(NEW_ROW_CAPTION, false));
 
     IsRow oldRow = getRow();
     setRowBuffer(oldRow);
@@ -1003,6 +1023,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private CreationCallback getCreationCallback() {
     return creationCallback;
+  }
+
+  private Dimensions getDimensions() {
+    return dimensions;
   }
 
   private List<String> getDisablableWidgets() {
@@ -1233,6 +1257,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private void setDataColumns(List<BeeColumn> dataColumns) {
     this.dataColumns = dataColumns;
+  }
+
+  private void setDimensions(Dimensions dimensions) {
+    this.dimensions = dimensions;
   }
 
   private void setFormCallback(FormCallback formCallback) {

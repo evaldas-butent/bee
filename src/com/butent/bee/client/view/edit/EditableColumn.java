@@ -9,6 +9,7 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.Stacking;
@@ -525,6 +526,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   private void ensureEditor(HasWidgets editorContainer) {
     if (getEditor() != null) {
+      if (editorContainer != null && getEditor().asWidget().getParent() != editorContainer) {
+        BeeKeeper.getLog().debug(getCaption(), "editor moved");
+        editorContainer.add(getEditor().asWidget());
+      }
       return;
     }
 

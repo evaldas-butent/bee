@@ -601,10 +601,18 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     setEditing(true);
 
     StyleUtils.copySize(sourceElement, getEditorBox());
-    StyleUtils.setLeft(getEditorBox(),
-        DomUtils.getRelativeLeft(getContainerElement(), sourceElement));
-    StyleUtils.setTop(getEditorBox(),
-        DomUtils.getRelativeTop(getContainerElement(), sourceElement));
+    
+    int left;
+    int top;
+    if (getContainerElement().isOrHasChild(sourceElement)) {
+      left = DomUtils.getRelativeLeft(getContainerElement(), sourceElement);
+      top = DomUtils.getRelativeTop(getContainerElement(), sourceElement);
+    } else {
+      left = sourceElement.getAbsoluteLeft() - getContainerElement().getAbsoluteLeft();
+      top = sourceElement.getAbsoluteTop() - getContainerElement().getAbsoluteTop();
+    }
+    StyleUtils.setLeft(getEditorBox(), left);
+    StyleUtils.setTop(getEditorBox(), top);
 
     sourceElement.blur();
 

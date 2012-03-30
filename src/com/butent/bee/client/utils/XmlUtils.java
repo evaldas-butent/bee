@@ -18,8 +18,10 @@ import com.google.gwt.xml.client.impl.DOMParseException;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
+import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.ui.Calculation;
@@ -241,6 +243,14 @@ public class XmlUtils {
     return getConditionalStyle(element);
   }
 
+  public static Dimensions getDimensions(Element element) {
+    Assert.notNull(element);
+    return new Dimensions(getAttributeDouble(element, HasDimensions.ATTR_WIDTH),
+        getAttributeUnit(element, HasDimensions.ATTR_WIDTH_UNIT),
+        getAttributeDouble(element, HasDimensions.ATTR_HEIGHT),
+        getAttributeUnit(element, HasDimensions.ATTR_HEIGHT_UNIT));
+  }
+  
   public static List<Property> getDocumentInfo(Document doc) {
     Assert.notNull(doc);
     List<Property> lst = Lists.newArrayList();

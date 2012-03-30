@@ -699,7 +699,12 @@ public class EventUtils {
 
   public static Element getEventTargetElement(NativeEvent ev) {
     Assert.notNull(ev);
-    return Element.as(ev.getEventTarget());
+    
+    if (Element.is(ev.getEventTarget())) {
+      return Element.as(ev.getEventTarget());
+    } else {
+      return null;
+    }
   }
 
   public static String getEventTargetId(NativeEvent ev) {
@@ -715,12 +720,20 @@ public class EventUtils {
 
   public static String getTargetId(EventTarget et) {
     Assert.notNull(et);
-    return Element.as(et).getId();
+    if (Element.is(et)) {
+      return Element.as(et).getId();
+    } else {
+      return null;
+    }
   }
 
   public static String getTargetTagName(EventTarget et) {
     Assert.notNull(et);
-    return Element.as(et).getTagName();
+    if (Element.is(et)) {
+      return Element.as(et).getTagName();
+    } else {
+      return null;
+    }
   }
 
   public static int getTypeInt(NativeEvent ev) {
@@ -1185,10 +1198,10 @@ public class EventUtils {
   }
 
   private static String transformEventTarget(EventTarget et) {
-    if (et == null) {
-      return BeeConst.STRING_EMPTY;
-    } else {
+    if (et != null && Element.is(et)) {
       return DomUtils.transformElement(Element.as(et));
+    } else {
+      return BeeConst.STRING_EMPTY;
     }
   }
 

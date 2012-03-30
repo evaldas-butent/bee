@@ -21,11 +21,11 @@ import java.util.List;
 public class ColumnDescription implements BeeSerializable, HasInfo {
 
   public enum ColType {
-    DATA("BeeDataColumn", false),
-    CALCULATED("BeeCalcColumn", true),
-    ID("BeeIdColumn", true),
-    VERSION("BeeVerColumn", true),
-    SELECTION("BeeSelectionColumn", true);
+    DATA("DataColumn", false),
+    CALCULATED("CalcColumn", true),
+    ID("IdColumn", true),
+    VERSION("VerColumn", true),
+    SELECTION("SelectionColumn", true);
 
     public static ColType getColType(String tagName) {
       if (!BeeUtils.isEmpty(tagName)) {

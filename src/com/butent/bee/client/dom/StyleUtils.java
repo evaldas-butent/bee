@@ -17,6 +17,7 @@ import com.google.gwt.safecss.shared.SafeStylesUtils;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -1858,7 +1859,7 @@ public class StyleUtils {
   }
 
   public static void setRectangle(Element el, int left, int top, int width, int height) {
-    Assert.notNull(el);
+    Assert.notNull(el, "setRectangle: element is null");
     setRectangle(el.getStyle(), left, top, width, height);
   }
 
@@ -2248,6 +2249,7 @@ public class StyleUtils {
       }
 
       if (ok) {
+        BeeKeeper.getLog().debug(el.getTagName(), el.getClassName(), el.getId(), name, value);
         return value;
       }
     }

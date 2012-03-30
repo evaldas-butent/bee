@@ -2,8 +2,7 @@ package com.butent.bee.client.presenter;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
@@ -29,7 +28,7 @@ public class GridFormPresenter extends AbstractPresenter {
   private final GridView gridView;
   
   private final HeaderView header;
-  private final Split container;
+  private final Complex container;
   
   private final boolean editSave;
 
@@ -46,7 +45,12 @@ public class GridFormPresenter extends AbstractPresenter {
   }
   
   public FormView getForm() {
-    return (FormView) container.getCenter();
+    for (Widget child : container) {
+      if (child instanceof FormView) {
+        return (FormView) child;
+      }
+    }
+    return null;
   }
 
   public GridCallback getGridCallback() {
@@ -115,14 +119,13 @@ public class GridFormPresenter extends AbstractPresenter {
     header.addCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, edit));
   }
   
-  private Split createContainer(HeaderView headerView, FormView formView, boolean edit) {
-    Split formContainer = new Split(0);
-    StyleUtils.makeAbsolute(formContainer);
+  private Complex createContainer(HeaderView headerView, FormView formView, boolean edit) {
+    Complex formContainer = new Complex();
     formContainer.addStyleName(STYLE_FORM_CONTAINER);
     formContainer.addStyleName(getFormStyle(STYLE_FORM_CONTAINER, edit));
 
-    formContainer.addNorth(headerView.asWidget(), headerView.getHeight());
-    formContainer.add(formView.asWidget());
+    formContainer.addTopHeightFillHorizontal(headerView.asWidget(), 0, headerView.getHeight());
+    formContainer.addTopBottomFillHorizontal(formView.asWidget(), headerView.getHeight(), 0);
     
     return formContainer;
   }
