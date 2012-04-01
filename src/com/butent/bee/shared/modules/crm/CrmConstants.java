@@ -1,20 +1,42 @@
 package com.butent.bee.shared.modules.crm;
 
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.utils.BeeUtils;
 
 public class CrmConstants {
-  public static enum Priority {
-    LOW, MEDIUM, HIGH
+
+  public static enum Priority implements HasCaption {
+    LOW("*"), MEDIUM("**"), HIGH("***");
+    
+    private final String caption;
+
+    private Priority(String caption) {
+      this.caption = caption;
+    }
+
+    @Override
+    public String getCaption() {
+      return caption;
+    }
   }
 
-  public static enum ProjectEvent {
+  public static enum ProjectEvent implements HasCaption {
     CREATED, ACTIVATED, SUSPENDED, COMPLETED, CANCELED,
-    EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED, DELETED
+    EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED, DELETED;
+
+    public String getCaption() {
+      return BeeUtils.proper(this.name(), null);
+    }
   }
 
-  public static enum TaskEvent {
+  public static enum TaskEvent implements HasCaption {
     ACTIVATED, SUSPENDED, COMPLETED, APPROVED, CANCELED,
-    FORWARDED, EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED, DELETED
+    FORWARDED, EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED, DELETED;
+
+    public String getCaption() {
+      return BeeUtils.proper(this.name(), null);
+    }
   }
 
   public static final String CRM_MODULE = "Crm";

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListBox xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../../schemas/widget.xsd"
+
+  source="Priority" name="Priority" valueNumeric="true" itemKey="Priority"
+  style="min-width: 80px; color: darkblue; letter-spacing: 5px; font-size: medium; padding-left: 3px;"
+/>
+  
+  

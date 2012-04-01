@@ -122,6 +122,7 @@ import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.ui.HasValueStartIndex;
+import com.butent.bee.shared.ui.RendererDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
@@ -368,7 +369,7 @@ public enum FormWidget {
   private static final String ATTR_MULTIPLE = "multiple";
 
   private static final String ATTR_PARENT_NAME = "parentName";
-  
+
   private static final String TAG_CSS = "css";
   private static final String TAG_DYN_STYLE = "dynStyle";
   private static final String TAG_HANDLER = "handler";
@@ -780,6 +781,9 @@ public enum FormWidget {
         String isNum = attributes.get(ATTR_VALUE_NUMERIC);
         if (BeeUtils.isBoolean(isNum)) {
           ((BeeListBox) widget).setValueNumeric(BeeUtils.toBoolean(isNum));
+        } else if (ValueType.isNumeric(DataUtils
+            .getColumnType(attributes.get(ATTR_SOURCE), columns))) {
+          ((BeeListBox) widget).setValueNumeric(true);
         }
         break;
 
@@ -1063,10 +1067,15 @@ public enum FormWidget {
         } else if (BeeUtils.same(childTag, TAG_HANDLER)) {
           addHandler(widget, child.getAttribute(ATTR_EVENT), XmlUtils.getText(child));
 
-        } else if (BeeUtils.same(childTag, TAG_CALC)) {
-          calc = XmlUtils.getCalculation(child);
-          if (calc != null) {
-            widgetDescription.setCalculation(calc);
+        } else if (BeeUtils.same(childTag, RendererDescription.TAG_RENDERER)) {
+          RendererDescription rendererDescription = XmlUtils.getRendererDescription(child);
+          if (rendererDescription != null) {
+            widgetDescription.setRendererDescription(rendererDescription);
+          }
+        } else if (BeeUtils.same(childTag, RendererDescription.TAG_RENDER)) {
+          Calculation render = XmlUtils.getCalculation(child);
+          if (render != null) {
+            widgetDescription.setRender(render);
           }
 
         } else if (BeeUtils.same(childTag, TAG_EDITABLE)) {
@@ -1235,6 +1244,7 @@ public enum FormWidget {
           } else {
             ((BeeImage) widget).setResource(resource);
           }
+          widget.getElement().setId(id);
         }
         break;
 
@@ -1908,6 +1918,11 @@ public enum FormWidget {
       } else if (BeeUtils.same(name, HasTextDimensions.ATTR_CHARACTER_WIDTH)) {
         if (widget instanceof HasTextDimensions && BeeUtils.isPositiveInt(value)) {
           ((HasTextDimensions) widget).setCharacterWidth(BeeUtils.toInt(value));
+        }
+
+      } else if (BeeUtils.same(name, HasItems.ATTR_ITEM_KEY)) {
+        if (widget instanceof AcceptsCaptions) {
+          ((AcceptsCaptions) widget).addCaptions(value);
         }
       }
     }

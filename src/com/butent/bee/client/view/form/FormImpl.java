@@ -24,6 +24,8 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
@@ -59,7 +61,6 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.event.ScopeChangeEvent;
 import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
 import com.butent.bee.shared.data.event.SortEvent;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -104,30 +105,23 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       if (type.isDisplay()) {
         String source = result.getSource();
         int index = BeeConst.UNDEF;
-        ValueType valueType = null;
-        Evaluator evaluator = null;
-
+        
         boolean ok = true;
-
         if (!BeeUtils.isEmpty(source) && hasData()) {
           index = getDataIndex(source);
-          if (index >= 0) {
-            valueType = getDataColumns().get(index).getType();
-          } else {
+          if (index < 0) {
             onFailure(new String[] {"display source not found", source, id});
             ok = false;
           }
         }
 
         if (ok) {
-          Calculation calc = result.getCalculation();
-          if (calc != null) {
-            evaluator = Evaluator.create(calc, source, getDataColumns());
-          }
-
-          ok = (index >= 0 || evaluator != null);
+          AbstractCellRenderer renderer = 
+              RendererFactory.getRenderer(result.getRendererDescription(), result.getRender(),
+                  result.getItemKey(), getDataColumns(), index);
+          ok = (index >= 0 || renderer != null);
           if (ok) {
-            getDisplayWidgets().add(new DisplayWidget(index, valueType, evaluator, result));
+            getDisplayWidgets().add(new DisplayWidget(index, renderer, result));
           }
         }
       }
@@ -157,58 +151,32 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private class DisplayWidget {
     private final int dataIndex;
-    private final ValueType valueType;
-
-    private final Evaluator evaluator;
-
+    private final AbstractCellRenderer renderer;
     private final WidgetDescription widgetDescription;
 
-    private DisplayWidget(int dataIndex, ValueType valueType, Evaluator evaluator,
+    private DisplayWidget(int dataIndex, AbstractCellRenderer renderer,
         WidgetDescription widgetDescription) {
       this.dataIndex = dataIndex;
-      this.valueType = valueType;
-      this.evaluator = evaluator;
+      this.renderer = renderer;
       this.widgetDescription = widgetDescription;
     }
 
-    private int getDataIndex() {
-      return dataIndex;
-    }
-
-    private Evaluator getEvaluator() {
-      return evaluator;
-    }
-
     private String getValue(IsRow rowValue) {
-      if (getEvaluator() != null) {
-        if (rowValue != null && getDataIndex() >= 0 && getValueType() != null) {
-          getEvaluator().update(rowValue, getPageStart(), getDataIndex(), getValueType(),
-              rowValue.getString(getDataIndex()));
-        } else {
-          getEvaluator().update(rowValue);
-        }
-        return getEvaluator().evaluate();
+      if (renderer != null) {
+        return renderer.render(rowValue);
       } else if (rowValue != null) {
-        return rowValue.getString(getDataIndex());
+        return rowValue.getString(dataIndex);
       } else {
         return BeeConst.STRING_EMPTY;
       }
     }
 
-    private ValueType getValueType() {
-      return valueType;
-    }
-
-    private WidgetDescription getWidgetDescription() {
-      return widgetDescription;
-    }
-
     private String getWidgetId() {
-      return getWidgetDescription().getWidgetId();
+      return widgetDescription.getWidgetId();
     }
 
     private FormWidget getWidgetType() {
-      return getWidgetDescription().getWidgetType();
+      return widgetDescription.getWidgetType();
     }
   }
 
@@ -386,6 +354,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       return;
     }
     if (addStyle) {
+      StyleUtils.makeAbsolute(root);
       root.addStyleName(STYLE_FORM);
     }
     setRootWidget(root);

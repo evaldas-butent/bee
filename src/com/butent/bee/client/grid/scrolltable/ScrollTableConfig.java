@@ -552,7 +552,7 @@ public class ScrollTableConfig {
 
     panel.add(new BeeLabel("Grid Resize"), x, y);
     rpName = BeeUtils.createUniqueName("rp");
-    panel.add(new RadioGroup(rpName, resizePolicy, ResizePolicy.values()), x + 100, y);
+    panel.add(new RadioGroup(rpName, resizePolicy, ResizePolicy.class), x + 100, y);
     y += 30 + yMrg;
 
     int ww = 50;

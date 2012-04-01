@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
-  name="Data" caption="Data Binding, Events" viewName="DataTypes">
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+  name="Data" caption="Data Binding, Events, Rendering" viewName="DataTypes">
   
   <FlexTable borderWidth="1" cellPadding="5" style="borderCollapse: collapse;">
     <row>
@@ -50,13 +50,7 @@
 
     <row>
       <cell>
-        <Radio source="Integer" valueStartIndex="1">
-          <option>1</option>
-          <option>2</option>
-          <option>3</option>
-          <option>4</option>
-          <option>5</option>
-        </Radio>
+        <Radio source="Integer" valueStartIndex="1" itemKey="Priority" />
       </cell>
       <cell>
         <ListBox source="Integer" valueNumeric="true">
@@ -73,17 +67,17 @@
         </ListBox>
       </cell>
       <cell>
-        <ListBox source="Integer" valueNumeric="true" valueStartIndex="1">
-          <item>bbb</item>
-          <item>ccc</item>
-          <item>ddd</item>
-          <item>eee</item>
-          <item>fff</item>
-          <item>ggg</item>
-          <item>hhh</item>
-          <item>iii</item>
-          <item>jjj</item>
-        </ListBox>
+        <Image source="Integer">
+          <renderer type="list">
+            <item>add</item>
+            <item>delete</item>
+            <item>bookmark</item>
+            <item>play</item>
+            <item>red</item>
+            <item>green</item>
+            <item>yellow</item>
+          </renderer>
+        </Image>
       </cell>
     </row>
 
@@ -172,15 +166,12 @@
         <LongLabel source="Long" />
       </cell>
       <cell>
-        <Progress max="1000">
-          <calc>
-            <function>
-              if (row.Long &gt; 0) {
-                return Math.min(Math.sqrt(row.Long), 900);
-              }
-              return 0;
-            </function>
-          </calc>
+        <Progress source="Long" max="10">
+          <renderer type="range">
+            <item>, 0, 2</item>
+            <item>0, 1e6, 5</item>
+            <item>1e6, , 9</item>
+          </renderer>
         </Progress>
       </cell>
     </row>
@@ -211,25 +202,25 @@
       </cell>
       <cell>
         <TextLabel>
-          <calc>
+          <render>
             <function>
               return "length " + String(row.String).length;
             </function>
-          </calc>
+          </render>
         </TextLabel>
       </cell>
       <cell>
         <Meter min="0" max="30" source="String">
-          <calc>
+          <render>
             <expression>String(cell.value).length</expression>
-          </calc>
+          </render>
         </Meter>
       </cell>
     </row>
 
     <row>
       <cell colSpan="3">
-        <InputArea source="Memo" style="width: 500px; height: 60px;" />
+        <InputArea source="Memo" visibleLines="4" characterWidth="40" />
       </cell>
     </row>
     <row>
@@ -244,16 +235,16 @@
       </cell>
       <cell>
         <LongLabel>
-          <calc>
+          <render>
             <expression>rowId</expression>
-          </calc>
+          </render>
         </LongLabel>
       </cell>
       <cell>
         <DateTimeLabel>
-          <calc>
+          <render>
             <expression>rowVersion</expression>
-          </calc>
+          </render>
         </DateTimeLabel>
       </cell>
     </row>

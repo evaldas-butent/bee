@@ -18,7 +18,6 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.resources.Images;
 import com.butent.bee.client.utils.AbstractEvaluation;
-import com.butent.bee.client.utils.Evaluator.Evaluation;
 import com.butent.bee.client.utils.Evaluator.Parameters;
 import com.butent.bee.client.utils.HasEvaluation;
 import com.butent.bee.client.view.edit.Editor;
@@ -38,7 +37,6 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.crm.CrmConstants;
-import com.butent.bee.shared.modules.crm.CrmConstants.Priority;
 import com.butent.bee.shared.modules.crm.CrmConstants.ProjectEvent;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
@@ -66,62 +64,54 @@ public class ProjectList {
     public boolean afterCreateColumn(String columnId, AbstractColumn<?> column,
         ColumnHeader header, ColumnFooter footer) {
 
-      if (column instanceof HasEvaluation) {
-        if (BeeUtils.same(columnId, CrmConstants.COL_PRIORITY)) {
-          ((HasEvaluation) column).setEvaluation(EVAL_PRIORITY);
+      if (BeeUtils.same(columnId, "Mode") && column instanceof HasEvaluation) {
+        ((HasEvaluation) column).setEvaluation(new AbstractEvaluation() {
+          private Widget modeNew = null;
+          private Widget modeUpd = null;
 
-        } else if (BeeUtils.same(columnId, CrmConstants.COL_EVENT)) {
-          ((HasEvaluation) column).setEvaluation(EVAL_EVENT);
-
-        } else if (BeeUtils.same(columnId, "Mode")) {
-          ((HasEvaluation) column).setEvaluation(new AbstractEvaluation() {
-            private Widget modeNew = null;
-            private Widget modeUpd = null;
-
-            @Override
-            public String eval(Parameters parameters) {
-              Long access = parameters.getLong(CrmConstants.COL_LAST_ACCESS);
-              if (access == null) {
-                return getHtml(modeNew);
-              }
-              Long publish = parameters.getLong(CrmConstants.COL_LAST_PUBLISH);
-              if (access < publish) {
-                return getHtml(modeUpd);
-              }
-              return BeeConst.STRING_EMPTY;
+          @Override
+          public String eval(Parameters parameters) {
+            Long access = parameters.getLong(CrmConstants.COL_LAST_ACCESS);
+            if (access == null) {
+              return getHtml(modeNew);
             }
+            Long publish = parameters.getLong(CrmConstants.COL_LAST_PUBLISH);
+            if (access < publish) {
+              return getHtml(modeUpd);
+            }
+            return BeeConst.STRING_EMPTY;
+          }
 
-            @Override
-            public void setOptions(String options) {
-              if (!BeeUtils.isEmpty(options)) {
-                int idx = 0;
-                for (String mode : BeeUtils.NAME_SPLITTER.split(options)) {
-                  ImageResource resource = Images.get(mode);
-                  Widget widget = (resource == null) ? new BeeLabel(mode) : new BeeImage(resource);
-                  switch (idx++) {
-                    case 0:
-                      modeNew = widget;
-                      break;
-                    case 1:
-                      modeUpd = widget;
-                      break;
-                  }
+          @Override
+          public void setOptions(String options) {
+            if (!BeeUtils.isEmpty(options)) {
+              int idx = 0;
+              for (String mode : BeeUtils.NAME_SPLITTER.split(options)) {
+                ImageResource resource = Images.get(mode);
+                Widget widget = (resource == null) ? new BeeLabel(mode) : new BeeImage(resource);
+                switch (idx++) {
+                  case 0:
+                    modeNew = widget;
+                    break;
+                  case 1:
+                    modeUpd = widget;
+                    break;
                 }
               }
             }
+          }
 
-            private String getHtml(Widget widget) {
-              if (widget == null) {
-                return null;
-              } else if (widget instanceof BeeLabel) {
-                return widget.getElement().getInnerHTML();
-              } else {
-                DomUtils.createId(widget, "mode");
-                return widget.getElement().getString();
-              }
+          private String getHtml(Widget widget) {
+            if (widget == null) {
+              return null;
+            } else if (widget instanceof BeeLabel) {
+              return widget.getElement().getInnerHTML();
+            } else {
+              DomUtils.createId(widget, "mode");
+              return widget.getElement().getString();
             }
-          });
-        }
+          }
+        });
       }
       return true;
     }
@@ -142,7 +132,7 @@ public class ProjectList {
         this.filterWidgets.put(BeeUtils.normalize(name), (Editor) widget);
       }
     }
-    
+
     @Override
     public boolean beforeCreateColumn(String columnId, List<BeeColumn> dataColumns,
         ColumnDescription columnDescription) {
@@ -188,7 +178,7 @@ public class ProjectList {
         return getType().getCaption();
       }
     }
-    
+
     @Override
     public Map<String, Filter> getInitialFilters() {
       Filter filter = Filter.or(getEventFilter(ProjectEvent.CREATED),
@@ -227,7 +217,7 @@ public class ProjectList {
         return ComparisonFilter.isEqual(CrmConstants.COL_EVENT, new IntegerValue(pe.ordinal()));
       }
     }
-    
+
     private Filter getFilter() {
       CompoundFilter andFilter = Filter.and();
       Value now = new IntegerValue(new JustDate().getDay());
@@ -258,7 +248,7 @@ public class ProjectList {
     private Type getType() {
       return type;
     }
-    
+
     private Long getUserId() {
       return userId;
     }
@@ -295,20 +285,6 @@ public class ProjectList {
   }
 
   private static final String FILTER_KEY = "f1";
-
-  private static final Evaluation EVAL_PRIORITY = new AbstractEvaluation() {
-    @Override
-    public String eval(Parameters parameters) {
-      return BeeUtils.getName(Priority.class, parameters.getInteger(CrmConstants.COL_PRIORITY));
-    }
-  };
-
-  private static final Evaluation EVAL_EVENT = new AbstractEvaluation() {
-    @Override
-    public String eval(Parameters parameters) {
-      return BeeUtils.getName(ProjectEvent.class, parameters.getInteger(CrmConstants.COL_EVENT));
-    }
-  };
 
   public static void open(String args) {
     Type type = null;

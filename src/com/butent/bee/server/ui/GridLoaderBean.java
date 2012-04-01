@@ -72,9 +72,6 @@ public class GridLoaderBean {
 
   private static final String TAG_CALC = "calc";
 
-  private static final String TAG_RENDERER = "renderer";
-  private static final String TAG_RENDER = "render";
-
   private static final String TAG_EDITOR = "editor";
 
   private static final Set<String> WIDGET_TAGS = Sets.newHashSet("north", "south", "west", "east");
@@ -351,11 +348,11 @@ public class GridLoaderBean {
   private RendererDescription getRenderer(Element parent, EditorDescription editor) {
     Assert.notNull(parent);
 
-    Element element = XmlUtils.getFirstChildElement(parent, TAG_RENDERER);
+    Element element = XmlUtils.getFirstChildElement(parent, RendererDescription.TAG_RENDERER);
     if (element == null) {
       return null;
     }
-    String typeCode = element.getAttribute(ATTR_TYPE);
+    String typeCode = element.getAttribute(RendererDescription.ATTR_TYPE);
     if (BeeUtils.isEmpty(typeCode)) {
       return null;
     }
@@ -523,6 +520,9 @@ public class GridLoaderBean {
 
         } else if (BeeUtils.same(key, ATTR_CELL)) {
           dst.setCellType(CellType.getByCode(value));
+
+        } else if (BeeUtils.same(key, HasItems.ATTR_ITEM_KEY)) {
+          dst.setItemKey(value.trim());
         }
       }
     }
@@ -585,7 +585,7 @@ public class GridLoaderBean {
     if (renderer != null) {
       dst.setRendererDescription(renderer);
     }
-    Calculation render = XmlUtils.getCalculation(src, TAG_RENDER);
+    Calculation render = XmlUtils.getCalculation(src, RendererDescription.TAG_RENDER);
     if (render != null) {
       dst.setRender(render);
     }

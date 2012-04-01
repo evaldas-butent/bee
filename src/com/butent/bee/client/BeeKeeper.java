@@ -9,11 +9,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.calendar.demo.CalendarPanel;
 import com.butent.bee.client.modules.commons.CommonEventHandler;
-import com.butent.bee.client.modules.crm.DocumentHandler;
-import com.butent.bee.client.modules.crm.ProjectEventHandler;
-import com.butent.bee.client.modules.crm.ProjectList;
-import com.butent.bee.client.modules.crm.TaskEventHandler;
-import com.butent.bee.client.modules.crm.TaskList;
 import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.CompositeService;
@@ -123,21 +118,6 @@ public class BeeKeeper {
       }
     });
 
-    TaskEventHandler.register();
-    getMenu().registerMenuCallback("task_list", new MenuManager.MenuCallback() {
-      public void onSelection(String parameters) {
-        TaskList.open(parameters);
-      }
-    });
-
-    ProjectEventHandler.register();
-    getMenu().registerMenuCallback("project_list", new MenuManager.MenuCallback() {
-      public void onSelection(String parameters) {
-        ProjectList.open(parameters);
-      }
-    });
-
-    DocumentHandler.register();
     TransportHandler.register();
 
     CommonEventHandler.register();

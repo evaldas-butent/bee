@@ -1,8 +1,10 @@
 package com.butent.bee.client.ui;
 
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
+import com.butent.bee.shared.ui.RendererDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -32,7 +34,10 @@ public class WidgetDescription implements HasInfo {
   private Collection<ConditionalStyleDeclaration> dynStyles = null;
 
   private String source = null;
-  private Calculation calculation = null;
+
+  private RendererDescription rendererDescription = null;
+  private Calculation render = null;
+  private String itemKey = null;
 
   private String caption = null;
   private Boolean readOnly = null;
@@ -65,10 +70,6 @@ public class WidgetDescription implements HasInfo {
     }
   }
 
-  public Calculation getCalculation() {
-    return calculation;
-  }
-
   public String getCaption() {
     return caption;
   }
@@ -97,7 +98,8 @@ public class WidgetDescription implements HasInfo {
         "Rel Column", getRelColumn(),
         "Min Value", getMinValue(),
         "Max Value", getMaxValue(),
-        "Required", isRequired());
+        "Required", isRequired(),
+        "Item Key", getItemKey());
 
     if (getValidation() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Validation", getValidation().getInfo());
@@ -108,8 +110,12 @@ public class WidgetDescription implements HasInfo {
     if (getCarry() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Carry", getCarry().getInfo());
     }
-    if (getCalculation() != null) {
-      PropertyUtils.appendChildrenToProperties(info, "Calculation", getCalculation().getInfo());
+
+    if (getRendererDescription() != null) {
+      PropertyUtils.appendChildrenToProperties(info, "Renderer", getRendererDescription().getInfo());
+    }
+    if (getRender() != null) {
+      PropertyUtils.appendChildrenToProperties(info, "Render", getRender().getInfo());
     }
 
     if (getDynStyles() != null && !getDynStyles().isEmpty()) {
@@ -127,6 +133,10 @@ public class WidgetDescription implements HasInfo {
 
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
+  }
+
+  public String getItemKey() {
+    return itemKey;
   }
 
   public String getMaxValue() {
@@ -149,6 +159,14 @@ public class WidgetDescription implements HasInfo {
     return relView;
   }
 
+  public Calculation getRender() {
+    return render;
+  }
+
+  public RendererDescription getRendererDescription() {
+    return rendererDescription;
+  }
+
   public String getSource() {
     return source;
   }
@@ -156,7 +174,7 @@ public class WidgetDescription implements HasInfo {
   public Calculation getValidation() {
     return validation;
   }
-
+  
   public String getWidgetId() {
     return widgetId;
   }
@@ -169,7 +187,7 @@ public class WidgetDescription implements HasInfo {
   public int hashCode() {
     return (getWidgetId() == null) ? 0 : getWidgetId().trim().hashCode();
   }
-  
+
   public boolean isDisablable() {
     return disablable;
   }
@@ -214,12 +232,11 @@ public class WidgetDescription implements HasInfo {
         setRelView(value.trim());
       } else if (BeeUtils.same(key, ATTR_REL_COLUMN)) {
         setRelColumn(value.trim());
+
+      } else if (BeeUtils.same(key, HasItems.ATTR_ITEM_KEY)) {
+        setItemKey(value.trim());
       }
     }
-  }
-
-  public void setCalculation(Calculation calculation) {
-    this.calculation = calculation;
   }
 
   public void setCaption(String caption) {
@@ -240,6 +257,10 @@ public class WidgetDescription implements HasInfo {
 
   public void setEditable(Calculation editable) {
     this.editable = editable;
+  }
+
+  public void setItemKey(String itemKey) {
+    this.itemKey = itemKey;
   }
 
   public void setMaxValue(String maxValue) {
@@ -266,6 +287,14 @@ public class WidgetDescription implements HasInfo {
     this.relView = relView;
   }
 
+  public void setRender(Calculation render) {
+    this.render = render;
+  }
+
+  public void setRendererDescription(RendererDescription rendererDescription) {
+    this.rendererDescription = rendererDescription;
+  }
+
   public void setRequired(Boolean required) {
     this.required = required;
   }
@@ -277,4 +306,5 @@ public class WidgetDescription implements HasInfo {
   public void setValidation(Calculation validation) {
     this.validation = validation;
   }
+  
 }

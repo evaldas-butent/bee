@@ -24,8 +24,11 @@ import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
+import com.butent.bee.shared.ui.RendererDescription;
+import com.butent.bee.shared.ui.RendererType;
 import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -313,6 +316,29 @@ public class XmlUtils {
     return PropertyUtils.createProperties("Data", pin.getData(), "Target", pin.getTarget());
   }
 
+  public static RendererDescription getRendererDescription(Element element) {
+    Assert.notNull(element);
+    String typeCode = element.getAttribute(RendererDescription.ATTR_TYPE);
+    if (BeeUtils.isEmpty(typeCode)) {
+      return null;
+    }
+
+    RendererType type = RendererType.getByTypeCode(typeCode);
+    if (type == null) {
+      return null;
+    }
+
+    RendererDescription rendererDescription = new RendererDescription(type);
+    rendererDescription.setAttributes(XmlUtils.getAttributes(element));
+
+    List<String> items = getChildrenText(element, HasItems.TAG_ITEM);
+    if (!items.isEmpty()) {
+      rendererDescription.setItems(items);
+    }
+    
+    return rendererDescription;
+  }
+  
   public static StyleDeclaration getStyle(Element element) {
     Assert.notNull(element);
 

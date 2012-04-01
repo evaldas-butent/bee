@@ -842,8 +842,9 @@ public class BeeUtils {
    * @return only the String class name with packages excluded.
    */
   public static String getClassName(Class<?> cls) {
-    String c = cls.getName();
-    return c.substring(c.lastIndexOf(".") + 1);
+    String name = cls.getName();
+    int p = Math.max(name.lastIndexOf('.'), name.lastIndexOf('$'));
+    return name.substring(p + 1);
   }
 
   public static <E extends Enum<?>> E getConstant(Class<E> clazz, String name) {
@@ -987,6 +988,21 @@ public class BeeUtils {
     }
   }
 
+  /**
+   * Returns a value from the list in the specified index.
+   * 
+   * @param lst the list to return from
+   * @param idx the element which to return by index
+   * @return return an element in the specified position.
+   */
+  public static <T> T getQuietly(List<? extends T> lst, int idx) {
+    if (isIndex(lst, idx)) {
+      return lst.get(idx);
+    } else {
+      return null;
+    }
+  }
+  
   public static String getSame(Collection<String> col, String s) {
     if (isEmpty(col)) {
       return null;
@@ -1020,7 +1036,7 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
-  
+
   /**
    * Separates a string with separator value. Returns a string that goes after the separator.
    * 
@@ -1075,7 +1091,7 @@ public class BeeUtils {
       return def;
     }
   }
-
+  
   /**
    * Extended if sentence. Basic syntax : if {@code obj[i] == true} the method jumps to
    * {@code obj[i+1]} else jumps to {@code obj[i+2]}
@@ -1100,7 +1116,7 @@ public class BeeUtils {
     }
     return z;
   }
-  
+
   /**
    * Transforms the Object to a String and increments the value by 1.
    * 
@@ -1110,7 +1126,7 @@ public class BeeUtils {
   public static String increment(Object obj) {
     return increment(transform(obj));
   }
-
+  
   /**
    * Transforms the String to Integer and increments it by 1.
    * 
@@ -1120,7 +1136,7 @@ public class BeeUtils {
   public static String increment(String s) {
     return Integer.toString(toInt(s) + 1);
   }
-  
+
   public static int indexOf(List<String> lst, String s) {
     if (isEmpty(lst)) {
       return BeeConst.UNDEF;
@@ -1706,11 +1722,11 @@ public class BeeUtils {
   public static boolean isPositiveDouble(String s) {
     return isDouble(s, BeeConst.DOUBLE_ZERO, false);
   }
-
+  
   public static boolean isPositiveInt(String s) {
     return isInt(s) && toInt(s) > 0;
   }
-  
+
   /**
    * Checks if the first character in a CharSequence is a prefix.
    * 
@@ -2043,21 +2059,6 @@ public class BeeUtils {
       return z;
     }
     return x;
-  }
-
-  /**
-   * Returns a value from the list in the specified index.
-   * 
-   * @param lst the list to return from
-   * @param idx the element which to return by index
-   * @return return an element in the specified position.
-   */
-  public static <T> T listGetQuietly(List<? extends T> lst, int idx) {
-    if (isIndex(lst, idx)) {
-      return lst.get(idx);
-    } else {
-      return null;
-    }
   }
 
   /**

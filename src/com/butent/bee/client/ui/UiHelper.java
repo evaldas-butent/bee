@@ -1,5 +1,6 @@
 package com.butent.bee.client.ui;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -33,8 +34,10 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -169,6 +172,20 @@ public class UiHelper {
         foster(child, parentName, parentRow, parentEnabled);
       }
     }
+  }
+  
+  public static List<String> getCaptions(Class<? extends Enum<?>> clazz) {
+    Assert.notNull(clazz);
+    List<String> result = Lists.newArrayList();
+
+    for (Enum<?> constant : clazz.getEnumConstants()) {
+      if (constant instanceof HasCaption) {
+        result.add(((HasCaption) constant).getCaption());
+      } else {
+        result.add(BeeUtils.proper(constant.name(), BeeConst.CHAR_UNDER));
+      }
+    }
+    return result;
   }
   
   public static HorizontalAlignmentConstant getDefaultHorizontalAlignment(ValueType type) {

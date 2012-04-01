@@ -33,8 +33,11 @@ public class RowOrdering<RowType extends IsRow> implements Comparator<RowType> {
 
       switch (index) {
         case DataUtils.ID_INDEX:
+          type = DataUtils.ID_TYPE;
+          break;
+
         case DataUtils.VERSION_INDEX:
-          type = ValueType.LONG;
+          type = DataUtils.VERSION_TYPE;
           break;
 
         default:

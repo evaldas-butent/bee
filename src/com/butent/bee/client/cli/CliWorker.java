@@ -112,6 +112,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -378,6 +379,8 @@ public class CliWorker {
       BeeKeeper.getScreen().showGrid(Global.getCache().getExtendedInfo());
     } else if (z.startsWith("cal")) {
       showCalendar(arr);
+    } else if (z.startsWith("cap")) {
+      showCaptions();
     } else if (z.equals("canvas")) {
       new CanvasDemo().start();
     } else if (BeeUtils.inList(z, "center", "east", "north", "south", "screen", "west")) {
@@ -829,6 +832,25 @@ public class CliWorker {
     }
 
     BeeKeeper.getScreen().updateActivePanel(new CalendarPanel(days, multi));
+  }
+
+  public static void showCaptions() {
+    Set<String> keys = Global.getRegisteredCaptionKeys();
+    if (BeeUtils.isEmpty(keys)) {
+      BeeKeeper.getLog().debug("no captions registered");
+      return;
+    }
+
+    List<Property> props = PropertyUtils.createProperties("Caption Keys",
+        BeeUtils.bracket(keys.size()));
+    
+    for (String key : keys) {
+      for (String caption : Global.getCaptions(key)) {
+        props.add(new Property(key, caption));
+      }
+    }
+    
+    BeeKeeper.getScreen().showGrid(props);
   }
   
   public static void showClientLocation() {

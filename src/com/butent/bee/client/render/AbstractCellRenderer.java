@@ -18,7 +18,7 @@ public abstract class AbstractCellRenderer extends AbstractRenderer<IsRow> {
     super();
     this.dataIndex = dataIndex;
     this.dataColumn = dataColumn;
-    this.dataType = dataColumn.getType();
+    this.dataType = (dataColumn == null) ? null : dataColumn.getType();
   }
 
   public IsColumn getDataColumn() {

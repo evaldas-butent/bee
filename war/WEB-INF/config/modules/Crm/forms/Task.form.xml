@@ -12,13 +12,13 @@
             <Label html="Būsena" />
           </cell>
           <cell>
-            <Label name="Event" class="bee-display" />
+            <TextLabel source="Event" itemKey="TaskEvent" class="bee-display" />
           </cell>
           <cell>
             <Label html="Prioritetas:" horizontalAlignment="right" />
           </cell>
           <cell>
-            <Label name="Priority" class="bee-display" />
+            <TextLabel source="Priority" itemKey="Priority" class="bee-display" />
           </cell>
         </row>
 
@@ -79,9 +79,9 @@
           </cell>
           <cell>
             <TextLabel class="bee-display">
-              <calc>
+              <render>
                 <function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</function>
-              </calc>
+              </render>
             </TextLabel>
           </cell>
           <cell>
@@ -89,9 +89,9 @@
           </cell>
           <cell>
             <TextLabel class="bee-display">
-              <calc>
+              <render>
                 <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
-              </calc>
+              </render>
             </TextLabel>
           </cell>
         </row>

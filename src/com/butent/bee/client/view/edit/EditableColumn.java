@@ -22,6 +22,7 @@ import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasNumberBounds;
@@ -66,6 +67,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   private final Boolean required;
 
   private final EditorDescription editorDescription;
+  private final String itemKey;
 
   private Editor editor = null;
   private IsRow rowValue = null;
@@ -94,6 +96,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       this.maxValue = null;
       this.required = false;
       this.editorDescription = null;
+      this.itemKey = null;
     } else {
       String source = this.dataColumn.getId();
       this.editable = Evaluator.create(columnDescr.getEditable(), source, dataColumns);
@@ -103,6 +106,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       this.maxValue = columnDescr.getMaxValue();
       this.required = columnDescr.isRequired();
       this.editorDescription = columnDescr.getEditor();
+      this.itemKey = columnDescr.getItemKey();
     }
   }
 
@@ -535,12 +539,21 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
     String format = null;
     if (getEditorDescription() != null) {
-      setEditor(EditorFactory.getEditor(getEditorDescription(), getDataType(), isNullable(),
-          getRelationInfo()));
+      setEditor(EditorFactory.getEditor(getEditorDescription(), getItemKey(), getDataType(),
+          isNullable(), getRelationInfo()));
       format = getEditorDescription().getFormat();
+
     } else if (isForeign()) {
       setEditor(new DataSelector(getRelationInfo(), false));
       getEditor().setNullable(isNullable());
+    
+    } else if (!BeeUtils.isEmpty(getItemKey())) {
+      BeeListBox listBox = new BeeListBox();
+      listBox.setValueNumeric(ValueType.isNumeric(getDataType()));
+      listBox.addCaptions(getItemKey());
+      listBox.setNullable(isNullable());
+      setEditor(listBox);
+      
     } else {
       setEditor(EditorFactory.createEditor(getDataColumn(), isNullable()));
     }
@@ -574,6 +587,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   private Evaluator getEditable() {
     return editable;
+  }
+
+  private String getItemKey() {
+    return itemKey;
   }
 
   private NotificationListener getNotificationListener() {

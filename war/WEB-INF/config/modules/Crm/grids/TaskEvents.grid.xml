@@ -24,46 +24,7 @@
                   + (row.PublishTime.getDate() >= 10 ? "." : ".0")
                   + row.PublishTime.getDate() + " " + row.PublishTime.toLocaleTimeString() + "\n"
                   + (row.PublisherFirstName || "") + " " + (row.PublisherLastName || "");
-            var ev = "";
-            
-            switch(row.Event) {
-              case 0:
-                ev = "ACTIVATED";
-                break;
-              case 1:
-                ev = "SUSPENDED";
-                break;
-              case 2:
-                ev = "COMPLETED";
-                break;
-              case 3:
-                ev = "APPROVED";
-                break;
-              case 4:
-                ev = "CANCELED";
-                break;
-              case 5:
-                ev = "FORWARDED";
-                break;
-              case 6:
-                ev = "EXTENDED";
-                break;
-              case 7:
-                ev = "RENEWED";
-                break;
-              case 8:
-                ev = "COMMENTED";
-                break;
-              case 9:
-                ev = "VISITED";
-                break;
-              case 10:
-                ev = "UPDATED";
-                break;
-              case 11:
-                ev = "DELETED";
-                break;
-            }
+            var ev = $wnd.Bee_getCaption("TaskEvent", row.Event);
             s = s + "\n" + ev;
             return s;
           </function>

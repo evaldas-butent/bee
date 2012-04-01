@@ -9,9 +9,12 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.ListBox;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.ui.AcceptsCaptions;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.Assert;
@@ -31,7 +34,8 @@ import java.util.List;
  * Implements a list box user interface component that presents a list of choices to the user.
  */
 
-public class BeeListBox extends ListBox implements Editor, HasItems, HasValueStartIndex {
+public class BeeListBox extends ListBox implements Editor, HasItems, HasValueStartIndex,
+    AcceptsCaptions {
 
   private HasStringValue source = null;
 
@@ -46,7 +50,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
 
   private int minSize = BeeConst.UNDEF;
   private int maxSize = BeeConst.UNDEF;
-  
+
   private boolean changePending = false;
 
   public BeeListBox() {
@@ -85,6 +89,14 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     if (size > 0) {
       setVisibleItemCount(size);
     }
+  }
+
+  public void addCaptions(Class<? extends Enum<?>> clazz) {
+    addItems(UiHelper.getCaptions(clazz));
+  }
+
+  public void addCaptions(String captionKey) {
+    addItems(Global.getCaptions(captionKey));
   }
 
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {

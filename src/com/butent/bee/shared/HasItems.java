@@ -5,6 +5,7 @@ import java.util.List;
 
 public interface HasItems {
 
+  String ATTR_ITEM_KEY = "itemKey";
   String TAG_ITEM = "item";
   
   void addItem(String item);

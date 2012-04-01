@@ -357,6 +357,22 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   }
 
   @Test
+  public void testGetQuietly() {
+    List<CharSequence> testc1 = new ArrayList<CharSequence>();
+    List<CharSequence> testc2 = new ArrayList<CharSequence>();
+    List<CharSequence> rez1 = new ArrayList<CharSequence>();
+    testc1.add("A");
+    testc1.add("simple text");
+    testc1.add("TEXT2");
+
+    rez1.add("simple text");
+
+    assertEquals("simple text", beeUtils.getQuietly(testc1, 1));
+    assertEquals(null, beeUtils.getQuietly(testc1, -1));
+    assertEquals(null, beeUtils.getQuietly(testc2, 5));
+  }
+
+  @Test
   public void testGetSuffix() {
     assertEquals("this test...", beeUtils.getSuffix("for example, this test...", ','));
     assertEquals("", beeUtils.getSuffix(" bad example,", ','));
@@ -754,22 +770,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     assertEquals(5.0, beeUtils.limit(5.0, Double.MAX_VALUE * 5, Double.MAX_VALUE * 5));
     assertEquals(5.0, beeUtils.limit(5.0, 2.0, Double.MAX_VALUE * 5));
     assertEquals(5.0, beeUtils.limit(5.0, Double.MAX_VALUE * 5, 10.0));
-  }
-
-  @Test
-  public void testListQuietly() {
-    List<CharSequence> testc1 = new ArrayList<CharSequence>();
-    List<CharSequence> testc2 = new ArrayList<CharSequence>();
-    List<CharSequence> rez1 = new ArrayList<CharSequence>();
-    testc1.add("A");
-    testc1.add("simple text");
-    testc1.add("TEXT2");
-
-    rez1.add("simple text");
-
-    assertEquals("simple text", beeUtils.listGetQuietly(testc1, 1));
-    assertEquals(null, beeUtils.listGetQuietly(testc1, -1));
-    assertEquals(null, beeUtils.listGetQuietly(testc2, 5));
   }
 
   @Test

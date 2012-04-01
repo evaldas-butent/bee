@@ -20,6 +20,11 @@ public class RendererDescription implements BeeSerializable, HasInfo, HasOptions
     TYPE, VALUE_START_INDEX, SEPARATOR, OPTIONS, ITEMS
   }
   
+  public static final String TAG_RENDERER = "renderer";
+  public static final String TAG_RENDER = "render";
+
+  public static final String ATTR_TYPE = "type";
+  
   private static final String ATTR_SEPARATOR = "separator";
 
   public static RendererDescription restore(String s) {

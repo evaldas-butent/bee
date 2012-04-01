@@ -44,21 +44,11 @@
       </calc>
     </CalcColumn>
     <IdColumn name="Id" caption="ID" />
-    <DataColumn name="Prior" source="Priority" caption="Prioritetas">
-      <renderer type="list">
-        <item>Low</item>
-        <item>Medium</item>
-        <item>High</item>
-      </renderer>
-    </DataColumn>
+    <DataColumn name="Priority" source="Priority" caption="Prioritetas" itemKey="Priority" />
     <DataColumn name="Description" source="Description" caption="Užduotis" />
     <DataColumn name="Project" source="ProjectName" caption="Projektas" />
     <DataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
-    <CalcColumn name="Event" type="string" caption="Būsena" sortBy="Event">
-      <calc>
-        <lambda />
-      </calc>
-    </CalcColumn>
+    <DataColumn name="Event" source="Event" caption="Būsena" itemKey="TaskEvent" />
     <CalcColumn name="Owner" type="string" caption="Vadovas" sortBy="OwnerFirstName, OwnerLastName"
       searchBy="OwnerFirstName, OwnerLastName">
       <calc>

@@ -8,6 +8,7 @@ import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.StringPicker;
 import com.butent.bee.client.composite.TextEditor;
 import com.butent.bee.client.richtext.RichTextEditor;
+import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.widget.BeeListBox;
@@ -162,7 +163,7 @@ public class EditorFactory {
     return editor;
   }
 
-  public static Editor getEditor(EditorDescription description, ValueType valueType,
+  public static Editor getEditor(EditorDescription description, String itemKey, ValueType valueType,
       boolean nullable,  RelationInfo relationInfo) {
     Assert.notNull(description);
     EditorType editorType = description.getType();
@@ -243,6 +244,9 @@ public class EditorFactory {
 
     if (editor instanceof HasItems && description.getItems() != null) {
       ((HasItems) editor).setItems(description.getItems());
+    }
+    if (editor instanceof AcceptsCaptions && !BeeUtils.isEmpty(itemKey)) {
+      ((AcceptsCaptions) editor).addCaptions(itemKey);
     }
 
     if (editor instanceof HasTextDimensions) {

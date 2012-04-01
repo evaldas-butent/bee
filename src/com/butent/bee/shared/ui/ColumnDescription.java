@@ -62,7 +62,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   private enum Serial {
     COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_SOURCE, REL_VIEW, REL_COLUMN,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER, SHOW_WIDTH,
-    VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED,
+    VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ITEM_KEY,
     RENDERER_DESCR, RENDER, CALC, VALUE_TYPE, PRECISION, SCALE, SEARCH_BY, SORT_BY,
     HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE
   }
@@ -108,6 +108,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   private EditorDescription editor = null;
 
+  private String itemKey = null;
+  
   private String minValue = null;
   private String maxValue = null;
   
@@ -277,6 +279,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case RENDER:
           setRender(Calculation.restore(value));
           break;
+        case ITEM_KEY:
+          setItemKey(value);
+          break;
       }
     }
   }
@@ -360,7 +365,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         "Scale", getScale(),
         "Search By", getSearchBy(),
         "Sort By", getSortBy(),
-        "Cell Type", getCellType());
+        "Cell Type", getCellType(),
+        "Item Key", getItemKey());
 
     if (getValidation() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Validation", getValidation().getInfo());
@@ -409,6 +415,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
+  }
+
+  public String getItemKey() {
+    return itemKey;
   }
 
   public String getMaxValue() {
@@ -470,7 +480,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public String getSource() {
     return source;
   }
-
+  
   public Calculation getValidation() {
     return validation;
   }
@@ -478,7 +488,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public ValueType getValueType() {
     return valueType;
   }
-  
+
   public Integer getWidth() {
     return width;
   }
@@ -626,6 +636,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case RENDER:
           arr[i++] = getRender();
           break;
+        case ITEM_KEY:
+          arr[i++] = getItemKey();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -683,6 +696,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     this.horAlign = horAlign;
   }
 
+  public void setItemKey(String itemKey) {
+    this.itemKey = itemKey;
+  }
+
   public void setMaxValue(String maxValue) {
     this.maxValue = maxValue;
   }
@@ -694,7 +711,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public void setMinValue(String minValue) {
     this.minValue = minValue;
   }
-
+  
   public void setMinWidth(Integer minWidth) {
     this.minWidth = minWidth;
   }
@@ -702,7 +719,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public void setPrecision(Integer precision) {
     this.precision = precision;
   }
-  
+
   public void setReadOnly(Boolean readOnly) {
     this.readOnly = readOnly;
   }
@@ -766,7 +783,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public void setVisible(Boolean visible) {
     this.visible = visible;
   }
-
+  
   public void setWidth(Integer width) {
     this.width = width;
   }

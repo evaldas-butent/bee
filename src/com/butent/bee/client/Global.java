@@ -15,6 +15,7 @@ import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.resources.Images;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.shared.Assert;
@@ -28,6 +29,7 @@ import com.butent.bee.shared.data.cache.CacheManager;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.menu.MenuConstants;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -58,6 +60,8 @@ public class Global implements Module {
   private static final Images.Resources images = Images.createResources();
 
   private static final Map<String, String> styleSheets = Maps.newHashMap();
+  
+  private static final Map<String, Class<? extends Enum<?>>> captions = Maps.newHashMap();
 
   public static void addStyleSheet(String name, String text) {
     if (BeeUtils.isEmpty(name)) {
@@ -103,20 +107,20 @@ public class Global implements Module {
     }
   }
 
-  public static void confirm(String caption, String message, BeeCommand command) {
-    msgBoxen.confirm(caption, message, command);
-  }
-
-  public static void confirm(String caption, List<String> messages, BeeCommand command) {
-    msgBoxen.confirm(caption, messages, command);
+  public static void confirm(List<String> messages, BeeCommand command) {
+    msgBoxen.confirm(null, messages, command);
   }
 
   public static void confirm(String message, BeeCommand command) {
     msgBoxen.confirm(message, command);
   }
 
-  public static void confirm(List<String> messages, BeeCommand command) {
-    msgBoxen.confirm(null, messages, command);
+  public static void confirm(String caption, List<String> messages, BeeCommand command) {
+    msgBoxen.confirm(caption, messages, command);
+  }
+
+  public static void confirm(String caption, String message, BeeCommand command) {
+    msgBoxen.confirm(caption, message, command);
   }
 
   public static void createVar(String name, String caption) {
@@ -142,6 +146,33 @@ public class Global implements Module {
     return cache;
   }
 
+  public static String getCaption(String key, int index) {
+    if (BeeUtils.isEmpty(key)) {
+      BeeKeeper.getLog().severe("Caption key not specified");
+      return null;
+    }
+    
+    List<String> list = getCaptions(key);
+    if (!BeeUtils.isIndex(list, index)) {
+      BeeKeeper.getLog().severe("cannot get caption: key", key, "index", index);
+      return null;
+    } else {
+      return list.get(index);
+    }
+  }
+  
+  public static List<String> getCaptions(String key) {
+    Assert.notEmpty(key);
+    Class<? extends Enum<?>> clazz = captions.get(BeeUtils.normalize(key));
+
+    if (clazz == null) {
+      BeeKeeper.getLog().severe("Captions not registered: " + key);
+      return null;
+    } else {
+      return UiHelper.getCaptions(clazz);
+    }
+  }
+  
   public static void getDataInfo(String viewName, DataInfoCallback callback) {
     getDataInfoProvider().getDataInfo(viewName, callback);
   }
@@ -156,6 +187,10 @@ public class Global implements Module {
 
   public static MessageBoxes getMsgBoxen() {
     return msgBoxen;
+  }
+
+  public static Set<String> getRegisteredCaptionKeys() {
+    return captions.keySet();
   }
 
   public static Variable getVar(String name) {
@@ -208,10 +243,6 @@ public class Global implements Module {
     msgBoxen.showInfo(obj);
   }
 
-  public static void inputString(String caption, StringCallback callback) {
-    inputString(caption, null, callback);
-  }
-
   public static void inputString(String caption, String prompt, StringCallback callback) {
     inputString(caption, prompt, callback, null);
   }
@@ -233,6 +264,10 @@ public class Global implements Module {
       String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
     inpBoxen.inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
         timeout, confirmHtml, cancelHtml, initializer);
+  }
+
+  public static void inputString(String caption, StringCallback callback) {
+    inputString(caption, null, callback);
   }
 
   public static void inputVars(Stage bst, String cap, String... names) {
@@ -273,6 +308,17 @@ public class Global implements Module {
 
   public static boolean nativeConfirm(Object... obj) {
     return msgBoxen.nativeConfirm(obj);
+  }
+
+  public static <E extends Enum<?> & HasCaption> void registerCaptions(Class<E> clazz) {
+    Assert.notNull(clazz);
+    registerCaptions(BeeUtils.getClassName(clazz), clazz);
+  }
+  
+  public static <E extends Enum<?> & HasCaption> void registerCaptions(String key, Class<E> clazz) {
+    Assert.notEmpty(key);
+    Assert.notNull(clazz);
+    captions.put(BeeUtils.normalize(key), clazz);
   }
 
   public static void sayHuh(Object... obj) {
@@ -403,6 +449,7 @@ public class Global implements Module {
 
   private native void exportMethods() /*-{
     $wnd.Bee_updateForm = $entry(@com.butent.bee.client.ui.UiHelper::updateForm(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
+    $wnd.Bee_getCaption = $entry(@com.butent.bee.client.Global::getCaption(Ljava/lang/String;I));
   }-*/;
 
   private void initCache() {

@@ -39,19 +39,11 @@
       </calc>
     </CalcColumn>
     <IdColumn name="Id" caption="ID" />
-    <CalcColumn name="Priority" type="string" caption="Prioritetas" sortBy="Priority">
-      <calc>
-        <lambda />
-      </calc>
-    </CalcColumn>
+    <DataColumn name="Priority" source="Priority" caption="Prioritetas" itemKey="Priority" />
     <DataColumn name="Type" source="TypeName" caption="Tipas" />
     <DataColumn name="Name" source="Name" caption="Pavadinimas" />
     <DataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
-    <CalcColumn name="Event" type="string" caption="Būsena" sortBy="Event">
-      <calc>
-        <lambda />
-      </calc>
-    </CalcColumn>
+    <DataColumn name="Event" source="Event" caption="Būsena" itemKey="ProjectEvent" />
     <CalcColumn name="Owner" type="string" caption="Vadovas" sortBy="OwnerFirstName, OwnerLastName"
       searchBy="OwnerFirstName, OwnerLastName">
       <calc>

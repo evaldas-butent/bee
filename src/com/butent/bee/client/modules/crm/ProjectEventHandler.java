@@ -81,11 +81,7 @@ public class ProjectEventHandler {
 
     @Override
     public void afterCreateWidget(final String name, final Widget widget) {
-      if (BeeUtils.same(name, CrmConstants.COL_PRIORITY) && widget instanceof BeeListBox) {
-        for (Priority priority : Priority.values()) {
-          ((BeeListBox) widget).addItem(priority.name());
-        }
-      } else if (BeeUtils.same(name, "Observers") && widget instanceof BeeListBox) {
+      if (BeeUtils.same(name, "Observers") && widget instanceof BeeListBox) {
         observers.setWidget((BeeListBox) widget);
 
       } else if (BeeUtils.same(name, CrmConstants.SVC_ADD_OBSERVERS)
@@ -261,15 +257,7 @@ public class ProjectEventHandler {
 
     @Override
     public void afterCreateWidget(String name, final Widget widget) {
-      if (BeeUtils.same(name, CrmConstants.COL_EVENT)) {
-        setWidget(name, widget);
-
-      } else if (BeeUtils.same(name, CrmConstants.COL_PRIORITY) && widget instanceof BeeListBox) {
-        for (Priority priority : Priority.values()) {
-          ((BeeListBox) widget).addItem(priority.name());
-        }
-
-      } else if (BeeUtils.same(name, "Observers") && widget instanceof BeeListBox) {
+      if (BeeUtils.same(name, "Observers") && widget instanceof BeeListBox) {
         observers.setWidget((BeeListBox) widget);
 
       } else if (BeeUtils.same(name, "Stages") && widget instanceof TreeView) {
@@ -335,8 +323,6 @@ public class ProjectEventHandler {
             }
           }
         }
-        getWidget(CrmConstants.COL_EVENT).getElement()
-            .setInnerText(BeeUtils.getName(ProjectEvent.class, idx));
       }
       Long user = BeeKeeper.getUser().getUserId();
 

@@ -10,6 +10,7 @@ import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.ui.RendererDescription;
 import com.butent.bee.shared.ui.RendererType;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
@@ -18,15 +19,20 @@ public class RendererFactory {
   public static AbstractCellRenderer createRenderer(Calculation calculation,
       List<? extends IsColumn> dataColumns, int dataIndex) {
     Assert.notNull(calculation);
-    Assert.isIndex(dataColumns, dataIndex);
 
-    IsColumn column = dataColumns.get(dataIndex);
-    return new EvalRenderer(dataIndex, column, Evaluator.create(calculation, column.getId(),
-        dataColumns));
+    IsColumn column = BeeUtils.getQuietly(dataColumns, dataIndex);
+    String columnId = (column == null) ? null : column.getId();
+    
+    Evaluator evaluator = Evaluator.create(calculation, columnId, dataColumns);
+    if (column != null) {
+      evaluator.setColIndex(dataIndex);
+    }
+
+    return new EvalRenderer(dataIndex, column, evaluator);
   }
 
   public static AbstractCellRenderer createRenderer(RendererDescription description,
-      int dataIndex, IsColumn dataColumn) {
+      String itemKey, int dataIndex, IsColumn dataColumn) {
     Assert.notNull(description);
     RendererType type = description.getType();
     Assert.notNull(type);
@@ -37,15 +43,24 @@ public class RendererFactory {
       case LIST:
         renderer = new ListRenderer(dataIndex, dataColumn);
         break;
+
       case MAP:
         renderer = new MapRenderer(dataIndex, dataColumn, description.getSeparator());
         break;
+
       case RANGE:
         renderer = new RangeRenderer(dataIndex, dataColumn, description.getSeparator(),
             description.getOptions());
         break;
+
+      case ENUM:
+        if (!BeeUtils.isEmpty(itemKey)) {
+          renderer = new EnumRenderer(dataIndex, dataColumn, itemKey);
+        } else {
+          BeeKeeper.getLog().warning("EnumRenderer: item key not specified");
+        }
+        break;
     }
-    Assert.notNull(renderer);
 
     if (renderer instanceof HasValueStartIndex && description.getValueStartIndex() != null) {
       ((HasValueStartIndex) renderer).setValueStartIndex(description.getValueStartIndex());
@@ -62,12 +77,18 @@ public class RendererFactory {
   }
 
   public static AbstractCellRenderer getRenderer(RendererDescription description,
-      Calculation calculation, List<? extends IsColumn> dataColumns, int dataIndex) {
+      Calculation calculation, String itemKey, List<? extends IsColumn> dataColumns, int dataIndex) {
     if (description != null) {
       Assert.isIndex(dataColumns, dataIndex);
-      return createRenderer(description, dataIndex, dataColumns.get(dataIndex));
+      return createRenderer(description, itemKey, dataIndex, dataColumns.get(dataIndex));
+
     } else if (calculation != null) {
       return createRenderer(calculation, dataColumns, dataIndex);
+    
+    } else if (!BeeUtils.isEmpty(itemKey)) {
+      Assert.isIndex(dataColumns, dataIndex);
+      return new EnumRenderer(dataIndex, dataColumns.get(dataIndex), itemKey);
+
     } else {
       return null;
     }

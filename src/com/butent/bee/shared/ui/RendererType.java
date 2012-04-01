@@ -5,7 +5,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 public enum RendererType {
   LIST("list"),
   MAP("map"),
-  RANGE("range");
+  RANGE("range"),
+  ENUM("enum");
 
   public static RendererType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {

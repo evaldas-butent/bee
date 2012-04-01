@@ -57,10 +57,12 @@
     <xs:complexContent>
       <xs:extension base="bee:labelType">
         <xs:choice minOccurs="0" maxOccurs="1">
-          <xs:element name="calc" type="bee:calcType" />
+          <xs:element name="renderer" type="bee:renderer" />
+          <xs:element name="render" type="bee:calcType" />
         </xs:choice>
         <xs:attribute name="source" type="bee:nameType" />
         <xs:attribute name="format" type="xs:normalizedString" />
+        <xs:attribute name="itemKey" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -270,6 +272,7 @@
           </xs:choice>
           <xs:attribute name="vertical" type="xs:boolean" default="false" />
           <xs:attribute name="valueStartIndex" type="xs:int" />
+          <xs:attribute name="itemKey" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -289,6 +292,7 @@
           <xs:attribute name="maxSize" type="xs:positiveInteger" />
           <xs:attribute name="valueNumeric" type="xs:boolean" default="false" />
           <xs:attribute name="valueStartIndex" type="xs:int" />
+          <xs:attribute name="itemKey" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

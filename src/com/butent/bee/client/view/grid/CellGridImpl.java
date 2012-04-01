@@ -629,7 +629,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
             if (BeeUtils.same(source, dataColumn.getId())) {
               AbstractCellRenderer renderer =
                   RendererFactory.getRenderer(columnDescr.getRendererDescription(),
-                      columnDescr.getRender(), dataCols, i);
+                      columnDescr.getRender(), columnDescr.getItemKey(), dataCols, i);
               
               if (renderer == null) {
                 column = GridFactory.createColumn(dataColumn, i, cellType);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!DOCTYPE Form [
+<!DOCTYPE BeeForm [
   <!ENTITY separator '<hr style="width: 97&#37;; border-color: lightgreen; border-width: 5px;"/>'>
   <!ENTITY left "margin-left: 20px;">
   <!ENTITY width "400">
@@ -8,7 +8,7 @@
   <!ENTITY rotClass "rotate-&axis;-&duration;">
 ]>
 <Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
   name="EntCss" caption="Entities, CSS">
 
   <FlowPanel class="&rotClass;">

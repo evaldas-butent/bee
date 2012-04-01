@@ -575,7 +575,7 @@ public class ScreenImpl implements Screen {
     adm.add(new RadioGroup(getElGrid(), false, BeeKeeper.getStorage().checkInt(getElGrid(), 2),
         Lists.newArrayList("simple", "scroll", "cell")));
     adm.add(new RadioGroup(getElCell(), false, BeeKeeper.getStorage().checkEnum(getElCell(),
-        TextCellType.TEXT_EDIT), TextCellType.values()));
+        TextCellType.TEXT_EDIT), TextCellType.class));
 
     Flow admPanel = new Flow();
     admPanel.addStyleName(StyleUtils.NAME_FLEX_BOX_VERTICAL);

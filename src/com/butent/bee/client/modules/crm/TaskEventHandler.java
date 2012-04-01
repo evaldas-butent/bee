@@ -308,12 +308,7 @@ public class TaskEventHandler {
 
     @Override
     public void afterCreateWidget(final String name, final Widget widget) {
-      if (BeeUtils.same(name, CrmConstants.COL_PRIORITY) && widget instanceof BeeListBox) {
-        for (Priority priority : Priority.values()) {
-          ((BeeListBox) widget).addItem(priority.name());
-        }
-
-      } else if (BeeUtils.same(name, "ExecutorList") && widget instanceof BeeListBox) {
+      if (BeeUtils.same(name, "ExecutorList") && widget instanceof BeeListBox) {
         executorWidget = (BeeListBox) widget;
         executorWidget.addKeyDownHandler(new KeyDownHandler() {
           public void onKeyDown(KeyDownEvent event) {
@@ -598,10 +593,8 @@ public class TaskEventHandler {
 
       parent.setWidget(row, 0, new BeeLabel(caption));
       BeeListBox list = new BeeListBox();
+      list.addCaptions(Priority.class);
 
-      for (Priority value : Priority.values()) {
-        list.addItem(value.name());
-      }
       list.setValueNumeric(true);
       list.setValue(BeeUtils.toString(def));
 
@@ -719,11 +712,7 @@ public class TaskEventHandler {
 
     @Override
     public void afterCreateWidget(String name, final Widget widget) {
-      if (!BeeUtils.isEmpty(name)
-          && BeeUtils.inListSame(name, CrmConstants.COL_PRIORITY, CrmConstants.COL_EVENT)) {
-        setWidget(name, widget);
-
-      } else if (BeeUtils.same(name, "TaskObservers") && widget instanceof ChildGrid) {
+      if (BeeUtils.same(name, "TaskObservers") && widget instanceof ChildGrid) {
         setObserverHandler(new ObserverHandler());
         ((ChildGrid) widget).setGridCallback(getObserverHandler());
 
@@ -753,17 +742,8 @@ public class TaskEventHandler {
       if (row == null) {
         return;
       }
-      String text = BeeConst.STRING_EMPTY;
-      Integer idx = row.getInteger(form.getDataIndex(CrmConstants.COL_PRIORITY));
 
-      if (BeeUtils.isOrdinal(Priority.class, idx)) {
-        text = Priority.values()[idx].name();
-      }
-      getWidget(CrmConstants.COL_PRIORITY).getElement().setInnerText(text);
-
-      text = BeeConst.STRING_EMPTY;
-      idx = row.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
-
+      Integer idx = row.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
       if (BeeUtils.isOrdinal(TaskEvent.class, idx)) {
         Long owner = row.getLong(form.getDataIndex(CrmConstants.COL_OWNER));
         Long executor = row.getLong(form.getDataIndex(CrmConstants.COL_EXECUTOR));
@@ -779,9 +759,7 @@ public class TaskEventHandler {
             }
           }
         }
-        text = TaskEvent.values()[idx].name();
       }
-      getWidget(CrmConstants.COL_EVENT).getElement().setInnerText(text);
     }
 
     @Override

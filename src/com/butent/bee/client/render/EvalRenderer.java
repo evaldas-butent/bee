@@ -11,12 +11,14 @@ import com.butent.bee.shared.data.IsRow;
 public class EvalRenderer extends AbstractCellRenderer implements HasEvaluation {
 
   private final Evaluator evaluator;
+  private final boolean hasColumn;
   
   public EvalRenderer(int dataIndex, IsColumn dataColumn, Evaluator evaluator) {
     super(dataIndex, dataColumn);
 
     Assert.notNull(evaluator, JreEmulation.getSimpleName(this) + ": evaluator is required");
     this.evaluator = evaluator;
+    hasColumn = dataIndex >= 0 && dataColumn != null; 
   }
 
   @Override
@@ -24,7 +26,13 @@ public class EvalRenderer extends AbstractCellRenderer implements HasEvaluation 
     if (row == null) {
       return null;
     }
-    evaluator.update(row);
+    
+    if (hasColumn) {
+      evaluator.update(row, getDataType(), getString(row));
+    } else {
+      evaluator.update(row);
+    }
+
     return evaluator.evaluate();
   }
 

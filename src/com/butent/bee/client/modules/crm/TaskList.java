@@ -18,7 +18,6 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.resources.Images;
 import com.butent.bee.client.utils.AbstractEvaluation;
-import com.butent.bee.client.utils.Evaluator.Evaluation;
 import com.butent.bee.client.utils.Evaluator.Parameters;
 import com.butent.bee.client.utils.HasEvaluation;
 import com.butent.bee.client.view.edit.Editor;
@@ -38,7 +37,6 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.crm.CrmConstants;
-import com.butent.bee.shared.modules.crm.CrmConstants.Priority;
 import com.butent.bee.shared.modules.crm.CrmConstants.ProjectEvent;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -66,18 +64,7 @@ public class TaskList {
     @Override
     public boolean afterCreateColumn(String columnId, AbstractColumn<?> column,
         ColumnHeader header, ColumnFooter footer) {
-
-      if (BeeUtils.same(columnId, CrmConstants.COL_PRIORITY)) {
-        if (column instanceof HasEvaluation) {
-          ((HasEvaluation) column).setEvaluation(PRIORITY_NAME);
-        }
-
-      } else if (BeeUtils.same(columnId, CrmConstants.COL_EVENT)) {
-        if (column instanceof HasEvaluation) {
-          ((HasEvaluation) column).setEvaluation(EVENT_NAME);
-        }
-
-      } else if (BeeUtils.same(columnId, "Mode") && column instanceof HasEvaluation) {
+      if (BeeUtils.same(columnId, "Mode") && column instanceof HasEvaluation) {
         ((HasEvaluation) column).setEvaluation(new AbstractEvaluation() {
           private Widget modeNew = null;
           private Widget modeUpd = null;
@@ -332,20 +319,6 @@ public class TaskList {
   }
 
   private static final String FILTER_KEY = "f1";
-
-  private static final Evaluation PRIORITY_NAME = new AbstractEvaluation() {
-    @Override
-    public String eval(Parameters parameters) {
-      return BeeUtils.getName(Priority.class, parameters.getInteger(CrmConstants.COL_PRIORITY));
-    }
-  };
-
-  private static final Evaluation EVENT_NAME = new AbstractEvaluation() {
-    @Override
-    public String eval(Parameters parameters) {
-      return BeeUtils.getName(TaskEvent.class, parameters.getInteger(CrmConstants.COL_EVENT));
-    }
-  };
 
   public static void open(String args) {
     Type type = null;

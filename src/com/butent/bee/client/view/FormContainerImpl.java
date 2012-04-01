@@ -1,5 +1,6 @@
 package com.butent.bee.client.view;
 
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../schemas/form.xsd" name="Widgets" caption="Layouts and Widgets">
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd" name="Widgets" caption="Layouts and Widgets">
 
   <SplitPanel splitterSize="3">
     <north size="50" splitterSize="1">
@@ -46,13 +46,13 @@
           <InlineLabel html="absolute panel" title="headerSize 25" />
           <AbsolutePanel style="paddingLeft: 5px;">
             <layer top="2" topUnit="em">
-              <VolumeSlider source="X" min="0" max="10000" minStep="10" maxStep="100" />
+              <VolumeSlider min="0" max="10000" minStep="10" maxStep="100" />
             </layer>
             <layer top="20" topUnit="%">
-              <ValueSpinner source="X" min="-10" max="30" />
+              <ValueSpinner min="-10" max="30" />
             </layer>
             <layer top="50" topUnit="%">
-              <ListBox source="X" allItemsVisible="true">
+              <ListBox allItemsVisible="true">
                 <item>item 1</item>
                 <item>item 2</item>
                 <item>item 3</item>
@@ -71,7 +71,7 @@
 
         <stack headerSize="25">
           <text>string picker</text>
-          <StringPicker source="X">
+          <StringPicker>
             <item>Item 1</item>
             <item>Item 2 ; &lt;img src="test.png"&gt;</item>
             <item>Item 3</item>
@@ -110,22 +110,22 @@
 
               <row>
                 <cell>
-                  <CheckBox source="X" />
+                  <CheckBox />
                 </cell>
                 <cell>
-                  <CheckBox source="X" html="Check" />
+                  <CheckBox html="Check" />
                 </cell>
               </row>
               <row>
                 <cell>
-                  <Radio vertical="true" source="X">
+                  <Radio vertical="true">
                     <option>Option 1</option>
                     <option>Option 2</option>
                     <option>Option 3</option>
                   </Radio>
                 </cell>
                 <cell>
-                  <Radio vertical="false" source="X">
+                  <Radio vertical="false">
                     <option>Option A</option>
                     <option>Option B</option>
                     <option>Option C</option>
@@ -138,7 +138,7 @@
                   <text>Area</text>
                 </cell>
                 <cell>
-                  <InputArea source="X" />
+                  <InputArea />
                 </cell>
               </row>
               <row>
@@ -146,7 +146,7 @@
                   <html>Currency</html>
                 </cell>
                 <cell>
-                  <InputCurrency source="X" />
+                  <InputCurrency />
                 </cell>
               </row>
               <row>
@@ -154,7 +154,7 @@
                   <html>Date</html>
                 </cell>
                 <cell>
-                  <InputDate source="X" format="date_short" />
+                  <InputDate format="date_short" />
                 </cell>
               </row>
               <row>
@@ -162,7 +162,7 @@
                   <html>DateTime</html>
                 </cell>
                 <cell>
-                  <InputDateTime source="X" />
+                  <InputDateTime />
                 </cell>
               </row>
               <row>
@@ -170,7 +170,7 @@
                   <html>Decimal</html>
                 </cell>
                 <cell>
-                  <InputDecimal scale="3" source="X" />
+                  <InputDecimal scale="3" />
                 </cell>
               </row>
               <row>
@@ -178,7 +178,7 @@
                   <html>Double</html>
                 </cell>
                 <cell>
-                  <InputDouble source="X" />
+                  <InputDouble />
                 </cell>
               </row>
               <row>
@@ -186,7 +186,7 @@
                   <html>Integer</html>
                 </cell>
                 <cell>
-                  <InputInteger source="X" />
+                  <InputInteger />
                 </cell>
               </row>
               <row>
@@ -194,7 +194,7 @@
                   <html>Long</html>
                 </cell>
                 <cell>
-                  <InputLong source="X" />
+                  <InputLong />
                 </cell>
               </row>
               <row>
@@ -202,7 +202,7 @@
                   <html>Slider</html>
                 </cell>
                 <cell>
-                  <InputSlider source="X" />
+                  <InputSlider />
                 </cell>
               </row>
               <row>
@@ -210,7 +210,7 @@
                   <html>Spinner</html>
                 </cell>
                 <cell>
-                  <InputSpinner source="X" />
+                  <InputSpinner />
                 </cell>
               </row>
               <row>
@@ -218,7 +218,7 @@
                   <html>Text</html>
                 </cell>
                 <cell>
-                  <InputText source="X" />
+                  <InputText />
                 </cell>
               </row>
             </FlexTable>
@@ -228,7 +228,7 @@
         <page>
           <InlineLabel html="Frame" />
           <ResizePanel>
-            <Frame url="http://www.google.com" />
+            <Frame url="http://uncyclopedia.org/wiki/Main_Page" />
           </ResizePanel>
         </page>
 
@@ -253,8 +253,7 @@
           <text>Var</text>
           <ComplexPanel>
             <layer left="10" top="20" width="80" widthUnit="%">
-              <SliderBar source="X" min="-100" max="200" step="50" numLabels="10"
-                numTicks="20" />
+              <SliderBar min="-100" max="200" step="50" numLabels="10" numTicks="20" />
             </layer>
             <layer left="100" top="100" width="300" height="100">
               <FlowPanel>
@@ -282,7 +281,7 @@
               </FlowPanel>
             </layer>
             <layer right="20" bottom="20">
-              <Toggle source="X">
+              <Toggle>
                 <upFace resource="cancel" />
                 <downFace resource="ok" />
               </Toggle>

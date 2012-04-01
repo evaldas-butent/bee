@@ -12,9 +12,10 @@
 
 <Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="Project" viewName="Projects" caption="Projektas">
-  
+
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal" style="&MARGIN_TOP;">
       <FlowPanel class="flexible" style="min-width: 600px;">
@@ -25,7 +26,7 @@
 
         <FlowPanel style="&ROW_STYLE;">
           <InlineLabel html="Būsena:" style="&LEFT_LABEL_STYLE;" />
-          <InlineLabel name="Event" style="&DISPLAY_STYLE;" />
+          <TextLabel source="Event" itemKey="ProjectEvent" style="&DISPLAY_STYLE;" />
           <InlineLabel html="Pradžia:" style="&LABEL_STYLE;" />
           <DateLabel source="StartDate" inline="true" style="&DISPLAY_STYLE;" />
           <InlineLabel html="Terminas:" style="&LABEL_STYLE;" />
@@ -38,10 +39,10 @@
           </cell>
           <cell>
             <DataSelector source="CompanyName" relSource="Company" relView="Companies"
-                relColumn="Name" style="width: 300px;" />
+              relColumn="Name" style="width: 300px;" />
           </cell>
         </HorizontalPanel>
-      </FlowPanel>      
+      </FlowPanel>
 
       <FlowPanel class="flexible" style="margin-right: 1em;">
         <Button name="COMMENTED" html="Naujas komentaras" style="&BUTTON_STYLE;" disablable="false" />
@@ -60,10 +61,10 @@
         <FlowPanel style="&MARGIN_TOP;">
           <FlowPanel style="&ROW_STYLE; ">
             <InlineLabel html="Prioritetas:" style="&LEFT_LABEL_STYLE;" />
-            <ListBox source="Priority" name="Priority" valueNumeric="true" style="width: 100px;" />
+            <xi:include href="widgets/Priority.widget.xml" />
             <InlineLabel html="Numatoma trukmė min.:" style="&LABEL_STYLE;" />
             <InputLong source="ExpectedDuration" style="width: 60px;" />
-          </FlowPanel>  
+          </FlowPanel>
 
           <HorizontalPanel style="&ROW_STYLE;">
             <cell>
@@ -73,7 +74,7 @@
               <DataSelector source="TypeName" relSource="ProjectType" relView="ProjectTypes"
                 relColumn="Name" />
             </cell>
-          </HorizontalPanel>  
+          </HorizontalPanel>
           <HorizontalPanel style="&ROW_STYLE;">
             <cell>
               <Label html="Asmuo:" style="&LEFT_LABEL_STYLE;" />
@@ -82,7 +83,7 @@
               <DataSelector source="PersonFirstName" relSource="CompanyPerson" relView="CompanyPersons"
                 relColumn="FirstName" />
             </cell>
-          </HorizontalPanel>  
+          </HorizontalPanel>
 
           <HorizontalPanel style="&ROW_STYLE; ">
             <cell>
@@ -101,9 +102,9 @@
           <FlowPanel style="&ROW_STYLE; ">
             <InlineLabel html="Autorius:" style="&LEFT_LABEL_STYLE;" />
             <TextLabel style="&DISPLAY_STYLE;">
-              <calc>
+              <render>
                 <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
-              </calc>
+              </render>
             </TextLabel>
           </FlowPanel>
 
@@ -123,20 +124,28 @@
       <page>
         <text>Etapai</text>
         <FlowPanel class="flexBox-horizontal" style="&MARGIN_TOP;">
-          <ChildTree name="Stages" source="ProjectStages" parentColumn="Parent" 
-                     relationColumn="Project" caption="Projekto etapai">
+          <ChildTree name="Stages" source="ProjectStages" parentColumn="Parent"
+            relationColumn="Project" caption="Projekto etapai">
             <calc>
-              <expression>row.Name</expression>                    
+              <expression>row.Name</expression>
             </calc>
             <form name="Etapo koregavimas">
               <FlexTable>
                 <row>
-                  <cell><Label html="Etapas" horizontalAlignment="right" class="bee-required" /></cell>
-                  <cell><InputText source="Name" style="width: 25em" required="true" /></cell>
+                  <cell>
+                    <Label html="Etapas" horizontalAlignment="right" class="bee-required" />
+                  </cell>
+                  <cell>
+                    <InputText source="Name" style="width: 25em" required="true" />
+                  </cell>
                 </row>
                 <row>
-                  <cell><Label html="Aprašymas" horizontalAlignment="right" /></cell>
-                  <cell><InputArea source="Description" visibleLines="4" style="width: 25em" /></cell>
+                  <cell>
+                    <Label html="Aprašymas" horizontalAlignment="right" />
+                  </cell>
+                  <cell>
+                    <InputArea source="Description" visibleLines="4" style="width: 25em" />
+                  </cell>
                 </row>
               </FlexTable>
             </form>
@@ -146,7 +155,7 @@
             <FlowPanel style="&ROW_STYLE;">
               <InlineLabel html="Etapo aprašymas:" style="&LABEL_STYLE;" />
               <TextLabel name="StageDescription" style="&DISPLAY_STYLE; white-space: pre-wrap;" />
-            </FlowPanel>  
+            </FlowPanel>
 
             <ChildGrid name="Tasks" relColumn="Project" class="flexible" />
           </FlowPanel>

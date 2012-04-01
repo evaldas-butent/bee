@@ -23,43 +23,7 @@
                   + (row.PublishTime.getDate() >= 10 ? "." : ".0")
                   + row.PublishTime.getDate() + " " + row.PublishTime.toLocaleTimeString() + "\n"
                   + (row.PublisherFirstName || "") + " " + (row.PublisherLastName || "");
-            var ev = "";
-            
-            switch(row.Event) {
-              case 0:
-                ev = "CREATED";
-                break;
-              case 1:
-                ev = "ACTIVATED";
-                break;
-              case 2:
-                ev = "SUSPENDED";
-                break;
-              case 3:
-                ev = "COMPLETED";
-                break;
-              case 4:
-                ev = "CANCELED";
-                break;
-              case 5:
-                ev = "EXTENDED";
-                break;
-              case 6:
-                ev = "RENEWED";
-                break;
-              case 7:
-                ev = "COMMENTED";
-                break;
-              case 8:
-                ev = "VISITED";
-                break;
-              case 9:
-                ev = "UPDATED";
-                break;
-              case 10:
-                ev = "DELETED";
-                break;
-            }
+            var ev = $wnd.Bee_getCaption("ProjectEvent", row.Event);
             s = s + "\n" + ev;
             return s;
           </function>

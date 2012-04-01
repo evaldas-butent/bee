@@ -407,13 +407,19 @@ public class Evaluator extends Calculation {
     return result;
   }
 
+  public void setColIndex(int colIndex) {
+    if (getParameters() != null) {
+      getParameters().setColIndex(colIndex);
+    }
+  }
+
   public void setEvaluation(Evaluation evaluation) {
     this.evaluation = evaluation;
     if (this.evaluation != null) {
       this.evaluation.setOptions(getLambda());
     }
   }
-
+  
   public void setParameters(Parameters parameters) {
     this.parameters = parameters;
   }
@@ -433,7 +439,7 @@ public class Evaluator extends Calculation {
     getParameters().setRowIndex(rowIndex);
     getParameters().setColIndex(colIndex);
   }
-
+  
   public void update(IsRow rowValue, int rowIndex, int colIndex, ValueType type, String value) {
     if (getParameters() == null) {
       return;
@@ -452,6 +458,14 @@ public class Evaluator extends Calculation {
     getParameters().setCellValue(type, newValue);
     getParameters().setCellOldValue(type, oldValue);
     getParameters().setCellNewValue(type, newValue);
+  }
+
+  public void update(IsRow rowValue, ValueType type, String value) {
+    if (getParameters() == null) {
+      return;
+    }
+    update(rowValue);
+    getParameters().setCellValue(type, value);
   }
 
   private native String doEval(JavaScriptObject fnc, JavaScriptObject row, double rowId,

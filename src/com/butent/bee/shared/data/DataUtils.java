@@ -32,6 +32,9 @@ public class DataUtils {
   public static final int ID_INDEX = -2;
   public static final int VERSION_INDEX = -3;
 
+  public static final ValueType ID_TYPE = ValueType.LONG;
+  public static final ValueType VERSION_TYPE = ValueType.LONG;
+  
   private static final Splitter COLUMN_SPLITTER =
       Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
 
@@ -56,7 +59,7 @@ public class DataUtils {
       table = new JsData<TableColumn>((JsArrayString) data, columnLabels);
 
     } else if (data instanceof List) {
-      Object el = BeeUtils.listGetQuietly((List<?>) data, 0);
+      Object el = BeeUtils.getQuietly((List<?>) data, 0);
 
       if (el instanceof ExtendedProperty) {
         table = new ExtendedPropertiesData((List<ExtendedProperty>) data, columnLabels);
@@ -125,6 +128,16 @@ public class DataUtils {
     return null;
   }
 
+  public static ValueType getColumnType(String columnId, List<? extends IsColumn> columns) {
+    int index = getColumnIndex(columnId, columns);
+
+    if (index >= 0) {
+      return columns.get(index).getType();
+    } else {
+      return null;
+    }
+  }
+  
   public static int getDefaultAsyncThreshold() {
     return defaultAsyncThreshold;
   }
