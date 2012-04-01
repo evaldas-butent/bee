@@ -8,6 +8,7 @@ import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
@@ -19,6 +20,8 @@ import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.ui.GridComponentDescription;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.RendererDescription;
+import com.butent.bee.shared.ui.RendererType;
 import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
@@ -69,8 +72,10 @@ public class GridLoaderBean {
 
   private static final String TAG_CALC = "calc";
 
+  private static final String TAG_RENDERER = "renderer";
+  private static final String TAG_RENDER = "render";
+
   private static final String TAG_EDITOR = "editor";
-  private static final String TAG_ITEM = "item";
 
   private static final Set<String> WIDGET_TAGS = Sets.newHashSet("north", "south", "west", "east");
 
@@ -327,7 +332,7 @@ public class GridLoaderBean {
     EditorDescription editor = new EditorDescription(editorType);
     editor.setAttributes(XmlUtils.getAttributes(element));
 
-    NodeList itemNodes = element.getElementsByTagName(TAG_ITEM);
+    NodeList itemNodes = element.getElementsByTagName(HasItems.TAG_ITEM);
     if (itemNodes != null && itemNodes.getLength() > 0) {
       List<String> items = Lists.newArrayList();
       for (int i = 0; i < itemNodes.getLength(); i++) {
@@ -343,6 +348,49 @@ public class GridLoaderBean {
     return editor;
   }
 
+  private RendererDescription getRenderer(Element parent, EditorDescription editor) {
+    Assert.notNull(parent);
+
+    Element element = XmlUtils.getFirstChildElement(parent, TAG_RENDERER);
+    if (element == null) {
+      return null;
+    }
+    String typeCode = element.getAttribute(ATTR_TYPE);
+    if (BeeUtils.isEmpty(typeCode)) {
+      return null;
+    }
+    RendererType type = RendererType.getByTypeCode(typeCode);
+    if (type == null) {
+      return null;
+    }
+
+    RendererDescription renderer = new RendererDescription(type);
+    renderer.setAttributes(XmlUtils.getAttributes(element));
+
+    List<String> items = Lists.newArrayList();
+    NodeList itemNodes = element.getElementsByTagName(HasItems.TAG_ITEM);
+    if (itemNodes != null && itemNodes.getLength() > 0) {
+      for (int i = 0; i < itemNodes.getLength(); i++) {
+        String item = itemNodes.item(i).getTextContent();
+        if (!BeeUtils.isEmpty(item)) {
+          items.add(item);
+        }
+      }
+    }
+    
+    if (items.isEmpty() && editor != null && editor.getItems() != null) {
+      items.addAll(editor.getItems());
+      if (renderer.getValueStartIndex() == null && editor.getValueStartIndex() != null) {
+        renderer.setValueStartIndex(editor.getValueStartIndex());
+      }
+    }
+    if (!items.isEmpty()) {
+      renderer.setItems(items);
+    }
+    
+    return renderer;
+  }
+  
   private boolean initColumn(BeeView view, ColumnDescription columnDescription) {
     Assert.notNull(columnDescription);
     if (view == null) {
@@ -531,6 +579,15 @@ public class GridLoaderBean {
     EditorDescription editor = getEditor(src);
     if (editor != null) {
       dst.setEditor(editor);
+    }
+
+    RendererDescription renderer = getRenderer(src, editor);
+    if (renderer != null) {
+      dst.setRendererDescription(renderer);
+    }
+    Calculation render = XmlUtils.getCalculation(src, TAG_RENDER);
+    if (render != null) {
+      dst.setRender(render);
     }
   }
 

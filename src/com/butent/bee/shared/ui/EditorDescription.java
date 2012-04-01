@@ -36,7 +36,6 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
   private static final String ATTR_MIN_WIDTH = "minWidth";
   private static final String ATTR_MIN_HEIGHT = "minHeight";
   private static final String ATTR_ON_ENTRY = "onEntry";
-  private static final String ATTR_OPTIONS = "options";
 
   public static EditorDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {

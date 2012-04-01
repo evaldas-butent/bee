@@ -63,7 +63,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_SOURCE, REL_VIEW, REL_COLUMN,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER, SHOW_WIDTH,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED,
-    CALC, VALUE_TYPE, PRECISION, SCALE, SEARCH_BY, SORT_BY,
+    RENDERER_DESCR, RENDER, CALC, VALUE_TYPE, PRECISION, SCALE, SEARCH_BY, SORT_BY,
     HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE
   }
 
@@ -102,6 +102,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   private Calculation validation = null;
   private Calculation editable = null;
   private Calculation carry = null;
+
+  private RendererDescription rendererDescription = null;
+  private Calculation render = null;
 
   private EditorDescription editor = null;
 
@@ -268,6 +271,12 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case CELL_TYPE:
           setCellType(CellType.getByCode(value));
           break;
+        case RENDERER_DESCR:
+          setRendererDescription(RendererDescription.restore(value));
+          break;
+        case RENDER:
+          setRender(Calculation.restore(value));
+          break;
       }
     }
   }
@@ -368,6 +377,12 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     if (getCalc() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Calc", getCalc().getInfo());
     }
+    if (getRendererDescription() != null) {
+      PropertyUtils.appendChildrenToProperties(info, "Renderer", getRendererDescription().getInfo());
+    }
+    if (getRender() != null) {
+      PropertyUtils.appendChildrenToProperties(info, "Render", getRender().getInfo());
+    }
 
     if (getHeaderStyle() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Header Style", getHeaderStyle().getInfo());
@@ -432,6 +447,14 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     return relView;
   }
 
+  public Calculation getRender() {
+    return render;
+  }
+
+  public RendererDescription getRendererDescription() {
+    return rendererDescription;
+  }
+
   public Integer getScale() {
     return scale;
   }
@@ -451,19 +474,19 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public Calculation getValidation() {
     return validation;
   }
-
+  
   public ValueType getValueType() {
     return valueType;
   }
-
+  
   public Integer getWidth() {
     return width;
   }
-  
+
   public Boolean hasFooter() {
     return hasFooter;
   }
-  
+
   public boolean isForeign() {
     return !BeeUtils.isEmpty(getRelSource());
   }
@@ -597,6 +620,12 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case CELL_TYPE:
           arr[i++] = (getCellType() == null) ? null : getCellType().getCode();
           break;
+        case RENDERER_DESCR:
+          arr[i++] = getRendererDescription();
+          break;
+        case RENDER:
+          arr[i++] = getRender();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -673,7 +702,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public void setPrecision(Integer precision) {
     this.precision = precision;
   }
-
+  
   public void setReadOnly(Boolean readOnly) {
     this.readOnly = readOnly;
   }
@@ -681,13 +710,21 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public void setRelColumn(String relColumn) {
     this.relColumn = relColumn;
   }
-  
+
   public void setRelSource(String relSource) {
     this.relSource = relSource;
   }
 
   public void setRelView(String relView) {
     this.relView = relView;
+  }
+
+  public void setRender(Calculation render) {
+    this.render = render;
+  }
+
+  public void setRendererDescription(RendererDescription rendererDescription) {
+    this.rendererDescription = rendererDescription;
   }
 
   public void setRequired(Boolean required) {

@@ -45,6 +45,10 @@
     <xs:complexContent>
       <xs:extension base="bee:column">
         <xs:sequence>
+          <xs:choice minOccurs="0" maxOccurs="1">
+            <xs:element name="renderer" type="bee:renderer" minOccurs="0" />
+            <xs:element name="render" type="bee:calcType" minOccurs="0" />
+          </xs:choice>
           <xs:element name="editable" type="bee:calcType" minOccurs="0" />
           <xs:element name="editor" type="bee:editor" minOccurs="0" />
           <xs:element name="validation" type="bee:calcType" minOccurs="0" />

@@ -26,6 +26,9 @@ import com.butent.bee.client.grid.scrolltable.model.TableModelHelper.Request;
 import com.butent.bee.client.grid.scrolltable.model.TableModelHelper.Response;
 import com.butent.bee.client.grid.scrolltable.render.FixedWidthGridBulkRenderer;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.RenderableCell;
+import com.butent.bee.client.render.RenderableColumn;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridCallback;
@@ -276,6 +279,12 @@ public class GridFactory {
     createGrid(gridName, getGridCallback(gridName), presenterCallback, options);
   }
 
+  public static DataColumn<?> createRenderableColumn(AbstractCellRenderer renderer, 
+      IsColumn dataColumn, int index, CellType cellType) {
+    Cell<String> cell = (cellType == null) ? new RenderableCell() : createCell(cellType);
+    return new RenderableColumn(cell, index, dataColumn, renderer);
+  }
+  
   public static void getGrid(String name, DescriptionCallback callback) {
     getGrid(name, callback, false);
   }

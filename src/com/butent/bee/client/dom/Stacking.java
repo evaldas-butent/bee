@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
@@ -62,8 +63,16 @@ public class Stacking {
   public static void pop(String id) {
     Assert.notEmpty(id, "Stacking pop: id is empty");
     Integer level = widgetLevels.remove(id);
-    Assert.notNull(level, "Stacking pop: id " + id + " not in widgetLevels");
-    maxLevel = level;
+    
+    if (level == null) {
+      BeeKeeper.getLog().severe("Stacking pop: id " + id + " not in widgetLevels");
+      for (Property prop : getInfo()) {
+        BeeKeeper.getLog().debug(prop.getName(), prop.getValue());
+      }
+      BeeKeeper.getLog().addSeparator();
+    } else {
+      maxLevel = level;
+    }
   }
   
   public static int push(String id) {

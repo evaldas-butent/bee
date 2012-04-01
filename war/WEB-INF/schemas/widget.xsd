@@ -269,7 +269,7 @@
             <xs:element name="option" type="xs:normalizedString" />
           </xs:choice>
           <xs:attribute name="vertical" type="xs:boolean" default="false" />
-          <xs:attribute name="valueStartIndex" type="xs:nonNegativeInteger" />
+          <xs:attribute name="valueStartIndex" type="xs:int" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -288,7 +288,7 @@
           <xs:attribute name="minSize" type="xs:positiveInteger" />
           <xs:attribute name="maxSize" type="xs:positiveInteger" />
           <xs:attribute name="valueNumeric" type="xs:boolean" default="false" />
-          <xs:attribute name="valueStartIndex" type="xs:nonNegativeInteger" />
+          <xs:attribute name="valueStartIndex" type="xs:int" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

@@ -6,6 +6,8 @@ package com.butent.bee.shared;
 
 public interface HasOptions {
 
+  String ATTR_OPTIONS = "options";
+
   String getOptions();
 
   void setOptions(String options);

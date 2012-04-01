@@ -1,5 +1,6 @@
 package com.butent.bee.client.widget;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -24,6 +25,7 @@ import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Implements a list box user interface component that presents a list of choices to the user.
@@ -118,6 +120,14 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
 
   public String getIdPrefix() {
     return "list";
+  }
+
+  public List<String> getItems() {
+    List<String> items = Lists.newArrayList();
+    for (int i = 0; i < getItemCount(); i++) {
+      items.add(getItemText(i));
+    }
+    return items;
   }
 
   public int getMaxSize() {

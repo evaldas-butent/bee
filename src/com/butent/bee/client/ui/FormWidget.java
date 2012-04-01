@@ -107,6 +107,7 @@ import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasNumberBounds;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.HasService;
@@ -359,8 +360,6 @@ public enum FormWidget {
   private static final String ATTR_ANIMATE = "animate";
   private static final String ATTR_OPEN = "open";
 
-  private static final String ATTR_OPTIONS = "options";
-
   private static final String ATTR_EVENT = "event";
 
   private static final String ATTR_ID = "id";
@@ -382,7 +381,6 @@ public enum FormWidget {
   private static final String TAG_HTML = "html";
   private static final String TAG_TEXT = "text";
 
-  private static final String TAG_ITEM = "item";
   private static final String TAG_LAYER = "layer";
   private static final String TAG_ROW = "row";
   private static final String TAG_COL = "col";
@@ -524,7 +522,7 @@ public enum FormWidget {
             attributes.get(ATTR_REL_SOURCE), attributes.get(ATTR_REL_VIEW),
             attributes.get(ATTR_REL_COLUMN));
         if (relationInfo != null) {
-          String options = attributes.get(ATTR_OPTIONS);
+          String options = attributes.get(HasOptions.ATTR_OPTIONS);
           if (BeeUtils.isEmpty(options)) {
             widget = new DataSelector(relationInfo, true);
           } else {
@@ -886,7 +884,7 @@ public enum FormWidget {
         break;
 
       case STRING_PICKER:
-        List<String> items = XmlUtils.getChildrenText(description, TAG_ITEM);
+        List<String> items = XmlUtils.getChildrenText(description, HasItems.TAG_ITEM);
         if (!BeeUtils.isEmpty(items)) {
           widget = new StringPicker();
           ((StringPicker) widget).setItems(items);
@@ -1781,7 +1779,7 @@ public enum FormWidget {
         ((RadioGroup) parent).addOption(opt, true);
       }
 
-    } else if (this == LIST_BOX && BeeUtils.same(childTag, TAG_ITEM)) {
+    } else if (this == LIST_BOX && BeeUtils.same(childTag, HasItems.TAG_ITEM)) {
       String item = XmlUtils.getText(child);
       if (!BeeUtils.isEmpty(item) && parent instanceof BeeListBox) {
         ((BeeListBox) parent).addItem(item);
@@ -1837,7 +1835,7 @@ public enum FormWidget {
       } else if (BeeUtils.same(name, ATTR_TITLE)) {
         widget.setTitle(value);
 
-      } else if (BeeUtils.same(name, ATTR_OPTIONS)) {
+      } else if (BeeUtils.same(name, HasOptions.ATTR_OPTIONS)) {
         if (widget instanceof HasOptions) {
           ((HasOptions) widget).setOptions(value);
         }

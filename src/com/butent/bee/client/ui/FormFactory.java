@@ -32,6 +32,7 @@ import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -85,8 +86,6 @@ public class FormFactory {
   }
 
   private static final String ATTR_TYPE = "type";
-
-  private static final String TAG_ITEM = "item";
 
   private static final Map<String, FormCallback> formCallbacks = Maps.newHashMap();
 
@@ -183,7 +182,7 @@ public class FormFactory {
     EditorDescription editor = new EditorDescription(editorType);
     editor.setAttributes(XmlUtils.getAttributes(element));
 
-    List<String> items = XmlUtils.getChildrenText(element, TAG_ITEM);
+    List<String> items = XmlUtils.getChildrenText(element, HasItems.TAG_ITEM);
     if (!BeeUtils.isEmpty(items)) {
       editor.setItems(items);
     }

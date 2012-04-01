@@ -116,7 +116,7 @@
       <xs:element name="item" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
     <xs:attribute name="type" type="bee:editorType" use="required" />
-    <xs:attribute name="valueStartIndex" type="xs:nonNegativeInteger" />
+    <xs:attribute name="valueStartIndex" type="xs:int" />
     <xs:attribute name="stepValue" type="xs:positiveInteger" />
     <xs:attributeGroup ref="bee:textArea" />
     <xs:attribute name="format" type="xs:normalizedString" />
@@ -292,5 +292,23 @@
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
+
+  <xs:complexType name="renderer">
+    <xs:sequence>
+      <xs:element name="item" type="xs:normalizedString" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+    <xs:attribute name="type" type="bee:rendererType" use="required" />
+    <xs:attribute name="valueStartIndex" type="xs:int" />
+    <xs:attribute name="separator" type="xs:normalizedString" />
+    <xs:attribute name="options" type="xs:normalizedString" />
+  </xs:complexType>
+
+  <xs:simpleType name="rendererType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="list" />
+      <xs:enumeration value="map" />
+      <xs:enumeration value="range" />
+    </xs:restriction>
+  </xs:simpleType>
 
 </xs:schema>

@@ -396,6 +396,14 @@ public class BeeUtils {
     }
   }
 
+  public static boolean contains(String s, char ch) {
+    if (s == null) {
+      return false;
+    } else {
+      return s.indexOf(ch) >= 0;
+    }
+  }
+  
   /**
    * Checks is there are equal elements in the Collections.
    * 

@@ -46,6 +46,7 @@ import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.SelectionColumn;
+import com.butent.bee.client.render.RenderableColumn;
 import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.StyleDescriptor;
 import com.butent.bee.client.view.edit.EditStartEvent;
@@ -410,6 +411,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     private boolean isColReadOnly() {
       return colReadOnly;
+    }
+    
+    private boolean isRenderable() {
+      return getColumn() instanceof RenderableColumn;
     }
 
     private boolean isSelection() {
@@ -1566,8 +1571,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     rowValue.setVersion(version);
     rowValue.setValue(dataIndex, value);
 
-    int col = getColumnIndexBySource(source);
-    boolean isCol = isColumnWithinBounds(col);
+    List<Integer> indexBySource = getColumnIndexBySource(source);
+    Integer col;
+
+    if (indexBySource.size() == 1) {
+      col = indexBySource.get(0);
+    } else {
+      col = null;
+    }
 
     boolean checkZindex = false;
     if (getRowStyles() != null) {
@@ -1579,16 +1590,23 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         checkZindex = true;
       }
 
-      if (isCol) {
-        if (getColumnInfo(col).getDynStyles() != null) {
-          refreshCell(row, col);
+      for (int i : indexBySource) {
+        if (getColumnInfo(i).isCalculated()) {
+          continue;
+        }
+        if (getColumnInfo(i).isRenderable()) {
+          checkZindex = true;
+        }
+
+        if (getColumnInfo(i).getDynStyles() != null) {
+          refreshCell(row, i);
         } else {
-          updateCellContent(row, col);
+          updateCellContent(row, i);
         }
       }
     }
 
-    if (checkZindex && isCol) {
+    if (checkZindex && col != null) {
       bringToFront(row, col);
     }
   }
@@ -1641,33 +1659,30 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       return;
     }
 
-    int col = getColumnIndexBySource(source);
-    if (!isColumnWithinBounds(col)) {
-      return;
+    for (int col : getColumnIndexBySource(source)) {
+      Element cellElement = getCellElement(row, col);
+      if (cellElement == null) {
+        continue;
+      }
+
+      if (BeeUtils.isEmpty(value)) {
+        cellElement.setInnerHTML(BeeConst.STRING_EMPTY);
+        continue;
+      }
+
+      IsRow rowValue = getDataItem(row).clone();
+      int dataIndex = getColumnInfo(col).getDataIndex();
+      rowValue.setValue(dataIndex, value);
+
+      AbstractColumn<?> column = getColumn(col);
+
+      SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
+      CellContext context = new CellContext(row, col, rowId, this);
+      column.render(context, rowValue, cellBuilder);
+      SafeHtml cellHtml = cellBuilder.toSafeHtml();
+
+      cellElement.setInnerHTML(cellHtml.asString());
     }
-
-    Element cellElement = getCellElement(row, col);
-    if (cellElement == null) {
-      return;
-    }
-
-    if (BeeUtils.isEmpty(value)) {
-      cellElement.setInnerHTML(BeeConst.STRING_EMPTY);
-      return;
-    }
-
-    IsRow rowValue = getDataItem(row).clone();
-    int dataIndex = getColumnInfo(col).getDataIndex();
-    rowValue.setValue(dataIndex, value);
-
-    AbstractColumn<?> column = getColumn(col);
-
-    SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
-    CellContext context = new CellContext(row, col, rowId, this);
-    column.render(context, rowValue, cellBuilder);
-    SafeHtml cellHtml = cellBuilder.toSafeHtml();
-
-    cellElement.setInnerHTML(cellHtml.asString());
   }
 
   public void refocus() {
@@ -1688,12 +1703,9 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       return;
     }
 
-    int col = getColumnIndexBySource(source);
-    if (!isColumnWithinBounds(col)) {
-      return;
+    for (int col : getColumnIndexBySource(source)) {
+      updateCellContent(row, col);
     }
-
-    updateCellContent(row, col);
   }
 
   public int resizeColumn(int col, int newWidth) {
@@ -2567,14 +2579,15 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return BeeConst.UNDEF;
   }
 
-  private int getColumnIndexBySource(String source) {
+  private List<Integer> getColumnIndexBySource(String source) {
     Assert.notEmpty(source);
+    List<Integer> result = Lists.newArrayList();
     for (int i = 0; i < getColumnCount(); i++) {
       if (BeeUtils.same(columns.get(i).getSource(), source)) {
-        return i;
+        result.add(i);
       }
     }
-    return BeeConst.UNDEF;
+    return result;
   }
 
   private ColumnInfo getColumnInfo(int col) {
@@ -3418,7 +3431,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private void refreshRow(int rowIndex) {
     refreshRow(rowIndex, null);
   }
-
+ 
   private void refreshRow(int rowIndex, Collection<Integer> colIndexes) {
     checkRowBounds(rowIndex);
 

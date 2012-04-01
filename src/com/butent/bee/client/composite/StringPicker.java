@@ -1,5 +1,6 @@
 package com.butent.bee.client.composite;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.Cell.Context;
@@ -38,7 +39,6 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -47,8 +47,7 @@ import java.util.Map;
  * Manages a user interface component for selecting text values from a cell list.
  */
 
-public class StringPicker extends CellList<String> implements Editor, HasItems,
-    BlurHandler {
+public class StringPicker extends CellList<String> implements Editor, HasItems, BlurHandler {
 
   /**
    * Contains {@code SafeHtml} templates for string picker screen presentations.
@@ -93,7 +92,8 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
   private static final String STYLE_CONTAINER = "bee-StringPicker";
   private static final String STYLE_ITEM = "bee-StringPicker-item";
   private static final String STYLE_SELECTED = "bee-StringPicker-selected";
-
+  
+  private final List<String> data = Lists.newArrayList();
   private String value = null;
 
   private boolean nullable = true;
@@ -135,6 +135,20 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
     return addDomHandler(handler, FocusEvent.getType());
   }
   
+  public void addItem(String item) {
+    Assert.notEmpty(item);
+    data.add(item);
+    refresh();
+  }
+
+  public void addItems(Collection<String> items) {
+    Assert.notNull(items);
+    if (!items.isEmpty()) {
+      data.addAll(items);
+      refresh();
+    }
+  }
+
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
   }
@@ -154,6 +168,14 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
 
   public String getIdPrefix() {
     return "string-picker";
+  }
+
+  public int getItemCount() {
+    return data.size();
+  }
+
+  public List<String> getItems() {
+    return data;
   }
 
   public String getNormalizedValue() {
@@ -247,7 +269,10 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
   }
 
   public void setItems(Collection<String> items) {
-    setRowData(0, new ArrayList<String>(items));
+    Assert.notNull(items);
+    data.clear();
+    data.addAll(items);
+    refresh();
   }
 
   public void setNullable(boolean nullable) {
@@ -451,6 +476,10 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
     }
   }
 
+  private void refresh() {
+    setRowData(data);
+  }
+
   private boolean selectByChar(char charCode, int currentIndex) {
     boolean ok = false;
     if (charCode <= BeeConst.CHAR_SPACE) {
@@ -477,7 +506,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems,
     }
     return ok;
   }
-
+  
   private void setBlurRegistration(HandlerRegistration blurRegistration) {
     this.blurRegistration = blurRegistration;
   }
