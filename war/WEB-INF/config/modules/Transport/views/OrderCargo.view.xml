@@ -7,20 +7,24 @@
   >
   <Columns>
     <SimpleColumn name="Order" />
-    <SimpleColumn name="LoadingDate" />
-    <SimpleColumn name="LoadingCountry" />
-    <SimpleJoin joinType="LEFT" name="LoadingCountry">
-      <SimpleColumn name="Name" alias="LoadingCountryName" />
+    <SimpleJoin name="LoadingPlace" joinType="LEFT">
+      <SimpleColumn name="Date" alias="LoadingDate" />
+      <SimpleColumn name="Country" alias="LoadingCountry" />
+      <SimpleJoin joinType="LEFT" name="Country">
+        <SimpleColumn name="Name" alias="LoadingCountryName" />
+      </SimpleJoin>
+      <SimpleColumn name="Place" alias="LoadingPlace" />
+      <SimpleColumn name="Terminal" alias="LoadingTerminal" />
     </SimpleJoin>
-    <SimpleColumn name="LoadingPlace" />
-    <SimpleColumn name="LoadingTerminal" />
-    <SimpleColumn name="UnloadingDate" />
-    <SimpleColumn name="UnloadingCountry" />
-    <SimpleJoin joinType="LEFT" name="UnloadingCountry">
-      <SimpleColumn name="Name" alias="UnloadingCountryName" />
+    <SimpleJoin name="UnloadingPlace" joinType="LEFT">
+      <SimpleColumn name="Date" alias="UnloadingDate" />
+      <SimpleColumn name="Country" alias="UnloadingCountry" />
+      <SimpleJoin joinType="LEFT" name="Country">
+        <SimpleColumn name="Name" alias="UnloadingCountryName" />
+      </SimpleJoin>
+      <SimpleColumn name="Place" alias="UnloadingPlace" />
+      <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
     </SimpleJoin>
-    <SimpleColumn name="UnloadingPlace" />
-    <SimpleColumn name="UnloadingTerminal" />
     <SimpleColumn name="Cargo" />
     <SimpleColumn name="Weight" />
     <SimpleColumn name="Volume" />

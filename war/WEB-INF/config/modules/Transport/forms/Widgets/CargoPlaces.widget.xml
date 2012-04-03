@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<HorizontalPanel xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../../schemas/widget.xsd">
+
+    <cell>
+      <FlexTable>
+        <row>
+          <cell colSpan="2">
+            <Label html="Pakrovimas" horizontalAlignment="center" style="font-weight: bold;" />
+          </cell>
+        </row>
+        <row>
+          <cell>
+            <Label html="Data" horizontalAlignment="right" />
+          </cell>
+          <cell>
+            <InputDate source="LoadingDate" style="width: 7em" />
+          </cell>
+        </row>
+        <row>
+          <cell>
+            <Label html="Šalis" horizontalAlignment="right" />
+          </cell>
+          <cell>
+            <DataSelector source="LoadingCountryName" relSource="LoadingCountry"
+              relView="Countries" relColumn="Name" />
+          </cell>
+        </row>
+        <row>
+          <cell>
+            <Label html="Vieta" horizontalAlignment="right" />
+          </cell>
+          <cell>
+            <InputText source="LoadingPlace" />
+          </cell>
+        </row>
+        <row>
+          <cell>
+            <Label html="Terminalas" horizontalAlignment="right" />
+          </cell>
+          <cell>
+            <InputText source="LoadingTerminal" />
+          </cell>
+        </row>
+      </FlexTable>
+    </cell>
+    <cell>
+      <FlexTable>
+        <row>
+          <cell colSpan="2">
+            <Label html="Iškrovimas" horizontalAlignment="center" style="font-weight: bold;" />
+          </cell>
+        </row>
+        <row>
+          <cell>
+            <Label html="Data" horizontalAlignment="right" />
+          </cell>
+          <cell>
+            <InputDate source="UnloadingDate"  style="width: 7em" />
+          </cell>
+        </row>
+        <row>
+          <cell>
+            <Label html="Šalis" horizontalAlignment="right" />
+          </cell>
+          <cell>
+            <DataSelector source="UnloadingCountryName" relSource="UnloadingCountry"
+              relView="Countries" relColumn="Name" />
+          </cell>
+        </row>
+        <row>
+          <cell>
+            <Label html="Vieta" horizontalAlignment="right" />
+          </cell>
+          <cell>
+            <InputText source="UnloadingPlace" />
+          </cell>
+        </row>
+        <row>
+          <cell>
+            <Label html="Terminalas" horizontalAlignment="right" />
+          </cell>
+          <cell>
+            <InputText source="UnloadingTerminal" />
+          </cell>
+        </row>
+      </FlexTable>
+    </cell>
+</HorizontalPanel>
+  
+  

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+  
+  name="Drivers" viewName="Drivers" caption="Vairuotojai"
+  newRowForm="Driver" editForm="Driver" newRowCaption="Naujas vairuotojas"
+  >
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <font>Verdana 12 px</font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <DataColumn name="PersonName" source="PersonName" caption="Vardas, Pavardė" />
+    <DataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
+    <DataColumn name="Position" source="Position" caption="Pareigos" />
+    <DataColumn name="Phone" source="Phone" caption="Tel." />
+    <DataColumn name="Email" source="Email" caption="El. paštas" />
+    <DataColumn name="Experience" source="Experience" caption="Stažas nuo" />
+    <DataColumn name="Notes" source="Notes" caption="Pastabos" />
+  </columns>
+</Grid>

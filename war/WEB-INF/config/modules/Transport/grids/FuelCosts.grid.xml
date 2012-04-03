@@ -15,7 +15,7 @@
   <columns>
     <DataColumn name="DateFrom" source="DateFrom" caption="Nuo" />
     <DataColumn name="DateTo" source="DateTo" caption="Iki" />
-    <DataColumn name="FuelName" source="FuelName" caption="Kuras" />
+    <DataColumn name="FuelType" source="FuelType" caption="Kuro rūšis" />
     <DataColumn name="Summer" source="Summer" caption="Vasara l/100km" format="#.00"  />
     <DataColumn name="Winter" source="Winter" caption="Žiema l/100km" format="#.00"  />
     <DataColumn name="TonneKilometer" source="TonneKilometer" caption="Tonkilometris" format="#.0000"  />

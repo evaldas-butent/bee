@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+
+  name="FuelTemperatures"
+  idName="TemperatureID"
+  x="0" y="0"
+  >
+  <BeeFields>
+    <BeeField name="Cost" type="LONG" notNull="true" relation="FuelCosts" cascade="DELETE" />
+    <BeeField name="Season" type="DECIMAL" precision="1" notNull="true" />
+    <BeeField name="TempFrom" type="DECIMAL" precision="4" scale="1" />
+    <BeeField name="TempTo" type="DECIMAL" precision="4" scale="1" />
+    <BeeField name="Rate" type="DECIMAL" precision="6" scale="2" />
+  </BeeFields>
+</BeeTable>

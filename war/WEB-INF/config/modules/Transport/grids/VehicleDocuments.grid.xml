@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
-  name="SparePartUsage" viewName="SparePartUsage" caption="Panaudojimo istorija"
+  name="VehicleDocuments" viewName="VehicleDocuments"
   >
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">
@@ -13,10 +13,10 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="ModelName" source="ModelName" caption="Modelis" readOnly="true" />
-    <DataColumn name="Number" source="Number" caption="Valst.Nr." />
-    <DataColumn name="Mounted" source="Mounted" caption="Uždėta" />
-    <DataColumn name="Removed" source="Removed" caption="Nuimta" />
+    <DataColumn name="CategoryName" source="CategoryName" caption="Kategorija" />
+    <DataColumn name="Number" source="Number" caption="Numeris" />
+    <DataColumn name="Name" source="Name" caption="Pavadinimas" />
+    <DataColumn name="Expires" source="Expires" caption="Galioja iki" />
     <DataColumn name="Note" source="Note" caption="Pastaba" />
   </columns>
 </Grid>

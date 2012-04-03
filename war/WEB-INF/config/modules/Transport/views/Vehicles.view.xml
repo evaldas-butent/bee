@@ -12,6 +12,7 @@
     </SimpleJoin>
     <SimpleColumn name="Model" />
     <SimpleJoin name="Model" joinType="LEFT">
+      <SimpleColumn name="Parent" alias="ParentModel" />
       <HiddenColumn name="Name" />
       <SimpleJoin name="Parent" joinType="LEFT">
         <HiddenColumn name="Name" alias="ParentName" />

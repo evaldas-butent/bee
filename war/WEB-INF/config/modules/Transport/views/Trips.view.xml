@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="Trips"
+  source="Trips"
+  >
+  <Columns>
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="TripNo" />
+    <SimpleColumn name="Forwarder" />
+    <SimpleJoin joinType="LEFT" name="Forwarder">
+      <SimpleColumn name="Name" alias="ForwarderName" />
+    </SimpleJoin>
+    <SimpleColumn name="ForwarderVehicle" />
+    <SimpleColumn name="Vehicle" />
+    <SimpleJoin name="Vehicle" joinType="LEFT">
+      <SimpleColumn name="Number" alias="VehicleNumber" />
+    </SimpleJoin>
+    <SimpleColumn name="Trailer" />
+    <SimpleJoin name="Trailer" joinType="LEFT">
+      <SimpleColumn name="Number" alias="TrailerNumber" />
+    </SimpleJoin>
+    <SimpleColumn name="DateFrom" />
+    <SimpleColumn name="DateTo" />
+    <SimpleColumn name="SpeedometerBefore" />
+    <SimpleColumn name="SpeedometerAfter" />
+    <SimpleColumn name="FuelBefore" />
+    <SimpleColumn name="FuelAfter" />
+    <SimpleColumn name="Notes" />
+  </Columns>
+  <Order>
+    <OrderBy column="Date" />
+  </Order>
+</View>

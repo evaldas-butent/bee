@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="DriverDocuments"
+  source="DriverDocuments"
+  >
+  <Columns>
+    <SimpleColumn name="Driver" />
+    <SimpleColumn name="Document" />
+    <SimpleJoin name="Document" joinType="LEFT">
+      <SimpleColumn name="Category" />
+      <SimpleJoin name="Category" joinType="LEFT">
+        <SimpleColumn name="Name" alias="CategoryName" />
+      </SimpleJoin>
+      <SimpleColumn name="Number" />
+      <SimpleColumn name="Name" />
+      <SimpleColumn name="Expires" />
+    </SimpleJoin>
+    <SimpleColumn name="Note" />
+  </Columns>
+  <Order>
+    <OrderBy column="CategoryName" />
+    <OrderBy column="Number" />
+  </Order>
+</View>
+ 

@@ -85,7 +85,7 @@ public class ModuleHolderBean {
         if (BeeUtils.isEmpty(moduleName)) {
           LogUtils.severe(logger, "Module", BeeUtils.bracket(mod), "does not have name");
 
-        } else if (modules.containsKey(moduleName)) {
+        } else if (hasModule(moduleName)) {
           LogUtils.severe(logger, "Dublicate module name:", BeeUtils.bracket(moduleName));
 
         } else {
@@ -99,16 +99,23 @@ public class ModuleHolderBean {
         LogUtils.severe(logger, "Not a module:", BeeUtils.bracket(mod));
       }
     }
-    for (String mod : getModules()) {
-      moduleList = getModule(mod).dependsOn();
+    boolean dependencyError = true;
 
-      if (!BeeUtils.isEmpty(moduleList)) {
-        for (String depends : SPLITTER.split(moduleList)) {
-          if (!hasModule(depends)) {
-            LogUtils.severe(logger, "Module dependency error:", "Module", BeeUtils.bracket(mod),
-                "depends on nonexistent module", BeeUtils.bracket(depends));
-            modules.remove(mod);
-            break;
+    while (dependencyError) {
+      dependencyError = false;
+
+      for (String mod : getModules()) {
+        moduleList = getModule(mod).dependsOn();
+
+        if (!BeeUtils.isEmpty(moduleList)) {
+          for (String depends : SPLITTER.split(moduleList)) {
+            if (!hasModule(depends)) {
+              LogUtils.severe(logger, "Module dependency error:", "Module", BeeUtils.bracket(mod),
+                  "depends on nonexistent module", BeeUtils.bracket(depends));
+              modules.remove(mod);
+              dependencyError = true;
+              break;
+            }
           }
         }
       }

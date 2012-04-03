@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+
+  name="Trips" viewName="Trips" caption="Reisai"
+  newRowForm="NewTrip" editForm="NewTrip" newRowPopup="true"
+  >
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <font>Verdana 12 px</font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <DataColumn name="Date" source="Date" caption="Data" />
+    <DataColumn name="TripNo" source="TripNo" caption="Reiso Nr." />
+    <DataColumn name="ForwarderName" source="ForwarderName" caption="Vežėjas" />
+    <CalcColumn name="Vehicle" type="string" caption="Transportas">
+      <calc>
+        <function>
+          var vehicle = row.ForwarderVehicle;
+          
+          if (!vehicle) {
+            if (row.VehicleNumber) {
+              vehicle = row.VehicleNumber;
+            }
+            if (row.TrailerNumber) {
+              vehicle = (vehicle ? vehicle + ' / ' : '')  + row.TrailerNumber;
+            }
+          }          
+          return vehicle;
+        </function>
+      </calc>
+    </CalcColumn>
+    <DataColumn name="DateFrom" source="DateFrom" caption="Išvyko" />
+    <DataColumn name="DateTo" source="DateTo" caption="Sugrįžo" />
+  </columns>
+</Grid>

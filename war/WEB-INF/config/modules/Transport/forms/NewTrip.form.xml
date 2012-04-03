@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY LABEL_STYLE "margin-right: 1em; margin-left: 1em;">
+  <!ENTITY LEFT_LABEL_STYLE "margin-right: 1em; display: inline-block; min-width: 4em; text-align: right">
+  <!ENTITY ROW_STYLE "margin-bottom: 1ex;">
+]>
+<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+  
+  name="NewTrip" viewName="Trips" caption="Naujas reisas"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+      <FlowPanel>
+        <InlineLabel html="Data" class="bee-required" style="&LEFT_LABEL_STYLE;" />
+        <InputDateTime source="Date" style="width: 10em;" />
+      </FlowPanel>
+      <FlowPanel>
+        <InlineLabel html="Reiso.Nr." class="bee-required" style="font-weight: bold; &LABEL_STYLE;" />
+        <InputText source="TripNo" />
+      </FlowPanel>
+    </FlowPanel>
+    <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+      <InlineLabel html="Vežėjas" style="&LEFT_LABEL_STYLE;" />
+      <DataSelector source="ForwarderName" relSource="Forwarder" relView="Companies"
+        relColumn="Name" class="flexible" />
+      <InlineLabel html="Vežėjo transportas" style="&LABEL_STYLE;" />
+      <SimplePanel style="position: relative; height: 23px; width: 150px;" class="flexible">
+        <InputText source="ForwarderVehicle" class="occupy" />
+      </SimplePanel>
+    </FlowPanel>
+  </FlowPanel>
+</Form>

@@ -10,7 +10,7 @@
     <BeeField name="Vehicle" type="LONG" notNull="true" relation="Vehicles" cascade="DELETE" />
     <BeeField name="DateFrom" type="DATE" />
     <BeeField name="DateTo" type="DATE" />
-    <BeeField name="Fuel" type="LONG" notNull="true" relation="Items" />
+    <BeeField name="Fuel" type="LONG" notNull="true" relation="FuelTypes" />
     <BeeField name="Summer" type="DECIMAL" precision="6" scale="2" notNull="true" />
     <BeeField name="Winter" type="DECIMAL" precision="6" scale="2" notNull="true" />
     <BeeField name="TonneKilometer" type="DECIMAL" precision="6" scale="4" />

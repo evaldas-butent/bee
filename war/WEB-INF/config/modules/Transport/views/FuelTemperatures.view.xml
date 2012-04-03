@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="FuelTemperatures"
+  source="FuelTemperatures"
+  >
+  <Columns>
+    <SimpleColumn name="Cost"/>
+    <SimpleColumn name="Season"/>
+    <SimpleColumn name="TempFrom"/>
+    <SimpleColumn name="TempTo"/>
+    <SimpleColumn name="Rate"/>
+  </Columns>
+  <Order>
+    <OrderBy column="Season" />
+    <OrderBy column="TempFrom" />
+  </Order>
+</View>

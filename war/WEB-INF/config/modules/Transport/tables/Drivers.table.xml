@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+
+  name="Drivers"
+  idName="DriverID"
+  x="0" y="0"
+  >
+  <BeeFields>
+    <BeeField name="CompanyPerson" type="LONG" notNull="true" relation="CompanyPersons" />
+    <BeeField name="Experience" type="DATE" />
+    <BeeField name="Notes" type="TEXT" />
+  </BeeFields>
+  <BeeKeys>
+    <BeeKey unique="true">
+      <KeyField>CompanyPerson</KeyField>
+    </BeeKey>
+  </BeeKeys>
+</BeeTable>

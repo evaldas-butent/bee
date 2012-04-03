@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+
+  name="VehicleServices"
+  idName="ServiceID"
+  x="0" y="0"
+  >
+  <BeeFields>
+    <BeeField name="Vehicle" type="LONG" notNull="true" relation="Vehicles" cascade="DELETE" />
+    <BeeField name="Type" type="LONG" notNull="true" relation="ServiceTypes" />
+    <BeeField name="Date" type="DATE" notNull="true" />
+    <BeeField name="Run" type="INTEGER" />
+    <BeeField name="ValidUntil" type="DATE" />
+    <BeeField name="ValidFor" type="INTEGER" />
+    <BeeField name="Notes" type="STRING" precision="100" />
+  </BeeFields>
+</BeeTable>

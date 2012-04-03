@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY LABEL_STYLE "margin-right: 1em; margin-left: 1em;">
+  <!ENTITY LEFT_LABEL_STYLE "margin-right: 1em; display: inline-block; min-width: 70px; text-align: right">
+  <!ENTITY ROW_STYLE "margin-bottom: 1ex;">
+]>
+<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+  
+  name="Driver" viewName="Drivers" caption="Vairuotojas"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <FlowPanel class="flexBox-horizontal">
+      <FlowPanel class="flexBox-vertical flexible">
+        <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
+          <InlineLabel html="Vardas, pavardė" class="bee-required" style="font-weight: bold; &LEFT_LABEL_STYLE;" />
+          <DataSelector source="PersonName" relSource="CompanyPerson" relView="CompanyPersons"
+            relColumn="PersonName" class="flexible" style="min-width: 5em;" />
+        </FlowPanel>
+
+        <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+          <FlowPanel>
+            <InlineLabel  html="Įmonė" style="&LEFT_LABEL_STYLE;" />
+            <TextLabel source="CompanyName" class="bee-display" style="display: inline-block" />
+          </FlowPanel>
+          <FlowPanel>
+            <InlineLabel html="Pareigos" style="&LABEL_STYLE;" />
+            <TextLabel source="Position" class="bee-display" style="display: inline-block" />
+          </FlowPanel>
+        </FlowPanel>
+        
+        <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+          <FlowPanel>
+            <InlineLabel html="Telefonai" style="&LEFT_LABEL_STYLE;" />
+            <TextLabel source="Phone" class="bee-display" style="display: inline-block" />
+          </FlowPanel>
+          <FlowPanel>
+            <InlineLabel html="El. paštas" style="&LABEL_STYLE;" />
+            <TextLabel source="Email" class="bee-display" style="display: inline-block" />
+          </FlowPanel>
+          <InlineLabel html="Stažas nuo" style="&LABEL_STYLE;" />
+          <InputDate source="Experience" style="width: 7em" />
+        </FlowPanel>
+      </FlowPanel>
+      
+      <FlowPanel class="flexBox-vertical flexible" style="&ROW_STYLE; margin-left: 1em;">
+        <Label html="Pastabos" />
+        <SimplePanel style="position: relative; min-width: 5em;" class="flexible">
+          <InputArea source="Notes" class="occupy" />
+        </SimplePanel>
+      </FlowPanel>
+    </FlowPanel>
+
+    <ChildGrid name="DriverDocuments" relColumn="Driver" class="flexible" />
+  </FlowPanel>
+</Form>  

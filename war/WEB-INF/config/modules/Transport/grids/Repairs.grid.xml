@@ -14,7 +14,7 @@
 
   <columns>
     <DataColumn name="Date" source="Date" caption="Data" />
-    <DataColumn name="ItemName" source="ItemName" caption="Paslauga" />
+    <DataColumn name="ItemName" source="ItemName" caption="Prekė/paslauga" />
     <DataColumn name="UnitName" source="UnitName" caption="Mato v." />
     <DataColumn name="Quantity" source="Quantity" caption="Kiekis" />
     <DataColumn name="Price" source="Price" caption="Kaina" format="#.00" />

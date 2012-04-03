@@ -4,7 +4,7 @@
   cellSpacing="10">
   <row>
     <cell>
-      <Label html="Dokumento data:" class="bee-required" />
+      <Label html="Dokumento data:" />
     </cell>
     <cell>
       <InputDateTime source="DocumentDate" />
@@ -51,7 +51,7 @@
 
   <row>
     <cell>
-      <Label html="Tipas:" class="bee-required" />
+      <Label html="Tipas:" />
     </cell>
     <cell>
       <DataSelector source="TypeName" relSource="Type" relView="DocumentTypes"
@@ -68,7 +68,7 @@
 
   <row>
     <cell>
-      <Label html="Grupė:" class="bee-required" />
+      <Label html="Grupė:" />
     </cell>
     <cell>
       <DataSelector source="GroupName" relSource="Group" relView="DocumentGroups"

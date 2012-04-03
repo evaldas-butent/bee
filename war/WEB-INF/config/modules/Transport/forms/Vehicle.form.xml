@@ -58,9 +58,9 @@
         </FlowPanel>
       </FlowPanel>
       
-      <FlowPanel class="flexBox-vertical" style="&ROW_STYLE; margin-left: 1em;">
+      <FlowPanel class="flexBox-vertical flexible" style="&ROW_STYLE; margin-left: 1em;">
         <Label html="Pastabos" />
-        <SimplePanel style="position: relative; width: 15em;" class="flexible">
+        <SimplePanel style="position: relative; min-width: 5em;" class="flexible">
           <InputArea source="Notes" class="occupy" />
         </SimplePanel>
       </FlowPanel>
@@ -70,9 +70,9 @@
       <page>
         <text>Papildoma informacija</text>
         <FlowPanel class="flexBox-horizontal">
-          <FlowPanel class="flexBox-vertical flexible" style="-webkit-box-align: end; margin-right: 1em;">
+          <FlowPanel class="flexBox-vertical" style="-webkit-box-align: end; margin-right: 1em;">
             <FlowPanel>
-              <InlineLabel html="Kuro balko talpa l" style="&LABEL_STYLE;" />
+              <InlineLabel html="Kuro bako talpa l" style="&LABEL_STYLE;" />
               <InputInteger source="TankCapacity" style="width: 2em" />
             </FlowPanel>
             <FlowPanel>
@@ -80,13 +80,25 @@
               <InputInteger source="Speedometer" style="width: 5em" />
             </FlowPanel>
           </FlowPanel>
-
-          <ChildGrid name="FuelCosts" relColumn="Vehicle" class="flexible" style="min-width: 200px;" />
+          
+          <FlowPanel class="flexBox-vertical flexible">
+              <ChildGrid name="FuelCosts" relColumn="Vehicle" style="height: 150px" />
+<!--               <ChildGrid name="FuelTemperatures" relColumn="Cost" parentName="FuelCosts"
+ -->              <GridPanel name="FuelTemperatures"
+                class="flexible" style="margin-left: 20%" />
+          </FlowPanel>
         </FlowPanel>
       </page>
       <page>
         <text>Remontai, servisas</text>
-        <ChildGrid name="Repairs" relColumn="Vehicle" />
+        <ComplexPanel>
+          <layer top="0" bottom="40" bottomUnit="%" left="0" right="0">
+            <ChildGrid name="Repairs" relColumn="Vehicle" />
+          </layer>
+          <layer top="60" topUnit="%" bottom="0" left="0" right="30" rightUnit="%">
+            <ChildGrid name="VehicleServices" relColumn="Vehicle" />
+          </layer>
+        </ComplexPanel>
       </page>
       <page>
         <text>Reisai</text>
@@ -94,11 +106,11 @@
       </page>
       <page>
         <text>Dokumentai</text>
-        <InlineLabel/>
+        <ChildGrid name="VehicleDocuments" relColumn="Vehicle" />
       </page>
       <page>
         <text>Keičiamos dalys</text>
-        <InlineLabel/>
+        <ChildGrid name="VehiclePartUsage" relColumn="Vehicle" />
       </page>
     </TabbedPages>
   </FlowPanel>

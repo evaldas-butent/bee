@@ -603,6 +603,9 @@ public class DataEditorBean {
       ss.addField(tblInfo.tableAlias, idName, tblInfo.tableAlias + "_" + idName)
           .addField(tblInfo.tableAlias, verName, tblInfo.tableAlias + "_" + verName);
 
+      if (!BeeUtils.isEmpty(ss.getGroupBy())) {
+        ss.addGroup(tblInfo.tableAlias, idName, verName);
+      }
       for (FieldInfo fldInfo : tblInfo.fields) {
         if (!BeeUtils.isEmpty(fldInfo.fieldAlias)) {
           ss.addField(fldInfo.tableAlias, fldInfo.fieldName, fldInfo.fieldAlias);
@@ -610,8 +613,8 @@ public class DataEditorBean {
       }
     }
     Assert.notEmpty(id);
-    Map<String, String> res = qs.getRow(ss
-        .setWhere(view.getCondition(ComparisonFilter.compareId(id))));
+    Map<String, String> res =
+        qs.getRow(ss.setWhere(view.getCondition(ComparisonFilter.compareId(id))));
 
     if (BeeUtils.isEmpty(res)) {
       return false;

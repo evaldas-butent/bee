@@ -505,17 +505,24 @@ public class UiServiceBean {
     return ResponseObject.response(result);
   }
 
-  private void buildDbList(String root, Set<String> tables) {
-    if (tables.contains(BeeUtils.normalize(root))) {
+  private void buildDbList(String rootTable, Set<String> tables, boolean initial) {
+    boolean recurse = BeeUtils.isSuffix(rootTable, '*');
+    String root = BeeUtils.normalize(BeeUtils.removeSuffix(rootTable, '*'));
+
+    if (!initial && tables.contains(root) || !sys.isTable(root)) {
       return;
     }
-    tables.add(BeeUtils.normalize(root));
+    tables.add(root);
 
     for (String tbl : sys.getTableNames()) {
       if (!tables.contains(BeeUtils.normalize(tbl))) {
         for (BeeField field : sys.getTableFields(tbl)) {
           if (BeeUtils.same(field.getRelation(), root)) {
-            buildDbList(tbl, tables);
+            if (recurse) {
+              buildDbList(tbl + '*', tables, false);
+            } else {
+              tables.add(BeeUtils.normalize(tbl));
+            }
           }
         }
       }
@@ -560,7 +567,7 @@ public class UiServiceBean {
       roots = sys.getTableNames();
     }
     for (String root : roots) {
-      buildDbList(root, tables);
+      buildDbList(root, tables, true);
     }
     for (String tableName : tables) {
       XmlTable xmlTable = sys.getXmlTable(sys.getTable(tableName).getModuleName(), tableName);
@@ -969,7 +976,7 @@ public class UiServiceBean {
       }
 
     } else {
-      response.addError("Rebuild what");
+      response.addError("Rebuild what?");
     }
     return response;
   }

@@ -6,12 +6,12 @@
   idName="DocumentID"
   >
   <BeeFields>
-    <BeeField name="DocumentDate" type="DATETIME" notNull="true" />
+    <BeeField name="DocumentDate" type="DATETIME" />
     <BeeField name="Expires" type="DATETIME" />
     <BeeField name="Number" type="STRING" precision="30" />
     <BeeField name="RegistrationNumber" type="STRING" precision="30" />
-    <BeeField name="Type" type="LONG" notNull="true" relation="DocumentTypes" />
-    <BeeField name="Group" type="LONG" notNull="true" relation="DocumentGroups" />
+    <BeeField name="Type" type="LONG" relation="DocumentTypes" />
+    <BeeField name="Group" type="LONG" relation="DocumentGroups" />
     <BeeField name="Category" type="LONG" notNull="true" relation="DocumentTree" />
     <BeeField name="Place" type="LONG" relation="DocumentPlaces" />
     <BeeField name="Company" type="LONG" relation="Companies" />

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="VehicleServices"
+  source="VehicleServices"
+  >
+  <Columns>
+    <SimpleColumn name="Vehicle"/>
+    <SimpleColumn name="Type"/>
+    <SimpleJoin joinType="LEFT" name="Type">
+      <SimpleColumn name="Name" alias="TypeName" />
+    </SimpleJoin>
+    <SimpleColumn name="Date"/>
+    <SimpleColumn name="Run" />
+    <SimpleColumn name="ValidUntil" />
+    <SimpleColumn name="ValidFor" />
+    <SimpleColumn name="Notes" />
+  </Columns>
+  <Order>
+    <OrderBy column="Date" descending="true" />
+  </Order>
+</View>

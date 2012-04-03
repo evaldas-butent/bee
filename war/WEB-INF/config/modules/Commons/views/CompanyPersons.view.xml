@@ -15,6 +15,16 @@
     <SimpleJoin name="Person" joinType="LEFT">
       <SimpleColumn name="FirstName" />
       <SimpleColumn name="LastName" />
+      <SimpleColumn name="PersonName">
+        <concat>
+          <string>"FirstName"</string>
+          <string>' '</string>
+          <nvl type="STRING">
+            <string>"LastName"</string>
+            <string>''</string>
+          </nvl>
+        </concat>
+      </SimpleColumn>
     </SimpleJoin>
     <SimpleJoin name="Contact" joinType="LEFT">
       <SimpleColumn name="Phone" />

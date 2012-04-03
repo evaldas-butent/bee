@@ -50,7 +50,7 @@
     <xs:attribute name="scale" type="xs:byte" />
     <xs:attribute name="notNull" type="xs:boolean" />
     <xs:attribute name="unique" type="xs:boolean" />
-    <xs:attribute name="relation" type="xs:string" />
+    <xs:attribute name="relation" type="bee:tableNameType" />
     <xs:attribute name="cascade" type="bee:cascadeType" />
     <xs:attribute name="translatable" type="xs:boolean" />
   </xs:complexType>

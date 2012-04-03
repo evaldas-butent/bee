@@ -9,6 +9,9 @@
   <BeeFields>
     <BeeField name="Cargo" type="LONG" notNull="true" relation="OrderCargo" cascade="DELETE" />
     <BeeField name="Trip" type="LONG" notNull="true" cascade="DELETE" />
-    <BeeField name="Percent" type="DECIMAL" precision="3" scale="0" />
+    <BeeField name="LoadingPlace" type="LONG" unique="true" relation="CargoPlaces" />
+    <BeeField name="UnloadingPlace" type="LONG" unique="true" relation="CargoPlaces" />
+    <BeeField name="CargoPercent" type="DECIMAL" precision="3" scale="0" />
+    <BeeField name="TripPercent" type="DECIMAL" precision="3" scale="0" />
   </BeeFields>
 </BeeTable>

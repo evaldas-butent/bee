@@ -24,6 +24,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -196,7 +197,10 @@ public class TransportHandler {
       if (model == null) {
         return null;
       } else {
-        return ComparisonFilter.isEqual("Model", new LongValue(model));
+        Value value = new LongValue(model);
+
+        return Filter.or(ComparisonFilter.isEqual("ParentModel", value),
+            ComparisonFilter.isEqual("Model", value));
       }
     }
 

@@ -16,7 +16,7 @@
 
   <columns>
     <DataColumn name="Date" source="Date" caption="Data" />
-    <DataColumn name="OrderNo" source="OrderNo" caption="Užsakymo numeris" />
+    <DataColumn name="OrderNo" source="OrderNo" caption="Užsakymo Nr." />
     <CalcColumn name="Status" type="string" caption="Būsena" sortBy="Status">
       <calc><lambda /></calc>
     </CalcColumn>

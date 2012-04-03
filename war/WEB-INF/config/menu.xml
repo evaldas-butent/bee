@@ -39,8 +39,11 @@
   <item id="orders" parent="transport_menu" order="10" text="Užsakymai" service="grid" parameters="TripOrders" />
   <item id="trips" parent="transport_menu" order="20" text="Reisai" service="grid" parameters="Trips" />
   <item id="types" parent="transport_menu" order="30" text="Transporto tipai" service="grid" parameters="VehicleTypes" separators="*" />
-  <item id="vehicles" parent="transport_menu" order="40" text="Transporto priemonės" service="grid" parameters="Vehicles" />
-  <item id="spare_parts" parent="transport_menu" order="50" text="Keičiamos dalys" service="grid" parameters="SpareParts" separators="*" />
+  <item id="service_types" parent="transport_menu" order="40" text="Serviso tipai" service="grid" parameters="ServiceTypes" />
+  <item id="fuel_types" parent="transport_menu" order="50" text="Kuro rūšys" service="grid" parameters="FuelTypes" />
+  <item id="vehicles" parent="transport_menu" order="60" text="Transporto priemonės" service="grid" parameters="Vehicles" />
+  <item id="drivers" parent="transport_menu" order="70" text="Vairuotojai" service="grid" parameters="Drivers" separators="*" />
+  <item id="spare_parts" parent="transport_menu" order="80" text="Keičiamos dalys" service="grid" parameters="SpareParts" separators="*" />
 
   <item id="calendar" order="80" text="Kalendorius" service="calendar" />
 
