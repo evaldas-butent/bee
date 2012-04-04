@@ -37,7 +37,8 @@
           <property name="user-table" value="&quot;Users&quot;"></property>
           <property name="datasource-jndi" value="jdbc/pg"></property>
           <property name="jaas-context" value="jdbcRealm"></property>
-          <property name="digest-algorithm" value="NONE"></property>
+          <property name="digest-algorithm" value="MD5"></property>
+          <property name="charset" value="UTF-8"></property>
         </auth-realm>
       </security-service>
     </config>

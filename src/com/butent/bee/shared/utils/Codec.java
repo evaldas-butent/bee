@@ -8,6 +8,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.value.BooleanValue;
 
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
@@ -610,22 +611,22 @@ public class Codec {
   }
 
   /**
-   * Converts a Byte array to a String. Note: {@code bytes} must be a double byte array.
+   * Converts a Byte array to a String.
    * 
    * @param bytes the array to convert
    * @return a String representation of the Byte array.
    */
   public static String fromBytes(byte[] bytes) {
     Assert.notNull(bytes);
-    int len = bytes.length;
-    Assert.isPositive(len);
-    Assert.isEven(len);
+    Assert.isPositive(bytes.length);
+    String result = null;
 
-    char[] chars = new char[len / 2];
-    for (int i = 0; i < chars.length; i++) {
-      chars[i] = (char) ((bytes[i * 2] << 8) + (bytes[i * 2 + 1] & 0xff));
+    try {
+      result = new String(bytes, BeeConst.CHARSET_UTF8);
+    } catch (UnsupportedEncodingException e) {
+      Assert.untouchable(e.getMessage());
     }
-    return new String(chars);
+    return result;
   }
 
   /**
@@ -659,13 +660,12 @@ public class Codec {
     } else {
       MD5.update(toBytes(s));
     }
-
     byte[] arr = MD5.digest();
     return toHex(arr);
   }
-  
+
   public static String pack(boolean value) {
-    return value ? BooleanValue.S_TRUE : BooleanValue.S_FALSE; 
+    return value ? BooleanValue.S_TRUE : BooleanValue.S_FALSE;
   }
 
   /**
@@ -795,7 +795,7 @@ public class Codec {
    * Converts {@code s} to Byte array.
    * 
    * @param s the value to convert
-   * @return a representing <b>double Byte</b> array
+   * @return a representing <b>Byte</b> array
    */
   public static byte[] toBytes(String s) {
     return toBytes(s, 0, BeeUtils.length(s));
@@ -806,7 +806,7 @@ public class Codec {
    * 
    * @param s the value to convert
    * @param start the start index where from to start converting
-   * @return a representing <b>double Byte</b> array
+   * @return a representing <b>Byte</b> array
    */
   public static byte[] toBytes(String s, int start) {
     return toBytes(s, start, BeeUtils.length(s));
@@ -819,7 +819,7 @@ public class Codec {
    * @param s the value to convert
    * @param start the start index where from to start converting
    * @param end the last index to convert to
-   * @return a representing <b>double Byte</b> array
+   * @return a representing <b>Byte</b> array
    */
   public static byte[] toBytes(String s, int start, int end) {
     Assert.notNull(s);
@@ -831,13 +831,12 @@ public class Codec {
     Assert.isTrue(start < len);
     Assert.isTrue(end <= len);
 
-    byte[] arr = new byte[(end - start) * 2];
-    char c;
+    byte[] arr = null;
 
-    for (int i = 0; i < end - start; i++) {
-      c = s.charAt(i + start);
-      arr[i * 2] = (byte) (c >> 8);
-      arr[i * 2 + 1] = (byte) (c & 0xff);
+    try {
+      arr = s.substring(start, end).getBytes(BeeConst.CHARSET_UTF8);
+    } catch (UnsupportedEncodingException e) {
+      Assert.unsupported(e.getMessage());
     }
     return arr;
   }
@@ -891,7 +890,7 @@ public class Codec {
       return sb.toString();
     }
   }
-  
+
   public static boolean unpack(String value) {
     if (BooleanValue.S_TRUE.equals(value)) {
       return true;

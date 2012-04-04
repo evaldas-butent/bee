@@ -51,7 +51,7 @@ public class FileUtils {
   public static final Filter FILE_FILTER = new NormalFileFilter();
   public static final Filter INPUT_FILTER = new InputFileFilter();
 
-  private static final Charset UTF_8 = Charset.forName("UTF-8");
+  private static final Charset UTF_8 = Charset.forName(BeeConst.CHARSET_UTF8);
 
   private static int defaultBufferSize = 4096;
   private static Charset defaultCharset = UTF_8;

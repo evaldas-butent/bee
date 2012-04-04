@@ -1,6 +1,7 @@
 package com.butent.bee.shared.communication;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -25,7 +26,7 @@ public class CommUtils {
 
   public static ContentType defaultRequestContentType = ContentType.XML;
   public static ContentType defaultResponseContentType = ContentType.TEXT;
-  
+
   public static ContentType formResponseContentType = ContentType.HTML;
 
   public static String buildContentType(String type) {
@@ -53,7 +54,7 @@ public class CommUtils {
     if (ctp == null) {
       return null;
     } else {
-      return "utf-8";
+      return BeeConst.CHARSET_UTF8;
     }
   }
 
@@ -79,7 +80,7 @@ public class CommUtils {
     }
     return ctp;
   }
-  
+
   public static ResponseObject getFormResonse(String result) {
     if (BeeUtils.isEmpty(result)) {
       return null;
@@ -116,7 +117,7 @@ public class CommUtils {
   public static boolean isHtml(ContentType ctp) {
     return ctp == ContentType.HTML;
   }
-  
+
   public static boolean isReservedParameter(String name) {
     Assert.notEmpty(name);
     return BeeUtils.startsSame(name, Service.RPC_VAR_SYS_PREFIX);

@@ -115,7 +115,10 @@ public class BeeConst {
   public static final int COMPARE_EQUAL = 0;
   public static final int COMPARE_MORE = 1;
 
-  public static final String XML_DEFAULT_PROLOG = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+  public static final String CHARSET_UTF8 = "UTF-8";
+
+  public static final String XML_DEFAULT_PROLOG =
+      "<?xml version=\"1.0\" encoding=\"" + CHARSET_UTF8 + "\"?>";
 
   public static final String CLOSE_CURSORS_AT_COMMIT = "close cursors at commit";
   public static final String HOLD_CURSORS_OVER_COMMIT = "hold cursors over commit";
