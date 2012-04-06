@@ -36,6 +36,7 @@
     <xs:attribute name="order" type="xs:normalizedString" />
     <xs:attribute name="minColumnWidth" type="bee:columnWidth" />
     <xs:attribute name="maxColumnWidth" type="bee:columnWidth" />
+    <xs:attribute name="autoFit" type="bee:intOrBoolean" />
     <xs:attribute name="showColumnWidths" type="xs:boolean" />
     <xs:attribute name="hasHeaders" type="xs:boolean" default="true" />
     <xs:attribute name="hasFooters" type="xs:boolean" default="true" />

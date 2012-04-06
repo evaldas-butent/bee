@@ -657,7 +657,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       getGrid().addColumn(columnId, dataIndex, source, column, header, footer);
-      getGrid().setColumnInfo(columnId, columnDescr, dataCols);
+      getGrid().setColumnInfo(columnId, columnDescr, gridDescr, dataCols);
     }
 
     if (callback != null) {
@@ -667,13 +667,12 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     initNewRowColumns(gridDescr.getNewRowColumns());
     setNewRowCaption(BeeUtils.ifString(gridDescr.getNewRowCaption(), DEFAULT_NEW_ROW_CAPTION));
 
-    getGrid().setRowCount(rowCount, false);
+    getGrid().estimateHeaderWidths(true);
 
+    getGrid().setRowCount(rowCount, false);
     if (rowSet != null && !rowSet.isEmpty()) {
       getGrid().setRowData(rowSet.getRows().getList(), false);
-      getGrid().estimateColumnWidths();
     }
-    getGrid().estimateHeaderWidths(true);
 
     initOrder(gridDescr.getOrder());
 

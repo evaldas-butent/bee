@@ -43,7 +43,7 @@
     </FlowPanel>
 
 
-    <TabbedPages barHeight="24" class="flexible" style="margin-top: 1ex;">
+    <TabbedPages class="flexible" style="margin-top: 1ex;">
       <page>
         <text>Pagrindiniai duomenys</text>
         <FlowPanel class="flexBox-horizontal">

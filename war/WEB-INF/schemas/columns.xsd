@@ -30,6 +30,7 @@
     <xs:attribute name="width" type="bee:columnWidth" />
     <xs:attribute name="minWidth" type="bee:columnWidth" />
     <xs:attribute name="maxWidth" type="bee:columnWidth" />
+    <xs:attribute name="autoFit" type="bee:intOrBoolean" />
     <xs:attribute name="sortable" type="xs:boolean" default="true" />
     <xs:attribute name="visible" type="xs:boolean" />
     <xs:attribute name="format" type="xs:normalizedString" />

@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
-  name="SparePartUsage" viewName="SparePartUsage" caption="Panaudojimo istorija"
+  name="SparePartUsage" viewName="SparePartUsage" caption="Panaudojimo istorija" autoFit="true"
   >
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">

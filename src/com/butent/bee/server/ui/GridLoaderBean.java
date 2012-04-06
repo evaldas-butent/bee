@@ -118,6 +118,8 @@ public class GridLoaderBean {
   private static final String ATTR_WIDTH = "width";
   private static final String ATTR_MIN_WIDTH = "minWidth";
   private static final String ATTR_MAX_WIDTH = "maxWidth";
+  private static final String ATTR_AUTO_FIT = "autoFit";
+  
   private static final String ATTR_SORTABLE = "sortable";
   private static final String ATTR_VISIBLE = "visible";
   private static final String ATTR_FORMAT = "format";
@@ -477,12 +479,16 @@ public class GridLoaderBean {
           dst.setCaption(value.trim());
         } else if (BeeUtils.same(key, ATTR_READ_ONLY)) {
           dst.setReadOnly(BeeUtils.toBooleanOrNull(value));
+
         } else if (BeeUtils.same(key, ATTR_WIDTH)) {
           dst.setWidth(BeeUtils.toIntOrNull(value));
         } else if (BeeUtils.same(key, ATTR_MIN_WIDTH)) {
           dst.setMinWidth(BeeUtils.toIntOrNull(value));
         } else if (BeeUtils.same(key, ATTR_MAX_WIDTH)) {
           dst.setMaxWidth(BeeUtils.toIntOrNull(value));
+        } else if (BeeUtils.same(key, ATTR_AUTO_FIT)) {
+          dst.setAutoFit(value.trim());
+
         } else if (BeeUtils.same(key, ATTR_SORTABLE)) {
           dst.setSortable(BeeUtils.toBooleanOrNull(value));
         } else if (BeeUtils.same(key, ATTR_VISIBLE)) {
@@ -624,6 +630,10 @@ public class GridLoaderBean {
     Integer maxColumnWidth = XmlUtils.getAttributeInteger(src, ATTR_MAX_COLUMN_WIDTH);
     if (maxColumnWidth != null) {
       dst.setMaxColumnWidth(maxColumnWidth);
+    }
+    String autoFit = src.getAttribute(ATTR_AUTO_FIT);
+    if (!BeeUtils.isEmpty(autoFit)) {
+      dst.setAutoFit(autoFit);
     }
 
     Boolean hasHeaders = XmlUtils.getAttributeBoolean(src, ATTR_HAS_HEADERS);

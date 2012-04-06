@@ -55,13 +55,13 @@
 
   <xs:simpleType name="nameType">
     <xs:restriction base="xs:string">
-      <xs:pattern value="[A-Z][a-zA-Z0-9]*"/>
+      <xs:pattern value="[A-Z][a-zA-Z0-9]*" />
     </xs:restriction>
   </xs:simpleType>
 
   <xs:simpleType name="uniqueName">
     <xs:restriction base="xs:ID">
-      <xs:pattern value="[A-Z][a-zA-Z0-9]*"/>
+      <xs:pattern value="[A-Z][a-zA-Z0-9]*" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -82,10 +82,21 @@
       <xs:maxLength value="20"></xs:maxLength>
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:simpleType name="positiveDecimal">
     <xs:restriction base="xs:decimal">
       <xs:minExclusive value="0" />
     </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="intOrBoolean">
+    <xs:union>
+      <xs:simpleType>
+        <xs:restriction base="xs:int" />
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="xs:boolean" />
+      </xs:simpleType>
+    </xs:union>
   </xs:simpleType>
 </xs:schema>

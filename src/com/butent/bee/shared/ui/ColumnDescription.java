@@ -64,7 +64,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER, SHOW_WIDTH,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ITEM_KEY,
     RENDERER_DESCR, RENDER, CALC, VALUE_TYPE, PRECISION, SCALE, SEARCH_BY, SORT_BY,
-    HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE
+    HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE, AUTO_FIT
   }
 
   public static ColumnDescription restore(String s) {
@@ -89,6 +89,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   private Integer minWidth = null;
   private Integer maxWidth = null;
+  private String autoFit = null;
 
   private Boolean sortable = null;
   private Boolean visible = null;
@@ -282,8 +283,15 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case ITEM_KEY:
           setItemKey(value);
           break;
+        case AUTO_FIT:
+          setAutoFit(value);
+          break;
       }
     }
+  }
+
+  public String getAutoFit() {
+    return autoFit;
   }
 
   public StyleDeclaration getBodyStyle() {
@@ -351,6 +359,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         "Rel Column", getRelColumn(),
         "Min Width", getMinWidth(),
         "Max Width", getMaxWidth(),
+        "Auto Fit", getAutoFit(),
         "Sortable", isSortable(),
         "Visible", isVisible(),
         "Format", getFormat(),
@@ -476,7 +485,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public String getSortBy() {
     return sortBy;
   }
-
+  
   public String getSource() {
     return source;
   }
@@ -484,7 +493,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public Calculation getValidation() {
     return validation;
   }
-  
+
   public ValueType getValueType() {
     return valueType;
   }
@@ -639,9 +648,16 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case ITEM_KEY:
           arr[i++] = getItemKey();
           break;
+        case AUTO_FIT:
+          arr[i++] = getAutoFit();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
+  }
+
+  public void setAutoFit(String autoFit) {
+    this.autoFit = autoFit;
   }
 
   public void setBodyStyle(StyleDeclaration bodyStyle) {
@@ -703,7 +719,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public void setMaxValue(String maxValue) {
     this.maxValue = maxValue;
   }
-
+  
   public void setMaxWidth(Integer maxWidth) {
     this.maxWidth = maxWidth;
   }
@@ -711,7 +727,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public void setMinValue(String minValue) {
     this.minValue = minValue;
   }
-  
+
   public void setMinWidth(Integer minWidth) {
     this.minWidth = minWidth;
   }
@@ -775,7 +791,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public void setValidation(Calculation validation) {
     this.validation = validation;
   }
-
+  
   public void setValueType(ValueType valueType) {
     this.valueType = valueType;
   }
@@ -783,7 +799,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public void setVisible(Boolean visible) {
     this.visible = visible;
   }
-  
+
   public void setWidth(Integer width) {
     this.width = width;
   }

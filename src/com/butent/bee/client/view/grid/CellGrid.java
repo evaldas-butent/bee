@@ -70,6 +70,7 @@ import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.GridComponentDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -232,6 +233,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private int headerWidth = BeeConst.UNDEF;
     private int bodyWidth = BeeConst.UNDEF;
     private int footerWidth = BeeConst.UNDEF;
+    
+    private int autoFitRows = BeeConst.UNDEF;
 
     private StyleDescriptor headerStyle = null;
     private StyleDescriptor bodyStyle = null;
@@ -270,6 +273,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       if (w > 0) {
         setHeaderWidth(Math.max(getHeaderWidth(), w));
       }
+    }
+
+    private int getAutoFitRows() {
+      return autoFitRows;
     }
 
     private Font getBodyFont() {
@@ -421,6 +428,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     private boolean isSelection() {
       return ColType.SELECTION.equals(getColumn().getColType());
+    }
+
+    private void setAutoFitRows(int autoFitRows) {
+      this.autoFitRows = autoFitRows;
     }
 
     private void setBodyFont(String fontDeclaration) {
@@ -939,6 +950,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private boolean readOnly = false;
   private boolean editing = false;
   private boolean enabled = true;
+  
+  private boolean isColumnWidthsEstimated = false;
 
   public CellGrid() {
     setElement(Document.get().createDivElement());
@@ -1045,6 +1058,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     for (int i = 0; i < getColumnCount(); i++) {
       estimateColumnWidth(i, values, start, end, true);
     }
+    isColumnWidthsEstimated = true;
   }
 
   public int estimateHeaderWidth(int col, boolean addMargins) {
@@ -1700,6 +1714,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   public void refresh(boolean refreshChildren) {
+    maybeUpdateColumnWidths();
     render();
   }
 
@@ -1787,7 +1802,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   public void setColumnInfo(String columnId, ColumnDescription columnDescription,
-      List<? extends IsColumn> dataColumns) {
+      GridDescription gridDescription, List<? extends IsColumn> dataColumns) {
     ColumnInfo columnInfo = getColumnInfo(columnId);
     Assert.notNull(columnInfo);
     Assert.notNull(columnDescription);
@@ -1809,6 +1824,13 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
     if (columnDescription.getMaxWidth() != null) {
       columnInfo.setMaxWidth(columnDescription.getMaxWidth());
+    }
+    
+    String af = BeeUtils.ifString(columnDescription.getAutoFit(), gridDescription.getAutoFit());
+    if (BeeUtils.isInt(af)) {
+      columnInfo.setAutoFitRows(BeeUtils.toInt(af));
+    } else if (BeeConst.isTrue(af)) {
+      columnInfo.setAutoFitRows(Integer.MAX_VALUE);
     }
 
     if (columnDescription.getHeaderStyle() != null) {
@@ -1988,6 +2010,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     getRowData().clear();
     if (!BeeUtils.isEmpty(values)) {
       getRowData().addAll(values);
+      
+      if (!isColumnWidthsEstimated) {
+        estimateColumnWidths();
+      }
     }
 
     if (refresh) {
@@ -2120,7 +2146,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       setPageStart(newPageStart, true, true);
     }
   }
-
+  
   private void bringToFront(int row, int col) {
     Element cellElement = getCellElement(row, col);
     Assert.notNull(cellElement);
@@ -2297,17 +2323,17 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return Rulers.getLineWidth(cellHtml.asString(), font);
   }
 
-  private <T extends IsRow> int estimateColumnWidth(int col, boolean update) {
-    return estimateColumnWidth(col, getRowData(), update);
+  private <T extends IsRow> int estimateColumnWidth(int col, boolean ensure) {
+    return estimateColumnWidth(col, getRowData(), ensure);
   }
 
-  private <T extends IsRow> int estimateColumnWidth(int col, List<T> values, boolean update) {
+  private <T extends IsRow> int estimateColumnWidth(int col, List<T> values, boolean ensure) {
     Assert.notNull(values);
-    return estimateColumnWidth(col, values, 0, values.size(), update);
+    return estimateColumnWidth(col, values, 0, values.size(), ensure);
   }
 
   private <T extends IsRow> int estimateColumnWidth(int col, List<T> values,
-      int start, int end, boolean update) {
+      int start, int end, boolean ensure) {
     Assert.notNull(values);
 
     ColumnInfo columnInfo = getColumnInfo(col);
@@ -2323,8 +2349,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       width = Math.max(width, estimateBodyCellWidth(i, col, rowValue, column, font));
     }
 
-    if (width > 0 && update) {
-      columnInfo.ensureBodyWidth(width);
+    if (width > 0) {
+      if (ensure) {
+        columnInfo.ensureBodyWidth(width);
+      } else {
+        columnInfo.setBodyWidth(width);
+      }
     }
     return width;
   }
@@ -3369,6 +3399,20 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return w;
   }
 
+  private void maybeUpdateColumnWidths() {
+    if (getRowData().isEmpty()) {
+      return;
+    }
+    
+    for (int i = 0; i < columns.size(); i++) {
+      ColumnInfo columnInfo = columns.get(i);
+      int rc = Math.min(getRowData().size(), columnInfo.getAutoFitRows());
+      if (rc > 0) {
+        estimateColumnWidth(i, getRowData(), 0, rc, false);
+      }
+    }
+  }
+
   private void onActivateCell(boolean activate) {
     Element activeCell = getActiveCellElement();
     if (activeCell != null) {
@@ -3446,8 +3490,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private void refreshRow(int rowIndex, Collection<Integer> colIndexes) {
     checkRowBounds(rowIndex);
 
-    List<RenderInfo> renderList = renderBody(getRowData(), Sets.newHashSet(rowIndex),
-        colIndexes);
+    List<RenderInfo> renderList = renderBody(getRowData(), Sets.newHashSet(rowIndex), colIndexes);
     Assert.notEmpty(renderList);
 
     Element cellElement;
