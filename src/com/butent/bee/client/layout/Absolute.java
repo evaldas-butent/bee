@@ -16,15 +16,11 @@ import com.butent.bee.shared.HasId;
 public class Absolute extends AbsolutePanel implements HasId {
 
   public Absolute() {
-    this(Position.ABSOLUTE, Overflow.AUTO);
+    this(Position.ABSOLUTE);
   }
 
   public Absolute(Position position) {
-    this(position, null);
-  }
-  
-  public Absolute(Overflow overflow) {
-    this(null, overflow);
+    this(position, Overflow.AUTO);
   }
   
   public Absolute(Position position, Overflow overflow) {

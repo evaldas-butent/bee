@@ -3,6 +3,7 @@ package com.butent.bee.client.view.form;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -269,7 +270,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public FormImpl(String formName, Position position) {
-    super(position);
+    super(position, Overflow.AUTO);
     this.formName = formName;
   }
 

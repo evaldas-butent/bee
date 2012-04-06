@@ -3,6 +3,7 @@ package com.butent.bee.client.composite;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.HandlesAllFocusEvents;
@@ -181,7 +182,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
 
   public ValueSpinner(Object source, long min, long max, int minStep, int maxStep,
       boolean constrained) {
-    super(Overflow.HIDDEN);
+    super(Position.RELATIVE, Overflow.HIDDEN);
     setStylePrimaryName(STYLENAME_DEFAULT);
 
     this.source = source;

@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -12,7 +13,6 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.user.client.ui.Composite;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -242,9 +242,7 @@ public class Notification extends Composite implements NativePreviewHandler {
 
   @Override
   protected void onUnload() {
-    if (!BeeKeeper.getScreen().isTemporaryDetach()) {
-      closePreview();
-    }
+    closePreview();
     super.onUnload();
   }
 
@@ -373,6 +371,23 @@ public class Notification extends Composite implements NativePreviewHandler {
   }
 
   private void showDisplay() {
-    getElement().getStyle().setDisplay(Display.BLOCK);
+    Style style = getElement().getStyle();
+    Element parent = getElement().getParentElement();
+
+    if (parent != null) {
+      if (parent.getScrollTop() > 0) {
+        style.setTop(parent.getScrollTop(), Unit.PX);
+      } else if (!BeeUtils.isEmpty(style.getTop())) {
+        style.clearTop();
+      }
+
+      if (parent.getScrollLeft() > 0) {
+        style.setRight(-parent.getScrollLeft(), Unit.PX);
+      } else if (!BeeUtils.isEmpty(style.getRight())) {
+        style.clearRight();
+      }
+    }
+    
+    style.setDisplay(Display.BLOCK);
   }
 }
