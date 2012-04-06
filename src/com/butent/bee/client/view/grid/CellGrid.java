@@ -2052,13 +2052,22 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   public boolean updatePageSize() {
     int oldPageSize = getPageSize();
-    if (oldPageSize > 0 && getRowCount() > 0) {
-      int newPageSize = Math.min(estimatePageSize(), getRowCount());
+    if (oldPageSize > 0) {
+      int newPageSize = estimatePageSize();
+
       if (newPageSize > 0 && newPageSize != oldPageSize) {
-        if (getPageStart() + newPageSize > getRowCount()) {
-          setPageStart(getRowCount() - newPageSize, false, false);
+        int rc = getRowCount();
+        boolean fire = (rc > 0) && (oldPageSize < rc || newPageSize < rc);
+
+        if (getPageStart() + newPageSize > rc) {
+          int start = Math.max(rc - newPageSize, 0);
+          if (start != getPageStart()) {
+            setPageStart(start, false, false);
+            fire = (rc > 0);
+          }
         }
-        setPageSize(newPageSize, true, true);
+
+        setPageSize(newPageSize, true, fire);
         return true;
       }
     }

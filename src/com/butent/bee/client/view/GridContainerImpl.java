@@ -422,7 +422,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   public void onResize() {
-    if (isAttached()) {
+    if (isAttached() && providesResize()) {
       super.onResize();
       getContent().getGrid().updatePageSize();
     }
@@ -463,14 +463,14 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
           }
         }
 
-        int ps = Math.min(estimatePageSize(), grid.getRowCount());
+        int ps = estimatePageSize();
         grid.setPageSize(ps, true, false);
 
         int ds = grid.getDataSize();
         if (ps > 0 && ps < ds) {
           grid.getRowData().subList(ps, ds).clear();
           grid.refresh(true);
-        } else if (ps > 0 && ps > ds) {
+        } else if (ps > 0 && ps > ds && ds < grid.getRowCount()) {
           DataRequestEvent.fire(grid);
         } else {
           grid.refresh(true);
@@ -727,6 +727,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   private void showChildren(boolean show) {
+    if (!show) {
+      setProvidesResize(false);
+    }
+
     if (hasHeader()) {
       HeaderView header = getHeader();
       if (header != null) {
@@ -750,6 +754,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (extWidget.isHidable()) {
         setWidgetSize(extWidget.getWidget(), show ? extWidget.getSize() : 0);
       }
+    }
+    
+    if (show) {
+      setProvidesResize(true);
     }
   }
 

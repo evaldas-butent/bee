@@ -90,6 +90,8 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
 
   private final int splitterSize;
 
+  private boolean providesResize = true;
+
   public Split() {
     this(defaultStyleName, defaultSplitterSize);
   }
@@ -160,7 +162,7 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
   public HandlerRegistration addDropHandler(DropHandler handler) {
     return addBitlessDomHandler(handler, DropEvent.getType());
   }
-  
+
   public void addEast(Widget widget, double size) {
     addEast(widget, size, ScrollBars.NONE);
   }
@@ -456,11 +458,17 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
   }
 
   public void onResize() {
-    for (Widget child : getChildren()) {
-      if (child instanceof RequiresResize) {
-        ((RequiresResize) child).onResize();
+    if (providesResize()) {
+      for (Widget child : getChildren()) {
+        if (child instanceof RequiresResize) {
+          ((RequiresResize) child).onResize();
+        }
       }
     }
+  }
+
+  public boolean providesResize() {
+    return providesResize;
   }
 
   @Override
@@ -513,6 +521,10 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     DomUtils.setId(this, id);
   }
 
+  public void setProvidesResize(boolean providesResize) {
+    this.providesResize = providesResize;
+  }
+
   public void setWidgetMinSize(Widget child, int minSize) {
     assertIsChild(child);
     Splitter splitter = getAssociatedSplitter(child);
@@ -543,10 +555,6 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     add(widget, scroll);
   }
 
-  protected Unit getUnit() {
-    return unit;
-  }
-
   protected boolean isSplitter(Widget w) {
     return w instanceof Splitter;
   }
@@ -561,7 +569,7 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     layout.onDetach();
   }
 
-  void assertIsChild(Widget widget) {
+  private void assertIsChild(Widget widget) {
     Assert.isTrue((widget == null) || (widget.getParent() == this),
         "The specified widget is not a child of this panel");
   }
@@ -658,6 +666,10 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
           "Target Size", bspl.getTargetSize());
     }
     return lst;
+  }
+
+  private Unit getUnit() {
+    return unit;
   }
 
   private void insertSplitter(Widget widget, Element container, Widget before, int size) {
