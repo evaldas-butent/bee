@@ -119,13 +119,7 @@ public class BeeKeeper {
     });
 
     TransportHandler.register();
-
     CommonEventHandler.register();
-    getMenu().registerMenuCallback("items", new MenuManager.MenuCallback() {
-      public void onSelection(String parameters) {
-        CommonEventHandler.openItems(parameters);
-      }
-    });
 
     getMenu().registerMenuCallback("calendar", new MenuManager.MenuCallback() {
       public void onSelection(String parameters) {

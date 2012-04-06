@@ -24,6 +24,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.ProjectEvent;
@@ -31,6 +32,7 @@ import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -83,6 +85,11 @@ public class CrmModuleBean implements BeeModule {
       response = ResponseObject.error(msg);
     }
     return response;
+  }
+
+  @Override
+  public Collection<BeeParameter> getDefaultParameters() {
+    return null;
   }
 
   @Override
@@ -211,7 +218,7 @@ public class CrmModuleBean implements BeeModule {
 
           case EXTENDED:
           case UPDATED:
-            // TODO        
+            // TODO
             break;
         }
       }

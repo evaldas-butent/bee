@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="TripDrivers"
+  source="TripDrivers"
+  >
+  <Columns>
+    <SimpleColumn name="Trip" />
+    <SimpleColumn name="DateFrom" />
+    <SimpleColumn name="DateTo" />
+    <SimpleColumn name="Driver" />
+    <SimpleJoin name="Driver" joinType="LEFT">
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" />
+          <SimpleColumn name="LastName" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+    <SimpleColumn name="Note" />
+  </Columns>
+  <Order>
+    <OrderBy column="DateFrom" descending="true" />
+  </Order>
+</View>

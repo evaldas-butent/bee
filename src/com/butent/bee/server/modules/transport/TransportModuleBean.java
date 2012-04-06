@@ -3,10 +3,12 @@ package com.butent.bee.server.modules.transport;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.logging.Logger;
 
 import javax.ejb.LocalBean;
@@ -36,6 +38,11 @@ public class TransportModuleBean implements BeeModule {
       response = ResponseObject.error(msg);
     }
     return response;
+  }
+
+  @Override
+  public Collection<BeeParameter> getDefaultParameters() {
+    return null;
   }
 
   @Override

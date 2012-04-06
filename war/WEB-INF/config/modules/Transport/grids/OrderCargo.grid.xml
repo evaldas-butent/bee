@@ -3,8 +3,8 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
 
   name="OrderCargo" viewName="OrderCargo" caption="Kroviniai"
-  newRowForm="OrderCargo" editForm="OrderCargo" editNewRow="true"
-  newRowCaption="Naujas krovinys"
+  newRowForm="OrderCargo" newRowPopup="true" newRowCaption="Naujas krovinys"
+  editForm="OrderCargo" editPopup="true"
   >
   <header borderWidth="1 0" />
   <body height="68" borderWidth="0">

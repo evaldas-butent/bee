@@ -50,4 +50,5 @@
   <item id="adm_menu" order="200" text="Administravimas" />
   <item id="roles" parent="adm_menu" order="10" text="Rolės" service="grid" parameters="Roles" />
   <item id="users" parent="adm_menu" order="20" text="Vartotojai" service="grid" parameters="Users" />
+  <item id="users" parent="adm_menu" order="30" text="Sistemos parametrai" service="system_parameters" parameters="Commons"  separators="*" />
 </BeeMenu>

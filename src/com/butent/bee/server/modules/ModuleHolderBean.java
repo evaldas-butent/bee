@@ -9,6 +9,7 @@ import com.butent.bee.server.Config;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
@@ -39,6 +40,20 @@ public class ModuleHolderBean {
     return getModule(reqInfo.getService()).doService(reqInfo);
   }
 
+  public Map<String, BeeParameter> getModuleDefaultParameters(String moduleName) {
+    Map<String, BeeParameter> paramMap = null;
+    Collection<BeeParameter> params = getModule(moduleName).getDefaultParameters();
+
+    if (!BeeUtils.isEmpty(params)) {
+      paramMap = Maps.newHashMap();
+
+      for (BeeParameter parameter : params) {
+        paramMap.put(parameter.getName(), parameter);
+      }
+    }
+    return paramMap;
+  }
+
   public Collection<String> getModules() {
     return ImmutableSet.copyOf(modules.keySet());
   }
@@ -61,7 +76,7 @@ public class ModuleHolderBean {
   }
 
   private BeeModule getModule(String moduleName) {
-    Assert.state(hasModule(moduleName));
+    Assert.state(hasModule(moduleName), "Unknown module name: " + moduleName);
     return modules.get(moduleName);
   }
 
@@ -79,7 +94,7 @@ public class ModuleHolderBean {
     for (String mod : mods) {
       try {
         BeeModule module =
-            (BeeModule) InitialContext.doLookup("java:global/Bee/" + mod + MODULE_BEAN_PREFIX);
+            (BeeModule) InitialContext.doLookup("java:module/" + mod + MODULE_BEAN_PREFIX);
         String moduleName = module.getName();
 
         if (BeeUtils.isEmpty(moduleName)) {

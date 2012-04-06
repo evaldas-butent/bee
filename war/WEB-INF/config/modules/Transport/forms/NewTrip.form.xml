@@ -1,33 +1,117 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
   <!ENTITY LABEL_STYLE "margin-right: 1em; margin-left: 1em;">
-  <!ENTITY LEFT_LABEL_STYLE "margin-right: 1em; display: inline-block; min-width: 4em; text-align: right">
+  <!ENTITY LEFT_LABEL_STYLE "margin-right: 1em; display: inline-block; min-width: 6em; text-align: right">
   <!ENTITY ROW_STYLE "margin-bottom: 1ex;">
 ]>
 <Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
-  
-  name="NewTrip" viewName="Trips" caption="Naujas reisas"
-  >
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd" name="NewTrip"
+
+  viewName="Trips" caption="Naujas reisas">
   <FlowPanel class="flexBox-vertical">
-    <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-      <FlowPanel>
-        <InlineLabel html="Data" class="bee-required" style="&LEFT_LABEL_STYLE;" />
-        <InputDateTime source="Date" style="width: 10em;" />
+    <FlowPanel class="flexBox-horizontal">
+      <FlowPanel class="flexBox-vertical flexible">
+        <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+          <FlowPanel>
+            <InlineLabel html="Data" class="bee-required" style="&LEFT_LABEL_STYLE;" />
+            <InputDateTime source="Date" style="width: 10em;" />
+          </FlowPanel>
+          <FlowPanel>
+            <InlineLabel html="Reiso.Nr." class="bee-required" style="font-weight: bold; &LABEL_STYLE;" />
+            <InputText source="TripNo" />
+          </FlowPanel>
+        </FlowPanel>
+        <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
+          <InlineLabel html="Vežėjas" style="&LEFT_LABEL_STYLE;" />
+          <DataSelector source="ForwarderName" relSource="Forwarder" relView="Companies"
+            relColumn="Name" class="flexible" />
+        </FlowPanel>
+        <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
+          <InlineLabel html="Transportas" style="&LEFT_LABEL_STYLE;" />
+          <SimplePanel style="position: relative; height: 23px;" class="flexible">
+            <InputText source="ForwarderVehicle" class="occupy" />
+          </SimplePanel>
+        </FlowPanel>
       </FlowPanel>
-      <FlowPanel>
-        <InlineLabel html="Reiso.Nr." class="bee-required" style="font-weight: bold; &LABEL_STYLE;" />
-        <InputText source="TripNo" />
+
+      <FlowPanel class="flexBox-vertical flexible" style="&ROW_STYLE; margin-left: 1em;">
+        <Label html="Pastabos" />
+        <SimplePanel style="position: relative; min-width: 5em;" class="flexible">
+          <InputArea source="Notes" class="occupy" />
+        </SimplePanel>
       </FlowPanel>
     </FlowPanel>
-    <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-      <InlineLabel html="Vežėjas" style="&LEFT_LABEL_STYLE;" />
-      <DataSelector source="ForwarderName" relSource="Forwarder" relView="Companies"
-        relColumn="Name" class="flexible" />
-      <InlineLabel html="Vežėjo transportas" style="&LABEL_STYLE;" />
-      <SimplePanel style="position: relative; height: 23px; width: 150px;" class="flexible">
-        <InputText source="ForwarderVehicle" class="occupy" />
-      </SimplePanel>
-    </FlowPanel>
+
+
+    <TabbedPages barHeight="24" class="flexible" style="margin-top: 1ex;">
+      <page>
+        <text>Pagrindiniai duomenys</text>
+        <FlowPanel class="flexBox-horizontal">
+          <FlowPanel class="flexBox-vertical">
+            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+              <SimplePanel>
+                <InlineLabel html="Išvykimas" style="font-weight: bold;" />
+              </SimplePanel>
+              <SimplePanel>
+                <InlineLabel html="Sugrįžimas" style="font-weight: bold;" />
+              </SimplePanel>
+            </FlowPanel>
+
+            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+              <SimplePanel style="position: relative; height: 23px; width: 7em;">
+                <InputDate source="DateFrom" class="occupy" />
+              </SimplePanel>
+              <InlineLabel html="Data" />
+              <SimplePanel style="position: relative; height: 23px; width: 7em;">
+                <InputDate source="DateTo" class="occupy" />
+              </SimplePanel>
+            </FlowPanel>
+            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+              <SimplePanel style="position: relative; height: 23px; width: 6em;">
+                <InputDouble source="SpeedometerBefore" class="occupy" />
+              </SimplePanel>
+              <InlineLabel html="Spidometras" style="margin: 0 1em 0 1em" />
+              <SimplePanel style="position: relative; height: 23px; width: 6em;">
+                <InputDouble source="SpeedometerAfter" class="occupy" />
+              </SimplePanel>
+            </FlowPanel>
+
+            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+              <SimplePanel style="position: relative; height: 23px; width: 4em;">
+                <InputDecimal source="FuelBefore" class="occupy" />
+              </SimplePanel>
+              <InlineLabel html="Kuro likutis bake" />
+              <SimplePanel style="position: relative; height: 23px; width: 4em;">
+                <InputDecimal source="FuelAfter" class="occupy" />
+              </SimplePanel>
+            </FlowPanel>
+          </FlowPanel>
+
+          <FlowPanel class="flexBox-vertical flexible">
+            <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
+              <InlineLabel html="Vilkikas" style="&LEFT_LABEL_STYLE;" />
+              <DataSelector source="VehicleNumber" relSource="Vehicle" relView="Vehicles"
+                relColumn="Number" class="flexible" />
+            </FlowPanel>
+
+            <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
+              <InlineLabel html="Puspriekabė" style="&LEFT_LABEL_STYLE;" />
+              <DataSelector source="TrailerNumber" relSource="Trailer" relView="Vehicles"
+                relColumn="Number" class="flexible" />
+            </FlowPanel>
+
+            <ChildGrid name="TripDrivers" relColumn="Trip" class="flexible" />
+          </FlowPanel>
+        </FlowPanel>
+      </page>
+      <page>
+        <text>Kroviniai</text>
+        <InlineLabel></InlineLabel>
+      </page>
+      <page>
+        <text>Išlaidos</text>
+        <InlineLabel></InlineLabel>
+      </page>
+    </TabbedPages>
   </FlowPanel>
 </Form>

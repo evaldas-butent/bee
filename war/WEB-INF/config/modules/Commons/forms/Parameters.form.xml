@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+  
+  name="Parameters"
+  >
+  <SimplePanel name="Container">
+    <InlineLabel />
+  </SimplePanel>
+</Form>

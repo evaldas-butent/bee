@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+  
+  name="TripDrivers" viewName="TripDrivers" caption="Vairuotojai"
+  >
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <font>Verdana 12 px</font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <DataColumn name="DateFrom" source="DateFrom" caption="Data nuo" />
+    <DataColumn name="DateTo" source="DateTo" caption="Data iki" />
+    <DataColumn name="Driver" source="FirstName" caption="Vardas, Pavardė">
+      <render>
+        <expression>row.FirstName + (row.LastName ? ', ' + row.LastName : '')</expression>
+      </render>
+    </DataColumn>
+    <DataColumn name="Note" source="Note" caption="Pastaba" />
+  </columns>
+</Grid>

@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
@@ -441,12 +442,20 @@ public class CommonEventHandler {
     }
   }
 
-  public static void openItems(String args) {
-    GridFactory.openGrid("Items", new ItemGridHandler(BeeUtils.startsSame(args, "s")));
-  }
-
   public static void register() {
     FormFactory.registerFormCallback("Item", new ItemFormHandler());
+
+    BeeKeeper.getMenu().registerMenuCallback("items", new MenuManager.MenuCallback() {
+      public void onSelection(String parameters) {
+        GridFactory.openGrid("Items", new ItemGridHandler(BeeUtils.startsSame(parameters, "s")));
+      }
+    });
+
+    BeeKeeper.getMenu().registerMenuCallback("system_parameters", new MenuManager.MenuCallback() {
+      public void onSelection(String parameters) {
+        FormFactory.openForm("Parameters", new ParameterHandler(parameters));
+      }
+    });
   }
 
   private static ParameterList createArgs(String name) {

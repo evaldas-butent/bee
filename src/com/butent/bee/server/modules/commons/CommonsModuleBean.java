@@ -18,9 +18,11 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -66,6 +68,11 @@ public class CommonsModuleBean implements BeeModule {
       response = ResponseObject.error(msg);
     }
     return response;
+  }
+
+  @Override
+  public Collection<BeeParameter> getDefaultParameters() {
+    return null;
   }
 
   @Override
