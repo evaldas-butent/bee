@@ -97,7 +97,7 @@
     </west>
 
     <center>
-      <TabbedPages barHeight="28" barUnit="px">
+      <TabbedPages>
         <page>
           <SpanPanel>
             <InlineLabel html="Input" />

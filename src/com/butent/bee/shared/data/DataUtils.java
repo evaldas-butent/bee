@@ -283,6 +283,16 @@ public class DataUtils {
     }
     return flt;
   }
+  
+  public static boolean same(IsRow r1, IsRow r2) {
+    if (r1 == null) {
+      return r2 == null;
+    } else if (r2 == null) {
+      return false;
+    } else {
+      return r1.getId() == r2.getId() && r1.getVersion() == r2.getVersion();
+    }
+  }
 
   private static IsColumn detectColumn(String expr, List<? extends IsColumn> columns,
       String idColumnName, String versionColumnName) {

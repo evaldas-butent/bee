@@ -20,8 +20,8 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormWidget;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.add.AddEndEvent;
@@ -37,8 +37,11 @@ import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.ActiveRowChangeEvent;
 import com.butent.bee.shared.data.event.DataRequestEvent;
+import com.butent.bee.shared.data.event.ParentRowEvent;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -68,10 +71,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     private final Component precedes;
     private final boolean hidable;
 
-    private final boolean fosterCare;
-
     private ExtWidget(Widget widget, Direction direction, int size, ScrollBars scrollBars,
-        Integer splSize, Component precedes, boolean hidable, boolean fosterCare) {
+        Integer splSize, Component precedes, boolean hidable) {
       super();
       this.widget = widget;
       this.direction = direction;
@@ -80,11 +81,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       this.splSize = splSize;
       this.precedes = precedes;
       this.hidable = hidable;
-      this.fosterCare = fosterCare;
-    }
-
-    private boolean isFosterCare() {
-      return fosterCare;
     }
 
     private Direction getDirection() {
@@ -144,6 +140,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private boolean enabled = true;
 
   private final List<ExtWidget> extWidgets = Lists.newArrayList();
+  private WidgetCreationCallback extCreation = null;
+  
+  private IsRow lastRow = null;
+  private boolean lastEnabled = false;
 
   public GridContainerImpl() {
     this(-1);
@@ -225,7 +225,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     getExtWidgets().clear();
     if (gridDescription.hasWidgets()) {
       for (String xml : gridDescription.getWidgets()) {
-        ExtWidget extWidget = createExtWidget(name, xml, gridCallback);
+        ExtWidget extWidget = createExtWidget(xml, gridCallback);
         if (extWidget != null) {
           getExtWidgets().add(extWidget);
         }
@@ -256,6 +256,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     if (gridDescription.getRowMessage() != null) {
       setRowMessage(Evaluator.create(gridDescription.getRowMessage(), null, dataColumns));
+    }
+    
+    if (getExtCreation() != null) {
+      getExtCreation().addBinding(name, getId(), gridDescription.getParent());
+      getExtCreation().bind(this, getId());
     }
   }
 
@@ -313,6 +318,21 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public void onActiveRowChange(ActiveRowChangeEvent event) {
+    IsRow rowValue = event.getRowValue();
+
+    boolean rowEnabled;
+    if (rowValue == null) {
+      rowEnabled = false;
+    } else {
+      GridView gridView = getContent();
+      rowEnabled = !gridView.isReadOnly() && isEnabled() && gridView.isEnabled()
+          && gridView.isRowEditable(rowValue, false);
+    }
+    
+    if (DataUtils.same(rowValue, getLastRow()) && rowEnabled == wasLastEnabled()) {
+      return;
+    }
+
     if (getRowMessage() != null) {
       getRowMessage().update(event.getRowValue());
       String message = getRowMessage().evaluate();
@@ -321,13 +341,12 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         getHeader().setMessage(message);
       }
     }
-
-    for (ExtWidget extWidget : getExtWidgets()) {
-      if (extWidget.isFosterCare()) {
-        UiHelper.foster(extWidget.getWidget(), getContent().getGridName(), event.getRowValue(),
-            getContent().isEnabled());
-      }
-    }
+    
+    String eventSource = BeeUtils.ifString(getViewPresenter().getEventSource(), getId());
+    BeeKeeper.getBus().fireEventFromSource(new ParentRowEvent(rowValue, rowEnabled), eventSource);
+    
+    setLastRow(rowValue);
+    setLastEnabled(rowEnabled);
   }
 
   public void onAddEnd(AddEndEvent event) {
@@ -462,7 +481,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   protected void onUnload() {
-    if (getViewPresenter() != null) {
+    if (!BeeKeeper.getScreen().isTemporaryDetach() && getViewPresenter() != null) {
       getViewPresenter().onViewUnload();
     }
     super.onUnload();
@@ -493,7 +512,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
   }
 
-  private ExtWidget createExtWidget(String gridName, String xml, GridCallback gridCallback) {
+  private ExtWidget createExtWidget(String xml, GridCallback gridCallback) {
     Document doc = XmlUtils.parse(xml);
     if (doc == null) {
       return null;
@@ -520,8 +539,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       BeeKeeper.getLog().severe("ext widget size must be positive integer");
       return null;
     }
-
-    Widget widget = FormFactory.createWidget(null, root, null, null, gridCallback,
+    
+    if (getExtCreation() == null) {
+      setExtCreation(new WidgetCreationCallback());
+    }
+    Widget widget = FormFactory.createWidget(root, null, getExtCreation(), gridCallback,
         "create ext widget:");
     if (widget == null) {
       return null;
@@ -534,10 +556,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     Component precedes = BeeUtils.getConstant(Component.class, root.getAttribute(ATTR_PRECEDES));
     boolean hidable = !BeeUtils.isFalse(XmlUtils.getAttributeBoolean(root, ATTR_HIDABLE));
 
-    boolean fosterCare = UiHelper.isFosterCare(widget, gridName);
-
-    return new ExtWidget(widget, direction, size, scrollBars, splSize, precedes, hidable,
-        fosterCare);
+    return new ExtWidget(widget, direction, size, scrollBars, splSize, precedes, hidable);
   }
 
   private int estimatePageSize() {
@@ -585,6 +604,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return BeeConst.UNDEF;
   }
 
+  private WidgetCreationCallback getExtCreation() {
+    return extCreation;
+  }
+
   private List<ExtWidget> getExtWidgets() {
     return extWidgets;
   }
@@ -608,6 +631,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private String getHeaderId() {
     return headerId;
+  }
+
+  private IsRow getLastRow() {
+    return lastRow;
   }
 
   private Evaluator getRowMessage() {
@@ -663,6 +690,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     this.adding = adding;
   }
 
+  private void setExtCreation(WidgetCreationCallback extCreation) {
+    this.extCreation = extCreation;
+  }
+
   private void setFooterId(String footerId) {
     this.footerId = footerId;
   }
@@ -677,6 +708,14 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private void setHeaderId(String headerId) {
     this.headerId = headerId;
+  }
+
+  private void setLastEnabled(boolean lastEnabled) {
+    this.lastEnabled = lastEnabled;
+  }
+
+  private void setLastRow(IsRow lastRow) {
+    this.lastRow = lastRow;
   }
 
   private void setRowMessage(Evaluator rowMessage) {
@@ -712,5 +751,9 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         setWidgetSize(extWidget.getWidget(), show ? extWidget.getSize() : 0);
       }
     }
+  }
+
+  private boolean wasLastEnabled() {
+    return lastEnabled;
   }
 }

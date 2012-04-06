@@ -40,7 +40,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 import java.util.Map;
 
-public class TreePresenter implements Presenter, CatchEvent.CatchHandler<IsRow> {
+public class TreePresenter extends AbstractPresenter implements CatchEvent.CatchHandler<IsRow> {
 
   private class CommitCallback implements RowCallback {
     private final boolean createMode;

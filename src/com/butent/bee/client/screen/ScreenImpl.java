@@ -497,7 +497,7 @@ public class ScreenImpl implements Screen {
   }
 
   protected Widget initWest() {
-    TabbedPages tp = new TabbedPages(22, Unit.PX);
+    TabbedPages tp = new TabbedPages();
 
     Stack fav = new Stack(Unit.PX);
     double h = 20;
@@ -513,7 +513,6 @@ public class ScreenImpl implements Screen {
     tp.add(new BeeLabel(), "Recent");
 
     Flow dp = new Flow();
-    StyleUtils.autoScroll(dp, ScrollBars.BOTH);
     tp.add(dp, Global.CONSTANTS.data(), Global.getDataInfoProvider().getDataInfoCreator());
     setDataPanel(dp);
 
@@ -592,7 +591,7 @@ public class ScreenImpl implements Screen {
     shellContainer.setWidget(shell);
     admPanel.add(shellContainer);
 
-    tp.add(admPanel, "Admin");
+    tp.add(admPanel, "Adm");
 
     return tp;
   }

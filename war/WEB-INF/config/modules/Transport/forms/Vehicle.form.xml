@@ -66,7 +66,7 @@
       </FlowPanel>
     </FlowPanel>
 
-    <TabbedPages barHeight="24" class="flexible" style="margin-top: 1ex;">
+    <TabbedPages class="flexible" style="margin-top: 1ex;">
       <page>
         <text>Papildoma informacija</text>
         <FlowPanel class="flexBox-horizontal">
@@ -82,9 +82,8 @@
           </FlowPanel>
           
           <FlowPanel class="flexBox-vertical flexible">
-              <ChildGrid name="FuelCosts" relColumn="Vehicle" style="height: 150px" />
-<!--               <ChildGrid name="FuelTemperatures" relColumn="Cost" parentName="FuelCosts"
- -->              <GridPanel name="FuelTemperatures"
+             <ChildGrid name="FuelCosts" relColumn="Vehicle" style="height: 150px" />
+             <ChildGrid name="FuelTemperatures" parent="FuelCosts" relColumn="Cost" 
                 class="flexible" style="margin-left: 20%" />
           </FlowPanel>
         </FlowPanel>

@@ -9,10 +9,14 @@ import com.butent.bee.shared.ui.Action;
  */
 
 public interface Presenter {
+  
+  String getEventSource();
 
   Widget getWidget();
   
   void handleAction(Action action);
 
   void onViewUnload();
+  
+  void setEventSource(String eventSource);
 }

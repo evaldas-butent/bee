@@ -27,6 +27,7 @@ import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -83,7 +84,8 @@ import java.util.Set;
  * Manages the structure and behavior of a cell grid user interface component.
  */
 
-public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStartHandlers {
+public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStartHandlers,
+    HasEnabled {
 
   /**
    * Contains a list of possible resizing modes (horizontal, vertical).
@@ -412,7 +414,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private boolean isColReadOnly() {
       return colReadOnly;
     }
-    
+
     private boolean isRenderable() {
       return getColumn() instanceof RenderableColumn;
     }
@@ -936,6 +938,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   private boolean readOnly = false;
   private boolean editing = false;
+  private boolean enabled = true;
 
   public CellGrid() {
     setElement(Document.get().createDivElement());
@@ -1368,6 +1371,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   public boolean isEditing() {
     return editing;
+  }
+
+  public boolean isEnabled() {
+    return enabled;
   }
 
   public boolean isReadOnly() {
@@ -1838,6 +1845,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   public void setEditing(boolean editing) {
     this.editing = editing;
+  }
+
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
   }
 
   public void setFooterBorderWidth(Edges borderWidth) {
@@ -3381,10 +3392,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
           StyleUtils.removeClassName(rowElements, STYLE_ACTIVE_ROW);
         }
       }
+    }
 
-      if (activate && getActiveRow() < getDataSize()) {
-        fireEvent(new ActiveRowChangeEvent(getRowData().get(getActiveRow())));
-      }
+    if (activate) {
+      fireEvent(new ActiveRowChangeEvent(getActiveRowData()));
     }
   }
 
@@ -3431,7 +3442,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private void refreshRow(int rowIndex) {
     refreshRow(rowIndex, null);
   }
- 
+
   private void refreshRow(int rowIndex, Collection<Integer> colIndexes) {
     checkRowBounds(rowIndex);
 
@@ -3462,7 +3473,9 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     SafeHtmlBuilder sb = new SafeHtmlBuilder();
     if (getRowData().isEmpty()) {
-      sb.append(template.emptiness(STYLE_EMPTY, BeeConst.STRING_EMPTY));
+      if (isEnabled()) {
+        sb.append(template.emptiness(STYLE_EMPTY, BeeConst.STRING_EMPTY));
+      }
     } else {
       renderData(sb, getRowData());
       renderResizer(sb);
@@ -3473,22 +3486,18 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     setZIndex(0);
 
-    if (getActiveRow() >= 0) {
-      if (getActiveRow() < getDataSize()) {
-        fireEvent(new ActiveRowChangeEvent(getRowData().get(getActiveRow())));
-      }
+    fireEvent(new ActiveRowChangeEvent(getActiveRowData()));
 
-      if (getActiveColumn() >= 0) {
-        Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-          public void execute() {
-            Element cellElement = getActiveCellElement();
-            if (cellElement != null) {
-              cellElement.getStyle().setZIndex(incrementZIndex());
-              cellElement.focus();
-            }
+    if (isRowWithinBounds(getActiveRow()) && getActiveColumn() >= 0) {
+      Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+        public void execute() {
+          Element cellElement = getActiveCellElement();
+          if (cellElement != null) {
+            cellElement.getStyle().setZIndex(incrementZIndex());
+            cellElement.focus();
           }
-        });
-      }
+        }
+      });
     }
   }
 

@@ -77,6 +77,7 @@ public class GridLoaderBean {
   private static final Set<String> WIDGET_TAGS = Sets.newHashSet("north", "south", "west", "east");
 
   private static final String ATTR_NAME = "name";
+  private static final String ATTR_PARENT = "parent";
   private static final String ATTR_CAPTION = "caption";
 
   private static final String ATTR_VIEW_NAME = "viewName";
@@ -594,6 +595,11 @@ public class GridLoaderBean {
   private void xmlToGrid(Element src, GridDescription dst, BeeView view) {
     Assert.notNull(src);
     Assert.notNull(dst);
+    
+    String parent = src.getAttribute(ATTR_PARENT);
+    if (!BeeUtils.isEmpty(parent)) {
+      dst.setParent(parent.trim());
+    }
 
     String caption = src.getAttribute(ATTR_CAPTION);
     if (!BeeUtils.isEmpty(caption)) {

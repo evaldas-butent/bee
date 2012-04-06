@@ -69,6 +69,12 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     this.handlerRegistry.add(display.addSortHandler(this));
     this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this));
   }
+  
+  public void clear() {
+    getDisplay().setPageStart(0, false, false);
+    getDisplay().setRowCount(0, true);
+    getDisplay().setRowData(null, true);
+  }
 
   public void disableCache() {
     setCacheEnabled(false);

@@ -12,6 +12,7 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.user.client.ui.Composite;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -241,7 +242,9 @@ public class Notification extends Composite implements NativePreviewHandler {
 
   @Override
   protected void onUnload() {
-    closePreview();
+    if (!BeeKeeper.getScreen().isTemporaryDetach()) {
+      closePreview();
+    }
     super.onUnload();
   }
 
@@ -342,7 +345,7 @@ public class Notification extends Composite implements NativePreviewHandler {
   }
 
   private void setState(State state) {
-    Assert.notNull(state, "notification state can not be null");
+    Assert.notNull(state, "notification state cannot be null");
     this.state = state;
 
     switch (state) {

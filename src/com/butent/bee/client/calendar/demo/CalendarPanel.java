@@ -248,11 +248,11 @@ public class CalendarPanel extends Complex {
 
   private Widget createViews() {
     TabBar tabBar = new TabBar();
-    tabBar.addTab("1 Day");
-    tabBar.addTab("4 Days");
-    tabBar.addTab("Work Week");
-    tabBar.addTab("Week");
-    tabBar.addTab("Month");
+    tabBar.addItem("1 Day");
+    tabBar.addItem("4 Days");
+    tabBar.addItem("Work Week");
+    tabBar.addItem("Week");
+    tabBar.addItem("Month");
     tabBar.selectTab(1, false);
 
     tabBar.addSelectionHandler(new SelectionHandler<Integer>() {
@@ -359,7 +359,7 @@ public class CalendarPanel extends Complex {
       color.getElement().getStyle().setBackgroundColor(gs.getBackground());
       color.getElement().getStyle().setPaddingBottom(2, Unit.PX);
 
-      colors.addTab(color);
+      colors.addItem(color);
     }
 
     colors.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {

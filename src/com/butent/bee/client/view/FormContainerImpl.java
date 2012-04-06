@@ -2,6 +2,7 @@ package com.butent.bee.client.view;
 
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
@@ -57,6 +58,8 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   private boolean hasData = false;
   private int initialRowCount = BeeConst.UNDEF;
+  
+  private boolean started = false;
 
   public FormContainerImpl() {
     this(-1);
@@ -258,7 +261,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     String message = getRowMessage().evaluate();
 
     if (!BeeUtils.isEmpty(message)) {
-      getHeader().setCaption(message);
+      getHeader().setMessage(message);
     }
   }
 
@@ -336,12 +339,16 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   @Override
   protected void onLoad() {
     super.onLoad();
-    start(getInitialRowCount());
+    
+    if (!started) {
+      start(getInitialRowCount());
+      started = true;
+    }
   }
 
   @Override
   protected void onUnload() {
-    if (getViewPresenter() != null) {
+    if (!BeeKeeper.getScreen().isTemporaryDetach() && getViewPresenter() != null) {
       getViewPresenter().onViewUnload();
     }
     super.onUnload();

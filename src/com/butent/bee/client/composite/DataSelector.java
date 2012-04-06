@@ -25,6 +25,7 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.UIObject;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.SelectionOracle;
 import com.butent.bee.client.data.SelectionOracle.Callback;
 import com.butent.bee.client.data.SelectionOracle.Request;
@@ -307,6 +308,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
         case KeyCodes.KEY_ENTER:
           if (getDisplay().handleKeyboardSelection(isInstant(), hasModifiers)) {
             event.preventDefault();
+            event.stopPropagation();
           }
           break;
 
@@ -738,7 +740,9 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
   @Override
   protected void onUnload() {
-    getOracle().onUnload();
+    if (!BeeKeeper.getScreen().isTemporaryDetach()) {
+      getOracle().onUnload();
+    }
     super.onUnload();
   }
 

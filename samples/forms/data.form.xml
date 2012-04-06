@@ -24,7 +24,7 @@
         <InputSlider source="Integer" min="-10" max="10" />
       </cell>
       <cell>
-        <IntegerLabel source="Integer" />
+        <TabBar source="Integer" itemKey="Priority" />
       </cell>
     </row>
 

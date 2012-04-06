@@ -55,7 +55,7 @@
       </FlowPanel>
     </FlowPanel>
 
-    <TabbedPages barHeight="24" class="flexible" style="&MARGIN_TOP;">
+    <TabbedPages class="flexible" style="&MARGIN_TOP;">
       <page>
         <text>Papildoma informacija</text>
         <FlowPanel style="&MARGIN_TOP;">

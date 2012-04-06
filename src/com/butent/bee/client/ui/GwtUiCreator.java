@@ -238,7 +238,7 @@ public class GwtUiCreator implements UiCreator {
 
   @Override
   public Object createTab(UiTab tab) {
-    TabbedPages widget = new TabbedPages(20, Unit.PX);
+    TabbedPages widget = new TabbedPages();
     widget.setTitle(tab.getId());
 
     if (tab.hasChilds()) {

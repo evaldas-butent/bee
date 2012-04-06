@@ -23,6 +23,12 @@ public class Assert {
     }
   }
 
+  public static void betweenExclusive(int x, int min, int max, String msg) {
+    if (!BeeUtils.betweenExclusive(x, min, max)) {
+      throw new BeeRuntimeException(msg);
+    }
+  }
+  
   public static void betweenInclusive(int x, int min, int max) {
     if (!BeeUtils.betweenInclusive(x, min, max)) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "argument " + x
@@ -30,6 +36,12 @@ public class Assert {
     }
   }
 
+  public static void betweenInclusive(int x, int min, int max, String msg) {
+    if (!BeeUtils.betweenInclusive(x, min, max)) {
+      throw new BeeRuntimeException(msg);
+    }
+  }
+  
   public static <T> void contains(Map<T, ?> map, T key) {
     notNull(map);
     notNull(key);

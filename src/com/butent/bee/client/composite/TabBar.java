@@ -1,5 +1,6 @@
 package com.butent.bee.client.composite;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasAllKeyHandlers;
@@ -29,16 +30,24 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.ui.AcceptsCaptions;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Collection;
+import java.util.List;
 
 public class TabBar extends Composite implements HasBeforeSelectionHandlers<Integer>,
-    HasSelectionHandlers<Integer>, HasId {
+    HasSelectionHandlers<Integer>, HasId, HasItems, AcceptsCaptions {
 
   public interface Tab extends HasAllKeyHandlers, HasClickHandlers, HasWordWrap {
     boolean hasWordWrap();
@@ -163,24 +172,45 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     return addHandler(handler, BeforeSelectionEvent.getType());
   }
 
+  public void addCaptions(Class<? extends Enum<?>> clazz) {
+    addItems(UiHelper.getCaptions(clazz));
+  }
+
+  public void addCaptions(String captionKey) {
+    addItems(Global.getCaptions(captionKey));
+  }
+
+  public void addItem(SafeHtml html) {
+    addItem(html.asString(), true);
+  }
+
+  public void addItem(String text) {
+    insertTab(text, getItemCount());
+  }
+
+  public void addItem(String text, boolean asHTML) {
+    insertTab(text, asHTML, getItemCount());
+  }
+
+  public void addItem(Widget widget) {
+    insertTab(widget, getItemCount());
+  }
+
+  public void addItems(Collection<String> items) {
+    Assert.notNull(items);
+    for (String it : items) {
+      addItem(it);
+    }
+  }
+
   public HandlerRegistration addSelectionHandler(SelectionHandler<Integer> handler) {
     return addHandler(handler, SelectionEvent.getType());
   }
-
-  public void addTab(SafeHtml html) {
-    addTab(html.asString(), true);
-  }
-
-  public void addTab(String text) {
-    insertTab(text, getTabCount());
-  }
-
-  public void addTab(String text, boolean asHTML) {
-    insertTab(text, asHTML, getTabCount());
-  }
-
-  public void addTab(Widget widget) {
-    insertTab(widget, getTabCount());
+  
+  public void clear() {
+    for (int i = getItemCount(); i >= 0; i--) {
+      removeTab(i);
+    }
   }
 
   public String getId() {
@@ -191,13 +221,34 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     return panel.getIdPrefix();
   }
 
+  public int getIndex(String html) {
+    for (int i = 0; i < getItemCount(); i++) {
+      if (BeeUtils.same(html, getTabHtml(i))) {
+        return i;
+      }
+    }
+    return BeeConst.UNDEF;
+  }
+
+  public int getItemCount() {
+    return panel.getWidgetCount() - 2;
+  }
+  
+  public List<String> getItems() {
+    List<String> items = Lists.newArrayList();
+    for (int i = 0; i < getItemCount(); i++) {
+      items.add(getTabHtml(i));
+    }
+    return items;
+  }
+
   public int getSelectedTab() {
     if (selectedTab == null) {
       return -1;
     }
     return panel.getWidgetIndex(selectedTab) - 1;
   }
-  
+
   public Widget getSelectedWidget() {
     if (selectedTab == null) {
       return null;
@@ -206,19 +257,15 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   }
 
   public Tab getTab(int index) {
-    if (index < 0 || index >= getTabCount()) {
+    if (index < 0 || index >= getItemCount()) {
       return null;
     }
     ClickDelegatePanel p = (ClickDelegatePanel) panel.getWidget(index + 1);
     return p;
   }
 
-  public int getTabCount() {
-    return panel.getWidgetCount() - 2;
-  }
-
   public String getTabHtml(int index) {
-    if (index < 0 || index >= getTabCount()) {
+    if (index < 0 || index >= getItemCount()) {
       return null;
     }
 
@@ -234,9 +281,9 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
       return focusablePanel.getElement().getParentElement().getInnerHTML();
     }
   }
-  
+
   public Widget getTabWidget(int index)  {
-    if (index < 0 || index >= getTabCount()) {
+    if (index < 0 || index >= getItemCount()) {
       return null;
     }
 
@@ -319,6 +366,15 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     panel.setId(id);
   }
 
+  public void setItems(Collection<String> items) {
+    if (getItemCount() > 0) {
+      clear();
+    }
+    if (items != null) {
+      addItems(items);
+    }
+  }
+
   public void setTabEnabled(int index, boolean enabled) {
     checkTabIndex(index, 0);
 
@@ -361,13 +417,13 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   }
 
   private void checkInsertBeforeTabIndex(int beforeIndex) {
-    Assert.betweenInclusive(beforeIndex, 0, getTabCount());
+    Assert.betweenInclusive(beforeIndex, 0, getItemCount());
   }
 
   private void checkTabIndex(int index, int min) {
-    Assert.betweenExclusive(index, min, getTabCount());
+    Assert.betweenExclusive(index, min, getItemCount());
   }
-
+  
   private boolean selectTabByTabWidget(Widget tabWidget) {
     int numTabs = panel.getWidgetCount() - 1;
 

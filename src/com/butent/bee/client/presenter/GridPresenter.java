@@ -58,7 +58,7 @@ import java.util.Set;
  * content etc).
  */
 
-public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
+public class GridPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasSearch {
 
   private class DeleteCallback extends BeeCommand {
@@ -84,7 +84,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
         RowInfo rowInfo = BeeUtils.peek(rows);
         final long rowId = rowInfo.getId();
         long version = rowInfo.getVersion();
-        
+
         if (BeeUtils.isEmpty(getViewName())) {
           getDataProvider().onRowDelete(new RowDeleteEvent(getViewName(), rowId));
           afterDelete(rowId);
@@ -109,7 +109,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
           rowIds[i] = rowInfo.getId();
           i++;
         }
-        
+
         if (BeeUtils.isEmpty(getViewName())) {
           getDataProvider().onMultiDelete(new MultiDeleteEvent(getViewName(), rows));
           afterMulti(rowIds);
@@ -129,7 +129,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
         }
       }
     }
-    
+
     private void afterMulti(long[] rowIds) {
       for (long rowId : rowIds) {
         afterDelete(rowId);
@@ -283,7 +283,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
       case DELETE:
         if (getView().isEnabled()) {
           IsRow row = getView().getContent().getActiveRowData();
-          if (row != null && getView().getContent().isRowEditable(row.getId(), true)) {
+          if (row != null && getView().getContent().isRowEditable(row, true)) {
             if (getView().getContent().isRowSelected(row.getId())) {
               deleteRows(row, getView().getContent().getSelectedRows());
             } else {
@@ -332,7 +332,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
     final long version = event.getRowValue().getVersion();
     final String columnId = event.getColumn().getLabel();
     final String newValue = event.getNewValue();
-    
+
     if (BeeUtils.isEmpty(getViewName())) {
       getDataProvider().onCellUpdate(new CellUpdateEvent(getViewName(), rowId, version, columnId,
           getDataProvider().getColumnIndex(columnId), newValue));
@@ -382,9 +382,6 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
   }
 
   public void onViewUnload() {
-    if (BeeKeeper.getScreen().isTemporaryDetach()) {
-      return;
-    }
     getView().setViewPresenter(null);
 
     for (HandlerRegistration hr : filterChangeHandlers) {
@@ -407,14 +404,14 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
       applyFilter(filter);
     }
   }
-  
+
   public void requery(boolean updateActiveRow) {
     if (getGridCallback() != null) {
       getGridCallback().beforeRequery(this);
     }
     getDataProvider().requery(updateActiveRow);
   }
-  
+
   private void afterDelete(long rowId) {
     if (getGridCallback() != null) {
       getGridCallback().afterDeleteRow(rowId);
@@ -526,7 +523,7 @@ public class GridPresenter implements Presenter, ReadyForInsertEvent.Handler,
   private String getViewName() {
     return getDataProvider().getViewName();
   }
-  
+
   private void setLastFilter(Filter lastFilter) {
     this.lastFilter = lastFilter;
   }

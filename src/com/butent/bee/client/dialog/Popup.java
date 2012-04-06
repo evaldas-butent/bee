@@ -42,7 +42,9 @@ public class Popup extends PopupPanel implements HasId {
 
   @Override
   public void hide(boolean autoClosed) {
-    Stacking.removeContext(this);
+    if (isShowing()) {
+      Stacking.removeContext(this);
+    }
     super.hide(autoClosed);
   }
 
@@ -52,7 +54,9 @@ public class Popup extends PopupPanel implements HasId {
 
   @Override
   public void show() {
-    Stacking.addContext(this);
+    if (!isShowing()) {
+      Stacking.addContext(this);
+    }
     super.show();
   }
   

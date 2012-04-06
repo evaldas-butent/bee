@@ -237,10 +237,10 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   }
 
   public void setItems(Collection<String> items) {
+    if (getItemCount() > 0) {
+      clear();
+    }
     if (items != null) {
-      if (getItemCount() > 0) {
-        clear();
-      }
       addItems(items);
     }
   }

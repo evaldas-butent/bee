@@ -46,16 +46,14 @@ public class CachedProvider extends Provider {
     this.table = table;
   }
   
+  @Override
   public void clear() {
     if (getTable().getNumberOfRows() > 0) {
       getTable().clearRows();
       getFilteredRowIds().clear();
       getViewRows().clear();
-      
-      getDisplay().setPageStart(0, false, false);
-      getDisplay().setRowCount(0, true);
-      getDisplay().setRowData(getRowList(), true);
     }
+    super.clear();
   }
 
   public int getRowCount() {

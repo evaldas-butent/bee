@@ -18,6 +18,7 @@ import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.ParentRowEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
@@ -33,7 +34,7 @@ import java.util.List;
 public class EventManager implements Module {
 
   private final SimpleEventBus eventBus;
-  
+
   private HandlerRegistration exitRegistry = null;
 
   public EventManager() {
@@ -61,7 +62,7 @@ public class EventManager implements Module {
   public boolean dispatchService(String svc) {
     return dispatchService(svc, null, null);
   }
-  
+
   public boolean dispatchService(String svc, String stg, Widget source) {
     Assert.notEmpty(svc);
 
@@ -145,9 +146,13 @@ public class EventManager implements Module {
       }
     });
   }
-  
+
   public HandlerRegistration registerMultiDeleteHandler(MultiDeleteEvent.Handler handler) {
     return MultiDeleteEvent.register(eventBus, handler);
+  }
+
+  public HandlerRegistration registerParentRowHandler(Object source, ParentRowEvent.Handler handler) {
+    return ParentRowEvent.register(eventBus, source, handler);
   }
 
   public HandlerRegistration registerRowDeleteHandler(RowDeleteEvent.Handler handler) {
@@ -161,7 +166,7 @@ public class EventManager implements Module {
   public HandlerRegistration registerRowUpdateHandler(RowUpdateEvent.Handler handler) {
     return RowUpdateEvent.register(eventBus, handler);
   }
-  
+
   public void removeExitHandler() {
     if (this.exitRegistry != null) {
       this.exitRegistry.removeHandler();

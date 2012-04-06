@@ -1,4 +1,4 @@
-body, select {
+body,select {
   font-family: Arial, sans-serif;
   font-size: small;
 }
@@ -8,6 +8,7 @@ body, select {
   -webkit-user-select: none;
   user-select: none;
 }
+
 .unselectable {
   -moz-user-select: none;
   -webkit-user-select: none;
@@ -26,7 +27,8 @@ body, select {
   -moz-box-orient: horizontal;
   -webkit-box-orient: horizontal;
 }
-.flexBox-vertical, .bee-TreeView {
+
+.flexBox-vertical,.bee-TreeView,.bee-TabbedPages-container {
   display: box;
   display: -moz-box;
   display: -webkit-box;
@@ -34,6 +36,7 @@ body, select {
   -moz-box-orient: vertical;
   -webkit-box-orient: vertical;
 }
+
 .flexBox-center {
   display: box;
   display: -moz-box;
@@ -44,7 +47,8 @@ body, select {
   box-pack: center;
   -moz-box-pack: center;
   -webkit-box-pack: center;
-}  
+}
+
 .flexBox-vertical-center {
   display: box;
   display: -moz-box;
@@ -59,6 +63,7 @@ body, select {
   -moz-box-pack: justify;
   -webkit-box-pack: justify;
 }
+
 .flexBox-horizontal-center {
   display: box;
   display: -moz-box;
@@ -74,7 +79,7 @@ body, select {
   -webkit-box-pack: justify;
 }
 
-.flexible, .bee-TreeView-tree {
+.flexible,.bee-TreeView-tree,.bee-TabbedPages-contentPanel {
   box-flex: 1;
   -moz-box-flex: 1;
   -webkit-box-flex: 1;
@@ -88,7 +93,7 @@ body, select {
   bottom: 0;
 }
 
-.bee-RadioButton input:checked + label {
+.bee-RadioButton input:checked+label {
   text-transform: uppercase;
 }
 
@@ -100,16 +105,17 @@ body, select {
   background-color: #d0e4f6;
   cursor: col-resize;
 }
+
 .bee-VSplitter {
   background-color: #d0e4f6;
   cursor: row-resize;
 }
 
-.bee-activeBlank, .bee-activeContent {
+.bee-activeBlank,.bee-activeContent {
   border: 2px solid red;
 }
 
-.bee-MenuRoot, .bee-MenuBar {
+.bee-MenuRoot,.bee-MenuBar {
   overflow: auto;
 }
 
@@ -121,6 +127,7 @@ body, select {
   padding-bottom: 5px;
   padding-right: 5px;
 }
+
 .bee-MenuRoot ul {
   border: 4px ridge LimeGreen;
   margin: 0;
@@ -128,6 +135,7 @@ body, select {
   padding-bottom: 5px;
   padding-right: 5px;
 }
+
 .bee-MenuRoot dl {
   margin: 0;
 }
@@ -156,22 +164,25 @@ body, select {
 .bee-MenuItem-dt {
   padding-left: 0.5em;
 }
+
 .bee-MenuItem-dt:first-letter {
   color: green;
   font-size: medium;
-  font-weight: bold;  
+  font-weight: bold;
 }
 
 .bee-MenuItem:hover {
   background: LightCyan;
 }
+
 .bee-MenuItem-selected {
   outline: red solid 1px;
 }
 
 .bee-MenuBar-horizontal table {
   border-collapse: collapse;
-}  
+}
+
 .bee-MenuBar-horizontal td {
   border: 1px solid silver;
   text-align: center;
@@ -187,6 +198,7 @@ body, select {
 .bee-MenuBar-level-1 ul {
   list-style-type: circle;
 }
+
 .bee-MenuBar-level-2 ul {
   list-style-type: square;
 }
@@ -194,6 +206,7 @@ body, select {
 .bee-MenuBar-level-1 ol {
   list-style-type: upper-alpha;
 }
+
 .bee-MenuBar-level-2 ol {
   list-style-type: lower-greek;
 }
@@ -202,7 +215,7 @@ body, select {
   background: LightCyan;
 }
 
-.bee-LayoutContainer > .bee-InputArea {
+.bee-LayoutContainer>.bee-InputArea {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -210,18 +223,20 @@ body, select {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -ms-box-sizing: border-box;
-}  
-.bee-LayoutContainer > .bee-InputText {
+}
+
+.bee-LayoutContainer>.bee-InputText {
   width: 100%;
   margin: 0;
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   -ms-box-sizing: border-box;
-}  
-.bee-LayoutContainer > .bee-Button {
+}
+
+.bee-LayoutContainer>.bee-Button {
   width: 100%;
-}  
+}
 
 .bee-LogSeparator {
   height: 1px;
@@ -231,12 +246,15 @@ body, select {
 .bee-LogRecord-info {
   color: #333;
 }
+
 .bee-LogRecord-severe {
   color: red;
 }
+
 .bee-LogRecord-warning {
   color: darkorange;
 }
+
 .bee-LogRecord-config {
   color: green;
 }
@@ -254,14 +272,14 @@ body, select {
 .bee-ScrollTable .headerWrapper {
   background: #381C1B;
 }
+
 .bee-ScrollTable .footerWrapper {
   border-top: 1px solid #aaa;
   background: #2C1514;
 }
 
-.bee-ScrollTable .dataTable td,
-.bee-ScrollTable .headerTable td,
-.bee-ScrollTable .footerTable td {
+.bee-ScrollTable .dataTable td,.bee-ScrollTable .headerTable td,.bee-ScrollTable .footerTable td
+  {
   border-color: #aaa;
   border-style: solid;
   border-width: 0px 1px 1px 0px;
@@ -269,35 +287,38 @@ body, select {
   overflow: hidden;
 }
 
-.bee-ScrollTable .headerTable td,
-.bee-ScrollTable .footerTable td {
+.bee-ScrollTable .headerTable td,.bee-ScrollTable .footerTable td {
   color: white;
 }
 
 .bee-ScrollTable .dataTable tr:nth-child(odd) {
   background: #ffffdd;
 }
+
 .bee-ScrollTable .dataTable tr:nth-child(even) {
   background: #eeeeee;
 }
-	
+
 .bee-ScrollTable .dataTable tr:hover {
   background: #c3d9ff;
 }
+
 .bee-ScrollTable .dataTable td:hover {
   background: #ffffaa;
 }
+
 .bee-ScrollTable .dataTable tr.selected td {
   background: #7aa5d6;
 }
 
-.bee-InputInteger, .bee-InputLong, .bee-InputNumber {
+.bee-InputInteger,.bee-InputLong,.bee-InputNumber {
   text-align: right;
 }
 
 .bee-InputSpinner {
   text-align: right;
 }
+
 .bee-InputSpinner:hover {
   background: LightCyan;
 }
@@ -305,12 +326,13 @@ body, select {
 .bee-configPanel {
   background: #ddd;
   border: 1px solid LightGrey;
-}  
+}
 
 .bee-dndSource {
   color: white;
   background: purple;
 }
+
 .bee-dndOver {
   color: blue;
   background: pink;
@@ -322,18 +344,21 @@ body, select {
   text-align: center;
   padding-top: 4ex;
 }
+
 .bee-dropArea:before {
-  content: "Drop Files"; 
+  content: "Drop Files";
   font-size: x-large;
   color: #bbb;
 }
-.bee-dropArea > div {
+
+.bee-dropArea>div {
   visibility: hidden;
 }
 
 .bee-ValueSpinner {
   width: 60px;
 }
+
 .bee-ValueSpinner .valueBox {
   text-align: right;
   margin: 0;
@@ -345,6 +370,7 @@ body, select {
   border: 1px solid #7f9db9;
   height: 18px;
 }
+
 .bee-VolumeSlider:hover {
   border: 1px dashed blue;
 }
@@ -352,9 +378,11 @@ body, select {
 .bee-ProgressBar-shell {
   background: Snow;
 }
+
 .bee-ProgressBar-bar {
   background: SpringGreen;
 }
+
 .bee-ProgressBar-text {
   color: blue;
 }
@@ -367,6 +395,7 @@ body, select {
   height: 36px;
   max-width: 400px;
 }
+
 .bee-SliderBar-line {
   border: 1px solid black;
   background-color: white;
@@ -375,15 +404,18 @@ body, select {
   top: 24px;
   overflow: hidden;
 }
+
 .bee-SliderBar-line-sliding {
   background-color: #ddd;
   cursor: pointer;
-} 
+}
+
 .bee-SliderBar-knob {
   top: 16px;
   z-index: 1;
   cursor: pointer;
 }
+
 .bee-SliderBar-tick {
   top: 14px;
   width: 1px;
@@ -391,6 +423,7 @@ body, select {
   background: black;
   overflow: hidden;
 }
+
 .bee-SliderBar-label {
   top: 1px;
   font-size: x-small;
@@ -403,6 +436,7 @@ body, select {
   padding: 5px;
   background: #eee;
 }
+
 .bee-Popup-glass {
   background-color: #000;
   opacity: 0.3;
@@ -421,6 +455,7 @@ body, select {
   font-size: medium;
   font-weight: bolder;
 }
+
 .bee-WindowMessage {
   margin-left: 1em;
 }
@@ -448,16 +483,18 @@ body, select {
 
 .bee-HeaderCellSortable {
   opacity: 0.3;
-  font-size: small; 
+  font-size: small;
 }
+
 .bee-HeaderCellSortable:before {
-  content: "\0021c5"; 
+  content: "\0021c5";
 }
 
 .bee-HeaderCellAscending {
   color: green;
   font-size: medium;
 }
+
 .bee-HeaderCellAscending:after {
   content: "\0021e7";
 }
@@ -466,9 +503,10 @@ body, select {
   color: maroon;
   font-size: medium;
 }
+
 .bee-HeaderCellDescending:after {
   content: "\0021e9";
-}  
+}
 
 .bee-HeaderCellWidthInfo {
   position: absolute;
@@ -485,7 +523,7 @@ body, select {
   top: 0;
   bottom: 0;
   overflow: auto;
-}  
+}
 
 .bee-CellGridCell {
   border-style: solid;
@@ -499,14 +537,14 @@ body, select {
 .bee-CellGridBody {
   overflow: hidden;
   text-overflow: ellipsis;
-  -webkit-transition: background 300ms;  
+  -webkit-transition: background 300ms;
 }
 
 .bee-CellGridFooter {
   background-color: #e8e8e8;
 }
 
-.bee-CellGridEvenRow  {
+.bee-CellGridEvenRow {
   background-color: #ffffff;
 }
 
@@ -540,15 +578,17 @@ body, select {
 
 .bee-CellGridResizerHorizontal {
   cursor: col-resize;
-}  
+}
+
 .bee-CellGridResizerVertical {
   cursor: row-resize;
-}  
+}
 
 .bee-CellGridResizerBar {
   background-color: #a5c4ff;
   z-index: 1;
-}  
+}
+
 .bee-CellGridResizerHandle {
   background-color: #bcf;
   z-index: 2;
@@ -561,8 +601,9 @@ body, select {
   font-size: larger;
   color: teal;
 }
+
 .bee-CellGridEmpty:before {
-  content: "No Data"; 
+  content: "No Data";
 }
 
 .bee-CellGridEditor {
@@ -576,33 +617,99 @@ body, select {
 .bee-afraid {
   background-color: fuchsia !important;
   font-size: x-large;
-}  
-
-@-webkit-keyframes scary {
-  from {background-color: #cfc; font-size: 1em;}
-  25% {background-color: crimson; font-size: 2.5em;}
-  50% {background-color: violet; font-size: 3em;}
-  75% {background-color: red; font-size: 3.5em;}
-  to {background-color: deeppink; font-size: 4em;}
 }
 
+@
+-webkit-keyframes scary {
+  from {background-color: #cfc;
+  font-size: 1em;
+}
+
+25%
+{
+background-color
+:
+ 
+crimson
+;
+ 
+font-size
+:
+ 
+2
+.5em
+;
+}
+50%
+{
+background-color
+:
+ 
+violet
+;
+ 
+font-size
+:
+ 
+3
+em
+;
+}
+75%
+{
+background-color
+:
+ 
+red
+;
+ 
+font-size
+:
+ 
+3
+.5em
+;
+}
+to {
+  background-color: deeppink;
+  font-size: 4em;
+}
+
+}
 .bee-very-afraid {
   -webkit-animation: scary 100s linear infinite alternate;
 }
 
-@-webkit-keyframes rotateX {
-  from {-webkit-transform: rotateX(0deg);}
-  to {-webkit-transform: rotateX(360deg);}
-}
-@-webkit-keyframes rotateY {
-  from {-webkit-transform: rotateY(0deg);}
-  to {-webkit-transform: rotateY(360deg);}
-}
-@-webkit-keyframes rotateZ {
-  from {-webkit-transform: rotateZ(0deg);}
-  to {-webkit-transform: rotateZ(360deg);}
+@
+-webkit-keyframes rotateX {
+  from {-webkit-transform: rotateX(0deg);
 }
 
+to {
+  -webkit-transform: rotateX(360deg);
+}
+
+}
+@
+-webkit-keyframes rotateY {
+  from {-webkit-transform: rotateY(0deg);
+}
+
+to {
+  -webkit-transform: rotateY(360deg);
+}
+
+}
+@
+-webkit-keyframes rotateZ {
+  from {-webkit-transform: rotateZ(0deg);
+}
+
+to {
+  -webkit-transform: rotateZ(360deg);
+}
+
+}
 .bee-error {
   color: red;
 }
@@ -610,7 +717,7 @@ body, select {
 .bee-DialogBox {
   border: 1px solid activeborder;
   border-radius: 2px;
-}  
+}
 
 .bee-DialogBox .Caption {
   background-color: #e3e8f3;
@@ -649,41 +756,48 @@ body, select {
   padding: 5px;
   font-family: Verdana;
 }
+
 .bee-NotificationInfo {
   font-size: 1em;
 }
+
 .bee-NotificationSevere {
   background-color: #ffcccc;
   font-size: 1.4em;
 }
+
 .bee-NotificationWarning {
   background-color: yellow;
   font-size: 1.2em;
 }
 
 .bee-NotificationText {
+  
 }
 
 .bee-Toggle {
   font-size: large;
   text-align: center;
 }
+
 .bee-Toggle-up-hovering {
   color: red;
-}  
+}
+
 .bee-Toggle-down-hovering {
   color: green;
 }
 
 .bee-StringPicker {
   overflow: auto;
-}  
+}
 
 .bee-StringPicker-item {
   margin-bottom: 2px;
   outline: none;
   cursor: pointer;
 }
+
 .bee-StringPicker-item:hover {
   background: LightCyan;
 }
@@ -715,6 +829,7 @@ body, select {
   left: 35%;
   bottom: 3px;
 }
+
 .bee-TextEditor-noes {
   position: absolute;
   right: 35%;
@@ -722,6 +837,7 @@ body, select {
 }
 
 .bee-RichTextEditor {
+  
 }
 
 .bee-RichTextToolbar {
@@ -730,12 +846,14 @@ body, select {
   border-bottom: 1px solid #bbb;
   padding: 3px;
   margin: 0px;
-}  
+}
 
 .bee-RichTextToolbar-row {
   width: 100%;
 }
-.bee-RichTextToolbar-row .bee-Toggle-down, .bee-RichTextToolbar-row .bee-Toggle-down-hovering {
+
+.bee-RichTextToolbar-row .bee-Toggle-down,.bee-RichTextToolbar-row .bee-Toggle-down-hovering
+  {
   background-color: #faac58;
 }
 
@@ -748,25 +866,25 @@ body, select {
   left: 2px;
   background-color: inherit;
   border-style: none;
-}  
+}
 
 .bee-DataSelector-embedded-input {
   left: 2px;
   top: 1px;
   margin: 0px;
   font-style: italic;
-}  
+}
 
 .bee-DataSelector-type {
   font-size: medium;
-}  
+}
 
-.bee-DataSelector-limit, .bee-DataSelector-embedded-limit {
+.bee-DataSelector-limit,.bee-DataSelector-embedded-limit {
   width: 36px;
   background-color: inherit;
   border-style: none;
   outline-style: none;
-}  
+}
 
 .bee-DataSelector-popup {
   background: #eee;
@@ -789,6 +907,7 @@ body, select {
 .bee-RowEditor {
   border-collapse: collapse;
 }
+
 .bee-RowEditorCaption {
   padding: 2px 0 4px;
   text-align: center;
@@ -800,12 +919,15 @@ body, select {
 .bee-RowEditor tr:nth-child(odd) {
   background: #ffe;
 }
+
 .bee-RowEditor tr:nth-child(even) {
   background: #f3f7fb;
 }
+
 .bee-RowEditor tr:first-of-type {
   background-color: #eee;
 }
+
 .bee-RowEditor tr:last-of-type {
   background: #eee;
 }
@@ -841,6 +963,7 @@ body, select {
 .bee-GridFormContainer-newRow {
   background-color: #ecf6ce;
 }
+
 .bee-GridFormContainer-edit {
   background-color: #fafafa;
 }
@@ -849,9 +972,11 @@ body, select {
   font-size: medium;
   font-style: italic;
 }
+
 .bee-GridFormCaption-newRow {
   color: green;
 }
+
 .bee-GridFormCaption-edit {
   color: brown;
 }
@@ -864,6 +989,7 @@ body, select {
   bottom: 0;
   overflow: auto;
 }
+
 .bee-Form-disabled {
   background-color: rgba(128, 192, 192, 0.25);
 }
@@ -876,6 +1002,7 @@ body, select {
 .bee-MainSearchBox {
   width: 200px;
 }
+
 .bee-MainSearchOptions {
   font-size: x-small;
 }
@@ -896,6 +1023,7 @@ body, select {
 .bee-Disclosure-header {
   cursor: pointer;
 }
+
 .bee-Disclosure-content {
   margin-left: 12px;
 }
@@ -904,22 +1032,27 @@ body, select {
   position: relative;
   min-height: 50px;
 }
+
 .bee-InputString {
   margin: 1ex 0;
   width: 256px;
 }
+
 .bee-InputError {
   margin-top: 1ex;
-}  
+}
+
 .bee-InputCommandGroup {
   position: relative;
   text-align: right;
   margin-top: 1ex;
- }
+}
+
 .bee-InputCommand {
   font-family: Tahoma;
   width: 80px;
 }
+
 .bee-InputCancel {
   margin-left: 1em;
 }
@@ -955,7 +1088,7 @@ body, select {
   white-space: nowrap;
 }
 
-.bee-TreeItem-imageCell, .bee-TreeItem-contentCell {
+.bee-TreeItem-imageCell,.bee-TreeItem-contentCell {
   vertical-align: middle;
 }
 
@@ -966,6 +1099,7 @@ body, select {
 .bee-TreeView {
   background-color: #f8f8f8;
 }
+
 .bee-TreeView-actions {
   text-align: right;
 }
@@ -975,7 +1109,8 @@ body, select {
   border-top: 1px solid #999;
   cursor: default;
 }
-.bee-DatePicker td, .bee-DatePicker-monthSelector td:focus {
+
+.bee-DatePicker td,.bee-DatePicker-monthSelector td:focus {
   outline: none;
 }
 
@@ -983,17 +1118,20 @@ body, select {
   width: 100%;
   background: white;
 }
-.bee-DatePicker-day, .bee-DatePicker-weekdayLabel, .bee-DatePicker-weekendLabel {
+
+.bee-DatePicker-day,.bee-DatePicker-weekdayLabel,.bee-DatePicker-weekendLabel
+  {
   font-size: 85%;
   text-align: center;
   padding: 4px;
   outline: none;
-  font-weight:bold;
+  font-weight: bold;
   color: #333;
   border-right: 1px solid #EDEDED;
   border-bottom: 1px solid #EDEDED;
 }
-.bee-DatePicker-weekdayLabel, .bee-DatePicker-weekendLabel {
+
+.bee-DatePicker-weekdayLabel,.bee-DatePicker-weekendLabel {
   background: #fff;
   padding: 0px 4px 2px;
   cursor: default;
@@ -1001,31 +1139,39 @@ body, select {
   font-size: 70%;
   font-weight: normal;
 }
+
 .bee-DatePicker-day {
   padding: 4px 7px;
   cursor: pointer;
 }
+
 .bee-DatePicker-dayIsToday {
   padding: 3px;
   color: blue;
 }
+
 .bee-DatePicker-dayIsWeekend {
   background: #f7f7f7;
 }
+
 .bee-DatePicker-dayIsFiller {
   color: #999;
   font-weight: normal;
 }
+
 .bee-DatePicker-dayIsValue {
   background: #d7dfe8;
 }
+
 .bee-DatePicker-dayIsDisabled {
   color: #AAAAAA;
   font-style: italic;
 }
+
 .bee-DatePicker-dayIsHighlighted {
   background: #F0E68C;
 }
+
 .bee-DatePicker-dayIsValueAndHighlighted {
   background: #d7dfe8;
 }
@@ -1035,6 +1181,7 @@ body, select {
   padding: 1px 0 5px 0;
   background: #fff;
 }
+
 .bee-DatePicker-month {
   text-align: center;
   vertical-align: middle;
@@ -1043,7 +1190,8 @@ body, select {
   font-weight: bold;
   color: #333;
 }
-.bee-DatePicker-previousButton, .bee-DatePicker-nextButton {
+
+.bee-DatePicker-previousButton,.bee-DatePicker-nextButton {
   font-size: 120%;
   line-height: 1em;
   color: #3a6aad;
@@ -1066,13 +1214,15 @@ body, select {
   -moz-border-radius: 3px 3px 0px 0px;
   border-radius: 3px 3px 0px 0px;
 }
+
 .bee-TabBar-item-selected {
   cursor: default;
   background-color: #eee;
   color: #333;
   font-weight: bold;
   border: 1px solid #ccc;
-} 
+}
+
 .bee-TabBar-item-disabled {
   cursor: default;
   color: #999;
@@ -1082,9 +1232,41 @@ body, select {
   border: 1px solid activeborder;
   border-radius: 2px;
 }
+
 .bee-ModalForm-glass {
   background-color: white;
   opacity: 0.7;
+}
+
+.bee-TabbedPages-tabPanel {
+  border-bottom: 1px solid #BEBEBE;
+}
+
+.bee-TabbedPages-tab {
+  display: inline-block;
+  margin-top: 1px;
+  margin-right: -6px;
+  height: 25px;
+  color: #6D6D6D;
+  font: 13px/25px Arial;
+  background: #F2F2F2;
+  border-top-left-radius: 20px 50px;
+  border-top-right-radius: 20px 50px;
+  border-style: solid;
+  border-color: #E4E4E4;
+  border-width: 1px 1px 0px;
+  padding: 0 10px;
+}
+
+.bee-TabbedPages-tabSelected {
+  background-color: white;
+  border-color: #BEBEBE;
+  position: relative;
+  z-index: 1;
+}
+
+.bee-TabbedPages-content {
+  overflow: auto;
 }
 
 .gwt-SplitLayoutPanel-HDragger {
@@ -1101,33 +1283,4 @@ body, select {
 
 .gwt-StackLayoutPanel .gwt-StackLayoutPanelContent {
   padding: 2px;
-}
-
-.gwt-TabLayoutPanelTabs {
-  background: #eee;
-  top: 0px;
-}
-.gwt-TabLayoutPanelContentContainer {
-  border-color: #ccc;
-  border-style: solid;
-  border-width: 0px 1px 1px;
-}
-.gwt-TabLayoutPanelContent {
-  overflow: hidden;
-  padding: 2px;
-}
-.gwt-TabLayoutPanelTab {
-  height: 100%;
-  margin-left: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  background: white;
-  color: #57574e;
-  font-weight: normal;
-  cursor: pointer;
-}
-.gwt-TabLayoutPanelTab-selected {
-  background: #f90;
-  color: white;
-  cursor: default;
 }

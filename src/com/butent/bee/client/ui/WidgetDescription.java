@@ -15,6 +15,8 @@ import java.util.Map;
 
 public class WidgetDescription implements HasInfo {
 
+  private static final String ATTR_PARENT = "parent";
+
   private static final String ATTR_CAPTION = "caption";
   private static final String ATTR_READ_ONLY = "readOnly";
 
@@ -30,6 +32,9 @@ public class WidgetDescription implements HasInfo {
 
   private final FormWidget widgetType;
   private final String widgetId;
+  private final String widgetName;
+
+  private String parentName = null;
   
   private Collection<ConditionalStyleDeclaration> dynStyles = null;
 
@@ -55,10 +60,11 @@ public class WidgetDescription implements HasInfo {
   private Boolean required = null;
   
   private boolean disablable = false;
-
-  public WidgetDescription(FormWidget widgetType, String widgetId) {
+  
+  public WidgetDescription(FormWidget widgetType, String widgetId, String widgetName) {
     this.widgetType = widgetType;
     this.widgetId = widgetId;
+    this.widgetName = widgetName;
   }
 
   @Override
@@ -90,6 +96,8 @@ public class WidgetDescription implements HasInfo {
     List<Property> info = PropertyUtils.createProperties(
         "Widget Type", getWidgetType(),
         "Widget Id", getWidgetId(),
+        "Widget Name", getWidgetName(),
+        "Parent Name", getParentName(),
         "Caption", getCaption(),
         "Read Only", isReadOnly(),
         "Source", getSource(),
@@ -147,6 +155,10 @@ public class WidgetDescription implements HasInfo {
     return minValue;
   }
 
+  public String getParentName() {
+    return parentName;
+  }
+
   public String getRelColumn() {
     return relColumn;
   }
@@ -170,13 +182,17 @@ public class WidgetDescription implements HasInfo {
   public String getSource() {
     return source;
   }
-
+  
   public Calculation getValidation() {
     return validation;
   }
-  
+
   public String getWidgetId() {
     return widgetId;
+  }
+
+  public String getWidgetName() {
+    return widgetName;
   }
 
   public FormWidget getWidgetType() {
@@ -212,7 +228,10 @@ public class WidgetDescription implements HasInfo {
         continue;
       }
 
-      if (BeeUtils.same(key, ATTR_CAPTION)) {
+      if (BeeUtils.same(key, ATTR_PARENT)) {
+        setParentName(value.trim());
+
+      } else if (BeeUtils.same(key, ATTR_CAPTION)) {
         setCaption(value.trim());
       } else if (BeeUtils.same(key, ATTR_READ_ONLY)) {
         setReadOnly(BeeUtils.toBooleanOrNull(value));
@@ -271,6 +290,10 @@ public class WidgetDescription implements HasInfo {
     this.minValue = minValue;
   }
 
+  public void setParentName(String parentName) {
+    this.parentName = parentName;
+  }
+
   public void setReadOnly(Boolean readOnly) {
     this.readOnly = readOnly;
   }
@@ -306,5 +329,4 @@ public class WidgetDescription implements HasInfo {
   public void setValidation(Calculation validation) {
     this.validation = validation;
   }
-  
 }

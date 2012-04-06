@@ -15,6 +15,7 @@
   <xs:complexType name="widgetBase">
     <xs:attributeGroup ref="bee:appearance" />
     <xs:attribute name="name" type="xs:normalizedString" />
+    <xs:attribute name="parent" type="xs:normalizedString" />
     <xs:attribute name="title" type="xs:string" />
     <xs:attribute name="html" type="xs:string" />
     <xs:attribute name="options" type="xs:normalizedString" />
@@ -256,8 +257,7 @@
           <xs:choice minOccurs="2" maxOccurs="unbounded">
             <xs:element name="page" type="bee:headerAndContent" />
           </xs:choice>
-          <xs:attribute name="barHeight" type="bee:positiveDecimal" use="required" />
-          <xs:attribute name="barUnit" type="bee:cssUnit" />
+          <xs:attribute name="stylePrefix" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -514,7 +514,6 @@
         <xs:extension base="bee:hasName">
           <xs:attribute name="relColumn" type="bee:nameType" use="required" />
           <xs:attribute name="source" type="bee:nameType" />
-          <xs:attribute name="parentName" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -713,7 +712,6 @@
         <xs:attribute name="parentColumn" type="bee:fieldNameType" use="required" />
         <xs:attribute name="orderColumn" type="bee:fieldNameType" />
         <xs:attribute name="hideActions" type="xs:boolean" />
-        <xs:attribute name="parentName" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -780,6 +778,19 @@
       <xs:complexContent>
         <xs:extension base="bee:widgetType">
           <xs:attribute name="multiple" type="xs:boolean" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="TabBar" substitutionGroup="bee:widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="bee:display">
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="tab" type="bee:widgetOrHtml" />
+          </xs:choice>
+          <xs:attribute name="stylePrefix" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

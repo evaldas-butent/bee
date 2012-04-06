@@ -33,8 +33,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
    */
 
   private enum Serial {
-    NAME, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HAS_HEADERS, HAS_FOOTERS, CACHING,
-    ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE, READONLY,
+    NAME, PARENT, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HAS_HEADERS, HAS_FOOTERS,
+    CACHING, ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE, READONLY,
     NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_CAPTION, NEW_ROW_POPUP, EDIT_FORM, EDIT_MODE, EDIT_SAVE,
     EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_IN_PLACE, EDIT_NEW_ROW, EDIT_POPUP, ENABLED_ACTIONS,
     DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER, ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE,
@@ -52,6 +52,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   }
 
   private String name = null;
+  private String parent = null;
   private String caption = null;
 
   private String viewName = null;
@@ -336,6 +337,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_POPUP:
           setEditPopup(BeeUtils.toBooleanOrNull(value));
           break;
+        case PARENT:
+          setParent(value);
+          break;
       }
     }
   }
@@ -409,6 +413,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
     PropertyUtils.addProperties(info, false,
         "Name", getName(),
+        "Parent", getParent(),
         "Caption", getCaption(),
         "View Name", getViewName(),
         "Id Name", getIdName(),
@@ -569,6 +574,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public Integer getPagingThreshold() {
     return pagingThreshold;
+  }
+
+  public String getParent() {
+    return parent;
   }
 
   public Calculation getRowEditable() {
@@ -784,6 +793,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case EDIT_POPUP:
           arr[i++] = getEditPopup();
           break;
+        case PARENT:
+          arr[i++] = getParent();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -918,6 +930,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.pagingThreshold = pagingThreshold;
   }
 
+  public void setParent(String parent) {
+    this.parent = parent;
+  }
+
   public void setReadOnly(Boolean readOnly) {
     this.readOnly = readOnly;
   }
@@ -949,7 +965,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setStyleSheets(Map<String, String> styleSheets) {
     this.styleSheets = styleSheets;
   }
-
+  
   public void setWidgets(List<String> widgets) {
     this.widgets = widgets;
   }

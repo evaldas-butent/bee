@@ -527,7 +527,7 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     LayoutData data = (LayoutData) widget.getLayoutData();
 
     Assert.isTrue(data.direction != Direction.CENTER,
-        "The size of the center widget can not be updated.");
+        "The size of the center widget cannot be updated.");
     data.size = size;
 
     forceLayout();

@@ -5,23 +5,19 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dialog.NotificationListener;
-import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
-import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.grid.AbstractColumn;
@@ -42,7 +38,6 @@ import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.ActionEvent;
@@ -105,78 +100,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
   }
 
-  private class ModalForm extends Popup {
-
-    private ModalForm(Widget widget, HasDimensions content) {
-      super(false);
-
-      if (Stacking.getWidgetCount() <= 0) {
-        enableGlass();
-      }
-      setAnimationEnabled(true);
-
-      widget.addStyleName(getDefaultStyleName() + "-content");
-      setWidget(widget);
-
-      if (content != null) {
-        setDimensions(content);
-      }
-    }
-
-    @Override
-    public String getIdPrefix() {
-      return "modal-form";
-    }
-
-    @Override
-    protected String getDefaultStyleName() {
-      return "bee-ModalForm";
-    }
-
-    private void close() {
-      hide();
-    }
-
-    private void open() {
-      center();
-    }
-
-    private void setDimensions(HasDimensions content) {
-      double v;
-      Unit u;
-
-      if (content.getWidthValue() != null) {
-        v = content.getWidthValue();
-        u = Dimensions.normalizeUnit(content.getWidthUnit());
-        if (Unit.PCT.equals(u)) {
-          v = Window.getClientWidth() * v / 100;
-          u = Unit.PX;
-        }
-      } else {
-        v = Window.getClientWidth() / 2;
-        u = Unit.PX;
-      }
-      if (v > 0) {
-        getElement().getStyle().setWidth(v, u);
-      }
-
-      if (content.getHeightValue() != null) {
-        v = content.getHeightValue();
-        u = Dimensions.normalizeUnit(content.getHeightUnit());
-        if (Unit.PCT.equals(u)) {
-          v = Window.getClientHeight() * v / 100;
-          u = Unit.PX;
-        }
-      } else {
-        v = Window.getClientHeight() / 2;
-        u = Unit.PX;
-      }
-      if (v > 0) {
-        getElement().getStyle().setHeight(v, u);
-      }
-    }
-  }
-
   private class NewRowCallback implements RowEditor.Callback {
     public void onCancel() {
       finishNewRow(null);
@@ -206,8 +129,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private final Map<String, EditableColumn> editableColumns = Maps.newLinkedHashMap();
 
   private final Notification notification = new Notification();
-
-  private boolean enabled = true;
 
   private List<BeeColumn> dataColumns = null;
   private final Set<RelationInfo> relations = Sets.newHashSet();
@@ -630,7 +551,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
               AbstractCellRenderer renderer =
                   RendererFactory.getRenderer(columnDescr.getRendererDescription(),
                       columnDescr.getRender(), columnDescr.getItemKey(), dataCols, i);
-              
+
               if (renderer == null) {
                 column = GridFactory.createColumn(dataColumn, i, cellType);
               } else {
@@ -850,10 +771,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   public void finishNewRow(IsRow row) {
     if (useFormForInsert()) {
       showForm(false, false);
-      if (isSingleFormInstance()) {
-        getForm(false).showChildren(true);
-      }
-
     } else {
       if (showNewRowPopup()) {
         getNewRowPopup().close();
@@ -1004,15 +921,27 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   public boolean isEnabled() {
-    return enabled;
+    return getGrid().isEnabled();
   }
 
-  public boolean isRowEditable(long rowId, boolean warn) {
-    IsRow rowValue = getGrid().getRowById(rowId);
+  public boolean isReadOnly() {
+    return getGrid().isReadOnly();
+  }
+
+  public boolean isRowEditable(IsRow rowValue, boolean warn) {
     if (rowValue == null) {
       return false;
     }
-    return isRowEditable(rowValue, warn);
+    if (getRowEditable() == null) {
+      return true;
+    }
+    getRowEditable().update(rowValue);
+    boolean ok = BeeUtils.toBoolean(getRowEditable().evaluate());
+
+    if (!ok && warn) {
+      notifyWarning("Row is read only:", getRowEditable().transform());
+    }
+    return ok;
   }
 
   public boolean isRowSelected(long rowId) {
@@ -1188,7 +1117,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   public void setEnabled(boolean enabled) {
-    this.enabled = enabled;
+    getGrid().setEnabled(enabled);
   }
 
   public void setRelColumn(String relColumn) {
@@ -1278,7 +1207,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           getDataColumns(), getRelations(), columns, getNewRowCallback(), this, getElement(), this));
 
       if (showNewRowPopup()) {
-        setNewRowPopup(new ModalForm(getNewRowWidget(), null));
+        setNewRowPopup(new ModalForm(getNewRowWidget(), null, true));
       } else {
         add(getNewRowWidget());
       }
@@ -1311,8 +1240,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         }
       }
 
-      form.showChildren(false);
-      form.updateRow(newRow, false);
+      form.updateRow(newRow, true);
 
       UiHelper.focus(form.asWidget());
 
@@ -1329,6 +1257,20 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
       setActiveFormContainerId(getNewRowWidget().getId());
     }
+  }
+
+  @Override
+  protected void onUnload() {
+    if (!BeeKeeper.getScreen().isTemporaryDetach()) {
+      if (getNewRowPopup() != null) {
+        getNewRowPopup().unload();
+      }
+      if (getEditPopup() != null) {
+        getEditPopup().unload();
+      }
+    }
+
+    super.onUnload();
   }
 
   private IsRow cloneRow(IsRow original) {
@@ -1375,9 +1317,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     if (asPopup) {
       if (edit) {
-        setEditPopup(new ModalForm(container, formView));
+        setEditPopup(new ModalForm(container, formView, true));
       } else {
-        setNewRowPopup(new ModalForm(container, formView));
+        setNewRowPopup(new ModalForm(container, formView, true));
       }
 
     } else {
@@ -1563,26 +1505,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private boolean isNewRowFormInitialized() {
     return newRowFormInitialized;
-  }
-
-  private boolean isReadOnly() {
-    return getGrid().isReadOnly();
-  }
-
-  private boolean isRowEditable(IsRow rowValue, boolean warn) {
-    if (rowValue == null) {
-      return false;
-    }
-    if (getRowEditable() == null) {
-      return true;
-    }
-    getRowEditable().update(rowValue);
-    boolean ok = BeeUtils.toBoolean(getRowEditable().evaluate());
-
-    if (!ok && warn) {
-      notifyWarning("Row is read only:", getRowEditable().transform());
-    }
-    return ok;
   }
 
   private boolean isSingleForm() {

@@ -51,7 +51,7 @@ import java.util.Set;
  * name, widgets etc).
  */
 
-public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
+public class FormPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, HasViewName, HasSearch {
 
   private class DeleteCallback extends BeeCommand {
@@ -265,9 +265,6 @@ public class FormPresenter implements Presenter, ReadyForInsertEvent.Handler,
   }
 
   public void onViewUnload() {
-    if (BeeKeeper.getScreen().isTemporaryDetach()) {
-      return;
-    }
     getView().setViewPresenter(null);
 
     for (HandlerRegistration hr : filterChangeHandlers) {

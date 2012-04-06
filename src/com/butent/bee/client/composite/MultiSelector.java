@@ -51,6 +51,7 @@ public class MultiSelector extends DialogBox {
         rowSet, false, createGridDescription(rowSet, columnNames), null, null,
         EnumSet.of(UiOption.SELECTOR));
     setPresenter(gp);
+    gp.setEventSource(getId());
     
     BeeButton button = new BeeButton("Pasirinkti");
     button.addClickHandler(new ClickHandler() {

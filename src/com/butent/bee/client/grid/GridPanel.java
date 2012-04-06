@@ -53,6 +53,9 @@ public class GridPanel extends ResizePanel implements HasEnabled {
   @Override
   protected void onLoad() {
     super.onLoad();
+    if (getPresenter() != null) {
+      return;
+    }
     
     GridCallback gcb = getGridCallback();
     if (gcb == null) {
@@ -64,6 +67,7 @@ public class GridPanel extends ResizePanel implements HasEnabled {
         if (gp != null) {
           setPresenter(gp);
           setWidget(gp.getWidget());
+          gp.setEventSource(getId());
         }
       }
     }, EnumSet.of(UiOption.EMBEDDED));

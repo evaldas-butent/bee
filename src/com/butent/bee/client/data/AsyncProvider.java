@@ -88,6 +88,12 @@ public class AsyncProvider extends Provider {
     super(display, viewName, columns, idColumnName, versionColumnName, dataFilter);
   }
 
+  @Override
+  public void clear() {
+    cancelPendingRequests();
+    super.clear();
+  }
+
   public CachingPolicy getCachingPolicy() {
     return cachingPolicy;
   }

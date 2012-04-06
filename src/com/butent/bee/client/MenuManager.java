@@ -363,7 +363,7 @@ public class MenuManager implements Module {
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_STACK)) {
       w = new Stack(Unit.PX);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TAB)) {
-      w = new TabbedPages(20, Unit.PX);
+      w = new TabbedPages();
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TREE)) {
       w = new Tree();

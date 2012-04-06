@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
   
   name="Documents" viewName="Documents" caption="Dokumentai" 
-  newRowForm="NewDocument" editForm="Document">
+  newRowForm="NewDocument" editForm="Document" parent="Tree">
   
   <west size="200">
     <DataTree name="Tree" caption="Kategorijos" source="DocumentTree" parentColumn="Parent"
