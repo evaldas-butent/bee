@@ -1,12 +1,13 @@
 package com.butent.bee.client.calendar.dayview;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.client.calendar.Appointment;
-import com.butent.bee.client.calendar.DateUtils;
 import com.butent.bee.client.calendar.HasSettings;
 import com.butent.bee.client.calendar.util.AppointmentUtil;
+import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.utils.TimeUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class DayViewLayoutStrategy {
     this.settings = settings;
   }
 
-  public ArrayList<AppointmentAdapter> doLayout(List<Appointment> appointments, int dayIndex,
+  public List<AppointmentAdapter> doLayout(List<Appointment> appointments, int dayIndex,
       int dayCount) {
 
     int intervalsPerHour = settings.getSettings().getIntervalsPerHour();
@@ -41,7 +42,7 @@ public class DayViewLayoutStrategy {
       timeBlocks[i] = t;
     }
 
-    ArrayList<AppointmentAdapter> appointmentCells = new ArrayList<AppointmentAdapter>();
+    List<AppointmentAdapter> appointmentCells = Lists.newArrayList();
 
     int groupMaxColumn = 0;
     int groupStartIndex = -1;
@@ -143,7 +144,7 @@ public class DayViewLayoutStrategy {
   }
 
   public int doMultiDayLayout(List<Appointment> appointments, List<AppointmentAdapter> adapters,
-      Date start, int days) {
+      JustDate start, int days) {
 
     HashMap<Integer, HashMap<Integer, Integer>> daySlotMap =
         new HashMap<Integer, HashMap<Integer, Integer>>();
@@ -155,16 +156,16 @@ public class DayViewLayoutStrategy {
       adapters.add(new AppointmentAdapter(appointment));
     }
 
-    ArrayList<Date> dateList = new ArrayList<Date>();
-    Date tempStartDate = (Date) start.clone();
+    List<JustDate> dateList = Lists.newArrayList();
+    JustDate tmp = JustDate.copyOf(start);
 
     for (int i = 0; i < days; i++) {
-      Date d = (Date) tempStartDate.clone();
-      DateUtils.resetTime(d);
+      JustDate d = JustDate.copyOf(tmp);
 
       daySlotMap.put(i, new HashMap<Integer, Integer>());
       dateList.add(d);
-      DateUtils.moveOneDayForward(tempStartDate);
+      
+      TimeUtils.moveOneDayForward(tmp);
     }
 
     for (AppointmentAdapter adapter : adapters) {
@@ -172,8 +173,9 @@ public class DayViewLayoutStrategy {
       boolean isStart = true;
 
       for (int i = 0; i < dateList.size(); i++) {
-        Date date = dateList.get(i);
-        boolean isWithinRange =  AppointmentUtil.rangeContains(adapter.getAppointment(), date);
+        JustDate date = dateList.get(i);
+        boolean isWithinRange =  AppointmentUtil.rangeContains(adapter.getAppointment(),
+            TimeUtils.startOfDay(date), TimeUtils.startOfDay(date, 1));
 
         if (isWithinRange) {
           if (isStart) {

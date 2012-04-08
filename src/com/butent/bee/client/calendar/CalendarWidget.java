@@ -31,15 +31,17 @@ import com.butent.bee.client.calendar.event.TimeBlockClickHandler;
 import com.butent.bee.client.calendar.event.UpdateEvent;
 import com.butent.bee.client.calendar.event.UpdateHandler;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasDateValue;
+import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 public class CalendarWidget extends InteractiveWidget implements
     HasSelectionHandlers<Appointment>, HasDeleteHandlers<Appointment>,
-    HasOpenHandlers<Appointment>, HasTimeBlockClickHandlers<Date>,
-    HasUpdateHandlers<Appointment>, HasDateRequestHandlers<Date>,
+    HasOpenHandlers<Appointment>, HasTimeBlockClickHandlers<HasDateValue>,
+    HasUpdateHandlers<Appointment>, HasDateRequestHandlers<HasDateValue>,
     HasMouseOverHandlers<Appointment>,
     HasLayout, HasAppointments {
 
@@ -47,7 +49,7 @@ public class CalendarWidget extends InteractiveWidget implements
 
   private boolean layoutPending = false;
 
-  private Date date;
+  private final JustDate date;
 
   private CalendarSettings settings = CalendarSettings.DEFAULT_SETTINGS;
 
@@ -56,14 +58,13 @@ public class CalendarWidget extends InteractiveWidget implements
   private CalendarView view = null;
 
   public CalendarWidget() {
-    this(new Date());
+    this(TimeUtils.today());
   }
 
-  public CalendarWidget(Date date) {
+  public CalendarWidget(JustDate date) {
     super();
     appointmentManager = new AppointmentManager();
     this.date = date;
-    DateUtils.resetTime(this.date);
   }
 
   public void addAppointment(Appointment appointment) {
@@ -81,14 +82,13 @@ public class CalendarWidget extends InteractiveWidget implements
     return addHandler(handler, CreateEvent.getType());
   }
 
-  public HandlerRegistration addDateRequestHandler(DateRequestHandler<Date> handler) {
+  public HandlerRegistration addDateRequestHandler(DateRequestHandler<HasDateValue> handler) {
     return addHandler(handler, DateRequestEvent.getType());
   }
   
-  @SuppressWarnings("deprecation")
   public void addDaysToDate(int numOfDays) {
     if (numOfDays != 0) {
-      this.date.setDate(this.date.getDate() + numOfDays);
+      TimeUtils.addDay(date, numOfDays);
       refresh();
     }
   }
@@ -109,7 +109,7 @@ public class CalendarWidget extends InteractiveWidget implements
     return addHandler(handler, SelectionEvent.getType());
   }
 
-  public HandlerRegistration addTimeBlockClickHandler(TimeBlockClickHandler<Date> handler) {
+  public HandlerRegistration addTimeBlockClickHandler(TimeBlockClickHandler<HasDateValue> handler) {
     return addHandler(handler, TimeBlockClickEvent.getType());
   }
 
@@ -142,11 +142,11 @@ public class CalendarWidget extends InteractiveWidget implements
     }
   }
 
-  public void fireDateRequestEvent(Date dt) {
+  public void fireDateRequestEvent(HasDateValue dt) {
     DateRequestEvent.fire(this, dt);
   }
 
-  public void fireDateRequestEvent(Date dt, Element clicked) {
+  public void fireDateRequestEvent(HasDateValue dt, Element clicked) {
     DateRequestEvent.fire(this, dt, clicked);
   }
 
@@ -174,7 +174,7 @@ public class CalendarWidget extends InteractiveWidget implements
     SelectionEvent.fire(this, appointment);
   }
 
-  public void fireTimeBlockClickEvent(Date dt) {
+  public void fireTimeBlockClickEvent(HasDateValue dt) {
     TimeBlockClickEvent.fire(this, dt);
   }
 
@@ -192,8 +192,8 @@ public class CalendarWidget extends InteractiveWidget implements
     return appointmentManager.getAppointments();
   }
 
-  public Date getDate() {
-    return (Date) date.clone();
+  public JustDate getDate() {
+    return JustDate.copyOf(date);
   }
 
   public int getDays() {
@@ -335,15 +335,19 @@ public class CalendarWidget extends InteractiveWidget implements
     appointmentManager.setCommittedAppointment(appt);
   }
 
-  public void setDate(Date date) {
-    setDate(date, getDays());
+  public void setDate(JustDate newDate) {
+    setDate(newDate, getDays());
   }
   
-  public void setDate(Date date, int days) {
-    Date dateCopy = (Date) date.clone();
-    DateUtils.resetTime(dateCopy);
-    this.date = dateCopy;
+  public void setDate(JustDate newDate, int days) {
+    Assert.notNull(newDate);
+    if (newDate.equals(date) && days == view.getDisplayedDays()) {
+      return;
+    }
+    
+    date.setDate(newDate);
     view.setDisplayedDays(days);
+
     refresh();
   }
 

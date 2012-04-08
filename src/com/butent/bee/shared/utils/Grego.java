@@ -109,7 +109,7 @@ public class Grego {
     if (month > 1 && month <= 12) {
       julian += DAYS_BEFORE[month + (isLeapYear(year) ? 11 : -1)];
     }
-    if (dom > 0) {
+    if (dom != 0) {
       julian += dom;
     } else {
       julian++;

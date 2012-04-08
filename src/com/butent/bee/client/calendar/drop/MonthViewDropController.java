@@ -6,12 +6,12 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.FlexTable;
 
 import com.butent.bee.client.calendar.Appointment;
-import com.butent.bee.client.calendar.DateUtils;
 import com.butent.bee.client.calendar.monthview.AppointmentWidget;
 import com.butent.bee.client.dnd.DragContext;
 import com.butent.bee.client.dnd.drop.AbsolutePositionDropController;
-
-import java.util.Date;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.utils.TimeUtils;
 
 public class MonthViewDropController extends AbsolutePositionDropController {
 
@@ -19,7 +19,7 @@ public class MonthViewDropController extends AbsolutePositionDropController {
 
   private int daysPerWeek;
   private int weeksPerMonth;
-  private Date firstDateDisplayed;
+  private JustDate firstDateDisplayed;
 
   private FlexTable monthGrid;
 
@@ -35,7 +35,7 @@ public class MonthViewDropController extends AbsolutePositionDropController {
     return (int) Math.floor(x / (monthGrid.getOffsetWidth() / daysPerWeek));
   }
 
-  public Date getFirstDateDisplayed() {
+  public JustDate getFirstDateDisplayed() {
     return firstDateDisplayed;
   }
 
@@ -66,10 +66,8 @@ public class MonthViewDropController extends AbsolutePositionDropController {
     int col = getColumn(context, draggable);
     int cell = row * daysPerWeek + col;
 
-    Date newStart = DateUtils.shiftDate(firstDateDisplayed, cell);
-    DateUtils.copyTime(appointment.getStart(), newStart);
-
-    Date newEnd = new Date(newStart.getTime() + originalStartToEndTimeDistance);
+    DateTime newStart = TimeUtils.combine(TimeUtils.nextDay(firstDateDisplayed, cell), appointment.getStart());
+    DateTime newEnd = new DateTime(newStart.getTime() + originalStartToEndTimeDistance);
 
     appointment.setStart(newStart);
     appointment.setEnd(newEnd);
@@ -97,13 +95,13 @@ public class MonthViewDropController extends AbsolutePositionDropController {
         }
       }
 
-      Date startDate = ((AppointmentWidget) draggable.widget).getAppointment().getStart();
-      Date endDate = ((AppointmentWidget) draggable.widget).getAppointment().getEnd();
+      DateTime startDate = ((AppointmentWidget) draggable.widget).getAppointment().getStart();
+      DateTime endDate = ((AppointmentWidget) draggable.widget).getAppointment().getEnd();
 
-      int dateDiff = DateUtils.differenceInDays(endDate, startDate) + 1;
+      int dateDiff = TimeUtils.dayDiff(startDate, endDate) + 1;
       dateDiff = (dateDiff <= 0) ? 1 : dateDiff;
-      highlightedCells = getCells(row, col, dateDiff);
 
+      highlightedCells = getCells(row, col, dateDiff);
       for (Element elem : highlightedCells) {
         if (elem != null) {
           DOM.setStyleAttribute(elem, BACKGROUND, "#C3D9FF");
@@ -116,7 +114,7 @@ public class MonthViewDropController extends AbsolutePositionDropController {
     this.daysPerWeek = daysPerWeek;
   }
 
-  public void setFirstDateDisplayed(Date firstDateDisplayed) {
+  public void setFirstDateDisplayed(JustDate firstDateDisplayed) {
     this.firstDateDisplayed = firstDateDisplayed;
   }
 

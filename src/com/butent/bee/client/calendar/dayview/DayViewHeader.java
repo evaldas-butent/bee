@@ -7,10 +7,11 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Label;
 
 import com.butent.bee.client.calendar.CalendarFormat;
-import com.butent.bee.client.calendar.DateUtils;
 import com.butent.bee.client.dom.DomUtils;
-
-import java.util.Date;
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasDateValue;
+import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.utils.TimeUtils;
 
 public class DayViewHeader extends Composite {
 
@@ -46,38 +47,39 @@ public class DayViewHeader extends Composite {
     header.setWidget(1, 0, splitter);
   }
 
-  public void setDays(Date date, int days) {
+  public void setDays(JustDate date, int days) {
     dayPanel.clear();
+
     double dayWidth = 100.0 / days;
     double dayLeft;
+    
+    JustDate tmp = JustDate.copyOf(date);
 
     for (int i = 0; i < days; i++) {
-      if (i > 0) {
-        DateUtils.moveOneDayForward(date);
-      }
-
-      dayLeft = dayWidth * i;
-
-      String headerTitle = CalendarFormat.INSTANCE.getDateFormat().format(date);
-
       Label dayLabel = new Label();
       dayLabel.setStylePrimaryName("day-cell");
       dayLabel.setWidth(dayWidth + "%");
+
+      String headerTitle = CalendarFormat.INSTANCE.getDateFormat().format(tmp);
       dayLabel.setText(headerTitle);
+    
+      dayLeft = dayWidth * i;
       DOM.setStyleAttribute(dayLabel.getElement(), "left", dayLeft + "%");
 
-      if (DateUtils.areOnTheSameDay(new Date(), date)) {
+      if (TimeUtils.isToday(tmp)) {
         dayLabel.setStyleName("day-cell-today");
-      } else if (DateUtils.isWeekend(date)) {
+      } else if (TimeUtils.isWeekend(tmp)) {
         dayLabel.setStyleName("day-cell-weekend");
       }
 
       dayPanel.add(dayLabel);
+      TimeUtils.moveOneDayForward(tmp);
     }
   }
 
-  public void setYear(Date date) {
-    setYear(DateUtils.year(date));
+  public void setYear(HasDateValue date) {
+    Assert.notNull(date);
+    setYear(date.getYear());
   }
 
   public void setYear(int year) {

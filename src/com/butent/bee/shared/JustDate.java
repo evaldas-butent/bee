@@ -276,6 +276,27 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
     this.fields = null;
   }
 
+  public void setDom(int dom) {
+    if (getDom() != dom) {
+      fields[Grego.IDX_DOM] = dom;
+      updateDays();
+    }  
+  }
+  
+  public void setMonth(int month) {
+    if (getMonth() != month) {
+      fields[Grego.IDX_MONTH] = month;
+      updateDays();
+    }  
+  }
+  
+  public void setYear(int year) {
+    if (getYear() != year) {
+      fields[Grego.IDX_YEAR] = year;
+      updateDays();
+    }  
+  }
+  
   public boolean supportsTimezoneOffset() {
     return false;
   }
@@ -302,5 +323,9 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
     if (fields == null) {
       computeFields();
     }
+  }
+  
+  private void updateDays() {
+    setDate(getYear(), getMonth(), getDom());
   }
 }

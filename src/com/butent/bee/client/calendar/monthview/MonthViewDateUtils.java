@@ -1,53 +1,33 @@
 package com.butent.bee.client.calendar.monthview;
 
-import com.butent.bee.client.calendar.DateUtils;
-import com.butent.bee.shared.Assert;
-
-import java.util.Date;
+import com.butent.bee.shared.HasDateValue;
+import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.utils.TimeUtils;
 
 public class MonthViewDateUtils {
 
-  @SuppressWarnings("deprecation")
-  public static Date firstDateShownInAMonthView(Date dayInMonth,
-      int firstDayOfWeek) {
-    Date date = DateUtils.firstOfTheMonth(dayInMonth);
-    int firstDayOffset = firstDayOfWeek + date.getDate() - date.getDay();
-    date.setDate(firstDayOffset);
-    if (DateUtils.areOnTheSameMonth(date, dayInMonth) && date.getDate() > 1) {
-      date.setDate(firstDayOffset - 7);
-    }
-    return date;
+  public static JustDate firstDateShownInAMonthView(HasDateValue dayInMonth) {
+    JustDate date = TimeUtils.startOfMonth(dayInMonth);
+    return TimeUtils.startOfWeek(date, (date.getDow() > 1) ? 0 : -1);
   }
 
-  @SuppressWarnings("deprecation")
-  public static int monthViewRequiredRows(Date dayInMonth, int firstDayOfWeek) {
+  public static int monthViewRequiredRows(HasDateValue dayInMonth) {
     int requiredRows = 5;
 
-    Date firstOfTheMonthClone = (Date) dayInMonth.clone();
-    firstOfTheMonthClone.setDate(1);
+    JustDate firstOfTheMonth = TimeUtils.startOfMonth(dayInMonth);
+    JustDate firstDayInCalendar = firstDateShownInAMonthView(dayInMonth);
 
-    Date firstDayInCalendar = firstDateShownInAMonthView(dayInMonth, firstDayOfWeek);
+    if (firstDayInCalendar.getMonth() != firstOfTheMonth.getMonth()) {
+      JustDate lastDayOfPreviousMonth = TimeUtils.previousDay(firstOfTheMonth);
+      int prevMonthOverlap = TimeUtils.dayDiff(firstDayInCalendar, lastDayOfPreviousMonth) + 1;
 
-    if (firstDayInCalendar.getMonth() != firstOfTheMonthClone.getMonth()) {
-      Date lastDayOfPreviousMonth = DateUtils.previousDay(firstOfTheMonthClone);
-      int prevMonthOverlap = daysInPeriod(firstDayInCalendar, lastDayOfPreviousMonth);
-
-      Date firstOfNextMonth = DateUtils.firstOfNextMonth(firstOfTheMonthClone);
-
-      int daysInMonth = daysInPeriod(firstOfTheMonthClone,
-          DateUtils.previousDay(firstOfNextMonth));
+      JustDate firstOfNextMonth = TimeUtils.startOfNextMonth(firstOfTheMonth);
+      int daysInMonth = TimeUtils.dayDiff(firstOfTheMonth, firstOfNextMonth);
 
       if (prevMonthOverlap + daysInMonth > 35) {
         requiredRows = 6;
       }
     }
     return requiredRows;
-  }
-
-  @SuppressWarnings("deprecation")
-  private static int daysInPeriod(Date start, Date end) {
-    Assert.isTrue(start.getMonth() == end.getMonth(), "daysInPeriod: " + start.toString() + ", "
-        + end.toString() + " dates must be in the same month.");
-    return 1 + end.getDate() - start.getDate();
   }
 }

@@ -1,6 +1,7 @@
 package com.butent.bee.client.calendar.monthview;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
@@ -15,7 +16,6 @@ import com.butent.bee.client.calendar.CalendarFormat;
 import com.butent.bee.client.calendar.CalendarSettings.Click;
 import com.butent.bee.client.calendar.CalendarView;
 import com.butent.bee.client.calendar.CalendarWidget;
-import com.butent.bee.client.calendar.DateUtils;
 import com.butent.bee.client.calendar.drop.MonthViewDropController;
 import com.butent.bee.client.calendar.drop.MonthViewPickupDragController;
 import com.butent.bee.client.dnd.DragEndEvent;
@@ -23,13 +23,14 @@ import com.butent.bee.client.dnd.DragHandler;
 import com.butent.bee.client.dnd.DragStartEvent;
 import com.butent.bee.client.dnd.PickupDragController;
 import com.butent.bee.client.dnd.VetoDragException;
+import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.TimeUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MonthView extends CalendarView {
 
@@ -66,13 +67,13 @@ public class MonthView extends CalendarView {
     return 4;
   }
 
-  private ArrayList<AppointmentWidget> appointmentsWidgets = new ArrayList<AppointmentWidget>();
+  private final List<AppointmentWidget> appointmentsWidgets = Lists.newArrayList();
 
   private AbsolutePanel appointmentCanvas = new AbsolutePanel();
 
-  private HashMap<Element, Integer> moreLabels = new HashMap<Element, Integer>();
+  private final Map<Element, Integer> moreLabels = Maps.newHashMap();
 
-  private Date firstDateDisplayed;
+  private JustDate firstDateDisplayed = null;
 
   private FlexTable monthCalendarGrid = new FlexTable();
 
@@ -183,7 +184,7 @@ public class MonthView extends CalendarView {
 
   @Override
   public void onAppointmentSelected(Appointment appt) {
-    ArrayList<AppointmentWidget> clickedAppointmentWidgets = findAppointmentWidgets(appt);
+    List<AppointmentWidget> clickedAppointmentWidgets = findAppointmentWidgets(appt);
 
     if (!clickedAppointmentWidgets.isEmpty()) {
       for (AppointmentWidget widget : selectedAppointmentWidgets) {
@@ -211,7 +212,7 @@ public class MonthView extends CalendarView {
         dayClicked(event);
       }
     } else {
-      ArrayList<AppointmentWidget> list = findAppointmentWidgetsByElement(clickedElement);
+      List<AppointmentWidget> list = findAppointmentWidgetsByElement(clickedElement);
       if (!list.isEmpty()) {
         calendarWidget.fireOpenEvent(list.get(0).getAppointment());
       }
@@ -245,35 +246,29 @@ public class MonthView extends CalendarView {
   public void scrollToHour(int hour) {
   }
 
-  @SuppressWarnings("deprecation")
   private void buildCalendarGrid() {
-    int firstDayOfWeek = CalendarFormat.INSTANCE.getFirstDayOfWeek();
     int month = calendarWidget.getDate().getMonth();
-    firstDateDisplayed = MonthViewDateUtils.firstDateShownInAMonthView(calendarWidget.getDate(),
-        firstDayOfWeek);
+    firstDateDisplayed = MonthViewDateUtils.firstDateShownInAMonthView(calendarWidget.getDate());
 
-    Date today = new Date();
-    DateUtils.resetTime(today);
+    JustDate today = TimeUtils.today();
 
     for (int i = 0; i < DAYS_IN_A_WEEK; i++) {
-      monthCalendarGrid.setText(0, i,
-          CalendarFormat.INSTANCE.getDayOfWeekAbbreviatedNames()[(i + firstDayOfWeek) % 7]);
+      monthCalendarGrid.setText(0, i, CalendarFormat.INSTANCE.getDayOfWeekAbbreviatedNames()[i]);
       monthCalendarGrid.getCellFormatter().setVerticalAlignment(0, i,
           HasVerticalAlignment.ALIGN_TOP);
       monthCalendarGrid.getCellFormatter().setStyleName(0, i, WEEKDAY_LABEL_STYLE);
     }
 
-    Date date = (Date) firstDateDisplayed.clone();
-    monthViewRequiredRows = MonthViewDateUtils.monthViewRequiredRows(calendarWidget.getDate(),
-        firstDayOfWeek);
+    JustDate date = JustDate.copyOf(firstDateDisplayed);
+    monthViewRequiredRows = MonthViewDateUtils.monthViewRequiredRows(calendarWidget.getDate());
     for (int monthGridRowIndex = 1; monthGridRowIndex <= monthViewRequiredRows; monthGridRowIndex++) {
       for (int dayOfWeekIndex = 0; dayOfWeekIndex < DAYS_IN_A_WEEK; dayOfWeekIndex++) {
         if (monthGridRowIndex != 1 || dayOfWeekIndex != 0) {
-          DateUtils.moveOneDayForward(date);
+          TimeUtils.moveOneDayForward(date);
         }
 
         configureDayInGrid(monthGridRowIndex, dayOfWeekIndex,
-            String.valueOf(date.getDate()), date.equals(today), date.getMonth() != month);
+            BeeUtils.toString(date.getDom()), date.equals(today), date.getMonth() != month);
       }
     }
   }
@@ -299,8 +294,8 @@ public class MonthView extends CalendarView {
     calculatedDayHeaderHeight = dayHeaderHeight;
   }
 
-  private Date cellDate(int cell) {
-    return DateUtils.shiftDate(firstDateDisplayed, cell);
+  private JustDate cellDate(int cell) {
+    return TimeUtils.nextDay(firstDateDisplayed, cell);
   }
 
   private void configureDayInGrid(int row, int col, String text, boolean isToday,
@@ -318,7 +313,7 @@ public class MonthView extends CalendarView {
       headerStyle.append("-disabled");
     }
     label.setStyleName(headerStyle.toString());
-    
+
     switch (col) {
       case 0:
         cellStyle.append(" firstColumn");
@@ -354,8 +349,8 @@ public class MonthView extends CalendarView {
     return appointmentAtElement;
   }
 
-  private ArrayList<AppointmentWidget> findAppointmentWidgets(Appointment appt) {
-    ArrayList<AppointmentWidget> appointmentWidgets = new ArrayList<AppointmentWidget>();
+  private List<AppointmentWidget> findAppointmentWidgets(Appointment appt) {
+    List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
     if (appt != null) {
       for (AppointmentWidget widget : appointmentsWidgets) {
         if (widget.getAppointment().equals(appt)) {
@@ -366,7 +361,7 @@ public class MonthView extends CalendarView {
     return appointmentWidgets;
   }
 
-  private ArrayList<AppointmentWidget> findAppointmentWidgetsByElement(Element element) {
+  private List<AppointmentWidget> findAppointmentWidgetsByElement(Element element) {
     return findAppointmentWidgets(findAppointmentByElement(element));
   }
 
@@ -403,7 +398,7 @@ public class MonthView extends CalendarView {
       int weekOfMonth) {
     AppointmentStackingManager weekTopElements = weekDescription.getTopAppointmentsManager();
     for (int layer = 0; layer < calculatedCellAppointments; layer++) {
-      List<AppointmentLayoutDescription> descriptionsInLayer = 
+      List<AppointmentLayoutDescription> descriptionsInLayer =
           weekTopElements.getDescriptionsInLayer(layer);
       if (descriptionsInLayer == null) {
         break;

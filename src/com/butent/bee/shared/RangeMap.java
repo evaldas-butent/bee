@@ -1,92 +1,48 @@
 package com.butent.bee.shared;
 
+import com.google.common.collect.Range;
+
 import java.util.HashMap;
 
-/**
- * Enables using arrays to store ranges with minimum and maximum values.
- */
-
 @SuppressWarnings("serial")
-public class RangeMap<V> extends HashMap<RangeMap<V>.Range, V> {
+public class RangeMap<K extends Comparable<?>, V> extends HashMap<Range<K>, V> {
 
-  public class Range extends Pair<Double, Double> {
-
-    public Range(Double min, Double max) {
-      super(min, max);
-    }
-
-    public boolean contains(double value) {
-      return (getMin() == null || getMin() <= value) && (getMax() == null || getMax() > value);
-    }
-
-    public boolean contains(Range range) {
-      if (range == null) {
-        return false;
-      }
-      if (equals(range)) {
-        return true;
-      }
-
-      if (range.getMin() == null) {
-        if (range.getMax() == null) {
-          return getMin() == null && getMax() == null;
-        }
-        return getMin() == null && getMax() >= range.getMax();
-      }
-      if (range.getMax() == null) {
-        return getMax() == null && getMin() <= range.getMin();
-      }
-
-      return (getMin() == null || getMin() <= range.getMin())
-          && (getMax() == null || getMax() >= range.getMax());
-    }
-
-    public Double getMax() {
-      return getB();
-    }
-
-    public Double getMin() {
-      return getA();
-    }
+  public static <K extends Comparable<?>, V> RangeMap<K, V> create() {
+    return new RangeMap<K, V>();
   }
 
-  public static <V> RangeMap<V> create() {
-    return new RangeMap<V>();
-  }
-
-  public static <V> RangeMap<V> create(Double min, Double max, V value) {
-    RangeMap<V> rangeMap = new RangeMap<V>();
-    rangeMap.put(min, max, value);
+  public static <K extends Comparable<?>, V> RangeMap<K, V> create(Range<K> range, V value) {
+    RangeMap<K, V> rangeMap = create();
+    rangeMap.put(range, value);
     return rangeMap;
   }
 
-  public static <V> RangeMap<V> create(Double min1, Double max1, V value1,
-      Double min2, Double max2, V value2) {
-    RangeMap<V> rangeMap = new RangeMap<V>();
-    rangeMap.put(min1, max1, value1);
-    rangeMap.put(min2, max2, value2);
+  public static <K extends Comparable<?>, V> RangeMap<K, V> create(Range<K> r1, V v1,
+      Range<K> r2, V v2) {
+    RangeMap<K, V> rangeMap = create();
+    rangeMap.put(r1, v1);
+    rangeMap.put(r2, v2);
     return rangeMap;
   }
 
-  public static <V> RangeMap<V> create(Double min1, Double max1, V value1,
-      Double min2, Double max2, V value2, Double min3, Double max3, V value3) {
-    RangeMap<V> rangeMap = new RangeMap<V>();
-    rangeMap.put(min1, max1, value1);
-    rangeMap.put(min2, max2, value2);
-    rangeMap.put(min3, max3, value3);
+  public static <K extends Comparable<?>, V> RangeMap<K, V> create(Range<K> r1, V v1,
+      Range<K> r2, V v2, Range<K> r3, V v3) {
+    RangeMap<K, V> rangeMap = create();
+    rangeMap.put(r1, v1);
+    rangeMap.put(r2, v2);
+    rangeMap.put(r3, v3);
     return rangeMap;
   }
-
+  
   private RangeMap() {
     super();
   }
 
-  public V get(double key) {
-    Range bestRange = null;
+  public V get(K key) {
+    Range<K> bestRange = null;
 
-    for (Range range : keySet()) {
-      if (range != null && range.contains(key)
-          && (bestRange == null || bestRange.contains(range))) {
+    for (Range<K> range : keySet()) {
+      if (range != null && range.contains(key) && (bestRange == null || bestRange.encloses(range))) {
         bestRange = range;
       }
     }
@@ -95,9 +51,5 @@ public class RangeMap<V> extends HashMap<RangeMap<V>.Range, V> {
       return null;
     }
     return super.get(bestRange);
-  }
-
-  public V put(Double min, Double max, V value) {
-    return super.put(new Range(min, max), value);
   }
 }

@@ -41,7 +41,13 @@ public interface HasDateValue extends BeeSerializable {
   
   int getTimezoneOffset();
   
-  int getYear();  
+  int getYear();
+  
+  void setDom(int dom);
+
+  void setMonth(int month);
+
+  void setYear(int year);
 
   boolean supportsTimezoneOffset();
 }

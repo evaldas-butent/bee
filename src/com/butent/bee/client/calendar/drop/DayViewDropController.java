@@ -7,8 +7,8 @@ import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.calendar.dayview.AppointmentWidget;
 import com.butent.bee.client.dnd.DragContext;
 import com.butent.bee.client.dnd.drop.AbsolutePositionDropController;
-
-import java.util.Date;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 
 public class DayViewDropController extends AbsolutePositionDropController {
 
@@ -17,7 +17,7 @@ public class DayViewDropController extends AbsolutePositionDropController {
   int columns;
   int rows;
   
-  Date date;
+  JustDate date;
 
   private int gridX;
 
@@ -29,7 +29,6 @@ public class DayViewDropController extends AbsolutePositionDropController {
     super(dropTarget);
   }
 
-  @SuppressWarnings("deprecation")
   @Override
   public void onDrop(DragContext context) {
 
@@ -52,20 +51,23 @@ public class DayViewDropController extends AbsolutePositionDropController {
     day = Math.min(day, columns - 1);
 
     Appointment appt = ((AppointmentWidget) widget).getAppointment();
-    Date start = (Date) date.clone();
-    Date end = (Date) date.clone();
+    DateTime start = date.getDateTime();
+    DateTime end = date.getDateTime();
+    
+    if (day != 0) {
+      start.setDom(start.getDom() + day);
+      end.setDom(end.getDom() + day);
+    }
 
-    start.setDate(start.getDate() + day);
-    end.setDate(end.getDate() + day);
-
-    start.setHours(0);
-    start.setMinutes(0);
-    start.setSeconds(0);
-    start.setMinutes((intervalStart) * (60 / intervalsPerHour));
-    end.setHours(0);
-    end.setMinutes(0);
-    end.setSeconds(0);
-    end.setMinutes((intervalStart + intervalSpan) * (60 / intervalsPerHour));
+    start.setHour(0);
+    start.setMinute(0);
+    start.setSecond(0);
+    start.setMinute((intervalStart) * (60 / intervalsPerHour));
+    
+    end.setHour(0);
+    end.setMinute(0);
+    end.setSecond(0);
+    end.setMinute((intervalStart + intervalSpan) * (60 / intervalsPerHour));
 
     appt.setStart(start);
     appt.setEnd(end);
@@ -112,7 +114,7 @@ public class DayViewDropController extends AbsolutePositionDropController {
     this.columns = columns;
   }
 
-  public void setDate(Date date) {
+  public void setDate(JustDate date) {
     this.date = date;
   }
 

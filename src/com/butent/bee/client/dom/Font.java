@@ -1,6 +1,7 @@
 package com.butent.bee.client.dom;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Ranges;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.FontStyle;
@@ -30,8 +31,8 @@ import java.util.List;
 public class Font implements HasInfo, Transformable {
 
   private static final double UNKNOWN = -1.0;
-  private static final RangeMap<Unit> DEFAULT_UNITS =
-    RangeMap.create(null, 4.0, Unit.EM, 4.0, null, Unit.PX);
+  private static final RangeMap<Double, Unit> DEFAULT_UNITS =
+    RangeMap.create(Ranges.lessThan(4.0), Unit.EM, Ranges.atLeast(4.0), Unit.PX);
   
   public static Font copyOf(Font original) {
     if (original == null) {

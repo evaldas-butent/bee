@@ -104,13 +104,6 @@ public class TimeUtils {
     add(date, MINUTE, amount);
   }
 
-  public static DateTime combine(Date datePart, DateTime timePart) {
-    if (datePart == null) {
-      return timePart;
-    }
-    return combine(new DateTime(datePart), timePart);
-  }
-
   public static DateTime combine(HasDateValue datePart, DateTime timePart) {
     if (datePart == null) {
       return timePart;
@@ -170,6 +163,13 @@ public class TimeUtils {
     return fieldDifference(start, end, DATE);
   }
 
+  public static int dayDiff(HasDateValue start, HasDateValue end) {
+    Assert.notNull(start);
+    Assert.notNull(end);
+    
+    return end.getDate().getDays() - start.getDate().getDays();
+  }
+  
   public static JustDate endOfMonth(HasDateValue ref) {
     Assert.notNull(ref);
     int year = ref.getYear();
@@ -328,6 +328,14 @@ public class TimeUtils {
     return compare(d1, d2) > 0;
   }
 
+  public static boolean isToday(HasDateValue dt) {
+    return sameDate(dt, today());
+  }
+
+  public static boolean isWeekend(HasDateValue dt) {
+    return (dt == null) ? false : dt.getDow() >= 6;
+  }
+  
   /**
    * @param millis the value to convert
    * @return the String representation of milliseconds.
@@ -338,6 +346,15 @@ public class TimeUtils {
     } else {
       return Integer.toString(millis);
     }
+  }
+
+  public static int minutesSinceDayStarted(DateTime dt) {
+    Assert.notNull(dt);
+    return dt.getHour() * 60 + dt.getMinute();
+  }
+  
+  public static void moveOneDayForward(JustDate date) {
+    addDay(date, 1);
   }
 
   public static JustDate nextDay(HasDateValue ref) {
@@ -420,6 +437,10 @@ public class TimeUtils {
     return arr;
   }
 
+  public static JustDate previousDay(HasDateValue ref) {
+    return nextDay(ref, -1);
+  }
+  
   /**
    * Generates a random JustDate between {@code min} and {@code max}.
    * 
@@ -467,6 +488,23 @@ public class TimeUtils {
     return x.getYear() == y.getYear() && x.getMonth() == y.getMonth();
   }
 
+  public static DateTime startOfDay() {
+    return new DateTime(today());
+  }
+
+  public static DateTime startOfDay(int increment) {
+    return startOfDay(today(), increment);
+  }
+
+  public static DateTime startOfDay(HasDateValue ref) {
+    return startOfDay(ref, 0);
+  }
+  
+  public static DateTime startOfDay(HasDateValue ref, int increment) {
+    Assert.notNull(ref);
+    return new DateTime(ref.getYear(), ref.getMonth(), ref.getDom() + increment);
+  }
+  
   public static JustDate startOfMonth() {
     JustDate date = new JustDate();
     int dom = date.getDom();
@@ -476,6 +514,10 @@ public class TimeUtils {
     return date;
   }
 
+  public static JustDate startOfMonth(HasDateValue ref) {
+    return startOfMonth(ref, 0);
+  }
+  
   public static JustDate startOfMonth(HasDateValue ref, int increment) {
     Assert.notNull(ref);
     int year = ref.getYear();
@@ -489,6 +531,14 @@ public class TimeUtils {
     return new JustDate(year, month, 1);
   }
 
+  public static JustDate startOfNextMonth(HasDateValue ref) {
+    return startOfMonth(ref, 1);
+  }
+
+  public static JustDate startOfPreviousMonth(HasDateValue ref) {
+    return startOfMonth(ref, -1);
+  }
+  
   public static JustDate startOfQuarter(HasDateValue ref, int increment) {
     Assert.notNull(ref);
     int year = ref.getYear();
@@ -503,6 +553,14 @@ public class TimeUtils {
     return new JustDate(year, month, 1);
   }
 
+  public static JustDate startOfWeek() {
+    return startOfWeek(today());
+  }
+  
+  public static JustDate startOfWeek(HasDateValue ref) {
+    return startOfWeek(ref, 0);
+  }
+  
   public static JustDate startOfWeek(HasDateValue ref, int increment) {
     Assert.notNull(ref);
     JustDate date = new JustDate(ref.getYear(), ref.getMonth(), ref.getDom());
@@ -522,6 +580,14 @@ public class TimeUtils {
     return date;
   }
 
+  public static JustDate startOfYear() {
+    return startOfYear(today());
+  }
+  
+  public static JustDate startOfYear(HasDateValue ref) {
+    return startOfYear(ref, 0);
+  }
+  
   public static JustDate startOfYear(HasDateValue ref, int increment) {
     Assert.notNull(ref);
     int year = ref.getYear();

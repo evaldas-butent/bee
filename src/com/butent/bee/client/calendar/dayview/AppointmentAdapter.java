@@ -1,7 +1,7 @@
 package com.butent.bee.client.calendar.dayview;
 
 import com.butent.bee.client.calendar.Appointment;
-import com.butent.bee.client.calendar.DateUtils;
+import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +25,8 @@ public class AppointmentAdapter {
 
   public AppointmentAdapter(Appointment appointment) {
     this.appointment = appointment;
-    this.appointmentStart = DateUtils.minutesSinceDayStarted(appointment.getStart());
-    this.appointmentEnd = DateUtils.minutesSinceDayStarted(appointment.getEnd());
+    this.appointmentStart = TimeUtils.minutesSinceDayStarted(appointment.getStart());
+    this.appointmentEnd = TimeUtils.minutesSinceDayStarted(appointment.getEnd());
     this.intersectingBlocks = new ArrayList<TimeBlock>();
   }
 

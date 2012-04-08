@@ -10,8 +10,6 @@ public interface CalendarConstants extends Messages {
 
   String dayOfMonthFormat();
   
-  String firstDayOfWeek();
-
   String more(int appointments);
 
   String noon();

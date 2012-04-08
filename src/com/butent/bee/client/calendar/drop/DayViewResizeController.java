@@ -7,8 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.calendar.dayview.AppointmentWidget;
 import com.butent.bee.client.dnd.AbstractDragController;
-
-import java.util.Date;
+import com.butent.bee.shared.DateTime;
 
 public class DayViewResizeController extends AbstractDragController {
 
@@ -19,21 +18,20 @@ public class DayViewResizeController extends AbstractDragController {
     super(boundaryPanel);
   }
 
-  @SuppressWarnings("deprecation")
   public void dragEnd() {
     AppointmentWidget apptWidget = (AppointmentWidget) context.draggable.getParent();
     int apptHeight = apptWidget.getOffsetHeight();
     Appointment appt = apptWidget.getAppointment();
 
-    Date end = (Date) appt.getStart().clone();
+    DateTime end = DateTime.copyOf(appt.getStart());
 
     double top = DOM.getIntStyleAttribute(apptWidget.getElement(), "top");
 
     int intervalStart = (int) Math.round(top / snapSize);
     int intervalSpan = Math.round(apptHeight / snapSize);
 
-    end.setHours(0);
-    end.setMinutes((intervalStart + intervalSpan) * (60 / intervalsPerHour));
+    end.setHour(0);
+    end.setMinute((intervalStart + intervalSpan) * (60 / intervalsPerHour));
 
     appt.setEnd(end);
 

@@ -22,8 +22,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.calendar.Appointment;
-
-import java.util.Date;
+import com.butent.bee.shared.DateTime;
 
 public class AppointmentWidget extends FlowPanel {
 
@@ -64,8 +63,8 @@ public class AppointmentWidget extends FlowPanel {
 
   private String title;
   private String description;
-  private Date start;
-  private Date end;
+  private DateTime start;
+  private DateTime end;
   private boolean selected;
   private double top;
   private double left;
@@ -98,9 +97,9 @@ public class AppointmentWidget extends FlowPanel {
   }
 
   public int compareTo(AppointmentWidget appt) {
-    int compare = this.getStart().compareTo(appt.getStart());
+    int compare = getStart().compareTo(appt.getStart());
     if (compare == 0) {
-      compare = appt.getEnd().compareTo(this.getEnd());
+      compare = appt.getEnd().compareTo(getEnd());
     }
     return compare;
   }
@@ -122,7 +121,7 @@ public class AppointmentWidget extends FlowPanel {
     return description;
   }
 
-  public Date getEnd() {
+  public DateTime getEnd() {
     return end;
   }
 
@@ -146,7 +145,7 @@ public class AppointmentWidget extends FlowPanel {
     return footerPanel;
   }
 
-  public Date getStart() {
+  public DateTime getStart() {
     return start;
   }
 
@@ -183,7 +182,7 @@ public class AppointmentWidget extends FlowPanel {
     DOM.setInnerHTML(bodyPanel.getElement(), description);
   }
 
-  public void setEnd(Date end) {
+  public void setEnd(DateTime end) {
     this.end = end;
   }
 
@@ -201,7 +200,7 @@ public class AppointmentWidget extends FlowPanel {
     this.multiDay = isMultiDay;
   }
 
-  public void setStart(Date start) {
+  public void setStart(DateTime start) {
     this.start = start;
   }
 

@@ -3,7 +3,7 @@ package com.butent.bee.client.calendar;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 
-import java.util.Date;
+import com.butent.bee.shared.DateTime;
 
 public abstract class CalendarView implements HasSettings {
 
@@ -19,7 +19,7 @@ public abstract class CalendarView implements HasSettings {
     createAppointment(appt.getStart());
   }
 
-  public final void createAppointment(Date start) {
+  public final void createAppointment(DateTime start) {
     calendarWidget.fireTimeBlockClickEvent(start);
   }
 

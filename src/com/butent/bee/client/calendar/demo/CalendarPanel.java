@@ -25,7 +25,6 @@ import com.butent.bee.client.calendar.Calendar;
 import com.butent.bee.client.calendar.CalendarSettings;
 import com.butent.bee.client.calendar.CalendarSettings.Click;
 import com.butent.bee.client.calendar.CalendarViews;
-import com.butent.bee.client.calendar.DateUtils;
 import com.butent.bee.client.calendar.event.CreateEvent;
 import com.butent.bee.client.calendar.event.CreateHandler;
 import com.butent.bee.client.calendar.event.DateRequestEvent;
@@ -63,7 +62,6 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
-import java.util.Date;
 import java.util.List;
 
 public class CalendarPanel extends Complex {
@@ -78,18 +76,18 @@ public class CalendarPanel extends Complex {
     calendar.addAppointments(buildAppointments(days, multi));    
     calendar.setView(CalendarViews.DAY, 4);
     
-    datePicker = new DatePicker(new JustDate(calendar.getDate()));
+    datePicker = new DatePicker(calendar.getDate());
     datePicker.addValueChangeHandler(new ValueChangeHandler<JustDate>() {
       public void onValueChange(ValueChangeEvent<JustDate> event) {
-        calendar.setDate(event.getValue().getJava());
+        calendar.setDate(event.getValue());
       }
     });
 
     BeeButton todayButton = new BeeButton("Today");
     todayButton.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
-        calendar.setDate(new Date());
-        datePicker.setDate(new JustDate(calendar.getDate()));
+        calendar.setDate(TimeUtils.today());
+        datePicker.setDate(calendar.getDate());
       }
     });
 
@@ -116,9 +114,8 @@ public class CalendarPanel extends Complex {
     createButton.setStyleName("bee-CreateAppointment");
     createButton.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
-        Date date = DateUtils.newDate(calendar.getDate());
-        DateUtils.resetTime(date);
-        date.setTime(date.getTime() + 12 * 60 * 60 * 1000);
+        DateTime date = calendar.getDate().getDateTime();
+        date.setHour(12);
         openDialog(null, date);
       }
     });
@@ -164,12 +161,12 @@ public class CalendarPanel extends Complex {
         DateTime end = new DateTime(start.getTime() + dur * TimeUtils.MILLIS_PER_MINUTE);
 
         Appointment appt = new Appointment();
-        appt.setStart(start.getJava());
-        appt.setEnd(end.getJava());
+        appt.setStart(start);
+        appt.setEnd(end);
 
         appt.setTitle(BeeUtils.randomString(3, 10, 'A', 'Z'));
         appt.setDescription(BeeUtils.randomString(10, 50, ' ', 'z'));
-        appt.setStyle(styles[Random.nextInt(styles.length - 1)]);
+        appt.setStyle(styles[Random.nextInt(styles.length - 2)]);
 
         lst.add(appt);
       }
@@ -179,21 +176,21 @@ public class CalendarPanel extends Complex {
     if (multi) {
       Appointment multi1 = new Appointment();
       multi1.setStyle(AppointmentStyle.BLUE);
-      multi1.setStart(TimeUtils.today(0).getJava());
-      multi1.setEnd(TimeUtils.today(14).getJava());
+      multi1.setStart(TimeUtils.startOfDay());
+      multi1.setEnd(TimeUtils.startOfDay(14));
       multi1.setTitle("All day All night");
       lst.add(multi1);
 
       Appointment multi2 = new Appointment();
-      multi2.setStart(TimeUtils.today(0).getJava());
-      multi2.setEnd(TimeUtils.today(10).getJava());
+      multi2.setStart(TimeUtils.startOfDay());
+      multi2.setEnd(TimeUtils.startOfDay(10));
       multi2.setTitle("Johnny, la gente esta muy loca");
       multi2.setStyle(AppointmentStyle.RED);
       lst.add(multi2);
 
       Appointment multi3 = new Appointment();
-      multi3.setStart(TimeUtils.today(3).getJava());
-      multi3.setEnd(TimeUtils.today(6).getJava());
+      multi3.setStart(TimeUtils.startOfDay(3));
+      multi3.setEnd(TimeUtils.startOfDay(6));
       multi3.setTitle("Viva la fiesta, viva la noche");
       multi3.setStyle(AppointmentStyle.RED);
       lst.add(multi3);
@@ -233,14 +230,14 @@ public class CalendarPanel extends Complex {
       }
     });
 
-    calendar.addTimeBlockClickHandler(new TimeBlockClickHandler<Date>() {
-      public void onTimeBlockClick(TimeBlockClickEvent<Date> event) {
+    calendar.addTimeBlockClickHandler(new TimeBlockClickHandler<HasDateValue>() {
+      public void onTimeBlockClick(TimeBlockClickEvent<HasDateValue> event) {
         openDialog(null, event.getTarget());
       }
     });
 
-    calendar.addDateRequestHandler(new DateRequestHandler<Date>() {
-      public void onDateRequested(DateRequestEvent<Date> event) {
+    calendar.addDateRequestHandler(new DateRequestHandler<HasDateValue>() {
+      public void onDateRequested(DateRequestEvent<HasDateValue> event) {
         BeeKeeper.getLog().debug("Requested", event.getTarget(),
             ((Element) event.getClicked()).getInnerText());
       }
@@ -267,9 +264,9 @@ public class CalendarPanel extends Complex {
             calendar.setView(CalendarViews.DAY, 4);
             break;
           case 2:
-            calendar.setDate(DateUtils.firstOfTheWeek(calendar.getDate()));
+            calendar.setDate(TimeUtils.startOfWeek(calendar.getDate()));
             calendar.setView(CalendarViews.DAY, 5);
-            datePicker.setDate(new JustDate(calendar.getDate()));
+            datePicker.setDate(calendar.getDate());
             break;
           case 3:
             calendar.setView(CalendarViews.DAY, 7);
@@ -284,14 +281,14 @@ public class CalendarPanel extends Complex {
   }
   
   private void navigate(boolean forward) {
-    Date oldDate = calendar.getDate();
-    Date newDate;
+    JustDate oldDate = calendar.getDate();
+    JustDate newDate;
 
     if (calendar.getView() instanceof MonthView) {
       if (forward) {
-        newDate = DateUtils.firstOfNextMonth(oldDate);
+        newDate = TimeUtils.startOfNextMonth(oldDate);
       } else {
-        newDate = DateUtils.firstOfPrevMonth(oldDate);
+        newDate = TimeUtils.startOfPreviousMonth(oldDate);
       }
       
     } else {
@@ -304,17 +301,17 @@ public class CalendarPanel extends Complex {
         shift = -shift;
       }
       
-      newDate = DateUtils.shiftDate(oldDate, shift);
+      newDate = TimeUtils.nextDay(oldDate, shift);
       if (days == 5) {
-        newDate = DateUtils.firstOfTheWeek(newDate);
+        newDate = TimeUtils.startOfWeek(newDate);
       }
     }
     
     calendar.setDate(newDate);
-    datePicker.setDate(new JustDate(newDate));
+    datePicker.setDate(newDate);
   }
 
-  private void openDialog(Appointment appointment, Date date) {
+  private void openDialog(Appointment appointment, HasDateValue date) {
     final boolean isNew = appointment == null;
     String caption = isNew ? "New Appointment" : "Edit Appointment";
     final DialogBox dialogBox = new DialogBox(caption);
@@ -386,18 +383,18 @@ public class CalendarPanel extends Complex {
     final Appointment ap = isNew ? new Appointment() : appointment;
 
     if (isNew && date != null) {
-      ap.setStart(date);
-      DateTime to = new DateTime(date);
+      ap.setStart(date.getDateTime());
+      DateTime to = DateTime.copyOf(ap.getStart());
       TimeUtils.addHour(to, 1);
-      ap.setEnd(to.getJava());
+      ap.setEnd(to);
     }
     if (isNew) {
       ap.setStyle(AppointmentStyle.BLUE);
     }
 
     summary.setText(ap.getTitle());
-    start.setDate(new DateTime(ap.getStart()));
-    end.setDate(new DateTime(ap.getEnd()));
+    start.setDate(ap.getStart());
+    end.setDate(ap.getEnd());
     description.setText(ap.getDescription());
     colors.selectTab(ap.getStyle().ordinal());
 
@@ -411,8 +408,8 @@ public class CalendarPanel extends Complex {
         }
 
         ap.setTitle(summary.getText());
-        ap.setStart(from.getJava());
-        ap.setEnd(to.getJava());
+        ap.setStart(from.getDateTime());
+        ap.setEnd(to.getDateTime());
         ap.setDescription(description.getText());
         ap.setStyle(AppointmentStyle.values()[colors.getSelectedTab()]);
 

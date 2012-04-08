@@ -3,9 +3,10 @@ package com.butent.bee.client.calendar;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.TimeUtils;
 
-import java.util.Date;
 import java.util.List;
 
 public class Appointment implements Comparable<Appointment> {
@@ -14,8 +15,8 @@ public class Appointment implements Comparable<Appointment> {
   private String title = null;
   private String description = null;
 
-  private Date start = null;
-  private Date end = null;
+  private DateTime start = null;
+  private DateTime end = null;
   
   private String location = null;
   private String createdBy = null;
@@ -79,7 +80,7 @@ public class Appointment implements Comparable<Appointment> {
     return description;
   }
 
-  public Date getEnd() {
+  public DateTime getEnd() {
     return end;
   }
 
@@ -91,7 +92,7 @@ public class Appointment implements Comparable<Appointment> {
     return location;
   }
 
-  public Date getStart() {
+  public DateTime getStart() {
     return start;
   }
 
@@ -108,8 +109,8 @@ public class Appointment implements Comparable<Appointment> {
   }
 
   public boolean isMultiDay() {
-    if (getEnd() != null && getStart() != null) {
-      return !DateUtils.areOnTheSameDay(getEnd(), getStart());
+    if (getStart() != null) {
+      return !TimeUtils.sameDate(getStart(), getEnd());
     } else {
       return false;
     }
@@ -139,7 +140,7 @@ public class Appointment implements Comparable<Appointment> {
     this.description = description;
   }
 
-  public void setEnd(Date end) {
+  public void setEnd(DateTime end) {
     this.end = end;
   }
 
@@ -155,7 +156,7 @@ public class Appointment implements Comparable<Appointment> {
     this.readOnly = readOnly;
   }
 
-  public void setStart(Date start) {
+  public void setStart(DateTime start) {
     this.start = start;
   }
 

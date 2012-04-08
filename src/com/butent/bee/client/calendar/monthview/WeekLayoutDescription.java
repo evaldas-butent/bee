@@ -1,32 +1,36 @@
 package com.butent.bee.client.calendar.monthview;
 
 import com.butent.bee.client.calendar.Appointment;
-import com.butent.bee.client.calendar.DateUtils;
-
-import java.util.Date;
+import com.butent.bee.shared.HasDateValue;
+import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.utils.TimeUtils;
 
 public class WeekLayoutDescription {
 
   public static final int FIRST_DAY = 0;
   public static final int LAST_DAY = 6;
+
   private AppointmentStackingManager topAppointmentsManager = null;
 
-  private DayLayoutDescription[] days = null;
+  private final DayLayoutDescription[] days;
 
-  private Date calendarFirstDay = null;
-  private Date calendarLastDay = null;
+  private final JustDate calendarFirstDay;
+  private final JustDate calendarLastDay;
 
   private int maxLayer = -1;
 
-  public WeekLayoutDescription(Date calendarFirstDay, Date calendarLastDay) {
+  public WeekLayoutDescription(JustDate calendarFirstDay, JustDate calendarLastDay) {
     this(calendarFirstDay, calendarLastDay, Integer.MAX_VALUE);
   }
 
-  public WeekLayoutDescription(Date calendarFirstDay, Date calendarLastDay, int maxLayer) {
+  public WeekLayoutDescription(JustDate calendarFirstDay, JustDate calendarLastDay, int maxLayer) {
     this.calendarFirstDay = calendarFirstDay;
     this.calendarLastDay = calendarLastDay;
+    
     days = new DayLayoutDescription[7];
+    
     this.maxLayer = maxLayer;
+
     topAppointmentsManager = new AppointmentStackingManager();
     topAppointmentsManager.setLayerOverflowLimit(this.maxLayer);
   }
@@ -44,9 +48,6 @@ public class WeekLayoutDescription {
     int weekStartDay = dayInWeek(appointment.getStart());
     int weekEndDay = dayInWeek(appointment.getEnd());
 
-    if (!appointment.getEnd().before(calendarLastDay)) {
-      weekEndDay = LAST_DAY;
-    }
     topAppointmentsManager.assignLayer(
         new AppointmentLayoutDescription(weekStartDay, weekEndDay, appointment));
   }
@@ -95,20 +96,16 @@ public class WeekLayoutDescription {
 
   private void assertValidDayIndex(int day) {
     if (day < FIRST_DAY || day > days.length) {
-      throw new IllegalArgumentException(
-          "Invalid day index (" + day + ")");
+      throw new IllegalArgumentException("Invalid day index (" + day + ")");
     }
   }
 
-  private int dayInWeek(Date date) {
-    if (date.before(calendarFirstDay)) {
+  private int dayInWeek(HasDateValue date) {
+    int diff = TimeUtils.dayDiff(calendarFirstDay, date);
+    if (diff <= 0) {
       return FIRST_DAY;
     }
-    if (date.after(calendarLastDay)) {
-      return LAST_DAY;
-    }
-
-    return (int) Math.floor(DateUtils.differenceInDays(date, calendarFirstDay) % 7d);
+    return Math.min(diff % 7, LAST_DAY);
   }
 
   private DayLayoutDescription initDay(int day) {

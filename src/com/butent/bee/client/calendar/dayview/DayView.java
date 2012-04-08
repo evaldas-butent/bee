@@ -20,9 +20,10 @@ import com.butent.bee.client.dnd.DragHandler;
 import com.butent.bee.client.dnd.DragStartEvent;
 import com.butent.bee.client.dnd.PickupDragController;
 import com.butent.bee.client.dnd.VetoDragException;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.utils.TimeUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class DayView extends CalendarView {
@@ -32,9 +33,8 @@ public class DayView extends CalendarView {
   private DayViewMultiDayBody multiViewBody = null;
   private DayViewLayoutStrategy layoutStrategy = null;
 
-  private final List<AppointmentWidget> appointmentWidgets = new ArrayList<AppointmentWidget>();
-
-  private List<AppointmentWidget> selectedAppointmentWidgets = new ArrayList<AppointmentWidget>();
+  private final List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
+  private final List<AppointmentWidget> selectedAppointmentWidgets = Lists.newArrayList();
 
   private final DayViewStyleManager styleManager = new DayViewStyleManager();
 
@@ -76,41 +76,41 @@ public class DayView extends CalendarView {
     createResizeController();
   }
 
-  @SuppressWarnings("deprecation")
   public void doLayout() {
-    final Date date = (Date) calendarWidget.getDate().clone();
+    final JustDate date = calendarWidget.getDate();
 
     multiViewBody.setDays(calendarWidget.getDays());
-    dayViewHeader.setDays((Date) date.clone(), calendarWidget.getDays());
-    dayViewHeader.setYear((Date) date.clone());
+    dayViewHeader.setDays(JustDate.copyOf(date), calendarWidget.getDays());
+    dayViewHeader.setYear(date);
     dayViewBody.setDays(calendarWidget.getDays());
     dayViewBody.getTimeline().prepare();
 
     dropController.setColumns(calendarWidget.getDays());
     dropController.setIntervalsPerHour(calendarWidget.getSettings().getIntervalsPerHour());
-    dropController.setDate((Date) calendarWidget.getDate().clone());
+    dropController.setDate(JustDate.copyOf(date));
     dropController.setSnapSize(calendarWidget.getSettings().getPixelsPerInterval());
     dropController.setMaxProxyHeight(getMaxProxyHeight());
+
     resizeController.setIntervalsPerHour(calendarWidget.getSettings().getIntervalsPerHour());
     resizeController.setSnapSize(calendarWidget.getSettings().getPixelsPerInterval());
+    
     proxyResizeController.setSnapSize(calendarWidget.getSettings().getPixelsPerInterval());
     proxyResizeController.setIntervalsPerHour(calendarWidget.getSettings().getIntervalsPerHour());
 
     this.selectedAppointmentWidgets.clear();
     appointmentWidgets.clear();
 
-    final Date tmpDate = (Date) calendarWidget.getDate().clone();
+    final JustDate tmpDate = JustDate.copyOf(date);
 
     for (int i = 0; i < calendarWidget.getDays(); i++) {
       List<Appointment> filteredList =
           AppointmentUtil.filterListByDate(calendarWidget.getAppointments(), tmpDate);
-
-      ArrayList<AppointmentAdapter> appointmentAdapters =
+      List<AppointmentAdapter> appointmentAdapters =
           layoutStrategy.doLayout(filteredList, i, calendarWidget.getDays());
 
       addAppointmentsToGrid(appointmentAdapters, false);
 
-      tmpDate.setDate(tmpDate.getDate() + 1);
+      TimeUtils.moveOneDayForward(tmpDate);
     }
 
     List<Appointment> filteredList =
@@ -152,7 +152,7 @@ public class DayView extends CalendarView {
       }
 
       selectedAppointmentWidgets.clear();
-      selectedAppointmentWidgets = clickedAppointmentAdapters;
+      selectedAppointmentWidgets.addAll(clickedAppointmentAdapters);
 
       double height = clickedAppointmentAdapters.get(0).getHeight();
       if (dayViewBody.getScrollPanel().getOffsetHeight() > height) {
@@ -329,7 +329,7 @@ public class DayView extends CalendarView {
         long startTime = 0L;
         int initialX = 0;
         int initialY = 0;
-        Date startDate;
+        DateTime startDate;
 
         public void onDragEnd(DragEndEvent event) {
           long clickTime = System.currentTimeMillis() - startTime;
@@ -371,7 +371,7 @@ public class DayView extends CalendarView {
   }
 
   private List<AppointmentWidget> findAppointmentWidget(Appointment appt) {
-    ArrayList<AppointmentWidget> appointmentAdapters = new ArrayList<AppointmentWidget>();
+    List<AppointmentWidget> appointmentAdapters = Lists.newArrayList();
     if (appt != null) {
       for (AppointmentWidget widget : appointmentWidgets) {
         if (widget.getAppointment().equals(appt)) {
@@ -386,12 +386,11 @@ public class DayView extends CalendarView {
     return findAppointmentWidget(findAppointmentByElement(element));
   }
 
-  @SuppressWarnings("deprecation")
-  private Date getCoordinatesDate(int x, int y) {
+  private DateTime getCoordinatesDate(int x, int y) {
     int left = dayViewBody.getGrid().gridOverlay.getAbsoluteLeft();
     int top = dayViewBody.getScrollPanel().getAbsoluteTop();
     int width = dayViewBody.getGrid().gridOverlay.getOffsetWidth();
-    int scrollOffset = dayViewBody.getScrollPanel().getScrollPosition();
+    int scrollOffset = dayViewBody.getScrollPanel().getVerticalScrollPosition();
 
     double relativeY = y - top + scrollOffset;
     double relativeX = x - left;
@@ -399,12 +398,12 @@ public class DayView extends CalendarView {
     double interval = Math.floor(relativeY / getSettings().getPixelsPerInterval());
     double day = Math.floor(relativeX / ((double) width / (double) calendarWidget.getDays()));
 
-    Date newStartDate = calendarWidget.getDate();
-    newStartDate.setHours(0);
-    newStartDate.setMinutes(0);
-    newStartDate.setSeconds(0);
-    newStartDate.setMinutes((int) interval * (60 / getSettings().getIntervalsPerHour()));
-    newStartDate.setDate(newStartDate.getDate() + (int) day);
+    DateTime newStartDate = calendarWidget.getDate().getDateTime();
+    newStartDate.setHour(0);
+    newStartDate.setMinute(0);
+    newStartDate.setSecond(0);
+    newStartDate.setMinute((int) interval * (60 / getSettings().getIntervalsPerHour()));
+    newStartDate.setDom(newStartDate.getDom() + (int) day);
 
     return newStartDate;
   }
@@ -425,7 +424,7 @@ public class DayView extends CalendarView {
 
     double day = Math.floor(relativeX / ((double) width / (double) calendarWidget.getDays()));
 
-    Date newStartDate = getCoordinatesDate(x, y);
+    DateTime newStartDate = getCoordinatesDate(x, y);
 
     if (getSettings().getTimeBlockClickNumber() != Click.Drag) {
       calendarWidget.fireTimeBlockClickEvent(newStartDate);

@@ -1,11 +1,12 @@
 package com.butent.bee.client.calendar;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.i18n.client.DateTimeFormat;
 
 import com.butent.bee.client.calendar.i18n.CalendarConstants;
-
-import java.util.Date;
+import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.utils.TimeUtils;
 
 public class CalendarFormat {
 
@@ -43,29 +44,32 @@ public class CalendarFormat {
 
   private String[] weekDayNames = new String[7];
   private String[] dayOfWeekAbbreviatedNames = new String[7];
-  private String[] dayOfMonthNames = new String[32];
+  private String[] dayOfMonthNames = new String[31];
   private String[] hours = new String[24];
 
   private DateTimeFormat dayOfMonthFormat = null;
   private DateTimeFormat dayOfWeekFormat = null;
   private DateTimeFormat dayOfWeekAbbreviatedFormat = null;
+  
   private DateTimeFormat timeFormat = null;
   private DateTimeFormat dateFormat = null;
+
   private String am = null;
   private String pm = null;
   private String noon = null;
 
-  private int firstDayOfWeek = Integer.valueOf(MESSAGES.firstDayOfWeek());
-
   private CalendarFormat() {
-    dayOfMonthFormat = DEFAULT_DAY_OF_MONTH_FORMAT;
-    dayOfWeekFormat = DEFAULT_DAY_OF_WEEK_FORMAT;
-    dayOfWeekAbbreviatedFormat = DEFAULT_DAY_OF_WEEK_ABBREVIATED_FORMAT;
-    timeFormat = DEFAULT_HOUR_FORMAT;
-    dateFormat = DEFAULT_DATE_FORMAT;
-    am = DEFAULT_AM_LABEL;
-    pm = DEFAULT_PM_LABEL;
-    noon = DEFAULT_NOON_LABEL;
+    this.dayOfMonthFormat = DEFAULT_DAY_OF_MONTH_FORMAT;
+    this.dayOfWeekFormat = DEFAULT_DAY_OF_WEEK_FORMAT;
+    this.dayOfWeekAbbreviatedFormat = DEFAULT_DAY_OF_WEEK_ABBREVIATED_FORMAT;
+
+    this.timeFormat = DEFAULT_HOUR_FORMAT;
+    this.dateFormat = DEFAULT_DATE_FORMAT;
+    
+    this.am = DEFAULT_AM_LABEL;
+    this.pm = DEFAULT_PM_LABEL;
+    this.noon = DEFAULT_NOON_LABEL;
+
     refreshWeekDayNames();
     refreshMonthDayNames();
     generateHourLabels();
@@ -85,10 +89,6 @@ public class CalendarFormat {
 
   public String[] getDayOfWeekNames() {
     return weekDayNames;
-  }
-
-  public int getFirstDayOfWeek() {
-    return firstDayOfWeek;
   }
 
   public String[] getHourLabels() {
@@ -130,10 +130,6 @@ public class CalendarFormat {
     refreshWeekDayNames();
   }
 
-  public void setFirstDayOfWeek(int firstDayOfWeek) {
-    this.firstDayOfWeek = Math.abs(firstDayOfWeek % 7);
-  }
-
   public void setHourLabels(String[] hourLabels) {
     if (hourLabels == null || hourLabels.length != HOURS_IN_DAY) {
       return;
@@ -158,38 +154,31 @@ public class CalendarFormat {
     generateHourLabels();
   }
 
-  @SuppressWarnings("deprecation")
   private void generateHourLabels() {
-    Date date = new Date();
-    date.setHours(0);
-    date.setMinutes(0);
+    DateTime date = TimeUtils.startOfDay();
     String hour;
 
     for (int i = 0; i < HOURS_IN_DAY; i++) {
-      date.setHours(i);
+      date.setHour(i);
       hour = timeFormat.format(date);
       hours[i] = hour;
     }
   }
 
-  @SuppressWarnings("deprecation")
   private void refreshMonthDayNames() {
-    Date date = new Date();
-    date.setMonth(0);
-    for (int i = 1; i < 32; ++i) {
-      date.setDate(i);
+    JustDate date = TimeUtils.startOfYear();
+    for (int i = 0; i < dayOfMonthNames.length; i++) {
+      date.setDom(i + 1);
       dayOfMonthNames[i] = dayOfMonthFormat.format(date);
     }
   }
 
-  @SuppressWarnings("deprecation")
   private void refreshWeekDayNames() {
-    Date date = new Date();
-    for (int i = 1; i <= 7; i++) {
-      date.setDate(i);
-      int dayOfWeek = date.getDay();
-      weekDayNames[dayOfWeek] = dayOfWeekFormat.format(date);
-      dayOfWeekAbbreviatedNames[dayOfWeek] = dayOfWeekAbbreviatedFormat.format(date);
+    JustDate date = TimeUtils.startOfWeek();
+    for (int i = 0; i < 7; i++) {
+      weekDayNames[i] = dayOfWeekFormat.format(date);
+      dayOfWeekAbbreviatedNames[i] = dayOfWeekAbbreviatedFormat.format(date);
+      TimeUtils.moveOneDayForward(date);
     }
   }
 }
