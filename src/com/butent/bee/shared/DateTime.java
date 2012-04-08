@@ -258,6 +258,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * 
    * @return the number of hour represented this object.
    */
+  @Override
   public int getHour() {
     ensureFields();
     return fields[Grego.IDX_HOUR];
@@ -273,6 +274,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * 
    * @return the number miliseconds the past of second.
    */
+  @Override
   public int getMillis() {
     ensureFields();
     return fields[Grego.IDX_MILLIS];
@@ -283,6 +285,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * 
    * @return the number of minutes the past of hour.
    */
+  @Override
   public int getMinute() {
     ensureFields();
     return fields[Grego.IDX_MINUTE];
@@ -304,6 +307,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * 
    * @return the number of minutes past the hour represented by this date.
    */
+  @Override
   public int getSecond() {
     ensureFields();
     return fields[Grego.IDX_SECOND];
@@ -327,6 +331,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * @return the time-zone offset, in minutes, for the current time zone.
    */
   @SuppressWarnings("deprecation")
+  @Override
   public int getTimezoneOffset() {
     return new Date(getTime()).getTimezoneOffset();
   }
@@ -455,17 +460,27 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     return Long.toString(time);
   }
 
+  public void setDom(int dom) {
+    if (getDom() != dom) {
+      fields[Grego.IDX_DOM] = dom;
+      updateTime();
+    }  
+  }
+
+  public void setHour(int hour) {
+    if (getHour() != hour) {
+      fields[Grego.IDX_HOUR] = hour;
+      updateTime();
+    }  
+  }
+
   public void setLocalDate(int year, int month, int dom) {
     setLocalDate(year, month, dom, 0, 0, 0, 0);
   }
 
   public void setLocalDate(int year, int month, int dom,
       int hour, int minute, int second, int millis) {
-    long z = Grego.fieldsToDay(year, month, dom);
-    z *= TimeUtils.MILLIS_PER_DAY;
-
-    z += TimeUtils.getMillis(hour, minute, second, millis);
-
+    long z = computeLocalTime(year, month, dom, hour, minute, second, millis);
     setLocalTime(z);
   }
 
@@ -480,6 +495,34 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     setTime(localTime + tzo + diff);
   }
 
+  public void setMillis(int millis) {
+    if (getMillis() != millis) {
+      fields[Grego.IDX_MILLIS] = millis;
+      updateTime();
+    }  
+  }
+  
+  public void setMinute(int minute) {
+    if (getMinute() != minute) {
+      fields[Grego.IDX_MINUTE] = minute;
+      updateTime();
+    }  
+  }
+
+  public void setMonth(int month) {
+    if (getMonth() != month) {
+      fields[Grego.IDX_MONTH] = month;
+      updateTime();
+    }  
+  }
+
+  public void setSecond(int second) {
+    if (getSecond() != second) {
+      fields[Grego.IDX_SECOND] = second;
+      updateTime();
+    }  
+  }
+  
   /**
    * Setting the time of milliseconds.
    * 
@@ -488,6 +531,17 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   public void setTime(long time) {
     this.time = time;
     resetComputedFields();
+  }
+
+  public void setYear(int year) {
+    if (getYear() != year) {
+      fields[Grego.IDX_YEAR] = year;
+      updateTime();
+    }  
+  }
+
+  public boolean supportsTimezoneOffset() {
+    return true;
   }
 
   /**
@@ -572,10 +626,20 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     fields = Grego.timeToFields(time - getTimezoneOffsetInMillis());
   }
 
+  private long computeLocalTime(int year, int month, int dom,
+      int hour, int minute, int second, int millis) {
+    long z = Grego.fieldsToDay(year, month, dom);
+    z *= TimeUtils.MILLIS_PER_DAY;
+
+    z += TimeUtils.getMillis(hour, minute, second, millis);
+
+    return z;
+  }
+
   private void computeUtcFields() {
     utcFields = Grego.timeToFields(time);
   }
-
+  
   private void ensureFields() {
     if (fields == null) {
       computeFields();
@@ -595,5 +659,9 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   private void resetComputedFields() {
     fields = null;
     utcFields = null;
+  }
+  
+  private void updateTime() {
+    setLocalDate(getYear(), getMonth(), getDom(), getHour(), getMinute(), getSecond(), getMillis());
   }
 }

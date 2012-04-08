@@ -1,6 +1,5 @@
 package com.butent.bee.client.i18n;
 
-import com.google.gwt.i18n.shared.DateTimeFormat;
 import com.google.gwt.text.shared.AbstractRenderer;
 
 import com.butent.bee.shared.BeeConst;
@@ -37,7 +36,7 @@ public class DateTimeRenderer extends AbstractRenderer<DateTime> implements HasD
     } else if (getDateTimeFormat() == null) {
       return object.toString();
     } else {
-      return getDateTimeFormat().format(object.getJava());
+      return getDateTimeFormat().format(object);
     }
   }
 

@@ -221,11 +221,15 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
     return fields[Grego.IDX_MONTH];
   }
 
+  public long getTime() {
+    return (long) TimeUtils.MILLIS_PER_DAY * days;
+  }
+
   @Override
   public ValueType getType() {
     return ValueType.DATE;
   }
-
+  
   /**
    * Return the value of year.
    * 
@@ -272,6 +276,10 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
     this.fields = null;
   }
 
+  public boolean supportsTimezoneOffset() {
+    return false;
+  }
+  
   /**
    * Converts the {@code JustDate} fields of dates to {@code String}.
    * 

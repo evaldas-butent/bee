@@ -1,5 +1,7 @@
 package com.butent.bee.shared;
 
+import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
@@ -45,6 +47,35 @@ public abstract class AbstractDate implements HasDateValue {
         Assert.untouchable();
         return null;
     }
+  }
+
+  public static AbstractDate parse(DateTimeFormat format, String s, ValueType type) {
+    if (format == null) {
+      return parse(s, type);
+    }
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    }
+    assertType(type);
+    
+    AbstractDate result;
+
+    switch (type) {
+      case DATE:
+        result = Format.parseDateQuietly(format, s);
+        break;
+      case DATETIME:
+        result = Format.parseDateTimeQuietly(format, s);
+        break;
+      default:
+        Assert.untouchable();
+        result = null;
+    }
+    
+    if (result == null) {
+      result = parse(s, type);
+    }
+    return result;
   }
   
   public static AbstractDate restore(String s, ValueType type) {
@@ -115,7 +146,27 @@ public abstract class AbstractDate implements HasDateValue {
 
   public abstract DateTime getDateTime();
 
+  public int getHour() {
+    return 0;
+  }
+
   public abstract Date getJava();
+
+  public int getMillis() {
+    return 0;
+  }
+
+  public int getMinute() {
+    return 0;
+  }
+
+  public int getSecond() {
+    return 0;
+  }
+
+  public int getTimezoneOffset() {
+    return 0;
+  }
 
   public abstract ValueType getType();
 

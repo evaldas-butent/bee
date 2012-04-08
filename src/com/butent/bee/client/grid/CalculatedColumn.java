@@ -3,9 +3,9 @@ package com.butent.bee.client.grid;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.i18n.shared.DateTimeFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
+import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
@@ -155,7 +155,7 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
             return dt.toString();
           }
         }
-        return df.format(dt.getJava());
+        return df.format(dt);
 
       case DECIMAL:
         return formatNumber(BeeUtils.toDecimalOrNull(value));

@@ -11,7 +11,6 @@ import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.i18n.shared.DateTimeFormat;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -20,6 +19,7 @@ import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
@@ -36,8 +36,6 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
-
-import java.util.Date;
 
 public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
@@ -122,18 +120,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     if (BeeUtils.isEmpty(v)) {
       return null;
     }
-
-    HasDateValue date;
-    if (getDateTimeFormat() == null) {
-      date = null;
-    } else {
-      date = AbstractDate.fromJava(TimeUtils.parseQuietly(getDateTimeFormat(), v), getDateType());
-    }
-
-    if (date == null) {
-      date = AbstractDate.parse(v, getDateType());
-    }
-    return date;
+    return AbstractDate.parse(getDateTimeFormat(), v, getDateType());
   }
 
   public DateTimeFormat getDateTimeFormat() {
@@ -297,7 +284,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
     if (getDateTimeFormat() != null) {
       try {
-        Date date = getDateTimeFormat().parse(v.trim());
+        DateTime date = getDateTimeFormat().parse(v.trim());
         if (date == null) {
           msg = "cannot parse " + v.trim();
         }
@@ -561,7 +548,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     } else if (getDateTimeFormat() == null) {
       text = value.toString();
     } else {
-      text = getDateTimeFormat().format(value.getJava());
+      text = getDateTimeFormat().format(value);
     }
     getBox().setValue(text);
   }

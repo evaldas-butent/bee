@@ -3,7 +3,6 @@ package com.butent.bee.shared.utils;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
-import com.google.gwt.i18n.shared.DateTimeFormat;
 
 import com.butent.bee.shared.AbstractDate;
 import com.butent.bee.shared.Assert;
@@ -421,20 +420,6 @@ public class TimeUtils {
     return arr;
   }
 
-  public static Date parseQuietly(DateTimeFormat format, String s) {
-    if (format == null || BeeUtils.isEmpty(s)) {
-      return null;
-    }
-
-    Date date;
-    try {
-      date = format.parse(s.trim());
-    } catch (IllegalArgumentException ex) {
-      date = null;
-    }
-    return date;
-  }
-
   /**
    * Generates a random JustDate between {@code min} and {@code max}.
    * 
@@ -620,6 +605,10 @@ public class TimeUtils {
     }
   }
 
+  public static JustDate today() {
+    return new JustDate();
+  }
+  
   public static JustDate today(int increment) {
     JustDate date = new JustDate();
     if (increment != 0) {

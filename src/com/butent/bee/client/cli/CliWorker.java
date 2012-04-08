@@ -18,8 +18,6 @@ import com.google.gwt.event.dom.client.ErrorEvent;
 import com.google.gwt.event.dom.client.ErrorHandler;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.i18n.shared.DateTimeFormat;
-import com.google.gwt.i18n.shared.DateTimeFormat.PredefinedFormat;
 import com.google.gwt.layout.client.Layout;
 import com.google.gwt.media.client.Audio;
 import com.google.gwt.media.client.Video;
@@ -59,6 +57,8 @@ import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.language.DetectionCallback;
 import com.butent.bee.client.language.DetectionResult;
@@ -109,7 +109,6 @@ import com.butent.bee.shared.utils.TimeUtils;
 import com.butent.bee.shared.utils.Wildcards;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -399,12 +398,12 @@ public class CliWorker {
       BeeKeeper.getRpc().invoke("connectionInfo");
     } else if (z.equals("cornify")) {
       cornify(arr);
-    } else if (z.equals("df")) {
-      showDateFormat();
+    } else if (z.startsWith("df")) {
+      showDateFormat(args);
     } else if (z.startsWith("dim")) {
       showDimensions();
-    } else if (z.equals("dt")) {
-      showDate(arr);
+    } else if (z.startsWith("dt")) {
+      showDate(z, args);
     } else if (BeeUtils.inList(z, "dir", "file", "get", "download", "src")) {
       getResource(arr);
     } else if (z.equals("eval")) {
@@ -843,16 +842,16 @@ public class CliWorker {
 
     List<Property> props = PropertyUtils.createProperties("Caption Keys",
         BeeUtils.bracket(keys.size()));
-    
+
     for (String key : keys) {
       for (String caption : Global.getCaptions(key)) {
         props.add(new Property(key, caption));
       }
     }
-    
+
     BeeKeeper.getScreen().showGrid(props);
   }
-  
+
   public static void showClientLocation() {
     AjaxLoader.load(new Runnable() {
       public void run() {
@@ -866,50 +865,76 @@ public class CliWorker {
       }
     });
   }
-  
+
   public static void showDataInfo(String viewName) {
     if (BeeUtils.isEmpty(viewName)) {
       BeeKeeper.getLog().severe("showDataInfo: viewName not specified");
       return;
     }
-    
+
     Global.getDataInfo(viewName, new DataInfoProvider.DataInfoCallback() {
       public void onSuccess(DataInfo result) {
-         BeeKeeper.getScreen().showGrid(result.getExtendedInfo());
+        BeeKeeper.getScreen().showGrid(result.getExtendedInfo());
       }
     });
   }
 
-  public static void showDate(String[] arr) {
-    int len = BeeUtils.length(arr);
-    JustDate d;
-    DateTime t;
+  public static void showDate(String cmnd, String args) {
+    DateTimeFormat dtf = null;
+    String inp = null;
 
-    if (len > 1) {
-      String s = ArrayUtils.join(arr, 1, 1);
-      if (BeeUtils.context("T", s)) {
-        Date j;
-        try {
-          j = DateTimeFormat.getFormat(PredefinedFormat.ISO_8601).parse(s);
-        } catch (IllegalArgumentException ex) {
-          Global.showError(s, ex);
-          j = null;
-        }
-        if (j == null) {
-          return;
-        }
-        t = new DateTime(j);
-        d = new JustDate(j);
-      } else {
-        t = DateTime.parse(s);
-        d = JustDate.parse(s);
-      }
-    } else {
-      d = new JustDate();
-      t = new DateTime();
+    char sep = ';';
+    if (BeeUtils.contains(args, sep)) {
+      dtf = Format.getDateTimeFormat(BeeUtils.getPrefix(args, sep));
+      inp = BeeUtils.getSuffix(args, sep);
+    } else if (BeeUtils.contains(cmnd, 'f') && !BeeUtils.isEmpty(args)) {
+      dtf = Format.getDefaultDateTimeFormat();
+      inp = args;
     }
 
-    List<Property> lst = PropertyUtils.createProperties(
+    DateTime t = null;
+    JustDate d = null;
+
+    if (dtf != null) {
+      try {
+        if (BeeUtils.contains(cmnd, 's')) {
+          t = dtf.parseStrict(inp);
+        } else {
+          t = dtf.parse(inp);
+        }
+      } catch (IllegalArgumentException ex) {
+        Global.showError(args, dtf.getPattern(), inp, ex);
+      }
+
+    } else if (!BeeUtils.isEmpty(args)) {
+      t = DateTime.parse(args);
+      if (t == null) {
+        BeeKeeper.getLog().severe("cannot parse", args);
+      } else {
+        d = JustDate.parse(args);
+      }
+
+    } else {
+      t = new DateTime();
+      d = new JustDate();
+    }
+
+    if (t == null) {
+      return;
+    }
+    if (d == null) {
+      d = new JustDate(t);
+    }
+
+    List<Property> lst = Lists.newArrayList();
+    if (dtf != null) {
+      lst.add(new Property("Format", dtf.getPattern()));
+    }
+    if (!BeeUtils.isEmpty(inp)) {
+      lst.add(new Property("Input", inp));
+    }
+
+    PropertyUtils.addProperties(lst,
         "Day", d.getDays(),
         "Year", d.getYear(),
         "Month", d.getMonth(),
@@ -951,22 +976,47 @@ public class CliWorker {
     BeeKeeper.getScreen().showGrid(lst);
   }
 
-  public static void showDateFormat() {
-    int r = DateTimeFormat.PredefinedFormat.values().length;
-    String[][] data = new String[r][3];
+  public static void showDateFormat(String args) {
+    if (BeeUtils.isEmpty(args)) {
+      int r = DateTimeFormat.PredefinedFormat.values().length;
+      String[][] data = new String[r][3];
 
-    Date d = new Date();
-    int i = 0;
-    for (DateTimeFormat.PredefinedFormat dtf : DateTimeFormat.PredefinedFormat.values()) {
-      data[i][0] = dtf.toString();
+      DateTime d = new DateTime();
+      int i = 0;
+      for (DateTimeFormat.PredefinedFormat dtf : DateTimeFormat.PredefinedFormat.values()) {
+        data[i][0] = dtf.toString();
 
-      DateTimeFormat format = DateTimeFormat.getFormat(dtf);
-      data[i][1] = format.getPattern();
-      data[i][2] = format.format(d);
-      i++;
+        DateTimeFormat format = DateTimeFormat.getFormat(dtf);
+        data[i][1] = format.getPattern();
+        data[i][2] = format.format(d);
+        i++;
+      }
+
+      BeeKeeper.getScreen().showGrid(data, "Format", "Pattern", "Value");
+
+    } else {
+      DateTimeFormat dtf = null;
+      DateTime t = null;
+
+      char sep = ';';
+      if (BeeUtils.contains(args, sep)) {
+        dtf = Format.getDateTimeFormat(BeeUtils.getPrefix(args, sep));
+        t = DateTime.parse(BeeUtils.getSuffix(args, sep));
+      } else {
+        dtf = Format.getDateTimeFormat(args);
+        t = new DateTime();
+      }
+      
+      if (dtf == null || t == null) {
+        BeeKeeper.getLog().severe("cannot parse", args);
+      } else {
+        String result = dtf.format(t);
+        BeeKeeper.getLog().debug("format", dtf.getPattern());
+        BeeKeeper.getLog().debug("input", t);
+        BeeKeeper.getLog().debug("result", result);
+        BeeKeeper.getLog().addSeparator();
+      }
     }
-
-    BeeKeeper.getScreen().showGrid(data, "Format", "Pattern", "Value");
   }
 
   public static void showDimensions() {

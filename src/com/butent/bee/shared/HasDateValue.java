@@ -25,9 +25,23 @@ public interface HasDateValue extends BeeSerializable {
   
   int getDoy();
   
-  Date getJava();
+  int getHour();
 
+  Date getJava();
+  
+  int getMillis();
+  
+  int getMinute();
+  
   int getMonth();
   
+  int getSecond();
+  
+  long getTime();
+  
+  int getTimezoneOffset();
+  
   int getYear();  
+
+  boolean supportsTimezoneOffset();
 }

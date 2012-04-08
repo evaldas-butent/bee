@@ -5,11 +5,12 @@ import com.google.gwt.i18n.client.CurrencyList;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.i18n.client.constants.NumberConstants;
-import com.google.gwt.i18n.shared.DateTimeFormat;
-import com.google.gwt.i18n.shared.DateTimeFormat.PredefinedFormat;
 
+import com.butent.bee.client.i18n.DateTimeFormat.PredefinedFormat;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -249,6 +250,24 @@ public class Format {
     return null;
   }
 
+  public static JustDate parseDateQuietly(DateTimeFormat format, String s) {
+    return JustDate.get(parseDateTimeQuietly(format, s));
+  }
+  
+  public static DateTime parseDateTimeQuietly(DateTimeFormat format, String s) {
+    if (format == null || BeeUtils.isEmpty(s)) {
+      return null;
+    }
+
+    DateTime result;
+    try {
+      result = format.parse(s.trim());
+    } catch (IllegalArgumentException ex) {
+      result = null;
+    }
+    return result;
+  }
+  
   public static Double parseQuietly(NumberFormat format, String s) {
     if (format == null || BeeUtils.isEmpty(s)) {
       return null;

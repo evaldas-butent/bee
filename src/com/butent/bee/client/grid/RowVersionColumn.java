@@ -1,8 +1,8 @@
 package com.butent.bee.client.grid;
 
 import com.google.gwt.cell.client.Cell.Context;
-import com.google.gwt.i18n.shared.DateTimeFormat;
 
+import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.IsRow;
