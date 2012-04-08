@@ -544,7 +544,7 @@ public class TaskEventHandler {
 
         addMinutes(flex, "Sugaišta minučių", 0, 0, 1440, 5);
         addSelector(SELECTOR, flex, "Darbo tipas", "DurationTypes", CrmConstants.COL_NAME, false);
-        addDate(flex, "Atlikimo data", ValueType.DATE, false, new Long(TimeUtils.today(0).getDay()));
+        addDate(flex, "Atlikimo data", ValueType.DATE, false, new Long(TimeUtils.today(0).getDays()));
       }
     }
 

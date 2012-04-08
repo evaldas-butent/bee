@@ -57,6 +57,11 @@ public class TimeUtils {
   public static final int MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
   public static final int MILLIS_PER_WEEK = 7 * MILLIS_PER_DAY;
 
+  public static final RangeOptions OPEN_REQUIRED = new RangeOptions(false, true, true);
+  public static final RangeOptions OPEN_NOT_REQUIRED = new RangeOptions(false, true, false);
+  public static final RangeOptions CLOSED_REQUIRED = new RangeOptions(false, false, true);
+  public static final RangeOptions CLOSED_NOT_REQUIRED = new RangeOptions(false, false, false);
+
   private static final String[] FIELD_NAME = {
       "ERA", "YEAR", "MONTH", "WEEK_OF_YEAR", "WEEK_OF_MONTH",
       "DAY_OF_MONTH", "DAY_OF_YEAR", "DAY_OF_WEEK",
@@ -88,7 +93,7 @@ public class TimeUtils {
   public static void addDay(JustDate date, int amount) {
     Assert.notNull(date);
     if (amount != 0) {
-      date.setDay(date.getDay() + amount);
+      date.setDays(date.getDays() + amount);
     }
   }
 
@@ -99,14 +104,14 @@ public class TimeUtils {
   public static void addMinute(DateTime date, int amount) {
     add(date, MINUTE, amount);
   }
-  
+
   public static DateTime combine(Date datePart, DateTime timePart) {
     if (datePart == null) {
       return timePart;
     }
     return combine(new DateTime(datePart), timePart);
   }
-  
+
   public static DateTime combine(HasDateValue datePart, DateTime timePart) {
     if (datePart == null) {
       return timePart;
@@ -114,9 +119,38 @@ public class TimeUtils {
     if (timePart == null) {
       return datePart.getDateTime();
     }
-    
+
     return new DateTime(datePart.getYear(), datePart.getMonth(), datePart.getDom(),
         timePart.getHour(), timePart.getMinute(), timePart.getSecond(), timePart.getMillis());
+  }
+
+  public static int compare(HasDateValue d1, HasDateValue d2) {
+    if (d1 == null) {
+      if (d2 == null) {
+        return BeeConst.COMPARE_EQUAL;
+      } else {
+        return BeeConst.COMPARE_LESS;
+      }
+    } else if (d2 == null) {
+      return BeeConst.COMPARE_MORE;
+
+    } else if (d1 instanceof JustDate) {
+      if (d2 instanceof JustDate) {
+        return ((JustDate) d1).compareTo((JustDate) d2);
+      } else {
+        return d1.getDateTime().compareTo(d2.getDateTime());
+      }
+
+    } else if (d1 instanceof DateTime) {
+      if (d2 instanceof DateTime) {
+        return ((DateTime) d1).compareTo((DateTime) d2);
+      } else {
+        return ((DateTime) d1).compareTo(d2.getDateTime());
+      }
+    }
+
+    Assert.untouchable();
+    return BeeConst.COMPARE_EQUAL;
   }
 
   public static int countFields(CharSequence cs) {
@@ -125,7 +159,7 @@ public class TimeUtils {
     }
     return Iterables.size(FIELD_SPLITTER.split(cs));
   }
-  
+
   /**
    * Gets the difference between {@code start} and {@code end}.
    * 
@@ -150,7 +184,7 @@ public class TimeUtils {
     int month = ref.getMonth();
     return new JustDate(Grego.fieldsToDay(year, month, 1) - 1);
   }
-  
+
   public static boolean equals(HasDateValue x, HasDateValue y) {
     if (x instanceof JustDate && y instanceof JustDate) {
       return sameDate(x, y);
@@ -160,7 +194,7 @@ public class TimeUtils {
     }
     return false;
   }
-  
+
   /**
    * Gets the specified field's difference between {@code start} and {@code end}.
    * 
@@ -212,10 +246,10 @@ public class TimeUtils {
 
     return min;
   }
-
+  
   public static JustDate getDate(HasDateValue src, int increment) {
     Assert.notNull(src);
-    return new JustDate(src.getDate().getDay() + increment);
+    return new JustDate(src.getDate().getDays() + increment);
   }
   
   public static int getMillis(int hour, int minute, int second, int millis) {
@@ -231,7 +265,44 @@ public class TimeUtils {
     }
     return z + millis;
   }
-  
+
+  public static boolean isBetween(HasDateValue dt, HasDateValue min, HasDateValue max,
+      RangeOptions options) {
+    Assert.notNull(options);
+    if (dt == null) {
+      return true;
+    } else if (min == null && max == null) {
+      return !options.isLowerRequired() && !options.isUpperRequired();
+
+    } else if (dt instanceof DateTime || min instanceof DateTime || max instanceof DateTime) {
+      return options.contains(DateTime.get(min), DateTime.get(max), DateTime.get(dt));
+    } else if (dt instanceof JustDate || min instanceof JustDate || max instanceof JustDate) {
+      return options.contains(JustDate.get(min), JustDate.get(max), JustDate.get(dt));
+    } else {
+      return false;
+    }
+  }
+
+  public static boolean isBetweenExclusiveNotRequired(HasDateValue dt, HasDateValue min,
+      HasDateValue max) {
+    return isBetween(dt, min, max, OPEN_NOT_REQUIRED);
+  }
+
+  public static boolean isBetweenExclusiveRequired(HasDateValue dt, HasDateValue min,
+      HasDateValue max) {
+    return isBetween(dt, min, max, OPEN_REQUIRED);
+  }
+
+  public static boolean isBetweenInclusiveNotRequired(HasDateValue dt, HasDateValue min,
+      HasDateValue max) {
+    return isBetween(dt, min, max, CLOSED_NOT_REQUIRED);
+  }
+
+  public static boolean isBetweenInclusiveRequired(HasDateValue dt, HasDateValue min,
+      HasDateValue max) {
+    return isBetween(dt, min, max, CLOSED_REQUIRED);
+  }
+
   /**
    * Checks if {@code x} is and instance of HasDateValue or Date.
    * 
@@ -241,7 +312,23 @@ public class TimeUtils {
   public static boolean isDateOrDateTime(Object x) {
     return x instanceof HasDateValue || x instanceof Date;
   }
-  
+
+  public static boolean isLeq(HasDateValue d1, HasDateValue d2) {
+    return compare(d1, d2) <= 0;
+  }
+
+  public static boolean isLess(HasDateValue d1, HasDateValue d2) {
+    return compare(d1, d2) < 0;
+  }
+
+  public static boolean isMeq(HasDateValue d1, HasDateValue d2) {
+    return compare(d1, d2) >= 0;
+  }
+
+  public static boolean isMore(HasDateValue d1, HasDateValue d2) {
+    return compare(d1, d2) > 0;
+  }
+
   /**
    * @param millis the value to convert
    * @return the String representation of milliseconds.
@@ -257,12 +344,12 @@ public class TimeUtils {
   public static JustDate nextDay(HasDateValue ref) {
     return nextDay(ref, 1);
   }
-  
+
   public static JustDate nextDay(HasDateValue ref, int increment) {
     Assert.notNull(ref);
-    return new JustDate(ref.getDate().getDay() + increment);
+    return new JustDate(ref.getDate().getDays() + increment);
   }
-  
+
   public static JustDate nextMonth() {
     return nextMonth(new DateTime(), 1);
   }
@@ -270,14 +357,14 @@ public class TimeUtils {
   public static JustDate nextMonth(HasDateValue ref) {
     return nextMonth(ref, 1);
   }
-  
+
   public static JustDate nextMonth(HasDateValue ref, int increment) {
     Assert.notNull(ref);
     int year = ref.getYear();
     int month = ref.getMonth();
     return new JustDate(year, month, Grego.monthLength(year, month) + increment);
   }
-  
+
   public static String normalize(AbstractDate x) {
     if (x == null) {
       return null;
@@ -285,7 +372,7 @@ public class TimeUtils {
       return x.serialize();
     }
   }
-  
+
   public static int normalizeYear(int year) {
     if (year < 0 || year >= 100) {
       return year;
@@ -293,7 +380,7 @@ public class TimeUtils {
       return year + 2000;
     }
   }
-  
+
   /**
    * Left pads and integer {@code number} by adding "0" to size of two.
    * 
@@ -358,7 +445,7 @@ public class TimeUtils {
   public static JustDate randomDate(JustDate min, JustDate max) {
     Assert.notNull(min);
     Assert.notNull(max);
-    return new JustDate(BeeUtils.randomInt(min.getDay(), max.getDay()));
+    return new JustDate(BeeUtils.randomInt(min.getDays(), max.getDays()));
   }
 
   /**
@@ -388,6 +475,13 @@ public class TimeUtils {
     return x.getDateTime().getTime() == y.getDateTime().getTime();
   }
   
+  public static boolean sameMonth(HasDateValue x, HasDateValue y) {
+    if (x == null || y == null) {
+      return false;
+    }
+    return x.getYear() == y.getYear() && x.getMonth() == y.getMonth();
+  }
+
   public static JustDate startOfMonth() {
     JustDate date = new JustDate();
     int dom = date.getDom();
@@ -403,13 +497,13 @@ public class TimeUtils {
     int month = ref.getMonth();
 
     if (increment != 0) {
-      Pair<Integer,Integer> pair = incrementMonth(year, month, increment);
+      Pair<Integer, Integer> pair = incrementMonth(year, month, increment);
       year = pair.getA();
       month = pair.getB();
     }
     return new JustDate(year, month, 1);
   }
-  
+
   public static JustDate startOfQuarter(HasDateValue ref, int increment) {
     Assert.notNull(ref);
     int year = ref.getYear();
@@ -417,7 +511,7 @@ public class TimeUtils {
     month -= (month - 1) % 3;
 
     if (increment != 0) {
-      Pair<Integer,Integer> pair = incrementMonth(year, month, increment * 3);
+      Pair<Integer, Integer> pair = incrementMonth(year, month, increment * 3);
       year = pair.getA();
       month = pair.getB();
     }
@@ -427,7 +521,7 @@ public class TimeUtils {
   public static JustDate startOfWeek(HasDateValue ref, int increment) {
     Assert.notNull(ref);
     JustDate date = new JustDate(ref.getYear(), ref.getMonth(), ref.getDom());
-    
+
     int incrDays = 0;
     int dow = ref.getDow();
     if (dow > 1) {
@@ -436,7 +530,7 @@ public class TimeUtils {
     if (increment != 0) {
       incrDays += increment * 7;
     }
-    
+
     if (incrDays != 0) {
       addDay(date, incrDays);
     }
@@ -451,7 +545,7 @@ public class TimeUtils {
     }
     return new JustDate(year, 1, 1);
   }
-  
+
   /**
    * Converts {@code x} to a JustDate format.
    * 
@@ -485,10 +579,10 @@ public class TimeUtils {
     if (BeeUtils.isInt(s)) {
       return new JustDate(BeeUtils.toInt(s));
     } else {
-      return null; 
+      return null;
     }
   }
-  
+
   /**
    * Converts {@code x} to a DateTime format.
    * 
@@ -509,7 +603,7 @@ public class TimeUtils {
     assertDateOrDateTime(x);
     return null;
   }
-  
+
   public static DateTime toDateTimeOrNull(Long time) {
     if (time == null) {
       return null;
@@ -522,7 +616,7 @@ public class TimeUtils {
     if (BeeUtils.isLong(s)) {
       return new DateTime(BeeUtils.toLong(s));
     } else {
-      return null; 
+      return null;
     }
   }
 
@@ -533,7 +627,7 @@ public class TimeUtils {
     }
     return date;
   }
-  
+
   /**
    * Converts {@code x} to a Date format.
    * 
@@ -571,7 +665,7 @@ public class TimeUtils {
       return "Field " + field;
     }
   }
-  
+
   private static long getDelta(DateTime date, int field, int amount) {
     long delta = amount;
 
@@ -646,9 +740,9 @@ public class TimeUtils {
     }
     int y = year;
     int m = month + increment;
-    
+
     if (m < 1) {
-      y += m / 12 - 1; 
+      y += m / 12 - 1;
       m = m % 12 + 12;
     } else if (m > 12) {
       y += (m - 1) / 12;
@@ -656,7 +750,7 @@ public class TimeUtils {
     }
     return new Pair<Integer, Integer>(y, m);
   }
-  
+
   private TimeUtils() {
   }
 }

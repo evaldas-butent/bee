@@ -220,7 +220,7 @@ public class ProjectList {
 
     private Filter getFilter() {
       CompoundFilter andFilter = Filter.and();
-      Value now = new IntegerValue(new JustDate().getDay());
+      Value now = new IntegerValue(new JustDate().getDays());
 
       if (isChecked("Changed")) {
         andFilter.add(Filter.or(Filter.isEmpty(CrmConstants.COL_LAST_ACCESS),

@@ -65,7 +65,7 @@ public class DateValue extends Value {
     if (isNull()) {
       return null;
     }
-    return BeeUtils.toDecimalOrNull(value.getDay());
+    return BeeUtils.toDecimalOrNull(value.getDays());
   }
 
   @Override
@@ -73,7 +73,7 @@ public class DateValue extends Value {
     if (isNull()) {
       return null;
     }
-    return (double) value.getDay();
+    return (double) value.getDays();
   }
 
   @Override
@@ -81,7 +81,7 @@ public class DateValue extends Value {
     if (isNull()) {
       return null;
     }
-    return value.getDay();
+    return value.getDays();
   }
 
   @Override
@@ -89,7 +89,7 @@ public class DateValue extends Value {
     if (isNull()) {
       return null;
     }
-    return (long) value.getDay();
+    return (long) value.getDays();
   }
 
   @Override
@@ -105,7 +105,7 @@ public class DateValue extends Value {
     if (isNull()) {
       return null;
     }
-    return BeeUtils.toString(value.getDay());
+    return BeeUtils.toString(value.getDays());
   }
 
   @Override

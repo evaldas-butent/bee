@@ -7,7 +7,8 @@ import java.util.Date;
  * {@code DateTime} and standard Java date type.
  */
 
-public interface HasDateValue {
+public interface HasDateValue extends BeeSerializable {
+  
   HasDateValue fromDate(JustDate justDate);
 
   HasDateValue fromDateTime(DateTime dateTime);

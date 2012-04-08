@@ -736,7 +736,7 @@ public abstract class SqlBuilder {
         s = (Boolean) val ? "1" : "0";
 
       } else if (val instanceof JustDate) {
-        s = BeeUtils.transform(((JustDate) val).getDay());
+        s = BeeUtils.transform(((JustDate) val).getDays());
 
       } else if (val instanceof Date) {
         s = BeeUtils.transform(((Date) val).getTime());

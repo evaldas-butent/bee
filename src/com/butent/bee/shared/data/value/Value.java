@@ -183,7 +183,7 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
         value = BooleanValue.pack((Boolean) value);
 
       } else if (value instanceof JustDate) {
-        value = ((JustDate) value).getDay();
+        value = ((JustDate) value).getDays();
 
       } else if (value instanceof DateTime) {
         value = ((DateTime) value).getTime();

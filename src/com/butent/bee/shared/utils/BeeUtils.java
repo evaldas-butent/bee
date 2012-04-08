@@ -482,6 +482,14 @@ public class BeeUtils {
     return false;
   }
   
+  public static boolean containsSame(String src, String ctxt) {
+    if (isEmpty(src) || isEmpty(ctxt)) {
+      return false;
+    } else {
+      return src.trim().toLowerCase().contains(ctxt.trim().toLowerCase());
+    }
+  }
+  
   public static boolean containsWhitespace(CharSequence cs) {
     if (cs == null) {
       return false;

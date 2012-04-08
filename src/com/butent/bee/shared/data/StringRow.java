@@ -196,7 +196,7 @@ public class StringRow extends AbstractRow {
     if (value == null) {
       clearCell(index);
     } else {
-      setValue(index, BeeUtils.toString(value.getDay()));
+      setValue(index, BeeUtils.toString(value.getDays()));
     }
   }
 

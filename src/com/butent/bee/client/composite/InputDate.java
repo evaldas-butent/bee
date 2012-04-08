@@ -29,6 +29,7 @@ import com.butent.bee.shared.AbstractDate;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.HasDateValue;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.value.ValueType;
@@ -44,7 +45,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
   private final InputText box;
   private final Popup popup;
-  private final DatePicker datePicker;
+  private DatePicker datePicker;
 
   private final ValueType dateType;
   private DateTimeFormat format;
@@ -61,7 +62,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
         "input date: invalid type " + type.getTypeCode());
 
     this.box = new InputText();
-    this.datePicker = new DatePicker();
+    this.datePicker = new DatePicker(new JustDate());
     this.popup = new Popup(true);
 
     this.format = format;
@@ -73,8 +74,8 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     initWidget(box);
     setStyleName(DEFAULT_STYLENAME);
 
-    datePicker.addValueChangeHandler(new ValueChangeHandler<Date>() {
-      public void onValueChange(ValueChangeEvent<Date> event) {
+    datePicker.addValueChangeHandler(new ValueChangeHandler<JustDate>() {
+      public void onValueChange(ValueChangeEvent<JustDate> event) {
         setDate(event.getValue());
 
         hideDatePicker();
@@ -107,13 +108,32 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return addDomHandler(handler, FocusEvent.getType());
   }
-  
+
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
   }
 
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
+  }
+
+  public HasDateValue getDate() {
+    String v = getBox().getValue();
+    if (BeeUtils.isEmpty(v)) {
+      return null;
+    }
+
+    HasDateValue date;
+    if (getDateTimeFormat() == null) {
+      date = null;
+    } else {
+      date = AbstractDate.fromJava(TimeUtils.parseQuietly(getDateTimeFormat(), v), getDateType());
+    }
+
+    if (date == null) {
+      date = AbstractDate.parse(v, getDateType());
+    }
+    return date;
   }
 
   public DateTimeFormat getDateTimeFormat() {
@@ -128,30 +148,8 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     return "date-box";
   }
 
-  public Date getJava() {
-    String v = getBox().getValue();
-    if (BeeUtils.isEmpty(v)) {
-      return null;
-    }
-
-    Date date;
-    if (getDateTimeFormat() != null) {
-      date = TimeUtils.parseQuietly(getDateTimeFormat(), v);
-    } else {
-      date = null;
-    }
-
-    if (date == null) {
-      AbstractDate ad = AbstractDate.parse(v, getDateType());
-      if (ad != null) {
-        date = ad.getJava();
-      }
-    }
-    return date;
-  }
-
   public String getNormalizedValue() {
-    AbstractDate date = getDate();
+    HasDateValue date = getDate();
     if (date == null) {
       return null;
     }
@@ -213,19 +211,27 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
     super.onBrowserEvent(event);
   }
-  
+
   public void setAccessKey(char key) {
     getBox().setAccessKey(key);
   }
 
-  public void setDate(Date date) {
-    AbstractDate newValue = AbstractDate.fromJava(date, getDateType());
-    if (newValue instanceof DateTime) {
-      AbstractDate oldValue = getDate();
-      if (oldValue != null) {
-        newValue = TimeUtils.combine(newValue, oldValue.getDateTime());
+  public void setDate(HasDateValue date) {
+    Assert.notNull(date);
+    HasDateValue newValue;
+
+    if (ValueType.DATETIME.equals(getDateType())) {
+      HasDateValue oldValue = getDate();
+
+      if (oldValue instanceof DateTime) {
+        newValue = TimeUtils.combine(date, oldValue.getDateTime());
+      } else {
+        newValue = DateTime.get(date);
       }
+    } else {
+      newValue = JustDate.get(date);
     }
+
     setValue(newValue);
   }
 
@@ -262,8 +268,8 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
   }
 
   public void setValue(String value, boolean fireEvents) {
-    AbstractDate oldValue = getDate();
-    AbstractDate newValue = AbstractDate.restore(value, getDateType());
+    HasDateValue oldValue = getDate();
+    HasDateValue newValue = AbstractDate.restore(value, getDateType());
     setValue(newValue);
 
     if (fireEvents && !TimeUtils.equals(oldValue, newValue)) {
@@ -329,25 +335,6 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     return box;
   }
 
-  private AbstractDate getDate() {
-    String v = getBox().getValue();
-    if (BeeUtils.isEmpty(v)) {
-      return null;
-    }
-
-    AbstractDate date;
-    if (getDateTimeFormat() == null) {
-      date = null;
-    } else {
-      date = AbstractDate.fromJava(TimeUtils.parseQuietly(getDateTimeFormat(), v), getDateType());
-    }
-
-    if (date == null) {
-      date = AbstractDate.parse(v, getDateType());
-    }
-    return date;
-  }
-
   private DatePicker getDatePicker() {
     return datePicker;
   }
@@ -366,10 +353,10 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
       return false;
     }
 
-    AbstractDate oldDate = getDate();
+    HasDateValue oldDate = getDate();
     JustDate baseDate =
-        (oldDate == null) ? new JustDate() : new JustDate(oldDate.getDate().getDay());
-    AbstractDate newDate = null;
+        (oldDate == null) ? new JustDate() : new JustDate(oldDate.getDate().getDays());
+    HasDateValue newDate = null;
 
     switch (charCode) {
       case 'a':
@@ -533,7 +520,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
           if (oldDate == null) {
             newDate = TimeUtils.today(incr);
           } else if (oldDate instanceof JustDate) {
-            newDate = new JustDate(oldDate.getDate().getDay() + incr);
+            newDate = new JustDate(oldDate.getDate().getDays() + incr);
           } else if (oldDate instanceof DateTime) {
             newDate =
                 new DateTime(oldDate.getDateTime().getTime() + TimeUtils.MILLIS_PER_DAY * incr);
@@ -567,7 +554,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     getPopup().hide();
   }
 
-  private void setValue(AbstractDate value) {
+  private void setValue(HasDateValue value) {
     String text;
     if (value == null) {
       text = BeeConst.STRING_EMPTY;
@@ -580,13 +567,11 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
   }
 
   private void showDatePicker() {
-    Date date = getJava();
+    HasDateValue date = getDate();
     if (date == null) {
-      date = new Date();
+      date = new JustDate();
     }
-    getDatePicker().setCurrentMonth(date);
-    getDatePicker().setValue(date);
-
+    getDatePicker().setDate(date.getDate());
     getPopup().showRelativeTo(getBox());
   }
 }

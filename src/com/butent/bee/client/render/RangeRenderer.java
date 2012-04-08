@@ -4,7 +4,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
-import com.google.common.collect.Ranges;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.utils.JreEmulation;
@@ -15,6 +14,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.RangeOptions;
 
 import java.util.Collection;
 import java.util.List;
@@ -32,8 +32,7 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
   private final String separator;
   private final Splitter splitter;
   
-  private final boolean lowerOpen;
-  private final boolean upperOpen;
+  private final RangeOptions rangeOptions;
 
   public RangeRenderer(int dataIndex, IsColumn dataColumn, String sep, String opt) {
     super(dataIndex, dataColumn);
@@ -41,21 +40,8 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
     this.separator = BeeUtils.ifString(sep, DEFAULT_SEPARATOR).trim();
     this.splitter = Splitter.on(this.separator).trimResults().limit(3);
     
-    if (BeeUtils.contains(opt, '('))  {
-      this.lowerOpen = true;
-    } else if (BeeUtils.contains(opt, '['))  {
-      this.lowerOpen = false;
-    } else {
-      this.lowerOpen = DEFAULT_LOWER_OPEN;
-    }
-
-    if (BeeUtils.contains(opt, ')'))  {
-      this.upperOpen = true;
-    } else if (BeeUtils.contains(opt, ']'))  {
-      this.upperOpen = false;
-    } else {
-      this.upperOpen = DEFAULT_UPPER_OPEN;
-    }
+    this.rangeOptions = new RangeOptions(RangeOptions.hasLowerOpen(opt, DEFAULT_LOWER_OPEN),
+        RangeOptions.hasUpperOpen(opt, DEFAULT_UPPER_OPEN), false, false);
   }
 
   public void addItem(String item) {
@@ -90,25 +76,15 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
         BeeKeeper.getLog().warning(JreEmulation.getSimpleName(this), "invalid range:", item);
         return;
       }
-      if (low.equals(upp) && (lowerOpen || upperOpen)) {
+      if (low.equals(upp) && (rangeOptions.isLowerOpen() || rangeOptions.isUpperOpen())) {
         BeeKeeper.getLog().warning(JreEmulation.getSimpleName(this), "invalid range:", item,
-            lowerOpen, upperOpen);
+            rangeOptions.isLowerOpen(), rangeOptions.isUpperOpen());
         return;
       }
     }
     
-    Range<Value> range;
-    if (low == null) {
-      range = upperOpen ? Ranges.lessThan(upp) : Ranges.atMost(upp);
-    } else if (upp == null) {
-      range = lowerOpen ? Ranges.greaterThan(low) : Ranges.atLeast(low);
-    } else if (lowerOpen) {
-      range = upperOpen ? Ranges.open(low, upp) : Ranges.openClosed(low, upp);
-    } else {
-      range = upperOpen ? Ranges.closedOpen(low, upp) : Ranges.closed(low, upp);
-    }
-    
-    if (range.isEmpty()) {
+    Range<Value> range = rangeOptions.getRange(low, upp);
+    if (range == null || range.isEmpty()) {
       BeeKeeper.getLog().warning(JreEmulation.getSimpleName(this), "range is empty:", item);
     } else {
       map.put(range, value);

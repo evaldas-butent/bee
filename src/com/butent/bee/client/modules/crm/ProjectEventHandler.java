@@ -165,7 +165,7 @@ public class ProjectEventHandler {
     public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
       observers.requery(null);
       newRow.setValue(form.getDataIndex(CrmConstants.COL_OWNER), BeeKeeper.getUser().getUserId());
-      newRow.setValue(form.getDataIndex("StartDate"), TimeUtils.today(0).getDay());
+      newRow.setValue(form.getDataIndex("StartDate"), TimeUtils.today(0).getDays());
       newRow.setValue(form.getDataIndex(CrmConstants.COL_EVENT), ProjectEvent.CREATED.ordinal());
       newRow.setValue(form.getDataIndex(CrmConstants.COL_PRIORITY), Priority.MEDIUM.ordinal());
     }

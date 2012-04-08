@@ -57,6 +57,7 @@ import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.HasDateValue;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -68,7 +69,7 @@ import java.util.List;
 public class CalendarPanel extends Complex {
 
   private final Calendar calendar = new Calendar();
-  private final DatePicker datePicker = new DatePicker();
+  private final DatePicker datePicker;
 
   public CalendarPanel(int days, boolean multi) {
     configureCalendar();
@@ -77,10 +78,10 @@ public class CalendarPanel extends Complex {
     calendar.addAppointments(buildAppointments(days, multi));    
     calendar.setView(CalendarViews.DAY, 4);
     
-    datePicker.setDate(calendar.getDate());
-    datePicker.addValueChangeHandler(new ValueChangeHandler<Date>() {
-      public void onValueChange(ValueChangeEvent<Date> event) {
-        calendar.setDate(event.getValue());
+    datePicker = new DatePicker(new JustDate(calendar.getDate()));
+    datePicker.addValueChangeHandler(new ValueChangeHandler<JustDate>() {
+      public void onValueChange(ValueChangeEvent<JustDate> event) {
+        calendar.setDate(event.getValue().getJava());
       }
     });
 
@@ -88,7 +89,7 @@ public class CalendarPanel extends Complex {
     todayButton.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
         calendar.setDate(new Date());
-        datePicker.setDate(calendar.getDate());
+        datePicker.setDate(new JustDate(calendar.getDate()));
       }
     });
 
@@ -172,7 +173,7 @@ public class CalendarPanel extends Complex {
 
         lst.add(appt);
       }
-      date.setDay(date.getDay() + 1);
+      date.setDays(date.getDays() + 1);
     }
     
     if (multi) {
@@ -268,7 +269,7 @@ public class CalendarPanel extends Complex {
           case 2:
             calendar.setDate(DateUtils.firstOfTheWeek(calendar.getDate()));
             calendar.setView(CalendarViews.DAY, 5);
-            datePicker.setDate(calendar.getDate());
+            datePicker.setDate(new JustDate(calendar.getDate()));
             break;
           case 3:
             calendar.setView(CalendarViews.DAY, 7);
@@ -310,7 +311,7 @@ public class CalendarPanel extends Complex {
     }
     
     calendar.setDate(newDate);
-    datePicker.setDate(newDate);
+    datePicker.setDate(new JustDate(newDate));
   }
 
   private void openDialog(Appointment appointment, Date date) {
@@ -395,23 +396,23 @@ public class CalendarPanel extends Complex {
     }
 
     summary.setText(ap.getTitle());
-    start.setDate(ap.getStart());
-    end.setDate(ap.getEnd());
+    start.setDate(new DateTime(ap.getStart()));
+    end.setDate(new DateTime(ap.getEnd()));
     description.setText(ap.getDescription());
     colors.selectTab(ap.getStyle().ordinal());
 
     BeeButton confirm = new BeeButton(isNew ? "Create" : "Update", new ClickHandler() {
       public void onClick(ClickEvent ev) {
-        Date from = start.getJava();
-        Date to = end.getJava();
-        if (from == null || to == null || BeeUtils.isMeq(from, to)) {
+        HasDateValue from = start.getDate();
+        HasDateValue to = end.getDate();
+        if (from == null || to == null || TimeUtils.isMeq(from, to)) {
           Global.showError("Sorry, no appointment");
           return;
         }
 
         ap.setTitle(summary.getText());
-        ap.setStart(from);
-        ap.setEnd(to);
+        ap.setStart(from.getJava());
+        ap.setEnd(to.getJava());
         ap.setDescription(description.getText());
         ap.setStyle(AppointmentStyle.values()[colors.getSelectedTab()]);
 

@@ -67,14 +67,14 @@ public class TestJustDate {
   @Test
   public final void testGetDay() {
     JustDate dt = new JustDate(1970, 1, 11);
-    assertEquals(10, dt.getDay());
+    assertEquals(10, dt.getDays());
 
     dt = new JustDate(1969, 12, 22);
-    assertEquals(-10, dt.getDay());
+    assertEquals(-10, dt.getDays());
 
     dt = new JustDate(1970, 2, 6);
 
-    assertEquals(36, dt.getDay());
+    assertEquals(36, dt.getDays());
   }
 
   @Test
@@ -363,13 +363,13 @@ public class TestJustDate {
   public final void testSetDay() {
     JustDate jd = new JustDate();
 
-    jd.setDay(0);
+    jd.setDays(0);
 
     assertEquals(1970, jd.getYear());
     assertEquals(1, jd.getMonth());
     assertEquals(1, jd.getDom());
 
-    jd.setDay(1098);
+    jd.setDays(1098);
 
     assertEquals(1973, jd.getYear());
     assertEquals(1, jd.getMonth());

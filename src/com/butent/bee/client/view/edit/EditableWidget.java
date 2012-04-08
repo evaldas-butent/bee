@@ -157,7 +157,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
 
       case DATE:
         if (BeeUtils.isLong(value)) {
-          return BeeUtils.toString(new JustDate(TimeUtils.toDateTimeOrNull(value)).getDay());
+          return BeeUtils.toString(new JustDate(TimeUtils.toDateTimeOrNull(value)).getDays());
         } else {
           return null;
         }

@@ -34,10 +34,28 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    */
   public static final char MILLIS_SEPARATOR = '.';
   
+  public static DateTime copyOf(DateTime original) {
+    if (original == null) {
+      return null;
+    } else {
+      return new DateTime(original.getTime());
+    }
+  }
+  
   public static long deserializeTime(String s) {
     return BeeUtils.toLong(s);
   }
 
+  public static DateTime get(HasDateValue dt) {
+    if (dt == null) {
+      return null;
+    } else if (dt instanceof DateTime) {
+      return (DateTime) dt;
+    } else {
+      return dt.getDateTime();
+    }
+  }
+  
   /**
    * Parsing {@code String s} to date format. If the {@code s} a number expression is converted to a
    * milliseconds. Otherwise parses of string an year, month, day, hours, minutes and seconds
@@ -216,7 +234,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns the number day of week representing this object. The value returned 1 and 7. First day
-   * of week Sunday (value 1)
+   * of week is Monday (value 1)
    * 
    * @return the number day of week.
    */
@@ -271,9 +289,9 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   }
 
   /**
-   * Returns the number of mounthh the year. The value returned between 1 and 12
+   * Returns the number of month. The value returned between 1 and 12
    * 
-   * @return the number of nounth the year.
+   * @return the number of month.
    */
   public int getMonth() {
     ensureFields();
@@ -319,9 +337,9 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   }
 
   /**
-   * Returns the number the day of mounth by UTC time. The value returned between 1 and 31.
+   * Returns the number the day of month by UTC time. The value returned between 1 and 31.
    * 
-   * @return the number the day of mounth by UTC time.
+   * @return the number the day of month by UTC time.
    */
   public int getUtcDom() {
     ensureUtcFields();
@@ -330,7 +348,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
 
   /**
    * Returns the number the day of week by UTC time. The value returned between 1 and 7. First day
-   * of week Sunday (value equals 1).
+   * of week is Monday (value equals 1).
    * 
    * @return the number the day of week by UTC time.
    */
@@ -380,9 +398,9 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   }
 
   /**
-   * Returns a number representing the mounth by UTC time. The value returned between 1 and 12.
+   * Returns a number representing the month by UTC time. The value returned between 1 and 12.
    * 
-   * @return a number representing the mounth by UTC time
+   * @return a number representing the month by UTC time
    */
   public int getUtcMonth() {
     ensureUtcFields();

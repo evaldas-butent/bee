@@ -910,7 +910,7 @@ public class CliWorker {
     }
 
     List<Property> lst = PropertyUtils.createProperties(
-        "Day", d.getDay(),
+        "Day", d.getDays(),
         "Year", d.getYear(),
         "Month", d.getMonth(),
         "Dom", d.getDom(),

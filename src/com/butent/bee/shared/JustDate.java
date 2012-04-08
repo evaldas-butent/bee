@@ -18,6 +18,24 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
    */
   public static final char FIELD_SEPARATOR = '.';
 
+  public static JustDate copyOf(JustDate original) {
+    if (original == null) {
+      return null;
+    } else {
+      return new JustDate(original.getDays());
+    }
+  }
+  
+  public static JustDate get(HasDateValue dt) {
+    if (dt == null) {
+      return null;
+    } else if (dt instanceof JustDate) {
+      return (JustDate) dt;
+    } else {
+      return dt.getDate();
+    }
+  }
+  
   /**
    * Converts {@code String} to date format. If {@code s} is a number format, {@code s} converting
    * to days since January 1, 1970, otherwise parse date fields separated with separators.
@@ -38,7 +56,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
     return new JustDate(TimeUtils.normalizeYear(arr[0]), arr[1], arr[2]);
   }
 
-  private int day;
+  private int days;
   private int[] fields = null;
 
   /**
@@ -64,7 +82,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
    */
   public JustDate(DateTime dateTime) {
     if (dateTime == null) {
-      setDay(0);
+      setDays(0);
     } else {
       setDate(dateTime.getYear(), dateTime.getMonth(), dateTime.getDom());
     }
@@ -73,18 +91,18 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
   /**
    * Creates new {@code JustDate} object instance with day value since January 1, 1970.
    * 
-   * @param day the value of days since January 1, 1970
+   * @param days the value of days since January 1, 1970
    */
-  public JustDate(int day) {
-    this.day = day;
+  public JustDate(int days) {
+    this.days = days;
   }
 
   /**
-   * Creates new {@code JustDate} object instance with year, mount and days values.
+   * Creates new {@code JustDate} object instance with year, month and day values.
    * 
-   * @param year years
+   * @param year year
    * @param month month of year 1-12
-   * @param dom day of mount 1-31
+   * @param dom day of month 1-31
    */
   public JustDate(int year, int month, int dom) {
     setDate(year, month, dom);
@@ -110,7 +128,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
     if (other == null) {
       return BeeConst.COMPARE_MORE;
     }
-    return Ints.compare(getDay(), other.getDay());
+    return Ints.compare(getDays(), other.getDays());
   }
 
   /**
@@ -120,7 +138,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
    */
   @Override
   public void deserialize(String s) {
-    day = Integer.parseInt(s);
+    days = Integer.parseInt(s);
     fields = null;
   }
 
@@ -133,7 +151,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof JustDate) {
-      return getDay() == ((JustDate) obj).getDay();
+      return getDays() == ((JustDate) obj).getDays();
     }
     return false;
   }
@@ -153,8 +171,8 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
    * 
    * @return the value of days since January 1, 1970.
    */
-  public int getDay() {
-    return day;
+  public int getDays() {
+    return days;
   }
 
   /**
@@ -169,7 +187,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
 
   /**
    * Returns the value the day of week. The value returned between 1 and 7. The first day of week
-   * are Sunday (value is 1).
+   * is Monday (value is 1).
    * 
    * @return the value the day of week.
    */
@@ -223,7 +241,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
    */
   @Override
   public int hashCode() {
-    return getDay();
+    return getDays();
   }
 
   /**
@@ -231,21 +249,26 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
    */
   @Override
   public String serialize() {
-    return Integer.toString(day);
+    return Integer.toString(days);
   }
 
+  public void setDate(JustDate date) {
+    Assert.notNull(date);
+    setDays(date.getDays());
+  }
+  
   public void setDate(int year, int month, int dom) {
-    setDay(Grego.fieldsToDay(year, month, dom));
+    setDays(Grego.fieldsToDay(year, month, dom));
   }
 
   /**
-   * Sets this {@code JustDate} object to represent a point in date that is {@code day} days after
+   * Sets this {@code JustDate} object to represent a point in date that is {@code days} days after
    * January 1, 1970.
    * 
-   * @param day the number of days.
+   * @param days the number of days.
    */
-  public void setDay(int day) {
-    this.day = day;
+  public void setDays(int days) {
+    this.days = days;
     this.fields = null;
   }
 
@@ -264,7 +287,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
   }
 
   private void computeFields() {
-    fields = Grego.dayToFields(day);
+    fields = Grego.dayToFields(days);
   }
 
   private void ensureFields() {

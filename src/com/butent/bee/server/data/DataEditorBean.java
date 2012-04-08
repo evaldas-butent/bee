@@ -252,8 +252,8 @@ public class DataEditorBean {
     List<FieldInfo> extUpdate = Lists.newArrayList();
     Map<String, String[]> relations = Maps.newHashMap();
 
-    int minDay = new JustDate().getDay() - 1000;
-    int maxDay = new JustDate().getDay() + 200;
+    int minDay = new JustDate().getDays() - 1000;
+    int maxDay = new JustDate().getDays() + 200;
     long minTime = new DateTime().getTime() - 1000L * TimeUtils.MILLIS_PER_DAY;
     long maxTime = new DateTime().getTime() + 200L * TimeUtils.MILLIS_PER_DAY;
 

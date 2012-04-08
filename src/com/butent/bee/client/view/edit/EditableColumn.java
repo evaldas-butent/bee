@@ -143,7 +143,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
       case DATE:
         if (BeeUtils.isLong(value)) {
-          return BeeUtils.toString(new JustDate(TimeUtils.toDateTimeOrNull(value)).getDay());
+          return BeeUtils.toString(new JustDate(TimeUtils.toDateTimeOrNull(value)).getDays());
         } else {
           return null;
         }

@@ -11,7 +11,7 @@ import java.util.Date;
  * types.
  */
 
-public abstract class AbstractDate implements BeeSerializable, HasDateValue {
+public abstract class AbstractDate implements HasDateValue {
 
   public static AbstractDate fromJava(Date date, ValueType type) {
     if (date == null) {
@@ -80,7 +80,7 @@ public abstract class AbstractDate implements BeeSerializable, HasDateValue {
 
     switch (type) {
       case DATE:
-        return new JustDate(justDate.getDay());
+        return new JustDate(justDate.getDays());
       case DATETIME:
         return new DateTime(justDate);
       default:

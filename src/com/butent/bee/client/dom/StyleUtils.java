@@ -1,6 +1,8 @@
 package com.butent.bee.client.dom;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
@@ -24,6 +26,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.StringPredicate;
 
 import java.util.Collection;
 import java.util.List;
@@ -361,6 +364,7 @@ public class StyleUtils {
   private static final char CLASS_NAME_SEPARATOR = ' ';
   private static final Splitter CLASS_NAME_SPLITTER =
       Splitter.on(CLASS_NAME_SEPARATOR).omitEmptyStrings().trimResults();
+  private static final Joiner CLASS_NAME_JOINER = Joiner.on(CLASS_NAME_SEPARATOR);
   
   private static final char ADD_CLASS = '+';
   private static final char REMOVE_CLASS = '-';
@@ -377,6 +381,18 @@ public class StyleUtils {
   private static final char NAME_DELIMITER = '-';
 
   private static final Unit DEFAULT_UNIT = Unit.PX;
+
+  public static String addClassName(String classes, String className) {
+    Assert.notEmpty(className);
+    if (BeeUtils.isEmpty(classes)) {
+      return className.trim();
+    }
+    if (containsClassName(classes, className)) {
+      return classes.trim();
+    }
+    
+    return buildClasses(classes, className);
+  }
   
   public static int addClassName(NodeList<Element> nodes, String className) {
     Assert.notNull(nodes);
@@ -524,6 +540,11 @@ public class StyleUtils {
     return buildStyle(CSS_BORDER_WIDTH, value);
   }
 
+  public static String buildClasses(Collection<String> styleNames) {
+    Assert.notNull(styleNames);
+    return CLASS_NAME_JOINER.join(Iterables.filter(styleNames, StringPredicate.NOT_EMPTY));
+  }
+  
   public static String buildClasses(String... styleNames) {
     return BeeUtils.concat(CLASS_NAME_SEPARATOR, styleNames);
   }
@@ -710,9 +731,13 @@ public class StyleUtils {
     if (el == null || BeeUtils.isEmpty(className)) {
       return false;
     }
-    return indexOfClassName(className, el.getClassName()) >= 0;
+    return containsClassName(el.getClassName(), className);
   }
 
+  public static boolean containsClassName(String classes, String className) {
+    return indexOfClassName(className, classes) >= 0;
+  }
+  
   public static void copyBorder(Style src, Style dst) {
     copyProperties(src, dst, STYLE_BORDER_WIDTH, STYLE_BORDER_STYLE, STYLE_BORDER_COLOR, 
         STYLE_BORDER_LEFT, STYLE_BORDER_RIGHT, STYLE_BORDER_TOP, STYLE_BORDER_BOTTOM);
@@ -1334,6 +1359,28 @@ public class StyleUtils {
       return defUnit;
     }
     return unit;
+  }
+
+  public static String removeClassName(String classes, String className) {
+    Assert.notEmpty(className);
+    if (BeeUtils.isEmpty(classes)) {
+      return BeeConst.STRING_EMPTY;
+    }
+    if (!BeeUtils.containsSame(classes, className)) {
+      return classes.trim();
+    }
+    
+    StringBuilder sb = new StringBuilder();
+    for (String name : CLASS_NAME_SPLITTER.split(classes.trim())) {
+      if (!BeeUtils.same(name, className)) {
+        if (sb.length() > 0) {
+          sb.append(CLASS_NAME_SEPARATOR);
+        }
+        sb.append(name);
+      }
+    }
+    
+    return sb.toString();
   }
   
   public static int removeClassName(NodeList<Element> nodes, String className) {

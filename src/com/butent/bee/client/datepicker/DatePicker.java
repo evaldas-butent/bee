@@ -1,8 +1,6 @@
 package com.butent.bee.client.datepicker;
 
-import com.google.gwt.editor.client.IsEditor;
-import com.google.gwt.editor.client.LeafValueEditor;
-import com.google.gwt.editor.client.adapters.TakesValueEditor;
+import com.google.common.collect.Maps;
 import com.google.gwt.event.logical.shared.HasHighlightHandlers;
 import com.google.gwt.event.logical.shared.HasShowRangeHandlers;
 import com.google.gwt.event.logical.shared.HighlightEvent;
@@ -16,74 +14,25 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-import java.util.Date;
-import java.util.HashMap;
+import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.TimeUtils;
+
 import java.util.Map;
 
-/**
- * Standard GWT date picker.
- * 
- * <h3>CSS Style Rules</h3>
- * 
- * <ul class="css">
- * 
- * <li>.gwt-DatePicker { }</li>
- * 
- * <li>.datePickerMonthSelector { the month selector widget }</li>
- * 
- * <li>.datePickerMonth { the month in the month selector widget } <li>
- * 
- * <li>.datePickerPreviousButton { the previous month button } <li>
- * 
- * <li>.datePickerNextButton { the next month button } <li>
- * 
- * <li>.datePickerDays { the portion of the picker that shows the days }</li>
- * 
- * <li>.datePickerWeekdayLabel { the label over weekdays }</li>
- * 
- * <li>.datePickerWeekendLabel { the label over weekends }</li>
- * 
- * <li>.datePickerDay { a single day }</li>
- * 
- * <li>.datePickerDayIsToday { today's date }</li>
- * 
- * <li>.datePickerDayIsWeekend { a weekend day }</li>
- * 
- * <li>.datePickerDayIsFiller { a day in another month }</li>
- * 
- * <li>.datePickerDayIsValue { the selected day }</li>
- * 
- * <li>.datePickerDayIsDisabled { a disabled day }</li>
- * 
- * <li>.datePickerDayIsHighlighted { the currently highlighted day }</li>
- * 
- * <li>.datePickerDayIsValueAndHighlighted { the highlighted day if it is also
- * selected }</li>
- * 
- * </ul>
- * 
- * <p>
- * <h3>Example</h3>
- * {@example com.google.gwt.examples.DatePickerExample}
- * </p>
- */
 public class DatePicker extends Composite implements
-    HasHighlightHandlers<Date>, HasShowRangeHandlers<Date>, HasValue<Date>,
-    IsEditor<LeafValueEditor<Date>> {
+    HasHighlightHandlers<JustDate>, HasShowRangeHandlers<JustDate>, HasValue<JustDate> {
 
-  /**
-   * Convenience class to group css style names.
-   */
-  static class StandardCss {
+  public static class CssClasses {
 
-    static StandardCss DEFAULT = new StandardCss("bee-DatePicker", "bee-DatePicker-");
+    private final String widgetStyleName;
+    private final String baseStyleName;
 
-    private String baseName;
-    private String widgetName;
-
-    public StandardCss(String widgetName, String baseName) {
-      this.widgetName = widgetName;
-      this.baseName = baseName;
+    public CssClasses(String widgetStyleName, String baseStyleName) {
+      this.widgetStyleName = widgetStyleName;
+      this.baseStyleName = baseStyleName;
     }
 
     public String datePicker() {
@@ -135,11 +84,11 @@ public class DatePicker extends Composite implements
     }
 
     public String getBaseStyleName() {
-      return baseName;
+      return baseStyleName;
     }
 
     public String getWidgetStyleName() {
-      return widgetName;
+      return widgetStyleName;
     }
 
     public String month() {
@@ -166,452 +115,180 @@ public class DatePicker extends Composite implements
       return wrap("weekendLabel");
     }
 
-    /**
-     * Prepends the base name to the given style.
-     * 
-     * @param style style name
-     * @return style name
-     */
     protected String wrap(String style) {
-      return baseName + style;
-    }
-  }
-
-  /**
-   * A date highlighted event that copied on read.
-   */
-  private static class DateHighlightEvent extends HighlightEvent<Date> {
-    protected DateHighlightEvent(Date highlighted) {
-      super(highlighted);
-    }
-
-    @Override
-    public Date getHighlighted() {
-      return CalendarUtil.copyDate(super.getHighlighted());
+      return baseStyleName + style;
     }
   }
 
   private static class DateStyler {
-    private Map<String, String> info = new HashMap<String, String>();
+    private final Map<JustDate, String> styles = Maps.newHashMap();
 
-    public String getStyleName(Date d) {
-      return info.get(genKey(d));
+    private DateStyler() {
     }
 
-    public void setStyleName(Date d, String styleName, boolean add) {
-      // Code is easier to maintain if surrounded by " ", and on all browsers
-      // this is a no-op.
-      styleName = " " + styleName + " ";
-      String key = genKey(d);
-      String current = info.get(key);
+    public String getStyleName(JustDate date) {
+      Assert.notNull(date);
+      return styles.get(date);
+    }
+
+    public void setStyleName(JustDate date, String styleName, boolean add) {
+      Assert.notNull(date);
+      Assert.notEmpty(styleName);
+
+      String current = styles.get(date);
 
       if (add) {
         if (current == null) {
-          info.put(key, styleName);
-        } else if (current.indexOf(styleName) == -1) {
-          info.put(key, current + styleName);
+          styles.put(date, styleName.trim());
+        } else {
+          styles.put(date, StyleUtils.addClassName(current, styleName));
         }
-      } else {
-        if (current != null) {
-          String newValue = current.replaceAll(styleName, "");
-          if (newValue.trim().length() == 0) {
-            info.remove(key);
-          } else {
-            info.put(key, newValue);
-          }
+
+      } else if (current != null) {
+        String newValue = StyleUtils.removeClassName(current, styleName);
+        if (BeeUtils.isEmpty(newValue)) {
+          styles.remove(date);
+        } else {
+          styles.put(date, newValue);
         }
       }
     }
-
-    @SuppressWarnings("deprecation")
-    private String genKey(Date d) {
-      return d.getYear() + "/" + d.getMonth() + "/" + d.getDate();
-    }
   }
 
-  private final DateStyler styler = new DateStyler();
+  private static final CssClasses DEFAULT_CSS_CLASSES =
+      new CssClasses("bee-DatePicker", "bee-DatePicker-");
+
+  private final DateStyler dateStyler = new DateStyler();
+
+  private final CssClasses cssClasses;
 
   private final MonthSelector monthSelector;
-  private final CalendarView view;
-  private final CalendarModel model;
-  private Date value;
-  private Date highlighted;
-  private StandardCss css = StandardCss.DEFAULT;
-  private LeafValueEditor<Date> editor;
+  private final MonthView view;
+  private final Model model;
 
-  /**
-   * Create a new date picker.
-   */
-  public DatePicker() {
-    this(new DefaultMonthSelector(), new DefaultCalendarView(),
-        new CalendarModel());
+  private JustDate value;
+  private JustDate highlighted;
+
+  public DatePicker(JustDate date) {
+    this(date, DEFAULT_CSS_CLASSES);
   }
 
-  /**
-   * Creates a new date picker.
-   * 
-   * @param monthSelector the month selector
-   * @param view the view
-   * @param model the model
-   */
+  public DatePicker(JustDate date, CssClasses cssClasses) {
+    this(date, cssClasses, new MonthSelector(cssClasses), new MonthView(cssClasses), new Model());
+  }
 
-  protected DatePicker(MonthSelector monthSelector, CalendarView view,
-      CalendarModel model) {
-
-    this.model = model;
+  public DatePicker(JustDate date, CssClasses cssClasses, MonthSelector monthSelector, MonthView view,
+      Model model) {
+    Assert.notNull(date);
+    Assert.notNull(cssClasses);
+    Assert.notNull(monthSelector);
+    Assert.notNull(view);
+    Assert.notNull(model);
+    
+    this.cssClasses = cssClasses;
     this.monthSelector = monthSelector;
-    monthSelector.setDatePicker(this);
     this.view = view;
+    this.model = model;
+
+    monthSelector.setDatePicker(this);
     view.setDatePicker(this);
 
     view.setup();
     monthSelector.setup();
     this.setup();
-
-    setCurrentMonth(new Date());
-    addStyleToDates(css().dayIsToday(), new Date());
+    
+    addStyleToDate(cssClasses.dayIsToday(), new JustDate());
+    setDate(date);
   }
 
-  public HandlerRegistration addHighlightHandler(HighlightHandler<Date> handler) {
+  public HandlerRegistration addHighlightHandler(HighlightHandler<JustDate> handler) {
     return addHandler(handler, HighlightEvent.getType());
   }
 
-  public HandlerRegistration addShowRangeHandler(ShowRangeHandler<Date> handler) {
+  public HandlerRegistration addShowRangeHandler(ShowRangeHandler<JustDate> handler) {
     return addHandler(handler, ShowRangeEvent.getType());
   }
 
-  /**
-   * Adds a show range handler and immediately activate the handler on the
-   * current view.
-   * 
-   * @param handler the handler
-   * @return the handler registration
-   */
-  public HandlerRegistration addShowRangeHandlerAndFire(
-      ShowRangeHandler<Date> handler) {
-    ShowRangeEvent<Date> event = new ShowRangeEvent<Date>(
-        getView().getFirstDate(), getView().getLastDate()) {
-    };
-    handler.onShowRange(event);
-    return addShowRangeHandler(handler);
-  }
-
-  /**
-   * Add a style name to the given dates.
-   */
-  public void addStyleToDates(String styleName, Date date) {
-    styler.setStyleName(date, styleName, true);
+  public void addStyleToDate(String styleName, JustDate date) {
+    dateStyler.setStyleName(date, styleName, true);
     if (isDateVisible(date)) {
       getView().addStyleToDate(styleName, date);
     }
   }
 
-  /**
-   * Add a style name to the given dates.
-   */
-  public void addStyleToDates(String styleName, Date date, Date... moreDates) {
-    addStyleToDates(styleName, date);
-    for (Date d : moreDates) {
-      addStyleToDates(styleName, d);
+  public void addStyleToDates(String styleName, Iterable<JustDate> dates) {
+    for (JustDate date : dates) {
+      addStyleToDate(styleName, date);
     }
   }
 
-  /**
-   * Add a style name to the given dates.
-   */
-  public void addStyleToDates(String styleName, Iterable<Date> dates) {
-    for (Date d : dates) {
-      addStyleToDates(styleName, d);
-    }
-  }
-
-  /**
-   * Adds the given style name to the specified dates, which must be visible.
-   * This is only set until the next time the DatePicker is refreshed.
-   */
-  public void addTransientStyleToDates(String styleName, Date date) {
-    assert isDateVisible(date) : date + " must be visible";
+  public void addTransientStyleToDate(String styleName, JustDate date) {
+    Assert.state(isDateVisible(date), "date must be visible");
     getView().addStyleToDate(styleName, date);
   }
 
-  /**
-   * Adds the given style name to the specified dates, which must be visible.
-   * This is only set until the next time the DatePicker is refreshed.
-   */
-  public final void addTransientStyleToDates(String styleName, Date date,
-      Date... moreDates) {
-    addTransientStyleToDates(styleName, date);
-    for (Date d : moreDates) {
-      addTransientStyleToDates(styleName, d);
+  public void addTransientStyleToDates(String styleName, Iterable<JustDate> dates) {
+    for (JustDate date : dates) {
+      addTransientStyleToDate(styleName, date);
     }
   }
 
-  /**
-   * Adds the given style name to the specified dates, which must be visible.
-   * This is only set until the next time the DatePicker is refreshed.
-   */
-  public final void addTransientStyleToDates(String styleName,
-      Iterable<Date> dates) {
-    for (Date d : dates) {
-      addTransientStyleToDates(styleName, d);
-    }
-  }
-
-  public HandlerRegistration addValueChangeHandler(
-      ValueChangeHandler<Date> handler) {
+  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<JustDate> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
   }
 
-  /**
-   * Returns a {@link TakesValueEditor} backed by the DatePicker.
-   */
-  public LeafValueEditor<Date> asEditor() {
-    if (editor == null) {
-      editor = TakesValueEditor.of(this);
-    }
-    return editor;
+  public CssClasses getCssClasses() {
+    return cssClasses;
   }
 
-  /**
-   * Gets the current month the date picker is showing.
-   * 
-   * <p>
-   * A datepicker <b> may </b> show days not in the current month. It
-   * <b>must</b> show all days in the current month.
-   * </p>
-   * 
-   * @return the current month
-   * 
-   */
-  public Date getCurrentMonth() {
+  public JustDate getCurrentMonth() {
     return getModel().getCurrentMonth();
   }
 
-  /**
-   * Returns the first shown date.
-   * 
-   * @return the first date.
-   */
-  // Final because the view should always control the value of the first date.
-  public final Date getFirstDate() {
-    return view.getFirstDate();
+  public JustDate getFirstDate() {
+    return getView().getFirstDate();
   }
 
-  /**
-   * Gets the highlighted date (the one the mouse is hovering over), if any.
-   * 
-   * @return the highlighted date
-   */
-  public final Date getHighlightedDate() {
-    return CalendarUtil.copyDate(highlighted);
+  public JustDate getHighlightedDate() {
+    return JustDate.copyOf(highlighted);
   }
 
-  /**
-   * Returns the last shown date.
-   * 
-   * @return the last date.
-   */
-  // Final because the view should always control the value of the last date.
-  public final Date getLastDate() {
-    return view.getLastDate();
+  public JustDate getLastDate() {
+    return getView().getLastDate();
   }
 
-  /**
-   * Gets the style associated with a date (does not include styles set via
-   * {@link #addTransientStyleToDates}).
-   * 
-   * @param date the date
-   * @return the styles associated with this date
-   */
-  public String getStyleOfDate(Date date) {
-    return styler.getStyleName(date);
-  }
-
-  /**
-   * Returns the selected date, or null if none is selected.
-   * 
-   * @return the selected date, or null
-   */
-  public final Date getValue() {
-    return CalendarUtil.copyDate(value);
-  }
-
-  /**
-   * Is the visible date enabled?
-   * 
-   * @param date the date, which must be visible
-   * @return is the date enabled?
-   */
-  public boolean isDateEnabled(Date date) {
-    assert isDateVisible(date) : date + " is not visible";
-    return getView().isDateEnabled(date);
-  }
-
-  /**
-   * Is the date currently shown in the date picker?
-   * 
-   * @param date
-   * @return is the date currently shown
-   */
-  public boolean isDateVisible(Date date) {
-    CalendarView r = getView();
-    Date first = r.getFirstDate();
-    Date last = r.getLastDate();
-    return (date != null && (CalendarUtil.isSameDate(first, date)
-        || CalendarUtil.isSameDate(last, date) || (first.before(date) && last.after(date))));
-  }
-
-  @Override
-  public void onLoad() {
-    ShowRangeEvent.fire(this, getFirstDate(), getLastDate());
-  }
-
-  /**
-   * Removes the styleName from the given dates (even if it is transient).
-   */
-  public void removeStyleFromDates(String styleName, Date date) {
-    styler.setStyleName(date, styleName, false);
-    if (isDateVisible(date)) {
-      getView().removeStyleFromDate(styleName, date);
-    }
-  }
-
-  /**
-   * Removes the styleName from the given dates (even if it is transient).
-   */
-  public void removeStyleFromDates(String styleName, Date date,
-      Date... moreDates) {
-    removeStyleFromDates(styleName, date);
-    for (Date d : moreDates) {
-      removeStyleFromDates(styleName, d);
-    }
-  }
-
-  /**
-   * Removes the styleName from the given dates (even if it is transient).
-   */
-  public void removeStyleFromDates(String styleName, Iterable<Date> dates) {
-    for (Date d : dates) {
-      removeStyleFromDates(styleName, d);
-    }
-  }
-
-  /**
-   * Sets the date picker to show the given month, use {@link #getFirstDate()}
-   * and {@link #getLastDate()} to access the exact date range the date picker
-   * chose to display.
-   * <p>
-   * A datepicker <b> may </b> show days not in the current month. It
-   * <b>must</b> show all days in the current month.
-   * </p>
-   * 
-   * @param month the month to show
-   */
-  public void setCurrentMonth(Date month) {
-    getModel().setCurrentMonth(month);
-    refreshAll();
-  }
-
-  public void setDate(Date newValue) {
-    setValue(newValue);
-    setCurrentMonth(newValue);
-  }
-  
-  /**
-   * Sets a visible date to be enabled or disabled. This is only set until the
-   * next time the DatePicker is refreshed.
-   */
-  public final void setTransientEnabledOnDates(boolean enabled, Date date) {
-    assert isDateVisible(date) : date + " must be visible";
-    getView().setEnabledOnDate(enabled, date);
-  }
-
-  /**
-   * Sets a visible date to be enabled or disabled. This is only set until the
-   * next time the DatePicker is refreshed.
-   */
-  public final void setTransientEnabledOnDates(boolean enabled, Date date,
-      Date... moreDates) {
-    setTransientEnabledOnDates(enabled, date);
-    for (Date d : moreDates) {
-      setTransientEnabledOnDates(enabled, d);
-    }
-  }
-
-  /**
-   * Sets a group of visible dates to be enabled or disabled. This is only set
-   * until the next time the DatePicker is refreshed.
-   */
-  public final void setTransientEnabledOnDates(boolean enabled, Iterable<Date> dates) {
-    for (Date d : dates) {
-      setTransientEnabledOnDates(enabled, d);
-    }
-  }
-
-  /**
-   * Sets the {@link DatePicker}'s value.
-   * 
-   * @param newValue the new value
-   */
-  public final void setValue(Date newValue) {
-    setValue(newValue, false);
-  }
-
-  /**
-   * Sets the {@link DatePicker}'s value.
-   * 
-   * @param newValue the new value for this date picker
-   * @param fireEvents should events be fired.
-   */
-  public final void setValue(Date newValue, boolean fireEvents) {
-    Date oldValue = value;
-
-    if (oldValue != null) {
-      removeStyleFromDates(css().dayIsValue(), oldValue);
-    }
-
-    value = CalendarUtil.copyDate(newValue);
-    if (value != null) {
-      addStyleToDates(css().dayIsValue(), value);
-    }
-    if (fireEvents) {
-      DateChangeEvent.fireIfNotEqualDates(this, oldValue, newValue);
-    }
-  }
-
-  /**
-   * Gets the {@link CalendarModel} associated with this date picker.
-   * 
-   * @return the model
-   */
-  protected final CalendarModel getModel() {
+  public Model getModel() {
     return model;
   }
 
-  /**
-   * Gets the {@link MonthSelector} associated with this date picker.
-   * 
-   * @return the month selector
-   */
-  protected final MonthSelector getMonthSelector() {
+  public MonthSelector getMonthSelector() {
     return monthSelector;
   }
 
-  /**
-   * Gets the {@link CalendarView} associated with this date picker.
-   * 
-   * @return the view
-   */
-  protected final CalendarView getView() {
+  public String getStyleOfDate(JustDate date) {
+    return dateStyler.getStyleName(date);
+  }
+
+  public JustDate getValue() {
+    return JustDate.copyOf(value);
+  }
+
+  public MonthView getView() {
     return view;
   }
 
-  /**
-   * Refreshes all components of this date picker.
-   */
-  protected final void refreshAll() {
-    highlighted = null;
-    getModel().refresh();
+  public boolean isDateEnabled(JustDate date) {
+    Assert.state(isDateVisible(date), "date is not visible");
+    return getView().isDateEnabled(date);
+  }
+
+  public boolean isDateVisible(JustDate date) {
+    Assert.notNull(date);
+    return TimeUtils.isBetweenInclusiveRequired(date, getFirstDate(), getLastDate());
+  }
+
+  public void refreshAll() {
+    this.highlighted = null;
 
     getView().refresh();
     getMonthSelector().refresh();
@@ -620,38 +297,89 @@ public class DatePicker extends Composite implements
     }
   }
 
-  /**
-   * Sets up the date picker.
-   */
-  protected void setup() {
-    /*
-     * Use a table (VerticalPanel) to get shrink-to-fit behavior. Divs expand to
-     * fill the available width, so we'd need to give it a size.
-     */
+  public void removeStyleFromDate(String styleName, JustDate date) {
+    dateStyler.setStyleName(date, styleName, false);
+    if (isDateVisible(date)) {
+      getView().removeStyleFromDate(styleName, date);
+    }
+  }
+
+  public void removeStyleFromDates(String styleName, Iterable<JustDate> dates) {
+    for (JustDate date : dates) {
+      removeStyleFromDate(styleName, date);
+    }
+  }
+
+  public void setDate(JustDate newValue) {
+    setDate(newValue, false);
+  }
+
+  public void setDate(JustDate newValue, boolean fireEvents) {
+    Assert.notNull(newValue);
+    
+    if (!newValue.equals(value)) {
+      setValue(newValue, fireEvents);
+      setCurrentMonth(newValue);
+    }
+  }
+
+  public void setHighlightedDate(JustDate highlighted) {
+    this.highlighted = highlighted;
+    HighlightEvent.fire(this, highlighted);
+  }
+
+  public void setTransientEnabledOnDate(boolean enabled, JustDate date) {
+    Assert.state(isDateVisible(date), "date must be visible");
+    getView().setEnabledOnDate(enabled, date);
+  }
+
+  public void setTransientEnabledOnDates(boolean enabled, Iterable<JustDate> dates) {
+    for (JustDate date : dates) {
+      setTransientEnabledOnDate(enabled, date);
+    }
+  }
+
+  public void setValue(JustDate newValue) {
+    setValue(newValue, false);
+  }
+
+  public void setValue(JustDate newValue, boolean fireEvents) {
+    if (BeeUtils.equals(value, newValue)) {
+      return;
+    }
+
+    JustDate oldValue = value;
+    if (oldValue != null) {
+      removeStyleFromDate(getCssClasses().dayIsValue(), oldValue);
+    }
+
+    value = JustDate.copyOf(newValue);
+    if (value != null) {
+      addStyleToDate(getCssClasses().dayIsValue(), value);
+    }
+
+    if (fireEvents) {
+      ValueChangeEvent.fire(this, newValue);
+    }
+  }
+
+  @Override
+  protected void onLoad() {
+    ShowRangeEvent.fire(this, getFirstDate(), getLastDate());
+  }
+
+  private void setCurrentMonth(JustDate date) {
+    getModel().setCurrentMonth(date);
+    refreshAll();
+  }
+
+  private void setup() {
     VerticalPanel panel = new VerticalPanel();
     initWidget(panel);
-    setStyleName(panel.getElement(), css.datePicker());
-    panel.add(this.getMonthSelector());
-    panel.add(this.getView());
-  }
 
-  /**
-   * Gets the css associated with this date picker for use by extended month and
-   * cell grids.
-   * 
-   * @return the css.
-   */
-  final StandardCss css() {
-    return css;
-  }
+    setStyleName(panel.getElement(), getCssClasses().datePicker());
 
-  /**
-   * Sets the highlighted date.
-   * 
-   * @param highlighted highlighted date
-   */
-  void setHighlightedDate(Date highlighted) {
-    this.highlighted = highlighted;
-    fireEvent(new DateHighlightEvent(highlighted));
+    panel.add(getMonthSelector());
+    panel.add(getView());
   }
 }

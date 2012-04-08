@@ -79,7 +79,7 @@ public class Grego {
     }
     int month = (12 * (dayOfYear + correction) + 6) / 367;
     int dayOfMonth = dayOfYear - DAYS_BEFORE[isLeap ? month + 12 : month] + 1;
-    int dayOfWeek = (int) ((d + 2) % 7);
+    int dayOfWeek = (int) ((d + 1) % 7);
     if (dayOfWeek < 1) {
       dayOfWeek += 7;
     }
