@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+
+  name="Colors"
+  idName="ColorID"
+  >
+  <BeeFields>
+    <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />
+
+    <BeeField name="Background" type="STRING" precision="200" notNull="true" />
+    <BeeField name="Foreground" type="STRING" precision="200" notNull="true" />
+  </BeeFields>
+</BeeTable>

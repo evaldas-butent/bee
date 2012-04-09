@@ -1,5 +1,6 @@
 package com.butent.bee.client.calendar;
 
+import com.google.common.collect.Maps;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
@@ -8,11 +9,11 @@ import com.butent.bee.client.calendar.dayview.DayView;
 import com.butent.bee.client.calendar.monthview.MonthView;
 import com.butent.bee.shared.Assert;
 
+import java.util.Map;
+
 public class Calendar extends CalendarWidget implements RequiresResize, ProvidesResize {
-
-  private DayView dayView = null;
-
-  private MonthView monthView = null;
+  
+  private final Map<CalendarView.Type, CalendarView> viewCache = Maps.newHashMap();
 
   private Timer resizeTimer = new Timer() {
     private int height;
@@ -31,7 +32,7 @@ public class Calendar extends CalendarWidget implements RequiresResize, Provides
   };
 
   public Calendar() {
-    this(CalendarViews.DAY);
+    this(CalendarView.Type.DAY);
   }
 
   public Calendar(CalendarView view) {
@@ -39,42 +40,46 @@ public class Calendar extends CalendarWidget implements RequiresResize, Provides
     setView(view);
   }
 
-  public Calendar(CalendarViews view) {
+  public Calendar(CalendarView.Type viewType) {
     super();
-    setView(view);
+    setType(viewType);
   }
 
   public void onResize() {
     resizeTimer.schedule(500);
   }
 
-  public void setView(CalendarViews view) {
-    setView(view, getDays());
+  public void setType(CalendarView.Type viewType) {
+    setType(viewType, getDays());
   }
 
-  public void setView(CalendarViews view, int days) {
-    switch (view) {
-      case DAY: {
-        if (dayView == null) {
-          dayView = new DayView();
+  public void setType(CalendarView.Type viewType, int days) {
+    Assert.notNull(viewType);
+    CalendarView cached = viewCache.get(viewType);
+    
+    switch (viewType) {
+      case DAY:
+        DayView dayView = (cached instanceof DayView) ? (DayView) cached : new DayView();
+        if (days > 0) {
+          dayView.setDisplayedDays(days);
         }
-        dayView.setDisplayedDays(days);
+        if (!(cached instanceof DayView)) {
+          viewCache.put(viewType, dayView);
+        }  
         setView(dayView);
         break;
-      }
 
-      case AGENDA: {
-        Assert.unsupported("Agenda View is not yet supported");
-        break;
-      }
-
-      case MONTH: {
-        if (monthView == null) {
-          monthView = new MonthView();
-        }
+      case MONTH:
+        MonthView monthView = (cached instanceof MonthView) ? (MonthView) cached : new MonthView();
+        if (!(cached instanceof MonthView)) {
+          viewCache.put(viewType, monthView);
+        }  
         setView(monthView);
         break;
-      }
+        
+      default:
+        Assert.unsupported(viewType.name() + " view is not yet supported");
+        break;
     }
   }
 }

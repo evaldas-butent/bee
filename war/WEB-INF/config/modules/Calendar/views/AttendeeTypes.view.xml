@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/views.xsd"
+
+  name="AttendeeTypes"
+  source="AttendeeTypes"
+  >
+  <Columns>
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Description" />
+
+    <SimpleColumn name="Transparency" />
+    <SimpleColumn name="Resource" />
+  </Columns>
+  <Order>
+    <OrderBy column="Name" />
+  </Order>
+</View>

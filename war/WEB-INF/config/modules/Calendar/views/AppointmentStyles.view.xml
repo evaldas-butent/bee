@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/views.xsd"
+
+  name="AppointmentStyles"
+  source="AppointmentStyles"
+  >
+  <Columns>
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Description" />
+
+    <SimpleColumn name="HeaderColor" />
+    <SimpleJoin name="HeaderColor" joinType="LEFT">
+      <SimpleColumn alias="HeaderColorName" name="Name" />
+      <SimpleColumn alias="HeaderBackground" name="Background" />
+      <SimpleColumn alias="HeaderForeground" name="Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="HeaderClass" />
+    <SimpleColumn name="HeaderStyle" />
+
+    <SimpleColumn name="BodyColor" />
+    <SimpleJoin name="BodyColor" joinType="LEFT">
+      <SimpleColumn alias="BodyColorName" name="Name" />
+      <SimpleColumn alias="BodyBackground" name="Background" />
+      <SimpleColumn alias="BodyForeground" name="Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="BodyClass" />
+    <SimpleColumn name="BodyStyle" />
+
+    <SimpleColumn name="FooterColor" />
+    <SimpleJoin name="FooterColor" joinType="LEFT">
+      <SimpleColumn alias="FooterColorName" name="Name" />
+      <SimpleColumn alias="FooterBackground" name="Background" />
+      <SimpleColumn alias="FooterForeground" name="Foreground" />
+    </SimpleJoin>
+
+    <SimpleColumn name="FooterClass" />
+    <SimpleColumn name="FooterStyle" />
+  </Columns>
+  <Order>
+    <OrderBy column="Name" />
+  </Order>
+</View>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="Attendees"
+  source="Attendees"
+  >
+  <Columns>
+    <SimpleColumn name="AttendeeType" />
+    <SimpleJoin joinType="INNER" name="AttendeeType">
+      <SimpleColumn alias="TypeName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Description" />
+
+    <SimpleColumn name="Person" />
+    <SimpleJoin name="Person" joinType="LEFT">
+      <SimpleColumn name="FirstName" />
+      <SimpleColumn name="LastName" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Transparency" />
+  </Columns>
+  <Order>
+    <OrderBy column="Name" />
+  </Order>
+</View>

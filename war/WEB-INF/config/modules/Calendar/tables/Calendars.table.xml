@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+
+  name="Calendars"
+  idName="CalendarID"
+  >
+  <BeeFields>
+    <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />
+    <BeeField name="Description" type="TEXT" />
+
+    <BeeField name="Location" type="STRING" precision="100" />
+    <BeeField name="TimeZone" type="LONG" relation="TimeZones" />
+
+    <BeeField name="Theme" type="LONG" relation="Themes" />
+
+    <BeeField name="Hidden" type="BOOLEAN" />
+    <BeeField name="ReadOnly" type="BOOLEAN" />
+    <BeeField name="Visibility" type="INTEGER" />
+
+    <BeeField name="Transparency" type="INTEGER" />
+
+    <BeeField name="DefaultDisplayedDays" type="INTEGER" />
+
+    <BeeField name="PixelsPerInterval" type="INTEGER" />
+    <BeeField name="IntervalsPerHour" type="INTEGER" />
+
+    <BeeField name="WorkingHourStart" type="INTEGER" />
+    <BeeField name="WorkingHourEnd" type="INTEGER" />
+    <BeeField name="ScrollToHour" type="INTEGER" />
+    <BeeField name="OffsetHourLabels" type="BOOLEAN" />
+
+    <BeeField name="EnableDragDrop" type="BOOLEAN" />
+    <BeeField name="DragDropCreation" type="BOOLEAN" />
+
+    <BeeField name="TimeBlockClickNumber" type="INTEGER" />
+  </BeeFields>
+</BeeTable>

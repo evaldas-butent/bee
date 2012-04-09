@@ -8,16 +8,19 @@ import java.util.List;
 
 public class AppointmentAdapter {
 
-  private Appointment appointment;
+  private final Appointment appointment;
+
+  private final List<TimeBlock> intersectingBlocks;
+  
   private int cellStart;
   private int cellSpan;
   private int columnStart = -1;
   private int columnSpan;
   private int appointmentStart;
   private int appointmentEnd;
+
   private double cellPercentFill;
   private double cellPercentStart;
-  private List<TimeBlock> intersectingBlocks;
   private double top;
   private double left;
   private double width;
@@ -27,6 +30,7 @@ public class AppointmentAdapter {
     this.appointment = appointment;
     this.appointmentStart = TimeUtils.minutesSinceDayStarted(appointment.getStart());
     this.appointmentEnd = TimeUtils.minutesSinceDayStarted(appointment.getEnd());
+
     this.intersectingBlocks = new ArrayList<TimeBlock>();
   }
 
@@ -120,10 +124,6 @@ public class AppointmentAdapter {
 
   public void setHeight(double height) {
     this.height = height;
-  }
-
-  public void setIntersectingBlocks(List<TimeBlock> intersectingBlocks) {
-    this.intersectingBlocks = intersectingBlocks;
   }
 
   public void setLeft(double left) {

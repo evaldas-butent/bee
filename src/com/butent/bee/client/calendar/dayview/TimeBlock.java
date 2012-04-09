@@ -13,17 +13,19 @@ public class TimeBlock {
 
   private int totalColumns = 1;
   private int order;
+  
   private String name;
   private int start;
   private int end;
-  private double top;
-  private double bottom;
+
+  private int top;
+  private int bottom;
 
   public List<AppointmentAdapter> getAppointments() {
     return appointments;
   }
 
-  public double getBottom() {
+  public int getBottom() {
     return bottom;
   }
 
@@ -32,7 +34,6 @@ public class TimeBlock {
   }
 
   public int getFirstAvailableColumn() {
-
     int col = 0;
     while (true) {
       if (occupiedColumns.containsKey(col)) {
@@ -59,7 +60,7 @@ public class TimeBlock {
     return start;
   }
 
-  public double getTop() {
+  public int getTop() {
     return top;
   }
 
@@ -78,7 +79,7 @@ public class TimeBlock {
     return apptEnd > this.getStart() && apptStart < this.getStart();
   }
 
-  public void setBottom(double bottom) {
+  public void setBottom(int bottom) {
     this.bottom = bottom;
   }
 
@@ -98,7 +99,7 @@ public class TimeBlock {
     this.start = start;
   }
 
-  public void setTop(double top) {
+  public void setTop(int top) {
     this.top = top;
   }
 

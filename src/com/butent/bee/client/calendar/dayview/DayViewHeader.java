@@ -1,6 +1,6 @@
 package com.butent.bee.client.calendar.dayview;
 
-import com.google.gwt.user.client.DOM;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.Label;
 
 import com.butent.bee.client.calendar.CalendarFormat;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasDateValue;
 import com.butent.bee.shared.JustDate;
@@ -20,51 +21,51 @@ public class DayViewHeader extends Composite {
   private static final String YEAR_CELL_STYLE = "year-cell";
   private static final String SPLITTER_STYLE = "splitter";
   
-  private FlexTable header = new FlexTable();
-  private AbsolutePanel dayPanel = new AbsolutePanel();
-  private AbsolutePanel splitter = new AbsolutePanel();
+  private final FlexTable header = new FlexTable();
+
+  private final AbsolutePanel dayPanel = new AbsolutePanel();
+  private final AbsolutePanel splitter = new AbsolutePanel();
 
   public DayViewHeader() {
     initWidget(header);
     header.setStyleName(GWT_CALENDAR_HEADER_STYLE);
+
     dayPanel.setStyleName(DAY_CELL_CONTAINER_STYLE);
+    splitter.setStylePrimaryName(SPLITTER_STYLE);
 
     header.insertRow(0);
     header.insertRow(0);
+  
     header.insertCell(0, 0);
     header.insertCell(0, 0);
     header.insertCell(0, 0);
+    
     header.setWidget(0, 1, dayPanel);
+    
     header.getCellFormatter().setStyleName(0, 0, YEAR_CELL_STYLE);
     header.getCellFormatter().setWidth(0, 2, DomUtils.getScrollBarWidth() + "px");
 
     header.getFlexCellFormatter().setColSpan(1, 0, 3);
+    
     header.setCellPadding(0);
-    header.setBorderWidth(0);
     header.setCellSpacing(0);
+    header.setBorderWidth(0);
 
-    splitter.setStylePrimaryName(SPLITTER_STYLE);
     header.setWidget(1, 0, splitter);
   }
 
   public void setDays(JustDate date, int days) {
     dayPanel.clear();
 
-    double dayWidth = 100.0 / days;
-    double dayLeft;
-    
+    int dayWidth = 100 / days;
     JustDate tmp = JustDate.copyOf(date);
 
     for (int i = 0; i < days; i++) {
-      Label dayLabel = new Label();
+      Label dayLabel = new Label(CalendarFormat.INSTANCE.getDateFormat().format(tmp));
       dayLabel.setStylePrimaryName("day-cell");
-      dayLabel.setWidth(dayWidth + "%");
 
-      String headerTitle = CalendarFormat.INSTANCE.getDateFormat().format(tmp);
-      dayLabel.setText(headerTitle);
-    
-      dayLeft = dayWidth * i;
-      DOM.setStyleAttribute(dayLabel.getElement(), "left", dayLeft + "%");
+      StyleUtils.setLeft(dayLabel, dayWidth * i, Unit.PCT);
+      StyleUtils.setWidth(dayLabel, dayWidth, Unit.PCT);
 
       if (TimeUtils.isToday(tmp)) {
         dayLabel.setStyleName("day-cell-today");

@@ -3,27 +3,36 @@ package com.butent.bee.client.calendar;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
 
 public abstract class CalendarView implements HasSettings {
 
+  public enum Type {
+    DAY, MONTH, AGENDA, RESOURCES
+  }
+  
   protected CalendarWidget calendarWidget = null;
 
-  private int displayedDays = 4;
+  private int displayedDays = BeeConst.UNDEF;
 
   public void attach(CalendarWidget widget) {
+    Assert.notNull(widget);
     this.calendarWidget = widget;
   }
 
-  public final void createAppointment(Appointment appt) {
+  public void createAppointment(Appointment appt) {
     createAppointment(appt.getStart());
   }
 
-  public final void createAppointment(DateTime start) {
+  public void createAppointment(DateTime start) {
+    Assert.notNull(calendarWidget);
     calendarWidget.fireTimeBlockClickEvent(start);
   }
 
   public final void deleteAppointment(Appointment appt) {
+    Assert.notNull(calendarWidget);
     calendarWidget.fireDeleteEvent(appt);
   }
 
@@ -41,6 +50,7 @@ public abstract class CalendarView implements HasSettings {
   }
 
   public CalendarSettings getSettings() {
+    Assert.notNull(calendarWidget);
     return calendarWidget.getSettings();
   }
 
@@ -69,21 +79,25 @@ public abstract class CalendarView implements HasSettings {
   public void onUpArrowKeyPressed() {
   }
 
-  public final void openAppointment(Appointment appt) {
+  public void openAppointment(Appointment appt) {
+    Assert.notNull(calendarWidget);
     calendarWidget.fireOpenEvent(appt);
   }
 
   public abstract void scrollToHour(int hour);
 
-  public final void selectAppointment(Appointment appt) {
+  public void selectAppointment(Appointment appt) {
+    Assert.notNull(calendarWidget);
     calendarWidget.setSelectedAppointment(appt, true);
   }
 
-  public final void selectNextAppointment() {
+  public void selectNextAppointment() {
+    Assert.notNull(calendarWidget);
     calendarWidget.selectNextAppointment();
   }
 
-  public final void selectPreviousAppointment() {
+  public void selectPreviousAppointment() {
+    Assert.notNull(calendarWidget);
     calendarWidget.selectPreviousAppointment();
   }
 
@@ -91,11 +105,8 @@ public abstract class CalendarView implements HasSettings {
     this.displayedDays = displayedDays;
   }
 
-  public void setSettings(CalendarSettings settings) {
-    calendarWidget.setSettings(settings);
-  }
-
   public final void updateAppointment(Appointment toAppt) {
+    Assert.notNull(calendarWidget);
     calendarWidget.fireUpdateEvent(toAppt);
   }
 }

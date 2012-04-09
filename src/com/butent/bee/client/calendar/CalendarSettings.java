@@ -6,14 +6,14 @@ public class CalendarSettings {
     Double, Single, Drag, None
   }
 
-  public static CalendarSettings DEFAULT_SETTINGS = new CalendarSettings();
-
   private int pixelsPerInterval = 30;
   private int intervalsPerHour = 2;
 
   private int workingHourStart = 8;
   private int workingHourEnd = 17;
   private int scrollToHour = 8;
+  
+  private int defaultDisplayedDays = 4;
   
   private boolean offsetHourLabels = false;
 
@@ -23,6 +23,10 @@ public class CalendarSettings {
   private Click timeBlockClickNumber = Click.Single;
 
   public CalendarSettings() {
+  }
+
+  public int getDefaultDisplayedDays() {
+    return defaultDisplayedDays;
   }
 
   public boolean getEnableDragDropCreation() {
@@ -59,6 +63,10 @@ public class CalendarSettings {
 
   public boolean isOffsetHourLabels() {
     return offsetHourLabels;
+  }
+
+  public void setDefaultDisplayedDays(int defaultDisplayedDays) {
+    this.defaultDisplayedDays = defaultDisplayedDays;
   }
 
   public void setEnableDragDrop(boolean enableDragDrop) {

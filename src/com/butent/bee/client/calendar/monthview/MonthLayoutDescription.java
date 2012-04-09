@@ -12,7 +12,7 @@ public class MonthLayoutDescription {
   private JustDate calendarFirstDay = null;
   private JustDate calendarLastDay = null;
 
-  private WeekLayoutDescription[] weeks = new WeekLayoutDescription[6];
+  private final WeekLayoutDescription[] weeks = new WeekLayoutDescription[6];
 
   public MonthLayoutDescription(JustDate calendarFirstDay, int monthViewRequiredRows,
       List<Appointment> appointments) {
@@ -30,11 +30,8 @@ public class MonthLayoutDescription {
     return weeks;
   }
 
-  private JustDate calculateLastDate(final JustDate startDate, int wks) {
-    int daysInMonthGrid = wks * 7;
-    JustDate endDate = JustDate.copyOf(startDate);
-    TimeUtils.addDay(endDate, daysInMonthGrid - 1);
-    return endDate;
+  private JustDate calculateLastDate(JustDate startDate, int wks) {
+    return TimeUtils.nextDay(startDate, wks * 7 - 1);
   }
 
   private int calculateWeekFor(HasDateValue testDate, HasDateValue calendarFirstDate) {
@@ -61,7 +58,7 @@ public class MonthLayoutDescription {
 
   private void initWeek(int weekIndex, int maxLayer) {
     if (weeks[weekIndex] == null) {
-      weeks[weekIndex] = new WeekLayoutDescription(calendarFirstDay, calendarLastDay, maxLayer);
+      weeks[weekIndex] = new WeekLayoutDescription(calendarFirstDay, maxLayer);
     }
   }
 

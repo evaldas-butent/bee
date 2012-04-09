@@ -1380,6 +1380,11 @@ public class DomUtils {
     BeeKeeper.getLog().addSeparator();
   }
 
+  public static void makeFocusable(UIObject obj) {
+    Assert.notNull(obj);
+    makeFocusable(obj.getElement());
+  }
+  
   public static void makeFocusable(Element el) {
     Assert.notNull(el);
     if (getTabIndex(el) < 0) {

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+
+  name="AppointmentReminders"
+  idName="AppointmentReminderID"
+  >
+  <BeeFields>
+    <BeeField name="Appointment" type="LONG" notNull="true" relation="Appointments" cascade="DELETE" />
+    <BeeField name="ReminderType" type="LONG" notNull="true" relation="ReminderTypes" cascade="DELETE" />
+    <BeeField name="Minutes" type="INTEGER" />
+  </BeeFields>
+  <BeeKeys>
+    <BeeKey unique="true">
+      <KeyField>Appointment</KeyField>
+      <KeyField>ReminderType</KeyField>
+    </BeeKey>
+  </BeeKeys>
+</BeeTable>

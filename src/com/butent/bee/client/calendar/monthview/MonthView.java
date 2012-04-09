@@ -2,11 +2,13 @@ package com.butent.bee.client.calendar.monthview;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
@@ -23,6 +25,8 @@ import com.butent.bee.client.dnd.DragHandler;
 import com.butent.bee.client.dnd.DragStartEvent;
 import com.butent.bee.client.dnd.PickupDragController;
 import com.butent.bee.client.dnd.VetoDragException;
+import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.shared.HasDateValue;
 import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
@@ -51,6 +55,7 @@ public class MonthView extends CalendarView {
       };
 
   private static final int DAYS_IN_A_WEEK = 7;
+
   private static final String MONTH_VIEW = "bee-cal-MonthView";
   private static final String CANVAS_STYLE = "canvas";
   private static final String GRID_STYLE = "grid";
@@ -68,24 +73,23 @@ public class MonthView extends CalendarView {
   }
 
   private final List<AppointmentWidget> appointmentsWidgets = Lists.newArrayList();
+  private final List<AppointmentWidget> selectedAppointmentWidgets = Lists.newArrayList();
 
-  private AbsolutePanel appointmentCanvas = new AbsolutePanel();
+  private final AbsolutePanel appointmentCanvas = new AbsolutePanel();
 
   private final Map<Element, Integer> moreLabels = Maps.newHashMap();
 
-  private JustDate firstDateDisplayed = null;
-
-  private FlexTable monthCalendarGrid = new FlexTable();
-
-  private int monthViewRequiredRows = 5;
-
-  private List<AppointmentWidget> selectedAppointmentWidgets = Lists.newArrayList();
+  private final FlexTable monthCalendarGrid = new FlexTable();
+  private final FlexCellFormatter cellFormatter = monthCalendarGrid.getFlexCellFormatter();
 
   private PickupDragController dragController = null;
-
   private MonthViewDropController monthViewDropController = null;
 
-  private MonthViewStyleManager styleManager = new MonthViewStyleManager();
+  private final MonthViewStyleManager styleManager = new MonthViewStyleManager();
+
+  private JustDate firstDateDisplayed = null;
+
+  private int monthViewRequiredRows = 5;
 
   private int calculatedWeekDayHeaderHeight;
 
@@ -93,20 +97,27 @@ public class MonthView extends CalendarView {
 
   private int calculatedCellAppointments;
 
-  private double calculatedCellOffsetHeight;
+  private int calculatedCellOffsetHeight;
 
-  private double calculatedCellHeight;
+  private int calculatedCellHeight;
+  
+  public MonthView() {
+    super();
+  }
 
   public void attach(CalendarWidget widget) {
     super.attach(widget);
 
     calendarWidget.addToRootPanel(monthCalendarGrid);
+
     monthCalendarGrid.setCellPadding(0);
-    monthCalendarGrid.setBorderWidth(0);
     monthCalendarGrid.setCellSpacing(0);
+    monthCalendarGrid.setBorderWidth(0);
+
     monthCalendarGrid.setStyleName(GRID_STYLE);
 
     calendarWidget.addToRootPanel(appointmentCanvas);
+    StyleUtils.makeAbsolute(appointmentCanvas);
     appointmentCanvas.setStyleName(CANVAS_STYLE);
 
     selectedAppointmentWidgets.clear();
@@ -116,7 +127,6 @@ public class MonthView extends CalendarView {
       dragController.addDragHandler(new DragHandler() {
         public void onDragEnd(DragEndEvent event) {
           Appointment appt = ((AppointmentWidget) event.getContext().draggable).getAppointment();
-
           calendarWidget.setCommittedAppointment(appt);
           calendarWidget.fireUpdateEvent(appt);
         }
@@ -132,23 +142,25 @@ public class MonthView extends CalendarView {
         public void onPreviewDragStart(DragStartEvent event) throws VetoDragException {
         }
       });
+
+      dragController.setBehaviorDragStartSensitivity(5);
+      dragController.setBehaviorDragProxy(true);
     }
-
-    DOM.setStyleAttribute(appointmentCanvas.getElement(), "position", "absolute");
-
-    dragController.setBehaviorDragStartSensitivity(5);
-    dragController.setBehaviorDragProxy(true);
-
-    monthViewDropController = new MonthViewDropController(appointmentCanvas, monthCalendarGrid);
-    dragController.registerDropController(monthViewDropController);
+    
+    if (monthViewDropController == null) {
+      monthViewDropController = new MonthViewDropController(appointmentCanvas, monthCalendarGrid);
+      dragController.registerDropController(monthViewDropController);
+    }
   }
 
   @Override
   public void doLayout() {
     appointmentCanvas.clear();
     monthCalendarGrid.clear();
+
     appointmentsWidgets.clear();
     moreLabels.clear();
+    
     selectedAppointmentWidgets.clear();
     while (monthCalendarGrid.getRowCount() > 0) {
       monthCalendarGrid.removeRow(0);
@@ -196,7 +208,7 @@ public class MonthView extends CalendarView {
       }
 
       selectedAppointmentWidgets.clear();
-      selectedAppointmentWidgets = clickedAppointmentWidgets;
+      selectedAppointmentWidgets.addAll(clickedAppointmentWidgets);
     }
   }
 
@@ -247,28 +259,25 @@ public class MonthView extends CalendarView {
   }
 
   private void buildCalendarGrid() {
-    int month = calendarWidget.getDate().getMonth();
-    firstDateDisplayed = MonthViewDateUtils.firstDateShownInAMonthView(calendarWidget.getDate());
-
-    JustDate today = TimeUtils.today();
-
     for (int i = 0; i < DAYS_IN_A_WEEK; i++) {
       monthCalendarGrid.setText(0, i, CalendarFormat.INSTANCE.getDayOfWeekAbbreviatedNames()[i]);
-      monthCalendarGrid.getCellFormatter().setVerticalAlignment(0, i,
-          HasVerticalAlignment.ALIGN_TOP);
-      monthCalendarGrid.getCellFormatter().setStyleName(0, i, WEEKDAY_LABEL_STYLE);
+      cellFormatter.setVerticalAlignment(0, i, HasVerticalAlignment.ALIGN_TOP);
+      cellFormatter.setStyleName(0, i, WEEKDAY_LABEL_STYLE);
     }
 
-    JustDate date = JustDate.copyOf(firstDateDisplayed);
-    monthViewRequiredRows = MonthViewDateUtils.monthViewRequiredRows(calendarWidget.getDate());
-    for (int monthGridRowIndex = 1; monthGridRowIndex <= monthViewRequiredRows; monthGridRowIndex++) {
-      for (int dayOfWeekIndex = 0; dayOfWeekIndex < DAYS_IN_A_WEEK; dayOfWeekIndex++) {
-        if (monthGridRowIndex != 1 || dayOfWeekIndex != 0) {
-          TimeUtils.moveOneDayForward(date);
-        }
+    int month = calendarWidget.getDate().getMonth();
+    firstDateDisplayed = firstDateShownInAMonthView(calendarWidget.getDate());
 
-        configureDayInGrid(monthGridRowIndex, dayOfWeekIndex,
-            BeeUtils.toString(date.getDom()), date.equals(today), date.getMonth() != month);
+    JustDate today = TimeUtils.today();
+    JustDate date = JustDate.copyOf(firstDateDisplayed);
+
+    monthViewRequiredRows = monthViewRequiredRows(calendarWidget.getDate());
+
+    for (int i = 1; i <= monthViewRequiredRows; i++) {
+      for (int j = 0; j < DAYS_IN_A_WEEK; j++) {
+        configureDayInGrid(i, j, BeeUtils.toString(date.getDom()), date.equals(today),
+            date.getMonth() != month);
+        TimeUtils.moveOneDayForward(date);
       }
     }
   }
@@ -277,18 +286,15 @@ public class MonthView extends CalendarView {
     int paddingTop = appointmentPaddingTop();
     int height = appointmentHeight();
 
-    calculatedCellAppointments = (int)
-        Math.floor((calculatedCellHeight - paddingTop) / (height + paddingTop)) - 1;
+    calculatedCellAppointments = (calculatedCellHeight - paddingTop) / (height + paddingTop) - 1;
   }
 
   private void calculateCellHeight() {
     int gridHeight = monthCalendarGrid.getOffsetHeight();
     int weekdayRowHeight = monthCalendarGrid.getRowFormatter().getElement(0).getOffsetHeight();
-    int dayHeaderHeight =
-        monthCalendarGrid.getFlexCellFormatter().getElement(1, 0).getFirstChildElement()
-            .getOffsetHeight();
+    int dayHeaderHeight = cellFormatter.getElement(1, 0).getFirstChildElement().getOffsetHeight();
 
-    calculatedCellOffsetHeight = (double) (gridHeight - weekdayRowHeight) / monthViewRequiredRows;
+    calculatedCellOffsetHeight = (gridHeight - weekdayRowHeight) / monthViewRequiredRows;
     calculatedCellHeight = calculatedCellOffsetHeight - dayHeaderHeight;
     calculatedWeekDayHeaderHeight = weekdayRowHeight;
     calculatedDayHeaderHeight = dayHeaderHeight;
@@ -304,14 +310,15 @@ public class MonthView extends CalendarView {
 
     StringBuilder headerStyle = new StringBuilder(CELL_HEADER_STYLE);
     StringBuilder cellStyle = new StringBuilder(CELL_STYLE);
+
     if (isToday) {
       headerStyle.append("-today");
       cellStyle.append("-today");
     }
-
     if (notInCurrentMonth) {
       headerStyle.append("-disabled");
     }
+
     label.setStyleName(headerStyle.toString());
 
     switch (col) {
@@ -324,17 +331,17 @@ public class MonthView extends CalendarView {
     }
 
     monthCalendarGrid.setWidget(row, col, label);
-    monthCalendarGrid.getCellFormatter().setVerticalAlignment(row, col,
-        HasVerticalAlignment.ALIGN_TOP);
-    monthCalendarGrid.getCellFormatter().setStyleName(row, col, cellStyle.toString());
+    cellFormatter.setVerticalAlignment(row, col, HasVerticalAlignment.ALIGN_TOP);
+    cellFormatter.setStyleName(row, col, cellStyle.toString());
   }
 
   private void dayClicked(Event event) {
     int y = event.getClientY() - DOM.getAbsoluteTop(appointmentCanvas.getElement());
     int x = event.getClientX() - DOM.getAbsoluteLeft(appointmentCanvas.getElement());
 
-    int row = (int) Math.floor(y / (appointmentCanvas.getOffsetHeight() / monthViewRequiredRows));
-    int col = (int) Math.floor(x / (appointmentCanvas.getOffsetWidth() / DAYS_IN_A_WEEK));
+    int row = y / (appointmentCanvas.getOffsetHeight() / monthViewRequiredRows);
+    int col = x / (appointmentCanvas.getOffsetWidth() / DAYS_IN_A_WEEK);
+
     calendarWidget.fireTimeBlockClickEvent(cellDate(row * DAYS_IN_A_WEEK + col));
   }
 
@@ -363,6 +370,11 @@ public class MonthView extends CalendarView {
 
   private List<AppointmentWidget> findAppointmentWidgetsByElement(Element element) {
     return findAppointmentWidgets(findAppointmentByElement(element));
+  }
+
+  private JustDate firstDateShownInAMonthView(HasDateValue dayInMonth) {
+    JustDate date = TimeUtils.startOfMonth(dayInMonth);
+    return TimeUtils.startOfWeek(date, (date.getDow() > 1) ? 0 : -1);
   }
 
   private void layOnAppointment(Appointment appointment, int colStart, int colEnd, int row,
@@ -443,21 +455,41 @@ public class MonthView extends CalendarView {
       }
     }
   }
+  
+  private int monthViewRequiredRows(HasDateValue dayInMonth) {
+    int requiredRows = 5;
 
-  private void placeItemInGrid(Widget panel, int colStart, int colEnd, int row, int cellPosition) {
+    JustDate firstOfTheMonth = TimeUtils.startOfMonth(dayInMonth);
+    JustDate firstDayInCalendar = firstDateShownInAMonthView(dayInMonth);
+
+    if (firstDayInCalendar.getMonth() != firstOfTheMonth.getMonth()) {
+      JustDate lastDayOfPreviousMonth = TimeUtils.previousDay(firstOfTheMonth);
+      int prevMonthOverlap = TimeUtils.dayDiff(firstDayInCalendar, lastDayOfPreviousMonth) + 1;
+
+      JustDate firstOfNextMonth = TimeUtils.startOfNextMonth(firstOfTheMonth);
+      int daysInMonth = TimeUtils.dayDiff(firstOfTheMonth, firstOfNextMonth);
+
+      if (prevMonthOverlap + daysInMonth > 35) {
+        requiredRows = 6;
+      }
+    }
+    return requiredRows;
+  }
+
+  private void placeItemInGrid(Widget widget, int colStart, int colEnd, int row, int cellPosition) {
     int paddingTop = appointmentPaddingTop();
     int height = appointmentHeight();
 
-    double left = (double) colStart / (double) DAYS_IN_A_WEEK * 100f + .5f;
+    double left = (double) colStart / (double) DAYS_IN_A_WEEK * 100d + .5d;
+    double width = ((double) (colEnd - colStart + 1) / (double) DAYS_IN_A_WEEK) * 100d - 1d;
 
-    double width = ((double) (colEnd - colStart + 1) / (double) DAYS_IN_A_WEEK) * 100f - 1f;
-
-    double top = calculatedWeekDayHeaderHeight + (row * calculatedCellOffsetHeight)
+    int top = calculatedWeekDayHeaderHeight + (row * calculatedCellOffsetHeight)
         + calculatedDayHeaderHeight + paddingTop + (cellPosition * (height + paddingTop));
 
-    DOM.setStyleAttribute(panel.getElement(), "position", "absolute");
-    DOM.setStyleAttribute(panel.getElement(), "top", top + "px");
-    DOM.setStyleAttribute(panel.getElement(), "left", left + "%");
-    DOM.setStyleAttribute(panel.getElement(), "width", width + "%");
+    StyleUtils.makeAbsolute(widget);
+    StyleUtils.setTop(widget, top);
+
+    widget.getElement().getStyle().setLeft(left, Unit.PCT);
+    widget.getElement().getStyle().setWidth(width, Unit.PCT);
   }
 }

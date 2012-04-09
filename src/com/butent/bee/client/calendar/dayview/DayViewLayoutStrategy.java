@@ -2,6 +2,7 @@ package com.butent.bee.client.calendar.dayview;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.calendar.HasSettings;
 import com.butent.bee.client.calendar.util.AppointmentUtil;
@@ -15,7 +16,8 @@ public class DayViewLayoutStrategy {
 
   private static final int MINUTES_PER_HOUR = 60;
   private static final int HOURS_PER_DAY = 24;
-  private HasSettings settings = null;
+
+  private final HasSettings settings;
 
   public DayViewLayoutStrategy(HasSettings settings) {
     this.settings = settings;
@@ -25,20 +27,23 @@ public class DayViewLayoutStrategy {
       int dayCount) {
 
     int intervalsPerHour = settings.getSettings().getIntervalsPerHour();
-    double intervalSize = settings.getSettings().getPixelsPerInterval();
+    int intervalSize = settings.getSettings().getPixelsPerInterval();
 
     int minutesPerInterval = MINUTES_PER_HOUR / intervalsPerHour;
-
     int numberOfTimeBlocks = MINUTES_PER_HOUR / minutesPerInterval * HOURS_PER_DAY;
+
     TimeBlock[] timeBlocks = new TimeBlock[numberOfTimeBlocks];
 
     for (int i = 0; i < numberOfTimeBlocks; i++) {
       TimeBlock t = new TimeBlock();
+      t.setOrder(i);
+      
       t.setStart(i * minutesPerInterval);
       t.setEnd(t.getStart() + minutesPerInterval);
-      t.setOrder(i);
+      
       t.setTop(i * intervalSize);
       t.setBottom(t.getTop() + intervalSize);
+      
       timeBlocks[i] = t;
     }
 
@@ -111,31 +116,33 @@ public class DayViewLayoutStrategy {
       tb.setTotalColumns(groupMaxColumn + 1);
     }
 
-    double widthAdj = 1f / dayCount;
+    double widthAdj = 1d / dayCount;
 
-    double paddingLeft = .5f;
-    double paddingRight = .5f;
+    double paddingLeft = 0.5d;
+    double paddingRight = 0.5d;
     double paddingBottom = 2;
 
     for (AppointmentAdapter apptCell : appointmentCells) {
-      double width = 1f / apptCell.getIntersectingBlocks().get(0).getTotalColumns() * 100;
-      double left =
-          (double) apptCell.getColumnStart()
-              / (double) apptCell.getIntersectingBlocks().get(0).getTotalColumns() * 100;
+      int totalColumns = apptCell.getIntersectingBlocks().get(0).getTotalColumns();
+      double width = 1d / totalColumns * 100;
+      double left = (double) apptCell.getColumnStart() / totalColumns * 100;
+
+      apptCell.setLeft(widthAdj * 100 * dayIndex + left * widthAdj + paddingLeft);
+      apptCell.setWidth(width * widthAdj - paddingLeft - paddingRight);
 
       apptCell.setTop(apptCell.getCellStart() * intervalSize);
-      apptCell.setLeft((widthAdj * 100 * dayIndex) + (left * widthAdj) + paddingLeft);
-      apptCell.setWidth(width * widthAdj - paddingLeft - paddingRight);
       apptCell.setHeight(apptCell.getIntersectingBlocks().size() * intervalSize - paddingBottom);
 
       double apptStart = apptCell.getAppointmentStart();
       double apptEnd = apptCell.getAppointmentEnd();
+      double apptDuration = apptEnd - apptStart;
+
       double blockStart = timeBlocks[apptCell.getCellStart()].getStart();
       double blockEnd = timeBlocks[apptCell.getCellStart() + apptCell.getCellSpan() - 1].getEnd();
       double blockDuration = blockEnd - blockStart;
-      double apptDuration = apptEnd - apptStart;
-      double timeFillHeight = apptDuration / blockDuration * 100f;
-      double timeFillStart = (apptStart - blockStart) / blockDuration * 100f;
+
+      double timeFillHeight = apptDuration / blockDuration * 100d;
+      double timeFillStart = (apptStart - blockStart) / blockDuration * 100d;
 
       apptCell.setCellPercentFill(timeFillHeight);
       apptCell.setCellPercentStart(timeFillStart);
@@ -200,9 +207,9 @@ public class DayViewLayoutStrategy {
               break;
             }
           } catch (Exception ex) {
-            System.out.println("Exception: y=" + y + " x=" + x + " adapters.size="
-                + adapters.size() + " start=" + adapter.getAppointment().getStart() + " end="
-                + adapter.getAppointment().getEnd().toString());
+            BeeKeeper.getLog().severe("Exception: y=", y, "x=", x,
+                "adapters.size=", adapters.size(), "start=", adapter.getAppointment().getStart(),
+                "end=", adapter.getAppointment().getEnd());
           }
         }
 
@@ -218,9 +225,9 @@ public class DayViewLayoutStrategy {
 
           adapter.setCellStart(x);
 
-          double top = adapter.getCellStart() * 25f + 5f;
-          double width = (adapter.getColumnSpan() + 1f) / days * 100f - 1f;
-          double left = ((double) adapter.getColumnStart()) / days * 100f + .5f;
+          double top = adapter.getCellStart() * 25d + 5d;
+          double width = (adapter.getColumnSpan() + 1d) / days * 100d - 1d;
+          double left = ((double) adapter.getColumnStart()) / days * 100d + 0.5d;
 
           adapter.setWidth(width);
           adapter.setLeft(left);

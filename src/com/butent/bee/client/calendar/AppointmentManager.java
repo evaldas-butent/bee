@@ -18,7 +18,11 @@ public class AppointmentManager {
 
   private final List<Appointment> appointments = Lists.newArrayList();
 
-  private boolean sortPending = true;
+  private boolean sortPending = false;
+
+  public AppointmentManager() {
+    super();
+  }
 
   public void addAppointment(Appointment appt) {
     if (appt != null) {
@@ -131,6 +135,7 @@ public class AppointmentManager {
 
   public boolean selectPreviousAppointment() {
     boolean moveSucceeded = false;
+ 
     if (getSelectedAppointment() != null) {
       int selectedApptIndex = getAppointments().indexOf(getSelectedAppointment());
       if (selectedApptIndex > 0) {

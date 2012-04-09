@@ -10,7 +10,5 @@ public interface ThemeAppointmentStyle {
   
   String getHeaderText();
 
-  String getSelectedBackgroundImage();
-
   String getSelectedBorder();
 }

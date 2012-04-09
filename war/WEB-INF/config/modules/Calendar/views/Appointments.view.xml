@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="Appointments"
+  source="Appointments"
+  >
+  <Columns>
+    <SimpleColumn name="Summary" />
+    <SimpleColumn name="Description" />
+
+    <SimpleColumn name="Location" />
+    <SimpleColumn name="HtmlLink" />
+
+    <SimpleColumn name="Color" />
+    <SimpleJoin name="Color" joinType="INNER">
+      <SimpleColumn alias="ColorName" name="Name" />
+      <SimpleColumn name="Background" />
+      <SimpleColumn name="Foreground" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="Style" />
+    <SimpleJoin name="Style" joinType="LEFT">
+      <SimpleColumn alias="StyleName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Status" />
+    <SimpleColumn name="Created" />
+
+    <SimpleColumn name="Creator" />
+    <SimpleJoin name="Creator" joinType="LEFT">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn alias="CreatorFirstName" name="FirstName" />
+        <SimpleColumn alias="CreatorLastName" name="LastName" />
+      </SimpleJoin>
+    </SimpleJoin>
+    
+    <SimpleColumn name="Organizer" />
+    <SimpleJoin name="Organizer" joinType="LEFT">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn alias="OrganizerFirstName" name="FirstName" />
+        <SimpleColumn alias="OrganizerLastName" name="LastName" />
+      </SimpleJoin>
+    </SimpleJoin>
+    
+
+    <SimpleColumn name="StartDate" />
+    <SimpleColumn name="StartDateTime" />
+    <SimpleColumn name="StartTimeZone" />
+    <SimpleJoin name="StartTimeZone" joinType="LEFT">
+      <SimpleColumn alias="StartTimeZoneName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="EndDate" />
+    <SimpleColumn name="EndDateTime" />
+    <SimpleColumn name="EndTimeZone" />
+    <SimpleJoin name="EndTimeZone" joinType="LEFT">
+      <SimpleColumn alias="EndTimeZoneName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Recurrence" />
+    <SimpleColumn name="RecurringEventId" />
+
+    <SimpleColumn name="Transparency" />
+    <SimpleColumn name="Visibility" />
+    <SimpleColumn name="ReadOnly" />
+
+    <SimpleColumn name="ICalUID" />
+    <SimpleColumn name="Sequence" />
+
+    <SimpleColumn name="AnyoneCanAddSelf" />
+    <SimpleColumn name="GuestsCanInviteOthers" />
+    <SimpleColumn name="GuestsCanSeeOtherGuests" />
+
+    <SimpleColumn name="UseDefaultReminders" />
+  </Columns>
+
+  <Order>
+    <OrderBy column="StartDate" />
+    <OrderBy column="StartDateTime" />
+  </Order>
+</View>

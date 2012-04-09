@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="Calendars"
+  source="Calendars"
+  >
+  <Columns>
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Description" />
+
+    <SimpleColumn name="Location" />
+    <SimpleColumn name="TimeZone" />
+    <SimpleJoin name="TimeZone" joinType="LEFT">
+      <SimpleColumn alias="TimeZoneName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Theme" />
+    <SimpleJoin name="Theme" joinType="LEFT">
+      <SimpleColumn alias="ThemeName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Hidden" />
+    <SimpleColumn name="ReadOnly" />
+    <SimpleColumn name="Visibility" />
+
+    <SimpleColumn name="Transparency" />
+
+    <SimpleColumn name="DefaultDisplayedDays" />
+
+    <SimpleColumn name="PixelsPerInterval" />
+    <SimpleColumn name="IntervalsPerHour" />
+
+    <SimpleColumn name="WorkingHourStart" />
+    <SimpleColumn name="WorkingHourEnd" />
+    <SimpleColumn name="ScrollToHour" />
+    <SimpleColumn name="OffsetHourLabels" />
+
+    <SimpleColumn name="EnableDragDrop" />
+    <SimpleColumn name="DragDropCreation" />
+
+    <SimpleColumn name="TimeBlockClickNumber" />
+  </Columns>
+  <Order>
+    <OrderBy column="Name" />
+  </Order>
+</View>

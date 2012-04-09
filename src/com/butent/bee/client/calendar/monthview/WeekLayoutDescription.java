@@ -10,29 +10,27 @@ public class WeekLayoutDescription {
   public static final int FIRST_DAY = 0;
   public static final int LAST_DAY = 6;
 
-  private AppointmentStackingManager topAppointmentsManager = null;
+  private final AppointmentStackingManager topAppointmentsManager;
 
   private final DayLayoutDescription[] days;
 
   private final JustDate calendarFirstDay;
-  private final JustDate calendarLastDay;
 
-  private int maxLayer = -1;
+  private final int maxLayer;
 
-  public WeekLayoutDescription(JustDate calendarFirstDay, JustDate calendarLastDay) {
-    this(calendarFirstDay, calendarLastDay, Integer.MAX_VALUE);
+  public WeekLayoutDescription(JustDate calendarFirstDay) {
+    this(calendarFirstDay, Integer.MAX_VALUE);
   }
 
-  public WeekLayoutDescription(JustDate calendarFirstDay, JustDate calendarLastDay, int maxLayer) {
+  public WeekLayoutDescription(JustDate calendarFirstDay, int maxLayer) {
     this.calendarFirstDay = calendarFirstDay;
-    this.calendarLastDay = calendarLastDay;
     
-    days = new DayLayoutDescription[7];
+    this.days = new DayLayoutDescription[7];
     
     this.maxLayer = maxLayer;
 
-    topAppointmentsManager = new AppointmentStackingManager();
-    topAppointmentsManager.setLayerOverflowLimit(this.maxLayer);
+    this.topAppointmentsManager = new AppointmentStackingManager();
+    this.topAppointmentsManager.setLayerOverflowLimit(this.maxLayer);
   }
 
   public void addAppointment(Appointment appointment) {

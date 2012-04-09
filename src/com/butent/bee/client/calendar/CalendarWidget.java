@@ -46,14 +46,13 @@ public class CalendarWidget extends InteractiveWidget implements
     HasLayout, HasAppointments {
 
   private boolean layoutSuspended = false;
-
   private boolean layoutPending = false;
 
   private final JustDate date;
 
-  private CalendarSettings settings = CalendarSettings.DEFAULT_SETTINGS;
+  private final CalendarSettings settings;
 
-  private AppointmentManager appointmentManager = null;
+  private final AppointmentManager appointmentManager;
 
   private CalendarView view = null;
 
@@ -63,7 +62,9 @@ public class CalendarWidget extends InteractiveWidget implements
 
   public CalendarWidget(JustDate date) {
     super();
-    appointmentManager = new AppointmentManager();
+
+    this.settings = new CalendarSettings();
+    this.appointmentManager = new AppointmentManager();
     this.date = date;
   }
 
@@ -85,14 +86,14 @@ public class CalendarWidget extends InteractiveWidget implements
   public HandlerRegistration addDateRequestHandler(DateRequestHandler<HasDateValue> handler) {
     return addHandler(handler, DateRequestEvent.getType());
   }
-  
+
   public void addDaysToDate(int numOfDays) {
     if (numOfDays != 0) {
       TimeUtils.addDay(date, numOfDays);
       refresh();
     }
   }
-  
+
   public HandlerRegistration addDeleteHandler(DeleteHandler<Appointment> handler) {
     return addHandler(handler, DeleteEvent.getType());
   }
@@ -127,11 +128,15 @@ public class CalendarWidget extends InteractiveWidget implements
   }
 
   public void doLayout() {
-    view.doLayout();
+    if (view != null) {
+      view.doLayout();
+    }
   }
 
   public void doSizing() {
-    view.doSizing();
+    if (view != null) {
+      view.doSizing();
+    }
   }
 
   public void fireCreateEvent(Appointment appointment) {
@@ -197,7 +202,7 @@ public class CalendarWidget extends InteractiveWidget implements
   }
 
   public int getDays() {
-    return view == null ? 4 : view.getDisplayedDays();
+    return view == null ? settings.getDefaultDisplayedDays() : view.getDisplayedDays();
   }
 
   public Appointment getSelectedAppointment() {
@@ -205,10 +210,10 @@ public class CalendarWidget extends InteractiveWidget implements
   }
 
   public CalendarSettings getSettings() {
-    return this.settings;
+    return settings;
   }
 
-  public final CalendarView getView() {
+  public CalendarView getView() {
     return view;
   }
 
@@ -222,22 +227,30 @@ public class CalendarWidget extends InteractiveWidget implements
 
   @Override
   public void onDeleteKeyPressed() {
-    view.onDeleteKeyPressed();
+    if (view != null) {
+      view.onDeleteKeyPressed();
+    }
   }
 
   @Override
   public void onDoubleClick(Element element, Event event) {
-    view.onDoubleClick(element, event);
+    if (view != null) {
+      view.onDoubleClick(element, event);
+    }
   }
 
   @Override
   public void onDownArrowKeyPressed() {
-    view.onDownArrowKeyPressed();
+    if (view != null) {
+      view.onDownArrowKeyPressed();
+    }
   }
 
   @Override
   public void onLeftArrowKeyPressed() {
-    view.onLeftArrowKeyPressed();
+    if (view != null) {
+      view.onLeftArrowKeyPressed();
+    }
   }
 
   public void onLoad() {
@@ -250,21 +263,29 @@ public class CalendarWidget extends InteractiveWidget implements
 
   @Override
   public void onMouseDown(Element element, Event event) {
-    view.onSingleClick(element, event);
+    if (view != null) {
+      view.onSingleClick(element, event);
+    }
   }
 
   public void onMouseOver(Element element, Event event) {
-    view.onMouseOver(element, event);
+    if (view != null) {
+      view.onMouseOver(element, event);
+    }
   }
 
   @Override
   public void onRightArrowKeyPressed() {
-    view.onRightArrowKeyPressed();
+    if (view != null) {
+      view.onRightArrowKeyPressed();
+    }
   }
 
   @Override
   public void onUpArrowKeyPressed() {
-    view.onUpArrowKeyPressed();
+    if (view != null) {
+      view.onUpArrowKeyPressed();
+    }
   }
 
   public void refresh() {
@@ -285,9 +306,10 @@ public class CalendarWidget extends InteractiveWidget implements
   }
 
   public void removeAppointment(Appointment appointment, boolean fireEvents) {
+    Assert.notNull(appointment);
     boolean commitChange = true;
     if (fireEvents) {
-      commitChange = DeleteEvent.fire(this, getSelectedAppointment());
+      commitChange = DeleteEvent.fire(this, appointment);
     }
 
     if (commitChange) {
@@ -312,7 +334,9 @@ public class CalendarWidget extends InteractiveWidget implements
   }
 
   public void scrollToHour(int hour) {
-    view.scrollToHour(hour);
+    if (view != null) {
+      view.scrollToHour(hour);
+    }
   }
 
   public boolean selectNextAppointment() {
@@ -338,13 +362,15 @@ public class CalendarWidget extends InteractiveWidget implements
   public void setDate(JustDate newDate) {
     setDate(newDate, getDays());
   }
-  
+
   public void setDate(JustDate newDate, int days) {
     Assert.notNull(newDate);
+    Assert.notNull(view);
+
     if (newDate.equals(date) && days == view.getDisplayedDays()) {
       return;
     }
-    
+
     date.setDate(newDate);
     view.setDisplayedDays(days);
 
@@ -352,10 +378,15 @@ public class CalendarWidget extends InteractiveWidget implements
   }
 
   public void setDays(int days) {
-    view.setDisplayedDays(days);
-    refresh();
+    Assert.isPositive(days);
+    Assert.notNull(view);
+
+    if (view.getDisplayedDays() != days) {
+      view.setDisplayedDays(days);
+      refresh();
+    }
   }
-  
+
   public void setRollbackAppointment(Appointment appt) {
     appointmentManager.setRollbackAppointment(appt);
   }
@@ -371,16 +402,16 @@ public class CalendarWidget extends InteractiveWidget implements
     }
   }
 
-  public void setSettings(CalendarSettings settings) {
-    this.settings = settings;
-  }
+  public void setView(CalendarView view) {
+    Assert.notNull(view);
 
-  public final void setView(CalendarView view) {
-    this.getRootPanel().clear();
+    super.clear();
+
     this.view = view;
     this.view.attach(this);
-    this.setStyleName(this.view.getStyleName());
-    this.refresh();
+
+    setStyleName(this.view.getStyleName());
+    refresh();
   }
 
   public void suspendLayout() {

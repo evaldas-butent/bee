@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+
+  name="ReminderTypes"
+  source="ReminderTypes"
+  >
+  <Columns>
+    <SimpleColumn name="Method" />
+    <SimpleColumn name="Minutes" />
+
+    <SimpleColumn name="Description" />
+  </Columns>
+  <Order>
+    <OrderBy column="Method" />
+  </Order>
+</View>

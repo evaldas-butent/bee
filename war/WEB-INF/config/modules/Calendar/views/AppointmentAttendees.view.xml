@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/views.xsd"
+
+  name="AppointmentAttendees"
+  source="AppointmentAttendees"
+  >
+  <Columns>
+    <SimpleColumn name="Appointment" />
+
+    <SimpleColumn name="Attendee" />
+    <SimpleJoin name="Attendee" joinType="INNER">
+      <SimpleColumn alias="AttendeeName" name="Name" />
+      <SimpleColumn name="AttendeeType" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="Optional" />
+    <SimpleColumn name="ResponseStatus" />
+    <SimpleColumn name="AdditionalGuests" />
+
+    <SimpleColumn name="Comment" />
+  </Columns>
+  <Order>
+    <OrderBy column="AttendeeType" />
+    <OrderBy column="AttendeeName" />
+  </Order>
+</View>

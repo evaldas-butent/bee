@@ -1,5 +1,6 @@
 package com.butent.bee.client.calendar.dayview;
 
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.HasAllMouseHandlers;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
@@ -22,13 +23,14 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.calendar.Appointment;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.shared.DateTime;
 
 public class AppointmentWidget extends FlowPanel {
 
-  class Div extends ComplexPanel implements HasAllMouseHandlers {
+  private class Div extends ComplexPanel implements HasAllMouseHandlers {
 
-    public Div() {
+    private Div() {
       setElement(DOM.createDiv());
     }
 
@@ -63,37 +65,45 @@ public class AppointmentWidget extends FlowPanel {
 
   private String title;
   private String description;
+
   private DateTime start;
   private DateTime end;
+  
+  private boolean multiDay = false;
+
   private boolean selected;
+  
   private double top;
   private double left;
   private double width;
   private double height;
 
-  private Widget headerPanel = new Div();
-  private Panel bodyPanel = new SimplePanel();
-  private Widget footerPanel = new Div();
-  private Panel timelinePanel = new SimplePanel();
-  private Panel timelineFillPanel = new SimplePanel();
-  private boolean multiDay = false;
+  private final Widget headerPanel = new Div();
+  private final Panel bodyPanel = new SimplePanel();
+  private final Widget footerPanel = new Div();
+
+  private final Panel timelinePanel = new SimplePanel();
+  private final Panel timelineFillPanel = new SimplePanel();
+  
   private Appointment appointment;
 
   public AppointmentWidget() {
-    this.setStylePrimaryName("bee-appointment");
+    setStylePrimaryName("bee-appointment");
+    StyleUtils.makeAbsolute(this);
+    
     headerPanel.setStylePrimaryName("header");
     bodyPanel.setStylePrimaryName("body");
     footerPanel.setStylePrimaryName("footer");
+    
     timelinePanel.setStylePrimaryName("timeline");
     timelineFillPanel.setStylePrimaryName("timeline-fill");
 
-    this.add(headerPanel);
-    this.add(bodyPanel);
-    this.add(footerPanel);
-    this.add(timelinePanel);
+    add(headerPanel);
+    add(bodyPanel);
+    add(footerPanel);
+    
+    add(timelinePanel);
     timelinePanel.add(timelineFillPanel);
-
-    DOM.setStyleAttribute(this.getElement(), "position", "absolute");
   }
 
   public int compareTo(AppointmentWidget appt) {
@@ -105,8 +115,8 @@ public class AppointmentWidget extends FlowPanel {
   }
 
   public void formatTimeline(double t, double h) {
-    timelineFillPanel.setHeight(h + "%");
-    DOM.setStyleAttribute(timelineFillPanel.getElement(), "top", t + "%");
+    StyleUtils.setTop(timelineFillPanel, t, Unit.PCT);
+    StyleUtils.setHeight(timelineFillPanel, h, Unit.PCT);
   }
 
   public Appointment getAppointment() {
@@ -114,7 +124,7 @@ public class AppointmentWidget extends FlowPanel {
   }
 
   public Widget getBody() {
-    return this.bodyPanel;
+    return bodyPanel;
   }
 
   public String getDescription() {
@@ -126,7 +136,7 @@ public class AppointmentWidget extends FlowPanel {
   }
 
   public Widget getHeader() {
-    return this.headerPanel;
+    return headerPanel;
   }
 
   public double getHeight() {
@@ -173,7 +183,7 @@ public class AppointmentWidget extends FlowPanel {
     this.appointment = appointment;
 
     if (appointment.isReadOnly()) {
-      this.remove(footerPanel);
+      remove(footerPanel);
     }
   }
 
@@ -188,12 +198,12 @@ public class AppointmentWidget extends FlowPanel {
 
   public void setHeight(double height) {
     this.height = height;
-    DOM.setStyleAttribute(this.getElement(), "height", height + "px");
+    StyleUtils.setHeight(this, height, Unit.PX);
   }
 
   public void setLeft(double left) {
     this.left = left;
-    DOM.setStyleAttribute(this.getElement(), "left", left + "%");
+    StyleUtils.setLeft(this, left, Unit.PCT);
   }
 
   public void setMultiDay(boolean isMultiDay) {
@@ -211,11 +221,11 @@ public class AppointmentWidget extends FlowPanel {
 
   public void setTop(double top) {
     this.top = top;
-    DOM.setStyleAttribute(this.getElement(), "top", top + "px");
+    StyleUtils.setTop(this, top, Unit.PX);
   }
 
   public void setWidth(double width) {
     this.width = width;
-    DOM.setStyleAttribute(this.getElement(), "width", width + "%");
+    StyleUtils.setWidth(this, width, Unit.PCT);
   }
 }

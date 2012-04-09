@@ -1422,6 +1422,29 @@ public class StyleUtils {
     setAppearance(obj.getElement(), className, styles);
   }
   
+  public static void setBackgroundColor(Element el, String color) {
+    Assert.notNull(el);
+    setBackgroundColor(el.getStyle(), color);
+  }
+
+  public static void setBackgroundColor(Style st, String color) {
+    Assert.notNull(st);
+    if (BeeUtils.isEmpty(color)) {
+      st.clearBackgroundColor();
+    } else {
+      st.setBackgroundColor(color);
+    }
+  }
+
+  public static void setBackgroundColor(String id, String color) {
+    setBackgroundColor(DomUtils.getElement(id), color);
+  }
+
+  public static void setBackgroundColor(UIObject obj, String color) {
+    Assert.notNull(obj);
+    setBackgroundColor(obj.getElement(), color);
+  }
+  
   public static void setBorderBottomWidth(Element el, int px) {
     Assert.notNull(el);
     setBorderBottomWidth(el.getStyle(), px);
@@ -1437,6 +1460,29 @@ public class StyleUtils {
     setBorderBottomWidth(obj.getElement(), px);
   }
 
+  public static void setBorderColor(Element el, String color) {
+    Assert.notNull(el);
+    setBorderColor(el.getStyle(), color);
+  }
+
+  public static void setBorderColor(Style st, String color) {
+    Assert.notNull(st);
+    if (BeeUtils.isEmpty(color)) {
+      st.clearBorderColor();
+    } else {
+      st.setBorderColor(color);
+    }
+  }
+
+  public static void setBorderColor(String id, String color) {
+    setBorderColor(DomUtils.getElement(id), color);
+  }
+
+  public static void setBorderColor(UIObject obj, String color) {
+    Assert.notNull(obj);
+    setBorderColor(obj.getElement(), color);
+  }
+  
   public static void setBorderLeftWidth(Element el, int px) {
     Assert.notNull(el);
     setBorderLeftWidth(el.getStyle(), px);
@@ -1502,6 +1548,29 @@ public class StyleUtils {
   public static void setBottom(UIObject obj, int px) {
     Assert.notNull(obj);
     setBottom(obj.getElement(), px);
+  }
+
+  public static void setColor(Element el, String color) {
+    Assert.notNull(el);
+    setColor(el.getStyle(), color);
+  }
+
+  public static void setColor(Style st, String color) {
+    Assert.notNull(st);
+    if (BeeUtils.isEmpty(color)) {
+      st.clearColor();
+    } else {
+      st.setColor(color);
+    }
+  }
+
+  public static void setColor(String id, String color) {
+    setColor(DomUtils.getElement(id), color);
+  }
+
+  public static void setColor(UIObject obj, String color) {
+    Assert.notNull(obj);
+    setColor(obj.getElement(), color);
   }
   
   public static void setCssText(Element el, String text) {
@@ -1708,6 +1777,25 @@ public class StyleUtils {
     setLeft(obj.getElement(), px);
   }
 
+  public static void setLeft(Element el, double value, Unit unit) {
+    Assert.notNull(el);
+    setLeft(el.getStyle(), value, unit);
+  }
+
+  public static void setLeft(Style st, double value, Unit unit) {
+    Assert.notNull(st);
+    st.setLeft(value, normalizeUnit(unit));
+  }
+
+  public static void setLeft(String id, double value, Unit unit) {
+    setLeft(DomUtils.getElement(id), value, unit);
+  }
+
+  public static void setLeft(UIObject obj, double value, Unit unit) {
+    Assert.notNull(obj);
+    setLeft(obj.getElement(), value, unit);
+  }
+  
   public static void setMaxHeight(Element el, double value, Unit unit) {
     Assert.notNull(el);
     setMaxHeight(el.getStyle(), value, unit);
@@ -2052,6 +2140,25 @@ public class StyleUtils {
     setTop(obj.getElement(), px);
   }
 
+  public static void setTop(Element el, double value, Unit unit) {
+    Assert.notNull(el);
+    setTop(el.getStyle(), value, unit);
+  }
+
+  public static void setTop(Style st, double value, Unit unit) {
+    Assert.notNull(st);
+    st.setTop(value, normalizeUnit(unit));
+  }
+
+  public static void setTop(String id, double value, Unit unit) {
+    setTop(DomUtils.getElement(id), value, unit);
+  }
+
+  public static void setTop(UIObject obj, double value, Unit unit) {
+    Assert.notNull(obj);
+    setTop(obj.getElement(), value, unit);
+  }
+  
   public static void setWhiteSpace(Element el, WhiteSpace value) {
     Assert.notNull(el);
     setWhiteSpace(el.getStyle(), value);

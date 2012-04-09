@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/views.xsd"
+
+  name="CalendarReminders"
+  source="CalendarReminders"
+  >
+  <Columns>
+    <SimpleColumn name="Calendar" />
+    <SimpleColumn name="Minutes" />
+    <SimpleColumn name="ReminderType" />
+    <SimpleJoin name="ReminderType" joinType="INNER">
+      <SimpleColumn name="Method" />
+      <SimpleColumn alias="DefaultMinutes" name="Minutes" />
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="Method" />
+  </Order>
+</View>

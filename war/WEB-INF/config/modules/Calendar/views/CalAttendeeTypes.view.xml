@@ -1,0 +1,20 @@
+<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/views.xsd"
+  
+  name="CalAttendeeTypes"
+  source="CalAttendeeTypes"
+  >
+  <Columns>
+    <SimpleColumn name="Calendar" />
+    <SimpleColumn name="AttendeeType" />
+    <SimpleJoin name="AttendeeType" joinType="INNER">
+      <SimpleColumn alias="TypeName" name="Name" />
+      <SimpleColumn alias="TypeDescription" name="Description" />
+      <SimpleColumn alias="TypeTransparency" name="Transparency" />
+      <SimpleColumn alias="TypeResource" name="Resource" />
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="TypeName" />
+  </Order>
+</View>

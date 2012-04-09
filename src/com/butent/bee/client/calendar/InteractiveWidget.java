@@ -14,14 +14,15 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
-import com.google.gwt.user.client.ui.FocusPanel;
-import com.google.gwt.user.client.ui.RootPanel;
+import com.google.gwt.user.client.ui.Focusable;
+import com.google.gwt.user.client.ui.impl.FocusImpl;
 
-public abstract class InteractiveWidget extends Composite {
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.Binder;
 
-  private FocusPanel focusPanel = new FocusPanel();
+public abstract class InteractiveWidget extends Composite implements Focusable {
 
-  protected FlowPanel rootPanel = new FlowPanel();
+  private final FlowPanel rootPanel = new FlowPanel();
 
   private boolean lastWasKeyDown = false;
 
@@ -30,10 +31,17 @@ public abstract class InteractiveWidget extends Composite {
     initWidget(rootPanel);
 
     sinkEvents(Event.ONMOUSEDOWN | Event.ONDBLCLICK | Event.KEYEVENTS);
+    
+    DomUtils.makeFocusable(rootPanel);
 
-    hideFocusPanel();
+    Binder.addKeyDownHandler(rootPanel, new KeyDownHandler() {
+      public void onKeyDown(KeyDownEvent event) {
+        keyboardNavigation(event.getNativeEvent().getKeyCode());
+        lastWasKeyDown = true;
+      }
+    });
 
-    focusPanel.addKeyPressHandler(new KeyPressHandler() {
+    Binder.addKeyPressHandler(rootPanel, new KeyPressHandler() {
       public void onKeyPress(KeyPressEvent event) {
         if (!lastWasKeyDown) {
           keyboardNavigation(event.getNativeEvent().getKeyCode());
@@ -42,21 +50,19 @@ public abstract class InteractiveWidget extends Composite {
       }
     });
 
-    focusPanel.addKeyUpHandler(new KeyUpHandler() {
+    Binder.addKeyUpHandler(rootPanel, new KeyUpHandler() {
       public void onKeyUp(KeyUpEvent event) {
         lastWasKeyDown = false;
-      }
-    });
-    focusPanel.addKeyDownHandler(new KeyDownHandler() {
-      public void onKeyDown(KeyDownEvent event) {
-        keyboardNavigation(event.getNativeEvent().getKeyCode());
-        lastWasKeyDown = true;
       }
     });
   }
 
   public ComplexPanel getRootPanel() {
     return rootPanel;
+  }
+
+  public int getTabIndex() {
+    return FocusImpl.getFocusImplForPanel().getTabIndex(getElement());
   }
 
   @Override
@@ -67,7 +73,7 @@ public abstract class InteractiveWidget extends Composite {
     switch (eventType) {
       case Event.ONDBLCLICK: {
         onDoubleClick(element, event);
-        focusPanel.setFocus(true);
+        setFocus(true);
         break;
       }
 
@@ -75,7 +81,7 @@ public abstract class InteractiveWidget extends Composite {
         if (event.getButton() == NativeEvent.BUTTON_LEFT 
             && DOM.eventGetCurrentTarget(event) == getElement()) {
           onMouseDown(element, event);
-          focusPanel.setFocus(true);
+          setFocus(true);
           DOM.eventCancelBubble(event, true);
           DOM.eventPreventDefault(event);
           return;
@@ -112,6 +118,26 @@ public abstract class InteractiveWidget extends Composite {
 
   public abstract void onUpArrowKeyPressed();
 
+  public void setAccessKey(char key) {
+    FocusImpl.getFocusImplForPanel().setAccessKey(getElement(), key);
+  }
+
+  public void setFocus(boolean focused) {
+    if (focused) {
+      FocusImpl.getFocusImplForPanel().focus(getElement());
+    } else {
+      FocusImpl.getFocusImplForPanel().blur(getElement());
+    }
+  }
+
+  public void setTabIndex(int index) {
+    FocusImpl.getFocusImplForPanel().setTabIndex(getElement(), index);
+  }
+  
+  protected void clear() {
+    getRootPanel().clear();
+  }
+
   protected void keyboardNavigation(int key) {
     switch (key) {
       case KeyCodes.KEY_DELETE: {
@@ -135,14 +161,5 @@ public abstract class InteractiveWidget extends Composite {
         break;
       }
     }
-  }
-
-  private void hideFocusPanel() {
-    RootPanel.get().add(focusPanel);
-    DOM.setStyleAttribute(focusPanel.getElement(), "position", "absolute");
-    DOM.setStyleAttribute(focusPanel.getElement(), "top", "-10");
-    DOM.setStyleAttribute(focusPanel.getElement(), "left", "-10");
-    DOM.setStyleAttribute(focusPanel.getElement(), "height", "0px");
-    DOM.setStyleAttribute(focusPanel.getElement(), "width", "0px");
   }
 }

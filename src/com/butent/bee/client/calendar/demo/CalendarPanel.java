@@ -22,9 +22,8 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.calendar.AppointmentStyle;
 import com.butent.bee.client.calendar.Calendar;
-import com.butent.bee.client.calendar.CalendarSettings;
 import com.butent.bee.client.calendar.CalendarSettings.Click;
-import com.butent.bee.client.calendar.CalendarViews;
+import com.butent.bee.client.calendar.CalendarView.Type;
 import com.butent.bee.client.calendar.event.CreateEvent;
 import com.butent.bee.client.calendar.event.CreateHandler;
 import com.butent.bee.client.calendar.event.DateRequestEvent;
@@ -74,7 +73,7 @@ public class CalendarPanel extends Complex {
 
     calendar.suspendLayout();
     calendar.addAppointments(buildAppointments(days, multi));    
-    calendar.setView(CalendarViews.DAY, 4);
+    calendar.setType(Type.DAY, calendar.getSettings().getDefaultDisplayedDays());
     
     datePicker = new DatePicker(calendar.getDate());
     datePicker.addValueChangeHandler(new ValueChangeHandler<JustDate>() {
@@ -200,11 +199,8 @@ public class CalendarPanel extends Complex {
   }
 
   private void configureCalendar() {
-    CalendarSettings settings = new CalendarSettings();
-    settings.setTimeBlockClickNumber(Click.Double);
-    settings.setEnableDragDropCreation(false);
-
-    calendar.setSettings(settings);
+    calendar.getSettings().setTimeBlockClickNumber(Click.Double);
+    calendar.getSettings().setEnableDragDropCreation(false);
 
     calendar.addDeleteHandler(new DeleteHandler<Appointment>() {
       public void onDelete(DeleteEvent<Appointment> event) {
@@ -247,7 +243,7 @@ public class CalendarPanel extends Complex {
   private Widget createViews() {
     TabBar tabBar = new TabBar();
     tabBar.addItem("1 Day");
-    tabBar.addItem("4 Days");
+    tabBar.addItem(BeeUtils.toString(calendar.getSettings().getDefaultDisplayedDays()) + " Days");
     tabBar.addItem("Work Week");
     tabBar.addItem("Week");
     tabBar.addItem("Month");
@@ -258,21 +254,21 @@ public class CalendarPanel extends Complex {
         int tabIndex = event.getSelectedItem();
         switch (tabIndex) {
           case 0:
-            calendar.setView(CalendarViews.DAY, 1);
+            calendar.setType(Type.DAY, 1);
             break;
           case 1:
-            calendar.setView(CalendarViews.DAY, 4);
+            calendar.setType(Type.DAY, calendar.getSettings().getDefaultDisplayedDays());
             break;
           case 2:
             calendar.setDate(TimeUtils.startOfWeek(calendar.getDate()));
-            calendar.setView(CalendarViews.DAY, 5);
+            calendar.setType(Type.DAY, 5);
             datePicker.setDate(calendar.getDate());
             break;
           case 3:
-            calendar.setView(CalendarViews.DAY, 7);
+            calendar.setType(Type.DAY, 7);
             break;
           case 4:
-            calendar.setView(CalendarViews.MONTH);
+            calendar.setType(Type.MONTH);
             break;
         }
       }

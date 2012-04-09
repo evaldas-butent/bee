@@ -5,6 +5,10 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
@@ -37,6 +41,20 @@ public class Binder {
     Assert.notNull(handler, "addKeyDownHandler: handler is null");
 
     return widget.addDomHandler(handler, KeyDownEvent.getType());
+  }
+
+  public static HandlerRegistration addKeyPressHandler(Widget widget, KeyPressHandler handler) {
+    Assert.notNull(widget, "addKeyPressHandler: widget is null");
+    Assert.notNull(handler, "addKeyPressHandler: handler is null");
+
+    return widget.addDomHandler(handler, KeyPressEvent.getType());
+  }
+  
+  public static HandlerRegistration addKeyUpHandler(Widget widget, KeyUpHandler handler) {
+    Assert.notNull(widget, "addKeyUpHandler: widget is null");
+    Assert.notNull(handler, "addKeyUpHandler: handler is null");
+
+    return widget.addDomHandler(handler, KeyUpEvent.getType());
   }
   
   public static void sinkInput(Element elem) {

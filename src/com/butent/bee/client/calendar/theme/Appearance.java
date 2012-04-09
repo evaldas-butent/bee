@@ -7,16 +7,18 @@ public class Appearance implements ThemeAppointmentStyle {
   protected String selectedBorder;
 
   protected String selectedBackground;
-  protected String selectedBackgroundImage;
   protected String selectedBackgroundHeader;
   protected String selectedBackgroundFooter;
+
   protected String selectedText;
   protected String selectedHeaderText;
+  
   protected String border;
+  
   protected String background;
-  protected String backgroundImage;
   protected String backgroundHeader;
   protected String backgroundFooter;
+  
   protected String text;
   protected String headerText;
 
@@ -51,10 +53,6 @@ public class Appearance implements ThemeAppointmentStyle {
     return backgroundHeader;
   }
 
-  public String getBackgroundImage() {
-    return backgroundImage;
-  }
-
   public String getBorder() {
     return border;
   }
@@ -73,10 +71,6 @@ public class Appearance implements ThemeAppointmentStyle {
 
   public String getSelectedBackgroundHeader() {
     return selectedBackgroundHeader;
-  }
-
-  public String getSelectedBackgroundImage() {
-    return selectedBackgroundImage;
   }
 
   public String getSelectedBorder() {
@@ -107,10 +101,6 @@ public class Appearance implements ThemeAppointmentStyle {
     this.backgroundHeader = backgroundHeader;
   }
 
-  public void setBackgroundImage(String backgroundImage) {
-    this.backgroundImage = backgroundImage;
-  }
-
   public void setBorder(String border) {
     this.border = border;
   }
@@ -129,10 +119,6 @@ public class Appearance implements ThemeAppointmentStyle {
 
   public void setSelectedBackgroundHeader(String selectedBackgroundHeader) {
     this.selectedBackgroundHeader = selectedBackgroundHeader;
-  }
-
-  public void setSelectedBackgroundImage(String selectedBackgroundImage) {
-    this.selectedBackgroundImage = selectedBackgroundImage;
   }
 
   public void setSelectedBorder(String selectedBorder) {

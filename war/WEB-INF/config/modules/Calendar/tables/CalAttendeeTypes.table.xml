@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/table.xsd"
+
+  name="CalAttendeeTypes"
+  idName="CalAttendeeTypeID"
+  >
+  <BeeFields>
+    <BeeField name="Calendar" type="LONG" notNull="true" relation="Calendars" cascade="DELETE" />
+    <BeeField name="AttendeeType" type="LONG" notNull="true" relation="AttendeeTypes" cascade="DELETE" />
+  </BeeFields>
+  <BeeKeys>
+    <BeeKey unique="true">
+      <KeyField>Calendar</KeyField>
+      <KeyField>AttendeeType</KeyField>
+    </BeeKey>
+  </BeeKeys>
+</BeeTable>
