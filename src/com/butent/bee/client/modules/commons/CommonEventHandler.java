@@ -458,7 +458,7 @@ public class CommonEventHandler {
     });
   }
 
-  private static ParameterList createArgs(String name) {
+  static ParameterList createArgs(String name) {
     ParameterList args = BeeKeeper.getRpc().createParameters(CommonsConstants.COMMONS_MODULE);
     args.addQueryItem(CommonsConstants.COMMONS_METHOD, name);
     return args;

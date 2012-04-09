@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.commons;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
@@ -8,6 +9,7 @@ import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
@@ -21,8 +23,10 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -46,6 +50,8 @@ public class CommonsModuleBean implements BeeModule {
   DataEditorBean deb;
   @EJB
   QueryServiceBean qs;
+  @EJB
+  ParamHolderBean prm;
   @Resource
   EJBContext ctx;
 
@@ -62,6 +68,9 @@ public class CommonsModuleBean implements BeeModule {
     if (BeeUtils.isPrefix(svc, CommonsConstants.COMMONS_ITEM_PREFIX)) {
       response = doItemEvent(svc, reqInfo);
 
+    } else if (BeeUtils.isPrefix(svc, CommonsConstants.COMMONS_PARAMETERS_PREFIX)) {
+      response = doParameterEvent(svc, reqInfo);
+
     } else {
       String msg = BeeUtils.concat(1, "Commons service not recognized:", svc);
       logger.warning(msg);
@@ -72,7 +81,10 @@ public class CommonsModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return null;
+    return Lists.newArrayList(
+        new BeeParameter(CommonsConstants.COMMONS_MODULE, "ProgramTitle", "String", "BEE", null),
+        new BeeParameter(CommonsConstants.COMMONS_MODULE, "Precission", "Number", "5",
+            "Precission of calculations"));
   }
 
   @Override
@@ -156,6 +168,37 @@ public class CommonsModuleBean implements BeeModule {
     }
     if (response == null) {
       String msg = BeeUtils.concat(1, "Items service not recognized:", svc);
+      logger.warning(msg);
+      response = ResponseObject.error(msg);
+
+    } else if (response.hasErrors()) {
+      ctx.setRollbackOnly();
+    }
+    return response;
+  }
+
+  private ResponseObject doParameterEvent(String svc, RequestInfo reqInfo) {
+    ResponseObject response = null;
+
+    if (BeeUtils.same(svc, CommonsConstants.SVC_GET_PARAMETERS)) {
+      response = ResponseObject.response(prm
+          .getParameters(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS_MODULE)).values());
+
+    } else if (BeeUtils.same(svc, CommonsConstants.SVC_SAVE_PARAMETERS)) {
+      List<BeeParameter> params = Lists.newArrayList();
+
+      for (String param : Codec.beeDeserializeCollection(
+          reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS_CHANGES))) {
+        params.add(BeeParameter.restore(param));
+      }
+      if (prm.saveParameters(params)) {
+        response = ResponseObject.response(true);
+      } else {
+        response = ResponseObject.error("Parameters update failure");
+      }
+    }
+    if (response == null) {
+      String msg = BeeUtils.concat(1, "Parameters service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
 

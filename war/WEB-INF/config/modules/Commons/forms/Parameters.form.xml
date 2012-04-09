@@ -2,9 +2,9 @@
 <Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
   
-  name="Parameters"
+  name="Parameters" enabledActions="add save refresh"
   >
   <SimplePanel name="Container">
-    <InlineLabel />
+    <InlineLabel html="Kraunami parametrai..." />
   </SimplePanel>
 </Form>
