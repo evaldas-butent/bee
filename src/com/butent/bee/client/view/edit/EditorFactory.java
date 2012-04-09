@@ -129,7 +129,7 @@ public class EditorFactory {
         break;
 
       case TEXT:
-        if (precision > 100) {
+        if (precision > 200) {
           editor = new InputArea();
         } else {
           editor = new InputText();

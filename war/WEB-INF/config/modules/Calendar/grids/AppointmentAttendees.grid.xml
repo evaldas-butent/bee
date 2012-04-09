@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+
+  name="AppointmentAttendees" viewName="AppointmentAttendees" caption="Resursai"
+  >
+  <columns>
+    <DataColumn name="TypeName" source="TypeName" readOnly="true" />
+    <DataColumn name="AttendeeName" source="AttendeeName" />
+    
+    <DataColumn name="Optional" source="Optional" />
+    <DataColumn name="ResponseStatus" source="ResponseStatus" itemKey="ResponseStatus" />
+    <DataColumn name="AdditionalGuests" source="AdditionalGuests" />
+
+    <DataColumn name="Comment" source="Comment" />
+  </columns>
+</Grid>

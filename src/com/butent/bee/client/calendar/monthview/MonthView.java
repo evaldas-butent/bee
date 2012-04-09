@@ -15,7 +15,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.calendar.CalendarFormat;
-import com.butent.bee.client.calendar.CalendarSettings.Click;
+import com.butent.bee.client.calendar.CalendarSettings.TimeBlockClick;
 import com.butent.bee.client.calendar.CalendarView;
 import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.calendar.drop.MonthViewDropController;
@@ -220,7 +220,7 @@ public class MonthView extends CalendarView {
 
   public void onDoubleClick(Element clickedElement, Event event) {
     if (clickedElement.equals(appointmentCanvas.getElement())) {
-      if (calendarWidget.getSettings().getTimeBlockClickNumber() == Click.Double) {
+      if (calendarWidget.getSettings().getTimeBlockClickNumber() == TimeBlockClick.Double) {
         dayClicked(event);
       }
     } else {
@@ -239,7 +239,7 @@ public class MonthView extends CalendarView {
   @Override
   public void onSingleClick(Element clickedElement, Event event) {
     if (clickedElement.equals(appointmentCanvas.getElement())) {
-      if (calendarWidget.getSettings().getTimeBlockClickNumber() == Click.Single) {
+      if (calendarWidget.getSettings().getTimeBlockClickNumber() == TimeBlockClick.Single) {
         dayClicked(event);
       }
     } else {

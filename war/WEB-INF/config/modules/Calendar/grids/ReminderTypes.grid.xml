@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+
+  name="ReminderTypes" viewName="ReminderTypes" caption="Priminimų tipai"
+  >
+  <columns>
+    <DataColumn name="Method" source="Method" itemKey="ReminderMethod" />
+    <DataColumn name="Minutes" source="Minutes" minValue="30" maxValue="1440" >
+      <editor type="spinner" stepValue="30" />
+    </DataColumn>
+
+    <DataColumn name="Description" source="Description" autoFit="true" />
+  </columns>
+</Grid>

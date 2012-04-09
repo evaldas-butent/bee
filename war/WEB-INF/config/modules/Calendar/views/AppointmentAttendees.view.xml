@@ -12,6 +12,9 @@
     <SimpleJoin name="Attendee" joinType="INNER">
       <SimpleColumn alias="AttendeeName" name="Name" />
       <SimpleColumn name="AttendeeType" />
+      <SimpleJoin joinType="INNER" name="AttendeeType">
+        <SimpleColumn alias="TypeName" name="Name" />
+      </SimpleJoin>
     </SimpleJoin>
     
     <SimpleColumn name="Optional" />

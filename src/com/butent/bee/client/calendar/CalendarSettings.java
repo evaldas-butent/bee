@@ -1,9 +1,15 @@
 package com.butent.bee.client.calendar;
 
+import com.butent.bee.shared.ui.HasCaption;
+
 public class CalendarSettings {
 
-  public enum Click {
-    Double, Single, Drag, None
+  public enum TimeBlockClick implements HasCaption {
+    Double, Single, Drag;
+
+    public String getCaption() {
+      return this.name();
+    }
   }
 
   private int pixelsPerInterval = 30;
@@ -20,7 +26,7 @@ public class CalendarSettings {
   private boolean enableDragDrop = true;
   private boolean dragDropCreation = true;
 
-  private Click timeBlockClickNumber = Click.Single;
+  private TimeBlockClick timeBlockClickNumber = TimeBlockClick.Single;
 
   public CalendarSettings() {
   }
@@ -45,7 +51,7 @@ public class CalendarSettings {
     return scrollToHour;
   }
 
-  public Click getTimeBlockClickNumber() {
+  public TimeBlockClick getTimeBlockClickNumber() {
     return timeBlockClickNumber;
   }
 
@@ -93,7 +99,7 @@ public class CalendarSettings {
     scrollToHour = hour;
   }
 
-  public void setTimeBlockClickNumber(Click timeBlockClickNumber) {
+  public void setTimeBlockClickNumber(TimeBlockClick timeBlockClickNumber) {
     this.timeBlockClickNumber = timeBlockClickNumber;
   }
 

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+
+  name="AppointmentStyles" viewName="AppointmentStyles" caption="Vizitų stiliai" autoFit="true"
+  >
+  <columns>
+    <DataColumn name="Name" source="Name" />
+    <DataColumn name="Description" source="Description" />
+
+    <DataColumn name="HeaderColorName" source="HeaderColorName" />
+    <DataColumn name="HeaderBackground" source="HeaderBackground" />
+    <DataColumn name="HeaderForeground" source="HeaderForeground" />
+
+    <DataColumn name="HeaderClass" source="HeaderClass" />
+    <DataColumn name="HeaderStyle" source="HeaderStyle" />
+
+    <DataColumn name="BodyColorName" source="BodyColorName" />
+    <DataColumn name="BodyBackground" source="BodyBackground" />
+    <DataColumn name="BodyForeground" source="BodyForeground" />
+
+    <DataColumn name="BodyClass" source="BodyClass" />
+    <DataColumn name="BodyStyle" source="BodyStyle" />
+
+    <DataColumn name="FooterColorName" source="FooterColorName" />
+    <DataColumn name="FooterBackground" source="FooterBackground" />
+    <DataColumn name="FooterForeground" source="FooterForeground" />
+
+    <DataColumn name="FooterClass" source="FooterClass" />
+    <DataColumn name="FooterStyle" source="FooterStyle" />
+  </columns>
+</Grid>

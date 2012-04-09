@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+
+  name="Appointments" viewName="Appointments" caption="Vizitai"
+  newRowForm="Appointment" editForm="Appointment"
+  >
+  <columns>
+    <DataColumn name="Summary" source="Summary" />
+    <DataColumn name="Description" source="Description" />
+
+    <DataColumn name="Location" source="Location" />
+    <DataColumn name="HtmlLink" source="HtmlLink" />
+
+    <DataColumn name="ColorName" source="ColorName" />
+    <DataColumn name="Background" source="Background" readOnly="true" />
+    <DataColumn name="Foreground" source="Foreground" readOnly="true" />
+    
+    <DataColumn name="StyleName" source="StyleName" />
+
+    <DataColumn name="Status" source="Status" itemKey="AppointmentStatus" />
+    <DataColumn name="Created" source="Created" readOnly="true">
+      <carry>
+        <expression>new Date()</expression>
+      </carry>
+    </DataColumn>
+
+    <DataColumn name="CreatorFirstName" source="CreatorFirstName" />
+    <DataColumn name="CreatorLastName" source="CreatorLastName" />
+    
+    <DataColumn name="OrganizerFirstName" source="OrganizerFirstName" />
+    <DataColumn name="OrganizerLastName" source="OrganizerLastName" />
+    
+    <DataColumn name="StartDate" source="StartDate" />
+    <DataColumn name="StartDateTime" source="StartDateTime" />
+    <DataColumn name="StartTimeZoneName" source="StartTimeZoneName" />
+
+    <DataColumn name="EndDate" source="EndDate" />
+    <DataColumn name="EndDateTime" source="EndDateTime" />
+    <DataColumn name="EndTimeZoneName" source="EndTimeZoneName" />
+
+    <DataColumn name="Recurrence" source="Recurrence" />
+    <DataColumn name="RecurringEventId" source="RecurringEventId" readOnly="true" />
+
+    <DataColumn name="Transparency" source="Transparency" itemKey="Transparency" />
+    <DataColumn name="Visibility" source="Visibility" itemKey="Calendar_Visibility" />
+    <DataColumn name="ReadOnly" source="ReadOnly" />
+
+    <DataColumn name="ICalUID" source="ICalUID" />
+    <DataColumn name="Sequence" source="Sequence" />
+
+    <DataColumn name="AnyoneCanAddSelf" source="AnyoneCanAddSelf" />
+    <DataColumn name="GuestsCanInviteOthers" source="GuestsCanInviteOthers" />
+    <DataColumn name="GuestsCanSeeOtherGuests" source="GuestsCanSeeOtherGuests" />
+
+    <DataColumn name="UseDefaultReminders" source="UseDefaultReminders" />
+  </columns>
+  
+  <rowEditable>
+    <expression>!row.ReadOnly</expression>
+  </rowEditable>
+
+</Grid>

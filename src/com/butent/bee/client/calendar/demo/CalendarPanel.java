@@ -22,7 +22,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.calendar.AppointmentStyle;
 import com.butent.bee.client.calendar.Calendar;
-import com.butent.bee.client.calendar.CalendarSettings.Click;
+import com.butent.bee.client.calendar.CalendarSettings.TimeBlockClick;
 import com.butent.bee.client.calendar.CalendarView.Type;
 import com.butent.bee.client.calendar.event.CreateEvent;
 import com.butent.bee.client.calendar.event.CreateHandler;
@@ -199,7 +199,7 @@ public class CalendarPanel extends Complex {
   }
 
   private void configureCalendar() {
-    calendar.getSettings().setTimeBlockClickNumber(Click.Double);
+    calendar.getSettings().setTimeBlockClickNumber(TimeBlockClick.Double);
     calendar.getSettings().setEnableDragDropCreation(false);
 
     calendar.addDeleteHandler(new DeleteHandler<Appointment>() {

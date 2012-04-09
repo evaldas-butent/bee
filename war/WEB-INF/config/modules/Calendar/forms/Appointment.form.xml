@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+  
+  name="Appointment" viewName="Appointments" caption="Vizitai">
+
+  <FlowPanel class="flexBox-vertical">
+    <FlexTable cellSpacing="5">
+      <row>
+        <cell>
+          <Label html="Pavadinimas:" class="bee-required" />
+        </cell>
+        <cell>
+          <InputText source="Summary" />
+        </cell>
+        <cell>
+          <Label html="Aprašymas:" />
+        </cell>
+        <cell>
+          <InputArea source="Description" visibleLines="3" />
+        </cell>
+      </row>
+
+      <row>
+        <cell>
+          <Label html="Pradžia:" class="bee-required" />
+        </cell>
+        <cell>
+          <InputDateTime source="StartDateTime" />
+        </cell>
+        <cell>
+          <Label html="Pabaiga:" class="bee-required" />
+        </cell>
+        <cell>
+          <InputDateTime source="EndDateTime" />
+        </cell>
+      </row>
+
+      <row>
+        <cell>
+          <Label html="Spalva:" class="bee-required" />
+        </cell>
+        <cell>
+          <DataSelector source="ColorName" relSource="Color" relView="Colors" relColumn="Name" />
+        </cell>
+        <cell>
+          <Label html="Stilius:" />
+        </cell>
+        <cell>
+          <DataSelector source="StyleName" relSource="Style" relView="AppointmentStyles" relColumn="Name" />
+        </cell>
+      </row>
+
+      <row>
+        <cell>
+          <Label html="Būsena:" />
+        </cell>
+        <cell>
+          <ListBox source="Status" itemKey="AppointmentStatus" />
+        </cell>
+        <cell>
+          <Radio source="Visibility" itemKey="Calendar_Visibility" vertical="true" />
+        </cell>
+        <cell>
+          <CheckBox source="UseDefaultReminders" html="Use Default Reminders" />
+        </cell>
+      </row>
+    </FlexTable>
+    
+    <ComplexPanel class="flexible" style="position: relative; margin-top: 3ex;">
+      <layer left="1" leftUnit="em" width="60" widthUnit="%" top="0" bottom="1">
+        <ChildGrid name="AppointmentAttendees" relColumn="Appointment" />
+      </layer>
+      <layer left="65" leftUnit="%" right="1" rightUnit="em" top="0" bottom="1">
+        <ChildGrid name="AppointmentReminders" relColumn="Appointment" />
+      </layer>
+    </ComplexPanel>
+
+  </FlowPanel>
+</Form>  

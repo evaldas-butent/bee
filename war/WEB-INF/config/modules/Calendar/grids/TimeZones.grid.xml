@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+
+  name="TimeZones" viewName="TimeZones" caption="Laiko juostos"
+  >
+  <columns>
+    <DataColumn name="Name" source="Name" />
+    <DataColumn name="StandardOffset" source="StandardOffset" />
+  </columns>
+</Grid>

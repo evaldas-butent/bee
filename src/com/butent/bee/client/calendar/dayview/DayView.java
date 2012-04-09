@@ -8,7 +8,7 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.calendar.Appointment;
-import com.butent.bee.client.calendar.CalendarSettings.Click;
+import com.butent.bee.client.calendar.CalendarSettings.TimeBlockClick;
 import com.butent.bee.client.calendar.CalendarView;
 import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.calendar.drop.DayViewDropController;
@@ -174,7 +174,7 @@ public class DayView extends CalendarView {
       Appointment appt = list.get(0).getAppointment();
       calendarWidget.fireOpenEvent(appt);
 
-    } else if (getSettings().getTimeBlockClickNumber() == Click.Double
+    } else if (getSettings().getTimeBlockClickNumber() == TimeBlockClick.Double
         && element == dayViewBody.getGrid().getGridOverlay().getElement()) {
       int x = DOM.eventGetClientX(event);
       int y = DOM.eventGetClientY(event);
@@ -208,7 +208,7 @@ public class DayView extends CalendarView {
 
     if (appt != null) {
       selectAppointment(appt);
-    } else if ((getSettings().getTimeBlockClickNumber() == Click.Single
+    } else if ((getSettings().getTimeBlockClickNumber() == TimeBlockClick.Single
         || getSettings().getEnableDragDropCreation())
         && element == dayViewBody.getGrid().getGridOverlay().getElement()) {
       int x = DOM.eventGetClientX(event);
@@ -432,7 +432,7 @@ public class DayView extends CalendarView {
 
     DateTime newStartDate = getCoordinatesDate(x, y);
 
-    if (getSettings().getTimeBlockClickNumber() != Click.Drag) {
+    if (getSettings().getTimeBlockClickNumber() != TimeBlockClick.Drag) {
       calendarWidget.fireTimeBlockClickEvent(newStartDate);
     } else {
       int snapSize = calendarWidget.getSettings().getPixelsPerInterval();

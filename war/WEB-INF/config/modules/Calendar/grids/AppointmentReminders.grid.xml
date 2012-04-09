@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+
+  name="AppointmentReminders" viewName="AppointmentReminders" caption="Priminimai"
+  >
+  <columns>
+    <DataColumn name="Method" source="Method" itemKey="ReminderMethod" />
+    <DataColumn name="Minutes" source="Minutes" />
+    <DataColumn name="DefaultMinutes" source="DefaultMinutes" readOnly="true" />
+  </columns>
+</Grid>

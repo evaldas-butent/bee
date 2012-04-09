@@ -349,6 +349,10 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     for (int i = 0; i < getSize(); i++) {
       label = new BeeLabel(getEditableColumn(i).getCaption());
       label.addStyleName(STYLE_LABEL);
+      if (!getEditableColumn(i).isNullable()) {
+        label.addStyleName(StyleUtils.NAME_REQUIRED);
+      }
+
       setWidget(r, 0, label);
       getCellFormatter().setVerticalAlignment(r, 0, HasVerticalAlignment.ALIGN_TOP);
 
@@ -360,6 +364,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
         StyleUtils.setTextAlign(cell, HasHorizontalAlignment.ALIGN_RIGHT);
       }
       cell.getElement().setTabIndex(0);
+
       setWidget(r, 1, cell);
       r++;
     }
@@ -541,7 +546,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
 
       case TEXT:
       case TIMEOFDAY:
-        if (precision > 100) {
+        if (precision > 200) {
           width = maxCellWidth;
           height = defaultCellHeight * 3;
         } else if (precision > 0) {

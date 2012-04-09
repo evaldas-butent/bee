@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+
+  name="AttendeeTypes" viewName="AttendeeTypes" caption="Resursų tipai"
+  >
+  <columns>
+    <DataColumn name="Name" source="Name" />
+    <DataColumn name="Description" source="Description" />
+
+    <DataColumn name="Transparency" source="Transparency" itemKey="Transparency" />
+    <DataColumn name="Resource" source="Resource" caption="Is Resource" />
+  </columns>
+</Grid>

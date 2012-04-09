@@ -1,21 +1,8 @@
 package com.butent.bee.client;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.LayoutPanel;
-import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.calendar.demo.CalendarPanel;
-import com.butent.bee.client.modules.commons.CommonEventHandler;
-import com.butent.bee.client.modules.transport.TransportHandler;
-import com.butent.bee.client.ui.AbstractFormCallback;
-import com.butent.bee.client.ui.CompositeService;
-import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.PasswordService;
-import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.RowComparator;
 
 import java.util.Arrays;
@@ -100,32 +87,6 @@ public class BeeKeeper {
     for (Module mdl : arr) {
       mdl.init();
     }
-  }
-
-  public void register() {
-    FormFactory.registerFormCallback("User", new AbstractFormCallback() {
-      @Override
-      public void afterCreateWidget(String name, final Widget widget) {
-        if (BeeUtils.same(name, "ChangePassword") && widget instanceof HasClickHandlers) {
-          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              CompositeService.doService(new PasswordService().name(),
-                  PasswordService.STG_GET_PASS, UiHelper.getForm(widget));
-            }
-          });
-        }
-      }
-    });
-
-    TransportHandler.register();
-    CommonEventHandler.register();
-
-    getMenu().registerMenuCallback("calendar", new MenuManager.MenuCallback() {
-      public void onSelection(String parameters) {
-        getScreen().updateActivePanel(new CalendarPanel(14, false));
-      }
-    });
   }
 
   public void start() {

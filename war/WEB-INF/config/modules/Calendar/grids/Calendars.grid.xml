@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+
+  name="Calendars" viewName="Calendars" caption="Kalendoriai"
+  newRowForm="Calendar" editForm="Calendar"
+  >
+  <columns>
+    <DataColumn name="Name" source="Name" />
+    <DataColumn name="Description" source="Description" />
+
+    <DataColumn name="Location" source="Location" />
+    <DataColumn name="TimeZoneName" source="TimeZoneName" />
+
+    <DataColumn name="ThemeName" source="ThemeName" />
+
+    <DataColumn name="Hidden" source="Hidden" />
+    <DataColumn name="ReadOnly" source="ReadOnly" />
+    <DataColumn name="Visibility" source="Visibility" itemKey="Calendar_Visibility" />
+
+    <DataColumn name="Transparency" source="Transparency" itemKey="Transparency" />
+
+    <DataColumn name="DefaultDisplayedDays" source="DefaultDisplayedDays" />
+
+    <DataColumn name="PixelsPerInterval" source="PixelsPerInterval" />
+    <DataColumn name="IntervalsPerHour" source="IntervalsPerHour" />
+
+    <DataColumn name="WorkingHourStart" source="WorkingHourStart" />
+    <DataColumn name="WorkingHourEnd" source="WorkingHourEnd" />
+    <DataColumn name="ScrollToHour" source="ScrollToHour" />
+    <DataColumn name="OffsetHourLabels" source="OffsetHourLabels" />
+
+    <DataColumn name="EnableDragDrop" source="EnableDragDrop" />
+    <DataColumn name="DragDropCreation" source="DragDropCreation" />
+
+    <DataColumn name="TimeBlockClickNumber" source="TimeBlockClickNumber" itemKey="TimeBlockClick" />
+  </columns>
+</Grid>

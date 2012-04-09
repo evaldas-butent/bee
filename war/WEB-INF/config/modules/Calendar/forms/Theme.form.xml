@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+  
+  name="Theme" viewName="Themes" caption="Spalvų Tema">
+
+  <FlowPanel class="flexBox-vertical">
+    <FlexTable cellSpacing="10">
+      <row>
+        <cell>
+          <Label html="Pavadinimas:" class="bee-required" />
+        </cell>
+        <cell>
+          <InputText source="Name" />
+        </cell>
+      </row>
+      <row>
+        <cell>
+          <Label html="Aprašymas:" />
+        </cell>
+        <cell>
+          <InputArea source="Description" visibleLines="3" style="width: 200px;" />
+        </cell>
+      </row>
+    </FlexTable>
+
+    <ChildGrid class="flexible" name="ThemeColors" relColumn="Theme" />
+  </FlowPanel>
+</Form>  

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+
+  name="Colors"
+  viewName="Colors"
+  caption="Colors"
+  >
+  <columns>
+    <DataColumn name="Name" source="Name" minWidth="100" />
+
+    <DataColumn name="Background" source="Background" autoFit="true" minWidth="200" />
+    <DataColumn name="Foreground" source="Foreground" maxWidth="100" />
+  </columns>
+  
+  <rowStyle>
+    <style>
+      <inline>background: [row.Background]; color: [row.Foreground];</inline>
+    </style>
+    <condition><expression>true</expression></condition>
+  </rowStyle>
+  
+</Grid>

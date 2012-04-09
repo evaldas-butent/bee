@@ -1,0 +1,13 @@
+<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+  
+  name="CalAttendeeTypes" viewName="CalAttendeeTypes" caption="Resursų tipai"
+  >
+  <columns>
+    <DataColumn name="TypeName" source="TypeName" />
+
+    <DataColumn name="TypeDescription" source="TypeDescription" readOnly="true" />
+    <DataColumn name="TypeTransparency" source="TypeTransparency" readOnly="true" itemKey="Transparency" />
+    <DataColumn name="TypeResource" source="TypeResource" readOnly="true" />
+  </columns>
+</Grid>

@@ -4,7 +4,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
-import com.butent.bee.client.modules.crm.CrmKeeper;
+import com.butent.bee.client.modules.ModuleManager;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 
@@ -26,10 +26,8 @@ public class Bee implements EntryPoint {
     if (GWT.isProdMode()) {
       GWT.setUncaughtExceptionHandler(new ExceptionHandler());
     }
-
-    bk.register();
     
-    CrmKeeper.register();
+    ModuleManager.onLoad();
 
     BeeKeeper.getScreen().start();
     BeeKeeper.getBus().dispatchService(Service.REFRESH_MENU);

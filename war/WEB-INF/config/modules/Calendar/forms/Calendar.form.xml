@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+  
+  name="Calendar" viewName="Calendars" caption="Kalendorius">
+
+  <FlowPanel class="flexBox-vertical">
+    <FlexTable cellSpacing="5">
+      <row>
+        <cell>
+          <Label html="Pavadinimas:" class="bee-required" />
+        </cell>
+        <cell>
+          <InputText source="Name" />
+        </cell>
+        <cell>
+          <Label html="Aprašymas:" />
+        </cell>
+        <cell>
+          <InputArea source="Description" visibleLines="3" />
+        </cell>
+        <cell>
+          <Label html="Tema:" class="bee-required" />
+        </cell>
+        <cell>
+          <DataSelector source="ThemeName" relSource="Theme" relView="Themes" relColumn="Name" />
+        </cell>
+      </row>
+
+      <row>
+        <cell>
+          <Label html="Dienos:" />
+        </cell>
+        <cell>
+          <InputSpinner source="DefaultDisplayedDays" minValue="2" maxValue="100" step="1" />
+        </cell>
+        <cell>
+          <Label html="Intervalų skaičius valandoje:" />
+        </cell>
+        <cell>
+          <InputSpinner source="IntervalsPerHour" minValue="1" maxValue="30" step="1" />
+        </cell>
+        <cell>
+          <Label html="Intervalo aukštis px:" />
+        </cell>
+        <cell>
+          <InputSpinner source="PixelsPerInterval" minValue="1" maxValue="30" step="1" />
+        </cell>
+      </row>
+
+      <row>
+        <cell>
+          <Label html="Darbo dienos pradžia:" />
+        </cell>
+        <cell>
+          <InputSpinner source="WorkingHourStart" minValue="0" maxValue="23" step="1" />
+        </cell>
+        <cell>
+          <Label html="Darbo dienos pabaiga:" />
+        </cell>
+        <cell>
+          <InputSpinner source="WorkingHourEnd" minValue="0" maxValue="23" step="1" />
+        </cell>
+        <cell>
+          <Label html="Scroll To Hour:" />
+        </cell>
+        <cell>
+          <InputSpinner source="ScrollToHour" minValue="0" maxValue="23" step="1" />
+        </cell>
+      </row>
+    </FlexTable>
+    
+    <ComplexPanel class="flexible" style="position: relative; margin-top: 3ex;">
+      <layer left="1" leftUnit="em" width="60" widthUnit="%" top="0" bottom="1">
+        <ChildGrid name="CalAttendeeTypes" relColumn="Calendar" />
+      </layer>
+      <layer left="65" leftUnit="%" right="1" rightUnit="em" top="0" bottom="1">
+        <ChildGrid name="CalendarReminders" relColumn="Calendar" />
+      </layer>
+    </ComplexPanel>
+
+  </FlowPanel>
+</Form>  
