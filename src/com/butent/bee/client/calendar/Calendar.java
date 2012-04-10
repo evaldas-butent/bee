@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.RequiresResize;
 
 import com.butent.bee.client.calendar.dayview.DayView;
 import com.butent.bee.client.calendar.monthview.MonthView;
+import com.butent.bee.client.calendar.resourceview.ResourceView;
 import com.butent.bee.shared.Assert;
 
 import java.util.Map;
@@ -75,6 +76,17 @@ public class Calendar extends CalendarWidget implements RequiresResize, Provides
           viewCache.put(viewType, monthView);
         }  
         setView(monthView);
+        break;
+
+      case RESOURCE:
+        ResourceView resourceView = (cached instanceof ResourceView) ? (ResourceView) cached : new ResourceView();
+        if (days > 0) {
+          resourceView.setDisplayedDays(days);
+        }
+        if (!(cached instanceof ResourceView)) {
+          viewCache.put(viewType, resourceView);
+        }  
+        setView(resourceView);
         break;
         
       default:

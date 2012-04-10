@@ -5,6 +5,7 @@ import com.google.gwt.user.client.Element;
 import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.calendar.ThemeAppointmentStyle;
 import com.butent.bee.client.calendar.theme.DefaultTheme;
+import com.butent.bee.client.calendar.util.AppointmentWidget;
 import com.butent.bee.client.dom.StyleUtils;
 
 public class DayViewStyleManager {

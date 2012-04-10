@@ -10,7 +10,7 @@ import com.butent.bee.shared.DateTime;
 public abstract class CalendarView implements HasSettings {
 
   public enum Type {
-    DAY, MONTH, AGENDA, RESOURCES
+    DAY, MONTH, AGENDA, RESOURCE
   }
   
   protected CalendarWidget calendarWidget = null;

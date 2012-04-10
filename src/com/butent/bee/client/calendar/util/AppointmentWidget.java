@@ -1,4 +1,4 @@
-package com.butent.bee.client.calendar.dayview;
+package com.butent.bee.client.calendar.util;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.HasAllMouseHandlers;

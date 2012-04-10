@@ -1,43 +1,21 @@
 package com.butent.bee.client.calendar;
 
 public class Attendee {
+  
+  private final long id;
+  private final String name;
 
-  private String name;
-  private String email;
-
-  private Attending attending = Attending.Maybe;
-
-  private String imageUrl;
-
-  public Attending getAttending() {
-    return attending;
+  public Attendee(long id, String name) {
+    super();
+    this.id = id;
+    this.name = name;
   }
 
-  public String getEmail() {
-    return email;
-  }
-
-  public String getImageUrl() {
-    return imageUrl;
+  public Long getId() {
+    return id;
   }
 
   public String getName() {
     return name;
-  }
-
-  public void setAttending(Attending attending) {
-    this.attending = attending;
-  }
-
-  public void setEmail(String email) {
-    this.email = email;
-  }
-
-  public void setImageUrl(String imageUrl) {
-    this.imageUrl = imageUrl;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 }

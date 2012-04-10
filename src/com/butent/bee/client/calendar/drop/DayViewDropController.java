@@ -4,7 +4,7 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.calendar.Appointment;
-import com.butent.bee.client.calendar.dayview.AppointmentWidget;
+import com.butent.bee.client.calendar.util.AppointmentWidget;
 import com.butent.bee.client.dnd.DragContext;
 import com.butent.bee.client.dnd.drop.AbsolutePositionDropController;
 import com.butent.bee.shared.DateTime;

@@ -1,6 +1,7 @@
-package com.butent.bee.client.calendar.demo;
+package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -21,6 +22,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.calendar.AppointmentStyle;
+import com.butent.bee.client.calendar.Attendee;
 import com.butent.bee.client.calendar.Calendar;
 import com.butent.bee.client.calendar.CalendarSettings.TimeBlockClick;
 import com.butent.bee.client.calendar.CalendarView.Type;
@@ -35,19 +37,23 @@ import com.butent.bee.client.calendar.event.TimeBlockClickHandler;
 import com.butent.bee.client.calendar.event.UpdateEvent;
 import com.butent.bee.client.calendar.event.UpdateHandler;
 import com.butent.bee.client.calendar.monthview.MonthView;
+import com.butent.bee.client.calendar.resourceview.ResourceView;
 import com.butent.bee.client.calendar.theme.Appearance;
 import com.butent.bee.client.calendar.theme.DefaultTheme;
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.TabBar;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.DateTimeFormat.PredefinedFormat;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.layout.Vertical;
+import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.Html;
@@ -57,22 +63,36 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.HasDateValue;
 import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.TimeUtils;
 
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public class CalendarPanel extends Complex {
 
   private final Calendar calendar = new Calendar();
   private final DatePicker datePicker;
+  
+  private final Complex gridPanel = new Complex();
+  private GridPresenter gridPresenter = null;
+  
+  private int resourceNameIndex = BeeConst.UNDEF;
 
-  public CalendarPanel(int days, boolean multi) {
+  public CalendarPanel() {
     configureCalendar();
 
     calendar.suspendLayout();
-    calendar.addAppointments(buildAppointments(days, multi));    
     calendar.setType(Type.DAY, calendar.getSettings().getDefaultDisplayedDays());
     
     datePicker = new DatePicker(calendar.getDate());
@@ -118,9 +138,19 @@ public class CalendarPanel extends Complex {
         openDialog(null, date);
       }
     });
+
+    BeeButton refreshButton = new BeeButton("Refresh");
+    refreshButton.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
+        refresh();
+      }
+    });
     
     addLeftTop(createButton, 30, 40);
     addLeftTop(datePicker, 10, 100);
+    
+    addLeftWidthTopBottom(gridPanel, 10, 180, 360, 80);
+    addLeftBottom(refreshButton, 30, 40);
 
     addLeftTop(panel, 220, 10);
 
@@ -128,6 +158,9 @@ public class CalendarPanel extends Complex {
     addRightTop(createViews(), 50, 10);
 
     add(calendar, new Edges(40, 10, 10, 220));
+    
+    loadResources();
+    loadAppointments(null);
   }
 
   @Override
@@ -140,62 +173,6 @@ public class CalendarPanel extends Complex {
         calendar.scrollToHour(calendar.getSettings().getScrollToHour());
       }
     });
-  }
-
-  private List<Appointment> buildAppointments(int days, boolean multi) {
-    List<Appointment> lst = Lists.newArrayList();
-
-    JustDate date = new JustDate();
-    AppointmentStyle[] styles = AppointmentStyle.values();
-
-    for (int day = 0; day < days; day++) {
-      int appointmentsPerDay = Random.nextInt(6) + 1;
-
-      for (int i = 0; i < appointmentsPerDay; i++) {
-        int hour = BeeUtils.randomInt(6, 18);
-        int min = Random.nextInt(2) * 30;
-        int dur = Random.nextInt(8) * 30 + 30;
-
-        DateTime start = new DateTime(date.getYear(), date.getMonth(), date.getDom(), hour, min, 0);
-        DateTime end = new DateTime(start.getTime() + dur * TimeUtils.MILLIS_PER_MINUTE);
-
-        Appointment appt = new Appointment();
-        appt.setStart(start);
-        appt.setEnd(end);
-
-        appt.setTitle(BeeUtils.randomString(3, 10, 'A', 'Z'));
-        appt.setDescription(BeeUtils.randomString(10, 50, ' ', 'z'));
-        appt.setStyle(styles[Random.nextInt(styles.length - 2)]);
-
-        lst.add(appt);
-      }
-      date.setDays(date.getDays() + 1);
-    }
-    
-    if (multi) {
-      Appointment multi1 = new Appointment();
-      multi1.setStyle(AppointmentStyle.BLUE);
-      multi1.setStart(TimeUtils.startOfDay());
-      multi1.setEnd(TimeUtils.startOfDay(14));
-      multi1.setTitle("All day All night");
-      lst.add(multi1);
-
-      Appointment multi2 = new Appointment();
-      multi2.setStart(TimeUtils.startOfDay());
-      multi2.setEnd(TimeUtils.startOfDay(10));
-      multi2.setTitle("Johnny, la gente esta muy loca");
-      multi2.setStyle(AppointmentStyle.RED);
-      lst.add(multi2);
-
-      Appointment multi3 = new Appointment();
-      multi3.setStart(TimeUtils.startOfDay(3));
-      multi3.setEnd(TimeUtils.startOfDay(6));
-      multi3.setTitle("Viva la fiesta, viva la noche");
-      multi3.setStyle(AppointmentStyle.RED);
-      lst.add(multi3);
-    }
-    
-    return lst;
   }
 
   private void configureCalendar() {
@@ -240,6 +217,45 @@ public class CalendarPanel extends Complex {
     });
   }
 
+  private GridDescription createGridDescription(BeeRowSet rowSet, List<String> columnNames) {
+    String viewName = rowSet.getViewName();
+    GridDescription gridDescription = new GridDescription(viewName, viewName, null, null);
+
+    gridDescription.setCaption("Resources");
+    gridDescription.setReadOnly(true);
+
+    gridDescription.setHasHeaders(false);
+    gridDescription.setHasFooters(true);
+
+    gridDescription.setSearchThreshold(DataUtils.getDefaultSearchThreshold());
+
+    gridDescription.addColumn(new ColumnDescription(ColType.SELECTION,
+        BeeUtils.createUniqueName("select-")));
+
+    for (String colName : columnNames) {
+      ColumnDescription columnDescription = new ColumnDescription(ColType.DATA, colName);
+      columnDescription.setSource(colName);
+      columnDescription.setSortable(true);
+      columnDescription.setHasFooter(true);
+
+      gridDescription.addColumn(columnDescription);
+    }
+    return gridDescription;
+  }
+  
+  private void createGridPresenter(BeeRowSet rowSet, List<String> columnNames) {
+    GridPresenter gp = new GridPresenter(rowSet.getViewName(), rowSet.getNumberOfRows(),
+        rowSet, false, createGridDescription(rowSet, columnNames), null, null,
+        EnumSet.of(UiOption.CHILD));
+    setGridPresenter(gp);
+    gp.setEventSource(getId());
+    
+    StyleUtils.makeAbsolute(gp.getWidget());
+    gp.getWidget().addStyleName(StyleUtils.NAME_OCCUPY);
+
+    gridPanel.add(gp.getWidget());
+  }
+
   private Widget createViews() {
     TabBar tabBar = new TabBar();
     tabBar.addItem("1 Day");
@@ -247,6 +263,7 @@ public class CalendarPanel extends Complex {
     tabBar.addItem("Work Week");
     tabBar.addItem("Week");
     tabBar.addItem("Month");
+    tabBar.addItem("Resources");
     tabBar.selectTab(1, false);
 
     tabBar.addSelectionHandler(new SelectionHandler<Integer>() {
@@ -270,10 +287,59 @@ public class CalendarPanel extends Complex {
           case 4:
             calendar.setType(Type.MONTH);
             break;
+          case 5:
+            calendar.setType(Type.RESOURCE);
+            refresh();
+            break;
         }
       }
     });
     return tabBar;
+  }
+
+  private GridPresenter getGridPresenter() {
+    return gridPresenter;
+  }
+  
+  private int getResourceNameIndex() {
+    return resourceNameIndex;
+  }
+
+  private void loadAppointmentAttendees(final BeeRowSet appRowSet, final Set<Long> attIds) {
+    Queries.getRowSet("AppointmentAttendees", null, new Queries.RowSetCallback() {
+      public void onFailure(String[] reason) {
+        BeeKeeper.getScreen().notifySevere(reason);
+      }
+
+      public void onSuccess(BeeRowSet result) {
+        setAppointments(appRowSet, result, attIds);
+      }
+    }); 
+  }
+
+  private void loadAppointments(final Set<Long> attIds) {
+    Queries.getRowSet("Appointments", null, new Queries.RowSetCallback() {
+      public void onFailure(String[] reason) {
+        BeeKeeper.getScreen().notifySevere(reason);
+      }
+
+      public void onSuccess(BeeRowSet result) {
+        loadAppointmentAttendees(result, attIds);
+      }
+    }); 
+  }
+  
+  private void loadResources() {
+    Queries.getRowSet("Attendees", null, new Queries.RowSetCallback() {
+      public void onFailure(String[] reason) {
+        BeeKeeper.getScreen().notifySevere(reason);
+      }
+
+      public void onSuccess(BeeRowSet result) {
+        setResourceNameIndex(DataUtils.getColumnIndex("Name", result.getColumns()));
+        createGridPresenter(result, Lists.newArrayList("Name"));
+      }
+    }); 
   }
   
   private void navigate(boolean forward) {
@@ -288,7 +354,7 @@ public class CalendarPanel extends Complex {
       }
       
     } else {
-      int days = Math.max(calendar.getDays(), 1);
+      int days = (calendar.getView() instanceof ResourceView) ? 1 : Math.max(calendar.getDays(), 1);
       int shift = days;
       if (days == 5) {
         shift = 7;
@@ -306,37 +372,43 @@ public class CalendarPanel extends Complex {
     calendar.setDate(newDate);
     datePicker.setDate(newDate);
   }
-
+  
   private void openDialog(Appointment appointment, HasDateValue date) {
     final boolean isNew = appointment == null;
     String caption = isNew ? "New Appointment" : "Edit Appointment";
     final DialogBox dialogBox = new DialogBox(caption);
 
-    Vertical panel = new Vertical();
-    panel.setSpacing(4);
-
-    panel.add(new Html("Summary"));
+    FlexTable panel = new FlexTable();
+    panel.setCellSpacing(4);
+    
+    int row = 0;
+    panel.setWidget(row, 0, new Html("Summary"));
+    
     final InputText summary = new InputText();
     StyleUtils.setWidth(summary, 300);
-    panel.add(summary);
+    panel.setWidget(row, 1, summary);
 
     DateTimeFormat dtFormat = DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT);
-
-    panel.add(new Html("Start"));
+    
+    row++;
+    panel.setWidget(row, 0, new Html("Start"));
     final InputDate start = new InputDate(ValueType.DATETIME, dtFormat);
-    panel.add(start);
+    panel.setWidget(row, 1, start);
 
-    panel.add(new Html("End"));
+    row++;
+    panel.setWidget(row, 0, new Html("End"));
     final InputDate end = new InputDate(ValueType.DATETIME, dtFormat);
-    panel.add(end);
-
-    panel.add(new Html("Description"));
+    panel.setWidget(row, 1, end);
+    
+    row++;
+    panel.setWidget(row, 0, new Html("Description"));
     final InputArea description = new InputArea();
-    description.setVisibleLines(5);
-    StyleUtils.setWidth(description, 360);
-    panel.add(description);
+    description.setVisibleLines(3);
+    StyleUtils.setWidth(description, 300);
+    panel.setWidget(row, 1, description);
 
-    panel.add(new Html("Color"));
+    row++;
+    panel.setWidget(row, 0, new Html("Color"));
     final TabBar colors = new TabBar("bee-ColorBar-");
 
     for (AppointmentStyle style : AppointmentStyle.values()) {
@@ -374,9 +446,22 @@ public class CalendarPanel extends Complex {
       }
     });
 
-    panel.add(colors);
+    panel.setWidget(row, 1, colors);
 
     final Appointment ap = isNew ? new Appointment() : appointment;
+    
+    if (!isNew && !ap.getAttendees().isEmpty()) {
+      row++;
+      panel.setWidget(row, 0, new Html("Attendees"));
+      
+      StringBuilder sb = new StringBuilder();
+      for (Attendee attendee : ap.getAttendees()) {
+        if (!BeeUtils.isEmpty(attendee.getName())) {
+          sb.append(' ').append(attendee.getName().trim());
+        }
+      }
+      panel.setWidget(row, 1, new Html(sb.toString().trim()));
+    }
 
     if (isNew && date != null) {
       ap.setStart(date.getDateTime());
@@ -418,7 +503,9 @@ public class CalendarPanel extends Complex {
         dialogBox.hide();
       }
     });
-    panel.add(confirm);
+    
+    row++;
+    panel.setWidget(row, 0, confirm);
 
     if (!isNew) {
       BeeButton delete = new BeeButton("Delete", new ClickHandler() {
@@ -427,7 +514,7 @@ public class CalendarPanel extends Complex {
           dialogBox.hide();
         }
       });
-      panel.add(delete);
+      panel.setWidget(row, 1, delete);
     }
 
     dialogBox.setWidget(panel);
@@ -436,5 +523,98 @@ public class CalendarPanel extends Complex {
     dialogBox.center();
 
     summary.setFocus(true);
+  }
+
+  private void refresh() {
+    if (getGridPresenter() == null) {
+      return;
+    }
+
+    Collection<RowInfo> selectedRows = getGridPresenter().getView().getContent().getSelectedRows();
+    if (selectedRows.isEmpty()) {
+      return;
+    }
+
+    List<Attendee> lst = Lists.newArrayList();
+    Set<Long> attIds = Sets.newHashSet();
+
+    for (RowInfo rowInfo : selectedRows) {
+      IsRow row = getGridPresenter().getView().getContent().getGrid().getRowById(rowInfo.getId());
+      if (row != null) {
+        lst.add(new Attendee(row.getId(), row.getString(getResourceNameIndex())));
+        attIds.add(row.getId());
+      }
+    }
+    
+    if (!lst.isEmpty()) {
+      calendar.setAttendees(lst);
+      loadAppointments(attIds);
+    }
+  }
+
+  private void setAppointments(BeeRowSet apprs, BeeRowSet aars, Set<Long> attIds) {
+    if (apprs == null || apprs.isEmpty()) {
+      return;
+    }
+    
+    List<Appointment> lst = Lists.newArrayList();
+    AppointmentStyle[] styles = AppointmentStyle.values();
+    
+    int startIndex = DataUtils.getColumnIndex("StartDateTime", apprs.getColumns());
+    int endIndex = DataUtils.getColumnIndex("EndDateTime", apprs.getColumns());
+
+    int summaryIndex = DataUtils.getColumnIndex("Summary", apprs.getColumns());
+    int descrIndex = DataUtils.getColumnIndex("Description", apprs.getColumns());
+    
+    int appIndex = BeeConst.UNDEF;
+    int attIndex = BeeConst.UNDEF;
+    int nameIndex = BeeConst.UNDEF;
+    
+    if (aars != null && !aars.isEmpty()) {
+      appIndex = DataUtils.getColumnIndex("Appointment", aars.getColumns());
+      attIndex = DataUtils.getColumnIndex("Attendee", aars.getColumns());
+      nameIndex = DataUtils.getColumnIndex("AttendeeName", aars.getColumns());
+    }
+    
+    for (IsRow row : apprs.getRows()) {
+      Appointment appt = new Appointment();
+      appt.setId(row.getId());
+      
+      appt.setTitle(row.getString(summaryIndex));
+      appt.setDescription(row.getString(descrIndex));
+
+      appt.setStart(row.getDateTime(startIndex));
+      appt.setEnd(row.getDateTime(endIndex));
+
+      appt.setStyle(styles[Random.nextInt(styles.length - 2)]);
+      
+      if (nameIndex >= 0) {
+        for (IsRow aa : aars.getRows()) {
+          if (attIds != null && !attIds.isEmpty()) {
+            if (!attIds.contains(aa.getLong(attIndex))) {
+              continue;
+            }
+          }
+          if (aa.getLong(appIndex) == row.getId()) {
+            appt.getAttendees().add(new Attendee(aa.getLong(attIndex), aa.getString(nameIndex)));
+          }
+        }
+      }
+      
+      if (attIds != null && !attIds.isEmpty() && appt.getAttendees().isEmpty()) {
+        continue;
+      }
+      lst.add(appt);
+    }
+    
+    calendar.setAppointments(lst);
+  }
+
+  private void setGridPresenter(GridPresenter gridPresenter) {
+    this.gridPresenter = gridPresenter;
+  }
+
+  private void setResourceNameIndex(int resourceNameIndex) {
+    this.resourceNameIndex = resourceNameIndex;
   }
 }

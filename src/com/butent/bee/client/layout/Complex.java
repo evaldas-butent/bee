@@ -120,7 +120,22 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
   public void addLeftTop(Widget child, int left, int top) {
     addLeftTop(child, left, Unit.PX, top, Unit.PX);
   }
+
+  public void addLeftWidthTopBottom(Widget child, double left, Unit leftUnit,
+      double width, Unit widthUnit, double top, Unit topUnit, double bottom, Unit bottomUnit) {
+    Assert.notNull(child);
+    setChildPosition(child);
+    setChildLeft(child, left, leftUnit);
+    setChildWidth(child, width, widthUnit);
+    setChildTop(child, top, topUnit);
+    setChildBottom(child, bottom, bottomUnit);
+    add(child);
+  }
   
+  public void addLeftWidthTopBottom(Widget child, int left, int width, int top, int bottom) {
+    addLeftWidthTopBottom(child, left, Unit.PX, width, Unit.PX, top, Unit.PX, bottom, Unit.PX);
+  }
+
   public void addRightBottom(Widget child, double right, Unit rightUnit, double bottom,
       Unit bottomUnit) {
     Assert.notNull(child);
@@ -210,5 +225,9 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
 
   private void setChildTop(Widget child, double value, Unit unit) {
     child.getElement().getStyle().setTop(value, unit);
+  }
+
+  private void setChildWidth(Widget child, double value, Unit unit) {
+    child.getElement().getStyle().setWidth(value, unit);
   }
 }

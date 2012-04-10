@@ -2,7 +2,7 @@
 <Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
   
-  name="Appointment" viewName="Appointments" caption="Vizitai">
+  name="Appointment" viewName="Appointments" caption="Vizitas">
 
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="5">

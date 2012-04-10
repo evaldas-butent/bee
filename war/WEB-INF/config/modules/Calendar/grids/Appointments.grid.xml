@@ -31,11 +31,19 @@
     <DataColumn name="OrganizerFirstName" source="OrganizerFirstName" />
     <DataColumn name="OrganizerLastName" source="OrganizerLastName" />
     
-    <DataColumn name="StartDate" source="StartDate" />
+    <DataColumn name="StartDate" source="StartDate">
+      <carry>
+        <expression>new Date()</expression>
+      </carry>
+    </DataColumn>  
     <DataColumn name="StartDateTime" source="StartDateTime" />
     <DataColumn name="StartTimeZoneName" source="StartTimeZoneName" />
 
-    <DataColumn name="EndDate" source="EndDate" />
+    <DataColumn name="EndDate" source="EndDate">
+      <carry>
+        <expression>new Date()</expression>
+      </carry>
+    </DataColumn>  
     <DataColumn name="EndDateTime" source="EndDateTime" />
     <DataColumn name="EndTimeZoneName" source="EndTimeZoneName" />
 

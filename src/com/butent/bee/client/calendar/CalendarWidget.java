@@ -1,5 +1,6 @@
 package com.butent.bee.client.calendar;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.logical.shared.HasOpenHandlers;
@@ -53,6 +54,7 @@ public class CalendarWidget extends InteractiveWidget implements
   private final CalendarSettings settings;
 
   private final AppointmentManager appointmentManager;
+  private final List<Attendee> attendees = Lists.newArrayList();
 
   private CalendarView view = null;
 
@@ -82,7 +84,7 @@ public class CalendarWidget extends InteractiveWidget implements
   public HandlerRegistration addCreateHandler(CreateHandler<Appointment> handler) {
     return addHandler(handler, CreateEvent.getType());
   }
-
+  
   public HandlerRegistration addDateRequestHandler(DateRequestHandler<HasDateValue> handler) {
     return addHandler(handler, DateRequestEvent.getType());
   }
@@ -197,6 +199,10 @@ public class CalendarWidget extends InteractiveWidget implements
     return appointmentManager.getAppointments();
   }
 
+  public List<Attendee> getAttendees() {
+    return attendees;
+  }
+  
   public JustDate getDate() {
     return JustDate.copyOf(date);
   }
@@ -353,6 +359,18 @@ public class CalendarWidget extends InteractiveWidget implements
       fireSelectionEvent(getSelectedAppointment());
     }
     return selected;
+  }
+
+  public void setAppointments(Collection<Appointment> appointments) {
+    appointmentManager.clearAppointments();
+    appointmentManager.addAppointments(appointments);
+    refresh();
+  }
+  
+  public void setAttendees(Collection<Attendee> attendees) {
+    this.attendees.clear();
+    this.attendees.addAll(attendees);
+    refresh();
   }
 
   public void setCommittedAppointment(Appointment appt) {

@@ -1,4 +1,4 @@
-package com.butent.bee.client.calendar.dayview;
+package com.butent.bee.client.calendar.resourceview;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -11,24 +11,24 @@ import com.butent.bee.client.calendar.HasSettings;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 
-public class DayViewBody extends Composite {
+public class ResourceViewBody extends Composite {
 
   private final ScrollPanel scrollPanel = new ScrollPanel();
   private final FlexTable layout = new FlexTable();
 
   private final HasSettings settings;
 
-  private final DayViewTimeline timeline;
-  private final DayViewGrid grid;
+  private final ResourceViewTimeline timeline;
+  private final ResourceViewGrid grid;
 
-  public DayViewBody(HasSettings settings) {
+  public ResourceViewBody(HasSettings settings) {
     initWidget(scrollPanel);
 
     this.settings = settings;
     
-    this.timeline = new DayViewTimeline(settings);
+    this.timeline = new ResourceViewTimeline(settings);
 
-    this.grid = new DayViewGrid(settings);
+    this.grid = new ResourceViewGrid(settings);
     grid.setStyleName("bee-appointment-panel");
 
     scrollPanel.setStylePrimaryName("scroll-area");
@@ -58,15 +58,15 @@ public class DayViewBody extends Composite {
     scrollPanel.add(w);
   }
 
-  public DayViewGrid getDayViewGrid() {
+  public ResourceViewGrid getDayViewGrid() {
     return grid;
   }
 
-  public DayViewTimeline getDayViewTimeline() {
+  public ResourceViewTimeline getDayViewTimeline() {
     return timeline;
   }
 
-  public DayViewGrid getGrid() {
+  public ResourceViewGrid getGrid() {
     return grid;
   }
 
@@ -74,12 +74,12 @@ public class DayViewBody extends Composite {
     return scrollPanel;
   }
 
-  public DayViewTimeline getTimeline() {
+  public ResourceViewTimeline getTimeline() {
     return timeline;
   }
 
-  public void setDays(int days) {
+  public void setColumns(int count) {
     grid.build(settings.getSettings().getWorkingHourStart(),
-        settings.getSettings().getWorkingHourEnd(), days);
+        settings.getSettings().getWorkingHourEnd(), count);
   }
 }

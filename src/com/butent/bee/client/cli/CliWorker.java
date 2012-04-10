@@ -35,7 +35,6 @@ import com.butent.bee.client.Settings;
 import com.butent.bee.client.ajaxloader.AjaxKeyRepository;
 import com.butent.bee.client.ajaxloader.AjaxLoader;
 import com.butent.bee.client.ajaxloader.ClientLocation;
-import com.butent.bee.client.calendar.demo.CalendarPanel;
 import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -70,6 +69,7 @@ import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TilePanel;
+import com.butent.bee.client.modules.calendar.CalendarPanel;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.FormFactory;
@@ -377,7 +377,7 @@ public class CliWorker {
     } else if (z.equals("cache")) {
       BeeKeeper.getScreen().showGrid(Global.getCache().getExtendedInfo());
     } else if (z.startsWith("cal")) {
-      showCalendar(arr);
+      BeeKeeper.getScreen().updateActivePanel(new CalendarPanel());
     } else if (z.startsWith("cap")) {
       showCaptions();
     } else if (z.equals("canvas")) {
@@ -816,21 +816,6 @@ public class CliWorker {
     }
 
     BeeKeeper.getScreen().showGrid(info);
-  }
-
-  public static void showCalendar(String[] arr) {
-    int days = 14;
-    boolean multi = false;
-
-    for (int i = 1; i < BeeUtils.length(arr); i++) {
-      if (BeeUtils.isDigit(arr[i])) {
-        days = BeeUtils.toInt(arr[i]);
-      } else if (arr[i].contains("m")) {
-        multi = true;
-      }
-    }
-
-    BeeKeeper.getScreen().updateActivePanel(new CalendarPanel(days, multi));
   }
 
   public static void showCaptions() {

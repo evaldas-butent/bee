@@ -11,7 +11,8 @@ import java.util.List;
 
 public class Appointment implements Comparable<Appointment> {
 
-  private String id = null;
+  private Long id = null;
+  
   private String title = null;
   private String description = null;
 
@@ -20,7 +21,8 @@ public class Appointment implements Comparable<Appointment> {
   
   private String location = null;
   private String createdBy = null;
-  private List<Attendee> attendees = Lists.newArrayList();
+
+  private final List<Attendee> attendees = Lists.newArrayList();
 
   private boolean allDay = false;
   
@@ -84,7 +86,7 @@ public class Appointment implements Comparable<Appointment> {
     return end;
   }
 
-  public String getId() {
+  public Long getId() {
     return id;
   }
 
@@ -124,10 +126,6 @@ public class Appointment implements Comparable<Appointment> {
     this.allDay = allDay;
   }
 
-  public void setAttendees(List<Attendee> attendees) {
-    this.attendees = attendees;
-  }
-
   public void setCreatedBy(String createdBy) {
     this.createdBy = createdBy;
   }
@@ -144,7 +142,7 @@ public class Appointment implements Comparable<Appointment> {
     this.end = end;
   }
 
-  public void setId(String id) {
+  public void setId(Long id) {
     this.id = id;
   }
 

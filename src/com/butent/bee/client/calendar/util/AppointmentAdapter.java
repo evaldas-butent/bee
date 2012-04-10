@@ -1,4 +1,4 @@
-package com.butent.bee.client.calendar.dayview;
+package com.butent.bee.client.calendar.util;
 
 import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.shared.utils.TimeUtils;

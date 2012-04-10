@@ -1,4 +1,4 @@
-package com.butent.bee.client.calendar.dayview;
+package com.butent.bee.client.calendar.util;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
