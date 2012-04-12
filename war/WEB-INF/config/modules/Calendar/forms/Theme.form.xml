@@ -7,20 +7,12 @@
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="10">
       <row>
-        <cell>
-          <Label html="Pavadinimas:" class="bee-required" />
-        </cell>
-        <cell>
-          <InputText source="Name" />
-        </cell>
+        <Label html="Pavadinimas:" class="bee-required" />
+        <InputText source="Name" />
       </row>
       <row>
-        <cell>
-          <Label html="Aprašymas:" />
-        </cell>
-        <cell>
-          <InputArea source="Description" visibleLines="3" style="width: 200px;" />
-        </cell>
+        <Label html="Aprašymas:" />
+        <InputArea source="Description" visibleLines="3" style="width: 200px;" />
       </row>
     </FlexTable>
 

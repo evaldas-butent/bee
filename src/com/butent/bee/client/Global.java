@@ -192,6 +192,10 @@ public class Global implements Module {
   public static Set<String> getRegisteredCaptionKeys() {
     return captions.keySet();
   }
+  
+  public static Map<String, String> getStylesheets() {
+    return styleSheets;
+  }
 
   public static Variable getVar(String name) {
     Assert.contains(vars, name);

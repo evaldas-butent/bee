@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+  
+  name="Tables" caption="Tables" viewName="DataTypes">
+
+  <FlowPanel>
+
+    <css id="test_tables">
+      .test {border-collapse: collapse; margin: 10px;}
+      .test td {border: 1px solid black; padding: 2px;}
+    </css>
+
+    <HorizontalPanel class="test" verticalAlignment="top" style="height: 50px;">
+      <text>text</text>
+      <InputText />
+      <cell width="200" horizontalAlignment="center" verticalAlignment="bottom">
+        <Button html="200 center bottom" />
+      </cell>
+      <Button html="outer" />
+    </HorizontalPanel>
+    
+    <VerticalPanel horizontalAlignment="right" class="test">
+      <text>text</text>
+      <cell horizontalAlignment="center" verticalAlignment="middle" width="200" height="60">
+        <Label html="200x60 center" />
+      </cell>
+      <html>html</html>
+    </VerticalPanel>
+
+    <FlexTable class="test">
+      <col index="0" width="150" widthUnit="px" />
+      <col index="1" width="300" widthUnit="px" />
+
+      <row>
+        <text>text</text>
+        <html>html</html>
+      </row>
+
+      <row>
+        <cell height="50" heightUnit="px" verticalAlignment="bottom">
+          <text>50px bottom</text>
+        </cell>
+        <cell horizontalAlignment="right" verticalAlignment="top">
+          <text>right top</text>
+        </cell>
+      </row>
+
+      <html>outer row</html>
+      
+      <row>
+        <cell colSpan="2" horizontalAlignment="center">
+          <text>col span 2 center</text>
+        </cell>
+      </row>
+
+      <row>
+        <VerticalPanel horizontalAlignment="center" class="test">
+          <text>ver 1</text>
+          <text>ver 2</text>
+          <text>ver 3</text>
+        </VerticalPanel>
+        <HorizontalPanel class="test">
+          <text>hor 1</text>
+          <text>hor 2</text>
+          <text>hor 3</text>
+        </HorizontalPanel>
+      </row>
+
+    </FlexTable>
+
+  </FlowPanel>
+
+</Form>

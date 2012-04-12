@@ -468,6 +468,8 @@ public class CliWorker {
       BeeKeeper.getRpc().invoke("systemInfo");
     } else if (z.equals("settings")) {
       BeeKeeper.getScreen().showGrid(Settings.getSettings());
+    } else if (z.startsWith("sheets")) {
+      BeeKeeper.getScreen().showGrid(Global.getStylesheets());
     } else if (z.equals("size") && arr.length >= 2) {
       showSize(arr);
     } else if (z.equals("slider")) {

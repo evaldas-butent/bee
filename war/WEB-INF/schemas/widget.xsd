@@ -30,7 +30,7 @@
         <xs:choice minOccurs="0" maxOccurs="unbounded">
           <xs:element name="css" type="bee:styleSheet" />
           <xs:element name="dynStyle" type="bee:conditionalStyle" />
-          <xs:element name="handler" type="bee:eventHandler"/>
+          <xs:element name="handler" type="bee:eventHandler" />
         </xs:choice>
       </xs:extension>
     </xs:complexContent>
@@ -102,17 +102,21 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="widgetOrHtml">
+  <xs:group name="wht">
     <xs:choice>
       <xs:element ref="bee:widget" />
       <xs:element ref="bee:html" />
       <xs:element ref="bee:text" />
     </xs:choice>
+  </xs:group>
+
+  <xs:complexType name="whtType">
+    <xs:group ref="bee:wht" />
   </xs:complexType>
-  
+
   <xs:complexType name="headerAndContent">
     <xs:complexContent>
-      <xs:extension base="bee:widgetOrHtml">
+      <xs:extension base="bee:whtType">
         <xs:sequence>
           <xs:element ref="bee:widget" />
         </xs:sequence>
@@ -120,22 +124,20 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="tableCell">
-    <xs:complexContent>
-      <xs:extension base="bee:widgetOrHtml">
-        <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
-        <xs:attribute name="verticalAlignment" type="bee:verticalAlignmentType" />
-        <xs:attributeGroup ref="bee:dimension" />
-        <xs:attributeGroup ref="bee:appearance" />
-      </xs:extension>
-    </xs:complexContent>
+  <xs:complexType name="prokaryote">
+    <xs:group ref="bee:wht" />
+    <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
+    <xs:attribute name="verticalAlignment" type="bee:verticalAlignmentType" />
+    <xs:attributeGroup ref="bee:dimension" />
+    <xs:attributeGroup ref="bee:appearance" />
   </xs:complexType>
 
   <xs:complexType name="cellVector">
     <xs:complexContent>
       <xs:extension base="bee:widgetType">
-        <xs:choice minOccurs="2" maxOccurs="unbounded">
-          <xs:element name="cell" type="bee:tableCell" />
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="cell" type="bee:prokaryote" />
+          <xs:group ref="bee:wht" />
         </xs:choice>
         <xs:attribute name="borderWidth" type="xs:unsignedByte" />
         <xs:attribute name="cellSpacing" type="xs:unsignedByte" />
@@ -233,7 +235,7 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="bee:widgetType">
-          <xs:choice minOccurs="2" maxOccurs="unbounded">
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="stack" type="bee:stackElement" />
           </xs:choice>
           <xs:attribute name="unit" type="bee:cssUnit" />
@@ -254,7 +256,7 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="bee:widgetType">
-          <xs:choice minOccurs="2" maxOccurs="unbounded">
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="page" type="bee:headerAndContent" />
           </xs:choice>
           <xs:attribute name="stylePrefix" type="xs:normalizedString" />
@@ -355,7 +357,7 @@
   <xs:element name="InlineLabel" type="bee:labelType" substitutionGroup="bee:widget" />
 
   <xs:element name="HtmlLabel" type="bee:display" substitutionGroup="bee:widget" />
-  
+
   <xs:complexType name="valueLabel">
     <xs:complexContent>
       <xs:extension base="bee:display">
@@ -449,7 +451,7 @@
   <xs:complexType name="hasChildren">
     <xs:complexContent>
       <xs:extension base="bee:widgetType">
-        <xs:choice minOccurs="2" maxOccurs="unbounded">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
           <xs:element ref="bee:widget" />
         </xs:choice>
       </xs:extension>
@@ -459,11 +461,21 @@
   <xs:element name="FlowPanel" type="bee:hasChildren" substitutionGroup="bee:widget" />
   <xs:element name="SpanPanel" type="bee:hasChildren" substitutionGroup="bee:widget" />
 
+  <xs:complexType name="eukaryote">
+    <xs:complexContent>
+      <xs:extension base="bee:prokaryote">
+        <xs:attribute name="colSpan" type="xs:positiveInteger" />
+        <xs:attribute name="rowSpan" type="xs:positiveInteger" />
+        <xs:attribute name="wordWrap" type="xs:boolean" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
   <xs:element name="FlexTable" substitutionGroup="bee:widget">
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="bee:widgetType">
-          <xs:choice minOccurs="1" maxOccurs="unbounded">
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="col">
               <xs:complexType>
                 <xs:attribute name="index" type="xs:nonNegativeInteger" use="required" />
@@ -472,25 +484,19 @@
                 <xs:attributeGroup ref="bee:appearance" />
               </xs:complexType>
             </xs:element>
+
             <xs:element name="row">
               <xs:complexType>
-                <xs:choice minOccurs="1" maxOccurs="unbounded">
-                  <xs:element name="cell">
-                    <xs:complexType>
-                      <xs:complexContent>
-                        <xs:extension base="bee:tableCell">
-                          <xs:attribute name="colSpan" type="xs:positiveInteger" />
-                          <xs:attribute name="rowSpan" type="xs:positiveInteger" />
-                          <xs:attribute name="wordWrap" type="xs:boolean" />
-                        </xs:extension>
-                      </xs:complexContent>
-                    </xs:complexType>
-                  </xs:element>
+                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                  <xs:element name="cell" type="bee:eukaryote" />
+                  <xs:group ref="bee:wht" />
                 </xs:choice>
                 <xs:attribute name="verticalAlignment" type="bee:verticalAlignmentType" />
                 <xs:attributeGroup ref="bee:appearance" />
               </xs:complexType>
             </xs:element>
+
+            <xs:group ref="bee:wht" />
           </xs:choice>
           <xs:attribute name="borderWidth" type="xs:unsignedByte" />
           <xs:attribute name="cellPadding" type="xs:unsignedByte" />
@@ -507,7 +513,7 @@
       </xs:restriction>
     </xs:complexContent>
   </xs:complexType>
-  
+
   <xs:element name="ChildGrid" substitutionGroup="bee:widget">
     <xs:complexType>
       <xs:complexContent>
@@ -537,7 +543,7 @@
   <xs:element name="ResizePanel" type="bee:hasOneChild" substitutionGroup="bee:widget" />
 
   <xs:element name="ScrollPanel" type="bee:hasOneChild" substitutionGroup="bee:widget" />
-  
+
   <xs:element name="Frame" substitutionGroup="bee:widget">
     <xs:complexType>
       <xs:complexContent>
@@ -641,7 +647,7 @@
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="bee:editableWidget">
-          <xs:choice minOccurs="2" maxOccurs="unbounded">
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="item" type="xs:normalizedString" />
           </xs:choice>
         </xs:extension>
@@ -673,7 +679,7 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:element name="Disclosure" substitutionGroup="bee:widget">
     <xs:complexType>
       <xs:complexContent>
@@ -715,7 +721,7 @@
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
-  
+
   <xs:element name="Tree" substitutionGroup="bee:widget">
     <xs:complexType>
       <xs:complexContent>
@@ -770,7 +776,7 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:element name="hr" type="bee:widgetType" substitutionGroup="bee:widget" />
 
   <xs:element name="InputFile" substitutionGroup="bee:widget">
@@ -788,7 +794,7 @@
       <xs:complexContent>
         <xs:extension base="bee:display">
           <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="tab" type="bee:widgetOrHtml" />
+            <xs:element name="tab" type="bee:whtType" />
           </xs:choice>
           <xs:attribute name="stylePrefix" type="xs:normalizedString" />
         </xs:extension>

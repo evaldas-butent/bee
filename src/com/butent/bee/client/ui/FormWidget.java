@@ -900,7 +900,7 @@ public enum FormWidget {
           widget = new Svg();
         }
         break;
-      
+
       case TAB_BAR:
         stylePrefix = attributes.get(ATTR_STYLE_PREFIX);
         widget = BeeUtils.isEmpty(stylePrefix) ? new TabBar() : new TabBar(stylePrefix);
@@ -1293,7 +1293,7 @@ public enum FormWidget {
           }
         }
         break;
-      
+
       case TAB_BAR:
         if (widget instanceof TabBar) {
           int idx = ((TabBar) widget).getIndex(value);
@@ -1400,6 +1400,31 @@ public enum FormWidget {
     return fw.create(description, columns, widgetDescriptionCallback, widgetCallback);
   }
 
+  private Widget createIfWidgetOrHtmlOrText(Element description, List<BeeColumn> columns,
+      WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback) {
+    if (description == null) {
+      return null;
+    }
+    Widget widget = null;
+
+    if (BeeUtils.same(description.getTagName(), TAG_TEXT)) {
+      String text = XmlUtils.getText(description);
+      if (!BeeUtils.isEmpty(text)) {
+        widget = new InlineHTML(text);
+      }
+
+    } else if (BeeUtils.same(description.getTagName(), TAG_HTML)) {
+      String html = XmlUtils.getText(description);
+      if (!BeeUtils.isEmpty(html)) {
+        widget = new Html(html);
+      }
+
+    } else {
+      widget = createIfWidget(description, columns, widgetDescriptionCallback, widgetCallback);
+    }
+    return widget;
+  }
+
   private Widget createOneChild(Element parent, List<BeeColumn> columns,
       WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback) {
     for (Element child : XmlUtils.getChildrenElements(parent)) {
@@ -1412,6 +1437,34 @@ public enum FormWidget {
     return null;
   }
 
+  private boolean createTableCell(HtmlTable table, Element description, int row, int col,
+      List<BeeColumn> columns, WidgetDescriptionCallback wdcb, WidgetCallback widgetCallback) {
+    boolean ok = false;
+    
+    if (BeeUtils.same(description.getTagName(), TAG_TEXT)) {
+      String text = XmlUtils.getText(description);
+      ok = !BeeUtils.isEmpty(text);
+      if (ok) {
+        table.setText(row, col, text);
+      }
+
+    } else if (BeeUtils.same(description.getTagName(), TAG_HTML)) {
+      String html = XmlUtils.getText(description);
+      ok = !BeeUtils.isEmpty(html);
+      if (ok) {
+        table.setHTML(row, col, html);
+      }
+
+    } else {
+      Widget widget = createIfWidget(description, columns, wdcb, widgetCallback);
+      ok = (widget != null);
+      if (ok) {
+        table.setWidget(row, col, widget);
+      }
+    }
+    return ok;
+  }
+  
   private Edges getEdges(Element description) {
     return new Edges(XmlUtils.getAttributeDouble(description, ATTR_TOP),
         XmlUtils.getAttributeUnit(description, ATTR_TOP_UNIT),
@@ -1567,178 +1620,65 @@ public enum FormWidget {
         }
       }
 
-    } else if (isTable()) {
-      if (BeeUtils.same(childTag, TAG_COL) && parent instanceof HtmlTable) {
+    } else if (isTable() && parent instanceof HtmlTable) {
+      HtmlTable table = (HtmlTable) parent;
+
+      if (BeeUtils.same(childTag, TAG_COL)) {
         String idx = child.getAttribute(ATTR_INDEX);
         if (BeeUtils.isDigit(idx)) {
           int c = BeeUtils.toInt(idx);
 
           Double width = XmlUtils.getAttributeDouble(child, HasDimensions.ATTR_WIDTH);
           if (BeeUtils.isPositive(width)) {
-            ((HtmlTable) parent).getColumnFormatter().setWidth(c,
-                StyleUtils.toCssLength(width,
-                    XmlUtils.getAttributeUnit(child, HasDimensions.ATTR_WIDTH_UNIT, Unit.PX)));
+            table.getColumnFormatter().setWidth(c, StyleUtils.toCssLength(width,
+                XmlUtils.getAttributeUnit(child, HasDimensions.ATTR_WIDTH_UNIT, Unit.PX)));
           }
-          StyleUtils.setAppearance(((HtmlTable) parent).getColumnFormatter().getElement(c),
+          StyleUtils.setAppearance(table.getColumnFormatter().getElement(c),
               child.getAttribute(ATTR_CLASS), child.getAttribute(ATTR_STYLE));
         }
 
-      } else if (BeeUtils.same(childTag, TAG_ROW) && parent instanceof HtmlTable) {
-        int r = ((HtmlTable) parent).getRowCount();
-
+      } else if (BeeUtils.same(childTag, TAG_ROW)) {
+        int r = table.getRowCount();
         int c = 0;
+
         for (Element cell : XmlUtils.getChildrenElements(child)) {
-          if (!BeeUtils.same(cell.getTagName(), TAG_CELL)) {
-            continue;
-          }
-
-          for (Element cellContent : XmlUtils.getChildrenElements(cell)) {
-            if (BeeUtils.same(cellContent.getTagName(), TAG_TEXT)) {
-              String text = XmlUtils.getText(cellContent);
-              if (!BeeUtils.isEmpty(text)) {
-                ((HtmlTable) parent).setText(r, c, text);
+          if (BeeUtils.same(cell.getTagName(), TAG_CELL)) {
+            for (Element cellContent : XmlUtils.getChildrenElements(cell)) {
+              if (createTableCell(table, cellContent, r, c, columns, wdcb, widgetCallback)) {
                 break;
               }
-              continue;
             }
-
-            if (BeeUtils.same(cellContent.getTagName(), TAG_HTML)) {
-              String html = XmlUtils.getText(cellContent);
-              if (!BeeUtils.isEmpty(html)) {
-                ((HtmlTable) parent).setHTML(r, c, html);
-                break;
-              }
-              continue;
-            }
-
-            Widget w = createIfWidget(cellContent, columns, wdcb, widgetCallback);
-            if (w != null) {
-              ((HtmlTable) parent).setWidget(r, c, w);
-              break;
-            }
-          }
-
-          String z = cell.getAttribute(ATTR_HORIZONTAL_ALIGNMENT);
-          if (!BeeUtils.isEmpty(z)) {
-            HorizontalAlignmentConstant horAlign = UiHelper.parseHorizontalAlignment(z);
-            if (horAlign != null) {
-              ((HtmlTable) parent).getCellFormatter().setHorizontalAlignment(r, c, horAlign);
-            }
-          }
-
-          z = cell.getAttribute(ATTR_VERTICAL_ALIGNMENT);
-          if (!BeeUtils.isEmpty(z)) {
-            VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
-            if (vertAlign != null) {
-              ((HtmlTable) parent).getCellFormatter().setVerticalAlignment(r, c, vertAlign);
-            }
-          }
-
-          Dimensions dimensions = XmlUtils.getDimensions(cell);
-          z = dimensions.getCssWidth();
-          if (!BeeUtils.isEmpty(z)) {
-            ((HtmlTable) parent).getCellFormatter().setWidth(r, c, z);
-          }
-          z = dimensions.getCssHeight();
-          if (!BeeUtils.isEmpty(z)) {
-            ((HtmlTable) parent).getCellFormatter().setHeight(r, c, z);
-          }
-
-          z = cell.getAttribute(ATTR_WORD_WRAP);
-          if (BeeUtils.isBoolean(z)) {
-            ((HtmlTable) parent).getCellFormatter().setWordWrap(r, c, BeeUtils.toBoolean(z));
-          }
-
-          StyleUtils.setAppearance(((HtmlTable) parent).getCellFormatter().getElement(r, c),
-              cell.getAttribute(ATTR_CLASS), cell.getAttribute(ATTR_STYLE));
-
-          if (parent instanceof FlexTable) {
-            String span = cell.getAttribute(ATTR_COL_SPAN);
-            if (BeeUtils.toInt(span) > 1) {
-              ((FlexTable) parent).getFlexCellFormatter().setColSpan(r, c, BeeUtils.toInt(span));
-            }
-            span = cell.getAttribute(ATTR_ROW_SPAN);
-            if (BeeUtils.toInt(span) > 1) {
-              ((FlexTable) parent).getFlexCellFormatter().setRowSpan(r, c, BeeUtils.toInt(span));
-            }
-          }
-
-          c++;
-        }
-
-        String z = child.getAttribute(ATTR_VERTICAL_ALIGNMENT);
-        if (!BeeUtils.isEmpty(z)) {
-          VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
-          if (vertAlign != null) {
-            ((HtmlTable) parent).getRowFormatter().setVerticalAlign(r, vertAlign);
+            setTableCellAttributes(table, cell, r, c);
+            c++;
+          } else if (createTableCell(table, cell, r, c, columns, wdcb, widgetCallback)) {
+            c++;
           }
         }
-        StyleUtils.setAppearance(((HtmlTable) parent).getRow(r),
-            child.getAttribute(ATTR_CLASS), child.getAttribute(ATTR_STYLE));
+        if (c > 0) {
+          setTableRowAttributes(table, child, r);
+        }
+
+      } else {
+        createTableCell(table, child, table.getRowCount(), 0, columns, wdcb, widgetCallback);
       }
 
-    } else if (isCellVector()) {
-      if (BeeUtils.same(childTag, TAG_CELL) && parent instanceof HasWidgets) {
-        Widget w = null;
-
+    } else if (isCellVector() && parent instanceof HasWidgets) {
+      Widget w = null;
+      if (BeeUtils.same(childTag, TAG_CELL)) {
         for (Element cellContent : XmlUtils.getChildrenElements(child)) {
-          if (BeeUtils.same(cellContent.getTagName(), TAG_TEXT)) {
-            String text = XmlUtils.getText(cellContent);
-            if (!BeeUtils.isEmpty(text)) {
-              w = new InlineHTML(text);
-              break;
-            }
-            continue;
-          }
-
-          if (BeeUtils.same(cellContent.getTagName(), TAG_HTML)) {
-            String html = XmlUtils.getText(cellContent);
-            if (!BeeUtils.isEmpty(html)) {
-              w = new Html(html);
-              break;
-            }
-            continue;
-          }
-
-          w = createIfWidget(cellContent, columns, wdcb, widgetCallback);
+          w = createIfWidgetOrHtmlOrText(cellContent, columns, wdcb, widgetCallback);
           if (w != null) {
             break;
           }
         }
+      } else {
+        w = createIfWidgetOrHtmlOrText(child, columns, wdcb, widgetCallback);
+      }
 
-        if (w != null) {
-          ((HasWidgets) parent).add(w);
-
-          if (parent instanceof CellPanel) {
-            String z = child.getAttribute(ATTR_HORIZONTAL_ALIGNMENT);
-            if (!BeeUtils.isEmpty(z)) {
-              HorizontalAlignmentConstant horAlign = UiHelper.parseHorizontalAlignment(z);
-              if (horAlign != null) {
-                ((CellPanel) parent).setCellHorizontalAlignment(w, horAlign);
-              }
-            }
-
-            z = child.getAttribute(ATTR_VERTICAL_ALIGNMENT);
-            if (!BeeUtils.isEmpty(z)) {
-              VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
-              if (vertAlign != null) {
-                ((CellPanel) parent).setCellVerticalAlignment(w, vertAlign);
-              }
-            }
-
-            Dimensions dimensions = XmlUtils.getDimensions(child);
-            z = dimensions.getCssWidth();
-            if (!BeeUtils.isEmpty(z)) {
-              ((CellPanel) parent).setCellWidth(w, z);
-            }
-            z = dimensions.getCssHeight();
-            if (!BeeUtils.isEmpty(z)) {
-              ((CellPanel) parent).setCellHeight(w, z);
-            }
-
-            StyleUtils.setAppearance(DOM.getParent(w.getElement()),
-                child.getAttribute(ATTR_CLASS), child.getAttribute(ATTR_STYLE));
-          }
+      if (w != null) {
+        ((HasWidgets) parent).add(w);
+        if (parent instanceof CellPanel && BeeUtils.same(childTag, TAG_CELL)) {
+          setVectorCellAttributes((CellPanel) parent, child, w);
         }
       }
 
@@ -2000,6 +1940,103 @@ public enum FormWidget {
       face.setImage(image);
     } else if (!BeeUtils.isEmpty(face)) {
       face.setHTML(html);
+    }
+  }
+
+  private void setTableCellAttributes(HtmlTable table, Element description, int row, int col) {
+    String z = description.getAttribute(ATTR_HORIZONTAL_ALIGNMENT);
+    if (!BeeUtils.isEmpty(z)) {
+      HorizontalAlignmentConstant horAlign = UiHelper.parseHorizontalAlignment(z);
+      if (horAlign != null) {
+        table.getCellFormatter().setHorizontalAlignment(row, col, horAlign);
+      }
+    }
+
+    z = description.getAttribute(ATTR_VERTICAL_ALIGNMENT);
+    if (!BeeUtils.isEmpty(z)) {
+      VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
+      if (vertAlign != null) {
+        table.getCellFormatter().setVerticalAlignment(row, col, vertAlign);
+      }
+    }
+
+    Dimensions dimensions = XmlUtils.getDimensions(description);
+    z = dimensions.getCssWidth();
+    if (BeeUtils.isEmpty(z)) {
+      table.getCellFormatter().setWidth(row, col, z);
+    }
+    z = dimensions.getCssHeight();
+    if (!BeeUtils.isEmpty(z)) {
+      table.getCellFormatter().setHeight(row, col, z);
+    }
+
+    if (BeeUtils.same(description.getTagName(), TAG_CELL)) {
+      z = description.getAttribute(ATTR_WORD_WRAP);
+      if (BeeUtils.isBoolean(z)) {
+        table.getCellFormatter().setWordWrap(row, col, BeeUtils.toBoolean(z));
+      }
+
+      StyleUtils.setAppearance(table.getCellFormatter().getElement(row, col),
+          description.getAttribute(ATTR_CLASS), description.getAttribute(ATTR_STYLE));
+
+      if (table instanceof FlexTable) {
+        String span = description.getAttribute(ATTR_COL_SPAN);
+        if (BeeUtils.toInt(span) > 1) {
+          ((FlexTable) table).getFlexCellFormatter().setColSpan(row, col, BeeUtils.toInt(span));
+        }
+        span = description.getAttribute(ATTR_ROW_SPAN);
+        if (BeeUtils.toInt(span) > 1) {
+          ((FlexTable) table).getFlexCellFormatter().setRowSpan(row, col, BeeUtils.toInt(span));
+        }
+      }
+    }
+  }
+
+  private void setTableRowAttributes(HtmlTable table, Element description, int row) {
+    String z = description.getAttribute(ATTR_VERTICAL_ALIGNMENT);
+    if (!BeeUtils.isEmpty(z)) {
+      VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
+      if (vertAlign != null) {
+        table.getRowFormatter().setVerticalAlign(row, vertAlign);
+      }
+    }
+    
+    if (BeeUtils.same(description.getTagName(), TAG_ROW)) {
+      StyleUtils.setAppearance(table.getRow(row), description.getAttribute(ATTR_CLASS),
+          description.getAttribute(ATTR_STYLE));
+    }
+  }
+  
+  private void setVectorCellAttributes(CellPanel parent, Element description, Widget cellContent) {
+    String z = description.getAttribute(ATTR_HORIZONTAL_ALIGNMENT);
+    if (!BeeUtils.isEmpty(z)) {
+      HorizontalAlignmentConstant horAlign = UiHelper.parseHorizontalAlignment(z);
+      if (horAlign != null) {
+        parent.setCellHorizontalAlignment(cellContent, horAlign);
+      }
+    }
+
+    z = description.getAttribute(ATTR_VERTICAL_ALIGNMENT);
+    if (!BeeUtils.isEmpty(z)) {
+      VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
+      if (vertAlign != null) {
+        parent.setCellVerticalAlignment(cellContent, vertAlign);
+      }
+    }
+
+    Dimensions dimensions = XmlUtils.getDimensions(description);
+    z = dimensions.getCssWidth();
+    if (!BeeUtils.isEmpty(z)) {
+      parent.setCellWidth(cellContent, z);
+    }
+    z = dimensions.getCssHeight();
+    if (!BeeUtils.isEmpty(z)) {
+      parent.setCellHeight(cellContent, z);
+    }
+
+    if (BeeUtils.same(description.getTagName(), TAG_CELL)) {
+      StyleUtils.setAppearance(DOM.getParent(cellContent.getElement()),
+          description.getAttribute(ATTR_CLASS), description.getAttribute(ATTR_STYLE));
     }
   }
 }

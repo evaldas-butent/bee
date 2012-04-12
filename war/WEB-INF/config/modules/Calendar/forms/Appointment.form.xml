@@ -7,63 +7,31 @@
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="5">
       <row>
-        <cell>
-          <Label html="Pavadinimas:" class="bee-required" />
-        </cell>
-        <cell>
-          <InputText source="Summary" />
-        </cell>
-        <cell>
-          <Label html="Aprašymas:" />
-        </cell>
-        <cell>
-          <InputArea source="Description" visibleLines="3" />
-        </cell>
+        <Label html="Pavadinimas:" class="bee-required" />
+        <InputText source="Summary" />
+        <Label html="Aprašymas:" />
+        <InputArea source="Description" visibleLines="3" />
       </row>
 
       <row>
-        <cell>
-          <Label html="Pradžia:" class="bee-required" />
-        </cell>
-        <cell>
-          <InputDateTime source="StartDateTime" />
-        </cell>
-        <cell>
-          <Label html="Pabaiga:" class="bee-required" />
-        </cell>
-        <cell>
-          <InputDateTime source="EndDateTime" />
-        </cell>
+        <Label html="Pradžia:" class="bee-required" />
+        <InputDateTime source="StartDateTime" />
+        <Label html="Pabaiga:" class="bee-required" />
+        <InputDateTime source="EndDateTime" />
       </row>
 
       <row>
-        <cell>
-          <Label html="Spalva:" class="bee-required" />
-        </cell>
-        <cell>
-          <DataSelector source="ColorName" relSource="Color" relView="Colors" relColumn="Name" />
-        </cell>
-        <cell>
-          <Label html="Stilius:" />
-        </cell>
-        <cell>
-          <DataSelector source="StyleName" relSource="Style" relView="AppointmentStyles" relColumn="Name" />
-        </cell>
+        <Label html="Spalva:" class="bee-required" />
+        <DataSelector source="ColorName" relSource="Color" relView="Colors" relColumn="Name" />
+        <Label html="Stilius:" />
+        <DataSelector source="StyleName" relSource="Style" relView="AppointmentStyles" relColumn="Name" />
       </row>
 
       <row>
-        <cell>
-          <Label html="Būsena:" />
-        </cell>
-        <cell>
-          <ListBox source="Status" itemKey="AppointmentStatus" />
-        </cell>
-        <cell>
-          <Radio source="Visibility" itemKey="Calendar_Visibility" vertical="true" />
-        </cell>
-        <cell>
-          <CheckBox source="UseDefaultReminders" html="Use Default Reminders" />
-        </cell>
+        <Label html="Būsena:" />
+        <ListBox source="Status" itemKey="AppointmentStatus" />
+        <Radio source="Visibility" itemKey="Calendar_Visibility" vertical="true" />
+        <CheckBox source="UseDefaultReminders" html="Use Default Reminders" />
       </row>
     </FlexTable>
     
