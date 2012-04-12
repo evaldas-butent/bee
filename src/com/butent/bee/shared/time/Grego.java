@@ -1,4 +1,4 @@
-package com.butent.bee.shared.utils;
+package com.butent.bee.shared.time;
 
 /**
  * Contains methods for date/time calculations.

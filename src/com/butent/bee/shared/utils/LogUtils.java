@@ -7,7 +7,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.time.DateTime;
 
 import java.util.List;
 import java.util.logging.Level;

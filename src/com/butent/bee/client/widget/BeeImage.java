@@ -2,13 +2,13 @@ package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Image;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.shared.HasId;
 
@@ -17,7 +17,7 @@ import com.butent.bee.shared.HasId;
  */
 public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
 
-  private BeeCommand command = null;
+  private Command command = null;
   private boolean enabled = true;
   private String styleDisabled = null;
 
@@ -46,23 +46,23 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
     init();
   }
 
-  public BeeImage(BeeCommand cmnd) {
+  public BeeImage(Command cmnd) {
     this();
     initCommand(cmnd);
   }
 
-  public BeeImage(ImageResource resource, BeeCommand cmnd) {
+  public BeeImage(ImageResource resource, Command cmnd) {
     this(resource);
     initCommand(cmnd);
   }
 
-  public BeeImage(ImageResource resource, BeeCommand cmnd, String styleDisabled) {
+  public BeeImage(ImageResource resource, Command cmnd, String styleDisabled) {
     this(resource);
     initCommand(cmnd);
     this.styleDisabled = styleDisabled;
   }
 
-  public BeeCommand getCommand() {
+  public Command getCommand() {
     return command;
   }
 
@@ -88,7 +88,7 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
     }
   }
 
-  public void setCommand(BeeCommand command) {
+  public void setCommand(Command command) {
     this.command = command;
   }
 
@@ -116,7 +116,7 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
     setStyleName("bee-Image");
   }
 
-  private void initCommand(BeeCommand cmnd) {
+  private void initCommand(Command cmnd) {
     if (cmnd != null) {
       setCommand(cmnd);
       sinkEvents(Event.ONCLICK);

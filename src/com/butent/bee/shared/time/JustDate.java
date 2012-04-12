@@ -1,11 +1,11 @@
-package com.butent.bee.shared;
+package com.butent.bee.shared.time;
 
 import com.google.common.primitives.Ints;
 
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Grego;
-import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Date;
 
@@ -308,11 +308,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
    */
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(10);
-    sb.append(TimeUtils.yearToString(getYear())).append(FIELD_SEPARATOR);
-    sb.append(TimeUtils.padTwo(getMonth())).append(FIELD_SEPARATOR);
-    sb.append(TimeUtils.padTwo(getDom()));
-    return sb.toString();
+    return TimeUtils.dateToString(this, FIELD_SEPARATOR);
   }
 
   private void computeFields() {

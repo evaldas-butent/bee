@@ -610,11 +610,6 @@ public class EventUtils {
     return ok;
   }
 
-  public static void blur(Element elem) {
-    Assert.notNull(elem);
-    elem.blur();
-  }
-
   public static NativeEvent createKeyDown(int keyCode) {
     return Document.get().createKeyDownEvent(false, false, false, false, keyCode);
   }
@@ -662,11 +657,6 @@ public class EventUtils {
   public static void fireKeyUp(EventTarget target, int keyCode) {
     Assert.notNull(target);
     fireKeyUp(Element.as(target), keyCode);
-  }
-
-  public static void focus(Element elem) {
-    Assert.notNull(elem);
-    elem.focus();
   }
 
   public static List<Property> getEventInfo(NativeEvent ev) {

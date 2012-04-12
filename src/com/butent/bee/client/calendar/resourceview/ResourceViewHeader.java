@@ -10,7 +10,7 @@ import com.butent.bee.client.calendar.Attendee;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.HasDateValue;
+import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;

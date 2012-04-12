@@ -9,9 +9,9 @@ import com.google.gwt.i18n.client.constants.NumberConstants;
 import com.butent.bee.client.i18n.DateTimeFormat.PredefinedFormat;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**

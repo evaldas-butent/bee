@@ -7,8 +7,6 @@ import com.google.common.primitives.Longs;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Sequence;
 import com.butent.bee.shared.data.value.BooleanValue;
@@ -21,6 +19,8 @@ import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 
 import java.math.BigDecimal;
 import java.util.Collection;

@@ -3,9 +3,9 @@ package com.butent.bee.client.calendar;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.List;
 

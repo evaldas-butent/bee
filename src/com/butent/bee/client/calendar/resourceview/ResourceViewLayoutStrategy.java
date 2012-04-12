@@ -8,8 +8,8 @@ import com.butent.bee.client.calendar.HasSettings;
 import com.butent.bee.client.calendar.util.AppointmentAdapter;
 import com.butent.bee.client.calendar.util.AppointmentUtil;
 import com.butent.bee.client.calendar.util.TimeBlock;
-import com.butent.bee.shared.JustDate;
-import com.butent.bee.shared.utils.TimeUtils;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 
 import java.util.HashMap;
 import java.util.List;

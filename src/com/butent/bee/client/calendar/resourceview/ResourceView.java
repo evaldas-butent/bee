@@ -24,9 +24,8 @@ import com.butent.bee.client.dnd.DragStartEvent;
 import com.butent.bee.client.dnd.PickupDragController;
 import com.butent.bee.client.dnd.VetoDragException;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.JustDate;
-import com.butent.bee.shared.utils.TimeUtils;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 
 import java.util.List;
 

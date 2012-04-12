@@ -71,6 +71,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   }
   
   public void clear() {
+    getDisplay().reset();
     getDisplay().setPageStart(0, false, false);
     getDisplay().setRowCount(0, true);
     getDisplay().setRowData(null, true);

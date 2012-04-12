@@ -1,6 +1,10 @@
 package com.butent.bee.client.datepicker;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.event.dom.client.HasKeyDownHandlers;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
@@ -10,20 +14,25 @@ import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.datepicker.DatePicker.CssClasses;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.YearMonth;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.StringList;
-import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.List;
 
-public class MonthView extends Component {
+class MonthView extends Component implements HasKeyDownHandlers {
 
-  public class DayGrid extends Grid {
+  private class DayGrid extends Grid {
 
-    public class Cell extends UIObject implements HasEnabled {
+    private class Cell extends UIObject implements HasEnabled {
 
       private final int index;
       private final JustDate value = new JustDate();
@@ -33,7 +42,7 @@ public class MonthView extends Component {
 
       private boolean enabled = true;
 
-      public Cell(int index, Element elem, boolean isWeekend) {
+      private Cell(int index, Element elem, boolean isWeekend) {
         this.index = index;
         this.cellStyle =
             isWeekend ? StyleUtils.buildClasses(css().day(), css().dayIsWeekend()) : css().day();
@@ -83,21 +92,10 @@ public class MonthView extends Component {
         updateStyle();
       }
 
-      private void onSelected(boolean selected) {
-        if (selected) {
-          if (isFiller()) {
-            getDatePicker().setDate(value, true);
-          } else {
-            getDatePicker().setValue(value, true);
-          }
-        }
-        updateStyle();
-      }
-
       private void setDateStyle(String dateStyle) {
         this.dateStyle = dateStyle;
       }
-
+      
       private void setText(String value) {
         DOM.setInnerText(getElement(), value);
       }
@@ -130,9 +128,6 @@ public class MonthView extends Component {
 
         if (getActiveCellIndex() == index) {
           styles.add(css().dayIsHighlighted());
-          if (getSelectedIndex() == index) {
-            styles.add(css().dayIsValueAndHighlighted());
-          }
         }
         if (!isEnabled()) {
           styles.add(css().dayIsDisabled());
@@ -146,16 +141,16 @@ public class MonthView extends Component {
     private final List<Cell> cellList = Lists.newArrayList();
 
     private int activeCellIndex = BeeConst.UNDEF;
-    private int selectedIndex = BeeConst.UNDEF;
 
-    public DayGrid() {
-      sinkEvents(Event.ONCLICK | Event.ONMOUSEOVER | Event.ONMOUSEOUT);
+    private DayGrid() {
+      sinkEvents(Event.ONCLICK | Event.ONMOUSEOVER | Event.ONMOUSEOUT | Event.ONKEYDOWN);
+      DomUtils.makeFocusable(this);
 
-      resize(Model.WEEKS_IN_MONTH + 1, Model.DAYS_IN_WEEK);
+      resize(WEEKS_IN_MONTH + 1, DAYS_IN_WEEK);
 
       CellFormatter formatter = getCellFormatter();
 
-      for (int i = 0; i < Model.DAYS_IN_WEEK; i++) {
+      for (int i = 0; i < DAYS_IN_WEEK; i++) {
         setText(0, i, Model.formatDayOfWeek(i));
 
         if (Model.isWeekend(i + 1)) {
@@ -166,8 +161,8 @@ public class MonthView extends Component {
       }
       
       int index = 0;
-      for (int row = 1; row <= Model.WEEKS_IN_MONTH; row++) {
-        for (int column = 0; column < Model.DAYS_IN_WEEK; column++) {
+      for (int row = 1; row <= WEEKS_IN_MONTH; row++) {
+        for (int column = 0; column < DAYS_IN_WEEK; column++) {
           Element element = formatter.getElement(row, column);
           Cell cell = new Cell(index++, element, Model.isWeekend(column));
 
@@ -183,7 +178,7 @@ public class MonthView extends Component {
         case Event.ONCLICK: {
           Cell cell = getCell(event);
           if (isActive(cell)) {
-            setSelected(cell);
+            getDatePicker().setValue(cell.value, true);
           }
           break;
         }
@@ -209,7 +204,17 @@ public class MonthView extends Component {
           }
           break;
         }
+        
+        case Event.ONKEYDOWN: {
+          if (navigate(event.getKeyCode(), EventUtils.hasModifierKey(event))) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          break;
+        }
       }
+      
+      super.onBrowserEvent(event);
     }
 
     @Override
@@ -218,10 +223,16 @@ public class MonthView extends Component {
     }
 
     private void activateCell(Cell cell, boolean activate) {
-      if (activate && cell.index == getActiveCellIndex()) {
+      int oldIndex = getActiveCellIndex();
+      if (activate && cell.index == oldIndex) {
         return;
       }
-      setActiveCellIndex(activate ? cell.index : BeeConst.UNDEF); 
+      
+      setActiveCellIndex(activate ? cell.index : BeeConst.UNDEF);
+      
+      if (activate && oldIndex >= 0) {
+        getCell(oldIndex).onActivate(false);
+      }
       cell.onActivate(activate);
     }
 
@@ -242,40 +253,18 @@ public class MonthView extends Component {
       return cellList.size();
     }
 
-    private Cell getSelectedCell() {
-      return (getSelectedIndex() >= 0) ? getCell(getSelectedIndex()) : null;
-    }
-
-    private int getSelectedIndex() {
-      return selectedIndex;
-    }
-
     private boolean isActive(Cell cell) {
       return cell != null && cell.isEnabled();
     }
-
+    
     private void setActiveCellIndex(int activeCellIndex) {
       this.activeCellIndex = activeCellIndex;
     }
-
-    private void setSelected(Cell cell) {
-      if (cell.index == getSelectedIndex()) {
-        return;
-      }
-      
-      Cell last = getSelectedCell();
-      if (last != null) {
-        last.onSelected(false);
-      }
-      
-      setSelectedIndex(cell.index);
-      cell.onSelected(true);
-    }
-
-    private void setSelectedIndex(int selectedIndex) {
-      this.selectedIndex = selectedIndex;
-    }
   }
+
+  private static final int WEEKS_IN_MONTH = 6;
+
+  private static final int DAYS_IN_WEEK = 7;
 
   private final CssClasses cssClasses;
   private final DayGrid grid;
@@ -283,34 +272,22 @@ public class MonthView extends Component {
   private final JustDate firstDisplayed = new JustDate();
   private final JustDate lastDisplayed = new JustDate();
 
-  public MonthView(CssClasses cssClasses) {
+  MonthView(CssClasses cssClasses) {
     this.cssClasses = cssClasses;
     this.grid = new DayGrid();
   }
 
-  public void addStyleToDate(String styleName, JustDate date) {
-    Assert.state(getDatePicker().isDateVisible(date));
-    getCell(date).addStyleName(styleName);
-  }
-
-  public JustDate getFirstDate() {
-    return firstDisplayed;
-  }
-
-  public JustDate getLastDate() {
-    return lastDisplayed;
-  }
-
-  public boolean isDateEnabled(JustDate date) {
-    Assert.state(getDatePicker().isDateVisible(date));
-    return getCell(date).isEnabled();
+  public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
+    return Binder.addKeyDownHandler(grid, handler);
   }
 
   @Override
-  public void refresh() {
-    JustDate start = getModel().getCurrentMonth();
+  protected void refresh() {
+    JustDate start = getModel().getCurrentMonth().getDate();
     int incr = (start.getDow() == 1) ? -1 : 0;
     firstDisplayed.setDate(TimeUtils.startOfWeek(start, incr));
+    
+    grid.setActiveCellIndex(BeeConst.UNDEF);
 
     int days = firstDisplayed.getDays();
     for (int i = 0; i < grid.getNumCells(); i++) {
@@ -319,32 +296,161 @@ public class MonthView extends Component {
     }
   }
 
-  public void removeStyleFromDate(String styleName, JustDate date) {
+  @Override
+  protected void setup() {
+    initWidget(grid);
+    grid.setStyleName(css().days());
+  }
+
+  void addStyleToDate(String styleName, JustDate date) {
+    Assert.state(getDatePicker().isDateVisible(date));
+    getCell(date).addStyleName(styleName);
+  }
+
+  JustDate getFirstDate() {
+    return firstDisplayed;
+  }
+
+  JustDate getLastDate() {
+    return lastDisplayed;
+  }
+
+  boolean isDateEnabled(JustDate date) {
+    Assert.state(getDatePicker().isDateVisible(date));
+    return getCell(date).isEnabled();
+  }
+
+  void removeStyleFromDate(String styleName, JustDate date) {
     if (getDatePicker().isDateVisible(date)) {
       getCell(date).removeStyleName(styleName);
     }
   }
 
-  public void setEnabledOnDate(boolean enabled, JustDate date) {
+  void setEnabledOnDate(boolean enabled, JustDate date) {
     Assert.state(getDatePicker().isDateVisible(date));
     getCell(date).setEnabled(enabled);
   }
-
-  @Override
-  public void setup() {
-    initWidget(grid);
-    grid.setStyleName(css().days());
+  
+  void setFocus(boolean focus) {
+    DomUtils.setFocus(grid, focus);
   }
-
+ 
   private CssClasses css() {
     return cssClasses;
   }
- 
+
   private DayGrid.Cell getCell(JustDate date) {
     int index = date.getDays() - firstDisplayed.getDays();
     DayGrid.Cell cell = grid.getCell(index);
     Assert.state(cell.value.equals(date));
     return cell;
+  }
+  
+  private boolean isIndex(int index) {
+    return BeeUtils.betweenExclusive(index, 0, grid.getNumCells());
+  }
+  
+  private boolean navigate(int keyCode, boolean hasModifiers) {
+    int oldIndex = grid.getActiveCellIndex();
+    if (BeeConst.isUndef(oldIndex)) {
+      int z = TimeUtils.dayDiff(firstDisplayed, getDatePicker().getValue());
+      if (isIndex(z)) {
+        oldIndex = z;
+      }
+    }
+    int newIndex = BeeConst.UNDEF;
+    
+    int increment = 0;
+    JustDate newDate = null;
+    boolean ok = false;
+    
+    DayGrid.Cell cell = null;
+    
+    switch (keyCode) {
+      case KeyCodes.KEY_ENTER:
+        if (oldIndex >= 0) {
+          cell = grid.getCell(oldIndex);
+          if (grid.isActive(cell)) {
+            getDatePicker().setValue(cell.value, true);
+            ok = true;
+          }
+        } else {
+          newIndex = 0;
+        }
+        break;
+
+      case KeyCodes.KEY_LEFT:
+        increment = -1;
+        break;
+
+      case KeyCodes.KEY_RIGHT:
+        increment = 1;
+        break;
+
+      case KeyCodes.KEY_UP:
+        increment = -7;
+        break;
+        
+      case KeyCodes.KEY_DOWN:
+        increment = 7;
+        break;
+
+      case KeyCodes.KEY_HOME:
+        JustDate today = TimeUtils.today();
+        int z = TimeUtils.dayDiff(firstDisplayed, today);
+        if (isIndex(z)) {
+          newIndex = (z == oldIndex) ? 0 : z;
+        } else {
+          newDate = today;
+        }
+        break;
+        
+      case KeyCodes.KEY_END:
+        newIndex = grid.getNumCells() - 1;
+        if (newIndex == oldIndex) {
+          newIndex = 0;
+        }
+        break;
+        
+      case KeyCodes.KEY_PAGEUP:
+        newDate = hasModifiers ? TimeUtils.endOfMonth(getModel().getCurrentMonth(), -12)
+            : TimeUtils.endOfPreviousMonth(getModel().getCurrentMonth());
+        break;
+        
+      case KeyCodes.KEY_PAGEDOWN:
+        newDate = hasModifiers ? TimeUtils.startOfMonth(getModel().getCurrentMonth(), 12)
+            : TimeUtils.startOfNextMonth(getModel().getCurrentMonth());
+        break;
+    }
+    if (ok) {
+      return ok;
+    }
+    
+    if (newIndex >= 0 && newIndex != oldIndex) {
+      cell = grid.getCell(newIndex);
+      ok = true;
+
+    } else if (increment != 0) {
+      newIndex = (oldIndex >= 0) ? oldIndex + increment : 0;
+      if (isIndex(newIndex)) {
+        cell = grid.getCell(newIndex);
+      } else {
+        newDate = TimeUtils.nextDay(firstDisplayed, newIndex);
+      }
+      ok = true;
+    }
+
+    if (newDate != null) {
+      getDatePicker().setCurrentMonth(YearMonth.get(newDate));
+      cell = grid.getCell(TimeUtils.dayDiff(firstDisplayed, newDate));
+      ok = true;
+    }
+
+    if (grid.isActive(cell)) {
+      grid.activateCell(cell, true);
+    }
+    
+    return ok;
   }
 
   private void setHighlightedDate(JustDate date) {

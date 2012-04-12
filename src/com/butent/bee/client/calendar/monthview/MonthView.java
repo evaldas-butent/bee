@@ -26,10 +26,10 @@ import com.butent.bee.client.dnd.DragStartEvent;
 import com.butent.bee.client.dnd.PickupDragController;
 import com.butent.bee.client.dnd.VetoDragException;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.shared.HasDateValue;
-import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Collections;
 import java.util.Comparator;

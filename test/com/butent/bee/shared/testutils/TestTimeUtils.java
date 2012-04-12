@@ -1,11 +1,11 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
-import com.butent.bee.shared.utils.Grego;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.Grego;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.LogUtils;
-import com.butent.bee.shared.utils.TimeUtils;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 import java.util.Date;
 
 /**
- * Tests {@link com.butent.bee.shared.utils.TimeUtils}.
+ * Tests {@link com.butent.bee.shared.time.TimeUtils}.
  */
 public class TestTimeUtils {
 

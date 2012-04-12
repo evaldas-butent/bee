@@ -4,9 +4,9 @@ import com.google.gwt.core.client.GWT;
 
 import com.butent.bee.client.calendar.i18n.CalendarConstants;
 import com.butent.bee.client.i18n.DateTimeFormat;
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.JustDate;
-import com.butent.bee.shared.utils.TimeUtils;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 
 public class CalendarFormat {
 

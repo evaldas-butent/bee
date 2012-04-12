@@ -4,8 +4,8 @@ import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.jdbc.JdbcException;
 import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.LogUtils;
 
 import java.sql.ResultSet;

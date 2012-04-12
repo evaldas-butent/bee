@@ -7,8 +7,8 @@ import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.calendar.util.AppointmentWidget;
 import com.butent.bee.client.dnd.DragContext;
 import com.butent.bee.client.dnd.drop.AbsolutePositionDropController;
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 
 public class ResourceViewDropController extends AbsolutePositionDropController {
 

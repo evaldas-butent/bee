@@ -1119,16 +1119,6 @@ to {
   padding: 1px 0 5px 0;
 }
 
-.bee-DatePicker-nextButton, .bee-DatePicker-previousButton {
-  font-size: 120%;
-  line-height: 1em;
-  cursor: pointer;
-  font-weight: bold;
-  padding: 0px 4px;
-  color: #23344F;
-  outline: none;
-}
-
 .bee-DatePicker-month {
   text-align: center;
   vertical-align: middle;
@@ -1176,13 +1166,7 @@ to {
 }
 
 .bee-DatePicker-dayIsHighlighted {
-  background-image: url(images/selected-cell-gradient.gif);
-  border-right: 1px solid #4C6C93;
-  border-left: 1px solid #4C6C93;
-  border-bottom: 1px solid #4C6C93;
-  border-top: 1px solid #4C6C93;
-  color: #FFF;
-  text-shadow: 0px 1px 5px #000;
+  background-color: cornsilk !important;
 }
 
 .bee-DatePicker-dayIsValue {
@@ -1196,13 +1180,7 @@ to {
 }
 
 .bee-DatePicker-dayIsToday {
-  color: #FFF;
-  text-shadow: 0px 1px 5px #000;
-  background-image: url(images/today-cell-gradient.gif);
-  border-right: 1px solid #304769;
-  border-left: 1px solid #304769;
-  border-bottom: 1px solid #304769;
-  border-top: 1px solid #304769;
+  background-color: #b0ffa0;
 }
 
 .bee-DatePicker-dayIsDisabled {

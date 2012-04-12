@@ -4,8 +4,8 @@ import com.google.gwt.core.client.JsArrayInteger;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.i18n.client.TimeZoneInfo;
 
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.HasDateValue;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateValue;
 
 public class TimeZone {
 

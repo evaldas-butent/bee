@@ -1,9 +1,9 @@
 package com.butent.bee.client.calendar.monthview;
 
 import com.butent.bee.client.calendar.Appointment;
-import com.butent.bee.shared.HasDateValue;
-import com.butent.bee.shared.JustDate;
-import com.butent.bee.shared.utils.TimeUtils;
+import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 
 public class WeekLayoutDescription {
 

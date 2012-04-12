@@ -5,9 +5,9 @@ import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.shared.DateTimeFormatInfo;
 import com.google.gwt.i18n.shared.DefaultDateTimeFormatInfo;
 
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.HasDateValue;
-import com.butent.bee.shared.utils.TimeUtils;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.TimeUtils;
 
 import java.util.HashMap;
 import java.util.List;

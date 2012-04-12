@@ -392,7 +392,7 @@ public class GridFactory {
     ScrollTable grid = new ScrollTable(cachedModel, tableDef);
     if (width > c) {
       int w = (width - DomUtils.getScrollBarWidth() - 2) / c;
-      grid.setDefaultColumnWidth(BeeUtils.limit(w, 60, 300));
+      grid.setDefaultColumnWidth(BeeUtils.clamp(w, 60, 300));
     }
     grid.createFooterTable();
 

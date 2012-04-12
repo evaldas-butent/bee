@@ -5,7 +5,7 @@ import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
-import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.time.JustDate;
 
 /**
  * Enables using columns which contain date type data.

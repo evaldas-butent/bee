@@ -1,9 +1,9 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
+import com.butent.bee.shared.time.DateTime;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

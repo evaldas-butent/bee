@@ -5,9 +5,9 @@ import com.google.gwt.cell.client.Cell;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
-import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.time.DateTime;
 
 /**
  * Implements DateTime type column, enables to get value for a specified row or index point.

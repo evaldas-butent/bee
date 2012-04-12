@@ -336,7 +336,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       if (maxW <= 0) {
         maxW = getMaxCellWidth();
       }
-      return BeeUtils.limit(w, minW, maxW);
+      return BeeUtils.clamp(w, minW, maxW);
     }
 
     private int getDataIndex() {
@@ -1730,6 +1730,16 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
+  public void reset() {
+    getResizedRows().clear();
+    getResizedCells().clear();
+    
+    if (!getSelectedRows().isEmpty()) {
+      getSelectedRows().clear();
+      fireSelectionCountChange();
+    }
+  }
+
   public int resizeColumn(int col, int newWidth) {
     int oldWidth = getColumnWidth(col);
     return resizeColumnWidth(col, oldWidth, newWidth - oldWidth);
@@ -2118,7 +2128,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       return;
     }
 
-    int absIndex = BeeUtils.limit(index, 0, rc - 1);
+    int absIndex = BeeUtils.clamp(index, 0, rc - 1);
     int oldPageStart = getPageStart();
     if (oldPageStart + getActiveRow() == absIndex) {
       return;
@@ -2147,7 +2157,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     } else {
       newPageStart = (absIndex / size) * size;
     }
-    newPageStart = BeeUtils.limit(newPageStart, 0, rc - size);
+    newPageStart = BeeUtils.clamp(newPageStart, 0, rc - size);
 
     setActiveRow(absIndex - newPageStart);
 

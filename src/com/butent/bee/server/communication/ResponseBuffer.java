@@ -2,11 +2,11 @@ package com.butent.bee.server.communication;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeResource;
-import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;

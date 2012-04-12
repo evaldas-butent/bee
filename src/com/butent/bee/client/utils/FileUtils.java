@@ -6,7 +6,7 @@ import com.google.gwt.core.client.JsArrayMixed;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;

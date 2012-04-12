@@ -1,7 +1,7 @@
 package com.butent.bee.client.calendar.util;
 
 import com.butent.bee.client.calendar.Appointment;
-import com.butent.bee.shared.utils.TimeUtils;
+import com.butent.bee.shared.time.TimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;

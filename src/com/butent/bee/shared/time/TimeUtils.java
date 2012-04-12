@@ -1,16 +1,13 @@
-package com.butent.bee.shared.utils;
+package com.butent.bee.shared.time;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 
-import com.butent.bee.shared.AbstractDate;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.HasDateValue;
-import com.butent.bee.shared.JustDate;
-import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.RangeOptions;
 
 import java.util.Date;
 
@@ -163,6 +160,18 @@ public class TimeUtils {
     return fieldDifference(start, end, DATE);
   }
 
+  public static String dateToString(int year, int month, int dom, char sep) {
+    return yearToString(year) + sep + monthToString(month) + sep + dayOfMonthToString(dom);
+  }
+
+  public static String dateToString(HasDateValue date, char sep) {
+    if (date == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return dateToString(date.getYear(), date.getMonth(), date.getDom(), sep);
+    }
+  }
+  
   public static int dayDiff(HasDateValue start, HasDateValue end) {
     Assert.notNull(start);
     Assert.notNull(end);
@@ -170,18 +179,21 @@ public class TimeUtils {
     return end.getDate().getDays() - start.getDate().getDays();
   }
   
-  public static JustDate endOfMonth(HasDateValue ref) {
-    Assert.notNull(ref);
-    int year = ref.getYear();
-    int month = ref.getMonth();
-    return new JustDate(year, month, Grego.monthLength(year, month));
+  public static String dayOfMonthToString(int dom) {
+    return padTwo(dom);
+  }
+  
+  public static JustDate endOfMonth(HasYearMonth ref) {
+    return endOfMonth(ref, 0);
   }
 
-  public static JustDate endOfPreviousMonth(HasDateValue ref) {
+  public static JustDate endOfMonth(HasYearMonth ref, int increment) {
     Assert.notNull(ref);
-    int year = ref.getYear();
-    int month = ref.getMonth();
-    return new JustDate(Grego.fieldsToDay(year, month, 1) - 1);
+    return YearMonth.get(ref).shiftMonth(increment).getLast();
+  }
+  
+  public static JustDate endOfPreviousMonth(HasYearMonth ref) {
+    return endOfMonth(ref, -1);
   }
 
   public static boolean equals(HasDateValue x, HasDateValue y) {
@@ -353,6 +365,10 @@ public class TimeUtils {
     return dt.getHour() * 60 + dt.getMinute();
   }
   
+  public static String monthToString(int month) {
+    return padTwo(month);
+  }
+  
   public static void moveOneDayForward(JustDate date) {
     addDay(date, 1);
   }
@@ -364,21 +380,6 @@ public class TimeUtils {
   public static JustDate nextDay(HasDateValue ref, int increment) {
     Assert.notNull(ref);
     return new JustDate(ref.getDate().getDays() + increment);
-  }
-
-  public static JustDate nextMonth() {
-    return nextMonth(new DateTime(), 1);
-  }
-
-  public static JustDate nextMonth(HasDateValue ref) {
-    return nextMonth(ref, 1);
-  }
-
-  public static JustDate nextMonth(HasDateValue ref, int increment) {
-    Assert.notNull(ref);
-    int year = ref.getYear();
-    int month = ref.getMonth();
-    return new JustDate(year, month, Grego.monthLength(year, month) + increment);
   }
 
   public static String normalize(AbstractDate x) {
@@ -440,7 +441,7 @@ public class TimeUtils {
   public static JustDate previousDay(HasDateValue ref) {
     return nextDay(ref, -1);
   }
-  
+
   /**
    * Generates a random JustDate between {@code min} and {@code max}.
    * 
@@ -481,7 +482,7 @@ public class TimeUtils {
     return x.getDateTime().getTime() == y.getDateTime().getTime();
   }
   
-  public static boolean sameMonth(HasDateValue x, HasDateValue y) {
+  public static boolean sameMonth(HasYearMonth x, HasYearMonth y) {
     if (x == null || y == null) {
       return false;
     }
@@ -514,43 +515,30 @@ public class TimeUtils {
     return date;
   }
 
-  public static JustDate startOfMonth(HasDateValue ref) {
+  public static JustDate startOfMonth(HasYearMonth ref) {
     return startOfMonth(ref, 0);
   }
   
-  public static JustDate startOfMonth(HasDateValue ref, int increment) {
+  public static JustDate startOfMonth(HasYearMonth ref, int increment) {
     Assert.notNull(ref);
-    int year = ref.getYear();
-    int month = ref.getMonth();
-
-    if (increment != 0) {
-      Pair<Integer, Integer> pair = incrementMonth(year, month, increment);
-      year = pair.getA();
-      month = pair.getB();
+    if (increment == 0) {
+      return new JustDate(ref.getYear(), ref.getMonth(), 1);
+    } else {
+      return YearMonth.get(ref).shiftMonth(increment).getDate();
     }
-    return new JustDate(year, month, 1);
   }
 
-  public static JustDate startOfNextMonth(HasDateValue ref) {
+  public static JustDate startOfNextMonth(HasYearMonth ref) {
     return startOfMonth(ref, 1);
   }
 
-  public static JustDate startOfPreviousMonth(HasDateValue ref) {
+  public static JustDate startOfPreviousMonth(HasYearMonth ref) {
     return startOfMonth(ref, -1);
   }
   
-  public static JustDate startOfQuarter(HasDateValue ref, int increment) {
+  public static JustDate startOfQuarter(HasYearMonth ref, int increment) {
     Assert.notNull(ref);
-    int year = ref.getYear();
-    int month = ref.getMonth();
-    month -= (month - 1) % 3;
-
-    if (increment != 0) {
-      Pair<Integer, Integer> pair = incrementMonth(year, month, increment * 3);
-      year = pair.getA();
-      month = pair.getB();
-    }
-    return new JustDate(year, month, 1);
+    return startOfMonth(ref, increment * 3 - (ref.getMonth() - 1) % 3);
   }
 
   public static JustDate startOfWeek() {
@@ -584,11 +572,11 @@ public class TimeUtils {
     return startOfYear(today());
   }
   
-  public static JustDate startOfYear(HasDateValue ref) {
+  public static JustDate startOfYear(HasYearMonth ref) {
     return startOfYear(ref, 0);
   }
   
-  public static JustDate startOfYear(HasDateValue ref, int increment) {
+  public static JustDate startOfYear(HasYearMonth ref, int increment) {
     Assert.notNull(ref);
     int year = ref.getYear();
     if (increment != 0) {
@@ -787,23 +775,6 @@ public class TimeUtils {
         Assert.unsupported(BeeUtils.concat(1, "delta" + fieldName(field) + "not supported"));
     }
     return delta;
-  }
-
-  private static Pair<Integer, Integer> incrementMonth(int year, int month, int increment) {
-    if (increment == 0) {
-      return new Pair<Integer, Integer>(year, month);
-    }
-    int y = year;
-    int m = month + increment;
-
-    if (m < 1) {
-      y += m / 12 - 1;
-      m = m % 12 + 12;
-    } else if (m > 12) {
-      y += (m - 1) / 12;
-      m = (m - 1) % 12 + 1;
-    }
-    return new Pair<Integer, Integer>(y, m);
   }
 
   private TimeUtils() {

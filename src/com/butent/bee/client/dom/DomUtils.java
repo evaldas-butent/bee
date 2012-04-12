@@ -1678,7 +1678,21 @@ public class DomUtils {
     Assert.notNull(obj);
     setDraggable(obj.getElement());
   }
+  
+  public static void setFocus(Element elem, boolean focus) {
+    Assert.notNull(elem);
+    if (focus) {
+      elem.focus();
+    } else {
+      elem.blur();
+    }
+  }
 
+  public static void setFocus(UIObject obj, boolean focus) {
+    Assert.notNull(obj);
+    setFocus(obj.getElement(), focus);
+  }
+  
   public static void setHtml(String id, String html) {
     Element elem = getElement(id);
     elem.setInnerHTML(html);

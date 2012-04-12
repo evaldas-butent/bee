@@ -10,6 +10,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.Transformable;
+import com.butent.bee.shared.time.TimeUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -209,6 +210,70 @@ public class BeeUtils {
   }
 
   /**
+   * Gets the value between {@code min} and {@code max}.
+   * 
+   * @param x a value to return in the specified limits
+   * @param min the minimum possible value
+   * @param max the maximum possible value
+   * @return {@code x} if the value is between {@code min} and {@code max}, is the value is less
+   *         than {@code min} it returns {@code min}, if greater than {@code max} it returns
+   *         {@code max}.
+   */
+  public static double clamp(double x, double min, double max) {
+    if (!isDouble(x)) {
+      if (isDouble(min)) {
+        return min;
+      }
+      if (isDouble(max)) {
+        return max;
+      }
+      return x;
+    }
+
+    double z;
+    if (isDouble(min) && isDouble(max)) {
+      z = Math.min(min, max);
+      if (x < z) {
+        return z;
+      }
+      z = Math.max(min, max);
+      if (x > z) {
+        return z;
+      }
+      return x;
+    }
+
+    if (isDouble(min)) {
+      return Math.max(x, min);
+    }
+    if (isDouble(max)) {
+      return Math.min(x, max);
+    }
+    return x;
+  }
+
+  /**
+   * Gets the value between {@code min} and {@code max}.
+   * 
+   * @param x a value to return in the specified limits
+   * @param min the minimum possible value
+   * @param max the maximum possible value
+   * @return x if the value is between {@code min} and {@code max}, if the value is less than
+   *         {@code min} it returns {@code min}, if greater than {@code max} it returns {@code max}.
+   */
+  public static int clamp(int x, int min, int max) {
+    int z = Math.min(min, max);
+    if (x < z) {
+      return z;
+    }
+    z = Math.max(min, max);
+    if (x > z) {
+      return z;
+    }
+    return x;
+  }
+
+  /**
    * A string in the specified position is appended with "..." and the left string after the index
    * {@code n} is replaced with a progress indicator.
    * <p>
@@ -259,7 +324,7 @@ public class BeeUtils {
       return x1.compareTo((T) x2);
     }
   }
-
+  
   /**
    * Compares the two specified Double values.
    * 
@@ -276,7 +341,7 @@ public class BeeUtils {
       return BeeConst.COMPARE_MORE;
     }
   }
-
+  
   /**
    * Compares the two specified Integer values.
    * 
@@ -303,7 +368,7 @@ public class BeeUtils {
       return BeeConst.COMPARE_MORE;
     }
   }
-  
+
   /**
    * Compares objects {@code x1} and {@code x2}. This method allows to compare values even if one or
    * both of the specified values are {@code null}.
@@ -327,7 +392,7 @@ public class BeeUtils {
       return x1.toString().compareTo(x2.toString());
     }
   }
-  
+
   /**
    * Compares the two specified String values.
    * 
@@ -387,7 +452,7 @@ public class BeeUtils {
 
     return s.toString();
   }
-
+  
   public static <T> boolean contains(Collection<? extends T> col, T item) {
     if (col == null) {
       return false;
@@ -403,7 +468,7 @@ public class BeeUtils {
       return s.indexOf(ch) >= 0;
     }
   }
-  
+
   /**
    * Checks is there are equal elements in the Collections.
    * 
@@ -441,7 +506,7 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  
   /**
    * Checks if the CharSequence {@code src} contains only of the specified characters.
    * 
@@ -468,7 +533,7 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  
   public static boolean containsSame(Collection<String> col, String s) {
     if (isEmpty(col)) {
       return false;
@@ -481,7 +546,7 @@ public class BeeUtils {
     }
     return false;
   }
-  
+
   public static boolean containsSame(String src, String ctxt) {
     if (isEmpty(src) || isEmpty(ctxt)) {
       return false;
@@ -489,7 +554,7 @@ public class BeeUtils {
       return src.trim().toLowerCase().contains(ctxt.trim().toLowerCase());
     }
   }
-  
+
   public static boolean containsWhitespace(CharSequence cs) {
     if (cs == null) {
       return false;
@@ -974,7 +1039,7 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
-
+  
   /**
    * Separates a String with separator value. Returns a String that goes before the separator.
    * 
@@ -995,7 +1060,7 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
-
+  
   /**
    * Returns a value from the list in the specified index.
    * 
@@ -1010,7 +1075,7 @@ public class BeeUtils {
       return null;
     }
   }
-  
+
   public static String getSame(Collection<String> col, String s) {
     if (isEmpty(col)) {
       return null;
@@ -1023,7 +1088,7 @@ public class BeeUtils {
     }
     return null;
   }
-  
+
   /**
    * Separates a string with separator value. Returns a string that goes after the separator.
    * 
@@ -1078,7 +1143,7 @@ public class BeeUtils {
     }
     return null;
   }
-
+  
   public static boolean hasLength(CharSequence cs, int min) {
     if (cs == null) {
       return false;
@@ -1134,7 +1199,7 @@ public class BeeUtils {
   public static String increment(Object obj) {
     return increment(transform(obj));
   }
-  
+
   /**
    * Transforms the String to Integer and increments it by 1.
    * 
@@ -1710,7 +1775,7 @@ public class BeeUtils {
       return false;
     }
   }
-
+  
   /**
    * Checks if an Object is a positive number.
    * 
@@ -1730,7 +1795,7 @@ public class BeeUtils {
   public static boolean isPositiveDouble(String s) {
     return isDouble(s, BeeConst.DOUBLE_ZERO, false);
   }
-  
+
   public static boolean isPositiveInt(String s) {
     return isInt(s) && toInt(s) > 0;
   }
@@ -2003,70 +2068,6 @@ public class BeeUtils {
       len = 0;
     }
     return len;
-  }
-
-  /**
-   * Gets the value between {@code min} and {@code max}.
-   * 
-   * @param x a value to return in the specified limits
-   * @param min the minimum possible value
-   * @param max the maximum possible value
-   * @return {@code x} if the value is between {@code min} and {@code max}, is the value is less
-   *         than {@code min} it returns {@code min}, if greater than {@code max} it returns
-   *         {@code max}.
-   */
-  public static double limit(double x, double min, double max) {
-    if (!isDouble(x)) {
-      if (isDouble(min)) {
-        return min;
-      }
-      if (isDouble(max)) {
-        return max;
-      }
-      return x;
-    }
-
-    double z;
-    if (isDouble(min) && isDouble(max)) {
-      z = Math.min(min, max);
-      if (x < z) {
-        return z;
-      }
-      z = Math.max(min, max);
-      if (x > z) {
-        return z;
-      }
-      return x;
-    }
-
-    if (isDouble(min)) {
-      return Math.max(x, min);
-    }
-    if (isDouble(max)) {
-      return Math.min(x, max);
-    }
-    return x;
-  }
-
-  /**
-   * Gets the value between {@code min} and {@code max}.
-   * 
-   * @param x a value to return in the specified limits
-   * @param min the minimum possible value
-   * @param max the maximum possible value
-   * @return x if the value is between {@code min} and {@code max}, if the value is less than
-   *         {@code min} it returns {@code min}, if greater than {@code max} it returns {@code max}.
-   */
-  public static int limit(int x, int min, int max) {
-    int z = Math.min(min, max);
-    if (x < z) {
-      return z;
-    }
-    z = Math.max(min, max);
-    if (x > z) {
-      return z;
-    }
-    return x;
   }
 
   /**
@@ -2673,6 +2674,22 @@ public class BeeUtils {
     } else {
       return s.substring(s.length() - n);
     }
+  }
+  
+  public static int rotateBackwardExclusive(int x, int min, int max) {
+    return rotateBackwardInclusive(x, min, max - 1);
+  }
+
+  public static int rotateBackwardInclusive(int x, int min, int max) {
+    return (x <= min || x > max) ? max : x - 1; 
+  }
+
+  public static int rotateForwardExclusive(int x, int min, int max) {
+    return rotateForwardInclusive(x, min, max - 1);
+  }
+
+  public static int rotateForwardInclusive(int x, int min, int max) {
+    return (x < min || x >= max) ? min : x + 1; 
   }
 
   /**

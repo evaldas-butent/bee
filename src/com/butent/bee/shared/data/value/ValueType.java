@@ -3,7 +3,7 @@ package com.butent.bee.shared.data.value;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.utils.TimeUtils;
+import com.butent.bee.shared.time.TimeUtils;
 
 import java.math.BigDecimal;
 import java.util.Map;

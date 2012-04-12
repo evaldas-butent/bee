@@ -1,6 +1,6 @@
 package com.butent.bee.client.i18n;
 
-import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.time.DateTime;
 
 public class DateRecord {
 

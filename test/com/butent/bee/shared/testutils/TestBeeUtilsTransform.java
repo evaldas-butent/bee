@@ -108,6 +108,25 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   }
 
   @Test
+  public void testClamp() {
+    assertEquals(10, beeUtils.clamp(5, 10, 15));
+    assertEquals(15, beeUtils.clamp(20, 1, 15));
+    assertEquals(5, beeUtils.clamp(5, 1, 15));
+    assertEquals(10.0, beeUtils.clamp(5.0, 10.0, 15.0));
+    assertEquals(15.0, beeUtils.clamp(20.0, 1.0, 15.0));
+    assertEquals(5.0, beeUtils.clamp(5.0, 1.00, 15.0));
+    assertEquals(10.0, beeUtils.clamp(5, 10.0, 15.0));
+    assertEquals(1.0, beeUtils.clamp(Double.MAX_VALUE * 5, 1.0, 15.0));
+    assertEquals(15.0, beeUtils.clamp(Double.MAX_VALUE * 5, Double.MAX_VALUE * 5, 15.0));
+    assertEquals(Double.POSITIVE_INFINITY, beeUtils.clamp(Double.MAX_VALUE * 5,
+        Double.MAX_VALUE * 5, Double.MAX_VALUE * 5));
+    assertEquals(5.0, beeUtils.clamp(5.0, 1, 15));
+    assertEquals(5.0, beeUtils.clamp(5.0, Double.MAX_VALUE * 5, Double.MAX_VALUE * 5));
+    assertEquals(5.0, beeUtils.clamp(5.0, 2.0, Double.MAX_VALUE * 5));
+    assertEquals(5.0, beeUtils.clamp(5.0, Double.MAX_VALUE * 5, 10.0));
+  }
+
+  @Test
   public void testClip() {
     assertEquals("This i...[6/18]", beeUtils.clip("This is a sentence", 6));
     assertEquals("", beeUtils.clip("", 6));
@@ -751,25 +770,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     assertEquals(0, beeUtils.length(1));
     assertEquals(2, beeUtils.length(b));
     assertEquals(5, beeUtils.length(tObj));
-  }
-
-  @Test
-  public void testLimit() {
-    assertEquals(10, beeUtils.limit(5, 10, 15));
-    assertEquals(15, beeUtils.limit(20, 1, 15));
-    assertEquals(5, beeUtils.limit(5, 1, 15));
-    assertEquals(10.0, beeUtils.limit(5.0, 10.0, 15.0));
-    assertEquals(15.0, beeUtils.limit(20.0, 1.0, 15.0));
-    assertEquals(5.0, beeUtils.limit(5.0, 1.00, 15.0));
-    assertEquals(10.0, beeUtils.limit(5, 10.0, 15.0));
-    assertEquals(1.0, beeUtils.limit(Double.MAX_VALUE * 5, 1.0, 15.0));
-    assertEquals(15.0, beeUtils.limit(Double.MAX_VALUE * 5, Double.MAX_VALUE * 5, 15.0));
-    assertEquals(Double.POSITIVE_INFINITY, beeUtils.limit(Double.MAX_VALUE * 5,
-        Double.MAX_VALUE * 5, Double.MAX_VALUE * 5));
-    assertEquals(5.0, beeUtils.limit(5.0, 1, 15));
-    assertEquals(5.0, beeUtils.limit(5.0, Double.MAX_VALUE * 5, Double.MAX_VALUE * 5));
-    assertEquals(5.0, beeUtils.limit(5.0, 2.0, Double.MAX_VALUE * 5));
-    assertEquals(5.0, beeUtils.limit(5.0, Double.MAX_VALUE * 5, 10.0));
   }
 
   @Test

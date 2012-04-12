@@ -2,7 +2,7 @@ package com.butent.bee.shared.utils;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.time.DateTime;
 
 /**
  * Extends Property implementation with new funcionality.

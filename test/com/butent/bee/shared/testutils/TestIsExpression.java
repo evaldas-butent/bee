@@ -8,9 +8,9 @@ import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst.SqlEngine;
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

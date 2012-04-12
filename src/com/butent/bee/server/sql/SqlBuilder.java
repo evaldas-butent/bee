@@ -5,10 +5,10 @@ import com.butent.bee.server.sql.SqlConstants.SqlFunction;
 import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlCreate.SqlField;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Date;

@@ -63,7 +63,7 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
         }
 
         int start = pos * (rowCount - pageSize) / (maxPos - height);
-        start = BeeUtils.limit(start, 0, rowCount - pageSize);
+        start = BeeUtils.clamp(start, 0, rowCount - pageSize);
 
         if (start != getPageStart()) {
           isScrolling = true;

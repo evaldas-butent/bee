@@ -14,15 +14,15 @@ import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.utils.Evaluator.Evaluation;
 import com.butent.bee.client.utils.HasEvaluation;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
-import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.TimeUtils;
 
 /**
  * Enables using columns which contain results of calculations with other columns.

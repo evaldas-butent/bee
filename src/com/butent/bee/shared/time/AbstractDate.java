@@ -1,10 +1,10 @@
-package com.butent.bee.shared;
+package com.butent.bee.shared.time;
 
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Date;
 

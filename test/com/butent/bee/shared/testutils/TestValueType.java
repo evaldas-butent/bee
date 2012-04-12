@@ -1,6 +1,5 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.DateValue;
@@ -8,6 +7,7 @@ import com.butent.bee.shared.data.value.NumberValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.TimeOfDayValue;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.time.DateTime;
 
 import static org.junit.Assert.assertEquals;
 

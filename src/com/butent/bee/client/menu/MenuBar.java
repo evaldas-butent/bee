@@ -576,7 +576,7 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
   }
 
   private void focus() {
-    EventUtils.focus(getElement());
+    DomUtils.setFocus(this, true);
   }
 
   private Element getItemContainerElement() {

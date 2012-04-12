@@ -32,9 +32,9 @@ import com.butent.bee.client.calendar.event.TimeBlockClickHandler;
 import com.butent.bee.client.calendar.event.UpdateEvent;
 import com.butent.bee.client.calendar.event.UpdateHandler;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.HasDateValue;
-import com.butent.bee.shared.JustDate;
-import com.butent.bee.shared.utils.TimeUtils;
+import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 
 import java.util.Collection;
 import java.util.List;

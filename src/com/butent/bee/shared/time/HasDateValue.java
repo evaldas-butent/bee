@@ -1,4 +1,6 @@
-package com.butent.bee.shared;
+package com.butent.bee.shared.time;
+
+import com.butent.bee.shared.BeeSerializable;
 
 import java.util.Date;
 
@@ -7,15 +9,13 @@ import java.util.Date;
  * {@code DateTime} and standard Java date type.
  */
 
-public interface HasDateValue extends BeeSerializable {
+public interface HasDateValue extends BeeSerializable, HasYearMonth {
   
   HasDateValue fromDate(JustDate justDate);
 
   HasDateValue fromDateTime(DateTime dateTime);
 
   HasDateValue fromJava(Date date);
-
-  JustDate getDate();
 
   DateTime getDateTime();
   
@@ -33,21 +33,13 @@ public interface HasDateValue extends BeeSerializable {
   
   int getMinute();
   
-  int getMonth();
-  
   int getSecond();
   
   long getTime();
   
   int getTimezoneOffset();
   
-  int getYear();
-  
   void setDom(int dom);
-
-  void setMonth(int month);
-
-  void setYear(int year);
 
   boolean supportsTimezoneOffset();
 }

@@ -100,7 +100,7 @@ public class Mobile extends ScreenImpl {
 
     w = initEast();
     if (w != null) {
-      p.addEast(w, BeeUtils.limit(DomUtils.getClientWidth() / 5, 128, 300), ScrollBars.BOTH);
+      p.addEast(w, BeeUtils.clamp(DomUtils.getClientWidth() / 5, 128, 300), ScrollBars.BOTH);
     }
 
     w = initCenter();
@@ -125,7 +125,7 @@ public class Mobile extends ScreenImpl {
   }
 
   protected int getWestWidth() {
-    return BeeUtils.limit(DomUtils.getClientWidth() / 5, 100, 200);
+    return BeeUtils.clamp(DomUtils.getClientWidth() / 5, 100, 200);
   }
 
   @Override

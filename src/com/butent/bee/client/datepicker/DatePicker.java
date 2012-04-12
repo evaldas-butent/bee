@@ -1,6 +1,8 @@
 package com.butent.bee.client.datepicker;
 
 import com.google.common.collect.Maps;
+import com.google.gwt.event.dom.client.HasKeyDownHandlers;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.HasHighlightHandlers;
 import com.google.gwt.event.logical.shared.HasShowRangeHandlers;
 import com.google.gwt.event.logical.shared.HighlightEvent;
@@ -16,14 +18,15 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Map;
 
-public class DatePicker extends Composite implements
-    HasHighlightHandlers<JustDate>, HasShowRangeHandlers<JustDate>, HasValue<JustDate> {
+public class DatePicker extends Composite implements HasHighlightHandlers<JustDate>,
+    HasShowRangeHandlers<JustDate>, HasValue<JustDate>, HasKeyDownHandlers {
 
   public static class CssClasses {
 
@@ -95,16 +98,12 @@ public class DatePicker extends Composite implements
       return wrap("month");
     }
 
+    public String monthNavigation() {
+      return wrap("monthNavigation");
+    }
+
     public String monthSelector() {
       return wrap("monthSelector");
-    }
-
-    public String nextButton() {
-      return wrap("nextButton");
-    }
-
-    public String previousButton() {
-      return wrap("previousButton");
     }
 
     public String weekdayLabel() {
@@ -174,17 +173,19 @@ public class DatePicker extends Composite implements
   }
 
   public DatePicker(JustDate date, CssClasses cssClasses) {
-    this(date, cssClasses, new MonthSelector(cssClasses), new MonthView(cssClasses), new Model());
+    this(date, cssClasses, new MonthSelector(cssClasses), new MonthView(cssClasses),
+        new Model(date));
   }
 
-  public DatePicker(JustDate date, CssClasses cssClasses, MonthSelector monthSelector, MonthView view,
+  public DatePicker(JustDate date, CssClasses cssClasses, MonthSelector monthSelector,
+      MonthView view,
       Model model) {
     Assert.notNull(date);
     Assert.notNull(cssClasses);
     Assert.notNull(monthSelector);
     Assert.notNull(view);
     Assert.notNull(model);
-    
+
     this.cssClasses = cssClasses;
     this.monthSelector = monthSelector;
     this.view = view;
@@ -196,13 +197,17 @@ public class DatePicker extends Composite implements
     view.setup();
     monthSelector.setup();
     this.setup();
-    
+
     addStyleToDate(cssClasses.dayIsToday(), new JustDate());
     setDate(date);
   }
 
   public HandlerRegistration addHighlightHandler(HighlightHandler<JustDate> handler) {
     return addHandler(handler, HighlightEvent.getType());
+  }
+
+  public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
+    return view.addKeyDownHandler(handler);
   }
 
   public HandlerRegistration addShowRangeHandler(ShowRangeHandler<JustDate> handler) {
@@ -241,7 +246,7 @@ public class DatePicker extends Composite implements
     return cssClasses;
   }
 
-  public JustDate getCurrentMonth() {
+  public YearMonth getCurrentMonth() {
     return getModel().getCurrentMonth();
   }
 
@@ -316,11 +321,15 @@ public class DatePicker extends Composite implements
 
   public void setDate(JustDate newValue, boolean fireEvents) {
     Assert.notNull(newValue);
-    
+
     if (!newValue.equals(value)) {
       setValue(newValue, fireEvents);
-      setCurrentMonth(newValue);
+      setCurrentMonth(YearMonth.get(newValue));
     }
+  }
+
+  public void setFocus(boolean focus) {
+    view.setFocus(focus);
   }
 
   public void setHighlightedDate(JustDate highlighted) {
@@ -344,18 +353,16 @@ public class DatePicker extends Composite implements
   }
 
   public void setValue(JustDate newValue, boolean fireEvents) {
-    if (BeeUtils.equals(value, newValue)) {
-      return;
-    }
+    if (!BeeUtils.equals(value, newValue)) {
+      JustDate oldValue = value;
+      if (oldValue != null) {
+        removeStyleFromDate(getCssClasses().dayIsValue(), oldValue);
+      }
 
-    JustDate oldValue = value;
-    if (oldValue != null) {
-      removeStyleFromDate(getCssClasses().dayIsValue(), oldValue);
-    }
-
-    value = JustDate.copyOf(newValue);
-    if (value != null) {
-      addStyleToDate(getCssClasses().dayIsValue(), value);
+      value = JustDate.copyOf(newValue);
+      if (value != null) {
+        addStyleToDate(getCssClasses().dayIsValue(), value);
+      }
     }
 
     if (fireEvents) {
@@ -368,8 +375,8 @@ public class DatePicker extends Composite implements
     ShowRangeEvent.fire(this, getFirstDate(), getLastDate());
   }
 
-  private void setCurrentMonth(JustDate date) {
-    getModel().setCurrentMonth(date);
+  void setCurrentMonth(YearMonth ym) {
+    getModel().setCurrentMonth(ym);
     refreshAll();
   }
 

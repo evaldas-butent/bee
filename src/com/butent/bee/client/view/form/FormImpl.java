@@ -698,6 +698,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public void refreshCellContent(String columnSource) {
   }
 
+  public void reset() {
+  }
+
   public void setEditing(boolean editing) {
     this.editing = editing;
   }

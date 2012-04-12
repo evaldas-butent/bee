@@ -6,7 +6,7 @@ abstract class Component extends Composite {
 
   private DatePicker datePicker;
 
-  public Model getModel() {
+  protected Model getModel() {
     return datePicker.getModel();
   }
 

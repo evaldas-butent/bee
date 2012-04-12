@@ -3,7 +3,7 @@ package com.butent.bee.client.widget;
 import com.butent.bee.client.i18n.DateRenderer;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
-import com.butent.bee.shared.JustDate;
+import com.butent.bee.shared.time.JustDate;
 
 /**
  * Enables using date label user interface component.

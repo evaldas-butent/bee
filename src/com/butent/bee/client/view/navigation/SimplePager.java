@@ -265,7 +265,7 @@ public class SimplePager extends AbstractPager {
         || rowCount <= pageSize * minFastPages) {
       return pageSize;
     }
-    return BeeUtils.limit((int) Math.sqrt(rowCount / pageSize), minFastPages, maxFastPages)
+    return BeeUtils.clamp((int) Math.sqrt(rowCount / pageSize), minFastPages, maxFastPages)
         * pageSize;
   }
 

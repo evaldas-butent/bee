@@ -1,7 +1,7 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;

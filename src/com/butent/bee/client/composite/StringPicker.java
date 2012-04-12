@@ -463,7 +463,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
         break;
     }
 
-    newIndex = BeeUtils.limit(newIndex, 0, itemCount - 1);
+    newIndex = BeeUtils.clamp(newIndex, 0, itemCount - 1);
     if (newIndex != oldIndex) {
       setValue(getItemValue(newIndex));
       ok = true;

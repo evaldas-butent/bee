@@ -1,8 +1,8 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests {@link com.butent.bee.shared.DateTime}.
+ * Tests {@link com.butent.bee.shared.time.DateTime}.
  */
 public class TestDateTime {
 

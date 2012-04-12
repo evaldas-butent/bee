@@ -441,7 +441,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
   }
 
   private int getMaxCellWidth() {
-    return BeeUtils.limit(getContainerElement().getOffsetWidth() - 100, defaultCellWidth, 400);
+    return BeeUtils.clamp(getContainerElement().getOffsetWidth() - 100, defaultCellWidth, 400);
   }
 
   private NotificationListener getNotificationListener() {
@@ -557,8 +557,8 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
         break;
     }
 
-    width = BeeUtils.limit(width, minCellWidth, maxCellWidth);
-    height = BeeUtils.limit(height, defaultCellHeight, maxCellHeight);
+    width = BeeUtils.clamp(width, minCellWidth, maxCellWidth);
+    height = BeeUtils.clamp(height, defaultCellHeight, maxCellHeight);
 
     StyleUtils.setSize(cell, width, height);
   }

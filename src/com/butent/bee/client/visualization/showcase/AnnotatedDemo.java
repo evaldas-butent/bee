@@ -9,9 +9,9 @@ import com.butent.bee.client.visualization.events.RangeChangeHandler;
 import com.butent.bee.client.visualization.visualizations.AnnotatedTimeLine;
 import com.butent.bee.client.visualization.visualizations.AnnotatedTimeLine.Options;
 import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.TimeUtils;
 
 /**
  * Implements demonstration of an annotated time line visualization.

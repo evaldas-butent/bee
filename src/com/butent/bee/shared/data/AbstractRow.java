@@ -1,8 +1,6 @@
 package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
@@ -15,6 +13,8 @@ import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.TimeOfDayValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;

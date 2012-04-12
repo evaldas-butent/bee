@@ -5,7 +5,7 @@ import com.google.gwt.core.client.JsArrayInteger;
 
 import com.butent.bee.client.ajaxloader.ArrayHelper;
 import com.butent.bee.client.ajaxloader.Properties;
-import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.time.DateTime;
 
 import java.util.Date;
 

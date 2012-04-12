@@ -1,12 +1,11 @@
-package com.butent.bee.shared;
+package com.butent.bee.shared.time;
 
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Grego;
-import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.Date;
 
@@ -550,11 +549,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * @return String of date
    */
   public String toDateString() {
-    StringBuilder sb = new StringBuilder(10);
-    sb.append(TimeUtils.yearToString(getYear())).append(DATE_FIELD_SEPARATOR);
-    sb.append(TimeUtils.padTwo(getMonth())).append(DATE_FIELD_SEPARATOR);
-    sb.append(TimeUtils.padTwo(getDom()));
-    return sb.toString();
+    return TimeUtils.dateToString(this, DATE_FIELD_SEPARATOR);
   }
 
   /**
@@ -587,11 +582,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   }
 
   public String toUtcDateString() {
-    StringBuilder sb = new StringBuilder(10);
-    sb.append(TimeUtils.yearToString(getUtcYear())).append(DATE_FIELD_SEPARATOR);
-    sb.append(TimeUtils.padTwo(getUtcMonth())).append(DATE_FIELD_SEPARATOR);
-    sb.append(TimeUtils.padTwo(getUtcDom()));
-    return sb.toString();
+    return TimeUtils.dateToString(getUtcYear(), getUtcMonth(), getUtcDom(), DATE_FIELD_SEPARATOR);
   }
 
   /**

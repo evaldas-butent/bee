@@ -1,12 +1,12 @@
 package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HTML;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -17,7 +17,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class Html extends HTML implements HasId, HasCommand {
 
-  private BeeCommand command = null;
+  private Command command = null;
 
   public Html() {
     super();
@@ -38,7 +38,7 @@ public class Html extends HTML implements HasId, HasCommand {
     }
   }
 
-  public Html(String html, BeeCommand cmnd) {
+  public Html(String html, Command cmnd) {
     this(html);
 
     if (cmnd != null) {
@@ -51,7 +51,7 @@ public class Html extends HTML implements HasId, HasCommand {
     init();
   }
 
-  public BeeCommand getCommand() {
+  public Command getCommand() {
     return command;
   }
 
@@ -71,7 +71,7 @@ public class Html extends HTML implements HasId, HasCommand {
     super.onBrowserEvent(event);
   }
 
-  public void setCommand(BeeCommand command) {
+  public void setCommand(Command command) {
     this.command = command;
     if (command != null) {
       sinkEvents(Event.ONCLICK);

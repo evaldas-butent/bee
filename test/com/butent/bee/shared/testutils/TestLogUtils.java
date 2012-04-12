@@ -1,6 +1,6 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.LogUtils;
 
 import static org.junit.Assert.assertEquals;

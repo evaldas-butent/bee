@@ -3,7 +3,7 @@ package com.butent.bee.client.i18n;
 import com.google.gwt.text.shared.AbstractRenderer;
 
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**

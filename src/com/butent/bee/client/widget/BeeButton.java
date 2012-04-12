@@ -2,13 +2,13 @@ package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Button;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasService;
@@ -22,7 +22,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class BeeButton extends Button implements HasId, HasService, HasStage, HasCommand {
 
-  private BeeCommand command = null;
+  private Command command = null;
 
   public BeeButton() {
     super();
@@ -39,7 +39,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     init();
   }
 
-  public BeeButton(String html, BeeCommand cmnd) {
+  public BeeButton(String html, Command cmnd) {
     this(html);
     setCommand(cmnd);
   }
@@ -67,7 +67,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     }
   }
 
-  public BeeCommand getCommand() {
+  public Command getCommand() {
     return command;
   }
 
@@ -101,7 +101,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     super.onBrowserEvent(event);
   }
   
-  public void setCommand(BeeCommand command) {
+  public void setCommand(Command command) {
     this.command = command;
     if (command != null) {
       initEvents();

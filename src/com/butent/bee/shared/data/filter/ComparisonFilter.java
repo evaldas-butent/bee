@@ -1,10 +1,10 @@
 package com.butent.bee.shared.data.filter;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;

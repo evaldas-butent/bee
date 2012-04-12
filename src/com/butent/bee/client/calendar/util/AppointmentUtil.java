@@ -4,10 +4,10 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.calendar.Attendee;
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.HasDateValue;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.TimeUtils;
 
 import java.util.List;
 

@@ -10,9 +10,9 @@ import com.butent.bee.client.calendar.CalendarFormat;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.HasDateValue;
-import com.butent.bee.shared.JustDate;
-import com.butent.bee.shared.utils.TimeUtils;
+import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 
 public class DayViewHeader extends Composite {
 

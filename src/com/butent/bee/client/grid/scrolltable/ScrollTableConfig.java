@@ -457,7 +457,7 @@ public class ScrollTableConfig {
         if (value > 0) {
           min = DomUtils.getValueInt(cRef[i].getMinW());
           max = DomUtils.getValueInt(cRef[i].getMaxW());
-          value = BeeUtils.limit(value, min, max);
+          value = BeeUtils.clamp(value, min, max);
 
           dstId = (dstMd == modeCur) ? cRef[i].getCurW() : cRef[i].getPrefW();
           dstWidget = DomUtils.getChild(popup, dstId);
@@ -793,7 +793,7 @@ public class ScrollTableConfig {
         continue;
       }
 
-      z = BeeUtils.limit(DomUtils.getValueInt(cRef[i].getOrder()), 0, columnCount - 1);
+      z = BeeUtils.clamp(DomUtils.getValueInt(cRef[i].getOrder()), 0, columnCount - 1);
       for (int j = 0; j < columnCount; j++) {
         if (arr[z] < 0) {
           arr[z] = i;

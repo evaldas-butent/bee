@@ -4,6 +4,7 @@ import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
@@ -25,17 +26,17 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.shared.AbstractDate;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.DateTime;
-import com.butent.bee.shared.HasDateValue;
-import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.time.AbstractDate;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.TimeUtils;
 
 public class InputDate extends Composite implements Editor, HasDateTimeFormat {
 
@@ -82,6 +83,15 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
         fireEvent(new EditStopEvent(State.CHANGED));
       }
     });
+    
+    datePicker.addKeyDownHandler(new KeyDownHandler() {
+      public void onKeyDown(KeyDownEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+          hideDatePicker();
+          getBox().setFocus(true);
+        }
+      }
+    });
 
     popup.addAutoHidePartner(getBox().getElement());
     popup.addCloseHandler(new CloseHandler<PopupPanel>() {
@@ -92,7 +102,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
       }
     });
 
-    sinkEvents(Event.ONCLICK + Event.ONKEYDOWN + Event.ONKEYPRESS + Event.ONBLUR);
+    sinkEvents(Event.ONCLICK + Event.ONKEYPRESS + Event.ONBLUR);
   }
 
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
@@ -179,16 +189,12 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
       event.preventDefault();
       if (dp) {
         hideDatePicker();
-      } else if (checkValue()) {
+      } else { {
         showDatePicker();
       }
       return;
     }
 
-    if (EventUtils.isKeyDown(type)) {
-      if (dp) {
-        hideDatePicker();
-      }
     } else if (EventUtils.isKeyPress(type)) {
       if (handleChar(event.getCharCode())) {
         event.preventDefault();
@@ -308,16 +314,6 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     return msg;
   }
 
-  private boolean checkValue() {
-    String msg = validate();
-    if (BeeUtils.isEmpty(msg)) {
-      return true;
-    }
-
-    fireEvent(new EditStopEvent(State.ERROR, msg));
-    return false;
-  }
-
   private InputText getBox() {
     return box;
   }
@@ -335,6 +331,11 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
   }
 
   private boolean handleChar(int charCode) {
+    if (charCode == '*' && !getPopup().isShowing()) {
+      showDatePicker();
+      return true;
+    }
+
     if (!Character.isLetter(BeeUtils.toChar(charCode))
         && !BeeUtils.inList(charCode, BeeConst.CHAR_PLUS, BeeConst.CHAR_MINUS)) {
       return false;
@@ -386,7 +387,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
       case 'F':
         newDate = TimeUtils.endOfMonth(baseDate);
         if (TimeUtils.sameDate(newDate, oldDate)) {
-          newDate = TimeUtils.endOfMonth(TimeUtils.nextMonth(oldDate));
+          newDate = TimeUtils.endOfMonth(oldDate, 1);
         }
         break;
 
@@ -428,7 +429,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
         break;
 
       case 'M':
-        newDate = TimeUtils.nextMonth(baseDate);
+        newDate = TimeUtils.startOfNextMonth(baseDate);
         break;
 
       case 'n':
@@ -560,5 +561,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     }
     getDatePicker().setDate(date.getDate());
     getPopup().showRelativeTo(getBox());
+    
+    getDatePicker().setFocus(true);
   }
 }

@@ -89,9 +89,7 @@ import com.butent.bee.client.widget.Svg;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeResource;
-import com.butent.bee.shared.DateTime;
 import com.butent.bee.shared.Holder;
-import com.butent.bee.shared.JustDate;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -99,13 +97,15 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
-import com.butent.bee.shared.utils.TimeUtils;
 import com.butent.bee.shared.utils.Wildcards;
 
 import java.util.ArrayList;
@@ -143,7 +143,7 @@ public class CliWorker {
       cornified = true;
     }
 
-    final int cnt = BeeUtils.limit(BeeUtils.toInt(ArrayUtils.getQuietly(arr, 1)), 1, 50);
+    final int cnt = BeeUtils.clamp(BeeUtils.toInt(ArrayUtils.getQuietly(arr, 1)), 1, 50);
 
     int delay = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 2));
     if (delay <= 0) {
@@ -1333,10 +1333,10 @@ public class CliWorker {
     if (max <= min) {
       max = min + 100;
     }
-    value = BeeUtils.limit(value, min, max);
-    low = BeeUtils.limit(low, min, max);
-    high = BeeUtils.limit(high, low, max);
-    optimum = BeeUtils.limit(optimum, min, max);
+    value = BeeUtils.clamp(value, min, max);
+    low = BeeUtils.clamp(low, min, max);
+    high = BeeUtils.clamp(high, low, max);
+    optimum = BeeUtils.clamp(optimum, min, max);
 
     FlexTable table = new FlexTable();
     table.setCellPadding(3);

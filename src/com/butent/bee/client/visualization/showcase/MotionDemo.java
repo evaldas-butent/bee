@@ -6,7 +6,7 @@ import com.butent.bee.client.visualization.AbstractDataTable.ColumnType;
 import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.visualizations.MotionChart;
 import com.butent.bee.client.visualization.visualizations.MotionChart.Options;
-import com.butent.bee.shared.DateTime;
+import com.butent.bee.shared.time.DateTime;
 
 /**
  * Implements demonstration of motion chart visualization in an image chart.
