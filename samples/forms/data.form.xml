@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
-  name="Data" caption="Data Binding, Events, Rendering" viewName="DataTypes">
-  
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="Data" caption="Data Binding, Events, Rendering" viewName="DataTypes"
+  >
   <FlexTable borderWidth="1" cellPadding="5" style="borderCollapse: collapse;">
     <row>
       <cell>
@@ -69,13 +71,13 @@
       <cell>
         <Image source="Integer">
           <renderer type="list">
-            <item>add</item>
-            <item>delete</item>
-            <item>bookmark</item>
-            <item>play</item>
-            <item>red</item>
-            <item>green</item>
-            <item>yellow</item>
+            <ui:item>add</ui:item>
+            <ui:item>delete</ui:item>
+            <ui:item>bookmark</ui:item>
+            <ui:item>play</ui:item>
+            <ui:item>red</ui:item>
+            <ui:item>green</ui:item>
+            <ui:item>yellow</ui:item>
           </renderer>
         </Image>
       </cell>
@@ -140,13 +142,13 @@
       <cell>
         <InputDouble source="Double">
           <validation>
-            <function>
+            <ui:function>
               if (Math.abs(cell.newValue) &lt; 1000) {
                 return null;
               } else {
                 return "oh noes";
               }
-            </function>
+            </ui:function>
           </validation>
         </InputDouble>
       </cell>
@@ -168,9 +170,9 @@
       <cell>
         <Progress source="Long" max="10">
           <renderer type="range">
-            <item>, 0, 2</item>
-            <item>0, 1e6, 5</item>
-            <item>1e6, , 9</item>
+            <ui:item>, 0, 2</ui:item>
+            <ui:item>0, 1e6, 5</ui:item>
+            <ui:item>1e6, , 9</ui:item>
           </renderer>
         </Progress>
       </cell>
@@ -203,16 +205,16 @@
       <cell>
         <TextLabel>
           <render>
-            <function>
+            <ui:function>
               return "length " + String(row.String).length;
-            </function>
+            </ui:function>
           </render>
         </TextLabel>
       </cell>
       <cell>
         <Meter min="0" max="30" source="String">
           <render>
-            <expression>String(cell.value).length</expression>
+            <ui:expression>String(cell.value).length</ui:expression>
           </render>
         </Meter>
       </cell>
@@ -236,14 +238,14 @@
       <cell>
         <LongLabel>
           <render>
-            <expression>rowId</expression>
+            <ui:expression>rowId</ui:expression>
           </render>
         </LongLabel>
       </cell>
       <cell>
         <DateTimeLabel>
           <render>
-            <expression>rowVersion</expression>
+            <ui:expression>rowVersion</ui:expression>
           </render>
         </DateTimeLabel>
       </cell>
@@ -251,8 +253,8 @@
     
   </FlexTable>
 
-  <rowEditable>
-    <expression>row.Date == null || row.Date &gt;= new Date(2005, 0, 1)</expression>
-  </rowEditable>
+  <f:rowEditable>
+    <ui:expression>row.Date == null || row.Date &gt;= new Date(2005, 0, 1)</ui:expression>
+  </f:rowEditable>
 
-</Form>
+</f:Form>

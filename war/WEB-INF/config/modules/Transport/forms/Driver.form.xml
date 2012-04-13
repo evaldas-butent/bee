@@ -4,8 +4,8 @@
   <!ENTITY LEFT_LABEL_STYLE "margin-right: 1em; display: inline-block; min-width: 70px; text-align: right">
   <!ENTITY ROW_STYLE "margin-bottom: 1ex;">
 ]>
-<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
   
   name="Driver" viewName="Drivers" caption="Vairuotojas"
   >
@@ -53,4 +53,4 @@
 
     <ChildGrid name="DriverDocuments" relColumn="Driver" class="flexible" />
   </FlowPanel>
-</Form>  
+</f:Form>  

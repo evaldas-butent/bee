@@ -9,9 +9,9 @@
   <!ENTITY DISPLAY_STYLE "display: inline-block; padding: 2px; border: 1px solid #aaa; margin-left: 2px;">
   <!ENTITY BUTTON_STYLE "background-color: #109610; color: white; font-family: Georgia;">
 ]>
-
-<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="Project" viewName="Projects" caption="Projektas">
@@ -103,7 +103,7 @@
             <InlineLabel html="Autorius:" style="&LEFT_LABEL_STYLE;" />
             <TextLabel style="&DISPLAY_STYLE;">
               <render>
-                <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
+                <ui:function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</ui:function>
               </render>
             </TextLabel>
           </FlowPanel>
@@ -127,7 +127,7 @@
           <ChildTree name="Stages" source="ProjectStages" parentColumn="Parent"
             relationColumn="Project" caption="Projekto etapai">
             <calc>
-              <expression>row.Name</expression>
+              <ui:expression>row.Name</ui:expression>
             </calc>
             <form name="Etapo koregavimas">
               <FlexTable>
@@ -164,4 +164,4 @@
     </TabbedPages>
 
   </FlowPanel>
-</Form>  
+</f:Form>  

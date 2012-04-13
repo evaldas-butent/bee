@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<FlexTable xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../../schemas/widget.xsd"
+<FlexTable xmlns="http://www.butent.com/widget"
+
   cellSpacing="10">
   <row>
     <cell>

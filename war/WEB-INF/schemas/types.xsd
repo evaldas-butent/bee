@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
-  xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
+<xs:schema targetNamespace="http://www.butent.com/type" elementFormDefault="qualified"
+  xmlns="http://www.butent.com/type"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
   <xs:simpleType name="dataType">
     <xs:restriction base="xs:string">
@@ -66,19 +67,19 @@
   </xs:simpleType>
 
   <xs:simpleType name="tableNameType">
-    <xs:restriction base="bee:nameType">
+    <xs:restriction base="nameType">
       <xs:maxLength value="20"></xs:maxLength>
     </xs:restriction>
   </xs:simpleType>
 
   <xs:simpleType name="fieldNameType">
-    <xs:restriction base="bee:nameType">
+    <xs:restriction base="nameType">
       <xs:maxLength value="30"></xs:maxLength>
     </xs:restriction>
   </xs:simpleType>
 
   <xs:simpleType name="stateNameType">
-    <xs:restriction base="bee:nameType">
+    <xs:restriction base="nameType">
       <xs:maxLength value="20"></xs:maxLength>
     </xs:restriction>
   </xs:simpleType>

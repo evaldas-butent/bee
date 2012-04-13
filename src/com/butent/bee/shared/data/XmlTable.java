@@ -18,13 +18,13 @@ import javax.xml.bind.annotation.XmlTransient;
 /**
  * Handles data table information storage in XML structure.
  */
-@XmlRootElement(name = "BeeTable", namespace = DataUtils.DEFAULT_NAMESPACE)
+@XmlRootElement(name = "BeeTable", namespace = DataUtils.TABLE_NAMESPACE)
 public class XmlTable {
 
   /**
    * Handles data field information storage in XML structure.
    */
-  @XmlRootElement(name = "BeeField", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "BeeField", namespace = DataUtils.TABLE_NAMESPACE)
   public static class XmlField {
     @XmlAttribute
     public String name;
@@ -88,11 +88,11 @@ public class XmlTable {
   /**
    * Handles table key information storage in XML structure.
    */
-  @XmlRootElement(name = "BeeKey", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "BeeKey", namespace = DataUtils.TABLE_NAMESPACE)
   public static class XmlKey {
     @XmlAttribute
     public boolean unique;
-    @XmlElement(name = "KeyField", namespace = DataUtils.DEFAULT_NAMESPACE)
+    @XmlElement(name = "KeyField", namespace = DataUtils.TABLE_NAMESPACE)
     public List<String> fields;
 
     @Override
@@ -142,19 +142,19 @@ public class XmlTable {
   @XmlAttribute
   public int y;
 
-  @XmlElementWrapper(name = "BeeFields", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlElementWrapper(name = "BeeFields", namespace = DataUtils.TABLE_NAMESPACE)
   @XmlElementRef
   public List<XmlField> fields;
 
-  @XmlElementWrapper(name = "BeeExtended", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlElementWrapper(name = "BeeExtended", namespace = DataUtils.TABLE_NAMESPACE)
   @XmlElementRef
   public List<XmlField> extFields;
 
-  @XmlElementWrapper(name = "BeeStates", namespace = DataUtils.DEFAULT_NAMESPACE)
-  @XmlElement(name = "BeeState", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlElementWrapper(name = "BeeStates", namespace = DataUtils.TABLE_NAMESPACE)
+  @XmlElement(name = "BeeState", namespace = DataUtils.TABLE_NAMESPACE)
   public Set<String> states;
 
-  @XmlElementWrapper(name = "BeeKeys", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlElementWrapper(name = "BeeKeys", namespace = DataUtils.TABLE_NAMESPACE)
   @XmlElementRef
   public Set<XmlKey> keys;
 

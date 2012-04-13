@@ -41,47 +41,47 @@ public abstract class XmlExpression {
     public List<XmlExpression> members;
   }
 
-  @XmlRootElement(name = "number", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "number", namespace = DataUtils.EXPRESSION_NAMESPACE)
   public static class XmlNumber extends XmlExpression {
   }
 
-  @XmlRootElement(name = "string", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "string", namespace = DataUtils.EXPRESSION_NAMESPACE)
   public static class XmlString extends XmlExpression {
   }
 
-  @XmlRootElement(name = "boolean", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "boolean", namespace = DataUtils.EXPRESSION_NAMESPACE)
   public static class XmlBoolean extends XmlExpression {
   }
 
-  @XmlRootElement(name = "date", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "date", namespace = DataUtils.EXPRESSION_NAMESPACE)
   public static class XmlDate extends XmlExpression {
   }
 
-  @XmlRootElement(name = "datetime", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "datetime", namespace = DataUtils.EXPRESSION_NAMESPACE)
   public static class XmlDatetime extends XmlExpression {
   }
 
-  @XmlRootElement(name = "plus", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "plus", namespace = DataUtils.EXPRESSION_NAMESPACE)
   public static class XmlPlus extends XmlHasMembers {
   }
 
-  @XmlRootElement(name = "minus", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "minus", namespace = DataUtils.EXPRESSION_NAMESPACE)
   public static class XmlMinus extends XmlHasMembers {
   }
 
-  @XmlRootElement(name = "multiply", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "multiply", namespace = DataUtils.EXPRESSION_NAMESPACE)
   public static class XmlMultiply extends XmlHasMembers {
   }
 
-  @XmlRootElement(name = "divide", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "divide", namespace = DataUtils.EXPRESSION_NAMESPACE)
   public static class XmlDivide extends XmlHasMembers {
   }
 
-  @XmlRootElement(name = "bulk", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "bulk", namespace = DataUtils.EXPRESSION_NAMESPACE)
   public static class XmlBulk extends XmlHasMembers {
   }
 
-  @XmlRootElement(name = "cast", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "cast", namespace = DataUtils.EXPRESSION_NAMESPACE)
   public static class XmlCast extends XmlHasMember {
     @XmlAttribute
     public int precision;
@@ -89,27 +89,27 @@ public abstract class XmlExpression {
     public int scale;
   }
 
-  @XmlRootElement(name = "switch", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "switch", namespace = DataUtils.EXPRESSION_NAMESPACE)
   public static class XmlSwitch extends XmlHasMember {
     @XmlElementRef
     public List<XmlCase> cases;
-    @XmlElement(name = "else", namespace = DataUtils.DEFAULT_NAMESPACE)
+    @XmlElement(name = "else", namespace = DataUtils.EXPRESSION_NAMESPACE)
     public XmlHasMember elseExpression;
   }
 
-  @XmlRootElement(name = "case", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "case", namespace = DataUtils.EXPRESSION_NAMESPACE)
   public static class XmlCase {
     @XmlElementRef
     public XmlExpression whenExpression;
-    @XmlElement(name = "then", namespace = DataUtils.DEFAULT_NAMESPACE)
+    @XmlElement(name = "then", namespace = DataUtils.EXPRESSION_NAMESPACE)
     public XmlHasMember thenExpression;
   }
 
-  @XmlRootElement(name = "nvl", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "nvl", namespace = DataUtils.EXPRESSION_NAMESPACE)
   public static class XmlNvl extends XmlHasMembers {
   }
 
-  @XmlRootElement(name = "concat", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "concat", namespace = DataUtils.EXPRESSION_NAMESPACE)
   public static class XmlConcat extends XmlHasMembers {
   }
 

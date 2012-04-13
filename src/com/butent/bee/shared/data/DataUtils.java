@@ -27,14 +27,17 @@ import java.util.Map;
 
 public class DataUtils {
 
-  public static final String DEFAULT_NAMESPACE = "http://www.butent.com/bee";
+  public static final String STATE_NAMESPACE = "http://www.butent.com/state";
+  public static final String TABLE_NAMESPACE = "http://www.butent.com/table";
+  public static final String VIEW_NAMESPACE = "http://www.butent.com/view";
+  public static final String EXPRESSION_NAMESPACE = "http://www.butent.com/expression";
 
   public static final int ID_INDEX = -2;
   public static final int VERSION_INDEX = -3;
 
   public static final ValueType ID_TYPE = ValueType.LONG;
   public static final ValueType VERSION_TYPE = ValueType.LONG;
-  
+
   private static final Splitter COLUMN_SPLITTER =
       Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
 
@@ -137,7 +140,7 @@ public class DataUtils {
       return null;
     }
   }
-  
+
   public static int getDefaultAsyncThreshold() {
     return defaultAsyncThreshold;
   }
@@ -283,7 +286,7 @@ public class DataUtils {
     }
     return flt;
   }
-  
+
   public static boolean same(IsRow r1, IsRow r2) {
     if (r1 == null) {
       return r2 == null;

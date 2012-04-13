@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="NewTask" caption="Nauja užduotis" width="666" height="444">
@@ -88,4 +88,4 @@
     </row>
 
   </FlexTable>
-</Form>  
+</f:Form>  

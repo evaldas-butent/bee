@@ -23,7 +23,7 @@ import java.util.Map;
 public class AbstractGridCallback implements GridCallback {
 
   private GridPresenter gridPresenter = null;
-  
+
   public void afterAction(Action action, GridPresenter presenter) {
   }
 
@@ -87,7 +87,7 @@ public class AbstractGridCallback implements GridCallback {
   public Widget createCustomWidget(String name, Element description) {
     return null;
   }
-  
+
   public String getCaption() {
     return null;
   }
@@ -121,6 +121,16 @@ public class AbstractGridCallback implements GridCallback {
   }
 
   public boolean onLoadExtWidget(Element root) {
+    return true;
+  }
+
+  @Override
+  public boolean onPrepareForInsert(GridView gridView, IsRow newRow) {
+    return true;
+  }
+
+  @Override
+  public boolean onPrepareForUpdate(GridView gridView, IsRow oldRow, IsRow newRow) {
     return true;
   }
 

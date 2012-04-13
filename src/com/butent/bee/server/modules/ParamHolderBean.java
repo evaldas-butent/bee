@@ -1,18 +1,22 @@
 package com.butent.bee.server.modules;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.sql.HasConditions;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -58,55 +62,86 @@ public class ParamHolderBean {
     Assert.notEmpty(module);
 
     if (!modules.containsKey(module)) {
-      updateParameters(module);
+      refreshParameters(module);
     }
     return modules.get(module);
   }
 
   @Lock(LockType.WRITE)
-  public boolean saveParameters(Collection<BeeParameter> params) {
-    boolean ok = true;
+  public ResponseObject removeParameters(String module, String... names) {
+    Assert.noNulls((Object[]) names);
+    HasConditions wh = SqlUtils.or();
 
-    for (BeeParameter param : params) {
-      long res = 0;
-      BeeParameter orig = getParameters(param.getModule()).get(param.getName());
-
-      if (orig != null) {
-        SqlUpdate su = new SqlUpdate(TBL_PARAMS)
-            .setWhere(SqlUtils.and(SqlUtils.equal(TBL_PARAMS, FLD_MODULE, param.getModule()),
-                SqlUtils.equal(TBL_PARAMS, FLD_NAME, param.getName())));
-
-        if (!BeeUtils.equals(param.getType(), orig.getType())) {
-          su.addConstant(FLD_TYPE, param.getType());
-        }
-        if (!BeeUtils.equals(param.getValue(), orig.getValue())) {
-          su.addConstant(FLD_VALUE, param.getValue());
-        }
-        if (!BeeUtils.equals(param.getDescription(), orig.getDescription())) {
-          su.addConstant(FLD_DESCRIPTION, param.getDescription());
-        }
-        res = qs.updateData(su);
-      }
-      if (res == 0) {
-        res = qs.insertData(new SqlInsert(TBL_PARAMS)
-            .addConstant(FLD_MODULE, param.getModule())
-            .addConstant(FLD_NAME, param.getName())
-            .addConstant(FLD_TYPE, param.getType())
-            .addConstant(FLD_VALUE, param.getValue())
-            .addConstant(FLD_DESCRIPTION, param.getDescription()));
-      }
-      if (res <= 0) {
-        ok = false;
-        break;
-      } else {
-        getParameters(param.getModule()).put(param.getName(), param);
-      }
+    for (String name : names) {
+      wh.add(SqlUtils.equal(TBL_PARAMS, FLD_NAME, name));
     }
-    return ok;
+    ResponseObject resp = qs.updateDataWithResponse(new SqlDelete(TBL_PARAMS)
+        .setWhere(SqlUtils.and(SqlUtils.equal(TBL_PARAMS, FLD_MODULE, module), wh)));
+
+    if (!resp.hasErrors()) {
+      Map<String, BeeParameter> params = moduleBean.getModuleDefaultParameters(module);
+      List<BeeParameter> defs = Lists.newArrayList();
+
+      for (String name : names) {
+        BeeParameter def = null;
+
+        if (!BeeUtils.isEmpty(params)) {
+          def = params.get(name);
+        }
+        if (def != null) {
+          defs.add(def);
+          getParameters(module).put(name, def);
+        } else {
+          getParameters(module).remove(name);
+        }
+      }
+      resp.setResponse(defs);
+    }
+    return resp;
   }
 
   @Lock(LockType.WRITE)
-  private void updateParameters(String module) {
+  public ResponseObject saveParameter(BeeParameter param) {
+    ResponseObject response = null;
+    BeeParameter orig = getParameters(param.getModule()).get(param.getName());
+
+    if (orig != null) {
+      SqlUpdate su = new SqlUpdate(TBL_PARAMS)
+          .setWhere(SqlUtils.and(SqlUtils.equal(TBL_PARAMS, FLD_MODULE, param.getModule()),
+              SqlUtils.equal(TBL_PARAMS, FLD_NAME, param.getName())));
+
+      if (!BeeUtils.equals(param.getType(), orig.getType())) {
+        su.addConstant(FLD_TYPE, param.getType());
+      }
+      if (!BeeUtils.equals(param.getValue(), orig.getValue())) {
+        su.addConstant(FLD_VALUE, param.getValue());
+      }
+      if (!BeeUtils.equals(param.getDescription(), orig.getDescription())) {
+        su.addConstant(FLD_DESCRIPTION, param.getDescription());
+      }
+      if (su.isEmpty()) {
+        response = ResponseObject.response(-1);
+      } else {
+        response = qs.updateDataWithResponse(su);
+      }
+    }
+    if (response == null || BeeUtils.isEmpty(response.getResponse(-1, null))) {
+      response = qs.insertDataWithResponse(new SqlInsert(TBL_PARAMS)
+          .addConstant(FLD_MODULE, param.getModule())
+          .addConstant(FLD_NAME, param.getName())
+          .addConstant(FLD_TYPE, param.getType())
+          .addConstant(FLD_VALUE, param.getValue())
+          .addConstant(FLD_DESCRIPTION, param.getDescription()));
+    }
+    if (!response.hasErrors()) {
+      getParameters(param.getModule()).put(param.getName(), param);
+      response.setResponse(param);
+    }
+    return response;
+  }
+
+  @Lock(LockType.WRITE)
+  private void refreshParameters(String module) {
     Map<String, BeeParameter> params = moduleBean.getModuleDefaultParameters(module);
 
     if (BeeUtils.isEmpty(params)) {

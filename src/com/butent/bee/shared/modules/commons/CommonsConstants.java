@@ -10,8 +10,9 @@ public class CommonsConstants {
 
   public static final String SVC_GET_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "get";
   public static final String SVC_SAVE_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "save";
+  public static final String SVC_REMOVE_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "remove";
   public static final String VAR_PARAMETERS_MODULE = Service.RPC_VAR_PREFIX + "parameters_module";
-  public static final String VAR_PARAMETERS_CHANGES = Service.RPC_VAR_PREFIX + "parameters_changes";
+  public static final String VAR_PARAMETERS = Service.RPC_VAR_PREFIX + "parameters";
 
   public static final String COMMONS_ITEM_PREFIX = "item_";
 

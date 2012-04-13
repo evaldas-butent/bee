@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="Parameters" caption="Sistemos parametrai" enabledActions="refresh add delete"
+  editForm="Parameter" editPopup="true" editInPlace="Value"
+  newRowForm="Parameter" newRowCaption="Naujas parametras" newRowPopup="true"
+  >
+  <columns>
+    <DataColumn name="Name" source="Name" caption="Parametras" />
+    <DataColumn name="Value" source="Value" caption="Reikšmė" />
+    <DataColumn name="Description" source="Description" caption="Aprašymas"/>
+  </columns>
+</Grid>

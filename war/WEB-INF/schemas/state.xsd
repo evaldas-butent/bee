@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
-  xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
+<xs:schema targetNamespace="http://www.butent.com/state" elementFormDefault="qualified"
+  xmlns="http://www.butent.com/state"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:type="http://www.butent.com/type">
   
-  <xs:include schemaLocation="types.xsd"/>
-
-  <xs:element name="State" type="bee:stateType">
+  <xs:import namespace="http://www.butent.com/type" schemaLocation="types.xsd" />
+  
+  <xs:element name="State" type="stateType">
     <xs:unique name="uniqueStateName">
       <xs:selector xpath=".//*" />
       <xs:field xpath="@name" />
@@ -12,7 +14,7 @@
   </xs:element>
 
   <xs:complexType name="stateType">
-    <xs:attribute name="name" use="required" type="bee:stateNameType" />
+    <xs:attribute name="name" use="required" type="type:stateNameType" />
     <xs:attribute name="userMode" type="xs:boolean" />
     <xs:attribute name="roleMode" type="xs:boolean" />
     <xs:attribute name="checked" type="xs:boolean" />

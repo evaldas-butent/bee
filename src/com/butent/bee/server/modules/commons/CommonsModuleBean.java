@@ -26,7 +26,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -181,21 +180,16 @@ public class CommonsModuleBean implements BeeModule {
     ResponseObject response = null;
 
     if (BeeUtils.same(svc, CommonsConstants.SVC_GET_PARAMETERS)) {
-      response = ResponseObject.response(prm
-          .getParameters(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS_MODULE)).values());
+      response = ResponseObject.response(
+          prm.getParameters(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS_MODULE)).values());
 
     } else if (BeeUtils.same(svc, CommonsConstants.SVC_SAVE_PARAMETERS)) {
-      List<BeeParameter> params = Lists.newArrayList();
+      response = prm.saveParameter(
+          BeeParameter.restore(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS)));
 
-      for (String param : Codec.beeDeserializeCollection(
-          reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS_CHANGES))) {
-        params.add(BeeParameter.restore(param));
-      }
-      if (prm.saveParameters(params)) {
-        response = ResponseObject.response(true);
-      } else {
-        response = ResponseObject.error("Parameters update failure");
-      }
+    } else if (BeeUtils.same(svc, CommonsConstants.SVC_REMOVE_PARAMETERS)) {
+      response = prm.removeParameters(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS_MODULE),
+          Codec.beeDeserializeCollection(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS)));
     }
     if (response == null) {
       String msg = BeeUtils.concat(1, "Parameters service not recognized:", svc);

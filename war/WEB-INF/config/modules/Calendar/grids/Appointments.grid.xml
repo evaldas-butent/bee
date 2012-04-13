@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
 
   name="Appointments" viewName="Appointments" caption="Vizitai"
   newRowForm="Appointment" editForm="Appointment"
@@ -21,7 +21,7 @@
     <DataColumn name="Status" source="Status" itemKey="AppointmentStatus" />
     <DataColumn name="Created" source="Created" readOnly="true">
       <carry>
-        <expression>new Date()</expression>
+        <ui:expression>new Date()</ui:expression>
       </carry>
     </DataColumn>
 
@@ -33,7 +33,7 @@
     
     <DataColumn name="StartDate" source="StartDate">
       <carry>
-        <expression>new Date()</expression>
+        <ui:expression>new Date()</ui:expression>
       </carry>
     </DataColumn>  
     <DataColumn name="StartDateTime" source="StartDateTime" />
@@ -41,7 +41,7 @@
 
     <DataColumn name="EndDate" source="EndDate">
       <carry>
-        <expression>new Date()</expression>
+        <ui:expression>new Date()</ui:expression>
       </carry>
     </DataColumn>  
     <DataColumn name="EndDateTime" source="EndDateTime" />
@@ -65,7 +65,7 @@
   </columns>
   
   <rowEditable>
-    <expression>!row.ReadOnly</expression>
+    <ui:expression>!row.ReadOnly</ui:expression>
   </rowEditable>
 
 </Grid>

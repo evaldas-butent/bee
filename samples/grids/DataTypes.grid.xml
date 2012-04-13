@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd" name="DataTypes"
-  viewName="DataTypes" maxColumnWidth="500" caption="Types" asyncThreshold="50" filter="Integer > 0"
-  order="Integer desc, Version" footerEvents="change">
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:w="http://www.butent.com/widget"
 
+  name="DataTypes" viewName="DataTypes"
+  maxColumnWidth="500" caption="Types" asyncThreshold="50" filter="Integer > 0"
+  order="Integer desc, Version" footerEvents="change"
+  >
   <header borderWidth="2">
     <style>
-      <inline>background-color: #f6cef5;</inline>
-      <font>medium</font>
+      <ui:inline>background-color: #f6cef5;</ui:inline>
+      <ui:font>medium</ui:font>
     </style>
   </header>
   <body maxHeight="100" />
@@ -17,19 +20,19 @@
     <IdColumn name="Id" caption="ID" showWidth="false" horizontalAlignment="left">
       <style>
         <headerStyle>
-          <class>bee-Button</class>
+          <ui:class>bee-Button</ui:class>
         </headerStyle>
         <bodyStyle>
-          <inline>background-color: lightgray;</inline>
-          <font>Courier</font>
+          <ui:inline>background-color: lightgray;</ui:inline>
+          <ui:font>Courier</ui:font>
         </bodyStyle>
         <dynStyle>
-          <style>
-            <inline>border-radius: [rowIndex]px;</inline>
-          </style>
-          <condition>
-            <expression>rowIndex != 0</expression>
-          </condition>
+          <ui:style>
+            <ui:inline>border-radius: [rowIndex]px;</ui:inline>
+          </ui:style>
+          <ui:condition>
+            <ui:expression>rowIndex != 0</ui:expression>
+          </ui:condition>
         </dynStyle>
       </style>
     </IdColumn>
@@ -37,8 +40,8 @@
     <VerColumn name="Version">
       <style>
         <bodyStyle>
-          <inline>color: darkblue;</inline>
-          <font>small italic</font>
+          <ui:inline>color: darkblue;</ui:inline>
+          <ui:font>small italic</ui:font>
         </bodyStyle>
       </style>
     </VerColumn>
@@ -46,7 +49,7 @@
     <CalcColumn name="Calc1" type="date" caption="Ver Dt" format="date_short"
       width="80" source="Version">
       <calc>
-        <expression>rowVersion</expression>
+        <ui:expression>rowVersion</ui:expression>
       </calc>
     </CalcColumn>
 
@@ -54,46 +57,46 @@
 
     <DataColumn name="Iii" source="Integer" minValue="-10000" maxValue="1e6">
       <editable>
-        <expression>cell.value &lt; row.Long</expression>
+        <ui:expression>cell.value &lt; row.Long</ui:expression>
       </editable>
       <editor type="spinner" stepValue="100" />
     </DataColumn>
 
     <DataColumn name="Nlist" source="Integer">
       <editor type="list" valueStartIndex="2">
-        <item>aaa</item>
-        <item>bbb</item>
-        <item>ccc</item>
-        <item>ddd</item>
-        <item>eee</item>
-        <item>fff</item>
-        <item>ggg</item>
-        <item>hhh</item>
-        <item>iii</item>
-        <item>jjj</item>
+        <ui:item>aaa</ui:item>
+        <ui:item>bbb</ui:item>
+        <ui:item>ccc</ui:item>
+        <ui:item>ddd</ui:item>
+        <ui:item>eee</ui:item>
+        <ui:item>fff</ui:item>
+        <ui:item>ggg</ui:item>
+        <ui:item>hhh</ui:item>
+        <ui:item>iii</ui:item>
+        <ui:item>jjj</ui:item>
       </editor>
     </DataColumn>
 
     <DataColumn name="Lll" source="Long" showWidth="false" minWidth="40">
       <style>
         <dynStyle>
-          <style>
-            <inline>color: red</inline>
-          </style>
-          <condition>
-            <expression>row.Long &lt; 0</expression>
-          </condition>
+          <ui:style>
+            <ui:inline>color: red</ui:inline>
+          </ui:style>
+          <ui:condition>
+            <ui:expression>row.Long &lt; 0</ui:expression>
+          </ui:condition>
         </dynStyle>
         <dynStyle>
-          <style>
-            <inline>color: green</inline>
-          </style>
-          <condition>
-            <function>
+          <ui:style>
+            <ui:inline>color: green</ui:inline>
+          </ui:style>
+          <ui:condition>
+            <ui:function>
                 var z = cell.value;
                 return z &gt; 0;
-              </function>
-          </condition>
+              </ui:function>
+          </ui:condition>
         </dynStyle>
       </style>
       <editor type="long" />
@@ -101,28 +104,28 @@
 
     <CalcColumn name="Calc2" type="decimal" caption="Math" scale="4" sortBy="Long, Date">
       <calc>
-        <expression>(row.Long &gt; 0) ? Math.log(row.Long) : row.Long / 1000</expression>
+        <ui:expression>(row.Long &gt; 0) ? Math.log(row.Long) : row.Long / 1000</ui:expression>
       </calc>
     </CalcColumn>
 
     <DataColumn name="Nnn" source="Numeric" format="0.0%" caption="Percent">
       <editor type="number" format="#.000" onEntry="select" />
       <validation>
-        <function>
+        <ui:function>
             var maxDiff = 1000;
             if (Math.abs((cell.oldValue || 0) - (cell.newValue || 0)) > maxDiff) {
               return "difference between old " + cell.oldValue + " and new " + cell.newValue + " cannot exceed " + maxDiff; 
             } else {
               return null;
             }
-          </function>
+          </ui:function>
       </validation>
     </DataColumn>
 
     <DataColumn name="Dec" source="Currency" width="168">
       <style>
         <bodyStyle>
-          <inline>letter-spacing: 5px;</inline>
+          <ui:inline>letter-spacing: 5px;</ui:inline>
         </bodyStyle>
       </style>
       <editor type="number" />
@@ -130,21 +133,21 @@
 
     <DataColumn name="Sss" source="String" sortable="false">
       <editor type="picker" height="116">
-        <item>123 www</item>
-        <item>Bitinas ; &lt;img src="test.png"&gt;</item>
-        <item>ccc ddd</item>
-        <item>beehive ; &lt;a href="http://www.butent.com"&gt;Būtent&lt;/a&gt;</item>
+        <ui:item>123 www</ui:item>
+        <ui:item>Bitinas ; &lt;img src="test.png"&gt;</ui:item>
+        <ui:item>ccc ddd</ui:item>
+        <ui:item>beehive ; &lt;a href="http://www.butent.com"&gt;Būtent&lt;/a&gt;</ui:item>
       </editor>
       <carry>
-        <expression>cell.value</expression>
+        <ui:expression>cell.value</ui:expression>
       </carry>
     </DataColumn>
 
     <DataColumn name="Char" source="Char">
       <editor type="list">
-        <item>abc</item>
-        <item>def</item>
-        <item>xyz</item>
+        <ui:item>abc</ui:item>
+        <ui:item>def</ui:item>
+        <ui:item>xyz</ui:item>
       </editor>
     </DataColumn>
 
@@ -154,14 +157,14 @@
 
     <CalcColumn name="Calc3" type="string" caption="typeof" width="100" searchBy="String, Char">
       <calc>
-        <function>
+        <ui:function>
             var s = "";
             for (var p in row) {
               var z = row[p];
               s = s + String(typeof(z)).charAt(0) + " ";
             }
             return s;
-          </function>
+          </ui:function>
       </calc>
     </CalcColumn>
 
@@ -169,19 +172,19 @@
       horizontalAlignment="center">
       <style>
         <footerStyle>
-          <class>bee-afraid</class>
+          <ui:class>bee-afraid</ui:class>
         </footerStyle>
       </style>
       <editor type="date" minWidth="100" />
       <carry>
-        <function>return new Date();</function>
+        <ui:function>return new Date();</ui:function>
       </carry>
     </DataColumn>
 
     <DataColumn name="Ttt" source="DateTime" format="yyyy-MM-dd HH:mm:ss">
       <style>
         <bodyStyle>
-          <inline>-webkit-transform:rotateY(180deg);</inline>
+          <ui:inline>-webkit-transform:rotateY(180deg);</ui:inline>
         </bodyStyle>
       </style>
       <editor type="datetime" onEntry="home" />
@@ -189,37 +192,37 @@
   </columns>
 
   <rowStyle>
-    <style>
-      <inline>="color: rgb(" + rowIndex * 10 + "," + rowIndex * 5 + ",0)"</inline>
-    </style>
-    <condition>
-      <expression>new Date().getMinutes() % 15 != 0</expression>
-    </condition>
+    <ui:style>
+      <ui:inline>="color: rgb(" + rowIndex * 10 + "," + rowIndex * 5 + ",0)"</ui:inline>
+    </ui:style>
+    <ui:condition>
+      <ui:expression>new Date().getMinutes() % 15 != 0</ui:expression>
+    </ui:condition>
   </rowStyle>
   <rowStyle>
-    <style>
-      <inline>="opacity: " + 30 / (new Date().getSeconds() + 30)</inline>
-    </style>
-    <condition>
-      <expression>true</expression>
-    </condition>
+    <ui:style>
+      <ui:inline>="opacity: " + 30 / (new Date().getSeconds() + 30)</ui:inline>
+    </ui:style>
+    <ui:condition>
+      <ui:expression>true</ui:expression>
+    </ui:condition>
   </rowStyle>
 
   <rowMessage>
-    <function>return String(rowId) + '  ' + rowVersion.toLocaleTimeString()</function>
+    <ui:function>return String(rowId) + '  ' + rowVersion.toLocaleTimeString()</ui:function>
   </rowMessage>
 
   <rowEditable>
-    <expression>row.Date == null || row.Date &gt;= new Date(2008, 0, 1)</expression>
+    <ui:expression>row.Date == null || row.Date &gt;= new Date(2008, 0, 1)</ui:expression>
   </rowEditable>
 
   <rowValidation>
-    <function>
+    <ui:function>
         if (row.Integer + row.Long + row.Double &gt; 0) {
           return null;
         }
         return "sum 'Integer+Long+Double' must be positive";
-      </function>
+      </ui:function>
   </rowValidation>
 
 </Grid>

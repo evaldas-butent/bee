@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+<View xmlns="http://www.butent.com/view"
+  xmlns:xpr="http://www.butent.com/expression"
 
   name="SparePartTypes"
   source="SparePartTypes"
@@ -12,11 +12,13 @@
       <SimpleColumn name="Name" alias="ParentName" />
     </SimpleJoin>
     <SimpleColumn name="TypeName">
-      <concat>
-        <nvl type="STRING"><string>"ParentName"</string><string>''</string></nvl>
-        <string>' '</string>
-        <string>"Name"</string>
-      </concat>
+      <xpr:concat>
+        <xpr:nvl type="STRING">
+          <xpr:string>"ParentName"</xpr:string><xpr:string>''</xpr:string>
+        </xpr:nvl>
+        <xpr:string>' '</xpr:string>
+        <xpr:string>"Name"</xpr:string>
+      </xpr:concat>
     </SimpleColumn>
   </Columns>
   <Order>

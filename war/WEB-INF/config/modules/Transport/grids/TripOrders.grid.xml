@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
 
   name="TripOrders" viewName="TripOrders" caption="Užsakymai"
   newRowForm="TripOrder" editForm="TripOrder" editNewRow="true" editShowId="true"
@@ -9,7 +9,7 @@
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">
     <style>
-      <font>Verdana 12 px</font>
+      <ui:font>Verdana 12 px</ui:font>
     </style>
   </body>
   <footer borderWidth="0" />
@@ -18,19 +18,19 @@
     <DataColumn name="Date" source="Date" caption="Data" />
     <DataColumn name="OrderNo" source="OrderNo" caption="Užsakymo Nr." />
     <CalcColumn name="Status" type="string" caption="Būsena" sortBy="Status">
-      <calc><lambda /></calc>
+      <calc><ui:lambda /></calc>
     </CalcColumn>
     <DataColumn name="Customer" source="CustomerName" caption="Užsakovas" />
     <DataColumn name="Payer" source="PayerName" caption="Mokėtojas" />
     <CalcColumn name="Manager" type="string" caption="Vadybininkas"
       sortBy="ManagerFirstName, ManagerLastName" searchBy="ManagerFirstName, ManagerLastName">
       <calc>
-        <function>return (row.ManagerFirstName || "") + " " + (row.ManagerLastName || "")</function>
+        <ui:function>return (row.ManagerFirstName || "") + " " + (row.ManagerLastName || "")</ui:function>
       </calc>
     </CalcColumn>
     <CalcColumn name="Cargo" type="string" caption="Kroviniai" searchBy="Cargo">
       <calc>
-        <function>
+        <ui:function>
           if (!row.MinCargo) {
             return row.MaxCargo;
           
@@ -40,7 +40,7 @@
           } else {
             return row.MinCargo + ", " + row.MaxCargo + (row.CntCargo > 2 ? ", ...": "");
           }
-        </function>
+        </ui:function>
       </calc>
     </CalcColumn>
     <DataColumn name="Weight" source="Weight" caption="Svoris" />

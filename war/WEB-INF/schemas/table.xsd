@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
-  xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
-  
-  <xs:include schemaLocation="types.xsd"/>
+<xs:schema targetNamespace="http://www.butent.com/table" elementFormDefault="qualified"
+  xmlns="http://www.butent.com/table"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:type="http://www.butent.com/type">
 
-  <xs:element name="BeeTable" type="bee:table">
+  <xs:import namespace="http://www.butent.com/type" schemaLocation="types.xsd" />
+
+  <xs:element name="BeeTable" type="table">
     <xs:unique name="uniqueFieldName">
       <xs:selector xpath=".//*" />
       <xs:field xpath="@name" />
@@ -13,51 +15,51 @@
 
   <xs:complexType name="table">
     <xs:sequence>
-      <xs:element name="BeeFields" type="bee:fields" minOccurs="0" maxOccurs="1" />
-      <xs:element name="BeeExtended" type="bee:fields" minOccurs="0" maxOccurs="1" />
-      <xs:element name="BeeStates" type="bee:states" minOccurs="0" maxOccurs="1" />
-      <xs:element name="BeeKeys" type="bee:keys" minOccurs="0" maxOccurs="1" />
+      <xs:element name="BeeFields" type="fields" minOccurs="0" maxOccurs="1" />
+      <xs:element name="BeeExtended" type="fields" minOccurs="0" maxOccurs="1" />
+      <xs:element name="BeeStates" type="states" minOccurs="0" maxOccurs="1" />
+      <xs:element name="BeeKeys" type="keys" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
-    <xs:attribute name="name" type="bee:tableNameType" use="required" />
-    <xs:attribute name="idName" type="bee:fieldNameType" default="ID" />
-    <xs:attribute name="versionName" type="bee:fieldNameType" default="VERSION" />
+    <xs:attribute name="name" type="type:tableNameType" use="required" />
+    <xs:attribute name="idName" type="type:fieldNameType" default="ID" />
+    <xs:attribute name="versionName" type="type:fieldNameType" default="VERSION" />
     <xs:attribute name="x" type="xs:int" />
     <xs:attribute name="y" type="xs:int" />
   </xs:complexType>
 
   <xs:complexType name="fields">
     <xs:sequence>
-      <xs:element name="BeeField" type="bee:fieldType" maxOccurs="unbounded" />
+      <xs:element name="BeeField" type="fieldType" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="states">
     <xs:sequence>
-      <xs:element name="BeeState" type="bee:stateNameType" maxOccurs="unbounded" />
+      <xs:element name="BeeState" type="type:stateNameType" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="keys">
     <xs:sequence>
-      <xs:element name="BeeKey" type="bee:keyType" maxOccurs="unbounded" />
+      <xs:element name="BeeKey" type="keyType" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="fieldType">
-    <xs:attribute name="name" use="required" type="bee:fieldNameType" />
-    <xs:attribute name="type" type="bee:dataType" use="required" />
+    <xs:attribute name="name" use="required" type="type:fieldNameType" />
+    <xs:attribute name="type" type="type:dataType" use="required" />
     <xs:attribute name="precision" type="xs:integer" />
     <xs:attribute name="scale" type="xs:byte" />
     <xs:attribute name="notNull" type="xs:boolean" />
     <xs:attribute name="unique" type="xs:boolean" />
-    <xs:attribute name="relation" type="bee:tableNameType" />
-    <xs:attribute name="cascade" type="bee:cascadeType" />
+    <xs:attribute name="relation" type="type:tableNameType" />
+    <xs:attribute name="cascade" type="cascadeType" />
     <xs:attribute name="translatable" type="xs:boolean" />
   </xs:complexType>
 
   <xs:complexType name="keyType">
     <xs:sequence>
-      <xs:element name="KeyField" type="bee:fieldNameType" maxOccurs="unbounded" />
+      <xs:element name="KeyField" type="type:fieldNameType" maxOccurs="unbounded" />
     </xs:sequence>
     <xs:attribute name="unique" type="xs:boolean" />
   </xs:complexType>

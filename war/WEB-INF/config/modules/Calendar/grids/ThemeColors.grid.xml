@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
 
   name="ThemeColors" viewName="ThemeColors" caption="Spalvos" autoFit="true"
   >
-
   <columns>
     <DataColumn name="ColorName" source="ColorName" minWidth="100" />
 
@@ -13,10 +12,10 @@
   </columns>
 
   <rowStyle>
-    <style>
-      <inline>background: [row.Background]; color: [row.Foreground];</inline>
-    </style>
-    <condition><expression>true</expression></condition>
+    <ui:style>
+      <ui:inline>background: [row.Background]; color: [row.Foreground];</ui:inline>
+    </ui:style>
+    <ui:condition><ui:expression>true</ui:expression></ui:condition>
   </rowStyle>
 </Grid>
 

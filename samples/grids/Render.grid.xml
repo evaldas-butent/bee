@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
-  name="Render" viewName="DataTypes" caption="Rendering">
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
 
+  name="Render" viewName="DataTypes" caption="Rendering"
+  >
   <columns>
     <DataColumn name="Bbb" source="Boolean" />
 
     <DataColumn name="Bmap" source="Boolean">
-      <renderer type="map"><item>t = yeah</item><item>f = noes</item></renderer>
+      <renderer type="map"><ui:item>t = yeah</ui:item><ui:item>f = noes</ui:item></renderer>
     </DataColumn>    
 
     <DataColumn name="Iii" source="Integer" />
@@ -15,35 +16,35 @@
     <DataColumn name="Nlist" source="Integer">
       <renderer type="list" />
       <editor type="list" valueStartIndex="-2">
-        <item>aaa</item>
-        <item>bbb</item>
-        <item>ccc</item>
-        <item>ddd</item>
-        <item>eee</item>
-        <item>fff</item>
-        <item>ggg</item>
-        <item>hhh</item>
-        <item>iii</item>
-        <item>jjj</item>
+        <ui:item>aaa</ui:item>
+        <ui:item>bbb</ui:item>
+        <ui:item>ccc</ui:item>
+        <ui:item>ddd</ui:item>
+        <ui:item>eee</ui:item>
+        <ui:item>fff</ui:item>
+        <ui:item>ggg</ui:item>
+        <ui:item>hhh</ui:item>
+        <ui:item>iii</ui:item>
+        <ui:item>jjj</ui:item>
       </editor>
     </DataColumn>
 
     <DataColumn name="Lll" source="Long" />
 
     <DataColumn name="Reval" source="Long" horizontalAlignment="right">
-      <render><expression>row.Long / 2</expression></render>
+      <render><ui:expression>row.Long / 2</ui:expression></render>
     </DataColumn>
 
     <DataColumn name="Nnn" source="Numeric" cell="html" width="100" >
       <render>
-        <function>
+        <ui:function>
           if (row.Numeric &gt; 0 &amp;&amp; row.Numeric &lt; 100) {
             return '&lt;meter min=0 max=100 value=' + row.Numeric + ' style="width: 5em;"&gt;&lt;/meter&gt;'
              + '&lt;span style="padding-left: 1em;"&gt;' + Math.round(row.Numeric) + '&lt;/span&gt;';
           } else {
             return row.Numeric;
           } 
-        </function>
+        </ui:function>
       </render>
     </DataColumn>
 
@@ -51,10 +52,10 @@
 
     <DataColumn name="Money" source="Currency">
       <renderer type="range">
-        <item>, 0, debit</item>
-        <item>0, 1000, cash</item>
-        <item>1e3, 1e6, moola</item>
-        <item>1e6, , problems</item>
+        <ui:item>, 0, debit</ui:item>
+        <ui:item>0, 1000, cash</ui:item>
+        <ui:item>1e3, 1e6, moola</ui:item>
+        <ui:item>1e6, , problems</ui:item>
       </renderer>
     </DataColumn>    
 
@@ -63,10 +64,10 @@
     <DataColumn name="Map" source="String" cell="html">
       <renderer type="map" separator=";" />
       <editor type="picker" height="116">
-        <item>123 www ; 123</item>
-        <item>Bitinas ; &lt;img src="test.png"&gt;</item>
-        <item>ccc ddd ; cd</item>
-        <item>beehive ; &lt;a href="http://www.butent.com"&gt;Būtent&lt;/a&gt;</item>
+        <ui:item>123 www ; 123</ui:item>
+        <ui:item>Bitinas ; &lt;img src="test.png"&gt;</ui:item>
+        <ui:item>ccc ddd ; cd</ui:item>
+        <ui:item>beehive ; &lt;a href="http://www.butent.com"&gt;Būtent&lt;/a&gt;</ui:item>
       </editor>
     </DataColumn>
 
@@ -74,9 +75,9 @@
 
     <DataColumn name="Drange" source="Date" horizontalAlignment="center">
       <renderer type="range">
-        <item>, 10 1 1, long ago</item>
-        <item>12, 13, this year</item>
-        <item>13, , never</item>
+        <ui:item>, 10 1 1, long ago</ui:item>
+        <ui:item>12, 13, this year</ui:item>
+        <ui:item>13, , never</ui:item>
       </renderer>
     </DataColumn>
 

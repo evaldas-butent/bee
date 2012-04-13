@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
-  
-  name="Tasks" viewName="Tasks" caption="Užduotys">
-  
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="Tasks" viewName="Tasks" caption="Užduotys"
+  >
   <columns>
     <IdColumn name="Id" caption="ID" />
     <DataColumn name="Priority" source="Priority" caption="Prioritetas" itemKey="Priority"/> 
@@ -13,13 +13,13 @@
     <CalcColumn name="Owner" type="string" caption="Vadovas" sortBy="OwnerFirstName, OwnerLastName"
       searchBy="OwnerFirstName, OwnerLastName">
       <calc>
-        <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
+        <ui:function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</ui:function>
       </calc>
     </CalcColumn>
     <CalcColumn name="Executor" type="string" caption="Vykdytojas"
       sortBy="ExecutorFirstName, ExecutorLastName" searchBy="ExecutorFirstName, ExecutorLastName">
       <calc>
-        <function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</function>
+        <ui:function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</ui:function>
       </calc>
     </CalcColumn>
     <DataColumn name="FinishTime" source="FinishTime" caption="Pabaigos laikas" />

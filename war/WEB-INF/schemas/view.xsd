@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
-  xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
+<xs:schema targetNamespace="http://www.butent.com/view" elementFormDefault="qualified"
+  xmlns="http://www.butent.com/view"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:type="http://www.butent.com/type"
+  xmlns:expression="http://www.butent.com/expression">
 
-  <xs:include schemaLocation="types.xsd" />
-  <xs:include schemaLocation="expressions.xsd" />
+  <xs:import namespace="http://www.butent.com/type" schemaLocation="types.xsd" />
+  <xs:import namespace="http://www.butent.com/expression" schemaLocation="expressions.xsd" />
 
   <xs:element name="View">
     <xs:complexType>
@@ -11,49 +14,49 @@
         <xs:element name="Columns" minOccurs="1" maxOccurs="1">
           <xs:complexType>
             <xs:choice maxOccurs="unbounded">
-              <xs:element ref="bee:common" />
-              <xs:element ref="bee:simple" />
+              <xs:element ref="common" />
+              <xs:element ref="simple" />
             </xs:choice>
           </xs:complexType>
         </xs:element>
         <xs:element name="Order" minOccurs="0" maxOccurs="1">
           <xs:complexType>
             <xs:sequence>
-              <xs:element name="OrderBy" type="bee:order" maxOccurs="unbounded" />
+              <xs:element name="OrderBy" type="order" maxOccurs="unbounded" />
             </xs:sequence>
           </xs:complexType>
         </xs:element>
       </xs:sequence>
-      <xs:attribute name="name" type="bee:nameType" use="required" />
-      <xs:attribute name="source" type="bee:tableNameType" use="required" />
+      <xs:attribute name="name" type="type:nameType" use="required" />
+      <xs:attribute name="source" type="type:tableNameType" use="required" />
       <xs:attribute name="filter" type="xs:string" />
       <xs:attribute name="readOnly" type="xs:boolean" />
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="common" type="bee:column" abstract="true" />
-  <xs:element name="simple" type="bee:column" abstract="true" />
-  <xs:element name="aggregate" type="bee:column" abstract="true" />
+  <xs:element name="common" type="column" abstract="true" />
+  <xs:element name="simple" type="column" abstract="true" />
+  <xs:element name="aggregate" type="column" abstract="true" />
 
-  <xs:element name="SimpleColumn" type="bee:columnSimple" substitutionGroup="bee:simple" />
-  <xs:element name="HiddenColumn" type="bee:columnHidden" substitutionGroup="bee:common" />
-  <xs:element name="AggregateColumn" type="bee:columnAggregate" substitutionGroup="bee:aggregate" />
+  <xs:element name="SimpleColumn" type="columnSimple" substitutionGroup="simple" />
+  <xs:element name="HiddenColumn" type="columnHidden" substitutionGroup="common" />
+  <xs:element name="AggregateColumn" type="columnAggregate" substitutionGroup="aggregate" />
 
-  <xs:element name="SimpleJoin" type="bee:joinSimple" substitutionGroup="bee:simple" />
-  <xs:element name="ExternalJoin" type="bee:joinExternal" substitutionGroup="bee:common" />
-  <xs:element name="AggregateJoin" type="bee:joinAggregate" substitutionGroup="bee:aggregate" />
+  <xs:element name="SimpleJoin" type="joinSimple" substitutionGroup="simple" />
+  <xs:element name="ExternalJoin" type="joinExternal" substitutionGroup="common" />
+  <xs:element name="AggregateJoin" type="joinAggregate" substitutionGroup="aggregate" />
 
   <xs:complexType name="column">
-    <xs:attribute name="name" type="bee:fieldNameType" use="required" />
+    <xs:attribute name="name" type="type:fieldNameType" use="required" />
   </xs:complexType>
 
   <xs:complexType name="columnSimple">
     <xs:complexContent>
-      <xs:extension base="bee:column">
+      <xs:extension base="column">
         <xs:sequence>
-          <xs:element ref="bee:expression" minOccurs="0" maxOccurs="1" />
+          <xs:element ref="expression:expression" minOccurs="0" maxOccurs="1" />
         </xs:sequence>
-        <xs:attribute name="alias" type="bee:fieldNameType" />
+        <xs:attribute name="alias" type="type:fieldNameType" />
         <xs:attribute name="locale">
           <xs:simpleType>
             <xs:restriction base="xs:string">
@@ -67,32 +70,32 @@
 
   <xs:complexType name="columnHidden">
     <xs:complexContent>
-      <xs:extension base="bee:columnSimple" />
+      <xs:extension base="columnSimple" />
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="columnAggregate">
     <xs:complexContent>
-      <xs:extension base="bee:columnSimple">
-        <xs:attribute name="aggregate" type="bee:aggregateType" use="required" />
+      <xs:extension base="columnSimple">
+        <xs:attribute name="aggregate" type="type:aggregateType" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="join">
     <xs:complexContent>
-      <xs:extension base="bee:column">
-        <xs:attribute name="joinType" type="bee:joinType" use="required" />
+      <xs:extension base="column">
+        <xs:attribute name="joinType" type="type:joinType" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="joinSimple">
     <xs:complexContent>
-      <xs:extension base="bee:join">
+      <xs:extension base="join">
         <xs:choice maxOccurs="unbounded">
-          <xs:element ref="bee:common" />
-          <xs:element ref="bee:simple" />
+          <xs:element ref="common" />
+          <xs:element ref="simple" />
         </xs:choice>
       </xs:extension>
     </xs:complexContent>
@@ -100,10 +103,10 @@
 
   <xs:complexType name="joinAggregate">
     <xs:complexContent>
-      <xs:extension base="bee:join">
+      <xs:extension base="join">
         <xs:choice maxOccurs="unbounded">
-          <xs:element ref="bee:common" />
-          <xs:element ref="bee:aggregate" />
+          <xs:element ref="common" />
+          <xs:element ref="aggregate" />
         </xs:choice>
       </xs:extension>
     </xs:complexContent>
@@ -111,14 +114,14 @@
 
   <xs:complexType name="joinExternal">
     <xs:complexContent>
-      <xs:extension base="bee:joinAggregate">
-        <xs:attribute name="source" type="bee:tableNameType" use="required" />
+      <xs:extension base="joinAggregate">
+        <xs:attribute name="source" type="type:tableNameType" use="required" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="order">
-    <xs:attribute name="column" type="bee:fieldNameType" use="required" />
+    <xs:attribute name="column" type="type:fieldNameType" use="required" />
     <xs:attribute name="descending" type="xs:boolean" />
   </xs:complexType>
 </xs:schema>

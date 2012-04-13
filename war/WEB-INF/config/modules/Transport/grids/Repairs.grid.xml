@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
 
   name="Repairs" viewName="Repairs" caption="Remontų istorija"
   >
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">
     <style>
-      <font>Verdana 12 px</font>
+      <ui:font>Verdana 12 px</ui:font>
     </style>
   </body>
   <footer borderWidth="0" />
@@ -20,7 +20,7 @@
     <DataColumn name="Price" source="Price" caption="Kaina" format="#.00" />
     <DataColumn name="CurrencyName" source="CurrencyName" caption="Val." />
     <CalcColumn type="decimal" name="Total" caption="Suma" format="#.00">
-      <calc><expression>row.Quantity * row.Price</expression></calc>
+      <calc><ui:expression>row.Quantity * row.Price</ui:expression></calc>
     </CalcColumn>
     <DataColumn name="Note" source="Note" caption="Pastaba" />
     <DataColumn name="Run" source="Run" caption="Rida" />

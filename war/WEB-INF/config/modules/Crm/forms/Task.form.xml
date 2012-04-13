@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
   
   name="Task" viewName="Tasks" caption="Užduotis">
 
@@ -80,7 +81,7 @@
           <cell>
             <TextLabel class="bee-display">
               <render>
-                <function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</function>
+                <ui:function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</ui:function>
               </render>
             </TextLabel>
           </cell>
@@ -90,7 +91,7 @@
           <cell>
             <TextLabel class="bee-display">
               <render>
-                <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
+                <ui:function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</ui:function>
               </render>
             </TextLabel>
           </cell>
@@ -119,4 +120,4 @@
 
     <ChildGrid name="TaskEvents" relColumn="Task" class="flexible" style="margin-left: 1em;" />
   </FlowPanel>
-</Form>  
+</f:Form>  

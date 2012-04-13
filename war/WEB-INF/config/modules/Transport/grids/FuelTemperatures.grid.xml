@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
 
   name="FuelTemperatures" viewName="FuelTemperatures" caption="Temperatūriniai koeficientai"
   >
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">
     <style>
-      <font>Verdana 12 px</font>
+      <ui:font>Verdana 12 px</ui:font>
     </style>
   </body>
   <footer borderWidth="0" />
@@ -16,8 +16,8 @@
     <DataColumn name="Season" source="Season" caption="Sezonas">
       <renderer type="list" />
       <editor type="list">
-        <item>Vasara</item>
-        <item>Žiema</item>
+        <ui:item>Vasara</ui:item>
+        <ui:item>Žiema</ui:item>
       </editor>
     </DataColumn>
     <DataColumn name="TempFrom" source="TempFrom" caption="Temp.nuo" format="#.0" />

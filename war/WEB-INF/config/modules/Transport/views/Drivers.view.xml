@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+<View xmlns="http://www.butent.com/view"
+  xmlns:xpr="http://www.butent.com/expression"
 
   name="Drivers"
   source="Drivers"
@@ -15,14 +15,14 @@
         <HiddenColumn name="FirstName" />
         <HiddenColumn name="LastName" />
         <SimpleColumn name="PersonName">
-          <concat>
-            <string>"FirstName"</string>
-            <string>' '</string>
-            <nvl type="STRING">
-              <string>"LastName"</string>
-              <string>''</string>
-            </nvl>
-          </concat>
+          <xpr:concat>
+            <xpr:string>"FirstName"</xpr:string>
+            <xpr:string>' '</xpr:string>
+            <xpr:nvl type="STRING">
+              <xpr:string>"LastName"</xpr:string>
+              <xpr:string>''</xpr:string>
+            </xpr:nvl>
+          </xpr:concat>
         </SimpleColumn>
       </SimpleJoin>
       <SimpleJoin name="Contact" joinType="LEFT">

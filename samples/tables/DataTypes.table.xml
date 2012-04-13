@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/bee" name="DataTypes">
+<BeeTable xmlns="http://www.butent.com/table" name="DataTypes">
   <BeeFields>
     <BeeField name="Boolean" type="BOOLEAN" />
     <BeeField name="Integer" type="INTEGER" />

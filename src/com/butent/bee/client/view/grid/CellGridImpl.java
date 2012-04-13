@@ -1515,6 +1515,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   private void prepareForInsert(IsRow row) {
+    if (getGridCallback() != null && !getGridCallback().onPrepareForInsert(this, row)) {
+      return;
+    }
     List<BeeColumn> columns = Lists.newArrayList();
     List<String> values = Lists.newArrayList();
 
@@ -1552,7 +1555,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       notifyWarning("Old row not found", "id = " + rowId);
       return;
     }
-
+    if (getGridCallback() != null && !getGridCallback().onPrepareForUpdate(this, oldRow, newRow)) {
+      return;
+    }
     String oldValue;
     String newValue;
 
@@ -1571,7 +1576,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         newValues.add(newValue);
       }
     }
-
     if (!columns.isEmpty()) {
       fireEvent(new SaveChangesEvent(rowId, newRow.getVersion(), columns, oldValues, newValues));
     }

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
   
   name="DocumentTree" caption="Dokumentų medis">
 
   <DataTree caption="Kategorijos" source="DocumentTree" parentColumn="Parent" orderColumn="Order">
     <calc>
-      <expression>row.Name</expression>
+      <ui:expression>row.Name</ui:expression>
     </calc>
     <form name="Kategorijos koregavimas">
       <FlowPanel>
@@ -16,4 +16,4 @@
       </FlowPanel>
     </form>
   </DataTree>
-</Form>  
+</f:Form>  

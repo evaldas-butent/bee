@@ -5,7 +5,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.IsRow;
 
 /**
  * Handles an event when a row value is updated in table based user interface components.
@@ -30,9 +30,9 @@ public class RowUpdateEvent extends Event<RowUpdateEvent.Handler> implements Dat
   }
 
   private final String viewName;
-  private final BeeRow row;
+  private final IsRow row;
 
-  public RowUpdateEvent(String viewName, BeeRow row) {
+  public RowUpdateEvent(String viewName, IsRow row) {
     this.viewName = viewName;
     this.row = row;
   }
@@ -42,10 +42,10 @@ public class RowUpdateEvent extends Event<RowUpdateEvent.Handler> implements Dat
     return TYPE;
   }
 
-  public BeeRow getRow() {
+  public IsRow getRow() {
     return row;
   }
-  
+
   public long getRowId() {
     return getRow().getId();
   }

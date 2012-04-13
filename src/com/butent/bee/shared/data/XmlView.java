@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
  * Handles views information storage in XML structure.
  */
 
-@XmlRootElement(name = "View", namespace = DataUtils.DEFAULT_NAMESPACE)
+@XmlRootElement(name = "View", namespace = DataUtils.VIEW_NAMESPACE)
 public class XmlView {
 
   @XmlSeeAlso({XmlSimpleColumn.class, XmlHiddenColumn.class, XmlAggregateColumn.class,
@@ -22,7 +22,7 @@ public class XmlView {
     public String name;
   }
 
-  @XmlRootElement(name = "SimpleColumn", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "SimpleColumn", namespace = DataUtils.VIEW_NAMESPACE)
   public static class XmlSimpleColumn extends XmlColumn {
     @XmlAttribute
     public String alias;
@@ -32,17 +32,17 @@ public class XmlView {
     public XmlExpression expr;
   }
 
-  @XmlRootElement(name = "HiddenColumn", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "HiddenColumn", namespace = DataUtils.VIEW_NAMESPACE)
   public static class XmlHiddenColumn extends XmlSimpleColumn {
   }
 
-  @XmlRootElement(name = "AggregateColumn", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "AggregateColumn", namespace = DataUtils.VIEW_NAMESPACE)
   public static class XmlAggregateColumn extends XmlSimpleColumn {
     @XmlAttribute
     public String aggregate;
   }
 
-  @XmlRootElement(name = "SimpleJoin", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "SimpleJoin", namespace = DataUtils.VIEW_NAMESPACE)
   public static class XmlSimpleJoin extends XmlColumn {
     @XmlAttribute
     public String joinType;
@@ -50,17 +50,17 @@ public class XmlView {
     public Collection<XmlColumn> columns;
   }
 
-  @XmlRootElement(name = "ExternalJoin", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "ExternalJoin", namespace = DataUtils.VIEW_NAMESPACE)
   public static class XmlExternalJoin extends XmlSimpleJoin {
     @XmlAttribute
     public String source;
   }
 
-  @XmlRootElement(name = "AggregateJoin", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "AggregateJoin", namespace = DataUtils.VIEW_NAMESPACE)
   public static class XmlAggregateJoin extends XmlSimpleJoin {
   }
 
-  @XmlRootElement(name = "OrderBy", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlRootElement(name = "OrderBy", namespace = DataUtils.VIEW_NAMESPACE)
   public static class XmlOrder {
     @XmlAttribute
     public String column;
@@ -78,11 +78,11 @@ public class XmlView {
   @XmlAttribute
   public boolean readOnly;
 
-  @XmlElementWrapper(name = "Columns", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlElementWrapper(name = "Columns", namespace = DataUtils.VIEW_NAMESPACE)
   @XmlElementRef
   public Collection<XmlColumn> columns;
 
-  @XmlElementWrapper(name = "Order", namespace = DataUtils.DEFAULT_NAMESPACE)
+  @XmlElementWrapper(name = "Order", namespace = DataUtils.VIEW_NAMESPACE)
   @XmlElementRef
   public Collection<XmlOrder> orders;
 }

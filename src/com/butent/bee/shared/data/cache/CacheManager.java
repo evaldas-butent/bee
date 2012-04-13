@@ -11,6 +11,7 @@ import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
@@ -134,7 +135,7 @@ public class CacheManager implements HandlesAllDataEvents {
       }
       return null;
     }
-    
+
     private List<BeeRow> getRows(Filter filter, Order order, int offset, int limit) {
       if (data.isEmpty()) {
         return null;
@@ -225,7 +226,7 @@ public class CacheManager implements HandlesAllDataEvents {
       return ok;
     }
 
-    private boolean updateRow(BeeRow newRow) {
+    private boolean updateRow(IsRow newRow) {
       boolean ok = false;
       if (newRow == null) {
         return ok;
@@ -359,7 +360,7 @@ public class CacheManager implements HandlesAllDataEvents {
     get(key).insertRow(row);
     return true;
   }
-  
+
   public void invalidate(String key) {
     assertKey(key);
     get(key).invalidate();
@@ -434,7 +435,7 @@ public class CacheManager implements HandlesAllDataEvents {
     }
 
     Entry entry = get(key);
-    BeeRow row = event.getRow();
+    IsRow row = event.getRow();
 
     if (entry.updateRow(row)) {
       BeeKeeper.getLog().info("Cache", key, "updated row", row.getId());

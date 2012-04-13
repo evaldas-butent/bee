@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
   
   name="TripOrder" viewName="TripOrders" caption="Transporto užsakymas"
   >
@@ -52,4 +52,4 @@
 
     <ChildGrid class="flexible" name="OrderCargo" relColumn="Order" />
   </FlowPanel>
-</Form>
+</f:Form>

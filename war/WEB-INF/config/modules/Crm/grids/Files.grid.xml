@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
-  
-  name="Files" viewName="Files" caption="Bylos">
-  
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="Files" viewName="Files" caption="Bylos"
+  >
   <columns>
     <DataColumn name="FileDate" source="FileDate" caption="Data" />
     <DataColumn name="FileVersion" source="FileVersion" caption="Versija" />
@@ -14,7 +14,7 @@
     <CalcColumn name="Owner" type="string" caption="Registratorius"
       sortBy="OwnerLastName, OwnerFirstName" searchBy="OwnerFirstName, OwnerLastName">
       <calc>
-        <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
+        <ui:function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</ui:function>
       </calc>
     </CalcColumn>
   </columns>

@@ -23,7 +23,7 @@ import java.util.Map;
 public interface GridCallback extends WidgetCallback {
 
   void afterAction(Action action, GridPresenter presenter);
-  
+
   void afterCreate(CellGrid grid);
 
   boolean afterCreateColumn(String columnId, AbstractColumn<?> column, ColumnHeader header,
@@ -32,19 +32,19 @@ public interface GridCallback extends WidgetCallback {
   void afterCreateColumns(CellGrid grid);
 
   void afterDeleteRow(long rowId);
-  
+
   boolean beforeAction(Action action, GridPresenter presenter);
 
   boolean beforeAddRow(GridPresenter presenter);
 
   void beforeCreate(List<BeeColumn> dataColumns, int rowCount, GridDescription gridDescription,
       boolean hasSearch);
-  
+
   boolean beforeCreateColumn(String columnId, List<BeeColumn> dataColumns,
       ColumnDescription columnDescription);
 
   void beforeCreateColumns(List<BeeColumn> dataColumns, List<ColumnDescription> columnDescriptions);
-  
+
   int beforeDeleteRow(GridPresenter presenter, IsRow row);
 
   int beforeDeleteRows(GridPresenter presenter, IsRow activeRow, Collection<RowInfo> selectedRows);
@@ -54,26 +54,30 @@ public interface GridCallback extends WidgetCallback {
   void beforeRequery(GridPresenter presenter);
 
   String getCaption();
-  
+
   GridPresenter getGridPresenter();
-  
+
   Map<String, Filter> getInitialFilters();
-  
+
   BeeRowSet getInitialRowSet();
-  
+
   GridCallback getInstance();
 
   String getRowCaption(IsRow row, boolean edit);
-  
+
   boolean onClose(GridPresenter presenter);
-  
+
   boolean onLoad(GridDescription gridDescription);
 
   boolean onLoadExtWidget(Element root);
-  
+
+  boolean onPrepareForInsert(GridView gridView, IsRow newRow);
+
+  boolean onPrepareForUpdate(GridView gridView, IsRow oldRow, IsRow newRow);
+
   void onShow(GridPresenter presenter);
 
   boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow);
-  
-  void setGridPresenter(GridPresenter gridPresenter);  
+
+  void setGridPresenter(GridPresenter gridPresenter);
 }

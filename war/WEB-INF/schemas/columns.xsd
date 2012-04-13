@@ -1,61 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
-  xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
+<xs:schema targetNamespace="http://www.butent.com/grid" elementFormDefault="qualified"
+  xmlns="http://www.butent.com/grid"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:type="http://www.butent.com/type"
+  xmlns:ui="http://www.butent.com/ui">
 
   <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd" />
-  
-  <xs:include schemaLocation="types.xsd" />
-  <xs:include schemaLocation="ui.xsd" />
+  <xs:import namespace="http://www.butent.com/type" schemaLocation="types.xsd" />
+  <xs:import namespace="http://www.butent.com/ui" schemaLocation="ui.xsd" />
 
-  <xs:element name="columns" type="bee:columnList" />
+  <xs:element name="columns" type="columnList" />
 
   <xs:complexType name="columnList">
     <xs:choice minOccurs="1" maxOccurs="unbounded">
-      <xs:element name="DataColumn" type="bee:dataColumn" />
-      <xs:element name="CalcColumn" type="bee:calculatedColumn" />
-      <xs:element name="IdColumn" type="bee:column" />
-      <xs:element name="VerColumn" type="bee:column" />
-      <xs:element name="SelectionColumn" type="bee:column" />
+      <xs:element name="DataColumn" type="dataColumn" />
+      <xs:element name="CalcColumn" type="calculatedColumn" />
+      <xs:element name="IdColumn" type="column" />
+      <xs:element name="VerColumn" type="column" />
+      <xs:element name="SelectionColumn" type="column" />
     </xs:choice>
     <xs:attribute ref="xml:base" />
   </xs:complexType>
 
   <xs:complexType name="column">
     <xs:sequence>
-      <xs:element name="style" type="bee:columnStyle" minOccurs="0" />
+      <xs:element name="style" type="columnStyle" minOccurs="0" />
     </xs:sequence>
     <xs:attribute name="name" type="xs:ID" use="required" />
     <xs:attribute name="caption" type="xs:string" />
     <xs:attribute name="readOnly" type="xs:boolean" />
-    <xs:attribute name="width" type="bee:columnWidth" />
-    <xs:attribute name="minWidth" type="bee:columnWidth" />
-    <xs:attribute name="maxWidth" type="bee:columnWidth" />
-    <xs:attribute name="autoFit" type="bee:intOrBoolean" />
+    <xs:attribute name="width" type="columnWidth" />
+    <xs:attribute name="minWidth" type="columnWidth" />
+    <xs:attribute name="maxWidth" type="columnWidth" />
+    <xs:attribute name="autoFit" type="type:intOrBoolean" />
     <xs:attribute name="sortable" type="xs:boolean" default="true" />
     <xs:attribute name="visible" type="xs:boolean" />
     <xs:attribute name="format" type="xs:normalizedString" />
-    <xs:attribute name="horizontalAlignment" type="bee:horizontalAlignmentType" />
+    <xs:attribute name="horizontalAlignment" type="ui:horizontalAlignmentType" />
     <xs:attribute name="hasFooter" type="xs:boolean" default="true" />
     <xs:attribute name="showWidth" type="xs:boolean" />
-    <xs:attribute name="cell" type="bee:cellType" />
+    <xs:attribute name="cell" type="ui:cellType" />
     <xs:attribute name="sortBy" type="xs:normalizedString" />
     <xs:attribute name="searchBy" type="xs:normalizedString" />
   </xs:complexType>
 
   <xs:complexType name="baseColumn">
     <xs:complexContent>
-      <xs:extension base="bee:column">
+      <xs:extension base="column">
         <xs:sequence>
           <xs:choice minOccurs="0" maxOccurs="1">
-            <xs:element name="renderer" type="bee:renderer" />
-            <xs:element name="render" type="bee:calcType" />
+            <xs:element name="renderer" type="ui:renderer" />
+            <xs:element name="render" type="ui:calcType" />
           </xs:choice>
-          <xs:element name="editable" type="bee:calcType" minOccurs="0" />
-          <xs:element name="editor" type="bee:editor" minOccurs="0" />
-          <xs:element name="validation" type="bee:calcType" minOccurs="0" />
-          <xs:element name="carry" type="bee:calcType" minOccurs="0" />
+          <xs:element name="editable" type="ui:calcType" minOccurs="0" />
+          <xs:element name="editor" type="ui:editor" minOccurs="0" />
+          <xs:element name="validation" type="ui:calcType" minOccurs="0" />
+          <xs:element name="carry" type="ui:calcType" minOccurs="0" />
         </xs:sequence>
-        <xs:attribute name="source" type="bee:nameType" use="required" />
+        <xs:attribute name="source" type="type:nameType" use="required" />
         <xs:attribute name="required" type="xs:boolean" />
         <xs:attribute name="itemKey" type="xs:normalizedString" />
       </xs:extension>
@@ -64,7 +66,7 @@
 
   <xs:complexType name="dataColumn">
     <xs:complexContent>
-      <xs:extension base="bee:baseColumn">
+      <xs:extension base="baseColumn">
         <xs:attribute name="minValue" type="xs:normalizedString" />
         <xs:attribute name="maxValue" type="xs:normalizedString" />
       </xs:extension>
@@ -73,24 +75,24 @@
 
   <xs:complexType name="calculatedColumn">
     <xs:complexContent>
-      <xs:extension base="bee:column">
+      <xs:extension base="column">
         <xs:sequence>
-          <xs:element name="calc" type="bee:calcType" />
+          <xs:element name="calc" type="ui:calcType" />
         </xs:sequence>
-        <xs:attribute name="type" type="bee:valueType" use="required" />
+        <xs:attribute name="type" type="type:valueType" use="required" />
         <xs:attribute name="precision" type="xs:positiveInteger" />
         <xs:attribute name="scale" type="xs:unsignedByte" />
-        <xs:attribute name="source" type="bee:nameType" />
+        <xs:attribute name="source" type="type:nameType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="columnStyle">
     <xs:sequence>
-      <xs:element name="headerStyle" type="bee:styleType" minOccurs="0" />
-      <xs:element name="bodyStyle" type="bee:styleType" minOccurs="0" />
-      <xs:element name="footerStyle" type="bee:styleType" minOccurs="0" />
-      <xs:element name="dynStyle" type="bee:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="headerStyle" type="ui:styleType" minOccurs="0" />
+      <xs:element name="bodyStyle" type="ui:styleType" minOccurs="0" />
+      <xs:element name="footerStyle" type="ui:styleType" minOccurs="0" />
+      <xs:element name="dynStyle" type="ui:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 

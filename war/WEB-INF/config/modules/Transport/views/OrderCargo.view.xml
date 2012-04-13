@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/view.xsd"
+<View xmlns="http://www.butent.com/view"
+  xmlns:xpr="http://www.butent.com/expression"
 
   name="OrderCargo"
   source="OrderCargo"
@@ -36,9 +36,9 @@
       <HiddenColumn name="Quantity" alias="Qty" />
       <HiddenColumn name="Price" />
       <AggregateColumn name="Total" aggregate="SUM">
-        <cast type="DECIMAL" precision="12" scale="2">
-          <number>"Qty" * "Price"</number>
-        </cast>
+        <xpr:cast type="DECIMAL" precision="12" scale="2">
+          <xpr:number>"Qty" * "Price"</xpr:number>
+        </xpr:cast>
       </AggregateColumn>
       <AggregateJoin joinType="LEFT" name="Currency">
         <AggregateColumn name="Name" aggregate="MIN" alias="MinCurr" />

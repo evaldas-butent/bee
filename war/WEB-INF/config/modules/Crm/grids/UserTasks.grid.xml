@@ -1,37 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:w="http://www.butent.com/widget"
   
   name="UserTasks" viewName="UserTasks" caption="Užduotys"
   editForm="Task" editShowId="true" editSave="false" newRowForm="NewTask" newRowPopup="true"
-  caching="false">
-  
+  caching="false"
+  >
   <north size="40">
-    <FlowPanel class="flexBox-horizontal-center" style="background-color: #f8f8f8; font-family: Tahoma; font-size: 12px;">
-      <FlowPanel>
-        <CheckBox name="Scheduled" html="Suplanuotos" />
-        <CheckBox name="Executing" html="Vykdomos" checked="true" />
-        <CheckBox name="Suspended" html="Sustabdytos" checked="true" />
-        <CheckBox name="Completed" html="Įvykdytos" />
-        <CheckBox name="Canceled" html="Nutrauktos" />
-        <CheckBox name="Approved" html="Baigtos" />
-      </FlowPanel>
-      <FlowPanel class="flexBox-vertical">
-        <SimplePanel>
-          <CheckBox name="Overdue" html="Tik vėluojančios" style="color: red;" />
-        </SimplePanel>
-        <SimplePanel>
-          <CheckBox name="Updated" html="Tik pasikeitusios" />
-        </SimplePanel>
-      </FlowPanel>
-      <Button name="Filter" html="Filtruoti" />
-    </FlowPanel>
+    <w:FlowPanel class="flexBox-horizontal-center" style="background-color: #f8f8f8; font-family: Tahoma; font-size: 12px;">
+      <w:FlowPanel>
+        <w:CheckBox name="Scheduled" html="Suplanuotos" />
+        <w:CheckBox name="Executing" html="Vykdomos" checked="true" />
+        <w:CheckBox name="Suspended" html="Sustabdytos" checked="true" />
+        <w:CheckBox name="Completed" html="Įvykdytos" />
+        <w:CheckBox name="Canceled" html="Nutrauktos" />
+        <w:CheckBox name="Approved" html="Baigtos" />
+      </w:FlowPanel>
+      <w:FlowPanel class="flexBox-vertical">
+        <w:SimplePanel>
+          <w:CheckBox name="Overdue" html="Tik vėluojančios" style="color: red;" />
+        </w:SimplePanel>
+        <w:SimplePanel>
+          <w:CheckBox name="Updated" html="Tik pasikeitusios" />
+        </w:SimplePanel>
+      </w:FlowPanel>
+      <w:Button name="Filter" html="Filtruoti" />
+    </w:FlowPanel>
   </north>
   
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">
     <style>
-      <font>Verdana 12 px</font>
+      <ui:font>Verdana 12 px</ui:font>
     </style>
   </body>
   <footer borderWidth="0" />
@@ -40,7 +41,7 @@
     <CalcColumn name="Mode" type="string" caption="&#160;" cell="html"
       horizontalAlignment="center" width="15">
       <calc>
-        <lambda>greenSmall, yellowSmall</lambda>
+        <ui:lambda>greenSmall, yellowSmall</ui:lambda>
       </calc>
     </CalcColumn>
     <IdColumn name="Id" caption="ID" />
@@ -52,13 +53,13 @@
     <CalcColumn name="Owner" type="string" caption="Vadovas" sortBy="OwnerFirstName, OwnerLastName"
       searchBy="OwnerFirstName, OwnerLastName">
       <calc>
-        <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
+        <ui:function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</ui:function>
       </calc>
     </CalcColumn>
     <CalcColumn name="Executor" type="string" caption="Vykdytojas"
       sortBy="ExecutorFirstName, ExecutorLastName" searchBy="ExecutorFirstName, ExecutorLastName">
       <calc>
-        <function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</function>
+        <ui:function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</ui:function>
       </calc>
     </CalcColumn>
     <DataColumn name="StartTime" source="StartTime" caption="Pradžia" />
@@ -66,27 +67,27 @@
   </columns>
 
   <rowStyle>
-    <style>
-      <inline>color: red;</inline>
-    </style>
-    <condition>
-      <expression>row.Event == 0 &amp;&amp; row.FinishTime &lt; new Date()</expression>
-    </condition>
+    <ui:style>
+      <ui:inline>color: red;</ui:inline>
+    </ui:style>
+    <ui:condition>
+      <ui:expression>row.Event == 0 &amp;&amp; row.FinishTime &lt; new Date()</ui:expression>
+    </ui:condition>
   </rowStyle>
   <rowStyle>
-    <style>
-      <inline>color: black;</inline>
-    </style>
-    <condition>
-      <expression>row.Event == 0</expression>
-    </condition>
+    <ui:style>
+      <ui:inline>color: black;</ui:inline>
+    </ui:style>
+    <ui:condition>
+      <ui:expression>row.Event == 0</ui:expression>
+    </ui:condition>
   </rowStyle>
   <rowStyle>
-    <style>
-      <inline>color: gray;</inline>
-    </style>
-    <condition>
-      <expression>true</expression>
-    </condition>
+    <ui:style>
+      <ui:inline>color: gray;</ui:inline>
+    </ui:style>
+    <ui:condition>
+      <ui:expression>true</ui:expression>
+    </ui:condition>
   </rowStyle>
 </Grid>

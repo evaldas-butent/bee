@@ -20,6 +20,7 @@ import com.butent.bee.client.composite.MultiSelector.SelectionCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.commons.ParametersHandler.ParameterFormHandler;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
@@ -451,9 +452,11 @@ public class CommonEventHandler {
       }
     });
 
+    FormFactory.registerFormCallback("Parameter", new ParameterFormHandler());
+
     BeeKeeper.getMenu().registerMenuCallback("system_parameters", new MenuManager.MenuCallback() {
       public void onSelection(String parameters) {
-        FormFactory.openForm("Parameters", new ParameterHandler(parameters));
+        GridFactory.openGrid("Parameters", new ParametersHandler(parameters));
       }
     });
   }

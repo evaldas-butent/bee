@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
-  
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
   name="TaskEvents" viewName="TaskEvents" caption="Įvykių istorija"
   readOnly="true" order="TaskEventID desc" caching="false">
 
   <body height="48" borderWidth="0">
     <style>
-      <font>Tahoma 11 px</font>
+      <ui:font>Tahoma 11 px</ui:font>
     </style>
   </body>
 
@@ -15,11 +15,11 @@
     <CalcColumn name="Publisher" type="string" caption="Paskelbta" width="120">
       <style>
         <bodyStyle>
-          <inline>white-space: pre-wrap;</inline>
+          <ui:inline>white-space: pre-wrap;</ui:inline>
         </bodyStyle>
       </style>
       <calc>
-        <function>
+        <ui:function>
             var s = row.PublishTime.getFullYear() + "." + (row.PublishTime.getMonth() + 1)
                   + (row.PublishTime.getDate() >= 10 ? "." : ".0")
                   + row.PublishTime.getDate() + " " + row.PublishTime.toLocaleTimeString() + "\n"
@@ -27,17 +27,17 @@
             var ev = $wnd.Bee_getCaption("TaskEvent", row.Event);
             s = s + "\n" + ev;
             return s;
-          </function>
+          </ui:function>
       </calc>
     </CalcColumn>
     <CalcColumn name="Comment" type="string" caption="Komentaras" width="240">
       <style>
         <bodyStyle>
-          <inline>white-space: pre-wrap;</inline>
+          <ui:inline>white-space: pre-wrap;</ui:inline>
         </bodyStyle>
       </style>
       <calc>
-        <function>
+        <ui:function>
             var s = "";
             
             if (row.EventNote) {
@@ -50,24 +50,24 @@
               s = s + row.Comment;
             }
             return s;
-          </function>
+          </ui:function>
       </calc>
     </CalcColumn>
     <CalcColumn name="Duration" type="string" caption="Sugaištas laikas" width="100">
       <style>
         <bodyStyle>
-          <inline>white-space: pre-wrap;</inline>
+          <ui:inline>white-space: pre-wrap;</ui:inline>
         </bodyStyle>
       </style>
       <calc>
-        <function>
+        <ui:function>
             var s = "";
             
             if (row.Duration) {
               s =  row.Duration.getTime() + " min." + "\n" + row.DurationType;
             }
             return s;
-          </function>
+          </ui:function>
       </calc>
     </CalcColumn>
   </columns>

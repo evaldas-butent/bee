@@ -1,30 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
-  xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
+<xs:schema targetNamespace="http://www.butent.com/form" elementFormDefault="qualified"
+  xmlns="http://www.butent.com/form"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:type="http://www.butent.com/type"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:widget="http://www.butent.com/widget">
 
-  <xs:include schemaLocation="types.xsd" />
-  <xs:include schemaLocation="ui.xsd" />
-  <xs:include schemaLocation="widget.xsd" />
+  <xs:import namespace="http://www.butent.com/type" schemaLocation="types.xsd" />
+  <xs:import namespace="http://www.butent.com/ui" schemaLocation="ui.xsd" />
+  <xs:import namespace="http://www.butent.com/widget" schemaLocation="widget.xsd" />
 
   <xs:complexType name="form">
     <xs:sequence>
-      <xs:element ref="bee:widget" />
-      <xs:element name="rowMessage" type="bee:calcType" minOccurs="0" />
-      <xs:element name="rowEditable" type="bee:calcType" minOccurs="0" />
-      <xs:element name="rowValidation" type="bee:calcType" minOccurs="0" />
+      <xs:element ref="widget:widget" />
+      <xs:element name="rowMessage" type="ui:calcType" minOccurs="0" />
+      <xs:element name="rowEditable" type="ui:calcType" minOccurs="0" />
+      <xs:element name="rowValidation" type="ui:calcType" minOccurs="0" />
     </xs:sequence>
-    <xs:attribute name="name" type="bee:nameType" use="required" />
-    <xs:attribute name="viewName" type="bee:nameType" />
+    <xs:attribute name="name" type="type:nameType" use="required" />
+    <xs:attribute name="viewName" type="type:nameType" />
     <xs:attribute name="caption" type="xs:string" />
     <xs:attribute name="readOnly" type="xs:boolean" />
     <xs:attribute name="asyncThreshold" type="xs:nonNegativeInteger" default="100" />
     <xs:attribute name="searchThreshold" type="xs:nonNegativeInteger" default="2" />
-    <xs:attribute name="enabledActions" type="bee:viewActions" />
-    <xs:attribute name="disabledActions" type="bee:viewActions" />
-    <xs:attributeGroup ref="bee:dimension" />
+    <xs:attribute name="enabledActions" type="ui:viewActions" />
+    <xs:attribute name="disabledActions" type="ui:viewActions" />
+    <xs:attributeGroup ref="ui:dimension" />
   </xs:complexType>
 
-  <xs:element name="Form" type="bee:form">
+  <xs:element name="Form" type="form">
     <xs:unique name="uniqueWidgetName">
       <xs:selector xpath=".//*" />
       <xs:field xpath="@name" />

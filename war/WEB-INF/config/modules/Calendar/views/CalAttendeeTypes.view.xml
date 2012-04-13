@@ -1,5 +1,4 @@
-<View xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/views.xsd"
+<View xmlns="http://www.butent.com/view"
   
   name="CalAttendeeTypes"
   source="CalAttendeeTypes"

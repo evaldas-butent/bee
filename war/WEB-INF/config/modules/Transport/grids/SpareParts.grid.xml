@@ -1,32 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:w="http://www.butent.com/widget"
   
   name="SpareParts" viewName="SpareParts" parent="SparePartTypes"
   caption="Keičiamos dalys" newRowCaption="Nauja dalis"
   >
   <west size="150" splitterSize="2">
-    <DataTree name="SparePartTypes" caption="Tipai" source="SparePartTypes" parentColumn="Parent">
-      <calc>
-        <expression>row.Name</expression>
-      </calc>
-      <form name="Tipo koregavimas">
-        <FlowPanel>
-          <Label html="Tipas" class="bee-required" />
-          <InputText source="Name" style="width: 20em" />
-        </FlowPanel>
-      </form>
-    </DataTree>
+    <w:DataTree name="SparePartTypes" caption="Tipai" source="SparePartTypes" parentColumn="Parent">
+      <w:calc>
+        <ui:expression>row.Name</ui:expression>
+      </w:calc>
+      <w:form name="Tipo koregavimas">
+        <w:FlowPanel>
+          <w:Label html="Tipas" class="bee-required" />
+          <w:InputText source="Name" style="width: 20em" />
+        </w:FlowPanel>
+      </w:form>
+    </w:DataTree>
   </west>
   
   <south size="200" splitterSize="2">
-    <ChildGrid name="SparePartUsage" relColumn="Part" />
+    <w:ChildGrid name="SparePartUsage" relColumn="Part" />
   </south>
   
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">
     <style>
-      <font>Verdana 12 px</font>
+      <ui:font>Verdana 12 px</ui:font>
     </style>
   </body>
   <footer borderWidth="0" />

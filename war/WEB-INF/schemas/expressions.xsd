@@ -1,7 +1,9 @@
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.butent.com/bee"
-  xmlns:bee="http://www.butent.com/bee" elementFormDefault="qualified">
+<xs:schema targetNamespace="http://www.butent.com/expression" elementFormDefault="qualified"
+  xmlns="http://www.butent.com/expression"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:type="http://www.butent.com/type">
 
-  <xs:include schemaLocation="types.xsd" />
+  <xs:import namespace="http://www.butent.com/type" schemaLocation="types.xsd" />
 
   <xs:simpleType name="isExpression">
     <xs:restriction base="xs:token">
@@ -11,104 +13,104 @@
 
   <xs:complexType name="hasMember">
     <xs:sequence>
-      <xs:element ref="bee:expression" minOccurs="1" maxOccurs="1" />
+      <xs:element ref="expression" minOccurs="1" maxOccurs="1" />
     </xs:sequence>
-    <xs:attribute name="type" type="bee:dataType" use="required" />
+    <xs:attribute name="type" type="type:dataType" use="required" />
   </xs:complexType>
 
   <xs:complexType name="hasNumber">
     <xs:sequence>
-      <xs:element ref="bee:expression" minOccurs="1" maxOccurs="1" />
+      <xs:element ref="expression" minOccurs="1" maxOccurs="1" />
     </xs:sequence>
-    <xs:attribute name="type" type="bee:dataType" fixed="DOUBLE" />
+    <xs:attribute name="type" type="type:dataType" fixed="DOUBLE" />
   </xs:complexType>
 
   <xs:complexType name="hasMembers">
     <xs:sequence>
-      <xs:element ref="bee:expression" minOccurs="2" maxOccurs="unbounded" />
+      <xs:element ref="expression" minOccurs="2" maxOccurs="unbounded" />
     </xs:sequence>
-    <xs:attribute name="type" type="bee:dataType" use="required" />
+    <xs:attribute name="type" type="type:dataType" use="required" />
   </xs:complexType>
 
   <xs:complexType name="hasNumbers">
     <xs:sequence>
-      <xs:element ref="bee:expression" minOccurs="2" maxOccurs="unbounded" />
+      <xs:element ref="expression" minOccurs="2" maxOccurs="unbounded" />
     </xs:sequence>
-    <xs:attribute name="type" type="bee:dataType" fixed="DOUBLE" />
+    <xs:attribute name="type" type="type:dataType" fixed="DOUBLE" />
   </xs:complexType>
 
   <xs:complexType name="hasStrings">
     <xs:sequence>
-      <xs:element ref="bee:expression" minOccurs="2" maxOccurs="unbounded" />
+      <xs:element ref="expression" minOccurs="2" maxOccurs="unbounded" />
     </xs:sequence>
-    <xs:attribute name="type" type="bee:dataType" fixed="STRING" />
+    <xs:attribute name="type" type="type:dataType" fixed="STRING" />
   </xs:complexType>
 
   <xs:element name="expression" abstract="true" />
 
-  <xs:element name="number" substitutionGroup="bee:expression">
+  <xs:element name="number" substitutionGroup="expression">
     <xs:complexType>
       <xs:simpleContent>
-        <xs:extension base="bee:isExpression">
-          <xs:attribute name="type" type="bee:dataType" fixed="DOUBLE" />
+        <xs:extension base="isExpression">
+          <xs:attribute name="type" type="type:dataType" fixed="DOUBLE" />
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="string" substitutionGroup="bee:expression">
+  <xs:element name="string" substitutionGroup="expression">
     <xs:complexType>
       <xs:simpleContent>
-        <xs:extension base="bee:isExpression">
-          <xs:attribute name="type" type="bee:dataType" fixed="STRING" />
+        <xs:extension base="isExpression">
+          <xs:attribute name="type" type="type:dataType" fixed="STRING" />
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="boolean" substitutionGroup="bee:expression">
+  <xs:element name="boolean" substitutionGroup="expression">
     <xs:complexType>
       <xs:simpleContent>
-        <xs:extension base="bee:isExpression">
-          <xs:attribute name="type" type="bee:dataType" fixed="BOOLEAN" />
+        <xs:extension base="isExpression">
+          <xs:attribute name="type" type="type:dataType" fixed="BOOLEAN" />
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="date" substitutionGroup="bee:expression">
+  <xs:element name="date" substitutionGroup="expression">
     <xs:complexType>
       <xs:simpleContent>
-        <xs:extension base="bee:isExpression">
-          <xs:attribute name="type" type="bee:dataType" fixed="DATE" />
+        <xs:extension base="isExpression">
+          <xs:attribute name="type" type="type:dataType" fixed="DATE" />
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="datetime" substitutionGroup="bee:expression">
+  <xs:element name="datetime" substitutionGroup="expression">
     <xs:complexType>
       <xs:simpleContent>
-        <xs:extension base="bee:isExpression">
-          <xs:attribute name="type" type="bee:dataType" fixed="DATETIME" />
+        <xs:extension base="isExpression">
+          <xs:attribute name="type" type="type:dataType" fixed="DATETIME" />
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="plus" type="bee:hasNumbers" substitutionGroup="bee:expression" />
-  <xs:element name="minus" type="bee:hasNumbers" substitutionGroup="bee:expression" />
-  <xs:element name="multiply" type="bee:hasNumbers" substitutionGroup="bee:expression" />
-  <xs:element name="divide" type="bee:hasNumbers" substitutionGroup="bee:expression" />
-  <xs:element name="bulk" type="bee:hasNumbers" substitutionGroup="bee:expression" />
+  <xs:element name="plus" type="hasNumbers" substitutionGroup="expression" />
+  <xs:element name="minus" type="hasNumbers" substitutionGroup="expression" />
+  <xs:element name="multiply" type="hasNumbers" substitutionGroup="expression" />
+  <xs:element name="divide" type="hasNumbers" substitutionGroup="expression" />
+  <xs:element name="bulk" type="hasNumbers" substitutionGroup="expression" />
 
-  <xs:element name="nvl" type="bee:hasMembers" substitutionGroup="bee:expression" />
-  <xs:element name="concat" type="bee:hasStrings" substitutionGroup="bee:expression" />
+  <xs:element name="nvl" type="hasMembers" substitutionGroup="expression" />
+  <xs:element name="concat" type="hasStrings" substitutionGroup="expression" />
 
-  <xs:element name="cast" substitutionGroup="bee:expression">
+  <xs:element name="cast" substitutionGroup="expression">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="bee:hasMember">
+        <xs:extension base="hasMember">
           <xs:attribute name="precision" type="xs:unsignedByte" />
           <xs:attribute name="scale" type="xs:unsignedByte" />
         </xs:extension>
@@ -116,19 +118,19 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="switch" substitutionGroup="bee:expression">
+  <xs:element name="switch" substitutionGroup="expression">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="bee:hasMember">
+        <xs:extension base="hasMember">
           <xs:sequence>
             <xs:element name="case" minOccurs="1" maxOccurs="unbounded">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element ref="bee:expression" minOccurs="1" maxOccurs="1" />
+                  <xs:element ref="expression" minOccurs="1" maxOccurs="1" />
                   <xs:element name="then" minOccurs="1" maxOccurs="1">
                     <xs:complexType>
                       <xs:sequence>
-                        <xs:element ref="bee:expression" minOccurs="1" maxOccurs="1" />
+                        <xs:element ref="expression" minOccurs="1" maxOccurs="1" />
                       </xs:sequence>
                     </xs:complexType>
                   </xs:element>
@@ -138,7 +140,7 @@
             <xs:element name="else" minOccurs="1" maxOccurs="1">
               <xs:complexType>
                 <xs:sequence>
-                  <xs:element ref="bee:expression" minOccurs="1" maxOccurs="1" />
+                  <xs:element ref="expression" minOccurs="1" maxOccurs="1" />
                 </xs:sequence>
               </xs:complexType>
             </xs:element>

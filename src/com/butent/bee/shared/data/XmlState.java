@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Handles state information storage in XML structure.
  */
-@XmlRootElement(name = "State", namespace = DataUtils.DEFAULT_NAMESPACE)
+@XmlRootElement(name = "State", namespace = DataUtils.STATE_NAMESPACE)
 public class XmlState implements BeeSerializable {
 
   private enum Serial {

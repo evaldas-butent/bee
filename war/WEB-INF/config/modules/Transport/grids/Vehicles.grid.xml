@@ -1,29 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
-  
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:w="http://www.butent.com/widget"
+
   name="Vehicles" viewName="Vehicles"
   newRowForm="Vehicle" editForm="Vehicle"
   newRowCaption="Nauja transporto priemonė"
   >
   <west size="150" splitterSize="2">
-    <DataTree name="VehicleModels" caption="Modeliai" source="VehicleModels" parentColumn="Parent">
-      <calc>
-        <expression>row.Name</expression>
-      </calc>
-      <form name="Modelio koregavimas">
-        <FlowPanel>
-          <Label html="Modelis" class="bee-required" />
-          <InputText source="Name" style="width: 20em" />
-        </FlowPanel>
-      </form>
-    </DataTree>
+    <w:DataTree name="VehicleModels" caption="Modeliai" source="VehicleModels" parentColumn="Parent">
+      <w:calc>
+        <ui:expression>row.Name</ui:expression>
+      </w:calc>
+      <w:form name="Modelio koregavimas">
+        <w:FlowPanel>
+          <w:Label html="Modelis" class="bee-required" />
+          <w:InputText source="Name" style="width: 20em" />
+        </w:FlowPanel>
+      </w:form>
+    </w:DataTree>
   </west>
   
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">
     <style>
-      <font>Verdana 12 px</font>
+      <ui:font>Verdana 12 px</ui:font>
     </style>
   </body>
   <footer borderWidth="0" />

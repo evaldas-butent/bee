@@ -7,8 +7,8 @@
   <!ENTITY duration "5s">
   <!ENTITY rotClass "rotate-&axis;-&duration;">
 ]>
-<Form xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/form.xsd"
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
   name="EntCss" caption="Entities, CSS">
 
   <FlowPanel class="&rotClass;">
@@ -31,4 +31,4 @@
     <Image resource="butent" style="&left;" />
   </FlowPanel>
 
-</Form>
+</f:Form>

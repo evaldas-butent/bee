@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:w="http://www.butent.com/widget"
   
   name="Documents" viewName="Documents" caption="Dokumentai" 
   newRowForm="NewDocument" editForm="Document" parent="Tree">
   
   <west size="200">
-    <DataTree name="Tree" caption="Kategorijos" source="DocumentTree" parentColumn="Parent"
+    <w:DataTree name="Tree" caption="Kategorijos" source="DocumentTree" parentColumn="Parent"
               hideActions="true">
-      <calc>
-        <expression>row.Name + (row.DocumentCount != 0 ? ' [' + row.DocumentCount + ']' : '')</expression>
-      </calc>
-    </DataTree>
+      <w:calc>
+        <ui:expression>row.Name + (row.DocumentCount != 0 ? ' [' + row.DocumentCount + ']' : '')</ui:expression>
+      </w:calc>
+    </w:DataTree>
   </west>
   
   <columns>

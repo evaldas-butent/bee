@@ -1,5 +1,4 @@
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+<Grid xmlns="http://www.butent.com/grid"
   
   name="CalAttendeeTypes" viewName="CalAttendeeTypes" caption="Resursų tipai"
   >

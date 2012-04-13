@@ -1,32 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/bee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.butent.com/bee ../../../../schemas/grid.xsd"
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:w="http://www.butent.com/widget"
   
   name="UserProjects" viewName="UserProjects" caption="Projektai"
   editForm="Project" editMode="true" newRowForm="NewProject" editNewRow="true"
-  caching="false">
-  
+  caching="false"
+  >
   <north size="40">
-    <FlowPanel class="flexBox-horizontal-center" style="background-color: #f8f8f8; font-family: Tahoma; font-size: 12px;">
-      <FlowPanel>
-        <CheckBox name="Created" html="Suplanuoti" checked="true" />
-        <CheckBox name="Activated" html="Vykdomi" checked="true" />
-        <CheckBox name="Suspended" html="Sustabdyti" checked="true" />
-        <CheckBox name="Canceled" html="Nutraukti" />
-        <CheckBox name="Completed" html="Baigti" />
-      </FlowPanel>
-      <FlowPanel class="flexible flexBox-vertical-center">
-        <CheckBox name="Overdue" html="Tik vėluojantys" style="color: red;" />
-        <CheckBox name="Changed" html="Tik pasikeitę" />
-      </FlowPanel>
-      <Button name="Filter" html="Filtruoti" />
-    </FlowPanel>
+    <w:FlowPanel class="flexBox-horizontal-center" style="background-color: #f8f8f8; font-family: Tahoma; font-size: 12px;">
+      <w:FlowPanel>
+        <w:CheckBox name="Created" html="Suplanuoti" checked="true" />
+        <w:CheckBox name="Activated" html="Vykdomi" checked="true" />
+        <w:CheckBox name="Suspended" html="Sustabdyti" checked="true" />
+        <w:CheckBox name="Canceled" html="Nutraukti" />
+        <w:CheckBox name="Completed" html="Baigti" />
+      </w:FlowPanel>
+      <w:FlowPanel class="flexible flexBox-vertical-center">
+        <w:CheckBox name="Overdue" html="Tik vėluojantys" style="color: red;" />
+        <w:CheckBox name="Changed" html="Tik pasikeitę" />
+      </w:FlowPanel>
+      <w:Button name="Filter" html="Filtruoti" />
+    </w:FlowPanel>
   </north>  
   
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">
     <style>
-      <font>Verdana 12 px</font>
+      <ui:font>Verdana 12 px</ui:font>
     </style>
   </body>
   <footer borderWidth="0" />
@@ -35,7 +36,7 @@
     <CalcColumn name="Mode" type="string" caption="&#160;" cell="html"
       horizontalAlignment="center" width="15">
       <calc>
-        <lambda>greenSmall, yellowSmall</lambda>
+        <ui:lambda>greenSmall, yellowSmall</ui:lambda>
       </calc>
     </CalcColumn>
     <IdColumn name="Id" caption="ID" />
@@ -47,7 +48,7 @@
     <CalcColumn name="Owner" type="string" caption="Vadovas" sortBy="OwnerFirstName, OwnerLastName"
       searchBy="OwnerFirstName, OwnerLastName">
       <calc>
-        <function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</function>
+        <ui:function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</ui:function>
       </calc>
     </CalcColumn>
     <DataColumn name="StartDate" source="StartDate" caption="Pradžia" />
@@ -55,27 +56,27 @@
   </columns>
 
   <rowStyle>
-    <style>
-      <inline>="color:red"</inline>
-    </style>
-    <condition>
-      <expression>row.Event == 1 &amp;&amp; row.FinishDate &lt; new Date()</expression>
-    </condition>
+    <ui:style>
+      <ui:inline>="color:red"</ui:inline>
+    </ui:style>
+    <ui:condition>
+      <ui:expression>row.Event == 1 &amp;&amp; row.FinishDate &lt; new Date()</ui:expression>
+    </ui:condition>
   </rowStyle>
   <rowStyle>
-    <style>
-      <inline>="color:black"</inline>
-    </style>
-    <condition>
-      <expression>row.Event &lt; 2</expression>
-    </condition>
+    <ui:style>
+      <ui:inline>="color:black"</ui:inline>
+    </ui:style>
+    <ui:condition>
+      <ui:expression>row.Event &lt; 2</ui:expression>
+    </ui:condition>
   </rowStyle>
   <rowStyle>
-    <style>
-      <inline>="color:gray"</inline>
-    </style>
-    <condition>
-      <expression>true</expression>
-    </condition>
+    <ui:style>
+      <ui:inline>="color:gray"</ui:inline>
+    </ui:style>
+    <ui:condition>
+      <ui:expression>true</ui:expression>
+    </ui:condition>
   </rowStyle>
 </Grid>
