@@ -5,6 +5,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -52,7 +53,7 @@ public class BeeConnection {
       Properties prp = conn.getClientInfo();
       if (!BeeUtils.isEmpty(prp)) {
         for (String p : prp.stringPropertyNames()) {
-          PropertyUtils.addProperty(lst, "Client Info", BeeUtils.addName(p, prp.getProperty(p)));
+          PropertyUtils.addProperty(lst, "Client Info", NameUtils.addName(p, prp.getProperty(p)));
         }
       }
 
@@ -60,7 +61,7 @@ public class BeeConnection {
       if (!BeeUtils.isEmpty(tm)) {
         for (Map.Entry<String, Class<?>> me : tm.entrySet()) {
           PropertyUtils.addProperty(lst, "Type Map",
-              BeeUtils.addName(me.getKey(), me.getValue().toString()));
+              NameUtils.addName(me.getKey(), me.getValue().toString()));
         }
       }
 

@@ -37,6 +37,7 @@ import com.butent.bee.client.widget.SimpleBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Arrays;
 
@@ -551,7 +552,7 @@ public class ScrollTableConfig {
     y += 36;
 
     panel.add(new BeeLabel("Grid Resize"), x, y);
-    rpName = BeeUtils.createUniqueName("rp");
+    rpName = NameUtils.createUniqueName("rp");
     panel.add(new RadioGroup(rpName, resizePolicy, ResizePolicy.class), x + 100, y);
     y += 30 + yMrg;
 

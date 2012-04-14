@@ -160,8 +160,6 @@ public class Invocation {
 
     lst.addAll(SystemInfo.getThreadGroupInfo(ct.getThreadGroup(), true, true));
 
-    PropertyUtils.appendChildrenToExtended(lst, "[xml] Document Builder Factory",
-        XmlUtils.getDomFactoryInfo());
     PropertyUtils.appendChildrenToExtended(lst, "[xml] Document Builder",
         XmlUtils.getDomBuilderInfo());
 

@@ -35,7 +35,7 @@ public class ExtensionFilter extends AbstractNameFilter {
   @Override
   public boolean accept(File dir, String name) {
     boolean ok = false;
-    String x = NameUtils.getExtension(name);
+    String x = FileNameUtils.getExtension(name);
     if (BeeUtils.isEmpty(x)) {
       return ok;
     }

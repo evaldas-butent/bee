@@ -40,6 +40,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -471,7 +472,7 @@ public class DomUtils {
   }
 
   public static String createUniqueName() {
-    return BeeUtils.createUniqueName(DEFAULT_NAME_PREFIX);
+    return NameUtils.createUniqueName(DEFAULT_NAME_PREFIX);
   }
   
   public static void enableChildren(HasWidgets parent, boolean enabled) {

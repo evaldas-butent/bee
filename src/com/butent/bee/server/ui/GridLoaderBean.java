@@ -28,7 +28,6 @@ import com.butent.bee.shared.utils.LogUtils;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import java.util.List;
 import java.util.Map;
@@ -213,7 +212,7 @@ public class GridLoaderBean {
     if (gridElement == null) {
       return null;
     }
-    if (!BeeUtils.same(gridElement.getTagName(), TAG_GRID)) {
+    if (!BeeUtils.same(XmlUtils.getLocalName(gridElement), TAG_GRID)) {
       LogUtils.warning(logger, "unrecognized grid element tag name", gridElement.getTagName());
       return null;
     }
@@ -244,14 +243,15 @@ public class GridLoaderBean {
     }
     xmlToGrid(gridElement, grid, view);
 
-    NodeList columnGroups = gridElement.getElementsByTagName(TAG_COLUMNS);
-    if (XmlUtils.isEmpty(columnGroups)) {
+    List<Element> columnGroups = XmlUtils.getElementsByLocalName(gridElement, TAG_COLUMNS);
+    if (columnGroups.isEmpty()) {
       LogUtils.warning(logger, "Grid", gridName, "tag", TAG_COLUMNS, "not found");
       return null;
     }
+
     List<Element> columns = Lists.newArrayList();
-    for (int i = 0; i < columnGroups.getLength(); i++) {
-      columns.addAll(XmlUtils.getChildrenElements(columnGroups.item(i)));
+    for (int i = 0; i < columnGroups.size(); i++) {
+      columns.addAll(XmlUtils.getChildrenElements(columnGroups.get(i)));
     }
     if (columns.isEmpty()) {
       LogUtils.warning(logger, "Grid", gridName, "has no columns");
@@ -261,7 +261,7 @@ public class GridLoaderBean {
     for (int i = 0; i < columns.size(); i++) {
       Element columnElement = columns.get(i);
 
-      String colTag = columnElement.getTagName();
+      String colTag = XmlUtils.getLocalName(columnElement);
       ColType colType = ColType.getColType(colTag);
       String colName = columnElement.getAttribute(ATTR_NAME);
 
@@ -332,11 +332,11 @@ public class GridLoaderBean {
     EditorDescription editor = new EditorDescription(editorType);
     editor.setAttributes(XmlUtils.getAttributes(element));
 
-    NodeList itemNodes = element.getElementsByTagName(HasItems.TAG_ITEM);
-    if (itemNodes != null && itemNodes.getLength() > 0) {
+    List<Element> itemNodes = XmlUtils.getElementsByLocalName(element, HasItems.TAG_ITEM);
+    if (!itemNodes.isEmpty()) {
       List<String> items = Lists.newArrayList();
-      for (int i = 0; i < itemNodes.getLength(); i++) {
-        String item = itemNodes.item(i).getTextContent();
+      for (int i = 0; i < itemNodes.size(); i++) {
+        String item = itemNodes.get(i).getTextContent();
         if (!BeeUtils.isEmpty(item)) {
           items.add(item);
         }
@@ -368,10 +368,10 @@ public class GridLoaderBean {
     renderer.setAttributes(XmlUtils.getAttributes(element));
 
     List<String> items = Lists.newArrayList();
-    NodeList itemNodes = element.getElementsByTagName(HasItems.TAG_ITEM);
-    if (itemNodes != null && itemNodes.getLength() > 0) {
-      for (int i = 0; i < itemNodes.getLength(); i++) {
-        String item = itemNodes.item(i).getTextContent();
+    List<Element> itemNodes = XmlUtils.getElementsByLocalName(element, HasItems.TAG_ITEM);
+    if (!itemNodes.isEmpty()) {
+      for (int i = 0; i < itemNodes.size(); i++) {
+        String item = itemNodes.get(i).getTextContent();
         if (!BeeUtils.isEmpty(item)) {
           items.add(item);
         }
@@ -549,12 +549,11 @@ public class GridLoaderBean {
         dst.setFooterStyle(footerStyle);
       }
 
-      NodeList dynStyleNodes = styleElement.getElementsByTagName(TAG_DYN_STYLE);
-      if (dynStyleNodes != null && dynStyleNodes.getLength() > 0) {
+      List<Element> dynStyleNodes = XmlUtils.getElementsByLocalName(styleElement, TAG_DYN_STYLE);
+      if (!dynStyleNodes.isEmpty()) {
         List<ConditionalStyleDeclaration> dynStyles = Lists.newArrayList();
-        for (int i = 0; i < dynStyleNodes.getLength(); i++) {
-          ConditionalStyleDeclaration cs =
-              XmlUtils.getConditionalStyle((Element) dynStyleNodes.item(i));
+        for (int i = 0; i < dynStyleNodes.size(); i++) {
+          ConditionalStyleDeclaration cs = XmlUtils.getConditionalStyle(dynStyleNodes.get(i));
           if (cs != null) {
             dynStyles.add(cs);
           }
@@ -740,12 +739,12 @@ public class GridLoaderBean {
       dst.setEditPopup(editPopup);
     }
 
-    NodeList cssNodes = src.getElementsByTagName(TAG_CSS);
-    if (cssNodes != null && cssNodes.getLength() > 0) {
+    List<Element> cssNodes = XmlUtils.getElementsByLocalName(src, TAG_CSS);
+    if (!cssNodes.isEmpty()) {
       Map<String, String> styleSheets = Maps.newHashMap();
-      for (int i = 0; i < cssNodes.getLength(); i++) {
-        String name = ((Element) cssNodes.item(i)).getAttribute(ATTR_ID);
-        String text = cssNodes.item(i).getTextContent();
+      for (int i = 0; i < cssNodes.size(); i++) {
+        String name = cssNodes.get(i).getAttribute(ATTR_ID);
+        String text = cssNodes.get(i).getTextContent();
         if (!BeeUtils.isEmpty(name) && !BeeUtils.isEmpty(text)) {
           styleSheets.put(name.trim(), text.trim());
         }
@@ -777,12 +776,11 @@ public class GridLoaderBean {
       dst.setFooter(footer);
     }
 
-    NodeList rowStyleNodes = src.getElementsByTagName(TAG_ROW_STYLE);
-    if (rowStyleNodes != null && rowStyleNodes.getLength() > 0) {
+    List<Element> rowStyleNodes = XmlUtils.getElementsByLocalName(src, TAG_ROW_STYLE);
+    if (!rowStyleNodes.isEmpty()) {
       List<ConditionalStyleDeclaration> rowStyles = Lists.newArrayList();
-      for (int i = 0; i < rowStyleNodes.getLength(); i++) {
-        ConditionalStyleDeclaration cs =
-            XmlUtils.getConditionalStyle((Element) rowStyleNodes.item(i));
+      for (int i = 0; i < rowStyleNodes.size(); i++) {
+        ConditionalStyleDeclaration cs = XmlUtils.getConditionalStyle(rowStyleNodes.get(i));
         if (cs != null) {
           rowStyles.add(cs);
         }

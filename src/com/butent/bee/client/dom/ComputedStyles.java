@@ -9,6 +9,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 
 import java.util.List;
@@ -21,8 +22,8 @@ public class ComputedStyles implements HasLength, HasInfo {
     Assert.notNull(el);
     Assert.notEmpty(p);
 
-    return getComputedStyle(el, BeeUtils.decamelize(p, NAME_SEPARATOR),
-        BeeUtils.camelize(p, NAME_SEPARATOR));
+    return getComputedStyle(el, NameUtils.decamelize(p, NAME_SEPARATOR),
+        NameUtils.camelize(p, NAME_SEPARATOR));
   }
 
   public static String get(UIObject obj, String p) {

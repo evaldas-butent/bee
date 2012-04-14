@@ -31,6 +31,7 @@ import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
 
@@ -79,7 +80,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
   private int valueStartIndex = 0;
 
   public RadioGroup(boolean vertical) {
-    this(BeeUtils.createUniqueName("optiongroup"), vertical);
+    this(NameUtils.createUniqueName("optiongroup"), vertical);
   }
 
   public RadioGroup(boolean vertical, int value, List<String> opt) {

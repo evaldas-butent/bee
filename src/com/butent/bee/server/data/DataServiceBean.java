@@ -16,6 +16,7 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -479,8 +480,8 @@ public class DataServiceBean {
       buff.addLine(enter.toTimeString(), start.toTimeString(), end.toTimeString());
       buff.addLine(ret, rc, BeeUtils.bracket(BeeUtils.toSeconds(end.getTime() - start.getTime())),
           "type", JdbcUtils.getTypeInfo(rs));
-      buff.addLine("memory", BeeUtils.addName("executeQuery", memQ1 - memQ2),
-          BeeUtils.addName(ret, memC1 - memC2));
+      buff.addLine("memory", NameUtils.addName("executeQuery", memQ1 - memQ2),
+          NameUtils.addName(ret, memC1 - memC2));
     } else if (BeeConst.JDBC_META_DATA.equals(ret)) {
       buff.addExtendedPropertiesColumns();
       buff.appendProperties("Connection", BeeConnection.getInfo(conn));

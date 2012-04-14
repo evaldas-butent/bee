@@ -3,7 +3,7 @@ package com.butent.bee.server.io;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.server.Config;
-import com.butent.bee.server.io.NameUtils.Component;
+import com.butent.bee.server.io.FileNameUtils.Component;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.DateTime;
@@ -131,10 +131,10 @@ public class FileUtils {
       return Lists.newArrayList(new File(search.trim()));
     }
 
-    String pfx = NameUtils.getPrefix(search);
-    String path = NameUtils.getPathNoEndSeparator(search);
-    String stem = NameUtils.getBaseName(search);
-    String ext = NameUtils.getExtension(search);
+    String pfx = FileNameUtils.getPrefix(search);
+    String path = FileNameUtils.getPathNoEndSeparator(search);
+    String stem = FileNameUtils.getBaseName(search);
+    String ext = FileNameUtils.getExtension(search);
 
     List<File> roots = Lists.newArrayList();
 
@@ -508,7 +508,7 @@ public class FileUtils {
 
   public static File toFile(Class<?> clazz) {
     Assert.notNull(clazz);
-    return toFile(clazz.getResource(NameUtils.addExtension(clazz.getSimpleName(), EXT_CLASS)));
+    return toFile(clazz.getResource(FileNameUtils.addExtension(clazz.getSimpleName(), EXT_CLASS)));
   }
 
   public static File toFile(URL url) {

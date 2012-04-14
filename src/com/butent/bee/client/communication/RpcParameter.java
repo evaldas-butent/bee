@@ -2,6 +2,7 @@ package com.butent.bee.client.communication;
 
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 /**
  * Contains necessary properties of a particular RPC parameter and methods to get and set them.
@@ -95,7 +96,7 @@ public class RpcParameter implements Transformable {
   }
 
   public String transform() {
-    return BeeUtils.addName(BeeUtils.concat(1, BeeUtils.bracket(getSection()), getName()),
+    return NameUtils.addName(BeeUtils.concat(1, BeeUtils.bracket(getSection()), getName()),
         getValue());
   }
 }

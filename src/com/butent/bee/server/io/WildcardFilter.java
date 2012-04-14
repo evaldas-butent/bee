@@ -2,7 +2,7 @@ package com.butent.bee.server.io;
 
 import com.google.common.collect.Sets;
 
-import com.butent.bee.server.io.NameUtils.Component;
+import com.butent.bee.server.io.FileNameUtils.Component;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Wildcards;
 import com.butent.bee.shared.utils.Wildcards.Pattern;
@@ -73,7 +73,7 @@ public class WildcardFilter extends AbstractFileFilter {
     if (component == null) {
       z = pathname.getPath();
     } else {
-      z = NameUtils.getComponent(pathname.getPath(), component);
+      z = FileNameUtils.getComponent(pathname.getPath(), component);
     }
     if (BeeUtils.isEmpty(z)) {
       return ok;

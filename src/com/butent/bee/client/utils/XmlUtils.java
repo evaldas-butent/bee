@@ -32,6 +32,7 @@ import com.butent.bee.shared.ui.RendererType;
 import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -148,7 +149,7 @@ public class XmlUtils {
     String lamb = null;
     
     for (Element child : getChildrenElements(element)) {
-      String tag = child.getTagName();
+      String tag = getLocalName(child);
       String text = getText(child);
       if (BeeUtils.isEmpty(text)) {
         continue;
@@ -204,13 +205,13 @@ public class XmlUtils {
     Assert.notEmpty(tagName);
     List<String> result = Lists.newArrayList();
 
-    NodeList children = parent.getElementsByTagName(tagName.trim());
-    if (children == null || children.getLength() <= 0) {
-      return null;
+    List<Element> children = getElementsByLocalName(parent, tagName);
+    if (children.isEmpty()) {
+      return result;
     }
 
-    for (int i = 0; i < children.getLength(); i++) {
-      String text = getText((Element) children.item(i));
+    for (int i = 0; i < children.size(); i++) {
+      String text = getText(children.get(i));
       if (!BeeUtils.isEmpty(text)) {
         result.add(text);
       }
@@ -283,15 +284,34 @@ public class XmlUtils {
     return lst;
   }
 
+  public static List<Element> getElementsByLocalName(Element parent, String tagName) {
+    return getElementsByLocalName(parent, tagName, BeeConst.UNDEF);
+  }
+  
+  public static List<Element> getElementsByLocalName(Element parent, String tagName, int max) {
+    Assert.notEmpty(tagName);
+    List<Element> result = Lists.newArrayList();
+
+    for (Element child : getChildrenElements(parent)) {
+      if (BeeUtils.same(getLocalName(child), tagName)) {
+        result.add(child);
+        if (max > 0 && result.size() >= max) {
+          break;
+        }
+      }
+    }
+    return result;
+  }
+
   public static Element getFirstChildElement(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
 
-    NodeList children = parent.getElementsByTagName(tagName.trim());
-    if (children == null || children.getLength() <= 0) {
+    List<Element> children = getElementsByLocalName(parent, tagName, 1);
+    if (children.isEmpty()) {
       return null;
     }
-    return (Element) children.item(0);
+    return children.get(0);
   }
 
   public static List<ExtendedProperty> getInfo(String xml) {
@@ -300,6 +320,11 @@ public class XmlUtils {
       return null;
     }
     return getTreeInfo(doc, BeeConst.STRING_EMPTY);
+  }
+  
+  public static String getLocalName(Element el) {
+    Assert.notNull(el);
+    return NameUtils.getLocalPart(el.getTagName());
   }
 
   public static List<Property> getNodeInfo(Node nd) {
@@ -452,6 +477,14 @@ public class XmlUtils {
     }
     return doc;
   }
+  
+  public static boolean tagIs(Element element, String tagName) {
+    if (element == null) {
+      return false;
+    } else {
+      return BeeUtils.same(getLocalName(element), tagName);
+    }
+  }
 
   private static void appendElementWithText(Document doc, Element root, String tag, String txt) {
     Element el = doc.createElement(tag);
@@ -492,7 +525,7 @@ public class XmlUtils {
   }
 
   private static boolean isElement(Node nd) {
-    return nd.getNodeType() == Node.ELEMENT_NODE;
+    return nd != null && nd.getNodeType() == Node.ELEMENT_NODE;
   }
 
   private static String transformDocument(Document doc) {

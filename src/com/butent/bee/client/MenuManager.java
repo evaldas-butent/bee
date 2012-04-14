@@ -27,6 +27,7 @@ import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.menu.MenuUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -173,7 +174,7 @@ public class MenuManager implements Module {
         ic++;
       }
     }
-    BeeKeeper.getLog().finish(dur, BeeUtils.addName("roots", rc), BeeUtils.addName("items", ic));
+    BeeKeeper.getLog().finish(dur, NameUtils.addName("roots", rc), NameUtils.addName("items", ic));
 
     setLoaded(true);
     if (getOnLoad() != null) {

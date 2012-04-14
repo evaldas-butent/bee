@@ -142,7 +142,7 @@ public class FormFactory {
     int count = 0;
 
     for (Element child : children) {
-      FormWidget fw = FormWidget.getByTagName(child.getTagName());
+      FormWidget fw = FormWidget.getByTagName(XmlUtils.getLocalName(child));
       if (fw != null) {
         root = child;
         formWidget = fw;

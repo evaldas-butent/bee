@@ -54,6 +54,7 @@ import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -853,7 +854,7 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     if (options.containsKey(OPTION_SEARCH_TYPE)) {
       String search = JsonUtils.getString(options, OPTION_SEARCH_TYPE);
       if (!BeeUtils.isEmpty(search)) {
-        Operator type = BeeUtils.getConstant(Operator.class, search);
+        Operator type = NameUtils.getConstant(Operator.class, search);
         if (type != null) {
           setSearchType(type);
         }

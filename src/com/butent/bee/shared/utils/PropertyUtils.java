@@ -225,7 +225,7 @@ public class PropertyUtils {
     Assert.notNull(clazz);
 
     if (dst.isEmpty()) {
-      dst.add(new Property(BeeUtils.getClassName(clazz), "instance is empty"));
+      dst.add(new Property(NameUtils.getClassName(clazz), "instance is empty"));
     }
   }
 

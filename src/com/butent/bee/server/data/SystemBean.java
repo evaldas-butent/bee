@@ -13,7 +13,7 @@ import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.BeeTable.BeeKey;
 import com.butent.bee.server.data.BeeTable.BeeTrigger;
 import com.butent.bee.server.io.FileUtils;
-import com.butent.bee.server.io.NameUtils;
+import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.sql.HasFrom;
 import com.butent.bee.server.sql.IsCondition;
@@ -48,6 +48,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -989,7 +990,7 @@ public class SystemBean {
 
         for (File resource : resources) {
           String resourcePath = resource.getPath();
-          String objectName = NameUtils.getBaseName(resourcePath);
+          String objectName = FileNameUtils.getBaseName(resourcePath);
           objectName = objectName.substring(0, objectName.length() - obj.name().length() - 1);
           objects.add(BeeUtils.normalize(objectName));
         }
@@ -1292,7 +1293,7 @@ public class SystemBean {
 
   private <T extends BeeObject> void register(T object, Map<String, T> cache) {
     if (!BeeUtils.isEmpty(object)) {
-      String name = BeeUtils.getClassName(object.getClass());
+      String name = NameUtils.getClassName(object.getClass());
       String objectName = object.getName();
       String moduleName = BeeUtils.parenthesize(object.getModuleName());
       T existingObject = cache.get(BeeUtils.normalize(objectName));

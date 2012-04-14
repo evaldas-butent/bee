@@ -9,6 +9,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -79,7 +80,7 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
         val = new DateTimeValue((DateTime) value);
 
       } else {
-        Assert.unsupported("Unsupported value type: " + BeeUtils.getClassName(value.getClass()));
+        Assert.unsupported("Unsupported value type: " + NameUtils.getClassName(value.getClass()));
       }
     }
     return val;

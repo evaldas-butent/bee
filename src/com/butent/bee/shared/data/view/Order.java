@@ -12,6 +12,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -142,10 +143,10 @@ public class Order implements BeeSerializable, Transformable {
         } else if (isSortDescending(w2)) {
           name = w1;
           asc = false;
-        } else if (isSortAscending(w1) && BeeUtils.isIdentifier(w2)) {
+        } else if (isSortAscending(w1) && NameUtils.isIdentifier(w2)) {
           name = w2;
           asc = true;
-        } else if (isSortDescending(w1) && BeeUtils.isIdentifier(w2)) {
+        } else if (isSortDescending(w1) && NameUtils.isIdentifier(w2)) {
           name = w2;
           asc = false;
         } else {

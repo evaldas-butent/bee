@@ -32,6 +32,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +83,7 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
 
   private BAR_TYPE barType = BAR_TYPE.TABLE;
   private ITEM_TYPE defaultItemType = MenuItem.defaultType;
-  private String name = BeeUtils.createUniqueName("mb-");
+  private String name = NameUtils.createUniqueName("mb-");
 
   private boolean hoverEnabled = true;
 

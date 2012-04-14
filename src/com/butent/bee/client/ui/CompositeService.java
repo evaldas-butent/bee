@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Stage;
-import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Map;
 
@@ -38,7 +38,7 @@ public abstract class CompositeService {
 
     CompositeService service = registeredServices.get(svc).getInstance();
     Assert.notNull(service);
-    service.serviceId = svc + "_" + BeeUtils.createUniqueName();
+    service.serviceId = svc + "_" + NameUtils.createUniqueName();
     pendingServices.put(service.getId(), service);
     return service;
   }
@@ -65,7 +65,7 @@ public abstract class CompositeService {
   }
 
   public String name() {
-    return Service.COMPOSITE_SERVICE_PREFIX + BeeUtils.getClassName(this.getClass());
+    return Service.COMPOSITE_SERVICE_PREFIX + NameUtils.getClassName(this.getClass());
   }
 
   protected void destroy() {

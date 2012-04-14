@@ -5,8 +5,8 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.Filter;
-import com.butent.bee.server.io.NameUtils;
-import com.butent.bee.server.io.NameUtils.Component;
+import com.butent.bee.server.io.FileNameUtils;
+import com.butent.bee.server.io.FileNameUtils.Component;
 import com.butent.bee.server.io.WildcardFilter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -222,7 +222,7 @@ public class Config {
     if (file == null) {
       return false;
     }
-    String ext = NameUtils.getExtension(file.getName());
+    String ext = FileNameUtils.getExtension(file.getName());
     if (BeeUtils.isEmpty(ext)) {
       return false;
     }

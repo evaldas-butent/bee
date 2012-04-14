@@ -73,6 +73,7 @@ import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -230,7 +231,7 @@ public class CalendarPanel extends Complex {
     gridDescription.setSearchThreshold(DataUtils.getDefaultSearchThreshold());
 
     gridDescription.addColumn(new ColumnDescription(ColType.SELECTION,
-        BeeUtils.createUniqueName("select-")));
+        NameUtils.createUniqueName("select-")));
 
     for (String colName : columnNames) {
       ColumnDescription columnDescription = new ColumnDescription(ColType.DATA, colName);

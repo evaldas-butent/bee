@@ -5,6 +5,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,39 +58,39 @@ public abstract class UiComponent implements HasId, BeeSerializable {
   private static UiComponent createComponent(String oClass) {
     Assert.notEmpty(oClass);
 
-    if (BeeUtils.getClassName(UiWindow.class).equals(oClass)) {
+    if (NameUtils.getClassName(UiWindow.class).equals(oClass)) {
       return new UiWindow();
-    } else if (BeeUtils.getClassName(UiPanel.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiPanel.class).equals(oClass)) {
       return new UiPanel();
-    } else if (BeeUtils.getClassName(UiHorizontalLayout.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiHorizontalLayout.class).equals(oClass)) {
       return new UiHorizontalLayout();
-    } else if (BeeUtils.getClassName(UiVerticalLayout.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiVerticalLayout.class).equals(oClass)) {
       return new UiVerticalLayout();
-    } else if (BeeUtils.getClassName(UiLabel.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiLabel.class).equals(oClass)) {
       return new UiLabel();
-    } else if (BeeUtils.getClassName(UiField.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiField.class).equals(oClass)) {
       return new UiField();
-    } else if (BeeUtils.getClassName(UiButton.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiButton.class).equals(oClass)) {
       return new UiButton();
-    } else if (BeeUtils.getClassName(UiMenuHorizontal.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiMenuHorizontal.class).equals(oClass)) {
       return new UiMenuHorizontal();
-    } else if (BeeUtils.getClassName(UiMenuVertical.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiMenuVertical.class).equals(oClass)) {
       return new UiMenuVertical();
-    } else if (BeeUtils.getClassName(UiListBox.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiListBox.class).equals(oClass)) {
       return new UiListBox();
-    } else if (BeeUtils.getClassName(UiStack.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiStack.class).equals(oClass)) {
       return new UiStack();
-    } else if (BeeUtils.getClassName(UiTree.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiTree.class).equals(oClass)) {
       return new UiTree();
-    } else if (BeeUtils.getClassName(UiTab.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiTab.class).equals(oClass)) {
       return new UiTab();
-    } else if (BeeUtils.getClassName(UiCheckBox.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiCheckBox.class).equals(oClass)) {
       return new UiCheckBox();
-    } else if (BeeUtils.getClassName(UiTextArea.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiTextArea.class).equals(oClass)) {
       return new UiTextArea();
-    } else if (BeeUtils.getClassName(UiRadioButton.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiRadioButton.class).equals(oClass)) {
       return new UiRadioButton();
-    } else if (BeeUtils.getClassName(UiGrid.class).equals(oClass)) {
+    } else if (NameUtils.getClassName(UiGrid.class).equals(oClass)) {
       return new UiGrid();
     }
 
@@ -289,7 +290,7 @@ public abstract class UiComponent implements HasId, BeeSerializable {
           break;
       }
     }
-    return Codec.beeSerialize(new Object[] {BeeUtils.getClassName(this.getClass()), arr});
+    return Codec.beeSerialize(new Object[] {NameUtils.getClassName(this.getClass()), arr});
   }
 
   public void setCaption(String caption) {

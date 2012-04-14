@@ -28,6 +28,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
 
@@ -45,7 +46,7 @@ public class TransportHandler {
 
     @Override
     public void afterRefresh(FormView form, IsRow row) {
-      String text = BeeUtils.getName(OrderStatus.class,
+      String text = NameUtils.getName(OrderStatus.class,
           row.getInteger(form.getDataIndex(TransportConstants.COL_STATUS)));
 
       status.getElement().setInnerText(text);
@@ -73,7 +74,7 @@ public class TransportHandler {
         ((HasEvaluation) column).setEvaluation(new AbstractEvaluation() {
           @Override
           public String eval(Parameters parameters) {
-            return BeeUtils.getName(OrderStatus.class,
+            return NameUtils.getName(OrderStatus.class,
                 parameters.getInteger(TransportConstants.COL_STATUS));
           }
         });

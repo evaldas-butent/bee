@@ -25,6 +25,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.StringPredicate;
 
@@ -2364,7 +2365,7 @@ public class StyleUtils {
   }
   
   private static String camelize(String name) {
-    return BeeUtils.camelize(name, NAME_DELIMITER);
+    return NameUtils.camelize(name, NAME_DELIMITER);
   }
 
   private static void clearStyleProperty(Style style, String name) {

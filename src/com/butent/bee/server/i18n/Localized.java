@@ -4,8 +4,8 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.server.io.ExtensionFilter;
 import com.butent.bee.server.io.FileUtils;
-import com.butent.bee.server.io.NameUtils;
-import com.butent.bee.server.io.NameUtils.Component;
+import com.butent.bee.server.io.FileNameUtils;
+import com.butent.bee.server.io.FileNameUtils.Component;
 import com.butent.bee.server.io.WildcardFilter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -188,7 +188,7 @@ public class Localized {
     int cnt = 0;
 
     for (File file : files) {
-      name = NameUtils.getBaseName(file.getName());
+      name = FileNameUtils.getBaseName(file.getName());
       if (BeeUtils.same(name, baseName)) {
         makeAvailable(type, rootLocale, file);
         cnt++;

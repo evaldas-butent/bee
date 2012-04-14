@@ -7,6 +7,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class HttpUtils {
 
   public static String counterInfo(String name, Object obj) {
     if (obj instanceof Counter) {
-      return BeeUtils.addName(name, ((Counter) obj).transform());
+      return NameUtils.addName(name, ((Counter) obj).transform());
     } else {
       return BeeConst.STRING_EMPTY;
     }

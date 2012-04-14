@@ -13,6 +13,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -118,14 +119,14 @@ public class RpcUtils {
     Collection<ExtendedProperty> prp = new ArrayList<ExtendedProperty>();
 
     PropertyUtils.addExtended(prp, "Status",
-        BeeUtils.addName("Code", resp.getStatusCode()), resp.getStatusText());
+        NameUtils.addName("Code", resp.getStatusCode()), resp.getStatusText());
 
     Header[] h = resp.getHeaders();
     int c = h.length;
 
     if (c > 0) {
-      PropertyUtils.addExtended(prp, "Headers", BeeUtils.addName("Cnt", c),
-          BeeUtils.addName("Length", resp.getHeadersAsString().length()));
+      PropertyUtils.addExtended(prp, "Headers", NameUtils.addName("Cnt", c),
+          NameUtils.addName("Length", resp.getHeadersAsString().length()));
 
       for (int i = 0; i < c; i++) {
         if (BeeUtils.isEmpty(h[i])) {

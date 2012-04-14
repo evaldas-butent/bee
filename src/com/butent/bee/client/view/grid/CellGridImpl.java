@@ -77,6 +77,7 @@ import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -437,7 +438,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     Set<String> footerEvents;
     if (hasFooters) {
-      footerEvents = BeeUtils.toSet(gridDescr.getFooterEvents());
+      footerEvents = NameUtils.toSet(gridDescr.getFooterEvents());
     } else {
       footerEvents = null;
     }
@@ -719,7 +720,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       setEditShowId(BeeUtils.unbox(gridDescr.getEditShowId()));
 
       if (!BeeUtils.isEmpty(gridDescr.getEditInPlace())) {
-        getEditInPlace().addAll(BeeUtils.toList(gridDescr.getEditInPlace()));
+        getEditInPlace().addAll(NameUtils.toList(gridDescr.getEditInPlace()));
       }
       setEditNewRow(BeeUtils.unbox(gridDescr.getEditNewRow()));
     }
@@ -1452,7 +1453,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     List<String> columnList = Lists.newArrayList();
-    for (String colName : BeeUtils.NAME_SPLITTER.split(columnNames)) {
+    for (String colName : NameUtils.NAME_SPLITTER.split(columnNames)) {
       if (BeeUtils.isEmpty(colName)) {
         continue;
       }

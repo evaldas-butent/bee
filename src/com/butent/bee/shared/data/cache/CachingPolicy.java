@@ -1,6 +1,6 @@
 package com.butent.bee.shared.data.cache;
 
-import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 /**
  * Contains a list of possible read and write settings.
@@ -10,7 +10,7 @@ public enum CachingPolicy {
   NONE(false, false), READ(true, false), WRITE(false, true), FULL(true, true);
   
   public static CachingPolicy get(String name) {
-    return BeeUtils.getConstant(CachingPolicy.class, name);
+    return NameUtils.getConstant(CachingPolicy.class, name);
   }
 
   private boolean read;

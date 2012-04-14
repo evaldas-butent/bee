@@ -5,7 +5,7 @@ import com.google.common.collect.Sets;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.io.FileUtils;
-import com.butent.bee.server.io.NameUtils;
+import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
@@ -15,6 +15,7 @@ import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.ui.UiLoader;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import org.w3c.dom.Document;
 
@@ -224,7 +225,7 @@ public class UiHolderBean {
 
         for (File resource : resources) {
           String resourcePath = resource.getPath();
-          String objectName = NameUtils.getBaseName(resourcePath);
+          String objectName = FileNameUtils.getBaseName(resourcePath);
           objectName = objectName.substring(0, objectName.length() - obj.name().length() - 1);
           objects.add(key(objectName));
         }
@@ -267,7 +268,7 @@ public class UiHolderBean {
   private <T> void register(T object, Map<String, T> cache, String objectName,
       String moduleName) {
     if (!BeeUtils.isEmpty(object)) {
-      String name = BeeUtils.getClassName(object.getClass());
+      String name = NameUtils.getClassName(object.getClass());
 
       if (cache.containsKey(key(objectName))) {
         LogUtils.warning(logger, BeeUtils.parenthesize(moduleName),

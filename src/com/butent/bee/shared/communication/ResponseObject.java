@@ -7,6 +7,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -185,7 +186,7 @@ public class ResponseObject implements BeeSerializable {
     boolean ok = response != null;
 
     if (ok && clazz != null) {
-      ok = BeeUtils.same(getType(), BeeUtils.getClassName(clazz));
+      ok = BeeUtils.same(getType(), NameUtils.getClassName(clazz));
     }
     return ok;
   }
@@ -232,7 +233,7 @@ public class ResponseObject implements BeeSerializable {
 
   public ResponseObject setType(Class<?> clazz) {
     Assert.notNull(clazz);
-    return setType(BeeUtils.getClassName(clazz));
+    return setType(NameUtils.getClassName(clazz));
   }
 
   public ResponseObject setType(String type) {

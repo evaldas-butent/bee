@@ -6,7 +6,7 @@ import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.Filter;
-import com.butent.bee.server.io.NameUtils;
+import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.utils.ClassUtils;
 import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.XmlUtils;
@@ -391,7 +391,7 @@ public class SystemServiceBean {
     if (BeeUtils.isEmpty(pDst)) {
       dst = null;
     } else {
-      dst = NameUtils.defaultExtension(pDst, XmlUtils.defaultXmlExtension);
+      dst = FileNameUtils.defaultExtension(pDst, XmlUtils.defaultXmlExtension);
       if (BeeUtils.inListSame(dst, src, xsl)) {
         buff.addSevere(dst, "is not a valid target");
         return;

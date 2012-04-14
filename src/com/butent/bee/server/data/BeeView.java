@@ -52,6 +52,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
@@ -242,7 +243,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         expr = SqlUtils.expression(x.toArray());
       }
       if (expr == null) {
-        Assert.unsupported(BeeUtils.getClassName(xmlExpr.getClass()));
+        Assert.unsupported(NameUtils.getClassName(xmlExpr.getClass()));
       }
       return expr;
     }
@@ -366,27 +367,27 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public IsCondition getCondition(Filter flt) {
     if (flt != null) {
-      String clazz = BeeUtils.getClassName(flt.getClass());
+      String clazz = NameUtils.getClassName(flt.getClass());
 
-      if (BeeUtils.getClassName(ColumnValueFilter.class).equals(clazz)) {
+      if (NameUtils.getClassName(ColumnValueFilter.class).equals(clazz)) {
         return getCondition((ColumnValueFilter) flt);
 
-      } else if (BeeUtils.getClassName(ColumnColumnFilter.class).equals(clazz)) {
+      } else if (NameUtils.getClassName(ColumnColumnFilter.class).equals(clazz)) {
         return getCondition((ColumnColumnFilter) flt);
 
-      } else if (BeeUtils.getClassName(ColumnIsEmptyFilter.class).equals(clazz)) {
+      } else if (NameUtils.getClassName(ColumnIsEmptyFilter.class).equals(clazz)) {
         return getCondition((ColumnIsEmptyFilter) flt);
 
-      } else if (BeeUtils.getClassName(ColumnNotEmptyFilter.class).equals(clazz)) {
+      } else if (NameUtils.getClassName(ColumnNotEmptyFilter.class).equals(clazz)) {
         return getCondition((ColumnNotEmptyFilter) flt);
 
-      } else if (BeeUtils.getClassName(CompoundFilter.class).equals(clazz)) {
+      } else if (NameUtils.getClassName(CompoundFilter.class).equals(clazz)) {
         return getCondition((CompoundFilter) flt);
 
-      } else if (BeeUtils.getClassName(IdFilter.class).equals(clazz)) {
+      } else if (NameUtils.getClassName(IdFilter.class).equals(clazz)) {
         return getCondition((IdFilter) flt);
 
-      } else if (BeeUtils.getClassName(VersionFilter.class).equals(clazz)) {
+      } else if (NameUtils.getClassName(VersionFilter.class).equals(clazz)) {
         return getCondition((VersionFilter) flt);
 
       } else {

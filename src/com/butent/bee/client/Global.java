@@ -31,6 +31,7 @@ import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -316,7 +317,7 @@ public class Global implements Module {
 
   public static <E extends Enum<?> & HasCaption> void registerCaptions(Class<E> clazz) {
     Assert.notNull(clazz);
-    registerCaptions(BeeUtils.getClassName(clazz), clazz);
+    registerCaptions(NameUtils.getClassName(clazz), clazz);
   }
   
   public static <E extends Enum<?> & HasCaption> void registerCaptions(String key, Class<E> clazz) {

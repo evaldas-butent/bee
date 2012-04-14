@@ -104,6 +104,7 @@ import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.utils.Wildcards;
@@ -259,9 +260,9 @@ public class CliWorker {
         match = Wildcards.isLike(input, expr);
       }
     }
-    Global.showDialog(mode, BeeUtils.addName("input", input), BeeUtils.addName("pattern", expr),
-        BeeUtils.addName("case", BeeUtils.iif(sens, "sensitive", insens, "insensitive", defCase)),
-        BeeUtils.addName("match", match));
+    Global.showDialog(mode, NameUtils.addName("input", input), NameUtils.addName("pattern", expr),
+        NameUtils.addName("case", BeeUtils.iif(sens, "sensitive", insens, "insensitive", defCase)),
+        NameUtils.addName("match", match));
   }
 
   public static void doLocale(String[] arr) {
@@ -1436,9 +1437,9 @@ public class CliWorker {
     panel.add(new BeeLabel("indeterminate"), 10, 8);
     panel.add(new Progress(), 120, 10);
 
-    panel.add(new BeeLabel(BeeUtils.addName("steps", steps)), 10, 36);
-    panel.add(new BeeLabel(BeeUtils.addName("millis", millis)), 10, 53);
-    panel.add(new BeeLabel(BeeUtils.addName("max", max)), 10, 70);
+    panel.add(new BeeLabel(NameUtils.addName("steps", steps)), 10, 36);
+    panel.add(new BeeLabel(NameUtils.addName("millis", millis)), 10, 53);
+    panel.add(new BeeLabel(NameUtils.addName("max", max)), 10, 70);
 
     final Progress prg = new Progress(max, value);
     panel.add(prg, 120, 40);
@@ -2001,7 +2002,7 @@ public class CliWorker {
       Global.inform(value, "removed");
     } else {
       BeeKeeper.getStorage().setItem(key, value);
-      Global.inform("Storage", BeeUtils.addName(key, value));
+      Global.inform("Storage", NameUtils.addName(key, value));
     }
   }
 

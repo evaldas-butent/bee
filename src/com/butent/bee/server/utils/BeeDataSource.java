@@ -8,6 +8,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.sql.Connection;
@@ -241,8 +242,8 @@ public class BeeDataSource implements Transformable {
         continue;
       }
 
-      v = BeeUtils.concat(null, BeeUtils.addName("Max", rs.getInt("MAX_LEN")),
-          BeeUtils.addName("Default", rs.getString("DEFAULT_VALUE")), rs.getString("DESCRIPTION"));
+      v = BeeUtils.concat(null, NameUtils.addName("Max", rs.getInt("MAX_LEN")),
+          NameUtils.addName("Default", rs.getString("DEFAULT_VALUE")), rs.getString("DESCRIPTION"));
       PropertyUtils.addExtended(lst, "Client Property", k, BeeUtils.ifString(v, "(empty)"));
     }
     rs.close();
@@ -267,8 +268,8 @@ public class BeeDataSource implements Transformable {
           continue;
         }
 
-        v = BeeUtils.concat(null, BeeUtils.addName("Cat", rs.getString("FUNCTION_CAT")),
-            BeeUtils.addName("Schem", rs.getString("FUNCTION_SCHEM")));
+        v = BeeUtils.concat(null, NameUtils.addName("Cat", rs.getString("FUNCTION_CAT")),
+            NameUtils.addName("Schem", rs.getString("FUNCTION_SCHEM")));
         PropertyUtils.addExtended(lst, "Function", k, BeeUtils.ifString(v, k));
       }
       rs.close();
@@ -293,8 +294,8 @@ public class BeeDataSource implements Transformable {
           continue;
         }
 
-        v = BeeUtils.concat(null, BeeUtils.addName("Cat", rs.getString("PROCEDURE_CAT")),
-            BeeUtils.addName("Schem", rs.getString("PROCEDURE_SCHEM")));
+        v = BeeUtils.concat(null, NameUtils.addName("Cat", rs.getString("PROCEDURE_CAT")),
+            NameUtils.addName("Schem", rs.getString("PROCEDURE_SCHEM")));
         PropertyUtils.addExtended(lst, "Procedure", k, BeeUtils.ifString(v, k));
       }
       rs.close();
@@ -381,17 +382,17 @@ public class BeeDataSource implements Transformable {
       }
 
       c = rs.getInt("DATA_TYPE");
-      v = BeeUtils.concat(1, BeeUtils.addName("sql.Type", c), JdbcUtils.getJdbcTypeName(c));
+      v = BeeUtils.concat(1, NameUtils.addName("sql.Type", c), JdbcUtils.getJdbcTypeName(c));
       PropertyUtils.addExtended(lst, nm, k, v);
 
       PropertyUtils.addExtended(lst, nm, k,
-          BeeUtils.addName("Precision", rs.getInt("PRECISION")));
+          NameUtils.addName("Precision", rs.getInt("PRECISION")));
       PropertyUtils.addExtended(lst, nm, k,
-          BeeUtils.addName("Prefix", rs.getString("LITERAL_PREFIX")));
+          NameUtils.addName("Prefix", rs.getString("LITERAL_PREFIX")));
       PropertyUtils.addExtended(lst, nm, k,
-          BeeUtils.addName("Suffix", rs.getString("LITERAL_SUFFIX")));
+          NameUtils.addName("Suffix", rs.getString("LITERAL_SUFFIX")));
       PropertyUtils.addExtended(lst, nm, k,
-          BeeUtils.addName("Create", rs.getString("CREATE_PARAMS")));
+          NameUtils.addName("Create", rs.getString("CREATE_PARAMS")));
 
       switch (rs.getInt("NULLABLE")) {
         case (DatabaseMetaData.typeNoNulls): {
@@ -405,9 +406,9 @@ public class BeeDataSource implements Transformable {
         default:
           s = null;
       }
-      PropertyUtils.addExtended(lst, nm, k, BeeUtils.addName("Nullable", s));
+      PropertyUtils.addExtended(lst, nm, k, NameUtils.addName("Nullable", s));
 
-      PropertyUtils.addExtended(lst, nm, k, BeeUtils.addName("Case sensitive",
+      PropertyUtils.addExtended(lst, nm, k, NameUtils.addName("Case sensitive",
           rs.getBoolean("CASE_SENSITIVE") ? BeeConst.YES : BeeConst.NO));
 
       switch (rs.getInt("SEARCHABLE")) {
@@ -430,22 +431,22 @@ public class BeeDataSource implements Transformable {
         default:
           s = null;
       }
-      PropertyUtils.addExtended(lst, nm, k, BeeUtils.addName("Searchable", s));
+      PropertyUtils.addExtended(lst, nm, k, NameUtils.addName("Searchable", s));
 
       PropertyUtils.addExtended(lst, nm, k,
-          BeeUtils.addName("Unsigned", rs.getBoolean("UNSIGNED_ATTRIBUTE")));
+          NameUtils.addName("Unsigned", rs.getBoolean("UNSIGNED_ATTRIBUTE")));
       PropertyUtils.addExtended(lst, nm, k,
-          BeeUtils.addName("Fixed prec scale", rs.getBoolean("FIXED_PREC_SCALE")));
+          NameUtils.addName("Fixed prec scale", rs.getBoolean("FIXED_PREC_SCALE")));
       PropertyUtils.addExtended(lst, nm, k,
-          BeeUtils.addName("Auto increment", rs.getBoolean("AUTO_INCREMENT")));
+          NameUtils.addName("Auto increment", rs.getBoolean("AUTO_INCREMENT")));
       PropertyUtils.addExtended(lst, nm, k,
-          BeeUtils.addName("Local name", rs.getString("LOCAL_TYPE_NAME")));
+          NameUtils.addName("Local name", rs.getString("LOCAL_TYPE_NAME")));
       PropertyUtils.addExtended(lst, nm, k,
-          BeeUtils.addName("Min scale", rs.getShort("MINIMUM_SCALE")));
+          NameUtils.addName("Min scale", rs.getShort("MINIMUM_SCALE")));
       PropertyUtils.addExtended(lst, nm, k,
-          BeeUtils.addName("Max scale", rs.getShort("MAXIMUM_SCALE")));
+          NameUtils.addName("Max scale", rs.getShort("MAXIMUM_SCALE")));
       PropertyUtils.addExtended(lst, nm, k,
-          BeeUtils.addName("Num prec radix", rs.getInt("NUM_PREC_RADIX")));
+          NameUtils.addName("Num prec radix", rs.getInt("NUM_PREC_RADIX")));
     }
     rs.close();
 

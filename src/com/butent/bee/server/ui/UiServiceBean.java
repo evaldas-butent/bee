@@ -19,7 +19,7 @@ import com.butent.bee.server.data.SystemBean.SysObject;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.FileUtils;
-import com.butent.bee.server.io.NameUtils;
+import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
@@ -49,6 +49,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -170,7 +171,7 @@ public class UiServiceBean {
       return ResponseObject.error("error parsing design xml");
     }
 
-    NodeList nodes = srcDoc.getElementsByTagName("control");
+    NodeList nodes = srcDoc.getElementsByTagNameNS("*", "control");
     if (nodes == null || nodes.getLength() <= 0) {
       return ResponseObject.error("no controls found in design xml");
     }
@@ -498,7 +499,7 @@ public class UiServiceBean {
     }
 
     String path = new File(new File(Config.USER_DIR, "forms"),
-        NameUtils.defaultExtension(formName, XmlUtils.defaultXmlExtension)).getPath();
+        FileNameUtils.defaultExtension(formName, XmlUtils.defaultXmlExtension)).getPath();
     LogUtils.infoNow(logger, "saving", path);
     FileUtils.saveToFile(result, path);
 
@@ -823,7 +824,7 @@ public class UiServiceBean {
 
       for (String row : data) {
         String colName = row.replaceAll("['\"]", "");
-        rs.addColumn(new BeeColumn(ValueType.TEXT, colName, BeeUtils.createUniqueName("col")));
+        rs.addColumn(new BeeColumn(ValueType.TEXT, colName, NameUtils.createUniqueName("col")));
       }
       for (int i = 0; i < 20; i++) {
         int cnt = data.length;
@@ -916,7 +917,7 @@ public class UiServiceBean {
       List<String> tbls = Lists.newArrayList();
       int idx = -1;
 
-      for (String w : BeeUtils.NAME_SPLITTER.split(cmd)) {
+      for (String w : NameUtils.NAME_SPLITTER.split(cmd)) {
         idx++;
 
         if (idx == 0) {
@@ -966,9 +967,9 @@ public class UiServiceBean {
           .split(schema));
 
     } else if (!BeeUtils.isEmpty(cmd)) {
-      String tbl = BeeUtils.getWord(cmd, 0);
+      String tbl = NameUtils.getWord(cmd, 0);
       if (sys.isTable(tbl)) {
-        String opt = BeeUtils.getWord(cmd, 1);
+        String opt = NameUtils.getWord(cmd, 1);
         sys.rebuildTable(tbl, !BeeConst.STRING_MINUS.equals(opt));
         response.addInfo("Rebuild", tbl, opt, "OK");
       } else {

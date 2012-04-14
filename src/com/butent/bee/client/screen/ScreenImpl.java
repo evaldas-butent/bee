@@ -61,6 +61,7 @@ import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 /**
  * Handles default (desktop) screen implementation.
@@ -175,7 +176,7 @@ public class ScreenImpl implements Screen {
   }
 
   public String getName() {
-    return BeeUtils.getClassName(getClass());
+    return NameUtils.getClassName(getClass());
   }
 
   public int getPriority(int p) {

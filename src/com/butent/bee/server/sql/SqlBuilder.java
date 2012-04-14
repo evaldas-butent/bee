@@ -10,6 +10,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -39,7 +40,7 @@ public abstract class SqlBuilder {
       return getUpdate((SqlUpdate) query);
 
     } else {
-      Assert.unsupported("Unsupported class name: " + BeeUtils.getClassName(query.getClass()));
+      Assert.unsupported("Unsupported class name: " + NameUtils.getClassName(query.getClass()));
     }
     return null;
   }

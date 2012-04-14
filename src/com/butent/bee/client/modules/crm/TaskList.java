@@ -42,6 +42,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -87,7 +88,7 @@ public class TaskList {
           public void setOptions(String options) {
             if (!BeeUtils.isEmpty(options)) {
               int idx = 0;
-              for (String mode : BeeUtils.NAME_SPLITTER.split(options)) {
+              for (String mode : NameUtils.NAME_SPLITTER.split(options)) {
                 ImageResource resource = Images.get(mode);
                 Widget widget = (resource == null) ? new BeeLabel(mode) : new BeeImage(resource);
                 switch (idx++) {

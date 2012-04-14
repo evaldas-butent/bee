@@ -2,6 +2,7 @@ package com.butent.bee.server.http;
 
 import com.butent.bee.server.concurrency.Counter;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.io.IOException;
 
@@ -53,7 +54,7 @@ public class RequestFilter implements Filter {
 
       context.log(BeeUtils.concat(1, "filter", System.nanoTime(),
           HttpUtils.counterInfo("counter", COUNTER),
-          BeeUtils.addName("rid", rid),
+          NameUtils.addName("rid", rid),
           HttpUtils.counterInfo(HttpConst.ATTRIBUTE_REQUEST_COUNTER, rc),
           HttpUtils.counterInfo(HttpConst.ATTRIBUTE_CONTEXT_COUNTER, cc),
           HttpUtils.counterInfo(HttpConst.ATTRIBUTE_SESSION_COUNTER, sc)));

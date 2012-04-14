@@ -44,6 +44,7 @@ import com.butent.bee.shared.data.event.DataRequestEvent;
 import com.butent.bee.shared.data.event.ParentRowEvent;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -527,8 +528,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       return null;
     }
 
-    String tagName = root.getTagName();
-    Direction direction = BeeUtils.getConstant(Direction.class, tagName);
+    String tagName = XmlUtils.getLocalName(root);
+    Direction direction = NameUtils.getConstant(Direction.class, tagName);
     if (!validDirection(direction, false)) {
       BeeKeeper.getLog().severe("ext widget: invalid root tag name", BeeUtils.quote(tagName));
       return null;
@@ -553,7 +554,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         ScrollBars.BOTH);
     Integer splSize = XmlUtils.getAttributeInteger(root, FormWidget.ATTR_SPLITTER_SIZE);
 
-    Component precedes = BeeUtils.getConstant(Component.class, root.getAttribute(ATTR_PRECEDES));
+    Component precedes = NameUtils.getConstant(Component.class, root.getAttribute(ATTR_PRECEDES));
     boolean hidable = !BeeUtils.isFalse(XmlUtils.getAttributeBoolean(root, ATTR_HIDABLE));
 
     return new ExtWidget(widget, direction, size, scrollBars, splSize, precedes, hidable);

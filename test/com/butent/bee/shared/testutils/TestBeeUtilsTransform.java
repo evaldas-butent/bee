@@ -6,6 +6,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import junit.framework.TestCase;
 
@@ -318,8 +319,8 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public final void testGetClassName() {
-    assertEquals("TestBeeUtilsTransform", BeeUtils.getClassName(this.getClass()));
-    assertEquals("BeeUtils", BeeUtils.getClassName(BeeUtils.class));
+    assertEquals("TestBeeUtilsTransform", NameUtils.getClassName(this.getClass()));
+    assertEquals("BeeUtils", NameUtils.getClassName(BeeUtils.class));
   }
 
   @Test
@@ -582,13 +583,13 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testIsIdentifier() {
-    assertEquals(false, beeUtils.isIdentifier(null));
-    assertEquals(false, beeUtils.isIdentifier(""));
-    assertEquals(true, beeUtils.isIdentifier("aaa5"));
-    assertEquals(false, beeUtils.isIdentifier("5a"));
-    assertEquals(false, beeUtils.isIdentifier("5a_a"));
-    assertEquals(false, beeUtils.isIdentifier("\t\n\r"));
-    assertEquals(false, beeUtils.isIdentifier("&&&^%$$&**()"));
+    assertEquals(false, NameUtils.isIdentifier(null));
+    assertEquals(false, NameUtils.isIdentifier(""));
+    assertEquals(true, NameUtils.isIdentifier("aaa5"));
+    assertEquals(false, NameUtils.isIdentifier("5a"));
+    assertEquals(false, NameUtils.isIdentifier("5a_a"));
+    assertEquals(false, NameUtils.isIdentifier("\t\n\r"));
+    assertEquals(false, NameUtils.isIdentifier("&&&^%$$&**()"));
   }
 
   @Test
@@ -1103,9 +1104,9 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   @Test
   public void testTransformClass() {
     int a = 0;
-    assertEquals(BeeConst.NULL, beeUtils.transformClass(null));
-    assertEquals(this.getClass().getName(), beeUtils.transformClass(this));
-    assertEquals("java.lang.Integer", beeUtils.transformClass(a));
+    assertEquals(BeeConst.NULL, NameUtils.transformClass(null));
+    assertEquals(this.getClass().getName(), NameUtils.transformClass(this));
+    assertEquals("java.lang.Integer", NameUtils.transformClass(a));
   }
 
   @Test

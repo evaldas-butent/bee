@@ -11,7 +11,7 @@ import java.util.Collection;
  * Enables operations with file names, paths, extensions, read and change them.
  */
 
-public class NameUtils {
+public class FileNameUtils {
   /**
    * Contains a list of possible name components like prefix, path, extension and so on.
    */
@@ -507,6 +507,6 @@ public class NameUtils {
     return (ch == UNIX_SEPARATOR) || (ch == WINDOWS_SEPARATOR);
   }
 
-  private NameUtils() {
+  private FileNameUtils() {
   }
 }

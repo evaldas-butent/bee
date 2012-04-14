@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Set;
 
@@ -18,7 +19,7 @@ public enum Action implements BeeSerializable {
   public static Set<Action> parse(String s) {
     Set<Action> result = Sets.newHashSet();
     if (!BeeUtils.isEmpty(s)) {
-      for (String item : BeeUtils.NAME_SPLITTER.split(s)) {
+      for (String item : NameUtils.NAME_SPLITTER.split(s)) {
         Action action = restore(item);
         if (action != null) {
           result.add(action);

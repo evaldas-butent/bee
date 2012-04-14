@@ -5,6 +5,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 
 /**
  * Contains utility functions for communication between server and client sides, for example
@@ -129,7 +130,7 @@ public class CommUtils {
 
   public static boolean isValidParameter(String name) {
     Assert.notEmpty(name);
-    return BeeUtils.isIdentifier(name) && !isReservedParameter(name);
+    return NameUtils.isIdentifier(name) && !isReservedParameter(name);
   }
 
   public static ContentType normalizeRequest(ContentType ctp) {

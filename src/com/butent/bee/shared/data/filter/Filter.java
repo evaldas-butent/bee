@@ -9,6 +9,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowFilter;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -90,25 +91,25 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
   private static Filter getFilter(String clazz) {
     Filter flt = null;
 
-    if (BeeUtils.getClassName(ColumnValueFilter.class).equals(clazz)) {
+    if (NameUtils.getClassName(ColumnValueFilter.class).equals(clazz)) {
       flt = new ColumnValueFilter();
 
-    } else if (BeeUtils.getClassName(ColumnColumnFilter.class).equals(clazz)) {
+    } else if (NameUtils.getClassName(ColumnColumnFilter.class).equals(clazz)) {
       flt = new ColumnColumnFilter();
 
-    } else if (BeeUtils.getClassName(ColumnIsEmptyFilter.class).equals(clazz)) {
+    } else if (NameUtils.getClassName(ColumnIsEmptyFilter.class).equals(clazz)) {
       flt = new ColumnIsEmptyFilter();
 
-    } else if (BeeUtils.getClassName(ColumnNotEmptyFilter.class).equals(clazz)) {
+    } else if (NameUtils.getClassName(ColumnNotEmptyFilter.class).equals(clazz)) {
       flt = new ColumnNotEmptyFilter();
 
-    } else if (BeeUtils.getClassName(CompoundFilter.class).equals(clazz)) {
+    } else if (NameUtils.getClassName(CompoundFilter.class).equals(clazz)) {
       flt = new CompoundFilter();
 
-    } else if (BeeUtils.getClassName(IdFilter.class).equals(clazz)) {
+    } else if (NameUtils.getClassName(IdFilter.class).equals(clazz)) {
       flt = new IdFilter();
 
-    } else if (BeeUtils.getClassName(VersionFilter.class).equals(clazz)) {
+    } else if (NameUtils.getClassName(VersionFilter.class).equals(clazz)) {
       flt = new VersionFilter();
 
     } else {
@@ -136,7 +137,7 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
   }
 
   protected String serialize(Object obj) {
-    return Codec.beeSerialize(new Object[] {BeeUtils.getClassName(this.getClass()), obj});
+    return Codec.beeSerialize(new Object[] {NameUtils.getClassName(this.getClass()), obj});
   }
 
   protected void setSafe() {

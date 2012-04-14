@@ -25,6 +25,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 
@@ -67,8 +68,8 @@ public class AsyncCallback implements RequestCallback {
     }
 
     if (statusCode != Response.SC_OK) {
-      msg = BeeUtils.concat(1, BeeUtils.addName(Service.RPC_VAR_QID, id),
-          BeeUtils.addName(Service.RPC_VAR_SVC, svc));
+      msg = BeeUtils.concat(1, NameUtils.addName(Service.RPC_VAR_QID, id),
+          NameUtils.addName(Service.RPC_VAR_SVC, svc));
       if (!BeeUtils.isEmpty(msg)) {
         BeeKeeper.getLog().severe(msg);
       }
@@ -107,14 +108,14 @@ public class AsyncCallback implements RequestCallback {
     int pc = BeeUtils.toInt(resp.getHeader(Service.RPC_VAR_PART_CNT));
 
     if (debug) {
-      BeeKeeper.getLog().info("response", BeeUtils.addName(Service.RPC_VAR_QID, id),
-          BeeUtils.addName(Service.RPC_VAR_SVC, svc));
+      BeeKeeper.getLog().info("response", NameUtils.addName(Service.RPC_VAR_QID, id),
+          NameUtils.addName(Service.RPC_VAR_SVC, svc));
 
-      BeeKeeper.getLog().info(BeeUtils.addName(Service.RPC_VAR_CTP, ctp),
-          BeeUtils.addName("len", len), BeeUtils.addName(Service.RPC_VAR_CNT, cnt));
-      BeeKeeper.getLog().info(BeeUtils.addName(Service.RPC_VAR_COLS, cc),
-          BeeUtils.addName(Service.RPC_VAR_MSG_CNT, mc),
-          BeeUtils.addName(Service.RPC_VAR_PART_CNT, pc));
+      BeeKeeper.getLog().info(NameUtils.addName(Service.RPC_VAR_CTP, ctp),
+          NameUtils.addName("len", len), NameUtils.addName(Service.RPC_VAR_CNT, cnt));
+      BeeKeeper.getLog().info(NameUtils.addName(Service.RPC_VAR_COLS, cc),
+          NameUtils.addName(Service.RPC_VAR_MSG_CNT, mc),
+          NameUtils.addName(Service.RPC_VAR_PART_CNT, pc));
     }
 
     String hSep = resp.getHeader(Service.RPC_VAR_SEP);

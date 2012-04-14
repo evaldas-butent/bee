@@ -13,6 +13,7 @@ import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -108,10 +109,11 @@ public class XmlUtils {
   public static String defaultXmlExtension = "xml";
   public static String defaultXslExtension = "xsl";
 
+  private static final String ALL_NS = "*";
   private static final String ALL_TAGS = "*";
+
   private static Logger logger = Logger.getLogger(XmlUtils.class.getName());
 
-  private static DocumentBuilderFactory domFactory;
   private static DocumentBuilder domBuilder;
 
   private static TransformerFactory xsltFactory;
@@ -134,18 +136,18 @@ public class XmlUtils {
     nodeTypes.put(Node.DOCUMENT_FRAGMENT_NODE, "Document Fragment");
     nodeTypes.put(Node.NOTATION_NODE, "Notation");
 
-    DocumentBuilderFactory dbf = null;
     DocumentBuilder bld;
 
     try {
-      dbf = DocumentBuilderFactory.newInstance();
+      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+      dbf.setNamespaceAware(true);
+      dbf.setXIncludeAware(true);
       bld = dbf.newDocumentBuilder();
     } catch (ParserConfigurationException ex) {
       LogUtils.error(logger, ex);
       bld = null;
     }
 
-    domFactory = dbf;
     domBuilder = bld;
 
     TransformerFactory tf = null;
@@ -236,7 +238,7 @@ public class XmlUtils {
       return null;
     }
 
-    NodeList lst = doc.getElementsByTagName(tag);
+    NodeList lst = doc.getElementsByTagNameNS(ALL_NS, tag);
     int r = (lst == null) ? 0 : lst.getLength();
     if (r <= 0) {
       LogUtils.warning(logger, "tag", tag, "not found in", src, xsl);
@@ -285,7 +287,7 @@ public class XmlUtils {
     String lamb = null;
     
     for (Element child : getChildrenElements(element)) {
-      String tag = child.getTagName();
+      String tag = getLocalName(child);
       String text = child.getTextContent();
       if (BeeUtils.isEmpty(text)) {
         continue;
@@ -317,8 +319,7 @@ public class XmlUtils {
     Assert.notNull(cdata);
     List<Property> lst = new ArrayList<Property>();
 
-    PropertyUtils.addProperties(lst, "Length", cdata.getLength(),
-        "Data", cdata.getData(),
+    PropertyUtils.addProperties(lst, "Length", cdata.getLength(), "Data", cdata.getData(),
         "Is Element Content Whitespace", cdata.isElementContentWhitespace());
     return lst;
   }
@@ -352,9 +353,9 @@ public class XmlUtils {
     }
 
     for (int i = 0; i < nodes.getLength(); i++) {
-      Node node = nodes.item(i);
-      if (isElement(node) && BeeUtils.containsSame(tagNames, ((Element) node).getTagName())) {
-        result.add((Element) node);
+      Element element = asElement(nodes.item(i));
+      if (element != null && BeeUtils.containsSame(tagNames, getLocalName(element))) {
+        result.add(element);
       }
     }
     return result;
@@ -368,7 +369,7 @@ public class XmlUtils {
         "Data", comm.getData(), "To String", comm.toString());
     return lst;
   }
-
+  
   public static ConditionalStyleDeclaration getConditionalStyle(Element element) {
     Assert.notNull(element);
 
@@ -459,26 +460,6 @@ public class XmlUtils {
     return lst;
   }
 
-  public static List<Property> getDomFactoryInfo() {
-    List<Property> lst = new ArrayList<Property>();
-
-    if (domFactory == null) {
-      PropertyUtils.addProperty(lst, "Error instantiating factory",
-          DocumentBuilderFactory.class.getName());
-    } else {
-      PropertyUtils.addProperties(lst, "Is Coalescing", domFactory.isCoalescing(),
-          "Is Expand Entity References", domFactory.isExpandEntityReferences(),
-          "Is Ignoring Comments", domFactory.isIgnoringComments(),
-          "Is Ignoring Element Content Whitespace",
-          domFactory.isIgnoringElementContentWhitespace(),
-          "Is Namespace Aware", domFactory.isNamespaceAware(),
-          "Is Validating", domFactory.isValidating(),
-          "Is XInclude Aware", domFactory.isXIncludeAware(),
-          "To String", domFactory.toString());
-    }
-    return lst;
-  }
-
   public static List<Property> getElementInfo(Element el) {
     Assert.notNull(el);
     List<Property> lst = new ArrayList<Property>();
@@ -503,20 +484,18 @@ public class XmlUtils {
       return ret;
     }
 
-    Node nd;
     Element el;
     String tg, txt;
 
     int n = (ignore == null) ? 0 : ignore.length;
 
     for (int i = 0; i < nodes.getLength(); i++) {
-      nd = nodes.item(i);
-      if (!isElement(nd)) {
+      el = asElement(nodes.item(i));
+      if (el == null) {
         continue;
       }
-      el = (Element) nd;
 
-      tg = el.getTagName();
+      tg = getLocalName(el);
       if (n > 0 && BeeUtils.inListSame(tg, ignore)) {
         continue;
       }
@@ -527,6 +506,26 @@ public class XmlUtils {
       }
     }
     return ret;
+  }
+
+  public static List<Element> getElementsByLocalName(Element parent, String tagName) {
+    Assert.notNull(parent);
+    Assert.notEmpty(tagName);
+
+    List<Element> result = Lists.newArrayList();
+
+    NodeList nodes = parent.getElementsByTagNameNS(ALL_NS, tagName);
+    if (isEmpty(nodes)) {
+      return result;
+    }
+
+    for (int i = 0; i < nodes.getLength(); i++) {
+      Element element = asElement(nodes.item(i));
+      if (element != null) {
+        result.add(element);
+      }
+    }
+    return result;
   }
 
   public static List<Property> getEntityInfo(Entity ent) {
@@ -563,11 +562,20 @@ public class XmlUtils {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
 
-    NodeList children = parent.getElementsByTagName(tagName.trim());
+    NodeList children = parent.getElementsByTagNameNS(ALL_NS, tagName.trim());
     if (children == null || children.getLength() <= 0) {
       return null;
     }
     return (Element) children.item(0);
+  }
+  
+  public static String getLocalName(Element el) {
+    Assert.notNull(el);
+    if (BeeUtils.isEmpty(el.getLocalName())) {
+      return NameUtils.getLocalPart(el.getTagName());
+    } else {
+      return el.getLocalName();
+    }
   }
 
   public static List<Property> getNodeInfo(Node nd) {
@@ -718,21 +726,21 @@ public class XmlUtils {
       return null;
     }
 
-    NodeList nodes = doc.getElementsByTagName(tag.trim());
+    NodeList nodes = doc.getElementsByTagNameNS(ALL_NS, tag.trim());
     if (nodes == null) {
       return null;
     }
 
-    Node nd;
+    Element el;
     String txt;
 
     for (int i = 0; i < nodes.getLength(); i++) {
-      nd = nodes.item(i);
-      if (!isElement(nd)) {
+      el = asElement(nodes.item(i));
+      if (el == null) {
         continue;
       }
 
-      txt = ((Element) nd).getTextContent();
+      txt = el.getTextContent();
       if (!BeeUtils.isEmpty(txt)) {
         return txt;
       }
@@ -863,9 +871,9 @@ public class XmlUtils {
       PropertyUtils.addProperty(lst, "Error instantiating factory",
           TransformerFactory.class.getName());
     } else {
-      PropertyUtils.addProperties(lst, "Class", BeeUtils.transformClass(xsltFactory),
-          "Error Listener", BeeUtils.transformClass(xsltFactory.getErrorListener()),
-          "URI Resolver", BeeUtils.transformClass(xsltFactory.getURIResolver()));
+      PropertyUtils.addProperties(lst, "Class", NameUtils.transformClass(xsltFactory),
+          "Error Listener", NameUtils.transformClass(xsltFactory.getErrorListener()),
+          "URI Resolver", NameUtils.transformClass(xsltFactory.getURIResolver()));
     }
     return lst;
   }
@@ -972,7 +980,7 @@ public class XmlUtils {
     StreamSource tr = new StreamSource(xsl);
 
     Document doc = domBuilder.newDocument();
-    Element nd = doc.createElement(BeeUtils.createUniqueName("x2d"));
+    Element nd = doc.createElement(NameUtils.createUniqueName("x2d"));
 
     DOMResult out = new DOMResult(nd);
 
@@ -1022,6 +1030,14 @@ public class XmlUtils {
       return wrt.getBuffer().toString();
     } else {
       return BeeConst.STRING_EMPTY;
+    }
+  }
+  
+  private static Element asElement(Node nd) {
+    if (isElement(nd)) {
+      return (Element) nd;
+    } else {
+      return null;
     }
   }
 
@@ -1099,8 +1115,7 @@ public class XmlUtils {
     return lst;
   }
 
-  private static List<Property> getNamedNodeMapInfo(NamedNodeMap nodes,
-      String msg) {
+  private static List<Property> getNamedNodeMapInfo(NamedNodeMap nodes, String msg) {
     List<Property> lst = new ArrayList<Property>();
     if (nodes == null) {
       return lst;
@@ -1126,7 +1141,7 @@ public class XmlUtils {
   }
 
   private static boolean isElement(Node nd) {
-    return nd.getNodeType() == Node.ELEMENT_NODE;
+    return nd != null && nd.getNodeType() == Node.ELEMENT_NODE;
   }
 
   private static String transformDOMImplementation(DOMImplementation imp) {

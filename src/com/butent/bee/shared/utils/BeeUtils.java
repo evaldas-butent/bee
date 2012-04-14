@@ -1,8 +1,5 @@
 package com.butent.bee.shared.utils;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
@@ -29,29 +26,6 @@ import java.util.Set;
  * Contains base methods for developement.
  */
 public class BeeUtils {
-
-  public static final Splitter NAME_SPLITTER = 
-      Splitter.on(CharMatcher.anyOf(" ,;")).trimResults().omitEmptyStrings();
-  
-  private static int nameCounter = 0;
-
-  /**
-   * Adds a value to a name. Object {@code v} must be either numeric or boolean. Name and value are
-   * separated by a default separator.
-   * 
-   * @param nm name
-   * @param v a value
-   * @return a formed String
-   */
-  public static String addName(String nm, Object v) {
-    if (isEmpty(v, EnumSet.of(BeeType.NUMBER, BeeType.BOOLEAN))) {
-      return BeeConst.STRING_EMPTY;
-    } else if (isEmpty(nm)) {
-      return transform(v);
-    } else {
-      return nm.trim() + BeeConst.DEFAULT_VALUE_SEPARATOR + transform(v);
-    }
-  }
 
   /**
    * Checks if all specified objects are empty.
@@ -182,30 +156,6 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     } else {
       return BeeConst.STRING_LEFT_BRACKET + s + BeeConst.STRING_RIGHT_BRACKET;
-    }
-  }
-
-  public static String camelize(String str, char sep) {
-    if (str == null || str.indexOf(sep) < 0) {
-      return str;
-    }
-
-    char[] arr = str.toCharArray();
-    int cnt = 0;
-    for (int i = 0; i < arr.length; i++) {
-      if (arr[i] != sep) {
-        if (cnt < i) {
-          arr[cnt] = arr[i];
-        }
-        cnt++;
-      } else if (i < arr.length - 1) {
-        arr[i + 1] = Character.toUpperCase(arr[i + 1]);
-      }
-    }
-    if (cnt > 0) {
-      return new String(arr, 0, cnt);
-    } else {
-      return BeeConst.STRING_EMPTY;
     }
   }
 
@@ -652,53 +602,6 @@ public class BeeUtils {
   }
 
   /**
-   * Creates a unique name.
-   * 
-   * @return a unique name.
-   */
-  public static String createUniqueName() {
-    return createUniqueName(null);
-  }
-
-  /**
-   * Created a unique name with a specified prefix.
-   * 
-   * @param pfx prefix used for generating a unique name
-   * @return String which contains unique value with a specified prefix.
-   */
-  public static String createUniqueName(String pfx) {
-    nameCounter++;
-
-    if (pfx == null) {
-      return transform(nameCounter);
-    } else {
-      return pfx.trim() + nameCounter;
-    }
-  }
-
-  public static String decamelize(String str, char sep) {
-    if (isEmpty(str)) {
-      return str;
-    }
-    if (str.equals(str.toLowerCase())) {
-      return str;
-    }
-
-    StringBuilder sb = new StringBuilder();
-    char ch;
-
-    for (int i = 0; i < str.length(); i++) {
-      ch = str.charAt(i);
-      if (Character.isUpperCase(ch)) {
-        sb.append(sep).append(Character.toLowerCase(ch));
-      } else {
-        sb.append(ch);
-      }
-    }
-    return sb.toString();
-  }
-
-  /**
    * Deletes a part of a String from specified {@code start} to {@code end}.
    * 
    * @param src source String to delete from
@@ -911,60 +814,6 @@ public class BeeUtils {
   }
 
   /**
-   * @param cls the class to get a name from
-   * @return only the String class name with packages excluded.
-   */
-  public static String getClassName(Class<?> cls) {
-    String name = cls.getName();
-    int p = Math.max(name.lastIndexOf('.'), name.lastIndexOf('$'));
-    return name.substring(p + 1);
-  }
-
-  public static <E extends Enum<?>> E getConstant(Class<E> clazz, String name) {
-    Assert.notNull(clazz);
-    if (isEmpty(name)) {
-      return null;
-    }
-
-    E result = null;
-
-    for (int i = 0; i < 3; i++) {
-      for (E constant : clazz.getEnumConstants()) {
-        if (i == 0) {
-          if (same(constant.name(), name)) {
-            result = constant;
-            break;
-          }
-
-        } else if (i == 1) {
-          if (startsSame(constant.name(), name)) {
-            if (result == null) {
-              result = constant;
-            } else {
-              result = null;
-              break;
-            }
-          }
-
-        } else {
-          if (context(name, constant.name())) {
-            if (result == null) {
-              result = constant;
-            } else {
-              result = null;
-              break;
-            }
-          }
-        }
-      }
-      if (result != null) {
-        break;
-      }
-    }
-    return result;
-  }
-
-  /**
    * If any {@code src} Collection element contains {@code ctxt} (case is ignored), than that
    * element is added to the new Collection and returned after all elements from {@code src}
    * Collection are covered.
@@ -1003,19 +852,6 @@ public class BeeUtils {
       }
     }
     return key;
-  }
-
-  public static <E extends Enum<?>> String getName(Class<E> clazz, Integer idx) {
-    if (clazz == null || idx == null || idx < 0) {
-      return null;
-    }
-
-    E[] constants = clazz.getEnumConstants();
-    if (constants != null && idx < constants.length) {
-      return constants[idx].name();
-    } else {
-      return null;
-    }
   }
 
   /**
@@ -1131,19 +967,6 @@ public class BeeUtils {
     }
   }
 
-  public static String getWord(String s, int idx) {
-    if (isEmpty(s) || idx < 0) {
-      return null;
-    }
-    int i = 0;
-    for (String w : NAME_SPLITTER.split(s)) {
-      if (idx == i++) {
-        return w;
-      }
-    }
-    return null;
-  }
-  
   public static boolean hasLength(CharSequence cs, int min) {
     if (cs == null) {
       return false;
@@ -1621,33 +1444,6 @@ public class BeeUtils {
 
     for (int i = 0; i < s.length(); i++) {
       if (!isHexDigit(s.charAt(i))) {
-        ok = false;
-        break;
-      }
-    }
-    return ok;
-  }
-
-  /**
-   * Checks if a string is a correct identifier. Identifier cannot start with a number, and can only
-   * contain "_", digits and letters.
-   * 
-   * @param name the name to check
-   * @return true if the String is a correct identifier, false otherwise.
-   */
-  public static boolean isIdentifier(CharSequence name) {
-    if (isEmpty(name)) {
-      return false;
-    }
-    if (Character.isDigit(name.charAt(0))) {
-      return false;
-    }
-
-    boolean ok = true;
-    char c;
-    for (int i = 0; i < name.length(); i++) {
-      c = name.charAt(i);
-      if (c != BeeConst.CHAR_UNDER && !Character.isLetterOrDigit(c)) {
         ok = false;
         break;
       }
@@ -3086,13 +2882,6 @@ public class BeeUtils {
     }
   }
 
-  public static List<String> toList(String s) {
-    if (s == null) {
-      return null;
-    }
-    return Lists.newArrayList(NAME_SPLITTER.split(s));
-  }
-
   public static long toLong(Double d) {
     if (!isDouble(d)) {
       return 0L;
@@ -3160,13 +2949,6 @@ public class BeeUtils {
         + toLeadingZeroes((int) (millis % 1000), 3);
   }
 
-  public static Set<String> toSet(String s) {
-    if (s == null) {
-      return null;
-    }
-    return Sets.newHashSet(NAME_SPLITTER.split(s));
-  }
-  
   public static String toString(BigDecimal bd) {
     if (bd == null) {
       return null;
@@ -3261,21 +3043,6 @@ public class BeeUtils {
       return transformEnumeration((Enumeration<?>) x, sep);
     } else {
       return transform(x);
-    }
-  }
-
-  /**
-   * Transforms an Object {@code obj} to a String representation. In general, this method returns a
-   * string that "textually represents" a class(class name).
-   * 
-   * @param obj value to transform
-   * @return Object's class name
-   */
-  public static String transformClass(Object obj) {
-    if (obj == null) {
-      return BeeConst.NULL;
-    } else {
-      return obj.getClass().getName();
     }
   }
 
@@ -3390,7 +3157,7 @@ public class BeeUtils {
       if (sb.length() > 0) {
         sb.append(z);
       }
-      sb.append(addName(transform(key), transform(value, nextSep)));
+      sb.append(NameUtils.addName(transform(key), transform(value, nextSep)));
     }
     return sb.toString();
   }
@@ -3431,7 +3198,7 @@ public class BeeUtils {
 
     for (int i = 0; i < c - 1; i += 2) {
       if (opt[i] instanceof String) {
-        el = addName((String) opt[i], opt[i + 1]);
+        el = NameUtils.addName((String) opt[i], opt[i + 1]);
         if (!isEmpty(el)) {
           if (sb.length() > 0) {
             sb.append(BeeConst.DEFAULT_OPTION_SEPARATOR);
