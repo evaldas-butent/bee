@@ -48,10 +48,16 @@ public class Service {
   public static final String GET_DATA = COMPOSITE_SERVICE_PREFIX + "get_data";
 
   public static final String DATA_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "data_";
+  
   public static final String GET_X_FORM = DATA_SERVICE_PREFIX + "x_form";
   public static final String GET_X_FORM_LIST = DATA_SERVICE_PREFIX + "x_form_list";
   public static final String GET_MENU = DATA_SERVICE_PREFIX + "menu";
   public static final String GET_X_GRID = DATA_SERVICE_PREFIX + "x_grid";
+
+  public static final String GET_GRID = DATA_SERVICE_PREFIX + "get_grid";
+  public static final String GET_FORM = DATA_SERVICE_PREFIX + "get_form";
+  public static final String GET_DECORATORS = DATA_SERVICE_PREFIX + "get_decorators";
+  
   public static final String REBUILD = DATA_SERVICE_PREFIX + "rebuild";
   public static final String DO_SQL = DATA_SERVICE_PREFIX + "do_sql";
   public static final String QUERY = DATA_SERVICE_PREFIX + "query";
@@ -65,8 +71,6 @@ public class Service {
   public static final String UPDATE_ROW = DATA_SERVICE_PREFIX + "update_row";
   public static final String INSERT_ROW = DATA_SERVICE_PREFIX + "insert_row";
   public static final String INSERT_ROWS = DATA_SERVICE_PREFIX + "insert_rows";
-  public static final String GET_GRID = DATA_SERVICE_PREFIX + "get_grid";
-  public static final String GET_FORM = DATA_SERVICE_PREFIX + "get_form";
 
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";

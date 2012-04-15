@@ -35,6 +35,7 @@ import com.butent.bee.client.composite.StringPicker;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.composite.ValueSpinner;
 import com.butent.bee.client.composite.VolumeSlider;
+import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
@@ -370,6 +371,8 @@ public enum FormWidget {
   private static final String ATTR_CHECKED = "checked";
   private static final String ATTR_MULTIPLE = "multiple";
 
+  private static final String ATTR_DECORATOR = "decorator"; 
+  
   private static final String TAG_CSS = "css";
   private static final String TAG_DYN_STYLE = "dynStyle";
   private static final String TAG_HANDLER = "handler";
@@ -1144,6 +1147,16 @@ public enum FormWidget {
     if (widgetDescriptionCallback != null) {
       widgetDescriptionCallback.onSuccess(widgetDescription);
     }
+    
+    String decorator = attributes.get(ATTR_DECORATOR);
+    if (!BeeUtils.isEmpty(decorator)) {
+      String options = attributes.get(HasOptions.ATTR_OPTIONS);
+      Widget decorated = TuningFactory.decorate(widget, decorator, JsonUtils.toJson(options));
+      if (decorated != null) {
+        return decorated;
+      }
+    }
+
     return widget;
   }
 

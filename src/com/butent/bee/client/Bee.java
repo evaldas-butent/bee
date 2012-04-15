@@ -4,6 +4,7 @@ import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
+import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.modules.ModuleManager;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -30,7 +31,10 @@ public class Bee implements EntryPoint {
     ModuleManager.onLoad();
 
     BeeKeeper.getScreen().start();
+
     BeeKeeper.getBus().dispatchService(Service.REFRESH_MENU);
+    TuningFactory.getTools();
+
     BeeKeeper.getBus().registerExitHandler("Don't leave me this way");
   }
 }

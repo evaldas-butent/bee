@@ -42,6 +42,7 @@ import com.butent.bee.client.communication.RpcList;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.data.DataInfoProvider;
 import com.butent.bee.client.data.JsData;
+import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.ComputedStyles;
 import com.butent.bee.client.dom.Dimensions;
@@ -399,6 +400,12 @@ public class CliWorker {
       BeeKeeper.getRpc().invoke("connectionInfo");
     } else if (z.equals("cornify")) {
       cornify(arr);
+    } else if (z.startsWith("decor")) {
+      if (BeeUtils.isEmpty(args)) {
+        BeeKeeper.getScreen().showGrid(TuningFactory.getExtendedInfo());
+      } else {
+        TuningFactory.refresh();
+      }
     } else if (z.startsWith("df")) {
       showDateFormat(args);
     } else if (z.startsWith("dim")) {

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Decorators xmlns="http://www.butent.com/decorator">
+
+  <decorator id="caption-left">
+    <param name="caption" required="true" />
+    <param name="left" default="100" />
+    <param name="unit" default="px" />
+    <param name="required" />
+
+    <style id="decorator-caption-left">
+      .caption-left-content {position: absolute; left: {left}{unit}; top: 0px;}
+    </style>
+
+    <lifecycle>
+      <created>
+        if ({required}) {
+          this.firstChild.className = "bee-required";
+        }
+      </created>
+    </lifecycle>
+
+    <template>
+      <div style="position: relative;">
+        <div>{caption}</div>
+        <content />
+      </div>
+    </template>
+  </decorator>
+
+</Decorators>

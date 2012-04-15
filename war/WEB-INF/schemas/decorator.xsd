@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.butent.com/decorator" elementFormDefault="qualified"
+  xmlns="http://www.butent.com/decorator"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:ui="http://www.butent.com/ui">
+
+  <xs:import namespace="http://www.butent.com/ui" schemaLocation="ui.xsd" />
+  
+  <xs:element name="content">
+    <xs:complexType>
+      <xs:attribute name="select" type="xs:normalizedString" />
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="param">
+    <xs:complexType>
+      <xs:attribute name="name" type="xs:normalizedString" use="required" />
+      <xs:attribute name="default" type="xs:normalizedString" />
+      <xs:attribute name="required" type="xs:boolean" />
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="lifecycle">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="created" type="xs:string" minOccurs="0" />
+        <xs:element name="inserted" type="xs:string" minOccurs="0" />
+        <xs:element name="removed" type="xs:string" minOccurs="0" />
+      </xs:all>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="template">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:any minOccurs="1" maxOccurs="unbounded" processContents="lax" />
+      </xs:sequence>
+      <xs:attribute name="id" type="xs:normalizedString" />
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="decorator">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="param" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element name="style" type="ui:styleSheet" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element ref="lifecycle" minOccurs="0" maxOccurs="1" />
+        <xs:element name="handler" type="ui:eventHandler" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element ref="template" minOccurs="1" maxOccurs="1" />
+      </xs:sequence>
+      <xs:attribute name="id" type="xs:ID" use="required" />
+      <xs:attribute name="apply-author-styles" type="xs:boolean" /> 
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="Decorators">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="decorator" minOccurs="1" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

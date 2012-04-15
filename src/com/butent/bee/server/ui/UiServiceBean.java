@@ -18,6 +18,7 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.SystemBean.SysObject;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.io.ExtensionFilter;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.sql.SqlConstants.SqlDataType;
@@ -43,6 +44,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
+import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -115,6 +117,8 @@ public class UiServiceBean {
       response = getGrid(reqInfo);
     } else if (BeeUtils.same(svc, Service.GET_FORM)) {
       response = getForm(reqInfo);
+    } else if (BeeUtils.same(svc, Service.GET_DECORATORS)) {
+      response = getDecorators();
 
     } else if (BeeUtils.same(svc, Service.REBUILD)) {
       response = rebuildData(reqInfo);
@@ -669,6 +673,42 @@ public class UiServiceBean {
     } else {
       return ResponseObject.response(sys.getDataInfo(viewName));
     }
+  }
+
+  private ResponseObject getDecorators() {
+    File dir = new File(Config.WEB_INF_DIR, DecoratorConstants.DIRECTORY);
+    List<File> files = FileUtils.findFiles(dir, Lists.newArrayList(FileUtils.INPUT_FILTER,
+        new ExtensionFilter(XmlUtils.defaultXmlExtension)));
+    if (files.isEmpty()) {
+      return ResponseObject.error("getDecorators: no xml found in", dir.getPath());
+    }
+
+    Document dstDoc = XmlUtils.createDocument();
+    Element dstRoot = dstDoc.createElement(DecoratorConstants.TAG_DECORATORS);
+    dstRoot.setAttribute("xmlns", DecoratorConstants.NAMESPACE);
+    dstDoc.appendChild(dstRoot);
+
+    for (File file : files) {
+      String path = file.getPath();
+
+      Document srcDoc =
+          XmlUtils.getXmlResource(path, Config.getSchemaPath(DecoratorConstants.SCHEMA));
+      if (srcDoc == null) {
+        return ResponseObject.error("getDecorators: cannot load xml:", path);
+      }
+
+      List<Element> elements =
+          XmlUtils.getElementsByLocalName(srcDoc, DecoratorConstants.TAG_DECORATOR);
+      if (elements.isEmpty()) {
+        LogUtils.warning(logger, "no decorators found in", path);
+      }
+
+      for (Element decorator : elements) {
+        dstRoot.appendChild(dstDoc.importNode(decorator, true));
+      }
+      LogUtils.infoNow(logger, elements.size(), "decorators loaded from", path);
+    }
+    return ResponseObject.response(XmlUtils.toString(dstDoc, false));
   }
 
   private ResponseObject getDsns() {

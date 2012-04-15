@@ -508,13 +508,22 @@ public class XmlUtils {
     return ret;
   }
 
-  public static List<Element> getElementsByLocalName(Element parent, String tagName) {
+  public static List<Element> getElementsByLocalName(Node parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
 
     List<Element> result = Lists.newArrayList();
-
-    NodeList nodes = parent.getElementsByTagNameNS(ALL_NS, tagName);
+    NodeList nodes;
+    
+    if (isElement(parent)) {
+      nodes = asElement(parent).getElementsByTagNameNS(ALL_NS, tagName);
+    } else if (isDocument(parent)) {
+      nodes = asDocument(parent).getElementsByTagNameNS(ALL_NS, tagName);
+    } else {
+      Assert.untouchable("node must be element or document");
+      nodes = null;
+    }
+    
     if (isEmpty(nodes)) {
       return result;
     }
@@ -1033,6 +1042,14 @@ public class XmlUtils {
     }
   }
   
+  private static Document asDocument(Node nd) {
+    if (isDocument(nd)) {
+      return (Document) nd;
+    } else {
+      return null;
+    }
+  }
+
   private static Element asElement(Node nd) {
     if (isElement(nd)) {
       return (Element) nd;
@@ -1040,7 +1057,7 @@ public class XmlUtils {
       return null;
     }
   }
-
+  
   private static boolean checkBuilder() {
     if (domBuilder == null) {
       LogUtils.severe(logger, "Document Builder not available");
@@ -1138,6 +1155,10 @@ public class XmlUtils {
 
   private static boolean isAttribute(Node nd) {
     return nd.getNodeType() == Node.ATTRIBUTE_NODE;
+  }
+
+  private static boolean isDocument(Node nd) {
+    return nd != null && nd.getNodeType() == Node.DOCUMENT_NODE;
   }
 
   private static boolean isElement(Node nd) {

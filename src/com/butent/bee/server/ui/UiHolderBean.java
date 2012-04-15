@@ -80,7 +80,7 @@ public class UiHolderBean {
   Map<String, String> gridCache = new HashMap<String, String>();
   Map<String, String> formCache = new HashMap<String, String>();
   Map<String, String> menuCache = new HashMap<String, String>();
-
+  
   public ResponseObject getForm(String formName) {
     Assert.state(isForm(formName), "Not a form: " + formName);
     String resource = formCache.get(key(formName));
@@ -202,6 +202,7 @@ public class UiHolderBean {
         menuCache.clear();
         break;
     }
+
     int cnt = 0;
     Collection<File> roots = Lists.newArrayList();
 
