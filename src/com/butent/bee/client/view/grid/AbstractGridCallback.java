@@ -9,6 +9,7 @@ import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -125,12 +126,14 @@ public class AbstractGridCallback implements GridCallback {
   }
 
   @Override
-  public boolean onPrepareForInsert(GridView gridView, IsRow newRow) {
+  public boolean onPrepareForInsert(GridView gridView, IsRow newRow,
+      List<? extends IsColumn> columns) {
     return true;
   }
 
   @Override
-  public boolean onPrepareForUpdate(GridView gridView, IsRow oldRow, IsRow newRow) {
+  public boolean onPrepareForUpdate(GridView gridView, IsRow oldRow,
+      List<? extends IsColumn> columns, List<String> newValues) {
     return true;
   }
 

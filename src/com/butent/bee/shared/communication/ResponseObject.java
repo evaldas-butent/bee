@@ -63,7 +63,12 @@ public class ResponseObject implements BeeSerializable {
   }
 
   public ResponseObject addError(Throwable err) {
-    addError(err.toString());
+    Throwable cause = err;
+
+    while (cause.getCause() != null) {
+      cause = cause.getCause();
+    }
+    addError(cause.toString());
     return this;
   }
 

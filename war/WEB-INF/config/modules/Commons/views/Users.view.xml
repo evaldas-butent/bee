@@ -13,7 +13,6 @@
       <SimpleColumn name="DateOfBirth" />
     </SimpleJoin>
     <SimpleColumn name="Properties" />
-    <SimpleColumn name="LastLogin" />
   </Columns>
   <Order>
     <OrderBy column="Login" />

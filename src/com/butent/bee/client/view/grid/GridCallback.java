@@ -9,6 +9,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.WidgetCallback;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -71,9 +72,10 @@ public interface GridCallback extends WidgetCallback {
 
   boolean onLoadExtWidget(Element root);
 
-  boolean onPrepareForInsert(GridView gridView, IsRow newRow);
+  boolean onPrepareForInsert(GridView gridView, IsRow newRow, List<? extends IsColumn> columns);
 
-  boolean onPrepareForUpdate(GridView gridView, IsRow oldRow, IsRow newRow);
+  boolean onPrepareForUpdate(GridView gridView, IsRow oldRow, List<? extends IsColumn> columns,
+      List<String> newValues);
 
   void onShow(GridPresenter presenter);
 

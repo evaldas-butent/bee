@@ -4,10 +4,26 @@
   
   name="Parameter" caption="Parametro koregavimas"
   >
-  <FlowPanel>
-    <TextLabel source="Module" />
-    <InputText source="Name" />
-    <InputText source="Type" />
-    <InputArea source="Description" />
+  <FlowPanel class="flexBox-horizontal">
+    <FlowPanel class="flexBox-vertical">
+      <FlowPanel class="flexBox-horizontal-center">
+        <InlineLabel html="Pavadinimas" class="bee-required" style="font-weight: bold;" />
+        <InputText source="Name" style="font-weight: bold;" />
+      </FlowPanel>
+      <FlowPanel class="flexBox-horizontal-center">
+        <InlineLabel html="Tipas" class="bee-required" />
+        <Radio source="Type" vertical="true">
+          <option>String</option>
+          <option>Number</option>
+          <option>Date</option>
+        </Radio>
+      </FlowPanel>
+    </FlowPanel>
+    <FlowPanel class="flexBox-vertical flexible">
+      <Label html="Aprašymas" />
+      <SimplePanel style="position: relative; height: 10ex;">
+        <InputArea source="Description" class="occupy" />
+      </SimplePanel>
+    </FlowPanel>
   </FlowPanel>
 </f:Form>

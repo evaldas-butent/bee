@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -79,20 +80,23 @@ public class BeeServlet extends HttpServlet {
         LogUtils.info(logger, reqInfo.getContent());
       }
     }
-    HttpSession session = req.getSession(true);
-
-    String reqSid = reqInfo.getParameter(Service.RPC_VAR_SID);
-    String currentSid = session.getId();
-
     ResponseObject response = null;
     ResponseBuffer buff = new ResponseBuffer(sep);
 
-    boolean doLogout = BeeUtils.same(svc, Service.LOGOUT);
+    String reqSid = reqInfo.getParameter(Service.RPC_VAR_SID);
+    HttpSession session = req.getSession();
+
+    boolean doLogout = BeeUtils.same(svc, Service.LOGOUT)
+        || (BeeUtils.isEmpty(reqSid) && !BeeUtils.isEmpty(session.getAttribute(Service.VAR_USER)));
 
     if (!doLogout) {
       if (BeeUtils.isEmpty(reqSid)) {
-        response = dispatcher.doLogin(reqInfo.getLocale());
-
+        try {
+          response = dispatcher.doLogin(reqInfo.getLocale(), req.getRemoteAddr(),
+              req.getHeader("user-agent"));
+        } catch (EJBException e) {
+          response = ResponseObject.error(e);
+        }
         if (response.hasErrors()) {
           doLogout = true;
           LogUtils.severe(logger, (Object[]) response.getErrors());
@@ -105,15 +109,23 @@ public class BeeServlet extends HttpServlet {
 
           LogUtils.infoNow(logger, "session id:", session.getId());
         }
-      } else if (!BeeUtils.same(reqSid, currentSid)) {
+      } else if (!BeeUtils.same(reqSid, session.getId())) {
         doLogout = true;
-        LogUtils.severe(logger, "session id:", "request =", reqSid, "current =", currentSid);
+        LogUtils.severe(logger, "session id:", "request =", reqSid, "current =", session.getId());
       }
     }
     if (doLogout) {
       response = logout(req, session);
     } else {
-      response = dispatcher.doService(svc, dsn, reqInfo, buff);
+      if (BeeUtils.same(svc, Service.LOGIN)) {
+        response = ResponseObject.info("Login OK");
+      } else {
+        try {
+          response = dispatcher.doService(svc, dsn, reqInfo, buff);
+        } catch (EJBException e) {
+          response = ResponseObject.error(e);
+        }
+      }
       resp.setHeader(Service.RPC_VAR_QID, rid);
     }
 

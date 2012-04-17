@@ -44,11 +44,11 @@ public class DispatcherBean {
   @EJB
   UserServiceBean usrBean;
 
-  public ResponseObject doLogin(String locale) {
+  public ResponseObject doLogin(String locale, String host, String agent) {
     if (BeeUtils.isEmpty(SqlBuilderFactory.getDsn())) {
       return ResponseObject.error("DSN not specified");
     }
-    return usrBean.login(locale);
+    return usrBean.login(locale, host, agent);
   }
 
   public void doLogout(String user) {

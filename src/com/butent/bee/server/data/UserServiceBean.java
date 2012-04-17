@@ -9,8 +9,8 @@ import com.google.common.primitives.Longs;
 import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localized;
 import com.butent.bee.server.sql.SqlBuilderFactory;
+import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
-import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -116,6 +116,7 @@ public class UserServiceBean {
   public static final String TBL_ROLES = "Roles";
   public static final String TBL_USER_ROLES = "UserRoles";
   public static final String TBL_PERSONS = "Persons";
+  public static final String TBL_USER_HISTORY = "UserHistory";
 
   public static final String FLD_LOGIN = "Login";
   public static final String FLD_PASSWORD = "Password";
@@ -213,9 +214,17 @@ public class UserServiceBean {
   }
 
   @Lock(LockType.WRITE)
-  public ResponseObject login(String locale) {
+  public ResponseObject login(String locale, String host, String agent) {
     ResponseObject response = new ResponseObject();
     String user = getCurrentUser();
+
+    SqlInsert si = new SqlInsert(TBL_USER_HISTORY)
+        .addConstant("Time", System.currentTimeMillis())
+        .addConstant("Name", user)
+        .addConstant("Host", host)
+        .addConstant("Notes", agent);
+
+    String mode = "IN";
 
     if (isUser(user)) {
       UserInfo info = getUserInfo(user);
@@ -225,9 +234,7 @@ public class UserServiceBean {
       UserData data = info.getUserData();
       data.setProperty("dsn", SqlBuilderFactory.getDsn());
 
-      qs.updateData(new SqlUpdate(TBL_USERS)
-          .addConstant("LastLogin", System.currentTimeMillis())
-          .setWhere(SqlUtils.equal(TBL_USERS, sys.getIdName(TBL_USERS), getUserId(user))));
+      si.addConstant("User", getUserId(user));
 
       response.setResponse(data).addInfo("User logged in:",
           user + " " + BeeUtils.parenthesize(data.getUserSign()));
@@ -241,17 +248,27 @@ public class UserServiceBean {
       LogUtils.warning(logger, (Object[]) response.getWarnings());
 
     } else {
+      mode = "FAIL";
       response.addError("Login attempt by an unauthorized user:", user);
       LogUtils.severe(logger, (Object[]) response.getErrors());
     }
+    qs.insertData(si.addConstant("Mode", mode));
     return response;
   }
 
   @Lock(LockType.WRITE)
   public void logout(String user) {
+    SqlInsert si = new SqlInsert(TBL_USER_HISTORY)
+        .addConstant("Time", System.currentTimeMillis())
+        .addConstant("Name", user);
+
+    String mode = "OUT";
+
     if (isUser(user)) {
       UserInfo info = getUserInfo(user);
       String sign = user + " " + BeeUtils.parenthesize(info.getUserData().getUserSign());
+
+      si.addConstant("User", getUserId(user));
 
       if (info.isOnline()) {
         info.setOnline(false);
@@ -263,8 +280,10 @@ public class UserServiceBean {
       LogUtils.warning(logger, "Anonymous user logged out:", user);
 
     } else {
+      mode = "FAIL";
       LogUtils.severe(logger, "Logout attempt by an unauthorized user:", user);
     }
+    qs.insertData(si.addConstant("Mode", mode));
   }
 
   @SuppressWarnings("unused")

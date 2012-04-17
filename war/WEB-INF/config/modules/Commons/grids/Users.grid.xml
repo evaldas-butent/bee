@@ -9,6 +9,5 @@
     <DataColumn name="Login" source="Login" caption="Prisijungimo vardas" />
     <DataColumn name="FirstName" source="FirstName" caption="Vardas" />
     <DataColumn name="LasName" source="LastName" caption="Pavardė" />
-    <DataColumn name="LastLogin" source="LastLogin" caption="Paskutinis prisijungimas" />
   </columns>
 </Grid>

@@ -1516,9 +1516,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   private void prepareForInsert(IsRow row) {
-    if (getGridCallback() != null && !getGridCallback().onPrepareForInsert(this, row)) {
-      return;
-    }
     List<BeeColumn> columns = Lists.newArrayList();
     List<String> values = Lists.newArrayList();
 
@@ -1545,7 +1542,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       notifySevere("New Row", "all columns cannot be empty");
       return;
     }
-
+    if (getGridCallback() != null && !getGridCallback().onPrepareForInsert(this, row, columns)) {
+      return;
+    }
     fireEvent(new ReadyForInsertEvent(columns, values));
   }
 
@@ -1554,9 +1553,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     IsRow oldRow = getGrid().getRowById(rowId);
     if (oldRow == null) {
       notifyWarning("Old row not found", "id = " + rowId);
-      return;
-    }
-    if (getGridCallback() != null && !getGridCallback().onPrepareForUpdate(this, oldRow, newRow)) {
       return;
     }
     String oldValue;
@@ -1571,15 +1567,22 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       newValue = newRow.getString(i);
 
       if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
-        getGrid().preliminaryUpdate(rowId, getDataColumns().get(i).getId(), newValue);
         columns.add(getDataColumns().get(i));
         oldValues.add(oldValue);
         newValues.add(newValue);
       }
     }
-    if (!columns.isEmpty()) {
-      fireEvent(new SaveChangesEvent(rowId, newRow.getVersion(), columns, oldValues, newValues));
+    if (columns.isEmpty()) {
+      return;
     }
+    if (getGridCallback() != null
+        && !getGridCallback().onPrepareForUpdate(this, oldRow, columns, newValues)) {
+      return;
+    }
+    for (int i = 0; i < columns.size(); i++) {
+      getGrid().preliminaryUpdate(rowId, columns.get(i).getId(), newValues.get(i));
+    }
+    fireEvent(new SaveChangesEvent(rowId, newRow.getVersion(), columns, oldValues, newValues));
   }
 
   private void setActiveFormContainerId(String activeFormContainerId) {
@@ -1744,6 +1747,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private void updateCell(IsRow rowValue, IsColumn dataColumn, String oldValue, String newValue,
       boolean rowMode) {
+
+    if (getGridCallback() != null && !getGridCallback().onPrepareForUpdate(this, rowValue,
+        Lists.newArrayList(dataColumn), Lists.newArrayList(newValue))) {
+      return;
+    }
     getGrid().preliminaryUpdate(rowValue.getId(), dataColumn.getId(), newValue);
     fireEvent(new ReadyForUpdateEvent(rowValue, dataColumn, oldValue, newValue, rowMode));
   }

@@ -22,6 +22,8 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.value.ValueType;
@@ -46,18 +48,18 @@ public class ParametersHandler extends AbstractGridCallback {
     }
   }
 
-  private static final List<BeeColumn> columns = Lists.newArrayList(
-      new BeeColumn(ValueType.TEXT, "Module", false),
-      new BeeColumn(ValueType.TEXT, "Name", false),
-      new BeeColumn(ValueType.TEXT, "Type", false),
-      new BeeColumn(ValueType.TEXT, "Value", true),
-      new BeeColumn(ValueType.TEXT, "Description", true));
+  private static final String MODULE = "Module";
+  private static final String NAME = "Name";
+  private static final String TYPE = "Type";
+  private static final String VALUE = "Value";
+  private static final String DESCRIPTION = "Description";
 
-  private static final int moduleIndex = 0;
-  private static final int nameIndex = 1;
-  private static final int typeIndex = 2;
-  private static final int valueIndex = 3;
-  private static final int descriptionIndex = 4;
+  private static final List<BeeColumn> columns = Lists.newArrayList(
+      new BeeColumn(ValueType.TEXT, MODULE, false),
+      new BeeColumn(ValueType.TEXT, NAME, false),
+      new BeeColumn(ValueType.TEXT, TYPE, false),
+      new BeeColumn(ValueType.TEXT, VALUE, true),
+      new BeeColumn(ValueType.TEXT, DESCRIPTION, true));
 
   private final String module;
   private LocalProvider provider = null;
@@ -131,9 +133,11 @@ public class ParametersHandler extends AbstractGridCallback {
   }
 
   @Override
-  public boolean onPrepareForInsert(GridView gridView, IsRow newRow) {
-    if (params.containsKey(newRow.getString(nameIndex))) {
-      gridView.notifySevere("Dublicate parameter name:", newRow.getString(nameIndex));
+  public boolean onPrepareForInsert(GridView gridView, IsRow newRow, List<? extends IsColumn> cols) {
+    String name = newRow.getString(id(NAME));
+
+    if (params.containsKey(name)) {
+      gridView.notifySevere("Dublicate parameter name:", name);
     } else {
       update(gridView, newRow);
     }
@@ -141,20 +145,15 @@ public class ParametersHandler extends AbstractGridCallback {
   }
 
   @Override
-  public boolean onPrepareForUpdate(GridView gridView, IsRow oldRow, IsRow newRow) {
-    boolean upd = false;
+  public boolean onPrepareForUpdate(GridView gridView, IsRow oldRow,
+      List<? extends IsColumn> cols, List<String> newValues) {
 
-    for (int i = 0; i < columns.size(); i++) {
-      if (!BeeUtils.equals(oldRow.getValue(i), newRow.getValue(i))) {
-        upd = true;
-        break;
-      }
+    IsRow newRow = oldRow.clone();
+
+    for (int i = 0; i < cols.size(); i++) {
+      newRow.setValue(id(cols.get(i).getId()), newValues.get(i));
     }
-    if (upd) {
-      update(gridView, newRow);
-    } else {
-      gridView.notifyWarning("No changes");
-    }
+    update(gridView, newRow);
     return false;
   }
 
@@ -168,8 +167,8 @@ public class ParametersHandler extends AbstractGridCallback {
 
   @Override
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
-    newRow.setValue(moduleIndex, module);
-    newRow.setValue(typeIndex, oldRow != null ? oldRow.getString(typeIndex) : null);
+    newRow.setValue(id(MODULE), module);
+    newRow.setValue(id(TYPE), oldRow != null ? oldRow.getString(id(TYPE)) : null);
     return true;
   }
 
@@ -214,6 +213,10 @@ public class ParametersHandler extends AbstractGridCallback {
     return getGridPresenter().getView().getContent().getGrid();
   }
 
+  private int id(String colName) {
+    return DataUtils.getColumnIndex(colName, columns);
+  }
+
   private void refresh() {
     if (provider == null) {
       return;
@@ -224,11 +227,11 @@ public class ParametersHandler extends AbstractGridCallback {
 
     for (BeeParameter prm : params.values()) {
       String[] values = new String[columns.size()];
-      values[moduleIndex] = prm.getModule();
-      values[nameIndex] = prm.getName();
-      values[typeIndex] = prm.getType();
-      values[valueIndex] = prm.getValue();
-      values[descriptionIndex] = prm.getDescription();
+      values[id(MODULE)] = prm.getModule();
+      values[id(NAME)] = prm.getName();
+      values[id(TYPE)] = prm.getType();
+      values[id(VALUE)] = prm.getValue();
+      values[id(DESCRIPTION)] = prm.getDescription();
 
       ref.put(++cnt, prm.getName());
       BeeRow row = new BeeRow(cnt, values);
@@ -268,8 +271,8 @@ public class ParametersHandler extends AbstractGridCallback {
   private void update(final GridView gridView, final IsRow row) {
     ParameterList args = CommonEventHandler.createArgs(CommonsConstants.SVC_SAVE_PARAMETERS);
     args.addDataItem(CommonsConstants.VAR_PARAMETERS,
-        Codec.beeSerialize(new BeeParameter(module, row.getString(nameIndex),
-            row.getString(typeIndex), row.getString(valueIndex), row.getString(descriptionIndex))));
+        Codec.beeSerialize(new BeeParameter(module, row.getString(id(NAME)),
+            row.getString(id(TYPE)), row.getString(id(VALUE)), row.getString(id(DESCRIPTION)))));
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
@@ -284,11 +287,11 @@ public class ParametersHandler extends AbstractGridCallback {
           boolean newMode = !params.containsKey(prm.getName());
 
           String[] values = new String[columns.size()];
-          values[moduleIndex] = prm.getModule();
-          values[nameIndex] = prm.getName();
-          values[typeIndex] = prm.getType();
-          values[valueIndex] = prm.getValue();
-          values[descriptionIndex] = prm.getDescription();
+          values[id(MODULE)] = prm.getModule();
+          values[id(NAME)] = prm.getName();
+          values[id(TYPE)] = prm.getType();
+          values[id(VALUE)] = prm.getValue();
+          values[id(DESCRIPTION)] = prm.getDescription();
 
           params.put(prm.getName(), prm);
 
