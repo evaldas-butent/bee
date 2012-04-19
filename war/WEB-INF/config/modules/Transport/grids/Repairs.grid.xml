@@ -20,7 +20,7 @@
     <DataColumn name="Price" source="Price" caption="Kaina" format="#.00" />
     <DataColumn name="CurrencyName" source="CurrencyName" caption="Val." />
     <CalcColumn type="decimal" name="Total" caption="Suma" format="#.00">
-      <calc><ui:expression>row.Quantity * row.Price</ui:expression></calc>
+      <render><ui:expression>row.Quantity * row.Price</ui:expression></render>
     </CalcColumn>
     <DataColumn name="Note" source="Note" caption="Pastaba" />
     <DataColumn name="Run" source="Run" caption="Rida" />

@@ -4,6 +4,7 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.user.cellview.client.Column;
 
+import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.HasValueType;
 import com.butent.bee.shared.data.value.ValueType;
@@ -16,16 +17,23 @@ import java.util.List;
  * and value.
  */
 
-public abstract class AbstractColumn<C> extends Column<IsRow, C> implements HasValueType {
+public abstract class AbstractColumn<C> extends Column<IsRow, C> implements HasValueType,
+    HasOptions {
 
   private List<String> searchBy = null;
   private List<String> sortBy = null;
-  
+
+  private String options = null;
+
   public AbstractColumn(Cell<C> cell) {
     super(cell);
   }
 
   public abstract ColType getColType();
+
+  public String getOptions() {
+    return options;
+  }
 
   public List<String> getSearchBy() {
     return searchBy;
@@ -41,6 +49,10 @@ public abstract class AbstractColumn<C> extends Column<IsRow, C> implements HasV
   public abstract C getValue(IsRow row);
 
   public abstract ValueType getValueType();
+
+  public void setOptions(String options) {
+    this.options = options;
+  }
 
   public void setSearchBy(List<String> searchBy) {
     this.searchBy = searchBy;

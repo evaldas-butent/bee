@@ -21,7 +21,6 @@ public class Calculation implements BeeSerializable, HasInfo, Transformable {
 
   public static final String TAG_EXPRESSION = "expression";
   public static final String TAG_FUNCTION = "function";
-  public static final String TAG_LAMBDA = "lambda";
 
   public static Calculation restore(String s) {
     if (BeeUtils.isEmpty(s)) {
@@ -34,12 +33,10 @@ public class Calculation implements BeeSerializable, HasInfo, Transformable {
 
   private String expression = null;
   private String function = null;
-  private String lambda = null;
 
-  public Calculation(String expression, String function, String lambda) {
+  public Calculation(String expression, String function) {
     this.expression = expression;
     this.function = function;
-    this.lambda = lambda;
   }
 
   private Calculation() {
@@ -47,11 +44,10 @@ public class Calculation implements BeeSerializable, HasInfo, Transformable {
 
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 3);
+    Assert.lengthEquals(arr, 2);
 
     setExpression(BeeUtils.isEmpty(arr[0]) ? null : Codec.decodeBase64(arr[0]));
     setFunction(BeeUtils.isEmpty(arr[1]) ? null : Codec.decodeBase64(arr[1]));
-    setLambda(BeeUtils.isEmpty(arr[2]) ? null : Codec.decodeBase64(arr[2]));
   }
 
   public String getExpression() {
@@ -76,16 +72,9 @@ public class Calculation implements BeeSerializable, HasInfo, Transformable {
     if (!BeeUtils.isEmpty(getFunction())) {
       info.add(new Property(TAG_FUNCTION, getFunction()));
     }
-    if (!BeeUtils.isEmpty(getLambda())) {
-      info.add(new Property(TAG_LAMBDA, getLambda()));
-    }
     return info;
   }
 
-  public String getLambda() {
-    return lambda;
-  }
-  
   public boolean hasExpressionOrFunction() {
     return !BeeUtils.isEmpty(getExpression()) || !BeeUtils.isEmpty(getFunction());
   }
@@ -93,18 +82,17 @@ public class Calculation implements BeeSerializable, HasInfo, Transformable {
   public String serialize() {
     String expr = BeeUtils.isEmpty(getExpression()) ? null : Codec.encodeBase64(getExpression());
     String func = BeeUtils.isEmpty(getFunction()) ? null : Codec.encodeBase64(getFunction());
-    String lamb = BeeUtils.isEmpty(getLambda()) ? null : Codec.encodeBase64(getLambda());
 
-    return Codec.beeSerialize(new Object[] {expr, func, lamb});
+    return Codec.beeSerialize(new Object[] {expr, func});
   }
 
   public String transform() {
     return BeeUtils.transformOptions(TAG_EXPRESSION, getExpression(),
-        TAG_FUNCTION, getFunction(), TAG_LAMBDA, getLambda());
+        TAG_FUNCTION, getFunction());
   }
 
   private boolean isEmpty() {
-    return BeeUtils.allEmpty(getExpression(), getFunction(), getLambda());
+    return BeeUtils.allEmpty(getExpression(), getFunction());
   }
 
   private void setExpression(String expression) {
@@ -113,9 +101,5 @@ public class Calculation implements BeeSerializable, HasInfo, Transformable {
 
   private void setFunction(String function) {
     this.function = function;
-  }
-
-  private void setLambda(String lambda) {
-    this.lambda = lambda;
   }
 }

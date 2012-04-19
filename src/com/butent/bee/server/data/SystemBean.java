@@ -92,7 +92,7 @@ public class SystemBean {
 
     public String getFileName(String objName) {
       Assert.notEmpty(objName);
-      return BeeUtils.concat(".", objName, name().toLowerCase(), XmlUtils.defaultXmlExtension);
+      return BeeUtils.concat(".", objName, name().toLowerCase(), XmlUtils.DEFAULT_XML_EXTENSION);
     }
 
     public String getPath() {

@@ -2,6 +2,7 @@ package com.butent.bee.client.render;
 
 import com.google.gwt.text.shared.AbstractRenderer;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
@@ -14,11 +15,22 @@ public abstract class AbstractCellRenderer extends AbstractRenderer<IsRow> {
   
   private final ValueType dataType;
 
+  public AbstractCellRenderer() {
+    this(ValueType.TEXT);
+  }
+
   public AbstractCellRenderer(int dataIndex, IsColumn dataColumn) {
     super();
     this.dataIndex = dataIndex;
     this.dataColumn = dataColumn;
     this.dataType = (dataColumn == null) ? null : dataColumn.getType();
+  }
+  
+  public AbstractCellRenderer(ValueType dataType) {
+    super();
+    this.dataIndex = BeeConst.UNDEF;
+    this.dataColumn = null;
+    this.dataType = dataType;
   }
 
   public IsColumn getDataColumn() {

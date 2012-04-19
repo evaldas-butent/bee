@@ -34,6 +34,10 @@ class Template {
     this.id = id;
     this.markup = markup;
   }
+  
+  Template getCopy() {
+    return new Template(id, markup);
+  }
 
   String getId() {
     return id;

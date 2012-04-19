@@ -518,7 +518,7 @@ public class CliWorker {
       BeeKeeper.getRpc().invoke("vmInfo");
     } else if (z.equals("widget") && arr.length >= 2) {
       showWidgetInfo(arr);
-    } else if (z.equals("xml") && arr.length >= 2) {
+    } else if (z.startsWith("xml") && arr.length >= 2) {
       showXmlInfo(arr);
 
     } else {
@@ -582,8 +582,7 @@ public class CliWorker {
     }
 
     if (BeeUtils.same(arr[0], "download")) {
-      String url = GWT.getModuleBaseURL() + "file/" +
-          Codec.encodeBase64(ArrayUtils.join(arr, 1, 1));
+      String url = GWT.getModuleBaseURL() + "file/" + Codec.encodeBase64(ArrayUtils.join(arr, 1, 1));
       Window.open(url, "", "");
       return;
     }
@@ -1961,12 +1960,18 @@ public class CliWorker {
   }
 
   public static void showXmlInfo(String[] arr) {
+    String[] opt = ArrayUtils.copyOf(arr);
+    final boolean detailed = !BeeUtils.same(opt[0], "xml");
+    if (detailed) {
+      opt[0] = "xml";
+    }
+
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
-    params.addPositionalHeader(arr);
+    params.addPositionalHeader(opt);
 
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
       public void onResponse(ResponseObject response) {
-        BeeKeeper.getScreen().showGrid(XmlUtils.getInfo((String) response.getResponse()));
+        BeeKeeper.getScreen().showGrid(XmlUtils.getInfo((String) response.getResponse(), detailed));
       }
     });
   }

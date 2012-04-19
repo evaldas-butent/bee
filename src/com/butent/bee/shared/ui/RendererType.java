@@ -3,10 +3,10 @@ package com.butent.bee.shared.ui;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public enum RendererType {
-  LIST("list"),
-  MAP("map"),
-  RANGE("range"),
-  ENUM("enum");
+  LIST("list", true),
+  MAP("map", true),
+  RANGE("range", true),
+  ENUM("enum", true);
 
   public static RendererType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {
@@ -21,12 +21,18 @@ public enum RendererType {
   }
 
   private final String typeCode;
+  private final boolean requiresSource;
   
-  private RendererType(String typeCode) {
+  private RendererType(String typeCode, boolean requiresSource) {
     this.typeCode = typeCode;
+    this.requiresSource = requiresSource;
   }
 
   public String getTypeCode() {
     return typeCode;
+  }
+
+  public boolean requiresSource() {
+    return requiresSource;
   }
 }

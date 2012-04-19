@@ -2,6 +2,7 @@ package com.butent.bee.client.dom;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.ButtonElement;
@@ -46,6 +47,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Contains necessary functions for reading and changing DOM information.
@@ -131,6 +133,7 @@ public class DomUtils {
   public static final String ATTRIBUTE_DATA_ROW = "data-row";
   public static final String ATTRIBUTE_SERVICE = "data-svc";
   public static final String ATTRIBUTE_STAGE = "data-stg";
+  public static final String ATTRIBUTE_ROLE = "data-role";
 
   public static final String TYPE_SEARCH = "search";
 
@@ -526,23 +529,23 @@ public class DomUtils {
     return obj.getElement().getAttribute(name);
   }
 
-  public static List<Property> getAttributes(Element el) {
+  public static Map<String, String> getAttributes(Element el, boolean includeEmptyValues) {
     Assert.notNull(el);
+    Map<String, String> result = Maps.newHashMap();
 
     JsArray<ElementAttribute> arr = getNativeAttributes(el);
     if (arr == null) {
-      return null;
+      return result;
     }
 
-    List<Property> lst = new ArrayList<Property>();
     ElementAttribute attr;
-
     for (int i = 0; i < arr.length(); i++) {
       attr = arr.get(i);
-      lst.add(new Property(attr.getName(), attr.getValue()));
+      if (includeEmptyValues || !BeeUtils.isEmpty(attr.getValue())) {
+        result.put(attr.getName(), attr.getValue());
+      }
     }
-
-    return lst;
+    return result;
   }
 
   public static int getCellPadding(Element elem) {
@@ -1029,6 +1032,10 @@ public class DomUtils {
     return top;
   }
 
+  public static String getRole(Element el) {
+    return Assert.notNull(el).getAttribute(ATTRIBUTE_ROLE);
+  }
+  
   public static int getRowSpan(Element elem) {
     if (isTableCellElement(elem)) {
       return elem.getPropertyInt(ATTRIBUTE_ROW_SPAN);

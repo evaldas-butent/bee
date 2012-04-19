@@ -406,6 +406,25 @@ public class StyleUtils {
     return cnt;
   }
 
+  public static void addStyle(Element el, Style st) {
+    Assert.notNull(el);
+    Assert.notNull(st);
+
+    String textToAdd = getCssText(st);
+    if (BeeUtils.isEmpty(textToAdd)) {
+      return;
+    }
+    
+    String oldText = getCssText(el);
+    if (BeeUtils.isEmpty(oldText)) {
+      setCssText(el, textToAdd);
+    } else if (!BeeUtils.context(textToAdd, oldText)) {
+      String newText = oldText.trim().endsWith(DEFINITION_SEPARATOR)
+          ? oldText.trim() : oldText.trim() + DEFINITION_SEPARATOR; 
+      setCssText(el, newText + textToAdd.trim());
+    }
+  }
+  
   public static void addStyleDependentName(Element el, String style) {
     setStyleDependentName(el, style, true);
   }

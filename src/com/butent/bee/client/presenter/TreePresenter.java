@@ -96,10 +96,10 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     String expr = "'ID=' + rowId";
 
     if (calc == null) {
-      this.calculation = new Calculation(expr, null, null);
+      this.calculation = new Calculation(expr, null);
     } else {
       this.calculation = new Calculation(calc.hasExpressionOrFunction() ? calc.getExpression()
-          : expr, calc.getFunction(), calc.getLambda());
+          : expr, calc.getFunction());
     }
     getView().addCatchHandler(this);
 

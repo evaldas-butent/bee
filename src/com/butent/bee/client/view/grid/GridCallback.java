@@ -7,7 +7,6 @@ import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.WidgetCallback;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -27,8 +26,8 @@ public interface GridCallback extends WidgetCallback {
 
   void afterCreate(CellGrid grid);
 
-  boolean afterCreateColumn(String columnId, AbstractColumn<?> column, ColumnHeader header,
-      ColumnFooter footer);
+  boolean afterCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
+      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer);
 
   void afterCreateColumns(CellGrid grid);
 
@@ -38,13 +37,14 @@ public interface GridCallback extends WidgetCallback {
 
   boolean beforeAddRow(GridPresenter presenter);
 
-  void beforeCreate(List<BeeColumn> dataColumns, int rowCount, GridDescription gridDescription,
-      boolean hasSearch);
+  void beforeCreate(List<? extends IsColumn> dataColumns, int rowCount,
+      GridDescription gridDescription, boolean hasSearch);
 
-  boolean beforeCreateColumn(String columnId, List<BeeColumn> dataColumns,
+  boolean beforeCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
       ColumnDescription columnDescription);
 
-  void beforeCreateColumns(List<BeeColumn> dataColumns, List<ColumnDescription> columnDescriptions);
+  void beforeCreateColumns(List<? extends IsColumn> dataColumns,
+      List<ColumnDescription> columnDescriptions);
 
   int beforeDeleteRow(GridPresenter presenter, IsRow row);
 

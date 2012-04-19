@@ -45,6 +45,8 @@ import java.util.Map;
 
 public class XmlUtils {
 
+  public static final String ATTR_XMLNS = "xmlns";
+
   private static final Map<Short, String> NODE_TYPES = Maps.newHashMap();
 
   static {
@@ -95,14 +97,14 @@ public class XmlUtils {
     Assert.notEmpty(name);
     return BeeUtils.toDoubleOrNull(element.getAttribute(name));
   }
-  
+
   public static Integer getAttributeInteger(Element element, String name) {
     Assert.notNull(element);
     Assert.notEmpty(name);
     return BeeUtils.toIntOrNull(element.getAttribute(name));
   }
 
-  public static Map<String, String> getAttributes(Element element) {
+  public static Map<String, String> getAttributes(Element element, boolean includeNSDeclaration) {
     Assert.notNull(element);
     Map<String, String> result = Maps.newHashMap();
 
@@ -114,7 +116,9 @@ public class XmlUtils {
     Attr attr;
     for (int i = 0; i < attributes.getLength(); i++) {
       attr = (Attr) attributes.item(i);
-      result.put(attr.getName(), attr.getValue());
+      if (includeNSDeclaration || !isNamespaceDeclaration(attr)) {
+        result.put(attr.getName(), attr.getValue());
+      }
     }
     return result;
   }
@@ -124,11 +128,11 @@ public class XmlUtils {
     Assert.notEmpty(name);
     return StyleUtils.parseScrollBars(element.getAttribute(name), def);
   }
-  
+
   public static Unit getAttributeUnit(Element element, String name) {
     return getAttributeUnit(element, name, null);
   }
-  
+
   public static Unit getAttributeUnit(Element element, String name, Unit defUnit) {
     Assert.notNull(element);
     Assert.notEmpty(name);
@@ -143,11 +147,10 @@ public class XmlUtils {
 
   public static Calculation getCalculation(Element element) {
     Assert.notNull(element);
-    
+
     String expr = null;
     String func = null;
-    String lamb = null;
-    
+
     for (Element child : getChildrenElements(element)) {
       String tag = getLocalName(child);
       String text = getText(child);
@@ -159,11 +162,9 @@ public class XmlUtils {
         expr = text;
       } else if (BeeUtils.same(tag, Calculation.TAG_FUNCTION)) {
         func = text;
-      } else if (BeeUtils.same(tag, Calculation.TAG_LAMBDA)) {
-        lamb = text;
       }
     }
-    return new Calculation(expr, func, lamb);
+    return new Calculation(expr, func);
   }
 
   public static Calculation getCalculation(Element parent, String tagName) {
@@ -218,7 +219,7 @@ public class XmlUtils {
     }
     return result;
   }
-  
+
   public static List<Property> getCommentInfo(Comment comm) {
     Assert.notNull(comm);
     return PropertyUtils.createProperties("Length", comm.getLength(), "Data", comm.getData());
@@ -254,7 +255,7 @@ public class XmlUtils {
         getAttributeDouble(element, HasDimensions.ATTR_HEIGHT),
         getAttributeUnit(element, HasDimensions.ATTR_HEIGHT_UNIT));
   }
-  
+
   public static List<Property> getDocumentInfo(Document doc) {
     Assert.notNull(doc);
     List<Property> lst = Lists.newArrayList();
@@ -266,19 +267,28 @@ public class XmlUtils {
     return lst;
   }
 
-  public static List<Property> getElementInfo(Element el) {
+  public static List<Property> getElementInfo(Element el, boolean detailed) {
     Assert.notNull(el);
     List<Property> lst = PropertyUtils.createProperties("Tag Name", el.getTagName());
-    
-    Map<String, String> attributes = getAttributes(el);
-    int c = (attributes == null) ? 0 : attributes.size();
+    if (detailed) {
+      lst.addAll(getNodeInfo(el));
+    }
+
+    NamedNodeMap attributes = el.getAttributes();
+    int c = (attributes == null) ? 0 : attributes.getLength();
+
     if (c > 0) {
       PropertyUtils.addProperty(lst, "Attributes", BeeUtils.bracket(c));
-      int i = 0;
-      for (Map.Entry<String, String> attr : attributes.entrySet()) {
-        PropertyUtils.addProperty(lst,
-            BeeUtils.concat(1, "Attribute", BeeUtils.progress(++i, c), attr.getKey()), 
-            attr.getValue());
+      Attr attr;
+      String pfx;
+
+      for (int i = 0; i < c; i++) {
+        attr = (Attr) attributes.item(i);
+        pfx = BeeUtils.concat(1, "Attr", BeeUtils.progress(i + 1, c));
+        PropertyUtils.addProperty(lst, BeeUtils.concat(1, pfx, attr.getName()), attr.getValue());
+        if (detailed) {
+          PropertyUtils.appendChildrenToProperties(lst, pfx, getNodeInfo(attr));
+        }
       }
     }
     return lst;
@@ -287,7 +297,7 @@ public class XmlUtils {
   public static List<Element> getElementsByLocalName(Element parent, String tagName) {
     return getElementsByLocalName(parent, tagName, BeeConst.UNDEF);
   }
-  
+
   public static List<Element> getElementsByLocalName(Element parent, String tagName, int max) {
     Assert.notEmpty(tagName);
     List<Element> result = Lists.newArrayList();
@@ -314,14 +324,39 @@ public class XmlUtils {
     return children.get(0);
   }
 
-  public static List<ExtendedProperty> getInfo(String xml) {
+  public static List<ExtendedProperty> getInfo(String xml, boolean detailed) {
     Document doc = parse(xml);
     if (doc == null) {
       return null;
     }
-    return getTreeInfo(doc, BeeConst.STRING_EMPTY);
+    return getTreeInfo(doc, BeeConst.STRING_EMPTY, detailed);
   }
-  
+
+  public static String getInnerXml(Element element) {
+    if (element == null) {
+      return null;
+    }
+    StringBuilder sb = new StringBuilder();
+
+    NodeList children = element.getChildNodes();
+    if (children != null) {
+      for (int i = 0; i < children.getLength(); i++) {
+        Node node = children.item(i);
+        if (isElement(node)) {
+          sb.append(node.toString());
+        } else {
+          sb.append(BeeUtils.trim(node.getNodeValue()));
+        }
+      }
+    }
+    return sb.toString();
+  }
+
+  public static String getLocalName(Attr attr) {
+    Assert.notNull(attr);
+    return NameUtils.getLocalPart(attr.getName());
+  }
+
   public static String getLocalName(Element el) {
     Assert.notNull(el);
     return NameUtils.getLocalPart(el.getTagName());
@@ -354,16 +389,16 @@ public class XmlUtils {
     }
 
     RendererDescription rendererDescription = new RendererDescription(type);
-    rendererDescription.setAttributes(XmlUtils.getAttributes(element));
+    rendererDescription.setAttributes(XmlUtils.getAttributes(element, false));
 
     List<String> items = getChildrenText(element, HasItems.TAG_ITEM);
     if (!items.isEmpty()) {
       rendererDescription.setItems(items);
     }
-    
+
     return rendererDescription;
   }
-  
+
   public static StyleDeclaration getStyle(Element element) {
     Assert.notNull(element);
 
@@ -413,7 +448,7 @@ public class XmlUtils {
         txt.getData());
   }
 
-  public static List<ExtendedProperty> getTreeInfo(Node nd, String root) {
+  public static List<ExtendedProperty> getTreeInfo(Node nd, String root, boolean detailed) {
     Assert.notNull(nd);
     List<ExtendedProperty> lst = Lists.newArrayList();
 
@@ -422,7 +457,7 @@ public class XmlUtils {
 
     switch (tp) {
       case Node.ELEMENT_NODE:
-        tpInf = getElementInfo((Element) nd);
+        tpInf = getElementInfo((Element) nd, detailed);
         break;
       case Node.ATTRIBUTE_NODE:
         tpInf = getAttrInfo((Attr) nd);
@@ -459,10 +494,23 @@ public class XmlUtils {
       PropertyUtils.addExtended(lst, BeeUtils.ifString(root, getNodeName(tp)), "Children",
           BeeUtils.bracket(c));
       for (int i = 0; i < c; i++) {
-        lst.addAll(getTreeInfo(children.item(i), BeeUtils.concat(".", root, i)));
+        lst.addAll(getTreeInfo(children.item(i), BeeUtils.concat(".", root, i), detailed));
       }
     }
     return lst;
+  }
+
+  public static boolean isNamespaceDeclaration(Attr attr) {
+    if (attr == null) {
+      return false;
+    } else {
+      return isNamespaceDeclaration(attr.getName());
+    }
+  }
+  
+  public static boolean isNamespaceDeclaration(String name) {
+    return BeeUtils.same(name, ATTR_XMLNS)
+        || BeeUtils.same(NameUtils.getNamespacePrefix(name), ATTR_XMLNS);
   }
 
   public static Document parse(String xml) {
@@ -477,7 +525,7 @@ public class XmlUtils {
     }
     return doc;
   }
-  
+
   public static boolean tagIs(Element element, String tagName) {
     if (element == null) {
       return false;
@@ -531,7 +579,7 @@ public class XmlUtils {
   private static String transformDocument(Document doc) {
     return transformDocument(doc, BeeConst.XML_DEFAULT_PROLOG);
   }
-  
+
   private static String transformDocument(Document doc, String prolog) {
     String xml = doc.toString();
 

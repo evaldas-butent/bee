@@ -106,12 +106,14 @@ public class XmlUtils {
     }
   }
 
-  public static String defaultXmlExtension = "xml";
-  public static String defaultXslExtension = "xsl";
+  public static final String DEFAULT_XML_EXTENSION = "xml";
+  public static final String DEFAULT_XSL_EXTENSION = "xsl";
+
+  public static final String ATTR_XMLNS = "xmlns";
 
   private static final String ALL_NS = "*";
   private static final String ALL_TAGS = "*";
-
+  
   private static Logger logger = Logger.getLogger(XmlUtils.class.getName());
 
   private static DocumentBuilder domBuilder;
@@ -284,7 +286,6 @@ public class XmlUtils {
     
     String expr = null;
     String func = null;
-    String lamb = null;
     
     for (Element child : getChildrenElements(element)) {
       String tag = getLocalName(child);
@@ -297,11 +298,9 @@ public class XmlUtils {
         expr = text;
       } else if (BeeUtils.same(tag, Calculation.TAG_FUNCTION)) {
         func = text;
-      } else if (BeeUtils.same(tag, Calculation.TAG_LAMBDA)) {
-        lamb = text;
       }
     }
-    return new Calculation(expr, func, lamb);
+    return new Calculation(expr, func);
   }
 
   public static Calculation getCalculation(Element parent, String tagName) {

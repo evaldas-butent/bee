@@ -1,30 +1,41 @@
 package com.butent.bee.client.decorator;
 
-import com.google.gwt.json.client.JSONObject;
+import com.google.common.collect.Lists;
 import com.google.gwt.xml.client.Element;
 
-import com.butent.bee.client.utils.JsonUtils;
+import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
+
+import java.util.List;
+import java.util.Map;
 
 class Parameter {
-  
-  static Parameter getParameter(Element element) {
+
+  static List<Parameter> getParameters(Element element) {
+    List<Parameter> result = Lists.newArrayList();
     if (element == null) {
-      return null;
+      return result;
     }
-    
-    String name = element.getAttribute(DecoratorConstants.ATTR_NAME);
-    String defaultValue = element.getAttribute(DecoratorConstants.ATTR_DEFAULT);
-    boolean required = BeeUtils.toBoolean(element.getAttribute(DecoratorConstants.ATTR_REQUIRED));
-    
-    if (BeeUtils.isEmpty(name)) {
-      return null;
-    } else {
-      return new Parameter(name.trim(), defaultValue, required);
+
+    boolean required =
+        BeeUtils.same(XmlUtils.getLocalName(element), DecoratorConstants.TAG_REQUIRED_PARAM);
+
+    Map<String, String> attributes = XmlUtils.getAttributes(element, false);
+    if (attributes.isEmpty()) {
+      return result;
     }
+
+    for (Map.Entry<String, String> entry : attributes.entrySet()) {
+      String name = NameUtils.getLocalPart(entry.getKey());
+      if (!BeeUtils.isEmpty(name)) {
+        result.add(new Parameter(name.trim(), BeeUtils.trim(entry.getValue()), required));
+      }
+    }
+    return result;
   }
-  
+
   private final String name;
   private final String defaultValue;
   private final boolean required;
@@ -44,15 +55,13 @@ class Parameter {
     return name;
   }
 
-  String getValue(JSONObject options) {
+  String getValue(Map<String, String> options) {
     if (options == null || !options.containsKey(name)) {
       return defaultValue;
     }
-    
-    String value = JsonUtils.toString(options.get(name));
-    return BeeUtils.ifString(value, defaultValue);
+    return BeeUtils.ifString(options.get(name), defaultValue);
   }
-  
+
   boolean isRequired() {
     return required;
   }

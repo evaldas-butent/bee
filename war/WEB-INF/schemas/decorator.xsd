@@ -1,25 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema targetNamespace="http://www.butent.com/decorator" elementFormDefault="qualified"
+<xs:schema targetNamespace="http://www.butent.com/decorator"
+  elementFormDefault="qualified" attributeFormDefault="unqualified"
   xmlns="http://www.butent.com/decorator"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   xmlns:ui="http://www.butent.com/ui">
 
   <xs:import namespace="http://www.butent.com/ui" schemaLocation="ui.xsd" />
-  
+
+  <xs:attribute name="caption" type="xs:string" />
+  <xs:attribute name="valueRequired" type="xs:boolean" />
+
+  <xs:attribute name="size" type="xs:decimal" />
+  <xs:attribute name="unit" type="ui:cssUnit" />
+
+  <xs:attribute name="class" type="xs:normalizedString" />
+  <xs:attribute name="style" type="xs:string" />
+
+  <xs:simpleType name="registeredDecorator">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="label" />
+      <xs:enumeration value="caption-left" />
+      <xs:enumeration value="caption-right" />
+      <xs:enumeration value="caption-top" />
+      <xs:enumeration value="caption-bottom" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="abstractDecorator">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="caption" />
+      <xs:enumeration value="caption-div" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="anyDecorator">
+    <xs:union memberTypes="registeredDecorator abstractDecorator" />
+  </xs:simpleType>
+
   <xs:element name="content">
     <xs:complexType>
+      <xs:attribute name="data-role" type="xs:NCName" default="content" />
+      <xs:attributeGroup ref="ui:appearance" />
       <xs:attribute name="select" type="xs:normalizedString" />
     </xs:complexType>
   </xs:element>
   
-  <xs:element name="param">
-    <xs:complexType>
-      <xs:attribute name="name" type="xs:normalizedString" use="required" />
-      <xs:attribute name="default" type="xs:normalizedString" />
-      <xs:attribute name="required" type="xs:boolean" />
+  <xs:element name="const">
+    <xs:complexType mixed="true">
+      <xs:sequence>
+        <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax" />
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:NCName" use="required" />
     </xs:complexType>
   </xs:element>
-  
+
+  <xs:complexType name="decoratorParameter">
+    <xs:anyAttribute namespace="##targetNamespace" processContents="strict" />
+  </xs:complexType>
+
   <xs:element name="lifecycle">
     <xs:complexType>
       <xs:all>
@@ -29,36 +67,58 @@
       </xs:all>
     </xs:complexType>
   </xs:element>
-  
+
   <xs:element name="template">
     <xs:complexType>
       <xs:sequence>
-        <xs:any minOccurs="1" maxOccurs="unbounded" processContents="lax" />
+        <xs:any minOccurs="1" maxOccurs="1" processContents="lax" />
       </xs:sequence>
-      <xs:attribute name="id" type="xs:normalizedString" />
-    </xs:complexType>
-  </xs:element>
-  
-  <xs:element name="decorator">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element ref="param" minOccurs="0" maxOccurs="unbounded" />
-        <xs:element name="style" type="ui:styleSheet" minOccurs="0" maxOccurs="unbounded" />
-        <xs:element ref="lifecycle" minOccurs="0" maxOccurs="1" />
-        <xs:element name="handler" type="ui:eventHandler" minOccurs="0" maxOccurs="unbounded" />
-        <xs:element ref="template" minOccurs="1" maxOccurs="1" />
-      </xs:sequence>
-      <xs:attribute name="id" type="xs:ID" use="required" />
-      <xs:attribute name="apply-author-styles" type="xs:boolean" /> 
+      <xs:attribute name="id" type="xs:NCName" />
     </xs:complexType>
   </xs:element>
 
+  <xs:complexType name="baseType">
+    <xs:sequence>
+      <xs:element name="requiredParam" type="decoratorParameter" minOccurs="0" maxOccurs="1" />
+      <xs:element name="optionalParam" type="decoratorParameter" minOccurs="0" maxOccurs="1" />
+      <xs:element ref="const" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="style" type="ui:styleSheet" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element ref="lifecycle" minOccurs="0" maxOccurs="1" />
+      <xs:element name="handler" type="ui:eventHandler" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element ref="template" minOccurs="0" maxOccurs="1" />
+    </xs:sequence>
+    <xs:attribute name="extends" type="anyDecorator" />
+    <xs:attribute name="apply-author-styles" type="xs:boolean" />
+  </xs:complexType>
+
+  <xs:complexType name="abstractType">
+    <xs:complexContent>
+      <xs:extension base="baseType">
+        <xs:attribute name="id" type="abstractDecorator" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  
+  <xs:complexType name="decoratorType">
+    <xs:complexContent>
+      <xs:extension base="baseType">
+        <xs:attribute name="id" type="registeredDecorator" use="required" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
   <xs:element name="Decorators">
     <xs:complexType>
-      <xs:sequence>
-        <xs:element ref="decorator" minOccurs="1" maxOccurs="unbounded" />
-      </xs:sequence>
+      <xs:choice minOccurs="1" maxOccurs="unbounded">
+        <xs:element name="abstract" type="abstractType" />
+        <xs:element name="decorator" type="decoratorType" />
+      </xs:choice>
     </xs:complexType>
+
+    <xs:unique name="uniqueDecorator">
+      <xs:selector xpath=".//*" />
+      <xs:field xpath="@id" />
+    </xs:unique>
   </xs:element>
 
 </xs:schema>

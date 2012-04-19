@@ -15,7 +15,6 @@
     <xs:choice>
       <xs:element name="expression" type="xs:normalizedString" />
       <xs:element name="function" type="xs:string" />
-      <xs:element name="lambda" type="xs:normalizedString" />
     </xs:choice>
   </xs:complexType>
 

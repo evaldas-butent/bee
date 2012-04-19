@@ -70,7 +70,6 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Action;
-import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
@@ -520,19 +519,25 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       String caption = BeeUtils.ifString(columnDescr.getCaption(), columnId);
 
       String source = columnDescr.getSource();
+      dataIndex = BeeConst.UNDEF;
+
       if (!BeeUtils.isEmpty(source)) {
         source = DataUtils.getColumnName(source, dataCols, idName, versionName);
         if (BeeUtils.isEmpty(source)) {
           BeeKeeper.getLog().warning("columnId:", columnId, "source:", columnDescr.getSource(),
               "source not found");
           continue;
+        } else {
+          dataIndex = DataUtils.getColumnIndex(source, dataCols);
         }
       }
 
       CellType cellType = columnDescr.getCellType();
-
-      dataIndex = BeeConst.UNDEF;
       column = null;
+
+      AbstractCellRenderer renderer =
+          RendererFactory.getRenderer(columnDescr.getRendererDescription(),
+              columnDescr.getRender(), columnDescr.getItemKey(), dataCols, dataIndex);
 
       switch (colType) {
         case ID:
@@ -546,47 +551,38 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           break;
 
         case DATA:
-          for (int i = 0; i < dataCols.size(); i++) {
-            BeeColumn dataColumn = dataCols.get(i);
-            if (BeeUtils.same(source, dataColumn.getId())) {
-              AbstractCellRenderer renderer =
-                  RendererFactory.getRenderer(columnDescr.getRendererDescription(),
-                      columnDescr.getRender(), columnDescr.getItemKey(), dataCols, i);
+          if (dataIndex >= 0) {
+            BeeColumn dataColumn = dataCols.get(dataIndex);
 
-              if (renderer == null) {
-                column = GridFactory.createColumn(dataColumn, i, cellType);
-              } else {
-                column = GridFactory.createRenderableColumn(renderer, dataColumn, i, cellType);
-              }
+            if (renderer == null) {
+              column = GridFactory.createColumn(dataColumn, dataIndex, cellType);
+            } else {
+              column =
+                  GridFactory.createRenderableColumn(renderer, dataColumn, dataIndex, cellType);
+            }
 
-              if (columnDescr.isForeign()) {
-                relationInfo = RelationInfo.create(dataCols, columnDescr);
-              } else {
-                relationInfo = null;
-              }
+            if (columnDescr.isForeign()) {
+              relationInfo = RelationInfo.create(dataCols, columnDescr);
+            } else {
+              relationInfo = null;
+            }
 
-              EditableColumn editableColumn =
-                  new EditableColumn(dataCols, i, relationInfo, column, caption, columnDescr);
-              editableColumn.setNotificationListener(this);
-              getEditableColumns().put(BeeUtils.normalize(columnId), editableColumn);
+            EditableColumn editableColumn =
+                new EditableColumn(dataCols, dataIndex, relationInfo, column, caption, columnDescr);
+            editableColumn.setNotificationListener(this);
+            getEditableColumns().put(BeeUtils.normalize(columnId), editableColumn);
 
-              if (relationInfo != null) {
-                getRelations().add(relationInfo);
-              }
-
-              dataIndex = i;
-              break;
+            if (relationInfo != null) {
+              getRelations().add(relationInfo);
             }
           }
           break;
 
         case CALCULATED:
-          Calculation calc = columnDescr.getCalc();
-          if (calc != null) {
             Cell<String> cell =
                 (cellType == null) ? new CalculatedCell() : GridFactory.createCell(cellType);
             CalculatedColumn calcColumn = new CalculatedColumn(cell, columnDescr.getValueType(),
-                Evaluator.create(calc, columnId, dataCols));
+                renderer);
 
             if (columnDescr.getPrecision() != null) {
               calcColumn.setPrecision(columnDescr.getPrecision());
@@ -598,7 +594,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
               }
             }
             column = calcColumn;
-          }
           break;
 
         case SELECTION:
@@ -636,6 +631,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       if (!BeeUtils.isEmpty(columnDescr.getHorAlign())) {
         UiHelper.setHorizontalAlignment(column, columnDescr.getHorAlign());
       }
+      
+      if (!BeeUtils.isEmpty(columnDescr.getOptions())) {
+        column.setOptions(columnDescr.getOptions());
+      }
 
       if (hasHeaders) {
         boolean showWidth = showColumnWidths;
@@ -653,7 +652,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       if (callback != null &&
-          !callback.afterCreateColumn(columnId, column, header, footer)) {
+          !callback.afterCreateColumn(columnId, dataCols, column, header, footer)) {
         continue;
       }
 

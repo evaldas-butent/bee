@@ -17,19 +17,17 @@
   <columns>
     <DataColumn name="Date" source="Date" caption="Data" />
     <DataColumn name="OrderNo" source="OrderNo" caption="Užsakymo Nr." />
-    <CalcColumn name="Status" type="string" caption="Būsena" sortBy="Status">
-      <calc><ui:lambda /></calc>
-    </CalcColumn>
+    <DataColumn name="Status" source="Status" caption="Būsena" itemKey="OrderStatus" />
     <DataColumn name="Customer" source="CustomerName" caption="Užsakovas" />
     <DataColumn name="Payer" source="PayerName" caption="Mokėtojas" />
     <CalcColumn name="Manager" type="string" caption="Vadybininkas"
       sortBy="ManagerFirstName, ManagerLastName" searchBy="ManagerFirstName, ManagerLastName">
-      <calc>
+      <render>
         <ui:function>return (row.ManagerFirstName || "") + " " + (row.ManagerLastName || "")</ui:function>
-      </calc>
+      </render>
     </CalcColumn>
     <CalcColumn name="Cargo" type="string" caption="Kroviniai" searchBy="Cargo">
-      <calc>
+      <render>
         <ui:function>
           if (!row.MinCargo) {
             return row.MaxCargo;
@@ -41,7 +39,7 @@
             return row.MinCargo + ", " + row.MaxCargo + (row.CntCargo > 2 ? ", ...": "");
           }
         </ui:function>
-      </calc>
+      </render>
     </CalcColumn>
     <DataColumn name="Weight" source="Weight" caption="Svoris" />
     <DataColumn name="Volume" source="Volume" caption="Tūris" />

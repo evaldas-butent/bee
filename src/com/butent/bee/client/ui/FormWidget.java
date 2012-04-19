@@ -156,6 +156,7 @@ public enum FormWidget {
   DATE_LABEL("DateLabel", EnumSet.of(Type.DISPLAY)),
   DATE_TIME_LABEL("DateTimeLabel", EnumSet.of(Type.DISPLAY)),
   DECIMAL_LABEL("DecimalLabel", EnumSet.of(Type.DISPLAY)),
+  DECORATOR("decorator", EnumSet.of(Type.IS_DECORATOR)),
   DISCLOSURE("Disclosure", EnumSet.of(Type.HAS_CHILDREN)),
   DOUBLE_LABEL("DoubleLabel", EnumSet.of(Type.DISPLAY)),
   FLEX_TABLE("FlexTable", EnumSet.of(Type.TABLE)),
@@ -271,7 +272,7 @@ public enum FormWidget {
 
   private enum Type {
     FOCUSABLE, EDITABLE, IS_LABEL, DISPLAY, HAS_ONE_CHILD, HAS_CHILDREN, HAS_LAYERS,
-    TABLE, IS_CHILD, IS_GRID, PANEL, CELL_VECTOR, INPUT, SELECTOR, IS_CUSTOM
+    TABLE, IS_CHILD, IS_GRID, PANEL, CELL_VECTOR, INPUT, SELECTOR, IS_CUSTOM, IS_DECORATOR
   }
 
   public static final String ATTR_SCROLL_BARS = "scrollBars";
@@ -441,7 +442,7 @@ public enum FormWidget {
       return null;
     }
 
-    Map<String, String> attributes = XmlUtils.getAttributes(description);
+    Map<String, String> attributes = XmlUtils.getAttributes(description, false);
     List<Element> children = XmlUtils.getChildrenElements(description);
 
     String html = attributes.get(ATTR_HTML);
@@ -1021,6 +1022,19 @@ public enum FormWidget {
             XmlUtils.getCalculation(description, TAG_CALC),
             XmlUtils.getFirstChildElement(description, "form")));
         break;
+      
+      case DECORATOR:
+        String id = attributes.get(ATTR_ID);
+        if (!BeeUtils.isEmpty(id) && children.size() == 1) {
+          Widget child = createIfWidget(children.get(0), columns, widgetDescriptionCallback,
+              widgetCallback);
+          if (child != null) {
+            widget = TuningFactory.decorate(id, description, child);
+          }
+          children.clear();
+          attributes.clear();
+        }
+        break;
     }
 
     if (widget == null) {
@@ -1148,10 +1162,9 @@ public enum FormWidget {
       widgetDescriptionCallback.onSuccess(widgetDescription);
     }
     
-    String decorator = attributes.get(ATTR_DECORATOR);
-    if (!BeeUtils.isEmpty(decorator)) {
-      String options = attributes.get(HasOptions.ATTR_OPTIONS);
-      Widget decorated = TuningFactory.decorate(widget, decorator, JsonUtils.toJson(options));
+    String decoratorId = attributes.get(ATTR_DECORATOR);
+    if (!BeeUtils.isEmpty(decoratorId)) {
+      Widget decorated = TuningFactory.decorate(decoratorId, description, widget);
       if (decorated != null) {
         return decorated;
       }
@@ -1162,6 +1175,10 @@ public enum FormWidget {
 
   public boolean isChild() {
     return hasType(Type.IS_CHILD);
+  }
+
+  public boolean isDecorator() {
+    return hasType(Type.IS_DECORATOR);
   }
 
   public boolean isDisplay() {
@@ -1598,7 +1615,7 @@ public enum FormWidget {
   private boolean isCellVector() {
     return hasType(Type.CELL_VECTOR);
   }
-
+  
   private boolean isTable() {
     return hasType(Type.TABLE);
   }

@@ -7,7 +7,7 @@ import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 class Lifecycle {
-  
+
   static Lifecycle getLifecycle(Element element) {
     if (element == null) {
       return null;
@@ -40,9 +40,9 @@ class Lifecycle {
     }
   }
   
-  private final String created;
-  private final String inserted;
-  private final String removed;
+  private String created;
+  private String inserted;
+  private String removed;
 
   Lifecycle(String created, String inserted, String removed) {
     super();
@@ -50,7 +50,11 @@ class Lifecycle {
     this.inserted = inserted;
     this.removed = removed;
   }
-
+  
+  Lifecycle getCopy() {
+    return new Lifecycle(created, inserted, removed);
+  }
+  
   String getCreated() {
     return created;
   }
@@ -61,5 +65,33 @@ class Lifecycle {
 
   String getRemoved() {
     return removed;
+  }
+
+  void setCreated(String created) {
+    this.created = created;
+  }
+
+  void setInserted(String inserted) {
+    this.inserted = inserted;
+  }
+
+  void setRemoved(String removed) {
+    this.removed = removed;
+  }
+  
+  void updateFrom(Lifecycle other, boolean override) {
+    if (other == null) {
+      return;
+    }
+    
+    if (override || BeeUtils.isEmpty(getCreated()) && !BeeUtils.isEmpty(other.getCreated())) {
+      setCreated(other.getCreated());
+    }
+    if (override || BeeUtils.isEmpty(getInserted()) && !BeeUtils.isEmpty(other.getInserted())) {
+      setInserted(other.getInserted());
+    }
+    if (override || BeeUtils.isEmpty(getRemoved()) && !BeeUtils.isEmpty(other.getRemoved())) {
+      setRemoved(other.getRemoved());
+    }
   }
 }

@@ -19,7 +19,7 @@ class Handler {
     if (BeeUtils.isEmpty(event) || BeeUtils.isEmpty(text)) {
       return null;
     } else {
-      return new Handler(event, text);
+      return new Handler(event.trim(), text.trim());
     }
   }
   

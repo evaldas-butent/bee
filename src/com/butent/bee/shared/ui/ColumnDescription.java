@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -18,7 +19,7 @@ import java.util.List;
  * Contains column properties and methods for managing them.
  */
 
-public class ColumnDescription implements BeeSerializable, HasInfo {
+public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions {
 
   public enum ColType {
     DATA("DataColumn", false),
@@ -63,8 +64,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, REL_SOURCE, REL_VIEW, REL_COLUMN,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER, SHOW_WIDTH,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ITEM_KEY,
-    RENDERER_DESCR, RENDER, CALC, VALUE_TYPE, PRECISION, SCALE, SEARCH_BY, SORT_BY,
-    HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE, AUTO_FIT
+    RENDERER_DESCR, RENDER, VALUE_TYPE, PRECISION, SCALE, SEARCH_BY, SORT_BY,
+    HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE, AUTO_FIT, OPTIONS
   }
 
   public static ColumnDescription restore(String s) {
@@ -116,7 +117,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   
   private Boolean required = null;
 
-  private Calculation calc = null;
   private ValueType valueType = null;
   private Integer precision = null;
   private Integer scale = null;
@@ -132,6 +132,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   private CellType cellType = null;
 
+  private String options = null;
+  
   public ColumnDescription(ColType colType, String name) {
     Assert.notEmpty(colType);
     Assert.notEmpty(name);
@@ -184,9 +186,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
           break;
         case REL_COLUMN:
           setRelColumn(value);
-          break;
-        case CALC:
-          setCalc(Calculation.restore(value));
           break;
         case VALUE_TYPE:
           setValueType(ValueType.getByTypeCode(value));
@@ -286,6 +285,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case AUTO_FIT:
           setAutoFit(value);
           break;
+        case OPTIONS:
+          setOptions(value);
+          break;
       }
     }
   }
@@ -296,10 +298,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   public StyleDeclaration getBodyStyle() {
     return bodyStyle;
-  }
-
-  public Calculation getCalc() {
-    return calc;
   }
 
   public String getCaption() {
@@ -375,7 +373,8 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         "Search By", getSearchBy(),
         "Sort By", getSortBy(),
         "Cell Type", getCellType(),
-        "Item Key", getItemKey());
+        "Item Key", getItemKey(),
+        "Options", getOptions());
 
     if (getValidation() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Validation", getValidation().getInfo());
@@ -388,9 +387,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     }
     if (getCarry() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Carry", getCarry().getInfo());
-    }
-    if (getCalc() != null) {
-      PropertyUtils.appendChildrenToProperties(info, "Calc", getCalc().getInfo());
     }
     if (getRendererDescription() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Renderer", getRendererDescription().getInfo());
@@ -450,6 +446,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
     return name;
   }
 
+  public String getOptions() {
+    return options;
+  }
+
   public Integer getPrecision() {
     return precision;
   }
@@ -481,7 +481,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public String getSearchBy() {
     return searchBy;
   }
-
+  
   public String getSortBy() {
     return sortBy;
   }
@@ -489,7 +489,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public String getSource() {
     return source;
   }
-  
+
   public Calculation getValidation() {
     return validation;
   }
@@ -560,9 +560,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
           break;
         case REL_COLUMN:
           arr[i++] = getRelColumn();
-          break;
-        case CALC:
-          arr[i++] = getCalc();
           break;
         case VALUE_TYPE:
           arr[i++] = (getValueType() == null) ? null : getValueType().getTypeCode();
@@ -651,6 +648,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
         case AUTO_FIT:
           arr[i++] = getAutoFit();
           break;
+        case OPTIONS:
+          arr[i++] = getOptions();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -662,10 +662,6 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   public void setBodyStyle(StyleDeclaration bodyStyle) {
     this.bodyStyle = bodyStyle;
-  }
-
-  public void setCalc(Calculation calc) {
-    this.calc = calc;
   }
 
   public void setCaption(String caption) {
@@ -715,11 +711,11 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public void setItemKey(String itemKey) {
     this.itemKey = itemKey;
   }
-
+  
   public void setMaxValue(String maxValue) {
     this.maxValue = maxValue;
   }
-  
+
   public void setMaxWidth(Integer maxWidth) {
     this.maxWidth = maxWidth;
   }
@@ -730,6 +726,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
 
   public void setMinWidth(Integer minWidth) {
     this.minWidth = minWidth;
+  }
+
+  public void setOptions(String options) {
+    this.options = options;
   }
 
   public void setPrecision(Integer precision) {
@@ -783,7 +783,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public void setSortBy(String sortBy) {
     this.sortBy = sortBy;
   }
-
+  
   public void setSource(String source) {
     this.source = source;
   }
@@ -791,7 +791,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo {
   public void setValidation(Calculation validation) {
     this.validation = validation;
   }
-  
+
   public void setValueType(ValueType valueType) {
     this.valueType = valueType;
   }

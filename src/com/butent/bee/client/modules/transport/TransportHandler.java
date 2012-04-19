@@ -4,16 +4,11 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.grid.AbstractColumn;
-import com.butent.bee.client.grid.ColumnFooter;
-import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.utils.AbstractEvaluation;
-import com.butent.bee.client.utils.Evaluator.Parameters;
-import com.butent.bee.client.utils.HasEvaluation;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
@@ -62,24 +57,6 @@ public class TransportHandler {
       newRow.setValue(form.getDataIndex("Date"), System.currentTimeMillis());
       newRow.setValue(form.getDataIndex(TransportConstants.COL_STATUS),
           OrderStatus.CREATED.ordinal());
-    }
-  }
-
-  private static class OrdersGridHandler extends AbstractGridCallback {
-    @Override
-    public boolean afterCreateColumn(String columnId, AbstractColumn<?> column,
-        ColumnHeader header, ColumnFooter footer) {
-
-      if (BeeUtils.same(columnId, TransportConstants.COL_STATUS) && column instanceof HasEvaluation) {
-        ((HasEvaluation) column).setEvaluation(new AbstractEvaluation() {
-          @Override
-          public String eval(Parameters parameters) {
-            return NameUtils.getName(OrderStatus.class,
-                parameters.getInteger(TransportConstants.COL_STATUS));
-          }
-        });
-      }
-      return true;
     }
   }
 
@@ -222,7 +199,7 @@ public class TransportHandler {
   }
 
   public static void register() {
-    GridFactory.registerGridCallback("TripOrders", new OrdersGridHandler());
+    Global.registerCaptions(OrderStatus.class);
     FormFactory.registerFormCallback("TripOrder", new OrderFormHandler());
     GridFactory.registerGridCallback("Vehicles", new VehiclesGridHandler());
     GridFactory.registerGridCallback("SpareParts", new SparePartsGridHandler());

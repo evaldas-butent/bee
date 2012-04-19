@@ -12,15 +12,15 @@
     <DataColumn name="Event" source="Event" caption="Būsena" itemKey="TaskEvent" />
     <CalcColumn name="Owner" type="string" caption="Vadovas" sortBy="OwnerFirstName, OwnerLastName"
       searchBy="OwnerFirstName, OwnerLastName">
-      <calc>
+      <render>
         <ui:function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</ui:function>
-      </calc>
+      </render>
     </CalcColumn>
     <CalcColumn name="Executor" type="string" caption="Vykdytojas"
       sortBy="ExecutorFirstName, ExecutorLastName" searchBy="ExecutorFirstName, ExecutorLastName">
-      <calc>
+      <render>
         <ui:function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</ui:function>
-      </calc>
+      </render>
     </CalcColumn>
     <DataColumn name="FinishTime" source="FinishTime" caption="Pabaigos laikas" />
   </columns>

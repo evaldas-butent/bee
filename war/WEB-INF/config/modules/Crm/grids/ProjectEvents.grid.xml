@@ -17,7 +17,7 @@
           <ui:inline>white-space: pre-wrap;</ui:inline>
         </bodyStyle>
       </style>
-      <calc>
+      <render>
         <ui:function>
             var s = row.PublishTime.getFullYear() + "." + (row.PublishTime.getMonth() + 1)
                   + (row.PublishTime.getDate() >= 10 ? "." : ".0")
@@ -27,7 +27,7 @@
             s = s + "\n" + ev;
             return s;
           </ui:function>
-      </calc>
+      </render>
     </CalcColumn>
     <CalcColumn name="Comment" type="string" caption="Komentaras" width="240">
       <style>
@@ -35,7 +35,7 @@
           <ui:inline>white-space: pre-wrap;</ui:inline>
         </bodyStyle>
       </style>
-      <calc>
+      <render>
         <ui:function>
             var s = "";
             
@@ -50,7 +50,7 @@
             }
             return s;
           </ui:function>
-      </calc>
+      </render>
     </CalcColumn>
   </columns>
 </Grid>

@@ -1,14 +1,12 @@
 package com.butent.bee.client.render;
 
-import com.butent.bee.client.utils.Evaluator.Evaluation;
 import com.butent.bee.client.utils.Evaluator;
-import com.butent.bee.client.utils.HasEvaluation;
 import com.butent.bee.client.utils.JreEmulation;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 
-public class EvalRenderer extends AbstractCellRenderer implements HasEvaluation {
+public class EvalRenderer extends AbstractCellRenderer {
 
   private final Evaluator evaluator;
   private final boolean hasColumn;
@@ -34,9 +32,5 @@ public class EvalRenderer extends AbstractCellRenderer implements HasEvaluation 
     }
 
     return evaluator.evaluate();
-  }
-
-  public void setEvaluation(Evaluation evaluation) {
-    evaluator.setEvaluation(evaluation);
   }
 }

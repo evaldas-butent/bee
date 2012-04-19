@@ -25,6 +25,10 @@
   <xs:complexType name="column">
     <xs:sequence>
       <xs:element name="style" type="columnStyle" minOccurs="0" />
+      <xs:choice minOccurs="0" maxOccurs="1">
+        <xs:element name="renderer" type="ui:renderer" />
+        <xs:element name="render" type="ui:calcType" />
+      </xs:choice>
     </xs:sequence>
     <xs:attribute name="name" type="xs:ID" use="required" />
     <xs:attribute name="caption" type="xs:string" />
@@ -42,16 +46,13 @@
     <xs:attribute name="cell" type="ui:cellType" />
     <xs:attribute name="sortBy" type="xs:normalizedString" />
     <xs:attribute name="searchBy" type="xs:normalizedString" />
+    <xs:attribute name="options" type="xs:normalizedString" />
   </xs:complexType>
 
   <xs:complexType name="baseColumn">
     <xs:complexContent>
       <xs:extension base="column">
         <xs:sequence>
-          <xs:choice minOccurs="0" maxOccurs="1">
-            <xs:element name="renderer" type="ui:renderer" />
-            <xs:element name="render" type="ui:calcType" />
-          </xs:choice>
           <xs:element name="editable" type="ui:calcType" minOccurs="0" />
           <xs:element name="editor" type="ui:editor" minOccurs="0" />
           <xs:element name="validation" type="ui:calcType" minOccurs="0" />
@@ -76,9 +77,6 @@
   <xs:complexType name="calculatedColumn">
     <xs:complexContent>
       <xs:extension base="column">
-        <xs:sequence>
-          <xs:element name="calc" type="ui:calcType" />
-        </xs:sequence>
         <xs:attribute name="type" type="type:valueType" use="required" />
         <xs:attribute name="precision" type="xs:positiveInteger" />
         <xs:attribute name="scale" type="xs:unsignedByte" />

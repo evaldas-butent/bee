@@ -32,13 +32,18 @@ public class RendererFactory {
   }
 
   public static AbstractCellRenderer createRenderer(RendererDescription description,
-      String itemKey, int dataIndex, IsColumn dataColumn) {
+      String itemKey, List<? extends IsColumn> dataColumns, int dataIndex) {
     Assert.notNull(description);
     RendererType type = description.getType();
     Assert.notNull(type);
 
-    AbstractCellRenderer renderer = null;
+    IsColumn dataColumn = BeeUtils.getQuietly(dataColumns, dataIndex);
+    if (dataColumn == null && type.requiresSource()) {
+      BeeKeeper.getLog().warning("renderer", type.getTypeCode(), "requires source");
+      return null;
+    }
 
+    AbstractCellRenderer renderer = null;
     switch (type) {
       case LIST:
         renderer = new ListRenderer(dataIndex, dataColumn);
@@ -79,8 +84,7 @@ public class RendererFactory {
   public static AbstractCellRenderer getRenderer(RendererDescription description,
       Calculation calculation, String itemKey, List<? extends IsColumn> dataColumns, int dataIndex) {
     if (description != null) {
-      Assert.isIndex(dataColumns, dataIndex);
-      return createRenderer(description, itemKey, dataIndex, dataColumns.get(dataIndex));
+      return createRenderer(description, itemKey, dataColumns, dataIndex);
 
     } else if (calculation != null) {
       return createRenderer(calculation, dataColumns, dataIndex);

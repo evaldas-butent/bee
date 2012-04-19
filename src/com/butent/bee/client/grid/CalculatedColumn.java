@@ -9,10 +9,9 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
+import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.utils.Evaluator;
-import com.butent.bee.client.utils.Evaluator.Evaluation;
-import com.butent.bee.client.utils.HasEvaluation;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
@@ -29,10 +28,10 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class CalculatedColumn extends AbstractColumn<String> implements HasDateTimeFormat,
-    HasNumberFormat, HasPrecision, HasScale, HasEvaluation {
+    HasNumberFormat, HasPrecision, HasScale, HasCellRenderer {
 
   private final ValueType valueType;
-  private final Evaluator evaluator;
+  private AbstractCellRenderer renderer;
 
   private DateTimeFormat dateTimeformat = null;
   private NumberFormat numberFormat = null;
@@ -40,16 +39,16 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
   private int precision = BeeConst.UNDEF;
   private int scale = BeeConst.UNDEF;
   
-  public CalculatedColumn(Cell<String> cell, ValueType valueType, Evaluator evaluator) {
+  public CalculatedColumn(Cell<String> cell, ValueType valueType, AbstractCellRenderer renderer) {
     super(cell);
     this.valueType = valueType;
-    this.evaluator = evaluator;
+    this.renderer = renderer;
 
     UiHelper.setDefaultHorizontalAlignment(this, valueType);
   }
 
-  public CalculatedColumn(ValueType valueType, Evaluator evaluator) {
-    this(new CalculatedCell(), valueType, evaluator);
+  public CalculatedColumn(ValueType valueType, AbstractCellRenderer renderer) {
+    this(new CalculatedCell(), valueType, renderer);
   }
 
   @Override
@@ -69,21 +68,21 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
     return precision;
   }
 
+  public AbstractCellRenderer getRenderer() {
+    return renderer;
+  }
+
   public int getScale() {
     return scale;
   }
 
   @Override
   public String getString(Context context, IsRow row) {
-    if (row == null) {
+    if (row == null || getRenderer() == null) {
       return null;
-    }
-    if (context == null) {
-      getEvaluator().update(row);
     } else {
-      getEvaluator().update(row, context.getIndex(), context.getColumn());
+      return getRenderer().render(row);
     }
-    return getEvaluator().evaluate();
   }
 
   @Override
@@ -109,18 +108,16 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
     this.dateTimeformat = format;
   }
 
-  public void setEvaluation(Evaluation evaluation) {
-    if (getEvaluator() != null) {
-      getEvaluator().setEvaluation(evaluation);
-    }
-  }
-
   public void setNumberFormat(NumberFormat format) {
     this.numberFormat = format;
   }
 
   public void setPrecision(int precision) {
     this.precision = precision;
+  }
+
+  public void setRenderer(AbstractCellRenderer renderer) {
+    this.renderer = renderer;
   }
 
   public void setScale(int scale) {
@@ -187,9 +184,5 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
     } else {
       return format.format(value);
     }
-  }
-
-  private Evaluator getEvaluator() {
-    return evaluator;
   }
 }

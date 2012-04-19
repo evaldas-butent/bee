@@ -8,7 +8,6 @@ import com.google.gwt.core.client.JsDate;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -201,10 +200,6 @@ public class Evaluator extends Calculation {
     }
   }
 
-  public interface Evaluation extends HasOptions {
-    String eval(Parameters parameters);
-  }
-
   /**
    * Requires implementing classes to have methods for getting and setting value change related
    * information like old and new values, row and column value etc.
@@ -280,7 +275,7 @@ public class Evaluator extends Calculation {
       return null;
     }
 
-    Evaluator evaluator = new Evaluator(calc.getExpression(), calc.getFunction(), calc.getLambda());
+    Evaluator evaluator = new Evaluator(calc.getExpression(), calc.getFunction());
     if (dataColumns != null && !dataColumns.isEmpty()) {
       evaluator.init(colName, dataColumns);
     }
@@ -299,10 +294,8 @@ public class Evaluator extends Calculation {
 
   private final JavaScriptObject interpeter;
 
-  private Evaluation evaluation = null;
-
-  private Evaluator(String expression, String function, String lambda) {
-    super(expression, function, lambda);
+  private Evaluator(String expression, String function) {
+    super(expression, function);
 
     if (!BeeUtils.isEmpty(expression)) {
       this.interpeter = createExprInterpreter(expression);
@@ -314,13 +307,7 @@ public class Evaluator extends Calculation {
   }
 
   public String evaluate() {
-    if (getEvaluation() == null) {
-      return evaluate(getInterpeter());
-    } else if (getParameters() == null) {
-      return null;
-    } else {
-      return getEvaluation().eval(getParameters());
-    }
+    return evaluate(getInterpeter());
   }
 
   public String evaluate(JavaScriptObject fnc) {
@@ -339,10 +326,6 @@ public class Evaluator extends Calculation {
       s = null;
     }
     return s;
-  }
-
-  public Evaluation getEvaluation() {
-    return evaluation;
   }
 
   public void init(String colName, List<? extends IsColumn> dataColumns) {
@@ -413,13 +396,6 @@ public class Evaluator extends Calculation {
     }
   }
 
-  public void setEvaluation(Evaluation evaluation) {
-    this.evaluation = evaluation;
-    if (this.evaluation != null) {
-      this.evaluation.setOptions(getLambda());
-    }
-  }
-  
   public void setParameters(Parameters parameters) {
     this.parameters = parameters;
   }

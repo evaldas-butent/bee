@@ -503,7 +503,7 @@ public class UiServiceBean {
     }
 
     String path = new File(new File(Config.USER_DIR, "forms"),
-        FileNameUtils.defaultExtension(formName, XmlUtils.defaultXmlExtension)).getPath();
+        FileNameUtils.defaultExtension(formName, XmlUtils.DEFAULT_XML_EXTENSION)).getPath();
     LogUtils.infoNow(logger, "saving", path);
     FileUtils.saveToFile(result, path);
 
@@ -678,14 +678,14 @@ public class UiServiceBean {
   private ResponseObject getDecorators() {
     File dir = new File(Config.WEB_INF_DIR, DecoratorConstants.DIRECTORY);
     List<File> files = FileUtils.findFiles(dir, Lists.newArrayList(FileUtils.INPUT_FILTER,
-        new ExtensionFilter(XmlUtils.defaultXmlExtension)));
+        new ExtensionFilter(XmlUtils.DEFAULT_XML_EXTENSION)));
     if (files.isEmpty()) {
       return ResponseObject.error("getDecorators: no xml found in", dir.getPath());
     }
 
     Document dstDoc = XmlUtils.createDocument();
     Element dstRoot = dstDoc.createElement(DecoratorConstants.TAG_DECORATORS);
-    dstRoot.setAttribute("xmlns", DecoratorConstants.NAMESPACE);
+    dstRoot.setAttribute(XmlUtils.ATTR_XMLNS, DecoratorConstants.NAMESPACE);
     dstDoc.appendChild(dstRoot);
 
     for (File file : files) {
@@ -697,8 +697,8 @@ public class UiServiceBean {
         return ResponseObject.error("getDecorators: cannot load xml:", path);
       }
 
-      List<Element> elements =
-          XmlUtils.getElementsByLocalName(srcDoc, DecoratorConstants.TAG_DECORATOR);
+      List<Element> elements = XmlUtils.getChildrenElements(srcDoc.getDocumentElement(),
+          Sets.newHashSet(DecoratorConstants.TAG_ABSTRACT, DecoratorConstants.TAG_DECORATOR));
       if (elements.isEmpty()) {
         LogUtils.warning(logger, "no decorators found in", path);
       }

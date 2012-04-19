@@ -13,9 +13,9 @@
     <DataColumn name="Hash" source="Hash" caption="Kodas" readOnly="true" />
     <CalcColumn name="Owner" type="string" caption="Registratorius"
       sortBy="OwnerLastName, OwnerFirstName" searchBy="OwnerFirstName, OwnerLastName">
-      <calc>
+      <render>
         <ui:function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</ui:function>
-      </calc>
+      </render>
     </CalcColumn>
   </columns>
 </Grid>

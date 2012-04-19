@@ -167,7 +167,7 @@ public class SystemServiceBean {
       if (BeeUtils.same(mode, "src")) {
         defaultExtension = FileUtils.EXT_JAVA;
       } else if (BeeUtils.same(mode, "xml")) {
-        defaultExtension = XmlUtils.defaultXmlExtension;
+        defaultExtension = XmlUtils.DEFAULT_XML_EXTENSION;
       }
 
       List<File> files = FileUtils.findFiles(search, roots, filters, defaultExtension, true, false);
@@ -318,7 +318,7 @@ public class SystemServiceBean {
     List<Filter> filters = Lists.newArrayList(FileUtils.INPUT_FILTER);
     
     List<File> sources = 
-      FileUtils.findFiles(pSrc, null, filters, XmlUtils.defaultXmlExtension, true, false);
+      FileUtils.findFiles(pSrc, null, filters, XmlUtils.DEFAULT_XML_EXTENSION, true, false);
     if (sources == null || sources.isEmpty()) {
       buff.addSevere(pSrc, "file not found");
       return;
@@ -364,7 +364,7 @@ public class SystemServiceBean {
     }
 
     List<File> transforms = 
-      FileUtils.findFiles(pXsl, null, filters, XmlUtils.defaultXslExtension, true, false);
+      FileUtils.findFiles(pXsl, null, filters, XmlUtils.DEFAULT_XSL_EXTENSION, true, false);
     if (transforms == null || transforms.isEmpty()) {
       buff.addSevere(pXsl, "file not found");
       return;
@@ -391,7 +391,7 @@ public class SystemServiceBean {
     if (BeeUtils.isEmpty(pDst)) {
       dst = null;
     } else {
-      dst = FileNameUtils.defaultExtension(pDst, XmlUtils.defaultXmlExtension);
+      dst = FileNameUtils.defaultExtension(pDst, XmlUtils.DEFAULT_XML_EXTENSION);
       if (BeeUtils.inListSame(dst, src, xsl)) {
         buff.addSevere(dst, "is not a valid target");
         return;

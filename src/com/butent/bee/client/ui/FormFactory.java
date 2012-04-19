@@ -179,7 +179,7 @@ public class FormFactory {
     }
 
     EditorDescription editor = new EditorDescription(editorType);
-    editor.setAttributes(XmlUtils.getAttributes(element));
+    editor.setAttributes(XmlUtils.getAttributes(element, false));
 
     List<String> items = XmlUtils.getChildrenText(element, HasItems.TAG_ITEM);
     if (!BeeUtils.isEmpty(items)) {

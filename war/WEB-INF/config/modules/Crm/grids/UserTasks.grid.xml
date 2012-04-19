@@ -39,11 +39,7 @@
 
   <columns>
     <CalcColumn name="Mode" type="string" caption="&#160;" cell="html"
-      horizontalAlignment="center" width="15">
-      <calc>
-        <ui:lambda>greenSmall, yellowSmall</ui:lambda>
-      </calc>
-    </CalcColumn>
+      horizontalAlignment="center" width="15" options="greenSmall, yellowSmall" />
     <IdColumn name="Id" caption="ID" />
     <DataColumn name="Priority" source="Priority" caption="Prioritetas" itemKey="Priority" />
     <DataColumn name="Description" source="Description" caption="Užduotis" />
@@ -52,15 +48,15 @@
     <DataColumn name="Event" source="Event" caption="Būsena" itemKey="TaskEvent" />
     <CalcColumn name="Owner" type="string" caption="Vadovas" sortBy="OwnerFirstName, OwnerLastName"
       searchBy="OwnerFirstName, OwnerLastName">
-      <calc>
+      <render>
         <ui:function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</ui:function>
-      </calc>
+      </render>
     </CalcColumn>
     <CalcColumn name="Executor" type="string" caption="Vykdytojas"
       sortBy="ExecutorFirstName, ExecutorLastName" searchBy="ExecutorFirstName, ExecutorLastName">
-      <calc>
+      <render>
         <ui:function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</ui:function>
-      </calc>
+      </render>
     </CalcColumn>
     <DataColumn name="StartTime" source="StartTime" caption="Pradžia" />
     <DataColumn name="FinishTime" source="FinishTime" caption="Terminas" />

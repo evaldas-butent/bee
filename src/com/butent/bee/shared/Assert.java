@@ -14,60 +14,68 @@ import java.util.Map;
  */
 
 public class Assert {
+
   public static final String ASSERTION_FAILED = "[Assertion failed] - ";
 
-  public static void betweenExclusive(int x, int min, int max) {
+  public static int betweenExclusive(int x, int min, int max) {
     if (!BeeUtils.betweenExclusive(x, min, max)) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "argument " + x
           + " must be >= " + min + " and < " + max);
     }
+    return x;
   }
 
-  public static void betweenExclusive(int x, int min, int max, String msg) {
+  public static int betweenExclusive(int x, int min, int max, String msg) {
     if (!BeeUtils.betweenExclusive(x, min, max)) {
       throw new BeeRuntimeException(msg);
     }
+    return x;
   }
-  
-  public static void betweenInclusive(int x, int min, int max) {
+
+  public static int betweenInclusive(int x, int min, int max) {
     if (!BeeUtils.betweenInclusive(x, min, max)) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "argument " + x
           + " must be >= " + min + " and <= " + max);
     }
+    return x;
   }
 
-  public static void betweenInclusive(int x, int min, int max, String msg) {
+  public static int betweenInclusive(int x, int min, int max, String msg) {
     if (!BeeUtils.betweenInclusive(x, min, max)) {
       throw new BeeRuntimeException(msg);
     }
+    return x;
   }
-  
-  public static <T> void contains(Map<T, ?> map, T key) {
+
+  public static <T> T contains(Map<T, ?> map, T key) {
     notNull(map);
     notNull(key);
     if (!map.containsKey(key)) {
       throw new KeyNotFoundException(key);
     }
+    return key;
   }
 
-  public static void hasLength(Object obj) {
-    hasLength(obj, ASSERTION_FAILED + "argument has zero length");
+  public static <T> T hasLength(T obj) {
+    return hasLength(obj, ASSERTION_FAILED + "argument has zero length");
   }
 
-  public static void hasLength(Object obj, String msg) {
+  public static <T> T hasLength(T obj, String msg) {
     if (BeeUtils.length(obj) <= 0) {
       throw new BeeRuntimeException(msg);
     }
+    return obj;
   }
 
-  public static void isEven(int x) {
-    isEven(x, ASSERTION_FAILED + "(" + x + ") argument must even");
+  public static int isEven(int x) {
+    return isEven(x, ASSERTION_FAILED + "(" + x + ") argument must even");
   }
 
-  public static void isEven(int x, String msg) {
+  public static int isEven(int x, String msg) {
     if (x % 2 == 1) {
       throw new BeeRuntimeException(msg);
     }
+    return x;
   }
 
   public static void isFalse(boolean expression) {
@@ -80,7 +88,7 @@ public class Assert {
     }
   }
 
-  public static void isIndex(Collection<?> col, int idx) {
+  public static int isIndex(Collection<?> col, int idx) {
     notNull(col);
     nonNegative(idx);
 
@@ -91,16 +99,18 @@ public class Assert {
     } else if (idx >= n) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx + " must be < " + n);
     }
+    return idx;
   }
 
-  public static void isIndex(Collection<?> col, int idx, String msg) {
+  public static int isIndex(Collection<?> col, int idx, String msg) {
     notNull(col);
     if (idx < 0 || idx >= col.size()) {
       throw new BeeRuntimeException(msg);
     }
+    return idx;
   }
 
-  public static void isIndex(Object obj, int idx) {
+  public static int isIndex(Object obj, int idx) {
     notNull(obj);
     nonNegative(idx);
 
@@ -112,61 +122,79 @@ public class Assert {
     } else if (idx >= n) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx + " must be < " + n);
     }
+    return idx;
   }
 
-  public static void isIndex(Object obj, int idx, String msg) {
+  public static int isIndex(Object obj, int idx, String msg) {
     notNull(obj);
     if (idx < 0 || idx >= BeeUtils.length(obj)) {
       throw new BeeRuntimeException(msg);
     }
+    return idx;
   }
 
-  public static void isNull(Object object) {
-    isNull(object, ASSERTION_FAILED + "the object argument must be null");
+  public static <T> T isNull(T object) {
+    return isNull(object, ASSERTION_FAILED + "the object argument must be null");
   }
 
-  public static void isNull(Object object, String message) {
+  public static <T> T isNull(T object, String message) {
     if (object != null) {
       throw new BeeRuntimeException(message);
     }
+    return object;
   }
 
-  public static void isOdd(int x) {
-    isOdd(x, ASSERTION_FAILED + "(" + x + ") argument must odd");
+  public static int isOdd(int x) {
+    return isOdd(x, ASSERTION_FAILED + "(" + x + ") argument must odd");
   }
 
-  public static void isOdd(int x, String msg) {
+  public static int isOdd(int x, String msg) {
     if (x % 2 == 0) {
       throw new BeeRuntimeException(msg);
     }
+    return x;
   }
 
-  public static void isPositive(double x) {
-    isPositive(x, ASSERTION_FAILED + "(" + x + ") argument must be positive");
+  public static double isPositive(double x) {
+    return isPositive(x, ASSERTION_FAILED + "(" + x + ") argument must be positive");
   }
 
-  public static void isPositive(double x, String msg) {
+  public static double isPositive(double x, String msg) {
     if (x <= 0) {
       throw new BeeRuntimeException(msg);
     }
+    return x;
   }
 
-  public static void isScale(int x) {
-    isPositive(x, ASSERTION_FAILED + "(" + x + ") scale must be >= 0 and <= "
+  public static int isPositive(int x) {
+    return isPositive(x, ASSERTION_FAILED + "(" + x + ") argument must be positive");
+  }
+
+  public static int isPositive(int x, String msg) {
+    if (x <= 0) {
+      throw new BeeRuntimeException(msg);
+    }
+    return x;
+  }
+
+  public static int isScale(int x) {
+    return isPositive(x, ASSERTION_FAILED + "(" + x + ") scale must be >= 0 and <= "
         + BeeConst.MAX_SCALE);
   }
 
-  public static void isScale(int x, String msg) {
+  public static int isScale(int x, String msg) {
     if (x < 0 || x > BeeConst.MAX_SCALE) {
       throw new BeeRuntimeException(msg);
     }
+    return x;
   }
 
-  public static void isString(Object obj) {
+  public static String isString(Object obj) {
     notNull(obj);
     if (!(obj instanceof String)) {
       throw new ArgumentTypeException(obj.getClass().getName(), String.class.getName());
     }
+    return (String) obj;
   }
 
   public static void isTrue(boolean expression) {
@@ -179,7 +207,7 @@ public class Assert {
     }
   }
 
-  public static void lengthEquals(Object obj, int size) {
+  public static <T> T lengthEquals(T obj, int size) {
     notNull(obj);
     int len = BeeUtils.length(obj);
 
@@ -187,9 +215,10 @@ public class Assert {
       throw new BeeRuntimeException(ASSERTION_FAILED + "length " + len
           + " must be equal to " + size);
     }
+    return obj;
   }
 
-  public static void lengthLimit(Object obj, int min, int max) {
+  public static <T> T lengthInclusive(T obj, int min, int max) {
     notNull(obj);
     int len = BeeUtils.length(obj);
 
@@ -199,24 +228,26 @@ public class Assert {
     if (max > 0 && len > max) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "length " + len + " must be <= " + max);
     }
+    return obj;
   }
 
-  public static void maxLength(Object obj, int max) {
-    lengthLimit(obj, -1, max);
+  public static <T> T maxLength(T obj, int max) {
+    return lengthInclusive(obj, -1, max);
   }
 
-  public static void minLength(Object obj, int min) {
-    lengthLimit(obj, min, -1);
+  public static <T> T minLength(T obj, int min) {
+    return lengthInclusive(obj, min, -1);
   }
 
-  public static void nonNegative(int x) {
-    nonNegative(x, ASSERTION_FAILED + "(" + x + ") argument must be non-negative");
+  public static int nonNegative(int x) {
+    return nonNegative(x, ASSERTION_FAILED + "(" + x + ") argument must be non-negative");
   }
 
-  public static void nonNegative(int x, String msg) {
+  public static int nonNegative(int x, String msg) {
     if (x < 0) {
       throw new BeeRuntimeException(msg);
     }
+    return x;
   }
 
   public static void noNullElements(String message, Object... obj) {
@@ -234,34 +265,37 @@ public class Assert {
     noNullElements(ASSERTION_FAILED + "arguments must not be null", obj);
   }
 
-  public static void notEmpty(Object obj) {
-    notEmpty(obj, ASSERTION_FAILED + "argument must not be null or empty");
+  public static <T> T notEmpty(T obj) {
+    return notEmpty(obj, ASSERTION_FAILED + "argument must not be null or empty");
   }
 
-  public static void notEmpty(Object obj, String message) {
+  public static <T> T notEmpty(T obj, String message) {
     if (BeeUtils.isEmpty(obj)) {
       throw new BeeRuntimeException(message);
     }
+    return obj;
   }
 
-  public static void notNull(Object object) {
-    notNull(object, ASSERTION_FAILED + "this argument is required; it must not be null");
+  public static <T> T notNull(T object) {
+    return notNull(object, ASSERTION_FAILED + "this argument is required; it must not be null");
   }
 
-  public static void notNull(Object object, String message) {
+  public static <T> T notNull(T object, String message) {
     if (object == null) {
       throw new BeeRuntimeException(message);
     }
+    return object;
   }
 
-  public static void parameterCount(int c, int min) {
-    parameterCount(c, min, -1);
+  public static int parameterCount(int c, int min) {
+    return parameterCount(c, min, -1);
   }
 
-  public static void parameterCount(int c, int min, int max) {
+  public static int parameterCount(int c, int min, int max) {
     if (min > 0 && c < min || max > 0 && c > max) {
       throw new ArgumentCountException(c, min, max);
     }
+    return c;
   }
 
   public static void state(boolean expression) {

@@ -20,7 +20,7 @@
     <DataColumn name="Volume" source="Volume" caption="Tūris" />
     <DataColumn name="Quantity" source="Quantity" caption="Kiekis" />
     <CalcColumn name="Loading" type="string" cell="html" caption="Pakrovimas">
-      <calc>
+      <render>
         <ui:function>
           var s = "";
           var tr = "&lt;tr&gt;";
@@ -46,10 +46,10 @@
           }
           return s;
         </ui:function>
-      </calc>
+      </render>
     </CalcColumn>
     <CalcColumn name="Unloading" type="string" cell="html" caption="Iškrovimas">
-      <calc>
+      <render>
         <ui:function>
           var s = "";
           var tr = "&lt;tr&gt;";
@@ -75,7 +75,7 @@
           }
           return s;
         </ui:function>
-      </calc>
+      </render>
     </CalcColumn>
     <DataColumn name="Number" source="Number" caption="Numeris" />
     <DataColumn name="Cmr" source="Cmr" caption="CMR" />
@@ -87,14 +87,14 @@
       </style>
     </DataColumn>
     <CalcColumn name="Total" type="double" caption="Suma">
-      <calc>
+      <render>
         <ui:expression>row.MinCurr == row.MaxCurr ? row.Total : null</ui:expression>
-      </calc>
+      </render>
     </CalcColumn>
     <CalcColumn name="Curr" type="string" caption="Val.">
-      <calc>
+      <render>
         <ui:expression>row.MinCurr == row.MaxCurr ? row.MaxCurr : null</ui:expression>
-      </calc>
+      </render>
     </CalcColumn>
   </columns>
 </Grid>

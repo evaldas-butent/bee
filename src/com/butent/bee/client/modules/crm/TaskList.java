@@ -16,16 +16,16 @@ import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.resources.Images;
-import com.butent.bee.client.utils.AbstractEvaluation;
-import com.butent.bee.client.utils.Evaluator.Parameters;
-import com.butent.bee.client.utils.HasEvaluation;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
@@ -63,28 +63,39 @@ public class TaskList {
     }
 
     @Override
-    public boolean afterCreateColumn(String columnId, AbstractColumn<?> column,
-        ColumnHeader header, ColumnFooter footer) {
-      if (BeeUtils.same(columnId, "Mode") && column instanceof HasEvaluation) {
-        ((HasEvaluation) column).setEvaluation(new AbstractEvaluation() {
+    public boolean afterCreateColumn(String columnId, final List<? extends IsColumn> dataColumns,
+        final AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer) {
+      if (BeeUtils.same(columnId, "Mode") && column instanceof HasCellRenderer) {
+        ((HasCellRenderer) column).setRenderer(new AbstractCellRenderer() {
           private Widget modeNew = null;
           private Widget modeUpd = null;
+          
+          private int laIndex;
+          private int lpIndex;
+          
+          {
+            setOptions(column.getOptions());
+            laIndex = DataUtils.getColumnIndex(CrmConstants.COL_LAST_ACCESS, dataColumns);
+            lpIndex = DataUtils.getColumnIndex(CrmConstants.COL_LAST_PUBLISH, dataColumns);
+          }
 
           @Override
-          public String eval(Parameters parameters) {
-            Long access = parameters.getLong(CrmConstants.COL_LAST_ACCESS);
+          public String render(IsRow row) {
+            if (row == null) {
+              return null;
+            }
+            Long access = row.getLong(laIndex);
             if (access == null) {
               return getHtml(modeNew);
             }
 
-            Long publish = parameters.getLong(CrmConstants.COL_LAST_PUBLISH);
+            Long publish = row.getLong(lpIndex);
             if (publish != null && access < publish) {
               return getHtml(modeUpd);
             }
             return BeeConst.STRING_EMPTY;
           }
 
-          @Override
           public void setOptions(String options) {
             if (!BeeUtils.isEmpty(options)) {
               int idx = 0;
@@ -139,7 +150,7 @@ public class TaskList {
     }
 
     @Override
-    public boolean beforeCreateColumn(String columnId, List<BeeColumn> dataColumns,
+    public boolean beforeCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
         ColumnDescription columnDescription) {
 
       return getType().equals(Type.ASSIGNED)

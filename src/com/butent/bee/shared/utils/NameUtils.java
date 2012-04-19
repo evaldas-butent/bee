@@ -186,6 +186,10 @@ public class NameUtils {
     }
   }
 
+  public static String getNamespacePrefix(String qName) {
+    return BeeUtils.getPrefix(qName, QUALIFIED_NAME_SEPARATOR);
+  }
+  
   public static String getWord(String s, int idx) {
     if (BeeUtils.isEmpty(s) || idx < 0) {
       return null;

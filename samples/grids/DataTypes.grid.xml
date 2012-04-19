@@ -48,9 +48,9 @@
 
     <CalcColumn name="Calc1" type="date" caption="Ver Dt" format="date_short"
       width="80" source="Version">
-      <calc>
+      <render>
         <ui:expression>rowVersion</ui:expression>
-      </calc>
+      </render>
     </CalcColumn>
 
     <DataColumn name="Bbb" source="Boolean" />
@@ -103,9 +103,9 @@
     </DataColumn>
 
     <CalcColumn name="Calc2" type="decimal" caption="Math" scale="4" sortBy="Long, Date">
-      <calc>
+      <render>
         <ui:expression>(row.Long &gt; 0) ? Math.log(row.Long) : row.Long / 1000</ui:expression>
-      </calc>
+      </render>
     </CalcColumn>
 
     <DataColumn name="Nnn" source="Numeric" format="0.0%" caption="Percent">
@@ -156,7 +156,7 @@
     </DataColumn>
 
     <CalcColumn name="Calc3" type="string" caption="typeof" width="100" searchBy="String, Char">
-      <calc>
+      <render>
         <ui:function>
             var s = "";
             for (var p in row) {
@@ -165,7 +165,7 @@
             }
             return s;
           </ui:function>
-      </calc>
+      </render>
     </CalcColumn>
 
     <DataColumn name="Ddd" source="Date" minValue="2000 1 1" maxValue="2012 12 21"

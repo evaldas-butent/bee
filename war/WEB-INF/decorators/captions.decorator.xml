@@ -1,28 +1,58 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Decorators xmlns="http://www.butent.com/decorator">
+<Decorators xmlns="http://www.butent.com/decorator" xmlns:p="http://www.butent.com/decorator">
 
-  <decorator id="caption-left">
-    <param name="caption" required="true" />
-    <param name="left" default="100" />
-    <param name="unit" default="px" />
-    <param name="required" />
-
-    <style id="decorator-caption-left">
-      .caption-left-content {position: absolute; left: {left}{unit}; top: 0px;}
-    </style>
-
+  <abstract id="caption">
+    <requiredParam p:caption="" />
+    <optionalParam p:valueRequired="false" p:class="" p:style="" />
+    
     <lifecycle>
       <created>
         if ({required}) {
-          this.firstChild.className = "bee-required";
+          $wnd.Bee_setActorProperty(this, "caption", "className", "bee-required");
         }
       </created>
     </lifecycle>
+  </abstract>
+
+  <decorator id="label" extends="caption">
+    <template>
+      <label>{caption}<content/></label>
+    </template>
+  </decorator>
+
+  <abstract id="caption-div" extends="caption">
+    <const name="container-style" />
+    <const name="caption-element">
+      <div data-role="caption" class="{class}" style="{style}">{caption}</div>
+    </const>
+    <const name="content-style" />
 
     <template>
-      <div style="position: relative;">
-        <div>{caption}</div>
-        <content />
+      <div style="{container-style}">
+        {caption-element}
+        <content style="{content-style}" />
+      </div>
+    </template>
+  </abstract>
+
+  <decorator id="caption-left" extends="caption-div">
+    <optionalParam p:size="100" p:unit="px" />
+
+    <const name="container-style">position: relative;</const>
+    <const name="content-style">position: absolute; left: {size}{unit}; top: 0px;</const>
+  </decorator>
+
+  <decorator id="caption-right" extends="caption-div">
+  </decorator>
+
+  <decorator id="caption-top" extends="caption-div">
+  </decorator>
+  
+  <decorator id="caption-bottom" extends="caption-div">
+    <template>
+      <div style="{container-style}">
+        <content style="{content-style}" />
+        {caption-element}
       </div>
     </template>
   </decorator>

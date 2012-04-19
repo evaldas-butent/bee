@@ -9,6 +9,7 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
@@ -68,8 +69,6 @@ public class GridLoaderBean {
   private static final String TAG_VALIDATION = "validation";
   private static final String TAG_EDITABLE = "editable";
   private static final String TAG_CARRY = "carry";
-
-  private static final String TAG_CALC = "calc";
 
   private static final String TAG_EDITOR = "editor";
 
@@ -425,12 +424,7 @@ public class GridLoaderBean {
         break;
 
       case CALCULATED:
-        if (columnDescription.getCalc() == null) {
-          LogUtils.warning(logger, viewName, "column", columnDescription.getName(),
-              "calculation not specified");
-        } else {
-          ok = true;
-        }
+        ok = true;
         break;
 
       case SELECTION:
@@ -530,6 +524,8 @@ public class GridLoaderBean {
 
         } else if (BeeUtils.same(key, HasItems.ATTR_ITEM_KEY)) {
           dst.setItemKey(value.trim());
+        } else if (BeeUtils.same(key, HasOptions.ATTR_OPTIONS)) {
+          dst.setOptions(value.trim());
         }
       }
     }
@@ -575,11 +571,6 @@ public class GridLoaderBean {
     Calculation carry = XmlUtils.getCalculation(src, TAG_CARRY);
     if (carry != null) {
       dst.setCarry(carry);
-    }
-
-    Calculation calc = XmlUtils.getCalculation(src, TAG_CALC);
-    if (calc != null) {
-      dst.setCalc(calc);
     }
 
     EditorDescription editor = getEditor(src);
