@@ -7,6 +7,7 @@ import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.WidgetCallback;
+import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -24,12 +25,13 @@ public interface GridCallback extends WidgetCallback {
 
   void afterAction(Action action, GridPresenter presenter);
 
-  void afterCreate(CellGrid grid);
+  void afterCreate(GridView gridView);
 
   boolean afterCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
-      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer);
+      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
+      EditableColumn editableColumn);
 
-  void afterCreateColumns(CellGrid grid);
+  void afterCreateColumns(GridView gridView);
 
   void afterDeleteRow(long rowId);
 

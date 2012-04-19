@@ -76,7 +76,7 @@ public interface DropController {
   void onMove(DragContext context);
 
   /**
-   * Called just prior to {@link #onDrop(DragContext)} to allow the drop operation to be cancelled
+   * Called just prior to {@link #onDrop(DragContext)} to allow the drop operation to be canceled
    * by throwing a {@link VetoDragException}.
    * 
    * @param context the current drag context

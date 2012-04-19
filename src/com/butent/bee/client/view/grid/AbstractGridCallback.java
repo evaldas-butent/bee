@@ -7,6 +7,7 @@ import com.butent.bee.client.grid.AbstractColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -27,15 +28,16 @@ public class AbstractGridCallback implements GridCallback {
   public void afterAction(Action action, GridPresenter presenter) {
   }
 
-  public void afterCreate(CellGrid grid) {
+  public void afterCreate(GridView gridView) {
   }
 
   public boolean afterCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
-      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer) {
+      AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
+      EditableColumn editableColumn) {
     return true;
   }
 
-  public void afterCreateColumns(CellGrid grid) {
+  public void afterCreateColumns(GridView gridView) {
   }
 
   public void afterCreateWidget(String name, Widget widget) {

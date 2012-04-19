@@ -40,6 +40,9 @@ import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.validation.CellValidation;
+import com.butent.bee.client.validation.ValidationHelper;
+import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.view.ActionEvent;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
@@ -181,6 +184,15 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return addHandler(handler, AddStartEvent.getType());
   }
 
+  public HandlerRegistration addCellValidationHandler(String columnId, Handler handler) {
+    EditableColumn editableColumn = getEditableColumn(columnId, true);
+    if (editableColumn == null) {
+      return null;
+    } else {
+      return editableColumn.addCellValidationHandler(handler);
+    }
+  }
+  
   public HandlerRegistration addChangeHandler(ChangeHandler handler) {
     setFilterChangeHandler(handler);
     return new HandlerRegistration() {
@@ -504,6 +516,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     int dataIndex;
     RelationInfo relationInfo;
 
+    EditableColumn editableColumn = null;
+    
     for (ColumnDescription columnDescr : columnDescriptions) {
       String columnId = columnDescr.getName();
       if (callback != null &&
@@ -567,7 +581,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
               relationInfo = null;
             }
 
-            EditableColumn editableColumn =
+            editableColumn =
                 new EditableColumn(dataCols, dataIndex, relationInfo, column, caption, columnDescr);
             editableColumn.setNotificationListener(this);
             getEditableColumns().put(BeeUtils.normalize(columnId), editableColumn);
@@ -652,7 +666,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       if (callback != null &&
-          !callback.afterCreateColumn(columnId, dataCols, column, header, footer)) {
+          !callback.afterCreateColumn(columnId, dataCols, column, header, footer, editableColumn)) {
         continue;
       }
 
@@ -661,7 +675,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     if (callback != null) {
-      callback.afterCreateColumns(getGrid());
+      callback.afterCreateColumns(this);
     }
 
     initNewRowColumns(gridDescr.getNewRowColumns());
@@ -744,7 +758,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     if (callback != null) {
-      callback.afterCreate(getGrid());
+      callback.afterCreate(this);
     }
   }
 
@@ -827,6 +841,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   public IsRow getActiveRowData() {
     return getGrid().getActiveRowData();
+  }
+
+  public Map<String, EditableColumn> getEditableColumns() {
+    return editableColumns;
   }
 
   public Filter getFilter(List<? extends IsColumn> columns, String idColumnName,
@@ -1002,7 +1020,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     IsRow rowValue = event.getRowValue();
     String columnId = event.getColumnId();
-    EditableColumn editableColumn = getEditableColumn(columnId);
+    EditableColumn editableColumn = getEditableColumn(columnId, false);
 
     boolean useForm = useFormForEdit(columnId);
     boolean editable = !isReadOnly();
@@ -1199,7 +1217,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (!useForm && getNewRowWidget() == null) {
       List<EditableColumn> columns = Lists.newArrayList();
       for (String columnId : getNewRowColumns()) {
-        columns.add(getEditableColumn(columnId));
+        columns.add(getEditableColumn(columnId, true));
       }
 
       setNewRowWidget(new RowEditor(BeeUtils.ifString(caption, getNewRowCaption()),
@@ -1344,15 +1362,19 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return dataColumns;
   }
 
-  private EditableColumn getEditableColumn(String columnId) {
+  private EditableColumn getEditableColumn(String columnId, boolean warn) {
     if (BeeUtils.isEmpty(columnId)) {
+      if (warn) {
+        BeeKeeper.getLog().warning("editable column id not specified");
+      }
       return null;
     }
-    return getEditableColumns().get(BeeUtils.normalize(columnId));
-  }
 
-  private Map<String, EditableColumn> getEditableColumns() {
-    return editableColumns;
+    EditableColumn editableColumn = getEditableColumns().get(BeeUtils.normalize(columnId));
+    if (editableColumn == null && warn) {
+      BeeKeeper.getLog().warning("editable column not found:", columnId);
+    }
+    return editableColumn;
   }
 
   private FormView getEditForm() {
@@ -1814,16 +1836,18 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
       newValue = row.getString(index);
 
-      ok = UiHelper.validateCell(oldValue, newValue, ec.getValidation(), row, index,
+      CellValidation cv = new CellValidation(oldValue, newValue, ec.getValidation(), row, index,
           ec.getTypeForUpdate(), ec.isNullable(), ec.getMinValue(), ec.getMaxValue(),
           ec.getCaption(), notificationListener, force);
+      
+      ok = ValidationHelper.validateCell(cv, ec);
       if (!ok) {
         break;
       }
     }
 
     if (ok && getRowValidation() != null) {
-      ok = UiHelper.validateRow(row, getRowValidation(), notificationListener);
+      ok = ValidationHelper.validateRow(row, getRowValidation(), notificationListener);
     }
     return ok;
   }

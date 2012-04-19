@@ -37,7 +37,7 @@ public class DragEndEvent extends DragEvent {
       dropTargetText = "dropTarget="
           + StringUtil.getShortTypeName(context.finalDropController.getDropTarget());
     } else {
-      dropTargetText = "[cancelled]";
+      dropTargetText = "[canceled]";
     }
     return "DragEndEvent(" + dropTargetText + ", source=" + getSourceShortTypeName() + ")";
   }

@@ -10,15 +10,20 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.validation.CellValidateEvent;
+import com.butent.bee.client.validation.CellValidation;
+import com.butent.bee.client.validation.CellValidationBus;
+import com.butent.bee.client.validation.HasCellValidationHandlers;
+import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -35,7 +40,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 
 public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String>, FocusHandler,
-    BlurHandler, EditStopEvent.Handler {
+    BlurHandler, EditStopEvent.Handler, HasCellValidationHandlers {
 
   private final int dataIndex;
   private final BeeColumn dataColumn;
@@ -53,6 +58,8 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   private final boolean required;
   private final boolean readOnly;
 
+  private final CellValidationBus cellValidationBus = new CellValidationBus();
+  
   private EditEndEvent.Handler editEndHandler = null;
   private boolean initialized = false;
 
@@ -80,6 +87,10 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     this.readOnly = BeeUtils.isTrue(widgetDescription.isReadOnly());
   }
 
+  public HandlerRegistration addCellValidationHandler(CellValidateEvent.Handler handler) {
+    return cellValidationBus.addCellValidationHandler(handler);
+  }
+  
   public void bind(Widget rootWidget, EditEndEvent.Handler handler, FormView formView) {
     if (isInitialized()) {
       return;
@@ -134,6 +145,10 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return getWidgetDescription().equals(((EditableWidget) obj).getWidgetDescription());
   }
 
+  public boolean fireCellValidation(CellValidateEvent event) {
+    return cellValidationBus.fireCellValidation(event);
+  }
+  
   public String getCaption() {
     return BeeUtils.ifString(getWidgetDescription().getCaption(),
         getDataColumn().getLabel());
@@ -458,8 +473,10 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   }
 
   private boolean validate(String oldValue, String newValue, boolean force) {
-    return UiHelper.validateCell(oldValue, newValue, getValidation(), getRowValue(),
-        getIndexForUpdate(), getTypeForUpdate(), isNullable(), getMinValue(), getMaxValue(),
-        getCaption(), getForm(), force);
+    CellValidation cellValidation = new CellValidation(oldValue, newValue, getValidation(),
+        getRowValue(), getIndexForUpdate(), getTypeForUpdate(), isNullable(), getMinValue(),
+        getMaxValue(), getCaption(), getForm(), force);
+
+    return ValidationHelper.validateCell(cellValidation, this);
   }
 }

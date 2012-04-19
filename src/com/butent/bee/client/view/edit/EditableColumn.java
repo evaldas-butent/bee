@@ -7,6 +7,7 @@ import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.client.BeeKeeper;
@@ -22,6 +23,11 @@ import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.validation.CellValidateEvent;
+import com.butent.bee.client.validation.CellValidation;
+import com.butent.bee.client.validation.CellValidationBus;
+import com.butent.bee.client.validation.HasCellValidationHandlers;
+import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -48,7 +54,8 @@ import java.util.List;
  * etc.
  */
 
-public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEvent.Handler {
+public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEvent.Handler,
+    HasCellValidationHandlers {
 
   private static final String STYLE_EDITOR = "bee-CellGridEditor";
 
@@ -68,6 +75,8 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   private final EditorDescription editorDescription;
   private final String itemKey;
+  
+  private final CellValidationBus cellValidationBus = new CellValidationBus();
 
   private Editor editor = null;
   private IsRow rowValue = null;
@@ -110,6 +119,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     }
   }
 
+  public HandlerRegistration addCellValidationHandler(CellValidateEvent.Handler handler) {
+    return cellValidationBus.addCellValidationHandler(handler);
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
@@ -119,6 +132,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       return false;
     }
     return getColIndex() == ((EditableColumn) obj).getColIndex();
+  }
+
+  public boolean fireCellValidation(CellValidateEvent event) {
+    return cellValidationBus.fireCellValidation(event);
   }
 
   public String getCaption() {
@@ -546,14 +563,14 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     } else if (isForeign()) {
       setEditor(new DataSelector(getRelationInfo(), false));
       getEditor().setNullable(isNullable());
-    
+
     } else if (!BeeUtils.isEmpty(getItemKey())) {
       BeeListBox listBox = new BeeListBox();
       listBox.setValueNumeric(ValueType.isNumeric(getDataType()));
       listBox.addCaptions(getItemKey());
       listBox.setNullable(isNullable());
       setEditor(listBox);
-      
+
     } else {
       setEditor(EditorFactory.createEditor(getDataColumn(), isNullable()));
     }
@@ -639,8 +656,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   }
 
   private boolean validate(String oldValue, String newValue, boolean force) {
-    return UiHelper.validateCell(oldValue, newValue, getValidation(), getRowValue(),
-        getIndexForUpdate(), getTypeForUpdate(), isNullable(), getMinValue(), getMaxValue(),
-        getCaption(), getNotificationListener(), force);
+    CellValidation cellValidation = new CellValidation(oldValue, newValue, getValidation(),
+        getRowValue(), getIndexForUpdate(), getTypeForUpdate(), isNullable(), getMinValue(),
+        getMaxValue(), getCaption(), getNotificationListener(), force);
+
+    return ValidationHelper.validateCell(cellValidation, this);
   }
 }

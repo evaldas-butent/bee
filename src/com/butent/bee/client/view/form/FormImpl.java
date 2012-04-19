@@ -31,11 +31,12 @@ import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormWidget;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.EvalHelper;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.validation.CellValidateEvent.Handler;
+import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.view.ActionEvent;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
@@ -290,6 +291,15 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return addHandler(handler, AddStartEvent.getType());
   }
 
+  public HandlerRegistration addCellValidationHandler(String columnId, Handler handler) {
+    EditableWidget editableWidget = getEditableWidgetByColumn(columnId, true);
+    if (editableWidget == null) {
+      return null;
+    } else {
+      return editableWidget.addCellValidationHandler(handler);
+    }
+  }
+
   public HandlerRegistration addDataRequestHandler(DataRequestEvent.Handler handler) {
     return addHandler(handler, DataRequestEvent.getType());
   }
@@ -413,6 +423,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return this;
   }
 
+  public List<EditableWidget> getEditableWidgets() {
+    return editableWidgets;
+  }
+
   public FormCallback getFormCallback() {
     return formCallback;
   }
@@ -476,7 +490,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public Widget getWidgetBySource(String source) {
     Assert.notEmpty(source);
-    EditableWidget editableWidget = getEditableWidgetByColumn(source);
+    EditableWidget editableWidget = getEditableWidgetByColumn(source, false);
     if (editableWidget == null) {
       return null;
     } else {
@@ -887,7 +901,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
 
     if (ok && getRow() != null) {
-      ok = UiHelper.validateRow(getRow(), getRowValidation(), this);
+      ok = ValidationHelper.validateRow(getRow(), getRowValidation(), this);
     }
 
     return ok;
@@ -991,17 +1005,17 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return displayWidgets;
   }
 
-  private EditableWidget getEditableWidgetByColumn(String columnId) {
+  private EditableWidget getEditableWidgetByColumn(String columnId, boolean warn) {
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (BeeUtils.same(columnId, editableWidget.getColumnId())) {
         return editableWidget;
       }
     }
-    return null;
-  }
 
-  private List<EditableWidget> getEditableWidgets() {
-    return editableWidgets;
+    if (warn) {
+      BeeKeeper.getLog().warning("editable widget not found:", columnId);
+    }
+    return null;
   }
 
   private Notification getNotification() {

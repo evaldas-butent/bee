@@ -412,7 +412,7 @@ public class PickupDragController extends AbstractDragController {
   }
 
   /**
-   * Save the selected widgets' current location in case they much be restored due to a cancelled
+   * Save the selected widgets' current location in case they much be restored due to a canceled
    * drop.
    * 
    * @see #restoreSelectedWidgetsLocation()

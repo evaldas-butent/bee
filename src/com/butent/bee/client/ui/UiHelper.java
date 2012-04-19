@@ -18,10 +18,8 @@ import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasCharacterFilter;
 import com.butent.bee.client.view.form.FormView;
@@ -30,8 +28,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasNumberBounds;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.Holder;
-import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasCaption;
@@ -365,69 +361,6 @@ public class UiHelper {
     }
 
     form.updateCell(columnId, value);
-  }
-
-  public static boolean validateCell(String oldValue, String newValue, Evaluator validation,
-      IsRow row, int colIndex, ValueType type, boolean nullable, String minValue, String maxValue,
-      String caption, NotificationListener notificationListener, boolean force) {
-    if (!force && BeeUtils.equalsTrimRight(oldValue, newValue)) {
-      return true;
-    }
-    String errorMessage = null;
-
-    if (validation != null) {
-      validation.update(row, BeeConst.UNDEF, colIndex, type, oldValue, newValue);
-      String msg = validation.evaluate();
-      if (!BeeUtils.isEmpty(msg)) {
-        errorMessage = msg;
-      }
-    }
-
-    if (errorMessage == null && !nullable && BeeUtils.isEmpty(newValue)) {
-      errorMessage = "Value required";
-    }
-
-    if (errorMessage == null && (!BeeUtils.isEmpty(minValue) || !BeeUtils.isEmpty(maxValue))) {
-      Value value = Value.parseValue(type, newValue, false);
-
-      if (!BeeUtils.isEmpty(minValue)
-          && value.compareTo(Value.parseValue(type, minValue, true)) < 0) {
-        errorMessage = BeeUtils.concat(1, errorMessage, "Min value:", minValue);
-      }
-      if (!BeeUtils.isEmpty(maxValue)
-          && value.compareTo(Value.parseValue(type, maxValue, true)) > 0) {
-        errorMessage = BeeUtils.concat(1, errorMessage, "Max value:", maxValue);
-      }
-    }
-
-    if (errorMessage == null) {
-      return true;
-    } else {
-      if (notificationListener != null) {
-        notificationListener.notifySevere(caption, errorMessage);
-      }
-      return false;
-    }
-  }
-
-  public static boolean validateRow(IsRow row, Evaluator validation,
-      NotificationListener notificationListener) {
-    Assert.notNull(row);
-    if (validation == null) {
-      return true;
-    }
-
-    validation.update(row);
-    String message = validation.evaluate();
-
-    if (BeeUtils.isEmpty(message)) {
-      return true;
-    } else {
-      if (notificationListener != null) {
-        notificationListener.notifySevere(message);
-      }
-      return false;
-    }
   }
 
   private UiHelper() {

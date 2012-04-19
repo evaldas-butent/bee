@@ -19,6 +19,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.resources.Images;
+import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.widget.BeeImage;
@@ -63,7 +64,8 @@ public class ProjectList {
 
     @Override
     public boolean afterCreateColumn(String columnId, final List<? extends IsColumn> dataColumns,
-        final AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer) {
+        final AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
+        EditableColumn editableColumn) {
 
       if (BeeUtils.same(columnId, "Mode") && column instanceof HasCellRenderer) {
         ((HasCellRenderer) column).setRenderer(new AbstractCellRenderer() {

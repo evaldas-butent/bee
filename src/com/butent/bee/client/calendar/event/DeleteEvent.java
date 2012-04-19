@@ -10,7 +10,7 @@ public class DeleteEvent<T> extends GwtEvent<DeleteHandler<T>> {
     if (TYPE != null) {
       DeleteEvent<T> event = new DeleteEvent<T>(target);
       source.fireEvent(event);
-      return !event.isCancelled();
+      return !event.isCanceled();
     }
     return true;
   }
@@ -22,7 +22,7 @@ public class DeleteEvent<T> extends GwtEvent<DeleteHandler<T>> {
     return TYPE;
   }
 
-  private boolean cancelled = false;
+  private boolean canceled = false;
 
   private final T target;
 
@@ -40,12 +40,12 @@ public class DeleteEvent<T> extends GwtEvent<DeleteHandler<T>> {
     return target;
   }
 
-  public boolean isCancelled() {
-    return cancelled;
+  public boolean isCanceled() {
+    return canceled;
   }
 
-  public void setCancelled(boolean cancelled) {
-    this.cancelled = cancelled;
+  public void setCanceled(boolean canceled) {
+    this.canceled = canceled;
   }
 
   @Override
