@@ -6,8 +6,9 @@
   >
   <Columns>
     <SimpleColumn name="Method" />
+    <SimpleColumn name="Hours" />
     <SimpleColumn name="Minutes" />
-
+    <SimpleColumn name="Template" />
     <SimpleColumn name="Description" />
   </Columns>
   <Order>

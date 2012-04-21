@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="ReminderTypes" viewName="ReminderTypes" caption="Priminimų tipai"
+  name="ExtendedProperties" viewName="ExtendedProperties" caption="Parametrai"
   >
   <columns>
-    <DataColumn name="Method" itemKey="ReminderMethod" />
+    <DataColumn name="GroupName" />
+    <DataColumn name="Name" />
     <DataColumn name="Hours" />
     <DataColumn name="Minutes" />
-    <DataColumn name="Template" />
     <DataColumn name="Description" />
   </columns>
 </Grid>

@@ -6,6 +6,8 @@
   newRowForm="Appointment" editForm="Appointment"
   >
   <columns>
+    <DataColumn name="TypeName" />
+
     <DataColumn name="Summary" />
     <DataColumn name="Description" />
 
@@ -31,19 +33,11 @@
     <DataColumn name="OrganizerFirstName" />
     <DataColumn name="OrganizerLastName" />
     
-    <DataColumn name="StartDate">
-      <carry>
-        <ui:expression>new Date()</ui:expression>
-      </carry>
-    </DataColumn>  
+    <DataColumn name="StartDate" />
     <DataColumn name="StartDateTime" />
     <DataColumn name="StartTimeZoneName" />
 
-    <DataColumn name="EndDate">
-      <carry>
-        <ui:expression>new Date()</ui:expression>
-      </carry>
-    </DataColumn>  
+    <DataColumn name="EndDate" />
     <DataColumn name="EndDateTime" />
     <DataColumn name="EndTimeZoneName" />
 
@@ -62,6 +56,26 @@
     <DataColumn name="GuestsCanSeeOtherGuests" />
 
     <DataColumn name="UseDefaultReminders" />
+    
+    <DataColumn name="CompanyName" />
+    <DataColumn name="CompanyPhone" />
+    <DataColumn name="CompanyMobile" />
+    <DataColumn name="CompanyEmail" />
+
+    <DataColumn name="VehicleType" />
+    <DataColumn name="VehicleNumber" />
+    <DataColumn name="VehicleBodyNumber" />
+    <DataColumn name="VehicleEngineNumber" />
+    <DataColumn name="VehicleEngineVolume" />
+    <DataColumn name="VehicleProductionDate" />
+    <DataColumn name="VehicleSpeedometer" />
+    <DataColumn name="VehicleTankCapacity" />
+    <DataColumn name="VehiclePower" />
+    <DataColumn name="VehicleNetto" />
+    <DataColumn name="VehicleBrutto" />
+
+    <DataColumn name="EffectiveStart" />
+    <DataColumn name="EffectiveEnd" />
   </columns>
   
   <rowEditable>

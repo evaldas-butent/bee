@@ -8,6 +8,6 @@
     <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />
 
     <BeeField name="Background" type="STRING" precision="200" notNull="true" />
-    <BeeField name="Foreground" type="STRING" precision="200" notNull="true" />
+    <BeeField name="Foreground" type="STRING" precision="200" />
   </BeeFields>
 </BeeTable>

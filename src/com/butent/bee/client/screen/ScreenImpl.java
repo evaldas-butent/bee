@@ -337,6 +337,7 @@ public class ScreenImpl implements Screen {
   protected void createUi() {
     Widget w;
     Split p = new Split(2);
+    p.addStyleName("bee-Screen");
 
     w = initNorth();
     if (w != null) {

@@ -46,10 +46,13 @@
   <item id="spare_parts" parent="transport_menu" order="80" text="Keičiamos dalys" service="grid" parameters="SpareParts" separators="*" />
 
   <item id="calendar_menu" order="80" text="Kalendorius" />
-  <item id="calendars" parent="calendar_menu" order="100" text="Kalendoriai" service="grid" parameters="Calendars" />
+  <item id="calendars" parent="calendar_menu" order="50" text="Kalendoriai" service="grid" parameters="Calendars" />
+  <item id="appointments" parent="calendar_menu" order="100" text="Vizitai" service="grid" parameters="Appointments" separators="*" />
+  <item id="attendee_types" parent="calendar_menu" order="105" text="Vizitų tipai" service="grid" parameters="AppointmentTypes" separators="*" />
   <item id="attendee_types" parent="calendar_menu" order="110" text="Resursų tipai" service="grid" parameters="AttendeeTypes" separators="*" />
-  <item id="attendees" parent="calendar_menu" order="120" text="Resursai" service="grid" parameters="Attendees" />
-  <item id="appointments" parent="calendar_menu" order="130" text="Vizitai" service="grid" parameters="Appointments" separators="*" />
+  <item id="attendees" parent="calendar_menu" order="115" text="Resursai" service="grid" parameters="Attendees" />
+  <item id="appointments" parent="calendar_menu" order="120" text="Vizitų parametrų grupės" service="grid" parameters="PropertyGroups" separators="*" />
+  <item id="appointments" parent="calendar_menu" order="125" text="Vizitų parametrai" service="grid" parameters="ExtendedProperties" />
   <item id="colors" parent="calendar_menu" order="140" text="Spalvos" service="grid" parameters="Colors" separators="*" />
   <item id="themes" parent="calendar_menu" order="150" text="Temos" service="grid" parameters="Themes" />
   <item id="appointment_styles" parent="calendar_menu" order="160" text="Vizitų stiliai" service="grid" parameters="AppointmentStyles" />

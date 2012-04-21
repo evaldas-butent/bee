@@ -5,6 +5,11 @@
   source="Appointments"
   >
   <Columns>
+    <SimpleColumn name="AppointmentType" />
+    <SimpleJoin joinType="INNER" name="AppointmentType">
+      <SimpleColumn alias="TypeName" name="Name" />
+    </SimpleJoin>
+  
     <SimpleColumn name="Summary" />
     <SimpleColumn name="Description" />
 
@@ -12,7 +17,7 @@
     <SimpleColumn name="HtmlLink" />
 
     <SimpleColumn name="Color" />
-    <SimpleJoin name="Color" joinType="INNER">
+    <SimpleJoin name="Color" joinType="LEFT">
       <SimpleColumn alias="ColorName" name="Name" />
       <SimpleColumn name="Background" />
       <SimpleColumn name="Foreground" />
@@ -72,6 +77,36 @@
     <SimpleColumn name="GuestsCanSeeOtherGuests" />
 
     <SimpleColumn name="UseDefaultReminders" />
+    
+    <SimpleColumn name="Company" />
+    <SimpleJoin name="Company" joinType="LEFT">
+      <SimpleColumn alias="CompanyName" name="Name" />
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn alias="CompanyPhone" name="Phone" />
+        <SimpleColumn alias="CompanyMobile" name="Mobile" />
+        <SimpleColumn alias="CompanyEmail" name="Email" />
+      </SimpleJoin>
+    </SimpleJoin>
+    
+    <SimpleColumn name="Vehicle" />
+    <SimpleJoin name="Vehicle" joinType="LEFT">
+      <SimpleJoin name="Type" joinType="LEFT">
+        <SimpleColumn alias="VehicleType" name="Name" />
+      </SimpleJoin>
+      <SimpleColumn alias="VehicleNumber" name="Number" />
+      <SimpleColumn alias="VehicleBodyNumber" name="BodyNumber" />
+      <SimpleColumn alias="VehicleEngineNumber" name="EngineNumber" />
+      <SimpleColumn alias="VehicleEngineVolume" name="EngineVolume" />
+      <SimpleColumn alias="VehicleProductionDate" name="ProductionDate" />
+      <SimpleColumn alias="VehicleSpeedometer" name="Speedometer" />
+      <SimpleColumn alias="VehicleTankCapacity" name="TankCapacity" />
+      <SimpleColumn alias="VehiclePower" name="Power" />
+      <SimpleColumn alias="VehicleNetto" name="Netto" />
+      <SimpleColumn alias="VehicleBrutto" name="Brutto" />
+    </SimpleJoin>
+    
+    <SimpleColumn name="EffectiveStart" />
+    <SimpleColumn name="EffectiveEnd" />
   </Columns>
 
   <Order>

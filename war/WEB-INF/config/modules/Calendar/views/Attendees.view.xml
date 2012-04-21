@@ -13,15 +13,18 @@
     <SimpleColumn name="Name" />
     <SimpleColumn name="Description" />
 
-    <SimpleColumn name="Person" />
-    <SimpleJoin name="Person" joinType="LEFT">
-      <SimpleColumn name="FirstName" />
-      <SimpleColumn name="LastName" />
+    <SimpleColumn name="CompanyPerson" />
+    <SimpleJoin name="CompanyPerson" joinType="LEFT">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn name="FirstName" />
+        <SimpleColumn name="LastName" />
+      </SimpleJoin>
     </SimpleJoin>
 
     <SimpleColumn name="Transparency" />
   </Columns>
   <Order>
+    <OrderBy column="TypeName" />
     <OrderBy column="Name" />
   </Order>
 </View>

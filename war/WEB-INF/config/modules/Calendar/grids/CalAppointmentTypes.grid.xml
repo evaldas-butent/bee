@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
   
-  name="CalAttendeeTypes" viewName="CalAttendeeTypes" caption="Resursų tipai"
+  name="CalAppointmentTypes" viewName="CalAppointmentTypes" caption="Vizitų tipai"
   >
   <columns>
     <DataColumn name="TypeName" />
-
     <DataColumn name="TypeDescription" readOnly="true" />
-    <DataColumn name="TypeTransparency" readOnly="true" itemKey="Transparency" />
-    <DataColumn name="TypeResource" readOnly="true" />
-    
     <DataColumn name="Hidden" />
   </columns>
 </Grid>

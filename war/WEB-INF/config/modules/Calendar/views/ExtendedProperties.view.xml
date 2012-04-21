@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ExtendedProperties"
+  source="ExtendedProperties"
+  >
+  <Columns>
+    <SimpleColumn name="PropertyGroup" />
+    <SimpleJoin joinType="INNER" name="PropertyGroup">
+      <SimpleColumn alias="GroupName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Hours" />
+    <SimpleColumn name="Minutes" />
+    <SimpleColumn name="Description" />
+  </Columns>
+  <Order>
+    <OrderBy column="GroupName" />
+    <OrderBy column="Name" />
+  </Order>
+</View>

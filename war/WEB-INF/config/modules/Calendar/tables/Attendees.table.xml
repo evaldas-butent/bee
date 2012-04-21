@@ -8,9 +8,9 @@
     <BeeField name="AttendeeType" type="LONG" notNull="true" relation="AttendeeTypes" />
 
     <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />
+    <BeeField name="Location" type="STRING" precision="100" />
     <BeeField name="Description" type="TEXT" />
 
-    <BeeField name="Person" type="LONG" relation="Persons" />
     <BeeField name="CompanyPerson" type="LONG" relation="CompanyPersons" />
 
     <BeeField name="Transparency" type="INTEGER" />

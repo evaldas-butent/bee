@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+
+  name="AppointmentTypes" viewName="AppointmentTypes" caption="Vizitų tipai"
+  >
+  <columns>
+    <DataColumn name="Name" />
+    <DataColumn name="Description" />
+
+    <DataColumn name="AppointmentCreator" />
+    <DataColumn name="AppointmentEditor" />
+  </columns>
+</Grid>

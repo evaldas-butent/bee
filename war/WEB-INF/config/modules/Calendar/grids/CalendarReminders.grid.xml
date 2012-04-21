@@ -5,7 +5,12 @@
   >
   <columns>
     <DataColumn name="Method" itemKey="ReminderMethod" />
+    <DataColumn name="Hours" />
     <DataColumn name="Minutes" />
+    <DataColumn name="Template" />
+
+    <DataColumn name="DefaultHours" readOnly="true" />
     <DataColumn name="DefaultMinutes" readOnly="true" />
+    <DataColumn name="DefaultTemplate" readOnly="true" />
   </columns>
 </Grid>

@@ -7,12 +7,13 @@
   <BeeFields>
     <BeeField name="Appointment" type="LONG" notNull="true" relation="Appointments" cascade="DELETE" />
     <BeeField name="ReminderType" type="LONG" notNull="true" relation="ReminderTypes" cascade="DELETE" />
+    <BeeField name="Recipient" type="LONG" relation="CompanyPersons" cascade="DELETE" />
+
+    <BeeField name="Hours" type="INTEGER" />
     <BeeField name="Minutes" type="INTEGER" />
+    <BeeField name="Scheduled" type="DATETIME" />
+
+    <BeeField name="Message" type="TEXT" />
+    <BeeField name="Sent" type="DATETIME" />
   </BeeFields>
-  <BeeKeys>
-    <BeeKey unique="true">
-      <KeyField>Appointment</KeyField>
-      <KeyField>ReminderType</KeyField>
-    </BeeKey>
-  </BeeKeys>
 </BeeTable>

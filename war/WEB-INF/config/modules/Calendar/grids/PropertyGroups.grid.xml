@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+
+  name="PropertyGroups" viewName="PropertyGroups" caption="Parametrų grupės"
+  >
+  <columns>
+    <DataColumn name="Name" />
+    <DataColumn name="Description" />
+    <DataColumn name="DefaultPropertyName" />
+  </columns>
+</Grid>

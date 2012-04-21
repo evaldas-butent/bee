@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+  
+  name="CalendarAttendees"
+  source="CalendarAttendees"
+  >
+  <Columns>
+    <SimpleColumn name="Calendar" />
+
+    <SimpleColumn name="Attendee" />
+    <SimpleJoin name="Attendee" joinType="INNER">
+      <SimpleColumn alias="AttendeeName" name="Name" />
+      <SimpleColumn name="AttendeeType" />
+      <SimpleJoin joinType="INNER" name="AttendeeType">
+        <SimpleColumn alias="TypeName" name="Name" />
+      </SimpleJoin>
+    </SimpleJoin>
+    
+    <SimpleColumn name="Hidden" />
+  </Columns>
+  <Order>
+    <OrderBy column="AttendeeType" />
+    <OrderBy column="AttendeeName" />
+  </Order>
+</View>

@@ -7,7 +7,10 @@
   <BeeFields>
     <BeeField name="Calendar" type="LONG" notNull="true" relation="Calendars" cascade="DELETE" />
     <BeeField name="ReminderType" type="LONG" notNull="true" relation="ReminderTypes" cascade="DELETE" />
+
+    <BeeField name="Hours" type="INTEGER" />
     <BeeField name="Minutes" type="INTEGER" />
+    <BeeField name="Template" type="TEXT" />
   </BeeFields>
   <BeeKeys>
     <BeeKey unique="true">

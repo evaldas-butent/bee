@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
   
-  name="CalAttendeeTypes"
-  source="CalAttendeeTypes"
+  name="CalAppointmentTypes"
+  source="CalAppointmentTypes"
   >
   <Columns>
     <SimpleColumn name="Calendar" />
 
-    <SimpleColumn name="AttendeeType" />
-    <SimpleJoin name="AttendeeType" joinType="INNER">
+    <SimpleColumn name="AppointmentType" />
+    <SimpleJoin name="AppointmentType" joinType="INNER">
       <SimpleColumn alias="TypeName" name="Name" />
       <SimpleColumn alias="TypeDescription" name="Description" />
-      <SimpleColumn alias="TypeTransparency" name="Transparency" />
-      <SimpleColumn alias="TypeResource" name="Resource" />
     </SimpleJoin>
     
     <SimpleColumn name="Hidden" />

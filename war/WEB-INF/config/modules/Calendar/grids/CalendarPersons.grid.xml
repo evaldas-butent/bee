@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="CalendarPersons" viewName="CalendarPersons" caption="Asmenys"
+  >
+  <columns>
+    <DataColumn name="FirstName" />
+    <DataColumn name="LastName" />
+
+    <DataColumn name="Creator" />
+    <DataColumn name="Organizer" />
+
+    <DataColumn name="Hidden" />
+  </columns>
+</Grid>

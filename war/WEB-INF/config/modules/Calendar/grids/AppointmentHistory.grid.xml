@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+
+  name="AppointmentHistory" viewName="AppointmentHistory" caption="Istorija"
+  >
+  <columns>
+    <DataColumn name="PublishTime" />
+    <DataColumn name="FirstName" />
+    <DataColumn name="LastName" />
+
+    <DataColumn name="Status" itemKey="AppointmentStatus" />
+    <DataColumn name="Hours" />
+    <DataColumn name="Minutes" />
+    
+    <DataColumn name="Comment" />
+  </columns>
+</Grid>
+ 

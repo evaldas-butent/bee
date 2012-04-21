@@ -93,6 +93,10 @@ body,select {
   bottom: 0;
 }
 
+.bee-Screen {
+  background-color: #FBFBFB;  
+}
+
 .bee-RadioButton input:checked+label {
   text-transform: uppercase;
 }
@@ -102,20 +106,20 @@ body,select {
 }
 
 .bee-HSplitter {
-  background-color: #d0e4f6;
+  background: #e2dfdf;
   cursor: col-resize;
 }
 
 .bee-VSplitter {
-  background-color: #d0e4f6;
+  background: #e2dfdf;
   cursor: row-resize;
 }
 
-.bee-activeBlank,.bee-activeContent {
-  border: 2px solid red;
+.bee-activeBlank, .bee-activeContent {
+  border: 2px solid #676767;
 }
 
-.bee-MenuRoot,.bee-MenuBar {
+.bee-MenuRoot, .bee-MenuBar {
   overflow: auto;
 }
 
@@ -140,26 +144,42 @@ body,select {
   margin: 0;
 }
 
+.bee-MenuRoot-flow .bee-MenuItem-label {
+  display: inline-block;
+  margin: 2px;
+  color: #6D6D6D;
+  font: 13px/21px Arial;
+}
+
+.bee-MenuRoot-flow.bee-MenuRoot-horizontal .bee-MenuItem-label:hover,
+.bee-MenuRoot-flow.bee-MenuRoot-horizontal .bee-MenuItem-selected {
+  border-bottom: 5px solid #FD6268;
+  outline: none !important;
+}
+
 .bee-MenuPopup {
   max-width: 95%;
-  background: WhiteSmoke;
-  border: 1px solid LightGrey;
+  background: white;
+  border: 1px solid #e7e7e7;
   box-shadow: 6px 6px 5px DarkGray;
   -webkit-box-shadow: 6px 6px 5px DarkGray;
   -moz-box-shadow: 6px 6px 5px DarkGray;
-}
-
-.bee-MenuRoot-flow .bee-MenuItem-label {
-  display: inline-block;
-  padding-top: 3px;
-  padding-bottom: 3px;
-  margin: 2px;
 }
 
 .bee-MenuItem-label {
   padding-left: 0.5em;
   padding-right: 0.5em;
 }
+
+.bee-MenuPopup .bee-MenuItem-label {
+  color: #ADADAD;
+  font: 13px/1.4 Arial;
+}
+
+.bee-MenuPopup .bee-MenuItem-label.bee-MenuItem-selected {
+  color: #636363;
+  outline: none !important;
+}   
 
 .bee-MenuItem-dt {
   padding-left: 0.5em;
@@ -169,10 +189,6 @@ body,select {
   color: green;
   font-size: medium;
   font-weight: bold;
-}
-
-.bee-MenuItem:hover {
-  background: LightCyan;
 }
 
 .bee-MenuItem-selected {
@@ -192,7 +208,7 @@ body,select {
 
 .bee-MenuBar-vertical .bee-MenuItemSeparator {
   height: 1px;
-  background: Silver;
+  background: #e7e7e7;
 }
 
 .bee-MenuBar-level-1 ul {

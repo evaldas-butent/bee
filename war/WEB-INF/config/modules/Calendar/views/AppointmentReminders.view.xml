@@ -6,12 +6,34 @@
   >
   <Columns>
     <SimpleColumn name="Appointment" />
-    <SimpleColumn name="ReminderType" />
+    
+    <SimpleColumn name="Recipient" />
+    <SimpleJoin name="Recipient" joinType="LEFT">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn name="FirstName" />
+        <SimpleColumn name="LastName" />
+        <SimpleJoin name="Contact" joinType="LEFT">
+          <SimpleColumn name="Mobile" />
+          <SimpleColumn name="Email" />
+        </SimpleJoin>
+      </SimpleJoin>
+    </SimpleJoin>
+    
+    <SimpleColumn name="Hours" />
     <SimpleColumn name="Minutes" />
+    <SimpleColumn name="Scheduled" />
+
+    <SimpleColumn name="Message" />
+
+    <SimpleColumn name="ReminderType" />
     <SimpleJoin name="ReminderType" joinType="INNER">
       <SimpleColumn name="Method" />
+      <SimpleColumn alias="DefaultHours" name="Hours" />
       <SimpleColumn alias="DefaultMinutes" name="Minutes" />
+      <SimpleColumn alias="DefaultTemplate" name="Template" />
     </SimpleJoin>
+
+    <SimpleColumn name="Sent" />
   </Columns>
   <Order>
     <OrderBy column="Method" />

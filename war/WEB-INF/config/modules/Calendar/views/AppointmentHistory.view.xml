@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="AppointmentHistory" source="AppointmentHistory"
+  >
+  <Columns>
+    <SimpleColumn name="Appointment" />
+    <SimpleJoin name="Publisher" joinType="INNER">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn name="FirstName" />
+        <SimpleColumn name="LastName" />
+      </SimpleJoin>
+    </SimpleJoin>
+    <SimpleColumn name="PublishTime" />
+
+    <SimpleColumn name="Status" />
+    <SimpleColumn name="Hours" />
+    <SimpleColumn name="Minutes" />
+    
+    <SimpleColumn name="Comment" />
+  </Columns>
+</View>
+ 

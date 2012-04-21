@@ -7,10 +7,19 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class CalendarConstants {
   
   public static enum AppointmentStatus implements HasCaption {
-    CONFIRMED, TENTATIVE, CANCELED;
+    TENTATIVE("Planuojamas"),
+    CONFIRMED("Patvirtintas"),
+    DELAYED("Atidėtas"),
+    CANCELED("Atšauktas");
     
+    private final String caption;
+    
+    private AppointmentStatus(String caption) {
+      this.caption = caption;
+    }
+
     public String getCaption() {
-      return this.name().toLowerCase();
+      return caption;
     }
   }
 

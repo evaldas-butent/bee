@@ -5,26 +5,28 @@
   idName="AppointmentID"
   >
   <BeeFields>
-    <BeeField name="Summary" type="STRING" precision="100" notNull="true" />
+    <BeeField name="AppointmentType" type="LONG" notNull="true" relation="AppointmentTypes" />
+
+    <BeeField name="Summary" type="STRING" precision="100" />
     <BeeField name="Description" type="TEXT" />
 
     <BeeField name="Location" type="STRING" precision="100" />
     <BeeField name="HtmlLink" type="STRING" precision="200" />
 
-    <BeeField name="Color" type="LONG" notNull="true" relation="Colors" />
+    <BeeField name="Color" type="LONG" relation="Colors" />
     <BeeField name="Style" type="LONG" relation="AppointmentStyles" />
 
     <BeeField name="Status" type="INTEGER" />
-    <BeeField name="Created" type="DATETIME" notNull="true" />
+    <BeeField name="Created" type="DATETIME" />
 
     <BeeField name="Creator" type="LONG" relation="CompanyPersons" />
     <BeeField name="Organizer" type="LONG" relation="CompanyPersons" />
 
-    <BeeField name="StartDate" type="DATE" notNull="true" />
+    <BeeField name="StartDate" type="DATE" />
     <BeeField name="StartDateTime" type="DATETIME" />
     <BeeField name="StartTimeZone" type="LONG" relation="TimeZones" />
 
-    <BeeField name="EndDate" type="DATE" notNull="true" />
+    <BeeField name="EndDate" type="DATE" />
     <BeeField name="EndDateTime" type="DATETIME" />
     <BeeField name="EndTimeZone" type="LONG" relation="TimeZones" />
 
@@ -43,5 +45,11 @@
     <BeeField name="GuestsCanSeeOtherGuests" type="BOOLEAN" />
 
     <BeeField name="UseDefaultReminders" type="BOOLEAN" />
+    
+    <BeeField name="Company" type="LONG" relation="Companies" />
+    <BeeField name="Vehicle" type="LONG" relation="Vehicles" />
+    
+    <BeeField name="EffectiveStart" type="DATETIME" />
+    <BeeField name="EffectiveEnd" type="DATETIME" />
   </BeeFields>
 </BeeTable>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="AttendeeProps"
+  source="AttendeeProps"
+  >
+  <Columns>
+    <SimpleColumn name="Attendee" />
+
+    <SimpleColumn name="Property" />
+    <SimpleJoin name="Property" joinType="INNER">
+      <SimpleColumn alias="PropertyName" name="Name" />
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="PropertyName" />
+  </Order>
+</View>

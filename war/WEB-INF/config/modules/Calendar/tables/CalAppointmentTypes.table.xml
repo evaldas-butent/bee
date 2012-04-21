@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <BeeTable xmlns="http://www.butent.com/table"
 
-  name="CalAttendeeTypes"
-  idName="CalAttendeeTypeID"
+  name="CalAppointmentTypes"
+  idName="CalAppointmentTypeID"
   >
   <BeeFields>
     <BeeField name="Calendar" type="LONG" notNull="true" relation="Calendars" cascade="DELETE" />
-    <BeeField name="AttendeeType" type="LONG" notNull="true" relation="AttendeeTypes" cascade="DELETE" />
+    <BeeField name="AppointmentType" type="LONG" notNull="true" relation="AppointmentTypes" cascade="DELETE" />
 
     <BeeField name="Hidden" type="BOOLEAN" />
   </BeeFields>
   <BeeKeys>
     <BeeKey unique="true">
       <KeyField>Calendar</KeyField>
-      <KeyField>AttendeeType</KeyField>
+      <KeyField>AppointmentType</KeyField>
     </BeeKey>
   </BeeKeys>
 </BeeTable>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="AppointmentTypes"
+  source="AppointmentTypes"
+  >
+  <Columns>
+    <SimpleColumn name="Name" />
+    <SimpleColumn name="Description" />
+
+    <SimpleColumn name="AppointmentCreator" />
+    <SimpleColumn name="AppointmentEditor" />
+  </Columns>
+  <Order>
+    <OrderBy column="Name" />
+  </Order>
+</View>
