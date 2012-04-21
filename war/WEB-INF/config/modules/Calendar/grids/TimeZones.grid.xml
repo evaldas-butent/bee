@@ -4,7 +4,7 @@
   name="TimeZones" viewName="TimeZones" caption="Laiko juostos"
   >
   <columns>
-    <DataColumn name="Name" source="Name" />
-    <DataColumn name="StandardOffset" source="StandardOffset" />
+    <DataColumn name="Name" />
+    <DataColumn name="StandardOffset" />
   </columns>
 </Grid>

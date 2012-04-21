@@ -58,6 +58,7 @@ public class WidgetDescription implements HasInfo {
   private String minValue = null;
   private String maxValue = null;
   private Boolean required = null;
+  private Boolean nullable = null;
   
   private boolean disablable = false;
   
@@ -99,14 +100,15 @@ public class WidgetDescription implements HasInfo {
         "Widget Name", getWidgetName(),
         "Parent Name", getParentName(),
         "Caption", getCaption(),
-        "Read Only", isReadOnly(),
+        "Read Only", getReadOnly(),
         "Source", getSource(),
         "Rel Source", getRelSource(),
         "Rel View", getRelView(),
         "Rel Column", getRelColumn(),
         "Min Value", getMinValue(),
         "Max Value", getMaxValue(),
-        "Required", isRequired(),
+        "Required", getRequired(),
+        "Nullable", getNullable(),
         "Item Key", getItemKey());
 
     if (getValidation() != null) {
@@ -155,8 +157,16 @@ public class WidgetDescription implements HasInfo {
     return minValue;
   }
 
+  public Boolean getNullable() {
+    return nullable;
+  }
+
   public String getParentName() {
     return parentName;
+  }
+
+  public Boolean getReadOnly() {
+    return readOnly;
   }
 
   public String getRelColumn() {
@@ -174,15 +184,19 @@ public class WidgetDescription implements HasInfo {
   public Calculation getRender() {
     return render;
   }
-
+  
   public RendererDescription getRendererDescription() {
     return rendererDescription;
+  }
+
+  public Boolean getRequired() {
+    return required;
   }
 
   public String getSource() {
     return source;
   }
-  
+
   public Calculation getValidation() {
     return validation;
   }
@@ -206,14 +220,6 @@ public class WidgetDescription implements HasInfo {
 
   public boolean isDisablable() {
     return disablable;
-  }
-
-  public Boolean isReadOnly() {
-    return readOnly;
-  }
-
-  public Boolean isRequired() {
-    return required;
   }
 
   public void setAttributes(Map<String, String> attributes) {
@@ -288,6 +294,10 @@ public class WidgetDescription implements HasInfo {
 
   public void setMinValue(String minValue) {
     this.minValue = minValue;
+  }
+
+  public void setNullable(Boolean nullable) {
+    this.nullable = nullable;
   }
 
   public void setParentName(String parentName) {

@@ -4,16 +4,46 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
-import java.util.Iterator;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.utils.JsFunction;
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.utils.BeeUtils;
 
-public class DecoratedWidget extends Panel {
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+public class DecoratedWidget extends Panel implements HasId {
 
   private final Widget widget;
+  
+  private final JsFunction onInserted;
+  private final JsFunction onRemoved;
+  
+  private int insertCounter = 0;
+  private int removeCounter = 0;
 
-  public DecoratedWidget(Widget widget, Element element) {
-    this.widget = widget;
-    setElement(element);
+  public DecoratedWidget(Widget widget, Element element, JsFunction onInserted,
+      JsFunction onRemoved) {
+    this.widget = Assert.notNull(widget);
+    setElement(Assert.notNull(element));
+    this.onInserted = onInserted;
+    this.onRemoved = onRemoved;
+    
+    widget.removeFromParent();
     adopt(widget);
+    
+    if (BeeUtils.isEmpty(element.getId())) {
+      DomUtils.createId(element, getIdPrefix());
+    }
+  }
+
+  public String getId() {
+    return DomUtils.getId(this);
+  }
+
+  public String getIdPrefix() {
+    return "decorator";
   }
 
   public Widget getWidget() {
@@ -23,27 +53,55 @@ public class DecoratedWidget extends Panel {
   @Override
   public Iterator<Widget> iterator() {
     return new Iterator<Widget>() {
-      boolean first = true;
+      int counter = 0;
 
       public boolean hasNext() {
-        return first;
+        return counter == 0;
       }
 
       public Widget next() {
-        if (!first) {
-          return null;
+        if (counter > 0) {
+          throw new NoSuchElementException();
         }
-        first = false;
+        counter++;
         return widget;
       }
 
       public void remove() {
+        if (counter == 1) {
+          DecoratedWidget.this.remove(widget);
+        }
       }
     };
   }
 
   @Override
   public boolean remove(Widget child) {
+    Assert.unsupported();
     return false;
+  }
+
+  public void setId(String id) {
+    DomUtils.setId(this, id);
+  }
+
+  @Override
+  protected void onLoad() {
+    super.onLoad();
+
+    insertCounter++;
+    if (onInserted != null && insertCounter <= 1) {
+      onInserted.call(getElement());
+    }
+  }
+
+  @Override
+  protected void onUnload() {
+    super.onUnload();
+
+    removeCounter++;
+    if (onRemoved != null && removeCounter <= 1) {
+      onRemoved.call(getElement());
+    }
   }
 }

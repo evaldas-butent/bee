@@ -579,14 +579,24 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
+  
+  <xs:complexType name="inputWidget">
+    <xs:complexContent>
+      <xs:extension base="editableWidget">
+        <xs:attribute name="defaultDecorator" type="d:registeredDecorator" default="caption-left" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
 
-  <xs:element name="InputText" type="editableWidget" substitutionGroup="widget" />
+  <xs:element name="InputText" type="inputWidget" substitutionGroup="widget" />
 
   <xs:element name="InputArea" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="editableWidget">
           <xs:attributeGroup ref="ui:textArea" />
+          <xs:attribute name="defaultDecorator" type="d:registeredDecorator"
+            default="caption-left-cell" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -594,7 +604,7 @@
 
   <xs:complexType name="editableInteger">
     <xs:complexContent>
-      <xs:extension base="editableWidget">
+      <xs:extension base="inputWidget">
         <xs:attribute name="min" type="xs:int" />
         <xs:attribute name="max" type="xs:int" />
         <xs:attribute name="step" type="xs:positiveInteger" />
@@ -604,30 +614,30 @@
 
   <xs:element name="InputInteger" type="editableInteger" substitutionGroup="widget" />
 
-  <xs:element name="InputLong" type="editableWidget" substitutionGroup="widget" />
-  <xs:element name="InputDouble" type="editableWidget" substitutionGroup="widget" />
+  <xs:element name="InputLong" type="inputWidget" substitutionGroup="widget" />
+  <xs:element name="InputDouble" type="inputWidget" substitutionGroup="widget" />
 
   <xs:element name="InputDecimal" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="editableWidget">
+        <xs:extension base="inputWidget">
           <xs:attribute name="scale" type="xs:unsignedByte" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="InputCurrency" type="editableWidget" substitutionGroup="widget" />
+  <xs:element name="InputCurrency" type="inputWidget" substitutionGroup="widget" />
 
   <xs:element name="InputSpinner" type="editableInteger" substitutionGroup="widget" />
   <xs:element name="InputSlider" type="editableInteger" substitutionGroup="widget" />
 
-  <xs:element name="InputDate" type="editableWidget" substitutionGroup="widget" />
-  <xs:element name="InputDateTime" type="editableWidget" substitutionGroup="widget" />
+  <xs:element name="InputDate" type="inputWidget" substitutionGroup="widget" />
+  <xs:element name="InputDateTime" type="inputWidget" substitutionGroup="widget" />
 
   <xs:complexType name="spinnerBase">
     <xs:complexContent>
-      <xs:extension base="editableWidget">
+      <xs:extension base="inputWidget">
         <xs:attribute name="min" type="xs:long" use="required" />
         <xs:attribute name="max" type="xs:long" use="required" />
         <xs:attribute name="step" type="xs:positiveInteger" />
@@ -644,7 +654,7 @@
   <xs:element name="SliderBar" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="editableWidget">
+        <xs:extension base="inputWidget">
           <xs:attribute name="min" type="xs:double" use="required" />
           <xs:attribute name="max" type="xs:double" use="required" />
           <xs:attribute name="step" type="xs:double" use="required" />
@@ -675,6 +685,8 @@
           <xs:attribute name="relView" type="type:nameType" use="required" />
           <xs:attribute name="relColumn" type="type:nameType" use="required" />
           <xs:attributeGroup ref="ui:textArea" />
+          <xs:attribute name="defaultDecorator" type="d:registeredDecorator"
+            default="caption-left-cell" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

@@ -109,8 +109,6 @@ public class XmlUtils {
   public static final String DEFAULT_XML_EXTENSION = "xml";
   public static final String DEFAULT_XSL_EXTENSION = "xsl";
 
-  public static final String ATTR_XMLNS = "xmlns";
-
   private static final String ALL_NS = "*";
   private static final String ALL_TAGS = "*";
   

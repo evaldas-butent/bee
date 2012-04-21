@@ -7,6 +7,8 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -14,6 +16,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.utils.JsFunction;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.ui.DecoratorConstants;
@@ -35,8 +39,13 @@ class Decorator implements HasEnabled, HasExtendedInfo {
     private final List<Handler> handlers = Lists.newArrayList();
     private Template template = null;
 
+    private String eventTarget = null;
+    private String appearanceTarget = null;
+    private boolean appearanceDeep = false;
+
     private Fields(List<Parameter> params, Map<String, String> constants, Map<String, String> css,
-        Lifecycle lifecycle, List<Handler> handlers, Template template) {
+        Lifecycle lifecycle, List<Handler> handlers, Template template, String eventTarget,
+        String appearanceTarget, boolean appearanceDeep) {
       super();
 
       if (params != null && !params.isEmpty()) {
@@ -56,6 +65,10 @@ class Decorator implements HasEnabled, HasExtendedInfo {
         this.handlers.addAll(handlers);
       }
       this.template = template;
+
+      this.eventTarget = eventTarget;
+      this.appearanceTarget = appearanceTarget;
+      this.appearanceDeep = appearanceDeep;
     }
 
     public List<ExtendedProperty> getExtendedInfo() {
@@ -108,6 +121,17 @@ class Decorator implements HasEnabled, HasExtendedInfo {
         PropertyUtils.addExtended(result, DecoratorConstants.TAG_TEMPLATE,
             template.getId(), template.getMarkup());
       }
+
+      if (!BeeUtils.isEmpty(eventTarget)) {
+        PropertyUtils.addExtended(result, DecoratorConstants.ATTR_EVENT_TARGET, eventTarget);
+      }
+      if (!BeeUtils.isEmpty(appearanceTarget)) {
+        PropertyUtils.addExtended(result, DecoratorConstants.ATTR_APPEARANCE_TARGET,
+            appearanceTarget);
+        PropertyUtils.addExtended(result, DecoratorConstants.ATTR_APPEARANCE_DEEP,
+            appearanceDeep);
+      }
+
       return result;
     }
 
@@ -135,8 +159,17 @@ class Decorator implements HasEnabled, HasExtendedInfo {
       params.add(param);
     }
 
+    private String getAppearanceTarget() {
+      return appearanceTarget;
+    }
+
     private Fields getCopy() {
-      return new Fields(params, constants, css, lifecycle, handlers, template);
+      return new Fields(params, constants, css, lifecycle, handlers, template, eventTarget,
+          appearanceTarget, appearanceDeep);
+    }
+
+    private String getEventTarget() {
+      return eventTarget;
     }
 
     private Lifecycle getLifecycle() {
@@ -162,10 +195,26 @@ class Decorator implements HasEnabled, HasExtendedInfo {
       return template;
     }
 
+    private boolean isAppearanceDeep() {
+      return appearanceDeep;
+    }
+
+    private void setAppearanceDeep(boolean appearanceDeep) {
+      this.appearanceDeep = appearanceDeep;
+    }
+
+    private void setAppearanceTarget(String appearanceTarget) {
+      this.appearanceTarget = appearanceTarget;
+    }
+
+    private void setEventTarget(String eventTarget) {
+      this.eventTarget = eventTarget;
+    }
+
     private void setLifecycle(Lifecycle lifecycle) {
       this.lifecycle = lifecycle;
     }
-    
+
     private void setTemplate(Template template) {
       this.template = template;
     }
@@ -186,13 +235,15 @@ class Decorator implements HasEnabled, HasExtendedInfo {
 
   Decorator(String id, String parent, boolean isAbstract, List<Parameter> params,
       Map<String, String> constants, Map<String, String> css, Lifecycle lifecycle,
-      List<Handler> handlers, Template template) {
+      List<Handler> handlers, Template template, String eventTarget, String appearanceTarget,
+      boolean appearanceDeep) {
     super();
     this.id = id;
     this.parent = parent;
     this.isAbstract = isAbstract;
 
-    this.definedFields = new Fields(params, constants, css, lifecycle, handlers, template);
+    this.definedFields = new Fields(params, constants, css, lifecycle, handlers, template,
+        eventTarget, appearanceTarget, appearanceDeep);
   }
 
   public List<ExtendedProperty> getExtendedInfo() {
@@ -221,23 +272,34 @@ class Decorator implements HasEnabled, HasExtendedInfo {
   }
 
   Widget decorate(Widget widget, Map<String, String> options) {
+    if (widget == null) {
+      BeeKeeper.getLog().severe("decorator", getId(), "widget is null");
+      return widget;
+    }
+
     if (getFields() == null) {
       BeeKeeper.getLog().severe("decorator", getId(), "has no fields");
       return widget;
     }
+    if (!checkRequiredParameters(options)) {
+      return widget;
+    }
+
     if (!hasTemplate()) {
       BeeKeeper.getLog().severe("decorator", getId(), "has no template");
       return widget;
     }
-    
+
     Map<String, String> substitutes = getSubstitutes(options);
-    Element root = getElement(substitutes);
+    Element widgetElement = widget.getElement();
+
+    Element root = createElement(substitutes, widgetElement);
     if (root == null) {
       BeeKeeper.getLog().severe("decorator", getId(), "cannot create element");
       return widget;
     }
     if (BeeUtils.same(root.getTagName(), DecoratorConstants.TAG_CONTENT)) {
-      BeeKeeper.getLog().severe("decorator", getId(), "template root element cannot be content");
+      BeeKeeper.getLog().severe("decorator", getId(), "template root element equals content");
       BeeKeeper.getLog().severe(root.toString());
       return widget;
     }
@@ -253,34 +315,53 @@ class Decorator implements HasEnabled, HasExtendedInfo {
       BeeKeeper.getLog().severe(root.toString());
       return widget;
     }
-    
+
     Element templateContent = list.getItem(0);
     String role = templateContent.getAttribute(DomUtils.ATTRIBUTE_ROLE);
     Style style = templateContent.getStyle();
-    String className = templateContent.getClassName();
-    
+    String classes = templateContent.getClassName();
+
     Element contentParent = templateContent.getParentElement();
-    Element widgetElement = widget.getElement();
     contentParent.replaceChild(widgetElement, templateContent);
-    
+
     if (!BeeUtils.isEmpty(role)) {
       widgetElement.setAttribute(DomUtils.ATTRIBUTE_ROLE, role);
     }
     if (style != null) {
       StyleUtils.addStyle(widgetElement, style);
     }
-    if (!BeeUtils.isEmpty(className)) {
-      widgetElement.addClassName(className);
+    if (!BeeUtils.isEmpty(classes)) {
+      StyleUtils.updateClasses(widgetElement, classes);
     }
+    widgetElement.addClassName(getId() + "-content");
     
-    widgetElement.addClassName(getId() + BeeConst.CHAR_MINUS + DecoratorConstants.TAG_CONTENT);
+    addAppearance(root, widgetElement, options);
 
     if (getCounter() <= 0) {
       addStyleSheets(substitutes);
     }
-    setCounter(getCounter() + 1);
 
-    return new DecoratedWidget(widget, root);
+    JsFunction onCreated = null;    
+    JsFunction onInserted = null;
+    JsFunction onRemoved = null;
+
+    Lifecycle lifecycle = getFields().getLifecycle();
+    if (lifecycle != null) {
+      onCreated = createFunction(lifecycle.getCreated(), substitutes);
+      onInserted = createFunction(lifecycle.getInserted(), substitutes);
+      onRemoved = createFunction(lifecycle.getRemoved(), substitutes);
+    }
+
+    DecoratedWidget decoratedWidget = new DecoratedWidget(widget, root, onInserted, onRemoved);
+    
+    addHandlers(decoratedWidget, widget, substitutes);
+
+    if (onCreated != null) {
+      onCreated.call(root);
+    }
+    
+    setCounter(getCounter() + 1);
+    return decoratedWidget;
   }
 
   Fields getFields() {
@@ -321,11 +402,30 @@ class Decorator implements HasEnabled, HasExtendedInfo {
           getFields().getLifecycle().updateFrom(parentFields.getLifecycle(), false);
         }
       }
+
       if (!parentFields.handlers.isEmpty()) {
-        getFields().handlers.addAll(parentFields.handlers);
+        String eventTarget = parentFields.getEventTarget();
+        for (Handler parentHandler : parentFields.handlers) {
+          Handler handler = parentHandler.copyOf();
+          if (BeeUtils.isEmpty(handler.getTarget()) && !BeeUtils.isEmpty(eventTarget)) {
+            handler.setTarget(eventTarget);
+          }
+          getFields().handlers.add(handler);
+        }
       }
+
       if (getFields().getTemplate() == null && parentFields.getTemplate() != null) {
         getFields().setTemplate(parentFields.getTemplate().getCopy());
+      }
+
+      if (BeeUtils.isEmpty(getFields().getEventTarget())
+          && !BeeUtils.isEmpty(parentFields.getEventTarget())) {
+        getFields().setEventTarget(parentFields.getEventTarget());
+      }
+      if (BeeUtils.isEmpty(getFields().getAppearanceTarget())
+          && !BeeUtils.isEmpty(parentFields.getAppearanceTarget())) {
+        getFields().setAppearanceTarget(parentFields.getAppearanceTarget());
+        getFields().setAppearanceDeep(parentFields.isAppearanceDeep());
       }
     }
 
@@ -343,6 +443,112 @@ class Decorator implements HasEnabled, HasExtendedInfo {
   void setInitialized(boolean initialized) {
     this.initialized = initialized;
   }
+  
+  private void addAppearance(Element root, Element content, Map<String, String> options) {
+    if (options == null || options.isEmpty()) {
+      return;
+    }
+    
+    String classes = options.get(DecoratorConstants.OPTION_ROOT_CLASS);
+    String styles = options.get(DecoratorConstants.OPTION_ROOT_STYLE);
+    StyleUtils.updateAppearance(root, classes, styles);
+
+    classes = options.get(DecoratorConstants.OPTION_CONTENT_CLASS);
+    styles = options.get(DecoratorConstants.OPTION_CONTENT_STYLE);
+    StyleUtils.updateAppearance(content, classes, styles);
+
+    classes = options.get(DecoratorConstants.OPTION_ROLE_CLASS);
+    styles = options.get(DecoratorConstants.OPTION_ROLE_STYLE);
+    if (!BeeUtils.isEmpty(classes)) {
+      TuningHelper.updateRoleClasses(root, classes);
+    }
+    if (!BeeUtils.isEmpty(styles)) {
+      TuningHelper.updateRoleStyles(root, styles);
+    }
+    
+    String role = getFields().getAppearanceTarget();
+    if (BeeUtils.isEmpty(role)) {
+      return;
+    }
+    
+    classes = options.get(DecoratorConstants.OPTION_CLASS);
+    styles = options.get(DecoratorConstants.OPTION_STYLE);
+    if (BeeUtils.allEmpty(classes, styles)) {
+      return;
+    }
+
+    if (BeeUtils.same(role, DecoratorConstants.ROLE_ROOT)) {
+      StyleUtils.updateAppearance(root, classes, styles);
+      return;
+    }
+    if (BeeUtils.same(role, DecoratorConstants.ROLE_CONTENT)) {
+      StyleUtils.updateAppearance(content, classes, styles);
+      return;
+    }
+    
+    Element cutoff = getFields().isAppearanceDeep() ? null : content;
+    List<Element> targets = TuningHelper.getActors(root, role, null, cutoff);
+    if (targets.isEmpty()) {
+      BeeKeeper.getLog().warning("decorator", getId(), "appearance role", role, "no actors found");
+      return;
+    }
+
+    for (Element target : targets) {
+      StyleUtils.updateAppearance(target, classes, styles);
+    }
+  }
+
+  private void addHandlers(Widget decorated, Widget content, Map<String, String> substitutes) {
+    String eventTarget = getFields().getEventTarget();
+    Element rootElement = decorated.getElement();
+    Element contentElement = content.getElement();
+
+    for (Handler handler : getFields().handlers) {
+      String type = handler.getType();
+      String body = substitute(handler.getBody(), substitutes);
+      if (BeeUtils.isEmpty(type) || BeeUtils.isEmpty(body)) {
+        continue;
+      }
+
+      String role = BeeUtils.ifString(handler.getTarget(), eventTarget);
+
+      if (BeeUtils.isEmpty(role) || BeeUtils.same(role, DecoratorConstants.ROLE_ROOT)) {
+        EventUtils.addDomHandler(decorated, type, body);
+        continue;
+      }
+      if (BeeUtils.same(role, DecoratorConstants.ROLE_CONTENT)) {
+        EventUtils.addDomHandler(content, type, body);
+        continue;
+      }
+      
+      Element cutoff = handler.isDeep() ? null : contentElement;
+      List<Element> targets = TuningHelper.getActors(rootElement, role, null, cutoff);
+      if (targets.isEmpty()) {
+        BeeKeeper.getLog().warning("decorator", getId(), "handler", type, "role", role,
+            "no actors found");
+        continue;
+      }
+
+      for (Element target : targets) {
+        if (target.equals(rootElement)) {
+          EventUtils.addDomHandler(decorated, type, body);
+          continue;
+        }
+        if (target.equals(contentElement)) {
+          EventUtils.addDomHandler(content, type, body);
+          continue;
+        }
+
+        EventListener eventListener = DOM.getEventListener(DomUtils.upcast(target));
+        if (eventListener == null) {
+          DOM.setEventListener(DomUtils.upcast(target), decorated);
+        } else if (!decorated.equals(eventListener)) {
+          continue;
+        }
+        EventUtils.addDomHandler(decorated, type, body);
+      }
+    }
+  }
 
   private void addStyleSheets(Map<String, String> substitutes) {
     for (Map.Entry<String, String> sheet : getFields().css.entrySet()) {
@@ -351,15 +557,55 @@ class Decorator implements HasEnabled, HasExtendedInfo {
       Global.addStyleSheet(substitute(name, substitutes), substitute(text, substitutes));
     }
   }
+  
+  private boolean checkRequiredParameters(Map<String, String> options) {
+    if (getFields().params.isEmpty()) {
+      return true;
+    }
+    
+    boolean ok = true;
+    for (Parameter param : getFields().params) {
+      if (!param.isRequired()) {
+        continue;
+      }
+      if (options == null || BeeUtils.isEmpty(options.get(param.getName()))) {
+        ok = false;
+        break;
+      }
+    }
+    return ok;
+  }
+
+  private Element createElement(Map<String, String> substitutes, Element content) {
+    DivElement tmpDiv = Document.get().createDivElement();
+    tmpDiv.setInnerHTML(substitute(getFields().getTemplate().getMarkup(), substitutes));
+    Element element = tmpDiv.getFirstChildElement();
+    
+    if (element == null) {
+      return element;
+    }
+    
+    List<Element> children = DomUtils.getElementsByAttributeValue(element, BeeConst.ATTR_XMLNS,
+        DecoratorConstants.NAMESPACE, content, content);
+    for (Element child : children) {
+      child.removeAttribute(BeeConst.ATTR_XMLNS);
+    }
+    
+    return element;
+  }
+
+  private JsFunction createFunction(String source, Map<String, String> substitutes) {
+    String body = substitute(source, substitutes);
+
+    if (BeeUtils.isEmpty(body)) {
+      return null;
+    } else {
+      return JsFunction.create(body);
+    }
+  }
 
   private int getCounter() {
     return counter;
-  }
-
-  private Element getElement(Map<String, String> substitutes) {
-    DivElement tmpDiv = Document.get().createDivElement();
-    tmpDiv.setInnerHTML(substitute(getFields().getTemplate().getMarkup(), substitutes));
-    return tmpDiv.getFirstChildElement();
   }
 
   private Map<String, String> getSubstitutes(Map<String, String> options) {

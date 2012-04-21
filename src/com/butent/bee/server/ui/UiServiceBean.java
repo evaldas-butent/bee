@@ -685,7 +685,7 @@ public class UiServiceBean {
 
     Document dstDoc = XmlUtils.createDocument();
     Element dstRoot = dstDoc.createElement(DecoratorConstants.TAG_DECORATORS);
-    dstRoot.setAttribute(XmlUtils.ATTR_XMLNS, DecoratorConstants.NAMESPACE);
+    dstRoot.setAttribute(BeeConst.ATTR_XMLNS, DecoratorConstants.NAMESPACE);
     dstDoc.appendChild(dstRoot);
 
     for (File file : files) {

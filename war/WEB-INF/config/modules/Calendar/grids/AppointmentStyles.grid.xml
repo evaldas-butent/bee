@@ -4,28 +4,28 @@
   name="AppointmentStyles" viewName="AppointmentStyles" caption="Vizitų stiliai" autoFit="true"
   >
   <columns>
-    <DataColumn name="Name" source="Name" />
-    <DataColumn name="Description" source="Description" />
+    <DataColumn name="Name" />
+    <DataColumn name="Description" />
 
-    <DataColumn name="HeaderColorName" source="HeaderColorName" />
-    <DataColumn name="HeaderBackground" source="HeaderBackground" />
-    <DataColumn name="HeaderForeground" source="HeaderForeground" />
+    <DataColumn name="HeaderColorName" />
+    <DataColumn name="HeaderBackground" />
+    <DataColumn name="HeaderForeground" />
 
-    <DataColumn name="HeaderClass" source="HeaderClass" />
-    <DataColumn name="HeaderStyle" source="HeaderStyle" />
+    <DataColumn name="HeaderClass" />
+    <DataColumn name="HeaderStyle" />
 
-    <DataColumn name="BodyColorName" source="BodyColorName" />
-    <DataColumn name="BodyBackground" source="BodyBackground" />
-    <DataColumn name="BodyForeground" source="BodyForeground" />
+    <DataColumn name="BodyColorName" />
+    <DataColumn name="BodyBackground" />
+    <DataColumn name="BodyForeground" />
 
-    <DataColumn name="BodyClass" source="BodyClass" />
-    <DataColumn name="BodyStyle" source="BodyStyle" />
+    <DataColumn name="BodyClass" />
+    <DataColumn name="BodyStyle" />
 
-    <DataColumn name="FooterColorName" source="FooterColorName" />
-    <DataColumn name="FooterBackground" source="FooterBackground" />
-    <DataColumn name="FooterForeground" source="FooterForeground" />
+    <DataColumn name="FooterColorName" />
+    <DataColumn name="FooterBackground" />
+    <DataColumn name="FooterForeground" />
 
-    <DataColumn name="FooterClass" source="FooterClass" />
-    <DataColumn name="FooterStyle" source="FooterStyle" />
+    <DataColumn name="FooterClass" />
+    <DataColumn name="FooterStyle" />
   </columns>
 </Grid>

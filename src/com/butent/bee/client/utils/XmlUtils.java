@@ -45,8 +45,6 @@ import java.util.Map;
 
 public class XmlUtils {
 
-  public static final String ATTR_XMLNS = "xmlns";
-
   private static final Map<Short, String> NODE_TYPES = Maps.newHashMap();
 
   static {
@@ -509,8 +507,8 @@ public class XmlUtils {
   }
   
   public static boolean isNamespaceDeclaration(String name) {
-    return BeeUtils.same(name, ATTR_XMLNS)
-        || BeeUtils.same(NameUtils.getNamespacePrefix(name), ATTR_XMLNS);
+    return BeeUtils.same(name, BeeConst.ATTR_XMLNS)
+        || BeeUtils.same(NameUtils.getNamespacePrefix(name), BeeConst.ATTR_XMLNS);
   }
 
   public static Document parse(String xml) {

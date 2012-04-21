@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:d="http://www.butent.com/decorator"
+
+  name="Decor" caption="Decorators">
+  
+  <FlowPanel style="margin-left: 1em; margin-top: 1ex;">
+    <InputText caption="label" decorator="label" />
+
+    <InputText caption="attr caption" />
+    <InputText d:caption="d:caption" />
+
+    <InputText caption="required" required="true" />
+    <InputText caption="valueRequired" d:valueRequired="true" />
+    <hr/>
+
+    <InputText caption="size 0" d:size="0" />
+    <InputText caption="size 70" d:size="70" />
+    <InputText caption="size 10 unit em" d:size="10" d:unit="em" />
+    <InputText caption="long long long size default" />
+    <hr/>
+
+    <InputText caption="green" d:style="color: green" />
+    <InputText caption="class" d:class="bee-required" />
+    <hr/>
+
+    <InputText caption="right" decorator="caption-right" />
+    <InputText caption="overrite padding left 3em" decorator="caption-right" d:style="padding-left: 3em;" />
+
+    <InputText caption="top" decorator="caption-top" />
+    <InputText caption="bottom" decorator="caption-bottom" />
+    <hr/>
+    
+    <decorator id="caption-left-cell" d:caption="left" d:size="40">
+      <decorator id="caption-right-cell" d:caption="right">
+        <decorator id="caption-top-cell" d:caption="top" d:style="text-align: center;">
+          <decorator id="caption-bottom-cell" d:caption="bottom" d:style="text-align: center;">
+            <InputText caption="nested" decorator="label" />
+          </decorator>
+        </decorator>
+      </decorator>
+    </decorator>
+    
+  </FlowPanel>
+
+</f:Form>

@@ -10,6 +10,7 @@ import com.google.gwt.xml.client.NamedNodeMap;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -33,7 +34,8 @@ public class TuningFactory {
     decorators.clear();
   }
 
-  public static Widget decorate(String decoratorId, Element description, Widget widget) {
+  public static Widget decorate(String decoratorId, Element element, Widget widget,
+      WidgetDescription widgetDescription) {
     if (widget == null || BeeUtils.isEmpty(decoratorId) || !isEnabled()) {
       return widget;
     }
@@ -50,15 +52,14 @@ public class TuningFactory {
       BeeKeeper.getLog().warning("decorator is abstract:", decoratorId);
       return widget;
     }
-    
+
     if (!decorator.isInitialized()) {
       if (!initialize(decorator, null)) {
         decorator.setEnabled(false);
         return widget;
       }
     }
-
-    return decorator.decorate(widget, getOptions(description));
+    return decorator.decorate(widget, getOptions(element, widgetDescription));
   }
 
   public static List<ExtendedProperty> getExtendedInfo() {
@@ -71,31 +72,41 @@ public class TuningFactory {
       for (Map.Entry<String, Decorator> entry : decorators.entrySet()) {
         PropertyUtils.addExtended(result, DecoratorConstants.TAG_DECORATOR,
             BeeUtils.progress(++idx, decorators.size()), entry.getKey());
-        result.addAll(entry.getValue().getExtendedInfo());
+        PropertyUtils.appendWithPrefix(result, entry.getKey(), entry.getValue().getExtendedInfo());
       }
     }
 
     return result;
   }
 
-  public static Map<String, String> getOptions(Element element) {
+  public static Map<String, String> getOptions(Element element, WidgetDescription wd) {
     Map<String, String> result = Maps.newHashMap();
-    if (element == null) {
-      return result;
-    }
 
-    NamedNodeMap attributes = element.getAttributes();
-    if (attributes == null || attributes.getLength() <= 0) {
-      return result;
-    }
+    if (element != null) {
+      NamedNodeMap attributes = element.getAttributes();
+      int cnt = (attributes == null) ? 0 : attributes.getLength();
 
-    Attr attr;
-    for (int i = 0; i < attributes.getLength(); i++) {
-      attr = (Attr) attributes.item(i);
-      if (BeeUtils.same(attr.getNamespaceURI(), DecoratorConstants.NAMESPACE)) {
-        result.put(XmlUtils.getLocalName(attr), attr.getValue());
+      Attr attr;
+      for (int i = 0; i < cnt; i++) {
+        attr = (Attr) attributes.item(i);
+        if (BeeUtils.same(attr.getNamespaceURI(), DecoratorConstants.NAMESPACE)) {
+          result.put(XmlUtils.getLocalName(attr), attr.getValue());
+        }
       }
     }
+
+    if (wd != null) {
+      String caption = wd.getCaption();
+      if (!BeeUtils.isEmpty(caption) && !result.containsKey(DecoratorConstants.OPTION_CAPTION)) {
+        result.put(DecoratorConstants.OPTION_CAPTION, caption);
+      }
+      
+      if ((BeeUtils.isTrue(wd.getRequired()) || BeeUtils.isFalse(wd.getNullable())) 
+          && !result.containsKey(DecoratorConstants.OPTION_VALUE_REQUIRED)) {
+        result.put(DecoratorConstants.OPTION_VALUE_REQUIRED, BeeConst.STRING_TRUE);
+      }
+    }
+    
     return result;
   }
 
@@ -116,7 +127,7 @@ public class TuningFactory {
   public static void refresh() {
     getTools();
   }
-  
+
   public static void setEnabled(boolean enabled) {
     TuningFactory.enabled = enabled;
   }
@@ -127,20 +138,20 @@ public class TuningFactory {
       decorator.init(null);
       return true;
     }
-    
+
     String id = decorator.getId();
     if (BeeUtils.same(id, ext) || relatives != null && relatives.contains(normalize(ext))) {
       BeeKeeper.getLog().severe("incest detected:", id, ext,
           BeeUtils.transformCollection(relatives, BeeConst.DEFAULT_LIST_SEPARATOR));
       return false;
     }
-    
+
     Decorator parent = decorators.get(normalize(ext));
     if (parent == null) {
       BeeKeeper.getLog().severe("parent decorator not found id:", id, "extends:", ext);
       return false;
     }
-    
+
     if (!parent.isInitialized()) {
       List<String> children = Lists.newArrayList(normalize(id));
       if (relatives != null) {
@@ -158,7 +169,7 @@ public class TuningFactory {
   private static String normalize(String key) {
     return BeeUtils.normalize(key);
   }
-  
+
   private static void parseXml(String xml) {
     Document document = XmlUtils.parse(xml);
     if (document == null) {
@@ -246,8 +257,14 @@ public class TuningFactory {
       if (decorators.containsKey(key)) {
         BeeKeeper.getLog().warning("duplicate decorator id:", id);
       } else {
-        decorators.put(key, new Decorator(id, ext, BeeUtils.same(tag,
-            DecoratorConstants.TAG_ABSTRACT), params, constants, css, lc, handlers, template));
+        String eventTarget = element.getAttribute(DecoratorConstants.ATTR_EVENT_TARGET);
+        String appearanceTarget = element.getAttribute(DecoratorConstants.ATTR_APPEARANCE_TARGET);
+        Boolean appearanceDeep =
+            XmlUtils.getAttributeBoolean(element, DecoratorConstants.ATTR_APPEARANCE_DEEP);
+
+        decorators.put(key, new Decorator(id, ext,
+            BeeUtils.same(tag, DecoratorConstants.TAG_ABSTRACT), params, constants, css, lc,
+            handlers, template, eventTarget, appearanceTarget, BeeUtils.unbox(appearanceDeep)));
       }
     }
     BeeKeeper.getLog().info("loaded", decorators.size(), "decorators");

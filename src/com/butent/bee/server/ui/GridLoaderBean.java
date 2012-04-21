@@ -392,15 +392,23 @@ public class GridLoaderBean {
   
   private boolean initColumn(BeeView view, ColumnDescription columnDescription) {
     Assert.notNull(columnDescription);
+    
+    ColType colType = columnDescription.getColType();
+    String source = columnDescription.getSource();
+
+    if (ColType.DATA.equals(colType) && BeeUtils.isEmpty(source)) {
+      source = columnDescription.getName();
+      columnDescription.setSource(source);
+    }
+    
     if (view == null) {
       return true;
     }
 
     boolean ok = false;
     String viewName = view.getName();
-    String source = columnDescription.getSource();
 
-    switch (columnDescription.getColType()) {
+    switch (colType) {
       case ID:
         columnDescription.setSource(view.getSourceIdName());
         ok = true;

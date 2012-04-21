@@ -161,6 +161,8 @@ public class BeeConst {
   public static final double DOUBLE_ONE = 1.0d;
   public static final float FLOAT_ZERO = 0.0f;
 
+  public static final String ATTR_XMLNS = "xmlns";
+
   private static String home = SERVER;
 
   /**

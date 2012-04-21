@@ -82,7 +82,12 @@ public class FormFactory {
   public interface FormViewCallback extends Callback<FormView, String[]> {
   }
 
-  public interface WidgetDescriptionCallback extends Callback<WidgetDescription, String[]> {
+  public interface WidgetDescriptionCallback {
+    WidgetDescription getLastWidgetDescription();
+    
+    void onFailure(Object... messages);
+    
+    void onSuccess(WidgetDescription result);
   }
 
   private static final String ATTR_TYPE = "type";
@@ -130,6 +135,7 @@ public class FormFactory {
       WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback,
       String messagePrefix) {
     Assert.notNull(parent);
+    Assert.notNull(widgetDescriptionCallback, "createWidget: widgetDescriptionCallback is null");
 
     List<Element> children = XmlUtils.getChildrenElements(parent);
     if (BeeUtils.isEmpty(children)) {

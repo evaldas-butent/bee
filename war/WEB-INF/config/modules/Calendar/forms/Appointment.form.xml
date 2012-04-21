@@ -7,29 +7,22 @@
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="5">
       <row>
-        <Label html="Pavadinimas:" class="bee-required" />
-        <InputText source="Summary" />
-        <Label html="Aprašymas:" />
-        <InputArea source="Description" visibleLines="3" />
+        <InputText source="Summary" caption="Pavadinimas:" />
+        <InputDateTime source="StartDateTime" caption="Pradžia:" />
+        <InputDateTime source="EndDateTime" caption="Pabaiga:" />
       </row>
 
       <row>
-        <Label html="Pradžia:" class="bee-required" />
-        <InputDateTime source="StartDateTime" />
-        <Label html="Pabaiga:" class="bee-required" />
-        <InputDateTime source="EndDateTime" />
+        <DataSelector source="ColorName" relSource="Color" relView="Colors" relColumn="Name"
+          caption="Spalva:" />
+        <DataSelector source="StyleName" relSource="Style" relView="AppointmentStyles"
+          relColumn="Name" caption="Stilius:" />
+        <ListBox source="Status" itemKey="AppointmentStatus" decorator="caption-left"
+          caption="Būsena:" />
       </row>
-
+      
       <row>
-        <Label html="Spalva:" class="bee-required" />
-        <DataSelector source="ColorName" relSource="Color" relView="Colors" relColumn="Name" />
-        <Label html="Stilius:" />
-        <DataSelector source="StyleName" relSource="Style" relView="AppointmentStyles" relColumn="Name" />
-      </row>
-
-      <row>
-        <Label html="Būsena:" />
-        <ListBox source="Status" itemKey="AppointmentStatus" />
+        <InputArea source="Description" caption="Aprašymas:" visibleLines="3" />
         <Radio source="Visibility" itemKey="Calendar_Visibility" vertical="true" />
         <CheckBox source="UseDefaultReminders" html="Use Default Reminders" />
       </row>

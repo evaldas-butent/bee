@@ -83,8 +83,8 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
 
     this.minValue = widgetDescription.getMinValue();
     this.maxValue = widgetDescription.getMaxValue();
-    this.required = BeeUtils.isTrue(widgetDescription.isRequired());
-    this.readOnly = BeeUtils.isTrue(widgetDescription.isReadOnly());
+    this.required = BeeUtils.isTrue(widgetDescription.getRequired());
+    this.readOnly = BeeUtils.isTrue(widgetDescription.getReadOnly());
   }
 
   public HandlerRegistration addCellValidationHandler(CellValidateEvent.Handler handler) {
@@ -150,8 +150,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   }
   
   public String getCaption() {
-    return BeeUtils.ifString(getWidgetDescription().getCaption(),
-        getDataColumn().getLabel());
+    return BeeUtils.ifString(getWidgetDescription().getCaption(), getDataColumn().getLabel());
   }
 
   public String getCarryValue(IsRow row) {

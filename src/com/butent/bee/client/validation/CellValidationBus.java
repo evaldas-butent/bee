@@ -36,7 +36,7 @@ public class CellValidationBus implements HasCellValidationHandlers {
     Assert.notNull(event);
     boolean ok = true;
     
-    if (!event.isCanceled() && !handlers.isEmpty()) {
+    if (!event.isCanceled() && handlers != null) {
       for (CellValidateEvent.Handler handler : handlers) {
         ok = handler.validateCell(event);
 

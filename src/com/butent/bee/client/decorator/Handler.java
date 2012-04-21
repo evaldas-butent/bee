@@ -15,28 +15,55 @@ class Handler {
     
     String event = element.getAttribute(DecoratorConstants.ATTR_EVENT);
     String text = XmlUtils.getText(element);
+    String target = element.getAttribute(DecoratorConstants.ATTR_TARGET);
+    Boolean deep = XmlUtils.getAttributeBoolean(element, DecoratorConstants.ATTR_DEEP);
     
     if (BeeUtils.isEmpty(event) || BeeUtils.isEmpty(text)) {
       return null;
     } else {
-      return new Handler(event.trim(), text.trim());
+      return new Handler(event.trim(), text.trim(), BeeUtils.trim(target), BeeUtils.unbox(deep));
     }
   }
   
   private final String type;
   private final String body;
 
-  Handler(String type, String body) {
+  private String target;
+  private boolean deep;
+
+  Handler(String type, String body, String target, boolean deep) {
     super();
     this.type = type;
     this.body = body;
+    this.target = target;
+    this.deep = deep;
+  }
+  
+  Handler copyOf() {
+    return new Handler(type, body, target, deep);
+  }
+
+  String getBody() {
+    return body;
+  }
+
+  String getTarget() {
+    return target;
   }
 
   String getType() {
     return type;
   }
 
-  String getBody() {
-    return body;
+  boolean isDeep() {
+    return deep;
+  }
+
+  void setDeep(boolean deep) {
+    this.deep = deep;
+  }
+
+  void setTarget(String target) {
+    this.target = target;
   }
 }

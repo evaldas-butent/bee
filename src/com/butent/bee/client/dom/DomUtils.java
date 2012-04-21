@@ -3,6 +3,7 @@ package com.butent.bee.client.dom;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.ButtonElement;
@@ -46,6 +47,7 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -786,6 +788,45 @@ public class DomUtils {
     return lst;
   }
 
+  public static List<Element> getElementsByAttributeValue(Element root, String name, String value) {
+    return getElementsByAttributeValue(root, name, value, null, null);
+  }
+
+  public static List<Element> getElementsByAttributeValue(Element root, String name, String value,
+      Element excludeElement, Element cutoffElement) {
+    Collection<Element> exclude = (excludeElement == null) ? null : Sets.newHashSet(excludeElement);
+    Collection<Element> cutoff = (cutoffElement == null) ? null : Sets.newHashSet(cutoffElement);
+    
+    return getElementsByAttributeValueUsingCollectionFilters(root, name, value, exclude, cutoff);
+  }
+
+  public static List<Element> getElementsByAttributeValueUsingCollectionFilters(Element root,
+      String name, String value, Collection<Element> exclude, Collection<Element> cutoff) {
+    List<Element> result = Lists.newArrayList();
+    if (root == null || BeeUtils.isEmpty(name)) {
+      return result;
+    }
+    
+    if (BeeUtils.same(root.getAttribute(name), value) 
+        && (exclude == null || !exclude.contains(root))) {
+      result.add(root);
+    }
+    if (cutoff != null && cutoff.contains(root)) {
+      return result;
+    }
+
+    NodeList<Element> children = getChildren(root);
+    if (children == null) {
+      return result;
+    }
+    
+    for (int i = 0; i < children.getLength(); i++) {
+      result.addAll(getElementsByAttributeValueUsingCollectionFilters(children.getItem(i),
+          name, value, exclude, cutoff));
+    }
+    return result;
+  }
+  
   public static native NodeList<Element> getElementsByName(String name) /*-{
     return $doc.getElementsByName(name);
   }-*/;
@@ -1388,16 +1429,16 @@ public class DomUtils {
     BeeKeeper.getLog().addSeparator();
   }
 
-  public static void makeFocusable(UIObject obj) {
-    Assert.notNull(obj);
-    makeFocusable(obj.getElement());
-  }
-  
   public static void makeFocusable(Element el) {
     Assert.notNull(el);
     if (getTabIndex(el) < 0) {
       el.setTabIndex(0);
     }
+  }
+  
+  public static void makeFocusable(UIObject obj) {
+    Assert.notNull(obj);
+    makeFocusable(obj.getElement());
   }
   
   public static void moveBy(Element el, int dx, int dy) {
@@ -1749,7 +1790,7 @@ public class DomUtils {
     Assert.notNull(obj);
     return setPlaceholder(obj.getElement(), value);
   }
-
+  
   public static void setRowSpan(Element elem, int span) {
     Assert.isTrue(isTableCellElement(elem), "not a table cell element");
     Assert.isPositive(span);
@@ -1863,6 +1904,10 @@ public class DomUtils {
       return BeeUtils.concat(1, JreEmulation.getSimpleName(w), w.getElement().getId(),
           w.getStyleName());
     }
+  }
+  
+  public static com.google.gwt.user.client.Element upcast(Element elem) {
+    return (com.google.gwt.user.client.Element) elem;
   }
 
   private static void assertInputElement(Element elem) {

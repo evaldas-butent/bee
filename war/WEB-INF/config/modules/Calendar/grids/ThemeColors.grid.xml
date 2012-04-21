@@ -5,10 +5,10 @@
   name="ThemeColors" viewName="ThemeColors" caption="Spalvos" autoFit="true"
   >
   <columns>
-    <DataColumn name="ColorName" source="ColorName" minWidth="100" />
+    <DataColumn name="ColorName" minWidth="100" />
 
-    <DataColumn name="Background" source="Background" minWidth="200" />
-    <DataColumn name="Foreground" source="Foreground" maxWidth="100" />
+    <DataColumn name="Background" minWidth="200" />
+    <DataColumn name="Foreground" maxWidth="100" />
   </columns>
 
   <rowStyle>

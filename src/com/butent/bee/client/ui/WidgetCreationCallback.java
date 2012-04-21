@@ -6,7 +6,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -16,6 +15,8 @@ public class WidgetCreationCallback implements FormFactory.WidgetDescriptionCall
   private final Map<String, String> namedWidgets = Maps.newHashMap();
   private final Map<String, String> potentialChildren = Maps.newHashMap();
 
+  private WidgetDescription lastWidgetDescription = null;
+  
   public WidgetCreationCallback() {
     super();
   }
@@ -57,13 +58,18 @@ public class WidgetCreationCallback implements FormFactory.WidgetDescriptionCall
     }
   }
 
-  public void onFailure(String[] reason) {
-    BeeKeeper.getLog().severe(ArrayUtils.join(reason, 1));
+  public WidgetDescription getLastWidgetDescription() {
+    return lastWidgetDescription; 
+  }
+
+  public void onFailure(Object... messages) {
+    BeeKeeper.getLog().severe(messages);
   }
 
   public void onSuccess(WidgetDescription result) {
+    lastWidgetDescription = result;
+    
     String id = result.getWidgetId();
-
     if (!BeeUtils.isEmpty(id)) {
       if (!BeeUtils.isEmpty(result.getWidgetName())) {
         namedWidgets.put(result.getWidgetName(), id);

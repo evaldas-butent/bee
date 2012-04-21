@@ -5,33 +5,33 @@
   newRowForm="Calendar" editForm="Calendar"
   >
   <columns>
-    <DataColumn name="Name" source="Name" />
-    <DataColumn name="Description" source="Description" />
+    <DataColumn name="Name" />
+    <DataColumn name="Description" />
 
-    <DataColumn name="Location" source="Location" />
-    <DataColumn name="TimeZoneName" source="TimeZoneName" />
+    <DataColumn name="Location" />
+    <DataColumn name="TimeZoneName" />
 
-    <DataColumn name="ThemeName" source="ThemeName" />
+    <DataColumn name="ThemeName" />
 
-    <DataColumn name="Hidden" source="Hidden" />
-    <DataColumn name="ReadOnly" source="ReadOnly" />
-    <DataColumn name="Visibility" source="Visibility" itemKey="Calendar_Visibility" />
+    <DataColumn name="Hidden" />
+    <DataColumn name="ReadOnly" />
+    <DataColumn name="Visibility" itemKey="Calendar_Visibility" />
 
-    <DataColumn name="Transparency" source="Transparency" itemKey="Transparency" />
+    <DataColumn name="Transparency" itemKey="Transparency" />
 
-    <DataColumn name="DefaultDisplayedDays" source="DefaultDisplayedDays" />
+    <DataColumn name="DefaultDisplayedDays" />
 
-    <DataColumn name="PixelsPerInterval" source="PixelsPerInterval" />
-    <DataColumn name="IntervalsPerHour" source="IntervalsPerHour" />
+    <DataColumn name="PixelsPerInterval" />
+    <DataColumn name="IntervalsPerHour" />
 
-    <DataColumn name="WorkingHourStart" source="WorkingHourStart" />
-    <DataColumn name="WorkingHourEnd" source="WorkingHourEnd" />
-    <DataColumn name="ScrollToHour" source="ScrollToHour" />
-    <DataColumn name="OffsetHourLabels" source="OffsetHourLabels" />
+    <DataColumn name="WorkingHourStart" />
+    <DataColumn name="WorkingHourEnd" />
+    <DataColumn name="ScrollToHour" />
+    <DataColumn name="OffsetHourLabels" />
 
-    <DataColumn name="EnableDragDrop" source="EnableDragDrop" />
-    <DataColumn name="DragDropCreation" source="DragDropCreation" />
+    <DataColumn name="EnableDragDrop" />
+    <DataColumn name="DragDropCreation" />
 
-    <DataColumn name="TimeBlockClickNumber" source="TimeBlockClickNumber" itemKey="TimeBlockClick" />
+    <DataColumn name="TimeBlockClickNumber" itemKey="TimeBlockClick" />
   </columns>
 </Grid>

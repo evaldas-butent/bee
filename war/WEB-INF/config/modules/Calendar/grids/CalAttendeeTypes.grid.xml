@@ -3,10 +3,10 @@
   name="CalAttendeeTypes" viewName="CalAttendeeTypes" caption="Resursų tipai"
   >
   <columns>
-    <DataColumn name="TypeName" source="TypeName" />
+    <DataColumn name="TypeName" />
 
-    <DataColumn name="TypeDescription" source="TypeDescription" readOnly="true" />
-    <DataColumn name="TypeTransparency" source="TypeTransparency" readOnly="true" itemKey="Transparency" />
-    <DataColumn name="TypeResource" source="TypeResource" readOnly="true" />
+    <DataColumn name="TypeDescription" readOnly="true" />
+    <DataColumn name="TypeTransparency" readOnly="true" itemKey="Transparency" />
+    <DataColumn name="TypeResource" readOnly="true" />
   </columns>
 </Grid>

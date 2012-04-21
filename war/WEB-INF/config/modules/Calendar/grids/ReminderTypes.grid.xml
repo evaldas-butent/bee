@@ -4,11 +4,11 @@
   name="ReminderTypes" viewName="ReminderTypes" caption="Priminimų tipai"
   >
   <columns>
-    <DataColumn name="Method" source="Method" itemKey="ReminderMethod" />
-    <DataColumn name="Minutes" source="Minutes" minValue="30" maxValue="1440" >
+    <DataColumn name="Method" itemKey="ReminderMethod" />
+    <DataColumn name="Minutes" minValue="30" maxValue="1440" >
       <editor type="spinner" stepValue="30" />
     </DataColumn>
 
-    <DataColumn name="Description" source="Description" autoFit="true" />
+    <DataColumn name="Description" autoFit="true" />
   </columns>
 </Grid>

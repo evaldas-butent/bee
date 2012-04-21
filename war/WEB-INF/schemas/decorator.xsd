@@ -16,6 +16,28 @@
   <xs:attribute name="class" type="xs:normalizedString" />
   <xs:attribute name="style" type="xs:string" />
 
+  <xs:attribute name="rootClass" type="xs:normalizedString" />
+  <xs:attribute name="rootStyle" type="xs:string" />
+
+  <xs:attribute name="contentClass" type="xs:normalizedString" />
+  <xs:attribute name="contentStyle" type="xs:string" />
+
+  <xs:attribute name="roleClass" type="xs:string" />
+  <xs:attribute name="roleStyle" type="xs:string" />
+  
+  <xs:simpleType name="role">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="root" />
+      <xs:enumeration value="content" />
+      <xs:enumeration value="content-cell" />
+      <xs:enumeration value="content-row" />
+      <xs:enumeration value="caption" />
+      <xs:enumeration value="caption-cell" />
+      <xs:enumeration value="caption-row" />
+      <xs:enumeration value="row" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="registeredDecorator">
     <xs:restriction base="xs:string">
       <xs:enumeration value="label" />
@@ -23,6 +45,10 @@
       <xs:enumeration value="caption-right" />
       <xs:enumeration value="caption-top" />
       <xs:enumeration value="caption-bottom" />
+      <xs:enumeration value="caption-left-cell" />
+      <xs:enumeration value="caption-right-cell" />
+      <xs:enumeration value="caption-top-cell" />
+      <xs:enumeration value="caption-bottom-cell" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -30,6 +56,7 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="caption" />
       <xs:enumeration value="caption-div" />
+      <xs:enumeration value="caption-table" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -37,11 +64,15 @@
     <xs:union memberTypes="registeredDecorator abstractDecorator" />
   </xs:simpleType>
 
-  <xs:element name="content">
+  <xs:element name="ins">
     <xs:complexType>
-      <xs:attribute name="data-role" type="xs:NCName" default="content" />
-      <xs:attributeGroup ref="ui:appearance" />
-      <xs:attribute name="select" type="xs:normalizedString" />
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="data-role" type="xs:normalizedString" />
+          <xs:attributeGroup ref="ui:appearance" />
+          <xs:attribute name="select" type="xs:normalizedString" />
+        </xs:extension>
+      </xs:simpleContent>
     </xs:complexType>
   </xs:element>
   
@@ -67,6 +98,17 @@
       </xs:all>
     </xs:complexType>
   </xs:element>
+  
+  <xs:element name="handler">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="ui:eventHandler">
+          <xs:attribute name="target" type="role" />
+          <xs:attribute name="deep" type="xs:boolean" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
 
   <xs:element name="template">
     <xs:complexType>
@@ -84,10 +126,13 @@
       <xs:element ref="const" minOccurs="0" maxOccurs="unbounded" />
       <xs:element name="style" type="ui:styleSheet" minOccurs="0" maxOccurs="unbounded" />
       <xs:element ref="lifecycle" minOccurs="0" maxOccurs="1" />
-      <xs:element name="handler" type="ui:eventHandler" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element ref="handler" minOccurs="0" maxOccurs="unbounded" />
       <xs:element ref="template" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
     <xs:attribute name="extends" type="anyDecorator" />
+    <xs:attribute name="eventTarget" type="role" />
+    <xs:attribute name="appearanceTarget" type="role" />
+    <xs:attribute name="appearanceDeep" type="xs:boolean" />
     <xs:attribute name="apply-author-styles" type="xs:boolean" />
   </xs:complexType>
 

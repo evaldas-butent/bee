@@ -1,5 +1,7 @@
 package com.butent.bee.shared.ui;
 
+import com.google.common.base.Splitter;
+
 public class DecoratorConstants {
 
   public static final String DIRECTORY = "decorators";
@@ -23,19 +25,45 @@ public class DecoratorConstants {
   public static final String TAG_INSERTED = "inserted";
   public static final String TAG_REMOVED = "removed";
 
-  public static final String TAG_CONTENT = "content";
+  public static final String TAG_CONTENT = "ins";
   
   public static final String ATTR_ID = "id"; 
   public static final String ATTR_EXTENDS = "extends"; 
+  public static final String ATTR_EVENT_TARGET = "eventTarget";
+  public static final String ATTR_APPEARANCE_TARGET = "appearanceTarget";
+  public static final String ATTR_APPEARANCE_DEEP = "appearanceDeep";
+  public static final String ATTR_APPLY_AUTHOR_STYLES = "apply-author-styles"; 
 
   public static final String ATTR_NAME = "name"; 
 
   public static final String ATTR_EVENT = "event";
-  
-  public static final String ATTR_APPLY_AUTHOR_STYLES = "apply-author-styles"; 
+  public static final String ATTR_TARGET = "target";
+  public static final String ATTR_DEEP = "deep";
  
   public static final String SUBSTITUTE_PREFIX = "{";
   public static final String SUBSTITUTE_SUFFIX = "}";
+
+  public static final String ROLE_ROOT = "root";
+  public static final String ROLE_CONTENT = "content";
+  
+  public static final String OPTION_CLASS = "class";
+  public static final String OPTION_STYLE = "style";
+  public static final String OPTION_ROOT_CLASS = "rootClass";
+  public static final String OPTION_ROOT_STYLE = "rootStyle";
+  public static final String OPTION_CONTENT_CLASS = "contentClass";
+  public static final String OPTION_CONTENT_STYLE = "contentStyle";
+
+  public static final String OPTION_ROLE_CLASS = "roleClass";
+  public static final String OPTION_ROLE_STYLE = "roleStyle";
+
+  public static final String OPTION_CAPTION = "caption";
+  public static final String OPTION_VALUE_REQUIRED = "valueRequired";
+  
+  public static final String ROLE_DEFINITION_SEPARATOR = "|";
+  public static final String ROLE_VALUE_SEPARATOR = "=";
+  
+  public static final Splitter ROLE_DEFINITION_SPLITTER =
+    Splitter.on(ROLE_DEFINITION_SEPARATOR).omitEmptyStrings().trimResults();
   
   private DecoratorConstants() {
   }

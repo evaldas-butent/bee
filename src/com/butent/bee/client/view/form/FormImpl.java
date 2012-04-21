@@ -89,14 +89,14 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
     public void onSuccess(WidgetDescription result) {
       if (result == null) {
-        onFailure(new String[] {"widget description is null"});
+        onFailure("widget description is null");
         return;
       }
 
       String id = result.getWidgetId();
       FormWidget type = result.getWidgetType();
       if (type == null) {
-        onFailure(new String[] {"widget type is null", id});
+        onFailure("widget type is null", id);
         return;
       }
 
@@ -112,7 +112,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         if (!BeeUtils.isEmpty(source) && hasData()) {
           index = getDataIndex(source);
           if (index < 0) {
-            onFailure(new String[] {"display source not found", source, id});
+            onFailure("display source not found", source, id);
             ok = false;
           }
         }
@@ -138,10 +138,14 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
             relationInfo = RelationInfo.create(getDataColumns(), source, result.getRelSource(),
                 result.getRelView(), result.getRelColumn());
           }
-          getEditableWidgets().add(new EditableWidget(getDataColumns(), index,
-              relationInfo, result));
+
+          EditableWidget editableWidget =
+              new EditableWidget(getDataColumns(), index, relationInfo, result);
+          getEditableWidgets().add(editableWidget);
+
+          result.setNullable(editableWidget.isNullable());
         } else {
-          onFailure(new String[] {"editable source not found", source, id});
+          onFailure("editable source not found", source, id);
         }
       }
       

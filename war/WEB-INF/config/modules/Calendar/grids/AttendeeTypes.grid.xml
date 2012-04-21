@@ -4,10 +4,10 @@
   name="AttendeeTypes" viewName="AttendeeTypes" caption="Resursų tipai"
   >
   <columns>
-    <DataColumn name="Name" source="Name" />
-    <DataColumn name="Description" source="Description" />
+    <DataColumn name="Name" />
+    <DataColumn name="Description" />
 
-    <DataColumn name="Transparency" source="Transparency" itemKey="Transparency" />
-    <DataColumn name="Resource" source="Resource" caption="Is Resource" />
+    <DataColumn name="Transparency" itemKey="Transparency" />
+    <DataColumn name="Resource" caption="Is Resource" />
   </columns>
 </Grid>

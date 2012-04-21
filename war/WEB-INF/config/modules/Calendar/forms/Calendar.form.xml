@@ -7,30 +7,28 @@
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="5">
       <row>
-        <Label html="Pavadinimas:" class="bee-required" />
-        <InputText source="Name" />
-        <Label html="Aprašymas:" />
-        <InputArea source="Description" visibleLines="3" />
-        <Label html="Tema:" class="bee-required" />
-        <DataSelector source="ThemeName" relSource="Theme" relView="Themes" relColumn="Name" />
+        <InputText source="Name" caption="Pavadinimas:" />
+        <InputArea source="Description" caption="Aprašymas:" visibleLines="3" />
+        <DataSelector source="ThemeName" relSource="Theme" relView="Themes" relColumn="Name"
+          caption="Tema" />
       </row>
 
       <row>
-        <Label html="Dienos:" />
-        <InputSpinner source="DefaultDisplayedDays" minValue="2" maxValue="100" step="1" />
-        <Label html="Intervalų skaičius valandoje:" />
-        <InputSpinner source="IntervalsPerHour" minValue="1" maxValue="30" step="1" />
-        <Label html="Intervalo aukštis px:" />
-        <InputSpinner source="PixelsPerInterval" minValue="1" maxValue="30" step="1" />
+        <InputSpinner source="DefaultDisplayedDays" caption="Dienos"
+          minValue="2" maxValue="100" step="1" />
+        <InputSpinner source="IntervalsPerHour" caption="Intervalų skaičius valandoje:"
+          minValue="1" maxValue="30" step="1" decorator="caption-left-cell" />
+        <InputSpinner source="PixelsPerInterval" caption="Intervalo aukštis px:"
+          minValue="1" maxValue="30" step="1" decorator="caption-left-cell" />
       </row>
 
       <row>
-        <Label html="Darbo dienos pradžia:" />
-        <InputSpinner source="WorkingHourStart" minValue="0" maxValue="23" step="1" />
-        <Label html="Darbo dienos pabaiga:" />
-        <InputSpinner source="WorkingHourEnd" minValue="0" maxValue="23" step="1" />
-        <Label html="Scroll To Hour:" />
-        <InputSpinner source="ScrollToHour" minValue="0" maxValue="23" step="1" />
+        <InputSpinner source="WorkingHourStart" caption="Darbo dienos pradžia:" 
+          minValue="0" maxValue="23" step="1" decorator="caption-left-cell" />
+        <InputSpinner source="WorkingHourEnd" caption="Darbo dienos pabaiga:"
+          minValue="0" maxValue="23" step="1" decorator="caption-left-cell" />
+        <InputSpinner source="ScrollToHour" caption="Scroll To Hour:"
+          minValue="0" maxValue="23" step="1" decorator="caption-left-cell" />
       </row>
     </FlexTable>
     

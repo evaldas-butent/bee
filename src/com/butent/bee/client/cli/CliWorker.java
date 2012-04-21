@@ -1234,7 +1234,7 @@ public class CliWorker {
         new WidgetInitializer() {
           public Widget initialize(Widget widget, String name) {
             if (BeeUtils.context(widgetName.get(), name)) {
-              StyleUtils.setAppearance(widget, null, widgetStyle.get());
+              StyleUtils.updateAppearance(widget, null, widgetStyle.get());
               BeeKeeper.getLog().info(name, StyleUtils.getCssText(widget));
             }
             return widget;

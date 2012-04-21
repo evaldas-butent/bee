@@ -142,6 +142,10 @@ public class Global implements Module {
 
     vars.put(name, new Variable(caption, type, value, widget, items));
   }
+  
+  public static void debug(String s) {
+    BeeKeeper.getLog().debug(s);
+  }
 
   public static CacheManager getCache() {
     return cache;
@@ -455,6 +459,8 @@ public class Global implements Module {
   private native void exportMethods() /*-{
     $wnd.Bee_updateForm = $entry(@com.butent.bee.client.ui.UiHelper::updateForm(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
     $wnd.Bee_getCaption = $entry(@com.butent.bee.client.Global::getCaption(Ljava/lang/String;I));
+    $wnd.Bee_debug = $entry(@com.butent.bee.client.Global::debug(Ljava/lang/String;));
+    $wnd.Bee_updateActor = $entry(@com.butent.bee.client.decorator.TuningHelper::updateActor(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;));
   }-*/;
 
   private void initCache() {

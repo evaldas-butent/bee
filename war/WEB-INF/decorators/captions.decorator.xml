@@ -1,60 +1,95 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Decorators xmlns="http://www.butent.com/decorator" xmlns:p="http://www.butent.com/decorator">
 
-  <abstract id="caption">
+  <abstract id="caption" eventTarget="caption" appearanceTarget="caption">
     <requiredParam p:caption="" />
-    <optionalParam p:valueRequired="false" p:class="" p:style="" />
+    <optionalParam p:valueRequired="false" />
+
+    <const name="caption-style" />
+    <const name="content-element"><ins>content</ins></const>
     
     <lifecycle>
       <created>
-        if ({required}) {
-          $wnd.Bee_setActorProperty(this, "caption", "className", "bee-required");
+        if ({valueRequired}) {
+          $wnd.Bee_updateActor(this, "caption", "className", "bee-required");
         }
       </created>
     </lifecycle>
+
+    <handler event="mousewheel">
+      var v = event.wheelDelta;
+      var u = (v &lt; 0) ? "-" : "+";
+      $wnd.Bee_updateActor(target, "caption", "fontSize", u);
+    </handler>
   </abstract>
 
   <decorator id="label" extends="caption">
     <template>
-      <label>{caption}<content/></label>
+      <label data-role="caption" style="{caption-style}">{caption}{content-element}</label>
     </template>
   </decorator>
 
   <abstract id="caption-div" extends="caption">
-    <const name="container-style" />
     <const name="caption-element">
-      <div data-role="caption" class="{class}" style="{style}">{caption}</div>
+      <span data-role="caption" style="{caption-style}">{caption}</span>
     </const>
-    <const name="content-style" />
-
-    <template>
-      <div style="{container-style}">
-        {caption-element}
-        <content style="{content-style}" />
-      </div>
-    </template>
+    <template><div>{caption-element}{content-element}</div></template>
   </abstract>
 
   <decorator id="caption-left" extends="caption-div">
     <optionalParam p:size="100" p:unit="px" />
-
-    <const name="container-style">position: relative;</const>
-    <const name="content-style">position: absolute; left: {size}{unit}; top: 0px;</const>
+    <const name="caption-style">display: inline-block; min-width: {size}{unit}; padding-top: 2px;</const>
   </decorator>
 
   <decorator id="caption-right" extends="caption-div">
+    <const name="caption-style">padding-left: 2px;</const>
+    <template><div>{content-element}{caption-element}</div></template>
   </decorator>
 
   <decorator id="caption-top" extends="caption-div">
+    <const name="caption-style">display: block;</const>
   </decorator>
   
-  <decorator id="caption-bottom" extends="caption-div">
-    <template>
-      <div style="{container-style}">
-        <content style="{content-style}" />
-        {caption-element}
-      </div>
-    </template>
+  <decorator id="caption-bottom" extends="caption-top">
+    <template><div>{content-element}{caption-element}</div></template>
   </decorator>
+
+  <abstract id="caption-table" extends="caption">
+    <const name="caption-element">
+      <div data-role="caption" style="{caption-style}">{caption}</div>
+    </const>
+    <const name="caption-cell"><td data-role="caption-cell">{caption-element}</td></const>
+    <const name="content-cell"><td data-role="content-cell">{content-element}</td></const>
+
+    <const name="table-style">table-layout: fixed;</const>
+    <const name="table-body" />
+
+    <template><table style="{table-style}"><tbody>{table-body}</tbody></table></template>
+  </abstract>
+
+  <decorator id="caption-left-cell" extends="caption-table">
+    <optionalParam p:size="100" p:unit="px" />
+    <const name="caption-style">width: {size}{unit};</const>
+    
+    <const name="table-body"><tr data-role="row">{caption-cell}{content-cell}</tr></const>
+  </decorator>  
+
+  <decorator id="caption-right-cell" extends="caption-table">
+    <const name="table-body"><tr data-role="row">{content-cell}{caption-cell}</tr></const>
+  </decorator>  
+
+  <decorator id="caption-top-cell" extends="caption-table">
+    <const name="table-body">
+      <tr data-role="caption-row">{caption-cell}</tr>
+      <tr data-role="content-row">{content-cell}</tr>
+    </const>
+  </decorator>  
+
+  <decorator id="caption-bottom-cell" extends="caption-table">
+    <const name="table-body">
+      <tr data-role="content-row">{content-cell}</tr>
+      <tr data-role="caption-row">{caption-cell}</tr>
+    </const>
+  </decorator>  
 
 </Decorators>

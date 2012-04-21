@@ -1,20 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:d="http://www.butent.com/decorator"
   
   name="Theme" viewName="Themes" caption="Spalvų Tema">
 
   <FlowPanel class="flexBox-vertical">
-    <FlexTable cellSpacing="10">
-      <row>
-        <Label html="Pavadinimas:" class="bee-required" />
-        <InputText source="Name" />
-      </row>
-      <row>
-        <Label html="Aprašymas:" />
-        <InputArea source="Description" visibleLines="3" style="width: 200px;" />
-      </row>
-    </FlexTable>
+    <HorizontalPanel cellSpacing="20">
+      <InputText source="Name" caption="Pavadinimas:"/>
+      <InputArea source="Description" caption="Aprašymas:" visibleLines="3" style="width: 200px;"
+        d:roleStyle="caption-cell = vertical-align: top;" />
+    </HorizontalPanel>
 
     <ChildGrid class="flexible" name="ThemeColors" relColumn="Theme" />
   </FlowPanel>

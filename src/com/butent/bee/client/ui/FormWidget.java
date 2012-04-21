@@ -373,6 +373,7 @@ public enum FormWidget {
   private static final String ATTR_MULTIPLE = "multiple";
 
   private static final String ATTR_DECORATOR = "decorator"; 
+  private static final String ATTR_DEFAULT_DECORATOR = "defaultDecorator"; 
   
   private static final String TAG_CSS = "css";
   private static final String TAG_DYN_STYLE = "dynStyle";
@@ -429,21 +430,21 @@ public enum FormWidget {
     this.types = types;
   }
 
-  public Widget create(Element description, List<BeeColumn> columns,
+  public Widget create(Element element, List<BeeColumn> columns,
       WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback) {
-    Assert.notNull(description);
+    Assert.notNull(element);
 
-    String name = description.getAttribute(ATTR_NAME);
-    if (widgetCallback != null && !widgetCallback.beforeCreateWidget(name, description)) {
+    String name = element.getAttribute(ATTR_NAME);
+    if (widgetCallback != null && !widgetCallback.beforeCreateWidget(name, element)) {
       return null;
     }
 
-    if (BeeUtils.isFalse(XmlUtils.getAttributeBoolean(description, ATTR_VISIBLE))) {
+    if (BeeUtils.isFalse(XmlUtils.getAttributeBoolean(element, ATTR_VISIBLE))) {
       return null;
     }
 
-    Map<String, String> attributes = XmlUtils.getAttributes(description, false);
-    List<Element> children = XmlUtils.getChildrenElements(description);
+    Map<String, String> attributes = XmlUtils.getAttributes(element, false);
+    List<Element> children = XmlUtils.getChildrenElements(element);
 
     String html = attributes.get(ATTR_HTML);
     String url;
@@ -519,7 +520,7 @@ public enum FormWidget {
       case CUSTOM_EDITABLE:
       case CUSTOM_FOCUSABLE:
         if (widgetCallback != null) {
-          widget = widgetCallback.createCustomWidget(name, description);
+          widget = widgetCallback.createCustomWidget(name, element);
         }
         break;
 
@@ -893,7 +894,7 @@ public enum FormWidget {
         break;
 
       case STRING_PICKER:
-        List<String> items = XmlUtils.getChildrenText(description, HasItems.TAG_ITEM);
+        List<String> items = XmlUtils.getChildrenText(element, HasItems.TAG_ITEM);
         if (!BeeUtils.isEmpty(items)) {
           widget = new StringPicker();
           ((StringPicker) widget).setItems(items);
@@ -1019,8 +1020,8 @@ public enum FormWidget {
         ((TreeView) widget).setViewPresenter(new TreePresenter((TreeView) widget,
             attributes.get(ATTR_SOURCE), attributes.get("parentColumn"),
             attributes.get("orderColumn"), attributes.get("relationColumn"),
-            XmlUtils.getCalculation(description, TAG_CALC),
-            XmlUtils.getFirstChildElement(description, "form")));
+            XmlUtils.getCalculation(element, TAG_CALC),
+            XmlUtils.getFirstChildElement(element, "form")));
         break;
       
       case DECORATOR:
@@ -1029,7 +1030,8 @@ public enum FormWidget {
           Widget child = createIfWidget(children.get(0), columns, widgetDescriptionCallback,
               widgetCallback);
           if (child != null) {
-            widget = TuningFactory.decorate(id, description, child);
+            widget = TuningFactory.decorate(id, element, child,
+                widgetDescriptionCallback.getLastWidgetDescription());
           }
           children.clear();
           attributes.clear();
@@ -1038,13 +1040,7 @@ public enum FormWidget {
     }
 
     if (widget == null) {
-      String msg1 = "cannot create widget";
-      String msg2 = getTagName();
-      if (widgetDescriptionCallback == null) {
-        BeeKeeper.getLog().severe(msg1, msg2);
-      } else {
-        widgetDescriptionCallback.onFailure(new String[] {msg1, msg2});
-      }
+      widgetDescriptionCallback.onFailure("cannot create widget", getTagName());
       return null;
     }
 
@@ -1158,13 +1154,12 @@ public enum FormWidget {
       ((Launchable) widget).launch();
     }
 
-    if (widgetDescriptionCallback != null) {
-      widgetDescriptionCallback.onSuccess(widgetDescription);
-    }
+    widgetDescriptionCallback.onSuccess(widgetDescription);
     
-    String decoratorId = attributes.get(ATTR_DECORATOR);
+    String decoratorId = attributes.containsKey(ATTR_DECORATOR)
+        ? attributes.get(ATTR_DECORATOR) : attributes.get(ATTR_DEFAULT_DECORATOR);
     if (!BeeUtils.isEmpty(decoratorId)) {
-      Widget decorated = TuningFactory.decorate(decoratorId, description, widget);
+      Widget decorated = TuningFactory.decorate(decoratorId, element, widget, widgetDescription);
       if (decorated != null) {
         return decorated;
       }
@@ -1371,11 +1366,7 @@ public enum FormWidget {
       return;
     }
 
-    boolean ok = EventUtils.addDomHandler(widget, event, handler);
-    if (!ok) {
-      BeeKeeper.getLog().warning("add handler:", NameUtils.getClassName(widget.getClass()),
-          DomUtils.getId(widget), event, "event not supported");
-    }
+    EventUtils.addDomHandler(widget, event, handler);
   }
 
   private HeaderAndContent createHeaderAndContent(Element parent, List<BeeColumn> columns,
@@ -1421,40 +1412,40 @@ public enum FormWidget {
     return new HeaderAndContent(headerTag, headerString, headerWidget, content);
   }
 
-  private Widget createIfWidget(Element description, List<BeeColumn> columns,
+  private Widget createIfWidget(Element element, List<BeeColumn> columns,
       WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback) {
-    if (description == null) {
+    if (element == null) {
       return null;
     }
-    FormWidget fw = getByTagName(XmlUtils.getLocalName(description));
+    FormWidget fw = getByTagName(XmlUtils.getLocalName(element));
     if (fw == null) {
       return null;
     }
-    return fw.create(description, columns, widgetDescriptionCallback, widgetCallback);
+    return fw.create(element, columns, widgetDescriptionCallback, widgetCallback);
   }
 
-  private Widget createIfWidgetOrHtmlOrText(Element description, List<BeeColumn> columns,
+  private Widget createIfWidgetOrHtmlOrText(Element element, List<BeeColumn> columns,
       WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback) {
-    if (description == null) {
+    if (element == null) {
       return null;
     }
     Widget widget = null;
-    String tag = XmlUtils.getLocalName(description);
+    String tag = XmlUtils.getLocalName(element);
 
     if (BeeUtils.same(tag, TAG_TEXT)) {
-      String text = XmlUtils.getText(description);
+      String text = XmlUtils.getText(element);
       if (!BeeUtils.isEmpty(text)) {
         widget = new InlineHTML(text);
       }
 
     } else if (BeeUtils.same(tag, TAG_HTML)) {
-      String html = XmlUtils.getText(description);
+      String html = XmlUtils.getText(element);
       if (!BeeUtils.isEmpty(html)) {
         widget = new Html(html);
       }
 
     } else {
-      widget = createIfWidget(description, columns, widgetDescriptionCallback, widgetCallback);
+      widget = createIfWidget(element, columns, widgetDescriptionCallback, widgetCallback);
     }
     return widget;
   }
@@ -1471,27 +1462,27 @@ public enum FormWidget {
     return null;
   }
 
-  private boolean createTableCell(HtmlTable table, Element description, int row, int col,
+  private boolean createTableCell(HtmlTable table, Element element, int row, int col,
       List<BeeColumn> columns, WidgetDescriptionCallback wdcb, WidgetCallback widgetCallback) {
     boolean ok = false;
-    String tag = XmlUtils.getLocalName(description);
+    String tag = XmlUtils.getLocalName(element);
     
     if (BeeUtils.same(tag, TAG_TEXT)) {
-      String text = XmlUtils.getText(description);
+      String text = XmlUtils.getText(element);
       ok = !BeeUtils.isEmpty(text);
       if (ok) {
         table.setText(row, col, text);
       }
 
     } else if (BeeUtils.same(tag, TAG_HTML)) {
-      String html = XmlUtils.getText(description);
+      String html = XmlUtils.getText(element);
       ok = !BeeUtils.isEmpty(html);
       if (ok) {
         table.setHTML(row, col, html);
       }
 
     } else {
-      Widget widget = createIfWidget(description, columns, wdcb, widgetCallback);
+      Widget widget = createIfWidget(element, columns, wdcb, widgetCallback);
       ok = (widget != null);
       if (ok) {
         table.setWidget(row, col, widget);
@@ -1500,22 +1491,22 @@ public enum FormWidget {
     return ok;
   }
   
-  private Edges getEdges(Element description) {
-    return new Edges(XmlUtils.getAttributeDouble(description, ATTR_TOP),
-        XmlUtils.getAttributeUnit(description, ATTR_TOP_UNIT),
-        XmlUtils.getAttributeDouble(description, ATTR_RIGHT),
-        XmlUtils.getAttributeUnit(description, ATTR_RIGHT_UNIT),
-        XmlUtils.getAttributeDouble(description, ATTR_BOTTOM),
-        XmlUtils.getAttributeUnit(description, ATTR_BOTTOM_UNIT),
-        XmlUtils.getAttributeDouble(description, ATTR_LEFT),
-        XmlUtils.getAttributeUnit(description, ATTR_LEFT_UNIT));
+  private Edges getEdges(Element element) {
+    return new Edges(XmlUtils.getAttributeDouble(element, ATTR_TOP),
+        XmlUtils.getAttributeUnit(element, ATTR_TOP_UNIT),
+        XmlUtils.getAttributeDouble(element, ATTR_RIGHT),
+        XmlUtils.getAttributeUnit(element, ATTR_RIGHT_UNIT),
+        XmlUtils.getAttributeDouble(element, ATTR_BOTTOM),
+        XmlUtils.getAttributeUnit(element, ATTR_BOTTOM_UNIT),
+        XmlUtils.getAttributeDouble(element, ATTR_LEFT),
+        XmlUtils.getAttributeUnit(element, ATTR_LEFT_UNIT));
   }
 
-  private Pair<String, BeeImage> getFaceOptions(Element description) {
-    String html = description.getAttribute(ATTR_HTML);
+  private Pair<String, BeeImage> getFaceOptions(Element element) {
+    String html = element.getAttribute(ATTR_HTML);
     BeeImage image = null;
 
-    String name = description.getAttribute(ATTR_RESOURCE);
+    String name = element.getAttribute(ATTR_RESOURCE);
     if (!BeeUtils.isEmpty(name)) {
       ImageResource resource = Images.get(name);
       if (resource != null) {
@@ -1523,7 +1514,7 @@ public enum FormWidget {
       }
     }
     if (image == null) {
-      String url = description.getAttribute(ATTR_URL);
+      String url = element.getAttribute(ATTR_URL);
       if (!BeeUtils.isEmpty(url)) {
         image = new BeeImage(url);
       }
@@ -1668,7 +1659,7 @@ public enum FormWidget {
             table.getColumnFormatter().setWidth(c, StyleUtils.toCssLength(width,
                 XmlUtils.getAttributeUnit(child, HasDimensions.ATTR_WIDTH_UNIT, Unit.PX)));
           }
-          StyleUtils.setAppearance(table.getColumnFormatter().getElement(c),
+          StyleUtils.updateAppearance(table.getColumnFormatter().getElement(c),
               child.getAttribute(ATTR_CLASS), child.getAttribute(ATTR_STYLE));
         }
 
@@ -1853,7 +1844,7 @@ public enum FormWidget {
       if (BeeUtils.same(name, ATTR_CLASS)) {
         StyleUtils.updateClasses(widget, value);
       } else if (BeeUtils.same(name, ATTR_STYLE)) {
-        StyleUtils.apply(widget.getElement().getStyle(), value);
+        StyleUtils.updateStyle(widget.getElement().getStyle(), value);
 
       } else if (BeeUtils.same(name, ATTR_TITLE)) {
         widget.setTitle(value);
@@ -1941,8 +1932,8 @@ public enum FormWidget {
     }
   }
 
-  private void setFace(CustomButton button, String faceName, Element description) {
-    Pair<String, BeeImage> options = getFaceOptions(description);
+  private void setFace(CustomButton button, String faceName, Element element) {
+    Pair<String, BeeImage> options = getFaceOptions(element);
     if (options == null) {
       return;
     }
@@ -1978,8 +1969,8 @@ public enum FormWidget {
     }
   }
 
-  private void setTableCellAttributes(HtmlTable table, Element description, int row, int col) {
-    String z = description.getAttribute(ATTR_HORIZONTAL_ALIGNMENT);
+  private void setTableCellAttributes(HtmlTable table, Element element, int row, int col) {
+    String z = element.getAttribute(ATTR_HORIZONTAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
       HorizontalAlignmentConstant horAlign = UiHelper.parseHorizontalAlignment(z);
       if (horAlign != null) {
@@ -1987,7 +1978,7 @@ public enum FormWidget {
       }
     }
 
-    z = description.getAttribute(ATTR_VERTICAL_ALIGNMENT);
+    z = element.getAttribute(ATTR_VERTICAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
       VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
       if (vertAlign != null) {
@@ -1995,7 +1986,7 @@ public enum FormWidget {
       }
     }
 
-    Dimensions dimensions = XmlUtils.getDimensions(description);
+    Dimensions dimensions = XmlUtils.getDimensions(element);
     z = dimensions.getCssWidth();
     if (BeeUtils.isEmpty(z)) {
       table.getCellFormatter().setWidth(row, col, z);
@@ -2005,21 +1996,21 @@ public enum FormWidget {
       table.getCellFormatter().setHeight(row, col, z);
     }
 
-    if (XmlUtils.tagIs(description, TAG_CELL)) {
-      z = description.getAttribute(ATTR_WORD_WRAP);
+    if (XmlUtils.tagIs(element, TAG_CELL)) {
+      z = element.getAttribute(ATTR_WORD_WRAP);
       if (BeeUtils.isBoolean(z)) {
         table.getCellFormatter().setWordWrap(row, col, BeeUtils.toBoolean(z));
       }
 
-      StyleUtils.setAppearance(table.getCellFormatter().getElement(row, col),
-          description.getAttribute(ATTR_CLASS), description.getAttribute(ATTR_STYLE));
+      StyleUtils.updateAppearance(table.getCellFormatter().getElement(row, col),
+          element.getAttribute(ATTR_CLASS), element.getAttribute(ATTR_STYLE));
 
       if (table instanceof FlexTable) {
-        String span = description.getAttribute(ATTR_COL_SPAN);
+        String span = element.getAttribute(ATTR_COL_SPAN);
         if (BeeUtils.toInt(span) > 1) {
           ((FlexTable) table).getFlexCellFormatter().setColSpan(row, col, BeeUtils.toInt(span));
         }
-        span = description.getAttribute(ATTR_ROW_SPAN);
+        span = element.getAttribute(ATTR_ROW_SPAN);
         if (BeeUtils.toInt(span) > 1) {
           ((FlexTable) table).getFlexCellFormatter().setRowSpan(row, col, BeeUtils.toInt(span));
         }
@@ -2027,8 +2018,8 @@ public enum FormWidget {
     }
   }
 
-  private void setTableRowAttributes(HtmlTable table, Element description, int row) {
-    String z = description.getAttribute(ATTR_VERTICAL_ALIGNMENT);
+  private void setTableRowAttributes(HtmlTable table, Element element, int row) {
+    String z = element.getAttribute(ATTR_VERTICAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
       VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
       if (vertAlign != null) {
@@ -2036,14 +2027,14 @@ public enum FormWidget {
       }
     }
     
-    if (XmlUtils.tagIs(description, TAG_ROW)) {
-      StyleUtils.setAppearance(table.getRow(row), description.getAttribute(ATTR_CLASS),
-          description.getAttribute(ATTR_STYLE));
+    if (XmlUtils.tagIs(element, TAG_ROW)) {
+      StyleUtils.updateAppearance(table.getRow(row), element.getAttribute(ATTR_CLASS),
+          element.getAttribute(ATTR_STYLE));
     }
   }
   
-  private void setVectorCellAttributes(CellPanel parent, Element description, Widget cellContent) {
-    String z = description.getAttribute(ATTR_HORIZONTAL_ALIGNMENT);
+  private void setVectorCellAttributes(CellPanel parent, Element element, Widget cellContent) {
+    String z = element.getAttribute(ATTR_HORIZONTAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
       HorizontalAlignmentConstant horAlign = UiHelper.parseHorizontalAlignment(z);
       if (horAlign != null) {
@@ -2051,7 +2042,7 @@ public enum FormWidget {
       }
     }
 
-    z = description.getAttribute(ATTR_VERTICAL_ALIGNMENT);
+    z = element.getAttribute(ATTR_VERTICAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
       VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
       if (vertAlign != null) {
@@ -2059,7 +2050,7 @@ public enum FormWidget {
       }
     }
 
-    Dimensions dimensions = XmlUtils.getDimensions(description);
+    Dimensions dimensions = XmlUtils.getDimensions(element);
     z = dimensions.getCssWidth();
     if (!BeeUtils.isEmpty(z)) {
       parent.setCellWidth(cellContent, z);
@@ -2069,9 +2060,9 @@ public enum FormWidget {
       parent.setCellHeight(cellContent, z);
     }
 
-    if (XmlUtils.tagIs(description, TAG_CELL)) {
-      StyleUtils.setAppearance(DOM.getParent(cellContent.getElement()),
-          description.getAttribute(ATTR_CLASS), description.getAttribute(ATTR_STYLE));
+    if (XmlUtils.tagIs(element, TAG_CELL)) {
+      StyleUtils.updateAppearance(DOM.getParent(cellContent.getElement()),
+          element.getAttribute(ATTR_CLASS), element.getAttribute(ATTR_STYLE));
     }
   }
 }
