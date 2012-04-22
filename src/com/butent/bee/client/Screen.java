@@ -42,6 +42,8 @@ public interface Screen extends Module, NotificationListener {
 
   void updateActiveQuietly(Widget w, ScrollBars scroll);
 
+  void updateCommandPanel(Widget w);
+  
   void updateData(Widget w);
 
   void updateMenu(Widget w);

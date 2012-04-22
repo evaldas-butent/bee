@@ -14,7 +14,7 @@ import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.TextCellType;
-import com.butent.bee.client.resources.Images;
+import com.butent.bee.client.images.Images;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.BeeCommand;

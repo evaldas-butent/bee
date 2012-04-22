@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/table"
+
+  name="UserCalendars"
+  idName="UserCalendarID"
+  >
+  <BeeFields>
+    <BeeField name="User" type="LONG" notNull="true" relation="Users" cascade="DELETE" />
+    <BeeField name="Calendar" type="LONG" notNull="true" relation="Calendars" cascade="DELETE" />
+
+    <BeeField name="DefaultDisplayedDays" type="INTEGER" />
+
+    <BeeField name="PixelsPerInterval" type="INTEGER" />
+    <BeeField name="IntervalsPerHour" type="INTEGER" />
+
+    <BeeField name="WorkingHourStart" type="INTEGER" />
+    <BeeField name="WorkingHourEnd" type="INTEGER" />
+    <BeeField name="ScrollToHour" type="INTEGER" />
+    <BeeField name="OffsetHourLabels" type="BOOLEAN" />
+
+    <BeeField name="EnableDragDrop" type="BOOLEAN" />
+    <BeeField name="DragDropCreation" type="BOOLEAN" />
+
+    <BeeField name="TimeBlockClickNumber" type="INTEGER" />
+  </BeeFields>
+  <BeeKeys>
+    <BeeKey unique="true">
+      <KeyField>User</KeyField>
+      <KeyField>Calendar</KeyField>
+    </BeeKey>
+  </BeeKeys>
+</BeeTable>

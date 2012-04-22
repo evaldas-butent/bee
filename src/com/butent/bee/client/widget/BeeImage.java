@@ -2,6 +2,7 @@ package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.safehtml.shared.SafeUri;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HasEnabled;
@@ -62,6 +63,16 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
     this.styleDisabled = styleDisabled;
   }
 
+  public BeeImage(SafeUri url) {
+    super(url);
+    init();
+  }
+
+  public BeeImage(SafeUri url, Command cmnd) {
+    this(url);
+    initCommand(cmnd);
+  }
+  
   public Command getCommand() {
     return command;
   }

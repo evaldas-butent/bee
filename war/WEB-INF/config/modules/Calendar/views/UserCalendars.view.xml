@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="UserCalendars"
+  source="UserCalendars"
+  >
+  <Columns>
+    <SimpleColumn name="User" />
+    <SimpleColumn name="Calendar" />
+    <SimpleJoin name="Calendar" joinType="INNER">
+      <SimpleColumn alias="CalendarName" name="Name" />
+    </SimpleJoin>
+
+    <SimpleColumn name="DefaultDisplayedDays" />
+
+    <SimpleColumn name="PixelsPerInterval" />
+    <SimpleColumn name="IntervalsPerHour" />
+
+    <SimpleColumn name="WorkingHourStart" />
+    <SimpleColumn name="WorkingHourEnd" />
+    <SimpleColumn name="ScrollToHour" />
+    <SimpleColumn name="OffsetHourLabels" />
+
+    <SimpleColumn name="EnableDragDrop" />
+    <SimpleColumn name="DragDropCreation" />
+
+    <SimpleColumn name="TimeBlockClickNumber" />
+  </Columns>
+  <Order>
+    <OrderBy column="CalendarName" />
+  </Order>
+</View>

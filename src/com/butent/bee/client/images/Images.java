@@ -1,10 +1,9 @@
-package com.butent.bee.client.resources;
+package com.butent.bee.client.images;
 
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.resources.client.ImageResource.ImageOptions;
 
 import com.butent.bee.shared.Assert;
 
@@ -85,10 +84,6 @@ public class Images {
     @Source("bookmark_add.png")
     ImageResource bookmarkAdd();
 
-    @Source("butent.png")
-    @ImageOptions(width = 61)
-    ImageResource butent();
-
     @Source("cancel.png")
     ImageResource cancel();
 
@@ -113,7 +108,7 @@ public class Images {
     @Source("edit_delete.png")
     ImageResource editDelete();
     
-    @Source("exit.png")
+    @Source("exit.gif")
     ImageResource exit();
 
     @Source("first.png")
@@ -137,6 +132,12 @@ public class Images {
     @Source("loading.gif")
     ImageResource loading();
 
+    @Source("logo1.gif")
+    ImageResource logo1();
+
+    @Source("logo2.gif")
+    ImageResource logo2();
+    
     @Source("next.png")
     ImageResource next();
 
@@ -176,6 +177,9 @@ public class Images {
     @Source("search.png")
     ImageResource search();
 
+    @Source("searchOptions.gif")
+    ImageResource searchOptions();
+    
     @Source("settings.png")
     ImageResource settings();
     
@@ -244,8 +248,6 @@ public class Images {
     map.put(key("bookmark"), resources.bookmark());
     map.put(key("bookmark_add"), resources.bookmarkAdd());
 
-    map.put(key("butent"), resources.butent());
-
     map.put(key("cancel"), resources.cancel());
     map.put(key("close"), resources.close());
 
@@ -259,8 +261,6 @@ public class Images {
 
     map.put(key("edit_add"), resources.editAdd());
     map.put(key("edit_delete"), resources.editDelete());
-
-    map.put(key("exit"), resources.exit());
 
     map.put(key("first"), resources.first());
 

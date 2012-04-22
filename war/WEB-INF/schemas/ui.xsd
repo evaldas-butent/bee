@@ -177,7 +177,6 @@
       <xs:enumeration value="edit" />
       <xs:enumeration value="edit_add" />
       <xs:enumeration value="edit_delete" />
-      <xs:enumeration value="exit" />
       <xs:enumeration value="first" />
       <xs:enumeration value="forward" />
       <xs:enumeration value="green" />

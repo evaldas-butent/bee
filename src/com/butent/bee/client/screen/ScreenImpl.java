@@ -52,7 +52,6 @@ import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeListBox;
-import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.SimpleBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeResource;
@@ -100,6 +99,8 @@ public class ScreenImpl implements Screen {
 
   private Split screenPanel = null;
   private TilePanel activePanel = null;
+
+  private HasWidgets commandPanel = null;
   private HasWidgets menuPanel = null;
   private HasWidgets dataPanel = null;
 
@@ -173,6 +174,10 @@ public class ScreenImpl implements Screen {
     TilePanel p = getActivePanel();
     Assert.notNull(p);
     return p.getOffsetWidth();
+  }
+
+  public HasWidgets getCommandPanel() {
+    return commandPanel;
   }
 
   public String getName() {
@@ -279,6 +284,10 @@ public class ScreenImpl implements Screen {
     }
   }
 
+  public void updateCommandPanel(Widget w) {
+    updatePanel(getCommandPanel(), w);
+  }
+
   public void updateData(Widget w) {
     updatePanel(getDataPanel(), w);
   }
@@ -341,7 +350,7 @@ public class ScreenImpl implements Screen {
 
     w = initNorth();
     if (w != null) {
-      p.addNorth(w, 66);
+      p.addNorth(w, 100);
     }
 
     w = initSouth();
@@ -409,11 +418,11 @@ public class ScreenImpl implements Screen {
   }
 
   protected Widget initNorth() {
-    Complex cp = new Complex();
-    cp.addStyleName("bee-NorthContainer");
+    Complex panel = new Complex();
+    panel.addStyleName("bee-NorthContainer");
 
-    BeeImage img = new BeeImage(Global.getImages().butent());
-    img.addStyleName("bee-Icon");
+    BeeImage img = new BeeImage(Global.getImages().logo2());
+    img.addStyleName("bee-Logo");
 
     String ver = Settings.getVersion();
     if (!BeeUtils.isEmpty(ver)) {
@@ -425,53 +434,70 @@ public class ScreenImpl implements Screen {
       }
     });
 
-    cp.addLeftTop(img, 4, 0);
+    panel.add(img);
 
-    FlexTable searchContainer = new FlexTable();
+    Flow searchContainer = new Flow();
     searchContainer.addStyleName("bee-MainSearchContainer");
 
-    SearchBox box = new SearchBox("search");
+    SearchBox box = new SearchBox("Search");
     box.addStyleName("bee-MainSearchBox");
-    searchContainer.setWidget(0, 0, box);
+    searchContainer.add(box);
+    
+    Simple optionsContainer = new Simple();
+    optionsContainer.addStyleName("bee-MainSearchOptionsContainer");
+    BeeImage options = new BeeImage(Global.getImages().searchOptions().getSafeUri());
+    options.addStyleName("bee-MainSearchOptions");
+    optionsContainer.setWidget(options);
+    searchContainer.add(optionsContainer);
 
-    BeeImage go = new BeeImage(Global.getImages().search());
-    go.addStyleName("bee-MainSearchGo");
-    searchContainer.setWidget(0, 1, go);
+    Simple submitContainer = new Simple();
+    submitContainer.addStyleName("bee-MainSearchSubmitContainer");
+    BeeImage submit = new BeeImage(Global.getImages().search().getSafeUri());
+    submit.addStyleName("bee-MainSearchSubmit");
+    submitContainer.setWidget(submit);
+    searchContainer.add(submitContainer);
 
-    InternalLink opt = new InternalLink("search options", "");
-    opt.addStyleName("bee-MainSearchOptions");
-    searchContainer.setWidget(1, 0, opt);
+    panel.add(searchContainer);
+    
+    Flow commandContainer = new Flow();
+    commandContainer.addStyleName("bee-MainCommandPanel");
+    panel.add(commandContainer);
+    setCommandPanel(commandContainer);
 
-    cp.addLeftTop(searchContainer, 100, 4);
+    Flow menuContainer = new Flow();
+    menuContainer.addStyleName("bee-MainMenu");
+    panel.add(menuContainer);
+    setMenuPanel(menuContainer);
 
-    BeeLayoutPanel mp = new BeeLayoutPanel();
-    mp.addStyleName("bee-MainMenu");
-
-    cp.addLeftTop(mp, 400, 8);
-    StyleUtils.setRight(mp, 200);
-    StyleUtils.setBottom(mp, 1);
-
-    setMenuPanel(mp);
-
+    Flow userContainer = new Flow();
+    userContainer.addStyleName("bee-UserContainer");
+    
     BeeLabel user = new BeeLabel();
     user.addStyleName("bee-UserSignature");
-
-    cp.addRightTop(user, 30, 4);
+    userContainer.add(user);
     setSignature(user);
 
-    BeeImage out = new BeeImage(Global.getImages().exit(), new BeeCommand() {
+    Simple exitContainer = new Simple();
+    exitContainer.addStyleName("bee-UserExitContainer");
+    BeeImage exit = new BeeImage(Global.getImages().exit().getSafeUri(), new BeeCommand() {
       @Override
       public void execute() {
         Global.confirm(BeeKeeper.getUser().getUserSign(), "Sign out",
             new ServiceCommand(Service.LOGOUT));
       }
     });
-    cp.addRightTop(out, 2, 2);
+    exit.addStyleName("bee-UserExit");
+    exitContainer.setWidget(exit);
+    userContainer.add(exitContainer);
+    
+    panel.add(userContainer);
 
-    setNotification(new Notification());
-    cp.addRightTop(getNotification(), 0, 0);
+    Notification nw = new Notification();
+    nw.addStyleName("bee-MainNotificationContainer");
+    panel.add(nw);
+    setNotification(nw);
 
-    return cp;
+    return panel;
   }
 
   protected Widget initSouth() {
@@ -709,6 +735,10 @@ public class ScreenImpl implements Screen {
 
   private void setActivePanel(TilePanel p) {
     activePanel = p;
+  }
+
+  private void setCommandPanel(HasWidgets commandPanel) {
+    this.commandPanel = commandPanel;
   }
 
   private void setLogToggle(BeeCheckBox logToggle) {
