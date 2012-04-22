@@ -5,13 +5,13 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.utils.JreEmulation;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -52,7 +52,7 @@ public class MapRenderer extends AbstractCellRenderer implements HasItems {
     }
     
     if (key == null || BeeUtils.isEmpty(value)) {
-      BeeKeeper.getLog().warning(JreEmulation.getSimpleName(this), "cannot add item:", item);
+      BeeKeeper.getLog().warning(NameUtils.getName(this), "cannot add item:", item);
     } else {
       map.put(key.getString(), value);
     }

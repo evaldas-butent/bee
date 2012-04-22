@@ -33,5 +33,10 @@
     <DataColumn name="DragDropCreation" />
 
     <DataColumn name="TimeBlockClickNumber" itemKey="TimeBlockClick" />
+
+    <DataColumn name="OwnerLastName" sortBy="OwnerLastName, OwnerLastName" searchBy="OwnerFirstName, OwnerLastName">
+      <renderer type="join" options="OwnerFirstName, OwnerLastName" />
+    </DataColumn>
+      
   </columns>
 </Grid>

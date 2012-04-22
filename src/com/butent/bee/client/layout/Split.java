@@ -35,7 +35,6 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.ui.HandlesAfterAdd;
 import com.butent.bee.client.ui.HandlesBeforeAdd;
-import com.butent.bee.client.utils.JreEmulation;
 import com.butent.bee.client.widget.HorizontalSplitter;
 import com.butent.bee.client.widget.Splitter;
 import com.butent.bee.client.widget.VerticalSplitter;
@@ -44,6 +43,7 @@ import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -293,7 +293,7 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
-    PropertyUtils.addChildren(lst, JreEmulation.getSimpleName(this),
+    PropertyUtils.addChildren(lst, NameUtils.getName(this),
         "Id", getId(),
         "Absolute Left", getAbsoluteLeft(),
         "Absolute Top", getAbsoluteTop(),
@@ -633,7 +633,7 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     }
 
     PropertyUtils.addProperties(lst,
-        "Class", JreEmulation.getSimpleName(w),
+        "Class", NameUtils.getName(w),
         "Absolute Left", w.getAbsoluteLeft(),
         "Absolute Top", w.getAbsoluteTop(),
         "Offset Height", w.getOffsetHeight(),

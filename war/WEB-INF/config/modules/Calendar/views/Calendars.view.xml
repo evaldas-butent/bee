@@ -39,6 +39,13 @@
     <SimpleColumn name="DragDropCreation" />
 
     <SimpleColumn name="TimeBlockClickNumber" />
+    
+    <SimpleJoin name="Owner" joinType="LEFT">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn alias="OwnerFirstName" name="FirstName" />
+        <SimpleColumn alias="OwnerLastName" name="LastName" />
+      </SimpleJoin>
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="Name" />

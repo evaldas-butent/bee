@@ -1,10 +1,10 @@
 package com.butent.bee.client.render;
 
 import com.butent.bee.client.utils.Evaluator;
-import com.butent.bee.client.utils.JreEmulation;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.utils.NameUtils;
 
 public class EvalRenderer extends AbstractCellRenderer {
 
@@ -14,7 +14,7 @@ public class EvalRenderer extends AbstractCellRenderer {
   public EvalRenderer(int dataIndex, IsColumn dataColumn, Evaluator evaluator) {
     super(dataIndex, dataColumn);
 
-    Assert.notNull(evaluator, JreEmulation.getSimpleName(this) + ": evaluator is required");
+    Assert.notNull(evaluator, NameUtils.getName(this) + ": evaluator is required");
     this.evaluator = evaluator;
     hasColumn = dataIndex >= 0 && dataColumn != null; 
   }

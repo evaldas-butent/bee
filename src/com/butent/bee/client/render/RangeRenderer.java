@@ -6,7 +6,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.utils.JreEmulation;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
@@ -14,6 +13,7 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.RangeOptions;
 
 import java.util.Collection;
@@ -68,16 +68,16 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
     }
     
     if (low == null && upp == null) {
-      BeeKeeper.getLog().warning(JreEmulation.getSimpleName(this), "cannot parse item:", item);
+      BeeKeeper.getLog().warning(NameUtils.getName(this), "cannot parse item:", item);
       return;
     }
     if (low != null && upp != null) {
       if (BeeUtils.isMore(low, upp)) {
-        BeeKeeper.getLog().warning(JreEmulation.getSimpleName(this), "invalid range:", item);
+        BeeKeeper.getLog().warning(NameUtils.getName(this), "invalid range:", item);
         return;
       }
       if (low.equals(upp) && (rangeOptions.isLowerOpen() || rangeOptions.isUpperOpen())) {
-        BeeKeeper.getLog().warning(JreEmulation.getSimpleName(this), "invalid range:", item,
+        BeeKeeper.getLog().warning(NameUtils.getName(this), "invalid range:", item,
             rangeOptions.isLowerOpen(), rangeOptions.isUpperOpen());
         return;
       }
@@ -85,7 +85,7 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
     
     Range<Value> range = rangeOptions.getRange(low, upp);
     if (range == null || range.isEmpty()) {
-      BeeKeeper.getLog().warning(JreEmulation.getSimpleName(this), "range is empty:", item);
+      BeeKeeper.getLog().warning(NameUtils.getName(this), "range is empty:", item);
     } else {
       map.put(range, value);
     }

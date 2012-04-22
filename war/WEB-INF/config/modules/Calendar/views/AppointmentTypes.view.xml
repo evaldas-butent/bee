@@ -10,6 +10,12 @@
 
     <SimpleColumn name="AppointmentCreator" />
     <SimpleColumn name="AppointmentEditor" />
+
+    <SimpleColumn name="AppointmentHeader" />
+    <SimpleColumn name="AppointmentBody" />
+    <SimpleColumn name="AppointmentFooter" />
+    
+    <SimpleColumn name="AppointmentTitle" />
   </Columns>
   <Order>
     <OrderBy column="Name" />

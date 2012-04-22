@@ -172,6 +172,10 @@ public class NameUtils {
       return qName;
     }
   }
+
+  public static String getName(Object obj) {
+    return getClassName(Assert.notNull(obj).getClass());
+  }
   
   public static <E extends Enum<?>> String getName(Class<E> clazz, Integer idx) {
     if (clazz == null || idx == null || idx < 0) {

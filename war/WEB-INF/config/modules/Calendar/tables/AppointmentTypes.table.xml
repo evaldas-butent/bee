@@ -11,5 +11,10 @@
     <BeeField name="AppointmentCreator" type="STRING" precision="30" />
     <BeeField name="AppointmentEditor" type="STRING" precision="30" />
 
+    <BeeField name="AppointmentHeader" type="STRING" precision="100" />
+    <BeeField name="AppointmentBody" type="TEXT" />
+    <BeeField name="AppointmentFooter" type="STRING" precision="100" />
+
+    <BeeField name="AppointmentTitle" type="TEXT" />
   </BeeFields>
 </BeeTable>

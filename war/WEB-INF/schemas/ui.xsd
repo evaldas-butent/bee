@@ -307,6 +307,7 @@
       <xs:enumeration value="map" />
       <xs:enumeration value="range" />
       <xs:enumeration value="enum" />
+      <xs:enumeration value="join" />
     </xs:restriction>
   </xs:simpleType>
 

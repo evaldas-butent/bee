@@ -10,5 +10,8 @@
 
     <BeeField name="Transparency" type="INTEGER" />
     <BeeField name="Resource" type="BOOLEAN" />
+    
+    <BeeField name="AttendeeCreator" type="STRING" precision="30" />
+    <BeeField name="AttendeeEditor" type="STRING" precision="30" />
   </BeeFields>
 </BeeTable>

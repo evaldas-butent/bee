@@ -8,10 +8,10 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.tree.TreeItem;
-import com.butent.bee.client.utils.JreEmulation;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -94,8 +94,7 @@ public class TilePanel extends Split {
       if (child instanceof TilePanel) {
         root.addItem(((TilePanel) child).getTree(s, splitters));
       } else {
-        root.addItem(BeeUtils.concat(1, s, JreEmulation.getSimpleName(child),
-            DomUtils.getId(child)));
+        root.addItem(BeeUtils.concat(1, s, NameUtils.getName(child), DomUtils.getId(child)));
       }
     }
     return root;

@@ -9,5 +9,11 @@
 
     <DataColumn name="AppointmentCreator" />
     <DataColumn name="AppointmentEditor" />
+
+    <DataColumn name="AppointmentHeader" />
+    <DataColumn name="AppointmentBody" />
+    <DataColumn name="AppointmentFooter" />
+   
+    <DataColumn name="AppointmentTitle" />
   </columns>
 </Grid>

@@ -9,5 +9,8 @@
 
     <DataColumn name="Transparency" itemKey="Transparency" />
     <DataColumn name="Resource" caption="Is Resource" />
+
+    <DataColumn name="AttendeeCreator" />
+    <DataColumn name="AttendeeEditor" />
   </columns>
 </Grid>

@@ -2,7 +2,6 @@ package com.butent.bee.client.render;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.utils.Evaluator;
-import com.butent.bee.client.utils.JreEmulation;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.data.IsColumn;
@@ -22,7 +21,7 @@ public class RendererFactory {
 
     IsColumn column = BeeUtils.getQuietly(dataColumns, dataIndex);
     String columnId = (column == null) ? null : column.getId();
-    
+
     Evaluator evaluator = Evaluator.create(calculation, columnId, dataColumns);
     if (column != null) {
       evaluator.setColIndex(dataIndex);
@@ -65,18 +64,19 @@ public class RendererFactory {
           BeeKeeper.getLog().warning("EnumRenderer: item key not specified");
         }
         break;
+
+      case JOIN:
+        renderer = new JoinRenderer(dataColumns, description.getSeparator(),
+            description.getOptions());
+        break;
     }
 
     if (renderer instanceof HasValueStartIndex && description.getValueStartIndex() != null) {
       ((HasValueStartIndex) renderer).setValueStartIndex(description.getValueStartIndex());
     }
 
-    if (renderer instanceof HasItems) {
-      if (description.getItems() != null) {
-        ((HasItems) renderer).setItems(description.getItems());
-      } else {
-        BeeKeeper.getLog().warning(JreEmulation.getSimpleName(renderer), "no items initialized");
-      }
+    if (renderer instanceof HasItems && description.getItems() != null) {
+      ((HasItems) renderer).setItems(description.getItems());
     }
     return renderer;
   }
@@ -88,7 +88,7 @@ public class RendererFactory {
 
     } else if (calculation != null) {
       return createRenderer(calculation, dataColumns, dataIndex);
-    
+
     } else if (!BeeUtils.isEmpty(itemKey)) {
       Assert.isIndex(dataColumns, dataIndex);
       return new EnumRenderer(dataIndex, dataColumns.get(dataIndex), itemKey);

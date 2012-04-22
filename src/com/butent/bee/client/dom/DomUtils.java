@@ -35,7 +35,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.layout.Direction;
-import com.butent.bee.client.utils.JreEmulation;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -692,7 +691,7 @@ public class DomUtils {
 
     if (w instanceof HasWidgets) {
       for (Widget child : (HasWidgets) w) {
-        PropertyUtils.addProperty(lst, JreEmulation.getSimpleName(child), getId(child));
+        PropertyUtils.addProperty(lst, NameUtils.getName(child), getId(child));
       }
     }
     return lst;
@@ -1023,7 +1022,7 @@ public class DomUtils {
     List<Property> lst = new ArrayList<Property>();
 
     for (Widget p = w; p != null; p = p.getParent()) {
-      PropertyUtils.addProperty(lst, JreEmulation.getSimpleName(p), getId(p));
+      PropertyUtils.addProperty(lst, NameUtils.getName(p), getId(p));
     }
     return lst;
   }
@@ -1876,7 +1875,7 @@ public class DomUtils {
     if (obj == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return JreEmulation.getSimpleName(obj);
+      return NameUtils.getName(obj);
     }
   }
 
@@ -1892,7 +1891,7 @@ public class DomUtils {
     if (obj == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return BeeUtils.concat(1, JreEmulation.getSimpleName(obj), obj.getElement().getId(),
+      return BeeUtils.concat(1, NameUtils.getName(obj), obj.getElement().getId(),
           obj.getStyleName());
     }
   }
@@ -1901,8 +1900,7 @@ public class DomUtils {
     if (w == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return BeeUtils.concat(1, JreEmulation.getSimpleName(w), w.getElement().getId(),
-          w.getStyleName());
+      return BeeUtils.concat(1, NameUtils.getName(w), w.getElement().getId(), w.getStyleName());
     }
   }
   

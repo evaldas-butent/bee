@@ -33,5 +33,7 @@
     <BeeField name="DragDropCreation" type="BOOLEAN" />
 
     <BeeField name="TimeBlockClickNumber" type="INTEGER" />
+    
+    <BeeField name="Owner" type="LONG" relation="Users" />
   </BeeFields>
 </BeeTable>
