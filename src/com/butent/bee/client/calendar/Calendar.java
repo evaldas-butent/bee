@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.butent.bee.client.calendar.dayview.DayView;
 import com.butent.bee.client.calendar.monthview.MonthView;
 import com.butent.bee.client.calendar.resourceview.ResourceView;
+import com.butent.bee.client.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.Assert;
 
 import java.util.Map;
@@ -32,17 +33,17 @@ public class Calendar extends CalendarWidget implements RequiresResize, Provides
     }
   };
 
-  public Calendar() {
-    this(CalendarView.Type.DAY);
+  public Calendar(CalendarSettings settings) {
+    this(settings, CalendarView.Type.DAY);
   }
 
-  public Calendar(CalendarView view) {
-    super();
+  public Calendar(CalendarSettings settings, CalendarView view) {
+    super(settings);
     setView(view);
   }
 
-  public Calendar(CalendarView.Type viewType) {
-    super();
+  public Calendar(CalendarSettings settings, CalendarView.Type viewType) {
+    super(settings);
     setType(viewType);
   }
 

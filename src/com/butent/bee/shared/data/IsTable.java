@@ -67,6 +67,8 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   RowType getRow(int rowIndex);
   
+  RowType getRowById(long rowId);
+  
   int getRowIndex(long rowId);
 
   Sequence<RowType> getRows();
@@ -151,4 +153,6 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
   void sort(List<Pair<Integer, Boolean>> sortInfo);
 
   void sortByRowId(boolean ascending);
+  
+  void updateRow(RowType row);  
 }

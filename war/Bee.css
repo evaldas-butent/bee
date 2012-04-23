@@ -158,7 +158,22 @@ body,select {
 .bee-MainCommandPanel {
   left: 310px;
   top: 28px;
+  right: 225px;
 }
+.bee-MainCommandPanelItem {
+  display: inline-block;
+  margin-left: 5%;
+  height: 25px;
+  color: #6D6D6D;
+  font: 13px/25px Arial;
+  background: #F2F2F2;
+  padding: 0 10px;
+  border: 1px solid #E4E4E4;
+  border-radius: 2px;
+}
+.bee-MainCommandPanelItem:hover {
+  border: 1px solid #BEBEBE;
+}  
 
 .bee-MainMenu {
   left: 103px;

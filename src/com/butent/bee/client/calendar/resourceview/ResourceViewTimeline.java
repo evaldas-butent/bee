@@ -34,7 +34,7 @@ public class ResourceViewTimeline extends Composite {
         * settings.getSettings().getPixelsPerInterval();
 
     int i = 0;
-    if (settings.getSettings().isOffsetHourLabels()) {
+    if (settings.getSettings().offsetHourLabels()) {
       i = 1;
       SimplePanel sp = new SimplePanel();
       StyleUtils.setHeight(sp, labelHeight / 2);

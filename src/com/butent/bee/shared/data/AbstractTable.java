@@ -394,6 +394,15 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   public abstract RowType getRow(int rowIndex);
 
+  public RowType getRowById(long rowId) {
+    for (int i = 0; i < getNumberOfRows(); i++) {
+      if (getRow(i).getId() == rowId) {
+        return getRow(i);
+      }
+    }
+    return null;
+  }
+  
   public int getRowIndex(long rowId) {
     for (int i = 0; i < getNumberOfRows(); i++) {
       if (getRow(i).getId() == rowId) {
@@ -543,7 +552,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
       removeRow(rowIndex);
     }
   }
-
+  
   public void setCell(int rowIndex, int colIndex, IsCell cell) {
     getRow(rowIndex).setCell(colIndex, cell);
   }
@@ -692,6 +701,11 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return sb.toString();
   }
 
+  public void updateRow(RowType row) {
+    Assert.notNull(row);
+    getRows().set(getRowIndex(row.getId()), row);
+  }
+  
   protected void assertColumnIndex(int colIndex) {
     Assert.isIndex(columns, colIndex);
   }

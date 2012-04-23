@@ -1,45 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:d="http://www.butent.com/decorator"
   
   name="Calendar" viewName="Calendars" caption="Kalendorius">
 
   <FlowPanel class="flexBox-vertical">
-    <FlexTable cellSpacing="5">
-      <row>
-        <InputText source="Name" caption="Pavadinimas:" />
-        <InputArea source="Description" caption="Aprašymas:" visibleLines="3" />
-        <DataSelector source="ThemeName" relSource="Theme" relView="Themes" relColumn="Name"
-          caption="Tema" />
-      </row>
-
-      <row>
-        <InputSpinner source="DefaultDisplayedDays" caption="Dienos"
-          minValue="2" maxValue="100" step="1" />
-        <InputSpinner source="IntervalsPerHour" caption="Intervalų skaičius valandoje:"
-          minValue="1" maxValue="30" step="1" decorator="caption-left-cell" />
-        <InputSpinner source="PixelsPerInterval" caption="Intervalo aukštis px:"
-          minValue="1" maxValue="30" step="1" decorator="caption-left-cell" />
-      </row>
-
-      <row>
-        <InputSpinner source="WorkingHourStart" caption="Darbo dienos pradžia:" 
-          minValue="0" maxValue="23" step="1" decorator="caption-left-cell" />
-        <InputSpinner source="WorkingHourEnd" caption="Darbo dienos pabaiga:"
-          minValue="0" maxValue="23" step="1" decorator="caption-left-cell" />
-        <InputSpinner source="ScrollToHour" caption="Scroll To Hour:"
-          minValue="0" maxValue="23" step="1" decorator="caption-left-cell" />
-      </row>
-    </FlexTable>
+    <HorizontalPanel cellSpacing="10">
+      <InputText source="Name" caption="Pavadinimas:"/>
+      <InputArea source="Description" caption="Aprašymas:" visibleLines="3" style="width: 200px;"
+        d:roleStyle="caption-cell = vertical-align: top;" />
+      <DataSelector source="ThemeName" relSource="Theme" relView="Themes" relColumn="Name"
+        caption="Tema" />
+    </HorizontalPanel>
     
-    <ComplexPanel class="flexible" style="position: relative; margin-top: 3ex;">
-      <layer left="1" leftUnit="em" width="60" widthUnit="%" top="0" bottom="1">
+    <StackPanel class="flexible">
+      <stack headerSize="22">
+        <text>Resursų tipai</text>
         <ChildGrid name="CalAttendeeTypes" relColumn="Calendar" />
-      </layer>
-      <layer left="65" leftUnit="%" right="1" rightUnit="em" top="0" bottom="1">
+      </stack>
+      <stack headerSize="22">
+        <text>Resursai</text>
+        <ChildGrid name="CalendarAttendees" relColumn="Calendar" />
+      </stack>
+      <stack headerSize="22">
+        <text>Asmenys</text>
+        <ChildGrid name="CalendarPersons" relColumn="Calendar" />
+      </stack>
+      <stack headerSize="22">
+        <text>Vizitų tipai</text>
+        <ChildGrid name="CalAppointmentTypes" relColumn="Calendar" />
+      </stack>
+      <stack headerSize="22">
+        <text>Priminimai</text>
         <ChildGrid name="CalendarReminders" relColumn="Calendar" />
-      </layer>
-    </ComplexPanel>
+      </stack>
+    </StackPanel>
 
   </FlowPanel>
 </f:Form>  

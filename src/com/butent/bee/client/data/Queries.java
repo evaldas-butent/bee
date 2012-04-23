@@ -380,6 +380,19 @@ public class Queries {
         });
   }
 
+  public static void update(String viewName, BeeRow row, List<BeeColumn> columns,
+      RowCallback callback) {
+    Assert.notEmpty(viewName);
+    Assert.notNull(row);
+    Assert.notEmpty(columns);
+
+    BeeRowSet rs = new BeeRowSet(columns);
+    rs.setViewName(viewName);
+    rs.addRow(row);
+
+    update(rs, true, callback);
+  }
+  
   public static void update(String viewName, long rowId, long version, List<BeeColumn> columns,
       List<String> oldValues, List<String> newValues, RowCallback callback) {
     Assert.notEmpty(viewName);

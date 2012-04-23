@@ -104,7 +104,7 @@ public class FormFactory {
   }
 
   public static void createFormView(final String name, final List<BeeColumn> columns,
-      final FormCallback formCallback, final FormViewCallback viewCallback) {
+      final FormCallback formCallback, final FormViewCallback viewCallback, final boolean addStyle) {
     Assert.notEmpty(name);
     Assert.notNull(viewCallback);
 
@@ -116,7 +116,7 @@ public class FormFactory {
             viewCallback.onFailure(new String[] {"form", name, "decription not created"});
           } else {
             FormView view = new FormImpl(name);
-            view.create(fd, columns, formCallback, true);
+            view.create(fd, columns, formCallback, addStyle);
             viewCallback.onSuccess(view);
           }
         } else {
@@ -127,8 +127,8 @@ public class FormFactory {
   }
 
   public static void createFormView(String name, List<BeeColumn> columns,
-      FormViewCallback viewCallback) {
-    createFormView(name, columns, getFormCallback(name), viewCallback);
+      FormViewCallback viewCallback, boolean addStyle) {
+    createFormView(name, columns, getFormCallback(name), viewCallback, addStyle);
   }
 
   public static Widget createWidget(Element parent, List<BeeColumn> columns,

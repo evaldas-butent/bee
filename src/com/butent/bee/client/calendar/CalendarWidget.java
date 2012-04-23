@@ -31,6 +31,7 @@ import com.butent.bee.client.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.calendar.event.TimeBlockClickHandler;
 import com.butent.bee.client.calendar.event.UpdateEvent;
 import com.butent.bee.client.calendar.event.UpdateHandler;
+import com.butent.bee.client.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
@@ -58,14 +59,14 @@ public class CalendarWidget extends InteractiveWidget implements
 
   private CalendarView view = null;
 
-  public CalendarWidget() {
-    this(TimeUtils.today());
+  public CalendarWidget(CalendarSettings settings) {
+    this(TimeUtils.today(), settings);
   }
 
-  public CalendarWidget(JustDate date) {
+  public CalendarWidget(JustDate date, CalendarSettings settings) {
     super();
 
-    this.settings = new CalendarSettings();
+    this.settings = settings;
     this.appointmentManager = new AppointmentManager();
     this.date = date;
   }

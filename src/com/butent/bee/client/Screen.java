@@ -1,5 +1,6 @@
 package com.butent.bee.client;
 
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -18,6 +19,8 @@ public interface Screen extends Module, NotificationListener {
 
   void activatePanel(TilePanel np);
 
+  void addCommandItem(Widget widget);  
+  
   void closeView(View view);
 
   TilePanel getActivePanel();
@@ -26,6 +29,8 @@ public interface Screen extends Module, NotificationListener {
 
   int getActivePanelWidth();
 
+  HasWidgets getCommandPanel();
+  
   Split getScreenPanel();
 
   boolean isTemporaryDetach();

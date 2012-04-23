@@ -221,6 +221,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       Global.getMsgBoxen().confirm("Delete Row ?", deleteCallback, StyleUtils.NAME_SCARY);
     }
   }
+  
+  public IsRow getActiveRow() {
+    return getView().getContent().getActiveRowData();
+  }
 
   public List<BeeColumn> getDataColumns() {
     return getDataProvider().getColumns();
@@ -282,7 +286,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       case DELETE:
         if (getView().isEnabled()) {
-          IsRow row = getView().getContent().getActiveRowData();
+          IsRow row = getActiveRow();
           if (row != null && getView().getContent().isRowEditable(row, true)) {
             if (getView().getContent().isRowSelected(row.getId())) {
               deleteRows(row, getView().getContent().getSelectedRows());

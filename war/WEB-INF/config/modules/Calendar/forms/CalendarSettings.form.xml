@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+
+  name="CalendarSettings" viewName="UserCalendars" caption="Calendar Settings">
+
+  <FlexTable cellSpacing="5">
+    <row>
+      <InputSpinner source="DefaultDisplayedDays" caption="Dienos" minValue="2"
+        maxValue="100" step="1" />
+      <InputSpinner source="IntervalsPerHour" caption="Intervalų skaičius valandoje:"
+        minValue="1" maxValue="30" step="1" decorator="caption-left-cell" />
+      <InputSpinner source="PixelsPerInterval" caption="Intervalo aukštis px:"
+        minValue="1" maxValue="30" step="1" decorator="caption-left-cell" />
+    </row>
+
+    <row>
+      <InputSpinner source="WorkingHourStart" caption="Darbo dienos pradžia:" minValue="0"
+        maxValue="23" step="1" decorator="caption-left-cell" />
+      <InputSpinner source="WorkingHourEnd" caption="Darbo dienos pabaiga:" minValue="0"
+        maxValue="23" step="1" decorator="caption-left-cell" />
+      <InputSpinner source="ScrollToHour" caption="Scroll To Hour:" minValue="0"
+        maxValue="23" step="1" decorator="caption-left-cell" />
+    </row>
+
+    <row>
+      <CheckBox source="OffsetHourLabels" html="OffsetHourLabels" />
+      <CheckBox source="EnableDragDrop" html="EnableDragDrop" />
+      <CheckBox source="DragDropCreation" html="DragDropCreation" />
+    </row>
+
+    <row>
+      <Label html="TimeBlockClickNumber" />
+      <Radio source="TimeBlockClickNumber" itemKey="TimeBlockClick" />
+      <CheckBox source="Favorite" html="Favorite" />
+    </row>
+  </FlexTable>
+</f:Form>  

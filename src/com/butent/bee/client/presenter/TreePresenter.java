@@ -208,7 +208,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     final IsRow row;
 
     if (addMode) {
-      row = new BeeRow(0, new String[getDataColumns().size()]);
+      row = DataUtils.createEmptyRow(getDataColumns().size());
     } else {
       String[] arr = new String[getDataColumns().size()];
 

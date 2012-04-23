@@ -61,7 +61,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
@@ -725,7 +724,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
             result.addActionHandler(CellGridImpl.this);
           }
         }
-      });
+      }, true);
 
       if (gridDescr.getEditMessage() != null) {
         setEditMessage(Evaluator.create(gridDescr.getEditMessage(), null, dataCols));
@@ -754,7 +753,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
             result.addActionHandler(CellGridImpl.this);
           }
         }
-      });
+      }, true);
     }
 
     if (callback != null) {
@@ -1074,7 +1073,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
       getEditForm().setEnabled(enableForm);
 
-      IsRow row = cloneRow(rowValue);
+      IsRow row = DataUtils.cloneRow(rowValue, getDataColumns().size());
       getEditForm().updateRow(row, true);
 
       if (editableColumn != null && enableForm) {
@@ -1186,14 +1185,14 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     IsRow oldRow = getGrid().getActiveRowData();
-    IsRow newRow = createEmptyRow();
+    IsRow newRow = DataUtils.createEmptyRow(getDataColumns().size());
 
     for (EditableColumn editableColumn : getEditableColumns().values()) {
       if (!editableColumn.hasCarry()) {
         continue;
       }
       if (oldRow == null) {
-        oldRow = createEmptyRow();
+        oldRow = DataUtils.createEmptyRow(getDataColumns().size());
       }
 
       String carry = editableColumn.getCarryValue(oldRow);
@@ -1290,27 +1289,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     super.onUnload();
   }
 
-  private IsRow cloneRow(IsRow original) {
-    String[] arr = new String[getDataColumns().size()];
-    for (int i = 0; i < arr.length; i++) {
-      arr[i] = original.getString(i);
-    }
-
-    IsRow result = new BeeRow(original.getId(), arr);
-    result.setVersion(original.getVersion());
-
-    return result;
-  }
-
   private void closeEditForm() {
     showForm(true, false);
     fireEvent(new EditFormEvent(State.CLOSED, showEditPopup()));
     getGrid().refocus();
-  }
-
-  private IsRow createEmptyRow() {
-    String[] arr = new String[getDataColumns().size()];
-    return new BeeRow(0, arr);
   }
 
   private String createFormContainer(FormView formView, boolean edit, String defaultCaption,

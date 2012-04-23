@@ -3,6 +3,7 @@ package com.butent.bee.client.calendar;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 
+import com.butent.bee.client.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.DateTime;

@@ -48,7 +48,6 @@ import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -833,9 +832,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     IsRow oldRow = getRow();
     setRowBuffer(oldRow);
     if (oldRow == null) {
-      oldRow = createEmptyRow();
+      oldRow = DataUtils.createEmptyRow(getDataColumns().size());
     }
-    IsRow newRow = createEmptyRow();
+    IsRow newRow = DataUtils.createEmptyRow(getDataColumns().size());
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (!editableWidget.hasCarry()) {
@@ -929,11 +928,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       getPreviewReg().removeHandler();
       setPreviewReg(null);
     }
-  }
-
-  private IsRow createEmptyRow() {
-    String[] arr = new String[getDataColumns().size()];
-    return new BeeRow(0, arr);
   }
 
   private void fireDataRequest() {

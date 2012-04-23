@@ -70,7 +70,6 @@ import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TilePanel;
-import com.butent.bee.client.modules.calendar.CalendarPanel;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.FormFactory;
@@ -378,8 +377,6 @@ public class CliWorker {
       showBrowser(arr);
     } else if (z.equals("cache")) {
       BeeKeeper.getScreen().showGrid(Global.getCache().getExtendedInfo());
-    } else if (z.startsWith("cal")) {
-      BeeKeeper.getScreen().updateActivePanel(new CalendarPanel());
     } else if (z.startsWith("cap")) {
       showCaptions();
     } else if (z.equals("canvas")) {

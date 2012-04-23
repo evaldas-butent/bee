@@ -15,7 +15,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.calendar.CalendarFormat;
-import com.butent.bee.client.calendar.CalendarSettings.TimeBlockClick;
 import com.butent.bee.client.calendar.CalendarView;
 import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.calendar.drop.MonthViewDropController;
@@ -26,6 +25,7 @@ import com.butent.bee.client.dnd.DragStartEvent;
 import com.butent.bee.client.dnd.PickupDragController;
 import com.butent.bee.client.dnd.VetoDragException;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -386,7 +386,7 @@ public class MonthView extends CalendarView {
     boolean selected = calendarWidget.isTheSelectedAppointment(appointment);
     styleManager.applyStyle(panel, selected);
 
-    if (calendarWidget.getSettings().isEnableDragDrop() && !appointment.isReadOnly()) {
+    if (calendarWidget.getSettings().isDragDropEnabled() && !appointment.isReadOnly()) {
       dragController.makeDraggable(panel);
     }
 

@@ -8,7 +8,6 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.calendar.Appointment;
-import com.butent.bee.client.calendar.CalendarSettings.TimeBlockClick;
 import com.butent.bee.client.calendar.CalendarView;
 import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.calendar.drop.DayViewDropController;
@@ -23,6 +22,7 @@ import com.butent.bee.client.dnd.DragStartEvent;
 import com.butent.bee.client.dnd.PickupDragController;
 import com.butent.bee.client.dnd.VetoDragException;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -211,7 +211,7 @@ public class DayView extends CalendarView {
     if (appt != null) {
       selectAppointment(appt);
     } else if ((getSettings().getTimeBlockClickNumber() == TimeBlockClick.Single
-        || getSettings().getEnableDragDropCreation())
+        || getSettings().isDragDropCreationEnabled())
         && element == dayViewBody.getGrid().getGridOverlay().getElement()) {
       int x = DOM.eventGetClientX(event);
       int y = DOM.eventGetClientY(event);
@@ -257,7 +257,7 @@ public class DayView extends CalendarView {
         panel.setDescription(appt.getAppointment().getDescription());
         dayViewBody.getGrid().getGrid().add(panel);
 
-        if (calendarWidget.getSettings().isEnableDragDrop() && !appt.getAppointment().isReadOnly()) {
+        if (calendarWidget.getSettings().isDragDropEnabled() && !appt.getAppointment().isReadOnly()) {
           resizeController.makeDraggable(panel.getResizeHandle());
           dragController.makeDraggable(panel, panel.getMoveHandle());
         }

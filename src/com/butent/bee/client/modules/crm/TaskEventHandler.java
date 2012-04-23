@@ -214,7 +214,7 @@ public class TaskEventHandler {
       BeeRowSet rowSet = new BeeRowSet("TaskObservers", columns);
 
       for (IsRow row : users) {
-        rowSet.addRow(new BeeRow(0,
+        rowSet.addRow(new BeeRow(DataUtils.NEW_ROW_ID,
             new String[] {BeeUtils.toString(task), BeeUtils.toString(row.getId())}));
       }
 

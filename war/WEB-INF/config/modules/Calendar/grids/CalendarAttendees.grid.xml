@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
   
-  name="CalendarAttendees" viewName="CalendarAttendees" caption="Resursai"
+  name="CalendarAttendees" viewName="CalendarAttendees"
   >
   <columns>
     <DataColumn name="TypeName" readOnly="true" />

@@ -787,6 +787,14 @@ public class DomUtils {
     return lst;
   }
 
+  public static Element getElementQuietly(String id) {
+    if (BeeUtils.isEmpty(id)) {
+      return null;
+    } else {
+      return DOM.getElementById(id);
+    }
+  }
+  
   public static List<Element> getElementsByAttributeValue(Element root, String name, String value) {
     return getElementsByAttributeValue(root, name, value, null, null);
   }

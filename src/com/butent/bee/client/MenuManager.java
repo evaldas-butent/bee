@@ -357,8 +357,7 @@ public class MenuManager implements Module {
     Widget w = null;
 
     if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_HOR)) {
-      boolean hover = MenuConstants.isRootLevel(level) ? true : opt;
-      w = new MenuBar(level, false, getBarType(opt), MenuItem.ITEM_TYPE.LABEL, hover);
+      w = new MenuBar(level, false, getBarType(false), MenuItem.ITEM_TYPE.LABEL, opt);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_VERT)) {
       w = new MenuBar(level, true, getBarType(opt), MenuItem.ITEM_TYPE.LABEL, opt);
 

@@ -14,6 +14,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.ui.Widget;
@@ -24,7 +25,6 @@ import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.calendar.AppointmentStyle;
 import com.butent.bee.client.calendar.Attendee;
 import com.butent.bee.client.calendar.Calendar;
-import com.butent.bee.client.calendar.CalendarSettings.TimeBlockClick;
 import com.butent.bee.client.calendar.CalendarView.Type;
 import com.butent.bee.client.calendar.event.CreateEvent;
 import com.butent.bee.client.calendar.event.CreateHandler;
@@ -81,8 +81,10 @@ import java.util.List;
 import java.util.Set;
 
 public class CalendarPanel extends Complex {
+  
+  private final long calendarId; 
 
-  private final Calendar calendar = new Calendar();
+  private final Calendar calendar;
   private final DatePicker datePicker;
   
   private final Complex gridPanel = new Complex();
@@ -90,7 +92,9 @@ public class CalendarPanel extends Complex {
   
   private int resourceNameIndex = BeeConst.UNDEF;
 
-  public CalendarPanel() {
+  public CalendarPanel(long calendarId, CalendarSettings settings) {
+    this.calendarId = calendarId;
+    this.calendar = new Calendar(settings);
     configureCalendar();
 
     calendar.suspendLayout();
@@ -155,7 +159,13 @@ public class CalendarPanel extends Complex {
 
     addLeftTop(panel, 220, 10);
 
-    addRightTop(new BeeImage(Global.getImages().settings()), 10, 10);
+    BeeImage config = new BeeImage(Global.getImages().settings(), new Command() {
+      public void execute() {
+        CalendarKeeper.editSettings(CalendarPanel.this.calendarId, CalendarPanel.this.calendar);
+      }
+    });
+    addRightTop(config, 10, 10);
+    
     addRightTop(createViews(), 50, 10);
 
     add(calendar, new Edges(40, 10, 10, 220));
@@ -177,9 +187,6 @@ public class CalendarPanel extends Complex {
   }
 
   private void configureCalendar() {
-    calendar.getSettings().setTimeBlockClickNumber(TimeBlockClick.Double);
-    calendar.getSettings().setEnableDragDropCreation(false);
-
     calendar.addDeleteHandler(new DeleteHandler<Appointment>() {
       public void onDelete(DeleteEvent<Appointment> event) {
         BeeKeeper.getLog().debug("Appointment deleted");

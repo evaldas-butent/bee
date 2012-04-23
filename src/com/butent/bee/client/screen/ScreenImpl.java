@@ -139,6 +139,12 @@ public class ScreenImpl implements Screen {
 
     setActivePanel(np);
   }
+  
+  public void addCommandItem(Widget widget) {
+    Assert.notNull(widget);
+    widget.addStyleName("bee-MainCommandPanelItem");
+    getCommandPanel().add(widget);
+  }
 
   public void closeView(View view) {
     Assert.notNull(view, "closeView: view is null");

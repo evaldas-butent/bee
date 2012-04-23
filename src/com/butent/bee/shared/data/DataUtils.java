@@ -37,6 +37,8 @@ public class DataUtils {
 
   public static final ValueType ID_TYPE = ValueType.LONG;
   public static final ValueType VERSION_TYPE = ValueType.LONG;
+  
+  public static final long NEW_ROW_ID = 0L;
 
   private static final Splitter COLUMN_SPLITTER =
       Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
@@ -46,6 +48,23 @@ public class DataUtils {
   private static int defaultPagingThreshold = 20;
 
   private static int maxInitialRowSetSize = 50;
+  
+  public static BeeRow cloneRow(IsRow original, int columnCount) {
+    Assert.notNull(original);
+    String[] arr = new String[Assert.isPositive(columnCount)];
+    for (int i = 0; i < arr.length; i++) {
+      arr[i] = original.getString(i);
+    }
+
+    BeeRow result = new BeeRow(original.getId(), arr);
+    result.setVersion(original.getVersion());
+
+    return result;
+  }
+  
+  public static IsRow createEmptyRow(int columnCount) {
+    return new BeeRow(NEW_ROW_ID, new String[Assert.isPositive(columnCount)]);
+  }
 
   @SuppressWarnings("unchecked")
   public static IsTable<?, ?> createTable(Object data, String... columnLabels) {
@@ -153,8 +172,20 @@ public class DataUtils {
     return defaultSearchThreshold;
   }
 
+  public static Long getLong(BeeRowSet rowSet, IsRow row, String columnId) {
+    return row.getLong(getColumnIndex(columnId, rowSet.getColumns()));
+  }
+  
   public static int getMaxInitialRowSetSize() {
     return maxInitialRowSetSize;
+  }
+  
+  public static String getString(BeeRowSet rowSet, IsRow row, String columnId) {
+    return row.getString(getColumnIndex(columnId, rowSet.getColumns()));
+  }
+  
+  public static boolean isNewRow(IsRow row) {
+    return Assert.notNull(row).getId() == NEW_ROW_ID;
   }
 
   public static List<String> parseColumns(String input, List<? extends IsColumn> columns,
@@ -295,6 +326,10 @@ public class DataUtils {
     } else {
       return r1.getId() == r2.getId() && r1.getVersion() == r2.getVersion();
     }
+  }
+  
+  public static void setValue(BeeRowSet rowSet, IsRow row, String columnId, String value) {
+    row.setValue(getColumnIndex(columnId, rowSet.getColumns()), value);
   }
 
   private static IsColumn detectColumn(String expr, List<? extends IsColumn> columns,
