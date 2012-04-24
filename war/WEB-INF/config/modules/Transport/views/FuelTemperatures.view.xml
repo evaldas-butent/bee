@@ -5,7 +5,7 @@
   source="FuelTemperatures"
   >
   <Columns>
-    <SimpleColumn name="Cost"/>
+    <SimpleColumn name="Consumption"/>
     <SimpleColumn name="Season"/>
     <SimpleColumn name="TempFrom"/>
     <SimpleColumn name="TempTo"/>

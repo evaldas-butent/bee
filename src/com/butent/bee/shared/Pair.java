@@ -11,8 +11,6 @@ import com.butent.bee.shared.utils.BeeUtils;
  * @param <B> type of second object to pair
  */
 public class Pair<A, B> implements Transformable {
-  private final A a;
-  private final B b;
 
   /**
    * Creates the new {@code Pair} object passing the pair of objects.
@@ -20,7 +18,14 @@ public class Pair<A, B> implements Transformable {
    * @param a object to pair the object {@code b}
    * @param b object to pair the object {@code a}
    */
-  public Pair(A a, B b) {
+  public static <A, B> Pair<A, B> create(A a, B b) {
+    return new Pair<A, B>(a, b);
+  }
+
+  private final A a;
+  private final B b;
+
+  private Pair(A a, B b) {
     this.a = a;
     this.b = b;
   }

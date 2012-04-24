@@ -6,7 +6,7 @@
   x="0" y="0"
   >
   <BeeFields>
-    <BeeField name="Date" type="DATETIME" notNull="true" />
+    <BeeField name="Date" type="DATETIME" notNull="true" defExpr="CURRENT_TIME" />
     <BeeField name="TripNo" type="STRING" precision="20" unique="true" notNull="true" />
     <BeeField name="Vehicle" type="LONG" relation="Vehicles" />
     <BeeField name="Trailer" type="LONG" relation="Vehicles" />

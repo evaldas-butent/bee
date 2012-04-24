@@ -82,8 +82,8 @@
           </FlowPanel>
           
           <FlowPanel class="flexBox-vertical flexible">
-             <ChildGrid name="FuelCosts" relColumn="Vehicle" style="height: 150px" />
-             <ChildGrid name="FuelTemperatures" parent="FuelCosts" relColumn="Cost" 
+             <ChildGrid name="FuelConsumptions" relColumn="Vehicle" style="height: 150px" />
+             <ChildGrid name="FuelTemperatures" parent="FuelConsumptions" relColumn="Consumption" 
                 class="flexible" style="margin-left: 20%" />
           </FlowPanel>
         </FlowPanel>

@@ -6,7 +6,7 @@
   x="741" y="101"
   >
   <BeeFields>
-    <BeeField name="Order" type="LONG" relation="TripOrders" notNull="true" cascade="DELETE" />
+    <BeeField name="Order" type="LONG" relation="TransportationOrders" notNull="true" cascade="DELETE" />
     <BeeField name="LoadingPlace" type="LONG" unique="true" relation="CargoPlaces" />
     <BeeField name="UnloadingPlace" type="LONG" unique="true" relation="CargoPlaces" />
     <BeeField name="Cargo" type="STRING" precision="100" notNull="true" />

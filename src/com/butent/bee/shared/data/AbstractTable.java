@@ -169,9 +169,9 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   public void clearCell(int rowIndex, int colIndex) {
     getRow(rowIndex).clearCell(colIndex);
   }
-  
+
   public abstract void clearRows();
-  
+
   public void clearValue(int rowIndex, int colIndex) {
     IsCell cell = getCell(rowIndex, colIndex);
     cell.clearValue();
@@ -402,7 +402,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     }
     return null;
   }
-  
+
   public int getRowIndex(long rowId) {
     for (int i = 0; i < getNumberOfRows(); i++) {
       if (getRow(i).getId() == rowId) {
@@ -428,7 +428,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
     List<Pair<Integer, Boolean>> sortInfo = Lists.newArrayList();
     for (int i = 0; i < colIndexes.length; i++) {
-      sortInfo.add(new Pair<Integer, Boolean>(colIndexes[i], true));
+      sortInfo.add(Pair.create(colIndexes[i], true));
     }
     return getSortedRows(sortInfo);
   }
@@ -552,7 +552,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
       removeRow(rowIndex);
     }
   }
-  
+
   public void setCell(int rowIndex, int colIndex, IsCell cell) {
     getRow(rowIndex).setCell(colIndex, cell);
   }
@@ -666,7 +666,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
     List<Pair<Integer, Boolean>> sortInfo = Lists.newArrayList();
     for (int i = 0; i < colIndexes.length; i++) {
-      sortInfo.add(new Pair<Integer, Boolean>(colIndexes[i], true));
+      sortInfo.add(Pair.create(colIndexes[i], true));
     }
     sort(sortInfo);
   }
@@ -705,7 +705,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     Assert.notNull(row);
     getRows().set(getRowIndex(row.getId()), row);
   }
-  
+
   protected void assertColumnIndex(int colIndex) {
     Assert.isIndex(columns, colIndex);
   }

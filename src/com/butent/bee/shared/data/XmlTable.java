@@ -3,6 +3,7 @@ package com.butent.bee.shared.data;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -38,6 +39,10 @@ public class XmlTable {
     public boolean notNull;
     @XmlAttribute
     public boolean unique;
+    @XmlAttribute
+    public DefaultExpression defExpr;
+    @XmlAttribute
+    public String defValue;
     @XmlAttribute
     public String relation;
     @XmlTransient

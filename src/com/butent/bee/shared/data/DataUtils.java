@@ -111,6 +111,16 @@ public class DataUtils {
     return "Column " + index;
   }
 
+  public static IsColumn getColumn(String columnId, List<? extends IsColumn> columns) {
+    int index = getColumnIndex(columnId, columns);
+
+    if (index >= 0) {
+      return columns.get(index);
+    } else {
+      return null;
+    }
+  }
+
   public static int getColumnIndex(String columnId, List<? extends IsColumn> columns) {
     int index = BeeConst.UNDEF;
     if (BeeUtils.isEmpty(columnId) || BeeUtils.isEmpty(columns)) {
@@ -133,10 +143,10 @@ public class DataUtils {
     }
 
     if (!BeeUtils.isEmpty(columns)) {
-      for (IsColumn col : columns) {
-        if (BeeUtils.same(col.getId(), input)) {
-          return col.getId();
-        }
+      IsColumn column = getColumn(input, columns);
+
+      if (column != null) {
+        return column.getId();
       }
     }
 
@@ -146,18 +156,17 @@ public class DataUtils {
     if (BeeUtils.same(input, versionColumnName)) {
       return versionColumnName;
     }
-
     return null;
   }
 
   public static ValueType getColumnType(String columnId, List<? extends IsColumn> columns) {
-    int index = getColumnIndex(columnId, columns);
+    ValueType type = null;
+    IsColumn column = getColumn(columnId, columns);
 
-    if (index >= 0) {
-      return columns.get(index).getType();
-    } else {
-      return null;
+    if (column != null) {
+      type = column.getType();
     }
+    return type;
   }
 
   public static int getDefaultAsyncThreshold() {

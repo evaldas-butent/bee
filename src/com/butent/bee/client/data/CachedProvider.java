@@ -45,7 +45,7 @@ public class CachedProvider extends Provider {
     Assert.notNull(table);
     this.table = table;
   }
-  
+
   @Override
   public void clear() {
     if (getTable().getNumberOfRows() > 0) {
@@ -168,7 +168,7 @@ public class CachedProvider extends Provider {
               continue;
             }
           }
-          sortList.add(new Pair<Integer, Boolean>(index, sortInfo.isAscending()));
+          sortList.add(Pair.create(index, sortInfo.isAscending()));
         }
       }
       if (!sortList.isEmpty()) {

@@ -12,8 +12,8 @@ import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.BeeTable.BeeKey;
 import com.butent.bee.server.data.BeeTable.BeeTrigger;
-import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.FileNameUtils;
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.sql.HasFrom;
 import com.butent.bee.server.sql.IsCondition;
@@ -30,9 +30,11 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.XmlState;
 import com.butent.bee.shared.data.XmlTable;
@@ -278,6 +280,10 @@ public class SystemBean {
     return tableCache.get(BeeUtils.normalize(tblName));
   }
 
+  public Map<String, Pair<DefaultExpression, Object>> getTableDefaults(String tblName) {
+    return getTable(tblName).getDefaults();
+  }
+
   public BeeField getTableField(String tblName, String fldName) {
     return getTable(tblName).getField(fldName);
   }
@@ -330,7 +336,7 @@ public class SystemBean {
   public BeeRowSet getViewData(String viewName, Filter filter, Order order) {
     return getViewData(viewName, filter, order, BeeConst.UNDEF, BeeConst.UNDEF);
   }
-  
+
   public BeeRowSet getViewData(String viewName, Filter filter, Order order, int limit, int offset,
       String... columns) {
 
@@ -1074,10 +1080,11 @@ public class SystemBean {
                   LogUtils.warning(logger, "Extendend fields must bee nullable:", tbl, fldName);
                   notNull = false;
                 }
-                BeeField fld = table.addField(fldName, SqlDataType.valueOf(field.type),
-                    field.precision, field.scale, notNull,
-                    field.unique, field.relation,
-                    field.cascade == null ? null : SqlKeyword.valueOf(field.cascade))
+                BeeField fld = table.addField(fldName,
+                    NameUtils.getConstant(SqlDataType.class, field.type),
+                    field.precision, field.scale, notNull, field.unique,
+                    field.defExpr, field.defValue, field.relation,
+                    NameUtils.getConstant(SqlKeyword.class, field.cascade))
                     .setTranslatable(field.translatable)
                     .setExtended(extMode);
 

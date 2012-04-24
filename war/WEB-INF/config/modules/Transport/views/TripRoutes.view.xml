@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TripRoutes"
+  source="TripRoutes"
+  >
+  <Columns>
+    <SimpleColumn name="Trip" />
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Country" />
+    <SimpleJoin name="Country" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CountryName" />
+    </SimpleJoin>
+    <SimpleColumn name="Route" />
+    <SimpleColumn name="Fuel"/>
+    <SimpleJoin joinType="LEFT" name="Fuel">
+      <SimpleColumn name="Name" alias="FuelType" />
+    </SimpleJoin>
+    <SimpleColumn name="SpeedometerFrom" />
+    <SimpleColumn name="SpeedometerTo" />
+    <SimpleColumn name="Kilometers" />
+    <SimpleColumn name="CargoWeight" />
+    <SimpleColumn name="Season" />
+    <SimpleColumn name="Temperature" />
+  </Columns>
+  <Order>
+    <OrderBy column="Date" />
+  </Order>
+</View>

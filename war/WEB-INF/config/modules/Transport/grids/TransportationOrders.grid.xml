@@ -2,8 +2,8 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="TripOrders" viewName="TripOrders" caption="Užsakymai"
-  newRowForm="TripOrder" editForm="TripOrder" editNewRow="true" editShowId="true"
+  name="TransportationOrders" viewName="TransportationOrders" caption="Pervežimo užsakymai"
+  newRowForm="TransportationOrder" editForm="TransportationOrder" editNewRow="true" editShowId="true"
   newRowCaption="Naujas užsakymas"
   >
   <header borderWidth="1 0" />

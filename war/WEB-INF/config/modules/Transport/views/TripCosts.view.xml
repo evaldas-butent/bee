@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="TripCosts"
+  source="TripCosts"
+  >
+  <Columns>
+    <SimpleColumn name="Trip"/>
+    <SimpleColumn name="Date"/>
+    <SimpleColumn name="Item"/>
+    <SimpleJoin joinType="LEFT" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
+    </SimpleJoin>
+    <SimpleColumn name="Unit"/>
+    <SimpleJoin joinType="LEFT" name="Unit">
+      <SimpleColumn name="Name" alias="UnitName" />
+    </SimpleJoin>
+    <SimpleColumn name="Quantity" />
+    <SimpleColumn name="Price" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+    <SimpleColumn name="Number" />
+    <SimpleColumn name="Supplier" />
+    <SimpleJoin name="Supplier" joinType="LEFT">
+      <SimpleColumn name="Name" alias="SupplierName" />
+    </SimpleJoin>
+    <SimpleColumn name="Country" />
+    <SimpleJoin name="Country" joinType="LEFT">
+      <SimpleColumn name="Name" alias="CountryName" />
+    </SimpleJoin>
+    <SimpleColumn name="Note" />
+  </Columns>
+  <Order>
+    <OrderBy column="Date" />
+  </Order>
+</View>

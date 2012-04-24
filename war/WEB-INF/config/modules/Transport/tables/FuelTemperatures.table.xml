@@ -6,10 +6,10 @@
   x="0" y="0"
   >
   <BeeFields>
-    <BeeField name="Cost" type="LONG" notNull="true" relation="FuelCosts" cascade="DELETE" />
+    <BeeField name="Consumption" type="LONG" notNull="true" relation="FuelConsumptions" cascade="DELETE" />
     <BeeField name="Season" type="DECIMAL" precision="1" notNull="true" />
-    <BeeField name="TempFrom" type="DECIMAL" precision="4" scale="1" />
-    <BeeField name="TempTo" type="DECIMAL" precision="4" scale="1" />
+    <BeeField name="TempFrom" type="DECIMAL" precision="3" scale="0" />
+    <BeeField name="TempTo" type="DECIMAL" precision="3" scale="0" />
     <BeeField name="Rate" type="DECIMAL" precision="6" scale="2" />
   </BeeFields>
 </BeeTable>

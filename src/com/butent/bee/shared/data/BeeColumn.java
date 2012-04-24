@@ -6,11 +6,15 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasExtendedInfo;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Transformable;
+import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
+import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -21,14 +25,15 @@ import java.util.List;
  * id and parameters management.
  */
 
-public class BeeColumn extends TableColumn implements BeeSerializable, Transformable, HasExtendedInfo {
+public class BeeColumn extends TableColumn implements BeeSerializable, Transformable,
+    HasExtendedInfo {
 
   /**
    * Contains a list of parameters for column serialization.
    */
 
   private enum Serial {
-    ID, LABEL, VALUE_TYPE, PRECISION, SCALE, ISNULL, READ_ONLY, LEVEL
+    ID, LABEL, VALUE_TYPE, PRECISION, SCALE, ISNULL, READ_ONLY, LEVEL, DEFAULTS
   }
 
   public static final int NO_NULLS = 0;
@@ -65,8 +70,9 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   private boolean readOnly = false;
   private boolean writable = false;
   private boolean definitelyWritable = false;
-  
+
   private int level = 0;
+  private Pair<DefaultExpression, Object> defaults = null;
 
   public BeeColumn() {
     super(ValueType.TEXT);
@@ -84,7 +90,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     this(type, id, id);
     setNullable(nillable ? NULLABLE : NO_NULLS);
   }
-  
+
   public BeeColumn(ValueType type, String label, String id) {
     super(type, label, id);
   }
@@ -157,6 +163,14 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
         case LEVEL:
           setLevel(BeeUtils.toInt(value));
           break;
+        case DEFAULTS:
+          String[] def = Codec.beeDeserializeCollection(value);
+
+          if (ArrayUtils.length(def) == 2) {
+            setDefaults(Pair.create(NameUtils.getConstant(DefaultExpression.class, def[0]),
+                (Object) def[1]));
+          }
+          break;
       }
     }
   }
@@ -167,6 +181,10 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
 
   public String getClazz() {
     return clazz;
+  }
+
+  public Pair<DefaultExpression, Object> getDefaults() {
+    return defaults;
   }
 
   public int getDisplaySize() {
@@ -197,10 +215,10 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     if (getProperties() != null) {
       lst.addAll(getProperties().getInfo());
     }
-    
+
     List<ExtendedProperty> result = Lists.newArrayList();
     PropertyUtils.appendChildrenToExtended(result, getId(), lst);
-    
+
     return result;
   }
 
@@ -216,7 +234,8 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
         "Scale", valueAsString(getScale()),
         "Nullable", nullableAsString(),
         "Read Only", isReadOnly(),
-        "Level", getLevel());
+        "Level", getLevel(),
+        "Defaults", getDefaults());
   }
 
   public int getLevel() {
@@ -258,7 +277,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   public boolean isDefinitelyWritable() {
     return definitelyWritable;
   }
-  
+
   public boolean isForeign() {
     return getLevel() > 0;
   }
@@ -329,6 +348,10 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
         case LEVEL:
           arr[i++] = getLevel();
           break;
+        case DEFAULTS:
+          arr[i++] = (getDefaults() == null) ? null
+              : new Object[] {getDefaults().getA(), getDefaults().getB()};
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -352,6 +375,10 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
 
   public void setCurrency(boolean currency) {
     this.currency = currency;
+  }
+
+  public void setDefaults(Pair<DefaultExpression, Object> defaults) {
+    this.defaults = defaults;
   }
 
   public void setDefinitelyWritable(boolean definitelyWritable) {

@@ -1,44 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
-  <!ENTITY LABEL_STYLE "margin-right: 1em; margin-left: 1em;">
-  <!ENTITY LEFT_LABEL_STYLE "margin-right: 1em; display: inline-block; min-width: 6em; text-align: right">
   <!ENTITY ROW_STYLE "margin-bottom: 1ex;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form" name="NewTrip"
-
-  viewName="Trips" caption="Naujas reisas">
+  xmlns:f="http://www.butent.com/form" 
+  xmlns:d="http://www.butent.com/decorator" 
+  
+  name="Trip" viewName="Trips" caption="Reisas"
+  >
   <FlowPanel class="flexBox-vertical">
     <FlowPanel class="flexBox-horizontal">
-      <FlowPanel class="flexBox-vertical flexible">
+      <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em">
         <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-          <FlowPanel>
-            <InlineLabel html="Data" class="bee-required" style="&LEFT_LABEL_STYLE;" />
-            <InputDateTime source="Date" style="width: 10em;" />
-          </FlowPanel>
-          <FlowPanel>
-            <InlineLabel html="Reiso.Nr." class="bee-required" style="font-weight: bold; &LABEL_STYLE;" />
-            <InputText source="TripNo" />
-          </FlowPanel>
+          <InputDateTime source="Date" style="width: 10em;" caption="Data" d:size="6" d:align="right" />
+          <InputText source="TripNo" caption="Reiso.Nr." />
         </FlowPanel>
         <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
-          <InlineLabel html="Vežėjas" style="&LEFT_LABEL_STYLE;" />
           <DataSelector source="ForwarderName" relSource="Forwarder" relView="Companies"
-            relColumn="Name" class="flexible" />
+            relColumn="Name" class="flexible" caption="Vežėjas" d:size="6" d:align="right" />
         </FlowPanel>
         <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
-          <InlineLabel html="Transportas" style="&LEFT_LABEL_STYLE;" />
-          <SimplePanel style="position: relative; height: 23px;" class="flexible">
-            <InputText source="ForwarderVehicle" class="occupy" />
-          </SimplePanel>
+          <InputText source="ForwarderVehicle" caption="Transportas" d:size="6" d:align="right" />
         </FlowPanel>
       </FlowPanel>
 
       <FlowPanel class="flexBox-vertical flexible" style="&ROW_STYLE; margin-left: 1em;">
-        <Label html="Pastabos" />
-        <SimplePanel style="position: relative; min-width: 5em;" class="flexible">
-          <InputArea source="Notes" class="occupy" />
-        </SimplePanel>
+        <InputArea source="Notes" caption="Pastabos" decorator="caption-top" />
       </FlowPanel>
     </FlowPanel>
 
@@ -47,7 +34,7 @@
       <page>
         <text>Pagrindiniai duomenys</text>
         <FlowPanel class="flexBox-horizontal">
-          <FlowPanel class="flexBox-vertical">
+          <FlowPanel class="flexBox-vertical" style="margin-left: 1em">
             <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
               <SimplePanel>
                 <InlineLabel html="Išvykimas" style="font-weight: bold;" />
@@ -87,17 +74,16 @@
             </FlowPanel>
           </FlowPanel>
 
-          <FlowPanel class="flexBox-vertical flexible">
+          <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em;">
             <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
-              <InlineLabel html="Vilkikas" style="&LEFT_LABEL_STYLE;" />
+              <InlineLabel html="Vilkikas" />
               <DataSelector source="VehicleNumber" relSource="Vehicle" relView="Vehicles"
                 relColumn="Number" class="flexible" />
             </FlowPanel>
 
             <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
-              <InlineLabel html="Puspriekabė" style="&LEFT_LABEL_STYLE;" />
               <DataSelector source="TrailerNumber" relSource="Trailer" relView="Vehicles"
-                relColumn="Number" class="flexible" />
+                relColumn="Number" class="flexible" caption="Puspriekabė" />
             </FlowPanel>
 
             <ChildGrid name="TripDrivers" relColumn="Trip" class="flexible" />
@@ -110,7 +96,25 @@
       </page>
       <page>
         <text>Išlaidos</text>
-        <InlineLabel></InlineLabel>
+        <ComplexPanel>
+          <layer top="0" bottom="40" bottomUnit="%" left="0" right="0">
+            <ChildGrid name="TripCosts" relColumn="Trip" />
+          </layer>
+          <layer top="60" topUnit="%" bottom="0" left="0" right="0">
+            <ChildGrid name="TripFuelCosts" relColumn="Trip" />
+          </layer>
+        </ComplexPanel>
+      </page>
+      <page>
+        <text>Kelionės lapai</text>
+        <ComplexPanel>
+          <layer top="0" bottom="30" bottomUnit="%" left="0" right="0">
+            <ChildGrid name="TripRoutes" relColumn="Trip" />
+          </layer>
+          <layer top="70" topUnit="%" bottom="0" left="0" right="40" rightUnit="%">
+            <ChildGrid name="TripFuelConsumptions" relColumn="Trip" />
+          </layer>
+        </ComplexPanel>
       </page>
     </TabbedPages>
   </FlowPanel>

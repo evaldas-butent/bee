@@ -16,8 +16,10 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.HasExtendedInfo;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.XmlExpression;
 import com.butent.bee.shared.data.XmlExpression.XmlBulk;
@@ -300,6 +302,16 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public int getColumnCount() {
     return getColumnNames().size();
+  }
+
+  public Pair<DefaultExpression, Object> getColumnDefaults(String colName) {
+    Pair<DefaultExpression, Object> defaults = null;
+    BeeField field = getColumnInfo(colName).getField();
+
+    if (field != null) {
+      defaults = field.getDefaults();
+    }
+    return defaults;
   }
 
   public IsExpression getColumnExpression(String colName) {

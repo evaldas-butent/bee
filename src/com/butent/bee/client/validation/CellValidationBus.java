@@ -4,11 +4,12 @@ import com.google.common.collect.Lists;
 import com.google.gwt.event.shared.HandlerRegistration;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
 public class CellValidationBus implements HasCellValidationHandlers {
-  
+
   private List<CellValidateEvent.Handler> handlers = null;
 
   public CellValidationBus() {
@@ -20,27 +21,27 @@ public class CellValidationBus implements HasCellValidationHandlers {
     if (handlers == null) {
       handlers = Lists.newArrayList();
     }
-    
+
     if (!handlers.contains(handler)) {
       handlers.add(handler);
     }
-    
+
     return new HandlerRegistration() {
       public void removeHandler() {
         handlers.remove(handler);
       }
     };
   }
-  
-  public boolean fireCellValidation(CellValidateEvent event) {
+
+  public Boolean fireCellValidation(CellValidateEvent event) {
     Assert.notNull(event);
-    boolean ok = true;
-    
+    Boolean ok = true;
+
     if (!event.isCanceled() && handlers != null) {
       for (CellValidateEvent.Handler handler : handlers) {
         ok = handler.validateCell(event);
 
-        if (ok) {
+        if (!BeeUtils.isEmpty(ok)) {
           if (event.isCanceled()) {
             break;
           }

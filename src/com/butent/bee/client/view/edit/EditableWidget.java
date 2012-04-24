@@ -59,7 +59,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   private final boolean readOnly;
 
   private final CellValidationBus cellValidationBus = new CellValidationBus();
-  
+
   private EditEndEvent.Handler editEndHandler = null;
   private boolean initialized = false;
 
@@ -90,7 +90,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   public HandlerRegistration addCellValidationHandler(CellValidateEvent.Handler handler) {
     return cellValidationBus.addCellValidationHandler(handler);
   }
-  
+
   public void bind(Widget rootWidget, EditEndEvent.Handler handler, FormView formView) {
     if (isInitialized()) {
       return;
@@ -118,14 +118,14 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       }
 
       getEditor().addEditStopHandler(this);
-      
+
       setEditEndHandler(handler);
       setInitialized(true);
     } else {
       BeeKeeper.getLog().warning("editable widget: no editor", getCaption(), getWidgetId());
     }
   }
-  
+
   public boolean checkForUpdate(boolean reset) {
     boolean ok = update(null, false);
     if (!ok && reset) {
@@ -145,10 +145,10 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return getWidgetDescription().equals(((EditableWidget) obj).getWidgetDescription());
   }
 
-  public boolean fireCellValidation(CellValidateEvent event) {
+  public Boolean fireCellValidation(CellValidateEvent event) {
     return cellValidationBus.fireCellValidation(event);
   }
-  
+
   public String getCaption() {
     return BeeUtils.ifString(getWidgetDescription().getCaption(), getDataColumn().getLabel());
   }
@@ -237,7 +237,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   public ValueType getTypeForUpdate() {
     return getColumnForUpdate().getType();
   }
-  
+
   public String getWidgetId() {
     return getWidgetDescription().getWidgetId();
   }
@@ -307,7 +307,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       reset();
     }
   }
-  
+
   public void onFocus(FocusEvent event) {
     getEditor().setEditing(true);
     getForm().onActiveWidgetChange(new ActiveWidgetChangeEvent(getWidgetId(), true));
@@ -367,11 +367,11 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       }
     }
   }
-  
+
   public boolean validate(boolean force) {
     String oldValue = getOldValueForUpdate();
     String newValue = getEditor().getNormalizedValue();
-    
+
     if (!force && BeeUtils.equalsTrimRight(oldValue, newValue)) {
       return true;
     }
@@ -476,6 +476,6 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
         getRowValue(), getIndexForUpdate(), getTypeForUpdate(), isNullable(), getMinValue(),
         getMaxValue(), getCaption(), getForm(), force);
 
-    return ValidationHelper.validateCell(cellValidation, this);
+    return !BeeUtils.isEmpty(ValidationHelper.validateCell(cellValidation, this));
   }
 }

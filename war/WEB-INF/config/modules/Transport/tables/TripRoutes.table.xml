@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/table"
+
+  name="TripRoutes"
+  idName="RouteID"
+  x="0" y="0"
+  >
+  <BeeFields>
+    <BeeField name="Trip" type="LONG" notNull="true" relation="Trips" cascade="DELETE" />
+    <BeeField name="Date" type="DATE" notNull="true" />
+    <BeeField name="Country" type="LONG" relation="Countries" />
+    <BeeField name="Route" type="STRING" precision="100" />
+    <BeeField name="Fuel" type="LONG" notNull="true" relation="FuelTypes" />
+    <BeeField name="SpeedometerFrom" type="DOUBLE" />
+    <BeeField name="SpeedometerTo" type="DOUBLE" />
+    <BeeField name="Kilometers" type="DOUBLE" />
+    <BeeField name="CargoWeight" type="DECIMAL" precision="7" scale="3" />
+    <BeeField name="Season" type="DECIMAL" precision="1" notNull="true" />
+    <BeeField name="Temperature" type="DECIMAL" precision="3" scale="0" />
+  </BeeFields>
+</BeeTable>

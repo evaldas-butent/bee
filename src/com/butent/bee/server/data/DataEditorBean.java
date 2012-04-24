@@ -15,9 +15,12 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.Defaults;
+import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
@@ -46,7 +49,6 @@ import javax.ejb.TransactionAttributeType;
 @LocalBean
 @TransactionAttribute(TransactionAttributeType.MANDATORY)
 public class DataEditorBean {
-
   private static class FieldInfo {
     private final String tableAlias;
     private final String fieldAlias;
@@ -475,6 +477,18 @@ public class DataEditorBean {
 
         for (FieldInfo col : baseUpdate) {
           si.addConstant(col.fieldName, col.newValue);
+        }
+        Map<String, Pair<DefaultExpression, Object>> defaults = sys.getTableDefaults(tblName);
+
+        if (!BeeUtils.isEmpty(defaults)) {
+          Defaults defaultsImpl = new ServerDefaults();
+
+          for (String fldName : defaults.keySet()) {
+            if (!si.hasField(fldName)) {
+              Pair<DefaultExpression, Object> pair = defaults.get(fldName);
+              si.addConstant(fldName, defaultsImpl.getValue(pair.getA(), pair.getB()));
+            }
+          }
         }
         ResponseObject resp = qs.insertDataWithResponse(si);
         id = resp.getResponse(-1L, logger);

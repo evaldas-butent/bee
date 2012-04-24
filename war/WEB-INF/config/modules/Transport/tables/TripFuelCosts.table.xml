@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/table"
+
+  name="TripFuelCosts"
+  idName="CostID"
+  x="0" y="0"
+  >
+  <BeeFields>
+    <BeeField name="Trip" type="LONG" notNull="true" relation="Trips" cascade="DELETE" />
+    <BeeField name="Date" type="DATE" notNull="true" />
+    <BeeField name="Fuel" type="LONG" notNull="true" relation="FuelTypes" />
+    <BeeField name="Quantity" type="DOUBLE" notNull="true" />
+    <BeeField name="Price" type="DECIMAL" precision="15" scale="5" />
+    <BeeField name="Currency" type="LONG" relation="Currencies" />
+    <BeeField name="Number" type="STRING" precision="20" />
+    <BeeField name="Supplier" type="LONG" relation="Companies" />
+    <BeeField name="Country" type="LONG" relation="Countries" />
+    <BeeField name="Note" type="STRING" precision="50" />
+  </BeeFields>
+</BeeTable>

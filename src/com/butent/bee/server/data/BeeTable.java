@@ -22,6 +22,10 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasExtendedInfo;
+import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.Defaults.DefaultExpression;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -49,15 +53,18 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     private final int scale;
     private final boolean notNull;
     private final boolean unique;
+    private final DefaultExpression defExpr;
+    private final Object defValue;
     private final String relation;
     private final SqlKeyword cascade;
     private boolean extended = false;
     private boolean translatable = false;
 
     private BeeField(String name, SqlDataType type, int precision, int scale,
-        boolean notNull, boolean unique, String relation, SqlKeyword cascade) {
+        boolean notNull, boolean unique, DefaultExpression defExpr, String defValue,
+        String relation, SqlKeyword cascade) {
       Assert.notEmpty(name);
-      Assert.notEmpty(type);
+      Assert.notNull(type);
 
       this.name = name;
       this.type = type;
@@ -65,12 +72,48 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       this.scale = scale;
       this.notNull = notNull;
       this.unique = unique;
+      this.defExpr = defExpr;
       this.relation = relation;
       this.cascade = cascade;
+
+      switch (type) {
+        case DATE:
+          JustDate date = JustDate.parse(defValue);
+
+          if (date != null) {
+            this.defValue = date.getDays();
+          } else {
+            this.defValue = null;
+          }
+          break;
+
+        case DATETIME:
+          DateTime time = DateTime.parse(defValue);
+
+          if (time != null) {
+            this.defValue = time.getTime();
+          } else {
+            this.defValue = null;
+          }
+          break;
+
+        default:
+          this.defValue = type.parse(defValue);
+          break;
+      }
     }
 
     public SqlKeyword getCascade() {
       return cascade;
+    }
+
+    public Pair<DefaultExpression, Object> getDefaults() {
+      Pair<DefaultExpression, Object> defaults = null;
+
+      if (defExpr != null || defValue != null) {
+        defaults = Pair.create(defExpr, defValue);
+      }
+      return defaults;
     }
 
     public String getName() {
@@ -818,6 +861,22 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     return translationSource.createTranslationTable(query, field);
   }
 
+  public Map<String, Pair<DefaultExpression, Object>> getDefaults() {
+    Map<String, Pair<DefaultExpression, Object>> defaults = null;
+
+    for (BeeField field : getFields()) {
+      Pair<DefaultExpression, Object> pair = field.getDefaults();
+
+      if (pair != null) {
+        if (defaults == null) {
+          defaults = Maps.newHashMap();
+        }
+        defaults.put(field.getName(), pair);
+      }
+    }
+    return defaults;
+  }
+
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
     PropertyUtils.addProperties(info, false, "Module Name", getModuleName(), "Name", getName(),
@@ -832,6 +891,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       PropertyUtils.addChildren(info, key, "Name", field.getName(), "Type", field.getType(),
           "Precision", field.getPrecision(), "Scale", field.getScale(),
           "Not Null", field.isNotNull(), "Unique", field.isUnique(),
+          "Defaults", field.getDefaults(),
           "Relation", field.getRelation(), "Cascade", field.getCascade(),
           "Extended", field.isExtended(), "Translatable", field.isTranslatable());
     }
@@ -1051,9 +1111,11 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   }
 
   BeeField addField(String name, SqlDataType type, int precision, int scale,
-      boolean notNull, boolean unique, String relation, SqlKeyword cascade) {
+      boolean notNull, boolean unique, DefaultExpression defExpr, String defValue,
+      String relation, SqlKeyword cascade) {
 
-    BeeField field = new BeeField(name, type, precision, scale, notNull, unique, relation, cascade);
+    BeeField field = new BeeField(name, type, precision, scale, notNull, unique, defExpr, defValue,
+        relation, cascade);
     String fieldName = field.getName();
 
     Assert.state(!hasField(fieldName)

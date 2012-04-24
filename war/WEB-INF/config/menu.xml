@@ -36,7 +36,7 @@
   <item id="doc_types" parent="doc_menu" order="50" text="Vietos" service="grid" parameters="DocumentPlaces" />
 
   <item id="transport_menu" order="70" text="Transportas" />
-  <item id="orders" parent="transport_menu" order="10" text="Užsakymai" service="grid" parameters="TripOrders" />
+  <item id="orders" parent="transport_menu" order="10" text="Užsakymai" service="grid" parameters="TransportationOrders" />
   <item id="trips" parent="transport_menu" order="20" text="Reisai" service="grid" parameters="Trips" />
   <item id="types" parent="transport_menu" order="30" text="Transporto tipai" service="grid" parameters="VehicleTypes" separators="*" />
   <item id="service_types" parent="transport_menu" order="40" text="Serviso tipai" service="grid" parameters="ServiceTypes" />

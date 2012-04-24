@@ -74,10 +74,11 @@ public interface GridCallback extends WidgetCallback {
 
   boolean onLoadExtWidget(Element root);
 
-  boolean onPrepareForInsert(GridView gridView, IsRow newRow, List<? extends IsColumn> columns);
+  boolean onPrepareForInsert(GridView gridView, List<? extends IsColumn> columns,
+      List<String> values);
 
-  boolean onPrepareForUpdate(GridView gridView, IsRow oldRow, List<? extends IsColumn> columns,
-      List<String> newValues);
+  boolean onPrepareForUpdate(GridView gridView, long rowId, long version,
+      List<? extends IsColumn> columns, List<String> oldValues, List<String> newValues);
 
   void onShow(GridPresenter presenter);
 

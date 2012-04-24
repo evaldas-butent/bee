@@ -33,7 +33,7 @@ public class JsStringSequence extends AbstractSequence<String> {
   public void clear() {
     values.setLength(0);
   }
-  
+
   public JsStringSequence clone() {
     JsArrayString arr = JavaScriptObject.createArray().cast();
     for (int i = 0; i < getLength(); i++) {
@@ -52,7 +52,7 @@ public class JsStringSequence extends AbstractSequence<String> {
     for (int i = 0; i < getLength(); i++) {
       arr[i] = get(i);
     }
-    return new Pair<String[], Integer>(arr, getLength());
+    return Pair.create(arr, getLength());
   }
 
   public int getLength() {

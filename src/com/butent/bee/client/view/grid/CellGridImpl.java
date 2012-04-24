@@ -40,9 +40,9 @@ import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.validation.ValidationHelper;
-import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.view.ActionEvent;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
@@ -191,7 +191,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       return editableColumn.addCellValidationHandler(handler);
     }
   }
-  
+
   public HandlerRegistration addChangeHandler(ChangeHandler handler) {
     setFilterChangeHandler(handler);
     return new HandlerRegistration() {
@@ -516,7 +516,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     RelationInfo relationInfo;
 
     EditableColumn editableColumn = null;
-    
+
     for (ColumnDescription columnDescr : columnDescriptions) {
       String columnId = columnDescr.getName();
       if (callback != null &&
@@ -592,21 +592,21 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           break;
 
         case CALCULATED:
-            Cell<String> cell =
-                (cellType == null) ? new CalculatedCell() : GridFactory.createCell(cellType);
-            CalculatedColumn calcColumn = new CalculatedColumn(cell, columnDescr.getValueType(),
-                renderer);
+          Cell<String> cell =
+              (cellType == null) ? new CalculatedCell() : GridFactory.createCell(cellType);
+          CalculatedColumn calcColumn = new CalculatedColumn(cell, columnDescr.getValueType(),
+              renderer);
 
-            if (columnDescr.getPrecision() != null) {
-              calcColumn.setPrecision(columnDescr.getPrecision());
+          if (columnDescr.getPrecision() != null) {
+            calcColumn.setPrecision(columnDescr.getPrecision());
+          }
+          if (columnDescr.getScale() != null) {
+            calcColumn.setScale(columnDescr.getScale());
+            if (ValueType.DECIMAL.equals(columnDescr.getValueType())) {
+              calcColumn.setNumberFormat(Format.getDecimalFormat(columnDescr.getScale()));
             }
-            if (columnDescr.getScale() != null) {
-              calcColumn.setScale(columnDescr.getScale());
-              if (ValueType.DECIMAL.equals(columnDescr.getValueType())) {
-                calcColumn.setNumberFormat(Format.getDecimalFormat(columnDescr.getScale()));
-              }
-            }
-            column = calcColumn;
+          }
+          column = calcColumn;
           break;
 
         case SELECTION:
@@ -644,7 +644,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       if (!BeeUtils.isEmpty(columnDescr.getHorAlign())) {
         UiHelper.setHorizontalAlignment(column, columnDescr.getHorAlign());
       }
-      
+
       if (!BeeUtils.isEmpty(columnDescr.getOptions())) {
         column.setOptions(columnDescr.getOptions());
       }
@@ -840,6 +840,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   public IsRow getActiveRowData() {
     return getGrid().getActiveRowData();
+  }
+
+  public List<BeeColumn> getDataColumns() {
+    return dataColumns;
   }
 
   public Map<String, EditableColumn> getEditableColumns() {
@@ -1340,10 +1344,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return activeFormContainerId;
   }
 
-  private List<BeeColumn> getDataColumns() {
-    return dataColumns;
-  }
-
   private EditableColumn getEditableColumn(String columnId, boolean warn) {
     if (BeeUtils.isEmpty(columnId)) {
       if (warn) {
@@ -1545,7 +1545,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       notifySevere("New Row", "all columns cannot be empty");
       return;
     }
-    if (getGridCallback() != null && !getGridCallback().onPrepareForInsert(this, row, columns)) {
+    if (getGridCallback() != null && !getGridCallback().onPrepareForInsert(this, columns, values)) {
       return;
     }
     fireEvent(new ReadyForInsertEvent(columns, values));
@@ -1579,7 +1579,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       return;
     }
     if (getGridCallback() != null
-        && !getGridCallback().onPrepareForUpdate(this, oldRow, columns, newValues)) {
+        && !getGridCallback().onPrepareForUpdate(this, rowId, newRow.getVersion(),
+            columns, oldValues, newValues)) {
       return;
     }
     for (int i = 0; i < columns.size(); i++) {
@@ -1751,8 +1752,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private void updateCell(IsRow rowValue, IsColumn dataColumn, String oldValue, String newValue,
       boolean rowMode) {
 
-    if (getGridCallback() != null && !getGridCallback().onPrepareForUpdate(this, rowValue,
-        Lists.newArrayList(dataColumn), Lists.newArrayList(newValue))) {
+    if (getGridCallback() != null && !getGridCallback().onPrepareForUpdate(this, rowValue.getId(),
+        rowValue.getVersion(), Lists.newArrayList(dataColumn), Lists.newArrayList(oldValue),
+        Lists.newArrayList(newValue))) {
       return;
     }
     getGrid().preliminaryUpdate(rowValue.getId(), dataColumn.getId(), newValue);
@@ -1821,8 +1823,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       CellValidation cv = new CellValidation(oldValue, newValue, ec.getValidation(), row, index,
           ec.getTypeForUpdate(), ec.isNullable(), ec.getMinValue(), ec.getMaxValue(),
           ec.getCaption(), notificationListener, force);
-      
-      ok = ValidationHelper.validateCell(cv, ec);
+
+      ok = !BeeUtils.isEmpty(ValidationHelper.validateCell(cv, ec));
       if (!ok) {
         break;
       }

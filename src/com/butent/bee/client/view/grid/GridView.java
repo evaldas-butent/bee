@@ -40,6 +40,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   IsRow getActiveRowData();
 
+  List<BeeColumn> getDataColumns();
+
   FormView getForm(boolean edit);
 
   CellGrid getGrid();
@@ -53,7 +55,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   Collection<RowInfo> getSelectedRows();
 
   boolean isReadOnly();
-  
+
   boolean isRowEditable(IsRow row, boolean warn);
 
   boolean isRowSelected(long rowId);

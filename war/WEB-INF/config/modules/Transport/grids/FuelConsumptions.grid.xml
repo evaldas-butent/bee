@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="FuelCosts" viewName="FuelCosts" caption="Kuro sąnaudos"
+  name="FuelConsumptions" viewName="FuelConsumptions" caption="Kuro sąnaudos"
   >
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">

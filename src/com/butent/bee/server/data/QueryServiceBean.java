@@ -278,12 +278,7 @@ public class QueryServiceBean {
   }
 
   public Map<String, String> getRow(IsQuery query) {
-    SimpleRowSet res = getSingleRow(query);
-
-    if (BeeUtils.isEmpty(res.getNumberOfRows())) {
-      return null;
-    }
-    return res.getRow(0);
+    return getSingleRow(query).getRow(0);
   }
 
   public String getValue(IsQuery query) {
@@ -291,12 +286,7 @@ public class QueryServiceBean {
   }
 
   public String[] getValues(IsQuery query) {
-    SimpleRowSet res = getSingleRow(query);
-
-    if (BeeUtils.isEmpty(res.getNumberOfRows())) {
-      return null;
-    }
-    return res.getValues(0);
+    return getSingleRow(query).getValues(0);
   }
 
   public List<BeeColumn> getViewColumns(final BeeView view) {
@@ -359,7 +349,7 @@ public class QueryServiceBean {
       }
     });
   }
-  
+
   public long insertData(SqlInsert si) {
     return insertDataWithResponse(si).getResponse(-1L, logger);
   }
@@ -457,7 +447,7 @@ public class QueryServiceBean {
   private SimpleRowSet getSingleRow(IsQuery query) {
     SimpleRowSet res = getData(query);
     Assert.notNull(res);
-    Assert.isTrue(res.getNumberOfRows() <= 1, "Result must contain exactly one row");
+    Assert.isTrue(res.getNumberOfRows() <= 1, "Result must contain zero or one row");
     return res;
   }
 
@@ -465,7 +455,7 @@ public class QueryServiceBean {
     SimpleRowSet res = getData(query);
     Assert.notNull(res);
     Assert.isTrue(res.getNumberOfColumns() == 1, "Result must contain exactly one column");
-    Assert.isTrue(res.getNumberOfRows() == 1, "Result must contain exactly one row");
+    Assert.isTrue(res.getNumberOfRows() <= 1, "Result must contain zero or one row");
     return res;
   }
 
@@ -476,8 +466,9 @@ public class QueryServiceBean {
       column.setReadOnly(true);
     }
     column.setLevel(view.getColumnLevel(colName));
+    column.setDefaults(view.getColumnDefaults(colName));
   }
-  
+
   private <T> T processSql(String sql, SqlHandler<T> callback) {
     Assert.notEmpty(sql);
     Assert.notEmpty(callback);
@@ -537,7 +528,7 @@ public class QueryServiceBean {
         } else if (BeeUtils.same(colName, view.getSourceIdName())) {
           idIndex = col.getIndex();
           continue;
-        
+
         } else if (BeeUtils.same(colName, view.getSourceVersionName())) {
           versionIndex = col.getIndex();
           continue;

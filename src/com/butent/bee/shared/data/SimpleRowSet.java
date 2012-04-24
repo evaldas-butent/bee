@@ -316,6 +316,10 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
 
   public Map<String, String> getRow(int index) {
     String[] cells = getValues(index);
+
+    if (cells == null) {
+      return null;
+    }
     Map<String, String> row = Maps.newHashMapWithExpectedSize(getNumberOfColumns());
 
     for (String col : columns.keySet()) {
@@ -330,6 +334,10 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
 
   public String getValue(int rowIndex, int colIndex) {
     String[] cells = getValues(rowIndex);
+
+    if (cells == null) {
+      return null;
+    }
     Assert.isIndex(cells, colIndex);
     return cells[colIndex];
   }
@@ -339,8 +347,10 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   }
 
   public String[] getValues(int index) {
-    Assert.isIndex(rows, index);
-    return rows.get(index);
+    if (BeeUtils.isIndex(rows, index)) {
+      return rows.get(index);
+    }
+    return null;
   }
 
   @Override

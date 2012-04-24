@@ -12,6 +12,7 @@
 
   <xs:attribute name="size" type="xs:decimal" />
   <xs:attribute name="unit" type="ui:cssUnit" />
+  <xs:attribute name="align" type="ui:horizontalAlignmentType" />
 
   <xs:attribute name="class" type="xs:normalizedString" />
   <xs:attribute name="style" type="xs:string" />

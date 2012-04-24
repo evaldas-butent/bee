@@ -67,7 +67,7 @@ public class ListSequence<T> extends AbstractSequence<T> {
    */
   public Pair<T[], Integer> getArray(T[] a) {
     Assert.notNull(a);
-    return new Pair<T[], Integer>(values.toArray(a), getLength());
+    return Pair.create(values.toArray(a), getLength());
   }
 
   public int getLength() {

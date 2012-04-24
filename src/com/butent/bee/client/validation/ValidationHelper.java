@@ -10,22 +10,22 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class ValidationHelper {
 
-  public static boolean validateCell(CellValidation validation, HasCellValidationHandlers source) {
+  public static Boolean validateCell(CellValidation validation, HasCellValidationHandlers source) {
     Assert.notNull(validation);
     if (source == null) {
       return validateCell(validation);
     }
-    
+
     CellValidateEvent event = new CellValidateEvent(validation);
     event.setValidationPhase(ValidationPhase.PRE);
-    boolean ok = source.fireCellValidation(event);
-    
-    if (ok && !event.isCanceled()) {
+    Boolean ok = source.fireCellValidation(event);
+
+    if (!BeeUtils.isEmpty(ok) && !event.isCanceled()) {
       event.setValidationPhase(ValidationPhase.DEF);
       ok = validateCell(event.getCellValidation());
     }
 
-    if (ok && !event.isCanceled()) {
+    if (!BeeUtils.isEmpty(ok) && !event.isCanceled()) {
       event.setValidationPhase(ValidationPhase.POST);
       ok = source.fireCellValidation(event);
     }
@@ -72,7 +72,7 @@ public class ValidationHelper {
       errorMessage = "Value required";
     }
 
-    if (errorMessage == null
+    if (errorMessage == null && cv.getNewValue() != null
         && (!BeeUtils.isEmpty(cv.getMinValue()) || !BeeUtils.isEmpty(cv.getMaxValue()))) {
       Value value = Value.parseValue(cv.getType(), cv.getNewValue(), false);
 

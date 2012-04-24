@@ -31,7 +31,7 @@ public abstract class ArraySequence<T> extends AbstractSequence<T> {
   public void clear() {
     this.length = 0;
   }
-  
+
   public abstract ArraySequence<T> clone();
 
   /**
@@ -51,7 +51,7 @@ public abstract class ArraySequence<T> extends AbstractSequence<T> {
    * @return the array of objects
    */
   public Pair<T[], Integer> getArray(T[] a) {
-    return new Pair<T[], Integer>(values, getLength());
+    return Pair.create(values, getLength());
   }
 
   public int getLength() {

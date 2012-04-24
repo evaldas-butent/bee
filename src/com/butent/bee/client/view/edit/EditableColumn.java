@@ -75,7 +75,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   private final EditorDescription editorDescription;
   private final String itemKey;
-  
+
   private final CellValidationBus cellValidationBus = new CellValidationBus();
 
   private Editor editor = null;
@@ -134,7 +134,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return getColIndex() == ((EditableColumn) obj).getColIndex();
   }
 
-  public boolean fireCellValidation(CellValidateEvent event) {
+  public Boolean fireCellValidation(CellValidateEvent event) {
     return cellValidationBus.fireCellValidation(event);
   }
 
@@ -534,7 +534,12 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       }
 
       String newValue = getEditor().getNormalizedValue();
-      if (!validate(oldValue, newValue, false)) {
+      Boolean ok = validate(oldValue, newValue, false);
+
+      if (BeeUtils.isEmpty(ok)) {
+        if (ok == null) {
+          closeEditor(keyCode, hasModifiers);
+        }
         return false;
       }
 
@@ -655,7 +660,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     this.state = state;
   }
 
-  private boolean validate(String oldValue, String newValue, boolean force) {
+  private Boolean validate(String oldValue, String newValue, boolean force) {
     CellValidation cellValidation = new CellValidation(oldValue, newValue, getValidation(),
         getRowValue(), getIndexForUpdate(), getTypeForUpdate(), isNullable(), getMinValue(),
         getMaxValue(), getCaption(), getNotificationListener(), force);

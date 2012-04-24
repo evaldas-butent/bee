@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <BeeTable xmlns="http://www.butent.com/table"
 
-  name="TripOrders"
+  name="TransportationOrders"
   idName="OrderID"
   x="741" y="101"
   >

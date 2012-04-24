@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="TripRoutes" viewName="TripRoutes" caption="Maršrutai"
+  >
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <ui:font>Verdana 12 px</ui:font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <DataColumn name="Date" source="Date" caption="Data" />
+    <DataColumn name="Country" source="CountryName" caption="Šalis" />
+    <DataColumn name="Route" source="Route" caption="Maršrutas" />
+    <DataColumn name="SpeedometerFrom" source="SpeedometerFrom" caption="Spid.nuo" format="#.0" minValue="0" />
+    <DataColumn name="SpeedometerTo" source="SpeedometerTo" caption="Spid.iki" format="#.0" minValue="0" />
+    <DataColumn name="Kilometers" source="Kilometers" caption="Km" format="#.0" minValue="0">
+      <style>
+        <headerStyle><ui:font>bold</ui:font></headerStyle>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+    </DataColumn>
+    <DataColumn name="CargoWeight" source="CargoWeight" caption="Pakrauta t" format="#.000" />
+    <DataColumn name="Season" source="Season" caption="Sezonas">
+      <renderer type="list" />
+      <editor type="list">
+        <ui:item>Vasara</ui:item>
+        <ui:item>Žiema</ui:item>
+      </editor>
+    </DataColumn>
+    <DataColumn name="Temperature" source="Temperature" caption="Temp." />
+    <CalcColumn type="decimal" name="Consumption" caption="Litrai">
+      <style>
+        <headerStyle><ui:font>bold</ui:font></headerStyle>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+    </CalcColumn>
+    <DataColumn name="FuelType" source="FuelType" caption="Kuro rūšis" />
+  </columns>
+</Grid>

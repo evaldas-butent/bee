@@ -2,7 +2,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   
-  name="TripOrder" viewName="TripOrders" caption="Transporto užsakymas"
+  name="TransportationOrder" viewName="TransportationOrders" caption="Pervežimo užsakymas"
   >
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="10">
@@ -13,7 +13,7 @@
             <Label html="Būsena" horizontalAlignment="right" />
           </cell>
           <cell>
-            <Label name="Status" class="bee-display" />
+            <TextLabel source="Status" itemKey="OrderStatus" class="bee-display" />
           </cell>
       </row>
       <row>

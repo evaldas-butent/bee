@@ -52,6 +52,8 @@
     <xs:attribute name="scale" type="xs:byte" />
     <xs:attribute name="notNull" type="xs:boolean" />
     <xs:attribute name="unique" type="xs:boolean" />
+    <xs:attribute name="defExpr" type="defaultType" />          
+    <xs:attribute name="defValue" type="type:notEmptyString" />          
     <xs:attribute name="relation" type="type:tableNameType" />
     <xs:attribute name="cascade" type="cascadeType" />
     <xs:attribute name="translatable" type="xs:boolean" />
@@ -68,6 +70,15 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="DELETE" />
       <xs:enumeration value="SET_NULL" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="defaultType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="CURRENT_DATE" />
+      <xs:enumeration value="CURRENT_TIME" />
+      <xs:enumeration value="CURRENT_USER" />
+      <xs:enumeration value="NEXT_NUMBER" />
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>

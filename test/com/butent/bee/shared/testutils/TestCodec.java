@@ -198,8 +198,8 @@ public class TestCodec {
   @Test
   public final void testDeserializeLength() {
 
-    Pair<Integer, Integer> a = new Pair<Integer, Integer>(53, 3);
-    Pair<Integer, Integer> b = new Pair<Integer, Integer>(8, 2);
+    Pair<Integer, Integer> a = Pair.create(53, 3);
+    Pair<Integer, Integer> b = Pair.create(8, 2);
 
     assertEquals(a.getA(), Codec.deserializeLength("253", 0).getA());
     assertEquals(a.getB(), Codec.deserializeLength("253", 0).getB());

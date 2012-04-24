@@ -372,9 +372,9 @@ public enum FormWidget {
   private static final String ATTR_CHECKED = "checked";
   private static final String ATTR_MULTIPLE = "multiple";
 
-  private static final String ATTR_DECORATOR = "decorator"; 
-  private static final String ATTR_DEFAULT_DECORATOR = "defaultDecorator"; 
-  
+  private static final String ATTR_DECORATOR = "decorator";
+  private static final String ATTR_DEFAULT_DECORATOR = "defaultDecorator";
+
   private static final String TAG_CSS = "css";
   private static final String TAG_DYN_STYLE = "dynStyle";
   private static final String TAG_HANDLER = "handler";
@@ -1023,7 +1023,7 @@ public enum FormWidget {
             XmlUtils.getCalculation(element, TAG_CALC),
             XmlUtils.getFirstChildElement(element, "form")));
         break;
-      
+
       case DECORATOR:
         String id = attributes.get(ATTR_ID);
         if (!BeeUtils.isEmpty(id) && children.size() == 1) {
@@ -1155,7 +1155,7 @@ public enum FormWidget {
     }
 
     widgetDescriptionCallback.onSuccess(widgetDescription);
-    
+
     String decoratorId = attributes.containsKey(ATTR_DECORATOR)
         ? attributes.get(ATTR_DECORATOR) : attributes.get(ATTR_DEFAULT_DECORATOR);
     if (!BeeUtils.isEmpty(decoratorId)) {
@@ -1378,7 +1378,7 @@ public enum FormWidget {
 
     for (Element child : XmlUtils.getChildrenElements(parent)) {
       String childTag = XmlUtils.getLocalName(child);
-      
+
       if (BeeUtils.same(childTag, TAG_TEXT)) {
         String text = XmlUtils.getText(child);
         if (!BeeUtils.isEmpty(text)) {
@@ -1466,7 +1466,7 @@ public enum FormWidget {
       List<BeeColumn> columns, WidgetDescriptionCallback wdcb, WidgetCallback widgetCallback) {
     boolean ok = false;
     String tag = XmlUtils.getLocalName(element);
-    
+
     if (BeeUtils.same(tag, TAG_TEXT)) {
       String text = XmlUtils.getText(element);
       ok = !BeeUtils.isEmpty(text);
@@ -1490,7 +1490,7 @@ public enum FormWidget {
     }
     return ok;
   }
-  
+
   private Edges getEdges(Element element) {
     return new Edges(XmlUtils.getAttributeDouble(element, ATTR_TOP),
         XmlUtils.getAttributeUnit(element, ATTR_TOP_UNIT),
@@ -1519,7 +1519,7 @@ public enum FormWidget {
         image = new BeeImage(url);
       }
     }
-    return new Pair<String, BeeImage>(html, image);
+    return Pair.create(html, image);
   }
 
   private String getTagName() {
@@ -1606,7 +1606,7 @@ public enum FormWidget {
   private boolean isCellVector() {
     return hasType(Type.CELL_VECTOR);
   }
-  
+
   private boolean isTable() {
     return hasType(Type.TABLE);
   }
@@ -2026,13 +2026,13 @@ public enum FormWidget {
         table.getRowFormatter().setVerticalAlign(row, vertAlign);
       }
     }
-    
+
     if (XmlUtils.tagIs(element, TAG_ROW)) {
       StyleUtils.updateAppearance(table.getRow(row), element.getAttribute(ATTR_CLASS),
           element.getAttribute(ATTR_STYLE));
     }
   }
-  
+
   private void setVectorCellAttributes(CellPanel parent, Element element, Widget cellContent) {
     String z = element.getAttribute(ATTR_HORIZONTAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {

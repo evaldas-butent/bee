@@ -90,6 +90,12 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="notEmptyString">
+    <xs:restriction base="xs:string">
+      <xs:minLength value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="intOrBoolean">
     <xs:union>
       <xs:simpleType>

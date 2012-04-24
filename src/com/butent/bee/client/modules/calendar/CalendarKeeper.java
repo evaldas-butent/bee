@@ -52,7 +52,7 @@ public class CalendarKeeper {
         EditableColumn editableColumn) {
       if (BeeUtils.same(columnId, CalendarConstants.COL_NAME) && editableColumn != null) {
         editableColumn.addCellValidationHandler(new CellValidateEvent.Handler() {
-          public boolean validateCell(CellValidateEvent event) {
+          public Boolean validateCell(CellValidateEvent event) {
             if (event.isPostValidation() && !event.sameValue() && !event.isNewRow()) {
               updateCalendarName(event.getRowId(), event.getNewValue());
             }
