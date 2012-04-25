@@ -16,6 +16,9 @@ public class ClientDefaults extends Defaults {
           value = BeeKeeper.getUser().getUserId();
           break;
 
+        case NEXT_NUMBER:
+          break;
+
         default:
           value = super.getValue(defExpr, defValue);
           break;

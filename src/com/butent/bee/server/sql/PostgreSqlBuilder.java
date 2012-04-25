@@ -1,6 +1,7 @@
 package com.butent.bee.server.sql;
 
 import com.butent.bee.server.sql.SqlConstants.SqlDataType;
+import com.butent.bee.server.sql.SqlConstants.SqlFunction;
 import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -28,6 +29,17 @@ class PostgreSqlBuilder extends SqlBuilder {
       sql += " OFFSET " + offset;
     }
     return sql;
+  }
+
+  @Override
+  protected String sqlFunction(SqlFunction function, Map<String, Object> params) {
+    switch (function) {
+      case LENGTH:
+        return "CHAR_LENGTH(" + params.get("expression") + ")";
+
+      default:
+        return super.sqlFunction(function, params);
+    }
   }
 
   @Override

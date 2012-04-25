@@ -1,5 +1,7 @@
 package com.butent.bee.server.sql;
 
+import com.google.common.collect.Maps;
+
 import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlConstants.SqlFunction;
 import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
@@ -463,6 +465,32 @@ public abstract class SqlBuilder {
           xpr.append(" || ").append(params.get("member" + i));
         }
         return xpr.toString();
+
+      case LENGTH:
+        return "LENGTH(" + params.get("expression") + ")";
+
+      case SUBSTRING:
+        xpr = new StringBuilder("SUBSTR(")
+            .append(params.get("expression"))
+            .append(",")
+            .append(params.get("pos"));
+
+        if (params.containsKey("len")) {
+          xpr.append(",").append(params.get("len"));
+        }
+        return xpr.append(")").toString();
+
+      case LEFT:
+        Map<String, Object> newParams = Maps.newHashMap(params);
+        newParams.put("pos", 1);
+        return sqlFunction(SqlFunction.SUBSTRING, newParams);
+
+      case RIGHT:
+        newParams = Maps.newHashMap(params);
+        newParams.put("pos", BeeUtils.concat(1,
+            sqlFunction(SqlFunction.LENGTH, params), "-", params.get("len"), "+", "1"));
+
+        return sqlFunction(SqlFunction.SUBSTRING, newParams);
     }
     Assert.untouchable();
     return null;

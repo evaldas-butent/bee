@@ -316,6 +316,24 @@ public class SqlUtils {
     return cond;
   }
 
+  public static IsExpression left(IsExpression expr, int len) {
+    return new FunctionExpression(SqlFunction.LEFT,
+        ImmutableMap.of("expression", expr, "len", len));
+  }
+
+  public static IsExpression left(String source, String field, int len) {
+    return left(field(source, field), len);
+  }
+
+  public static IsExpression length(IsExpression expr) {
+    return new FunctionExpression(SqlFunction.LENGTH,
+        ImmutableMap.of("expression", (Object) expr));
+  }
+
+  public static IsExpression length(String source, String field) {
+    return length(field(source, field));
+  }
+
   public static IsCondition less(IsExpression expr, Object value) {
     return compare(expr, Operator.LT, constant(value));
   }
@@ -414,6 +432,15 @@ public class SqlUtils {
         ImmutableMap.of("nameFrom", (Object) name(from), "nameTo", name(to)));
   }
 
+  public static IsExpression right(IsExpression expr, int len) {
+    return new FunctionExpression(SqlFunction.RIGHT,
+        ImmutableMap.of("expression", expr, "len", len));
+  }
+
+  public static IsExpression right(String source, String field, int len) {
+    return left(field(source, field), len);
+  }
+
   public static IsExpression sqlCase(IsExpression expr, Object... pairs) {
     Assert.noNulls(expr, pairs);
     Assert.parameterCount(pairs.length, 3);
@@ -450,6 +477,24 @@ public class SqlUtils {
 
   public static IsCondition startsWith(String source, String field, String value) {
     return startsWith(field(source, field), value);
+  }
+
+  public static IsExpression substring(IsExpression expr, int pos) {
+    return new FunctionExpression(SqlFunction.SUBSTRING,
+        ImmutableMap.of("expression", expr, "pos", pos));
+  }
+
+  public static IsExpression substring(IsExpression expr, int pos, int len) {
+    return new FunctionExpression(SqlFunction.SUBSTRING,
+        ImmutableMap.of("expression", expr, "pos", pos, "len", len));
+  }
+
+  public static IsExpression substring(String source, String field, int pos) {
+    return substring(field(source, field), pos);
+  }
+
+  public static IsExpression substring(String source, String field, int pos, int len) {
+    return substring(field(source, field), pos, len);
   }
 
   public static String temporaryName() {

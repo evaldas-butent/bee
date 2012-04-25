@@ -274,7 +274,7 @@ public class BeeUtils {
       return x1.compareTo((T) x2);
     }
   }
-  
+
   /**
    * Compares the two specified Double values.
    * 
@@ -291,7 +291,7 @@ public class BeeUtils {
       return BeeConst.COMPARE_MORE;
     }
   }
-  
+
   /**
    * Compares the two specified Integer values.
    * 
@@ -308,7 +308,7 @@ public class BeeUtils {
       return BeeConst.COMPARE_MORE;
     }
   }
-  
+
   public static int compare(long x1, long x2) {
     if (x1 == x2) {
       return BeeConst.COMPARE_EQUAL;
@@ -402,7 +402,7 @@ public class BeeUtils {
 
     return s.toString();
   }
-  
+
   public static <T> boolean contains(Collection<? extends T> col, T item) {
     if (col == null) {
       return false;
@@ -456,7 +456,7 @@ public class BeeUtils {
     }
     return ok;
   }
-  
+
   /**
    * Checks if the CharSequence {@code src} contains only of the specified characters.
    * 
@@ -483,7 +483,7 @@ public class BeeUtils {
     }
     return ok;
   }
-  
+
   public static boolean containsSame(Collection<String> col, String s) {
     if (isEmpty(col)) {
       return false;
@@ -875,7 +875,7 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
-  
+
   /**
    * Separates a String with separator value. Returns a String that goes before the separator.
    * 
@@ -896,7 +896,7 @@ public class BeeUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
-  
+
   /**
    * Returns a value from the list in the specified index.
    * 
@@ -987,7 +987,7 @@ public class BeeUtils {
       return def;
     }
   }
-  
+
   /**
    * Extended if sentence. Basic syntax : if {@code obj[i] == true} the method jumps to
    * {@code obj[i+1]} else jumps to {@code obj[i+2]}
@@ -1571,7 +1571,7 @@ public class BeeUtils {
       return false;
     }
   }
-  
+
   /**
    * Checks if an Object is a positive number.
    * 
@@ -1906,6 +1906,21 @@ public class BeeUtils {
     return z;
   }
 
+  public static String nextString(String value) {
+    String expression = trim(value);
+    String pattern = "^(.*?)(\\d*?)$";
+    String prefix = expression.replaceFirst(pattern, "$1");
+    String suffix = expression.replaceFirst(pattern, "$2");
+
+    if (isEmpty(suffix)) {
+      suffix = "0";
+    }
+    int l = suffix.length();
+    suffix = BeeUtils.transform(Long.parseLong(suffix) + 1);
+
+    return prefix + padLeft(suffix, l, '0');
+  }
+
   public static double normalize(double x, double min, double max) {
     double z;
 
@@ -2093,7 +2108,7 @@ public class BeeUtils {
   public static String progress(int pos, int tot, String message) {
     return concat(BeeConst.STRING_SPACE, progress(pos, tot), message);
   }
-  
+
   /**
    * Separates the String {@code s} to an array with a specified separator. Capitalizes each array
    * element's first letter and converts other to lower-case.
@@ -2133,7 +2148,7 @@ public class BeeUtils {
     }
     return z.toString();
   }
-  
+
   public static String quote(String s) {
     if (s == null) {
       return BeeConst.STRING_QUOT + BeeConst.STRING_QUOT;
@@ -2471,13 +2486,13 @@ public class BeeUtils {
       return s.substring(s.length() - n);
     }
   }
-  
+
   public static int rotateBackwardExclusive(int x, int min, int max) {
     return rotateBackwardInclusive(x, min, max - 1);
   }
 
   public static int rotateBackwardInclusive(int x, int min, int max) {
-    return (x <= min || x > max) ? max : x - 1; 
+    return (x <= min || x > max) ? max : x - 1;
   }
 
   public static int rotateForwardExclusive(int x, int min, int max) {
@@ -2485,7 +2500,7 @@ public class BeeUtils {
   }
 
   public static int rotateForwardInclusive(int x, int min, int max) {
-    return (x < min || x >= max) ? min : x + 1; 
+    return (x < min || x >= max) ? min : x + 1;
   }
 
   /**
@@ -2693,7 +2708,7 @@ public class BeeUtils {
   public static boolean toBoolean(int x) {
     return x == BeeConst.INT_TRUE;
   }
-  
+
   /**
    * Checks if {@code s} is a Boolean value.
    * 

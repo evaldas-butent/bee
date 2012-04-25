@@ -89,6 +89,29 @@ class MsSqlBuilder extends SqlBuilder {
         }
         return xpr.toString();
 
+      case LENGTH:
+        return "LEN(" + params.get("expression") + ")";
+
+      case SUBSTRING:
+        xpr = new StringBuilder("SUBSTRING(")
+            .append(params.get("expression"))
+            .append(",")
+            .append(params.get("pos"))
+            .append(",");
+
+        if (params.containsKey("len")) {
+          xpr.append(params.get("len"));
+        } else {
+          xpr.append(1e6);
+        }
+        return xpr.append(")").toString();
+
+      case LEFT:
+        return "LEFT(" + params.get("expression") + "," + params.get("len") + ")";
+
+      case RIGHT:
+        return "RIGHT(" + params.get("expression") + "," + params.get("len") + ")";
+
       default:
         return super.sqlFunction(function, params);
     }

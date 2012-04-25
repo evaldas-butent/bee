@@ -64,7 +64,7 @@ class OracleSqlBuilder extends SqlBuilder {
             break;
 
           default:
-            dataType = super.sqlType(type, precision, scale);
+            dataType = sqlType(type, precision, scale);
         }
         return BeeUtils.concat(1, sql, "AS", dataType + ")");
 

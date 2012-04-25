@@ -7,7 +7,8 @@
   >
   <BeeFields>
     <BeeField name="Date" type="DATETIME" notNull="true" defExpr="CURRENT_TIME" />
-    <BeeField name="TripNo" type="STRING" precision="20" unique="true" notNull="true" />
+    <BeeField name="TripNo" type="STRING" precision="20" unique="true" notNull="false"
+      defExpr="NEXT_NUMBER" defValue="R/" />
     <BeeField name="Vehicle" type="LONG" relation="Vehicles" />
     <BeeField name="Trailer" type="LONG" relation="Vehicles" />
     <BeeField name="DateFrom" type="DATE" />

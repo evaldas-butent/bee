@@ -83,7 +83,7 @@ class MySqlBuilder extends SqlBuilder {
             break;
 
           default:
-            dataType = super.sqlType(type, precision, scale);
+            dataType = sqlType(type, precision, scale);
         }
         return BeeUtils.concat(1, sql, "AS", dataType + ")");
 
@@ -94,6 +94,15 @@ class MySqlBuilder extends SqlBuilder {
           xpr.append(", ").append(params.get("member" + i));
         }
         return "CONCAT(" + xpr.toString() + ")";
+
+      case LENGTH:
+        return "CHAR_LENGTH(" + params.get("expression") + ")";
+
+      case LEFT:
+        return "LEFT(" + params.get("expression") + "," + params.get("len") + ")";
+
+      case RIGHT:
+        return "RIGHT(" + params.get("expression") + "," + params.get("len") + ")";
 
       default:
         return super.sqlFunction(function, params);

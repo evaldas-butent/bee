@@ -19,7 +19,6 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.Defaults;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.value.Value;
@@ -110,6 +109,8 @@ public class DataEditorBean {
   QueryServiceBean qs;
   @EJB
   UserServiceBean usr;
+  @EJB
+  ServerDefaults srvDef;
   @Resource
   EJBContext ctx;
 
@@ -481,12 +482,10 @@ public class DataEditorBean {
         Map<String, Pair<DefaultExpression, Object>> defaults = sys.getTableDefaults(tblName);
 
         if (!BeeUtils.isEmpty(defaults)) {
-          Defaults defaultsImpl = new ServerDefaults();
-
           for (String fldName : defaults.keySet()) {
-            if (!si.hasField(fldName)) {
+            if (!si.hasField(fldName) && !sys.getTableField(tblName, fldName).isExtended()) {
               Pair<DefaultExpression, Object> pair = defaults.get(fldName);
-              si.addConstant(fldName, defaultsImpl.getValue(pair.getA(), pair.getB()));
+              si.addConstant(fldName, srvDef.getValue(tblName, fldName, pair.getA(), pair.getB()));
             }
           }
         }
