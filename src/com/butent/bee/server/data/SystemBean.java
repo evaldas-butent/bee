@@ -66,7 +66,6 @@ import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
-import javax.ejb.Startup;
 
 /**
  * Ensures core data management functionality containing: data structures for tables and views,
@@ -75,7 +74,6 @@ import javax.ejb.Startup;
  */
 
 @Singleton
-@Startup
 @Lock(LockType.READ)
 public class SystemBean {
 
@@ -122,6 +120,7 @@ public class SystemBean {
   private Map<String, BeeState> stateCache = Maps.newHashMap();
   private Map<String, BeeTable> tableCache = Maps.newHashMap();
   private Map<String, BeeView> viewCache = Maps.newHashMap();
+  private Map<String, ViewCallback> viewCallbacks = Maps.newHashMap();
 
   public void activateTable(String tblName) {
     BeeTable table = getTable(tblName);
@@ -329,6 +328,26 @@ public class SystemBean {
     return view;
   }
 
+  public ViewCallback getViewCallback(BeeView view) {
+    ViewCallback callback = null;
+
+    if (view != null) {
+      callback = viewCallbacks.get(BeeUtils.normalize(view.getName()));
+
+      if (callback != null) {
+        ViewCallback instance = callback.getInstance();
+
+        if (instance != null) {
+          callback = instance;
+        }
+        if (!callback.sameModule(view.getModuleName())) {
+          callback = null;
+        }
+      }
+    }
+    return callback;
+  }
+
   public IsCondition getViewCondition(String viewName, Filter filter) {
     return getView(viewName).getCondition(filter);
   }
@@ -366,7 +385,7 @@ public class SystemBean {
   }
 
   public int getViewSize(String viewName, Filter filter) {
-    return qs.dbRowCount(getView(viewName).getQuery(filter, null));
+    return qs.sqlCount(getView(viewName).getQuery(filter, null));
   }
 
   public XmlState getXmlState(String moduleName, String stateName) {
@@ -583,6 +602,11 @@ public class SystemBean {
     rebuildTable(getTable(tblName), ref);
   }
 
+  public void registerViewCallback(String viewName, ViewCallback callback) {
+    Assert.notEmpty(viewName);
+    viewCallbacks.put(BeeUtils.normalize(viewName), callback);
+  }
+
   public SqlSelect verifyStates(SqlSelect query, String tblName, String tblAlias, String... states) {
     Assert.notNull(query);
 
@@ -676,7 +700,7 @@ public class SystemBean {
     for (SqlCreate sc : newTables.values()) {
       tblName = (String) sc.getTarget().getSource();
       String tblBackup = null;
-      boolean update = !qs.isDbTable(getDbName(), getDbSchema(), tblName);
+      boolean update = !qs.dbExists(getDbName(), getDbSchema(), tblName);
 
       if (update) {
         if (diff != null) {
@@ -798,7 +822,7 @@ public class SystemBean {
         }
       }
       if (!BeeUtils.isEmpty(tblBackup)) {
-        if (qs.isDbTable(getDbName(), getDbSchema(), tblBackup)) {
+        if (qs.dbExists(getDbName(), getDbSchema(), tblBackup)) {
           makeStructureChanges(SqlUtils.dropTable(tblBackup));
         }
         makeStructureChanges(sc.setTarget(tblBackup));

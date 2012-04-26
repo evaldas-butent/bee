@@ -9,6 +9,7 @@ import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlConstants;
 import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
+import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
@@ -102,9 +103,9 @@ public class QueryServiceBean {
     return sqlEngine;
   }
 
-  public boolean dbExists(String source, IsCondition where) {
-    return dbRowCount(new SqlSelect()
-        .addConstant(null, "dummy").addFrom(source).setWhere(where)) > 0;
+  public boolean dbExists(String dbName, String dbSchema, String table) {
+    Assert.notEmpty(table);
+    return !BeeUtils.isEmpty(dbTables(dbName, dbSchema, table));
   }
 
   public SimpleRowSet dbFields(String dbName, String dbSchema, String table) {
@@ -131,24 +132,6 @@ public class QueryServiceBean {
       return getValue(query);
     }
     return "";
-  }
-
-  public int dbRowCount(String source, IsCondition where) {
-    return dbRowCount(new SqlSelect().addConstant(null, "dummy").addFrom(source).setWhere(where));
-  }
-
-  public int dbRowCount(SqlSelect ss) {
-    SimpleRowSet res;
-
-    if (BeeUtils.allEmpty(ss.getGroupBy(), ss.getUnion())) {
-      res = getData(ss.copyOf().resetFields().resetOrder().addCount("cnt"));
-    } else {
-      res = getData(new SqlSelect().addCount("cnt").addFrom(ss.resetOrder(), "als"));
-    }
-    if (res == null) {
-      return -1;
-    }
-    return BeeUtils.unbox(res.getInt(0, 0));
   }
 
   public String dbSchema() {
@@ -325,7 +308,7 @@ public class QueryServiceBean {
     });
   }
 
-  public BeeRowSet getViewData(IsQuery query, final BeeView view) {
+  public BeeRowSet getViewData(final SqlSelect query, final BeeView view) {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
     activateTables(query);
@@ -339,7 +322,13 @@ public class QueryServiceBean {
 
       @Override
       public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
-        return rsToBeeRowSet(rs, view);
+        BeeRowSet rowset = rsToBeeRowSet(rs, view);
+        ViewCallback callback = sys.getViewCallback(view);
+
+        if (callback != null) {
+          callback.afterViewData(query, rowset);
+        }
+        return rowset;
       }
 
       @Override
@@ -386,9 +375,38 @@ public class QueryServiceBean {
     return response;
   }
 
-  public boolean isDbTable(String dbName, String dbSchema, String table) {
-    Assert.notEmpty(table);
-    return !BeeUtils.isEmpty(dbTables(dbName, dbSchema, table));
+  public int sqlCount(String source, IsCondition where) {
+    return sqlCount(new SqlSelect().addConstant(null, "dummy").addFrom(source).setWhere(where));
+  }
+
+  public int sqlCount(SqlSelect ss) {
+    SimpleRowSet res;
+
+    if (BeeUtils.allEmpty(ss.getGroupBy(), ss.getUnion())) {
+      res = getData(ss.copyOf().resetFields().resetOrder().addCount("cnt"));
+    } else {
+      res = getData(new SqlSelect().addCount("cnt").addFrom(ss.resetOrder(), "als"));
+    }
+    if (res == null) {
+      return -1;
+    }
+    return BeeUtils.unbox(res.getInt(0, 0));
+  }
+
+  public String sqlCreateTemp(SqlSelect query) {
+    String tmp = SqlUtils.temporaryName();
+    updateData(new SqlCreate(tmp).setDataSource(query));
+    return tmp;
+  }
+
+  public void sqlDropTemp(String tmp) {
+    Assert.state(!sys.isTable(tmp), "Can't drop a base table: " + tmp);
+    updateData(SqlUtils.dropTable(tmp));
+  }
+
+  public boolean sqlExists(String source, IsCondition where) {
+    return sqlCount(new SqlSelect()
+        .addConstant(null, "dummy").addFrom(source).setWhere(where)) > 0;
   }
 
   public int updateData(IsQuery query) {

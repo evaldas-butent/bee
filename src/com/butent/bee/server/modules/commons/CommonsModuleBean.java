@@ -96,6 +96,10 @@ public class CommonsModuleBean implements BeeModule {
     return getName();
   }
 
+  @Override
+  public void init() {
+  }
+
   private ResponseObject doItemEvent(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
 

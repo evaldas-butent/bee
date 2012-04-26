@@ -355,7 +355,8 @@ public abstract class SqlBuilder {
               "$1" + (operator != Operator.STARTS ? "%" : "")
                   + "$2" + (operator != Operator.ENDS ? "%" : "") + "$3");
         }
-        return BeeUtils.concat(1, expression, "LIKE", value, "ESCAPE '|'");
+        return BeeUtils.concat(1,
+            expression, sqlKeyword(SqlKeyword.LIKE, null), value, "ESCAPE '|'");
     }
     Assert.untouchable();
     return null;
@@ -740,6 +741,9 @@ public abstract class SqlBuilder {
 
       case SET_NULL:
         return "SET NULL";
+
+      case LIKE:
+        return "LIKE";
     }
     Assert.untouchable();
     return null;

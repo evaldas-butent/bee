@@ -10,6 +10,6 @@
     <BeeField name="Season" type="DECIMAL" precision="1" notNull="true" />
     <BeeField name="TempFrom" type="DECIMAL" precision="3" scale="0" />
     <BeeField name="TempTo" type="DECIMAL" precision="3" scale="0" />
-    <BeeField name="Rate" type="DECIMAL" precision="6" scale="2" />
+    <BeeField name="Rate" type="DECIMAL" precision="6" scale="2" notNull="true" />
   </BeeFields>
 </BeeTable>

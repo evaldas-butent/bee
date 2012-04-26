@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+      xmlns:x="http://www.butent.com/expression"
 
   name="TripRoutes"
   source="TripRoutes"
@@ -22,6 +23,9 @@
     <SimpleColumn name="CargoWeight" />
     <SimpleColumn name="Season" />
     <SimpleColumn name="Temperature" />
+    <SimpleColumn name="Consumption">
+      <x:number>0</x:number>
+    </SimpleColumn>
   </Columns>
   <Order>
     <OrderBy column="Date" />

@@ -75,6 +75,12 @@ public class ModuleHolderBean {
     return modules.containsKey(moduleName);
   }
 
+  public void initModules() {
+    for (String mod : getModules()) {
+      getModule(mod).init();
+    }
+  }
+
   private BeeModule getModule(String moduleName) {
     Assert.state(hasModule(moduleName), "Unknown module name: " + moduleName);
     return modules.get(moduleName);

@@ -17,4 +17,6 @@ public interface BeeModule {
   String getName();
 
   String getResourcePath();
+
+  void init();
 }

@@ -102,6 +102,10 @@ public class CrmModuleBean implements BeeModule {
     return getName();
   }
 
+  @Override
+  public void init() {
+  }
+
   private ResponseObject doProjectEvent(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
 
@@ -316,7 +320,7 @@ public class CrmModuleBean implements BeeModule {
           response = deb.commitRow(rs, false);
 
           if (!response.hasErrors()
-              && !qs.dbExists(CrmConstants.TBL_TASK_USERS, SqlUtils.and(wh,
+              && !qs.sqlExists(CrmConstants.TBL_TASK_USERS, SqlUtils.and(wh,
                   SqlUtils.equal(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_USER, newUser)))) {
             response = registerTaskVisit(taskId, newUser, null, true);
           }

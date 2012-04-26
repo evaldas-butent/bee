@@ -33,12 +33,12 @@
       </editor>
     </DataColumn>
     <DataColumn name="Temperature" source="Temperature" caption="Temp." />
-    <CalcColumn type="decimal" name="Consumption" caption="Litrai">
+    <DataColumn name="Consumption" caption="Litrai">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
-    </CalcColumn>
+    </DataColumn>
     <DataColumn name="FuelType" source="FuelType" caption="Kuro rūšis" />
   </columns>
 </Grid>

@@ -100,6 +100,9 @@ class PostgreSqlBuilder extends SqlBuilder {
             .setWhere(wh)
             .getSqlString(this);
 
+      case LIKE:
+        return "ILIKE";
+
       default:
         return super.sqlKeyword(option, params);
     }

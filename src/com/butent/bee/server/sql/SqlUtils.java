@@ -52,10 +52,10 @@ public class SqlUtils {
     return new ComparisonCondition(op, expr, value);
   }
 
-  public static IsExpression concat(IsExpression... members) {
+  public static IsExpression concat(Object... members) {
     Assert.minLength(members, 2);
-    Assert.noNulls((Object[]) members);
-    return new FunctionExpression(SqlFunction.CONCAT, getMemberMap((Object[]) members));
+    Assert.noNulls(members);
+    return new FunctionExpression(SqlFunction.CONCAT, getMemberMap(members));
   }
 
   public static IsExpression constant(Object constant) {
@@ -179,10 +179,10 @@ public class SqlUtils {
     return new SqlCommand(SqlKeyword.DB_TRIGGERS, params);
   }
 
-  public static IsExpression divide(IsExpression... members) {
+  public static IsExpression divide(Object... members) {
     Assert.minLength(members, 2);
-    Assert.noNulls((Object[]) members);
-    return new FunctionExpression(SqlFunction.DIVIDE, getMemberMap((Object[]) members));
+    Assert.noNulls(members);
+    return new FunctionExpression(SqlFunction.DIVIDE, getMemberMap(members));
   }
 
   public static IsQuery dropForeignKey(String table, String name) {
@@ -359,10 +359,10 @@ public class SqlUtils {
     return matches(field(source, field), value);
   }
 
-  public static IsExpression minus(IsExpression... members) {
+  public static IsExpression minus(Object... members) {
     Assert.minLength(members, 2);
-    Assert.noNulls((Object[]) members);
-    return new FunctionExpression(SqlFunction.MINUS, getMemberMap((Object[]) members));
+    Assert.noNulls(members);
+    return new FunctionExpression(SqlFunction.MINUS, getMemberMap(members));
   }
 
   public static IsCondition more(IsExpression expr, Object value) {
@@ -381,10 +381,10 @@ public class SqlUtils {
     return moreEqual(field(source, field), value);
   }
 
-  public static IsExpression multiply(IsExpression... members) {
+  public static IsExpression multiply(Object... members) {
     Assert.minLength(members, 2);
-    Assert.noNulls((Object[]) members);
-    return new FunctionExpression(SqlFunction.MULTIPLY, getMemberMap((Object[]) members));
+    Assert.noNulls(members);
+    return new FunctionExpression(SqlFunction.MULTIPLY, getMemberMap(members));
   }
 
   public static IsExpression name(String name) {
@@ -411,20 +411,20 @@ public class SqlUtils {
     return notNull(field(src, fld));
   }
 
-  public static IsExpression nvl(IsExpression... members) {
+  public static IsExpression nvl(Object... members) {
     Assert.minLength(members, 2);
-    Assert.noNulls((Object[]) members);
-    return new FunctionExpression(SqlFunction.NVL, getMemberMap((Object[]) members));
+    Assert.noNulls(members);
+    return new FunctionExpression(SqlFunction.NVL, getMemberMap(members));
   }
 
   public static HasConditions or(IsCondition... conditions) {
     return CompoundCondition.or(conditions);
   }
 
-  public static IsExpression plus(IsExpression... members) {
+  public static IsExpression plus(Object... members) {
     Assert.minLength(members, 2);
-    Assert.noNulls((Object[]) members);
-    return new FunctionExpression(SqlFunction.PLUS, getMemberMap((Object[]) members));
+    Assert.noNulls(members);
+    return new FunctionExpression(SqlFunction.PLUS, getMemberMap(members));
   }
 
   public static IsQuery renameTable(String from, String to) {

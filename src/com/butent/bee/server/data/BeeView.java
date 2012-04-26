@@ -192,19 +192,19 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           members.add(parse(z, history));
         }
         if (xmlExpr instanceof XmlPlus) {
-          expr = SqlUtils.plus(members.toArray(new IsExpression[0]));
+          expr = SqlUtils.plus(members.toArray());
         } else if (xmlExpr instanceof XmlMinus) {
-          expr = SqlUtils.minus(members.toArray(new IsExpression[0]));
+          expr = SqlUtils.minus(members.toArray());
         } else if (xmlExpr instanceof XmlMultiply) {
-          expr = SqlUtils.multiply(members.toArray(new IsExpression[0]));
+          expr = SqlUtils.multiply(members.toArray());
         } else if (xmlExpr instanceof XmlDivide) {
-          expr = SqlUtils.divide(members.toArray(new IsExpression[0]));
+          expr = SqlUtils.divide(members.toArray());
         } else if (xmlExpr instanceof XmlBulk) {
           expr = SqlUtils.expression(members.toArray());
         } else if (xmlExpr instanceof XmlNvl) {
-          expr = SqlUtils.nvl(members.toArray(new IsExpression[0]));
+          expr = SqlUtils.nvl(members.toArray());
         } else if (xmlExpr instanceof XmlConcat) {
-          expr = SqlUtils.concat(members.toArray(new IsExpression[0]));
+          expr = SqlUtils.concat(members.toArray());
         }
       } else if (xmlExpr.content != null && !xmlExpr.content.replaceAll("\\s", "").isEmpty()) {
         List<Object> x = Lists.newArrayList();

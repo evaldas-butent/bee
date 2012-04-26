@@ -31,7 +31,7 @@ public class CalendarModuleBean implements BeeModule {
   SystemBean sys;
   @EJB
   UserServiceBean usr;
-  
+
   @Override
   public String dependsOn() {
     return CommonsConstants.COMMONS_MODULE;
@@ -66,17 +66,21 @@ public class CalendarModuleBean implements BeeModule {
   public String getResourcePath() {
     return getName();
   }
-  
+
+  @Override
+  public void init() {
+  }
+
   private boolean checkTable(String name) {
     return sys.isTable(name) && sys.getTable(name).isActive();
   }
-  
+
   private ResponseObject getUserCalendars() {
     long userId = usr.getCurrentUserId();
     if (!checkTable(CalendarConstants.TBL_USER_CALENDARS)) {
       return ResponseObject.error("table not active:", CalendarConstants.TBL_USER_CALENDARS);
     }
-    
+
     Filter filter = ComparisonFilter.isEqual(CalendarConstants.COL_USER, new LongValue(userId));
     BeeRowSet res = sys.getViewData(CalendarConstants.VIEW_USER_CALENDARS, filter, null);
 
