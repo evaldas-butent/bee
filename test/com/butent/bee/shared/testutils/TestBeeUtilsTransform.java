@@ -629,15 +629,13 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testIsPositive() {
-    assertEquals(false, beeUtils.isPositive(true));
-    assertEquals(false, beeUtils.isPositive(null));
-    assertEquals(false, beeUtils.isPositive(""));
-    assertEquals(false, beeUtils.isPositive("5"));
-    assertEquals(false, beeUtils.isPositive("-5"));
+    assertEquals(false, beeUtils.isPositiveInt(""));
+    assertEquals(false, beeUtils.isPositiveInt("5"));
+    assertEquals(false, beeUtils.isPositiveInt("-5"));
     assertEquals(false, beeUtils.isPositive(-5));
     assertEquals(true, beeUtils.isPositive(5));
-    assertEquals(true, beeUtils.isPositive((Object) 5.0));
-    assertEquals(false, beeUtils.isPositive((Object) 0.0));
+    assertEquals(true, beeUtils.isPositive(5.0));
+    assertEquals(false, beeUtils.isPositive(0.0));
   }
 
   @Test
@@ -1249,8 +1247,9 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     log("\t\t [done]");
 
     int a[] = {1, 2, 3};
-    assertEquals("1c2c3", BeeUtils.transform((Object) a, 'c'));
-    assertEquals("class com.butent.bee.shared.BeeType", BeeUtils.transform(BeeType.class, ";"));
+    assertEquals("1c2c3", BeeUtils.transformGeneric((Object) a, 'c'));
+    assertEquals("class com.butent.bee.shared.BeeType",
+        BeeUtils.transformGeneric(BeeType.class, ";"));
   }
 
   @Test

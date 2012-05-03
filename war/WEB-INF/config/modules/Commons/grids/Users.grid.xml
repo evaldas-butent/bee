@@ -6,8 +6,8 @@
   >
   <columns>
     <IdColumn name="Id" caption="ID" />
-    <DataColumn name="Login" source="Login" caption="Prisijungimo vardas" />
-    <DataColumn name="FirstName" source="FirstName" caption="Vardas" />
-    <DataColumn name="LasName" source="LastName" caption="Pavardė" />
+    <DataColumn name="Login" caption="Prisijungimo vardas" />
+    <DataColumn name="FirstName" caption="Vardas" />
+    <DataColumn name="LastName" caption="Pavardė" />
   </columns>
 </Grid>

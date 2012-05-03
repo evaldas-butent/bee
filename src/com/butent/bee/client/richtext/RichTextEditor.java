@@ -89,6 +89,10 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
     }
   }
 
+  public EditorAction getDefaultFocusAction() {
+    return null;
+  }
+  
   @Override
   public String getIdPrefix() {
     return "rt-editor";
@@ -173,7 +177,8 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
     getArea().setHTML(value);
   }
 
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry,
+      Element sourceElement) {
     EditorAction action = (onEntry == null) ? EditorAction.ADD_LAST : onEntry;
     UiHelper.doEditorAction(this, oldValue, charCode, action);
 

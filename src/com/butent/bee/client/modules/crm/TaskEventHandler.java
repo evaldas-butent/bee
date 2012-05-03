@@ -64,7 +64,6 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants.Priority;
@@ -113,9 +112,6 @@ public class TaskEventHandler {
       final long task = presenter.getView().getContent().getRelId();
 
       Queries.getRowSet("Users", null, CompoundFilter.and(filters), null, new RowSetCallback() {
-        public void onFailure(String[] reason) {
-        }
-
         public void onSuccess(final BeeRowSet result) {
           if (result.isEmpty()) {
             presenter.getView().getContent().notifyWarning("Everybody is watching you");
@@ -219,10 +215,6 @@ public class TaskEventHandler {
       }
 
       Queries.insert(rowSet, new RowSetCallback() {
-        public void onFailure(String[] reason) {
-          presenter.getView().getContent().notifySevere(reason);
-        }
-
         public void onSuccess(BeeRowSet result) {
           for (BeeRow row : result.getRows()) {
             BeeKeeper.getBus().fireEvent(new RowInsertEvent(result.getViewName(), row));
@@ -465,9 +457,6 @@ public class TaskEventHandler {
       }
 
       Queries.getRowSet("Users", null, CompoundFilter.and(filters), null, new RowSetCallback() {
-        public void onFailure(String[] reason) {
-        }
-
         public void onSuccess(BeeRowSet result) {
           if (result.isEmpty()) {
             Global.showError("No more heroes any more");
@@ -629,11 +618,11 @@ public class TaskEventHandler {
       }
       parent.setWidget(row, 0, lbl);
       BeeColumn col = new BeeColumn(ValueType.LONG, "Dummy");
-      DataSelector selector = new DataSelector(
-          RelationInfo.create(Lists.newArrayList(col), null, col.getId(), relView, relColumn),
-          true);
-      parent.setWidget(row, 1, selector);
-      dialogWidgets.put(id, selector);
+//      DataSelector selector = new DataSelector(
+//          RelationInfo.create(Lists.newArrayList(col), null, col.getId(), relView, relColumn),
+//          true);
+//      parent.setWidget(row, 1, selector);
+//      dialogWidgets.put(id, selector);
     }
 
     public void addSelector(String caption, String relView, String relColumn,

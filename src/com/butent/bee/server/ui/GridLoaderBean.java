@@ -21,11 +21,16 @@ import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.ui.GridComponentDescription;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.RefreshType;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.RendererDescription;
 import com.butent.bee.shared.ui.RendererType;
+import com.butent.bee.shared.ui.SelectorColumn;
 import com.butent.bee.shared.ui.StyleDeclaration;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -74,11 +79,8 @@ public class GridLoaderBean {
 
   private static final Set<String> WIDGET_TAGS = Sets.newHashSet("north", "south", "west", "east");
 
-  private static final String ATTR_NAME = "name";
   private static final String ATTR_PARENT = "parent";
-  private static final String ATTR_CAPTION = "caption";
 
-  private static final String ATTR_VIEW_NAME = "viewName";
   private static final String ATTR_FILTER = "filter";
   private static final String ATTR_ORDER = "order";
 
@@ -96,7 +98,6 @@ public class GridLoaderBean {
   private static final String ATTR_SEARCH_THRESHOLD = "searchThreshold";
   private static final String ATTR_INITIAL_ROW_SET_SIZE = "initialRowSetSize";
 
-  private static final String ATTR_READ_ONLY = "readOnly";
   private static final String ATTR_ENABLED_ACTIONS = "enabledActions";
   private static final String ATTR_DISABLED_ACTIONS = "disabledActions";
 
@@ -117,16 +118,14 @@ public class GridLoaderBean {
   private static final String ATTR_MIN_WIDTH = "minWidth";
   private static final String ATTR_MAX_WIDTH = "maxWidth";
   private static final String ATTR_AUTO_FIT = "autoFit";
-  
+
   private static final String ATTR_SORTABLE = "sortable";
   private static final String ATTR_VISIBLE = "visible";
   private static final String ATTR_FORMAT = "format";
-  private static final String ATTR_HORIZONTAL_ALIGNMENT = "horizontalAlignment";
 
   private static final String ATTR_HAS_FOOTER = "hasFooter";
   private static final String ATTR_SHOW_WIDTH = "showWidth";
 
-  private static final String ATTR_SOURCE = "source";
   private static final String ATTR_REQUIRED = "required";
 
   private static final String ATTR_MIN_VALUE = "minValue";
@@ -136,8 +135,8 @@ public class GridLoaderBean {
   private static final String ATTR_PRECISION = "precision";
   private static final String ATTR_SCALE = "scale";
 
-  private static final String ATTR_SEARCH_BY = "searchBy";
   private static final String ATTR_SORT_BY = "sortBy";
+  private static final String ATTR_SEARCH_BY = "searchBy";
 
   private static final String ATTR_CELL = "cell";
 
@@ -161,36 +160,23 @@ public class GridLoaderBean {
 
     gridDescription.addColumn(new ColumnDescription(ColType.ID, view.getSourceIdName()));
 
-    Map<String, ColumnDescription> columns = Maps.newLinkedHashMap();
-    Set<String> relSources = Sets.newHashSet();
-
     ColumnDescription columnDescription;
     for (String colName : view.getColumnNames()) {
-      columnDescription = new ColumnDescription(ColType.DATA, colName);
+      int level = view.getColumnLevel(colName);
+      boolean readOnly = view.isColReadOnly(colName);
+
+      ColType colType = (level <= 0 || readOnly) ? ColType.DATA : ColType.RELATED;
+      columnDescription = new ColumnDescription(colType, colName);
       columnDescription.setSource(colName);
 
-      if (view.isColReadOnly(colName)) {
+      if (readOnly) {
         columnDescription.setReadOnly(true);
+      } else if (ColType.RELATED.equals(colType)) {
+        columnDescription.setRelation(Relation.create(null, null, null, null));
       }
 
-      setRelation(view, colName, columnDescription);
-      if (!BeeUtils.isEmpty(columnDescription.getRelSource())) {
-        relSources.add(columnDescription.getRelSource());
-      }
-
-      columns.put(BeeUtils.normalize(colName), columnDescription);
+      gridDescription.addColumn(columnDescription);
     }
-
-    if (!relSources.isEmpty()) {
-      for (String relSource : relSources) {
-        columnDescription = columns.get(BeeUtils.normalize(relSource));
-        if (columnDescription != null) {
-          columnDescription.setReadOnly(true);
-        }
-      }
-    }
-
-    gridDescription.getColumns().addAll(columns.values());
 
     gridDescription.addColumn(new ColumnDescription(ColType.VERSION, view.getSourceVersionName()));
 
@@ -216,11 +202,11 @@ public class GridLoaderBean {
       return null;
     }
 
-    String gridName = gridElement.getAttribute(ATTR_NAME);
-    String viewName = gridElement.getAttribute(ATTR_VIEW_NAME);
+    String gridName = gridElement.getAttribute(UiConstants.ATTR_NAME);
+    String viewName = gridElement.getAttribute(UiConstants.ATTR_VIEW_NAME);
 
     if (BeeUtils.isEmpty(gridName)) {
-      LogUtils.warning(logger, "Grid attribute", ATTR_NAME, "not found");
+      LogUtils.warning(logger, "Grid attribute", UiConstants.ATTR_NAME, "not found");
       return null;
     }
 
@@ -262,7 +248,7 @@ public class GridLoaderBean {
 
       String colTag = XmlUtils.getLocalName(columnElement);
       ColType colType = ColType.getColType(colTag);
-      String colName = columnElement.getAttribute(ATTR_NAME);
+      String colName = columnElement.getAttribute(UiConstants.ATTR_NAME);
 
       if (colType == null) {
         LogUtils.warning(logger, "Grid", gridName, "column", i, colName,
@@ -281,6 +267,10 @@ public class GridLoaderBean {
 
       ColumnDescription column = new ColumnDescription(colType, colName);
       xmlToColumn(columnElement, column);
+
+      if (ColType.RELATED.equals(colType)) {
+        column.setRelation(getRelation(columnElement));
+      }
 
       if (initColumn(view, column)) {
         grid.addColumn(column);
@@ -347,10 +337,45 @@ public class GridLoaderBean {
     return editor;
   }
 
-  private RendererDescription getRenderer(Element parent, EditorDescription editor) {
+  private Relation getRelation(Element element) {
+    Assert.notNull(element);
+
+    RendererDescription rowRenderer = null;
+    Calculation rowRender = null;
+    
+    List<SelectorColumn> selectorColumns = Lists.newArrayList();
+
+    for (Element child : XmlUtils.getChildrenElements(element)) {
+      String tagName = XmlUtils.getLocalName(child);
+
+      if (BeeUtils.same(tagName, Relation.TAG_ROW_RENDERER)) {
+        rowRenderer = getRenderer(child, null);
+      } else if (BeeUtils.same(tagName, Relation.TAG_ROW_RENDER)) {
+        rowRender = XmlUtils.getCalculation(child);
+
+      } else if (BeeUtils.same(tagName, Relation.TAG_SELECTOR_COLUMN)) {
+        RendererDescription renderer = getRenderer(child, RendererDescription.TAG_RENDERER, null);
+        Calculation render = XmlUtils.getCalculation(child, RendererDescription.TAG_RENDER);
+        selectorColumns.add(SelectorColumn.create(XmlUtils.getAttributes(child), renderer, render));
+      }
+    }
+    return Relation.create(XmlUtils.getAttributes(element), selectorColumns, rowRenderer,
+        rowRender);
+  }
+
+  private RendererDescription getRenderer(Element parent, String tagName,
+      EditorDescription editor) {
     Assert.notNull(parent);
 
-    Element element = XmlUtils.getFirstChildElement(parent, RendererDescription.TAG_RENDERER);
+    Element element = XmlUtils.getFirstChildElement(parent, tagName);
+    if (element == null) {
+      return null;
+    } else {
+      return getRenderer(element, editor);
+    }
+  }
+
+  private RendererDescription getRenderer(Element element, EditorDescription editor) {
     if (element == null) {
       return null;
     }
@@ -376,7 +401,7 @@ public class GridLoaderBean {
         }
       }
     }
-    
+
     if (items.isEmpty() && editor != null && editor.getItems() != null) {
       items.addAll(editor.getItems());
       if (renderer.getValueStartIndex() == null && editor.getValueStartIndex() != null) {
@@ -386,21 +411,21 @@ public class GridLoaderBean {
     if (!items.isEmpty()) {
       renderer.setItems(items);
     }
-    
+
     return renderer;
   }
-  
+
   private boolean initColumn(BeeView view, ColumnDescription columnDescription) {
     Assert.notNull(columnDescription);
-    
+
     ColType colType = columnDescription.getColType();
     String source = columnDescription.getSource();
 
-    if (ColType.DATA.equals(colType) && BeeUtils.isEmpty(source)) {
+    if (!colType.isReadOnly() && BeeUtils.isEmpty(source)) {
       source = columnDescription.getName();
       columnDescription.setSource(source);
     }
-    
+
     if (view == null) {
       return true;
     }
@@ -420,11 +445,11 @@ public class GridLoaderBean {
         break;
 
       case DATA:
+      case RELATED:
         if (view.hasColumn(source)) {
           if (view.isColReadOnly(source)) {
             columnDescription.setReadOnly(true);
           }
-          setRelation(view, source, columnDescription);
           ok = true;
         } else {
           LogUtils.warning(logger, viewName, "unrecognized view column:", source);
@@ -443,26 +468,6 @@ public class GridLoaderBean {
     return ok;
   }
 
-  private void setRelation(BeeView view, String colName, ColumnDescription columnDescription) {
-    String parentColumn = view.getColumnParent(colName);
-    if (BeeUtils.isEmpty(parentColumn)) {
-      return;
-    }
-
-    int level = view.getColumnLevel(colName);
-    if (level <= 0) {
-      return;
-    }
-
-    columnDescription.setRelSource(view.getColumnField(parentColumn));
-    columnDescription.setRelView(view.getColumnTable(colName));
-    columnDescription.setRelColumn(view.getColumnField(colName));
-    
-    if (level > 1 && columnDescription.isReadOnly() == null) {
-      columnDescription.setReadOnly(true);
-    }
-  }
-
   private void xmlToColumn(Element src, ColumnDescription dst) {
     Assert.notNull(src);
     Assert.notNull(dst);
@@ -477,9 +482,9 @@ public class GridLoaderBean {
           continue;
         }
 
-        if (BeeUtils.same(key, ATTR_CAPTION)) {
+        if (BeeUtils.same(key, UiConstants.ATTR_CAPTION)) {
           dst.setCaption(value.trim());
-        } else if (BeeUtils.same(key, ATTR_READ_ONLY)) {
+        } else if (BeeUtils.same(key, UiConstants.ATTR_READ_ONLY)) {
           dst.setReadOnly(BeeUtils.toBooleanOrNull(value));
 
         } else if (BeeUtils.same(key, ATTR_WIDTH)) {
@@ -497,7 +502,7 @@ public class GridLoaderBean {
           dst.setVisible(BeeUtils.toBooleanOrNull(value));
         } else if (BeeUtils.same(key, ATTR_FORMAT)) {
           dst.setFormat(value.trim());
-        } else if (BeeUtils.same(key, ATTR_HORIZONTAL_ALIGNMENT)) {
+        } else if (BeeUtils.same(key, UiConstants.ATTR_HORIZONTAL_ALIGNMENT)) {
           dst.setHorAlign(value.trim());
 
         } else if (BeeUtils.same(key, ATTR_HAS_FOOTER)) {
@@ -505,7 +510,7 @@ public class GridLoaderBean {
         } else if (BeeUtils.same(key, ATTR_SHOW_WIDTH)) {
           dst.setShowWidth(BeeUtils.toBooleanOrNull(value));
 
-        } else if (BeeUtils.same(key, ATTR_SOURCE)) {
+        } else if (BeeUtils.same(key, UiConstants.ATTR_SOURCE)) {
           dst.setSource(value.trim());
         } else if (BeeUtils.same(key, ATTR_REQUIRED)) {
           dst.setRequired(BeeUtils.toBooleanOrNull(value));
@@ -522,13 +527,17 @@ public class GridLoaderBean {
         } else if (BeeUtils.same(key, ATTR_SCALE)) {
           dst.setScale(BeeUtils.toIntOrNull(value));
 
-        } else if (BeeUtils.same(key, ATTR_SEARCH_BY)) {
-          dst.setSearchBy(value.trim());
+        } else if (BeeUtils.same(key, RendererDescription.ATTR_RENDER_COLUMNS)) {
+          dst.setRenderColumns(NameUtils.toList(value.trim()));
         } else if (BeeUtils.same(key, ATTR_SORT_BY)) {
           dst.setSortBy(value.trim());
+        } else if (BeeUtils.same(key, ATTR_SEARCH_BY)) {
+          dst.setSearchBy(value.trim());
 
         } else if (BeeUtils.same(key, ATTR_CELL)) {
           dst.setCellType(CellType.getByCode(value));
+        } else if (BeeUtils.same(key, RefreshType.ATTR_UPDATE_MODE)) {
+          dst.setUpdateMode(RefreshType.getByCode(value));
 
         } else if (BeeUtils.same(key, HasItems.ATTR_ITEM_KEY)) {
           dst.setItemKey(value.trim());
@@ -586,7 +595,7 @@ public class GridLoaderBean {
       dst.setEditor(editor);
     }
 
-    RendererDescription renderer = getRenderer(src, editor);
+    RendererDescription renderer = getRenderer(src, RendererDescription.TAG_RENDERER, editor);
     if (renderer != null) {
       dst.setRendererDescription(renderer);
     }
@@ -599,13 +608,13 @@ public class GridLoaderBean {
   private void xmlToGrid(Element src, GridDescription dst, BeeView view) {
     Assert.notNull(src);
     Assert.notNull(dst);
-    
+
     String parent = src.getAttribute(ATTR_PARENT);
     if (!BeeUtils.isEmpty(parent)) {
       dst.setParent(parent.trim());
     }
 
-    String caption = src.getAttribute(ATTR_CAPTION);
+    String caption = src.getAttribute(UiConstants.ATTR_CAPTION);
     if (!BeeUtils.isEmpty(caption)) {
       dst.setCaption(caption.trim());
     }
@@ -675,7 +684,7 @@ public class GridLoaderBean {
       dst.setInitialRowSetSize(initialRowSetSize);
     }
 
-    Boolean readOnly = XmlUtils.getAttributeBoolean(src, ATTR_READ_ONLY);
+    Boolean readOnly = XmlUtils.getAttributeBoolean(src, UiConstants.ATTR_READ_ONLY);
     if (readOnly != null) {
       dst.setReadOnly(readOnly);
     }

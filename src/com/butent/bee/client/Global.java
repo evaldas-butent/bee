@@ -7,7 +7,6 @@ import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.DataInfoProvider;
-import com.butent.bee.client.data.DataInfoProvider.DataInfoCallback;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.MessageBoxes;
@@ -26,6 +25,7 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.data.cache.CacheManager;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.menu.MenuConstants;
@@ -178,8 +178,8 @@ public class Global implements Module {
     }
   }
   
-  public static void getDataInfo(String viewName, DataInfoCallback callback) {
-    getDataInfoProvider().getDataInfo(viewName, callback);
+  public static DataInfo getDataInfo(String viewName, boolean warn) {
+    return getDataInfoProvider().getDataInfo(viewName, warn);
   }
 
   public static DataInfoProvider getDataInfoProvider() {
@@ -329,7 +329,7 @@ public class Global implements Module {
     Assert.notNull(clazz);
     captions.put(BeeUtils.normalize(key), clazz);
   }
-
+  
   public static void sayHuh(Object... obj) {
     msgBoxen.showInfo("Huh ?", obj);
   }
@@ -491,8 +491,6 @@ public class Global implements Module {
     setVarWidth(Service.VAR_XML_SOURCE, "300px");
     setVarWidth(Service.VAR_XML_TRANSFORM, "300px");
     setVarWidth(Service.VAR_XML_TARGET, "300px");
-
-    createVar(Service.VAR_FORM_NAME, "Form name");
 
     createVar(Service.VAR_JDBC_QUERY, "Jdbc Query");
     setVarWidth(Service.VAR_JDBC_QUERY, "500px");

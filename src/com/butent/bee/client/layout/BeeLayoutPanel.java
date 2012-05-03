@@ -5,10 +5,9 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.layout.client.Layout.Alignment;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.WidgetCollection;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.ui.HandlesAfterAdd;
-import com.butent.bee.client.ui.HandlesBeforeAdd;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -30,18 +29,10 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
   @Override
   public void add(Widget widget) {
     Assert.notNull(widget);
-    Widget w = widget;
-    if (w instanceof HandlesBeforeAdd) {
-      w = ((HandlesBeforeAdd) w).onBeforeAdd(this);
-    }
+    super.add(widget);
 
-    super.add(w);
-    DomUtils.createId(getWidgetContainerElement(w), "container");
-    getWidgetContainerElement(w).setClassName("bee-LayoutContainer");
-
-    if (w instanceof HandlesAfterAdd) {
-      ((HandlesAfterAdd) w).onAfterAdd(this);
-    }
+    DomUtils.createId(getWidgetContainerElement(widget), "container");
+    getWidgetContainerElement(widget).setClassName("bee-LayoutContainer");
   }
 
   public void add(Widget widget, boolean scroll) {
@@ -190,6 +181,11 @@ public class BeeLayoutPanel extends LayoutPanel implements HasId {
     }
   }
   
+  @Override
+  protected WidgetCollection getChildren() {
+    return super.getChildren();
+  }
+
   private Unit normalizeUnit(Unit unit) {
     return (unit == null) ? defaultUnit : unit;
   }

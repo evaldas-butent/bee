@@ -33,7 +33,9 @@ public class CompoundFilter extends Filter {
 
   protected CompoundFilter(CompoundType joinType, Filter... filters) {
     this.type = joinType;
-    add(filters);
+    if (filters != null) {
+      add(filters);
+    }
   }
 
   public Filter add(Filter... filters) {

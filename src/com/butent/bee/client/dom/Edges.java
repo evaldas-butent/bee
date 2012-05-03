@@ -26,8 +26,10 @@ public class Edges {
   }
 
   public static final String EMPTY_CSS_VALUE = BeeConst.STRING_ZERO;
+  public static final String CSS_SHAPE_AUTO = "auto";
 
   private static final char CSS_VALUE_SEPARATOR = BeeConst.CHAR_SPACE;
+  private static final String CSS_SHAPE_SEPARATOR = BeeConst.DEFAULT_LIST_SEPARATOR;
 
   private static final Unit DEFAULT_UNIT = Unit.PX;
 
@@ -256,11 +258,11 @@ public class Edges {
     return bottomValue;
   }
 
-  public String getCssBottom() {
-    return getCssEdge(Edge.BOTTOM);
+  public String getCssBottom(String emptyValue) {
+    return getCssEdge(Edge.BOTTOM, emptyValue);
   }
 
-  public String getCssEdge(Edge edge) {
+  public String getCssEdge(Edge edge, String emptyValue) {
     Assert.notNull(edge);
 
     Double value;
@@ -290,7 +292,7 @@ public class Edges {
     }
 
     if (value == null) {
-      return EMPTY_CSS_VALUE;
+      return emptyValue;
     } else {
       if (unit == null) {
         unit = DEFAULT_UNIT;
@@ -299,26 +301,36 @@ public class Edges {
     }
   }
 
-  public String getCssLeft() {
-    return getCssEdge(Edge.LEFT);
+  public String getCssLeft(String emptyValue) {
+    return getCssEdge(Edge.LEFT, emptyValue);
   }
 
-  public String getCssRight() {
-    return getCssEdge(Edge.RIGHT);
+  public String getCssRight(String emptyValue) {
+    return getCssEdge(Edge.RIGHT, emptyValue);
   }
 
-  public String getCssTop() {
-    return getCssEdge(Edge.TOP);
+  public String getCssShape() {
+    if (isEmpty()) {
+      return CSS_SHAPE_AUTO;
+    }
+    return "rect(" + getCssEdge(Edge.TOP, CSS_SHAPE_AUTO) + CSS_SHAPE_SEPARATOR
+        + getCssEdge(Edge.RIGHT, CSS_SHAPE_AUTO) + CSS_SHAPE_SEPARATOR
+        + getCssEdge(Edge.BOTTOM, CSS_SHAPE_AUTO) + CSS_SHAPE_SEPARATOR
+        + getCssEdge(Edge.LEFT, CSS_SHAPE_AUTO) + ")";
+  }
+  
+  public String getCssTop(String emptyValue) {
+    return getCssEdge(Edge.TOP, emptyValue);
   }
 
   public String getCssValue() {
     if (isEmpty()) {
       return EMPTY_CSS_VALUE;
     }
-    return getCssEdge(Edge.TOP) + CSS_VALUE_SEPARATOR
-        + getCssEdge(Edge.RIGHT) + CSS_VALUE_SEPARATOR
-        + getCssEdge(Edge.BOTTOM) + CSS_VALUE_SEPARATOR
-        + getCssEdge(Edge.LEFT);
+    return getCssEdge(Edge.TOP, EMPTY_CSS_VALUE) + CSS_VALUE_SEPARATOR
+        + getCssEdge(Edge.RIGHT, EMPTY_CSS_VALUE) + CSS_VALUE_SEPARATOR
+        + getCssEdge(Edge.BOTTOM, EMPTY_CSS_VALUE) + CSS_VALUE_SEPARATOR
+        + getCssEdge(Edge.LEFT, EMPTY_CSS_VALUE);
   }
 
   public int getIntBottom() {

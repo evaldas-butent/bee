@@ -68,7 +68,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   private boolean searchable = false;
 
   private boolean readOnly = false;
-  private boolean writable = false;
+  private boolean sqlWritable = false;
   private boolean definitelyWritable = false;
 
   private int level = 0;
@@ -123,7 +123,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     result.setCurrency(isCurrency());
     result.setSearchable(isSearchable());
     result.setReadOnly(isReadOnly());
-    result.setWritable(isWritable());
+    result.setSqlWritable(isSqlWritable());
     result.setDefinitelyWritable(isDefinitelyWritable());
 
     return result;
@@ -208,7 +208,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
         "Case Sensitive", isCaseSensitive(),
         "Currency", valueAsString(isCurrency()),
         "Searchable", isSearchable(),
-        "Writable", isWritable(),
+        "Sql Writable", isSqlWritable(),
         "Definitely Writable", isDefinitelyWritable(),
         "Pattern", getPattern());
 
@@ -298,8 +298,12 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     return signed;
   }
 
+  public boolean isSqlWritable() {
+    return sqlWritable;
+  }
+  
   public boolean isWritable() {
-    return writable;
+    return !isReadOnly() && !isForeign();
   }
 
   public String nullableAsString() {
@@ -421,16 +425,16 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     this.sqlType = sqlType;
   }
 
+  public void setSqlWritable(boolean sqlWritable) {
+    this.sqlWritable = sqlWritable;
+  }
+
   public void setTable(String table) {
     this.table = table;
   }
 
   public void setTypeName(String typeName) {
     this.typeName = typeName;
-  }
-
-  public void setWritable(boolean writable) {
-    this.writable = writable;
   }
 
   @Override

@@ -23,13 +23,11 @@
       <row>
         <cell><Label html="Užsakovas" horizontalAlignment="right" class="bee-required" /></cell>
         <cell>
-          <DataSelector source="CustomerName" relSource="Customer" relView="Companies"
-                        relColumn="Name" />
+          <DataSelector source="CustomerName" />
         </cell>
         <cell><Label html="Mokėtojas" horizontalAlignment="right" /></cell>
         <cell colSpan="3">
-          <DataSelector source="PayerName" relSource="Payer" relView="Companies"
-                        relColumn="Name" />
+          <DataSelector source="PayerName" />
         </cell>
       </row>
       <row>
@@ -37,15 +35,13 @@
           <Label html="Kontaktas:" horizontalAlignment="right" />
         </cell>
         <cell>
-          <DataSelector source="PersonFirstName" relSource="CustomerPerson" relView="CompanyPersons"
-            relColumn="FirstName" />
+          <DataSelector source="CustomerPerson" />
         </cell>
         <cell>
           <Label html="Vadybininkas:" horizontalAlignment="right" />
         </cell>
         <cell>
-          <DataSelector source="ManagerFirstName" relSource="Manager" relView="Users"
-            relColumn="FirstName" />
+          <DataSelector source="Manager" />
         </cell>
       </row>
     </FlexTable>

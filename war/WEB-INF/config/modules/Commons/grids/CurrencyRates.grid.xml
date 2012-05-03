@@ -7,6 +7,6 @@
     <DataColumn name="Date" source="Date" caption="Data" />
     <DataColumn name="Quantity" source="Quantity" caption="Kiekis" />
     <DataColumn name="Rate" source="Rate" caption="Kursas" />
-    <DataColumn name="BaseCurrency" source="BaseCurrencyName" caption="Valiuta" />
+    <RelColumn name="BaseCurrency" caption="Valiuta" />
   </columns>
 </Grid>

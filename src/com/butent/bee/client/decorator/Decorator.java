@@ -24,6 +24,7 @@ import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.utils.XmlHelper;
 
 import java.util.List;
 import java.util.Map;
@@ -585,10 +586,10 @@ class Decorator implements HasEnabled, HasExtendedInfo {
       return element;
     }
     
-    List<Element> children = DomUtils.getElementsByAttributeValue(element, BeeConst.ATTR_XMLNS,
+    List<Element> children = DomUtils.getElementsByAttributeValue(element, XmlHelper.ATTR_XMLNS,
         DecoratorConstants.NAMESPACE, content, content);
     for (Element child : children) {
-      child.removeAttribute(BeeConst.ATTR_XMLNS);
+      child.removeAttribute(XmlHelper.ATTR_XMLNS);
     }
     
     return element;

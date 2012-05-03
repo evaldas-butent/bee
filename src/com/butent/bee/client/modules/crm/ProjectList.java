@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.crm;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -196,8 +197,8 @@ public class ProjectList {
 
     @Override
     public Map<String, Filter> getInitialFilters() {
-      Filter filter = Filter.or(getEventFilter(ProjectEvent.CREATED),
-          getEventFilter(ProjectEvent.ACTIVATED), getEventFilter(ProjectEvent.SUSPENDED));
+      Filter filter = Filter.or(Lists.newArrayList(getEventFilter(ProjectEvent.CREATED),
+          getEventFilter(ProjectEvent.ACTIVATED), getEventFilter(ProjectEvent.SUSPENDED)));
       Map<String, Filter> filters = Maps.newHashMap();
       filters.put(FILTER_KEY, filter);
       return filters;

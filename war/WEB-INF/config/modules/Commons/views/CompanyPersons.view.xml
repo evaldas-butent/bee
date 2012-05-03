@@ -14,16 +14,6 @@
     <SimpleJoin name="Person" joinType="LEFT">
       <SimpleColumn name="FirstName" />
       <SimpleColumn name="LastName" />
-      <SimpleColumn name="PersonName">
-        <xpr:concat>
-          <xpr:string>"FirstName"</xpr:string>
-          <xpr:string>' '</xpr:string>
-          <xpr:nvl type="STRING">
-            <xpr:string>"LastName"</xpr:string>
-            <xpr:string>''</xpr:string>
-          </xpr:nvl>
-        </xpr:concat>
-      </SimpleColumn>
     </SimpleJoin>
     <SimpleJoin name="Contact" joinType="LEFT">
       <SimpleColumn name="Phone" />

@@ -2,10 +2,6 @@ package com.butent.bee.client.menu;
 
 import com.butent.bee.client.dialog.Popup;
 
-/**
- * Implements a menu element in style of {@code BeePopupPanel}.
- */
-
 public class MenuPopup extends Popup {
 
   private static final String STYLENAME_DEFAULT = "bee-MenuPopup";
@@ -16,7 +12,7 @@ public class MenuPopup extends Popup {
   public MenuPopup(MenuBar bar, MenuItem item) {
     super(true, false);
     setStyleName(STYLENAME_DEFAULT);
-    addStyleDependentName(item.getSubMenu().getDefaultItemType().toString().toLowerCase());
+    addStyleDependentName(item.getSubMenu().getItemType().name().toLowerCase());
 
     this.parentMenu = bar;
     this.parentItem = item;

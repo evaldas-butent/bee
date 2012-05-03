@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -46,7 +45,7 @@ public class MessageBoxes {
     boolean ok = false;
 
     if (source != null) {
-      PopupPanel p = DomUtils.parentPopup(source);
+      Popup p = DomUtils.getParentPopup(source);
       if (p != null) {
         p.hide();
         ok = true;
@@ -79,9 +78,9 @@ public class MessageBoxes {
     Assert.isPositive(count);
     Assert.notNull(command);
     
-    final PopupPanel panel;
+    final Popup panel;
     if (BeeUtils.isEmpty(caption)) {
-      panel = new Popup();
+      panel = new Popup(true);
     } else {
       panel = new DialogBox(caption);
     }
@@ -219,7 +218,7 @@ public class MessageBoxes {
       grid.getFlexCellFormatter().setColSpan(index, 0, c);
     }
 
-    Popup box = new Popup();
+    Popup box = new Popup(true);
     box.setAnimationEnabled(true);
 
     box.setWidget(grid);
@@ -239,7 +238,7 @@ public class MessageBoxes {
   public void showWidget(Widget widget) {
     Assert.notNull(widget);
 
-    Popup box = new Popup();
+    Popup box = new Popup(true);
     box.setAnimationEnabled(true);
 
     box.setWidget(widget);
@@ -276,7 +275,7 @@ public class MessageBoxes {
       vp.add(bottom);
     }
 
-    Popup popup = new Popup();
+    Popup popup = new Popup(true);
     popup.setAnimationEnabled(true);
 
     popup.setWidget(vp);

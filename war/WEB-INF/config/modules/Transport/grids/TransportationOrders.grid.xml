@@ -21,7 +21,7 @@
     <DataColumn name="Customer" source="CustomerName" caption="Užsakovas" />
     <DataColumn name="Payer" source="PayerName" caption="Mokėtojas" />
     <CalcColumn name="Manager" type="string" caption="Vadybininkas"
-      sortBy="ManagerFirstName, ManagerLastName" searchBy="ManagerFirstName, ManagerLastName">
+      sortBy="ManagerFirstName ManagerLastName" searchBy="ManagerFirstName ManagerLastName">
       <render>
         <ui:function>return (row.ManagerFirstName || "") + " " + (row.ManagerLastName || "")</ui:function>
       </render>

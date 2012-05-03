@@ -3,10 +3,13 @@ package com.butent.bee.client.render;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.HasValueStartIndex;
+import com.butent.bee.shared.ui.PotentialRenderer;
 import com.butent.bee.shared.ui.RendererDescription;
 import com.butent.bee.shared.ui.RendererType;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -31,7 +34,8 @@ public class RendererFactory {
   }
 
   public static AbstractCellRenderer createRenderer(RendererDescription description,
-      String itemKey, List<? extends IsColumn> dataColumns, int dataIndex) {
+      String itemKey, List<String> renderColumns, List<? extends IsColumn> dataColumns,
+      int dataIndex) {
     Assert.notNull(description);
     RendererType type = description.getType();
     Assert.notNull(type);
@@ -66,8 +70,7 @@ public class RendererFactory {
         break;
 
       case JOIN:
-        renderer = new JoinRenderer(dataColumns, description.getSeparator(),
-            description.getOptions());
+        renderer = new JoinRenderer(dataColumns, description.getSeparator(), renderColumns);
         break;
     }
 
@@ -81,10 +84,22 @@ public class RendererFactory {
     return renderer;
   }
 
+  public static AbstractCellRenderer getRenderer(PotentialRenderer potentialRenderer,
+      String itemKey, List<String> renderColumns, List<? extends IsColumn> dataColumns,
+      int dataIndex) {
+    RendererDescription description = (potentialRenderer instanceof RendererDescription)
+        ? (RendererDescription) potentialRenderer : null;
+    Calculation calculation = (potentialRenderer instanceof Calculation)
+        ? (Calculation) potentialRenderer : null;
+    
+    return getRenderer(description, calculation, itemKey, renderColumns, dataColumns, dataIndex);
+  }
+  
   public static AbstractCellRenderer getRenderer(RendererDescription description,
-      Calculation calculation, String itemKey, List<? extends IsColumn> dataColumns, int dataIndex) {
+      Calculation calculation, String itemKey, List<String> renderColumns,
+      List<? extends IsColumn> dataColumns, int dataIndex) {
     if (description != null) {
-      return createRenderer(description, itemKey, dataColumns, dataIndex);
+      return createRenderer(description, itemKey, renderColumns, dataColumns, dataIndex);
 
     } else if (calculation != null) {
       return createRenderer(calculation, dataColumns, dataIndex);
@@ -92,6 +107,17 @@ public class RendererFactory {
     } else if (!BeeUtils.isEmpty(itemKey)) {
       Assert.isIndex(dataColumns, dataIndex);
       return new EnumRenderer(dataIndex, dataColumns.get(dataIndex), itemKey);
+    
+    } else if (!BeeUtils.isEmpty(renderColumns)) {
+      if (renderColumns.size() == 1) {
+        int index = DataUtils.getColumnIndex(renderColumns.get(0), dataColumns);
+        if (BeeConst.isUndef(index)) {
+          index = dataIndex;
+        }
+        return new SimpleRenderer(index, dataColumns.get(index));
+      } else {
+        return new JoinRenderer(dataColumns, null, renderColumns);
+      }
 
     } else {
       return null;

@@ -8,18 +8,10 @@
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="10" style="width:100%">
       <row>
-        <cell>
-          <Label html="Vardas" />
-        </cell>
-        <cell>
-          <InputText style="width:100%" source="FirstName" />
-        </cell>
-        <cell>
-          <Label html="Pavardė" horizontalAlignment="right" />
-        </cell>
-        <cell>
-          <InputText style="width:100%" source="LastName" />
-        </cell>
+        <Label html="Vardas" />
+        <InputText style="width:100%" source="FirstName" />
+        <Label html="Pavardė" horizontalAlignment="right" />
+        <InputText style="width:100%" source="LastName" />
       </row>
       <row>
         <cell colSpan="4">

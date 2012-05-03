@@ -29,13 +29,7 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
     }
     
     private String getValue(IsRow row) {
-      if (row.isNull(index)) {
-        return null;
-      } else if (ValueType.isString(type)) {
-        return row.getString(index);
-      } else {
-        return row.getValue(index, type).toString();
-      }
+      return DataUtils.getValue(row, index, type);
     }
   }
   
@@ -47,7 +41,7 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
 
   private final String separator;
 
-  public JoinRenderer(List<? extends IsColumn> dataColumns, String sep, String options) {
+  public JoinRenderer(List<? extends IsColumn> dataColumns, String sep, List<String> items) {
     super();
     this.dataColumns = dataColumns;
     
@@ -59,10 +53,8 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
       this.separator = DEFAULT_SEPARATOR;
     }
     
-    if (!BeeUtils.isEmpty(options)) {
-      for (String item : NameUtils.NAME_SPLITTER.split(options)) {
-        addItem(item);
-      }
+    if (!BeeUtils.isEmpty(items)) {
+      addItems(items);
     }
   }
 

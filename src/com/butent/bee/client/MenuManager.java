@@ -10,7 +10,6 @@ import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.menu.MenuDataProvider;
-import com.butent.bee.client.menu.MenuItem;
 import com.butent.bee.client.menu.MenuSelectionHandler;
 import com.butent.bee.client.menu.MenuSeparator;
 import com.butent.bee.client.menu.MenuTreeViewModel;
@@ -24,6 +23,8 @@ import com.butent.bee.client.widget.BeeCellList;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.menu.MenuConstants;
+import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
+import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
 import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.menu.MenuUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -357,9 +358,9 @@ public class MenuManager implements Module {
     Widget w = null;
 
     if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_HOR)) {
-      w = new MenuBar(level, false, getBarType(false), MenuItem.ITEM_TYPE.LABEL, opt);
+      w = new MenuBar(level, false, getBarType(false), ITEM_TYPE.LABEL, opt);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_VERT)) {
-      w = new MenuBar(level, true, getBarType(opt), MenuItem.ITEM_TYPE.LABEL, opt);
+      w = new MenuBar(level, true, getBarType(opt), ITEM_TYPE.LABEL, opt);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_STACK)) {
       w = new Stack(Unit.PX);
@@ -378,23 +379,23 @@ public class MenuManager implements Module {
           new MenuDataProvider(getItems())), null);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_LIST)) {
-      w = new MenuBar(level, true, MenuBar.BAR_TYPE.LIST, MenuItem.ITEM_TYPE.OPTION, opt);
+      w = new MenuBar(level, true, BAR_TYPE.LIST, ITEM_TYPE.OPTION, opt);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_ORDERED_LIST)) {
-      w = new MenuBar(level, true, MenuBar.BAR_TYPE.OLIST, MenuItem.ITEM_TYPE.LI, opt);
+      w = new MenuBar(level, true, BAR_TYPE.OLIST, ITEM_TYPE.LI, opt);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_UNORDERED_LIST)) {
-      w = new MenuBar(level, true, MenuBar.BAR_TYPE.ULIST, MenuItem.ITEM_TYPE.LI, opt);
+      w = new MenuBar(level, true, BAR_TYPE.ULIST, ITEM_TYPE.LI, opt);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_DEFINITION_LIST)) {
-      w = new MenuBar(level, true, MenuBar.BAR_TYPE.DLIST, MenuItem.ITEM_TYPE.DT, opt);
+      w = new MenuBar(level, true, BAR_TYPE.DLIST, ITEM_TYPE.DT, opt);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_RADIO_HOR)) {
-      w = new MenuBar(level, false, getBarType(opt), MenuItem.ITEM_TYPE.RADIO, opt);
+      w = new MenuBar(level, false, getBarType(opt), ITEM_TYPE.RADIO, opt);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_RADIO_VERT)) {
-      w = new MenuBar(level, true, getBarType(opt), MenuItem.ITEM_TYPE.RADIO, opt);
+      w = new MenuBar(level, true, getBarType(opt), ITEM_TYPE.RADIO, opt);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_BUTTONS_HOR)) {
-      w = new MenuBar(level, false, getBarType(opt), MenuItem.ITEM_TYPE.BUTTON, opt);
+      w = new MenuBar(level, false, getBarType(opt), ITEM_TYPE.BUTTON, opt);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_BUTTONS_VERT)) {
-      w = new MenuBar(level, true, getBarType(opt), MenuItem.ITEM_TYPE.BUTTON, opt);
+      w = new MenuBar(level, true, getBarType(opt), ITEM_TYPE.BUTTON, opt);
 
     } else {
       Assert.untouchable();
@@ -403,8 +404,8 @@ public class MenuManager implements Module {
     return w;
   }
 
-  private MenuBar.BAR_TYPE getBarType(boolean opt) {
-    return opt ? MenuBar.BAR_TYPE.TABLE : MenuBar.BAR_TYPE.FLOW;
+  private BAR_TYPE getBarType(boolean opt) {
+    return opt ? BAR_TYPE.TABLE : BAR_TYPE.FLOW;
   }
 
   private int getItemCount() {

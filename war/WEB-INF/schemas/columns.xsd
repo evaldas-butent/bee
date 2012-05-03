@@ -14,6 +14,7 @@
   <xs:complexType name="columnList">
     <xs:choice minOccurs="1" maxOccurs="unbounded">
       <xs:element name="DataColumn" type="dataColumn" />
+      <xs:element name="RelColumn" type="relatedColumn" />
       <xs:element name="CalcColumn" type="calculatedColumn" />
       <xs:element name="IdColumn" type="column" />
       <xs:element name="VerColumn" type="column" />
@@ -44,8 +45,9 @@
     <xs:attribute name="hasFooter" type="xs:boolean" default="true" />
     <xs:attribute name="showWidth" type="xs:boolean" />
     <xs:attribute name="cell" type="ui:cellType" />
-    <xs:attribute name="sortBy" type="xs:normalizedString" />
-    <xs:attribute name="searchBy" type="xs:normalizedString" />
+    <xs:attribute name="renderColumns" type="type:nameList" />
+    <xs:attribute name="sortBy" type="type:nameList" />
+    <xs:attribute name="searchBy" type="type:nameList" />
     <xs:attribute name="options" type="xs:normalizedString" />
   </xs:complexType>
 
@@ -61,6 +63,7 @@
         <xs:attribute name="source" type="type:nameType" />
         <xs:attribute name="required" type="xs:boolean" />
         <xs:attribute name="itemKey" type="xs:normalizedString" />
+        <xs:attribute name="updateMode" type="ui:refreshType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -74,6 +77,20 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <xs:complexType name="relatedColumn">
+    <xs:complexContent>
+      <xs:extension base="baseColumn">
+        <xs:sequence>
+          <xs:group ref="ui:selector" minOccurs="0" maxOccurs="1" />
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="selectorColumn" type="ui:selectorColumn" />
+          </xs:choice>
+        </xs:sequence>
+        <xs:attributeGroup ref="ui:relation" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+   
   <xs:complexType name="calculatedColumn">
     <xs:complexContent>
       <xs:extension base="column">

@@ -11,10 +11,12 @@ import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.data.HasDataRow;
+import com.butent.bee.client.data.RelationUtils;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.ui.WidgetDescription;
@@ -24,6 +26,7 @@ import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.validation.CellValidationBus;
 import com.butent.bee.client.validation.HasCellValidationHandlers;
 import com.butent.bee.client.validation.ValidationHelper;
+import com.butent.bee.client.view.form.DisplayWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -32,21 +35,23 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.ActiveWidgetChangeEvent;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.RefreshType;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
 public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String>, FocusHandler,
-    BlurHandler, EditStopEvent.Handler, HasCellValidationHandlers {
+    BlurHandler, EditStopEvent.Handler, HasCellValidationHandlers, EditEndEvent.HasEditEndHandler {
 
   private final int dataIndex;
   private final BeeColumn dataColumn;
-  private final RelationInfo relationInfo;
 
   private final WidgetDescription widgetDescription;
+  private final DisplayWidget displayWidget;
 
   private final Evaluator editable;
   private final Evaluator validation;
@@ -66,15 +71,16 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   private Editor editor = null;
   private FormView form = null;
 
-  public EditableWidget(List<BeeColumn> dataColumns, int dataIndex, RelationInfo relationInfo,
-      WidgetDescription widgetDescription) {
+  public EditableWidget(List<BeeColumn> dataColumns, int dataIndex,
+      WidgetDescription widgetDescription, DisplayWidget displayWidget) {
     Assert.isIndex(dataColumns, dataIndex);
     Assert.notNull(widgetDescription);
 
     this.dataIndex = dataIndex;
     this.dataColumn = dataColumns.get(dataIndex);
-    this.relationInfo = relationInfo;
+
     this.widgetDescription = widgetDescription;
+    this.displayWidget = displayWidget;
 
     String source = this.dataColumn.getId();
     this.editable = Evaluator.create(widgetDescription.getEditable(), source, dataColumns);
@@ -199,7 +205,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   }
 
   public BeeColumn getColumnForUpdate() {
-    return isForeign() ? getRelationInfo().getDataColumn() : getDataColumn();
+    return getDataColumn();
   }
 
   public String getColumnId() {
@@ -223,15 +229,19 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   }
 
   public int getIndexForUpdate() {
-    return isForeign() ? getRelationInfo().getDataIndex() : getDataIndex();
+    return getDataIndex();
   }
 
-  public RelationInfo getRelationInfo() {
-    return relationInfo;
+  public Relation getRelation() {
+    return getWidgetDescription().getRelation();
   }
 
   public boolean getRowModeForUpdate() {
-    return isForeign();
+    if (getUpdateMode() == null) {
+      return hasRelation();
+    } else {
+      return RefreshType.ROW.equals(getUpdateMode());
+    }
   }
 
   public ValueType getTypeForUpdate() {
@@ -249,6 +259,14 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   @Override
   public int hashCode() {
     return getWidgetDescription().hashCode();
+  }
+
+  public boolean hasRelation() {
+    return getRelation() != null;
+  }
+
+  public boolean isDisplay() {
+    return getDisplayWidget() != null;
   }
 
   public boolean isEditable(IsRow row) {
@@ -271,15 +289,9 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return false;
   }
 
-  public boolean isForeign() {
-    return getRelationInfo() != null;
-  }
-
   public boolean isNullable() {
     if (isRequired()) {
       return false;
-    } else if (isForeign()) {
-      return getRelationInfo().isNullable();
     } else if (getDataColumn() != null) {
       return getDataColumn().isNullable();
     } else {
@@ -291,26 +303,71 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return readOnly;
   }
 
+  public boolean maybeUpdateRelation(String viewName, IsRow row, boolean updateColumn) {
+    boolean ok = false;
+    if (!BeeUtils.isEmpty(viewName) && row != null && getEditor() instanceof HasDataRow
+        && getRelation() != null) {
+      ok = RelationUtils.updateRow(viewName, getColumnId(), row, getRelation().getViewName(),
+          ((HasDataRow) getEditor()).getRow(), updateColumn) > 0;
+    }
+    return ok;
+  }
+
   public void onBlur(BlurEvent event) {
     getEditor().setEditing(false);
     getForm().onActiveWidgetChange(new ActiveWidgetChangeEvent(getWidgetId(), false));
   }
 
   public void onEditStop(EditStopEvent event) {
-    if (event.isFinished()) {
+    if (event.isChanged()) {
       update(KeyCodes.KEY_TAB, false);
+
     } else if (event.isError()) {
       if (getForm() != null) {
         getForm().notifySevere(event.getMessage());
       }
+
     } else if (event.isCanceled()) {
       reset();
+
+    } else if (event.isClosed()) {
+      reset();
+      end(event.getKeyCode(), event.hasModifiers());
     }
   }
 
   public void onFocus(FocusEvent event) {
     getEditor().setEditing(true);
     getForm().onActiveWidgetChange(new ActiveWidgetChangeEvent(getWidgetId(), true));
+    
+    if (event.getSource() instanceof HasTextBox) {
+      TextBoxBase widget = ((HasTextBox) event.getSource()).getTextBox();
+      String value = widget.getText();
+      if (BeeUtils.isEmpty(value)) {
+        return;
+      }
+
+      EditorAction action = getWidgetDescription().getOnFocus();
+      if (action == null) {
+        action = ((Editor) widget).getDefaultFocusAction();
+        if (action == null) {
+          return;
+        }
+      }
+
+      switch (action) {
+        case END:
+          widget.setCursorPos(value.length());
+          break;
+        case HOME:
+          widget.setCursorPos(0);
+          break;
+        case SELECT:
+          widget.selectAll();
+          break;
+        default:
+      }
+    }
   }
 
   public void onKeyDown(KeyDownEvent event) {
@@ -343,7 +400,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     }
   }
 
-  public void setValue(IsRow row) {
+  public void refresh(IsRow row) {
     if (getEditor() != null) {
       String value;
       if (row == null) {
@@ -351,19 +408,10 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       } else {
         value = BeeUtils.trimRight(row.getString(getDataIndex()));
       }
-
       getEditor().setValue(value);
 
-      if (isForeign()) {
-        if (row == null) {
-          value = null;
-        } else {
-          value = row.getString(getRelationInfo().getDataIndex());
-        }
-
-        if (getEditor() instanceof DataSelector) {
-          ((DataSelector) getEditor()).setSelectedValue(value);
-        }
+      if (isDisplay()) {
+        getDisplayWidget().refresh((Widget) getEditor(), row);
       }
     }
   }
@@ -378,8 +426,18 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return validate(oldValue, newValue, force);
   }
 
+  private void end(Integer keyCode, boolean hasModifiers) {
+    if (getEditEndHandler() != null) {
+      getEditEndHandler().onEditEnd(new EditEndEvent(keyCode, hasModifiers, getWidgetId()), this);
+    }
+  }
+
   private Evaluator getCarry() {
     return carry;
+  }
+
+  private DisplayWidget getDisplayWidget() {
+    return displayWidget;
   }
 
   private Evaluator getEditable() {
@@ -416,6 +474,10 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return getForm().getRow();
   }
 
+  private RefreshType getUpdateMode() {
+    return getWidgetDescription().getUpdateMode();
+  }
+
   private Evaluator getValidation() {
     return validation;
   }
@@ -433,7 +495,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   }
 
   private void reset() {
-    setValue(getRowValue());
+    refresh(getRowValue());
   }
 
   private void setEditEndHandler(EditEndEvent.Handler editEndHandler) {
@@ -466,7 +528,8 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
 
     if (getEditEndHandler() != null) {
       getEditEndHandler().onEditEnd(new EditEndEvent(getRowValue(), getColumnForUpdate(),
-          oldValue, newValue, getRowModeForUpdate(), keyCode, hasModifiers, getWidgetId()));
+          oldValue, newValue, getRowModeForUpdate(), hasRelation(), keyCode, hasModifiers,
+          getWidgetId()), this);
     }
     return true;
   }

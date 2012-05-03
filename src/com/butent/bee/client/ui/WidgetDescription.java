@@ -4,7 +4,11 @@ import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
+import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.RefreshType;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.RendererDescription;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -17,19 +21,12 @@ public class WidgetDescription implements HasInfo {
 
   private static final String ATTR_PARENT = "parent";
 
-  private static final String ATTR_CAPTION = "caption";
-  private static final String ATTR_READ_ONLY = "readOnly";
-
-  private static final String ATTR_SOURCE = "source";
-
   private static final String ATTR_MIN_VALUE = "minValue";
   private static final String ATTR_MAX_VALUE = "maxValue";
   private static final String ATTR_REQUIRED = "required";
 
-  private static final String ATTR_REL_SOURCE = "relSource";
-  private static final String ATTR_REL_VIEW = "relView";
-  private static final String ATTR_REL_COLUMN = "relColumn";
-
+  private static final String ATTR_ON_FOCUS = "onFocus";
+  
   private final FormWidget widgetType;
   private final String widgetId;
   private final String widgetName;
@@ -39,18 +36,16 @@ public class WidgetDescription implements HasInfo {
   private Collection<ConditionalStyleDeclaration> dynStyles = null;
 
   private String source = null;
+  private Relation relation = null;
 
   private RendererDescription rendererDescription = null;
   private Calculation render = null;
+  private String renderColumns = null;
   private String itemKey = null;
 
   private String caption = null;
   private Boolean readOnly = null;
   
-  private String relSource = null;
-  private String relView = null;
-  private String relColumn = null;
-
   private Calculation validation = null;
   private Calculation editable = null;
   private Calculation carry = null;
@@ -61,6 +56,9 @@ public class WidgetDescription implements HasInfo {
   private Boolean nullable = null;
   
   private boolean disablable = false;
+  
+  private EditorAction onFocus = null;
+  private RefreshType updateMode = null;
   
   public WidgetDescription(FormWidget widgetType, String widgetId, String widgetName) {
     this.widgetType = widgetType;
@@ -102,15 +100,19 @@ public class WidgetDescription implements HasInfo {
         "Caption", getCaption(),
         "Read Only", getReadOnly(),
         "Source", getSource(),
-        "Rel Source", getRelSource(),
-        "Rel View", getRelView(),
-        "Rel Column", getRelColumn(),
         "Min Value", getMinValue(),
         "Max Value", getMaxValue(),
         "Required", getRequired(),
         "Nullable", getNullable(),
-        "Item Key", getItemKey());
+        "Render Columns", getRenderColumns(),
+        "Item Key", getItemKey(),
+        "On Focus", getOnFocus(),
+        "Update Mode", getUpdateMode());
 
+    if (getRelation() != null) {
+      PropertyUtils.appendChildrenToProperties(info, "Relation", getRelation().getInfo());
+    }
+    
     if (getValidation() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Validation", getValidation().getInfo());
     }
@@ -161,6 +163,10 @@ public class WidgetDescription implements HasInfo {
     return nullable;
   }
 
+  public EditorAction getOnFocus() {
+    return onFocus;
+  }
+
   public String getParentName() {
     return parentName;
   }
@@ -168,23 +174,19 @@ public class WidgetDescription implements HasInfo {
   public Boolean getReadOnly() {
     return readOnly;
   }
-
-  public String getRelColumn() {
-    return relColumn;
-  }
-
-  public String getRelSource() {
-    return relSource;
-  }
-
-  public String getRelView() {
-    return relView;
+  
+  public Relation getRelation() {
+    return relation;
   }
 
   public Calculation getRender() {
     return render;
   }
-  
+
+  public String getRenderColumns() {
+    return renderColumns;
+  }
+
   public RendererDescription getRendererDescription() {
     return rendererDescription;
   }
@@ -195,6 +197,10 @@ public class WidgetDescription implements HasInfo {
 
   public String getSource() {
     return source;
+  }
+
+  public RefreshType getUpdateMode() {
+    return updateMode;
   }
 
   public Calculation getValidation() {
@@ -237,11 +243,11 @@ public class WidgetDescription implements HasInfo {
       if (BeeUtils.same(key, ATTR_PARENT)) {
         setParentName(value.trim());
 
-      } else if (BeeUtils.same(key, ATTR_CAPTION)) {
+      } else if (BeeUtils.same(key, UiConstants.ATTR_CAPTION)) {
         setCaption(value.trim());
-      } else if (BeeUtils.same(key, ATTR_READ_ONLY)) {
+      } else if (BeeUtils.same(key, UiConstants.ATTR_READ_ONLY)) {
         setReadOnly(BeeUtils.toBooleanOrNull(value));
-      } else if (BeeUtils.same(key, ATTR_SOURCE)) {
+      } else if (BeeUtils.same(key, UiConstants.ATTR_SOURCE)) {
         setSource(value.trim());
 
       } else if (BeeUtils.same(key, ATTR_MIN_VALUE)) {
@@ -251,15 +257,15 @@ public class WidgetDescription implements HasInfo {
       } else if (BeeUtils.same(key, ATTR_REQUIRED)) {
         setRequired(BeeUtils.toBooleanOrNull(value));
 
-      } else if (BeeUtils.same(key, ATTR_REL_SOURCE)) {
-        setRelSource(value.trim());
-      } else if (BeeUtils.same(key, ATTR_REL_VIEW)) {
-        setRelView(value.trim());
-      } else if (BeeUtils.same(key, ATTR_REL_COLUMN)) {
-        setRelColumn(value.trim());
-
+      } else if (BeeUtils.same(key, RendererDescription.ATTR_RENDER_COLUMNS)) {
+        setRenderColumns(value.trim());
       } else if (BeeUtils.same(key, HasItems.ATTR_ITEM_KEY)) {
         setItemKey(value.trim());
+
+      } else if (BeeUtils.same(key, ATTR_ON_FOCUS)) {
+        setOnFocus(EditorAction.getByCode(value));
+      } else if (BeeUtils.same(key, RefreshType.ATTR_UPDATE_MODE)) {
+        setUpdateMode(RefreshType.getByCode(value));
       }
     }
   }
@@ -300,6 +306,10 @@ public class WidgetDescription implements HasInfo {
     this.nullable = nullable;
   }
 
+  public void setOnFocus(EditorAction onFocus) {
+    this.onFocus = onFocus;
+  }
+
   public void setParentName(String parentName) {
     this.parentName = parentName;
   }
@@ -308,20 +318,16 @@ public class WidgetDescription implements HasInfo {
     this.readOnly = readOnly;
   }
 
-  public void setRelColumn(String relColumn) {
-    this.relColumn = relColumn;
-  }
-
-  public void setRelSource(String relSource) {
-    this.relSource = relSource;
-  }
-
-  public void setRelView(String relView) {
-    this.relView = relView;
+  public void setRelation(Relation relation) {
+    this.relation = relation;
   }
 
   public void setRender(Calculation render) {
     this.render = render;
+  }
+
+  public void setRenderColumns(String renderColumns) {
+    this.renderColumns = renderColumns;
   }
 
   public void setRendererDescription(RendererDescription rendererDescription) {
@@ -334,6 +340,10 @@ public class WidgetDescription implements HasInfo {
 
   public void setSource(String source) {
     this.source = source;
+  }
+
+  public void setUpdateMode(RefreshType updateMode) {
+    this.updateMode = updateMode;
   }
 
   public void setValidation(Calculation validation) {

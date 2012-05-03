@@ -310,11 +310,6 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     }
     Queries.getRowSet(source, null, flt, null, new RowSetCallback() {
       @Override
-      public void onFailure(String[] reason) {
-        BeeKeeper.getScreen().notifySevere(reason);
-      }
-
-      @Override
       public void onSuccess(BeeRowSet result) {
         if (evaluator == null) {
           dataColumns = result.getColumns();

@@ -226,7 +226,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     getExtWidgets().clear();
     if (gridDescription.hasWidgets()) {
       for (String xml : gridDescription.getWidgets()) {
-        ExtWidget extWidget = createExtWidget(xml, gridCallback);
+        ExtWidget extWidget = createExtWidget(xml, gridDescription.getViewName(), dataColumns,
+            gridCallback);
         if (extWidget != null) {
           getExtWidgets().add(extWidget);
         }
@@ -513,7 +514,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
   }
 
-  private ExtWidget createExtWidget(String xml, GridCallback gridCallback) {
+  private ExtWidget createExtWidget(String xml, String viewName, List<BeeColumn> dataColumns,
+      GridCallback gridCallback) {
     Document doc = XmlUtils.parse(xml);
     if (doc == null) {
       return null;
@@ -544,8 +546,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (getExtCreation() == null) {
       setExtCreation(new WidgetCreationCallback());
     }
-    Widget widget = FormFactory.createWidget(root, null, getExtCreation(), gridCallback,
-        "create ext widget:");
+    Widget widget = FormFactory.createWidget(root, viewName, dataColumns, getExtCreation(),
+        gridCallback, "create ext widget:");
     if (widget == null) {
       return null;
     }

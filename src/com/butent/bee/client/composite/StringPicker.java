@@ -163,6 +163,10 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     return this;
   }
 
+  public EditorAction getDefaultFocusAction() {
+    return null;
+  }
+  
   public String getId() {
     return DomUtils.getId(this);
   }
@@ -298,7 +302,8 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     }
   }
 
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry,
+      Element sourceElement) {
     String v;
 
     if (selectByChar(charCode, BeeConst.UNDEF)) {

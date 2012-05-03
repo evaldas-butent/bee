@@ -1,5 +1,6 @@
 package com.butent.bee.client.composite;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
@@ -8,6 +9,7 @@ import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.TextBoxBase;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
@@ -17,6 +19,7 @@ import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
+import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.State;
@@ -28,7 +31,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements a component used for making changes to multiple lines of text.
  */
 
-public class TextEditor extends Absolute implements Editor, HasTextDimensions {
+public class TextEditor extends Absolute implements Editor, HasTextDimensions, HasTextBox {
 
   private final InputArea area;
   private final String acceptId;
@@ -79,6 +82,10 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions {
     return getArea().getCharacterWidth();
   }
 
+  public EditorAction getDefaultFocusAction() {
+    return getArea().getDefaultFocusAction();
+  }
+  
   @Override
   public String getIdPrefix() {
     return "text-editor";
@@ -92,6 +99,10 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions {
     return getArea().getTabIndex();
   }
 
+  public TextBoxBase getTextBox() {
+    return getArea();
+  }
+  
   public String getValue() {
     return getArea().getValue();
   }
@@ -174,8 +185,9 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions {
     getArea().setVisibleLines(lines);
   }
 
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
-    getArea().startEdit(oldValue, charCode, onEntry);
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry,
+      Element sourceElement) {
+    getArea().startEdit(oldValue, charCode, onEntry, sourceElement);
   }
 
   public String validate() {

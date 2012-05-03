@@ -1,4 +1,4 @@
-body,select {
+body, select {
   font-family: Arial, sans-serif;
   font-size: small;
 }
@@ -166,10 +166,11 @@ body,select {
   height: 25px;
   color: #6D6D6D;
   font: 13px/25px Arial;
-  background: #F2F2F2;
+  background-color: #F2F2F2;
   padding: 0 10px;
   border: 1px solid #E4E4E4;
   border-radius: 2px;
+  cursor: pointer;
 }
 .bee-MainCommandPanelItem:hover {
   border: 1px solid #BEBEBE;
@@ -199,6 +200,7 @@ body,select {
   overflow: hidden;
   position: absolute;
   right: 0px;
+  cursor: pointer;
 }
 .bee-UserExit {
   position: absolute;
@@ -221,12 +223,12 @@ body,select {
 }
 
 .bee-HSplitter {
-  background: #e2dfdf;
+  background-color: #e2dfdf;
   cursor: col-resize;
 }
 
 .bee-VSplitter {
-  background: #e2dfdf;
+  background-color: #e2dfdf;
   cursor: row-resize;
 }
 
@@ -269,21 +271,19 @@ body,select {
 .bee-MenuRoot-flow.bee-MenuRoot-horizontal .bee-MenuItem-label:hover,
 .bee-MenuRoot-flow.bee-MenuRoot-horizontal .bee-MenuItem-selected {
   border-bottom: 5px solid #FD6268;
-  outline: none !important;
 }
 
 .bee-MenuPopup {
   max-width: 95%;
-  background: white;
+  background-color: white;
   border: 1px solid #e7e7e7;
   box-shadow: 6px 6px 5px DarkGray;
-  -webkit-box-shadow: 6px 6px 5px DarkGray;
-  -moz-box-shadow: 6px 6px 5px DarkGray;
 }
 
 .bee-MenuItem-label {
-  padding-left: 0.5em;
-  padding-right: 0.5em;
+  padding-left: 1em;
+  padding-right: 1em;
+  cursor: pointer;
 }
 
 .bee-MenuPopup .bee-MenuItem-label {
@@ -293,7 +293,6 @@ body,select {
 
 .bee-MenuPopup .bee-MenuItem-label.bee-MenuItem-selected {
   color: #636363;
-  outline: none !important;
 }   
 
 .bee-MenuItem-dt {
@@ -304,10 +303,6 @@ body,select {
   color: green;
   font-size: medium;
   font-weight: bold;
-}
-
-.bee-MenuItem-selected {
-  outline: red solid 1px;
 }
 
 .bee-MenuBar-horizontal table {
@@ -323,7 +318,7 @@ body,select {
 
 .bee-MenuBar-vertical .bee-MenuItemSeparator {
   height: 1px;
-  background: #e7e7e7;
+  background-color: #e7e7e7;
 }
 
 .bee-MenuBar-level-1 ul {
@@ -343,10 +338,10 @@ body,select {
 }
 
 .bee-Button:focus {
-  background: LightCyan;
+  background-color: LightCyan;
 }
 
-.bee-LayoutContainer>.bee-InputArea {
+.bee-LayoutContainer > .bee-InputArea {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -356,7 +351,7 @@ body,select {
   -ms-box-sizing: border-box;
 }
 
-.bee-LayoutContainer>.bee-InputText {
+.bee-LayoutContainer > .bee-InputText {
   width: 100%;
   margin: 0;
   box-sizing: border-box;
@@ -365,13 +360,13 @@ body,select {
   -ms-box-sizing: border-box;
 }
 
-.bee-LayoutContainer>.bee-Button {
+.bee-LayoutContainer > .bee-Button {
   width: 100%;
 }
 
 .bee-LogSeparator {
   height: 1px;
-  background: MidnightBlue;
+  background-color: MidnightBlue;
 }
 
 .bee-LogRecord-info {
@@ -401,12 +396,12 @@ body,select {
 }
 
 .bee-ScrollTable .headerWrapper {
-  background: #381C1B;
+  background-color: #381C1B;
 }
 
 .bee-ScrollTable .footerWrapper {
   border-top: 1px solid #aaa;
-  background: #2C1514;
+  background-color: #2C1514;
 }
 
 .bee-ScrollTable .dataTable td,.bee-ScrollTable .headerTable td,.bee-ScrollTable .footerTable td {
@@ -422,23 +417,23 @@ body,select {
 }
 
 .bee-ScrollTable .dataTable tr:nth-child(odd) {
-  background: #ffffdd;
+  background-color: #ffffdd;
 }
 
 .bee-ScrollTable .dataTable tr:nth-child(even) {
-  background: #eeeeee;
+  background-color: #eeeeee;
 }
 
 .bee-ScrollTable .dataTable tr:hover {
-  background: #c3d9ff;
+  background-color: #c3d9ff;
 }
 
 .bee-ScrollTable .dataTable td:hover {
-  background: #ffffaa;
+  background-color: #ffffaa;
 }
 
 .bee-ScrollTable .dataTable tr.selected td {
-  background: #7aa5d6;
+  background-color: #7aa5d6;
 }
 
 .bee-InputInteger,.bee-InputLong,.bee-InputNumber {
@@ -450,26 +445,26 @@ body,select {
 }
 
 .bee-InputSpinner:hover {
-  background: LightCyan;
+  background-color: LightCyan;
 }
 
 .bee-configPanel {
-  background: #ddd;
+  background-color: #ddd;
   border: 1px solid LightGrey;
 }
 
 .bee-dndSource {
   color: white;
-  background: purple;
+  background-color: purple;
 }
 
 .bee-dndOver {
   color: blue;
-  background: pink;
+  background-color: pink;
 }
 
 .bee-dropArea {
-  background: white;
+  background-color: white;
   border: 2px dashed #bbb;
   text-align: center;
   padding-top: 4ex;
@@ -481,7 +476,7 @@ body,select {
   color: #bbb;
 }
 
-.bee-dropArea>div {
+.bee-dropArea > div {
   visibility: hidden;
 }
 
@@ -506,11 +501,11 @@ body,select {
 }
 
 .bee-ProgressBar-shell {
-  background: Snow;
+  background-color: Snow;
 }
 
 .bee-ProgressBar-bar {
-  background: SpringGreen;
+  background-color: SpringGreen;
 }
 
 .bee-ProgressBar-text {
@@ -550,7 +545,7 @@ body,select {
   top: 14px;
   width: 1px;
   height: 8px;
-  background: black;
+  background-color: black;
   overflow: hidden;
 }
 
@@ -561,10 +556,10 @@ body,select {
 }
 
 .bee-Popup {
-  border: 3px solid activeborder;
-  border-radius: 12px;
+  border: 2px solid activeborder;
+  border-radius: 6px;
   padding: 5px;
-  background: #eee;
+  background-color: #eee;
 }
 
 .bee-Popup-glass {
@@ -860,7 +855,7 @@ body,select {
 }
 
 .bee-StringPicker-item:hover {
-  background: LightCyan;
+  background-color: LightCyan;
 }
 
 .bee-StringPicker-selected {
@@ -914,41 +909,30 @@ body,select {
 }
 
 .bee-DataSelector-embedded {
-  width: 200px;
-  height: 23px;
-}
-
-.bee-DataSelector-input {
-  left: 2px;
-  background-color: inherit;
-  border-style: none;
-}
-
-.bee-DataSelector-embedded-input {
-  left: 2px;
-  top: 1px;
-  margin: 0px;
-  font-style: italic;
-}
-
-.bee-DataSelector-type {
-  font-size: medium;
-}
-
-.bee-DataSelector-limit,.bee-DataSelector-embedded-limit {
-  width: 36px;
-  background-color: inherit;
-  border-style: none;
-  outline-style: none;
+  background-color: #ffc;
 }
 
 .bee-DataSelector-popup {
-  background: #eee;
-  border: 1px solid LightGrey;
-  box-shadow: 6px 6px 5px DarkGray;
-  -webkit-box-shadow: 6px 6px 5px DarkGray;
-  -moz-box-shadow: 6px 6px 5px DarkGray;
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+
+.bee-DataSelector-item {
+  color: #333;
+}
+.bee-DataSelector-menu .bee-MenuItem-selected {
+  color: #DD4B39;
+  font-weight: bolder;
+}
+.bee-DataSelector-item:hover {
+  background-color: #eee;
+}
+
+.bee-DataSelector-content {
+  padding-left: 7px;
+  padding-right: 3px;
+} 
 
 .bee-DataSelector-navigationCell {
   text-align: center;
@@ -973,11 +957,11 @@ body,select {
 }
 
 .bee-RowEditor tr:nth-child(odd) {
-  background: #ffe;
+  background-color: #ffe;
 }
 
 .bee-RowEditor tr:nth-child(even) {
-  background: #f3f7fb;
+  background-color: #f3f7fb;
 }
 
 .bee-RowEditor tr:first-of-type {
@@ -985,7 +969,7 @@ body,select {
 }
 
 .bee-RowEditor tr:last-of-type {
-  background: #eee;
+  background-color: #eee;
 }
 
 .bee-RowEditorLabel {
@@ -1241,7 +1225,6 @@ body,select {
   margin-left: 4px;
   padding: 4px 8px 4px 8px;
   cursor: pointer;
-  cursor: hand;
   background-color: whiteSmoke;
   color: #444;
   font-weight: normal;
@@ -1285,13 +1268,14 @@ body,select {
   height: 25px;
   color: #6D6D6D;
   font: 13px/25px Arial;
-  background: #F2F2F2;
+  background-color: #F2F2F2;
   border-top-left-radius: 20px 50px;
   border-top-right-radius: 20px 50px;
   border-style: solid;
   border-color: #E4E4E4;
   border-width: 1px 1px 0px;
   padding: 0 10px;
+  cursor: pointer;
 }
 
 .bee-TabbedPages-tabSelected {
@@ -1299,24 +1283,32 @@ body,select {
   border-color: #BEBEBE;
   position: relative;
   z-index: 1;
+  cursor: default;
 }
 
 .bee-TabbedPages-content {
   overflow: auto;
 }
 
-.gwt-SplitLayoutPanel-HDragger {
-  background: #f6cef5;
-  cursor: col-resize;
-}
-
-.gwt-StackLayoutPanel .gwt-StackLayoutPanelHeader {
-  cursor: hand;
+.bee-StackHeader {
+  cursor: pointer;
   padding-left: 5px;
-  border-top: 1px solid #bbb;
-  background-color: #e4e4e4;
+  border-top: 1px solid #E4E4E4;
+  color: #6D6D6D;
+  background-color: #F2F2F2;
+  font: 13px Arial;
+}
+.bee-StackHeader:hover {
+  border-style: solid;
+  border-color: #BEBEBE;
+  border-width: 1px 0px;
 }
 
-.gwt-StackLayoutPanel .gwt-StackLayoutPanelContent {
+.bee-StackContent {
   padding: 2px;
+}
+
+.gwt-SplitLayoutPanel-HDragger {
+  background-color: #f6cef5;
+  cursor: col-resize;
 }

@@ -47,6 +47,8 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   boolean containsColumn(String columnId);
 
+  boolean containsRow(long rowId);
+  
   IsTable<RowType, ColType> create();
 
   ColType createColumn(ValueType type, String label, String id);
@@ -93,8 +95,8 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   void removeRow(int rowIndex);
   
-  void removeRowById(long rowId);
-
+  boolean removeRowById(long rowId);
+  
   void removeRows(int rowIndex, int rowCount);
 
   void setCell(int rowIndex, int colIndex, IsCell cell);
@@ -154,5 +156,5 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   void sortByRowId(boolean ascending);
   
-  void updateRow(RowType row);  
+  boolean updateRow(RowType row);  
 }

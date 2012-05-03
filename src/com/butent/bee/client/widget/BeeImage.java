@@ -1,9 +1,9 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.safehtml.shared.SafeUri;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Image;
@@ -18,7 +18,7 @@ import com.butent.bee.shared.HasId;
  */
 public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
 
-  private Command command = null;
+  private Scheduler.ScheduledCommand command = null;
   private boolean enabled = true;
   private String styleDisabled = null;
 
@@ -47,17 +47,17 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
     init();
   }
 
-  public BeeImage(Command cmnd) {
+  public BeeImage(Scheduler.ScheduledCommand cmnd) {
     this();
     initCommand(cmnd);
   }
 
-  public BeeImage(ImageResource resource, Command cmnd) {
+  public BeeImage(ImageResource resource, Scheduler.ScheduledCommand cmnd) {
     this(resource);
     initCommand(cmnd);
   }
 
-  public BeeImage(ImageResource resource, Command cmnd, String styleDisabled) {
+  public BeeImage(ImageResource resource, Scheduler.ScheduledCommand cmnd, String styleDisabled) {
     this(resource);
     initCommand(cmnd);
     this.styleDisabled = styleDisabled;
@@ -68,12 +68,12 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
     init();
   }
 
-  public BeeImage(SafeUri url, Command cmnd) {
+  public BeeImage(SafeUri url, Scheduler.ScheduledCommand cmnd) {
     this(url);
     initCommand(cmnd);
   }
   
-  public Command getCommand() {
+  public Scheduler.ScheduledCommand getCommand() {
     return command;
   }
 
@@ -99,7 +99,7 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
     }
   }
 
-  public void setCommand(Command command) {
+  public void setCommand(Scheduler.ScheduledCommand command) {
     this.command = command;
   }
 
@@ -127,7 +127,7 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
     setStyleName("bee-Image");
   }
 
-  private void initCommand(Command cmnd) {
+  private void initCommand(Scheduler.ScheduledCommand cmnd) {
     if (cmnd != null) {
       setCommand(cmnd);
       sinkEvents(Event.ONCLICK);

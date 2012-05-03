@@ -21,7 +21,6 @@ import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -271,8 +270,8 @@ public class InputBoxes {
     addCommandGroup(dialog, panel, confirmHtml, cancelHtml, initializer, state, errorDisplay,
         errorSupplier);
 
-    dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
-      public void onClose(CloseEvent<PopupPanel> event) {
+    dialog.addCloseHandler(new CloseHandler<Popup>() {
+      public void onClose(CloseEvent<Popup> event) {
         if (timer != null) {
           timer.cancel();
         }
@@ -474,8 +473,8 @@ public class InputBoxes {
       }
     });
 
-    dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
-      public void onClose(CloseEvent<PopupPanel> event) {
+    dialog.addCloseHandler(new CloseHandler<Popup>() {
+      public void onClose(CloseEvent<Popup> event) {
         if (timer != null) {
           timer.cancel();
         }
@@ -505,7 +504,7 @@ public class InputBoxes {
     }
   }
 
-  private boolean addCommandGroup(final PopupPanel dialog, HasWidgets panel, String confirmHtml,
+  private boolean addCommandGroup(final Popup dialog, HasWidgets panel, String confirmHtml,
       String cancelHtml, WidgetInitializer initializer, final Holder<State> state,
       final Holder<Widget> errorDisplay, final Supplier<String> errorSupplier) {
     if (BeeUtils.allEmpty(confirmHtml, cancelHtml)) {
@@ -554,7 +553,7 @@ public class InputBoxes {
     return true;
   }
 
-  private Timer createTimer(final PopupPanel dialog, final Holder<State> state) {
+  private Timer createTimer(final Popup dialog, final Holder<State> state) {
     return new Timer() {
       @Override
       public void run() {

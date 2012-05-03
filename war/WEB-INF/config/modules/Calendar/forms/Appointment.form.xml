@@ -7,8 +7,7 @@
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="5">
       <row>
-        <DataSelector source="TypeName" relSource="AppointmentType" relView="AppointmentTypes" relColumn="Name"
-          caption="Tipas:" />
+        <DataSelector source="AppointmentType" caption="Tipas:" />
         <InputText source="Summary" caption="Pavadinimas:" />
       </row>
       <row>  
@@ -17,10 +16,8 @@
       </row>
 
       <row>
-        <DataSelector source="ColorName" relSource="Color" relView="Colors" relColumn="Name"
-          caption="Spalva:" />
-        <DataSelector source="StyleName" relSource="Style" relView="AppointmentStyles"
-          relColumn="Name" caption="Stilius:" />
+        <DataSelector source="Color" caption="Spalva:" />
+        <DataSelector source="Style" caption="Stilius:" />
         <ListBox source="Status" itemKey="AppointmentStatus" decorator="caption-left"
           caption="Būsena:" />
       </row>

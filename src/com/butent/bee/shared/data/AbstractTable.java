@@ -195,6 +195,10 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return getColumnIndex(columnId) >= 0;
   }
 
+  public boolean containsRow(long rowId) {
+    return getRowById(rowId) != null;
+  }
+
   public abstract IsTable<RowType, ColType> create();
 
   public abstract ColType createColumn(ValueType type, String label, String id);
@@ -540,8 +544,14 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   public abstract void removeRow(int rowIndex);
 
-  public void removeRowById(long rowId) {
-    removeRow(getRowIndex(rowId));
+  public boolean removeRowById(long rowId) {
+    int rowIndex = getRowIndex(rowId);
+    if (BeeConst.isUndef(rowIndex)) {
+      return false;
+    } else {
+      removeRow(rowIndex);
+      return true;
+    }
   }
 
   public void removeRows(int rowIndex, int rowCount) {
@@ -701,9 +711,18 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return sb.toString();
   }
 
-  public void updateRow(RowType row) {
-    Assert.notNull(row);
-    getRows().set(getRowIndex(row.getId()), row);
+  public boolean updateRow(RowType row) {
+    if (row == null) {
+      return false;
+    }
+
+    int rowIndex = getRowIndex(row.getId());
+    if (BeeConst.isUndef(rowIndex)) {
+      return false;
+    } else {
+      getRows().set(rowIndex, row);
+      return true;
+    }
   }
 
   protected void assertColumnIndex(int colIndex) {

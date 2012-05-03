@@ -1,18 +1,16 @@
 package com.butent.bee.client.composite;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
-import com.google.gwt.event.dom.client.HandlesAllKeyEvents;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.MouseWheelEvent;
 import com.google.gwt.event.dom.client.MouseWheelHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
@@ -20,66 +18,197 @@ import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.json.client.JSONObject;
-import com.google.gwt.json.client.JSONValue;
-import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.data.HasDataRow;
 import com.butent.bee.client.data.SelectionOracle;
 import com.butent.bee.client.data.SelectionOracle.Callback;
 import com.butent.bee.client.data.SelectionOracle.Request;
 import com.butent.bee.client.data.SelectionOracle.Response;
-import com.butent.bee.client.data.SelectionOracle.SelectionColumn;
 import com.butent.bee.client.data.SelectionOracle.Suggestion;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.menu.MenuItem;
-import com.butent.bee.client.utils.JsonUtils;
+import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.RendererFactory;
+import com.butent.bee.client.render.SimpleRenderer;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.widget.InlineLabel;
-import com.butent.bee.client.widget.InputSpinner;
+import com.butent.bee.client.view.edit.EditorFactory;
+import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.data.cache.CachingPolicy;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.data.view.RelationInfo;
+import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.menu.MenuConstants;
+import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
+import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
 import com.butent.bee.shared.ui.EditorAction;
-import com.butent.bee.shared.ui.HasTextDimensions;
+import com.butent.bee.shared.ui.HasVisibleLines;
+import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.SelectorColumn;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Enables using user interface component for entering text entries while the system is suggesting
  * possible matching values from the list.
  */
 
-public class DataSelector extends Complex implements Editor, HasTextDimensions {
+public class DataSelector extends Composite implements Editor, HasVisibleLines, HasDataRow,
+    HasTextBox {
+
+  private class InputEvents implements MouseWheelHandler {
+
+    private boolean consumed = false;
+
+    public void onMouseWheel(MouseWheelEvent event) {
+      if (!isEnabled() || !isActive() || !getSelector().isShowing()) {
+        return;
+      }
+
+      int y = event.getDeltaY();
+      if (y > 0) {
+        nextOffset();
+      } else if (y < 0) {
+        prevOffset();
+      }
+    }
+
+    private void consume() {
+      setConsumed(true);
+    }
+
+    private boolean isConsumed() {
+      return consumed;
+    }
+
+    private void onKeyDown(Event event) {
+      if (!isEnabled() || !isActive()) {
+        setConsumed(false);
+        return;
+      }
+
+      int keyCode = event.getKeyCode();
+      boolean hasModifiers = EventUtils.hasModifierKey(event);
+
+      switch (keyCode) {
+        case KeyCodes.KEY_DOWN:
+          consume();
+          if (hasModifiers && hasMore()) {
+            nextOffset();
+          } else {
+            getSelector().moveSelectionDown();
+          }
+          break;
+
+        case KeyCodes.KEY_UP:
+          consume();
+          if (hasModifiers && getOffset() > 0) {
+            prevOffset();
+          } else {
+            getSelector().moveSelectionUp();
+          }
+          break;
+
+        case KeyCodes.KEY_PAGEDOWN:
+          consume();
+          if (hasMore()) {
+            nextPage();
+          } else {
+            getSelector().selectLast();
+          }
+          break;
+
+        case KeyCodes.KEY_PAGEUP:
+          consume();
+          if (getOffset() > 0) {
+            prevPage();
+          } else {
+            getSelector().selectFirst();
+          }
+          break;
+
+        case KeyCodes.KEY_ESCAPE:
+          consume();
+          if (getSelector().isItemSelected()) {
+            getSelector().cancelSelection();
+          } else {
+            exit(true, State.CANCELED);
+          }
+          break;
+
+        case KeyCodes.KEY_ENTER:
+          consume();
+          if (getSelector().isShowing()) {
+            getSelector().handleKeyboardSelection(isInstant(), hasModifiers);
+          } else if (BeeUtils.isEmpty(getDisplayValue())) {
+            askOracle();
+          }
+          break;
+
+        case KeyCodes.KEY_TAB:
+          consume();
+          exit(true, State.CLOSED, keyCode, hasModifiers);
+          break;
+
+        default:
+          setConsumed(false);
+      }
+    }
+
+    private void onKeyUp(Event event) {
+      if (!isEnabled() || isConsumed() || !isActive()) {
+        return;
+      }
+      int keyCode = event.getKeyCode();
+
+      if (isInstant() || keyCode == KeyCodes.KEY_ENTER) {
+        consume();
+        askOracle();
+      }
+    }
+
+    private void setConsumed(boolean consumed) {
+      this.consumed = consumed;
+    }
+  }
 
   /**
    * Handles suggestion display.
    */
 
-  private class Display {
+  private class Selector {
 
     private final MenuBar menu;
     private final Popup popup;
 
-    private Boolean pendingSelection = null;
-    private boolean ready = false;
+    private MenuItem itemPrev = null;
+    private MenuItem itemNext = null;
 
-    private Display(UIObject partner) {
-      this.menu = new MenuBar(0, true);
+    private Boolean pendingSelection = null;
+
+    private Selector(ITEM_TYPE itemType, UIObject partner) {
+      this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true, BAR_TYPE.TABLE, itemType);
+
       menu.addStyleName(getStyle(STYLE_MENU));
 
       this.popup = new Popup(true, false);
@@ -87,29 +216,50 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
       popup.setWidget(menu);
 
       popup.addAutoHidePartner(partner.getElement());
-      popup.addCloseHandler(new CloseHandler<PopupPanel>() {
-        public void onClose(CloseEvent<PopupPanel> event) {
+      popup.addCloseHandler(new CloseHandler<Popup>() {
+        public void onClose(CloseEvent<Popup> event) {
           if (event.isAutoClosed()) {
             getMenu().clearItems();
-            exit(false);
+            exit(false, State.CANCELED);
           }
         }
       });
     }
 
-    private void addClassToCell(MenuItem item, String className) {
-      if (item == null || BeeUtils.isEmpty(className)) {
-        return;
-      }
-
-      Element parent = item.getElement().getParentElement();
-      if (DomUtils.isTableCellElement(parent)) {
-        parent.addClassName(className);
-      }
-    }
-
     private void cancelSelection() {
       getMenu().selectItem(null);
+    }
+
+    private MenuItem createNavigationItem(boolean next) {
+      MenuCommand command;
+      if (next) {
+        command = new MenuCommand() {
+          @Override
+          public void execute() {
+            nextPage();
+          }
+        };
+      } else {
+        command = new MenuCommand() {
+          @Override
+          public void execute() {
+            prevPage();
+          }
+        };
+      }
+
+      MenuItem item = new MenuItem(menu, next ? ITEM_NEXT : ITEM_PREV, ITEM_TYPE.LABEL, command);
+      item.addStyleName(getStyle(STYLE_NAVIGATION));
+
+      return item;
+    }
+
+    private MenuItem getItemNext() {
+      return itemNext;
+    }
+
+    private MenuItem getItemPrev() {
+      return itemPrev;
     }
 
     private MenuBar getMenu() {
@@ -131,10 +281,11 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
       if (!instant && !hasModifiers) {
         return false;
       }
+
       MenuItem item = getMenu().getSelectedItem();
       if (item == null && (hasModifiers || instant && getMenu().getItemCount() == 1)) {
         for (MenuItem it : getMenu().getItems()) {
-          if (it instanceof SuggestionItem) {
+          if (!isNavigationItem(it)) {
             item = it;
             break;
           }
@@ -144,8 +295,8 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
         return false;
       }
 
-      if (item instanceof NavigationItem) {
-        setPendingSelection(!((NavigationItem) item).isNext());
+      if (isNavigationItem(item)) {
+        setPendingSelection(item == getItemPrev());
       }
       item.getCommand().execute();
       return true;
@@ -153,6 +304,13 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
 
     private void hide() {
       getPopup().hide();
+    }
+
+    private void initNavigationItem(MenuItem item) {
+      addClassToCell(item, getStyle(STYLE_NAVIGATION_CELL));
+      if (isTableMode() && getColumnCount() > 1) {
+        DomUtils.setColSpan(DomUtils.getParentCell(item, true), getColumnCount());
+      }
     }
 
     private boolean isItemSelected() {
@@ -163,8 +321,8 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
       }
     }
 
-    private boolean isReady() {
-      return ready;
+    private boolean isNavigationItem(MenuItem item) {
+      return item == getItemPrev() || item == getItemNext();
     }
 
     private boolean isShowing() {
@@ -183,24 +341,28 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
       }
     }
 
-    private boolean selectCurrentSugestion() {
-      if (!isShowing()) {
-        return false;
+    private void selectFirst() {
+      if (isShowing()) {
+        getMenu().selectFirstItem();
       }
-      MenuItem item = getMenu().getSelectedItem();
-      if (item instanceof SuggestionItem) {
-        item.getCommand().execute();
-        return true;
+    }
+
+    private void selectLast() {
+      if (isShowing()) {
+        getMenu().selectLastItem();
       }
-      return false;
+    }
+
+    private void setItemNext(MenuItem itemNext) {
+      this.itemNext = itemNext;
+    }
+
+    private void setItemPrev(MenuItem itemPrev) {
+      this.itemPrev = itemPrev;
     }
 
     private void setPendingSelection(Boolean pendingSelection) {
       this.pendingSelection = pendingSelection;
-    }
-
-    private void setReady(boolean ready) {
-      this.ready = ready;
     }
 
     private void showSuggestions(Response response, UIObject target) {
@@ -211,395 +373,161 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
       }
 
       getMenu().clearItems();
-      MenuItem prev = null;
-      MenuItem next = null;
+
       if (getOffset() > 0) {
-        prev = getMenu().addItem(new NavigationItem(getMenu(), false));
-        addClassToCell(prev, getStyle(STYLE_NAVIGATION_CELL));
+        if (getItemPrev() == null) {
+          setItemPrev(createNavigationItem(false));
+        }
+        getMenu().addItem(getItemPrev());
+        initNavigationItem(getItemPrev());
       }
+
       for (Suggestion suggestion : suggestions) {
-        MenuItem item = getMenu().addItem(new SuggestionItem(getMenu(), suggestion));
-        addClassToCell(item, getStyle(STYLE_ITEM_CELL));
+        addItem(getMenu(), suggestion.getRow());
       }
+
       if (response.hasMoreSuggestions()) {
-        next = getMenu().addItem(new NavigationItem(getMenu(), true));
-        addClassToCell(next, getStyle(STYLE_NAVIGATION_CELL));
+        if (getItemNext() == null) {
+          setItemNext(createNavigationItem(true));
+        }
+        getMenu().addItem(getItemNext());
+        initNavigationItem(getItemNext());
       }
 
       if (getPendingSelection() != null) {
-        MenuItem item = getPendingSelection() ? next : prev;
+        MenuItem item = getPendingSelection() ? getItemNext() : getItemPrev();
         if (item != null) {
           getMenu().selectItem(item);
         }
         setPendingSelection(null);
       }
-      
-      if (!isReady()) {
-        setReady(true);
-      }
+
       getPopup().showRelativeTo(target);
-    }
-
-    private void start() {
-      setReady(false);
-    }
-  }
-
-  private class InputEvents extends HandlesAllKeyEvents implements MouseWheelHandler {
-
-    public void onKeyDown(KeyDownEvent event) {
-      if (!isEnabled()) {
-        return;
-      }
-
-      int keyCode = event.getNativeKeyCode();
-      boolean hasModifiers = EventUtils.hasModifierKey(event.getNativeEvent());
-
-      if (isEmbedded() && !getDisplay().isShowing()) {
-        if (keyCode == KeyCodes.KEY_DELETE && hasModifiers && isNullable()) {
-          event.preventDefault();
-          setValue(BeeConst.STRING_EMPTY);
-          setSelectedValue(null);
-        }
-        return;
-      }
-
-      switch (keyCode) {
-        case KeyCodes.KEY_DOWN:
-          event.preventDefault();
-          if (hasModifiers && hasMore()) {
-            nextOffset();
-          } else {
-            getDisplay().moveSelectionDown();
-          }
-          break;
-
-        case KeyCodes.KEY_UP:
-          event.preventDefault();
-          if (hasModifiers && getOffset() > 0) {
-            prevOffset();
-          } else {
-            getDisplay().moveSelectionUp();
-          }
-          break;
-
-        case KeyCodes.KEY_PAGEDOWN:
-          if (hasMore()) {
-            event.preventDefault();
-            nextPage();
-          }
-          break;
-
-        case KeyCodes.KEY_PAGEUP:
-          if (getOffset() > 0) {
-            event.preventDefault();
-            prevPage();
-          }
-          break;
-
-        case KeyCodes.KEY_ESCAPE:
-          event.preventDefault();
-          if (getDisplay().isItemSelected()) {
-            getDisplay().cancelSelection();
-          } else {
-            exit(true);
-          }
-          break;
-
-        case KeyCodes.KEY_ENTER:
-          if (getDisplay().handleKeyboardSelection(isInstant(), hasModifiers)) {
-            event.preventDefault();
-            event.stopPropagation();
-          }
-          break;
-
-        case KeyCodes.KEY_TAB:
-          event.preventDefault();
-          if (!getDisplay().selectCurrentSugestion()) {
-            exit(true);
-          }
-          break;
-          
-        case 113:
-          event.preventDefault();
-          getOracle().rotateCaching();
-          setLastRequest(null);
-          askOracle();
-      }
-    }
-
-    public void onKeyPress(KeyPressEvent event) {
-    }
-
-    public void onKeyUp(KeyUpEvent event) {
-      if (!isEnabled()) {
-        return;
-      }
-      int keyCode = event.getNativeKeyCode();
-
-      if (isEmbedded() && !getDisplay().isShowing()) {
-        if (BeeUtils.inList(keyCode, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN, KeyCodes.KEY_TAB,
-            KeyCodes.KEY_ESCAPE)) {
-          return;
-        }
-        if (keyCode == KeyCodes.KEY_ENTER && isInstant()) {
-          return;
-        }
-      }
-
-      if (isInstant() || keyCode == KeyCodes.KEY_ENTER) {
-        askOracle();
-      }
-    }
-
-    public void onMouseWheel(MouseWheelEvent event) {
-      if (!isEnabled()) {
-        return;
-      }
-      int y = event.getDeltaY();
-      if (y > 0) {
-        nextOffset();
-      } else if (y < 0) {
-        prevOffset();
-      }
-    }
-  }
-
-  private class LimitEvents implements ValueChangeHandler<String> {
-    public void onValueChange(ValueChangeEvent<String> event) {
-      if (isEnabled()) {
-        askOracle();
-      }
-    }
-  }
-
-  private class NavigationItem extends MenuItem {
-
-    final boolean next;
-
-    private NavigationItem(MenuBar parent, boolean next) {
-      super(parent, next ? ITEM_NEXT : ITEM_PREV);
-      this.next = next;
-
-      setCommand(new MenuCommand() {
-        @Override
-        public void execute() {
-          if (isNext()) {
-            nextPage();
-          } else {
-            prevPage();
-          }
-        }
-      });
-      addStyleName(getStyle(STYLE_NAVIGATION));
-    }
-
-    private boolean isNext() {
-      return next;
-    }
-  }
-
-  private class SearchTypeEvents implements ClickHandler {
-    public void onClick(ClickEvent event) {
-      if (!isEnabled()) {
-        return;
-      }
-      Operator[] constants = Operator.class.getEnumConstants();
-      Operator oldType = getSearchType();
-      int index = -1;
-      int start = 0;
-
-      if (oldType != null) {
-        start = oldType.ordinal() + 1;
-      }
-      for (int i = start; i < constants.length; i++) {
-        if (!BeeUtils.isEmpty(constants[i].toTextString())) {
-          index = i;
-          break;
-        }
-      }
-      setSearchType(index < 0 ? null : constants[index]);
-
-      if (event.getSource() instanceof UIObject) {
-        ((UIObject) event.getSource()).getElement().setInnerHTML(getSearchSymbol());
-      }
-      askOracle();
-      getInput().setFocus(true);
-    }
-  }
-
-  private class SuggestionItem extends MenuItem {
-
-    private final long rowId;
-    private final String relValue;
-
-    private SuggestionItem(MenuBar parent, Suggestion suggestion) {
-      super(parent, suggestion.getDisplayString());
-      this.rowId = suggestion.getRowId();
-      this.relValue = suggestion.getRelValue();
-
-      MenuCommand menuCommand = new MenuCommand() {
-        @Override
-        public void execute() {
-          setSelection(getRowId(), getRelValue());
-        }
-      };
-      setCommand(menuCommand);
-      addStyleName(getStyle(STYLE_ITEM));
-    }
-
-    private String getRelValue() {
-      return relValue;
-    }
-
-    private long getRowId() {
-      return rowId;
     }
   }
 
   private static final String ITEM_PREV = String.valueOf('\u25b2');
-
   private static final String ITEM_NEXT = String.valueOf('\u25bc');
 
   private static final String STYLE_SELECTOR = "bee-DataSelector";
   private static final String STYLE_EMBEDDED = "embedded";
 
-  private static final String STYLE_INPUT = "input";
-  private static final String STYLE_TYPE = "type";
-  private static final String STYLE_LIMIT = "limit";
-
   private static final String STYLE_POPUP = "popup";
   private static final String STYLE_MENU = "menu";
+
+  private static final String STYLE_TABLE = "table";
+  private static final String STYLE_ROW = "row";
+  private static final String STYLE_CELL = "cell";
+
+  private static final String STYLE_CONTENT = "content";
   private static final String STYLE_ITEM = "item";
-  private static final String STYLE_ITEM_CELL = "itemCell";
+
   private static final String STYLE_NAVIGATION = "navigation";
   private static final String STYLE_NAVIGATION_CELL = "navigationCell";
 
   private static final int DEFAULT_VISIBLE_LINES = 10;
-  private static final int DEFAULT_CHARACTER_WIDTH = -1;
 
   private static final Operator DEFAULT_SEARCH_TYPE = Operator.CONTAINS;
-
-  private static final CachingPolicy DEFAULT_CACHING_POLICY = CachingPolicy.FULL;
-  private static final int DEFAULT_CACHING_THRESHOLD = 1000;
-
-  private static final String OPTION_SHOW_LIMIT = "showLimit";
-  private static final String OPTION_SEARCH_TYPE = "searchType";
-  private static final String OPTION_CACHING = "caching";
-  private static final String OPTION_COLUMNS = "columns";
 
   private final Callback callback = new Callback() {
     public void onSuggestionsReady(Request request, Response response) {
       if (isEditing()) {
         setHasMore(response.hasMoreSuggestions());
-        getDisplay().showSuggestions(response, DataSelector.this);
+        getSelector().showSuggestions(response, DataSelector.this);
       }
     }
   };
 
-  private int characterWidth = DEFAULT_CHARACTER_WIDTH;
   private int visibleLines = DEFAULT_VISIBLE_LINES;
 
-  private Operator searchType = DEFAULT_SEARCH_TYPE;
-
-  private CachingPolicy cachingPolicy = DEFAULT_CACHING_POLICY;
-  private int cachingThreshold = DEFAULT_CACHING_THRESHOLD;
-
   private final SelectionOracle oracle;
+  private final Operator searchType;
 
-  private final Display display;
   private final InputText input;
-  private final InputSpinner limitWidget;
+  private final Selector selector;
+
+  private final List<String> choiceColumns = Lists.newArrayList();
+  private final Map<Integer, SelectorColumn> selectorColumns = Maps.newHashMap();
+
+  private final boolean tableMode;
+
+  private final AbstractCellRenderer rowRenderer;
+  private final Map<Integer, AbstractCellRenderer> cellRenderers = Maps.newHashMap();
 
   private final InputEvents inputEvents = new InputEvents();
-  private final SearchTypeEvents typeEvents = new SearchTypeEvents();
-  private final LimitEvents limitEvents = new LimitEvents();
 
-  private final RelationInfo relationInfo;
-
-  private final List<SelectionColumn> columns = Lists.newArrayList();
-  
   private final boolean embedded;
 
-  private String selectedValue = null;
+  private boolean active = false;
+
+  private BeeRow selectedRow = null;
+  private String editorValue = null;
 
   private Request lastRequest = null;
   private int offset = 0;
   private boolean hasMore = false;
-  
-  public DataSelector(RelationInfo relationInfo, boolean embedded) {
-    this(relationInfo, embedded, null);
-  }
-  
-  public DataSelector(RelationInfo relationInfo, boolean embedded, JSONObject options) {
-    super(embedded ? Position.RELATIVE : Position.ABSOLUTE);
 
-    this.relationInfo = relationInfo;
+  public DataSelector(Relation relation, boolean embedded) {
+    super();
+
     this.embedded = embedded;
 
-    boolean showLimit = false;
-    if (options != null) {
-      initOptions(options);
-      showLimit = !JsonUtils.isEmpty(options.get(OPTION_SHOW_LIMIT));
-    }
+    DataInfo viewInfo = Global.getDataInfo(relation.getViewName(), true);
+    this.oracle = new SelectionOracle(relation, viewInfo);
+    this.searchType =
+        (relation.getOperator() == null) ? DEFAULT_SEARCH_TYPE : relation.getOperator();
 
-    this.oracle = createOracle();
+    ITEM_TYPE itemType = relation.getItemType();
 
     this.input = new InputText();
-    this.display = new Display(this);
+    this.selector = new Selector(itemType, this.input);
 
-    input.addStyleName(getStyle(embedded, STYLE_INPUT));
-    add(input);
-
-    InlineLabel label = new InlineLabel(getSearchSymbol());
-    label.addStyleName(getStyle(embedded, STYLE_TYPE));
-    add(label);
-
-    int right = 2;
-
-    if (showLimit) {
-      this.limitWidget = new InputSpinner(DEFAULT_VISIBLE_LINES, 1, 99);
-      limitWidget.addStyleName(getStyle(embedded, STYLE_LIMIT));
-      add(limitWidget);
-
-      StyleUtils.makeAbsolute(limitWidget);
-      StyleUtils.setRight(limitWidget, right);
-      right += 40;
-
-      limitWidget.addValueChangeHandler(limitEvents);
-    } else {
-      this.limitWidget = null;
+    this.choiceColumns.addAll(relation.getChoiceColumns());
+    for (SelectorColumn selectorColumn : relation.getSelectorColumns()) {
+      int index = this.choiceColumns.indexOf(selectorColumn.getSource());
+      if (index >= 0) {
+        this.selectorColumns.put(index, selectorColumn);
+      }
     }
 
-    StyleUtils.makeAbsolute(label);
-    StyleUtils.setRight(label, right);
+    this.tableMode = ITEM_TYPE.ROW.equals(itemType) || !selectorColumns.isEmpty()
+        || itemType == null && choiceColumns.size() > 1 && !relation.hasRowRenderer();
 
-    StyleUtils.makeAbsolute(input);
-    StyleUtils.setRight(input, right + 16);
+    this.rowRenderer = RendererFactory.getRenderer(relation.getRowRendererDescription(),
+        relation.getRowRender(), null, choiceColumns, viewInfo.getColumns(), BeeConst.UNDEF);
 
-    setStyleName(getStyle(embedded, null));
+    if (tableMode) {
+      initCellRenderers(viewInfo);
+      getSelector().getMenu().addStyleName(getStyle(STYLE_TABLE));
+    }
 
-    inputEvents.addKeyHandlersTo(input);
-    input.addMouseWheelHandler(inputEvents);
+    if (BeeUtils.isPositive(relation.getVisibleLines())) {
+      setVisibleLines(relation.getVisibleLines());
+    }
 
-    label.addClickHandler(typeEvents);
-    
+    input.addStyleName(STYLE_SELECTOR);
     if (embedded) {
-      getDisplay().start();
-      setEditing(true);
+      input.addStyleName(getStyle(STYLE_EMBEDDED));
     }
+
+    initWidget(input);
+
+    input.addMouseWheelHandler(inputEvents);
+    Binder.addMouseWheelHandler(selector.getMenu(), inputEvents);
+
+    sinkEvents(Event.ONBLUR | Event.ONCLICK | Event.KEYEVENTS);
   }
 
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
-    return getInput().addBlurHandler(handler);
+    return addDomHandler(handler, BlurEvent.getType());
   }
 
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
-  
+
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
-    return getInput().addFocusHandler(handler);
+    return addDomHandler(handler, FocusEvent.getType());
   }
 
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
@@ -610,52 +538,52 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     return addHandler(handler, ValueChangeEvent.getType());
   }
 
-  public Callback getCallback() {
-    return callback;
+  public EditorAction getDefaultFocusAction() {
+    return EditorAction.SELECT;
   }
 
-  public int getCharacterWidth() {
-    return characterWidth;
+  public String getId() {
+    return DomUtils.getId(this);
   }
 
-  public Display getDisplay() {
-    return display;
-  }
-
-  @Override
   public String getIdPrefix() {
     return "selector";
   }
 
   public String getNormalizedValue() {
-    return getSelectedValue();
+    return getEditorValue();
+  }
+
+  public IsRow getRow() {
+    return selectedRow;
   }
 
   public int getTabIndex() {
     return getInput().getTabIndex();
   }
 
+  public TextBoxBase getTextBox() {
+    return getInput();
+  }
+
   public String getValue() {
-    return getSelectedValue();
+    return getEditorValue();
   }
 
   public int getVisibleLines() {
-    if (getLimitWidget() == null) {
-      return visibleLines;
-    }
-    return getLimitWidget().getIntValue();
+    return visibleLines;
   }
 
   public boolean handlesKey(int keyCode) {
-    if (isEmbedded()) {
-      return getDisplay().isShowing() || keyCode == KeyCodes.KEY_ENTER && !isInstant();
-    } else {
-      return true;
-    }
+    return isActive();
   }
 
   public boolean isEditing() {
     return getInput().isEditing();
+  }
+
+  public boolean isEmbedded() {
+    return embedded;
   }
 
   public boolean isEnabled() {
@@ -666,12 +594,92 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     return getInput().isNullable();
   }
 
+  @Override
+  public void onBrowserEvent(Event event) {
+    boolean showing = getSelector().isShowing();
+    int type = event.getTypeInt();
+
+    boolean consumed = false;
+
+    switch (type) {
+      case Event.ONBLUR:
+        if (showing) {
+          return;
+        } else {
+          setActive(false);
+        }
+        break;
+
+      case Event.ONCLICK:
+        if (isEmbedded() && !isActive()) {
+          start(EditorFactory.START_MOUSE_CLICK);
+        } else if (!showing) {
+          if (BeeUtils.isEmpty(getDisplayValue())) {
+            askOracle();
+          } else if (getInput().isAllSelected()) {
+            clearDisplay();
+            askOracle();
+          }
+        }
+        break;
+
+      case Event.ONKEYDOWN:
+        if (isEmbedded() && !isActive()) {
+          int keyCode = event.getKeyCode();
+
+          switch (keyCode) {
+            case KeyCodes.KEY_BACKSPACE:
+              consumed = true;
+              break;
+            case KeyCodes.KEY_DELETE:
+              consumed = true;
+              if (isNullable() && !BeeUtils.isEmpty(getDisplayValue())) {
+                setSelection(null);
+              }
+              break;
+          }
+
+        } else {
+          inputEvents.onKeyDown(event);
+          consumed = inputEvents.isConsumed();
+        }
+        break;
+
+      case Event.ONKEYPRESS:
+        if (isEmbedded() && !isActive()) {
+          consumed = true;
+          int charCode = event.getCharCode();
+
+          if (charCode > BeeConst.CHAR_SPACE
+              && Codec.isValidUnicodeChar(BeeUtils.toChar(charCode))) {
+            start(charCode);
+            consumed = true;
+          }
+        } else {
+          consumed = inputEvents.isConsumed();
+        }
+        break;
+
+      case Event.ONKEYUP:
+        inputEvents.onKeyUp(event);
+        consumed = inputEvents.isConsumed();
+        break;
+    }
+
+    if (consumed) {
+      event.preventDefault();
+      inputEvents.consume();
+    } else {
+      super.onBrowserEvent(event);
+    }
+  }
+
   public void setAccessKey(char key) {
     getInput().setAccessKey(key);
   }
 
-  public void setCharacterWidth(int width) {
-    this.characterWidth = width;
+  public void setDisplayValue(String value) {
+    getInput().setValue(value, false);
   }
 
   public void setEditing(boolean editing) {
@@ -679,19 +687,19 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   }
 
   public void setEnabled(boolean enabled) {
-    DomUtils.enableChildren(this, enabled);
+    getInput().setEnabled(enabled);
   }
 
   public void setFocus(boolean focused) {
     getInput().setFocus(focused);
   }
 
-  public void setNullable(boolean nullable) {
-    getInput().setNullable(nullable);
+  public void setId(String id) {
+    DomUtils.setId(this, id);
   }
 
-  public void setSelectedValue(String selectedValue) {
-    this.selectedValue = selectedValue;
+  public void setNullable(boolean nullable) {
+    getInput().setNullable(nullable);
   }
 
   public void setTabIndex(int index) {
@@ -699,40 +707,51 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   }
 
   public void setValue(String newValue) {
-    setValue(newValue, false);
+    setEditorValue(newValue);
   }
 
   public void setValue(String value, boolean fireEvents) {
-    getInput().setValue(value, fireEvents);
+    setEditorValue(value);
   }
 
   public void setVisibleLines(int lines) {
-    if (getLimitWidget() == null) {
-      this.visibleLines = lines;
-    } else {
-      getLimitWidget().setValue(lines);
-    }
+    this.visibleLines = lines;
   }
 
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry,
+      Element sourceElement) {
+    setSelectedRow(null);
+    if (!isEmbedded()) {
+      setEditorValue(oldValue);
+    }
+
     setLastRequest(null);
     setOffset(0);
 
-    getDisplay().start();
-    getInput().setFocus(true);
-
-    if (Character.isLetterOrDigit(charCode)) {
-      setValue(BeeUtils.toString(charCode));
+    if (charCode != BeeConst.CHAR_SPACE && Codec.isValidUnicodeChar(charCode)) {
+      if (charCode == '*') {
+        clearDisplay();
+      } else {
+        setDisplayValue(BeeUtils.toString(charCode));
+      }
       if (isInstant()) {
         askOracle();
       }
+
+    } else if (isEmbedded()) {
+      getInput().selectAll();
+
     } else {
-      if (isInstant() || BeeUtils.isEmpty(getInput().getValue())) {
-        setValue(BeeConst.STRING_EMPTY);
+      String text = (sourceElement == null) ? null : sourceElement.getInnerText();
+      if (BeeUtils.isEmpty(text)) {
+        clearDisplay();
       } else {
+        setDisplayValue(text.trim());
         getInput().selectAll();
       }
     }
+
+    setActive(true);
   }
 
   public String validate() {
@@ -747,8 +766,65 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     super.onUnload();
   }
 
+  private void addCells(Element rowElement, BeeRow row) {
+    for (int i = 0; i < getColumnCount(); i++) {
+      String cellContent = getCellRenderers().get(i).render(row);
+      SelectorColumn selectorColumn = getSelectorColumns().get(i);
+
+      TableCellElement cellElement = DomUtils.createTableCell();
+      cellElement.addClassName(getStyle(STYLE_CELL));
+
+      Element contentElement = DomUtils.createSpan(cellContent);
+      contentElement.addClassName(getStyle(STYLE_CONTENT));
+
+      if (selectorColumn != null) {
+        StyleUtils.updateAppearance(contentElement, selectorColumn.getClasses(),
+            selectorColumn.getStyle());
+
+        UiHelper.setHorizontalAlignment(cellElement, selectorColumn.getHorAlign());
+        UiHelper.setVerticalAlignment(cellElement, selectorColumn.getVertAlign());
+      }
+
+      cellElement.appendChild(contentElement);
+      rowElement.appendChild(cellElement);
+    }
+  }
+
+  private void addClassToCell(MenuItem item, String className) {
+    Element element = DomUtils.getParentCell(item, true);
+    if (DomUtils.isTableCellElement(element)) {
+      element.addClassName(className);
+    }
+  }
+
+  private void addItem(MenuBar menu, final BeeRow row) {
+    MenuCommand menuCommand = new MenuCommand() {
+      @Override
+      public void execute() {
+        setSelection(row);
+      }
+    };
+
+    MenuItem item;
+    if (isTableMode()) {
+      item = new MenuItem(menu, null, ITEM_TYPE.ROW, menuCommand);
+      addCells(item.getElement(), row);
+    } else {
+      item = new MenuItem(menu, renderItem(row), menuCommand);
+    }
+
+    menu.addItem(item);
+
+    item.addStyleName(getStyle(STYLE_ITEM));
+    if (isTableMode()) {
+      item.addStyleName(getStyle(STYLE_ROW));
+    } else {
+      addClassToCell(item, getStyle(STYLE_CELL));
+    }
+  }
+
   private void askOracle() {
-    String query = BeeUtils.trim(getInput().getText());
+    String query = BeeUtils.trim(getDisplayValue());
     Operator type = getSearchType();
     int start = getOffset();
     int size = getVisibleLines();
@@ -770,28 +846,44 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     getOracle().requestSuggestions(request, getCallback());
   }
 
-  private SelectionOracle createOracle() {
-    return new SelectionOracle(getRelationInfo(), getColumns(), getCachingPolicy(),
-        getCachingThreshold());
+  private void clearDisplay() {
+    setDisplayValue(BeeConst.STRING_EMPTY);
   }
 
-  private void exit(boolean hideDisplay) {
-    if (hideDisplay) {
-      getDisplay().hide();
+  private void exit(boolean hideSelector, State state) {
+    exit(hideSelector, state, null, false);
+  }
+
+  private void exit(boolean hideSelector, State state, Integer keyCode, boolean hasModifiers) {
+    if (hideSelector) {
+      getSelector().hide();
     }
-    fireEvent(new EditStopEvent(State.CANCELED));
+    setActive(false);
+    fireEvent(new EditStopEvent(state, keyCode, hasModifiers));
   }
 
-  private CachingPolicy getCachingPolicy() {
-    return cachingPolicy;
+  private Callback getCallback() {
+    return callback;
   }
 
-  private int getCachingThreshold() {
-    return cachingThreshold;
+  private Map<Integer, AbstractCellRenderer> getCellRenderers() {
+    return cellRenderers;
   }
 
-  private List<SelectionColumn> getColumns() {
-    return columns;
+  private List<String> getChoiceColumns() {
+    return choiceColumns;
+  }
+
+  private int getColumnCount() {
+    return getChoiceColumns().size();
+  }
+
+  private String getDisplayValue() {
+    return getInput().getText();
+  }
+
+  private String getEditorValue() {
+    return editorValue;
   }
 
   private InputText getInput() {
@@ -802,10 +894,6 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     return lastRequest;
   }
 
-  private InputSpinner getLimitWidget() {
-    return limitWidget;
-  }
-
   private int getOffset() {
     return offset;
   }
@@ -814,28 +902,20 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     return oracle;
   }
 
-  private RelationInfo getRelationInfo() {
-    return relationInfo;
-  }
-
-  private String getSearchSymbol() {
-    if (getSearchType() == null) {
-      return "?";
-    }
-    return getSearchType().toTextString();
+  private AbstractCellRenderer getRowRenderer() {
+    return rowRenderer;
   }
 
   private Operator getSearchType() {
     return searchType;
   }
-  
-  private String getSelectedValue() {
-    return selectedValue;
+
+  private Selector getSelector() {
+    return selector;
   }
 
-  private String getStyle(boolean emb, String suffix) {
-    return BeeUtils.concat(BeeConst.CHAR_MINUS, STYLE_SELECTOR,
-        emb ? STYLE_EMBEDDED : BeeConst.STRING_EMPTY, suffix);
+  private Map<Integer, SelectorColumn> getSelectorColumns() {
+    return selectorColumns;
   }
 
   private String getStyle(String suffix) {
@@ -845,95 +925,47 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
   private boolean hasMore() {
     return hasMore;
   }
-  
-  private void initOptions(JSONObject options) {
-    if (options == null) {
-      return;
+
+  private void initCellRenderers(DataInfo viewInfo) {
+    if (!getCellRenderers().isEmpty()) {
+      getCellRenderers().clear();
     }
 
-    if (options.containsKey(OPTION_SEARCH_TYPE)) {
-      String search = JsonUtils.getString(options, OPTION_SEARCH_TYPE);
-      if (!BeeUtils.isEmpty(search)) {
-        Operator type = NameUtils.getConstant(Operator.class, search);
-        if (type != null) {
-          setSearchType(type);
-        }
+    for (Map.Entry<Integer, SelectorColumn> entry : getSelectorColumns().entrySet()) {
+      SelectorColumn sc = entry.getValue();
+      AbstractCellRenderer renderer = RendererFactory.getRenderer(sc.getRendererDescription(),
+          sc.getRender(), sc.getItemKey(), sc.getRenderColumns(), viewInfo.getColumns(),
+          viewInfo.getColumnIndex(sc.getSource()));
+
+      if (renderer != null) {
+        getCellRenderers().put(entry.getKey(), renderer);
       }
     }
 
-    if (options.containsKey(OPTION_CACHING)) {
-      JSONValue caching = options.get(OPTION_CACHING);
-      if (caching != null) {
-        if (caching.isBoolean() != null) {
-          setCachingThreshold(BeeConst.UNDEF);
-          setCachingPolicy(caching.isBoolean().booleanValue()
-              ? CachingPolicy.FULL : CachingPolicy.NONE);
-
-        } else if (caching.isNumber() != null) {
-          setCachingPolicy(CachingPolicy.FULL);
-          setCachingThreshold(BeeUtils.toInt(caching.isNumber().doubleValue()));
-
-        } else if (caching.isString() != null) {
-          String s = caching.isString().stringValue();
-          if (BeeUtils.isInt(s)) {
-            setCachingThreshold(BeeUtils.toInt(s));
-          } else {
-            CachingPolicy policy = CachingPolicy.get(s);
-            if (policy != null) {
-              setCachingPolicy(policy);
-            }
-          }
-        }
-      }
+    if (getCellRenderers().isEmpty() && getColumnCount() == 1 && getRowRenderer() != null) {
+      getCellRenderers().put(0, getRowRenderer());
     }
 
-    if (options.containsKey(OPTION_COLUMNS)) {
-      JSONValue cols = options.get(OPTION_COLUMNS);
-      List<String> colList = Lists.newArrayList();
-
-      if (cols != null) {
-        if (cols.isString() != null) {
-          colList.add(cols.isString().stringValue());
-        } else if (cols.isArray() != null) {
-          for (int i = 0; i < cols.isArray().size(); i++) {
-            colList.add(JsonUtils.toString(cols.isArray().get(i)));
-          }
-        }
-      }
-
-      String name;
-      boolean searchable;
-      for (String column : colList) {
-        if (BeeUtils.isEmpty(column)) {
-          continue;
-        }
-
-        if (BeeUtils.isPrefixOrSuffix(column, BeeConst.CHAR_MINUS)) {
-          name = BeeUtils.removePrefixAndSuffix(column, BeeConst.CHAR_MINUS);
-          searchable = false;
-        } else {
-          name = column.trim();
-          searchable = true;
-        }
-
-        if (!BeeUtils.isEmpty(name)) {
-          getColumns().add(new SelectionColumn(name, searchable));
-        }
+    for (int i = 0; i < getColumnCount(); i++) {
+      if (!getCellRenderers().containsKey(i)) {
+        int index = viewInfo.getColumnIndex(getChoiceColumns().get(i));
+        AbstractCellRenderer renderer = new SimpleRenderer(index, viewInfo.getColumns().get(index));
+        getCellRenderers().put(i, renderer);
       }
     }
   }
 
-  private boolean isEmbedded() {
-    return embedded;
+  private boolean isActive() {
+    return active;
   }
 
   private boolean isInstant() {
-    Operator type = getSearchType();
-    if (type == null) {
-      return false;
-    } else {
-      return type.isStringOperator();
-    }
+    Operator operator = getSearchType();
+    return Operator.CONTAINS.equals(operator) || Operator.STARTS.equals(operator);
+  }
+
+  private boolean isTableMode() {
+    return tableMode;
   }
 
   private void nextOffset() {
@@ -964,12 +996,16 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     }
   }
 
-  private void setCachingPolicy(CachingPolicy cachingPolicy) {
-    this.cachingPolicy = cachingPolicy;
+  private String renderItem(BeeRow row) {
+    return getRowRenderer().render(row);
   }
 
-  private void setCachingThreshold(int cachingThreshold) {
-    this.cachingThreshold = cachingThreshold;
+  private void setActive(boolean active) {
+    this.active = active;
+  }
+
+  private void setEditorValue(String editorValue) {
+    this.editorValue = editorValue;
   }
 
   private void setHasMore(boolean hasMore) {
@@ -984,16 +1020,20 @@ public class DataSelector extends Complex implements Editor, HasTextDimensions {
     this.offset = offset;
   }
 
-  private void setSearchType(Operator searchType) {
-    this.searchType = searchType;
+  private void setSelectedRow(BeeRow row) {
+    this.selectedRow = row;
   }
 
-  private void setSelection(long rowId, String relValue) {
-    setSelectedValue(BeeUtils.toString(rowId));
-    getDisplay().hide();
-    if (isEmbedded()) {
-      getInput().setValue(relValue);
-    }
-    fireEvent(new EditStopEvent(State.CHANGED));
+  private void setSelection(BeeRow row) {
+    setSelectedRow(row);
+    setEditorValue(row == null ? null : BeeUtils.toString(row.getId()));
+
+    getSelector().hide();
+    setActive(false);
+    fireEvent(new EditStopEvent(State.CHANGED, KeyCodes.KEY_TAB, false));
+  }
+
+  private void start(int keyCode) {
+    startEdit(null, BeeUtils.toChar(keyCode), null, null);
   }
 }

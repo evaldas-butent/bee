@@ -54,7 +54,7 @@ public class BeeLabel extends Label implements HasId {
   }
 
   public String getIdPrefix() {
-    return DomUtils.LABEL_ID_PREFIX;
+    return "lbl";
   }
   
   public void setId(String id) {

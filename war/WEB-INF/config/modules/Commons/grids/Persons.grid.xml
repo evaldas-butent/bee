@@ -11,6 +11,6 @@
     <DataColumn name="Email" source="Email" caption="El. paštas" />
     <DataColumn name="Address" source="Address" caption="Adresas" />
     <DataColumn name="City" source="CityName" caption="Miestas" />
-    <DataColumn name="Country" source="CountryName" caption="Šalis" readOnly="true" />
+    <DataColumn name="Country" source="CountryName" caption="Šalis" />
   </columns>
 </Grid>

@@ -12,6 +12,8 @@ import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.data.HasDataRow;
+import com.butent.bee.client.data.RelationUtils;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.dom.StyleUtils;
@@ -34,17 +36,19 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasNumberBounds;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
+import com.butent.bee.shared.ui.RefreshType;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -55,13 +59,14 @@ import java.util.List;
  */
 
 public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEvent.Handler,
-    HasCellValidationHandlers {
+    HasCellValidationHandlers, HasViewName, EditEndEvent.HasEditEndHandler {
 
   private static final String STYLE_EDITOR = "bee-CellGridEditor";
 
+  private final String viewName;
+
   private final int colIndex;
   private final BeeColumn dataColumn;
-  private final RelationInfo relationInfo;
   private final String caption;
   private final AbstractColumn<?> uiColumn;
 
@@ -76,6 +81,9 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   private final EditorDescription editorDescription;
   private final String itemKey;
 
+  private final RefreshType updateMode;
+  private final Relation relation;
+
   private final CellValidationBus cellValidationBus = new CellValidationBus();
 
   private Editor editor = null;
@@ -87,36 +95,32 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   private EditEndEvent.Handler closeHandler = null;
 
-  public EditableColumn(List<BeeColumn> dataColumns, int colIndex, RelationInfo relationInfo,
+  public EditableColumn(String viewName, List<BeeColumn> dataColumns, int colIndex,
       AbstractColumn<?> uiColumn, String caption, ColumnDescription columnDescr) {
     Assert.isIndex(dataColumns, colIndex);
     Assert.notNull(uiColumn);
+    Assert.notNull(columnDescr);
+
+    this.viewName = viewName;
     this.colIndex = colIndex;
     this.dataColumn = dataColumns.get(colIndex);
-    this.relationInfo = relationInfo;
     this.uiColumn = uiColumn;
     this.caption = caption;
 
-    if (columnDescr == null) {
-      this.editable = null;
-      this.validation = null;
-      this.carry = null;
-      this.minValue = null;
-      this.maxValue = null;
-      this.required = false;
-      this.editorDescription = null;
-      this.itemKey = null;
-    } else {
-      String source = this.dataColumn.getId();
-      this.editable = Evaluator.create(columnDescr.getEditable(), source, dataColumns);
-      this.validation = Evaluator.create(columnDescr.getValidation(), source, dataColumns);
-      this.carry = Evaluator.create(columnDescr.getCarry(), source, dataColumns);
-      this.minValue = columnDescr.getMinValue();
-      this.maxValue = columnDescr.getMaxValue();
-      this.required = columnDescr.isRequired();
-      this.editorDescription = columnDescr.getEditor();
-      this.itemKey = columnDescr.getItemKey();
-    }
+    String source = this.dataColumn.getId();
+    this.editable = Evaluator.create(columnDescr.getEditable(), source, dataColumns);
+    this.validation = Evaluator.create(columnDescr.getValidation(), source, dataColumns);
+    this.carry = Evaluator.create(columnDescr.getCarry(), source, dataColumns);
+
+    this.minValue = columnDescr.getMinValue();
+    this.maxValue = columnDescr.getMaxValue();
+    this.required = columnDescr.isRequired();
+
+    this.editorDescription = columnDescr.getEditor();
+    this.itemKey = columnDescr.getItemKey();
+
+    this.updateMode = columnDescr.getUpdateMode();
+    this.relation = columnDescr.getRelation();
   }
 
   public HandlerRegistration addCellValidationHandler(CellValidateEvent.Handler handler) {
@@ -192,7 +196,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   }
 
   public BeeColumn getColumnForUpdate() {
-    return isForeign() ? getRelationInfo().getDataColumn() : getDataColumn();
+    return getDataColumn();
   }
 
   public String getColumnId() {
@@ -216,7 +220,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   }
 
   public int getIndexForUpdate() {
-    return isForeign() ? getRelationInfo().getDataIndex() : getColIndex();
+    return getColIndex();
   }
 
   public String getMaxValue() {
@@ -231,12 +235,12 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return row.getString(getIndexForUpdate());
   }
 
-  public RelationInfo getRelationInfo() {
-    return relationInfo;
-  }
-
   public boolean getRowModeForUpdate() {
-    return isForeign();
+    if (updateMode == null) {
+      return hasRelation();
+    } else {
+      return RefreshType.ROW.equals(updateMode);
+    }
   }
 
   public ValueType getTypeForUpdate() {
@@ -251,6 +255,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return validation;
   }
 
+  public String getViewName() {
+    return viewName;
+  }
+
   public boolean hasCarry() {
     return getCarry() != null;
   }
@@ -258,6 +266,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   @Override
   public int hashCode() {
     return getColIndex();
+  }
+
+  public boolean hasRelation() {
+    return getRelation() != null;
   }
 
   public boolean isCellEditable(IsRow row, boolean warn) {
@@ -278,20 +290,25 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return ok;
   }
 
-  public boolean isForeign() {
-    return getRelationInfo() != null;
-  }
-
   public boolean isNullable() {
     if (BeeUtils.unbox(isRequired())) {
       return false;
-    } else if (isForeign()) {
-      return getRelationInfo().isNullable();
-    } else if (getDataColumn() != null) {
-      return getDataColumn().isNullable();
     } else {
-      return true;
+      return getDataColumn().isNullable();
     }
+  }
+
+  public boolean isWritable() {
+    return getDataColumn().isWritable();
+  }
+
+  public boolean maybeUpdateRelation(IsRow row, boolean updateColumn) {
+    boolean ok = false;
+    if (row != null && getEditor() instanceof HasDataRow && getRelation() != null) {
+      ok = RelationUtils.updateRow(getViewName(), getColumnId(), row,
+          getRelation().getViewName(), ((HasDataRow) getEditor()).getRow(), updateColumn) > 0;
+    }
+    return ok;
   }
 
   public void onBlur(BlurEvent event) {
@@ -301,14 +318,14 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
   }
 
   public void onEditStop(EditStopEvent event) {
-    if (event.isFinished()) {
-      endEdit(null, false);
+    if (event.isChanged()) {
+      endEdit(event.getKeyCode(), event.hasModifiers());
     } else if (event.isError()) {
       if (getNotificationListener() != null) {
         getNotificationListener().notifySevere(event.getMessage());
       }
     } else {
-      closeEditor(null, false);
+      closeEditor(event.getKeyCode(), event.hasModifiers());
     }
   }
 
@@ -363,7 +380,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     EditorAction onEntry =
         (getEditorDescription() == null) ? null : getEditorDescription().getOnEntry();
 
-    getEditor().startEdit(oldValue, charCode, onEntry);
+    getEditor().startEdit(oldValue, charCode, onEntry, sourceElement);
   }
 
   public void setNotificationListener(NotificationListener notificationListener) {
@@ -512,7 +529,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     StyleUtils.hideDisplay(getEditor().asWidget());
 
     getCloseHandler().onEditEnd(new EditEndEvent(getRowValue(), column, oldValue, newValue,
-        rowMode, keyCode, hasModifiers, getEditor().getId()));
+        rowMode, hasRelation(), keyCode, hasModifiers, getEditor().getId()), this);
   }
 
   private boolean endEdit(Integer keyCode, boolean hasModifiers) {
@@ -543,8 +560,8 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
         return false;
       }
 
-      closeEditor(getColumnForUpdate(), oldValue, newValue, getRowModeForUpdate(),
-          keyCode, hasModifiers);
+      closeEditor(getColumnForUpdate(), oldValue, newValue, getRowModeForUpdate(), keyCode,
+          hasModifiers);
       return true;
     }
     return false;
@@ -562,11 +579,11 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     String format = null;
     if (getEditorDescription() != null) {
       setEditor(EditorFactory.getEditor(getEditorDescription(), getItemKey(), getDataType(),
-          isNullable(), getRelationInfo()));
+          isNullable(), getRelation()));
       format = getEditorDescription().getFormat();
 
-    } else if (isForeign()) {
-      setEditor(new DataSelector(getRelationInfo(), false));
+    } else if (getRelation() != null) {
+      setEditor(new DataSelector(getRelation(), false));
       getEditor().setNullable(isNullable());
 
     } else if (!BeeUtils.isEmpty(getItemKey())) {
@@ -617,6 +634,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   private NotificationListener getNotificationListener() {
     return notificationListener;
+  }
+
+  private Relation getRelation() {
+    return relation;
   }
 
   private IsRow getRowValue() {

@@ -3,6 +3,7 @@ package com.butent.bee.shared.data;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.ListSequence;
 import com.butent.bee.shared.data.value.ValueType;
@@ -208,5 +209,24 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
 
   public void setViewName(String viewName) {
     this.viewName = viewName;
+  }
+
+  public boolean updateCell(long rowId, String columnId, String value) {
+    int columnIdx = getColumnIndex(columnId);
+    if (BeeConst.isUndef(columnIdx)) {
+      return false;
+    } else {
+      return updateCell(rowId, columnIdx, value);
+    }
+  }
+  
+  public boolean updateCell(long rowId, int columnIdx, String value) {
+    BeeRow row = getRowById(rowId);
+    if (row == null) {
+      return false;
+    } else {
+      row.setValue(columnIdx, value);
+      return true;
+    }
   }
 }

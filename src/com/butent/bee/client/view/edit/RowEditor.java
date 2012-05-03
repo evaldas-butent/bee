@@ -1,6 +1,5 @@
 package com.butent.bee.client.view.edit;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
@@ -16,8 +15,6 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.dom.StyleUtils;
@@ -30,16 +27,13 @@ import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Implements a data editing functionality for table rows.
@@ -91,14 +85,11 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
   private static final String STYLE_CANCEL = "bee-RowEditorCancel";
 
   private final List<BeeColumn> dataColumns;
-  private final Set<RelationInfo> relations;
 
   private final List<EditableColumn> editableColumns;
   private final Callback callback;
   private final HasWidgets editorContainer;
   private final Element containerElement;
-
-  private final NotificationListener notificationListener;
 
   private final Element editorBox;
 
@@ -106,13 +97,13 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
 
   private int startIndex = 0;
   private int activeIndex = BeeConst.UNDEF;
+  private int editIndex = BeeConst.UNDEF;
 
   private boolean editing = false;
 
-  public RowEditor(String caption, List<BeeColumn> dataColumns, Set<RelationInfo> relations,
+  public RowEditor(String caption, List<BeeColumn> dataColumns,
       List<EditableColumn> editableColumns, Callback callback,
-      HasWidgets editorContainer, Element containerElement,
-      NotificationListener notificationListener) {
+      HasWidgets editorContainer, Element containerElement) {
     super();
     Assert.notEmpty(dataColumns);
     Assert.notEmpty(editableColumns);
@@ -121,12 +112,10 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     Assert.notNull(containerElement);
 
     this.dataColumns = dataColumns;
-    this.relations = relations;
     this.editableColumns = editableColumns;
     this.callback = callback;
     this.editorContainer = editorContainer;
     this.containerElement = containerElement;
-    this.notificationListener = notificationListener;
 
     this.editorBox = Document.get().createDivElement();
     editorBox.getStyle().setPaddingLeft(0.5, Unit.EM);
@@ -265,13 +254,13 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     }
   }
 
-  public void onEditEnd(EditEndEvent event) {
+  public void onEditEnd(EditEndEvent event, EditEndEvent.HasEditEndHandler source) {
     Assert.notNull(event);
     setEditing(false);
     refocus();
 
     if (!BeeUtils.equalsTrimRight(event.getOldValue(), event.getNewValue())) {
-      updateCell(event.getColumn().getId(), event.getNewValue());
+      updateCell(getEditIndex(), event.getColumn().getId(), event.getNewValue());
     }
 
     if (event.getKeyCode() != null) {
@@ -360,7 +349,8 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
       cell.setStyleName(STYLE_CELL);
       DomUtils.setDataColumn(cell, i);
       setCellSize(cell, i);
-      if (ValueType.isNumeric(getEditableColumn(i).getDataType())) {
+      if (ValueType.isNumeric(getEditableColumn(i).getDataType())
+          && !getEditableColumn(i).hasRelation()) {
         StyleUtils.setTextAlign(cell, HasHorizontalAlignment.ALIGN_RIGHT);
       }
       cell.getElement().setTabIndex(0);
@@ -395,15 +385,6 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     }
   }
 
-  private int getCellIndex(String columnId) {
-    for (int i = 0; i < getSize(); i++) {
-      if (BeeUtils.same(getEditableColumn(i).getColumnId(), columnId)) {
-        return i;
-      }
-    }
-    return BeeConst.UNDEF;
-  }
-
   private Element getContainerElement() {
     return containerElement;
   }
@@ -422,6 +403,10 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
 
   private List<EditableColumn> getEditableColumns() {
     return editableColumns;
+  }
+
+  private int getEditIndex() {
+    return editIndex;
   }
 
   private Element getEditorBox() {
@@ -444,14 +429,6 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     return BeeUtils.clamp(getContainerElement().getOffsetWidth() - 100, defaultCellWidth, 400);
   }
 
-  private NotificationListener getNotificationListener() {
-    return notificationListener;
-  }
-
-  private Set<RelationInfo> getRelations() {
-    return relations;
-  }
-
   private IsRow getRow() {
     return row;
   }
@@ -470,18 +447,6 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
 
   private boolean isIndex(int index) {
     return index >= 0 && index < getSize();
-  }
-
-  private boolean isRelSource(String columnId) {
-    if (BeeUtils.isEmpty(columnId) || BeeUtils.isEmpty(getRelations())) {
-      return false;
-    }
-    for (RelationInfo relationInfo : getRelations()) {
-      if (BeeUtils.same(relationInfo.getRelSource(), columnId)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private void refocus() {
@@ -563,6 +528,10 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     StyleUtils.setSize(cell, width, height);
   }
 
+  private void setEditIndex(int editIndex) {
+    this.editIndex = editIndex;
+  }
+
   private void setRow(IsRow row) {
     this.row = row;
   }
@@ -583,14 +552,13 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
         return;
       }
 
-      updateCell(editableColumn.getColumnForUpdate().getId(), null);
+      updateCell(index, editableColumn.getColumnForUpdate().getId(), null);
       return;
     }
 
     if (ValueType.BOOLEAN.equals(editableColumn.getDataType())
-        && BeeUtils
-            .inList(charCode, EditorFactory.START_MOUSE_CLICK, EditorFactory.START_KEY_ENTER)
-        && !editableColumn.isForeign()) {
+        && BeeUtils.inList(charCode, EditorFactory.START_MOUSE_CLICK,
+            EditorFactory.START_KEY_ENTER)) {
 
       String oldValue = getRow().getString(editableColumn.getColIndex());
       Boolean b = !BeeUtils.toBoolean(oldValue);
@@ -599,11 +567,12 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
       }
       String newValue = BooleanValue.pack(b);
 
-      updateCell(editableColumn.getColumnId(), newValue);
+      updateCell(index, editableColumn.getColumnId(), newValue);
       return;
     }
 
     setEditing(true);
+    setEditIndex(index);
 
     StyleUtils.copySize(sourceElement, getEditorBox());
     
@@ -625,74 +594,14 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
         StyleUtils.getZIndex(this) + 1, getRow(), BeeUtils.toChar(charCode), this);
   }
 
-  private void updateCell(final String columnId, String value) {
-    int index = getDataIndex(columnId);
-    getRow().setValue(index, value);
+  private void updateCell(int index, String columnId, String value) {
+    getRow().setValue(getDataIndex(columnId), value);
 
-    index = getCellIndex(columnId);
-    if (isIndex(index)) {
+    if (getEditableColumn(index).hasRelation()) {
+      getEditableColumn(index).maybeUpdateRelation(getRow(), false);
+      renderRow();
+    } else {
       renderCell(index, value);
-    }
-
-    if (isRelSource(columnId)) {
-      if (BeeUtils.isEmpty(value)) {
-        for (RelationInfo relationInfo : getRelations()) {
-          if (BeeUtils.same(relationInfo.getRelSource(), columnId)) {
-            String source = relationInfo.getSource();
-            index = getDataIndex(source);
-            getRow().clearCell(index);
-
-            index = getCellIndex(source);
-            if (isIndex(index)) {
-              renderCell(index, null);
-            }
-          }
-        }
-
-      } else {
-        String viewName = null;
-        final List<String> viewColumns = Lists.newArrayList();
-
-        for (RelationInfo relationInfo : getRelations()) {
-          if (BeeUtils.same(relationInfo.getRelSource(), columnId)) {
-            if (viewName == null) {
-              viewName = relationInfo.getRelView();
-            } else if (!BeeUtils.same(viewName, relationInfo.getRelView())) {
-              continue;
-            }
-            if (!BeeUtils.containsSame(viewColumns, relationInfo.getRelColumn())) {
-              viewColumns.add(relationInfo.getRelColumn());
-            }
-          }
-        }
-
-        Assert.notEmpty(viewColumns, "related columns not available");
-        Queries.getRow(viewName, BeeUtils.toLong(value), viewColumns, new Queries.RowCallback() {
-          public void onFailure(String[] reason) {
-            if (getNotificationListener() != null) {
-              getNotificationListener().notifySevere(reason);
-            }
-          }
-
-          public void onSuccess(BeeRow viewRow) {
-            for (int viewIndex = 0; viewIndex < viewColumns.size(); viewIndex++) {
-              for (RelationInfo relationInfo : getRelations()) {
-                if (BeeUtils.same(relationInfo.getRelSource(), columnId)
-                    && BeeUtils.same(relationInfo.getRelColumn(), viewColumns.get(viewIndex))) {
-                  String sourceId = relationInfo.getSource();
-                  String viewValue = viewRow.getString(viewIndex);
-                  getRow().setValue(getDataIndex(sourceId), viewValue);
-
-                  int cellIndex = getCellIndex(sourceId);
-                  if (isIndex(cellIndex)) {
-                    renderCell(cellIndex, viewValue);
-                  }
-                }
-              }
-            }
-          }
-        });
-      }
     }
   }
 }

@@ -2,7 +2,9 @@ package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Focusable;
@@ -19,6 +21,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasCharacterFilter;
@@ -290,9 +293,17 @@ public class UiHelper {
     }
   }
 
+  public static void setHorizontalAlignment(Element elem, String text) {
+    Assert.notNull(elem);
+
+    HorizontalAlignmentConstant align = parseHorizontalAlignment(text);
+    if (align != null) {
+      StyleUtils.setTextAlign(elem, align);
+    }
+  }
+
   public static void setHorizontalAlignment(HasHorizontalAlignment obj, String text) {
     Assert.notNull(obj);
-    Assert.notEmpty(text);
 
     HorizontalAlignmentConstant align = parseHorizontalAlignment(text);
     if (align != null) {
@@ -310,9 +321,20 @@ public class UiHelper {
     }
   }
 
+  public static void setVerticalAlignment(Element elem, String text) {
+    Assert.notNull(elem);
+    if (BeeUtils.isEmpty(text)) {
+      return;
+    }
+
+    VerticalAlign align = StyleUtils.parseVerticalAlign(text);
+    if (align != null) {
+      elem.getStyle().setVerticalAlign(align);
+    }
+  }
+
   public static void setVerticalAlignment(HasVerticalAlignment obj, String text) {
     Assert.notNull(obj);
-    Assert.notEmpty(text);
 
     VerticalAlignmentConstant align = parseVerticalAlignment(text);
     if (align != null) {

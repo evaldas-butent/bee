@@ -40,11 +40,7 @@ public class HtmlList extends Widget implements HasId {
   }
 
   public void addItem(String item) {
-    addItem(item, false);
-  }
-
-  public void addItem(String item, boolean asHtml) {
-    insertItem(item, asHtml, INSERT_AT_END);
+    insertItem(item, INSERT_AT_END);
   }
 
   public void clear() {
@@ -76,8 +72,8 @@ public class HtmlList extends Widget implements HasId {
     return getItem(index).getInnerText();
   }
 
-  public void insertItem(String item, boolean asHtml, int index) {
-    LIElement child = DomUtils.createListItem(item, asHtml).cast();
+  public void insertItem(String item, int index) {
+    LIElement child = DomUtils.createListItem(item).cast();
     child.setClassName("bee-HtmlListItem");
 
     if ((index < 0) || (index >= getItemCount())) {
@@ -87,10 +83,6 @@ public class HtmlList extends Widget implements HasId {
       getElement().insertBefore(getItem(index), child);
       items.add(index, child);
     }
-  }
-
-  public void insertItem(String item, int index) {
-    insertItem(item, false, index);
   }
 
   public boolean isOrdered() {

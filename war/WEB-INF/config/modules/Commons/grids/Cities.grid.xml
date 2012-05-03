@@ -7,10 +7,7 @@
   <columns>
     <DataColumn name="City" source="Name" caption="Miestas" />
 
-    <DataColumn name="Country" source="CountryName" caption="Šalis">
-      <editor type="selector" width="200" visibleLines="12"
-        options="{&quot;showLimit&quot;: true, &quot;searchType&quot;: &quot;contains&quot;}" />
-    </DataColumn>
+    <RelColumn name="Country" caption="Šalis" />
 
     <VerColumn name="Version" caption="Paskutinio koregavimo data" />
   </columns>

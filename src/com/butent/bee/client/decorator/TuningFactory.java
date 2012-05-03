@@ -16,6 +16,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.ui.DecoratorConstants;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -226,7 +227,7 @@ public class TuningFactory {
           params.addAll(Parameter.getParameters(child));
 
         } else if (BeeUtils.same(childTag, DecoratorConstants.TAG_CONST)) {
-          String name = child.getAttribute(DecoratorConstants.ATTR_NAME);
+          String name = child.getAttribute(UiConstants.ATTR_NAME);
           String value = XmlUtils.getInnerXml(child);
           if (!BeeUtils.isEmpty(name)) {
             constants.put(name.trim(), BeeUtils.trim(value));

@@ -54,6 +54,24 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="operatorType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="EQ" />
+      <xs:enumeration value="NE" />
+      <xs:enumeration value="LT" />
+      <xs:enumeration value="GT" />
+      <xs:enumeration value="LE" />
+      <xs:enumeration value="GE" />
+      <xs:enumeration value="STARTS" />
+      <xs:enumeration value="ENDS" />
+      <xs:enumeration value="CONTAINS" />
+      <xs:enumeration value="MATCHES" />
+      <xs:enumeration value="IN" />
+      <xs:enumeration value="IS_NULL" />
+      <xs:enumeration value="NOT_NULL" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="nameType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[A-Z][a-zA-Z0-9]*" />
@@ -105,5 +123,9 @@
         <xs:restriction base="xs:boolean" />
       </xs:simpleType>
     </xs:union>
+  </xs:simpleType>
+  
+  <xs:simpleType name="nameList">
+    <xs:list itemType="nameType" />
   </xs:simpleType>
 </xs:schema>

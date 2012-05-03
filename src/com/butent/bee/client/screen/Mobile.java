@@ -132,10 +132,6 @@ public class Mobile extends ScreenImpl {
   protected Widget initNorth() {
     Complex p = new Complex();
 
-    Horizontal data = new Horizontal();
-    setDataPanel(data);
-    p.addLeftTop(data, 1, Unit.EM, 4, Unit.PX);
-
     setNotification(new Notification());
     p.addRightTop(getNotification(), 1, 1);
 

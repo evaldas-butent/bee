@@ -126,6 +126,10 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     updateSize();
   }
 
+  public EditorAction getDefaultFocusAction() {
+    return null;
+  }
+  
   public String getId() {
     return DomUtils.getId(this);
   }
@@ -281,7 +285,8 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     this.valueStartIndex = valueStartIndex;
   }
 
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry,
+      Element sourceElement) {
     if (!isEditorInitialized()) {
       initEditor();
       setEditorInitialized(true);

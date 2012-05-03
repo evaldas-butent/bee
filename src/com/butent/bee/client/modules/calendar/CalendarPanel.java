@@ -14,7 +14,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.ui.Widget;
@@ -159,7 +158,7 @@ public class CalendarPanel extends Complex {
 
     addLeftTop(panel, 220, 10);
 
-    BeeImage config = new BeeImage(Global.getImages().settings(), new Command() {
+    BeeImage config = new BeeImage(Global.getImages().settings(), new Scheduler.ScheduledCommand() {
       public void execute() {
         CalendarKeeper.editSettings(CalendarPanel.this.calendarId, CalendarPanel.this.calendar);
       }
@@ -315,10 +314,6 @@ public class CalendarPanel extends Complex {
 
   private void loadAppointmentAttendees(final BeeRowSet appRowSet, final Set<Long> attIds) {
     Queries.getRowSet("AppointmentAttendees", null, new Queries.RowSetCallback() {
-      public void onFailure(String[] reason) {
-        BeeKeeper.getScreen().notifySevere(reason);
-      }
-
       public void onSuccess(BeeRowSet result) {
         setAppointments(appRowSet, result, attIds);
       }
@@ -327,10 +322,6 @@ public class CalendarPanel extends Complex {
 
   private void loadAppointments(final Set<Long> attIds) {
     Queries.getRowSet("Appointments", null, new Queries.RowSetCallback() {
-      public void onFailure(String[] reason) {
-        BeeKeeper.getScreen().notifySevere(reason);
-      }
-
       public void onSuccess(BeeRowSet result) {
         loadAppointmentAttendees(result, attIds);
       }
@@ -339,10 +330,6 @@ public class CalendarPanel extends Complex {
   
   private void loadResources() {
     Queries.getRowSet("Attendees", null, new Queries.RowSetCallback() {
-      public void onFailure(String[] reason) {
-        BeeKeeper.getScreen().notifySevere(reason);
-      }
-
       public void onSuccess(BeeRowSet result) {
         setResourceNameIndex(DataUtils.getColumnIndex("Name", result.getColumns()));
         createGridPresenter(result, Lists.newArrayList("Name"));

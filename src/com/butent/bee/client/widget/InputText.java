@@ -17,6 +17,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasCharacterFilter;
+import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.ui.EditorAction;
@@ -26,7 +27,8 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements a text box that allows a single line of text to be entered.
  */
 
-public class InputText extends TextBoxBase implements Editor, HasCharacterFilter, HasInputHandlers {
+public class InputText extends TextBoxBase implements Editor, HasCharacterFilter, HasInputHandlers,
+    HasTextBox {
 
   private HasStringValue source = null;
 
@@ -35,7 +37,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   private boolean nullable = true;
 
   private boolean editing = false;
-  
+
   private String oldValue = null;
 
   public InputText() {
@@ -73,6 +75,10 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     return charMatcher;
   }
 
+  public EditorAction getDefaultFocusAction() {
+    return EditorAction.SELECT;
+  }
+
   public String getId() {
     return DomUtils.getId(this);
   }
@@ -102,12 +108,25 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     return source;
   }
 
+  public TextBoxBase getTextBox() {
+    return this;
+  }
+
   public int getVisibleLength() {
     return getInputElement().getSize();
   }
 
   public boolean handlesKey(int keyCode) {
     return false;
+  }
+
+  public boolean isAllSelected() {
+    String text = getText();
+    if (BeeUtils.isEmpty(text)) {
+      return false;
+    } else {
+      return BeeUtils.equalsTrim(text, getSelectedText());
+    }
   }
 
   public boolean isEditing() {
@@ -124,7 +143,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
       event.preventDefault();
       return;
     }
-    
+
     super.onBrowserEvent(event);
 
     if (EventUtils.isChange(event.getType())) {
@@ -154,7 +173,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
   }
-  
+
   public void setSource(HasStringValue source) {
     this.source = source;
   }
@@ -169,7 +188,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     getInputElement().setSize(length);
   }
 
-  public void startEdit(String value, char charCode, EditorAction onEntry) {
+  public void startEdit(String value, char charCode, EditorAction onEntry, Element sourceElement) {
     EditorAction action = (onEntry == null) ? getDefaultEntryAction() : onEntry;
     UiHelper.doEditorAction(this, value, charCode, action);
   }
@@ -185,7 +204,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   protected EditorAction getDefaultEntryAction() {
     return EditorAction.REPLACE;
   }
-  
+
   protected String getDefaultStyleName() {
     return "bee-InputText";
   }

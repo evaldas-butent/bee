@@ -1,5 +1,6 @@
 package com.butent.bee.client.composite;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
@@ -14,7 +15,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.TextBoxBase;
 
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
@@ -25,6 +26,7 @@ import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -38,7 +40,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class InputDate extends Composite implements Editor, HasDateTimeFormat {
+public class InputDate extends Composite implements Editor, HasDateTimeFormat, HasTextBox {
 
   public static final String DEFAULT_STYLENAME = "bee-DateBox";
 
@@ -94,8 +96,8 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     });
 
     popup.addAutoHidePartner(getBox().getElement());
-    popup.addCloseHandler(new CloseHandler<PopupPanel>() {
-      public void onClose(CloseEvent<PopupPanel> event) {
+    popup.addCloseHandler(new CloseHandler<Popup>() {
+      public void onClose(CloseEvent<Popup> event) {
         if (event.isAutoClosed()) {
           getBox().setFocus(true);
         }
@@ -137,6 +139,10 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     return format;
   }
 
+  public EditorAction getDefaultFocusAction() {
+    return null;
+  }
+  
   public String getId() {
     return DomUtils.getId(this);
   }
@@ -157,6 +163,10 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     return getBox().getTabIndex();
   }
 
+  public TextBoxBase getTextBox() {
+    return getBox();
+  }
+  
   public String getValue() {
     return getBox().getValue();
   }
@@ -270,7 +280,8 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat {
     }
   }
 
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry,
+      Element sourceElement) {
     setValue(oldValue);
     if (handleChar(charCode)) {
       return;

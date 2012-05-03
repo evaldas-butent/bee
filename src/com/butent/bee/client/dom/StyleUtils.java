@@ -13,6 +13,7 @@ import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.dom.client.Style.HasCssName;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.safecss.shared.SafeStylesUtils;
@@ -280,6 +281,8 @@ public class StyleUtils {
   public static final String STYLE_LIST_IMAGE = "listStyleImage";
   public static final String STYLE_LIST_POSITION = "listStylePosition";
   public static final String STYLE_LIST_TYPE = "listStyleType";
+
+  public static final String STYLE_CLIP = "clip";
 
   public static final String VALUE_AUTO = "auto";
   public static final String VALUE_FIXED = "fixed";
@@ -648,6 +651,18 @@ public class StyleUtils {
     return buildStyle(CSS_Z_INDEX, value);
   }
 
+  public static void clearClip(Element el) {
+    clearClip(Assert.notNull(el).getStyle());
+  }
+
+  public static void clearClip(Style st) {
+    Assert.notNull(st).clearProperty(STYLE_CLIP);
+  }
+
+  public static void clearClip(UIObject obj) {
+    clearClip(Assert.notNull(obj).getElement());
+  }
+  
   public static void clearDisplay(Element el) {
     Assert.notNull(el);
     if (!BeeUtils.isEmpty(el.getStyle().getDisplay())) {
@@ -1363,6 +1378,10 @@ public class StyleUtils {
     return unit;
   }
 
+  public static VerticalAlign parseVerticalAlign(String input) {
+    return parseCssName(VerticalAlign.class, input);
+  }
+  
   public static int removeClassName(NodeList<Element> nodes, String className) {
     Assert.notNull(nodes);
     Assert.notEmpty(className);
@@ -1532,6 +1551,30 @@ public class StyleUtils {
     setBottom(obj.getElement(), px);
   }
 
+  public static void setClip(Element el, Edges edges) {
+    setClip(Assert.notNull(el).getStyle(), edges);
+  }
+
+  public static void setClip(Element el, int top, int right, int bottom, int left) {
+    setClip(Assert.notNull(el).getStyle(), top, right, bottom, left);
+  }
+  
+  public static void setClip(Style st, Edges edges) {
+    Assert.notNull(st).setProperty(STYLE_CLIP, Assert.notNull(edges).getCssShape());
+  }
+
+  public static void setClip(Style st, int top, int right, int bottom, int left) {
+    setClip(st, new Edges(top, right, bottom, left));
+  }
+
+  public static void setClip(UIObject obj, Edges edges) {
+    setClip(Assert.notNull(obj).getElement(), edges);
+  }
+
+  public static void setClip(UIObject obj, int top, int right, int bottom, int left) {
+    setClip(Assert.notNull(obj).getElement(), top, right, bottom, left);
+  }
+  
   public static void setColor(Element el, String color) {
     Assert.notNull(el);
     setColor(el.getStyle(), color);

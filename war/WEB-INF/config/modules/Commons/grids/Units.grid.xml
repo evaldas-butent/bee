@@ -5,8 +5,8 @@
   >
   <columns>
     <DataColumn name="Unit" source="Name" caption="Mato vienetas" />
-    <DataColumn name="Factor" source="Factor" caption="Koeficientas" />
-    <DataColumn name="BaseUnit" source="BaseUnitName" caption="Pagrindinis mv." />
-    <DataColumn name="Caption" source="Caption" caption="Pavadinimas" />
+    <DataColumn name="Factor" caption="Koeficientas" />
+    <RelColumn  name="BaseUnit" caption="Pagrindinis mv." />
+    <DataColumn name="Caption" caption="Pavadinimas" />
   </columns>
 </Grid>

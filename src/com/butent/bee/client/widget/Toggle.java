@@ -1,5 +1,6 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -69,6 +70,10 @@ public class Toggle extends CustomButton implements Editor {
     return addHandler(handler, ValueChangeEvent.getType());
   }
 
+  public EditorAction getDefaultFocusAction() {
+    return null;
+  }
+  
   public String getId() {
     return DomUtils.getId(this);
   }
@@ -187,7 +192,8 @@ public class Toggle extends CustomButton implements Editor {
     }
   }
 
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry,
+      Element sourceElement) {
     setValue(oldValue);
   }
 

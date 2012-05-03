@@ -142,13 +142,14 @@ public class InputNumber extends InputText implements HasNumberBounds, HasNumber
   }
 
   @Override
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry,
+      Element sourceElement) {
     if (BeeUtils.isEmpty(oldValue) || acceptChar(charCode) || getNumberFormat() == null) {
-      super.startEdit(oldValue, charCode, onEntry);
+      super.startEdit(oldValue, charCode, onEntry, sourceElement);
     } else {
       setValue(getNumberFormat().format(BeeUtils.toDouble(oldValue)));
       if (onEntry != null) {
-        super.startEdit(getValue(), charCode, onEntry);
+        super.startEdit(getValue(), charCode, onEntry, sourceElement);
       }
     }
   }

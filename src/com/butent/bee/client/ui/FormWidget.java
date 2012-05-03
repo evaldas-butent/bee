@@ -71,7 +71,6 @@ import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
-import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.TreeContainer;
 import com.butent.bee.client.view.TreeView;
@@ -114,20 +113,23 @@ import com.butent.bee.shared.HasNumberBounds;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.HasStage;
+import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.data.view.RelationInfo;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.ui.HasValueStartIndex;
+import com.butent.bee.shared.ui.HasVisibleLines;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.RendererDescription;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.XmlHelper;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -152,7 +154,7 @@ public enum FormWidget {
   CUSTOM_DISPLAY("CustomDisplay", EnumSet.of(Type.IS_CUSTOM, Type.DISPLAY)),
   CUSTOM_EDITABLE("CustomEditable", EnumSet.of(Type.IS_CUSTOM, Type.EDITABLE)),
   CUSTOM_FOCUSABLE("CustomFocusable", EnumSet.of(Type.IS_CUSTOM, Type.FOCUSABLE, Type.EDITABLE)),
-  DATA_SELECTOR("DataSelector", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.SELECTOR)),
+  DATA_SELECTOR("DataSelector", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.DISPLAY)),
   DATE_LABEL("DateLabel", EnumSet.of(Type.DISPLAY)),
   DATE_TIME_LABEL("DateTimeLabel", EnumSet.of(Type.DISPLAY)),
   DECIMAL_LABEL("DecimalLabel", EnumSet.of(Type.DISPLAY)),
@@ -272,15 +274,13 @@ public enum FormWidget {
 
   private enum Type {
     FOCUSABLE, EDITABLE, IS_LABEL, DISPLAY, HAS_ONE_CHILD, HAS_CHILDREN, HAS_LAYERS,
-    TABLE, IS_CHILD, IS_GRID, PANEL, CELL_VECTOR, INPUT, SELECTOR, IS_CUSTOM, IS_DECORATOR
+    TABLE, IS_CHILD, IS_GRID, PANEL, CELL_VECTOR, INPUT, IS_CUSTOM, IS_DECORATOR
   }
 
   public static final String ATTR_SCROLL_BARS = "scrollBars";
   public static final String ATTR_SPLITTER_SIZE = "splitterSize";
   public static final String ATTR_SIZE = "size";
 
-  private static final String ATTR_CLASS = "class";
-  private static final String ATTR_STYLE = "style";
   private static final String ATTR_STYLE_PREFIX = "stylePrefix";
 
   private static final String ATTR_HTML = "html";
@@ -291,8 +291,6 @@ public enum FormWidget {
   private static final String ATTR_INLINE = "inline";
   private static final String ATTR_FORMAT = "format";
   private static final String ATTR_SCALE = "scale";
-  private static final String ATTR_HORIZONTAL_ALIGNMENT = "horizontalAlignment";
-  private static final String ATTR_VERTICAL_ALIGNMENT = "verticalAlignment";
 
   private static final String ATTR_URL = "url";
   private static final String ATTR_HISTORY_TOKEN = "historyToken";
@@ -355,11 +353,6 @@ public enum FormWidget {
   private static final String ATTR_PRELOAD = "preload";
   private static final String ATTR_VOLUME = "volume";
 
-  private static final String ATTR_SOURCE = "source";
-  private static final String ATTR_NAME = "name";
-
-  private static final String ATTR_REL_SOURCE = "relSource";
-  private static final String ATTR_REL_VIEW = "relView";
   private static final String ATTR_REL_COLUMN = "relColumn";
 
   private static final String ATTR_ANIMATE = "animate";
@@ -430,11 +423,11 @@ public enum FormWidget {
     this.types = types;
   }
 
-  public Widget create(Element element, List<BeeColumn> columns,
+  public Widget create(Element element, String viewName, List<BeeColumn> columns,
       WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback) {
     Assert.notNull(element);
 
-    String name = element.getAttribute(ATTR_NAME);
+    String name = element.getAttribute(UiConstants.ATTR_NAME);
     if (widgetCallback != null && !widgetCallback.beforeCreateWidget(name, element)) {
       return null;
     }
@@ -455,6 +448,7 @@ public enum FormWidget {
     boolean inline;
     String stylePrefix;
 
+    Relation relation = null;
     Widget widget = null;
 
     switch (this) {
@@ -490,7 +484,7 @@ public enum FormWidget {
 
       case CHILD_GRID:
         String relColumn = attributes.get(ATTR_REL_COLUMN);
-        String source = attributes.get(ATTR_SOURCE);
+        String source = attributes.get(UiConstants.ATTR_SOURCE);
         int sourceIndex = BeeUtils.isEmpty(source)
             ? DataUtils.ID_INDEX : DataUtils.getColumnIndex(source, columns);
 
@@ -525,16 +519,9 @@ public enum FormWidget {
         break;
 
       case DATA_SELECTOR:
-        RelationInfo relationInfo = RelationInfo.create(columns, attributes.get(ATTR_SOURCE),
-            attributes.get(ATTR_REL_SOURCE), attributes.get(ATTR_REL_VIEW),
-            attributes.get(ATTR_REL_COLUMN));
-        if (relationInfo != null) {
-          String options = attributes.get(HasOptions.ATTR_OPTIONS);
-          if (BeeUtils.isEmpty(options)) {
-            widget = new DataSelector(relationInfo, true);
-          } else {
-            widget = new DataSelector(relationInfo, true, JsonUtils.toJson(options));
-          }
+        relation = createRelation(viewName, attributes, children);
+        if (relation != null) {
+          widget = new DataSelector(relation, true);
         }
         break;
 
@@ -788,7 +775,7 @@ public enum FormWidget {
         if (BeeUtils.isBoolean(isNum)) {
           ((BeeListBox) widget).setValueNumeric(BeeUtils.toBoolean(isNum));
         } else if (ValueType.isNumeric(DataUtils
-            .getColumnType(attributes.get(ATTR_SOURCE), columns))) {
+            .getColumnType(attributes.get(UiConstants.ATTR_SOURCE), columns))) {
           ((BeeListBox) widget).setValueNumeric(true);
         }
         break;
@@ -1018,7 +1005,7 @@ public enum FormWidget {
             BeeUtils.toBoolean(attributes.get("hideActions")));
 
         ((TreeView) widget).setViewPresenter(new TreePresenter((TreeView) widget,
-            attributes.get(ATTR_SOURCE), attributes.get("parentColumn"),
+            attributes.get(UiConstants.ATTR_SOURCE), attributes.get("parentColumn"),
             attributes.get("orderColumn"), attributes.get("relationColumn"),
             XmlUtils.getCalculation(element, TAG_CALC),
             XmlUtils.getFirstChildElement(element, "form")));
@@ -1027,8 +1014,8 @@ public enum FormWidget {
       case DECORATOR:
         String id = attributes.get(ATTR_ID);
         if (!BeeUtils.isEmpty(id) && children.size() == 1) {
-          Widget child = createIfWidget(children.get(0), columns, widgetDescriptionCallback,
-              widgetCallback);
+          Widget child = createIfWidget(children.get(0), viewName, columns,
+              widgetDescriptionCallback, widgetCallback);
           if (child != null) {
             widget = TuningFactory.decorate(id, element, child,
                 widgetDescriptionCallback.getLastWidgetDescription());
@@ -1046,6 +1033,10 @@ public enum FormWidget {
 
     String id = (widget instanceof HasId) ? ((HasId) widget).getId() : DomUtils.getId(widget);
     WidgetDescription widgetDescription = new WidgetDescription(this, id, name);
+    
+    if (relation != null) {
+      widgetDescription.setRelation(relation);
+    }
 
     boolean disablable = widget instanceof HasEnabled;
 
@@ -1113,7 +1104,7 @@ public enum FormWidget {
           }
 
         } else {
-          processChild(widget, child, columns, widgetDescriptionCallback, widgetCallback);
+          processChild(widget, child, viewName, columns, widgetDescriptionCallback, widgetCallback);
         }
       }
     }
@@ -1168,6 +1159,10 @@ public enum FormWidget {
     return widget;
   }
 
+  public String getTagName() {
+    return tagName;
+  }
+
   public boolean isChild() {
     return hasType(Type.IS_CHILD);
   }
@@ -1192,166 +1187,6 @@ public enum FormWidget {
     return hasType(Type.IS_GRID);
   }
 
-  public boolean isSelector() {
-    return hasType(Type.SELECTOR);
-  }
-
-  public void updateDisplay(Widget root, String id, String value) {
-    Widget widget = DomUtils.getChildQuietly(root, id);
-    if (widget == null) {
-      BeeKeeper.getLog().warning("update display:", id, "widget not found");
-      return;
-    }
-
-    switch (this) {
-      case AUDIO:
-        if (!BeeUtils.isEmpty(value) && widget instanceof Audio) {
-          ((Audio) widget).setSrc(value);
-        }
-        break;
-
-      case BUTTON:
-        if (!BeeUtils.isEmpty(value) && widget instanceof BeeButton) {
-          ((BeeButton) widget).setHTML(value);
-        }
-        break;
-
-      case CURRENCY_LABEL:
-        if (widget instanceof DecimalLabel) {
-          ((DecimalLabel) widget).setValue(BeeUtils.toDecimalOrNull(value));
-        }
-        break;
-
-      case DATE_LABEL:
-        if (widget instanceof DateLabel) {
-          ((DateLabel) widget).setValue(TimeUtils.toDateOrNull(value));
-        }
-        break;
-
-      case DATE_TIME_LABEL:
-        if (widget instanceof DateTimeLabel) {
-          ((DateTimeLabel) widget).setValue(TimeUtils.toDateTimeOrNull(value));
-        }
-        break;
-
-      case DECIMAL_LABEL:
-        if (widget instanceof DecimalLabel) {
-          ((DecimalLabel) widget).setValue(BeeUtils.toDecimalOrNull(value));
-        }
-        break;
-
-      case DOUBLE_LABEL:
-        if (widget instanceof DoubleLabel) {
-          ((DoubleLabel) widget).setValue(BeeUtils.toDoubleOrNull(value));
-        }
-        break;
-
-      case FRAME:
-        if (!BeeUtils.isEmpty(value) && widget instanceof BeeFrame) {
-          ((BeeFrame) widget).setUrl(value);
-        }
-        break;
-
-      case HYPERLINK:
-        if (!BeeUtils.isEmpty(value) && widget instanceof InternalLink) {
-          ((InternalLink) widget).update(value);
-        }
-        break;
-
-      case HTML_LABEL:
-        if (widget instanceof Html) {
-          ((Html) widget).setHTML(BeeUtils.trim(value));
-        }
-        break;
-
-      case IMAGE:
-        if (!BeeUtils.isEmpty(value) && widget instanceof BeeImage) {
-          ImageResource resource = Images.get(value);
-          if (resource == null) {
-            ((BeeImage) widget).setUrl(value);
-          } else {
-            ((BeeImage) widget).setResource(resource);
-          }
-          widget.getElement().setId(id);
-        }
-        break;
-
-      case INLINE_HYPERLINK:
-        if (!BeeUtils.isEmpty(value) && widget instanceof InlineInternalLink) {
-          ((InlineInternalLink) widget).update(value);
-        }
-        break;
-
-      case INTEGER_LABEL:
-        if (widget instanceof IntegerLabel) {
-          ((IntegerLabel) widget).setValue(BeeUtils.toIntOrNull(value));
-        }
-        break;
-
-      case LINK:
-        if (!BeeUtils.isEmpty(value) && widget instanceof Link) {
-          ((Link) widget).update(value);
-        }
-        break;
-
-      case LONG_LABEL:
-        if (widget instanceof LongLabel) {
-          ((LongLabel) widget).setValue(BeeUtils.toLongOrNull(value));
-        }
-        break;
-
-      case METER:
-        if (widget instanceof Meter) {
-          if (BeeUtils.isDouble(value)) {
-            ((Meter) widget).setValue(BeeUtils.toDouble(value));
-          } else {
-            ((Meter) widget).setValue(((Meter) widget).getMin());
-          }
-        }
-        break;
-
-      case PROGRESS:
-        if (widget instanceof Progress) {
-          if (BeeUtils.isPositiveDouble(value)) {
-            ((Progress) widget).setValue(BeeUtils.toDouble(value));
-          } else {
-            ((Progress) widget).setValue(BeeConst.DOUBLE_ZERO);
-          }
-        }
-        break;
-
-      case TAB_BAR:
-        if (widget instanceof TabBar) {
-          int idx = ((TabBar) widget).getIndex(value);
-          if (BeeConst.isUndef(idx) && BeeUtils.isDigit(value)) {
-            idx = BeeUtils.toInt(value);
-          }
-
-          if (idx >= 0 && idx < ((TabBar) widget).getItemCount()) {
-            ((TabBar) widget).selectTab(idx, false);
-          }
-        }
-        break;
-
-      case TEXT_LABEL:
-        if (widget instanceof TextLabel) {
-          ((TextLabel) widget).setValue(value);
-        }
-        break;
-
-      case VIDEO:
-        if (!BeeUtils.isEmpty(value) && widget instanceof Video) {
-          ((Video) widget).setSrc(value);
-        }
-        break;
-
-      case CANVAS:
-      case SVG:
-      default:
-        BeeKeeper.getLog().warning("update display:", getTagName(), "not supported");
-    }
-  }
-
   private void addHandler(Widget widget, String event, String handler) {
     Assert.notNull(widget);
 
@@ -1369,8 +1204,8 @@ public enum FormWidget {
     EventUtils.addDomHandler(widget, event, handler);
   }
 
-  private HeaderAndContent createHeaderAndContent(Element parent, List<BeeColumn> columns,
-      WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback) {
+  private HeaderAndContent createHeaderAndContent(Element parent, String viewName,
+      List<BeeColumn> columns, WidgetDescriptionCallback wdcb, WidgetCallback widgetCallback) {
     String headerTag = null;
     String headerString = null;
     Widget headerWidget = null;
@@ -1397,7 +1232,7 @@ public enum FormWidget {
         continue;
       }
 
-      Widget w = createIfWidget(child, columns, widgetDescriptionCallback, widgetCallback);
+      Widget w = createIfWidget(child, viewName, columns, wdcb, widgetCallback);
       if (w == null) {
         continue;
       }
@@ -1412,7 +1247,7 @@ public enum FormWidget {
     return new HeaderAndContent(headerTag, headerString, headerWidget, content);
   }
 
-  private Widget createIfWidget(Element element, List<BeeColumn> columns,
+  private Widget createIfWidget(Element element, String viewName, List<BeeColumn> columns,
       WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback) {
     if (element == null) {
       return null;
@@ -1421,11 +1256,11 @@ public enum FormWidget {
     if (fw == null) {
       return null;
     }
-    return fw.create(element, columns, widgetDescriptionCallback, widgetCallback);
+    return fw.create(element, viewName, columns, widgetDescriptionCallback, widgetCallback);
   }
 
-  private Widget createIfWidgetOrHtmlOrText(Element element, List<BeeColumn> columns,
-      WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback) {
+  private Widget createIfWidgetOrHtmlOrText(Element element, String viewName, 
+      List<BeeColumn> columns, WidgetDescriptionCallback wdcb, WidgetCallback widgetCallback) {
     if (element == null) {
       return null;
     }
@@ -1445,15 +1280,15 @@ public enum FormWidget {
       }
 
     } else {
-      widget = createIfWidget(element, columns, widgetDescriptionCallback, widgetCallback);
+      widget = createIfWidget(element, viewName, columns, wdcb, widgetCallback);
     }
     return widget;
   }
 
-  private Widget createOneChild(Element parent, List<BeeColumn> columns,
+  private Widget createOneChild(Element parent, String viewName, List<BeeColumn> columns,
       WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback) {
     for (Element child : XmlUtils.getChildrenElements(parent)) {
-      Widget widget = createIfWidget(child, columns, widgetDescriptionCallback,
+      Widget widget = createIfWidget(child, viewName, columns, widgetDescriptionCallback,
           widgetCallback);
       if (widget != null) {
         return widget;
@@ -1461,9 +1296,73 @@ public enum FormWidget {
     }
     return null;
   }
+  
+  private Relation createRelation(String viewName, Map<String, String> attributes,
+      List<Element> children) {
+    boolean debug = Global.isDebug();
+
+    Relation relation = XmlUtils.getRelation(attributes, children);
+
+    String source = attributes.get(UiConstants.ATTR_SOURCE);
+    List<String> renderColumns = 
+        NameUtils.toList(attributes.get(RendererDescription.ATTR_RENDER_COLUMNS));
+
+    if (debug) {
+      if (!BeeUtils.isEmpty(source)) {
+        BeeKeeper.getLog().debug(UiConstants.ATTR_SOURCE, source);
+      }
+      if (!BeeUtils.isEmpty(renderColumns)) {
+        BeeKeeper.getLog().debug(RendererDescription.ATTR_RENDER_COLUMNS, renderColumns);
+      }
+    }
+    
+    Holder<String> sourceHolder = Holder.of(source);
+    Holder<List<String>> listHolder = Holder.of(renderColumns);
+    
+    relation.initialize(Global.getDataInfoProvider(), viewName, sourceHolder, listHolder);
+    if (relation.getViewName() == null) {
+      BeeKeeper.getLog().severe("Cannot create relation");
+      BeeKeeper.getLog().severe(viewName, source, renderColumns);
+
+      BeeKeeper.getLog().info("attributes:");
+      BeeKeeper.getLog().debugMap(attributes);
+      BeeKeeper.getLog().info("relation:");
+      BeeKeeper.getLog().debugCollection(relation.getInfo());
+      BeeKeeper.getLog().addSeparator();
+
+      return null;
+    }
+    
+    if (debug) {
+      BeeKeeper.getLog().debugCollection(relation.getInfo());
+    }
+
+    source = sourceHolder.get();
+    renderColumns = listHolder.get();
+    
+    if (!BeeUtils.isEmpty(source)) {
+      attributes.put(UiConstants.ATTR_SOURCE, source);
+      if (debug) {
+        BeeKeeper.getLog().debug(UiConstants.ATTR_SOURCE, source);
+      }
+    }
+    if (!BeeUtils.isEmpty(renderColumns)) {
+      attributes.put(RendererDescription.ATTR_RENDER_COLUMNS, XmlHelper.getList(renderColumns));
+      if (debug) {
+        BeeKeeper.getLog().debug(RendererDescription.ATTR_RENDER_COLUMNS, renderColumns);
+      }
+    }
+
+    if (debug) {
+      BeeKeeper.getLog().addSeparator();
+    }
+
+    return relation;
+  }
 
   private boolean createTableCell(HtmlTable table, Element element, int row, int col,
-      List<BeeColumn> columns, WidgetDescriptionCallback wdcb, WidgetCallback widgetCallback) {
+      String viewName, List<BeeColumn> columns, WidgetDescriptionCallback wdcb,
+      WidgetCallback widgetCallback) {
     boolean ok = false;
     String tag = XmlUtils.getLocalName(element);
 
@@ -1482,7 +1381,7 @@ public enum FormWidget {
       }
 
     } else {
-      Widget widget = createIfWidget(element, columns, wdcb, widgetCallback);
+      Widget widget = createIfWidget(element, viewName, columns, wdcb, widgetCallback);
       ok = (widget != null);
       if (ok) {
         table.setWidget(row, col, widget);
@@ -1520,10 +1419,6 @@ public enum FormWidget {
       }
     }
     return Pair.create(html, image);
-  }
-
-  private String getTagName() {
-    return tagName;
   }
 
   private Set<Type> getTypes() {
@@ -1611,13 +1506,13 @@ public enum FormWidget {
     return hasType(Type.TABLE);
   }
 
-  private void processChild(Widget parent, Element child, List<BeeColumn> columns,
+  private void processChild(Widget parent, Element child, String viewName, List<BeeColumn> columns,
       WidgetDescriptionCallback wdcb, WidgetCallback widgetCallback) {
     String childTag = XmlUtils.getLocalName(child);
 
     if (hasLayers()) {
       if (BeeUtils.same(childTag, TAG_LAYER) && parent instanceof HasWidgets) {
-        Widget w = createOneChild(child, columns, wdcb, widgetCallback);
+        Widget w = createOneChild(child, viewName, columns, wdcb, widgetCallback);
 
         if (w != null) {
           ((HasWidgets) parent).add(w);
@@ -1660,7 +1555,8 @@ public enum FormWidget {
                 XmlUtils.getAttributeUnit(child, HasDimensions.ATTR_WIDTH_UNIT, Unit.PX)));
           }
           StyleUtils.updateAppearance(table.getColumnFormatter().getElement(c),
-              child.getAttribute(ATTR_CLASS), child.getAttribute(ATTR_STYLE));
+              child.getAttribute(UiConstants.ATTR_CLASS),
+              child.getAttribute(UiConstants.ATTR_STYLE));
         }
 
       } else if (BeeUtils.same(childTag, TAG_ROW)) {
@@ -1670,13 +1566,14 @@ public enum FormWidget {
         for (Element cell : XmlUtils.getChildrenElements(child)) {
           if (XmlUtils.tagIs(cell, TAG_CELL)) {
             for (Element cellContent : XmlUtils.getChildrenElements(cell)) {
-              if (createTableCell(table, cellContent, r, c, columns, wdcb, widgetCallback)) {
+              if (createTableCell(table, cellContent, r, c, viewName, columns, wdcb,
+                  widgetCallback)) {
                 break;
               }
             }
             setTableCellAttributes(table, cell, r, c);
             c++;
-          } else if (createTableCell(table, cell, r, c, columns, wdcb, widgetCallback)) {
+          } else if (createTableCell(table, cell, r, c, viewName, columns, wdcb, widgetCallback)) {
             c++;
           }
         }
@@ -1685,20 +1582,21 @@ public enum FormWidget {
         }
 
       } else {
-        createTableCell(table, child, table.getRowCount(), 0, columns, wdcb, widgetCallback);
+        createTableCell(table, child, table.getRowCount(), 0, viewName, columns, wdcb,
+            widgetCallback);
       }
 
     } else if (isCellVector() && parent instanceof HasWidgets) {
       Widget w = null;
       if (BeeUtils.same(childTag, TAG_CELL)) {
         for (Element cellContent : XmlUtils.getChildrenElements(child)) {
-          w = createIfWidgetOrHtmlOrText(cellContent, columns, wdcb, widgetCallback);
+          w = createIfWidgetOrHtmlOrText(cellContent, viewName, columns, wdcb, widgetCallback);
           if (w != null) {
             break;
           }
         }
       } else {
-        w = createIfWidgetOrHtmlOrText(child, columns, wdcb, widgetCallback);
+        w = createIfWidgetOrHtmlOrText(child, viewName, columns, wdcb, widgetCallback);
       }
 
       if (w != null) {
@@ -1709,19 +1607,19 @@ public enum FormWidget {
       }
 
     } else if (hasOneChild()) {
-      Widget w = createIfWidget(child, columns, wdcb, widgetCallback);
+      Widget w = createIfWidget(child, viewName, columns, wdcb, widgetCallback);
       if (w != null && parent instanceof HasOneWidget) {
         ((HasOneWidget) parent).setWidget(w);
       }
 
     } else if (hasChildren()) {
-      Widget w = createIfWidget(child, columns, wdcb, widgetCallback);
+      Widget w = createIfWidget(child, viewName, columns, wdcb, widgetCallback);
       if (w != null && parent instanceof HasWidgets) {
         ((HasWidgets) parent).add(w);
       }
 
     } else if (this == SPLIT_PANEL) {
-      Widget w = createOneChild(child, columns, wdcb, widgetCallback);
+      Widget w = createOneChild(child, viewName, columns, wdcb, widgetCallback);
       if (w != null && parent instanceof Split) {
         ScrollBars sb = XmlUtils.getAttributeScrollBars(child, ATTR_SCROLL_BARS, ScrollBars.NONE);
         Direction direction = NameUtils.getConstant(Direction.class, childTag);
@@ -1739,7 +1637,7 @@ public enum FormWidget {
 
     } else if (this == STACK_PANEL && BeeUtils.same(childTag, TAG_STACK)) {
       Double headerSize = XmlUtils.getAttributeDouble(child, ATTR_HEADER_SIZE);
-      HeaderAndContent hc = createHeaderAndContent(child, columns, wdcb, widgetCallback);
+      HeaderAndContent hc = createHeaderAndContent(child, viewName, columns, wdcb, widgetCallback);
 
       if (BeeUtils.isPositive(headerSize) && hc != null && hc.isValid()
           && parent instanceof Stack) {
@@ -1752,7 +1650,7 @@ public enum FormWidget {
       }
 
     } else if (this == TABBED_PAGES && BeeUtils.same(childTag, TAG_PAGE)) {
-      HeaderAndContent hc = createHeaderAndContent(child, columns, wdcb, widgetCallback);
+      HeaderAndContent hc = createHeaderAndContent(child, viewName, columns, wdcb, widgetCallback);
 
       if (hc != null && hc.isValid() && parent instanceof TabbedPages) {
         if (hc.isHeaderText() || hc.isHeaderHtml()) {
@@ -1775,7 +1673,7 @@ public enum FormWidget {
       }
 
     } else if (this == HEADER_CONTENT_FOOTER) {
-      Widget w = createOneChild(child, columns, wdcb, widgetCallback);
+      Widget w = createOneChild(child, viewName, columns, wdcb, widgetCallback);
       if (w != null && parent instanceof HeaderContentFooter) {
         if (BeeUtils.same(childTag, TAG_HEADER)) {
           ((HeaderContentFooter) parent).setHeaderWidget(w);
@@ -1812,7 +1710,7 @@ public enum FormWidget {
           }
         }
 
-        Widget w = createIfWidget(tabContent, columns, wdcb, widgetCallback);
+        Widget w = createIfWidget(tabContent, viewName, columns, wdcb, widgetCallback);
         if (w != null) {
           ((TabBar) parent).addItem(w);
           break;
@@ -1841,9 +1739,9 @@ public enum FormWidget {
         continue;
       }
 
-      if (BeeUtils.same(name, ATTR_CLASS)) {
+      if (BeeUtils.same(name, UiConstants.ATTR_CLASS)) {
         StyleUtils.updateClasses(widget, value);
-      } else if (BeeUtils.same(name, ATTR_STYLE)) {
+      } else if (BeeUtils.same(name, UiConstants.ATTR_STYLE)) {
         StyleUtils.updateStyle(widget.getElement().getStyle(), value);
 
       } else if (BeeUtils.same(name, ATTR_TITLE)) {
@@ -1859,11 +1757,11 @@ public enum FormWidget {
           ((Focusable) widget).setTabIndex(BeeUtils.toInt(value));
         }
 
-      } else if (BeeUtils.same(name, ATTR_HORIZONTAL_ALIGNMENT)) {
+      } else if (BeeUtils.same(name, UiConstants.ATTR_HORIZONTAL_ALIGNMENT)) {
         if (widget instanceof HasHorizontalAlignment) {
           UiHelper.setHorizontalAlignment((HasHorizontalAlignment) widget, value);
         }
-      } else if (BeeUtils.same(name, ATTR_VERTICAL_ALIGNMENT)) {
+      } else if (BeeUtils.same(name, UiConstants.ATTR_VERTICAL_ALIGNMENT)) {
         if (widget instanceof HasVerticalAlignment) {
           UiHelper.setVerticalAlignment((HasVerticalAlignment) widget, value);
         }
@@ -1915,9 +1813,9 @@ public enum FormWidget {
           ((HasValueStartIndex) widget).setValueStartIndex(BeeUtils.toInt(value));
         }
 
-      } else if (BeeUtils.same(name, HasTextDimensions.ATTR_VISIBLE_LINES)) {
-        if (widget instanceof HasTextDimensions && BeeUtils.isPositiveInt(value)) {
-          ((HasTextDimensions) widget).setVisibleLines(BeeUtils.toInt(value));
+      } else if (BeeUtils.same(name, HasVisibleLines.ATTR_VISIBLE_LINES)) {
+        if (widget instanceof HasVisibleLines && BeeUtils.isPositiveInt(value)) {
+          ((HasVisibleLines) widget).setVisibleLines(BeeUtils.toInt(value));
         }
       } else if (BeeUtils.same(name, HasTextDimensions.ATTR_CHARACTER_WIDTH)) {
         if (widget instanceof HasTextDimensions && BeeUtils.isPositiveInt(value)) {
@@ -1970,7 +1868,7 @@ public enum FormWidget {
   }
 
   private void setTableCellAttributes(HtmlTable table, Element element, int row, int col) {
-    String z = element.getAttribute(ATTR_HORIZONTAL_ALIGNMENT);
+    String z = element.getAttribute(UiConstants.ATTR_HORIZONTAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
       HorizontalAlignmentConstant horAlign = UiHelper.parseHorizontalAlignment(z);
       if (horAlign != null) {
@@ -1978,7 +1876,7 @@ public enum FormWidget {
       }
     }
 
-    z = element.getAttribute(ATTR_VERTICAL_ALIGNMENT);
+    z = element.getAttribute(UiConstants.ATTR_VERTICAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
       VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
       if (vertAlign != null) {
@@ -2003,7 +1901,8 @@ public enum FormWidget {
       }
 
       StyleUtils.updateAppearance(table.getCellFormatter().getElement(row, col),
-          element.getAttribute(ATTR_CLASS), element.getAttribute(ATTR_STYLE));
+          element.getAttribute(UiConstants.ATTR_CLASS),
+          element.getAttribute(UiConstants.ATTR_STYLE));
 
       if (table instanceof FlexTable) {
         String span = element.getAttribute(ATTR_COL_SPAN);
@@ -2019,7 +1918,7 @@ public enum FormWidget {
   }
 
   private void setTableRowAttributes(HtmlTable table, Element element, int row) {
-    String z = element.getAttribute(ATTR_VERTICAL_ALIGNMENT);
+    String z = element.getAttribute(UiConstants.ATTR_VERTICAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
       VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
       if (vertAlign != null) {
@@ -2028,13 +1927,13 @@ public enum FormWidget {
     }
 
     if (XmlUtils.tagIs(element, TAG_ROW)) {
-      StyleUtils.updateAppearance(table.getRow(row), element.getAttribute(ATTR_CLASS),
-          element.getAttribute(ATTR_STYLE));
+      StyleUtils.updateAppearance(table.getRow(row), element.getAttribute(UiConstants.ATTR_CLASS),
+          element.getAttribute(UiConstants.ATTR_STYLE));
     }
   }
 
   private void setVectorCellAttributes(CellPanel parent, Element element, Widget cellContent) {
-    String z = element.getAttribute(ATTR_HORIZONTAL_ALIGNMENT);
+    String z = element.getAttribute(UiConstants.ATTR_HORIZONTAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
       HorizontalAlignmentConstant horAlign = UiHelper.parseHorizontalAlignment(z);
       if (horAlign != null) {
@@ -2042,7 +1941,7 @@ public enum FormWidget {
       }
     }
 
-    z = element.getAttribute(ATTR_VERTICAL_ALIGNMENT);
+    z = element.getAttribute(UiConstants.ATTR_VERTICAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
       VerticalAlignmentConstant vertAlign = UiHelper.parseVerticalAlignment(z);
       if (vertAlign != null) {
@@ -2062,7 +1961,8 @@ public enum FormWidget {
 
     if (XmlUtils.tagIs(element, TAG_CELL)) {
       StyleUtils.updateAppearance(DOM.getParent(cellContent.getElement()),
-          element.getAttribute(ATTR_CLASS), element.getAttribute(ATTR_STYLE));
+          element.getAttribute(UiConstants.ATTR_CLASS),
+          element.getAttribute(UiConstants.ATTR_STYLE));
     }
   }
 }

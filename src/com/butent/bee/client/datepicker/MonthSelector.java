@@ -1,6 +1,6 @@
 package com.butent.bee.client.datepicker;
 
-import com.google.gwt.user.client.Command;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTMLTable.CellFormatter;
 import com.google.gwt.user.client.ui.Widget;
@@ -12,7 +12,7 @@ import com.butent.bee.shared.time.YearMonth;
 
 class MonthSelector extends Component {
   
-  private class Navigation implements Command {
+  private class Navigation implements Scheduler.ScheduledCommand {
     private final int months;
     
     private Navigation(int months) {

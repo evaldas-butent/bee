@@ -2,12 +2,6 @@ package com.butent.bee.client.ui;
 
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Callback;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.FormPanel;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
@@ -15,26 +9,17 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.communication.RpcUtils;
-import com.butent.bee.client.data.DataInfoProvider.DataInfoCallback;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.widget.BeeButton;
-import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.client.widget.InputFile;
-import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -99,12 +84,13 @@ public class FormFactory {
     Assert.notNull(formDescription);
     Assert.notNull(widgetDescriptionCallback);
 
-    return createWidget(formDescription.getFormElement(), columns, widgetDescriptionCallback,
-        formCallback, "createForm:");
+    return createWidget(formDescription.getFormElement(), formDescription.getViewName(), columns,
+        widgetDescriptionCallback, formCallback, "createForm:");
   }
 
-  public static void createFormView(final String name, final List<BeeColumn> columns,
-      final FormCallback formCallback, final FormViewCallback viewCallback, final boolean addStyle) {
+  public static void createFormView(final String name, final String viewName, 
+      final List<BeeColumn> columns, final FormCallback formCallback,
+      final FormViewCallback viewCallback, final boolean addStyle) {
     Assert.notEmpty(name);
     Assert.notNull(viewCallback);
 
@@ -115,6 +101,9 @@ public class FormFactory {
           if (fd == null) {
             viewCallback.onFailure(new String[] {"form", name, "decription not created"});
           } else {
+            if (!BeeUtils.isEmpty(viewName)) {
+              fd.setViewName(viewName);
+            }
             FormView view = new FormImpl(name);
             view.create(fd, columns, formCallback, addStyle);
             viewCallback.onSuccess(view);
@@ -126,12 +115,12 @@ public class FormFactory {
     });
   }
 
-  public static void createFormView(String name, List<BeeColumn> columns,
+  public static void createFormView(String name, String viewName, List<BeeColumn> columns,
       FormViewCallback viewCallback, boolean addStyle) {
-    createFormView(name, columns, getFormCallback(name), viewCallback, addStyle);
+    createFormView(name, viewName, columns, getFormCallback(name), viewCallback, addStyle);
   }
 
-  public static Widget createWidget(Element parent, List<BeeColumn> columns,
+  public static Widget createWidget(Element parent, String viewName, List<BeeColumn> columns,
       WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback,
       String messagePrefix) {
     Assert.notNull(parent);
@@ -165,7 +154,8 @@ public class FormFactory {
       return null;
     }
 
-    Widget widget = formWidget.create(root, columns, widgetDescriptionCallback, widgetCallback);
+    Widget widget = formWidget.create(root, viewName, columns, widgetDescriptionCallback,
+        widgetCallback);
     if (widget == null) {
       BeeKeeper.getLog().severe(messagePrefix, "cannot create root widget", formWidget);
     }
@@ -192,85 +182,6 @@ public class FormFactory {
       editor.setItems(items);
     }
     return editor;
-  }
-
-  public static void importForm(final String name) {
-    if (!BeeUtils.isEmpty(name)) {
-      Global.setVarValue(Service.VAR_FORM_NAME, BeeUtils.trim(name));
-    }
-
-    final FormPanel formPanel = new FormPanel();
-    formPanel.setAction(GWT.getModuleBaseURL() + Service.UPLOAD_URL);
-
-    formPanel.setEncoding(FormPanel.ENCODING_MULTIPART);
-    formPanel.setMethod(FormPanel.METHOD_POST);
-
-    FlexTable container = new FlexTable();
-    formPanel.setWidget(container);
-
-    container.setCellSpacing(10);
-
-    int row = 0;
-    container.setWidget(row, 0, new BeeLabel("Form Name"));
-    final InputText inputName = new InputText(Global.getVar(Service.VAR_FORM_NAME));
-    inputName.setName(Service.VAR_FORM_NAME);
-    container.setWidget(row, 1, inputName);
-
-    row++;
-    container.setWidget(row, 0, new BeeLabel("Design File"));
-    final InputFile upload = new InputFile();
-    upload.setName(Service.VAR_FILE_NAME);
-    container.setWidget(row, 1, upload);
-
-    row++;
-    container.setWidget(row, 0, new Hidden(Service.NAME_SERVICE, Service.IMPORT_FORM));
-
-    BeeButton submit = new BeeButton("Submit", new ClickHandler() {
-      public void onClick(ClickEvent event) {
-        formPanel.submit();
-      }
-    });
-
-    row++;
-    container.setWidget(row, 0, submit);
-    container.getCellFormatter().setHorizontalAlignment(row, 0,
-        HasHorizontalAlignment.ALIGN_CENTER);
-    container.getFlexCellFormatter().setColSpan(row, 0, 2);
-
-    final DialogBox dialog = new DialogBox();
-
-    formPanel.addSubmitHandler(new FormPanel.SubmitHandler() {
-      public void onSubmit(FormPanel.SubmitEvent event) {
-        if (BeeUtils.isEmpty(inputName.getValue())) {
-          Global.showError("Form name not specified");
-          event.cancel();
-        } else if (BeeUtils.isEmpty(upload.getFilename())) {
-          Global.showError("Select design file");
-          event.cancel();
-        }
-      }
-    });
-
-    formPanel.addSubmitCompleteHandler(new FormPanel.SubmitCompleteHandler() {
-      public void onSubmitComplete(FormPanel.SubmitCompleteEvent event) {
-        ResponseObject response = CommUtils.getFormResonse(event.getResults());
-        RpcUtils.dispatchMessages(response);
-        if (response.hasResponse(String.class)) {
-          parseForm((String) response.getResponse());
-          dialog.hide();
-        } else {
-          BeeKeeper.getLog().warning("unknown response type", response.getType());
-        }
-      }
-    });
-
-    dialog.setText("Import Form Design");
-    dialog.setAnimationEnabled(true);
-
-    dialog.setWidget(formPanel);
-    dialog.center();
-
-    inputName.setFocus(true);
   }
 
   public static void openForm(String name) {
@@ -303,12 +214,10 @@ public class FormFactory {
       return;
     }
 
-    Global.getDataInfo(viewName, new DataInfoCallback() {
-      @Override
-      public void onSuccess(DataInfo result) {
-        getInitialRowSet(viewName, result.getRowCount(), formDescription, callback);
-      }
-    });
+    DataInfo dataInfo = Global.getDataInfo(viewName, true);
+    if (dataInfo != null) {
+      getInitialRowSet(viewName, dataInfo.getRowCount(), formDescription, callback);
+    }
   }
 
   public static void registerFormCallback(String formName, FormCallback callback) {
@@ -374,9 +283,6 @@ public class FormFactory {
 
     Queries.getRowSet(viewName, null, null, null, 0, limit, CachingPolicy.FULL,
         new Queries.RowSetCallback() {
-          public void onFailure(String[] reason) {
-          }
-
           public void onSuccess(final BeeRowSet rowSet) {
             showForm(formDescription, viewName, rowCount, rowSet, async, callback);
           }

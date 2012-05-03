@@ -9,8 +9,6 @@ import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlBuilderFactory;
-import com.butent.bee.server.sql.SqlConstants.SqlDataType;
-import com.butent.bee.server.sql.SqlConstants.SqlFunction;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
@@ -22,6 +20,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.XmlExpression;
+import com.butent.bee.shared.data.SqlConstants.SqlDataType;
+import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.XmlExpression.XmlBulk;
 import com.butent.bee.shared.data.XmlExpression.XmlCase;
 import com.butent.bee.shared.data.XmlExpression.XmlCast;
@@ -51,6 +51,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.IdFilter;
 import com.butent.bee.shared.data.filter.VersionFilter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
@@ -544,6 +545,26 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   public String getSourceVersionName() {
     return source.getVersionName();
   }
+  
+  public List<ViewColumn> getViewColumns() {
+    List<ViewColumn> result = Lists.newArrayList();
+
+    for (ColumnInfo cInf : columns.values()) {
+      BeeField cf = cInf.getField();
+      
+      String table = (cf == null) ? null : cf.getTable(); 
+      String field = (cf == null) ? null : cf.getName(); 
+      String relation = (cf == null) ? null : cf.getRelation();
+      
+      String agg = (cInf.getAggregate() == null) ? null : cInf.getAggregate().name();
+      String expr = (cInf.getExpression() == null) ? null 
+          : cInf.getExpression().getSqlString(SqlBuilderFactory.getBuilder(SqlEngine.GENERIC));
+
+      result.add(new ViewColumn(cInf.getName(), cInf.getParent(), table, field, relation,
+          cInf.getLevel(), cInf.getLocale(), agg, expr, cInf.isHidden(), cInf.isReadOnly()));
+    }
+    return result;
+  }
 
   public boolean hasColumn(String colName) {
     return !BeeUtils.isEmpty(colName) && columns.containsKey(BeeUtils.normalize(colName));
@@ -816,7 +837,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   private void setFilter(SqlSelect ss, Filter flt) {
-    CompoundFilter f = Filter.and(filter, flt);
+    CompoundFilter f = Filter.and();
+    f.add(filter, flt);
 
     if (!f.isEmpty()) {
       IsCondition condition = getCondition(f);

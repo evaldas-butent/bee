@@ -102,7 +102,6 @@ public class ScreenImpl implements Screen {
 
   private HasWidgets commandPanel = null;
   private HasWidgets menuPanel = null;
-  private HasWidgets dataPanel = null;
 
   private Widget signature = null;
 
@@ -294,10 +293,6 @@ public class ScreenImpl implements Screen {
     updatePanel(getCommandPanel(), w);
   }
 
-  public void updateData(Widget w) {
-    updatePanel(getDataPanel(), w);
-  }
-
   public void updateMenu(Widget w) {
     updatePanel(getMenuPanel(), w);
   }
@@ -366,7 +361,7 @@ public class ScreenImpl implements Screen {
 
     w = initWest();
     if (w != null) {
-      p.addWest(w, 280);
+      p.addWest(w, 240);
     }
 
     w = initEast();
@@ -385,10 +380,6 @@ public class ScreenImpl implements Screen {
     if (getLogToggle() != null && !getLogToggle().getValue()) {
       BeeKeeper.getLog().hide();
     }
-  }
-
-  protected HasWidgets getDataPanel() {
-    return dataPanel;
   }
 
   protected TextCellType getDefaultCellType() {
@@ -546,10 +537,6 @@ public class ScreenImpl implements Screen {
 
     tp.add(new BeeLabel(), "Recent");
 
-    Flow dp = new Flow();
-    tp.add(dp, Global.CONSTANTS.data(), Global.getDataInfoProvider().getDataInfoCreator());
-    setDataPanel(dp);
-
     FlexTable fp = new FlexTable();
     fp.setCellSpacing(3);
 
@@ -628,10 +615,6 @@ public class ScreenImpl implements Screen {
     tp.add(admPanel, "Adm");
 
     return tp;
-  }
-
-  protected void setDataPanel(HasWidgets dataPanel) {
-    this.dataPanel = dataPanel;
   }
 
   protected void setNotification(Notification notification) {

@@ -15,7 +15,6 @@ import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.PopupPanel.PositionCallback;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
@@ -23,6 +22,7 @@ import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SpinnerListener;
 import com.butent.bee.client.composite.ValueSpinner;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dialog.Popup.PositionCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;

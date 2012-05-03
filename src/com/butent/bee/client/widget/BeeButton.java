@@ -1,8 +1,8 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Button;
 
@@ -22,7 +22,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class BeeButton extends Button implements HasId, HasService, HasStage, HasCommand {
 
-  private Command command = null;
+  private Scheduler.ScheduledCommand command = null;
 
   public BeeButton() {
     super();
@@ -39,7 +39,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     init();
   }
 
-  public BeeButton(String html, Command cmnd) {
+  public BeeButton(String html, Scheduler.ScheduledCommand cmnd) {
     this(html);
     setCommand(cmnd);
   }
@@ -67,7 +67,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     }
   }
 
-  public Command getCommand() {
+  public Scheduler.ScheduledCommand getCommand() {
     return command;
   }
 
@@ -76,7 +76,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
   }
 
   public String getIdPrefix() {
-    return DomUtils.BUTTON_ID_PREFIX;
+    return "b";
   }
 
   public String getService() {
@@ -101,7 +101,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     super.onBrowserEvent(event);
   }
   
-  public void setCommand(Command command) {
+  public void setCommand(Scheduler.ScheduledCommand command) {
     this.command = command;
     if (command != null) {
       initEvents();

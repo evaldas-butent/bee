@@ -4,11 +4,9 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.layout.client.Layout;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.RequiresResize;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.ui.HandlesAfterAdd;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.HasId;
@@ -18,7 +16,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Handles separate areas(tiles) of the layout.
  */
 
-public class BlankTile extends Composite implements HandlesAfterAdd, HasId, RequiresResize {
+public class BlankTile extends Composite implements HasId, RequiresResize {
 
   private class UpdateCommand extends BeeCommand {
     @Override
@@ -48,16 +46,17 @@ public class BlankTile extends Composite implements HandlesAfterAdd, HasId, Requ
     return "blank";
   }
 
-  public void onAfterAdd(HasWidgets parent) {
-    Scheduler.get().scheduleDeferred(new UpdateCommand());
-  }
-
   public void onResize() {
     updateCaption();
   }
 
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+  
+  protected void onLoad() {
+    super.onLoad();
+    Scheduler.get().scheduleDeferred(new UpdateCommand());
   }
 
   private void updateCaption() {

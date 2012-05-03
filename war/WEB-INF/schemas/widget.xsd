@@ -85,6 +85,7 @@
         <xs:attribute name="source" type="type:nameType" />
         <xs:attribute name="format" type="xs:normalizedString" />
         <xs:attribute name="itemKey" type="xs:normalizedString" />
+        <xs:attribute name="renderColumns" type="type:nameList" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -113,6 +114,7 @@
         <xs:attribute name="minValue" type="xs:normalizedString" />
         <xs:attribute name="maxValue" type="xs:normalizedString" />
         <xs:attribute name="required" type="xs:boolean" />
+        <xs:attribute name="updateMode" type="ui:refreshType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -144,8 +146,7 @@
 
   <xs:complexType name="prokaryote">
     <xs:group ref="wdht" />
-    <xs:attribute name="horizontalAlignment" type="ui:horizontalAlignmentType" />
-    <xs:attribute name="verticalAlignment" type="ui:verticalAlignmentType" />
+    <xs:attributeGroup ref="ui:alignment" />
     <xs:attributeGroup ref="ui:dimension" />
     <xs:attributeGroup ref="ui:appearance" />
   </xs:complexType>
@@ -159,8 +160,7 @@
         </xs:choice>
         <xs:attribute name="borderWidth" type="xs:unsignedByte" />
         <xs:attribute name="cellSpacing" type="xs:unsignedByte" />
-        <xs:attribute name="horizontalAlignment" type="ui:horizontalAlignmentType" />
-        <xs:attribute name="verticalAlignment" type="ui:verticalAlignmentType" />
+        <xs:attributeGroup ref="ui:alignment" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -584,6 +584,7 @@
     <xs:complexContent>
       <xs:extension base="editableWidget">
         <xs:attribute name="defaultDecorator" type="d:registeredDecorator" default="caption-left" />
+        <xs:attribute name="onFocus" type="ui:focusAction" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -597,6 +598,7 @@
           <xs:attributeGroup ref="ui:textArea" />
           <xs:attribute name="defaultDecorator" type="d:registeredDecorator"
             default="caption-left-cell" />
+          <xs:attribute name="onFocus" type="ui:focusAction" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -680,13 +682,20 @@
   <xs:element name="DataSelector" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="editableWidget">
-          <xs:attribute name="relSource" type="type:nameType" use="required" />
-          <xs:attribute name="relView" type="type:nameType" use="required" />
-          <xs:attribute name="relColumn" type="type:nameType" use="required" />
-          <xs:attributeGroup ref="ui:textArea" />
-          <xs:attribute name="defaultDecorator" type="d:registeredDecorator"
-            default="caption-left-cell" />
+        <xs:extension base="inputWidget">
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="1">
+              <xs:element name="renderer" type="ui:renderer" />
+              <xs:element name="render" type="ui:calcType" />
+            </xs:choice>
+            <xs:group ref="ui:selector" minOccurs="0" maxOccurs="1" />
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="selectorColumn" type="ui:selectorColumn" />
+            </xs:choice>
+          </xs:sequence>
+          <xs:attributeGroup ref="ui:relation" />
+          <xs:attribute name="itemKey" type="xs:normalizedString" />
+          <xs:attribute name="renderColumns" type="type:nameList" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

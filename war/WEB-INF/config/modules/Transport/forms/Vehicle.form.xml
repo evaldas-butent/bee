@@ -14,19 +14,16 @@
       <InlineLabel html="Valst.Nr." class="bee-required" style="font-weight: bold; &LEFT_LABEL_STYLE;" />
       <InputText source="Number" />
       <InlineLabel html="Modelis" class="bee-required" style="&LABEL_STYLE;" />
-      <DataSelector source="ModelName" relSource="Model" relView="VehicleModels" relColumn="ModelName"
-        class="flexible" style="min-width: 50px;" />
+      <DataSelector source="Model" class="flexible" style="min-width: 50px;" />
       <InlineLabel html="Tipas" class="bee-required" style="&LABEL_STYLE;" />
-      <DataSelector source="TypeName" relSource="Type" relView="VehicleTypes" relColumn="Name"
-                    class="flexible" style="min-width: 50px;" />
+      <DataSelector source="TypeName" class="flexible" style="min-width: 50px;" />
     </FlowPanel>
     
     <FlowPanel class="flexBox-horizontal">
       <FlowPanel class="flexBox-vertical flexible">
         <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
           <InlineLabel html="Savininkas" style="&LEFT_LABEL_STYLE;" />
-          <DataSelector source="OwnerName" relSource="Owner" relView="Companies" relColumn="Name"
-                        class="flexible" style="min-width: 50px;" />
+          <DataSelector source="OwnerName" class="flexible" style="min-width: 50px;" />
           <InlineLabel html="Pagaminimo data" style="&LABEL_STYLE;" />
           <InputDate source="ProductionDate" style="width: 7em" />
         </FlowPanel>

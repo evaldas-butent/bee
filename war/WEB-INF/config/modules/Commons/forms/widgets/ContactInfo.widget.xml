@@ -7,54 +7,28 @@
 
   <FlexTable cellSpacing="10">
     <row>
-      <cell>
-        <Label html="Telefonai" />
-      </cell>
-      <cell>
-        <InputText source="Phone" />
-      </cell>
-      <cell>
-        <Label html="El. paštas" horizontalAlignment="right" />
-      </cell>
-      <cell>
-        <InputText source="Email" />
-      </cell>
+      <Label html="Telefonai" />
+      <InputText source="Phone" />
+      <Label html="El. paštas" horizontalAlignment="right" />
+      <InputText source="Email" />
     </row>
     <row>
-      <cell>
-        <Label html="Adresas" />
-      </cell>
+      <Label html="Adresas" />
       <cell colSpan="3">
         <InputText source="Address" style="width:100%" />
       </cell>
     </row>
     <row>
-      <cell>
-        <Label html="Pašto indeksas" />
-      </cell>
-      <cell>
-        <InputText source="PostIndex" />
-      </cell>
-      <cell>
-        <Label html="Interneto svetainė" horizontalAlignment="right" />
-      </cell>
-      <cell>
-        <InputText source="Website" />
-      </cell>
+      <Label html="Pašto indeksas" />
+      <InputText source="PostIndex" />
+      <Label html="Interneto svetainė" horizontalAlignment="right" />
+      <InputText source="Website" />
     </row>
     <row>
-      <cell>
-        <Label html="Miestas" />
-      </cell>
-      <cell>
-        <DataSelector source="CityName" relSource="City" relView="Cities" relColumn="Name" />
-      </cell>
-      <cell>
-        <Label html="Šalis" horizontalAlignment="right" />
-      </cell>
-      <cell>
-        <TextLabel source="CountryName" />
-      </cell>
+      <Label html="Miestas" />
+      <DataSelector source="CityName" />
+      <Label html="Šalis" horizontalAlignment="right" />
+      <DataSelector source="CountryName" choiceColumns="CountryName Name" />
     </row>
   </FlexTable>
 </Disclosure>

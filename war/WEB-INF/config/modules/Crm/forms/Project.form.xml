@@ -38,8 +38,7 @@
             <Label html="Įmonė:" style="&LEFT_LABEL_STYLE;" />
           </cell>
           <cell>
-            <DataSelector source="CompanyName" relSource="Company" relView="Companies"
-              relColumn="Name" style="width: 300px;" />
+            <DataSelector source="CompanyName" style="width: 300px;" />
           </cell>
         </HorizontalPanel>
       </FlowPanel>
@@ -71,8 +70,7 @@
               <Label html="Tipas:" style="&LEFT_LABEL_STYLE;" />
             </cell>
             <cell>
-              <DataSelector source="TypeName" relSource="ProjectType" relView="ProjectTypes"
-                relColumn="Name" />
+              <DataSelector source="TypeName" />
             </cell>
           </HorizontalPanel>
           <HorizontalPanel style="&ROW_STYLE;">
@@ -80,8 +78,7 @@
               <Label html="Asmuo:" style="&LEFT_LABEL_STYLE;" />
             </cell>
             <cell>
-              <DataSelector source="PersonFirstName" relSource="CompanyPerson" relView="CompanyPersons"
-                relColumn="FirstName" />
+              <DataSelector source="CompanyPerson" />
             </cell>
           </HorizontalPanel>
 

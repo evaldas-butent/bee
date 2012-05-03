@@ -106,8 +106,6 @@ public class Service {
 
   public static final String VAR_CLASS_NAME = RPC_VAR_PREFIX + "class_name";
   public static final String VAR_PACKAGE_LIST = RPC_VAR_PREFIX + "package_list";
-  public static final String VAR_FILE_NAME = RPC_VAR_PREFIX + "file_name";
-  public static final String VAR_FORM_NAME = RPC_VAR_PREFIX + "form_name";
 
   public static final String VAR_XML_SOURCE = RPC_VAR_PREFIX + "xml_source";
   public static final String VAR_XML_TRANSFORM = RPC_VAR_PREFIX + "xml_transform";
@@ -153,7 +151,6 @@ public class Service {
   public static final String UPLOAD_URL = "upload";
 
   public static final String NAME_SERVICE = "service";
-  public static final String IMPORT_FORM = UPLOAD_SERVICE_PREFIX + "import_form";
 
   /**
    * Returns true if {@code svc} value starts with {@link #COMPOSITE_SERVICE_PREFIX}.

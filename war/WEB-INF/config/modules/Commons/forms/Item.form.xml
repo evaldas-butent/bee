@@ -6,60 +6,38 @@
   >
   <FlexTable cellSpacing="10">
     <row>
-      <cell>
-        <Label html="Pavadinimas:" class="bee-required" />
-      </cell>
+      <Label html="Pavadinimas:" class="bee-required" />
       <cell colSpan="3">
         <InputText source="Name" style="width: 100%;" />
       </cell>
     </row>
+
     <row>
-      <cell>
-        <Label html="Artikulas:" />
-      </cell>
-      <cell>
-        <InputText source="Article" />
-      </cell>
-      <cell>
-        <Label html="Mato v.:" horizontalAlignment="right" class="bee-required" />
-      </cell>
-      <cell>
-        <DataSelector source="UnitName" relSource="Unit" relView="Units" relColumn="Name"
-          style="width: 100px;" />
-      </cell>
-    </row>
-    <row>
-      <cell>
-        <Label html="Barkodas:" />
-      </cell>
-      <cell>
-        <InputText source="Barcode" />
-      </cell>
-      <cell>
-        <Label html="Pard. kaina.:" horizontalAlignment="right" />
-      </cell>
-      <cell>
-        <HorizontalPanel>
-          <cell><InputCurrency source="Price" /></cell>
-          <cell><DataSelector source="CurrencyName" relSource="Currency" relView="Currencies"
-            relColumn="Name" style="width: 80px;" /></cell>
-        </HorizontalPanel>
-      </cell>
+      <Label html="Artikulas:" />
+      <InputText source="Article" />
+      <Label html="Mato v.:" horizontalAlignment="right" class="bee-required" />
+      <DataSelector source="UnitName" style="width: 100px;" />
     </row>
 
     <row>
-      <cell>
-        <Label html="Kategorijos:" />
-      </cell>
+      <Label html="Barkodas:" />
+      <InputText source="Barcode" />
+      <Label html="Pard. kaina.:" horizontalAlignment="right" />
+      <HorizontalPanel>
+        <InputCurrency source="Price" />
+        <DataSelector renderColumns="CurrencyName" style="width: 80px;" />
+      </HorizontalPanel>
+    </row>
+
+    <row>
+      <Label html="Kategorijos:" />
       <cell colSpan="2">
         <ListBox name="Categories" multiSelect="true" minSize="2" maxSize="10" style="width: 100%;" />
       </cell>
-      <cell>
-        <VerticalPanel>
-          <cell><Button name="AddCategories" html="+" /></cell>
-          <cell><Button name="RemoveCategories" html="-" /></cell>
-        </VerticalPanel>
-      </cell>
+      <VerticalPanel>
+        <Button name="AddCategories" html="+" />
+        <Button name="RemoveCategories" html="-" />
+      </VerticalPanel>
     </row>
   </FlexTable>
 </f:Form>  

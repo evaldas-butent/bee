@@ -1,7 +1,6 @@
 package com.butent.bee.server;
 
 import com.butent.bee.server.http.HttpUtils;
-import com.butent.bee.server.ui.UiServiceBean;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
@@ -13,7 +12,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
@@ -30,21 +28,12 @@ public class UploadServlet extends HttpServlet {
 
   private static Logger logger = Logger.getLogger(UploadServlet.class.getName());
 
-  @EJB
-  UiServiceBean uiBean;
-
-  private ResponseObject dispatch(String service, HttpServletRequest req) {
+  private ResponseObject dispatch(String service) {
     ResponseObject responseObject;
 
-    if (BeeUtils.same(service, Service.IMPORT_FORM)) {
-      String formName = HttpUtils.readPart(req, Service.VAR_FORM_NAME);
-      String design = HttpUtils.readPart(req, Service.VAR_FILE_NAME);
-      responseObject = uiBean.importForm(formName, BeeUtils.trim(design));
-    } else {
-      String msg = BeeUtils.concat(1, service, "service not recognized");
-      LogUtils.warning(logger, msg);
-      responseObject = ResponseObject.error(msg);
-    }
+    String msg = BeeUtils.concat(1, service, "service not recognized");
+    LogUtils.warning(logger, msg);
+    responseObject = ResponseObject.error(msg);
 
     return responseObject;
   }
@@ -73,7 +62,7 @@ public class UploadServlet extends HttpServlet {
       responseObject = ResponseObject.error(msg);
     } else {
       LogUtils.infoNow(logger, prefix, "request", service);
-      responseObject = dispatch(service, req);
+      responseObject = dispatch(service);
       if (responseObject == null) {
         String msg = BeeUtils.concat(1, prefix, service, "response empty");
         LogUtils.warning(logger, msg);

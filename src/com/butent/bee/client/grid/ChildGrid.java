@@ -154,9 +154,6 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
 
     Queries.getRowSet(viewName, null, filter, getGridDescription().getOrder(),
         getGridDescription().getCachingPolicy(), new Queries.RowSetCallback() {
-          public void onFailure(String[] reason) {
-          }
-
           public void onSuccess(BeeRowSet rowSet) {
             Assert.notNull(rowSet);
             GridPresenter gp = new GridPresenter(viewName, rowSet.getNumberOfRows(),

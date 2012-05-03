@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style.Unit;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.ComputedStyles;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
@@ -18,8 +19,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 
 public class TuningHelper {
-  
-  public static boolean debug = false;
   
   private static final String CLASS_NAME = "className";
   private static final String STYLE = "style";
@@ -62,7 +61,7 @@ public class TuningHelper {
 
     List<Element> actors = getActors(root, role, null, null);
     if (actors.isEmpty()) {
-      if (debug) {
+      if (Global.isDebug()) {
         BeeKeeper.getLog().warning("updateActor:", root.getId(), role, name, value,
             "no actors found");
       }

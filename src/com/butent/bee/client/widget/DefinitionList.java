@@ -28,19 +28,11 @@ public class DefinitionList extends Widget implements HasId {
   }
 
   public void addDefinition(String text) {
-    addDefinition(text, false);
-  }
-
-  public void addDefinition(String text, boolean asHtml) {
-    insertItem(text, true, asHtml, INSERT_AT_END);
+    insertItem(text, true, INSERT_AT_END);
   }
 
   public void addItem(String text) {
-    addItem(text, false);
-  }
-
-  public void addItem(String text, boolean asHtml) {
-    insertItem(text, false, asHtml, INSERT_AT_END);
+    insertItem(text, false, INSERT_AT_END);
   }
 
   public void clear() {
@@ -73,11 +65,11 @@ public class DefinitionList extends Widget implements HasId {
   }
 
   public void insertDefinition(String text, int index) {
-    insertItem(text, true, false, index);
+    insertItem(text, true, index);
   }
 
-  public void insertItem(String item, boolean definition, boolean asHtml, int index) {
-    Element child = DomUtils.createDefinitionItem(definition, item, asHtml).cast();
+  public void insertItem(String item, boolean definition, int index) {
+    Element child = DomUtils.createDefinitionItem(definition, item).cast();
 
     String tag = child.getTagName().toLowerCase();
     child.setClassName("bee-Definition-" + tag);
@@ -92,7 +84,7 @@ public class DefinitionList extends Widget implements HasId {
   }
 
   public void insertItem(String text, int index) {
-    insertItem(text, false, false, index);
+    insertItem(text, false, index);
   }
 
   public void removeItem(int index) {

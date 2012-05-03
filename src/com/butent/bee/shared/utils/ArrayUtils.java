@@ -422,7 +422,7 @@ public class ArrayUtils {
       if (i > 0) {
         sb.append(z);
       }
-      sb.append(BeeUtils.transform(el, nextSep));
+      sb.append(BeeUtils.transformGeneric(el, nextSep));
     }
     return sb.toString();
   }

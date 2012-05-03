@@ -1,4 +1,4 @@
-package com.butent.bee.server.sql;
+package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;

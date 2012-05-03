@@ -73,7 +73,7 @@ public class ResultSetBean {
           z.getTable(), z.getClazz(), z.getSqlType(), z.getTypeName(), z.getType(),
           z.getPrecision(), z.getScale(), z.getNullable(), z.getPattern(), z.getDisplaySize(),
           z.isSigned(), z.isAutoIncrement(), z.isCaseSensitive(), z.isCurrency(), z.isSearchable(),
-          z.isReadOnly(), z.isWritable(), z.isDefinitelyWritable(), z.getProperties());
+          z.isReadOnly(), z.isSqlWritable(), z.isDefinitelyWritable(), z.getProperties());
 
       if (debug) {
         buff.add(new DateTime().toTimeString());

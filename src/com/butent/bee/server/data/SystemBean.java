@@ -20,9 +20,6 @@ import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
-import com.butent.bee.server.sql.SqlConstants;
-import com.butent.bee.server.sql.SqlConstants.SqlDataType;
-import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -36,8 +33,11 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.XmlState;
 import com.butent.bee.shared.data.XmlTable;
+import com.butent.bee.shared.data.SqlConstants.SqlDataType;
+import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlKey;
 import com.butent.bee.shared.data.XmlView;
@@ -46,6 +46,7 @@ import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -231,13 +232,16 @@ public class SystemBean {
     BeeTable source = getTable(view.getSourceName());
 
     List<BeeColumn> columns = null;
+    List<ViewColumn> viewColumns = null;
     int cnt = BeeConst.UNDEF;
 
     if (source.isActive()) {
       cnt = getViewSize(viewName, null);
-      columns = qs.getViewColumns(view);
+      columns = qs.getColumns(view);
+      viewColumns = view.getViewColumns();
     }
-    return new DataInfo(viewName, source.getIdName(), source.getVersionName(), columns, cnt);
+    return new DataInfo(viewName, source.getName(), source.getIdName(), source.getVersionName(),
+        columns, viewColumns, cnt);
   }
 
   public String getDbName() {

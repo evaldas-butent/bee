@@ -5,16 +5,11 @@ package com.butent.bee.shared.ui;
  * visible lines.
  */
 
-public interface HasTextDimensions {
+public interface HasTextDimensions extends HasVisibleLines {
 
   String ATTR_CHARACTER_WIDTH = "characterWidth";
-  String ATTR_VISIBLE_LINES = "visibleLines";
   
   int getCharacterWidth();
 
-  int getVisibleLines();
-
   void setCharacterWidth(int width);
-
-  void setVisibleLines(int lines);
 }

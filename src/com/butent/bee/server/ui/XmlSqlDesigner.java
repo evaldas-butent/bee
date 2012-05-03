@@ -3,8 +3,8 @@ package com.butent.bee.server.ui;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.XmlTable;
+import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlKey;
 import com.butent.bee.shared.utils.BeeUtils;

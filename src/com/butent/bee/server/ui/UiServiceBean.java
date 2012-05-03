@@ -10,7 +10,6 @@ import com.butent.bee.client.ui.StateService;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.data.BeeTable.BeeField;
-import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -19,9 +18,7 @@ import com.butent.bee.server.data.SystemBean.SysObject;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.ExtensionFilter;
-import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.io.FileUtils;
-import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.ui.XmlSqlDesigner.DataType;
@@ -37,6 +34,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.XmlState;
 import com.butent.bee.shared.data.XmlTable;
+import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -54,15 +52,13 @@ import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.utils.XmlHelper;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -164,350 +160,6 @@ public class UiServiceBean {
       response = ResponseObject.error(msg);
     }
     return response;
-  }
-
-  public ResponseObject importForm(String formName, String design) {
-    if (BeeUtils.isEmpty(formName)) {
-      return ResponseObject.error("form name not specified");
-    }
-    Document srcDoc = XmlUtils.fromString(design);
-    if (srcDoc == null) {
-      return ResponseObject.error("error parsing design xml");
-    }
-
-    NodeList nodes = srcDoc.getElementsByTagNameNS("*", "control");
-    if (nodes == null || nodes.getLength() <= 0) {
-      return ResponseObject.error("no controls found in design xml");
-    }
-
-    Document dstDoc = XmlUtils.createDocument();
-    Element formElement = dstDoc.createElement("Form");
-    formElement.setAttribute("xmlns", "http://www.butent.com/bee");
-    formElement.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-    formElement.setAttribute("xsi:schemaLocation",
-        "http://www.butent.com/bee ../../schemas/form.xsd");
-    dstDoc.appendChild(formElement);
-
-    Element rootElement = dstDoc.createElement("AbsolutePanel");
-    formElement.appendChild(rootElement);
-
-    BeeView view = null;
-
-    int minLeft = -1;
-    int minTop = -1;
-
-    for (int i = 0; i < nodes.getLength(); i++) {
-      Element control = (Element) nodes.item(i);
-      String srcType = control.getAttribute("controlTypeID");
-      if (BeeUtils.context("TitleWindow", srcType)) {
-        continue;
-      }
-
-      int left = BeeUtils.toInt(control.getAttribute("x"));
-      int top = BeeUtils.toInt(control.getAttribute("y"));
-
-      if (left >= 0) {
-        minLeft = (minLeft < 0) ? left : Math.min(minLeft, left);
-      }
-      if (top >= 0) {
-        minTop = (minTop < 0) ? top : Math.min(minTop, top);
-      }
-    }
-
-    int shiftLeft = minLeft - 10;
-    int shiftTop = minTop - 10;
-
-    List<Element> layers = Lists.newArrayList();
-
-    for (int i = 0; i < nodes.getLength(); i++) {
-      Element control = (Element) nodes.item(i);
-
-      String srcType = control.getAttribute("controlTypeID");
-      if (BeeUtils.isEmpty(srcType)) {
-        continue;
-      }
-      String dstType = BeeUtils.getSuffix(srcType, "::");
-      if (BeeUtils.isEmpty(dstType)) {
-        continue;
-      }
-
-      String srcLeft = control.getAttribute("x");
-      String srcTop = control.getAttribute("y");
-      String srcWidth = control.getAttribute("w");
-      String srcHeight = control.getAttribute("h");
-
-      String text = null;
-      Element propElement = XmlUtils.getFirstChildElement(control, "controlProperties");
-      if (propElement != null) {
-        Element textElement = XmlUtils.getFirstChildElement(propElement, "text");
-        if (textElement != null) {
-          text = XmlUtils.getTextQuietly(textElement);
-        }
-      }
-      if (BeeUtils.isEmpty(text)) {
-        continue;
-      }
-
-      text = BeeUtils.replace(text, "%20", " ");
-      text = BeeUtils.replace(text, "%3A", ":");
-      text = BeeUtils.replace(text, "%2C", ",");
-
-      int p = text.indexOf("%u");
-      while (p >= 0) {
-        text = text.substring(0, p) + (char) Integer.parseInt(text.substring(p + 2, p + 6), 16)
-            + text.substring(p + 6);
-        p = text.indexOf("%u");
-      }
-
-      String source;
-      String label;
-      if (BeeUtils.context(":", text)) {
-        source = BeeUtils.getPrefix(text, ":");
-        label = BeeUtils.getSuffix(text, ":");
-      } else if (BeeUtils.inListSame(dstType, "Label", "Button")) {
-        source = null;
-        label = text;
-      } else {
-        source = text;
-        label = null;
-      }
-
-      if (BeeUtils.same(dstType, "TitleWindow")) {
-        if (!BeeUtils.isEmpty(source)) {
-          formElement.setAttribute("name", source);
-          if (sys.isView(source)) {
-            formElement.setAttribute("viewName", source);
-            view = sys.getView(source);
-          } else {
-            LogUtils.warning(logger, "import form", formName,
-                "view name", source, "not recognized");
-          }
-        }
-        if (!BeeUtils.isEmpty(label)) {
-          formElement.setAttribute("caption", label);
-        }
-        continue;
-      }
-
-      if (BeeUtils.same(dstType, "TextInput")) {
-        if (BeeUtils.context(",", label)) {
-          dstType = "ListBox";
-        } else {
-          SqlDataType type = null;
-          if (view != null && view.hasColumn(source)) {
-            type = view.getColumnType(source);
-          }
-          if (type != null) {
-            switch (type) {
-              case DATE:
-                dstType = "InputDate";
-                break;
-              case DATETIME:
-                dstType = "InputDateTime";
-                break;
-              case DECIMAL:
-                dstType = "InputDecimal";
-                break;
-              case DOUBLE:
-                dstType = "InputDouble";
-                break;
-              case INTEGER:
-                dstType = "InputInteger";
-                break;
-              case LONG:
-                dstType = "InputLong";
-                break;
-              default:
-                dstType = "InputText";
-            }
-          } else {
-            dstType = "InputText";
-          }
-        }
-
-      } else if (BeeUtils.same(dstType, "TextArea")) {
-        dstType = "InputArea";
-
-      } else if (BeeUtils.same(dstType, "RadioButton")) {
-        dstType = "Radio";
-        srcWidth = null;
-        srcHeight = null;
-
-      } else if (BeeUtils.same(dstType, "ComboBox")) {
-        if (text.contains(".")) {
-          dstType = "DataSelector";
-        } else {
-          dstType = "ListBox";
-          srcWidth = null;
-          srcHeight = null;
-        }
-
-      } else if (BeeUtils.same(dstType, "DataGrid")) {
-        dstType = "ChildGrid";
-      }
-
-      Element layerElement = dstDoc.createElement("layer");
-
-      if (BeeUtils.isDigit(srcLeft)) {
-        if (shiftLeft > 0) {
-          layerElement.setAttribute("left", BeeUtils.toString(BeeUtils.toInt(srcLeft) - shiftLeft));
-        } else {
-          layerElement.setAttribute("left", srcLeft);
-        }
-      }
-      if (BeeUtils.isDigit(srcTop)) {
-        if (shiftTop > 0) {
-          layerElement.setAttribute("top", BeeUtils.toString(BeeUtils.toInt(srcTop) - shiftTop));
-        } else {
-          layerElement.setAttribute("top", srcTop);
-        }
-      }
-
-      if (BeeUtils.isDigit(srcWidth)) {
-        layerElement.setAttribute("width", srcWidth);
-      }
-      if (BeeUtils.isDigit(srcHeight)) {
-        layerElement.setAttribute("height", srcHeight);
-      }
-
-      layers.add(layerElement);
-
-      Element widgetElement = dstDoc.createElement(dstType.trim());
-      boolean isColumn = false;
-
-      if (!BeeUtils.isEmpty(source)) {
-        if (BeeUtils.same(dstType, "DataSelector") && view != null) {
-          String relSource = BeeUtils.getPrefix(source, '.');
-          String relColumn = BeeUtils.getSuffix(source, '.');
-
-          widgetElement.setAttribute("source", relSource + relColumn);
-          widgetElement.setAttribute("relSource", relSource);
-
-          String relView = null;
-          if (view.hasColumn(relSource)) {
-            relView =
-                sys.getRelation(view.getColumnTable(relSource), view.getColumnField(relSource));
-            if (!BeeUtils.isEmpty(relView)) {
-              widgetElement.setAttribute("relView", relView);
-              isColumn = true;
-            } else {
-              LogUtils.warning(logger, "import form", formName, "widget", dstType,
-                  "source", source, "relSource", relSource, "has no relation");
-            }
-          } else {
-            LogUtils.warning(logger, "import form", formName, "widget", dstType,
-                "source", source, "relSource", relSource, "not a view column");
-          }
-
-          widgetElement.setAttribute("relColumn", relColumn);
-          if (sys.isView(relView) && !sys.getView(relView).hasColumn(relColumn)) {
-            LogUtils.warning(logger, "import form", formName, "widget", dstType,
-                "source", source, "relView", relView, "relColumn", relColumn, "not a view column");
-          }
-
-        } else if (BeeUtils.same(dstType, "ChildGrid") && view != null) {
-          String relColumn = view.getSourceIdName();
-          widgetElement.setAttribute("name", source);
-          widgetElement.setAttribute("relColumn", relColumn);
-
-          if (ui.isGrid(source)) {
-            if (sys.getView(ui.getGrid(source).getViewName()).hasColumn(relColumn)) {
-              isColumn = true;
-            } else {
-              LogUtils.warning(logger, "import form", formName, "widget", dstType,
-                  "grid", source, "relColumn", relColumn, "not a view column");
-            }
-          } else if (!sys.isView(source)) {
-            LogUtils.warning(logger, "import form", formName, "widget", dstType,
-                "source", source, "not a view");
-          } else if (!sys.getView(source).hasColumn(relColumn)) {
-            LogUtils.warning(logger, "import form", formName, "widget", dstType,
-                "view", source, "relColumn", relColumn, "not a view column");
-          } else {
-            isColumn = true;
-          }
-
-        } else {
-          widgetElement.setAttribute("source", source);
-          if (view != null) {
-            if (!view.hasColumn(source)) {
-              LogUtils.warning(logger, "import form", formName, "widget", dstType,
-                  "source", source, "not a view column");
-            } else {
-              isColumn = true;
-            }
-          }
-        }
-      }
-
-      if (isColumn && BeeUtils.same(dstType, "InputDecimal")) {
-        int scale = sys.getScale(view.getColumnTable(source), view.getColumnField(source));
-        if (scale > 0) {
-          widgetElement.setAttribute("scale", BeeUtils.toString(scale));
-        }
-      }
-
-      if (!BeeUtils.isEmpty(label)) {
-        if (BeeUtils.same(dstType, "ListBox")) {
-          for (String item : BeeUtils.split(label, ",")) {
-            Element itemElement = dstDoc.createElement("item");
-            itemElement.setTextContent(item);
-            widgetElement.appendChild(itemElement);
-          }
-
-        } else if (BeeUtils.same(dstType, "Radio")) {
-          for (String item : BeeUtils.split(label, ",")) {
-            Element itemElement = dstDoc.createElement("option");
-            itemElement.setTextContent(item);
-            widgetElement.appendChild(itemElement);
-          }
-
-        } else {
-          widgetElement.setAttribute("html", label);
-        }
-      }
-
-      layerElement.appendChild(widgetElement);
-    }
-
-    if (layers.size() > 1) {
-      Collections.sort(layers, new Comparator<Element>() {
-        public int compare(Element o1, Element o2) {
-          if (o1 == null) {
-            return (o2 == null) ? BeeConst.COMPARE_EQUAL : BeeConst.COMPARE_LESS;
-          }
-          if (o2 == null) {
-            return BeeConst.COMPARE_MORE;
-          }
-
-          int t1 = BeeUtils.toInt(o1.getAttribute("top"));
-          int t2 = BeeUtils.toInt(o2.getAttribute("top"));
-
-          int res = (Math.abs(t1 - t2) < 5) ? BeeConst.COMPARE_EQUAL : BeeUtils.compare(t1, t2);
-          if (res == BeeConst.COMPARE_EQUAL) {
-            res = BeeUtils.compare(BeeUtils.toInt(o1.getAttribute("left")),
-                BeeUtils.toInt(o2.getAttribute("left")));
-          }
-          return res;
-        }
-      });
-    }
-
-    for (Element layer : layers) {
-      rootElement.appendChild(layer);
-    }
-
-    String result = XmlUtils.toString(dstDoc, true);
-    if (BeeUtils.isEmpty(result)) {
-      return ResponseObject.error("xml problem");
-    }
-
-    String path = new File(new File(Config.USER_DIR, "forms"),
-        FileNameUtils.defaultExtension(formName, XmlUtils.DEFAULT_XML_EXTENSION)).getPath();
-    LogUtils.infoNow(logger, "saving", path);
-    FileUtils.saveToFile(result, path);
-
-    return ResponseObject.response(result);
   }
 
   private void buildDbList(String rootTable, Set<String> tables, boolean initial) {
@@ -685,7 +337,7 @@ public class UiServiceBean {
 
     Document dstDoc = XmlUtils.createDocument();
     Element dstRoot = dstDoc.createElement(DecoratorConstants.TAG_DECORATORS);
-    dstRoot.setAttribute(BeeConst.ATTR_XMLNS, DecoratorConstants.NAMESPACE);
+    dstRoot.setAttribute(XmlHelper.ATTR_XMLNS, DecoratorConstants.NAMESPACE);
     dstDoc.appendChild(dstRoot);
 
     for (File file : files) {

@@ -33,8 +33,6 @@ import com.google.gwt.user.client.ui.WidgetCollection;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
-import com.butent.bee.client.ui.HandlesAfterAdd;
-import com.butent.bee.client.ui.HandlesBeforeAdd;
 import com.butent.bee.client.widget.HorizontalSplitter;
 import com.butent.bee.client.widget.Splitter;
 import com.butent.bee.client.widget.VerticalSplitter;
@@ -386,53 +384,44 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
       Assert.isTrue(direction != Direction.CENTER, "A CENTER widget must always be added last");
     }
 
-    Widget w = child;
-    if (w instanceof HandlesBeforeAdd) {
-      w = ((HandlesBeforeAdd) w).onBeforeAdd(this);
-    }
-
-    w.removeFromParent();
+    child.removeFromParent();
 
     WidgetCollection children = getChildren();
     if (before == null) {
-      children.add(w);
+      children.add(child);
     } else {
       int index = children.indexOf(before);
-      children.insert(w, index);
+      children.insert(child, index);
     }
 
-    Layer layer = layout.attachChild(w.getElement(),
-        (before != null) ? before.getElement() : null, w);
+    Layer layer = layout.attachChild(child.getElement(),
+        (before != null) ? before.getElement() : null, child);
     LayoutData data = new LayoutData(direction, size, layer);
-    w.setLayoutData(data);
+    child.setLayoutData(data);
 
-    adopt(w);
+    adopt(child);
 
     Element container = layer.getContainerElement();
 
     String pfx;
-    if (isSplitter(w)) {
-      pfx = (w instanceof HorizontalSplitter) ? "hor" : "vert";
+    if (isSplitter(child)) {
+      pfx = (child instanceof HorizontalSplitter) ? "hor" : "vert";
     } else {
       pfx = BeeUtils.transform(direction).toLowerCase();
     }
 
     container.setId(DomUtils.createUniqueId("layer-" + pfx));
 
-    if (!isSplitter(w)) {
+    if (!isSplitter(child)) {
       if (scroll != null && !(ScrollBars.NONE.equals(scroll))) {
         StyleUtils.autoScroll(container, scroll);
       }
 
       if (direction == Direction.CENTER) {
-        center = w;
+        center = child;
       } else if (splSize > 0) {
-        insertSplitter(w, container, before, splSize);
+        insertSplitter(child, container, before, splSize);
       }
-    }
-
-    if (w instanceof HandlesAfterAdd) {
-      ((HandlesAfterAdd) w).onAfterAdd(this);
     }
     animate(0);
   }

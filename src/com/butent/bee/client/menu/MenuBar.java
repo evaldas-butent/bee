@@ -1,5 +1,6 @@
 package com.butent.bee.client.menu;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
@@ -7,7 +8,6 @@ import com.google.gwt.dom.client.SelectElement;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
-import com.google.gwt.layout.client.Layout;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.resources.client.ImageResource.ImageOptions;
@@ -15,40 +15,29 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbstractImagePrototype;
-import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.layout.BeeLayoutPanel;
-import com.butent.bee.client.layout.Stack;
-import com.butent.bee.client.layout.TabbedPages;
-import com.butent.bee.client.menu.MenuItem.ITEM_TYPE;
-import com.butent.bee.client.ui.HandlesAfterAdd;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.menu.MenuConstants;
+import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
+import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Contains menu object and core menu handling methods like {@code addItem} or {@code doCommand}.
  */
 
-public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHandler<PopupPanel> {
-
-  /**
-   * Contains a list of possible menu types.
-   */
-  public static enum BAR_TYPE {
-    TABLE, FLOW, LIST, OLIST, ULIST, DLIST
-  }
+public class MenuBar extends Widget implements HasId, CloseHandler<Popup> {
 
   /**
    * Specifies implementing classes to have an image resource.
@@ -68,8 +57,8 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
     subMenuIcon = AbstractImagePrototype.create(resources.subMenuIcon());
   }
 
-  private List<UIObject> allItems = new ArrayList<UIObject>();
-  private List<MenuItem> items = new ArrayList<MenuItem>();
+  private final List<UIObject> allItems = Lists.newArrayList();
+  private final List<MenuItem> items = Lists.newArrayList();
 
   private Element body;
 
@@ -78,12 +67,12 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
   private MenuItem selectedItem = null;
   private MenuBar childMenu;
 
-  private int level;
-  private boolean vertical;
+  private final int level;
+  private final boolean vertical;
 
-  private BAR_TYPE barType = BAR_TYPE.TABLE;
-  private ITEM_TYPE defaultItemType = MenuItem.defaultType;
-  private String name = NameUtils.createUniqueName("mb-");
+  private final BAR_TYPE barType;
+  private final ITEM_TYPE itemType;
+  private final String name = NameUtils.createUniqueName("mb-");
 
   private boolean hoverEnabled = true;
 
@@ -108,7 +97,13 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
   }
 
   public MenuBar(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it, boolean hover) {
-    init(level, vert, bt, it, hover);
+    this.level = level;
+    this.vertical = vert;
+
+    this.barType = (bt == null) ? BAR_TYPE.TABLE : bt;  
+    this.itemType = (it == null) ? MenuItem.defaultType : it;
+
+    init(hover);
     DomUtils.createId(this, getIdPrefix());
   }
 
@@ -125,11 +120,11 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
   }
 
   public MenuItem addItem(String text, MenuBar mb) {
-    return addItem(new MenuItem(this, text, defaultItemType, mb));
+    return addItem(new MenuItem(this, text, getItemType(), mb));
   }
 
   public MenuItem addItem(String text, MenuCommand cmd) {
-    return addItem(new MenuItem(this, text, defaultItemType, cmd));
+    return addItem(new MenuItem(this, text, getItemType(), cmd));
   }
 
   public MenuSeparator addSeparator() {
@@ -160,10 +155,6 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
     }
   }
 
-  public ITEM_TYPE getDefaultItemType() {
-    return defaultItemType;
-  }
-
   public String getId() {
     return DomUtils.getId(this);
   }
@@ -186,6 +177,10 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
 
   public List<MenuItem> getItems() {
     return items;
+  }
+
+  public ITEM_TYPE getItemType() {
+    return itemType;
   }
 
   public int getLevel() {
@@ -264,25 +259,11 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
     }
   }
 
-  public void onAfterAdd(HasWidgets parent) {
-    if (parent instanceof BeeLayoutPanel) {
-      if (vertical) {
-        ((BeeLayoutPanel) parent).setWidgetHorizontalPosition(this, Layout.Alignment.BEGIN);
-      }
-      if (!vertical || barType != BAR_TYPE.TABLE) {
-        ((BeeLayoutPanel) parent).setWidgetVerticalPosition(this, Layout.Alignment.BEGIN);
-      }
-
-    } else if (parent instanceof Stack || parent instanceof TabbedPages) {
-      setStylePrimaryName(STYLENAME_ROOT);
-    }
-  }
-
   @Override
   public void onBrowserEvent(Event event) {
     Element target = DOM.eventGetTarget(event);
     int type = DOM.eventGetType(event);
-    
+
     if (type == Event.ONBLUR) {
       if (childMenu == null) {
         selectItem(null);
@@ -290,7 +271,7 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
       super.onBrowserEvent(event);
       return;
     }
-    
+
     if (EventUtils.isKeyEvent(type)) {
       hoverEnabled = false;
     } else if (type == Event.ONCLICK || type == Event.ONMOUSEWHEEL) {
@@ -421,7 +402,7 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
   }
 
   @Override
-  public void onClose(CloseEvent<PopupPanel> event) {
+  public void onClose(CloseEvent<Popup> event) {
     childMenu = null;
     popup = null;
 
@@ -433,6 +414,12 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
   public void prepare() {
     if (barType == BAR_TYPE.LIST && items.size() > 1) {
       SelectElement.as(body).setSize(items.size());
+    }
+  }
+
+  public void selectFirstItem() {
+    if (!items.isEmpty()) {
+      selectItem(items.get(0));
     }
   }
 
@@ -456,6 +443,12 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
     selectedItem = item;
   }
 
+  public void selectLastItem() {
+    if (!items.isEmpty()) {
+      selectItem(items.get(items.size() - 1));
+    }
+  }
+  
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
@@ -468,6 +461,11 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
       return;
     }
 
+    MenuBar submenu = item.getSubMenu();
+    if (submenu == null) {
+      return;
+    }
+
     int idx = allItems.indexOf(item);
     if (idx == -1) {
       return;
@@ -476,14 +474,7 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
     Element container = getItemContainerElement();
     Element tr = DOM.getChild(container, idx);
     int tdCount = DOM.getChildCount(tr);
-    MenuBar submenu = item.getSubMenu();
-    if (submenu == null) {
-      if (tdCount == 2) {
-        DOM.removeChild(tr, DOM.getChild(tr, 1));
-      }
-      setItemColSpan(item, 2);
-    } else if (tdCount == 1) {
-      setItemColSpan(item, 1);
+    if (tdCount == 1) {
       Element td = DOM.createTD();
       DOM.setElementProperty(td, "vAlign", "middle");
       DOM.setInnerHTML(td, subMenuIcon.getHTML());
@@ -525,19 +516,32 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
   private void addItemElement(int beforeIndex, Element elem) {
     if (barType != BAR_TYPE.TABLE) {
       DOM.insertChild(body, elem, beforeIndex);
+      return;
 
     } else if (vertical) {
-      Element tr = DOM.createTR();
-      DOM.insertChild(body, tr, beforeIndex);
-      Element td = DOM.createTD();
-      DOM.appendChild(td, elem);
-      DOM.appendChild(tr, td);
+      if (DomUtils.isTableRowElement(elem)) {
+        DOM.insertChild(body, elem, beforeIndex);
+      } else {
+        Element tr = DOM.createTR();
+        DOM.insertChild(body, tr, beforeIndex);
+        if (DomUtils.isTableCellElement(elem)) {
+          DOM.appendChild(tr, elem);
+        } else {
+          Element td = DOM.createTD();
+          DOM.appendChild(td, elem);
+          DOM.appendChild(tr, td);
+        }
+      }
 
     } else {
       Element tr = DOM.getChild(body, 0);
-      Element td = DOM.createTD();
-      DOM.appendChild(td, elem);
-      DOM.insertChild(tr, td, beforeIndex);
+      if (DomUtils.isTableCellElement(elem)) {
+        DOM.insertChild(tr, elem, beforeIndex);
+      } else {
+        Element td = DOM.createTD();
+        DOM.appendChild(td, elem);
+        DOM.insertChild(tr, td, beforeIndex);
+      }
     }
   }
 
@@ -604,18 +608,9 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
     }
   }
 
-  private void init(int lvl, boolean vert, BAR_TYPE bt, ITEM_TYPE it, boolean hover) {
-    this.level = lvl;
-    this.vertical = vert;
-    if (bt != null) {
-      this.barType = bt;
-    }
-    if (it != null) {
-      this.defaultItemType = it;
-    }
+  private void init(boolean hover) {
 
     Element elem;
-
     switch (barType) {
       case FLOW:
         elem = DOM.createDiv();
@@ -647,7 +642,7 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
         body = DOM.createTBody();
         DOM.appendChild(elem, body);
 
-        if (!vert) {
+        if (!isVertical()) {
           Element tr = DOM.createTR();
           DOM.appendChild(body, tr);
         }
@@ -664,17 +659,17 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
       sinkEvents(Event.ONMOUSEOVER | Event.ONMOUSEOUT);
     }
 
-    setStyleName((level == 0) ? STYLENAME_ROOT : STYLENAME_DEFAULT);
-    if (level > 0) {
-      addStyleDependentName("level-" + lvl);
+    setStyleName(MenuConstants.isRootLevel(getLevel()) ? STYLENAME_ROOT : STYLENAME_DEFAULT);
+    if (getLevel() > 0) {
+      addStyleDependentName("level-" + getLevel());
     }
-    if (vertical) {
+    if (isVertical()) {
       addStyleDependentName(StyleUtils.NAME_VERTICAL);
     } else {
       addStyleDependentName(StyleUtils.NAME_HORIZONTAL);
     }
 
-    addStyleDependentName(barType.toString().toLowerCase());
+    addStyleDependentName(barType.name().toLowerCase());
 
     StyleUtils.hideOutline(outer);
   }
@@ -698,10 +693,6 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
   }
 
   private MenuSeparator insertSeparator(MenuSeparator separator, int beforeIndex) {
-    if (vertical) {
-      setItemColSpan(separator, 2);
-    }
-
     addItemElement(beforeIndex, separator.getElement());
     separator.setParentMenu(this);
     allItems.add(beforeIndex, separator);
@@ -853,11 +844,5 @@ public class MenuBar extends Widget implements HasId, HandlesAfterAdd, CloseHand
     }
 
     selectItem(index);
-  }
-
-  private void setItemColSpan(UIObject item, int colspan) {
-    if (barType == BAR_TYPE.TABLE) {
-      DOM.setElementPropertyInt(item.getElement(), "colSpan", colspan);
-    }
   }
 }

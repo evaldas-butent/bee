@@ -34,8 +34,6 @@ public class DecoratorConstants {
   public static final String ATTR_APPEARANCE_DEEP = "appearanceDeep";
   public static final String ATTR_APPLY_AUTHOR_STYLES = "apply-author-styles"; 
 
-  public static final String ATTR_NAME = "name"; 
-
   public static final String ATTR_EVENT = "event";
   public static final String ATTR_TARGET = "target";
   public static final String ATTR_DEEP = "deep";

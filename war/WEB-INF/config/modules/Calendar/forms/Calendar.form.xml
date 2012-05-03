@@ -10,8 +10,7 @@
       <InputText source="Name" caption="Pavadinimas:"/>
       <InputArea source="Description" caption="Aprašymas:" visibleLines="3" style="width: 200px;"
         d:roleStyle="caption-cell = vertical-align: top;" />
-      <DataSelector source="ThemeName" relSource="Theme" relView="Themes" relColumn="Name"
-        caption="Tema" />
+      <DataSelector source="ThemeName" caption="Tema:" />
     </HorizontalPanel>
     
     <StackPanel class="flexible">

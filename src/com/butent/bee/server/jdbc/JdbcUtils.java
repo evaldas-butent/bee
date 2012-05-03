@@ -623,7 +623,7 @@ public class JdbcUtils {
       col.setDefinitelyWritable(rsmd.isDefinitelyWritable(idx));
       col.setReadOnly(rsmd.isReadOnly(idx));
       col.setSearchable(rsmd.isSearchable(idx));
-      col.setWritable(rsmd.isWritable(idx));
+      col.setSqlWritable(rsmd.isWritable(idx));
 
       ok = true;
     } catch (SQLException ex) {

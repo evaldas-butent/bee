@@ -1,5 +1,6 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -74,6 +75,10 @@ public class InputBoolean extends Composite implements Editor {
     return addHandler(handler, ValueChangeEvent.getType());
   }
 
+  public EditorAction getDefaultFocusAction() {
+    return null;
+  }
+  
   public String getId() {
     return getCheckBox().getId();
   }
@@ -157,7 +162,8 @@ public class InputBoolean extends Composite implements Editor {
     }
   }
 
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry,
+      Element sourceElement) {
   }
 
   public String validate() {

@@ -289,7 +289,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
         setStepValue(BeeUtils.toIntOrNull(value));
       } else if (BeeUtils.same(key, HasTextDimensions.ATTR_CHARACTER_WIDTH)) {
         setCharacterWidth(BeeUtils.toIntOrNull(value));
-      } else if (BeeUtils.same(key, HasTextDimensions.ATTR_VISIBLE_LINES)) {
+      } else if (BeeUtils.same(key, HasVisibleLines.ATTR_VISIBLE_LINES)) {
         setVisibleLines(BeeUtils.toIntOrNull(value));
       } else if (BeeUtils.same(key, ATTR_FORMAT)) {
         setFormat(value.trim());

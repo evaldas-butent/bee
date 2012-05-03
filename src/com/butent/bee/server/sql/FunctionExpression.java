@@ -2,8 +2,8 @@ package com.butent.bee.server.sql;
 
 import com.google.common.collect.Maps;
 
-import com.butent.bee.server.sql.SqlConstants.SqlFunction;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;

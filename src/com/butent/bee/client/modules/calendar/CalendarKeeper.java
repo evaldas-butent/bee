@@ -2,8 +2,8 @@ package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -142,7 +142,7 @@ public class CalendarKeeper {
     final long calId = DataUtils.getLong(userCalendars, row, CalendarConstants.COL_CALENDAR);
     String calName = getCalendarName(row);
 
-    Html widget = new Html(calName, new Command() {
+    Html widget = new Html(calName, new Scheduler.ScheduledCommand() {
       public void execute() {
         openCalendar(calId);
       }
@@ -154,7 +154,7 @@ public class CalendarKeeper {
 
   private static void createSettingsForm(final long calendarId,
       final CalendarWidget calendarWidget) {
-    FormFactory.createFormView(CalendarConstants.FORM_CALENDAR_SETTINGS,
+    FormFactory.createFormView(CalendarConstants.FORM_CALENDAR_SETTINGS, null,
         userCalendars.getColumns(),
         new FormFactory.FormViewCallback() {
           public void onFailure(String[] reason) {

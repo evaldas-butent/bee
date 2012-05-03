@@ -35,9 +35,6 @@ public class AsyncProvider extends Provider {
       this.updateActiveRow = updateActiveRow;
     }
 
-    public void onFailure(String[] reason) {
-    }
-
     public void onSuccess(BeeRowSet rowSet) {
       Integer id = getRpcId();
       if (id != null) {

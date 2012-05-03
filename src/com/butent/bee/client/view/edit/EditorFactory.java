@@ -10,7 +10,6 @@ import com.butent.bee.client.composite.TextEditor;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.utils.BeeCommand;
-import com.butent.bee.client.utils.JsonUtils;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputInteger;
@@ -29,11 +28,12 @@ import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
 import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.ui.HasValueStartIndex;
+import com.butent.bee.shared.ui.HasVisibleLines;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -164,7 +164,7 @@ public class EditorFactory {
   }
 
   public static Editor getEditor(EditorDescription description, String itemKey, ValueType valueType,
-      boolean nullable,  RelationInfo relationInfo) {
+      boolean nullable, Relation relation) {
     Assert.notNull(description);
     EditorType editorType = description.getType();
     Assert.notNull(editorType);
@@ -217,7 +217,9 @@ public class EditorFactory {
         break;
 
       case SELECTOR:
-        editor = new DataSelector(relationInfo, false, JsonUtils.toJson(description.getOptions()));
+        if (relation != null) {
+          editor = new DataSelector(relation, false);
+        }
         break;
 
       case STRING:
@@ -232,7 +234,8 @@ public class EditorFactory {
         editor = new Toggle();
         break;
     }
-    Assert.notNull(editor);
+    
+    Assert.notNull(editor, "cannot create editor");
     editor.setNullable(nullable);
 
     if (editor instanceof HasValueStartIndex && description.getValueStartIndex() != null) {
@@ -249,13 +252,12 @@ public class EditorFactory {
       ((AcceptsCaptions) editor).addCaptions(itemKey);
     }
 
-    if (editor instanceof HasTextDimensions) {
-      if (BeeUtils.isPositive(description.getCharacterWidth())) {
-        ((HasTextDimensions) editor).setCharacterWidth(description.getCharacterWidth());
-      }
-      if (BeeUtils.isPositive(description.getVisibleLines())) {
-        ((HasTextDimensions) editor).setVisibleLines(description.getVisibleLines());
-      }
+    if (editor instanceof HasVisibleLines && BeeUtils.isPositive(description.getVisibleLines())) {
+      ((HasVisibleLines) editor).setVisibleLines(description.getVisibleLines());
+    }
+    if (editor instanceof HasTextDimensions 
+        && BeeUtils.isPositive(description.getCharacterWidth())) {
+      ((HasTextDimensions) editor).setCharacterWidth(description.getCharacterWidth());
     }
 
     return editor;

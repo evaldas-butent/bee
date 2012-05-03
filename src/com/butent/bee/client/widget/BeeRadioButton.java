@@ -26,7 +26,7 @@ public class BeeRadioButton extends RadioButton implements HasId {
   }
 
   public String getIdPrefix() {
-    return DomUtils.RADIO_ID_PREFIX;
+    return "rb";
   }
 
   public void setId(String id) {

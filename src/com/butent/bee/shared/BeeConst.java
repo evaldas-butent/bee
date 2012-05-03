@@ -117,9 +117,6 @@ public class BeeConst {
 
   public static final String CHARSET_UTF8 = "UTF-8";
 
-  public static final String XML_DEFAULT_PROLOG =
-      "<?xml version=\"1.0\" encoding=\"" + CHARSET_UTF8 + "\"?>";
-
   public static final String CLOSE_CURSORS_AT_COMMIT = "close cursors at commit";
   public static final String HOLD_CURSORS_OVER_COMMIT = "hold cursors over commit";
 
@@ -160,8 +157,6 @@ public class BeeConst {
   public static final double DOUBLE_ZERO = 0.0d;
   public static final double DOUBLE_ONE = 1.0d;
   public static final float FLOAT_ZERO = 0.0f;
-
-  public static final String ATTR_XMLNS = "xmlns";
 
   private static String home = SERVER;
 

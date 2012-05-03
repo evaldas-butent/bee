@@ -199,6 +199,10 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     setOptionCount(0);
   }
 
+  public EditorAction getDefaultFocusAction() {
+    return null;
+  }
+  
   @Override
   public String getDefaultStyleName() {
     return "bee-RadioGroup";
@@ -346,7 +350,8 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     this.valueStartIndex = valueStartIndex;
   }
 
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry,
+      Element sourceElement) {
   }
 
   public String validate() {

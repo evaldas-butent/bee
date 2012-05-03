@@ -27,14 +27,17 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.RendererDescription;
 import com.butent.bee.shared.ui.RendererType;
+import com.butent.bee.shared.ui.SelectorColumn;
 import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.utils.XmlHelper;
 
 import java.util.List;
 import java.util.Map;
@@ -374,6 +377,31 @@ public class XmlUtils {
     return PropertyUtils.createProperties("Data", pin.getData(), "Target", pin.getTarget());
   }
 
+  public static Relation getRelation(Map<String, String> attributes, List<Element> children) {
+    RendererDescription rowRenderer = null;
+    Calculation rowRender = null;
+    
+    List<SelectorColumn> selectorColumns = Lists.newArrayList();
+
+    for (Element child : children) {
+      String tagName = getLocalName(child);
+      
+      if (BeeUtils.same(tagName, Relation.TAG_ROW_RENDERER)) {
+        rowRenderer = getRendererDescription(child);
+      } else if (BeeUtils.same(tagName, Relation.TAG_ROW_RENDER)) {
+        rowRender = getCalculation(child);
+
+      } else if (BeeUtils.same(tagName, Relation.TAG_SELECTOR_COLUMN)) {
+        RendererDescription renderer = getRendererDescription(child,
+            RendererDescription.TAG_RENDERER);
+        Calculation render = getCalculation(child, RendererDescription.TAG_RENDERER);
+        selectorColumns.add(SelectorColumn.create(getAttributes(child, false), renderer, render));
+      }
+    }
+
+    return Relation.create(attributes, selectorColumns, rowRenderer, rowRender);
+  }
+  
   public static RendererDescription getRendererDescription(Element element) {
     Assert.notNull(element);
     String typeCode = element.getAttribute(RendererDescription.ATTR_TYPE);
@@ -387,7 +415,7 @@ public class XmlUtils {
     }
 
     RendererDescription rendererDescription = new RendererDescription(type);
-    rendererDescription.setAttributes(XmlUtils.getAttributes(element, false));
+    rendererDescription.setAttributes(getAttributes(element, false));
 
     List<String> items = getChildrenText(element, HasItems.TAG_ITEM);
     if (!items.isEmpty()) {
@@ -397,6 +425,17 @@ public class XmlUtils {
     return rendererDescription;
   }
 
+  public static RendererDescription getRendererDescription(Element parent, String tagName) {
+    Assert.notNull(parent);
+    Assert.notEmpty(tagName);
+
+    Element element = getFirstChildElement(parent, tagName);
+    if (element == null) {
+      return null;
+    }
+    return getRendererDescription(element);
+  }
+  
   public static StyleDeclaration getStyle(Element element) {
     Assert.notNull(element);
 
@@ -507,8 +546,8 @@ public class XmlUtils {
   }
   
   public static boolean isNamespaceDeclaration(String name) {
-    return BeeUtils.same(name, BeeConst.ATTR_XMLNS)
-        || BeeUtils.same(NameUtils.getNamespacePrefix(name), BeeConst.ATTR_XMLNS);
+    return BeeUtils.same(name, XmlHelper.ATTR_XMLNS)
+        || BeeUtils.same(NameUtils.getNamespacePrefix(name), XmlHelper.ATTR_XMLNS);
   }
 
   public static Document parse(String xml) {
@@ -575,7 +614,7 @@ public class XmlUtils {
   }
 
   private static String transformDocument(Document doc) {
-    return transformDocument(doc, BeeConst.XML_DEFAULT_PROLOG);
+    return transformDocument(doc, XmlHelper.DEFAULT_PROLOG);
   }
 
   private static String transformDocument(Document doc, String prolog) {

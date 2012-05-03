@@ -26,10 +26,10 @@
 
   <columns>
     <DataColumn name="Name" source="Name" caption="Pavadinimas" />
-    <DataColumn name="Unit" source="UnitName" caption="Mato v." />
+    <DataColumn name="Unit" renderColumns="UnitName" caption="Mato v." />
     <DataColumn name="Article" source="Article" caption="Artikulas" />
     <DataColumn name="Barcode" source="Barcode" caption="Barkodas" />
     <DataColumn name="Price" source="Price" caption="Pard. kaina" />
-    <DataColumn name="Currency" source="CurrencyName" caption="Val." />
+    <DataColumn name="Currency" renderColumns="CurrencyName" caption="Val." />
   </columns>
 </Grid>

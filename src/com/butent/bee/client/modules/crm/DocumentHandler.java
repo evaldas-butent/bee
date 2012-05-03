@@ -73,7 +73,7 @@ public class DocumentHandler {
       List<String> values = Lists.newArrayList();
 
       for (BeeColumn column : form.getDataColumns()) {
-        if (column.isReadOnly() || column.isForeign()) {
+        if (!column.isWritable()) {
           continue;
         }
 

@@ -7,6 +7,7 @@ import com.google.common.collect.Sets;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.ButtonElement;
+import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.HeadElement;
@@ -24,16 +25,17 @@ import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.dom.client.TableCellElement;
+import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
@@ -100,17 +102,10 @@ public class DomUtils {
   public static final String TAG_TD = "td";
   public static final String TAG_TEXT_AREA = "textarea";
   public static final String TAG_TH = "th";
+  public static final String TAG_TR = "tr";
   public static final String TAG_VIDEO = "video";
 
   public static final String DEFAULT_ID_PREFIX = "bee";
-
-  public static final String BUTTON_ID_PREFIX = "bu";
-  public static final String HTML_ID_PREFIX = "html";
-  public static final String LABEL_ID_PREFIX = "lbl";
-  public static final String LIST_ITEM_ID_PREFIX = "li";
-  public static final String RADIO_ID_PREFIX = "rb";
-  public static final String OPTION_ID_PREFIX = "opt";
-  public static final String TABLE_CELL_ID_PREFIX = "td";
 
   public static final String ATTRIBUTE_CELL_PADDING = "cellPadding";
   public static final String ATTRIBUTE_CELL_SPACING = "cellSpacing";
@@ -165,6 +160,8 @@ public class DomUtils {
 
   private static final String SVG_NAMESPACE = "http://www.w3.org/2000/svg";
   
+  private static final Collection<String> TABLE_CELL_TAGS = Sets.newHashSet(TAG_TD, TAG_TH);
+  
   public static void allowSelection(Element elem) {
     Assert.notNull(elem);
     elem.removeClassName(StyleUtils.NAME_UNSELECTABLE);
@@ -187,28 +184,11 @@ public class DomUtils {
     obj.setTitle(null);
   }
 
-  public static Element createButton(String text) {
-    return createButton(text, false, null);
-  }
-
-  public static Element createButton(String text, boolean asHtml, String id) {
-    Assert.notEmpty(text);
-
+  public static Element createButton(String html) {
     ButtonElement elem = Document.get().createPushButtonElement();
-    if (asHtml) {
-      elem.setInnerHTML(text);
-    } else {
-      elem.setInnerText(text);
+    if (!BeeUtils.isEmpty(html)) {
+      elem.setInnerHTML(html);
     }
-
-    String s;
-    if (BeeUtils.isEmpty(id)) {
-      s = createUniqueId(BUTTON_ID_PREFIX);
-    } else {
-      s = id.trim();
-    }
-    elem.setId(s);
-
     return elem;
   }
 
@@ -216,15 +196,7 @@ public class DomUtils {
     return (DdElement) createElement(DdElement.TAG);
   }
 
-  public static Element createDefinitionItem(boolean term, String text) {
-    return createDefinitionItem(term, text, false, null);
-  }
-
-  public static Element createDefinitionItem(boolean term, String text, boolean asHtml) {
-    return createDefinitionItem(term, text, asHtml, null);
-  }
-
-  public static Element createDefinitionItem(boolean term, String text, boolean asHtml, String id) {
+  public static Element createDefinitionItem(boolean term, String html) {
     Element elem;
     if (term) {
       elem = createElement(DtElement.TAG);
@@ -232,23 +204,18 @@ public class DomUtils {
       elem = createElement(DdElement.TAG);
     }
 
-    if (!BeeUtils.isEmpty(text)) {
-      if (asHtml) {
-        elem.setInnerHTML(text);
-      } else {
-        elem.setInnerText(text);
-      }
+    if (!BeeUtils.isEmpty(html)) {
+      elem.setInnerHTML(html);
     }
-
-    String s;
-    if (BeeUtils.isEmpty(id)) {
-      s = createUniqueId(elem.getTagName().toLowerCase());
-    } else {
-      s = id.trim();
-    }
-    elem.setId(s);
-
     return elem;
+  }
+
+  public static Element createDiv(String html) {
+    DivElement element = Document.get().createDivElement();
+    if (!BeeUtils.isEmpty(html)) {
+      element.setInnerHTML(html);
+    }
+    return element;
   }
 
   public static DtElement createDtElement() {
@@ -274,27 +241,6 @@ public class DomUtils {
     return createElementNs(Document.get(), ns, tag);
   }
 
-  public static Element createHtml(String html) {
-    return createHtml(html, null);
-  }
-
-  public static Element createHtml(String html, String id) {
-    Assert.notEmpty(html);
-
-    SpanElement elem = Document.get().createSpanElement();
-    elem.setInnerHTML(html);
-
-    String s;
-    if (BeeUtils.isEmpty(id)) {
-      s = createUniqueId(HTML_ID_PREFIX);
-    } else {
-      s = id.trim();
-    }
-    elem.setId(s);
-
-    return elem;
-  }
-
   public static String createId(Element elem, String prefix) {
     Assert.notNull(elem);
     Assert.notEmpty(prefix);
@@ -310,110 +256,32 @@ public class DomUtils {
     return createId(obj.getElement(), prefix);
   }
 
-  public static Element createLabel(String text) {
-    return createLabel(text, null, false);
-  }
-
-  public static Element createLabel(String text, boolean asDiv) {
-    return createLabel(text, null, asDiv);
-  }
-
-  public static Element createLabel(String text, String id, boolean asDiv) {
-    Assert.notEmpty(text);
-
-    Element elem;
-    if (asDiv) {
-      elem = Document.get().createDivElement();
-    } else {
-      elem = Document.get().createSpanElement();
-    }
-
-    elem.setInnerText(text);
-
-    String s;
-    if (BeeUtils.isEmpty(id)) {
-      s = createUniqueId(LABEL_ID_PREFIX);
-    } else {
-      s = id.trim();
-    }
-    elem.setId(s);
-
-    return elem;
-  }
-
-  public static Element createListItem(String text) {
-    return createListItem(text, false, null);
-  }
-
-  public static Element createListItem(String text, boolean asHtml) {
-    return createListItem(text, asHtml, null);
-  }
-
-  public static Element createListItem(String text, boolean asHtml, String id) {
+  public static Element createListItem(String html) {
     LIElement elem = Document.get().createLIElement();
-
-    if (!BeeUtils.isEmpty(text)) {
-      if (asHtml) {
-        elem.setInnerHTML(text);
-      } else {
-        elem.setInnerText(text);
-      }
+    if (!BeeUtils.isEmpty(html)) {
+      elem.setInnerHTML(html);
     }
-
-    String s;
-    if (BeeUtils.isEmpty(id)) {
-      s = createUniqueId(LIST_ITEM_ID_PREFIX);
-    } else {
-      s = id.trim();
-    }
-    elem.setId(s);
-
     return elem;
   }
 
-  public static Element createOption(String text) {
-    return createOption(text, false, null);
-  }
-
-  public static Element createOption(String text, boolean asHtml) {
-    return createOption(text, asHtml, null);
-  }
-
-  public static Element createOption(String text, boolean asHtml, String id) {
+  public static Element createOption(String html) {
     OptionElement elem = Document.get().createOptionElement();
-
-    if (!BeeUtils.isEmpty(text)) {
-      if (asHtml) {
-        elem.setInnerHTML(text);
-      } else {
-        elem.setInnerText(text);
-      }
+    if (!BeeUtils.isEmpty(html)) {
+      elem.setInnerHTML(html);
     }
-
-    String s;
-    if (BeeUtils.isEmpty(id)) {
-      s = createUniqueId(OPTION_ID_PREFIX);
-    } else {
-      s = id.trim();
-    }
-    elem.setId(s);
-
     return elem;
   }
 
-  public static Element createRadio(String name, String text) {
-    return createRadio(name, text, null);
-  }
-
-  public static Element createRadio(String name, String text, String id) {
+  public static Element createRadio(String name, String html) {
     Assert.notEmpty(name);
-    Assert.notEmpty(text);
 
     SpanElement elem = Document.get().createSpanElement();
     InputElement input = Document.get().createRadioInputElement(name);
     LabelElement label = Document.get().createLabelElement();
 
-    label.setInnerText(text);
+    if (!BeeUtils.isEmpty(html)) {
+      label.setInnerHTML(html);
+    }
 
     String s = createUniqueId("ri");
     input.setId(s);
@@ -422,50 +290,48 @@ public class DomUtils {
     elem.appendChild(input);
     elem.appendChild(label);
 
-    if (BeeUtils.isEmpty(id)) {
-      s = createUniqueId(RADIO_ID_PREFIX);
-    } else {
-      s = id.trim();
-    }
-    elem.setId(s);
+    return elem;
+  }
 
+  public static Element createSpan(String html) {
+    SpanElement elem = Document.get().createSpanElement();
+    if (!BeeUtils.isEmpty(html)) {
+      elem.setInnerHTML(html);
+    }
     return elem;
   }
 
   public static Element createSvg(String tag) {
     return createElementNs(SVG_NAMESPACE, tag);
   }
+
+  public static TableCellElement createTableCell() {
+    return Document.get().createTDElement();
+  }
   
-  public static Element createTableCell(String text) {
-    return createTableCell(text, false, null);
-  }
-
-  public static Element createTableCell(String text, boolean asHtml) {
-    return createTableCell(text, asHtml, null);
-  }
-
-  public static Element createTableCell(String text, boolean asHtml, String id) {
-    TableCellElement elem = Document.get().createTDElement();
-
-    if (!BeeUtils.isEmpty(text)) {
-      if (asHtml) {
-        elem.setInnerHTML(text);
-      } else {
-        elem.setInnerText(text);
-      }
+  public static Element createTableCell(String html) {
+    TableCellElement elem = createTableCell();
+    if (!BeeUtils.isEmpty(html)) {
+      elem.setInnerHTML(html);
     }
-
-    String s;
-    if (BeeUtils.isEmpty(id)) {
-      s = createUniqueId(TABLE_CELL_ID_PREFIX);
-    } else {
-      s = id.trim();
-    }
-    elem.setId(s);
-
     return elem;
   }
 
+  public static TableRowElement createTableRow() {
+    return Document.get().createTRElement();
+  }
+  
+  public static Element createTableRow(List<String> cellContent) {
+    TableRowElement rowElement = createTableRow();
+    
+    if (cellContent != null) {
+      for (String text : cellContent) {
+        rowElement.appendChild(createTableCell(text));
+      }
+    }
+    return rowElement;
+  }
+  
   public static String createUniqueId() {
     return createUniqueId(DEFAULT_ID_PREFIX);
   }
@@ -998,6 +864,14 @@ public class DomUtils {
     return "<" + elem.tagName + attrs + ">" + elem.innerHTML + "</" + elem.tagName + ">";
   }-*/;
 
+  public static Element getParentCell(Element child, boolean incl) {
+    return getParentElement(child, TABLE_CELL_TAGS, incl);
+  }
+
+  public static Element getParentCell(UIObject obj, boolean incl) {
+    return getParentElement(obj, TABLE_CELL_TAGS, incl);
+  }
+
   public static int getParentClientHeight(Widget widget) {
     Assert.notNull(widget);
     Assert.notNull(widget.getParent(), "Widget is orphan");
@@ -1008,6 +882,46 @@ public class DomUtils {
     Assert.notNull(widget);
     Assert.notNull(widget.getParent(), "Widget is orphan");
     return widget.getParent().getElement().getClientWidth();
+  }
+
+  public static Element getParentElement(Element child, Collection<String> tagNames, boolean incl) {
+    if (child == null) {
+      return null;
+    }
+    
+    if (incl && BeeUtils.containsSame(tagNames, child.getTagName())) {
+      return child;
+    } else {
+      return getParentElement(child.getParentElement(), tagNames, true);
+    }
+  }
+  
+  public static Element getParentElement(Element child, String tagName, boolean incl) {
+    if (child == null) {
+      return null;
+    }
+    
+    if (incl && BeeUtils.same(child.getTagName(), tagName)) {
+      return child;
+    } else {
+      return getParentElement(child.getParentElement(), tagName, true);
+    }
+  }
+
+  public static Element getParentElement(UIObject obj, Collection<String> tagNames, boolean incl) {
+    if (obj == null) {
+      return null;
+    } else {
+      return getParentElement(obj.getElement(), tagNames, incl);
+    }
+  }
+  
+  public static Element getParentElement(UIObject obj, String tagName, boolean incl) {
+    if (obj == null) {
+      return null;
+    } else {
+      return getParentElement(obj.getElement(), tagName, incl);
+    }
   }
   
   public static String getParentId(Element elem, boolean find) {
@@ -1025,6 +939,31 @@ public class DomUtils {
     return getParentId(parent, find);
   }
 
+  public static Popup getParentPopup(Widget w) {
+    Assert.notNull(w);
+
+    Widget p = w;
+    for (int i = 0; i < MAX_GENERATIONS; i++) {
+      if (p instanceof Popup) {
+        return (Popup) p;
+      }
+
+      p = p.getParent();
+      if (p == null) {
+        break;
+      }
+    }
+    return null;
+  }
+
+  public static Element getParentRow(Element child, boolean incl) {
+    return getParentElement(child, TAG_TR, incl);
+  }
+
+  public static Element getParentRow(UIObject obj, boolean incl) {
+    return getParentElement(obj, TAG_TR, incl);
+  }
+
   public static List<Property> getPathInfo(Widget w) {
     Assert.notNull(w);
     List<Property> lst = new ArrayList<Property>();
@@ -1034,7 +973,7 @@ public class DomUtils {
     }
     return lst;
   }
-  
+
   public static Widget getPhysicalChild(Widget root, String id) {
     Assert.notNull(root);
     return getChildByElement(root, getElement(id));
@@ -1079,11 +1018,11 @@ public class DomUtils {
     }
     return top;
   }
-
+  
   public static String getRole(Element el) {
     return Assert.notNull(el).getAttribute(ATTRIBUTE_ROLE);
   }
-  
+
   public static int getRowSpan(Element elem) {
     if (isTableCellElement(elem)) {
       return elem.getPropertyInt(ATTRIBUTE_ROW_SPAN);
@@ -1124,11 +1063,11 @@ public class DomUtils {
     }
     return sib;
   }
-
+  
   public static String getStage(Widget w) {
     return getAttribute(w, ATTRIBUTE_STAGE);
   }
-  
+
   public static int getTabIndex(Element el) {
     Assert.notNull(el);
     return el.getTabIndex();
@@ -1214,12 +1153,12 @@ public class DomUtils {
 
     return lst;
   }
-
+  
   public static int getValueInt(Element elem) {
     Assert.notNull(elem);
     return elem.getPropertyInt(ATTRIBUTE_VALUE);
   }
-  
+
   public static int getValueInt(String id) {
     Element elem = getElement(id);
 
@@ -1345,7 +1284,7 @@ public class DomUtils {
       return getDirection(s) != null;
     }
   }
-
+  
   public static boolean isEmpty(HasWidgets container) {
     if (container == null) {
       return true;
@@ -1362,21 +1301,21 @@ public class DomUtils {
     }
     return false;
   }
-  
+
   public static boolean isInputElement(Element el) {
     if (el == null) {
       return false;
     }
     return el.getTagName().equalsIgnoreCase(TAG_INPUT);
   }
-
+  
   public static boolean isLabelElement(Element el) {
     if (el == null) {
       return false;
     }
     return el.getTagName().equalsIgnoreCase(TAG_LABEL);
   }
-  
+
   public static boolean isOrHasChild(String id, Node nd) {
     Assert.notEmpty(id);
     Assert.notNull(nd);
@@ -1398,6 +1337,13 @@ public class DomUtils {
       return false;
     }
     return el.getTagName().equalsIgnoreCase(TAG_TABLE);
+  }
+  
+  public static boolean isTableRowElement(Element el) {
+    if (el == null) {
+      return false;
+    }
+    return el.getTagName().equalsIgnoreCase(TAG_TR);
   }
 
   public static boolean isTdElement(Element el) {
@@ -1435,7 +1381,7 @@ public class DomUtils {
     }
     BeeKeeper.getLog().addSeparator();
   }
-
+  
   public static void makeFocusable(Element el) {
     Assert.notNull(el);
     if (getTabIndex(el) < 0) {
@@ -1447,7 +1393,7 @@ public class DomUtils {
     Assert.notNull(obj);
     makeFocusable(obj.getElement());
   }
-  
+
   public static void moveBy(Element el, int dx, int dy) {
     Assert.notNull(el);
     moveBy(el.getStyle(), dx, dy);
@@ -1475,12 +1421,12 @@ public class DomUtils {
   public static void moveBy(String id, int dx, int dy) {
     moveBy(getElement(id), dx, dy);
   }
-
+  
   public static void moveBy(UIObject obj, int dx, int dy) {
     Assert.notNull(obj);
     moveBy(obj.getElement(), dx, dy);
   }
-  
+
   public static void moveHorizontalBy(Element el, int dx) {
     Assert.notNull(el);
     moveBy(el.getStyle(), dx, 0);
@@ -1499,17 +1445,17 @@ public class DomUtils {
   public static void moveHorizontalBy(String id, int dx) {
     moveHorizontalBy(getElement(id), dx);
   }
-
+  
   public static void moveHorizontalBy(UIObject obj, int dx) {
     Assert.notNull(obj);
     moveHorizontalBy(obj.getElement(), dx);
   }
-  
+
   public static void moveVerticalBy(Element el, int dy) {
     Assert.notNull(el);
     moveBy(el.getStyle(), 0, dy);
   }
-
+  
   public static void moveVerticalBy(NodeList<Element> elements, int dy) {
     Assert.notNull(elements);
     if (dy == 0) {
@@ -1519,7 +1465,7 @@ public class DomUtils {
       moveVerticalBy(elements.getItem(i), dy);
     }
   }
-  
+
   public static void moveVerticalBy(String id, int dy) {
     moveVerticalBy(getElement(id), dy);
   }
@@ -1527,23 +1473,6 @@ public class DomUtils {
   public static void moveVerticalBy(UIObject obj, int dy) {
     Assert.notNull(obj);
     moveVerticalBy(obj.getElement(), dy);
-  }
-
-  public static PopupPanel parentPopup(Widget w) {
-    Assert.notNull(w);
-
-    Widget p = w;
-    for (int i = 0; i < MAX_GENERATIONS; i++) {
-      if (p instanceof PopupPanel) {
-        return (PopupPanel) p;
-      }
-
-      p = p.getParent();
-      if (p == null) {
-        break;
-      }
-    }
-    return null;
   }
 
   public static void preventChildSelection(Element elem, boolean recurse, String... tags) {

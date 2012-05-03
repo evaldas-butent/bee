@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema targetNamespace="http://www.butent.com/ui" elementFormDefault="qualified"
   xmlns="http://www.butent.com/ui"
-  xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:type="http://www.butent.com/type">
+
+  <xs:import namespace="http://www.butent.com/type" schemaLocation="types.xsd" />
 
   <xs:complexType name="styleType">
     <xs:sequence>
@@ -50,17 +53,22 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:attributeGroup name="alignment">
+    <xs:attribute name="horizontalAlignment" type="horizontalAlignmentType" />
+    <xs:attribute name="verticalAlignment" type="verticalAlignmentType" />
+  </xs:attributeGroup>
+
   <xs:simpleType name="cssUnit">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="%"></xs:enumeration>
-      <xs:enumeration value="in"></xs:enumeration>
-      <xs:enumeration value="cm"></xs:enumeration>
-      <xs:enumeration value="mm"></xs:enumeration>
-      <xs:enumeration value="em"></xs:enumeration>
-      <xs:enumeration value="ex"></xs:enumeration>
-      <xs:enumeration value="pt"></xs:enumeration>
-      <xs:enumeration value="pc"></xs:enumeration>
-      <xs:enumeration value="px"></xs:enumeration>
+      <xs:enumeration value="%" />
+      <xs:enumeration value="in" />
+      <xs:enumeration value="cm" />
+      <xs:enumeration value="mm" />
+      <xs:enumeration value="em" />
+      <xs:enumeration value="ex" />
+      <xs:enumeration value="pt" />
+      <xs:enumeration value="pc" />
+      <xs:enumeration value="px" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -148,12 +156,12 @@
 
   <xs:simpleType name="editorAction">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="replace"></xs:enumeration>
-      <xs:enumeration value="select"></xs:enumeration>
-      <xs:enumeration value="home"></xs:enumeration>
-      <xs:enumeration value="end"></xs:enumeration>
-      <xs:enumeration value="addFirst"></xs:enumeration>
-      <xs:enumeration value="addLast"></xs:enumeration>
+      <xs:enumeration value="replace" />
+      <xs:enumeration value="select" />
+      <xs:enumeration value="home" />
+      <xs:enumeration value="end" />
+      <xs:enumeration value="addFirst" />
+      <xs:enumeration value="addLast" />
     </xs:restriction>
   </xs:simpleType>
 
@@ -260,15 +268,15 @@
 
   <xs:simpleType name="viewAction">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="add"></xs:enumeration>
-      <xs:enumeration value="bookmark"></xs:enumeration>
-      <xs:enumeration value="configure"></xs:enumeration>
-      <xs:enumeration value="close"></xs:enumeration>
-      <xs:enumeration value="delete"></xs:enumeration>
-      <xs:enumeration value="edit"></xs:enumeration>
-      <xs:enumeration value="refresh"></xs:enumeration>
-      <xs:enumeration value="requery"></xs:enumeration>
-      <xs:enumeration value="save"></xs:enumeration>
+      <xs:enumeration value="add" />
+      <xs:enumeration value="bookmark" />
+      <xs:enumeration value="configure" />
+      <xs:enumeration value="close" />
+      <xs:enumeration value="delete" />
+      <xs:enumeration value="edit" />
+      <xs:enumeration value="refresh" />
+      <xs:enumeration value="requery" />
+      <xs:enumeration value="save" />
     </xs:restriction>
   </xs:simpleType>
   
@@ -307,6 +315,75 @@
       <xs:enumeration value="range" />
       <xs:enumeration value="enum" />
       <xs:enumeration value="join" />
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:group name="selector">
+    <xs:choice>
+      <xs:element name="rowRenderer" type="renderer" />
+      <xs:element name="rowRender" type="calcType" />
+    </xs:choice>
+  </xs:group>
+   
+  <xs:complexType name="selectorColumn">
+    <xs:choice minOccurs="0" maxOccurs="1">
+      <xs:element name="renderer" type="renderer" />
+      <xs:element name="render" type="calcType" />
+    </xs:choice>
+    <xs:attribute name="source" type="type:nameType" use="required" />
+    <xs:attributeGroup ref="appearance" />
+    <xs:attributeGroup ref="alignment" />
+    <xs:attribute name="itemKey" type="xs:normalizedString" />
+    <xs:attribute name="renderColumns" type="type:nameList" />
+  </xs:complexType>
+
+  <xs:simpleType name="relationCaching">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="none" />
+      <xs:enumeration value="query" />
+      <xs:enumeration value="local" />
+      <xs:enumeration value="global" />
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:attributeGroup name="relation">
+    <xs:attribute name="viewName" type="type:nameType" />
+    <xs:attribute name="choiceColumns" type="type:nameList" />
+    <xs:attribute name="searchableColumns" type="type:nameList" />
+    <xs:attribute name="filter" type="xs:normalizedString" />
+    <xs:attribute name="order" type="xs:normalizedString" />
+    <xs:attribute name="caching" type="relationCaching" />
+    <xs:attribute name="operator" type="type:operatorType" />
+    <xs:attribute name="itemType" type="menuItemType" />
+    <xs:attribute name="visibleLines" type="xs:positiveInteger" />
+  </xs:attributeGroup>
+  
+  <xs:simpleType name="refreshType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="cell" />
+      <xs:enumeration value="row" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="focusAction">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="select" />
+      <xs:enumeration value="home" />
+      <xs:enumeration value="end" />
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:simpleType name="menuItemType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="label" />
+      <xs:enumeration value="button" />
+      <xs:enumeration value="radio" />
+      <xs:enumeration value="html" />
+      <xs:enumeration value="option" />
+      <xs:enumeration value="li" />
+      <xs:enumeration value="dt" />
+      <xs:enumeration value="dd" />
+      <xs:enumeration value="row" />
     </xs:restriction>
   </xs:simpleType>
 

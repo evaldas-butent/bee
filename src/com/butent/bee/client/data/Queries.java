@@ -48,11 +48,8 @@ public class Queries {
   public interface RowCallback extends Callback<BeeRow, String[]> {
   }
 
-  /**
-   * Requires implementing classes to have {@code onResponse) method applied for a {@code RowSet}
-   * object.
-   */
-  public interface RowSetCallback extends Callback<BeeRowSet, String[]> {
+  public interface RowSetCallback {
+    void onSuccess(BeeRowSet result);
   }
 
   /**
@@ -137,7 +134,7 @@ public class Queries {
     if (BeeUtils.isEmpty(columns)) {
       columnNames = null;
     } else {
-      columnNames = BeeUtils.transform(columns, Service.VIEW_COLUMN_SEPARATOR);
+      columnNames = BeeUtils.transformCollection(columns, Service.VIEW_COLUMN_SEPARATOR);
     }
 
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
@@ -239,7 +236,7 @@ public class Queries {
     if (BeeUtils.isEmpty(columns)) {
       columnNames = null;
     } else {
-      columnNames = BeeUtils.transform(columns, Service.VIEW_COLUMN_SEPARATOR);
+      columnNames = BeeUtils.transformCollection(columns, Service.VIEW_COLUMN_SEPARATOR);
     }
 
     if (cachingPolicy != null && cachingPolicy.doRead() && BeeUtils.isEmpty(columnNames)
@@ -287,6 +284,8 @@ public class Queries {
                   && BeeUtils.isEmpty(columnNames)) {
                 Global.getCache().add(rs, filter, order, offset, limit);
               }
+            } else {
+              BeeKeeper.getLog().severe("get RowSet invalid response:", response.getType());
             }
           }
         });
@@ -325,14 +324,7 @@ public class Queries {
     BeeKeeper.getRpc().sendText(Service.INSERT_ROWS, Codec.beeSerialize(rowSet),
         new ResponseCallback() {
           public void onResponse(ResponseObject response) {
-            if (response.hasErrors()) {
-              if (callback == null) {
-                BeeKeeper.getScreen().notifySevere(response.getErrors());
-              } else {
-                callback.onFailure(response.getErrors());
-              }
-
-            } else if (response.hasResponse(BeeRowSet.class)) {
+            if (response.hasResponse(BeeRowSet.class)) {
               BeeRowSet result = BeeRowSet.restore((String) response.getResponse());
               BeeKeeper.getLog().info(result.getViewName(), "inserted", result.getNumberOfRows(),
                   "rows");
@@ -341,12 +333,7 @@ public class Queries {
               }
 
             } else {
-              String[] msg = {"insert rows:", rowSet.getViewName(), "invalid response"};
-              if (callback == null) {
-                BeeKeeper.getScreen().notifySevere(msg);
-              } else {
-                callback.onFailure(msg);
-              }
+              BeeKeeper.getLog().severe("insert rows:", rowSet.getViewName(), "invalid response");
             }
           }
         });

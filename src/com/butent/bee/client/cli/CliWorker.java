@@ -40,7 +40,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcList;
 import com.butent.bee.client.composite.SliderBar;
-import com.butent.bee.client.data.DataInfoProvider;
 import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.StringCallback;
@@ -110,6 +109,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.utils.Wildcards;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -389,8 +389,8 @@ public class CliWorker {
       clear(args);
     } else if (z.startsWith("client")) {
       showClientLocation();
-    } else if (z.startsWith("col") && arr.length == 2) {
-      showDataInfo(arr[1]);
+    } else if (z.startsWith("data")) {
+      showDataInfo(args);
     } else if (z.startsWith("conf")) {
       BeeKeeper.getRpc().invoke("configInfo");
     } else if (z.startsWith("conn") || z.equals("http")) {
@@ -433,8 +433,6 @@ public class CliWorker {
       showSupport();
     } else if (z.equals("id")) {
       showElement(v, arr);
-    } else if (z.equals("import")) {
-      FormFactory.importForm(args);
     } else if (z.startsWith("inp") && z.contains("type")) {
       showInputTypes();
     } else if (z.startsWith("inp") && z.contains("box") || z.equals("prompt")) {
@@ -859,15 +857,38 @@ public class CliWorker {
 
   public static void showDataInfo(String viewName) {
     if (BeeUtils.isEmpty(viewName)) {
-      BeeKeeper.getLog().severe("showDataInfo: viewName not specified");
-      return;
-    }
-
-    Global.getDataInfo(viewName, new DataInfoProvider.DataInfoCallback() {
-      public void onSuccess(DataInfo result) {
-        BeeKeeper.getScreen().showGrid(result.getExtendedInfo());
+      List<DataInfo> list = Lists.newArrayList(Global.getDataInfoProvider().getViews());
+      if (list.isEmpty()) {
+        Global.showError("no data infos available");
+        return;
       }
-    });
+      
+      Collections.sort(list);
+      String[][] data = new String[list.size()][7];
+
+      for (int i = 0; i < list.size(); i++) {
+        DataInfo di = list.get(i);
+
+        data[i][0] = di.getViewName();
+        data[i][1] = di.getTableName();
+        data[i][2] = di.getIdColumn();
+        data[i][3] = di.getVersionColumn();
+ 
+        data[i][4] = BeeUtils.toString(di.getColumnCount());
+        data[i][5] = BeeUtils.toString(di.getViewColumns().size());
+        data[i][6] = BeeUtils.toString(di.getRowCount());
+      }
+      BeeKeeper.getScreen().showGrid(data, "view", "table", "id", "version", "cc", "vc", "rc");
+
+    } else if (BeeUtils.inListSame(viewName, "load", "refresh", "+", "x")) {
+      Global.getDataInfoProvider().load();
+    
+    } else {
+      DataInfo dataInfo = Global.getDataInfo(viewName, true);
+      if (dataInfo != null) {
+        BeeKeeper.getScreen().showGrid(dataInfo.getExtendedInfo());
+      }
+    }
   }
 
   public static void showDate(String cmnd, String args) {

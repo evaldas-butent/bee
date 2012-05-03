@@ -102,7 +102,7 @@
       <editor type="long" />
     </DataColumn>
 
-    <CalcColumn name="Calc2" type="decimal" caption="Math" scale="4" sortBy="Long, Date">
+    <CalcColumn name="Calc2" type="decimal" caption="Math" scale="4" sortBy="Long Date">
       <render>
         <ui:expression>(row.Long &gt; 0) ? Math.log(row.Long) : row.Long / 1000</ui:expression>
       </render>
@@ -155,7 +155,7 @@
       <editor type="rich" />
     </DataColumn>
 
-    <CalcColumn name="Calc3" type="string" caption="typeof" width="100" searchBy="String, Char">
+    <CalcColumn name="Calc3" type="string" caption="typeof" width="100" searchBy="String Char">
       <render>
         <ui:function>
             var s = "";

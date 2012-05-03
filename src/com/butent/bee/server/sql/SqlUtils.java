@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import com.butent.bee.server.sql.SqlConstants.SqlDataType;
-import com.butent.bee.server.sql.SqlConstants.SqlFunction;
-import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.SqlConstants.SqlDataType;
+import com.butent.bee.shared.data.SqlConstants.SqlFunction;
+import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.ArrayUtils;

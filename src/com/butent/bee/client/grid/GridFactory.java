@@ -553,9 +553,6 @@ public class GridFactory {
         gridDescription.getCachingPolicy(),
         PropertyUtils.createProperties(Service.VAR_VIEW_SIZE, threshold),
         new Queries.RowSetCallback() {
-          public void onFailure(String[] reason) {
-          }
-
           public void onSuccess(final BeeRowSet rowSet) {
             Assert.notNull(rowSet);
 

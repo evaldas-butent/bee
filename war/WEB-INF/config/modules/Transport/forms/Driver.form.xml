@@ -14,8 +14,8 @@
       <FlowPanel class="flexBox-vertical flexible">
         <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
           <InlineLabel html="Vardas, pavardė" class="bee-required" style="font-weight: bold; &LEFT_LABEL_STYLE;" />
-          <DataSelector source="PersonName" relSource="CompanyPerson" relView="CompanyPersons"
-            relColumn="PersonName" class="flexible" style="min-width: 5em;" />
+          <DataSelector source="CompanyPerson" renderColumns="PersonName"
+            choiceColumns="CompanyName FirstName LastName" class="flexible" style="min-width: 5em;" />
         </FlowPanel>
 
         <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">

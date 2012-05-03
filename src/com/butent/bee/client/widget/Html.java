@@ -1,7 +1,7 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HTML;
 
@@ -17,7 +17,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class Html extends HTML implements HasId, HasCommand {
 
-  private Command command = null;
+  private Scheduler.ScheduledCommand command = null;
 
   public Html() {
     super();
@@ -38,7 +38,7 @@ public class Html extends HTML implements HasId, HasCommand {
     }
   }
 
-  public Html(String html, Command cmnd) {
+  public Html(String html, Scheduler.ScheduledCommand cmnd) {
     this(html);
 
     if (cmnd != null) {
@@ -51,7 +51,7 @@ public class Html extends HTML implements HasId, HasCommand {
     init();
   }
 
-  public Command getCommand() {
+  public Scheduler.ScheduledCommand getCommand() {
     return command;
   }
 
@@ -60,7 +60,7 @@ public class Html extends HTML implements HasId, HasCommand {
   }
 
   public String getIdPrefix() {
-    return DomUtils.HTML_ID_PREFIX;
+    return "html";
   }
 
   @Override
@@ -71,7 +71,7 @@ public class Html extends HTML implements HasId, HasCommand {
     super.onBrowserEvent(event);
   }
 
-  public void setCommand(Command command) {
+  public void setCommand(Scheduler.ScheduledCommand command) {
     this.command = command;
     if (command != null) {
       sinkEvents(Event.ONCLICK);

@@ -1,23 +1,20 @@
 package com.butent.bee.client.menu;
 
-import com.google.gwt.user.client.Element;
+import com.google.common.collect.Lists;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Contains attributes and getting and setting methods for a single menu item.
  */
 
 public class MenuItem extends UIObject implements HasId {
-
-  /**
-   * Lists all possible menu item types
-   */
-  public static enum ITEM_TYPE {
-    LABEL, BUTTON, RADIO, HTML, OPTION, LI, DT, DD
-  }
 
   public static ITEM_TYPE defaultType = ITEM_TYPE.LABEL;
 
@@ -49,10 +46,6 @@ public class MenuItem extends UIObject implements HasId {
     setCommand(cmd);
   }
 
-  protected MenuItem(MenuBar parent, String text) {
-    init(parent, text, getDefaultType(parent));
-  }
-  
   public MenuCommand getCommand() {
     return command;
   }
@@ -126,7 +119,7 @@ public class MenuItem extends UIObject implements HasId {
     ITEM_TYPE w = null;
 
     if (parent != null) {
-      w = parent.getDefaultItemType();
+      w = parent.getItemType();
     }
     if (w == null) {
       w = defaultType;
@@ -139,29 +132,40 @@ public class MenuItem extends UIObject implements HasId {
     Element elem;
 
     switch (type) {
+      case LABEL:
+        elem = DomUtils.createSpan(text);
+        break;
       case HTML:
-        elem = DomUtils.createHtml(text).cast();
+        elem = DomUtils.createDiv(text);
         break;
       case BUTTON:
-        elem = DomUtils.createButton(text).cast();
+        elem = DomUtils.createButton(text);
         break;
       case RADIO:
-        elem = DomUtils.createRadio(parent.getName(), text).cast();
+        elem = DomUtils.createRadio(parent.getName(), text);
         break;
       case OPTION:
-        elem = DomUtils.createOption(text).cast();
+        elem = DomUtils.createOption(text);
         break;
       case LI:
-        elem = DomUtils.createListItem(text).cast();
+        elem = DomUtils.createListItem(text);
         break;
       case DT:
-        elem = DomUtils.createDefinitionItem(true, text).cast();
+        elem = DomUtils.createDefinitionItem(true, text);
         break;
       case DD:
-        elem = DomUtils.createDefinitionItem(false, text).cast();
+        elem = DomUtils.createDefinitionItem(false, text);
+        break;
+      case ROW:
+        if (BeeUtils.isEmpty(text)) {
+          elem = DomUtils.createTableRow().cast();
+        } else {
+          elem = DomUtils.createTableRow(Lists.newArrayList(text));
+        }
         break;
       default:
-        elem = DomUtils.createLabel(text).cast();
+        Assert.untouchable();
+        elem = null;
     }
 
     setElement(elem);

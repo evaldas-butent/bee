@@ -5,15 +5,13 @@ import com.google.common.collect.Lists;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
-import com.butent.bee.client.data.DataInfoProvider.DataInfoCallback;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.DataEvent;
@@ -22,12 +20,13 @@ import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.data.view.RelationInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -124,67 +123,19 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   }
 
   /**
-   * Manages suggestion columns and their searchability.
-   */
-
-  public static class SelectionColumn {
-
-    private final String name;
-    private final boolean searchable;
-
-    public SelectionColumn(String name) {
-      this(name, true);
-    }
-
-    public SelectionColumn(String name, boolean searchable) {
-      this.name = name;
-      this.searchable = searchable;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public boolean isSearchable() {
-      return searchable;
-    }
-  }
-
-  /**
    * Handles a single row of suggestions.
    */
 
   public static class Suggestion {
+    private final BeeRow row;
 
-    private final String displayString;
-    private final long rowId;
-    private final String relValue;
-
-    public Suggestion(String displayString, long rowId, String relValue) {
-      this.displayString = displayString;
-      this.rowId = rowId;
-      this.relValue = relValue;
+    public Suggestion(BeeRow row) {
+      this.row = row;
     }
 
-    public String getDisplayString() {
-      return displayString;
+    public BeeRow getRow() {
+      return row;
     }
-
-    public String getRelValue() {
-      return relValue;
-    }
-
-    public long getRowId() {
-      return rowId;
-    }
-  }
-
-  /**
-   * Contains a list of possible caching settings for selections, from none to full.
-   */
-
-  private enum Caching {
-    NONE, QUERY, FULL
   }
 
   /**
@@ -210,124 +161,89 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
   }
 
-  private final RelationInfo relationInfo;
+  public static final Relation.Caching DEFAULT_CACHING = Relation.Caching.GLOBAL;
 
-  private final List<String> viewColumns = Lists.newArrayList();
-  private final int relIndex;
+  private final DataInfo viewInfo;
 
-  private final List<Integer> searchColumns = Lists.newArrayList();
+  private final List<IsColumn> searchColumns = Lists.newArrayList();
 
+  private final Filter viewFilter;
   private final Order viewOrder;
 
-  private final CachingPolicy cachingPolicy;
-  private final int cachingThreshold;
-
-  private Caching caching = null;
+  private final Relation.Caching caching;
 
   private BeeRowSet viewData = null;
   private BeeRowSet requestData = null;
 
   private Request lastRequest = null;
-
   private PendingRequest pendingRequest = null;
-
-  private final List<BeeColumn> dataColumns = Lists.newArrayList();
 
   private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
 
-  public SelectionOracle(RelationInfo relationInfo, List<SelectionColumn> cols,
-      CachingPolicy cachingPolicy, int cachingThreshold) {
-    Assert.notNull(relationInfo);
-    this.relationInfo = relationInfo;
+  private boolean dataInitialized = false;
 
-    String relColumn = relationInfo.getRelColumn();
-    if (!containsColumn(cols, relColumn)) {
-      getViewColumns().add(relColumn);
-      getSearchColumns().add(0);
-    }
+  public SelectionOracle(Relation relation, DataInfo viewInfo) {
+    Assert.notNull(relation);
+    Assert.notNull(viewInfo);
+    
+    this.viewInfo = viewInfo;
 
-    if (cols != null) {
-      for (SelectionColumn column : cols) {
-        String name = column.getName();
-        if (!BeeUtils.containsSame(getViewColumns(), name)) {
-          getViewColumns().add(name);
-          if (column.isSearchable()) {
-            getSearchColumns().add(getViewColumns().size() - 1);
-          }
-        }
+    for (String colName : relation.getSearchableColumns()) {
+      IsColumn column = DataUtils.getColumn(colName, viewInfo.getColumns());
+      if (column != null) {
+        this.searchColumns.add(column);
       }
     }
 
-    this.relIndex = BeeUtils.indexOf(getViewColumns(), relColumn);
+    this.viewFilter = relation.getFilter();
+    this.viewOrder = relation.getOrder();
 
-    this.viewOrder = new Order();
-    this.viewOrder.add(relColumn, true);
-
-    this.cachingPolicy = cachingPolicy;
-    this.cachingThreshold = cachingThreshold;
-
-    Global.getDataInfo(relationInfo.getRelView(), new DataInfoCallback() {
-      @Override
-      public void onSuccess(DataInfo result) {
-        Assert.notNull(result);
-
-        getDataColumns().clear();
-        for (BeeColumn column : result.getColumns()) {
-          getDataColumns().add(column);
-        }
-        initCaching(result.getRowCount());
-
-        checkPendingRequest();
-      }
-    });
+    this.caching = (relation.getCaching() == null) ? DEFAULT_CACHING : relation.getCaching();
 
     this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this));
   }
 
   public String getViewName() {
-    return getRelationInfo().getRelView();
+    return viewInfo.getViewName();
   }
 
   public void onCellUpdate(CellUpdateEvent event) {
-    if (isEventRelevant(event) && BeeUtils.containsSame(getViewColumns(), event.getColumnName())) {
-      initViewData();
+    if (isEventRelevant(event)
+        && getViewData().updateCell(event.getRowId(), event.getColumnIndex(), event.getValue())) {
+      setLastRequest(null);
     }
   }
 
   public void onMultiDelete(MultiDeleteEvent event) {
     if (isEventRelevant(event)) {
       for (RowInfo rowInfo : event.getRows()) {
-        int index = getViewData().getRowIndex(rowInfo.getId());
-        if (index >= 0) {
-          getViewData().removeRow(index);
-        }
+        getViewData().removeRowById(rowInfo.getId());
       }
+      setLastRequest(null);
     }
   }
 
   public void onRowDelete(RowDeleteEvent event) {
-    if (isEventRelevant(event)) {
-      int index = getViewData().getRowIndex(event.getRowId());
-      if (index >= 0) {
-        getViewData().removeRow(index);
-      }
+    if (isEventRelevant(event) && getViewData().removeRowById(event.getRowId())) {
+      setLastRequest(null);
     }
   }
 
   public void onRowInsert(RowInsertEvent event) {
-    if (isEventRelevant(event)) {
-      initViewData();
+    if (isEventRelevant(event) && !getViewData().containsRow(event.getRowId())) {
+      getViewData().addRow(event.getRow());
+      setLastRequest(null);
     }
   }
 
   public void onRowUpdate(RowUpdateEvent event) {
-    if (isEventRelevant(event)) {
-      initViewData();
+    if (isEventRelevant(event) && getViewData().updateRow(event.getRow())) {
+      setLastRequest(null);
     }
   }
 
   public void onUnload() {
-    for (HandlerRegistration entry : getHandlerRegistry()) {
+    for (HandlerRegistration entry : handlerRegistry) {
       if (entry != null) {
         entry.removeHandler();
       }
@@ -338,31 +254,17 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     Assert.notNull(request);
     Assert.notNull(callback);
 
-    if (getCaching() == null || getDataColumns().isEmpty()) {
-      setPendingRequest(new PendingRequest(request, callback));
-      return;
-    }
     if (!prepareData(request)) {
       setPendingRequest(new PendingRequest(request, callback));
+      if (isFullCaching() && !isDataInitialized()) {
+        setDataInitialized(true);
+        initViewData();
+      }
       return;
     }
 
     setLastRequest(request);
     processRequest(request, callback);
-  }
-
-  public void rotateCaching() {
-    int index = getCaching().ordinal();
-    if (index >= Caching.values().length - 1) {
-      index = 0;
-    } else {
-      index++;
-    }
-
-    Caching value = Caching.values()[index];
-    BeeKeeper.getLog().debug("caching", value);
-    setCaching(value);
-    setLastRequest(null);
   }
 
   private void checkPendingRequest() {
@@ -374,45 +276,14 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
   }
 
-  private boolean containsColumn(Collection<SelectionColumn> cols, String name) {
-    if (cols == null) {
-      return false;
-    }
-    for (SelectionColumn column : cols) {
-      if (BeeUtils.same(column.getName(), name)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private Caching getCaching() {
-    return caching;
-  }
-
-  private CachingPolicy getCachingPolicy() {
-    return cachingPolicy;
-  }
-
-  private int getCachingThreshold() {
-    return cachingThreshold;
-  }
-
-  private List<BeeColumn> getDataColumns() {
-    return dataColumns;
-  }
-
   private Filter getFilter(String query, Operator searchType) {
     if (BeeUtils.isEmpty(query)) {
       return null;
     }
     Filter filter = null;
 
-    for (Integer index : getSearchColumns()) {
-      Filter flt = DataUtils.parseExpression(BeeUtils.concat(1,
-          getViewColumns().get(index), searchType == null ? "" : searchType.toTextString(), query),
-          getDataColumns(), null, null);
-
+    for (IsColumn column : searchColumns) {
+      Filter flt = ComparisonFilter.compareWithValue(column, searchType, query);
       if (flt == null) {
         continue;
       }
@@ -425,10 +296,6 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     return filter;
   }
 
-  private List<HandlerRegistration> getHandlerRegistry() {
-    return handlerRegistry;
-  }
-
   private Request getLastRequest() {
     return lastRequest;
   }
@@ -437,64 +304,20 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     return pendingRequest;
   }
 
-  private RelationInfo getRelationInfo() {
-    return relationInfo;
-  }
-
-  private int getRelIndex() {
-    return relIndex;
-  }
-
   private BeeRowSet getRequestData() {
     return requestData;
-  }
-
-  private List<Integer> getSearchColumns() {
-    return searchColumns;
-  }
-
-  private List<String> getViewColumns() {
-    return viewColumns;
   }
 
   private BeeRowSet getViewData() {
     return viewData;
   }
 
-  private Order getViewOrder() {
-    return viewOrder;
-  }
-
-  private void initCaching(int rowCount) {
-    CachingPolicy policy = getCachingPolicy();
-    if (policy == null || policy == CachingPolicy.NONE) {
-      setCaching(Caching.NONE);
-      return;
-    }
-
-    int threshold = getCachingThreshold();
-    if (threshold <= 0) {
-      if (policy == CachingPolicy.FULL) {
-        setCaching(Caching.FULL);
-      } else {
-        setCaching(Caching.QUERY);
-      }
-      return;
-    }
-
-    if (rowCount > threshold) {
-      setCaching(Caching.QUERY);
-    } else {
-      setCaching(Caching.FULL);
-    }
-  }
-
   private void initViewData() {
-    Queries.getRowSet(getViewName(), getViewColumns(), null, getViewOrder(),
-        new Queries.RowSetCallback() {
-          public void onFailure(String[] reason) {
-          }
+    CachingPolicy cachingPolicy =
+        Relation.Caching.GLOBAL.equals(caching) ? CachingPolicy.FULL : CachingPolicy.NONE;
 
+    Queries.getRowSet(getViewName(), null, viewFilter, viewOrder, cachingPolicy,
+        new Queries.RowSetCallback() {
           public void onSuccess(BeeRowSet result) {
             setViewData(result);
             checkPendingRequest();
@@ -503,12 +326,20 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   }
 
   private boolean isCachingEnabled() {
-    return getCaching() != null && getCaching() != Caching.NONE;
+    return !Relation.Caching.NONE.equals(caching);
+  }
+
+  private boolean isDataInitialized() {
+    return dataInitialized;
   }
 
   private boolean isEventRelevant(DataEvent event) {
     return event != null && BeeUtils.same(event.getViewName(), getViewName())
-        && getCaching() == Caching.FULL;
+        && getViewData() != null && isCachingEnabled();
+  }
+
+  private boolean isFullCaching() {
+    return Relation.Caching.LOCAL.equals(caching) || Relation.Caching.GLOBAL.equals(caching);
   }
 
   private boolean prepareData(final Request request) {
@@ -529,10 +360,11 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       return true;
     }
 
-    if (getCaching() == Caching.FULL) {
+    if (isFullCaching()) {
       if (getViewData() == null) {
         return false;
       }
+
       if (getRequestData() == null) {
         setRequestData(new BeeRowSet(getViewData().getColumns()));
       } else {
@@ -547,20 +379,18 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       return true;
     }
 
-    int offset = request.getOffset();
-    int limit = request.getLimit();
+    int offset;
+    int limit;
     if (isCachingEnabled()) {
       offset = BeeConst.UNDEF;
       limit = BeeConst.UNDEF;
     } else {
-      limit++;
+      offset = request.getOffset();
+      limit = request.getLimit() + 1;
     }
 
-    Queries.getRowSet(getViewName(), getViewColumns(), filter, getViewOrder(), offset, limit,
-        new Queries.RowSetCallback() {
-          public void onFailure(String[] reason) {
-          }
-
+    Queries.getRowSet(getViewName(), null, Filter.and(viewFilter, filter), viewOrder,
+        offset, limit, new Queries.RowSetCallback() {
           public void onSuccess(BeeRowSet result) {
             if (getPendingRequest() == null) {
               return;
@@ -595,8 +425,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       if (start < end) {
         for (int i = start; i < end; i++) {
           BeeRow row = getRequestData().getRow(i);
-          suggestions.add(new Suggestion(toDisplay(row), row.getId(),
-              row.getString(getRelIndex())));
+          suggestions.add(new Suggestion(row));
         }
         hasMore = end < rowCount;
       }
@@ -606,13 +435,8 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     callback.onSuggestionsReady(request, response);
   }
 
-  private void setCaching(Caching caching) {
-    Assert.notNull(caching);
-    this.caching = caching;
-
-    if (caching == Caching.FULL) {
-      initViewData();
-    }
+  private void setDataInitialized(boolean dataInitialized) {
+    this.dataInitialized = dataInitialized;
   }
 
   private void setLastRequest(Request lastRequest) {
@@ -629,25 +453,5 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private void setViewData(BeeRowSet viewData) {
     this.viewData = viewData;
-  }
-
-  private String toDisplay(BeeRow row) {
-    if (row == null) {
-      return null;
-    }
-
-    String separator = ", ";
-    StringBuilder sb = new StringBuilder();
-
-    for (int i = 0; i < row.getNumberOfCells(); i++) {
-      String value = row.getString(i);
-      if (!BeeUtils.isEmpty(value)) {
-        if (sb.length() > 0) {
-          sb.append(separator);
-        }
-        sb.append(value.trim());
-      }
-    }
-    return sb.toString();
   }
 }

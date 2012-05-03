@@ -3,10 +3,10 @@ package com.butent.bee.shared.testutils;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlBuilder;
 import com.butent.bee.server.sql.SqlBuilderFactory;
-import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.shared.BeeConst.SqlEngine;
+import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 import static org.junit.Assert.assertEquals;

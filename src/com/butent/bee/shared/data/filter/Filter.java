@@ -21,20 +21,35 @@ import java.util.List;
 
 public abstract class Filter implements BeeSerializable, Transformable, RowFilter {
 
-  public static CompoundFilter and(Filter... filters) {
-    return new CompoundFilter(CompoundType.AND, filters);
+  public static Filter and(Filter f1, Filter f2) {
+    if (f1 == null) {
+      return f2;
+    } else if (f2 == null) {
+      return f1;
+    } else {
+      return new CompoundFilter(CompoundType.AND, f1, f2);
+    }
+  }
+  
+  public static CompoundFilter and() {
+    return new CompoundFilter(CompoundType.AND);
   }
 
   public static Filter and(Collection<Filter> filters) {
     if (filters == null || filters.isEmpty()) {
       return null;
-    } else if (filters.size() == 1) {
-      for (Filter filter : filters) {
-        return filter;
-      }
-      return null;
     } else {
-      return and(filters.toArray(new Filter[0]));
+      Filter[] arr = filters.toArray(new Filter[0]);
+      int size = arr.length;
+      
+      switch (size) {
+        case 1:
+          return arr[0];
+        case 2:
+          return and(arr[0], arr[1]);
+        default:
+          return new CompoundFilter(CompoundType.AND, arr);
+      }
     }
   }
 
@@ -53,21 +68,36 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
     return new ColumnNotEmptyFilter(column);
   }
 
-  public static CompoundFilter or(Filter... filters) {
-    return new CompoundFilter(CompoundType.OR, filters);
+  public static Filter or(Filter f1, Filter f2) {
+    if (f1 == null) {
+      return f2;
+    } else if (f2 == null) {
+      return f1;
+    } else {
+      return new CompoundFilter(CompoundType.OR, f1, f2);
+    }
   }
 
   public static Filter or(Collection<Filter> filters) {
     if (filters == null || filters.isEmpty()) {
       return null;
-    } else if (filters.size() == 1) {
-      for (Filter filter : filters) {
-        return filter;
-      }
-      return null;
     } else {
-      return or(filters.toArray(new Filter[0]));
+      Filter[] arr = filters.toArray(new Filter[0]);
+      int size = arr.length;
+      
+      switch (size) {
+        case 1:
+          return arr[0];
+        case 2:
+          return or(arr[0], arr[1]);
+        default:
+          return new CompoundFilter(CompoundType.OR, arr);
+      }
     }
+  }
+  
+  public static CompoundFilter or() {
+    return new CompoundFilter(CompoundType.OR);
   }
 
   public static Filter restore(String s) {

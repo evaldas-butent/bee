@@ -4,13 +4,12 @@
   name="Attendees" viewName="Attendees" caption="Resursai"
   >
   <columns>
-    <DataColumn name="TypeName" />
+    <RelColumn name="TypeName" />
 
     <DataColumn name="Name" />
     <DataColumn name="Description" />
 
-    <DataColumn name="FirstName" />
-    <DataColumn name="LastName" />
+    <RelColumn name="CompanyPerson" />
 
     <DataColumn name="Transparency" itemKey="Transparency" />
   </columns>

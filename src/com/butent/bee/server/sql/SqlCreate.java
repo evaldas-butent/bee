@@ -1,7 +1,7 @@
 package com.butent.bee.server.sql;
 
-import com.butent.bee.server.sql.SqlConstants.SqlDataType;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;

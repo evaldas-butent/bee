@@ -6,22 +6,12 @@
   >
   <columns>
     <IdColumn name="Id" caption="ID" />
-    <DataColumn name="Priority" source="Priority" caption="Prioritetas" itemKey="Priority"/> 
-    <DataColumn name="Description" source="Description" caption="Užduotis" />
-    <DataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
-    <DataColumn name="Event" source="Event" caption="Būsena" itemKey="TaskEvent" />
-    <CalcColumn name="Owner" type="string" caption="Vadovas" sortBy="OwnerFirstName, OwnerLastName"
-      searchBy="OwnerFirstName, OwnerLastName">
-      <render>
-        <ui:function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</ui:function>
-      </render>
-    </CalcColumn>
-    <CalcColumn name="Executor" type="string" caption="Vykdytojas"
-      sortBy="ExecutorFirstName, ExecutorLastName" searchBy="ExecutorFirstName, ExecutorLastName">
-      <render>
-        <ui:function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</ui:function>
-      </render>
-    </CalcColumn>
-    <DataColumn name="FinishTime" source="FinishTime" caption="Pabaigos laikas" />
+    <DataColumn name="Priority" caption="Prioritetas" itemKey="Priority"/> 
+    <DataColumn name="Description" caption="Užduotis" />
+    <RelColumn name="Company" caption="Įmonė" />
+    <DataColumn name="Event" caption="Būsena" itemKey="TaskEvent" />
+    <RelColumn name="Owner" caption="Vadovas" />
+    <RelColumn name="Executor" caption="Vykdytojas" />
+    <DataColumn name="FinishTime" caption="Pabaigos laikas" />
   </columns>
 </Grid>

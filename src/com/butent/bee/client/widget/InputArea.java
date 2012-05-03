@@ -1,10 +1,11 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.TextBoxBase;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
@@ -15,6 +16,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.ui.EditorAction;
@@ -26,7 +28,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class InputArea extends TextArea implements Editor, HandlesAfterSave, HasTextDimensions,
-    HasInputHandlers {
+    HasInputHandlers, HasTextBox {
 
   private BeeResource resource = null;
 
@@ -66,6 +68,10 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     return Binder.addInputHandler(this, handler);
   }
 
+  public EditorAction getDefaultFocusAction() {
+    return null;
+  }
+  
   public String getDigest() {
     return digest;
   }
@@ -91,6 +97,10 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     return resource;
   }
 
+  public TextBoxBase getTextBox() {
+    return this;
+  }
+  
   public boolean handlesKey(int keyCode) {
     return !BeeUtils.inList(keyCode, KeyCodes.KEY_ESCAPE, KeyCodes.KEY_TAB);
   }
@@ -160,7 +170,8 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     updateDigest(getValue());
   }
 
-  public void startEdit(String oldValue, char charCode, EditorAction onEntry) {
+  public void startEdit(String oldValue, char charCode, EditorAction onEntry,
+      Element sourceElement) {
     if (!isEditorInitialized()) {
       initEditor();
       setEditorInitialized(true);

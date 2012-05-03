@@ -393,11 +393,6 @@ public class ProjectEventHandler {
       }
       Queries.getRowSet("Users", null, flt, null, new RowSetCallback() {
         @Override
-        public void onFailure(String[] reason) {
-          Global.showError((Object[]) reason);
-        }
-
-        @Override
         public void onSuccess(final BeeRowSet result) {
           if (result.isEmpty()) {
             Global.showError("No more heroes any more");
@@ -509,11 +504,6 @@ public class ProjectEventHandler {
         Filter flt = ComparisonFilter.isEqual(CrmConstants.COL_PROJECT, new LongValue(projectId));
 
         Queries.getRowSet(CrmConstants.TBL_PROJECT_USERS, null, flt, null, new RowSetCallback() {
-          @Override
-          public void onFailure(String[] reason) {
-            Global.showError((Object[]) reason);
-          }
-
           @Override
           public void onSuccess(BeeRowSet result) {
             if (result.isEmpty()) {

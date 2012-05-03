@@ -12,6 +12,8 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.LogUtils;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,6 +45,22 @@ public class LogHandler implements Module {
 
   public void debug(Object... obj) {
     LogUtils.debug(getLogger(), obj);
+  }
+
+  public void debugCollection(Collection<?> collection) {
+    if (collection != null) {
+      for (Object obj : collection) {
+        LogUtils.debug(getLogger(), obj);
+      }
+    }
+  }
+
+  public void debugMap(Map<?, ?> map) {
+    if (map != null) {
+      for (Map.Entry<?, ?> entry : map.entrySet()) {
+        debug(entry.getKey(), entry.getValue());
+      }
+    }
   }
   
   public void end() {

@@ -2,6 +2,7 @@ package com.butent.bee.client.widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasStringValue;
+import com.butent.bee.shared.ui.EditorAction;
 
 /**
  * Implements a user interface component which lets to select a value by dragging a slider with a
@@ -33,6 +34,11 @@ public class InputSlider extends InputInteger {
     super(source, inputType, min, max, step);
   }
 
+  @Override
+  public EditorAction getDefaultFocusAction() {
+    return null;
+  }
+  
   @Override
   public String getDefaultStyleName() {
     return "bee-InputSlider";

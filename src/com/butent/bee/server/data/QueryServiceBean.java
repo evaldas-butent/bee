@@ -7,8 +7,6 @@ import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
-import com.butent.bee.server.sql.SqlConstants;
-import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
 import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -20,6 +18,8 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.SqlConstants;
+import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.time.DateTime;
@@ -272,7 +272,7 @@ public class QueryServiceBean {
     return getSingleRow(query).getValues(0);
   }
 
-  public List<BeeColumn> getViewColumns(final BeeView view) {
+  public List<BeeColumn> getColumns(final BeeView view) {
     Assert.notNull(view);
 
     SqlSelect ss = view.getQuery().setWhere(SqlUtils.sqlFalse()).resetOrder();

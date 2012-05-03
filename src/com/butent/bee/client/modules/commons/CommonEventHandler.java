@@ -75,11 +75,6 @@ public class CommonEventHandler {
       }
       Queries.getRowSet(CommonsConstants.TBL_CATEGORIES, null, flt, null, new RowSetCallback() {
         @Override
-        public void onFailure(String[] reason) {
-          Global.showError((Object[]) reason);
-        }
-
-        @Override
         public void onSuccess(final BeeRowSet result) {
           if (result.isEmpty()) {
             Global.showError("No more heroes any more");
@@ -199,11 +194,6 @@ public class CommonEventHandler {
         Queries.getRowSet(CommonsConstants.TBL_ITEM_CATEGORIES, null, flt, null,
             new RowSetCallback() {
               @Override
-              public void onFailure(String[] reason) {
-                Global.showError((Object[]) reason);
-              }
-
-              @Override
               public void onSuccess(BeeRowSet result) {
                 if (result.isEmpty()) {
                   return;
@@ -275,6 +265,9 @@ public class CommonEventHandler {
       List<String> values = Lists.newArrayList();
 
       for (BeeColumn column : form.getDataColumns()) {
+        if (!column.isWritable()) {
+          continue;
+        }
         String colName = column.getId();
         String value = row.getString(form.getDataIndex(colName));
 

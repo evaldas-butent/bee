@@ -4,8 +4,8 @@
   name="CompanyPersons" viewName="CompanyPersons" caption="Kontaktiniai asmenys"
   >
   <columns>
-    <DataColumn name="FirstName" source="FirstName" caption="Vardas" />
-    <DataColumn name="LasName" source="LastName" caption="Pavardė" />
+    <RelColumn name="FirstName" caption="Vardas" choiceColumns="FirstName LastName" />
+    <RelColumn name="LastName" caption="Pavardė" choiceColumns="LastName FirstName" />
     <DataColumn name="Position" source="Position" caption="Pareigos" />
     <DataColumn name="Phone" source="Phone" caption="Tel." />
     <DataColumn name="Email" source="Email" caption="El. paštas" />

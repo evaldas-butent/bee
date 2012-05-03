@@ -4,9 +4,11 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasInfo;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Contains methods for processing (removing, creating, adding) Property objects.
@@ -285,6 +287,32 @@ public class PropertyUtils {
     }
   }
 
+  public static void appendWithIndex(Collection<Property> dst, String caption, String prefix,
+      Collection<? extends HasInfo> src) {
+    Assert.notNull(dst);
+    if (BeeUtils.isEmpty(src)) {
+      return;
+    }
+    
+    int cnt = src.size();
+    if (!BeeUtils.isEmpty(caption)) {
+      dst.add(new Property(caption, BeeUtils.bracket(cnt)));
+    }
+    
+    int idx = 0;
+    String s;
+    for (HasInfo item : src) {
+      idx++;
+      if (BeeUtils.isEmpty(prefix)) {
+        s = (cnt > 1) ? BeeUtils.progress(idx, cnt) : null;
+      } else {
+        s = (cnt > 1) ? BeeUtils.concat(1, prefix, idx) : prefix;
+      }
+      
+      appendChildrenToProperties(dst, s, item.getInfo());
+    }
+  }
+  
   /**
    * Appends all elements from {@code src} to {@code dst} using a {@code prefix} prefix for all
    * added elements.
@@ -329,8 +357,10 @@ public class PropertyUtils {
    * @return a new list of Properties
    */
   public static List<Property> createProperties(String prefix, String[] values) {
-    Assert.notEmpty(values);
     List<Property> lst = Lists.newArrayList();
+    if (BeeUtils.isEmpty(values)) {
+      return lst;
+    }
 
     int n = values.length;
     String name = BeeUtils.isEmpty(prefix) ? BeeConst.STRING_EMPTY :
@@ -342,6 +372,38 @@ public class PropertyUtils {
     return lst;
   }
 
+  public static List<Property> createProperties(String prefix, Collection<String> values) {
+    List<Property> lst = Lists.newArrayList();
+    if (BeeUtils.isEmpty(values)) {
+      return lst;
+    }
+
+    int n = values.size();
+    if (!BeeUtils.isEmpty(prefix)) {
+      addProperty(lst, prefix, BeeUtils.bracket(n));
+    }
+    String name = BeeUtils.isEmpty(prefix) ? BeeConst.STRING_EMPTY :
+        prefix.trim() + BeeConst.STRING_SPACE;
+    
+    int i = 0;
+    for (String item : values) {
+      addProperty(lst, name + BeeUtils.progress(++i, n), item);
+    }
+    return lst;
+  }
+
+  public static List<Property> createProperties(Map<String, String> properties) {
+    List<Property> lst = Lists.newArrayList();
+    if (BeeUtils.isEmpty(properties)) {
+      return lst;
+    }
+
+    for (Map.Entry<String, String> entry : properties.entrySet()) {
+      addProperty(lst, entry.getKey(), entry.getValue());
+    }
+    return lst;
+  }
+  
   /**
    * Returns an ExtendedProperty list as an array.
    * 
@@ -455,7 +517,7 @@ public class PropertyUtils {
    * If {@code v} is a Sting value, transforms using {@link #transformString(String)}. If any other
    * Object, transforms it using {@link com.butent.bee.shared.utils.BeeUtils#transform(Object)}
    * 
-   * @param v teh String to transform
+   * @param v the String to transform
    * @return a String representation of the value {@code v}
    */
   private static String transformValue(Object v) {
@@ -464,7 +526,7 @@ public class PropertyUtils {
     } else if (v instanceof String) {
       return transformString((String) v);
     } else {
-      return BeeUtils.transform(v);
+      return BeeUtils.transformGeneric(v);
     }
   }
 
@@ -489,6 +551,8 @@ public class PropertyUtils {
       return false;
     } else if (v instanceof String) {
       return !((String) v).isEmpty();
+    } else if (v instanceof Collection) {
+      return !((Collection<?>) v).isEmpty();
     } else {
       return true;
     }

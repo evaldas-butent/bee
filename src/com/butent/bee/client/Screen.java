@@ -49,8 +49,6 @@ public interface Screen extends Module, NotificationListener {
 
   void updateCommandPanel(Widget w);
   
-  void updateData(Widget w);
-
   void updateMenu(Widget w);
 
   void updateSignature(String userSign);

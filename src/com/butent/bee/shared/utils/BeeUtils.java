@@ -27,6 +27,24 @@ import java.util.Set;
  */
 public class BeeUtils {
 
+  public static <T> boolean addNotEmpty(Collection<T> col, T item) {
+    if (isEmpty(item)) {
+      return false;
+    } else {
+      Assert.notNull(col).add(item);
+      return true;
+    }
+  }
+
+  public static <T> boolean addNotNull(Collection<T> col, T item) {
+    if (item == null) {
+      return false;
+    } else {
+      Assert.notNull(col).add(item);
+      return true;
+    }
+  }
+  
   /**
    * Checks if all specified objects are empty.
    * 
@@ -71,6 +89,20 @@ public class BeeUtils {
     return ok;
   }
 
+  public static boolean anyEmpty(Object... obj) {
+    Assert.notNull(obj);
+    Assert.parameterCount(obj.length, 1);
+    boolean ok = false;
+
+    for (Object z : obj) {
+      if (isEmpty(z)) {
+        ok = true;
+        break;
+      }
+    }
+    return ok;
+  }
+  
   /**
    * Appends specified list's {@code iterable} elements to a specified StringBuilder {@code bld}.
    * 
@@ -396,10 +428,9 @@ public class BeeUtils {
         if (s.length() > 0) {
           s.append(sep);
         }
-        s.append(transform(x[i], sep));
+        s.append(transformGeneric(x[i], sep));
       }
     }
-
     return s.toString();
   }
 
@@ -1572,20 +1603,8 @@ public class BeeUtils {
     }
   }
 
-  /**
-   * Checks if an Object is a positive number.
-   * 
-   * @param x the object to be checked
-   * @return true if a number is greater than 0, false otherwise.
-   */
-  public static boolean isPositive(Object x) {
-    if (x instanceof Integer) {
-      return (Integer) x > 0;
-    } else if (x instanceof Number) {
-      return Double.compare(((Number) x).doubleValue(), Double.valueOf(BeeConst.DOUBLE_ZERO)) > 0;
-    } else {
-      return false;
-    }
+  public static boolean isPositive(Integer x) {
+    return (x == null) ? false : x > 0;
   }
 
   public static boolean isPositiveDouble(String s) {
@@ -1798,27 +1817,6 @@ public class BeeUtils {
   }
 
   /**
-   * Null-safe set union.
-   * 
-   * @param src all sets to be joined
-   * @return a new set containing all elements from the {@code src} sets.
-   */
-  public static <T> Set<T> join(Set<? extends T>... src) {
-    Assert.notNull(src);
-    int n = src.length;
-    Assert.parameterCount(n, 2);
-
-    Set<T> dst = new HashSet<T>();
-
-    for (Set<? extends T> set : src) {
-      if (set != null) {
-        dst.addAll(set);
-      }
-    }
-    return dst;
-  }
-
-  /**
    * Cuts the string from the beginning to a specified index.
    * 
    * @param s string to cut
@@ -1989,7 +1987,8 @@ public class BeeUtils {
   public static String normSep(Object x, Object def) {
     String sep;
 
-    if (x instanceof CharSequence && length(x) > 0 || isPositive(x) || x instanceof Character) {
+    if (x instanceof CharSequence && length(x) > 0 
+        || x instanceof Integer && isPositive((Integer) x) || x instanceof Character) {
       sep = normSep(x);
     } else {
       sep = normSep(def);
@@ -3039,29 +3038,6 @@ public class BeeUtils {
   }
 
   /**
-   * Transforms an Object {@code x} to a String representation using the specified separator
-   * {@code sep}. Each level of recursion use the next separator.
-   * 
-   * @param x an Object to transform.
-   * @param sep separators for transforming Collections,Maps,Arrays and Enumerations. Uses a default
-   *          separator if none are specified.
-   * @return a String representation of the Object {@code x}.
-   */
-  public static String transform(Object x, Object... sep) {
-    if (x instanceof Collection) {
-      return transformCollection((Collection<?>) x, sep);
-    } else if (x instanceof Map) {
-      return transformMap((Map<?, ?>) x, sep);
-    } else if (ArrayUtils.isArray(x)) {
-      return ArrayUtils.transform(x, sep);
-    } else if (x instanceof Enumeration) {
-      return transformEnumeration((Enumeration<?>) x, sep);
-    } else {
-      return transform(x);
-    }
-  }
-
-  /**
    * Transforms a Collection {@code col} to a String representation using the specified separators
    * {@code sep}. Each level of recursion use the next separator.
    * 
@@ -3093,7 +3069,7 @@ public class BeeUtils {
       if (sb.length() > 0) {
         sb.append(z);
       }
-      sb.append(transform(el, nextSep));
+      sb.append(transformGeneric(el, nextSep));
     }
     return sb.toString();
   }
@@ -3131,9 +3107,32 @@ public class BeeUtils {
       if (sb.length() > 0) {
         sb.append(z);
       }
-      sb.append(transform(el, nextSep));
+      sb.append(transformGeneric(el, nextSep));
     }
     return sb.toString();
+  }
+
+  /**
+   * Transforms an Object {@code x} to a String representation using the specified separator
+   * {@code sep}. Each level of recursion use the next separator.
+   * 
+   * @param x an Object to transform.
+   * @param sep separators for transforming Collections,Maps,Arrays and Enumerations. Uses a default
+   *          separator if none are specified.
+   * @return a String representation of the Object {@code x}.
+   */
+  public static String transformGeneric(Object x, Object... sep) {
+    if (x instanceof Collection) {
+      return transformCollection((Collection<?>) x, sep);
+    } else if (x instanceof Map) {
+      return transformMap((Map<?, ?>) x, sep);
+    } else if (ArrayUtils.isArray(x)) {
+      return ArrayUtils.transform(x, sep);
+    } else if (x instanceof Enumeration) {
+      return transformEnumeration((Enumeration<?>) x, sep);
+    } else {
+      return transform(x);
+    }
   }
 
   /**
@@ -3172,7 +3171,7 @@ public class BeeUtils {
       if (sb.length() > 0) {
         sb.append(z);
       }
-      sb.append(NameUtils.addName(transform(key), transform(value, nextSep)));
+      sb.append(NameUtils.addName(transform(key), transformGeneric(value, nextSep)));
     }
     return sb.toString();
   }
@@ -3301,6 +3300,37 @@ public class BeeUtils {
     return (box == null) ? 0 : box;
   }
 
+  /**
+   * Null-safe collection union.
+   */
+  public static <T> Set<T> union(Collection<? extends T> col1, Collection<? extends T> col2) {
+    Set<T> result = new HashSet<T>();
+
+    if (col1 != null) {
+      result.addAll(col1);
+    }
+    if (col2 != null) {
+      result.addAll(col2);
+    }
+    return result;
+  }
+
+  public static <T> Set<T> union(Collection<? extends T> col1, Collection<? extends T> col2,
+      Collection<? extends T> col3) {
+    Set<T> result = new HashSet<T>();
+
+    if (col1 != null) {
+      result.addAll(col1);
+    }
+    if (col2 != null) {
+      result.addAll(col2);
+    }
+    if (col3 != null) {
+      result.addAll(col3);
+    }
+    return result;
+  }
+  
   /**
    * Searches for an Integer value from a String {@code s}.
    * 

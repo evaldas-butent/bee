@@ -5,6 +5,6 @@
   newRowColumns="RoleName" hasHeaders="false"
   >
   <columns>
-    <DataColumn name="RoleName" source="RoleName" caption="Rolė" width="100" />
+    <RelColumn name="RoleName" caption="Rolė" width="100" />
   </columns>
 </Grid>

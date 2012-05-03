@@ -9,6 +9,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Set;
@@ -23,11 +24,6 @@ public class FormDescription implements HasViewName {
   private static final String TAG_ROW_EDITABLE = "rowEditable";
   private static final String TAG_ROW_VALIDATION = "rowValidation";
 
-  private static final String ATTR_NAME = "name";
-  private static final String ATTR_VIEW_NAME = "viewName";
-  private static final String ATTR_CAPTION = "caption";
-  private static final String ATTR_READ_ONLY = "readOnly";
-
   private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
   private static final String ATTR_SEARCH_THRESHOLD = "searchThreshold";
 
@@ -36,11 +32,12 @@ public class FormDescription implements HasViewName {
 
   public static String getName(Element element) {
     Assert.notNull(element);
-    return element.getAttribute(ATTR_NAME);
+    return element.getAttribute(UiConstants.ATTR_NAME);
   }
   
   private final Element formElement;
-
+  private String viewName = null;
+  
   public FormDescription(Element formElement) {
     Assert.notNull(formElement);
     this.formElement = formElement;
@@ -55,9 +52,9 @@ public class FormDescription implements HasViewName {
   }
 
   public String getCaption() {
-    String caption = getFormElement().getAttribute(ATTR_CAPTION);
+    String caption = getFormElement().getAttribute(UiConstants.ATTR_CAPTION);
     if (BeeUtils.isEmpty(caption)) {
-      caption = getFormElement().getAttribute(ATTR_NAME);
+      caption = getFormElement().getAttribute(UiConstants.ATTR_NAME);
     }
     return BeeUtils.trim(caption);
   }
@@ -85,7 +82,7 @@ public class FormDescription implements HasViewName {
   }
 
   public String getName() {
-    return getFormElement().getAttribute(ATTR_NAME);
+    return getFormElement().getAttribute(UiConstants.ATTR_NAME);
   }
   
   public Calculation getRowEditable() {
@@ -109,15 +106,23 @@ public class FormDescription implements HasViewName {
   }
 
   public String getViewName() {
-    return getFormElement().getAttribute(ATTR_VIEW_NAME);
+    if (BeeUtils.isEmpty(viewName)) {
+      return getFormElement().getAttribute(UiConstants.ATTR_VIEW_NAME);
+    } else {
+      return viewName;
+    }
   }
 
   public boolean isReadOnly() {
-    Boolean readOnly = XmlUtils.getAttributeBoolean(getFormElement(), ATTR_READ_ONLY);
+    Boolean readOnly = XmlUtils.getAttributeBoolean(getFormElement(), UiConstants.ATTR_READ_ONLY);
     if (readOnly == null) {
       return false;
     }
     return readOnly;
+  }
+
+  public void setViewName(String viewName) {
+    this.viewName = viewName;
   }
 
   Element getFormElement() {

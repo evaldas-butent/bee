@@ -3,8 +3,6 @@ package com.butent.bee.shared.ui;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -14,7 +12,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.List;
 import java.util.Map;
 
-public class RendererDescription implements BeeSerializable, HasInfo, HasOptions {
+public class RendererDescription extends PotentialRenderer implements HasOptions {
 
   private enum Serial {
     TYPE, VALUE_START_INDEX, SEPARATOR, OPTIONS, ITEMS
@@ -23,10 +21,20 @@ public class RendererDescription implements BeeSerializable, HasInfo, HasOptions
   public static final String TAG_RENDERER = "renderer";
   public static final String TAG_RENDER = "render";
 
+  public static final String ATTR_RENDER_COLUMNS = "renderColumns";
+  
   public static final String ATTR_TYPE = "type";
   
   private static final String ATTR_SEPARATOR = "separator";
 
+  public static boolean canRestore(String[] arr) {
+    if (arr == null) {
+      return false;
+    } else {
+      return arr.length == Serial.values().length;
+    }
+  }
+  
   public static RendererDescription restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -53,47 +61,13 @@ public class RendererDescription implements BeeSerializable, HasInfo, HasOptions
     this.type = type;
   }
 
-  private RendererDescription() {
+  protected RendererDescription() {
   }
 
   public void deserialize(String s) {
-    String[] arr = Codec.beeDeserializeCollection(s);
-    Serial[] members = Serial.values();
-    Assert.lengthEquals(arr, members.length);
-
-    for (int i = 0; i < members.length; i++) {
-      Serial member = members[i];
-      String value = arr[i];
-      if (BeeUtils.isEmpty(value)) {
-        continue;
-      }
-
-      switch (member) {
-        case TYPE:
-          setType(RendererType.getByTypeCode(value));
-          break;
-        case VALUE_START_INDEX:
-          setValueStartIndex(BeeUtils.toIntOrNull(value));
-          break;
-        case SEPARATOR:
-          setSeparator(value.trim());
-          break;
-        case OPTIONS:
-          setOptions(value.trim());
-          break;
-        case ITEMS:
-          String[] data = Codec.beeDeserializeCollection(value);
-
-          if (BeeUtils.isEmpty(data)) {
-            setItems(null);
-          } else {
-            setItems(Lists.newArrayList(data));
-          }
-          break;
-      }
-    }
+    deserializeMembers(Codec.beeDeserializeCollection(s));
   }
-
+  
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(
         "Type", getType(),
@@ -197,6 +171,43 @@ public class RendererDescription implements BeeSerializable, HasInfo, HasOptions
 
   public void setValueStartIndex(Integer valueStartIndex) {
     this.valueStartIndex = valueStartIndex;
+  }
+
+  protected void deserializeMembers(String[] arr) {
+    Serial[] members = Serial.values();
+    Assert.lengthEquals(arr, members.length);
+
+    for (int i = 0; i < members.length; i++) {
+      Serial member = members[i];
+      String value = arr[i];
+      if (BeeUtils.isEmpty(value)) {
+        continue;
+      }
+
+      switch (member) {
+        case TYPE:
+          setType(RendererType.getByTypeCode(value));
+          break;
+        case VALUE_START_INDEX:
+          setValueStartIndex(BeeUtils.toIntOrNull(value));
+          break;
+        case SEPARATOR:
+          setSeparator(value.trim());
+          break;
+        case OPTIONS:
+          setOptions(value.trim());
+          break;
+        case ITEMS:
+          String[] data = Codec.beeDeserializeCollection(value);
+
+          if (BeeUtils.isEmpty(data)) {
+            setItems(null);
+          } else {
+            setItems(Lists.newArrayList(data));
+          }
+          break;
+      }
+    }
   }
 
   private boolean isEmpty() {

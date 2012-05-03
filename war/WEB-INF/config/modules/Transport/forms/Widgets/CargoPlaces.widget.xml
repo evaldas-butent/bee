@@ -20,8 +20,7 @@
           <Label html="Šalis" horizontalAlignment="right" />
         </cell>
         <cell>
-          <DataSelector source="LoadingCountryName" relSource="LoadingCountry" relView="Countries"
-            relColumn="Name" />
+          <DataSelector source="LoadingCountry" />
         </cell>
       </row>
       <row>
@@ -62,8 +61,7 @@
           <Label html="Šalis" horizontalAlignment="right" />
         </cell>
         <cell>
-          <DataSelector source="UnloadingCountryName" relSource="UnloadingCountry"
-            relView="Countries" relColumn="Name" />
+          <DataSelector source="UnloadingCountry" />
         </cell>
       </row>
       <row>

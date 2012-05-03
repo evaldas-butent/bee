@@ -1,5 +1,6 @@
 package com.butent.bee.client.view.edit;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.HasAllFocusHandlers;
 import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.user.client.ui.Focusable;
@@ -16,6 +17,8 @@ import com.butent.bee.shared.ui.EditorAction;
 
 public interface Editor extends HasId, IsWidget, HasValue<String>, Focusable, HasAllFocusHandlers,
     HasKeyDownHandlers, HasEditState, HasEditStopHandlers, HasEnabled {
+  
+  EditorAction getDefaultFocusAction();
 
   String getNormalizedValue();
   
@@ -25,7 +28,7 @@ public interface Editor extends HasId, IsWidget, HasValue<String>, Focusable, Ha
 
   void setNullable(boolean nullable);
 
-  void startEdit(String oldValue, char charCode, EditorAction onEntry);
+  void startEdit(String oldValue, char charCode, EditorAction onEntry, Element sourceElement);
 
   String validate();
 }

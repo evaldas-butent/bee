@@ -1,8 +1,9 @@
 package com.butent.bee.server.sql;
 
-import com.butent.bee.server.sql.SqlConstants.SqlDataType;
-import com.butent.bee.server.sql.SqlConstants.SqlFunction;
-import com.butent.bee.server.sql.SqlConstants.SqlKeyword;
+import com.butent.bee.shared.data.SqlConstants;
+import com.butent.bee.shared.data.SqlConstants.SqlDataType;
+import com.butent.bee.shared.data.SqlConstants.SqlFunction;
+import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
