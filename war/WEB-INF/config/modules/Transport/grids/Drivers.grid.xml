@@ -14,12 +14,12 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="PersonName" source="PersonName" caption="Vardas, Pavardė" />
-    <DataColumn name="CompanyName" source="CompanyName" caption="Įmonė" />
-    <DataColumn name="Position" source="Position" caption="Pareigos" />
-    <DataColumn name="Phone" source="Phone" caption="Tel." />
-    <DataColumn name="Email" source="Email" caption="El. paštas" />
-    <DataColumn name="Experience" source="Experience" caption="Stažas nuo" />
-    <DataColumn name="Notes" source="Notes" caption="Pastabos" />
+    <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="Vardas, Pavardė" />
+    <DataColumn name="CompanyName" caption="Įmonė" />
+    <DataColumn name="Position" caption="Pareigos" />
+    <DataColumn name="Phone" caption="Tel." />
+    <DataColumn name="Email" caption="El. paštas" />
+    <DataColumn name="Experience" caption="Stažas nuo" />
+    <DataColumn name="Notes" caption="Pastabos" />
   </columns>
 </Grid>

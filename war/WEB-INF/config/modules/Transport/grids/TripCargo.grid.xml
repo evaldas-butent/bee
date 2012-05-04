@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="TripCargo" viewName="TripCargo"
+  editForm="CargoPlace" editPopup="true" editInPlace="CargoPercent" disabledActions="add"
+  >
+  <header borderWidth="1 0" />
+  <body height="68" borderWidth="0">
+    <style>
+      <ui:font>Verdana 12 px</ui:font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <DataColumn name="OrderNo" caption="Užsakymo Nr." />
+    <DataColumn name="Content" caption="Krovinys" />
+    <DataColumn name="Weight" caption="Svoris" />
+    <DataColumn name="Volume" caption="Tūris" />
+    <DataColumn name="Quantity" caption="Kiekis" />
+    <DataColumn name="Number" caption="Numeris" />
+    <DataColumn name="Cmr" caption="CMR" />
+    <DataColumn name="Notes" caption="Pastabos">
+      <style>
+        <bodyStyle>
+          <ui:inline>white-space: pre-wrap;</ui:inline>
+        </bodyStyle>
+      </style>
+    </DataColumn>
+    <DataColumn name="CargoPercent" caption="%" minValue="0" />
+    <CalcColumn name="Loading" type="string" cell="html" caption="Pakrauta">
+      <render>
+        <ui:function>
+          var s = "";
+          var tr = "&lt;tr&gt;";
+          var tr_ = "&lt;/tr&gt;";
+          var tdc = "&lt;td align=\"right\" style=\"font-weight: bold;\"&gt;";
+          var td = "&lt;td&gt;";
+          var td_ = "&lt;/td&gt;";
+          
+          if (row.LoadingDate) {
+            s = s + tr + tdc + "Data:" + td_ + td + row.LoadingDate.toDateString() + td_ + tr_;
+          }
+          if (row.LoadingCountryName) {
+            s = s + tr + tdc + "Šalis:" + td_ + td + row.LoadingCountryName + td_ + tr_;
+          }
+          if (row.LoadingPlace) {
+            s = s + tr + tdc + "Vieta:" + td_ + td + row.LoadingPlace + td_ + tr_;
+          }
+          if (row.LoadingTerminal) {
+            s = s + tr + tdc + "Terminalas:" + td_ + td + row.LoadingTerminal + td_ + tr_;
+          }
+          if (s.length > 0) {
+            s = "&lt;table border=\"0\" style=\"border-collapse: collapse;\"&gt;" + s + "&lt;/table&gt;";
+          }
+          return s;
+        </ui:function>
+      </render>
+    </CalcColumn>
+    <CalcColumn name="Unloading" type="string" cell="html" caption="Iškrauta">
+      <render>
+        <ui:function>
+          var s = "";
+          var tr = "&lt;tr&gt;";
+          var tr_ = "&lt;/tr&gt;";
+          var tdc = "&lt;td align=\"right\" style=\"font-weight: bold;\"&gt;";
+          var td = "&lt;td&gt;";
+          var td_ = "&lt;/td&gt;";
+          
+          if (row.UnloadingDate) {
+            s = s + tr + tdc + "Data:" + td_ + td + row.UnloadingDate.toDateString() + td_ + tr_;
+          }
+          if (row.UnloadingCountryName) {
+            s = s + tr + tdc + "Šalis:" + td_ + td + row.UnloadingCountryName + td_ + tr_;
+          }
+          if (row.UnloadingPlace) {
+            s = s + tr + tdc + "Vieta:" + td_ + td + row.UnloadingPlace + td_ + tr_;
+          }
+          if (row.UnloadingTerminal) {
+            s = s + tr + tdc + "Terminalas:" + td_ + td + row.UnloadingTerminal + td_ + tr_;
+          }
+          if (s.length > 0) {
+            s = "&lt;table border=\"0\" style=\"border-collapse: collapse;\"&gt;" + s + "&lt;/table&gt;";
+          }
+          return s;
+        </ui:function>
+      </render>
+    </CalcColumn>
+  </columns>
+</Grid>

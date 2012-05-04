@@ -13,15 +13,15 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="Date" source="Date" caption="Data" />
-    <DataColumn name="Country" source="CountryName" caption="Šalis" />
-    <DataColumn name="Note" source="Note" caption="Pastaba" />
-    <DataColumn name="Quantity" source="Quantity" caption="Litrai" format="#.00">
+    <DataColumn name="Date" caption="Data" />
+    <RelColumn name="Country" caption="Šalis" />
+    <DataColumn name="Note" caption="Pastaba" />
+    <DataColumn name="Quantity" caption="Litrai" format="#.00">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </DataColumn>
-    <DataColumn name="FuelType" source="FuelType" caption="Kuro rūšis" />
+    <RelColumn name="Fuel" caption="Kuro rūšis" />
   </columns>
 </Grid>

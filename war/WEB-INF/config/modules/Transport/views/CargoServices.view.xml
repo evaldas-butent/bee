@@ -6,7 +6,6 @@
   >
   <Columns>
     <SimpleColumn name="Cargo"/>
-    <SimpleColumn name="Expedition"/>
     <SimpleColumn name="Item"/>
     <SimpleJoin joinType="LEFT" name="Item">
       <SimpleColumn name="Name" alias="ItemName" />
@@ -20,6 +19,11 @@
     <SimpleColumn name="Currency" />
     <SimpleJoin joinType="LEFT" name="Currency">
       <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+    <SimpleColumn name="CostPrice" />
+    <SimpleColumn name="CostCurrency" />
+    <SimpleJoin joinType="LEFT" name="CostCurrency">
+      <SimpleColumn name="Name" alias="CostCurrencyName" />
     </SimpleJoin>
   </Columns>
 </View>

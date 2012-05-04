@@ -26,9 +26,9 @@
     </row>
     <row>
       <Label html="Miestas" />
-      <DataSelector source="CityName" />
-      <Label html="Šalis" horizontalAlignment="right" />
-      <DataSelector source="CountryName" choiceColumns="CountryName Name" />
+      <cell colSpan="2">
+        <DataSelector source="City" style="width:100%" />
+      </cell>
     </row>
   </FlexTable>
 </Disclosure>

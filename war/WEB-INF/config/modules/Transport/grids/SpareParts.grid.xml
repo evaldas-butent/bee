@@ -33,12 +33,12 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="Type" source="TypeName" caption="Tipas" />
-    <DataColumn name="Number" source="Number" caption="Numeris" />
-    <DataColumn name="Description" source="Description" caption="Aprašymas" />
-    <DataColumn name="Run" source="Run" caption="Pradinė rida" />
-    <DataColumn name="Obtained" source="Obtained" caption="Gauta" />
-    <DataColumn name="WrittenOff" source="WrittenOff" caption="Nurašyta" />
-    <DataColumn name="Notes" source="Notes" caption="Pastabos" />
+    <RelColumn name="Type" searchableColumns="ParentName Name" caption="Tipas" />
+    <DataColumn name="Number" caption="Numeris" />
+    <DataColumn name="Description" caption="Aprašymas" />
+    <DataColumn name="Run" caption="Pradinė rida" />
+    <DataColumn name="Obtained" caption="Gauta" />
+    <DataColumn name="WrittenOff" caption="Nurašyta" />
+    <DataColumn name="Notes" caption="Pastabos" />
   </columns>
 </Grid>

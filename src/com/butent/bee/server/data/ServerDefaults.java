@@ -5,11 +5,8 @@ import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.data.Defaults;
-import com.butent.bee.shared.data.SqlConstants.SqlDataType;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
-
-import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -51,7 +48,7 @@ public class ServerDefaults extends Defaults {
     return value;
   }
 
-  private Object getNextNumber(String tblName, String fldName, String prefix) {
+  private String getNextNumber(String tblName, String fldName, String prefix) {
     Object value = null;
 
     if (!BeeUtils.allEmpty(tblName, fldName)) {
@@ -64,18 +61,19 @@ public class ServerDefaults extends Defaults {
         xpr = SqlUtils.substring(tblName, fldName, prefix.length() + 1);
         clause = SqlUtils.startsWith(tblName, fldName, prefix);
       }
-      Map<String, String> row = qs.getRow(new SqlSelect()
-          .addMax(SqlUtils.length(xpr), "length")
-          .addMax(SqlUtils.cast(xpr, SqlDataType.LONG, 0, 0), "value")
-          .addMax(SqlUtils.left(xpr, 3), "left")
-          .addMax(SqlUtils.right(xpr, 3), "right")
+      clause = SqlUtils.and(clause,
+          SqlUtils.compare(SqlUtils.length(xpr), Operator.EQ,
+              new SqlSelect()
+                  .addMax(SqlUtils.length(xpr), "length")
+                  .addFrom(tblName)
+                  .setWhere(clause)));
+
+      String maxValue = qs.getValue(new SqlSelect()
+          .addMax(xpr, "value")
           .addFrom(tblName)
           .setWhere(clause));
 
-      LogUtils.severe(LogUtils.getDefaultLogger(), BeeUtils.transformMap(row));
-
-      value = BeeUtils.nextString(BeeUtils.padLeft(row.get("value"),
-          BeeUtils.max(BeeUtils.toInt(row.get("length")), 1), '0'));
+      value = BeeUtils.nextString(maxValue);
     }
     return BeeUtils.concat(0, prefix, value);
   }

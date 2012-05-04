@@ -13,11 +13,12 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="TypeName" source="TypeName" caption="Tipas" />
-    <DataColumn name="Date" source="Date" caption="Data" />
-    <DataColumn name="Run" source="Run" caption="Rida" />
-    <DataColumn name="ValidUntil" source="ValidUntil" caption="Galioja iki" />
-    <DataColumn name="ValidFor" source="ValidFor" caption="Galioja km" />
-    <DataColumn name="Notes" source="Notes" caption="Pastabos" />
+    <RelColumn name="Type" caption="Tipas" />
+    <DataColumn name="Date" caption="Data" />
+    <DataColumn name="Run" caption="Rida" />
+    <DataColumn name="ValidUntil" caption="Galioja iki" />
+    <DataColumn name="ValidForKilometers" caption="Galioja km" />
+    <DataColumn name="ValidForHours" caption="Galioja motoval." />
+    <DataColumn name="Notes" caption="Pastabos" />
   </columns>
 </Grid>

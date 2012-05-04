@@ -13,15 +13,15 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="Season" source="Season" caption="Sezonas">
+    <DataColumn name="Season" caption="Sezonas">
       <renderer type="list" />
       <editor type="list">
         <ui:item>Vasara</ui:item>
         <ui:item>Žiema</ui:item>
       </editor>
     </DataColumn>
-    <DataColumn name="TempFrom" source="TempFrom" caption="Temp.nuo" format="#.0" />
-    <DataColumn name="TempTo" source="TempTo" caption="Temp.iki" format="#.0" />
-    <DataColumn name="Rate" source="Rate" caption="Koef.%" format="#.00" />
+    <DataColumn name="TempFrom" caption="Temp.nuo" format="#.0" />
+    <DataColumn name="TempTo" caption="Temp.iki" format="#.0" />
+    <DataColumn name="Rate" caption="Koef.%" format="#.00" />
   </columns>
 </Grid>

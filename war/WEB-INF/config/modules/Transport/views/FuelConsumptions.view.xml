@@ -15,6 +15,7 @@
     <SimpleColumn name="Summer" />
     <SimpleColumn name="Winter" />
     <SimpleColumn name="TonneKilometer" />
+    <SimpleColumn name="MotoHour" />
   </Columns>
   <Order>
     <OrderBy column="DateFrom" descending="true"/>

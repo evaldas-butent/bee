@@ -11,7 +11,8 @@
     <BeeField name="Date" type="DATE" notNull="true" />
     <BeeField name="Run" type="INTEGER" />
     <BeeField name="ValidUntil" type="DATE" />
-    <BeeField name="ValidFor" type="INTEGER" />
+    <BeeField name="ValidForKilometers" type="INTEGER" />
+    <BeeField name="ValidForHours" type="INTEGER" />
     <BeeField name="Notes" type="STRING" precision="100" />
   </BeeFields>
 </BeeTable>

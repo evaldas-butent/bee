@@ -1,6 +1,9 @@
 package com.butent.bee.client.modules.transport;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
@@ -9,13 +12,18 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.grid.AbstractColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.TreeView;
@@ -31,47 +39,83 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
 
 public class TransportHandler {
 
-  private static class OrderFormHandler extends AbstractFormCallback {
-    private Widget status = null;
-
+  private static class CargoTripsGridHandler extends AbstractGridCallback {
     @Override
-    public void afterCreateWidget(String name, Widget widget) {
-      if (BeeUtils.same(name, TransportConstants.COL_STATUS)) {
-        status = widget;
+    public boolean beforeAddRow(final GridPresenter presenter) {
+      CompoundFilter filter = Filter.and();
+      filter.add(ComparisonFilter.isEmpty("DateTo"));
+      int index = presenter.getDataProvider().getColumnIndex("Trip");
+
+      for (IsRow row : presenter.getView().getContent().getGrid().getRowData()) {
+        filter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(index)));
       }
+      Queries.getRowSet("Trips", null, filter, null, new RowSetCallback() {
+        @Override
+        public void onSuccess(BeeRowSet result) {
+          if (result.isEmpty()) {
+            presenter.getView().getContent().notifyWarning("No trips available");
+            return;
+          }
+          MultiSelector selector = new MultiSelector("Galimi reisai", result,
+              Lists.newArrayList("TripNo", "ForwarderName", "ForwarderVehicle", "VehicleNumber",
+                  "DateFrom", "DateTo"),
+              new MultiSelector.SelectionCallback() {
+                @Override
+                public void onSelection(List<IsRow> rows) {
+                  String cargo = BeeUtils.toString(presenter.getView().getContent().getRelId());
+
+                  List<BeeColumn> columns =
+                      Lists.newArrayList(new BeeColumn(ValueType.LONG, "Cargo"),
+                          new BeeColumn(ValueType.LONG, "Trip"));
+                  BeeRowSet rowSet = new BeeRowSet("CargoTrips", columns);
+
+                  for (IsRow row : rows) {
+                    rowSet.addRow(new BeeRow(DataUtils.NEW_ROW_ID,
+                        new String[] {cargo, BeeUtils.toString(row.getId())}));
+                  }
+
+                  Queries.insert(rowSet, new RowSetCallback() {
+                    public void onFailure(String[] reason) {
+                      presenter.getView().getContent().notifySevere(reason);
+                    }
+
+                    public void onSuccess(BeeRowSet res) {
+                      for (BeeRow row : res.getRows()) {
+                        BeeKeeper.getBus().fireEvent(new RowInsertEvent(res.getViewName(), row));
+                        presenter.getView().getContent().getGrid().insertRow(row);
+                      }
+                    }
+                  });
+                }
+              });
+          selector.center();
+        }
+      });
+      return false;
     }
+  }
 
-    @Override
-    public void afterRefresh(FormView form, IsRow row) {
-      String text = NameUtils.getName(OrderStatus.class,
-          row.getInteger(form.getDataIndex(TransportConstants.COL_STATUS)));
-
-      status.getElement().setInnerText(text);
-    }
-
-    @Override
-    public OrderFormHandler getInstance() {
-      return new OrderFormHandler();
-    }
-
+  private static class OrderFormHandler extends AbstractFormCallback {
     @Override
     public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-      newRow.setValue(form.getDataIndex("Date"), System.currentTimeMillis());
       newRow.setValue(form.getDataIndex(TransportConstants.COL_STATUS),
           OrderStatus.CREATED.ordinal());
     }
@@ -139,6 +183,42 @@ public class TransportHandler {
     }
   }
 
+  private static class TripFormHandler extends AbstractFormCallback {
+    @Override
+    public void afterCreateWidget(String name, final Widget widget) {
+      if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
+        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            FormView form = UiHelper.getForm(widget);
+            IsRow row = form.getRow();
+
+            ParameterList args = TransportHandler.createArgs(TransportConstants.SVC_GET_PROFIT);
+            args.addDataItem(TransportConstants.VAR_TRIP_ID, BeeUtils.transform(row.getId()));
+
+            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+              @Override
+              public void onResponse(ResponseObject response) {
+                Assert.notNull(response);
+
+                if (response.hasErrors()) {
+                  Global.showError((Object[]) response.getErrors());
+
+                } else if (response.hasArrayResponse(String.class)) {
+                  BeeKeeper.getScreen()
+                      .notifyInfo(Codec.beeDeserializeCollection((String) response.getResponse()));
+
+                } else {
+                  Global.showError("Unknown response");
+                }
+              }
+            });
+          }
+        });
+      }
+    }
+  }
+
   private static class TripRoutesGridHandler extends AbstractGridCallback {
     @Override
     public boolean afterCreateColumn(final String columnId, List<? extends IsColumn> dataColumns,
@@ -175,7 +255,7 @@ public class TransportHandler {
               rs.addRow(row.getId(), row.getVersion(), values.toArray(new String[0]));
               rs.getRow(0).preliminaryUpdate(0, cv.getNewValue());
 
-              ParameterList args = TransportHandler.createArgs("UPDATE_KILOMETERS");
+              ParameterList args = TransportHandler.createArgs(TransportConstants.SVC_UPDATE_KM);
               args.addDataItem("Rowset", Codec.beeSerialize(rs));
 
               if (BeeUtils.equals(columnId, "SpeedometerFrom")) {
@@ -291,10 +371,12 @@ public class TransportHandler {
 
   public static void register() {
     Global.registerCaptions(OrderStatus.class);
-    FormFactory.registerFormCallback("TripOrder", new OrderFormHandler());
+    FormFactory.registerFormCallback("TransportationOrder", new OrderFormHandler());
     GridFactory.registerGridCallback("Vehicles", new VehiclesGridHandler());
     GridFactory.registerGridCallback("SpareParts", new SparePartsGridHandler());
     GridFactory.registerGridCallback("TripRoutes", new TripRoutesGridHandler());
+    GridFactory.registerGridCallback("CargoTrips", new CargoTripsGridHandler());
+    FormFactory.registerFormCallback("Trip", new TripFormHandler());
   }
 
   static ParameterList createArgs(String name) {

@@ -24,7 +24,7 @@ public class ResponseObject implements BeeSerializable {
    */
 
   private enum Serial {
-    MESSAGES, RESPONSE_TYPE, RESPONSE
+    MESSAGES, RESPONSE_TYPE, ARRAY_TYPE, RESPONSE
   }
 
   public static ResponseObject error(Object... err) {
@@ -56,6 +56,7 @@ public class ResponseObject implements BeeSerializable {
   private Collection<ResponseMessage> messages = Lists.newArrayList();
   private Object response = null;
   private String type = null;
+  private boolean isArrayType = false;
 
   public ResponseObject addError(Object... err) {
     messages.add(new ResponseMessage(Level.SEVERE, BeeUtils.concat(1, err)));
@@ -106,6 +107,10 @@ public class ResponseObject implements BeeSerializable {
 
         case RESPONSE_TYPE:
           this.type = value;
+          break;
+
+        case ARRAY_TYPE:
+          this.isArrayType = BeeUtils.toBoolean(value);
           break;
 
         case RESPONSE:
@@ -171,6 +176,10 @@ public class ResponseObject implements BeeSerializable {
     return getMessageArray(Level.WARNING);
   }
 
+  public boolean hasArrayResponse(Class<?> clazz) {
+    return hasResponse(clazz, true);
+  }
+
   public boolean hasErrors() {
     return hasMessages(Level.SEVERE);
   }
@@ -188,16 +197,15 @@ public class ResponseObject implements BeeSerializable {
   }
 
   public boolean hasResponse(Class<?> clazz) {
-    boolean ok = response != null;
-
-    if (ok && clazz != null) {
-      ok = BeeUtils.same(getType(), NameUtils.getClassName(clazz));
-    }
-    return ok;
+    return hasResponse(clazz, false);
   }
 
   public boolean hasWarnings() {
     return hasMessages(Level.WARNING);
+  }
+
+  public boolean isArrayType() {
+    return isArrayType;
   }
 
   public boolean isEmpty() {
@@ -220,6 +228,10 @@ public class ResponseObject implements BeeSerializable {
           arr[i++] = type;
           break;
 
+        case ARRAY_TYPE:
+          arr[i++] = isArrayType;
+          break;
+
         case RESPONSE:
           arr[i++] = response;
           break;
@@ -233,16 +245,6 @@ public class ResponseObject implements BeeSerializable {
       setType(response.getClass());
     }
     this.response = response;
-    return this;
-  }
-
-  public ResponseObject setType(Class<?> clazz) {
-    Assert.notNull(clazz);
-    return setType(NameUtils.getClassName(clazz));
-  }
-
-  public ResponseObject setType(String type) {
-    this.type = type;
     return this;
   }
 
@@ -264,5 +266,29 @@ public class ResponseObject implements BeeSerializable {
       }
     }
     return false;
+  }
+
+  private boolean hasResponse(Class<?> clazz, boolean isArray) {
+    boolean ok = (response != null);
+
+    if (ok && clazz != null) {
+      ok = (isArrayType() == isArray) && BeeUtils.same(getType(), NameUtils.getClassName(clazz));
+    }
+    return ok;
+  }
+
+  private ResponseObject setType(Class<?> clazz) {
+    Assert.notNull(clazz);
+
+    this.isArrayType = clazz.isArray();
+    Class<?> cls;
+
+    if (isArrayType) {
+      cls = clazz.getComponentType();
+    } else {
+      cls = clazz;
+    }
+    this.type = NameUtils.getClassName(cls);
+    return this;
   }
 }

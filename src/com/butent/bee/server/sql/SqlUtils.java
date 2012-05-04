@@ -48,7 +48,7 @@ public class SqlUtils {
         ImmutableMap.of("expression", expr, "type", type, "precision", precision, "scale", scale));
   }
 
-  public static IsCondition compare(IsExpression expr, Operator op, IsExpression value) {
+  public static IsCondition compare(IsExpression expr, Operator op, IsSql value) {
     return new ComparisonCondition(op, expr, value);
   }
 
@@ -439,6 +439,14 @@ public class SqlUtils {
 
   public static IsExpression right(String source, String field, int len) {
     return left(field(source, field), len);
+  }
+
+  public static IsExpression round(IsExpression expr, int precision) {
+    return cast(expr, SqlDataType.DECIMAL, 15, precision);
+  }
+
+  public static IsExpression round(String source, String field, int precision) {
+    return round(field(source, field), precision);
   }
 
   public static IsExpression sqlCase(IsExpression expr, Object... pairs) {

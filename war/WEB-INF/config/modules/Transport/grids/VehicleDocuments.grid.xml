@@ -13,10 +13,10 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="CategoryName" source="CategoryName" caption="Kategorija" />
-    <DataColumn name="Number" source="Number" caption="Numeris" />
-    <DataColumn name="Name" source="Name" caption="Pavadinimas" />
-    <DataColumn name="Expires" source="Expires" caption="Galioja iki" />
-    <DataColumn name="Note" source="Note" caption="Pastaba" />
+    <RelColumn name="Category" caption="Kategorija" />
+    <DataColumn name="Number" caption="Numeris" />
+    <DataColumn name="Name" caption="Pavadinimas" />
+    <DataColumn name="Expires" caption="Galioja iki" />
+    <DataColumn name="Note" caption="Pastaba" />
   </columns>
 </Grid>

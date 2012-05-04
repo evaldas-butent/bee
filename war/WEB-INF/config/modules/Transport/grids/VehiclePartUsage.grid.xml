@@ -13,11 +13,11 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="Type" source="TypeName" caption="Tipas" readOnly="true" />
-    <DataColumn name="Number" source="Number" caption="Numeris" readOnly="true" />
-    <DataColumn name="Description" source="Description" caption="Aprašymas" readOnly="true" />
-    <DataColumn name="Mounted" source="Mounted" caption="Uždėta" />
-    <DataColumn name="Removed" source="Removed" caption="Nuimta" />
-    <DataColumn name="Note" source="Note" caption="Pastaba" />
+    <RelColumn name="Part" renderColumns="ParentTypeName TypeName" caption="Tipas" readOnly="true" />
+    <DataColumn name="Number" caption="Numeris" readOnly="true" />
+    <DataColumn name="Description" caption="Aprašymas" readOnly="true" />
+    <DataColumn name="Mounted" caption="Uždėta" />
+    <DataColumn name="Removed" caption="Nuimta" />
+    <DataColumn name="Note" caption="Pastaba" />
   </columns>
 </Grid>

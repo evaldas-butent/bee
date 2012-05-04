@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
+  
+  name="CargoPlace" caption="Vieta"
+  width="600" widthUnit="px" height="200" heightUnit="px"
+  >
+  <SimplePanel class="flexBox-vertical-center">
+    <xi:include href="widgets/CargoPlaces.widget.xml" />
+  </SimplePanel>
+</f:Form>

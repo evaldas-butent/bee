@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Form [
   <!ENTITY LABEL_STYLE "margin-right: 1em; margin-left: 1em;">
-  <!ENTITY LEFT_LABEL_STYLE "margin-right: 1em; display: inline-block; min-width: 70px; text-align: right">
+  <!ENTITY LEFT_LABEL_STYLE "margin-right: 1em; display: inline-block; width: 9em; text-align: right">
   <!ENTITY ROW_STYLE "margin-bottom: 1ex;">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
@@ -14,8 +14,10 @@
       <FlowPanel class="flexBox-vertical flexible">
         <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
           <InlineLabel html="Vardas, pavardė" class="bee-required" style="font-weight: bold; &LEFT_LABEL_STYLE;" />
-          <DataSelector source="CompanyPerson" renderColumns="PersonName"
-            choiceColumns="CompanyName FirstName LastName" class="flexible" style="min-width: 5em;" />
+          <SimplePanel class="flexible" style="position: relative; height: 23px;">
+            <DataSelector source="CompanyPerson" renderColumns="FirstName LastName"
+              choiceColumns="FirstName LastName CompanyName" class="occupy" />
+          </SimplePanel>
         </FlowPanel>
 
         <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">

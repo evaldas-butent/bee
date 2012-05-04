@@ -13,11 +13,12 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="DateFrom" source="DateFrom" caption="Nuo" />
-    <DataColumn name="DateTo" source="DateTo" caption="Iki" />
-    <DataColumn name="FuelType" source="FuelType" caption="Kuro rūšis" />
-    <DataColumn name="Summer" source="Summer" caption="Vasara l/100km" format="#.00"  />
-    <DataColumn name="Winter" source="Winter" caption="Žiema l/100km" format="#.00"  />
-    <DataColumn name="TonneKilometer" source="TonneKilometer" caption="Tonkilometris" format="#.0000"  />
+    <DataColumn name="DateFrom" caption="Nuo" />
+    <DataColumn name="DateTo" caption="Iki" />
+    <RelColumn name="Fuel" caption="Kuro rūšis" />
+    <DataColumn name="Summer" caption="Vasara l/100km" format="#.00"  />
+    <DataColumn name="Winter" caption="Žiema l/100km" format="#.00"  />
+    <DataColumn name="TonneKilometer" caption="Tonkilometris" format="#.0000"  />
+    <DataColumn name="MotoHour" caption="Motovalanda" format="#.00"  />
   </columns>
 </Grid>

@@ -13,19 +13,19 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="Date" source="Date" caption="Data" />
-    <DataColumn name="ItemName" source="ItemName" caption="Prekė/paslauga" />
-    <DataColumn name="UnitName" source="UnitName" caption="Mato v." />
-    <DataColumn name="Quantity" source="Quantity" caption="Kiekis" />
-    <DataColumn name="Price" source="Price" caption="Kaina" format="#.00" />
-    <DataColumn name="CurrencyName" source="CurrencyName" caption="Val." />
+    <DataColumn name="Date" caption="Data" />
+    <RelColumn name="Item" caption="Prekė/paslauga" />
+    <RelColumn name="Unit" caption="Mato v." />
+    <DataColumn name="Quantity" caption="Kiekis" />
+    <DataColumn name="Price" caption="Kaina" format="#.00" />
+    <RelColumn name="Currency" caption="Val." />
     <CalcColumn type="decimal" name="Total" caption="Suma" format="#.00">
       <render><ui:expression>row.Quantity * row.Price</ui:expression></render>
     </CalcColumn>
-    <DataColumn name="Note" source="Note" caption="Pastaba" />
-    <DataColumn name="Run" source="Run" caption="Rida" />
-    <DataColumn name="DocumentNo" source="DocumentNo" caption="Dok.Nr." />
-    <DataColumn name="SupplierName" source="SupplierName" caption="Tiekėjas" />
-    <DataColumn name="CountryName" source="CountryName" caption="Šalis" />
+    <DataColumn name="Note" caption="Pastaba" />
+    <DataColumn name="Run" caption="Rida" />
+    <DataColumn name="DocumentNo" caption="Dok.Nr." />
+    <RelColumn name="Supplier" caption="Tiekėjas" />
+    <RelColumn name="Country" caption="Šalis" />
   </columns>
 </Grid>

@@ -22,6 +22,7 @@ import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -195,8 +196,7 @@ public class QueryServiceBean {
     return processSql(query.getQuery(), new SqlHandler<SimpleRowSet>() {
       @Override
       public SimpleRowSet processError(SQLException ex) {
-        LogUtils.error(logger, ex);
-        return null;
+        throw new BeeRuntimeException(ex);
       }
 
       @Override
@@ -206,8 +206,7 @@ public class QueryServiceBean {
 
       @Override
       public SimpleRowSet processUpdateCount(int updateCount) {
-        LogUtils.warning(logger, "Query must return a ResultSet");
-        return null;
+        throw new BeeRuntimeException("Query must return a ResultSet");
       }
     });
   }
@@ -316,8 +315,7 @@ public class QueryServiceBean {
     return processSql(query.getQuery(), new SqlHandler<BeeRowSet>() {
       @Override
       public BeeRowSet processError(SQLException ex) {
-        LogUtils.error(logger, ex);
-        return null;
+        throw new BeeRuntimeException(ex);
       }
 
       @Override
@@ -333,8 +331,7 @@ public class QueryServiceBean {
 
       @Override
       public BeeRowSet processUpdateCount(int updateCount) {
-        LogUtils.warning(logger, "Query must return a ResultSet");
-        return null;
+        throw new BeeRuntimeException("Query must return a ResultSet");
       }
     });
   }
@@ -407,6 +404,11 @@ public class QueryServiceBean {
   public boolean sqlExists(String source, IsCondition where) {
     return sqlCount(new SqlSelect()
         .addConstant(null, "dummy").addFrom(source).setWhere(where)) > 0;
+  }
+
+  public void sqlIndex(String tmp, String... fields) {
+    Assert.state(!sys.isTable(tmp), "Can't index a base table: " + tmp);
+    updateData(SqlUtils.createIndex(false, tmp, SqlUtils.uniqueName(), fields));
   }
 
   public int updateData(IsQuery query) {

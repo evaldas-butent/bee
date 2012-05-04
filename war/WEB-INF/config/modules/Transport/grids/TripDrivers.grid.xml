@@ -15,11 +15,7 @@
   <columns>
     <DataColumn name="DateFrom" source="DateFrom" caption="Data nuo" />
     <DataColumn name="DateTo" source="DateTo" caption="Data iki" />
-    <DataColumn name="Driver" source="FirstName" caption="Vardas, Pavardė">
-      <render>
-        <ui:expression>row.FirstName + (row.LastName ? ', ' + row.LastName : '')</ui:expression>
-      </render>
-    </DataColumn>
+    <RelColumn name="Driver" caption="Vardas, Pavardė" />
     <DataColumn name="Note" source="Note" caption="Pastaba" />
   </columns>
 </Grid>

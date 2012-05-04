@@ -24,6 +24,8 @@
   </abstract>
 
   <decorator id="label" extends="caption">
+    <optionalParam p:size="0" p:unit="em" p:align="left" />
+    <const name="caption-style">display: inline-block; width: {size}{unit}; text-align: {align}; padding-top: 2px; padding-right: 2px;</const>
     <template>
       <label data-role="caption" style="{caption-style}">{caption}{content-element}</label>
     </template>

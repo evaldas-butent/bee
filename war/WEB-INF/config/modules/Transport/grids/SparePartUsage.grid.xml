@@ -13,10 +13,10 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="ModelName" source="ModelName" caption="Modelis" readOnly="true" />
-    <DataColumn name="Number" source="Number" caption="Valst.Nr." />
-    <DataColumn name="Mounted" source="Mounted" caption="Uždėta" />
-    <DataColumn name="Removed" source="Removed" caption="Nuimta" />
-    <DataColumn name="Note" source="Note" caption="Pastaba" />
+    <RelColumn name="Vehicle" renderColumns="ParentModelName ModelName" caption="Modelis" readOnly="true" />
+    <RelColumn name="Number" caption="Valst.Nr." />
+    <DataColumn name="Mounted" caption="Uždėta" />
+    <DataColumn name="Removed" caption="Nuimta" />
+    <DataColumn name="Note" caption="Pastaba" />
   </columns>
 </Grid>

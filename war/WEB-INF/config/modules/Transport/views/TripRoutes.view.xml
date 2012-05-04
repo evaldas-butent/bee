@@ -20,12 +20,11 @@
     <SimpleColumn name="SpeedometerFrom" />
     <SimpleColumn name="SpeedometerTo" />
     <SimpleColumn name="Kilometers" />
+    <SimpleColumn name="MotoHours" />
     <SimpleColumn name="CargoWeight" />
     <SimpleColumn name="Season" />
     <SimpleColumn name="Temperature" />
-    <SimpleColumn name="Consumption">
-      <x:number>0</x:number>
-    </SimpleColumn>
+    <SimpleColumn name="Consumption" />
   </Columns>
   <Order>
     <OrderBy column="Date" />

@@ -10,19 +10,10 @@
     <SimpleColumn name="Vehicle" />
     <SimpleJoin name="Vehicle" joinType="LEFT">
       <SimpleJoin name="Model" joinType="LEFT">
-        <HiddenColumn name="Name" />
         <SimpleJoin name="Parent" joinType="LEFT">
-          <HiddenColumn name="Name" alias="ParentName" />
+          <SimpleColumn name="Name" alias="ParentModelName" />
         </SimpleJoin>
-        <SimpleColumn name="ModelName">
-          <xpr:concat>
-            <xpr:nvl type="STRING">
-              <xpr:string>"ParentName"</xpr:string><xpr:string>''</xpr:string>
-            </xpr:nvl>
-            <xpr:string>' '</xpr:string>
-            <xpr:string>"Name"</xpr:string>
-          </xpr:concat>
-        </SimpleColumn>
+        <SimpleColumn name="Name" alias="ModelName" />
       </SimpleJoin>
       <SimpleColumn name="Number" />
     </SimpleJoin>

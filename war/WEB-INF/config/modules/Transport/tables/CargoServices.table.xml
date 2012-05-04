@@ -12,6 +12,7 @@
     <BeeField name="Quantity" type="DOUBLE" notNull="true" />
     <BeeField name="Price" type="DECIMAL" precision="15" scale="5" />
     <BeeField name="Currency" type="LONG" relation="Currencies" />
-    <BeeField name="Expedition" type="BOOLEAN" />
+    <BeeField name="CostPrice" type="DECIMAL" precision="15" scale="5" />
+    <BeeField name="CostCurrency" type="LONG" relation="Currencies" />
   </BeeFields>
 </BeeTable>

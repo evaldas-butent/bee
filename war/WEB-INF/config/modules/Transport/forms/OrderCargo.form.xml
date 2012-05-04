@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form" name="OrderCargo"
+  xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  viewName="OrderCargo" caption="Krovinys"
+  name="OrderCargo" viewName="OrderCargo" caption="Krovinys"
   >
   <FlowPanel class="flexBox-vertical">
     <VerticalPanel cellSpacing="10">
@@ -73,7 +73,7 @@
       </page>
       <page>
         <text>Reisai</text>
-        <InlineLabel />
+        <ChildGrid name="CargoTrips" relColumn="Cargo" />
       </page>
     </TabbedPages>
   </FlowPanel>

@@ -15,17 +15,12 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="Date" source="Date" caption="Data" />
-    <DataColumn name="OrderNo" source="OrderNo" caption="Užsakymo Nr." />
-    <DataColumn name="Status" source="Status" caption="Būsena" itemKey="OrderStatus" />
-    <DataColumn name="Customer" source="CustomerName" caption="Užsakovas" />
-    <DataColumn name="Payer" source="PayerName" caption="Mokėtojas" />
-    <CalcColumn name="Manager" type="string" caption="Vadybininkas"
-      sortBy="ManagerFirstName ManagerLastName" searchBy="ManagerFirstName ManagerLastName">
-      <render>
-        <ui:function>return (row.ManagerFirstName || "") + " " + (row.ManagerLastName || "")</ui:function>
-      </render>
-    </CalcColumn>
+    <DataColumn name="Date" caption="Data" />
+    <DataColumn name="OrderNo" caption="Užsakymo Nr." />
+    <DataColumn name="Status" caption="Būsena" itemKey="OrderStatus" />
+    <RelColumn name="Customer" caption="Užsakovas" />
+    <RelColumn name="Payer" caption="Mokėtojas" />
+    <RelColumn name="Manager" caption="Vadybininkas" />
     <CalcColumn name="Cargo" type="string" caption="Kroviniai" searchBy="Cargo">
       <render>
         <ui:function>
@@ -41,8 +36,8 @@
         </ui:function>
       </render>
     </CalcColumn>
-    <DataColumn name="Weight" source="Weight" caption="Svoris" />
-    <DataColumn name="Volume" source="Volume" caption="Tūris" />
-    <DataColumn name="Quantity" source="Quantity" caption="Kiekis" />
+    <DataColumn name="Weight" caption="Svoris" />
+    <DataColumn name="Volume" caption="Tūris" />
+    <DataColumn name="Quantity" caption="Kiekis" />
   </columns>
 </Grid>

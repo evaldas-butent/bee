@@ -14,8 +14,10 @@
     <BeeField name="SpeedometerFrom" type="DOUBLE" />
     <BeeField name="SpeedometerTo" type="DOUBLE" />
     <BeeField name="Kilometers" type="DOUBLE" />
+    <BeeField name="MotoHours" type="DECIMAL" precision="7" scale="2" />
     <BeeField name="CargoWeight" type="DECIMAL" precision="7" scale="3" />
     <BeeField name="Season" type="DECIMAL" precision="1" notNull="true" />
     <BeeField name="Temperature" type="DECIMAL" precision="3" scale="0" />
+    <BeeField name="Consumption" type="DOUBLE" />
   </BeeFields>
 </BeeTable>

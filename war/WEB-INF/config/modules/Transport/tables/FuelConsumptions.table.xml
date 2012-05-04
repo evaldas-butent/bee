@@ -13,5 +13,6 @@
     <BeeField name="Summer" type="DECIMAL" precision="6" scale="2" notNull="true" />
     <BeeField name="Winter" type="DECIMAL" precision="6" scale="2" notNull="true" />
     <BeeField name="TonneKilometer" type="DECIMAL" precision="6" scale="4" />
+    <BeeField name="MotoHour" type="DECIMAL" precision="6" scale="2" />
   </BeeFields>
 </BeeTable>

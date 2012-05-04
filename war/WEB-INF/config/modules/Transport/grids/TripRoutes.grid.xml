@@ -13,32 +13,38 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="Date" source="Date" caption="Data" />
-    <DataColumn name="Country" source="CountryName" caption="Šalis" />
-    <DataColumn name="Route" source="Route" caption="Maršrutas" />
-    <DataColumn name="SpeedometerFrom" source="SpeedometerFrom" caption="Spid.nuo" format="#.0" minValue="0" />
-    <DataColumn name="SpeedometerTo" source="SpeedometerTo" caption="Spid.iki" format="#.0" minValue="0" />
-    <DataColumn name="Kilometers" source="Kilometers" caption="Km" format="#.0" minValue="0">
+    <DataColumn name="Date" caption="Data" updateMode="row" />
+    <RelColumn name="Country" caption="Šalis" />
+    <DataColumn name="Route" caption="Maršrutas" />
+    <DataColumn name="SpeedometerFrom" caption="Spid.nuo" format="#.0" minValue="0" />
+    <DataColumn name="SpeedometerTo" caption="Spid.iki" format="#.0" minValue="0" />
+    <DataColumn name="Kilometers" caption="Km" format="#.0" minValue="0">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </DataColumn>
-    <DataColumn name="CargoWeight" source="CargoWeight" caption="Pakrauta t" format="#.000" />
-    <DataColumn name="Season" source="Season" caption="Sezonas">
+    <DataColumn name="MotoHours" caption="Motoval." format="#.00" minValue="0" updateMode="row">
+      <style>
+        <headerStyle><ui:font>bold</ui:font></headerStyle>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+    </DataColumn>
+    <DataColumn name="CargoWeight" caption="Pakrauta t" format="#.000" updateMode="row" />
+    <DataColumn name="Season" caption="Sezonas" updateMode="row">
       <renderer type="list" />
       <editor type="list">
         <ui:item>Vasara</ui:item>
         <ui:item>Žiema</ui:item>
       </editor>
     </DataColumn>
-    <DataColumn name="Temperature" source="Temperature" caption="Temp." />
+    <DataColumn name="Temperature" caption="Temp." updateMode="row" />
     <DataColumn name="Consumption" caption="Litrai">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </DataColumn>
-    <DataColumn name="FuelType" source="FuelType" caption="Kuro rūšis" />
+    <RelColumn name="Fuel" caption="Kuro rūšis" />
   </columns>
 </Grid>

@@ -30,10 +30,10 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="Type" source="TypeName" caption="Tipas" />
-    <DataColumn name="Model" source="ModelName" caption="Modelis" />
+    <RelColumn name="Type" caption="Tipas" />
+    <RelColumn name="Model" renderColumns="ParentModelName ModelName" caption="Modelis" />
     <DataColumn name="Number" source="Number" caption="Valst.Nr." />
-    <DataColumn name="Owner" source="OwnerName" caption="Savininkas" />
+    <RelColumn name="Owner" caption="Savininkas" />
     <DataColumn name="ProductionDate" source="ProductionDate" caption="Pag. data" />
     <DataColumn name="Power" source="Power" caption="Galia kW" />
     <DataColumn name="EngineVolume" source="EngineVolume" caption="Tūris cm&#x00b3;" />

@@ -13,7 +13,8 @@
     <SimpleColumn name="Date"/>
     <SimpleColumn name="Run" />
     <SimpleColumn name="ValidUntil" />
-    <SimpleColumn name="ValidFor" />
+    <SimpleColumn name="ValidForKilometers" />
+    <SimpleColumn name="ValidForHours" />
     <SimpleColumn name="Notes" />
   </Columns>
   <Order>

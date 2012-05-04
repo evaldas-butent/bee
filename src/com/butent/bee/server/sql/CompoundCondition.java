@@ -35,7 +35,7 @@ class CompoundCondition implements HasConditions {
   public void add(IsCondition... conditions) {
     if (!BeeUtils.isEmpty(conditions)) {
       for (IsCondition cond : conditions) {
-        if (!BeeUtils.isEmpty(cond)) {
+        if (cond != null) {
           subConditions.add(cond);
         }
       }

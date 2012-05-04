@@ -23,11 +23,11 @@
       <row>
         <cell><Label html="Užsakovas" horizontalAlignment="right" class="bee-required" /></cell>
         <cell>
-          <DataSelector source="CustomerName" />
+          <DataSelector source="Customer" />
         </cell>
         <cell><Label html="Mokėtojas" horizontalAlignment="right" /></cell>
         <cell colSpan="3">
-          <DataSelector source="PayerName" />
+          <DataSelector source="Payer" />
         </cell>
       </row>
       <row>

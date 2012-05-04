@@ -13,19 +13,22 @@
       <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em">
         <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
           <InputDateTime source="Date" style="width: 10em;" caption="Data" d:size="6" d:align="right" />
+          <Button name="profit" html="Pelnas" />
           <InputText source="TripNo" caption="Reiso.Nr." />
         </FlowPanel>
         <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
-          <DataSelector source="ForwarderName" class="flexible" caption="Vežėjas"
-            d:size="6" d:align="right" />
+          <DataSelector source="Forwarder" class="flexible" caption="Vežėjas" d:size="6" d:align="right" />
         </FlowPanel>
         <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
-          <InputText source="ForwarderVehicle" caption="Transportas" d:size="6" d:align="right" />
+          <InputText source="ForwarderVehicle"  class="flexible" caption="Transportas" d:size="6" d:align="right" />
         </FlowPanel>
       </FlowPanel>
 
       <FlowPanel class="flexBox-vertical flexible" style="&ROW_STYLE; margin-left: 1em;">
-        <InputArea source="Notes" caption="Pastabos" decorator="caption-top" />
+        <Label html="Pastabos" />
+        <SimplePanel style="position: relative; min-width: 5em;" class="flexible">
+          <InputArea source="Notes" class="occupy" />
+        </SimplePanel>
       </FlowPanel>
     </FlowPanel>
 
@@ -36,52 +39,48 @@
         <FlowPanel class="flexBox-horizontal">
           <FlowPanel class="flexBox-vertical" style="margin-left: 1em">
             <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+              <Label html="Išvykimas" style="font-weight: bold;" />
+              <Label html="Sugrįžimas" style="font-weight: bold;" />
+            </FlowPanel>
+            
+            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
               <SimplePanel>
-                <InlineLabel html="Išvykimas" style="font-weight: bold;" />
+                <InputDate source="DateFrom" style="width: 7em;" />
               </SimplePanel>
+              <Label html="Data" />
               <SimplePanel>
-                <InlineLabel html="Sugrįžimas" style="font-weight: bold;" />
+                <InputDate source="DateTo" style="width: 7em;" />
               </SimplePanel>
             </FlowPanel>
-
+            
             <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-              <SimplePanel style="position: relative; height: 23px; width: 7em;">
-                <InputDate source="DateFrom" class="occupy" />
+              <SimplePanel>
+                <InputDouble source="SpeedometerBefore" style="width: 6em;" />
               </SimplePanel>
-              <InlineLabel html="Data" />
-              <SimplePanel style="position: relative; height: 23px; width: 7em;">
-                <InputDate source="DateTo" class="occupy" />
+              <Label html="Spidometras" style="margin: 0 1em 0 1em" />
+              <SimplePanel>
+                <InputDouble source="SpeedometerAfter" style="width: 6em;" />
               </SimplePanel>
             </FlowPanel>
+            
             <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-              <SimplePanel style="position: relative; height: 23px; width: 6em;">
-                <InputDouble source="SpeedometerBefore" class="occupy" />
+              <SimplePanel>
+                <InputDecimal source="FuelBefore" style="width: 4em;" />
               </SimplePanel>
-              <InlineLabel html="Spidometras" style="margin: 0 1em 0 1em" />
-              <SimplePanel style="position: relative; height: 23px; width: 6em;">
-                <InputDouble source="SpeedometerAfter" class="occupy" />
-              </SimplePanel>
-            </FlowPanel>
-
-            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-              <SimplePanel style="position: relative; height: 23px; width: 4em;">
-                <InputDecimal source="FuelBefore" class="occupy" />
-              </SimplePanel>
-              <InlineLabel html="Kuro likutis bake" />
-              <SimplePanel style="position: relative; height: 23px; width: 4em;">
-                <InputDecimal source="FuelAfter" class="occupy" />
+              <Label html="Kuro likutis bake" />
+              <SimplePanel>
+                <InputDecimal source="FuelAfter" style="width: 4em;" />
               </SimplePanel>
             </FlowPanel>
           </FlowPanel>
 
           <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em;">
             <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
-              <InlineLabel html="Vilkikas" />
-              <DataSelector source="VehicleNumber" class="flexible" />
+              <DataSelector source="Vehicle" class="flexible" caption="Vilkikas" d:size="6" d:align="right" />
             </FlowPanel>
 
             <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
-              <DataSelector source="TrailerNumber" class="flexible" caption="Puspriekabė" />
+              <DataSelector source="Trailer" class="flexible" caption="Puspriekabė" d:size="6" d:align="right" />
             </FlowPanel>
 
             <ChildGrid name="TripDrivers" relColumn="Trip" class="flexible" />
@@ -90,7 +89,7 @@
       </page>
       <page>
         <text>Kroviniai</text>
-        <InlineLabel></InlineLabel>
+        <ChildGrid name="TripCargo" relColumn="Trip" />
       </page>
       <page>
         <text>Išlaidos</text>

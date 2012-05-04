@@ -13,17 +13,17 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="Date" source="Date" caption="Data" />
-    <DataColumn name="FuelType" source="FuelType" caption="Kuro rūšis" />
-    <DataColumn name="Quantity" source="Quantity" caption="Kiekis" />
-    <DataColumn name="Price" source="Price" caption="Kaina" format="#.00" />
-    <DataColumn name="Currency" source="CurrencyName" caption="Val." />
+    <DataColumn name="Date" caption="Data" />
+    <RelColumn name="Fuel" caption="Kuro rūšis" />
+    <DataColumn name="Quantity" caption="Kiekis" />
+    <DataColumn name="Price" caption="Kaina" format="#.00" />
+    <RelColumn name="Currency" caption="Val." />
     <CalcColumn name="Total" type="decimal" caption="Suma" format="#.00">
       <render><ui:expression>row.Quantity * row.Price</ui:expression></render>
     </CalcColumn>
-    <DataColumn name="Number" source="Number" caption="Numeris" />
-    <DataColumn name="Supplier" source="SupplierName" caption="Tiekėjas" />
-    <DataColumn name="Country" source="CountryName" caption="Šalis" />
-    <DataColumn name="Note" source="Note" caption="Pastaba" />
+    <DataColumn name="Number" caption="Numeris" />
+    <RelColumn name="Supplier" caption="Tiekėjas" />
+    <RelColumn name="Country" caption="Šalis" />
+    <DataColumn name="Note" caption="Pastaba" />
   </columns>
 </Grid>
