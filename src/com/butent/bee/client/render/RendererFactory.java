@@ -1,12 +1,14 @@
 package com.butent.bee.client.render;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.ui.PotentialRenderer;
@@ -18,6 +20,28 @@ import java.util.List;
 
 public class RendererFactory {
 
+  public static AbstractCellRenderer createRenderer(String viewName, List<String> renderColumns) {
+    return createRenderer(viewName, renderColumns, null);
+  }
+  
+  public static AbstractCellRenderer createRenderer(String viewName, List<String> renderColumns,
+      String separator) {
+    Assert.notEmpty(viewName);
+    Assert.notEmpty(renderColumns);
+    
+    DataInfo dataInfo = Global.getDataInfo(viewName, true);
+    if (dataInfo == null) {
+      return null;
+    }
+    
+    if (renderColumns.size() > 1) {
+      return new JoinRenderer(dataInfo.getColumns(), separator, renderColumns);
+    } else {
+      int index = dataInfo.getColumnIndex(renderColumns.get(0));
+      return new SimpleRenderer(index, dataInfo.getColumns().get(index));
+    }
+  }
+  
   public static AbstractCellRenderer createRenderer(Calculation calculation,
       List<? extends IsColumn> dataColumns, int dataIndex) {
     Assert.notNull(calculation);

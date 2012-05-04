@@ -9,92 +9,46 @@
     <FlowPanel class="flexBox-vertical">
       <FlexTable cellSpacing="10">
         <row>
-          <cell>
-            <Label html="Būsena" />
-          </cell>
-          <cell>
-            <TextLabel source="Event" itemKey="TaskEvent" class="bee-display" />
-          </cell>
-          <cell>
-            <Label html="Prioritetas:" horizontalAlignment="right" />
-          </cell>
-          <cell>
-            <TextLabel source="Priority" itemKey="Priority" class="bee-display" />
-          </cell>
+          <Label html="Būsena" />
+          <TextLabel source="Event" itemKey="TaskEvent" class="bee-display" />
+          <Label html="Prioritetas:" horizontalAlignment="right" />
+          <TextLabel source="Priority" itemKey="Priority" class="bee-display" />
         </row>
 
         <row>
-          <cell>
-            <InlineLabel />
-          </cell>
+          <InlineLabel />
           <cell colSpan="2">
             <Label html="Numatoma trukmė min.:" horizontalAlignment="right" />
           </cell>
-          <cell>
-            <LongLabel source="ExpectedDuration" class="bee-display" />
-          </cell>
+          <LongLabel source="ExpectedDuration" class="bee-display" />
         </row>
 
         <row>
-          <cell>
-            <Label html="Pradžia:" />
-          </cell>
-          <cell>
-            <DateTimeLabel source="StartTime" class="bee-display" />
-          </cell>
-          <cell>
-            <Label html="Įmonė:" horizontalAlignment="right" />
-          </cell>
-          <cell>
-            <TextLabel source="CompanyName" class="bee-display" />
-          </cell>
+          <Label html="Pradžia:" />
+          <DateTimeLabel source="StartTime" class="bee-display" />
+          <Label html="Įmonė:" horizontalAlignment="right" />
+          <TextLabel source="CompanyName" class="bee-display" />
         </row>
 
         <row>
-          <cell>
-            <Label html="Terminas:" />
-          </cell>
-          <cell>
-            <DateTimeLabel source="FinishTime" class="bee-display" />
-          </cell>
-          <cell>
-            <Label html="Asmuo:" horizontalAlignment="right" />
-          </cell>
-          <cell>
-            <TextLabel source="PersonFirstName" class="bee-display" />
-          </cell>
+          <Label html="Terminas:" />
+          <DateTimeLabel source="FinishTime" class="bee-display" />
+          <Label html="Asmuo:" horizontalAlignment="right" />
+          <TextLabel renderColumns="PersonFirstName PersonLastName" class="bee-display" />
         </row>
 
         <row>
-          <cell>
-            <Label html="Užduotis:" />
-          </cell>
+          <Label html="Užduotis:" />
           <cell colSpan="3">
             <TextLabel source="Description" class="bee-display" style="width: 100%; min-height: 60px;" />
           </cell>
         </row>
 
         <row>
-          <cell>
-            <Label html="Vykdytojas:" />
-          </cell>
-          <cell>
-            <TextLabel class="bee-display">
-              <render>
-                <ui:function>return (row.ExecutorFirstName || "") + " " + (row.ExecutorLastName || "")</ui:function>
-              </render>
-            </TextLabel>
-          </cell>
-          <cell>
-            <Label html="Autorius:" horizontalAlignment="right" />
-          </cell>
-          <cell>
-            <TextLabel class="bee-display">
-              <render>
-                <ui:function>return (row.OwnerFirstName || "") + " " + (row.OwnerLastName || "")</ui:function>
-              </render>
-            </TextLabel>
-          </cell>
+          <Label html="Vykdytojas:" />
+          <TextLabel class="bee-display" renderColumns="ExecutorFirstName ExecutorLastName" />
+          <Label html="Autorius:" horizontalAlignment="right" />
+          <TextLabel class="bee-display" renderColumns="OwnerFirstName OwnerLastName" />
         </row>
       </FlexTable>
 

@@ -64,6 +64,20 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
           ATTR_CACHING, ATTR_OPERATOR, ATTR_CHOICE_COLUMNS, ATTR_SEARCHABLE_COLUMNS,
           ATTR_ITEM_TYPE, HasVisibleLines.ATTR_VISIBLE_LINES));
 
+  public static Relation create(String viewName, List<String> columns) {
+    Relation relation = new Relation();
+
+    if (!BeeUtils.isEmpty(viewName)) {
+      relation.setViewName(viewName);
+    }
+    if (!BeeUtils.isEmpty(columns)) {
+      relation.getChoiceColumns().addAll(columns);
+      relation.getSearchableColumns().addAll(columns);
+    }
+    
+    return relation;
+  }
+  
   public static Relation create(Map<String, String> attributes,
       List<SelectorColumn> selectorColumns,  RendererDescription rowRendererDescription,
       Calculation rowRender) {

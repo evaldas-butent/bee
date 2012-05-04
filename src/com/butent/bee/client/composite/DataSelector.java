@@ -48,11 +48,13 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
@@ -75,6 +77,61 @@ import java.util.Map;
 
 public class DataSelector extends Composite implements Editor, HasVisibleLines, HasDataRow,
     HasTextBox {
+
+  public class SimpleHandler implements FocusHandler, BlurHandler, EditStopEvent.Handler {
+
+    private final AbstractCellRenderer renderer;
+
+    private String text = null;
+
+    public SimpleHandler(AbstractCellRenderer renderer) {
+      this.renderer = renderer;
+    }
+
+    public SimpleHandler(int dataIndex) {
+      this(dataIndex, ValueType.TEXT);
+    }
+
+    public SimpleHandler(int dataIndex, ValueType dataType) {
+      this(new SimpleRenderer(dataIndex, dataType));
+    }
+
+    public void onBlur(BlurEvent event) {
+      updateDisplay(getText());
+      setEditing(false);
+    }
+
+    public void onEditStop(EditStopEvent event) {
+      if (renderer != null) {
+        if (event.isChanged()) {
+          setText(getRow() == null ? null : renderer.render(getRow()));
+        }
+        updateDisplay(getText());
+        UiHelper.moveFocus(getParent(), getElement(), true);
+      }
+    }
+
+    public void onFocus(FocusEvent event) {
+      setText(getDisplayValue());
+      setEditing(true);
+    }
+
+    private String getText() {
+      return text;
+    }
+
+    private void setText(String text) {
+      this.text = text;
+    }
+
+    private void updateDisplay(String value) {
+      if (BeeUtils.isEmpty(value)) {
+        clearDisplay();
+      } else {
+        setDisplayValue(value.trim());
+      }
+    }
+  }
 
   private class InputEvents implements MouseWheelHandler {
 
@@ -532,6 +589,24 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
+  }
+
+  public Collection<HandlerRegistration> addSimpleHandler(int dataIndex) {
+    return addSimpleHandler(new SimpleHandler(dataIndex));
+  }
+
+  public Collection<HandlerRegistration> addSimpleHandler(int dataIndex, ValueType dataType) {
+    return addSimpleHandler(new SimpleHandler(dataIndex, dataType));
+  }
+  
+  public Collection<HandlerRegistration> addSimpleHandler(AbstractCellRenderer renderer) {
+    return addSimpleHandler(new SimpleHandler(renderer));
+  }
+
+  public Collection<HandlerRegistration> addSimpleHandler(SimpleHandler handler) {
+    Assert.notNull(handler);
+    return Lists.newArrayList(addBlurHandler(handler), addFocusHandler(handler),
+        addEditStopHandler(handler));
   }
 
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {

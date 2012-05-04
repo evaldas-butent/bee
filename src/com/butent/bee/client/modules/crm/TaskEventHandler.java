@@ -33,6 +33,7 @@ import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.FlexTable.FlexCellFormatter;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiHelper;
@@ -70,6 +71,7 @@ import com.butent.bee.shared.modules.crm.CrmConstants.Priority;
 import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -532,7 +534,8 @@ public class TaskEventHandler {
         parent.setWidget(row, 0, panel);
 
         addMinutes(flex, "Sugaišta minučių", 0, 0, 1440, 5);
-        addSelector(SELECTOR, flex, "Darbo tipas", "DurationTypes", CrmConstants.COL_NAME, false);
+        addSelector(SELECTOR, flex, "Darbo tipas", "DurationTypes",
+            Lists.newArrayList(CrmConstants.COL_NAME), false);
         addDate(flex, "Atlikimo data", ValueType.DATE, false, new Long(TimeUtils.today(0).getDays()));
       }
     }
@@ -609,7 +612,7 @@ public class TaskEventHandler {
     }
 
     public void addSelector(String id, FlexTable parent, String caption, String relView,
-        String relColumn, boolean required) {
+        List<String> relColumns, boolean required) {
       int row = parent.getRowCount();
 
       BeeLabel lbl = new BeeLabel(caption);
@@ -617,22 +620,22 @@ public class TaskEventHandler {
         lbl.setStyleName(StyleUtils.NAME_REQUIRED);
       }
       parent.setWidget(row, 0, lbl);
-      BeeColumn col = new BeeColumn(ValueType.LONG, "Dummy");
-//      DataSelector selector = new DataSelector(
-//          RelationInfo.create(Lists.newArrayList(col), null, col.getId(), relView, relColumn),
-//          true);
-//      parent.setWidget(row, 1, selector);
-//      dialogWidgets.put(id, selector);
+      
+      DataSelector selector = new DataSelector(Relation.create(relView, relColumns), true);
+      selector.addSimpleHandler(RendererFactory.createRenderer(relView, relColumns));
+
+      parent.setWidget(row, 1, selector);
+      dialogWidgets.put(id, selector);
     }
 
-    public void addSelector(String caption, String relView, String relColumn,
+    public void addSelector(String caption, String relView, List<String> relColumns,
         boolean required) {
-      addSelector(SELECTOR, caption, relView, relColumn, required);
+      addSelector(SELECTOR, caption, relView, relColumns, required);
     }
 
-    public void addSelector(String id, String caption, String relView, String relColumn,
+    public void addSelector(String id, String caption, String relView, List<String> relColumns,
         boolean required) {
-      addSelector(id, container, caption, relView, relColumn, required);
+      addSelector(id, container, caption, relView, relColumns, required);
     }
 
     public void display() {
@@ -1163,7 +1166,8 @@ public class TaskEventHandler {
     final Long oldUser = data.getLong(form.getDataIndex(CrmConstants.COL_EXECUTOR));
 
     final TaskDialog dialog = new TaskDialog("Užduoties persiuntimas");
-    dialog.addSelector("Vykdytojas", "Users", CrmConstants.COL_FIRST_NAME, true);
+    dialog.addSelector("Vykdytojas", "Users", 
+        Lists.newArrayList(CrmConstants.COL_FIRST_NAME, CrmConstants.COL_LAST_NAME), true);
 
     if (!BeeUtils.equals(owner, oldUser)) {
       dialog.addQuestion("Pašalinti siuntėją iš stebėtojų", false);
@@ -1274,8 +1278,9 @@ public class TaskEventHandler {
     final TaskDialog dialog = new TaskDialog("Užduoties koregavimas");
     dialog.addPriority("Prioritetas", oldPriority);
     dialog.addMinutes("Numatoma trukmė min.", oldTerm, 0, 43200, 30);
-    dialog.addSelector("Įmonė", "Companies", CrmConstants.COL_NAME, false);
-    dialog.addSelector("PERSON", "Asmuo", "CompanyPersons", CrmConstants.COL_FIRST_NAME, false);
+    dialog.addSelector("Įmonė", "Companies", Lists.newArrayList(CrmConstants.COL_NAME), false);
+    dialog.addSelector("PERSON", "Asmuo", "CompanyPersons", 
+        Lists.newArrayList(CrmConstants.COL_FIRST_NAME, CrmConstants.COL_LAST_NAME), false);
     dialog.addAction("Išsaugoti", new ClickHandler() {
       @Override
       public void onClick(ClickEvent e) {

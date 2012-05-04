@@ -1,7 +1,6 @@
 package com.butent.bee.client.dialog;
 
 import com.google.common.base.Supplier;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -15,7 +14,6 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FocusWidget;
-import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -43,7 +41,6 @@ import com.butent.bee.client.widget.InputPassword;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.client.widget.SimpleBoolean;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Holder;
@@ -52,8 +49,6 @@ import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.utils.BeeUtils;
-
-import java.util.List;
 
 /**
  * Implements a user interface component, which enables to produce a input box for information input
@@ -98,7 +93,7 @@ public class InputBoxes {
           }
 
           if (widget instanceof InputText || widget instanceof ListBox) {
-            if (navigate(EventUtils.getEventTargetElement(event), true)) {
+            if (UiHelper.moveFocus(getDialog(), EventUtils.getEventTargetElement(event), true)) {
               event.preventDefault();
             }
           } else if (widget instanceof BeeRadioButton) {
@@ -112,7 +107,7 @@ public class InputBoxes {
         case KeyCodes.KEY_DOWN:
         case KeyCodes.KEY_UP:
           if (!(getWidget(event) instanceof ListBox)) {
-            if (navigate(EventUtils.getEventTargetElement(event),
+            if (UiHelper.moveFocus(getDialog(), EventUtils.getEventTargetElement(event),
                 event.getNativeKeyCode() == KeyCodes.KEY_DOWN)) {
               event.preventDefault();
             }
@@ -131,42 +126,6 @@ public class InputBoxes {
 
     private Widget getWidget(HasNativeEvent event) {
       return DomUtils.getChildByElement(getDialog(), EventUtils.getEventTargetElement(event));
-    }
-
-    private boolean navigate(Element current, boolean forward) {
-      if (current == null) {
-        return false;
-      }
-
-      List<Focusable> children = DomUtils.getFocusableChildren(getDialog());
-      if (children == null || children.size() <= 1) {
-        return false;
-      }
-
-      int index = BeeConst.UNDEF;
-      for (int i = 0; i < children.size(); i++) {
-        if (children.get(i) instanceof Widget
-            && ((Widget) children.get(i)).getElement().isOrHasChild(current)) {
-          index = i;
-          break;
-        }
-      }
-      if (BeeConst.isUndef(index)) {
-        return false;
-      }
-
-      if (forward) {
-        index++;
-      } else {
-        index--;
-      }
-
-      if (index >= 0 && index < children.size()) {
-        children.get(index).setFocus(true);
-        return true;
-      } else {
-        return false;
-      }
     }
   }
 

@@ -26,11 +26,15 @@ public abstract class AbstractCellRenderer extends AbstractRenderer<IsRow> {
     this.dataType = (dataColumn == null) ? null : dataColumn.getType();
   }
   
-  public AbstractCellRenderer(ValueType dataType) {
+  public AbstractCellRenderer(int dataIndex, ValueType dataType) {
     super();
-    this.dataIndex = BeeConst.UNDEF;
+    this.dataIndex = dataIndex;
     this.dataColumn = null;
     this.dataType = dataType;
+  }
+
+  public AbstractCellRenderer(ValueType dataType) {
+    this(BeeConst.UNDEF, dataType);
   }
 
   public IsColumn getDataColumn() {

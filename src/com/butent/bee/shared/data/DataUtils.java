@@ -216,7 +216,7 @@ public class DataUtils {
   public static String getValue(IsRow row, int index, ValueType type) {
     if (row.isNull(index)) {
       return null;
-    } else if (ValueType.isString(type)) {
+    } else if (type == null || ValueType.isString(type)) {
       return row.getString(index);
     } else {
       return row.getValue(index, type).toString();

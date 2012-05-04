@@ -233,6 +233,50 @@ public class UiHelper {
         && EventUtils.hasModifierKey(event);
   }
 
+  public static boolean moveFocus(Widget parent, UIObject currentObject, boolean forward) {
+    if (currentObject == null) {
+      return false;
+    } else {
+      return moveFocus(parent, currentObject.getElement(), forward);
+    }
+  }
+  
+  public static boolean moveFocus(Widget parent, Element currentElement, boolean forward) {
+    if (parent == null || currentElement == null) {
+      return false;
+    }
+
+    List<Focusable> children = DomUtils.getFocusableChildren(parent);
+    if (children == null || children.size() <= 1) {
+      return false;
+    }
+
+    int index = BeeConst.UNDEF;
+    for (int i = 0; i < children.size(); i++) {
+      if (children.get(i) instanceof Widget
+          && ((Widget) children.get(i)).getElement().isOrHasChild(currentElement)) {
+        index = i;
+        break;
+      }
+    }
+    if (BeeConst.isUndef(index)) {
+      return false;
+    }
+
+    if (forward) {
+      index++;
+    } else {
+      index--;
+    }
+
+    if (index >= 0 && index < children.size()) {
+      children.get(index).setFocus(true);
+      return true;
+    } else {
+      return false;
+    }
+  }
+  
   public static HorizontalAlignmentConstant parseHorizontalAlignment(String text) {
     if (BeeUtils.isEmpty(text)) {
       return null;
