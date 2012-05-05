@@ -40,6 +40,7 @@ import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.menu.MenuItem;
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.EnumRenderer;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.render.SimpleRenderer;
 import com.butent.bee.client.ui.UiHelper;
@@ -546,12 +547,20 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         this.selectorColumns.put(index, selectorColumn);
       }
     }
+    int size = choiceColumns.size();
 
     this.tableMode = ITEM_TYPE.ROW.equals(itemType) || !selectorColumns.isEmpty()
-        || itemType == null && choiceColumns.size() > 1 && !relation.hasRowRenderer();
+        || itemType == null && size > 1 && !relation.hasRowRenderer();
 
+    int dataIndex = (size == 1) ? viewInfo.getColumnIndex(choiceColumns.get(0)) : BeeConst.UNDEF;
     this.rowRenderer = RendererFactory.getRenderer(relation.getRowRendererDescription(),
-        relation.getRowRender(), null, choiceColumns, viewInfo.getColumns(), BeeConst.UNDEF);
+        relation.getRowRender(), relation.getItemKey(), choiceColumns, viewInfo.getColumns(),
+        dataIndex);
+    
+    if (rowRenderer instanceof EnumRenderer && relation.getSearchableColumns().size() == 1) {
+      oracle.createTranslator(((EnumRenderer) rowRenderer).getCaptions(),
+          ((EnumRenderer) rowRenderer).getValueStartIndex());
+    }
 
     if (tableMode) {
       initCellRenderers(viewInfo);
@@ -598,7 +607,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public Collection<HandlerRegistration> addSimpleHandler(int dataIndex, ValueType dataType) {
     return addSimpleHandler(new SimpleHandler(dataIndex, dataType));
   }
-  
+
   public Collection<HandlerRegistration> addSimpleHandler(AbstractCellRenderer renderer) {
     return addSimpleHandler(new SimpleHandler(renderer));
   }

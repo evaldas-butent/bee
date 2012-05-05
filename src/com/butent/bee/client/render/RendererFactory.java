@@ -8,10 +8,12 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.ui.PotentialRenderer;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.RendererDescription;
 import com.butent.bee.shared.ui.RendererType;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -107,6 +109,26 @@ public class RendererFactory {
     }
     return renderer;
   }
+  
+  public static int getDataIndex(RendererDescription description, Calculation calculation,
+      String itemKey, List<? extends IsColumn> dataColumns, int dataIndex, Relation relation) {
+    if (relation == null || BeeUtils.isEmpty(itemKey)) {
+      return dataIndex;
+    }
+    if (description != null && !RendererType.ENUM.equals(description.getType())) {
+      return dataIndex;
+    }
+    if (calculation != null) {
+      return dataIndex;
+    }
+
+    int index = DataUtils.getColumnIndex(relation.getOriginalSource(), dataColumns);
+    if (!BeeConst.isUndef(index) && ValueType.isNumeric(dataColumns.get(index).getType())) {
+      return index;
+    } else {
+      return dataIndex;
+    }
+  }
 
   public static AbstractCellRenderer getRenderer(PotentialRenderer potentialRenderer,
       String itemKey, List<String> renderColumns, List<? extends IsColumn> dataColumns,
@@ -128,8 +150,7 @@ public class RendererFactory {
     } else if (calculation != null) {
       return createRenderer(calculation, dataColumns, dataIndex);
 
-    } else if (!BeeUtils.isEmpty(itemKey)) {
-      Assert.isIndex(dataColumns, dataIndex);
+    } else if (!BeeUtils.isEmpty(itemKey) && BeeUtils.isIndex(dataColumns, dataIndex)) {
       return new EnumRenderer(dataIndex, dataColumns.get(dataIndex), itemKey);
     
     } else if (!BeeUtils.isEmpty(renderColumns)) {
@@ -148,6 +169,13 @@ public class RendererFactory {
     }
   }
 
+  public static AbstractCellRenderer getRenderer(RendererDescription description,
+      Calculation calculation, String itemKey, List<String> renderColumns,
+      List<? extends IsColumn> dataColumns, int dataIndex, Relation relation) {
+    return getRenderer(description, calculation, itemKey, renderColumns, dataColumns,
+        getDataIndex(description, calculation, itemKey, dataColumns, dataIndex, relation));
+  }
+  
   private RendererFactory() {
   }
 }

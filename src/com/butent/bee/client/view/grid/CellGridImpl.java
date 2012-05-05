@@ -568,7 +568,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       AbstractCellRenderer renderer =
           RendererFactory.getRenderer(columnDescr.getRendererDescription(),
               columnDescr.getRender(), columnDescr.getItemKey(), renderColumns,
-              dataCols, dataIndex);
+              dataCols, dataIndex, columnDescr.getRelation());
 
       switch (colType) {
         case ID:

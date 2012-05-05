@@ -10,6 +10,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
@@ -62,22 +63,8 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   private static final Predicate<String> RELEVANT_ATTRIBUTE =
       Predicates.in(Sets.newHashSet(UiConstants.ATTR_VIEW_NAME, ATTR_FILTER, ATTR_ORDER,
           ATTR_CACHING, ATTR_OPERATOR, ATTR_CHOICE_COLUMNS, ATTR_SEARCHABLE_COLUMNS,
-          ATTR_ITEM_TYPE, HasVisibleLines.ATTR_VISIBLE_LINES));
+          ATTR_ITEM_TYPE, HasVisibleLines.ATTR_VISIBLE_LINES, HasItems.ATTR_ITEM_KEY));
 
-  public static Relation create(String viewName, List<String> columns) {
-    Relation relation = new Relation();
-
-    if (!BeeUtils.isEmpty(viewName)) {
-      relation.setViewName(viewName);
-    }
-    if (!BeeUtils.isEmpty(columns)) {
-      relation.getChoiceColumns().addAll(columns);
-      relation.getSearchableColumns().addAll(columns);
-    }
-    
-    return relation;
-  }
-  
   public static Relation create(Map<String, String> attributes,
       List<SelectorColumn> selectorColumns,  RendererDescription rowRendererDescription,
       Calculation rowRender) {
@@ -93,6 +80,20 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     }
     if (rowRender != null) {
       relation.setRowRender(rowRender);
+    }
+    
+    return relation;
+  }
+  
+  public static Relation create(String viewName, List<String> columns) {
+    Relation relation = new Relation();
+
+    if (!BeeUtils.isEmpty(viewName)) {
+      relation.setViewName(viewName);
+    }
+    if (!BeeUtils.isEmpty(columns)) {
+      relation.getChoiceColumns().addAll(columns);
+      relation.getSearchableColumns().addAll(columns);
     }
     
     return relation;
@@ -120,6 +121,8 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   private RendererDescription rowRendererDescription = null;
   private Calculation rowRender = null;
 
+  private String itemKey = null;
+  
   private final List<SelectorColumn> selectorColumns = Lists.newArrayList();
 
   private final List<String> choiceColumns = Lists.newArrayList();
@@ -127,6 +130,9 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
 
   private MenuConstants.ITEM_TYPE itemType = null;
   private Integer visibleLines = null;
+  
+  private String originalSource = null;
+  private final List<String> originalRenderColumns = Lists.newArrayList();
 
   private Relation() {
   }
@@ -200,7 +206,8 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
         "Caching", getCaching(),
         "Operator", getOperator(),
         "Item Type", getItemType(),
-        "Visible Lines", getVisibleLines());
+        "Visible Lines", getVisibleLines(),
+        "Item Key", getItemKey());
 
     if (!getChoiceColumns().isEmpty()) {
       PropertyUtils.addProperties(info, "Choice Columns", getChoiceColumns());
@@ -224,6 +231,10 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     return info;
   }
 
+  public String getItemKey() {
+    return itemKey;
+  }
+
   public MenuConstants.ITEM_TYPE getItemType() {
     return itemType;
   }
@@ -234,6 +245,14 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
 
   public Order getOrder() {
     return order;
+  }
+
+  public List<String> getOriginalRenderColumns() {
+    return Lists.newArrayList(originalRenderColumns);
+  }
+
+  public String getOriginalSource() {
+    return originalSource;
   }
 
   public Calculation getRowRender() {
@@ -247,7 +266,6 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   public List<String> getSearchableColumns() {
     return searchableColumns;
   }
-
   public List<SelectorColumn> getSelectorColumns() {
     return selectorColumns;
   }
@@ -259,12 +277,17 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   public Integer getVisibleLines() {
     return visibleLines;
   }
+
   public boolean hasRowRenderer() {
-    return getRowRendererDescription() != null || getRowRender() != null;
+    return getRowRendererDescription() != null || getRowRender() != null 
+        || !BeeUtils.isEmpty(getItemKey());
   }
 
   public void initialize(DataInfo.Provider provider, String sourceView, Holder<String> source,
       Holder<List<String>> renderColumns) {
+    
+    setOriginalSource(source.get());
+    setOriginalRenderColumns(renderColumns.get());
 
     String relView = getAttribute(UiConstants.ATTR_VIEW_NAME);
     if (!BeeUtils.isEmpty(relView)) {
@@ -289,6 +312,11 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
       setVisibleLines(BeeUtils.toInt(lines));
     }
 
+    String key = getAttribute(HasItems.ATTR_ITEM_KEY);
+    if (!BeeUtils.isEmpty(key)) {
+      setItemKey(key);
+    }
+    
     String flt = getAttribute(ATTR_FILTER);
     String ord = getAttribute(ATTR_ORDER);
 
@@ -444,6 +472,10 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     this.filter = filter;
   }
 
+  public void setItemKey(String itemKey) {
+    this.itemKey = itemKey;
+  }
+
   public void setItemType(MenuConstants.ITEM_TYPE itemType) {
     this.itemType = itemType;
   }
@@ -459,7 +491,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   public void setRowRender(Calculation rowRender) {
     this.rowRender = rowRender;
   }
-
+  
   public void setRowRendererDescription(RendererDescription rowRendererDescription) {
     this.rowRendererDescription = rowRendererDescription;
   }
@@ -481,7 +513,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   public void setViewName(String viewName) {
     this.viewName = viewName;
   }
-  
+
   public void setVisibleLines(Integer visibleLines) {
     this.visibleLines = visibleLines;
   }
@@ -496,6 +528,10 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
       }
     }
     return null;
+  }
+
+  private String deduceViewName(DataInfo sourceInfo, String colName) {
+    return sourceInfo.getRelationView(colName);
   }
 
   private String deduceViewName(DataInfo.Provider provider, DataInfo sourceInfo,
@@ -541,10 +577,6 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
       }
     }
     return result;
-  }
-
-  private String deduceViewName(DataInfo sourceInfo, String colName) {
-    return sourceInfo.getRelationView(colName);
   }
 
   private List<String> deriveRenderColumns(DataInfo sourceInfo, String source, String target) {
@@ -617,5 +649,18 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
       }
     }
     return result;
+  }
+
+  private void setOriginalRenderColumns(List<String> originalRenderColumns) {
+    if (!this.originalRenderColumns.isEmpty()) {
+      this.originalRenderColumns.clear();
+    }
+    if (!BeeUtils.isEmpty(originalRenderColumns)) {
+      this.originalRenderColumns.addAll(originalRenderColumns);
+    }
+  }
+  
+  private void setOriginalSource(String originalSource) {
+    this.originalSource = originalSource;
   }
 }

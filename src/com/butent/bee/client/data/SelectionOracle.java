@@ -7,6 +7,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -21,8 +22,10 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -163,6 +166,8 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   public static final Relation.Caching DEFAULT_CACHING = Relation.Caching.GLOBAL;
 
+  private static final String TRANSLATOR_COLUMN = "Original";
+
   private final DataInfo viewInfo;
 
   private final List<IsColumn> searchColumns = Lists.newArrayList();
@@ -182,10 +187,12 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private boolean dataInitialized = false;
 
+  private BeeRowSet translator = null;
+
   public SelectionOracle(Relation relation, DataInfo viewInfo) {
     Assert.notNull(relation);
     Assert.notNull(viewInfo);
-    
+
     this.viewInfo = viewInfo;
 
     for (String colName : relation.getSearchableColumns()) {
@@ -201,6 +208,15 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     this.caching = (relation.getCaching() == null) ? DEFAULT_CACHING : relation.getCaching();
 
     this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this));
+  }
+
+  public void createTranslator(List<String> values, int startIndex) {
+    Assert.notEmpty(values);
+
+    setTranslator(new BeeRowSet(new BeeColumn(ValueType.TEXT, TRANSLATOR_COLUMN)));
+    for (int i = 0; i < values.size(); i++) {
+      getTranslator().addRow(i + startIndex, new String[] {values.get(i)});
+    }
   }
 
   public String getViewName() {
@@ -280,8 +296,12 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     if (BeeUtils.isEmpty(query)) {
       return null;
     }
-    Filter filter = null;
+    
+    if (hasTranslator()) {
+      return translateQuery(query, searchType, searchColumns.get(0));
+    }
 
+    Filter filter = null;
     for (IsColumn column : searchColumns) {
       Filter flt = ComparisonFilter.compareWithValue(column, searchType, query);
       if (flt == null) {
@@ -308,8 +328,16 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     return requestData;
   }
 
+  private BeeRowSet getTranslator() {
+    return translator;
+  }
+
   private BeeRowSet getViewData() {
     return viewData;
+  }
+
+  private boolean hasTranslator() {
+    return getTranslator() != null && !getTranslator().isEmpty();
   }
 
   private void initViewData() {
@@ -371,9 +399,14 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
         getRequestData().getRows().clear();
       }
 
-      for (BeeRow row : getViewData().getRows()) {
-        if (filter == null || filter.isMatch(getViewData().getColumns(), row)) {
-          getRequestData().addRow(row);
+      if (filter == null) {
+        getRequestData().addRows(getViewData().getRows().getList());
+      } else {
+        List<BeeColumn> columns = getViewData().getColumns();
+        for (BeeRow row : getViewData().getRows()) {
+          if (filter.isMatch(columns, row)) {
+            getRequestData().addRow(row);
+          }
         }
       }
       return true;
@@ -451,7 +484,33 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     this.requestData = requestData;
   }
 
+  private void setTranslator(BeeRowSet translator) {
+    this.translator = translator;
+  }
+
   private void setViewData(BeeRowSet viewData) {
     this.viewData = viewData;
+  }
+
+  private Filter translateQuery(String query, Operator searchType, IsColumn targetColumn) {
+    Filter filter = ComparisonFilter.compareWithValue(getTranslator().getColumn(0), searchType,
+        query);
+    if (filter == null) {
+      return null;
+    }
+    CompoundFilter result = Filter.or();
+    
+    List<BeeColumn> columns = getTranslator().getColumns();
+    for (BeeRow row : getTranslator().getRows()) {
+      if (filter.isMatch(columns, row)) {
+        result.add(ComparisonFilter.compareWithValue(targetColumn, Operator.EQ,
+            BeeUtils.toString(row.getId())));
+      }
+    }
+    
+    if (result.isEmpty()) {
+      return null;
+    }
+    return result;
   }
 }

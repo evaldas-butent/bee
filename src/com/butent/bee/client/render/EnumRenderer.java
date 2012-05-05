@@ -50,6 +50,10 @@ public class EnumRenderer extends AbstractCellRenderer implements HasValueStartI
     this.valueStartIndex = valueStartIndex;
   }
 
+  public List<String> getCaptions() {
+    return captions;
+  }
+
   public int getValueStartIndex() {
     return valueStartIndex;
   }
