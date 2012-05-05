@@ -1,29 +1,15 @@
 package com.butent.bee.client.dialog;
 
-import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.Position;
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseDownHandler;
-import com.google.gwt.event.dom.client.MouseMoveEvent;
-import com.google.gwt.event.dom.client.MouseMoveHandler;
-import com.google.gwt.event.dom.client.MouseUpEvent;
-import com.google.gwt.event.dom.client.MouseUpHandler;
-import com.google.gwt.event.logical.shared.ResizeEvent;
-import com.google.gwt.event.logical.shared.ResizeHandler;
 import com.google.gwt.safehtml.client.HasSafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.Event.NativePreviewEvent;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasHTML;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.layout.Complex;
@@ -49,20 +35,6 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
     }
   }
 
-  private class MouseHandler implements MouseDownHandler, MouseUpHandler, MouseMoveHandler {
-    public void onMouseDown(MouseDownEvent event) {
-      beginDragging(event);
-    }
-
-    public void onMouseMove(MouseMoveEvent event) {
-      continueDragging(event);
-    }
-
-    public void onMouseUp(MouseUpEvent event) {
-      endDragging();
-    }
-  }
-
   private static final String STYLE_DIALOG = "bee-DialogBox";
 
   private static final String STYLE_CAPTION = "Caption";
@@ -72,15 +44,6 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
   private final Complex container = new Complex(Position.RELATIVE);
   private final Vertical layout = new Vertical();
   private final Caption caption;
-
-  private final int clientLeft;
-  private final int clientTop;
-
-  private boolean dragging;
-  private int dragStartX, dragStartY;
-  private int windowWidth;
-
-  private HandlerRegistration resizeHandlerRegistration;
 
   public DialogBox() {
     this(false);
@@ -112,15 +75,8 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
     });
     close.addStyleName(STYLE_CLOSE);
     this.container.add(close);
-
-    windowWidth = Window.getClientWidth();
-    clientLeft = Document.get().getBodyOffsetLeft();
-    clientTop = Document.get().getBodyOffsetTop();
-
-    MouseHandler mouseHandler = new MouseHandler();
-    addDomHandler(mouseHandler, MouseDownEvent.getType());
-    addDomHandler(mouseHandler, MouseUpEvent.getType());
-    addDomHandler(mouseHandler, MouseMoveEvent.getType());
+    
+    enableDragging();
   }
 
   public DialogBox(Caption captionWidget, String styleName) {
@@ -152,28 +108,6 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
     return caption.getText();
   }
 
-  @Override
-  public void hide(boolean autoClosed) {
-    if (resizeHandlerRegistration != null) {
-      resizeHandlerRegistration.removeHandler();
-      resizeHandlerRegistration = null;
-    }
-    super.hide(autoClosed);
-  }
-
-  @Override
-  public void onBrowserEvent(Event event) {
-    switch (event.getTypeInt()) {
-      case Event.ONMOUSEDOWN:
-      case Event.ONMOUSEUP:
-      case Event.ONMOUSEMOVE:
-        if (!dragging && !isCaptionEvent(event)) {
-          return;
-        }
-    }
-    super.onBrowserEvent(event);
-  }
-
   public void setHTML(SafeHtml html) {
     caption.setHTML(html);
   }
@@ -194,56 +128,9 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
 
     super.setWidget(container);
   }
-
+  
   @Override
-  public void show() {
-    if (resizeHandlerRegistration == null) {
-      resizeHandlerRegistration = Window.addResizeHandler(new ResizeHandler() {
-        public void onResize(ResizeEvent event) {
-          windowWidth = event.getWidth();
-        }
-      });
-    }
-    super.show();
-  }
-
-  protected void beginDragging(MouseDownEvent event) {
-    if (DOM.getCaptureElement() == null) {
-      dragging = true;
-      DOM.setCapture(getElement());
-      dragStartX = event.getX();
-      dragStartY = event.getY();
-    }
-  }
-
-  protected void continueDragging(MouseMoveEvent event) {
-    if (dragging) {
-      int absX = event.getX() + getAbsoluteLeft();
-      int absY = event.getY() + getAbsoluteTop();
-      if (absX < clientLeft || absX >= windowWidth || absY < clientTop) {
-        return;
-      }
-      setPopupPosition(absX - dragStartX, absY - dragStartY);
-    }
-  }
-
-  protected void endDragging() {
-    dragging = false;
-    DOM.releaseCapture(getElement());
-  }
-
-  @Override
-  protected void onPreviewNativeEvent(NativePreviewEvent event) {
-    NativeEvent nativeEvent = event.getNativeEvent();
-
-    if (!event.isCanceled() && (event.getTypeInt() == Event.ONMOUSEDOWN)
-        && isCaptionEvent(nativeEvent)) {
-      nativeEvent.preventDefault();
-    }
-    super.onPreviewNativeEvent(event);
-  }
-
-  private boolean isCaptionEvent(NativeEvent event) {
+  protected boolean isCaptionEvent(NativeEvent event) {
     EventTarget target = event.getEventTarget();
     if (Element.is(target)) {
       return caption.asWidget().getElement().getParentElement().isOrHasChild(Element.as(target));

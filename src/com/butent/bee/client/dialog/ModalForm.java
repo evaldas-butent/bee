@@ -1,12 +1,17 @@
 package com.butent.bee.client.dialog;
 
+import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.ui.HasDimensions;
+import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.ViewHelper;
 
 public class ModalForm extends Popup {
   
@@ -39,6 +44,9 @@ public class ModalForm extends Popup {
     
     if (dimensions != null) {
       setDimensions(dimensions);
+    }
+    if (ViewHelper.hasHeader(widget)) {
+      enableDragging();
     }
   }
 
@@ -80,6 +88,21 @@ public class ModalForm extends Popup {
       super.doDetachChildren();
       wasAttached = false;
       pendingUnload = false;
+    }
+  }
+
+  @Override
+  protected boolean isCaptionEvent(NativeEvent event) {
+    HeaderView header = ViewHelper.getHeader(getWidget());
+    if (header == null) {
+      return false;
+    }
+
+    EventTarget target = event.getEventTarget();
+    if (Element.is(target)) {
+      return header.asWidget().getElement().isOrHasChild(Element.as(target));
+    } else {
+      return false;
     }
   }
 

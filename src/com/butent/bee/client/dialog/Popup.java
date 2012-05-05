@@ -13,6 +13,12 @@ import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
+import com.google.gwt.event.dom.client.MouseMoveEvent;
+import com.google.gwt.event.dom.client.MouseMoveHandler;
+import com.google.gwt.event.dom.client.MouseUpEvent;
+import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.HasCloseHandlers;
@@ -56,6 +62,47 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     void setPosition(int offsetWidth, int offsetHeight);
   }
 
+  private class MouseHandler implements MouseDownHandler, MouseUpHandler, MouseMoveHandler {
+    private int dragStartX, dragStartY;
+
+    private final int clientLeft;
+    private final int clientTop;
+    
+    private MouseHandler() {
+      this.clientLeft = Document.get().getBodyOffsetLeft();
+      this.clientTop = Document.get().getBodyOffsetTop();
+    }
+
+    public void onMouseDown(MouseDownEvent event) {
+      if (DOM.getCaptureElement() == null && isCaptionEvent(event.getNativeEvent())) {
+        event.preventDefault();
+        DOM.setCapture(getElement());
+
+        setDragging(true);
+        dragStartX = event.getX();
+        dragStartY = event.getY();
+      }
+    }
+
+    public void onMouseMove(MouseMoveEvent event) {
+      if (isDragging()) {
+        int absX = event.getX() + getAbsoluteLeft();
+        int absY = event.getY() + getAbsoluteTop();
+        if (absX < clientLeft || absX >= getWindowWidth() || absY < clientTop) {
+          return;
+        }
+        setPopupPosition(absX - dragStartX, absY - dragStartY);
+      }
+    }
+
+    public void onMouseUp(MouseUpEvent event) {
+      if (isDragging()) {
+        setDragging(false);
+        DOM.releaseCapture(getElement());
+      }
+    }
+  }
+  
   private class ResizeAnimation extends Animation {
 
     private class GlassResizer implements ResizeHandler {
@@ -267,6 +314,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private boolean previewAllNativeEvents = false;
   private HandlerRegistration nativePreviewHandlerRegistration = null;
   private HandlerRegistration historyHandlerRegistration = null;
+  private HandlerRegistration resizeHandlerRegistration = null;
   
   private List<PreviewHandler> previewHandlers = null;
   private boolean hideOnEscape = false;
@@ -276,23 +324,27 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   
   private final String popupStyleName;
 
+  private int windowWidth;
+  private boolean dragging = false;
+  private MouseHandler mouseHandler = null;
+  
   public Popup(boolean autoHide) {
     this(autoHide, STYLE_POPUP);
+  }
+  
+  public Popup(boolean autoHide, boolean modal) {
+    this(autoHide, modal, STYLE_POPUP);
+  }
+
+  public Popup(boolean autoHide, boolean modal, String styleName) {
+    this(autoHide, styleName);
+    this.modal = modal;
   }
   
   public Popup(boolean autoHide, String styleName) {
     this(styleName);
     this.autoHide = autoHide;
     this.autoHideOnHistoryEvents = autoHide;
-  }
-
-  public Popup(boolean autoHide, boolean modal) {
-    this(autoHide, modal, STYLE_POPUP);
-  }
-  
-  public Popup(boolean autoHide, boolean modal, String styleName) {
-    this(autoHide, styleName);
-    this.modal = modal;
   }
 
   private Popup(String styleName) {
@@ -303,6 +355,8 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     
     this.popupStyleName = styleName;
     setStyleName(styleName);
+
+    this.windowWidth = Window.getClientWidth();
   }
 
   public void addAutoHidePartner(Element partner) {
@@ -553,6 +607,23 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     });
   }
 
+  protected void enableDragging() {
+    if (getMouseHandler() == null) {
+      setMouseHandler(new MouseHandler());
+      
+      addDomHandler(getMouseHandler(), MouseDownEvent.getType());
+      addDomHandler(getMouseHandler(), MouseUpEvent.getType());
+      addDomHandler(getMouseHandler(), MouseMoveEvent.getType());
+    }
+  }
+
+  /**
+   * @param event  
+   */
+  protected boolean isCaptionEvent(NativeEvent event) {
+    return false;
+  }
+
   protected void onPreviewNativeEvent(NativePreviewEvent event) {
     if (previewHandlers != null) {
       for (PreviewHandler handler : previewHandlers) {
@@ -624,13 +695,29 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private int getLeftPosition() {
     return leftPosition;
   }
+  
+  private MouseHandler getMouseHandler() {
+    return mouseHandler;
+  }
 
   private HandlerRegistration getNativePreviewHandlerRegistration() {
     return nativePreviewHandlerRegistration;
   }
+  
+  private HandlerRegistration getResizeHandlerRegistration() {
+    return resizeHandlerRegistration;
+  }
 
   private int getTopPosition() {
     return topPosition;
+  }
+
+  private int getWindowWidth() {
+    return windowWidth;
+  }
+
+  private boolean isDragging() {
+    return dragging;
   }
 
   private void maybeUpdateSize() {
@@ -644,7 +731,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       }
     }
   }
-  
+
   private void position(UIObject relativeObject, int offsetWidth, int offsetHeight) {
     int objectWidth = relativeObject.getOffsetWidth();
     int offsetWidthDiff = offsetWidth - objectWidth;
@@ -686,13 +773,13 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       }
       return;
     }
-
+    
     onPreviewNativeEvent(event);
     if (event.isCanceled()) {
       return;
     }
 
-    Event nativeEvent = Event.as(event.getNativeEvent());
+    NativeEvent nativeEvent = event.getNativeEvent();
     boolean eventTargetsPopupOrPartner = eventTargetsPopup(nativeEvent)
         || eventTargetsPartner(nativeEvent);
     if (eventTargetsPopupOrPartner) {
@@ -703,7 +790,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       event.cancel();
     }
 
-    int type = nativeEvent.getTypeInt();
+    int type = event.getTypeInt();
     switch (type) {
       case Event.ONMOUSEDOWN:
         if (DOM.getCaptureElement() != null) {
@@ -738,7 +825,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
         break;
     }
   }
-  
+
   private void setAutoHidePartners(List<Element> autoHidePartners) {
     this.autoHidePartners = autoHidePartners;
   }
@@ -750,11 +837,15 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private void setDesiredWidth(String desiredWidth) {
     this.desiredWidth = desiredWidth;
   }
+  
+  private void setDragging(boolean dragging) {
+    this.dragging = dragging;
+  }
 
   private void setGlass(Element glass) {
     this.glass = glass;
   }
-
+  
   private void setHistoryHandlerRegistration(HandlerRegistration historyHandlerRegistration) {
     this.historyHandlerRegistration = historyHandlerRegistration;
   }
@@ -763,8 +854,16 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     this.leftPosition = leftPosition;
   }
 
+  private void setMouseHandler(MouseHandler mouseHandler) {
+    this.mouseHandler = mouseHandler;
+  }
+
   private void setNativePreviewHandlerRegistration(HandlerRegistration nphr) {
     this.nativePreviewHandlerRegistration = nphr;
+  }
+
+  private void setResizeHandlerRegistration(HandlerRegistration resizeHandlerRegistration) {
+    this.resizeHandlerRegistration = resizeHandlerRegistration;
   }
 
   private void setShowing(boolean showing) {
@@ -775,6 +874,10 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     this.topPosition = topPosition;
   }
 
+  private void setWindowWidth(int windowWidth) {
+    this.windowWidth = windowWidth;
+  }
+
   private void updateHandlers() {
     if (getNativePreviewHandlerRegistration() != null) {
       getNativePreviewHandlerRegistration().removeHandler();
@@ -783,6 +886,10 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     if (getHistoryHandlerRegistration() != null) {
       getHistoryHandlerRegistration().removeHandler();
       setHistoryHandlerRegistration(null);
+    }
+    if (getResizeHandlerRegistration() != null) {
+      getResizeHandlerRegistration().removeHandler();
+      setResizeHandlerRegistration(null);
     }
 
     if (isShowing()) {
@@ -797,6 +904,12 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
           if (isAutoHideOnHistoryEventsEnabled()) {
             hide();
           }
+        }
+      }));
+      
+      setResizeHandlerRegistration(Window.addResizeHandler(new ResizeHandler() {
+        public void onResize(ResizeEvent event) {
+          setWindowWidth(event.getWidth());
         }
       }));
     }

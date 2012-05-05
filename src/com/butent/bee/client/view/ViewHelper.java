@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class ViewHelper {
-  
+
   public static Filter getFilter(HasSearch container, Provider dataProvider) {
     Assert.notNull(container);
     Assert.notNull(dataProvider);
@@ -35,6 +35,17 @@ public class ViewHelper {
       }
     }
     return Filter.and(filters);
+  }
+
+  public static HeaderView getHeader(Widget container) {
+    if (container instanceof HasWidgets) {
+      for (Widget child : (HasWidgets) container) {
+        if (child instanceof HeaderView) {
+          return (HeaderView) child;
+        }
+      }
+    }
+    return null;
   }
 
   public static Collection<PagerView> getPagers(HasWidgets container) {
@@ -75,6 +86,10 @@ public class ViewHelper {
     return searchers;
   }
 
+  public static boolean hasHeader(Widget container) {
+    return getHeader(container) != null;
+  }
+  
   private ViewHelper() {
   }
 }
