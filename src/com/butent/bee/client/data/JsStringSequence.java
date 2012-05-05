@@ -52,7 +52,7 @@ public class JsStringSequence extends AbstractSequence<String> {
     for (int i = 0; i < getLength(); i++) {
       arr[i] = get(i);
     }
-    return Pair.create(arr, getLength());
+    return Pair.of(arr, getLength());
   }
 
   public int getLength() {

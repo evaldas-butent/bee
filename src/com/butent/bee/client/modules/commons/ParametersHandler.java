@@ -18,6 +18,7 @@ import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -91,35 +92,40 @@ public class ParametersHandler extends AbstractGridCallback {
   }
 
   @Override
-  public int beforeDeleteRow(GridPresenter presenter, final IsRow row) {
-    Global.confirm(ref.get(row.getId()), "Remove parameter?", new BeeCommand() {
-      @Override
-      public void execute() {
-        delete(row.getId());
-      }
-    });
-    return -1;
+  public int beforeDeleteRow(GridPresenter presenter, final IsRow row, boolean confirm) {
+    if (confirm) {
+      Global.confirm(ref.get(row.getId()), "Remove parameter?", new BeeCommand() {
+        @Override
+        public void execute() {
+          delete(row.getId());
+        }
+      });
+    } else {
+      delete(row.getId());
+    }
+    return GridCallback.DELETE_CANCEL;
   }
 
   @Override
   public int beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
-      final Collection<RowInfo> selectedRows) {
+      Collection<RowInfo> selectedRows) {
 
-    final int c = selectedRows.size();
+    int c = selectedRows.size();
+    Long[] ids = new Long[c];
+    int i = 0;
 
-    Global.confirm(BeeUtils.concat(1, "Remove", c, "parameters?"), new BeeCommand() {
-      @Override
-      public void execute() {
-        Long[] ids = new Long[c];
-        int i = 0;
+    for (RowInfo rowInfo : selectedRows) {
+      ids[i++] = rowInfo.getId();
+    }
+    delete(ids);
 
-        for (RowInfo rowInfo : selectedRows) {
-          ids[i++] = rowInfo.getId();
-        }
-        delete(ids);
-      }
-    });
-    return -1;
+    return GridCallback.DELETE_CANCEL;
+  }
+
+  @Override
+  public Pair<String, String> getDeleteRowsMessage(int selectedRows) {
+    return Pair.of("Remove current parameter", BeeUtils.concat(1, "Remove", selectedRows,
+        "selected parameters"));
   }
 
   @Override

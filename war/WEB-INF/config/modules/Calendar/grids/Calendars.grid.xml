@@ -13,7 +13,6 @@
 
     <DataColumn name="ThemeName" />
 
-    <DataColumn name="Hidden" />
     <DataColumn name="ReadOnly" />
     <DataColumn name="Visibility" itemKey="Calendar_Visibility" />
 

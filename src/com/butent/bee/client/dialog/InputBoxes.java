@@ -129,14 +129,6 @@ public class InputBoxes {
     }
   }
 
-  public static final String WIDGET_PANEL = "panel";
-  public static final String WIDGET_PROMPT = "prompt";
-  public static final String WIDGET_INPUT = "input";
-  public static final String WIDGET_ERROR = "error";
-  public static final String WIDGET_COMMAND_GROUP = "commandGroup";
-  public static final String WIDGET_CONFIRM = "confirm";
-  public static final String WIDGET_CANCEL = "cancel";
-
   private static final String STYLE_INPUT_PANEL = "bee-InputPanel";
   private static final String STYLE_INPUT_PROMPT = "bee-InputPrompt";
   private static final String STYLE_INPUT_STRING = "bee-InputString";
@@ -147,7 +139,7 @@ public class InputBoxes {
   private static final String STYLE_INPUT_CONFIRM = "bee-InputConfirm";
   private static final String STYLE_INPUT_CANCEL = "bee-InputCancel";
 
-  public void inputString(String caption, String prompt, final StringCallback callback,
+  public void inputString(String caption, String prompt, final DialogCallback<String> callback,
       String defaultValue, int maxLength, double width, Unit widthUnit, final int timeout,
       String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
     Assert.notNull(callback);
@@ -155,8 +147,9 @@ public class InputBoxes {
     final Holder<State> state = Holder.of(State.OPEN);
 
     final DialogBox dialog = new DialogBox(caption);
+    UiHelper.initialize(dialog, initializer, DialogConstants.WIDGET_DIALOG);
 
-    final Timer timer = (timeout > 0) ? createTimer(dialog, state) : null;
+    final Timer timer = (timeout > 0) ? new DialogTimer(dialog, state) : null;
 
     Panel panel = new Flow();
     panel.addStyleName(STYLE_INPUT_PANEL);
@@ -165,7 +158,7 @@ public class InputBoxes {
       BeeLabel label = new BeeLabel(prompt.trim());
       label.addStyleName(STYLE_INPUT_PROMPT);
 
-      UiHelper.add(panel, label, initializer, WIDGET_PROMPT);
+      UiHelper.add(panel, label, initializer, DialogConstants.WIDGET_PROMPT);
     }
 
     InputText box = new InputText();
@@ -222,9 +215,9 @@ public class InputBoxes {
       }
     });
 
-    UiHelper.add(panel, input, initializer, WIDGET_INPUT);
+    UiHelper.add(panel, input, initializer, DialogConstants.WIDGET_INPUT);
 
-    UiHelper.add(panel, errorDisplay, initializer, WIDGET_ERROR);
+    UiHelper.add(panel, errorDisplay, initializer, DialogConstants.WIDGET_ERROR);
 
     addCommandGroup(dialog, panel, confirmHtml, cancelHtml, initializer, state, errorDisplay,
         errorSupplier);
@@ -248,7 +241,7 @@ public class InputBoxes {
       }
     });
 
-    UiHelper.setWidget(dialog, panel, initializer, WIDGET_PANEL);
+    UiHelper.setWidget(dialog, panel, initializer, DialogConstants.WIDGET_PANEL);
 
     dialog.setAnimationEnabled(true);
     dialog.center();
@@ -341,11 +334,11 @@ public class InputBoxes {
 
     BeeButton confirm;
     if (bst == null) {
-      confirm = new BeeButton("OK", Service.CONFIRM_DIALOG);
+      confirm = new BeeButton(DialogConstants.OK, Service.CONFIRM_DIALOG);
     } else {
-      confirm = new BeeButton("OK", bst);
+      confirm = new BeeButton(DialogConstants.OK, bst);
     }
-    BeeButton cancel = new BeeButton("Cancel", Service.CANCEL_DIALOG);
+    BeeButton cancel = new BeeButton(DialogConstants.CANCEL, Service.CANCEL_DIALOG);
 
     ft.setWidget(r, 0, confirm);
     ft.setWidget(r, 1, cancel);
@@ -370,7 +363,7 @@ public class InputBoxes {
     }
   }
 
-  public void inputWidget(String caption, Widget widget, final InputCallback callback,
+  public void inputWidget(String caption, Widget widget, final InputWidgetCallback callback,
       final int timeout, String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
     Assert.notNull(widget);
     Assert.notNull(callback);
@@ -378,14 +371,15 @@ public class InputBoxes {
     final Holder<State> state = Holder.of(State.OPEN);
 
     final DialogBox dialog = new DialogBox(caption);
+    UiHelper.initialize(dialog, initializer, DialogConstants.WIDGET_DIALOG);
 
-    final Timer timer = (timeout > 0) ? createTimer(dialog, state) : null;
+    final Timer timer = (timeout > 0) ? new DialogTimer(dialog, state) : null;
 
     Flow panel = new Flow();
     panel.addStyleName(STYLE_INPUT_PANEL);
 
     widget.addStyleName(STYLE_INPUT_WIDGET);
-    UiHelper.add(panel, widget, initializer, WIDGET_INPUT);
+    UiHelper.add(panel, widget, initializer, DialogConstants.WIDGET_INPUT);
 
     final Holder<Widget> errorDisplay = new Holder<Widget>(null);
     if (widget instanceof NotificationListener) {
@@ -395,7 +389,7 @@ public class InputBoxes {
       errorLabel.addStyleName(STYLE_INPUT_ERROR);
       errorLabel.addStyleName(StyleUtils.NAME_ERROR);
       errorDisplay.set(errorLabel);
-      UiHelper.add(panel, errorDisplay, initializer, WIDGET_ERROR);
+      UiHelper.add(panel, errorDisplay, initializer, DialogConstants.WIDGET_ERROR);
     }
 
     final Supplier<String> errorSupplier = new Supplier<String>() {
@@ -451,7 +445,7 @@ public class InputBoxes {
       }
     });
 
-    UiHelper.setWidget(dialog, panel, initializer, WIDGET_PANEL);
+    UiHelper.setWidget(dialog, panel, initializer, DialogConstants.WIDGET_PANEL);
 
     dialog.setAnimationEnabled(true);
     dialog.center();
@@ -490,7 +484,7 @@ public class InputBoxes {
         }
       });
 
-      UiHelper.add(commandGroup, confirm, initializer, WIDGET_CONFIRM);
+      UiHelper.add(commandGroup, confirm, initializer, DialogConstants.WIDGET_CONFIRM);
     }
 
     if (!BeeUtils.isEmpty(cancelHtml)) {
@@ -505,21 +499,11 @@ public class InputBoxes {
         }
       });
 
-      UiHelper.add(commandGroup, cancel, initializer, WIDGET_CANCEL);
+      UiHelper.add(commandGroup, cancel, initializer, DialogConstants.WIDGET_CANCEL);
     }
 
-    UiHelper.add(panel, commandGroup, initializer, WIDGET_COMMAND_GROUP);
+    UiHelper.add(panel, commandGroup, initializer, DialogConstants.WIDGET_COMMAND_GROUP);
     return true;
-  }
-
-  private Timer createTimer(final Popup dialog, final Holder<State> state) {
-    return new Timer() {
-      @Override
-      public void run() {
-        state.set(State.EXPIRED);
-        dialog.hide();
-      }
-    };
   }
 
   private void showError(Widget widget, String message) {

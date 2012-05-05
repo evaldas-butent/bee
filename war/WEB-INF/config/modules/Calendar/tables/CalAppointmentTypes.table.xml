@@ -7,8 +7,6 @@
   <BeeFields>
     <BeeField name="Calendar" type="LONG" notNull="true" relation="Calendars" cascade="DELETE" />
     <BeeField name="AppointmentType" type="LONG" notNull="true" relation="AppointmentTypes" cascade="DELETE" />
-
-    <BeeField name="Hidden" type="BOOLEAN" />
   </BeeFields>
   <BeeKeys>
     <BeeKey unique="true">

@@ -8,6 +8,7 @@ import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.WidgetCallback;
 import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -22,6 +23,11 @@ import java.util.List;
 import java.util.Map;
 
 public interface GridCallback extends WidgetCallback {
+  
+  int DELETE_CANCEL = -1;
+  int DELETE_DEFAULT = 0;
+  int DELETE_SILENT = 1;
+  int DELETE_CONFIRM = 2;
 
   void afterAction(Action action, GridPresenter presenter);
 
@@ -48,7 +54,7 @@ public interface GridCallback extends WidgetCallback {
   void beforeCreateColumns(List<? extends IsColumn> dataColumns,
       List<ColumnDescription> columnDescriptions);
 
-  int beforeDeleteRow(GridPresenter presenter, IsRow row);
+  int beforeDeleteRow(GridPresenter presenter, IsRow row, boolean confirm);
 
   int beforeDeleteRows(GridPresenter presenter, IsRow activeRow, Collection<RowInfo> selectedRows);
 
@@ -57,6 +63,10 @@ public interface GridCallback extends WidgetCallback {
   void beforeRequery(GridPresenter presenter);
 
   String getCaption();
+  
+  String getDeleteRowMessage();
+
+  Pair<String, String> getDeleteRowsMessage(int selectedRows);
 
   GridPresenter getGridPresenter();
 

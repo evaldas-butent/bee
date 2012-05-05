@@ -10,8 +10,6 @@
     
     <BeeField name="Creator" type="BOOLEAN" />
     <BeeField name="Organizer" type="BOOLEAN" />
-    
-    <BeeField name="Hidden" type="BOOLEAN" />
   </BeeFields>
   <BeeKeys>
     <BeeKey unique="true">

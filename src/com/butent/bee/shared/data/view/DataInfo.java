@@ -158,7 +158,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return DataUtils.getColumnIndex(columnId, getColumns());
   }
 
-  public int getColumnIndexSource(String table, String field) {
+  public int getColumnIndexBySource(String table, String field) {
     int index = BeeConst.UNDEF;
     Collection<ViewColumn> vcs = getViewColumnsBySource(table, field);
     if (vcs.isEmpty()) {

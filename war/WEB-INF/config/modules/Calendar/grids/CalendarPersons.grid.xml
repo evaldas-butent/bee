@@ -9,7 +9,5 @@
 
     <DataColumn name="Creator" />
     <DataColumn name="Organizer" />
-
-    <DataColumn name="Hidden" />
   </columns>
 </Grid>

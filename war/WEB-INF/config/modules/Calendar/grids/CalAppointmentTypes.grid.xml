@@ -6,6 +6,5 @@
   <columns>
     <DataColumn name="TypeName" />
     <DataColumn name="TypeDescription" readOnly="true" />
-    <DataColumn name="Hidden" />
   </columns>
 </Grid>

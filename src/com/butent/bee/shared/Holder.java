@@ -4,6 +4,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class Holder<T> {
   
+  public static <T> Holder<T> absent() {
+    return new Holder<T>(null);
+  }
+
   public static <T> Holder<T> of(T value) {
     return new Holder<T>(value);
   }
@@ -12,6 +16,10 @@ public class Holder<T> {
 
   public Holder(T value) {
     this.value = value;
+  }
+  
+  public boolean contains(T object) {
+    return BeeUtils.equals(get(), object);
   }
 
   public T get() {

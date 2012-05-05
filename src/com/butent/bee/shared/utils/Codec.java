@@ -439,7 +439,7 @@ public class Codec {
       Assert.isTrue(start + z < sLen);
       x = Integer.parseInt(src.substring(start + 1, start + z + 1));
     }
-    return Pair.create(x, z + 1);
+    return Pair.of(x, z + 1);
   }
 
   /**

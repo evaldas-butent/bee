@@ -8,6 +8,7 @@ import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -71,13 +72,13 @@ public class AbstractGridCallback implements GridCallback {
     return true;
   }
 
-  public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
-    return 0;
+  public int beforeDeleteRow(GridPresenter presenter, IsRow row, boolean confirm) {
+    return DELETE_DEFAULT;
   }
 
   public int beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows) {
-    return 0;
+    return DELETE_DEFAULT;
   }
 
   public void beforeRefresh(GridPresenter presenter) {
@@ -91,6 +92,14 @@ public class AbstractGridCallback implements GridCallback {
   }
 
   public String getCaption() {
+    return null;
+  }
+
+  public String getDeleteRowMessage() {
+    return null;
+  }
+
+  public Pair<String, String> getDeleteRowsMessage(int selectedRows) {
     return null;
   }
 

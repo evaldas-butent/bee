@@ -111,7 +111,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       Pair<DefaultExpression, Object> defaults = null;
 
       if (defExpr != null || defValue != null) {
-        defaults = Pair.create(defExpr, defValue);
+        defaults = Pair.of(defExpr, defValue);
       }
       return defaults;
     }

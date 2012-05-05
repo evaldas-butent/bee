@@ -18,7 +18,7 @@ public class Pair<A, B> implements Transformable {
    * @param a object to pair the object {@code b}
    * @param b object to pair the object {@code a}
    */
-  public static <A, B> Pair<A, B> create(A a, B b) {
+  public static <A, B> Pair<A, B> of(A a, B b) {
     return new Pair<A, B>(a, b);
   }
 

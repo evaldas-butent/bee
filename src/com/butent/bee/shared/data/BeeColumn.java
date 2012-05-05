@@ -167,7 +167,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
           String[] def = Codec.beeDeserializeCollection(value);
 
           if (ArrayUtils.length(def) == 2) {
-            setDefaults(Pair.create(NameUtils.getConstant(DefaultExpression.class, def[0]),
+            setDefaults(Pair.of(NameUtils.getConstant(DefaultExpression.class, def[0]),
                 (Object) def[1]));
           }
           break;

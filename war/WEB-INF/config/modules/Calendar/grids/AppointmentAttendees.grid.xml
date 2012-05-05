@@ -5,7 +5,7 @@
   >
   <columns>
     <DataColumn name="TypeName" readOnly="true" />
-    <DataColumn name="AttendeeName" />
+    <RelColumn name="AttendeeName" />
     
     <DataColumn name="Optional" />
     <DataColumn name="ResponseStatus" itemKey="ResponseStatus" />

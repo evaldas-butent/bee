@@ -21,6 +21,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SpinnerListener;
 import com.butent.bee.client.composite.ValueSpinner;
+import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dialog.Popup.PositionCallback;
 import com.butent.bee.client.dom.DomUtils;
@@ -671,7 +672,8 @@ public class ScrollTableConfig {
         x += z, y, z - wMrg);
     panel.append(new BeeButton("Fill Preferred", new ConfigCommand(Action.FILL_PREF)),
         x += z, y, z - wMrg);
-    panel.append(new BeeButton("Cancel", new ConfigCommand(Action.CANCEL)), x += z, y, z - wMrg);
+    panel.append(new BeeButton(DialogConstants.CANCEL, new ConfigCommand(Action.CANCEL)),
+        x += z, y, z - wMrg);
 
     y += 40 + yMrg;
 

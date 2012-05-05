@@ -12,6 +12,7 @@ import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.Visibility;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.HasCloseHandlers;
@@ -37,6 +38,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.event.PreviewHandler;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
@@ -238,6 +240,8 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     }
   }
   
+  private static final String STYLE_POPUP = "bee-Popup";
+  
   private static final int ANIMATION_DURATION = 250;
 
   private AnimationType animationType = AnimationType.CENTER;
@@ -263,28 +267,42 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private boolean previewAllNativeEvents = false;
   private HandlerRegistration nativePreviewHandlerRegistration = null;
   private HandlerRegistration historyHandlerRegistration = null;
+  
+  private List<PreviewHandler> previewHandlers = null;
+  private boolean hideOnEscape = false;
 
   private boolean isAnimationEnabled = false;
   private final ResizeAnimation resizeAnimation = new ResizeAnimation(this);
+  
+  private final String popupStyleName;
 
   public Popup(boolean autoHide) {
-    this();
+    this(autoHide, STYLE_POPUP);
+  }
+  
+  public Popup(boolean autoHide, String styleName) {
+    this(styleName);
     this.autoHide = autoHide;
     this.autoHideOnHistoryEvents = autoHide;
   }
 
   public Popup(boolean autoHide, boolean modal) {
-    this(autoHide);
+    this(autoHide, modal, STYLE_POPUP);
+  }
+  
+  public Popup(boolean autoHide, boolean modal, String styleName) {
+    this(autoHide, styleName);
     this.modal = modal;
   }
 
-  private Popup() {
+  private Popup(String styleName) {
     super();
 
     setPopupPosition(0, 0);
     DomUtils.createId(this, getIdPrefix());
-
-    setStyleName(getDefaultStyleName());
+    
+    this.popupStyleName = styleName;
+    setStyleName(styleName);
   }
 
   public void addAutoHidePartner(Element partner) {
@@ -295,9 +313,18 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       getAutoHidePartners().add(partner);
     }
   }
-
+  
   public HandlerRegistration addCloseHandler(CloseHandler<Popup> handler) {
     return addHandler(handler, CloseEvent.getType());
+  }
+
+  public void addPreviewHandler(PreviewHandler handler) {
+    if (handler != null) {
+      if (previewHandlers == null) {
+        previewHandlers = Lists.newArrayList();
+      }
+      previewHandlers.add(handler);
+    }
   }
 
   public void center() {
@@ -369,6 +396,10 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     CloseEvent.fire(this, this, autoClosed);
   }
 
+  public boolean hideOnEscape() {
+    return hideOnEscape;
+  }
+
   public boolean isAnimationEnabled() {
     return isAnimationEnabled;
   }
@@ -429,7 +460,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
     if (enabled && getGlass() == null) {
       Element elem = Document.get().createDivElement();
-      elem.addClassName(getDefaultStyleName() + "-glass");
+      elem.addClassName(popupStyleName + "-glass");
 
       elem.getStyle().setPosition(Position.ABSOLUTE);
       elem.getStyle().setLeft(0, Unit.PX);
@@ -446,6 +477,10 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     if (BeeUtils.isEmpty(height)) {
       setDesiredHeight(null);
     }
+  }
+
+  public void setHideOnEscape(boolean hideOnEscape) {
+    this.hideOnEscape = hideOnEscape;
   }
 
   public void setId(String id) {
@@ -518,14 +553,14 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     });
   }
 
-  protected String getDefaultStyleName() {
-    return "bee-Popup";
-  }
-
-  /**
-   * @param event  
-   */
   protected void onPreviewNativeEvent(NativePreviewEvent event) {
+    if (previewHandlers != null) {
+      for (PreviewHandler handler : previewHandlers) {
+        if (!event.isCanceled() || !event.isConsumed()) {
+          handler.onEventPreview(event);
+        }
+      }
+    }
   }
 
   @Override
@@ -609,7 +644,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       }
     }
   }
-
+  
   private void position(UIObject relativeObject, int offsetWidth, int offsetHeight) {
     int objectWidth = relativeObject.getOffsetWidth();
     int offsetWidthDiff = offsetWidth - objectWidth;
@@ -673,12 +708,8 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       case Event.ONMOUSEDOWN:
         if (DOM.getCaptureElement() != null) {
           event.consume();
-          return;
-        }
-
-        if (!eventTargetsPopupOrPartner && isAutoHideEnabled()) {
+        } else if (!eventTargetsPopupOrPartner && isAutoHideEnabled()) {
           hide(true);
-          return;
         }
         break;
 
@@ -688,7 +719,6 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       case Event.ONDBLCLICK:
         if (DOM.getCaptureElement() != null) {
           event.consume();
-          return;
         }
         break;
 
@@ -698,6 +728,12 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
           blur(target);
           event.cancel();
           return;
+        }
+        break;
+      
+      case Event.ONKEYDOWN:
+        if (hideOnEscape() && event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
+          hide(true);
         }
         break;
     }
@@ -710,7 +746,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private void setDesiredHeight(String desiredHeight) {
     this.desiredHeight = desiredHeight;
   }
-  
+
   private void setDesiredWidth(String desiredWidth) {
     this.desiredWidth = desiredWidth;
   }

@@ -1,7 +1,6 @@
 package com.butent.bee.client.ui;
 
 import com.google.common.collect.Maps;
-import com.google.gwt.core.client.Callback;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
@@ -64,7 +63,12 @@ public class FormFactory {
     void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow);
   }
 
-  public interface FormViewCallback extends Callback<FormView, String[]> {
+  public abstract static class FormViewCallback {
+    public void onFailure(String... reason) {
+      BeeKeeper.getScreen().notifyWarning(reason);
+    }
+    
+    public abstract void onSuccess(FormDescription formDescription, FormView result);
   }
 
   public interface WidgetDescriptionCallback {
@@ -99,17 +103,17 @@ public class FormFactory {
         if (response.hasResponse(String.class)) {
           FormDescription fd = getFormDescription((String) response.getResponse(), formCallback);
           if (fd == null) {
-            viewCallback.onFailure(new String[] {"form", name, "decription not created"});
+            viewCallback.onFailure("form", name, "decription not created");
           } else {
             if (!BeeUtils.isEmpty(viewName)) {
               fd.setViewName(viewName);
             }
             FormView view = new FormImpl(name);
             view.create(fd, columns, formCallback, addStyle);
-            viewCallback.onSuccess(view);
+            viewCallback.onSuccess(fd, view);
           }
         } else {
-          viewCallback.onFailure(new String[] {"get form", name, "response not a string"});
+          viewCallback.onFailure("get form", name, "response not a string");
         }
       }
     });
@@ -184,6 +188,22 @@ public class FormFactory {
     return editor;
   }
 
+  public static FormCallback getFormCallback(String formName) {
+    Assert.notEmpty(formName);
+    FormCallback callback = formCallbacks.get(BeeUtils.normalize(formName));
+    return getInstance(callback);
+  }
+
+  public static FormCallback getInstance(FormCallback callback) {
+    if (callback != null) {
+      FormCallback instance = callback.getInstance();
+      if (instance != null) {
+        return instance;
+      }
+    }
+    return callback;
+  }
+
   public static void openForm(String name) {
     openForm(name, getFormCallback(name));
   }
@@ -219,7 +239,7 @@ public class FormFactory {
       getInitialRowSet(viewName, dataInfo.getRowCount(), formDescription, callback);
     }
   }
-
+  
   public static void registerFormCallback(String formName, FormCallback callback) {
     Assert.notEmpty(formName);
     formCallbacks.put(BeeUtils.normalize(formName), callback);
@@ -230,18 +250,6 @@ public class FormFactory {
     Assert.notNull(responseCallback);
 
     BeeKeeper.getRpc().sendText(Service.GET_FORM, BeeUtils.trim(name), responseCallback);
-  }
-
-  private static FormCallback getFormCallback(String formName) {
-    Assert.notEmpty(formName);
-    FormCallback callback = formCallbacks.get(BeeUtils.normalize(formName));
-    if (callback != null) {
-      FormCallback instance = callback.getInstance();
-      if (instance != null) {
-        return instance;
-      }
-    }
-    return callback;
   }
 
   private static FormDescription getFormDescription(String xml, FormCallback callback) {

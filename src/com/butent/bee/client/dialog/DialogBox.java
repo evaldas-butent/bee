@@ -63,7 +63,8 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
     }
   }
 
-  private static final String STYLE_CONTAINER = "bee-DialogBox";
+  private static final String STYLE_DIALOG = "bee-DialogBox";
+
   private static final String STYLE_CAPTION = "Caption";
   private static final String STYLE_CONTENT = "Content";
   private static final String STYLE_CLOSE = "Close";
@@ -86,15 +87,15 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
   }
 
   public DialogBox(boolean autoHide) {
-    this(autoHide, true);
+    this(autoHide, true, STYLE_DIALOG);
   }
 
-  public DialogBox(boolean autoHide, boolean modal) {
-    this(autoHide, modal, new CaptionImpl());
+  public DialogBox(boolean autoHide, boolean modal, String styleName) {
+    this(autoHide, modal, new CaptionImpl(), styleName);
   }
 
-  public DialogBox(boolean autoHide, boolean modal, Caption captionWidget) {
-    super(autoHide, modal);
+  public DialogBox(boolean autoHide, boolean modal, Caption captionWidget, String styleName) {
+    super(autoHide, modal, styleName);
 
     Assert.notNull(captionWidget);
     captionWidget.asWidget().addStyleName(STYLE_CAPTION);
@@ -122,12 +123,16 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
     addDomHandler(mouseHandler, MouseMoveEvent.getType());
   }
 
-  public DialogBox(Caption captionWidget) {
-    this(false, true, captionWidget);
+  public DialogBox(Caption captionWidget, String styleName) {
+    this(false, true, captionWidget, styleName);
+  }
+
+  public DialogBox(String html, String styleName) {
+    this(new CaptionImpl(html), styleName);
   }
 
   public DialogBox(String html) {
-    this(new CaptionImpl(html));
+    this(html, STYLE_DIALOG);
   }
 
   public Caption getCaption() {
@@ -225,11 +230,6 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
   protected void endDragging() {
     dragging = false;
     DOM.releaseCapture(getElement());
-  }
-
-  @Override
-  protected String getDefaultStyleName() {
-    return STYLE_CONTAINER;
   }
 
   @Override

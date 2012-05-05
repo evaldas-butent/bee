@@ -193,13 +193,11 @@ public class DisplayWidget {
 
       case TAB_BAR:
         if (widget instanceof TabBar) {
-          int idx = ((TabBar) widget).getIndex(value);
-          if (BeeConst.isUndef(idx) && BeeUtils.isDigit(value)) {
-            idx = BeeUtils.toInt(value);
-          }
-
-          if (idx >= 0 && idx < ((TabBar) widget).getItemCount()) {
-            ((TabBar) widget).selectTab(idx, false);
+          if (BeeUtils.isDigit(value)) {
+            int idx = BeeUtils.toInt(value);
+            if (idx >= 0 && idx < ((TabBar) widget).getItemCount()) {
+              ((TabBar) widget).selectTab(idx, false);
+            }
           }
         }
         break;

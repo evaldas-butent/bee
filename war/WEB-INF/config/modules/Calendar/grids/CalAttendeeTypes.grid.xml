@@ -9,7 +9,5 @@
     <DataColumn name="TypeDescription" readOnly="true" />
     <DataColumn name="TypeTransparency" readOnly="true" itemKey="Transparency" />
     <DataColumn name="TypeResource" readOnly="true" />
-    
-    <DataColumn name="Hidden" />
   </columns>
 </Grid>

@@ -12,8 +12,6 @@
       <SimpleColumn alias="TypeName" name="Name" />
       <SimpleColumn alias="TypeDescription" name="Description" />
     </SimpleJoin>
-    
-    <SimpleColumn name="Hidden" />
   </Columns>
   <Order>
     <OrderBy column="TypeName" />

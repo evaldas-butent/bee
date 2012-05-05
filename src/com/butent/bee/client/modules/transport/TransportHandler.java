@@ -93,10 +93,6 @@ public class TransportHandler {
                   }
 
                   Queries.insert(rowSet, new RowSetCallback() {
-                    public void onFailure(String[] reason) {
-                      presenter.getView().getContent().notifySevere(reason);
-                    }
-
                     public void onSuccess(BeeRowSet res) {
                       for (BeeRow row : res.getRows()) {
                         BeeKeeper.getBus().fireEvent(new RowInsertEvent(res.getViewName(), row));

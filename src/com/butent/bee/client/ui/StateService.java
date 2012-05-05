@@ -66,7 +66,7 @@ public class StateService extends CompositeService {
                   vars[ROLE] = new Variable("ROLE", BeeType.BOOLEAN,
                       BeeUtils.toString(state.roleMode));
                   vars[CHECKED] = new Variable(BeeType.BOOLEAN, BeeUtils.toString(state.checked));
-                  lst.add(Pair.create(state, vars));
+                  lst.add(Pair.of(state, vars));
                 }
                 refresh();
 
@@ -88,7 +88,7 @@ public class StateService extends CompositeService {
       vars[USER] = new Variable("USER", BeeType.BOOLEAN);
       vars[ROLE] = new Variable("ROLE", BeeType.BOOLEAN);
       vars[CHECKED] = new Variable(BeeType.BOOLEAN);
-      lst.add(Pair.create(new XmlState(), vars));
+      lst.add(Pair.of(new XmlState(), vars));
       refresh();
       return ok;
 

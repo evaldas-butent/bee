@@ -1303,7 +1303,7 @@ public class StyleUtils {
         unit = parseUnit(u);
       }
     }
-    return Pair.create(value, unit);
+    return Pair.of(value, unit);
   }
 
   public static <E extends Enum<?> & HasCssName> E parseCssName(Class<E> clazz, String input) {

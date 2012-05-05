@@ -23,6 +23,7 @@ import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
+import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.BeeConst;
@@ -156,7 +157,7 @@ public class ProjectList {
     }
 
     @Override
-    public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
+    public int beforeDeleteRow(GridPresenter presenter, IsRow row, boolean confirm) {
       Provider provider = presenter.getDataProvider();
 
       if (!ProjectEventHandler.availableEvent(ProjectEvent.DELETED,
@@ -164,16 +165,16 @@ public class ProjectList {
           row.getLong(provider.getColumnIndex(CrmConstants.COL_OWNER)))) {
 
         presenter.getView().getContent().notifyWarning("Verboten");
-        return -1;
+        return GridCallback.DELETE_CANCEL;
       }
-      return 0;
+      return GridCallback.DELETE_DEFAULT;
     }
 
     @Override
     public int beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
         Collection<RowInfo> selectedRows) {
-      presenter.deleteRow(activeRow);
-      return -1;
+      presenter.deleteRow(activeRow, false);
+      return GridCallback.DELETE_CANCEL;
     }
 
     @Override

@@ -198,8 +198,8 @@ public class TestCodec {
   @Test
   public final void testDeserializeLength() {
 
-    Pair<Integer, Integer> a = Pair.create(53, 3);
-    Pair<Integer, Integer> b = Pair.create(8, 2);
+    Pair<Integer, Integer> a = Pair.of(53, 3);
+    Pair<Integer, Integer> b = Pair.of(8, 2);
 
     assertEquals(a.getA(), Codec.deserializeLength("253", 0).getA());
     assertEquals(a.getB(), Codec.deserializeLength("253", 0).getB());
@@ -207,10 +207,8 @@ public class TestCodec {
     assertEquals(b.getA(), Codec.deserializeLength("18A String", 0).getA());
     assertEquals(b.getB(), Codec.deserializeLength("18A String", 0).getB());
 
-    assertEquals((Object) 0, Codec.deserializeLength("08A String", 0)
-        .getA());
-    assertEquals((Object) 1, Codec.deserializeLength("08A String", 0)
-        .getB());
+    assertEquals((Object) 0, Codec.deserializeLength("08A String", 0).getA());
+    assertEquals((Object) 1, Codec.deserializeLength("08A String", 0).getB());
   }
 
   @Test

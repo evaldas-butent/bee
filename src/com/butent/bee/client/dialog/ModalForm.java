@@ -10,6 +10,8 @@ import com.butent.bee.client.ui.HasDimensions;
 
 public class ModalForm extends Popup {
   
+  private static final String STYLE_NAME = "bee-ModalForm";
+  
   private final boolean requiresUnload; 
   
   private boolean wasAttached = false;
@@ -24,7 +26,7 @@ public class ModalForm extends Popup {
   }
   
   public ModalForm(Widget widget, HasDimensions dimensions, boolean requiresUnload) {
-    super(false);
+    super(false, STYLE_NAME);
     this.requiresUnload = requiresUnload;
 
     if (Stacking.getWidgetCount() <= 0) {
@@ -32,7 +34,7 @@ public class ModalForm extends Popup {
     }
     setAnimationEnabled(true);
 
-    widget.addStyleName(getDefaultStyleName() + "-content");
+    widget.addStyleName(STYLE_NAME + "-content");
     setWidget(widget);
     
     if (dimensions != null) {
@@ -79,11 +81,6 @@ public class ModalForm extends Popup {
       wasAttached = false;
       pendingUnload = false;
     }
-  }
-
-  @Override
-  protected String getDefaultStyleName() {
-    return "bee-ModalForm";
   }
 
   private void setDimensions(HasDimensions dimensions) {

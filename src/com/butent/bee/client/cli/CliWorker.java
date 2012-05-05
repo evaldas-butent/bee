@@ -42,7 +42,8 @@ import com.butent.bee.client.communication.RpcList;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.decorator.TuningFactory;
-import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.dialog.DialogCallback;
+import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dom.ComputedStyles;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
@@ -385,6 +386,8 @@ public class CliWorker {
       doScreen(arr);
     } else if (z.equals("charset")) {
       getCharsets();
+    } else if (z.startsWith("cho")) {
+      showChoice(arr);
     } else if (z.equals("clear")) {
       clear(args);
     } else if (z.startsWith("client")) {
@@ -841,6 +844,93 @@ public class CliWorker {
     BeeKeeper.getScreen().showGrid(props);
   }
 
+  public static void showChoice(String[] arr) {
+    String caption = null;
+    String prompt = null;
+    List<String> options = Lists.newArrayList();
+    int defaultValue = BeeConst.UNDEF;
+    int timeout = BeeConst.UNDEF;
+    String cancelHtml = null;
+
+    final Holder<String> widgetName = new Holder<String>(null);
+    final Holder<String> widgetStyle = Holder.of("background-color:green");
+
+    String v;
+
+    for (int i = 1; i < BeeUtils.length(arr); i++) {
+      if (arr[i].length() < 3 || arr[i].charAt(1) != '=') {
+        options.add(arr[i]);
+        continue;
+      }
+
+      char k = arr[i].toLowerCase().charAt(0);
+      v = arr[i].substring(2).trim();
+      if (BeeUtils.isEmpty(v)) {
+        continue;
+      }
+
+      switch (k) {
+        case 'c':
+          caption = v;
+          break;
+        case 'p':
+          prompt = v;
+          break;
+        case 'd':
+          defaultValue = BeeUtils.toInt(v);
+          break;
+        case 't':
+          timeout = BeeUtils.toInt(v);
+          break;
+        case 'n':
+          cancelHtml = v;
+          break;
+        case 'i':
+          widgetName.set(v);
+          break;
+        case 's':
+          widgetStyle.set(v);
+          break;
+        default:
+          options.add(arr[i]);
+      }
+    }
+    
+    if (options.isEmpty()) {
+      for (int i = 0; i < BeeUtils.randomInt(1, 10); i++) {
+        options.add(BeeUtils.randomString(3, 20, ' ', 'z'));
+      }
+    }
+
+    Global.choice(caption, prompt, options,
+        new DialogCallback<Integer>() {
+          @Override
+          public void onCancel() {
+            BeeKeeper.getLog().info("cancel");
+          }
+
+          @Override
+          public void onSuccess(Integer value) {
+            BeeKeeper.getLog().info("success", value);
+          }
+
+          @Override
+          public void onTimeout(Integer value) {
+            BeeKeeper.getLog().info("timeout", value);
+          }
+
+        }, defaultValue, timeout, cancelHtml,
+        new WidgetInitializer() {
+          public Widget initialize(Widget widget, String name) {
+            if (BeeUtils.context(widgetName.get(), name)) {
+              StyleUtils.updateAppearance(widget, null, widgetStyle.get());
+              BeeKeeper.getLog().info(name, StyleUtils.getCssText(widget));
+            }
+            return widget;
+          }
+        });
+  }
+  
   public static void showClientLocation() {
     AjaxLoader.load(new Runnable() {
       public void run() {
@@ -1157,8 +1247,8 @@ public class CliWorker {
     double width = BeeConst.DOUBLE_UNDEF;
     Unit widthUnit = null;
     int timeout = BeeConst.UNDEF;
-    String confirmHtml = "OK";
-    String cancelHtml = "Cancel";
+    String confirmHtml = DialogConstants.OK;
+    String cancelHtml = DialogConstants.CANCEL;
 
     boolean required = true;
 
@@ -1224,7 +1314,7 @@ public class CliWorker {
     }
 
     Global.inputString(caption, prompt,
-        new StringCallback(required) {
+        new DialogCallback<String>(required) {
           @Override
           public void onCancel() {
             BeeKeeper.getLog().info("cancel");

@@ -28,7 +28,7 @@ body, select {
   -webkit-box-orient: horizontal;
 }
 
-.flexBox-vertical,.bee-TreeView,.bee-TabbedPages-container {
+.flexBox-vertical, .bee-TreeView, .bee-TabbedPages-container {
   display: box;
   display: -moz-box;
   display: -webkit-box;
@@ -79,7 +79,7 @@ body, select {
   -webkit-box-pack: justify;
 }
 
-.flexible,.bee-TreeView-tree,.bee-TabbedPages-contentPanel {
+.flexible, .bee-TreeView-tree, .bee-TabbedPages-contentPanel {
   box-flex: 1;
   -moz-box-flex: 1;
   -webkit-box-flex: 1;
@@ -346,18 +346,12 @@ body, select {
   height: 100%;
   margin: 0;
   box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -ms-box-sizing: border-box;
 }
 
 .bee-LayoutContainer > .bee-InputText {
   width: 100%;
   margin: 0;
   box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  -ms-box-sizing: border-box;
 }
 
 .bee-LayoutContainer > .bee-Button {
@@ -788,7 +782,7 @@ body, select {
   min-height: 10px;
 }
 
-.bee-DialogBox .Close {
+.bee-DialogBox .Close, .bee-ChoiceDialog .Close {
   position: absolute;
   top: 2px;
   right: 2px;
@@ -1230,7 +1224,6 @@ body, select {
   font-weight: normal;
   text-align: center;
   border: 1px solid #ccc;
-  -moz-border-radius: 3px 3px 0px 0px;
   border-radius: 3px 3px 0px 0px;
 }
 
@@ -1307,6 +1300,40 @@ body, select {
 .bee-StackContent {
   padding: 2px;
 }
+
+.bee-ChoiceDialog {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  background-color: white;
+  border: 1px solid #ccc;
+}
+
+.bee-ChoiceDialog .Caption {
+  padding: 1ex 2em;
+  font-weight: bolder;
+}
+.bee-ChoicePrompt {
+  padding: 1ex 2em;
+  text-align: center;
+}
+
+.bee-ChoiceGroup-panel {
+  margin: 2ex 0 2ex 2em;  
+}
+
+.bee-ChoiceGroup-item {
+  height: 25px;
+  color: #6D6D6D;
+  font: 13px/25px Arial;
+  background-color: #F2F2F2;
+  padding: 0 10px;
+  border: 1px solid #E4E4E4;
+  border-radius: 2px;
+  cursor: pointer;
+  margin-right: 2em;
+}
+.bee-ChoiceGroup-item:hover {
+  border: 1px solid #BEBEBE;
+}  
 
 .gwt-SplitLayoutPanel-HDragger {
   background-color: #f6cef5;

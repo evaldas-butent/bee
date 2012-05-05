@@ -17,8 +17,6 @@
     
     <SimpleColumn name="Creator" />
     <SimpleColumn name="Organizer" />
-
-    <SimpleColumn name="Hidden" />
   </Columns>
   <Order>
     <OrderBy column="LastName" />

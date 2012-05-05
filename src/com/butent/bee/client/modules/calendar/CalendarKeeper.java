@@ -13,13 +13,14 @@ import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.AbstractColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
@@ -157,11 +158,7 @@ public class CalendarKeeper {
     FormFactory.createFormView(CalendarConstants.FORM_CALENDAR_SETTINGS, null,
         userCalendars.getColumns(),
         new FormFactory.FormViewCallback() {
-          public void onFailure(String[] reason) {
-            BeeKeeper.getScreen().notifyWarning(reason);
-          }
-
-          public void onSuccess(FormView result) {
+          public void onSuccess(FormDescription formDescription, FormView result) {
             if (result != null) {
               settingsForm = result;
               settingsForm.setEditing(true);
@@ -236,7 +233,7 @@ public class CalendarKeeper {
 
     String caption = BeeUtils.concat(1, getCalendarName(oldRow), settingsForm.getCaption());
 
-    Global.inputWidget(caption, settingsForm.asWidget(), new InputCallback() {
+    Global.inputWidget(caption, settingsForm.asWidget(), new InputWidgetCallback() {
       public void onSuccess() {
         String oldValue;
         String newValue;

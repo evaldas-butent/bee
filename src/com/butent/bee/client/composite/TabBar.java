@@ -20,19 +20,17 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HasText;
+import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasWordWrap;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.client.ui.impl.FocusImpl;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.BeeLabel;
@@ -49,18 +47,16 @@ import java.util.List;
 public class TabBar extends Composite implements HasBeforeSelectionHandlers<Integer>,
     HasSelectionHandlers<Integer>, HasId, HasItems, AcceptsCaptions {
 
-  public interface Tab extends HasAllKeyHandlers, HasClickHandlers, HasWordWrap {
+  public interface Tab extends HasAllKeyHandlers, HasClickHandlers, HasWordWrap, HasEnabled {
     boolean hasWordWrap();
   }
 
-  private class ClickDelegatePanel extends Composite implements Tab {
-    private Simple focusablePanel;
+  private class DelegatePanel extends Composite implements Tab {
     private boolean enabled = true;
 
-    ClickDelegatePanel(Widget child) {
-      focusablePanel = new Simple(FocusImpl.getFocusImplForPanel().createFocusable());
-      focusablePanel.setWidget(child);
-      initWidget(focusablePanel);
+    private DelegatePanel(Widget widget) {
+      DomUtils.makeFocusable(widget);
+      initWidget(widget);
 
       sinkEvents(Event.ONCLICK | Event.ONKEYDOWN);
     }
@@ -81,20 +77,16 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
       return addDomHandler(handler, KeyUpEvent.getType());
     }
 
-    public Simple getFocusablePanel() {
-      return focusablePanel;
-    }
-
     public boolean getWordWrap() {
       if (hasWordWrap()) {
-        return ((HasWordWrap) focusablePanel.getWidget()).getWordWrap();
+        return ((HasWordWrap) getWidget()).getWordWrap();
       } else {
         return false;
       }
     }
 
     public boolean hasWordWrap() {
-      return focusablePanel.getWidget() instanceof HasWordWrap;
+      return getWidget() instanceof HasWordWrap;
     }
 
     public boolean isEnabled() {
@@ -103,18 +95,41 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
 
     @Override
     public void onBrowserEvent(Event event) {
-      if (!enabled) {
+      if (!isEnabled()) {
         return;
       }
-
-      switch (DOM.eventGetType(event)) {
+      
+      int index = TabBar.this.getTabIndex(this);
+      
+      switch (event.getTypeInt()) {
         case Event.ONCLICK:
-          TabBar.this.selectTabByTabWidget(this);
+          selectTab(index);
           break;
 
         case Event.ONKEYDOWN:
-          if (DOM.eventGetKeyCode(event) == KeyCodes.KEY_ENTER) {
-            TabBar.this.selectTabByTabWidget(this);
+          int size = TabBar.this.getItemCount();
+          int navigateTo = BeeConst.UNDEF;
+
+          switch (event.getKeyCode()) {
+            case KeyCodes.KEY_ENTER:
+              selectTab(index);
+              break;
+            case KeyCodes.KEY_LEFT:
+              navigateTo = BeeUtils.rotateBackwardExclusive(index, 0, size);
+              break;
+            case KeyCodes.KEY_RIGHT:
+              navigateTo = BeeUtils.rotateForwardExclusive(index, 0, size);
+              break;
+            case KeyCodes.KEY_HOME:
+              navigateTo = 0;
+              break;
+            case KeyCodes.KEY_END:
+              navigateTo = size - 1;
+              break;
+          }
+          
+          if (!BeeConst.isUndef(navigateTo) && navigateTo != index) {
+            TabBar.this.focusTab(navigateTo);
           }
           break;
       }
@@ -127,17 +142,22 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
 
     public void setWordWrap(boolean wrap) {
       if (hasWordWrap()) {
-        ((HasWordWrap) focusablePanel.getWidget()).setWordWrap(wrap);
+        ((HasWordWrap) getWidget()).setWordWrap(wrap);
       } else {
         Assert.unsupported("Widget does not implement HasWordWrap");
       }
+    }
+
+    @Override
+    protected Widget getWidget() {
+      return super.getWidget();
     }
   }
 
   private static final String DEFAULT_STYLE_PREFIX = "bee-TabBar-";
 
   private final Horizontal panel = new Horizontal();
-  private ClickDelegatePanel selectedTab = null;
+  private DelegatePanel selectedTab = null;
 
   private final String stylePrefix;
   
@@ -163,9 +183,6 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
 
     panel.add(first);
     panel.add(rest);
-
-    setStyleName(first.getElement().getParentElement(), stylePrefix + "first-wrapper");
-    setStyleName(rest.getElement().getParentElement(), stylePrefix + "rest-wrapper");
   }
 
   public HandlerRegistration addBeforeSelectionHandler(BeforeSelectionHandler<Integer> handler) {
@@ -213,21 +230,17 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     }
   }
 
+  public void focusTab(int index) {
+    checkTabIndex(index, 0);
+    DomUtils.setFocus(getTabWidget(index), true);
+  }
+
   public String getId() {
     return panel.getId();
   }
 
   public String getIdPrefix() {
     return panel.getIdPrefix();
-  }
-
-  public int getIndex(String html) {
-    for (int i = 0; i < getItemCount(); i++) {
-      if (BeeUtils.same(html, getTabHtml(i))) {
-        return i;
-      }
-    }
-    return BeeConst.UNDEF;
   }
 
   public int getItemCount() {
@@ -237,14 +250,14 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   public List<String> getItems() {
     List<String> items = Lists.newArrayList();
     for (int i = 0; i < getItemCount(); i++) {
-      items.add(getTabHtml(i));
+      items.add(getTabWidget(i).getElement().getInnerHTML());
     }
     return items;
   }
 
   public int getSelectedTab() {
     if (selectedTab == null) {
-      return -1;
+      return BeeConst.UNDEF;
     }
     return panel.getWidgetIndex(selectedTab) - 1;
   }
@@ -253,43 +266,22 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     if (selectedTab == null) {
       return null;
     }
-    return selectedTab.getFocusablePanel().getWidget();
+    return selectedTab.getWidget();
   }
 
   public Tab getTab(int index) {
     if (index < 0 || index >= getItemCount()) {
       return null;
     }
-    ClickDelegatePanel p = (ClickDelegatePanel) panel.getWidget(index + 1);
-    return p;
-  }
-
-  public String getTabHtml(int index) {
-    if (index < 0 || index >= getItemCount()) {
-      return null;
-    }
-
-    ClickDelegatePanel delPanel = (ClickDelegatePanel) panel.getWidget(index + 1);
-    Simple focusablePanel = delPanel.getFocusablePanel();
-    Widget widget = focusablePanel.getWidget();
-
-    if (widget instanceof Html) {
-      return ((Html) widget).getHTML();
-    } else if (widget instanceof HasText) {
-      return ((HasText) widget).getText();
-    } else {
-      return focusablePanel.getElement().getParentElement().getInnerHTML();
-    }
+    return getWrapper(index);
   }
 
   public Widget getTabWidget(int index)  {
     if (index < 0 || index >= getItemCount()) {
       return null;
+    } else {
+      return getWrapper(index).getWidget();
     }
-
-    ClickDelegatePanel delPanel = (ClickDelegatePanel) panel.getWidget(index + 1);
-    Simple focusablePanel = delPanel.getFocusablePanel();
-    return focusablePanel.getWidget();
   }
 
   public void insertTab(SafeHtml html, int beforeIndex) {
@@ -317,11 +309,14 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   public void insertTab(Widget widget, int beforeIndex) {
     insertTabWidget(widget, beforeIndex);
   }
+  
+  public boolean isIndex(int index) {
+    return index >= 0 && index < getItemCount();
+  }
 
   public boolean isTabEnabled(int index) {
     checkTabIndex(index, 0);
-    ClickDelegatePanel delPanel = (ClickDelegatePanel) panel.getWidget(index + 1);
-    return delPanel.isEnabled();
+    return getWrapper(index).isEnabled();
   }
 
   public void removeTab(int index) {
@@ -349,12 +344,12 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     }
 
     setSelectionStyle(selectedTab, false);
-    if (index == -1) {
+    if (BeeConst.isUndef(index)) {
       selectedTab = null;
       return true;
     }
 
-    selectedTab = (ClickDelegatePanel) panel.getWidget(index + 1);
+    selectedTab = getWrapper(index);
     setSelectionStyle(selectedTab, true);
     if (fireEvents) {
       SelectionEvent.fire(this, index);
@@ -378,42 +373,18 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   public void setTabEnabled(int index, boolean enabled) {
     checkTabIndex(index, 0);
 
-    ClickDelegatePanel delPanel = (ClickDelegatePanel) panel.getWidget(index + 1);
+    DelegatePanel delPanel = getWrapper(index);
     delPanel.setEnabled(enabled);
     setStyleName(delPanel.getElement(), stylePrefix + "item-disabled", !enabled);
-    setStyleName(delPanel.getElement().getParentElement(), stylePrefix + "wrapper-disabled",
-        !enabled);
-  }
-
-  public void setTabHTML(int index, SafeHtml html) {
-    setTabHTML(index, html.asString());
-  }
-
-  public void setTabHTML(int index, String html) {
-    checkTabIndex(index, 0);
-
-    ClickDelegatePanel delPanel = (ClickDelegatePanel) panel.getWidget(index + 1);
-    Simple focusablePanel = delPanel.getFocusablePanel();
-    focusablePanel.setWidget(new Html(html, false));
-  }
-
-  public void setTabText(int index, String text) {
-    checkTabIndex(index, 0);
-
-    ClickDelegatePanel delPanel = (ClickDelegatePanel) panel.getWidget(index + 1);
-    Simple focusablePanel = delPanel.getFocusablePanel();
-    focusablePanel.setWidget(new BeeLabel(text, false));
   }
 
   protected void insertTabWidget(Widget widget, int beforeIndex) {
     checkInsertBeforeTabIndex(beforeIndex);
 
-    ClickDelegatePanel delWidget = new ClickDelegatePanel(widget);
+    DelegatePanel delWidget = new DelegatePanel(widget);
     delWidget.setStyleName(stylePrefix + "item");
 
     panel.insert(delWidget, beforeIndex + 1);
-
-    setStyleName(DOM.getParent(delWidget.getElement()), stylePrefix + "wrapper", true);
   }
 
   private void checkInsertBeforeTabIndex(int beforeIndex) {
@@ -424,21 +395,22 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     Assert.betweenExclusive(index, min, getItemCount());
   }
   
-  private boolean selectTabByTabWidget(Widget tabWidget) {
-    int numTabs = panel.getWidgetCount() - 1;
-
-    for (int i = 1; i < numTabs; ++i) {
-      if (panel.getWidget(i) == tabWidget) {
-        return selectTab(i - 1);
+  private int getTabIndex(Widget wrapper) {
+    for (int i = 0; i < getItemCount(); i++) {
+      if (getWrapper(i) == wrapper) {
+        return i;
       }
     }
-    return false;
+    return BeeConst.UNDEF;
+  }
+  
+  private DelegatePanel getWrapper(int index) {
+    return (DelegatePanel) panel.getWidget(index + 1);
   }
 
   private void setSelectionStyle(Widget item, boolean selected) {
     if (item != null) {
       setStyleName(item.getElement(), stylePrefix + "item-selected", selected);
-      setStyleName(DOM.getParent(item.getElement()), stylePrefix + "wrapper-selected", selected);
     }
   }
 }

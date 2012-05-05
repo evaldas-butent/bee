@@ -19,7 +19,7 @@ import com.google.gwt.user.client.ui.RichTextArea.Formatter;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Horizontal;
@@ -137,14 +137,14 @@ public class RichTextToolbar extends Vertical implements HasEnabled {
         formatter.setJustification(RichTextArea.Justification.RIGHT);
 
       } else if (sender == insertImage) {
-        Global.inputString("Image URL", null, new StringCallback() {
+        Global.inputString("Image URL", null, new DialogCallback<String>() {
           @Override
           public void onSuccess(String value) {
             formatter.insertImage(value);
           }}, "http://");
 
       } else if (sender == createLink) {
-        Global.inputString("Link URL", null, new StringCallback() {
+        Global.inputString("Link URL", null, new DialogCallback<String>() {
           @Override
           public void onSuccess(String value) {
             formatter.createLink(value);
@@ -166,7 +166,7 @@ public class RichTextToolbar extends Vertical implements HasEnabled {
         updateStatus();
 
       } else if (sender == insertHtml) {
-        Global.inputString("Html", new StringCallback() {
+        Global.inputString("Html", new DialogCallback<String>() {
           @Override
           public void onSuccess(String value) {
             formatter.insertHTML(value);

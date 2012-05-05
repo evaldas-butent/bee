@@ -13,7 +13,6 @@
 
     <BeeField name="Theme" type="LONG" relation="Themes" />
 
-    <BeeField name="Hidden" type="BOOLEAN" />
     <BeeField name="ReadOnly" type="BOOLEAN" />
     <BeeField name="Visibility" type="INTEGER" />
 
@@ -34,6 +33,6 @@
 
     <BeeField name="TimeBlockClickNumber" type="INTEGER" />
     
-    <BeeField name="Owner" type="LONG" relation="Users" />
+    <BeeField name="Owner" type="LONG" relation="Users" defExpr="CURRENT_USER" />
   </BeeFields>
 </BeeTable>

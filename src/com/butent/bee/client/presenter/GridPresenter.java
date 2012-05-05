@@ -16,9 +16,11 @@ import com.butent.bee.client.data.CachedProvider;
 import com.butent.bee.client.data.LocalProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.dialog.DialogCallback;
+import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
@@ -31,6 +33,8 @@ import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -202,26 +206,29 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     BeeKeeper.getScreen().closeView(getView());
   }
 
-  public void deleteRow(IsRow row) {
+  public void deleteRow(IsRow row, boolean confirm) {
     Assert.notNull(row);
-    int z;
+    int mode;
     if (getGridCallback() != null) {
-      z = getGridCallback().beforeDeleteRow(this, row);
-      if (z < 0) {
-        return;
-      }
+      mode = getGridCallback().beforeDeleteRow(this, row, confirm);
     } else {
-      z = 0;
+      mode = GridCallback.DELETE_DEFAULT;
+    }
+
+    if (mode == GridCallback.DELETE_CANCEL) {
+      return;
     }
 
     DeleteCallback deleteCallback = new DeleteCallback(row.getId(), row.getVersion());
-    if (z > 0) {
+    if (mode == GridCallback.DELETE_SILENT || mode == GridCallback.DELETE_DEFAULT && !confirm) {
       deleteCallback.execute();
     } else {
-      Global.getMsgBoxen().confirm("Delete Row ?", deleteCallback, StyleUtils.NAME_SCARY);
+      String message = (getGridCallback() == null) ? null : getGridCallback().getDeleteRowMessage();
+      Global.getMsgBoxen().confirm(BeeUtils.ifString(message, "Delete Row ?"), deleteCallback,
+          StyleUtils.NAME_SCARY);
     }
   }
-  
+
   public IsRow getActiveRow() {
     return getView().getContent().getActiveRowData();
   }
@@ -276,7 +283,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case CONFIGURE:
-        Global.inputString("Options", new StringCallback() {
+        Global.inputString("Options", new DialogCallback<String>() {
           @Override
           public void onSuccess(String value) {
             getView().getContent().applyOptions(value);
@@ -288,10 +295,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         if (getView().isEnabled()) {
           IsRow row = getActiveRow();
           if (row != null && getView().getContent().isRowEditable(row, true)) {
-            if (getView().getContent().isRowSelected(row.getId())) {
-              deleteRows(row, getView().getContent().getSelectedRows());
+            Collection<RowInfo> selectedRows = getView().getContent().getSelectedRows();
+            boolean isActiveRowSelected = getView().getContent().isRowSelected(row.getId());
+
+            if (selectedRows.isEmpty() || isActiveRowSelected && selectedRows.size() == 1) {
+              deleteRow(row, true);
             } else {
-              deleteRow(row);
+              deleteRows(row, selectedRows);
             }
           }
         }
@@ -495,29 +505,50 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     return view;
   }
 
-  private void deleteRows(IsRow activeRow, Collection<RowInfo> selectedRows) {
-    if (selectedRows.size() <= 1) {
-      deleteRow(activeRow);
-      return;
-    }
+  private void deleteRows(final IsRow activeRow, final Collection<RowInfo> selectedRows) {
+    int size = selectedRows.size();
 
-    int z;
+    List<String> options = Lists.newArrayList();
     if (getGridCallback() != null) {
-      z = getGridCallback().beforeDeleteRows(this, activeRow, selectedRows);
-      if (z < 0) {
-        return;
+      Pair<String, String> message = getGridCallback().getDeleteRowsMessage(size);
+      if (message != null) {
+        options.add(message.getA());
+        options.add(message.getB());
       }
-    } else {
-      z = 0;
     }
 
-    DeleteCallback deleteCallback = new DeleteCallback(selectedRows);
-    if (z > 0) {
-      deleteCallback.execute();
-    } else {
-      Global.getMsgBoxen().confirm(BeeUtils.concat(1, "Delete", selectedRows.size(), "rows"),
-          Lists.newArrayList("SRSLY ?"), deleteCallback, StyleUtils.NAME_SUPER_SCARY);
+    if (options.isEmpty()) {
+      options.add("Delete current row");
+      options.add(BeeUtils.concat(1, "Delete", size, "selected row" + (size > 1 ? "s" : "")));
     }
+
+    Global.choice("Delete", null, options, new DialogCallback<Integer>() {
+      public void onSuccess(Integer value) {
+        if (value == 0) {
+          deleteRow(activeRow, false);
+        } else if (value == 1) {
+          int mode;
+          if (getGridCallback() == null) {
+            mode = GridCallback.DELETE_DEFAULT;
+          } else {
+            mode = getGridCallback().beforeDeleteRows(GridPresenter.this, activeRow, selectedRows);
+          }
+          if (mode == GridCallback.DELETE_CANCEL) {
+            return;
+          }
+
+          DeleteCallback deleteCallback = new DeleteCallback(selectedRows);
+          deleteCallback.execute();
+        }
+      }
+    }, 2, BeeConst.UNDEF, DialogConstants.CANCEL, new WidgetInitializer() {
+      public Widget initialize(Widget widget, String name) {
+        if (BeeUtils.same(name, DialogConstants.WIDGET_DIALOG)) {
+          widget.addStyleName(StyleUtils.NAME_SUPER_SCARY);
+        }
+        return widget;
+      }
+    });
   }
 
   private GridCallback getGridCallback() {

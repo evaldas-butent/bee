@@ -15,8 +15,6 @@
         <SimpleColumn alias="TypeName" name="Name" />
       </SimpleJoin>
     </SimpleJoin>
-    
-    <SimpleColumn name="Hidden" />
   </Columns>
   <Order>
     <OrderBy column="AttendeeType" />

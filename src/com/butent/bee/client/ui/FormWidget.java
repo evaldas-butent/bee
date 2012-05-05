@@ -1418,7 +1418,7 @@ public enum FormWidget {
         image = new BeeImage(url);
       }
     }
-    return Pair.create(html, image);
+    return Pair.of(html, image);
   }
 
   private Set<Type> getTypes() {

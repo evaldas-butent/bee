@@ -225,6 +225,16 @@ public class UiHelper {
     }
   }
 
+  public static Widget initialize(Widget widget, WidgetInitializer initializer, String name) {
+    if (widget == null) {
+      return null;
+    }
+    if (initializer == null) {
+      return widget;
+    }
+    return initializer.initialize(widget, name);
+  }
+  
   public static boolean isSave(NativeEvent event) {
     if (event == null) {
       return false;

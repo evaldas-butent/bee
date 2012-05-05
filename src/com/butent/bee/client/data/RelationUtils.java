@@ -69,7 +69,7 @@ public class RelationUtils {
         targetRow.clearCell(targetIndex);
         result++;
       } else {
-        int sourceIndex = sourceInfo.getColumnIndexSource(tc.getTable(), tc.getField());
+        int sourceIndex = sourceInfo.getColumnIndexBySource(tc.getTable(), tc.getField());
         if (!BeeConst.isUndef(sourceIndex)) {
           targetRow.setValue(targetIndex, sourceRow.getString(sourceIndex));
           result++;

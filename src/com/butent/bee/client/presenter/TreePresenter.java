@@ -11,7 +11,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
-import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.Evaluator;
@@ -231,7 +231,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     } else {
       caption = formView.getCaption();
     }
-    Global.inputWidget(caption, formView.asWidget(), new InputCallback() {
+    Global.inputWidget(caption, formView.asWidget(), new InputWidgetCallback() {
       final List<BeeColumn> columns = Lists.newArrayList();
       final List<String> oldValues = Lists.newArrayList();
       final List<String> values = Lists.newArrayList();

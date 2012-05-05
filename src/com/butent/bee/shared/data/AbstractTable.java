@@ -432,7 +432,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
     List<Pair<Integer, Boolean>> sortInfo = Lists.newArrayList();
     for (int i = 0; i < colIndexes.length; i++) {
-      sortInfo.add(Pair.create(colIndexes[i], true));
+      sortInfo.add(Pair.of(colIndexes[i], true));
     }
     return getSortedRows(sortInfo);
   }
@@ -676,7 +676,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
     List<Pair<Integer, Boolean>> sortInfo = Lists.newArrayList();
     for (int i = 0; i < colIndexes.length; i++) {
-      sortInfo.add(Pair.create(colIndexes[i], true));
+      sortInfo.add(Pair.of(colIndexes[i], true));
     }
     sort(sortInfo);
   }

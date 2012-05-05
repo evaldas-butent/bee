@@ -51,7 +51,7 @@ public abstract class ArraySequence<T> extends AbstractSequence<T> {
    * @return the array of objects
    */
   public Pair<T[], Integer> getArray(T[] a) {
-    return Pair.create(values, getLength());
+    return Pair.of(values, getLength());
   }
 
   public int getLength() {

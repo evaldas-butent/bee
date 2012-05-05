@@ -14,8 +14,6 @@
       <SimpleColumn alias="TypeTransparency" name="Transparency" />
       <SimpleColumn alias="TypeResource" name="Resource" />
     </SimpleJoin>
-    
-    <SimpleColumn name="Hidden" />
   </Columns>
   <Order>
     <OrderBy column="TypeName" />

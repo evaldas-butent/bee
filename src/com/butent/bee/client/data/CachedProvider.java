@@ -168,7 +168,7 @@ public class CachedProvider extends Provider {
               continue;
             }
           }
-          sortList.add(Pair.create(index, sortInfo.isAscending()));
+          sortList.add(Pair.of(index, sortInfo.isAscending()));
         }
       }
       if (!sortList.isEmpty()) {

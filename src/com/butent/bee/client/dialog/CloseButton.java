@@ -13,7 +13,7 @@ import com.butent.bee.shared.Stage;
 public class CloseButton extends BeeButton {
 
   public CloseButton() {
-    super("Close", Service.CLOSE_DIALOG);
+    super(DialogConstants.CLOSE, Service.CLOSE_DIALOG);
   }
 
   public CloseButton(Element element) {

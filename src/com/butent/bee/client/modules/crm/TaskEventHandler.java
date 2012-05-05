@@ -42,6 +42,7 @@ import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
+import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeLabel;
@@ -153,23 +154,23 @@ public class TaskEventHandler {
     }
 
     @Override
-    public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
+    public int beforeDeleteRow(GridPresenter presenter, IsRow row, boolean confirm) {
       int result;
       if (row == null) {
-        result = -1;
+        result = GridCallback.DELETE_CANCEL;
       } else {
         Long usr = BeeKeeper.getUser().getUserId();
         Long obs = row.getLong(presenter.getDataProvider().getColumnIndex(CrmConstants.COL_USER));
 
         if (usr == null || obs == null || obs.equals(getOwner()) || obs.equals(getExecutor())) {
-          result = -1;
+          result = GridCallback.DELETE_CANCEL;
         } else if (usr.equals(getOwner())) {
-          result = 0;
+          result = GridCallback.DELETE_DEFAULT;
         } else if (usr.equals(obs)) {
-          result = 0;
+          result = GridCallback.DELETE_DEFAULT;
         } else {
           presenter.getView().getContent().notifyWarning("the only limit is yourself");
-          result = -1;
+          result = GridCallback.DELETE_CANCEL;
         }
       }
       return result;
@@ -179,9 +180,9 @@ public class TaskEventHandler {
     public int beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
         Collection<RowInfo> selectedRows) {
       if (activeRow != null) {
-        presenter.deleteRow(activeRow);
+        presenter.deleteRow(activeRow, false);
       }
-      return -1;
+      return GridCallback.DELETE_CANCEL;
     }
 
     @Override

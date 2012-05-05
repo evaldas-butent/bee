@@ -3,19 +3,19 @@ package com.butent.bee.client.dialog;
 import com.butent.bee.shared.Validator;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public abstract class StringCallback implements Validator<String> {
+public abstract class DialogCallback<T> implements Validator<T> {
   
   private boolean required;
 
-  public StringCallback() {
+  public DialogCallback() {
     this(true);
   }
   
-  public StringCallback(boolean required) {
+  public DialogCallback(boolean required) {
     this.required = required;
   }
 
-  public String getMessage(String value) {
+  public String getMessage(T value) {
     if (validate(value)) {
       return null;
     } else if (isRequired() && BeeUtils.isEmpty(value)) {
@@ -32,9 +32,9 @@ public abstract class StringCallback implements Validator<String> {
   public void onCancel() {
   }
 
-  public abstract void onSuccess(String value);
+  public abstract void onSuccess(T value);
 
-  public void onTimeout(String value) {
+  public void onTimeout(T value) {
     if (validate(value)) {
       onSuccess(value);
     } else {
@@ -46,7 +46,7 @@ public abstract class StringCallback implements Validator<String> {
     this.required = required;
   }
 
-  public boolean validate(String value) {
+  public boolean validate(T value) {
     if (isRequired()) {
       return !BeeUtils.isEmpty(value);
     } else {
