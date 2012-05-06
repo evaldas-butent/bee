@@ -265,18 +265,12 @@ public class DataUtils {
     }
   }
   
+  public static boolean isId(Long id) {
+    return id != null && id > 0;
+  }
+  
   public static boolean isNewRow(IsRow row) {
     return Assert.notNull(row).getId() == NEW_ROW_ID;
-  }
-
-  public static List<String> parseColumns(String input, List<? extends IsColumn> columns,
-      String idColumnName, String versionColumnName) {
-    if (BeeUtils.isEmpty(input)) {
-      return null;
-    } else {
-      return parseColumns(Lists.newArrayList(NameUtils.NAME_SPLITTER.split(input)), columns,
-          idColumnName, versionColumnName);
-    }
   }
 
   public static List<String> parseColumns(List<String> input, List<? extends IsColumn> columns,
@@ -298,6 +292,16 @@ public class DataUtils {
       return null;
     }
     return result;
+  }
+
+  public static List<String> parseColumns(String input, List<? extends IsColumn> columns,
+      String idColumnName, String versionColumnName) {
+    if (BeeUtils.isEmpty(input)) {
+      return null;
+    } else {
+      return parseColumns(Lists.newArrayList(NameUtils.NAME_SPLITTER.split(input)), columns,
+          idColumnName, versionColumnName);
+    }
   }
   
   public static Filter parseCondition(String cond, List<? extends IsColumn> columns,

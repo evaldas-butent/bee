@@ -10,6 +10,7 @@ import com.butent.bee.client.ui.StateService;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.data.BeeTable.BeeField;
+import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -19,6 +20,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.ExtensionFilter;
 import com.butent.bee.server.io.FileUtils;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.ui.XmlSqlDesigner.DataType;
@@ -131,6 +133,8 @@ public class UiServiceBean {
       response = getViewSize(reqInfo);
     } else if (BeeUtils.same(svc, Service.DELETE_ROWS)) {
       response = deleteRows(reqInfo);
+    } else if (BeeUtils.same(svc, Service.DELETE)) {
+      response = delete(reqInfo);
     } else if (BeeUtils.same(svc, Service.UPDATE_CELL)) {
       response = updateCell(reqInfo);
     } else if (BeeUtils.same(svc, Service.UPDATE_ROW)) {
@@ -247,6 +251,23 @@ public class UiServiceBean {
       }
     }
     return ResponseObject.response(new BeeResource(null, XmlUtils.marshal(designer, null)));
+  }
+
+  private ResponseObject delete(RequestInfo reqInfo) {
+    String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    Assert.notEmpty(viewName);
+    String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
+    Assert.notEmpty(where);
+
+    BeeView view = sys.getView(viewName);
+    if (view.isReadOnly()) {
+      return ResponseObject.error("View", BeeUtils.bracket(view.getName()), "is read only.");
+    }
+
+    String tblName = view.getSourceName();
+    Filter filter = Filter.restore(where);
+
+    return qs.updateDataWithResponse(new SqlDelete(tblName).setWhere(view.getCondition(filter)));
   }
 
   private ResponseObject deleteRows(RequestInfo reqInfo) {

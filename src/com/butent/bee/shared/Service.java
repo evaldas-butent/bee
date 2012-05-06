@@ -43,6 +43,7 @@ public class Service {
   public static final String CONFIRM_DIALOG = UI_SERVICE_PREFIX + "confirm_dialog";
   public static final String CANCEL_DIALOG = UI_SERVICE_PREFIX + "cancel_dialog";
   public static final String REFRESH_MENU = UI_SERVICE_PREFIX + "refresh_menu";
+  public static final String OPEN_FAVORITE = UI_SERVICE_PREFIX + "open_favorite";
 
   public static final String GET_CLASS = COMPOSITE_SERVICE_PREFIX + "get_class";
   public static final String GET_XML = COMPOSITE_SERVICE_PREFIX + "get_xml";
@@ -68,6 +69,7 @@ public class Service {
   public static final String GENERATE = DATA_SERVICE_PREFIX + "generate";
   public static final String COUNT_ROWS = DATA_SERVICE_PREFIX + "row_count";
   public static final String DELETE_ROWS = DATA_SERVICE_PREFIX + "delete_rows";
+  public static final String DELETE = DATA_SERVICE_PREFIX + "delete";
   public static final String UPDATE_CELL = DATA_SERVICE_PREFIX + "update_cell";
   public static final String UPDATE_ROW = DATA_SERVICE_PREFIX + "update_row";
   public static final String INSERT_ROW = DATA_SERVICE_PREFIX + "insert_row";

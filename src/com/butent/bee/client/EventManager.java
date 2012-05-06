@@ -10,6 +10,7 @@ import com.google.web.bindery.event.shared.Event.Type;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.google.web.bindery.event.shared.SimpleEventBus;
 
+import com.butent.bee.client.screen.BookmarkEvent;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
@@ -121,6 +122,10 @@ public class EventManager implements Module {
   public void initEvents() {
   }
 
+  public HandlerRegistration registerBookmarkHandler(BookmarkEvent.Handler handler) {
+    return BookmarkEvent.register(eventBus, handler);
+  }
+  
   public HandlerRegistration registerCellUpdateHandler(CellUpdateEvent.Handler handler) {
     return CellUpdateEvent.register(eventBus, handler);
   }

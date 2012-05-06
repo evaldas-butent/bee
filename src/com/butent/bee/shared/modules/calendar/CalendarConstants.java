@@ -73,9 +73,11 @@ public class CalendarConstants {
   public static final String TBL_CONFIGURATION = "Configuration";
 
   public static final String VIEW_USER_CALENDARS = "UserCalendars";
+  public static final String VIEW_CALENDARS = "Calendars";
   public static final String VIEW_CONFIGURATION = "Configuration";
 
   public static final String GRID_CALENDARS = "Calendars";
+  public static final String GRID_USER_CALENDARS = "UserCalendars";
 
   public static final String FORM_CALENDAR_SETTINGS = "CalendarSettings";
   public static final String FORM_CONFIGURATION = "Configuration";

@@ -54,6 +54,37 @@ public class Queries {
 
   private static final int RESPONSE_FROM_CACHE = 0;
 
+  public static void delete(final String viewName, Filter filter, final IntCallback callback) {
+    Assert.notEmpty(viewName);
+    Assert.notNull(filter, "Delete: filter required");
+
+    List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
+        Service.VAR_VIEW_WHERE, filter.serialize());
+    ParameterList parameters = new ParameterList(Service.DELETE, RpcParameter.SECTION.DATA, lst);
+
+    BeeKeeper.getRpc().makePostRequest(parameters, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        Assert.notNull(response);
+        String s = (String) response.getResponse();
+
+        if (BeeUtils.isDigit(s)) {
+          int responseCount = BeeUtils.toInt(s);
+          BeeKeeper.getLog().info(viewName, "deleted", responseCount, "rows");
+          if (callback != null) {
+            callback.onSuccess(responseCount);
+          }
+
+        } else {
+          BeeKeeper.getLog().severe(viewName, "delete response:", s);
+          if (callback != null) {
+            callback.onFailure(s);
+          }
+        }
+      }
+    });
+  }
+
   public static void deleteRow(String viewName, long rowId, long version) {
     deleteRow(viewName, rowId, version, null);
   }
@@ -305,7 +336,7 @@ public class Queries {
     insertRow(rs, callback);
     return rs.getNumberOfColumns();
   }
-  
+
   public static void insert(String viewName, List<BeeColumn> columns, List<String> values,
       final RowCallback callback) {
     Assert.notEmpty(viewName);
@@ -316,7 +347,7 @@ public class Queries {
     BeeRowSet rs = new BeeRowSet(columns);
     rs.setViewName(viewName);
     rs.addRow(0, values.toArray(new String[0]));
-    
+
     insertRow(rs, callback);
   }
 
@@ -422,16 +453,16 @@ public class Queries {
 
     update(rs, true, callback);
   }
-  
+
   public static int updateCell(String viewName, long rowId, long version, BeeColumn column,
       String oldValue, String newValue, RowCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(column);
-    
+
     if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
       return 0;
     }
-    
+
     BeeRowSet rs = new BeeRowSet(column);
     rs.setViewName(viewName);
 
@@ -439,7 +470,7 @@ public class Queries {
     rs.getRow(0).preliminaryUpdate(0, newValue);
 
     update(rs, false, callback);
-    return 1; 
+    return 1;
   }
 
   private static void checkRowSet(BeeRowSet rowSet) {

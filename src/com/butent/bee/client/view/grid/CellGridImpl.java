@@ -626,7 +626,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           break;
         
         case ACTION:
-          column = new ActionColumn(ActionCell.create(columnDescr), dataIndex, renderer);
+          column = new ActionColumn(ActionCell.create(viewName, columnDescr), dataIndex, renderer);
           break;
       }
 

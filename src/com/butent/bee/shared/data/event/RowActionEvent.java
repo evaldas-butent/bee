@@ -5,9 +5,11 @@ import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.utils.BeeUtils;
 
 public class RowActionEvent extends Event<RowActionEvent.Handler> implements DataEvent, HasService,
     HasOptions {
@@ -26,6 +28,7 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
 
   private final String viewName;
   private final IsRow row;
+  private final long rowId;
 
   private String service;
   private String options;
@@ -39,9 +42,25 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
   }
 
   public RowActionEvent(String viewName, IsRow row, String service, String options) {
-    super();
+    this(viewName, row, (row == null) ? BeeConst.UNDEF : row.getId(), service, options);
+  }
+
+  public RowActionEvent(String viewName, long rowId) {
+    this(viewName, rowId, null, null);
+  }
+  
+  public RowActionEvent(String viewName, long rowId, String service) {
+    this(viewName, rowId, service, null);
+  }
+
+  public RowActionEvent(String viewName, long rowId, String service, String options) {
+    this(viewName, null, rowId, service, options);
+  }
+  
+  private RowActionEvent(String viewName, IsRow row, long rowId, String service, String options) {
     this.viewName = viewName;
     this.row = row;
+    this.rowId = rowId;
     this.service = service;
     this.options = options;
   }
@@ -60,15 +79,27 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
   }
 
   public long getRowId() {
-    return getRow().getId();
+    return rowId;
   }
 
   public String getService() {
     return service;
   }
-
+  
   public String getViewName() {
     return viewName;
+  }
+  
+  public boolean hasRow() {
+    return row != null;
+  }
+
+  public boolean hasService(String svc) {
+    return BeeUtils.same(svc, getService());
+  }
+  
+  public boolean hasView(String view) {
+    return BeeUtils.same(view, getViewName());
   }
 
   public void setOptions(String options) {

@@ -7,5 +7,6 @@
   <columns>
     <ActionColumn name="Link" source="CalendarName" element="link" minWidth="100"/>
     <ActionColumn name="Button" source="CalendarName" element="button" />
+    <DataColumn name="CalendarName" readOnly="true" />
   </columns>
 </Grid>

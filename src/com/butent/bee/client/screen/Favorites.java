@@ -16,12 +16,18 @@ import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowActionEvent;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.IntegerValue;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -98,7 +104,8 @@ public class Favorites extends Stack {
       itemWidget.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
-          BeeKeeper.getLog().debug("fav", id, html);
+          BeeKeeper.getBus().fireEvent(new RowActionEvent(getViewName(), id,
+              Service.OPEN_FAVORITE));
         }
       });
 
@@ -259,6 +266,8 @@ public class Favorites extends Stack {
       public void onSuccess(String value) {
         addItem(group, row.getId(), value);
         showWidget(group.getWidgetIndex());
+        
+        BeeKeeper.getBus().fireEvent(new BookmarkEvent(group, row.getId()));
       }
     }, html);
   }
@@ -297,8 +306,11 @@ public class Favorites extends Stack {
 
     HasIndexedWidgets display = getDisplay(group);
     display.remove(display.getWidget(group.indexOf(item)));
-
-//    Queries.deleteRow(VIEW_NAME, id, BeeConst.UNDEF, null);
+    
+    Filter filter = Filter.and(
+        ComparisonFilter.isEqual(COL_GROUP, new IntegerValue(group.ordinal())),
+        ComparisonFilter.isEqual(COL_ITEM, new LongValue(id)));
+    Queries.delete(VIEW_NAME, filter, null);
 
     return group.remove(item);
   }

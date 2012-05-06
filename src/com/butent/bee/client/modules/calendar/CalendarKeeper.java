@@ -1,11 +1,7 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.HasWidgets;
-import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -15,13 +11,14 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowCallback;
 import com.butent.bee.client.dialog.InputWidgetCallback;
-import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.FormPresenter;
-import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.screen.BookmarkEvent;
+import com.butent.bee.client.screen.Favorites;
+import com.butent.bee.client.screen.Favorites.Group;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
@@ -38,18 +35,27 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.DataEvent;
+import com.butent.bee.shared.data.event.HandlesAllDataEvents;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowActionEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
+import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
-import java.util.Map;
 
 public class CalendarKeeper {
 
-  private static class CalendarGridHandler extends AbstractGridCallback {
+  private static class CalendarGridHandler extends AbstractGridCallback implements
+      BookmarkEvent.Handler {
 
     @Override
     public boolean afterCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
@@ -74,15 +80,9 @@ public class CalendarKeeper {
     }
 
     @Override
-    public boolean beforeAction(Action action, GridPresenter presenter) {
-      if (Action.BOOKMARK.equals(action)) {
-        IsRow row = presenter.getActiveRow();
-        if (row != null && !hasUserCalendar(row.getId())) {
-          createUserCalendar(row);
-        }
-        return false;
-      } else {
-        return true;
+    public void onBookmark(BookmarkEvent event) {
+      if (Favorites.Group.CALENDARS.equals(event.getGroup())) {
+        createUserCalendar(event.getRowId());
       }
     }
   }
@@ -128,7 +128,7 @@ public class CalendarKeeper {
             }
           }
         };
-        
+
         if (DataUtils.isNewRow(row)) {
           Queries.insert(CalendarConstants.VIEW_CONFIGURATION, configuration.getColumns(), row,
               callback);
@@ -205,21 +205,79 @@ public class CalendarKeeper {
       themeId = DataUtils.getLong(configuration, row, CalendarConstants.COL_THEME);
     }
   }
-  
+
   private static class RowActionHandler implements RowActionEvent.Handler {
+    private int calendarColumnIndex = BeeConst.UNDEF;
+
     public void onRowAction(RowActionEvent event) {
+      Long id = null;
+      String viewName = null;
+
+      if (event.hasView(CalendarConstants.VIEW_CALENDARS)) {
+        id = event.getRowId();
+        viewName = CalendarConstants.VIEW_CALENDARS;
+      } else if (event.hasView(CalendarConstants.VIEW_USER_CALENDARS) && event.hasRow()) {
+        if (BeeConst.isUndef(calendarColumnIndex)) {
+          DataInfo dataInfo = Global.getDataInfo(CalendarConstants.VIEW_USER_CALENDARS, true);
+          if (dataInfo != null) {
+            calendarColumnIndex = dataInfo.getColumnIndex(CalendarConstants.COL_CALENDAR);
+          }
+        }
+
+        if (!BeeConst.isUndef(calendarColumnIndex)) {
+          id = event.getRow().getLong(calendarColumnIndex);
+          viewName = CalendarConstants.VIEW_CALENDARS;
+        }
+      }
+
+      if (id == null || viewName == null) {
+        return;
+      }
+
+      if (viewName.equals(CalendarConstants.VIEW_CALENDARS)) {
+        openCalendar(id);
+      }
+    }
+  }
+
+  private static class UserCalendarGridHandler extends AbstractGridCallback {
+  }
+
+  private static class UserCalendarViewHandler implements HandlesAllDataEvents {
+
+    public void onCellUpdate(CellUpdateEvent event) {
+    }
+
+    public void onMultiDelete(MultiDeleteEvent event) {
+      if (isEventRelevant(event)) {
+        for (RowInfo rowInfo : event.getRows()) {
+          removeUserCalendar(getCalendarId(rowInfo.getId()));
+        }
+      }
+    }
+
+    public void onRowDelete(RowDeleteEvent event) {
+      if (isEventRelevant(event)) {
+        removeUserCalendar(getCalendarId(event.getRowId()));
+      }
+    }
+
+    public void onRowInsert(RowInsertEvent event) {
+    }
+
+    public void onRowUpdate(RowUpdateEvent event) {
+    }
+
+    private boolean isEventRelevant(DataEvent event) {
+      return BeeUtils.same(event.getViewName(), CalendarConstants.VIEW_USER_CALENDARS);
     }
   }
 
   private static BeeRowSet userCalendars = null;
 
-  private static final Map<Long, String> FAVORITE_CALENDARS = Maps.newHashMap();
-
   private static FormView settingsForm = null;
 
   private static final ConfigurationHandler configurationHandler = new ConfigurationHandler();
-
-  private static final RowActionHandler rowActionHandler = new RowActionHandler();
 
   public static void loadUserCalendars() {
     ParameterList params = createRequestParameters(CalendarConstants.SVC_GET_USER_CALENDARS);
@@ -228,11 +286,6 @@ public class CalendarKeeper {
       public void onResponse(ResponseObject response) {
         if (response.hasResponse(BeeRowSet.class)) {
           userCalendars = BeeRowSet.restore((String) response.getResponse());
-          if (userCalendars != null && !userCalendars.isEmpty()) {
-            for (IsRow row : userCalendars.getRows()) {
-              createFavoriteWidget(row);
-            }
-          }
         }
       }
     });
@@ -253,12 +306,21 @@ public class CalendarKeeper {
 
     FormFactory.registerFormCallback(CalendarConstants.FORM_CONFIGURATION, configurationHandler);
 
-    GridFactory.registerGridCallback(CalendarConstants.GRID_CALENDARS, new CalendarGridHandler());
-    
-    BeeKeeper.getBus().registerRowActionHandler(rowActionHandler);
+    CalendarGridHandler calendarGridHandler = new CalendarGridHandler();
+
+    GridFactory.registerGridCallback(CalendarConstants.GRID_CALENDARS, calendarGridHandler);
+    GridFactory.registerGridCallback(CalendarConstants.GRID_USER_CALENDARS,
+        new UserCalendarGridHandler());
+
+    BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler());
+    BeeKeeper.getBus().registerBookmarkHandler(calendarGridHandler);
+
+    BeeKeeper.getBus().registerDataHandler(new UserCalendarViewHandler());
 
     configurationHandler.load();
     loadUserCalendars();
+
+    createCommands();
   }
 
   static ParameterList createRequestParameters(String service) {
@@ -295,18 +357,23 @@ public class CalendarKeeper {
     return new CalendarSettings(getCalendarRow(calendarId), userCalendars.getColumns());
   }
 
-  private static void createFavoriteWidget(IsRow row) {
-    final long calId = DataUtils.getLong(userCalendars, row, CalendarConstants.COL_CALENDAR);
-    String calName = getCalendarName(row);
+  private static void createAppointment() {
+  }
 
-    Html widget = new Html(calName, new Scheduler.ScheduledCommand() {
-      public void execute() {
-        openCalendar(calId);
-      }
-    });
+  private static void createCommands() {
+    BeeKeeper.getScreen().addCommandItem(new Html("Mano kalendoriai",
+        new Scheduler.ScheduledCommand() {
+          public void execute() {
+            GridFactory.openGrid(CalendarConstants.GRID_USER_CALENDARS);
+          }
+        }));
 
-    FAVORITE_CALENDARS.put(calId, widget.getId());
-    BeeKeeper.getScreen().addCommandItem(widget);
+    BeeKeeper.getScreen().addCommandItem(new Html("Naujas vizitas",
+        new Scheduler.ScheduledCommand() {
+          public void execute() {
+            createAppointment();
+          }
+        }));
   }
 
   private static void createSettingsForm(final long calendarId,
@@ -326,13 +393,13 @@ public class CalendarKeeper {
         }, false);
   }
 
-  private static void createUserCalendar(IsRow calendarRow) {
+  private static void createUserCalendar(long id) {
     List<BeeColumn> columns = Lists.newArrayList(
         new BeeColumn(ValueType.LONG, CalendarConstants.COL_USER),
         new BeeColumn(ValueType.LONG, CalendarConstants.COL_CALENDAR));
     List<String> values = Lists.newArrayList(
         BeeUtils.toString(BeeKeeper.getUser().getUserId()),
-        BeeUtils.toString(calendarRow.getId()));
+        BeeUtils.toString(id));
 
     Queries.insert(CalendarConstants.VIEW_USER_CALENDARS, columns, values,
         new Queries.RowCallback() {
@@ -343,11 +410,22 @@ public class CalendarKeeper {
                 loadUserCalendars();
               } else {
                 userCalendars.addRow(result);
-                createFavoriteWidget(result);
               }
             }
           }
         });
+  }
+
+  private static long getCalendarId(long userCalendarId) {
+    if (userCalendars == null) {
+      return BeeConst.UNDEF;
+    }
+
+    BeeRow row = userCalendars.getRowById(userCalendarId);
+    if (row == null) {
+      return BeeConst.UNDEF;
+    }
+    return DataUtils.getLong(userCalendars, row, CalendarConstants.COL_CALENDAR);
   }
 
   private static String getCalendarName(IsRow row) {
@@ -355,24 +433,15 @@ public class CalendarKeeper {
   }
 
   private static BeeRow getCalendarRow(long calendarId) {
+    if (userCalendars == null) {
+      return null;
+    }
     for (BeeRow row : userCalendars.getRows()) {
       if (DataUtils.getLong(userCalendars, row, CalendarConstants.COL_CALENDAR) == calendarId) {
         return row;
       }
     }
     return null;
-  }
-
-  private static HasWidgets getFavoritesContainer() {
-    return BeeKeeper.getScreen().getCommandPanel();
-  }
-
-  private static boolean hasUserCalendar(long id) {
-    if (userCalendars == null) {
-      return false;
-    } else {
-      return userCalendars.getRowById(id) != null;
-    }
   }
 
   private static void openCalendar(long id) {
@@ -425,6 +494,9 @@ public class CalendarKeeper {
   }
 
   private static void removeUserCalendar(long id) {
+    if (!DataUtils.isId(id)) {
+      return;
+    }
     if (userCalendars != null) {
       int index = userCalendars.getRowIndex(id);
       if (!BeeConst.isUndef(index)) {
@@ -432,21 +504,11 @@ public class CalendarKeeper {
       }
     }
 
-    String widgetId = FAVORITE_CALENDARS.get(id);
-    if (!BeeUtils.isEmpty(widgetId)) {
-      FAVORITE_CALENDARS.remove(id);
-      HasWidgets container = getFavoritesContainer();
-      if (container instanceof Widget) {
-        Widget widget = DomUtils.getChildQuietly((Widget) container, widgetId);
-        if (widget != null) {
-          container.remove(widget);
-        }
-      }
-    }
+    BeeKeeper.getScreen().getFavorites().removeItem(Group.CALENDARS, id);
   }
 
   private static void updateCalendarName(long id, String value) {
-    if (BeeUtils.isEmpty(value)) {
+    if (!DataUtils.isId(id) || BeeUtils.isEmpty(value)) {
       return;
     }
 
@@ -457,13 +519,7 @@ public class CalendarKeeper {
       }
     }
 
-    String widgetId = FAVORITE_CALENDARS.get(id);
-    if (!BeeUtils.isEmpty(widgetId)) {
-      Element element = DomUtils.getElementQuietly(widgetId);
-      if (element != null) {
-        element.setInnerText(value);
-      }
-    }
+    BeeKeeper.getScreen().getFavorites().updateItem(Group.CALENDARS, id, value);
   }
 
   private CalendarKeeper() {
