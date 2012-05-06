@@ -4,6 +4,6 @@
   name="AttendeeProps" viewName="AttendeeProps" caption="Parametrai"
   >
   <columns>
-    <DataColumn name="PropertyName" />
+    <DataColumn name="PropertyName" caption="Pavadinimas" />
   </columns>
 </Grid>

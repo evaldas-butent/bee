@@ -375,6 +375,20 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  public boolean focus(String source) {
+    if (BeeUtils.isEmpty(source)) {
+      return false;
+    }
+    
+    Widget widget = getWidgetBySource(source);
+    if (widget == null) {
+      return false;
+    } else {
+      DomUtils.setFocus(widget, true);
+      return true;
+    }
+  }
+  
   public RowInfo getActiveRowInfo() {
     if (getRow() == null) {
       return null;
@@ -793,6 +807,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
           fireDataRequest();
         } else {
           setRow(null);
+          fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
         }
       }
     }

@@ -62,6 +62,8 @@ public interface IsRow extends HasCustomProperties {
 
   void setCells(List<IsCell> cells);
 
+  void setId(long id);  
+  
   void setValue(int index, BigDecimal value);
 
   void setValue(int index, Boolean value);

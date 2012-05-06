@@ -42,7 +42,9 @@ public class CalendarModuleBean implements BeeModule {
     ResponseObject response = null;
     String svc = reqInfo.getParameter(CalendarConstants.CALENDAR_METHOD);
 
-    if (BeeUtils.same(svc, CalendarConstants.SVC_GET_USER_CALENDARS)) {
+    if (BeeUtils.same(svc, CalendarConstants.SVC_GET_CONFIGURATION)) {
+      response = getConfiguration();
+    } else if (BeeUtils.same(svc, CalendarConstants.SVC_GET_USER_CALENDARS)) {
       response = getUserCalendars();
     } else {
       String msg = BeeUtils.concat(1, "Calendar service not recognized:", svc);
@@ -73,6 +75,15 @@ public class CalendarModuleBean implements BeeModule {
 
   private boolean checkTable(String name) {
     return sys.isTable(name) && sys.getTable(name).isActive();
+  }
+
+  private ResponseObject getConfiguration() {
+    if (!checkTable(CalendarConstants.TBL_CONFIGURATION)) {
+      return ResponseObject.error("table not active:", CalendarConstants.TBL_CONFIGURATION);
+    }
+
+    BeeRowSet res = sys.getViewData(CalendarConstants.VIEW_CONFIGURATION);
+    return ResponseObject.response(res);
   }
 
   private ResponseObject getUserCalendars() {

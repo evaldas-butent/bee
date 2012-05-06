@@ -4,14 +4,14 @@
   name="AppointmentReminders" viewName="AppointmentReminders" caption="Priminimai"
   >
   <columns>
-    <RelColumn name="FirstName" />
-    <RelColumn name="LastName" />
+    <RelColumn name="FirstName" caption="Vardas" />
+    <RelColumn name="LastName" caption="Pavardė" />
     <DataColumn name="Mobile" />
     <DataColumn name="Email" />
 
-    <RelColumn name="Method" itemKey="ReminderMethod" />
-    <DataColumn name="Hours" />
-    <DataColumn name="Minutes" />
+    <RelColumn name="Method" caption="Metodas" itemKey="ReminderMethod" />
+    <DataColumn name="Hours" caption="Valandos" />
+    <DataColumn name="Minutes" caption="Minutės" />
     <DataColumn name="Scheduled" />
 
     <DataColumn name="Message" />

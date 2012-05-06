@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/table"
+
+  name="Configuration"
+  idName="ConfigurationID"
+  >
+  <BeeFields>
+    <BeeField name="Company" type="LONG" notNull="true" relation="Companies" />
+    <BeeField name="AppointmentType" type="LONG" notNull="true" relation="AppointmentTypes" />
+
+    <BeeField name="TimeZone" type="LONG" relation="TimeZones" />
+    <BeeField name="Theme" type="LONG" relation="Themes" />
+  </BeeFields>
+</BeeTable>

@@ -356,6 +356,10 @@ public class SystemBean {
     return getView(viewName).getCondition(filter);
   }
 
+  public BeeRowSet getViewData(String viewName) {
+    return getViewData(viewName, null, null);
+  }
+
   public BeeRowSet getViewData(String viewName, Filter filter, Order order) {
     return getViewData(viewName, filter, order, BeeConst.UNDEF, BeeConst.UNDEF);
   }

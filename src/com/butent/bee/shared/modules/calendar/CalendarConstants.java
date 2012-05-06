@@ -66,14 +66,19 @@ public class CalendarConstants {
   public static final String CALENDAR_MODULE = "Calendar";
   public static final String CALENDAR_METHOD = CALENDAR_MODULE + "Method";
 
+  public static final String SVC_GET_CONFIGURATION = "get_configuration"; 
   public static final String SVC_GET_USER_CALENDARS = "get_user_calendars"; 
 
   public static final String TBL_USER_CALENDARS = "UserCalendars";
+  public static final String TBL_CONFIGURATION = "Configuration";
+
   public static final String VIEW_USER_CALENDARS = "UserCalendars";
+  public static final String VIEW_CONFIGURATION = "Configuration";
 
   public static final String GRID_CALENDARS = "Calendars";
 
   public static final String FORM_CALENDAR_SETTINGS = "CalendarSettings";
+  public static final String FORM_CONFIGURATION = "Configuration";
   
   public static final String COL_USER = "User";
   public static final String COL_CALENDAR = "Calendar";
@@ -96,6 +101,12 @@ public class CalendarConstants {
   
   public static final String COL_FAVORITE = "Favorite";
 
+  public static final String COL_COMPANY = "Company";
+  public static final String COL_APPOINTMENT_TYPE = "AppointmentType";
+
+  public static final String COL_TIME_ZONE = "TimeZone";
+  public static final String COL_THEME = "Theme";
+  
   public static final int DEFAULT_PIXELS_PER_INTERVAL = 30;
   public static final int DEFAULT_INTERVALS_PER_HOUR = 2;
 

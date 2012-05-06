@@ -810,6 +810,7 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:element name="br" type="widgetType" substitutionGroup="widget" />
   <xs:element name="hr" type="widgetType" substitutionGroup="widget" />
 
   <xs:element name="InputFile" substitutionGroup="widget">

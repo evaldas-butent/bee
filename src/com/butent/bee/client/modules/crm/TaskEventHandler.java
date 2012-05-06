@@ -217,7 +217,7 @@ public class TaskEventHandler {
             new String[] {BeeUtils.toString(task), BeeUtils.toString(row.getId())}));
       }
 
-      Queries.insert(rowSet, new RowSetCallback() {
+      Queries.insertRowSet(rowSet, new RowSetCallback() {
         public void onSuccess(BeeRowSet result) {
           for (BeeRow row : result.getRows()) {
             BeeKeeper.getBus().fireEvent(new RowInsertEvent(result.getViewName(), row));

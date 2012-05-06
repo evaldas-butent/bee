@@ -29,8 +29,8 @@ import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
+import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridCallback;
-import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -94,7 +94,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           afterDelete(rowId);
         } else {
           Queries.deleteRow(getViewName(), rowId, version, new Queries.IntCallback() {
-            public void onFailure(String[] reason) {
+            @Override
+            public void onFailure(String... reason) {
               setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
               showFailure("Delete Row", reason);
             }
@@ -119,11 +120,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           afterMulti(rowIds);
         } else {
           Queries.deleteRows(getViewName(), rows, new Queries.IntCallback() {
-            public void onFailure(String[] reason) {
+            @Override
+            public void onFailure(String... reason) {
               showFailure("Delete Rows", reason);
               setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
             }
 
+            @Override
             public void onSuccess(Integer result) {
               BeeKeeper.getBus().fireEvent(new MultiDeleteEvent(getViewName(), rows));
               afterMulti(rowIds);
@@ -141,14 +144,15 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
   }
 
-  private class FilterCallback implements Queries.IntCallback {
+  private class FilterCallback extends Queries.IntCallback {
     private Filter filter;
 
     private FilterCallback(Filter filter) {
       this.filter = filter;
     }
 
-    public void onFailure(String[] reason) {
+    @Override
+    public void onFailure(String... reason) {
       showFailure("Filter", reason);
     }
 
@@ -173,7 +177,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private final Set<HandlerRegistration> filterChangeHandlers = Sets.newHashSet();
   private Filter lastFilter = null;
 
-  public GridPresenter(String viewName, int rowCount, BeeRowSet rowSet, boolean async,
+  public GridPresenter(String viewName, int rowCount, BeeRowSet rowSet, Provider.Type providerType,
       GridDescription gridDescription, GridCallback gridCallback,
       Map<String, Filter> initialFilters, Collection<UiOption> options) {
     if (gridCallback != null) {
@@ -183,11 +187,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     this.gridContainer = createView(gridDescription, rowSet.getColumns(), rowCount, rowSet,
         gridCallback, options);
 
-    this.dataProvider =
-        createProvider(gridContainer, viewName, rowSet.getColumns(),
-            gridDescription.getIdName(), gridDescription.getVersionName(),
-            gridDescription.getFilter(), initialFilters, gridDescription.getOrder(),
-            rowSet, async, gridDescription.getCachingPolicy());
+    this.dataProvider = createProvider(gridContainer, viewName, rowSet.getColumns(),
+        gridDescription.getIdName(), gridDescription.getVersionName(),
+        gridDescription.getFilter(), initialFilters, gridDescription.getOrder(),
+        rowSet, providerType, gridDescription.getCachingPolicy());
 
     bind();
   }
@@ -328,12 +331,14 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
 
     Queries.insert(getViewName(), event.getColumns(), event.getValues(), new Queries.RowCallback() {
-      public void onFailure(String[] reason) {
+      @Override
+      public void onFailure(String... reason) {
         setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
         showFailure("Insert Row", reason);
         getView().getContent().finishNewRow(null);
       }
 
+      @Override
       public void onSuccess(BeeRow result) {
         BeeKeeper.getBus().fireEvent(new RowInsertEvent(getViewName(), result));
         getView().getContent().finishNewRow(result);
@@ -361,11 +366,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     final boolean rowMode = event.isRowMode();
 
     Queries.update(rs, rowMode, new Queries.RowCallback() {
-      public void onFailure(String[] reason) {
+      @Override
+      public void onFailure(String... reason) {
         getView().getContent().refreshCellContent(rowId, columnId);
         showFailure("Update Cell", reason);
       }
 
+      @Override
       public void onSuccess(BeeRow row) {
         BeeKeeper.getLog().info("cell updated:", getViewName(), rowId, columnId, newValue);
         if (rowMode) {
@@ -384,7 +391,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     Queries.update(getViewName(), rowId, event.getVersion(), event.getColumns(),
         event.getOldValues(), event.getNewValues(), new Queries.RowCallback() {
-          public void onFailure(String[] reason) {
+          @Override
+          public void onFailure(String... reason) {
             showFailure("Save Changes", reason);
           }
 
@@ -462,22 +470,37 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private Provider createProvider(GridContainerView view, String viewName, List<BeeColumn> columns,
       String idColumnName, String versionColumnName, Filter dataFilter,
-      Map<String, Filter> initialFilters, Order order, BeeRowSet rowSet, boolean isAsync,
-      CachingPolicy cachingPolicy) {
-    Provider provider;
-    GridView display = view.getContent();
+      Map<String, Filter> initialFilters, Order order, BeeRowSet rowSet,
+      Provider.Type providerType, CachingPolicy cachingPolicy) {
 
-    if (BeeUtils.isEmpty(viewName)) {
-      provider = new LocalProvider(display.getGrid(), columns, dataFilter, rowSet);
-    } else if (isAsync) {
-      provider = new AsyncProvider(display.getGrid(), viewName, columns,
-          idColumnName, versionColumnName, dataFilter);
-      if (cachingPolicy != null) {
-        ((AsyncProvider) provider).setCachingPolicy(cachingPolicy);
-      }
-    } else {
-      provider = new CachedProvider(display.getGrid(), viewName, columns,
-          idColumnName, versionColumnName, dataFilter, rowSet);
+    if (providerType == null) {
+      return null;
+    }
+
+    Provider provider;
+    CellGrid display = view.getContent().getGrid();
+
+    switch (providerType) {
+      case ASYNC:
+        provider = new AsyncProvider(display, viewName, columns,
+            idColumnName, versionColumnName, dataFilter);
+        if (cachingPolicy != null) {
+          ((AsyncProvider) provider).setCachingPolicy(cachingPolicy);
+        }
+        break;
+
+      case CACHED:
+        provider = new CachedProvider(display, viewName, columns,
+            idColumnName, versionColumnName, dataFilter, rowSet);
+        break;
+
+      case LOCAL:
+        provider = new LocalProvider(display, viewName, columns, dataFilter, rowSet);
+        break;
+
+      default:
+        Assert.untouchable();
+        provider = null;
     }
 
     if (initialFilters != null) {

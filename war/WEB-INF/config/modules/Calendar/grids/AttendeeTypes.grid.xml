@@ -4,8 +4,8 @@
   name="AttendeeTypes" viewName="AttendeeTypes" caption="Resursų tipai"
   >
   <columns>
-    <DataColumn name="Name" />
-    <DataColumn name="Description" />
+    <DataColumn name="Name" caption="Pavadinimas" />
+    <DataColumn name="Description" caption="Aprašymas" />
 
     <DataColumn name="Transparency" itemKey="Transparency" />
     <DataColumn name="Resource" caption="Is Resource" />

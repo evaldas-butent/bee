@@ -4,7 +4,7 @@
   name="CalAppointmentTypes" viewName="CalAppointmentTypes"
   >
   <columns>
-    <DataColumn name="TypeName" />
-    <DataColumn name="TypeDescription" readOnly="true" />
+    <RelColumn name="TypeName" caption="Tipas" />
+    <DataColumn name="TypeDescription" caption="Aprašymas" readOnly="true" />
   </columns>
 </Grid>

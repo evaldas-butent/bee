@@ -4,7 +4,7 @@
   name="CalendarAttendees" viewName="CalendarAttendees"
   >
   <columns>
-    <DataColumn name="TypeName" readOnly="true" />
-    <DataColumn name="AttendeeName" />
+    <DataColumn name="TypeName" caption="Tipas" readOnly="true" />
+    <RelColumn name="AttendeeName" caption="Pavadinimas" />
   </columns>
 </Grid>

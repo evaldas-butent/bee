@@ -15,12 +15,6 @@
         }
       </created>
     </lifecycle>
-
-    <handler event="mousewheel">
-      var v = event.wheelDelta;
-      var u = (v &lt; 0) ? "-" : "+";
-      $wnd.Bee_updateActor(target, "caption", "fontSize", u);
-    </handler>
   </abstract>
 
   <decorator id="label" extends="caption">

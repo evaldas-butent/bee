@@ -13,9 +13,12 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.AsyncProvider;
 import com.butent.bee.client.data.CachedProvider;
+import com.butent.bee.client.data.HasDataTable;
+import com.butent.bee.client.data.LocalProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.DialogCallback;
+import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
@@ -26,13 +29,13 @@ import com.butent.bee.client.view.HasSearch;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
-import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.HasViewName;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -68,11 +71,13 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
 
       Queries.deleteRow(getViewName(), rowId, version, new Queries.IntCallback() {
-        public void onFailure(String[] reason) {
+        @Override
+        public void onFailure(String... reason) {
           setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
           showFailure("Delete Record", reason);
         }
 
+        @Override
         public void onSuccess(Integer result) {
           BeeKeeper.getBus().fireEvent(new RowDeleteEvent(getViewName(), rowId));
         }
@@ -80,14 +85,15 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
   }
 
-  private class FilterCallback implements Queries.IntCallback {
+  private class FilterCallback extends Queries.IntCallback {
     private Filter filter;
 
     private FilterCallback(Filter filter) {
       this.filter = filter;
     }
-
-    public void onFailure(String[] reason) {
+    
+    @Override
+    public void onFailure(String... reason) {
       showFailure("Filter", reason);
     }
 
@@ -113,13 +119,17 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   private Filter lastFilter = null;
 
   public FormPresenter(FormDescription formDescription, String viewName, int rowCount,
-      BeeRowSet rowSet, boolean async, FormCallback callback) {
+      BeeRowSet rowSet, Provider.Type providerType, FormCallback callback) {
     List<BeeColumn> columns = (rowSet == null) ? null : rowSet.getColumns();
 
     this.formContainer = createView(formDescription, columns, rowCount, callback);
-    this.dataProvider = createProvider(formContainer, viewName, columns, null, rowSet, async);
+    this.dataProvider = createProvider(formContainer, viewName, columns, rowSet, providerType);
 
     bind();
+  }
+
+  public IsRow getActiveRow() {
+    return getView().getContent().getRow();
   }
 
   public Provider getDataProvider() {
@@ -130,6 +140,10 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     return lastFilter;
   }
 
+  public NotificationListener getNotificationListener() {
+    return getView().getContent();
+  }
+  
   public Collection<SearchView> getSearchers() {
     Collection<SearchView> searchers;
 
@@ -218,12 +232,14 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
 
     Queries.insert(getViewName(), event.getColumns(), event.getValues(), new Queries.RowCallback() {
-      public void onFailure(String[] reason) {
+      @Override
+      public void onFailure(String... reason) {
         setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
         showFailure("Insert Row", reason);
         getView().getContent().finishNewRow(null);
       }
 
+      @Override
       public void onSuccess(BeeRow result) {
         BeeKeeper.getBus().fireEvent(new RowInsertEvent(getViewName(), result));
         getView().getContent().finishNewRow(result);
@@ -246,11 +262,13 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     Queries.update(rs, rowMode,
         new Queries.RowCallback() {
-          public void onFailure(String[] reason) {
+          @Override
+          public void onFailure(String... reason) {
             getView().getContent().refreshCellContent(columnId);
             showFailure("Update Cell", reason);
           }
 
+          @Override
           public void onSuccess(BeeRow row) {
             BeeKeeper.getLog().info("cell updated:", getViewName(), rowId, columnId, newValue);
             if (rowMode) {
@@ -299,19 +317,28 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
   }
 
-  private Provider createProvider(FormContainerView view, String dataName, List<BeeColumn> columns,
-      Filter dataFilter, BeeRowSet rowSet, boolean isAsync) {
-    if (BeeUtils.isEmpty(dataName)) {
+  private Provider createProvider(FormContainerView view, String viewName, List<BeeColumn> columns,
+      BeeRowSet rowSet, Provider.Type providerType) {
+    if (BeeUtils.isEmpty(viewName) || providerType == null) {
       return null;
     }
-    Provider provider;
-    FormView content = view.getContent();
 
-    if (isAsync) {
-      provider = new AsyncProvider(content.getDisplay(), dataName, columns, null, null, dataFilter);
-    } else {
-      provider = new CachedProvider(content.getDisplay(), dataName, columns, null, null,
-          dataFilter, rowSet);
+    HasDataTable display = view.getContent().getDisplay();
+    Provider provider;
+
+    switch (providerType) {
+      case ASYNC:
+        provider = new AsyncProvider(display, viewName, columns);
+        break;
+      case CACHED:
+        provider = new CachedProvider(display, viewName, columns, rowSet);
+        break;
+      case LOCAL:
+        provider = new LocalProvider(display, viewName, columns, rowSet);
+        break;
+      default:
+        Assert.untouchable();
+        provider = null;
     }
     return provider;
   }
@@ -348,11 +375,11 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (reasons != null) {
       messages.addAll(Lists.newArrayList(reasons));
     }
-    getView().getContent().notifySevere(messages.toArray(new String[0]));
+    getNotificationListener().notifySevere(messages.toArray(new String[0]));
   }
 
   private void showWarning(String... messages) {
-    getView().getContent().notifyWarning(messages);
+    getNotificationListener().notifyWarning(messages);
   }
 
   private void updateFilter() {

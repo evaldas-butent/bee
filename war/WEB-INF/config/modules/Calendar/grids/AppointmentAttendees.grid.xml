@@ -4,13 +4,13 @@
   name="AppointmentAttendees" viewName="AppointmentAttendees" caption="Resursai"
   >
   <columns>
-    <DataColumn name="TypeName" readOnly="true" />
-    <RelColumn name="AttendeeName" />
+    <DataColumn name="TypeName" caption="Tipas" readOnly="true" />
+    <RelColumn name="AttendeeName" caption="Pavadinimas" />
     
     <DataColumn name="Optional" />
     <DataColumn name="ResponseStatus" itemKey="ResponseStatus" />
     <DataColumn name="AdditionalGuests" />
 
-    <DataColumn name="Comment" source="Comment" />
+    <DataColumn name="Comment" caption="Komentaras" />
   </columns>
 </Grid>

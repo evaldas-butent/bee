@@ -5,6 +5,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 
+import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
@@ -49,7 +50,7 @@ public class MultiSelector extends DialogBox {
     this.selectionCallback = selectionCallback;
     
     GridPresenter gp = new GridPresenter(rowSet.getViewName(), rowSet.getNumberOfRows(),
-        rowSet, false, createGridDescription(rowSet, columnNames), null, null,
+        rowSet, Provider.Type.CACHED, createGridDescription(rowSet, columnNames), null, null,
         EnumSet.of(UiOption.SELECTOR));
     setPresenter(gp);
     gp.setEventSource(getId());

@@ -4,10 +4,12 @@
   name="ExtendedProperties" viewName="ExtendedProperties" caption="Parametrai"
   >
   <columns>
-    <DataColumn name="GroupName" />
-    <DataColumn name="Name" />
-    <DataColumn name="Hours" />
-    <DataColumn name="Minutes" />
-    <DataColumn name="Description" />
+    <RelColumn name="GroupName" caption="Grupė" />
+    <DataColumn name="Name" caption="Pavadinimas" />
+
+    <DataColumn name="Hours" caption="Valandos" />
+    <DataColumn name="Minutes" caption="Minutės" />
+
+    <DataColumn name="Description" caption="Aprašymas" />
   </columns>
 </Grid>

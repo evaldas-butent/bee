@@ -4,7 +4,7 @@
   name="Themes" viewName="Themes" caption="Temos" editForm="Theme"
   >
   <columns>
-    <DataColumn name="Name" />
-    <DataColumn name="Description" />
+    <DataColumn name="Name" caption="Pavadinimas" />
+    <DataColumn name="Description" caption="Aprašymas" />
   </columns>
 </Grid>

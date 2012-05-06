@@ -8,9 +8,9 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
-import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.form.FormImpl;
@@ -49,14 +49,18 @@ public class FormFactory {
     boolean beforeAction(Action action, FormPresenter presenter);
 
     void beforeRefresh(FormView form, IsRow row);
-
+    
     FormCallback getInstance();
+    
+    BeeRowSet getRowSet();
+
+    boolean hasFooter(int rowCount);
 
     boolean onLoad(Element formElement);
 
     boolean onPrepareForInsert(FormView form, DataView dataView, IsRow row);
 
-    void onShow(Presenter presenter);
+    void onShow(FormPresenter presenter);
 
     void onStartEdit(FormView form, IsRow row);
 
@@ -222,18 +226,27 @@ public class FormFactory {
     parseForm(xml, null);
   }
 
-  public static void parseForm(String xml, final FormCallback callback) {
-    final FormDescription formDescription = getFormDescription(xml, callback);
+  public static void parseForm(String xml, FormCallback callback) {
+    FormDescription formDescription = getFormDescription(xml, callback);
     if (formDescription == null) {
       return;
     }
 
-    final String viewName = formDescription.getViewName();
+    String viewName = formDescription.getViewName();
     if (BeeUtils.isEmpty(viewName)) {
       showForm(formDescription, callback);
       return;
     }
-
+    
+    if (callback != null) {
+      BeeRowSet rowSet = callback.getRowSet();
+      if (rowSet != null) {
+        showForm(formDescription, viewName, rowSet.getNumberOfRows(), rowSet, 
+            Provider.Type.LOCAL, callback);
+        return;
+      }
+    }
+    
     DataInfo dataInfo = Global.getDataInfo(viewName, true);
     if (dataInfo != null) {
       getInitialRowSet(viewName, dataInfo.getRowCount(), formDescription, callback);
@@ -276,35 +289,35 @@ public class FormFactory {
       final FormDescription formDescription, final FormCallback callback) {
     int limit = formDescription.getAsyncThreshold();
 
-    final boolean async;
+    final Provider.Type providerType;
     if (rowCount >= limit) {
-      async = true;
+      providerType = Provider.Type.ASYNC;
       if (rowCount <= DataUtils.getMaxInitialRowSetSize()) {
         limit = -1;
       } else {
         limit = DataUtils.getMaxInitialRowSetSize();
       }
     } else {
-      async = false;
+      providerType = Provider.Type.CACHED;
       limit = -1;
     }
 
     Queries.getRowSet(viewName, null, null, null, 0, limit, CachingPolicy.FULL,
         new Queries.RowSetCallback() {
           public void onSuccess(final BeeRowSet rowSet) {
-            showForm(formDescription, viewName, rowCount, rowSet, async, callback);
+            showForm(formDescription, viewName, rowCount, rowSet, providerType, callback);
           }
         });
   }
 
   private static void showForm(FormDescription formDescription, FormCallback callback) {
-    showForm(formDescription, null, BeeConst.UNDEF, null, false, callback);
+    showForm(formDescription, null, BeeConst.UNDEF, null, Provider.Type.CACHED, callback);
   }
 
   private static void showForm(FormDescription formDescription, String viewName, int rowCount,
-      BeeRowSet rowSet, boolean async, FormCallback callback) {
+      BeeRowSet rowSet, Provider.Type providerType, FormCallback callback) {
     FormPresenter presenter = new FormPresenter(formDescription, viewName, rowCount, rowSet,
-        async, callback);
+        providerType, callback);
     if (callback != null) {
       callback.onShow(presenter);
     }

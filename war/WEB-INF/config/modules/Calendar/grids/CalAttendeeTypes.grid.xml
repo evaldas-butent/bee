@@ -4,9 +4,9 @@
   name="CalAttendeeTypes" viewName="CalAttendeeTypes"
   >
   <columns>
-    <DataColumn name="TypeName" />
+    <RelColumn name="TypeName" caption="Tipas" />
 
-    <DataColumn name="TypeDescription" readOnly="true" />
+    <DataColumn name="TypeDescription" caption="Aprašymas" readOnly="true" />
     <DataColumn name="TypeTransparency" readOnly="true" itemKey="Transparency" />
     <DataColumn name="TypeResource" readOnly="true" />
   </columns>

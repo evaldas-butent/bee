@@ -13,13 +13,16 @@ import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.Queries.RowCallback;
 import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.AbstractColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.validation.CellValidateEvent;
@@ -83,28 +86,152 @@ public class CalendarKeeper {
     }
   }
 
+  private static class ConfigurationHandler extends AbstractFormCallback {
+
+    private long companyId = BeeConst.UNDEF;
+    private long appointmentTypeId = BeeConst.UNDEF;
+
+    private long timeZoneId = BeeConst.UNDEF;
+    private long themeId = BeeConst.UNDEF;
+
+    private BeeRowSet configuration = null;
+
+    @Override
+    public boolean beforeAction(Action action, FormPresenter presenter) {
+      if (Action.SAVE.equals(action)) {
+        final IsRow row = presenter.getActiveRow();
+        if (row == null || configuration == null) {
+          return false;
+        }
+
+        String co = DataUtils.getString(configuration, row, CalendarConstants.COL_COMPANY);
+        if (BeeUtils.isEmpty(co)) {
+          presenter.getNotificationListener().notifySevere("Company is required");
+          presenter.getView().getContent().focus(CalendarConstants.COL_COMPANY);
+          return false;
+        }
+
+        String at = DataUtils.getString(configuration, row, CalendarConstants.COL_APPOINTMENT_TYPE);
+        if (BeeUtils.isEmpty(at)) {
+          presenter.getNotificationListener().notifySevere("Appointment type is required");
+          presenter.getView().getContent().focus(CalendarConstants.COL_APPOINTMENT_TYPE);
+          return false;
+        }
+
+        RowCallback callback = new Queries.RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            if (result != null) {
+              update(result);
+              DataUtils.updateRow(row, result, configuration.getNumberOfColumns());
+            }
+          }
+        };
+        
+        if (DataUtils.isNewRow(row)) {
+          Queries.insert(CalendarConstants.VIEW_CONFIGURATION, configuration.getColumns(), row,
+              callback);
+        } else {
+          int cnt = Queries.update(CalendarConstants.VIEW_CONFIGURATION,
+              configuration.getColumns(), configuration.getRow(0), row, callback);
+          if (cnt <= 0) {
+            presenter.getNotificationListener().notifyInfo("No changes found");
+          }
+        }
+        return false;
+      }
+      return true;
+    }
+
+    @Override
+    public BeeRowSet getRowSet() {
+      if (configuration == null || configuration.isEmpty()) {
+        return null;
+      } else {
+        return configuration.clone();
+      }
+    }
+
+    @Override
+    public boolean hasFooter(int rowCount) {
+      return false;
+    }
+
+    @Override
+    public void onShow(FormPresenter presenter) {
+      presenter.getView().getContent().setEditing(true);
+    }
+
+    private void load() {
+      ParameterList params = createRequestParameters(CalendarConstants.SVC_GET_CONFIGURATION);
+
+      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+        public void onResponse(ResponseObject response) {
+          if (response.hasResponse(BeeRowSet.class)) {
+            configuration = BeeRowSet.restore((String) response.getResponse());
+            if (configuration.isEmpty()) {
+              configuration.addEmptyRow();
+            }
+            updateFields(configuration.getRow(0));
+          }
+        }
+      });
+    }
+
+    private void update(BeeRow row) {
+      if (row == null || configuration == null) {
+        return;
+      }
+
+      if (!configuration.isEmpty()) {
+        configuration.clearRows();
+      }
+      configuration.addRow(row);
+
+      updateFields(row);
+    }
+
+    private void updateFields(BeeRow row) {
+      if (row == null || configuration == null) {
+        return;
+      }
+
+      companyId = DataUtils.getLong(configuration, row, CalendarConstants.COL_COMPANY);
+      appointmentTypeId = DataUtils.getLong(configuration, row,
+          CalendarConstants.COL_APPOINTMENT_TYPE);
+
+      timeZoneId = DataUtils.getLong(configuration, row, CalendarConstants.COL_TIME_ZONE);
+      themeId = DataUtils.getLong(configuration, row, CalendarConstants.COL_THEME);
+    }
+  }
+
   private static BeeRowSet userCalendars = null;
 
   private static final Map<Long, String> FAVORITE_CALENDARS = Maps.newHashMap();
 
   private static FormView settingsForm = null;
 
+  private static final ConfigurationHandler configurationHandler = new ConfigurationHandler();
+
   public static void loadUserCalendars() {
     ParameterList params = createRequestParameters(CalendarConstants.SVC_GET_USER_CALENDARS);
 
-    BeeKeeper.getRpc().makeGetRequest(params,
-        new ResponseCallback() {
-          public void onResponse(ResponseObject response) {
-            if (response.hasResponse(BeeRowSet.class)) {
-              userCalendars = BeeRowSet.restore((String) response.getResponse());
-              if (userCalendars != null && !userCalendars.isEmpty()) {
-                for (IsRow row : userCalendars.getRows()) {
-                  createFavoriteWidget(row);
-                }
-              }
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse(BeeRowSet.class)) {
+          userCalendars = BeeRowSet.restore((String) response.getResponse());
+          if (userCalendars != null && !userCalendars.isEmpty()) {
+            for (IsRow row : userCalendars.getRows()) {
+              createFavoriteWidget(row);
             }
           }
-        });
+        }
+      }
+    });
+  }
+
+  public static void refreshConfiguration() {
+    configurationHandler.load();
   }
 
   public static void register() {
@@ -116,8 +243,11 @@ public class CalendarKeeper {
 
     Global.registerCaptions(CalendarConstants.TimeBlockClick.class);
 
+    FormFactory.registerFormCallback(CalendarConstants.FORM_CONFIGURATION, configurationHandler);
+
     GridFactory.registerGridCallback(CalendarConstants.GRID_CALENDARS, new CalendarGridHandler());
 
+    configurationHandler.load();
     loadUserCalendars();
   }
 
@@ -133,6 +263,22 @@ public class CalendarKeeper {
     } else {
       openSettingsForm(calendarId, calendarWidget);
     }
+  }
+
+  static long getCompany() {
+    return configurationHandler.companyId;
+  }
+
+  static long getDefaultAppointmentType() {
+    return configurationHandler.appointmentTypeId;
+  }
+
+  static long getDefaultTheme() {
+    return configurationHandler.themeId;
+  }
+
+  static long getDefaultTimeZone() {
+    return configurationHandler.timeZoneId;
   }
 
   static CalendarSettings getSettings(long calendarId) {
@@ -180,10 +326,7 @@ public class CalendarKeeper {
 
     Queries.insert(CalendarConstants.VIEW_USER_CALENDARS, columns, values,
         new Queries.RowCallback() {
-          public void onFailure(String[] reason) {
-            BeeKeeper.getScreen().notifySevere(reason);
-          }
-
+          @Override
           public void onSuccess(BeeRow result) {
             if (result != null) {
               if (userCalendars == null) {
@@ -261,10 +404,7 @@ public class CalendarKeeper {
 
           Queries.update(CalendarConstants.VIEW_USER_CALENDARS, oldRow.getId(),
               oldRow.getVersion(), columns, oldValues, newValues, new Queries.RowCallback() {
-                public void onFailure(String[] reason) {
-                  BeeKeeper.getScreen().notifySevere(reason);
-                }
-
+                @Override
                 public void onSuccess(BeeRow result) {
                   userCalendars.updateRow(result);
                 }

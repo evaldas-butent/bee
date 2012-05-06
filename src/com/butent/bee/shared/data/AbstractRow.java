@@ -150,6 +150,10 @@ public abstract class AbstractRow implements IsRow, Transformable {
 
   public abstract void setCells(List<IsCell> cells);
 
+  public void setId(long id) {
+    this.id = id;
+  }
+
   public void setProperties(CustomProperties properties) {
     this.properties = properties;
   }
@@ -190,22 +194,22 @@ public abstract class AbstractRow implements IsRow, Transformable {
   public void setValue(int index, Long value) {
     setValue(index, new LongValue(value));
   }
-
+  
   public void setValue(int index, String value) {
     setValue(index, new TextValue(value));
   }
-  
+
   public void setValue(int index, Value value) {
     IsCell cell = getCell(index);
     cell.setValue(value);
     cell.clearFormattedValue();
     cell.clearProperties();
   }
-
+  
   public void setVersion(long version) {
     this.version = version;
   }
-  
+
   public String transform() {
     StringBuilder sb = new StringBuilder();
     sb.append("id=").append(getId());
@@ -230,9 +234,5 @@ public abstract class AbstractRow implements IsRow, Transformable {
     if (getProperties() != null) {
       cloneRow.setProperties(getProperties().clone());
     }
-  }
-
-  protected void setId(long id) {
-    this.id = id;
   }
 }

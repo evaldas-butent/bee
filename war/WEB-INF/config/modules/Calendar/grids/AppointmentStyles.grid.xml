@@ -4,8 +4,8 @@
   name="AppointmentStyles" viewName="AppointmentStyles" caption="Vizitų stiliai" autoFit="true"
   >
   <columns>
-    <DataColumn name="Name" />
-    <DataColumn name="Description" />
+    <DataColumn name="Name" caption="Pavadinimas" />
+    <DataColumn name="Description" caption="Aprašymas" />
 
     <DataColumn name="HeaderColorName" />
     <DataColumn name="HeaderBackground" />

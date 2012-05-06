@@ -5,37 +5,14 @@
   newRowForm="Calendar" editForm="Calendar"
   >
   <columns>
-    <DataColumn name="Name" />
-    <DataColumn name="Description" />
+    <DataColumn name="Name" caption="Pavadinimas" />
+    <DataColumn name="Description" caption="Aprašymas" />
 
-    <DataColumn name="Location" />
-    <DataColumn name="TimeZoneName" />
+    <DataColumn name="ThemeName" caption="Tema" />
 
-    <DataColumn name="ThemeName" />
-
-    <DataColumn name="ReadOnly" />
-    <DataColumn name="Visibility" itemKey="Calendar_Visibility" />
-
+    <DataColumn name="Visibility" itemKey="Calendar_Visibility" caption="Matomumas" />
     <DataColumn name="Transparency" itemKey="Transparency" />
 
-    <DataColumn name="DefaultDisplayedDays" />
-
-    <DataColumn name="PixelsPerInterval" />
-    <DataColumn name="IntervalsPerHour" />
-
-    <DataColumn name="WorkingHourStart" />
-    <DataColumn name="WorkingHourEnd" />
-    <DataColumn name="ScrollToHour" />
-    <DataColumn name="OffsetHourLabels" />
-
-    <DataColumn name="EnableDragDrop" />
-    <DataColumn name="DragDropCreation" />
-
-    <DataColumn name="TimeBlockClickNumber" itemKey="TimeBlockClick" />
-
-    <DataColumn name="Owner" sortBy="OwnerLastName OwnerFirstName">
-      <renderer type="join" />
-    </DataColumn>
-      
+    <RelColumn name="Owner" caption="Savininkas" renderColumns="OwnerFirstName OwnerLastName" />
   </columns>
 </Grid>

@@ -80,6 +80,15 @@ public class AsyncProvider extends Provider {
   
   private final List<Integer> pendingRequests = Lists.newArrayList();
 
+  public AsyncProvider(HasDataTable display, String viewName, List<BeeColumn> columns) {
+    this(display, viewName, columns, null, null, null);
+  }
+
+  public AsyncProvider(HasDataTable display, String viewName, List<BeeColumn> columns,
+      Filter dataFilter) {
+    this(display, viewName, columns, null, null, dataFilter);
+  }
+
   public AsyncProvider(HasDataTable display, String viewName, List<BeeColumn> columns,
       String idColumnName, String versionColumnName, Filter dataFilter) {
     super(display, viewName, columns, idColumnName, versionColumnName, dataFilter);

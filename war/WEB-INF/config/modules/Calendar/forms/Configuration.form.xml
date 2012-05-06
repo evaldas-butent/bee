@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE BeeForm [
+  <!ENTITY sep "<br/>">
+  <!ENTITY is "width: 200px;">
+  <!ENTITY cw "10">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:d="http://www.butent.com/decorator"
+  
+  name="Configuration" viewName="Configuration" caption="Nustatymai"
+  disabledActions="add delete bookmark" enabledActions="save">
+
+  <FlowPanel style="margin: 2ex 3em;">
+    <DataSelector source="Company" caption="Įmonė:" style="&is;" d:size="&cw;" />
+    &sep;
+    <DataSelector source="AppointmentType" caption="Vizitų tipas:" style="&is;" d:size="&cw;" />
+    &sep;&sep;
+
+    <DataSelector source="TimeZone" caption="Laiko juosta:" style="&is;" d:size="&cw;" />
+    &sep;
+    <DataSelector source="Theme" caption="Tema:" style="&is;" d:size="&cw;" />
+  </FlowPanel>
+</f:Form>  

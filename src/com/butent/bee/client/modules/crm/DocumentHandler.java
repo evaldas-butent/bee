@@ -92,10 +92,12 @@ public class DocumentHandler {
       }
 
       Queries.insert(DOCUMENT_VIEW_NAME, columns, values, new Queries.RowCallback() {
-        public void onFailure(String[] reason) {
+        @Override
+        public void onFailure(String... reason) {
           dataView.notifySevere(reason);
         }
 
+        @Override
         public void onSuccess(BeeRow result) {
           dataView.finishNewRow(result);
           sendFiles(result.getId());
@@ -172,10 +174,7 @@ public class DocumentHandler {
 
         Queries.insert(FILE_VIEW_NAME, columns, Lists.newArrayList(values),
             new Queries.RowCallback() {
-              public void onFailure(String[] reason) {
-                BeeKeeper.getScreen().notifySevere(reason);
-              }
-
+              @Override
               public void onSuccess(BeeRow result) {
               }
             });

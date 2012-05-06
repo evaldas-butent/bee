@@ -4,12 +4,15 @@
   name="Attendees" viewName="Attendees" caption="Resursai"
   >
   <columns>
-    <RelColumn name="TypeName" />
+    <RelColumn name="TypeName" caption="Tipas" />
 
-    <DataColumn name="Name" />
-    <DataColumn name="Description" />
+    <DataColumn name="Name" caption="Pavadinimas" />
+    <DataColumn name="Description" caption="Aprašymas" />
 
-    <RelColumn name="CompanyPerson" />
+    <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="Vardas, Pavardė"
+      choiceColumns="FirstName LastName CompanyName" searchableColumns="FirstName LastName" />
+    <RelColumn name="CompanyName" caption="Įmonė"
+      choiceColumns="CompanyName FirstName LastName" searchableColumns="CompanyName" />
 
     <DataColumn name="Transparency" itemKey="Transparency" />
   </columns>

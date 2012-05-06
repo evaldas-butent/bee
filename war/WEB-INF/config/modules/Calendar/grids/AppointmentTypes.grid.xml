@@ -4,8 +4,8 @@
   name="AppointmentTypes" viewName="AppointmentTypes" caption="Vizitų tipai"
   >
   <columns>
-    <DataColumn name="Name" />
-    <DataColumn name="Description" />
+    <DataColumn name="Name" caption="Pavadinimas" />
+    <DataColumn name="Description" caption="Aprašymas" />
 
     <DataColumn name="AppointmentCreator" />
     <DataColumn name="AppointmentEditor" />

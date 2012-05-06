@@ -41,6 +41,7 @@ import com.butent.bee.client.calendar.theme.Appearance;
 import com.butent.bee.client.calendar.theme.DefaultTheme;
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.TabBar;
+import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.DialogBox;
@@ -252,7 +253,7 @@ public class CalendarPanel extends Complex {
   
   private void createGridPresenter(BeeRowSet rowSet, List<String> columnNames) {
     GridPresenter gp = new GridPresenter(rowSet.getViewName(), rowSet.getNumberOfRows(),
-        rowSet, false, createGridDescription(rowSet, columnNames), null, null,
+        rowSet, Provider.Type.LOCAL, createGridDescription(rowSet, columnNames), null, null,
         EnumSet.of(UiOption.CHILD));
     setGridPresenter(gp);
     gp.setEventSource(getId());

@@ -4,6 +4,8 @@ import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
+import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.layout.ResizePanel;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -79,11 +81,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
   }
 
   public void launch() {
-    GridFactory.getGrid(getGridName(), new GridFactory.DescriptionCallback() {
-      public void onFailure(String[] reason) {
-        BeeKeeper.getScreen().notifySevere(reason);
-      }
-
+    GridFactory.getGrid(getGridName(), new Callback<GridDescription>() {
       public void onSuccess(GridDescription result) {
         if (getGridCallback() != null && !getGridCallback().onLoad(result)) {
           return;
@@ -157,8 +155,8 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
           public void onSuccess(BeeRowSet rowSet) {
             Assert.notNull(rowSet);
             GridPresenter gp = new GridPresenter(viewName, rowSet.getNumberOfRows(),
-                rowSet, true, getGridDescription(), getGridCallback(), initialFilters,
-                EnumSet.of(UiOption.CHILD));
+                rowSet, Provider.Type.ASYNC, getGridDescription(), getGridCallback(),
+                initialFilters, EnumSet.of(UiOption.CHILD));
 
             gp.getView().getContent().setRelColumn(getRelSource());
             gp.getView().getContent().getGrid().setPageSize(BeeConst.UNDEF, false, false);

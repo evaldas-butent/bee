@@ -42,7 +42,7 @@ import java.util.Map;
 
 public class TreePresenter extends AbstractPresenter implements CatchEvent.CatchHandler<IsRow> {
 
-  private class CommitCallback implements RowCallback {
+  private class CommitCallback extends RowCallback {
     private final boolean createMode;
 
     public CommitCallback(boolean createMode) {
@@ -50,7 +50,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     }
 
     @Override
-    public void onFailure(String[] reason) {
+    public void onFailure(String... reason) {
       BeeKeeper.getScreen().notifySevere(reason);
     }
 
@@ -358,11 +358,6 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         public void execute() {
           Queries.deleteRow(source, data.getId(), data.getVersion(),
               new IntCallback() {
-                @Override
-                public void onFailure(String[] reason) {
-                  BeeKeeper.getScreen().notifySevere(reason);
-                }
-
                 @Override
                 public void onSuccess(Integer result) {
                   getView().removeItem(data);

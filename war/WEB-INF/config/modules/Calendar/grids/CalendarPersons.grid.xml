@@ -4,8 +4,12 @@
   name="CalendarPersons" viewName="CalendarPersons"
   >
   <columns>
-    <DataColumn name="FirstName" />
-    <DataColumn name="LastName" />
+    <RelColumn name="FirstName" caption="Vardas"
+      choiceColumns="FirstName LastName CompanyName" searchableColumns="FirstName" />
+    <RelColumn name="LastName" caption="Pavardė"
+      choiceColumns="LastName FirstName CompanyName" searchableColumns="LastName" />
+    <RelColumn name="CompanyName" caption="Įmonė"
+      choiceColumns="CompanyName FirstName LastName" searchableColumns="CompanyName" />
 
     <DataColumn name="Creator" />
     <DataColumn name="Organizer" />

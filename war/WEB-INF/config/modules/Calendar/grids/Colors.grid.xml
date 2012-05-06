@@ -5,7 +5,7 @@
   name="Colors" viewName="Colors" caption="Spalvos"
   >
   <columns>
-    <DataColumn name="Name" minWidth="100" />
+    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" />
 
     <DataColumn name="Background" autoFit="true" minWidth="200" />
     <DataColumn name="Foreground" maxWidth="100" />

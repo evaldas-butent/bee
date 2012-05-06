@@ -6,15 +6,16 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.cell.client.TextInputCell;
-import com.google.gwt.core.client.Callback;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.MultiSelectionModel;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.KeyProvider;
+import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.grid.scrolltable.ColumnDefinition;
@@ -62,13 +63,6 @@ import java.util.Map;
  */
 
 public class GridFactory {
-
-  /**
-   * Contains requirements for grid component callback methods.
-   */
-
-  public interface DescriptionCallback extends Callback<GridDescription, String[]> {
-  }
 
   public interface PresenterCallback {
     void onCreate(GridPresenter presenter);
@@ -259,11 +253,7 @@ public class GridFactory {
     Assert.notEmpty(gridName);
     Assert.notNull(presenterCallback);
 
-    getGrid(gridName, new DescriptionCallback() {
-      public void onFailure(String[] reason) {
-        BeeKeeper.getScreen().notifySevere(reason);
-      }
-
+    getGrid(gridName, new Callback<GridDescription>() {
       public void onSuccess(GridDescription result) {
         Assert.notNull(result);
         if (gridCallback != null && !gridCallback.onLoad(result)) {
@@ -285,11 +275,11 @@ public class GridFactory {
     return new RenderableColumn(cell, index, dataColumn, renderer);
   }
   
-  public static void getGrid(String name, DescriptionCallback callback) {
+  public static void getGrid(String name, Callback<GridDescription> callback) {
     getGrid(name, callback, false);
   }
 
-  public static void getGrid(final String name, final DescriptionCallback callback,
+  public static void getGrid(final String name, final Callback<GridDescription> callback,
       boolean reload) {
     Assert.notEmpty(name);
     Assert.notNull(callback);
@@ -499,12 +489,12 @@ public class GridFactory {
     return cell;
   }
 
-  private static void createPresenter(int rowCount, BeeRowSet rowSet, boolean async,
+  private static void createPresenter(int rowCount, BeeRowSet rowSet, Provider.Type providerType,
       GridDescription gridDescription, GridCallback gridCallback,
       PresenterCallback presenterCallback, Map<String, Filter> initialFilters,
       Collection<UiOption> options) {
     GridPresenter presenter = new GridPresenter(gridDescription.getViewName(), rowCount, rowSet,
-        async, gridDescription, gridCallback, initialFilters, options);
+        providerType, gridDescription, gridCallback, initialFilters, options);
     if (gridCallback != null) {
       gridCallback.onShow(presenter);
     }
@@ -537,8 +527,8 @@ public class GridFactory {
       if (brs == null) {
         BeeKeeper.getLog().severe("grid", gridDescription.getName(), "has no initial data");
       } else {
-        createPresenter(brs.getNumberOfRows(), brs, false, gridDescription, gridCallback,
-            presenterCallback, initialFilters, options);
+        createPresenter(brs.getNumberOfRows(), brs, Provider.Type.CACHED, gridDescription,
+            gridCallback, presenterCallback, initialFilters, options);
       }
       return;
     }
@@ -557,11 +547,13 @@ public class GridFactory {
             Assert.notNull(rowSet);
 
             int rc = BeeUtils.toInt(rowSet.getTableProperty(Service.VAR_VIEW_SIZE));
-            boolean async = threshold <= 0 || rc >= threshold || rc != rowSet.getNumberOfRows();
+            Provider.Type providerType = 
+                (threshold <= 0 || rc >= threshold || rc != rowSet.getNumberOfRows())
+                ? Provider.Type.ASYNC : Provider.Type.CACHED;
             rc = Math.max(rc, rowSet.getNumberOfRows());
 
-            createPresenter(rc, rowSet, async, gridDescription, gridCallback, presenterCallback,
-                initialFilters, options);
+            createPresenter(rc, rowSet, providerType, gridDescription, gridCallback,
+                presenterCallback, initialFilters, options);
           }
         });
   }

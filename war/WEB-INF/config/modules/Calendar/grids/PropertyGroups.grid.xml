@@ -4,8 +4,9 @@
   name="PropertyGroups" viewName="PropertyGroups" caption="Parametrų grupės"
   >
   <columns>
-    <DataColumn name="Name" />
-    <DataColumn name="Description" />
-    <DataColumn name="DefaultPropertyName" />
+    <DataColumn name="Name" caption="Pavadinimas" />
+    <DataColumn name="Description" caption="Aprašymas" />
+
+    <RelColumn name="DefaultPropertyName" caption="Default" />
   </columns>
 </Grid>

@@ -1550,7 +1550,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
       
       if (dataColumn.isWritable()) {
-        columns.add(getDataColumns().get(i));
+        columns.add(dataColumn);
         values.add(value);
       }
     }

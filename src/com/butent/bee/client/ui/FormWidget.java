@@ -143,6 +143,7 @@ import java.util.Set;
 public enum FormWidget {
   ABSOLUTE_PANEL("AbsolutePanel", EnumSet.of(Type.HAS_LAYERS)),
   AUDIO("Audio", EnumSet.of(Type.DISPLAY)),
+  BR("br", null),
   BUTTON("Button", EnumSet.of(Type.DISPLAY)),
   CANVAS("Canvas", EnumSet.of(Type.DISPLAY)),
   CHECK_BOX("CheckBox", EnumSet.of(Type.EDITABLE)),
@@ -462,6 +463,10 @@ public enum FormWidget {
           DomUtils.createId(widget, "audio");
           initMedia((Audio) widget, attributes);
         }
+        break;
+
+      case BR:
+        widget = new CustomWidget(Document.get().createBRElement());
         break;
 
       case BUTTON:

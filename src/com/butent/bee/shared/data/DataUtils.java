@@ -39,6 +39,7 @@ public class DataUtils {
   public static final ValueType VERSION_TYPE = ValueType.LONG;
   
   public static final long NEW_ROW_ID = 0L;
+  public static final long NEW_ROW_VERSION = 0L;
 
   private static int defaultAsyncThreshold = 100;
   private static int defaultSearchThreshold = 2;
@@ -53,9 +54,21 @@ public class DataUtils {
       arr[i] = original.getString(i);
     }
 
-    BeeRow result = new BeeRow(original.getId(), arr);
-    result.setVersion(original.getVersion());
+    BeeRow result = new BeeRow(original.getId(), original.getVersion(), arr);
+    return result;
+  }
 
+  public static BeeRowSet cloneRowSet(BeeRowSet original) {
+    Assert.notNull(original);
+    BeeRowSet result = new BeeRowSet(original.getViewName(), original.getColumns());
+    if (original.isEmpty()) {
+      return result;
+    }
+
+    int cc = original.getNumberOfColumns();
+    for (BeeRow row : original.getRows()) {
+      result.addRow(cloneRow(row, cc));
+    }
     return result;
   }
   
@@ -379,6 +392,19 @@ public class DataUtils {
   
   public static void setValue(BeeRowSet rowSet, IsRow row, String columnId, String value) {
     row.setValue(getColumnIndex(columnId, rowSet.getColumns()), value);
+  }
+  
+  public static void updateRow(IsRow target, IsRow source, int columnCount) {
+    Assert.notNull(target);
+    Assert.notNull(source);
+    Assert.isPositive(columnCount);
+    
+    target.setId(source.getId());
+    target.setVersion(source.getVersion());
+    
+    for (int i = 0; i < columnCount; i++) {
+      target.setValue(i, source.getString(i));
+    }
   }
 
   private static IsColumn detectColumn(String expr, List<? extends IsColumn> columns,

@@ -6,10 +6,10 @@
   newRowForm="Appointment" editForm="Appointment"
   >
   <columns>
-    <DataColumn name="TypeName" />
+    <DataColumn name="TypeName" caption="Tipas" />
 
     <DataColumn name="Summary" />
-    <DataColumn name="Description" />
+    <DataColumn name="Description" caption="Aprašymas" />
 
     <DataColumn name="Location" />
     <DataColumn name="HtmlLink" />
@@ -20,7 +20,7 @@
     
     <DataColumn name="StyleName" />
 
-    <DataColumn name="Status" itemKey="AppointmentStatus" />
+    <DataColumn name="Status" caption="Būsena" itemKey="AppointmentStatus" />
     <DataColumn name="Created" readOnly="true">
       <carry>
         <ui:expression>new Date()</ui:expression>

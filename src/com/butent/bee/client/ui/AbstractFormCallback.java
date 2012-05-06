@@ -4,10 +4,10 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.presenter.FormPresenter;
-import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
 
@@ -41,6 +41,14 @@ public class AbstractFormCallback implements FormFactory.FormCallback {
     return null;
   }
 
+  public BeeRowSet getRowSet() {
+    return null;
+  }
+
+  public boolean hasFooter(int rowCount) {
+    return true;
+  }
+
   public boolean onLoad(Element formElement) {
     return true;
   }
@@ -49,7 +57,7 @@ public class AbstractFormCallback implements FormFactory.FormCallback {
     return true;
   }
 
-  public void onShow(Presenter presenter) {
+  public void onShow(FormPresenter presenter) {
   }
 
   public void onStartEdit(FormView form, IsRow row) {

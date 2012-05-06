@@ -5,7 +5,7 @@
   name="ThemeColors" viewName="ThemeColors" caption="Spalvos" autoFit="true"
   >
   <columns>
-    <DataColumn name="ColorName" minWidth="100" />
+    <RelColumn name="ColorName" caption="Spalva" minWidth="100" />
 
     <DataColumn name="Background" minWidth="200" />
     <DataColumn name="Foreground" maxWidth="100" />

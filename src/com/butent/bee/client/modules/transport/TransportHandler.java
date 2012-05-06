@@ -92,7 +92,7 @@ public class TransportHandler {
                         new String[] {cargo, BeeUtils.toString(row.getId())}));
                   }
 
-                  Queries.insert(rowSet, new RowSetCallback() {
+                  Queries.insertRowSet(rowSet, new RowSetCallback() {
                     public void onSuccess(BeeRowSet res) {
                       for (BeeRow row : res.getRows()) {
                         BeeKeeper.getBus().fireEvent(new RowInsertEvent(res.getViewName(), row));

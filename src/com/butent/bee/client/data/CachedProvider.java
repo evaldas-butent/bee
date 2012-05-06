@@ -40,6 +40,16 @@ public class CachedProvider extends Provider {
   private final List<IsRow> viewRows = Lists.newArrayList();
 
   public CachedProvider(HasDataTable display, String viewName, List<BeeColumn> columns,
+      IsTable<?, ?> table) {
+    this(display, viewName, columns, null, null, null, table);
+  }
+
+  public CachedProvider(HasDataTable display, String viewName, List<BeeColumn> columns,
+      Filter dataFilter, IsTable<?, ?> table) {
+    this(display, viewName, columns, null, null, dataFilter, table);
+  }
+
+  public CachedProvider(HasDataTable display, String viewName, List<BeeColumn> columns,
       String idColumnName, String versionColumnName, Filter dataFilter, IsTable<?, ?> table) {
     super(display, viewName, columns, idColumnName, versionColumnName, dataFilter);
     Assert.notNull(table);
@@ -243,6 +253,26 @@ public class CachedProvider extends Provider {
     updateDisplay(updateActiveRow);
   }
 
+  protected void updateDisplay(boolean updateActiveRow) {
+    int start = getPageStart();
+    int length = getPageSize();
+    int rowCount = getRowCount();
+
+    List<? extends IsRow> rowValues;
+    if (rowCount <= 0) {
+      rowValues = Lists.newArrayList();
+    } else if (length <= 0 || length >= rowCount) {
+      rowValues = getRowList();
+    } else {
+      rowValues = getRowList().subList(start, BeeUtils.min(start + length, rowCount));
+    }
+
+    if (updateActiveRow) {
+      getDisplay().updateActiveRow(rowValues);
+    }
+    getDisplay().setRowData(rowValues, true);
+  }
+
   private void deleteRow(long rowId) {
     getTable().removeRowById(rowId);
     if (filteredRowIds.contains(rowId)) {
@@ -274,26 +304,6 @@ public class CachedProvider extends Provider {
 
   private void setTable(IsTable<?, ?> table) {
     this.table = table;
-  }
-
-  private void updateDisplay(boolean updateActiveRow) {
-    int start = getPageStart();
-    int length = getPageSize();
-    int rowCount = getRowCount();
-
-    List<? extends IsRow> rowValues;
-    if (rowCount <= 0) {
-      rowValues = Lists.newArrayList();
-    } else if (length <= 0 || length >= rowCount) {
-      rowValues = getRowList();
-    } else {
-      rowValues = getRowList().subList(start, BeeUtils.min(start + length, rowCount));
-    }
-
-    if (updateActiveRow) {
-      getDisplay().updateActiveRow(rowValues);
-    }
-    getDisplay().setRowData(rowValues, true);
   }
 
   private void updateViewRows() {

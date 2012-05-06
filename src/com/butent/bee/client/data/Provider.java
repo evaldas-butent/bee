@@ -32,6 +32,10 @@ import java.util.Map;
 
 public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvents, HasViewName {
 
+  public enum Type {
+    ASYNC, CACHED, LOCAL
+  }
+  
   private final HasDataTable display;
 
   private final String viewName;
@@ -69,7 +73,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     this.handlerRegistry.add(display.addSortHandler(this));
     this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this));
   }
-  
+
   public void clear() {
     getDisplay().reset();
     getDisplay().setPageStart(0, false, false);
@@ -92,7 +96,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   public List<BeeColumn> getColumns() {
     return columns;
   }
-  
+
   public String getIdColumnName() {
     return idColumnName;
   }
@@ -194,9 +198,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
     final Filter flt = getFilter();
     Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
-      public void onFailure(String[] reason) {
-      }
-
+      @Override
       public void onSuccess(Integer result) {
         if (result <= 0) {
           BeeKeeper.getLog().warning(getViewName(), flt, "refresh: row count", result);
