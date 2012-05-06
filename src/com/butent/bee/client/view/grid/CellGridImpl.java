@@ -20,15 +20,17 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
-import com.butent.bee.client.grid.AbstractColumn;
-import com.butent.bee.client.grid.CalculatedCell;
-import com.butent.bee.client.grid.CalculatedColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.grid.RowIdColumn;
-import com.butent.bee.client.grid.RowVersionColumn;
-import com.butent.bee.client.grid.SelectionColumn;
+import com.butent.bee.client.grid.cell.ActionCell;
+import com.butent.bee.client.grid.cell.CalculatedCell;
+import com.butent.bee.client.grid.column.AbstractColumn;
+import com.butent.bee.client.grid.column.ActionColumn;
+import com.butent.bee.client.grid.column.CalculatedColumn;
+import com.butent.bee.client.grid.column.RowIdColumn;
+import com.butent.bee.client.grid.column.RowVersionColumn;
+import com.butent.bee.client.grid.column.SelectionColumn;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.GridFormPresenter;
@@ -621,6 +623,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         case SELECTION:
           column = new SelectionColumn(getGrid());
           source = null;
+          break;
+        
+        case ACTION:
+          column = new ActionColumn(ActionCell.create(columnDescr), dataIndex, renderer);
           break;
       }
 

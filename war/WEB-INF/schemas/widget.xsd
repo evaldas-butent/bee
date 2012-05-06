@@ -359,7 +359,7 @@
   <xs:complexType name="internalLink">
     <xs:complexContent>
       <xs:extension base="focusableWidget">
-        <xs:attribute name="historyToken" type="xs:token" use="required" />
+        <xs:attribute name="historyToken" type="xs:token" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

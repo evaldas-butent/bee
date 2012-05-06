@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
 
   name="Calendars" viewName="Calendars" caption="Kalendoriai"
-  newRowForm="Calendar" editForm="Calendar"
+  newRowForm="Calendar" editForm="Calendar" favorite="Name"
   >
   <columns>
     <DataColumn name="Name" caption="Pavadinimas" />

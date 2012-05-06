@@ -2,7 +2,7 @@ package com.butent.bee.client.render;
 
 import com.google.gwt.cell.client.Cell;
 
-import com.butent.bee.client.grid.DataColumn;
+import com.butent.bee.client.grid.column.DataColumn;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 

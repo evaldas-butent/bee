@@ -1285,7 +1285,8 @@ body, select {
 
 .bee-StackHeader {
   cursor: pointer;
-  padding-left: 5px;
+  padding-left: 2em;
+  padding-top: 2px;
   border-top: 1px solid #E4E4E4;
   color: #6D6D6D;
   background-color: #F2F2F2;
@@ -1298,7 +1299,8 @@ body, select {
 }
 
 .bee-StackContent {
-  padding: 2px;
+  padding-left: 2px;
+  padding-top: 1ex;
 }
 
 .bee-ChoiceDialog {
@@ -1333,7 +1335,12 @@ body, select {
 }
 .bee-ChoiceGroup-item:hover {
   border: 1px solid #BEBEBE;
-}  
+}
+
+.bee-FavoritesItem {
+  margin-left: 1em;
+  line-height: 30px; 
+}
 
 .gwt-SplitLayoutPanel-HDragger {
   background-color: #f6cef5;

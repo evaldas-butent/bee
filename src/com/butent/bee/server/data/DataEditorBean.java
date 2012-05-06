@@ -222,11 +222,18 @@ public class DataEditorBean {
     if (view.isReadOnly()) {
       return ResponseObject.error("View", BeeUtils.bracket(view.getName()), "is read only.");
     }
+
     for (RowInfo row : rows) {
-      wh.add(SqlUtils.and(
-          SqlUtils.equal(tblName, view.getSourceIdName(), row.getId()),
-          SqlUtils.equal(tblName, view.getSourceVersionName(), row.getVersion())));
+      IsCondition whId = SqlUtils.equal(tblName, view.getSourceIdName(), row.getId());
+      long version = row.getVersion();
+
+      if (version > 0) {
+        wh.add(SqlUtils.and(whId, SqlUtils.equal(tblName, view.getSourceVersionName(), version)));
+      } else {
+        wh.add(whId);
+      }
     }
+
     ResponseObject response = qs.updateDataWithResponse(new SqlDelete(tblName).setWhere(wh));
     int cnt = response.getResponse(-1, logger);
 

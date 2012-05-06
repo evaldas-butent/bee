@@ -36,6 +36,8 @@ public class Bee implements EntryPoint {
         ModuleManager.onLoad();
 
         BeeKeeper.getBus().dispatchService(Service.REFRESH_MENU);
+        BeeKeeper.getScreen().getFavorites().load();
+
         Global.getDataInfoProvider().load();
 
         TuningFactory.getTools();

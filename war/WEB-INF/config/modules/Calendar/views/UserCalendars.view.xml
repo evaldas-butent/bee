@@ -24,8 +24,6 @@
     <SimpleColumn name="EnableDragDrop" />
     <SimpleColumn name="DragDropCreation" />
     <SimpleColumn name="TimeBlockClickNumber" />
-
-    <SimpleColumn name="Favorite" />
   </Columns>
   <Order>
     <OrderBy column="CalendarName" />

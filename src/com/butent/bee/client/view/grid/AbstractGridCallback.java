@@ -3,9 +3,9 @@ package com.butent.bee.client.view.grid;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
-import com.butent.bee.client.grid.AbstractColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
+import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.shared.Pair;

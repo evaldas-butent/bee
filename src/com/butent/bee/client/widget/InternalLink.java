@@ -1,39 +1,63 @@
 package com.butent.bee.client.widget;
 
-import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.dom.client.AnchorElement;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.ui.Hyperlink;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.ui.HasHTML;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.shared.Assert;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
-/**
- * Enables using internal link user interface component.
- */
+public class InternalLink extends Widget implements HasId, HasHTML, HasClickHandlers {
 
-public class InternalLink extends Hyperlink implements HasId {
+  private static final String DEFAULT_HREF = "javascript:;";
+  
+  private final Element anchorElem = DOM.createAnchor();
 
-  public InternalLink(SafeHtml html, String targetHistoryToken) {
-    super(html, targetHistoryToken);
-    init();
+  private String targetHistoryToken = null;
+
+  public InternalLink(String html) {
+    this(html, null);
   }
 
-  public InternalLink(String text, boolean asHTML, String targetHistoryToken) {
-    super(text, asHTML, targetHistoryToken);
-    init();
+  public InternalLink(String html, String targetHistoryToken) {
+    this(html, targetHistoryToken, null);
+  }
+  
+  public InternalLink(String html, String targetHistoryToken, Element elem) {
+    if (elem == null) {
+      setElement(anchorElem);
+    } else {
+      setElement(elem);
+      DOM.appendChild(getElement(), anchorElem);
+    }
+
+    if (!BeeUtils.isEmpty(html)) {
+      setHTML(html);
+    }
+    setTargetHistoryToken(targetHistoryToken);
+
+    sinkEvents(Event.ONCLICK);
+    setStyleName(getDefaultStyleName());
+    DomUtils.createId(this, getIdPrefix());
   }
 
-  public InternalLink(String text, String targetHistoryToken) {
-    super(text, targetHistoryToken);
-    init();
+  public HandlerRegistration addClickHandler(ClickHandler handler) {
+    return addHandler(handler, ClickEvent.getType());
   }
 
-  protected InternalLink(Element elem) {
-    super(elem);
-    init();
+  public String getHTML() {
+    return anchorElem.getInnerHTML();
   }
 
   public String getId() {
@@ -44,8 +68,41 @@ public class InternalLink extends Hyperlink implements HasId {
     return "internal-link";
   }
 
+  public String getTargetHistoryToken() {
+    return targetHistoryToken;
+  }
+
+  public String getText() {
+    return anchorElem.getInnerText();
+  }
+  
+  @Override
+  public void onBrowserEvent(Event event) {
+    super.onBrowserEvent(event);
+    if (EventUtils.isClick(event) && !BeeUtils.isEmpty(getTargetHistoryToken())) {
+      History.newItem(getTargetHistoryToken());
+      event.preventDefault();
+    }
+  }
+
+  public void setHTML(String html) {
+    anchorElem.setInnerHTML(html);
+  }
+
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  public void setTargetHistoryToken(String targetHistoryToken) {
+    this.targetHistoryToken = targetHistoryToken;
+
+    String href = BeeUtils.isEmpty(targetHistoryToken) ?
+        DEFAULT_HREF : BeeUtils.trim(targetHistoryToken);
+    AnchorElement.as(anchorElem).setHref(href);
+  }
+
+  public void setText(String text) {
+    anchorElem.setInnerText(text);
   }
 
   public void update(String value) {
@@ -53,7 +110,10 @@ public class InternalLink extends Hyperlink implements HasId {
   }
 
   public void update(String value, Object separator) {
-    Assert.notEmpty(value);
+    if (BeeUtils.isEmpty(value)) {
+      return;
+    }
+
     String sep = BeeUtils.normSep(separator, BeeConst.DEFAULT_VALUE_SEPARATOR);
     String html;
     String token;
@@ -63,18 +123,18 @@ public class InternalLink extends Hyperlink implements HasId {
       token = BeeUtils.getSuffix(value, sep);
     } else {
       html = value;
-      token = value;
+      token = null;
     }
-    setHTML(BeeUtils.trim(html));
-    setTargetHistoryToken(BeeUtils.trim(token));
+    
+    if (!BeeUtils.isEmpty(html)) {
+      setHTML(BeeUtils.trim(html));
+    }
+    if (!BeeUtils.isEmpty(token)) {
+      setTargetHistoryToken(BeeUtils.trim(token));
+    }
   }
 
   protected String getDefaultStyleName() {
     return "bee-InternalLink";
-  }
-
-  private void init() {
-    DomUtils.createId(this, getIdPrefix());
-    setStyleName(getDefaultStyleName());
   }
 }

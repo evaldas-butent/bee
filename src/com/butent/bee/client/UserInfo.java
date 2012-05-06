@@ -4,6 +4,9 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
@@ -26,6 +29,14 @@ public class UserInfo implements Module {
       return null;
     }
     return userData.getProperty("dsn");
+  }
+  
+  public Filter getFilter(String column) {
+    if (isLoggedIn()) {
+      return ComparisonFilter.isEqual(column, new LongValue(getUserId()));
+    } else {
+      return null;
+    }
   }
 
   public String getLogin() {

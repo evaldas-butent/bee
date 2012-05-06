@@ -147,7 +147,7 @@ public class BeeUtils {
     }
     return bld;
   }
-
+  
   /**
    * Checks if the specified value {@code x} is between values {@code min} and {@code max}. Note:
    * {@code min} value is inclusive, {@code max} value - exclusive.
@@ -2016,6 +2016,17 @@ public class BeeUtils {
       }
     }
     return z;
+  }
+
+  public static <T> void overwrite(Collection<T> target, Collection<T> source) {
+    Assert.notNull(target);
+    if (!target.isEmpty()) {
+      target.clear();
+    }
+    
+    if (source != null) {
+      target.addAll(source);
+    }
   }
 
   /**

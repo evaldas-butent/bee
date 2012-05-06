@@ -2,6 +2,8 @@ package com.butent.bee.client.grid;
 
 import com.google.gwt.user.cellview.client.Header;
 
+import com.butent.bee.client.grid.cell.HeaderCell;
+
 /**
  * Creates new header cells for grids.
  */

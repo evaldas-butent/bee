@@ -8,6 +8,7 @@ import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TilePanel;
+import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.view.View;
 import com.butent.bee.shared.BeeResource;
 
@@ -30,6 +31,8 @@ public interface Screen extends Module, NotificationListener {
   int getActivePanelWidth();
 
   HasWidgets getCommandPanel();
+  
+  Favorites getFavorites();
   
   Split getScreenPanel();
 

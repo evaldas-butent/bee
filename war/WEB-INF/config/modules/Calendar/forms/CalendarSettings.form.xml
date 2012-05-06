@@ -32,7 +32,6 @@
     <row>
       <Label html="TimeBlockClickNumber" />
       <Radio source="TimeBlockClickNumber" itemKey="TimeBlockClick" />
-      <CheckBox source="Favorite" html="Favorite" />
     </row>
   </FlexTable>
 </f:Form>  

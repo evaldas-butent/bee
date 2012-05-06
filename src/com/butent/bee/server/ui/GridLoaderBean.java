@@ -10,6 +10,7 @@ import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
@@ -139,8 +140,11 @@ public class GridLoaderBean {
   private static final String ATTR_SEARCH_BY = "searchBy";
 
   private static final String ATTR_CELL = "cell";
+  private static final String ATTR_ELEMENT = "element";
 
   private static final String ATTR_ID = "id";
+  
+  private static final String ATTR_FAVORITE = "favorite";
 
   private static Logger logger = Logger.getLogger(GridLoaderBean.class.getName());
 
@@ -457,10 +461,8 @@ public class GridLoaderBean {
         break;
 
       case CALCULATED:
-        ok = true;
-        break;
-
       case SELECTION:
+      case ACTION:
         ok = true;
         break;
     }
@@ -536,11 +538,17 @@ public class GridLoaderBean {
 
         } else if (BeeUtils.same(key, ATTR_CELL)) {
           dst.setCellType(CellType.getByCode(value));
+        } else if (BeeUtils.same(key, ATTR_ELEMENT)) {
+          dst.setElementType(value.trim());
+
         } else if (BeeUtils.same(key, RefreshType.ATTR_UPDATE_MODE)) {
           dst.setUpdateMode(RefreshType.getByCode(value));
 
         } else if (BeeUtils.same(key, HasItems.ATTR_ITEM_KEY)) {
           dst.setItemKey(value.trim());
+
+        } else if (BeeUtils.same(key, HasService.ATTR_SERVICE)) {
+          dst.setService(value.trim());
         } else if (BeeUtils.same(key, HasOptions.ATTR_OPTIONS)) {
           dst.setOptions(value.trim());
         }
@@ -697,6 +705,11 @@ public class GridLoaderBean {
       dst.setDisabledActions(Action.parse(disabledActions));
     }
 
+    String favorite = src.getAttribute(ATTR_FAVORITE);
+    if (!BeeUtils.isEmpty(favorite)) {
+      dst.setFavorite(favorite.trim());
+    }
+    
     String newRowForm = src.getAttribute(ATTR_NEW_ROW_FORM);
     if (!BeeUtils.isEmpty(newRowForm)) {
       dst.setNewRowForm(newRowForm);

@@ -19,6 +19,7 @@ import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.ParentRowEvent;
+import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
@@ -155,6 +156,10 @@ public class EventManager implements Module {
     return ParentRowEvent.register(eventBus, source, handler);
   }
 
+  public HandlerRegistration registerRowActionHandler(RowActionEvent.Handler handler) {
+    return RowActionEvent.register(eventBus, handler);
+  }
+  
   public HandlerRegistration registerRowDeleteHandler(RowDeleteEvent.Handler handler) {
     return RowDeleteEvent.register(eventBus, handler);
   }

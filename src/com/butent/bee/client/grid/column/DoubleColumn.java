@@ -1,4 +1,4 @@
-package com.butent.bee.client.grid;
+package com.butent.bee.client.grid.column;
 
 import com.google.gwt.i18n.client.NumberFormat;
 

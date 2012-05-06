@@ -121,7 +121,7 @@ public class DataUtils {
     return "Column " + index;
   }
 
-  public static IsColumn getColumn(String columnId, List<? extends IsColumn> columns) {
+  public static <T extends IsColumn> T getColumn(String columnId, List<T> columns) {
     int index = getColumnIndex(columnId, columns);
 
     if (index >= 0) {
@@ -190,6 +190,35 @@ public class DataUtils {
       names.add(versionColumnName);
     }
     return names;
+  }
+  
+  public static List<BeeColumn> getColumns(List<BeeColumn> columns, int... indexes) {
+    if (indexes == null) {
+      return columns;
+    }
+    
+    List<BeeColumn> result = Lists.newArrayList();
+    for (int index : indexes) {
+      if (index >= 0 && index < columns.size()) {
+        result.add(columns.get(index));
+      }
+    }
+    return result;
+  }
+
+  public static List<BeeColumn> getColumns(List<BeeColumn> columns, String... colNames) {
+    if (colNames == null) {
+      return columns;
+    }
+    
+    List<BeeColumn> result = Lists.newArrayList();
+    for (String colName : colNames) {
+      BeeColumn column = getColumn(colName, columns);
+      if (column != null) {
+        result.add(column);
+      }
+    }
+    return result;
   }
   
   public static ValueType getColumnType(String columnId, List<? extends IsColumn> columns) {
@@ -392,6 +421,29 @@ public class DataUtils {
   
   public static void setValue(BeeRowSet rowSet, IsRow row, String columnId, String value) {
     row.setValue(getColumnIndex(columnId, rowSet.getColumns()), value);
+  }
+  
+  public static List<String> translate(List<String> input, List<? extends IsColumn> columns,
+      IsRow row) {
+    List<String> result = Lists.newArrayList();
+    
+    if (BeeUtils.isEmpty(input) || BeeUtils.isEmpty(columns)) {
+      BeeUtils.overwrite(result, input);
+      return result;
+    }
+    
+    for (String expr : input) {
+      int index = getColumnIndex(expr, columns);
+
+      if (BeeConst.isUndef(index)) {
+        result.add(expr);
+      } else if (row == null) {
+        result.add(BeeConst.STRING_EMPTY);
+      } else {
+        result.add(row.getString(index));
+      }
+    }
+    return result;
   }
   
   public static void updateRow(IsRow target, IsRow source, int columnCount) {

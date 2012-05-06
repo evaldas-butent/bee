@@ -1,4 +1,4 @@
-package com.butent.bee.client.grid;
+package com.butent.bee.client.grid.column;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.Cell.Context;

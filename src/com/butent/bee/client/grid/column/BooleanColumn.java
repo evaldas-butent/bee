@@ -1,7 +1,8 @@
-package com.butent.bee.client.grid;
+package com.butent.bee.client.grid.column;
 
 import com.google.gwt.cell.client.Cell;
 
+import com.butent.bee.client.grid.cell.BooleanCell;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 

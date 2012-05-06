@@ -1,4 +1,4 @@
-package com.butent.bee.client.grid;
+package com.butent.bee.client.grid.cell;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;

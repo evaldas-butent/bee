@@ -16,10 +16,10 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowCallback;
 import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.grid.AbstractColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
@@ -38,6 +38,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.ui.Action;
@@ -88,11 +89,11 @@ public class CalendarKeeper {
 
   private static class ConfigurationHandler extends AbstractFormCallback {
 
-    private long companyId = BeeConst.UNDEF;
-    private long appointmentTypeId = BeeConst.UNDEF;
+    private Long companyId = null;
+    private Long appointmentTypeId = null;
 
-    private long timeZoneId = BeeConst.UNDEF;
-    private long themeId = BeeConst.UNDEF;
+    private Long timeZoneId = null;
+    private Long themeId = null;
 
     private BeeRowSet configuration = null;
 
@@ -204,6 +205,11 @@ public class CalendarKeeper {
       themeId = DataUtils.getLong(configuration, row, CalendarConstants.COL_THEME);
     }
   }
+  
+  private static class RowActionHandler implements RowActionEvent.Handler {
+    public void onRowAction(RowActionEvent event) {
+    }
+  }
 
   private static BeeRowSet userCalendars = null;
 
@@ -212,6 +218,8 @@ public class CalendarKeeper {
   private static FormView settingsForm = null;
 
   private static final ConfigurationHandler configurationHandler = new ConfigurationHandler();
+
+  private static final RowActionHandler rowActionHandler = new RowActionHandler();
 
   public static void loadUserCalendars() {
     ParameterList params = createRequestParameters(CalendarConstants.SVC_GET_USER_CALENDARS);
@@ -246,6 +254,8 @@ public class CalendarKeeper {
     FormFactory.registerFormCallback(CalendarConstants.FORM_CONFIGURATION, configurationHandler);
 
     GridFactory.registerGridCallback(CalendarConstants.GRID_CALENDARS, new CalendarGridHandler());
+    
+    BeeKeeper.getBus().registerRowActionHandler(rowActionHandler);
 
     configurationHandler.load();
     loadUserCalendars();
@@ -266,19 +276,19 @@ public class CalendarKeeper {
   }
 
   static long getCompany() {
-    return configurationHandler.companyId;
+    return BeeUtils.unbox(configurationHandler.companyId);
   }
 
   static long getDefaultAppointmentType() {
-    return configurationHandler.appointmentTypeId;
+    return BeeUtils.unbox(configurationHandler.appointmentTypeId);
   }
 
   static long getDefaultTheme() {
-    return configurationHandler.themeId;
+    return BeeUtils.unbox(configurationHandler.themeId);
   }
 
   static long getDefaultTimeZone() {
-    return configurationHandler.timeZoneId;
+    return BeeUtils.unbox(configurationHandler.timeZoneId);
   }
 
   static CalendarSettings getSettings(long calendarId) {

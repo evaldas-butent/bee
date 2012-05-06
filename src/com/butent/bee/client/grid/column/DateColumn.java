@@ -1,29 +1,30 @@
-package com.butent.bee.client.grid;
+package com.butent.bee.client.grid.column;
 
 import com.google.gwt.cell.client.Cell;
 
+import com.butent.bee.client.grid.cell.DateCell;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 
 /**
- * Implements DateTime type column, enables to get value for a specified row or index point.
+ * Implements date type column, enables to get value for a specified row or index point.
  */
 
-public class DateTimeColumn extends DataColumn<DateTime> implements HasDateTimeFormat {
+public class DateColumn extends DataColumn<JustDate> implements HasDateTimeFormat {
 
-  public DateTimeColumn(int index, IsColumn dataColumn) {
-    this(Format.getDefaultDateTimeFormat(), index, dataColumn);
+  public DateColumn(int index, IsColumn dataColumn) {
+    this(Format.getDefaultDateFormat(), index, dataColumn);
   }
 
-  public DateTimeColumn(DateTimeFormat format, int index, IsColumn dataColumn) {
-    this(new DateTimeCell(format), index, dataColumn);
+  public DateColumn(DateTimeFormat format, int index, IsColumn dataColumn) {
+    this(new DateCell(format), index, dataColumn);
   }
 
-  public DateTimeColumn(Cell<DateTime> cell, int index, IsColumn dataColumn) {
+  public DateColumn(Cell<JustDate> cell, int index, IsColumn dataColumn) {
     super(cell, index, dataColumn);
   }
 
@@ -34,13 +35,13 @@ public class DateTimeColumn extends DataColumn<DateTime> implements HasDateTimeF
       return null;
     }
   }
-  
+
   @Override
-  public DateTime getValue(IsRow row) {
+  public JustDate getValue(IsRow row) {
     if (row == null) {
       return null;
     }
-    return row.getDateTime(getIndex());
+    return row.getDate(getIndex());
   }
 
   public void setDateTimeFormat(DateTimeFormat format) {

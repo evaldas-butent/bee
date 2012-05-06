@@ -1,25 +1,24 @@
-package com.butent.bee.client.grid;
+package com.butent.bee.client.grid.cell;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
- * Manages rendering of cells containing arbitrary html.
+ * Manages rendering of cells for calculated columns.
  */
 
-public class HtmlCell extends AbstractCell<String> {
+public class CalculatedCell extends AbstractCell<String> {
 
-  public HtmlCell() {
+  public CalculatedCell() {
     super();
   }
 
   @Override
   public void render(Context context, String value, SafeHtmlBuilder sb) {
     if (!BeeUtils.isEmpty(value)) {
-      sb.append(SafeHtmlUtils.fromTrustedString(value));
+      sb.appendEscaped(value);
     }
   }
 }

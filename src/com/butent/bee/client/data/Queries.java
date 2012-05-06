@@ -282,6 +282,11 @@ public class Queries {
     return getRowSet(viewName, columns, filter, order, CachingPolicy.NONE, callback);
   }
 
+  public static int getRowSet(String viewName, List<String> columns, Filter filter,
+      RowSetCallback callback) {
+    return getRowSet(viewName, columns, filter, null, callback);
+  }
+
   public static int getRowSet(String viewName, List<String> columns, RowSetCallback callback) {
     return getRowSet(viewName, columns, null, null, callback);
   }
@@ -416,6 +421,25 @@ public class Queries {
     }
 
     update(rs, true, callback);
+  }
+  
+  public static int updateCell(String viewName, long rowId, long version, BeeColumn column,
+      String oldValue, String newValue, RowCallback callback) {
+    Assert.notEmpty(viewName);
+    Assert.notNull(column);
+    
+    if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
+      return 0;
+    }
+    
+    BeeRowSet rs = new BeeRowSet(column);
+    rs.setViewName(viewName);
+
+    rs.addRow(rowId, version, new String[] {oldValue});
+    rs.getRow(0).preliminaryUpdate(0, newValue);
+
+    update(rs, false, callback);
+    return 1; 
   }
 
   private static void checkRowSet(BeeRowSet rowSet) {

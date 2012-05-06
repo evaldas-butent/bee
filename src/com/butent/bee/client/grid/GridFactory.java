@@ -18,6 +18,18 @@ import com.butent.bee.client.data.KeyProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.grid.cell.HtmlCell;
+import com.butent.bee.client.grid.column.BooleanColumn;
+import com.butent.bee.client.grid.column.CurrencyColumn;
+import com.butent.bee.client.grid.column.DataColumn;
+import com.butent.bee.client.grid.column.DateColumn;
+import com.butent.bee.client.grid.column.DateTimeColumn;
+import com.butent.bee.client.grid.column.DecimalColumn;
+import com.butent.bee.client.grid.column.DoubleColumn;
+import com.butent.bee.client.grid.column.IntegerColumn;
+import com.butent.bee.client.grid.column.LongColumn;
+import com.butent.bee.client.grid.column.RowIdColumn;
+import com.butent.bee.client.grid.column.TextColumn;
 import com.butent.bee.client.grid.scrolltable.ColumnDefinition;
 import com.butent.bee.client.grid.scrolltable.ScrollTable;
 import com.butent.bee.client.grid.scrolltable.TableDefinition;
@@ -527,7 +539,7 @@ public class GridFactory {
       if (brs == null) {
         BeeKeeper.getLog().severe("grid", gridDescription.getName(), "has no initial data");
       } else {
-        createPresenter(brs.getNumberOfRows(), brs, Provider.Type.CACHED, gridDescription,
+        createPresenter(brs.getNumberOfRows(), brs, Provider.Type.LOCAL, gridDescription,
             gridCallback, presenterCallback, initialFilters, options);
       }
       return;

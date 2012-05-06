@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BeeTable xmlns="http://www.butent.com/table"
+
+  name="Favorites"
+  idName="FavoritesID"
+  >
+  <BeeFields>
+    <BeeField name="User" type="LONG" notNull="true" relation="Users" cascade="DELETE" defExpr="CURRENT_USER" />
+    <BeeField name="Group" type="INTEGER" notNull="true" />
+    <BeeField name="Item" type="LONG" notNull="true" />
+    <BeeField name="Order" type="INTEGER" />
+    <BeeField name="Html" type="TEXT" notNull="true" />
+  </BeeFields>
+</BeeTable>

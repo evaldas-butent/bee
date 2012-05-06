@@ -39,7 +39,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_IN_PLACE, EDIT_NEW_ROW, EDIT_POPUP, ENABLED_ACTIONS,
     DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER, ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE,
     ROW_VALIDATION, SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH, COLUMNS, WIDGETS,
-    FOOTER_EVENTS, AUTO_FIT
+    FOOTER_EVENTS, AUTO_FIT, FAVORITE
   }
 
   public static GridDescription restore(String s) {
@@ -112,6 +112,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Set<Action> enabledActions = Sets.newHashSet();
   private Set<Action> disabledActions = Sets.newHashSet();
 
+  private String favorite = null;
+  
   private List<String> widgets = Lists.newArrayList();
 
   public GridDescription(String name) {
@@ -344,6 +346,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case AUTO_FIT:
           setAutoFit(value);
           break;
+        case FAVORITE:
+          setFavorite(value);
+          break;
       }
     }
   }
@@ -453,7 +458,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Show Column Widths", showColumnWidths(),
         "Min Column Width", getMinColumnWidth(),
         "Max Column Width", getMaxColumnWidth(),
-        "Auto Fit", getAutoFit());
+        "Auto Fit", getAutoFit(),
+        "Favorite", getFavorite());
 
     if (getStyleSheets() != null && !getStyleSheets().isEmpty()) {
       int cnt = getStyleSheets().size();
@@ -523,6 +529,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           column.getInfo());
     }
     return info;
+  }
+
+  public String getFavorite() {
+    return favorite;
   }
 
   public Filter getFilter() {
@@ -808,6 +818,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case AUTO_FIT:
           arr[i++] = getAutoFit();
           break;
+        case FAVORITE:
+          arr[i++] = getFavorite();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -884,6 +897,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setEnabledActions(Set<Action> enabledActions) {
     this.enabledActions = enabledActions;
+  }
+
+  public void setFavorite(String favorite) {
+    this.favorite = favorite;
   }
 
   public void setFilter(Filter filter) {
@@ -965,7 +982,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setRowStyles(Collection<ConditionalStyleDeclaration> rowStyles) {
     this.rowStyles = rowStyles;
   }
-
+  
   public void setRowValidation(Calculation rowValidation) {
     this.rowValidation = rowValidation;
   }
@@ -973,7 +990,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setSearchThreshold(Integer searchThreshold) {
     this.searchThreshold = searchThreshold;
   }
-  
+
   public void setShowColumnWidths(Boolean showColumnWidths) {
     this.showColumnWidths = showColumnWidths;
   }
@@ -981,7 +998,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setStyleSheets(Map<String, String> styleSheets) {
     this.styleSheets = styleSheets;
   }
-
+  
   public void setWidgets(List<String> widgets) {
     this.widgets = widgets;
   }

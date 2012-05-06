@@ -22,8 +22,6 @@
     <BeeField name="DragDropCreation" type="BOOLEAN" />
 
     <BeeField name="TimeBlockClickNumber" type="INTEGER" />
-
-    <BeeField name="Favorite" type="BOOLEAN" />
   </BeeFields>
   <BeeKeys>
     <BeeKey unique="true">

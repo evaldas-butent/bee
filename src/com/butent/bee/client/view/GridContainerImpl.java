@@ -1,6 +1,7 @@
 package com.butent.bee.client.view;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.EventTarget;
@@ -42,12 +43,14 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.ActiveRowChangeEvent;
 import com.butent.bee.shared.data.event.DataRequestEvent;
 import com.butent.bee.shared.data.event.ParentRowEvent;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Implements design content for a grid container component.
@@ -145,6 +148,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   
   private IsRow lastRow = null;
   private boolean lastEnabled = false;
+  
+  private List<String> favorite = Lists.newArrayList();
 
   public GridContainerImpl() {
     this(-1);
@@ -196,8 +201,24 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (caption == null) {
         caption = gridDescription.getCaption();
       }
+      
+      Set<Action> enabledActions = Sets.newHashSet(gridDescription.getEnabledActions());
+      
+      boolean fav = !BeeUtils.isEmpty(gridDescription.getFavorite());
+      if (fav) {
+        setFavorite(NameUtils.toList(gridDescription.getFavorite()));
+      }
+
+      if (enabledActions.contains(Action.BOOKMARK) != fav) {
+        if (fav) {
+          enabledActions.add(Action.BOOKMARK);
+        } else {
+          enabledActions.remove(Action.BOOKMARK);
+        }
+      }
+      
       header.create(caption, !BeeUtils.isEmpty(gridDescription.getViewName()), readOnly, options,
-          gridDescription.getEnabledActions(), gridDescription.getDisabledActions());
+          enabledActions, gridDescription.getDisabledActions());
     } else {
       header = null;
     }
@@ -271,6 +292,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       return null;
     }
     return (GridView) getCenter();
+  }
+
+  public List<String> getFavorite() {
+    return favorite;
   }
 
   public HeaderView getHeader() {
@@ -436,6 +461,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
     this.enabled = enabled;
     DomUtils.enableChildren(this, enabled);
+  }
+
+  public void setFavorite(List<String> favorite) {
+    BeeUtils.overwrite(this.favorite, favorite);
   }
 
   public void setViewPresenter(Presenter viewPresenter) {
@@ -763,7 +792,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       setProvidesResize(true);
     }
   }
-
+  
   private boolean wasLastEnabled() {
     return lastEnabled;
   }

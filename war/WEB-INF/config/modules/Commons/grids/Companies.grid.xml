@@ -3,7 +3,7 @@
 
   name="Companies" viewName="Companies" caption="Įmonės"
   editForm="Company" newRowForm="Company" newRowCaption="Nauja Įmonė"
-  editPopup="true" newRowPopup="true"
+  editPopup="true" newRowPopup="true" favorite="Name"
   >
   <columns>
     <DataColumn name="Name" source="Name" caption="Įmonė" />

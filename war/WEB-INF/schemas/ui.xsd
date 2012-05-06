@@ -387,4 +387,11 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="elementType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="link" />
+      <xs:enumeration value="button" />
+    </xs:restriction>
+  </xs:simpleType>
+
 </xs:schema>

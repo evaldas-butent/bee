@@ -34,7 +34,6 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
-import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.layout.Vertical;
@@ -112,6 +111,8 @@ public class ScreenImpl implements Screen {
   private final String logVisible = "log-visible";
 
   private Notification notification = null;
+  
+  private Favorites favorites = null;
 
   public ScreenImpl() {
   }
@@ -183,6 +184,10 @@ public class ScreenImpl implements Screen {
 
   public HasWidgets getCommandPanel() {
     return commandPanel;
+  }
+
+  public Favorites getFavorites() {
+    return favorites;
   }
 
   public String getName() {
@@ -524,16 +529,9 @@ public class ScreenImpl implements Screen {
   protected Widget initWest() {
     TabbedPages tp = new TabbedPages();
 
-    Stack fav = new Stack(Unit.PX);
-    double h = 20;
-
-    fav.add(new BeeLabel(), "Menu", h);
-    fav.add(new BeeLabel(), "Records", h);
-    fav.add(new BeeLabel(), "Filters", h);
-    fav.add(new BeeLabel(), "Reports", h);
-    fav.add(new BeeLabel(), "Dashboards", h);
-
-    tp.add(fav, "Favorites");
+    Favorites fav = new Favorites();
+    tp.add(fav, new BeeImage(Global.getImages().bookmark()));
+    setFavorites(fav);
 
     tp.add(new BeeLabel(), "Recent");
 
@@ -728,6 +726,10 @@ public class ScreenImpl implements Screen {
 
   private void setCommandPanel(HasWidgets commandPanel) {
     this.commandPanel = commandPanel;
+  }
+
+  private void setFavorites(Favorites favorites) {
+    this.favorites = favorites;
   }
 
   private void setLogToggle(BeeCheckBox logToggle) {

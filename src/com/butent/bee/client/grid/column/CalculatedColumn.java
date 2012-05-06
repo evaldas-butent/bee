@@ -1,10 +1,12 @@
-package com.butent.bee.client.grid;
+package com.butent.bee.client.grid.column;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
+import com.butent.bee.client.grid.cell.BooleanCell;
+import com.butent.bee.client.grid.cell.CalculatedCell;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;

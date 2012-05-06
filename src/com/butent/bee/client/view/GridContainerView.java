@@ -26,5 +26,7 @@ public interface GridContainerView extends View, HasAllDragAndDropHandlers {
 
   GridView getContent();
   
-  HeaderView getHeader();  
+  List<String> getFavorite();
+  
+  HeaderView getHeader();
 }

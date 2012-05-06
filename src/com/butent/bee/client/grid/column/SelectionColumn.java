@@ -1,9 +1,10 @@
-package com.butent.bee.client.grid;
+package com.butent.bee.client.grid.column;
 
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.dom.client.Element;
 
+import com.butent.bee.client.grid.cell.SimpleBooleanCell;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;

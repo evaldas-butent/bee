@@ -15,10 +15,10 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
-import com.butent.bee.client.grid.AbstractColumn;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
@@ -244,7 +244,7 @@ public class TransportHandler {
               } else {
                 updColName = "Kilometers";
               }
-              cols.add((BeeColumn) DataUtils.getColumn(updColName, columns));
+              cols.add(DataUtils.getColumn(updColName, columns));
               values.add(row.getString(DataUtils.getColumnIndex(updColName, columns)));
 
               BeeRowSet rs = new BeeRowSet(viewName, cols);

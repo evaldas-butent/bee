@@ -3,6 +3,8 @@ package com.butent.bee.client.grid;
 import com.google.gwt.cell.client.ValueUpdater;
 import com.google.gwt.user.cellview.client.Header;
 
+import com.butent.bee.client.grid.cell.FooterCell;
+
 import java.util.Collection;
 import java.util.List;
 

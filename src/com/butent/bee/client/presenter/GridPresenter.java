@@ -317,6 +317,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       case REQUERY:
         requery(true);
         break;
+      
+      case BOOKMARK:
+        BeeKeeper.getScreen().getFavorites().bookmark(getViewName(), getActiveRow(),
+            getDataColumns(), getView().getFavorite());
+        break;
 
       default:
         BeeKeeper.getLog().info(action, "not implemented");

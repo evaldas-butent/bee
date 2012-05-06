@@ -5,6 +5,9 @@ package com.butent.bee.shared;
  */
 
 public interface HasService {
+  
+  String ATTR_SERVICE = "service";
+
   String getService();
 
   void setService(String svc);

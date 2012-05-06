@@ -173,7 +173,7 @@ public class HeaderImpl extends Complex implements HeaderView {
       x += w;
     }
 
-    if (hasAction(Action.BOOKMARK, isWindow, enabledActions, disabledActions)) {
+    if (hasAction(Action.BOOKMARK, false, enabledActions, disabledActions)) {
       addRightTop(createControl(Global.getImages().bookmarkAdd(), Action.BOOKMARK, cst), x, y);
       x += w;
     }

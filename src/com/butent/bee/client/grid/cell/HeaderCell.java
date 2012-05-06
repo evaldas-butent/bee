@@ -1,4 +1,4 @@
-package com.butent.bee.client.grid;
+package com.butent.bee.client.grid.cell;
 
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.ValueUpdater;
@@ -13,6 +13,7 @@ import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.view.Order;

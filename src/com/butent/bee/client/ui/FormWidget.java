@@ -295,7 +295,6 @@ public enum FormWidget {
 
   private static final String ATTR_URL = "url";
   private static final String ATTR_HISTORY_TOKEN = "historyToken";
-  private static final String ATTR_SERVICE = "service";
   private static final String ATTR_STAGE = "stage";
   private static final String ATTR_UNIT = "unit";
   private static final String ATTR_TAB_INDEX = "tabIndex";
@@ -642,9 +641,7 @@ public enum FormWidget {
 
       case HYPERLINK:
         url = attributes.get(ATTR_HISTORY_TOKEN);
-        if (!BeeUtils.isEmpty(url)) {
-          widget = new InternalLink(BeeUtils.ifString(html, url), url);
-        }
+        widget = new InternalLink(BeeUtils.ifString(html, url), url);
         break;
 
       case IMAGE:
@@ -663,9 +660,7 @@ public enum FormWidget {
 
       case INLINE_HYPERLINK:
         url = attributes.get(ATTR_HISTORY_TOKEN);
-        if (!BeeUtils.isEmpty(url)) {
-          widget = new InlineInternalLink(BeeUtils.ifString(html, url), url);
-        }
+        widget = new InlineInternalLink(BeeUtils.ifString(html, url), url);
         break;
 
       case INLINE_LABEL:
@@ -766,7 +761,7 @@ public enum FormWidget {
       case LINK:
         url = attributes.get(ATTR_URL);
         if (!BeeUtils.isEmpty(url)) {
-          widget = new Link(html, true, attributes.get(ATTR_URL));
+          widget = new Link(html, true, url);
         } else if (!BeeUtils.isEmpty(html)) {
           widget = new Link(html, true);
         } else {
@@ -1789,7 +1784,7 @@ public enum FormWidget {
           ((CellPanel) widget).setSpacing(BeeUtils.toInt(value));
         }
 
-      } else if (BeeUtils.same(name, ATTR_SERVICE)) {
+      } else if (BeeUtils.same(name, HasService.ATTR_SERVICE)) {
         if (widget instanceof HasService) {
           ((HasService) widget).setService(value);
         }
