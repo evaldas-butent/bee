@@ -7,42 +7,29 @@
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="10">
       <row>
-        <cell><Label html="Data" horizontalAlignment="right" class="bee-required" /></cell>
-        <cell><InputDateTime source="Date" /></cell>
-          <cell>
-            <Label html="Būsena" horizontalAlignment="right" />
-          </cell>
-          <cell>
-            <TextLabel source="Status" itemKey="OrderStatus" class="bee-display" />
-          </cell>
+        <Label html="Data" horizontalAlignment="right" />
+        <InputDateTime source="Date" />
+        <Label html="Būsena" horizontalAlignment="right" />
+        <TextLabel source="Status" itemKey="OrderStatus" class="bee-display" />
       </row>
       <row>
-        <cell><Label html="Užsakymo Nr." horizontalAlignment="right" class="bee-required" /></cell>
-        <cell colSpan="3"><InputText source="OrderNo" /></cell>
+        <Label html="Užsakymo Nr." horizontalAlignment="right" />
+        <InputText source="OrderNo" />
+        <Button name="profit" html="Pelnas" />
       </row>
       <row>
-        <cell><Label html="Užsakovas" horizontalAlignment="right" class="bee-required" /></cell>
-        <cell>
-          <DataSelector source="Customer" />
-        </cell>
-        <cell><Label html="Mokėtojas" horizontalAlignment="right" /></cell>
+        <Label html="Užsakovas" horizontalAlignment="right" />
+        <DataSelector source="Customer" />
+        <Label html="Mokėtojas" horizontalAlignment="right" />
         <cell colSpan="3">
           <DataSelector source="Payer" />
         </cell>
       </row>
       <row>
-        <cell>
-          <Label html="Kontaktas:" horizontalAlignment="right" />
-        </cell>
-        <cell>
-          <DataSelector source="CustomerPerson" />
-        </cell>
-        <cell>
-          <Label html="Vadybininkas:" horizontalAlignment="right" />
-        </cell>
-        <cell>
-          <DataSelector source="Manager" />
-        </cell>
+        <Label html="Kontaktas:" horizontalAlignment="right" />
+        <DataSelector source="CustomerPerson" />
+        <Label html="Vadybininkas:" horizontalAlignment="right" />
+        <DataSelector source="Manager" />
       </row>
     </FlexTable>
 

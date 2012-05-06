@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
+  xmlns:x="http://www.butent.com/expression"
 
   name="TripCargo"
   source="CargoTrips"
@@ -38,5 +39,8 @@
       <SimpleColumn name="Place" alias="UnloadingPlace" />
       <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
     </SimpleJoin>
+    <SimpleColumn name="XXX">
+      <x:number>0</x:number>
+    </SimpleColumn>
   </Columns>
 </View>

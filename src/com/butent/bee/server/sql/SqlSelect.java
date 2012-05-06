@@ -706,7 +706,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    */
   @Override
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(fieldList) || super.isEmpty();
+    return BeeUtils.isEmpty(fieldList);
   }
 
   /**

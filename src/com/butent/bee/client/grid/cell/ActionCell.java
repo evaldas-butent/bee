@@ -14,10 +14,10 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 public class ActionCell extends AbstractCell<String> implements HasService, HasOptions {
-  
+
   public enum Type {
     LINK, BUTTON;
-    
+
     private SafeHtml render(String value) {
       switch (this) {
         case LINK:
@@ -38,30 +38,30 @@ public class ActionCell extends AbstractCell<String> implements HasService, HasO
     @Template("<a href=\"javascript:;\" class=\"bee-ActionCellLink\">{0}</a>")
     SafeHtml link(String option);
   }
-  
+
+  private static final Template TEMPLATE = GWT.create(Template.class);
+
+  private static final Type DEFAULT_TYPE = Type.LINK;
+
   public static ActionCell create(ColumnDescription columnDescription) {
     ActionCell cell = new ActionCell(NameUtils.getConstant(Type.class,
         columnDescription.getElementType()));
-    
+
     cell.setService(columnDescription.getService());
     cell.setOptions(columnDescription.getOptions());
-    
+
     return cell;
   }
-  
-  private static final Template TEMPLATE = GWT.create(Template.class);
-  
-  private static final Type DEFAULT_TYPE = Type.LINK;
-  
+
   private final Type type;
-  
+
   private String service = null;
   private String options = null;
 
   public ActionCell() {
     this(DEFAULT_TYPE);
   }
-  
+
   public ActionCell(Type type) {
     super();
     this.type = (type == null) ? DEFAULT_TYPE : type;

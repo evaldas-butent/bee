@@ -209,10 +209,12 @@ public abstract class SqlBuilder {
     }
     List<IsFrom> fromList = ss.getFrom();
 
-    query.append(" FROM ");
+    if (!BeeUtils.isEmpty(fromList)) {
+      query.append(" FROM ");
 
-    for (IsFrom from : fromList) {
-      query.append(from.getSqlString(this));
+      for (IsFrom from : fromList) {
+        query.append(from.getSqlString(this));
+      }
     }
     IsCondition whereClause = ss.getWhere();
 

@@ -4,49 +4,31 @@
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="OrderCargo" viewName="OrderCargo" caption="Krovinys"
+  height="70" heightUnit="%"
   >
   <FlowPanel class="flexBox-vertical">
     <VerticalPanel cellSpacing="10">
       <cell>
         <FlexTable>
           <row>
-            <cell colSpan="2">
-              <Label html="Krovinys" horizontalAlignment="right" class="bee-required" />
-            </cell>
+            <Button name="profit" html="Pelnas" />
+            <Label html="Krovinys" horizontalAlignment="right" class="bee-required" />
             <cell colSpan="3">
               <InputText source="Cargo" style="font-weight: bold; width: 100%" />
             </cell>
           </row>
           <row>
-            <cell>
-              <Label html="CMR" horizontalAlignment="right" />
-            </cell>
-            <cell>
-              <InputText source="Cmr" />
-            </cell>
-            <cell>
-              <Label html="Svoris" horizontalAlignment="right" />
-            </cell>
-            <cell>
-              <InputInteger source="Weight" />
-            </cell>
-            <cell>
-              <Label html="Pastabos" />
-            </cell>
+            <Label html="CMR" horizontalAlignment="right" />
+            <InputText source="Cmr" />
+            <Label html="Svoris" horizontalAlignment="right" />
+            <InputDecimal source="Weight" format="#.000" />
+            <Label html="Pastabos" />
           </row>
           <row>
-            <cell>
-              <Label html="Numeris" horizontalAlignment="right" />
-            </cell>
-            <cell>
-              <InputText source="Number" />
-            </cell>
-            <cell>
-              <Label html="Tūris" horizontalAlignment="right" />
-            </cell>
-            <cell>
-              <InputDecimal format="#.000" scale="1" source="Volume" />
-            </cell>
+            <Label html="Numeris" horizontalAlignment="right" />
+            <InputText source="Number" />
+            <Label html="Tūris" horizontalAlignment="right" />
+            <InputDecimal format="#.000" scale="1" source="Volume" />
             <cell rowSpan="2">
               <InputArea source="Notes" characterWidth="30" style="height: 100%" />
             </cell>
@@ -55,9 +37,7 @@
             <cell colSpan="3">
               <Label html="Kiekis" horizontalAlignment="right" />
             </cell>
-            <cell>
-              <InputInteger source="Quantity" />
-            </cell>
+            <InputInteger source="Quantity" />
           </row>
         </FlexTable>
       </cell>

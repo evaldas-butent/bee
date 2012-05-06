@@ -349,6 +349,8 @@ public class QueryServiceBean {
 
     Assert.state(requiresId || !si.isEmpty());
 
+    activateTables(si);
+
     if (requiresId) {
       String versionFld = sys.getVersionName(source);
 
@@ -376,13 +378,14 @@ public class QueryServiceBean {
     return sqlCount(new SqlSelect().addConstant(null, "dummy").addFrom(source).setWhere(where));
   }
 
-  public int sqlCount(SqlSelect ss) {
+  public int sqlCount(SqlSelect query) {
     SimpleRowSet res;
+    SqlSelect ss = query.copyOf().resetOrder();
 
     if (BeeUtils.allEmpty(ss.getGroupBy(), ss.getUnion())) {
-      res = getData(ss.copyOf().resetFields().resetOrder().addCount("cnt"));
+      res = getData(ss.resetFields().addCount("cnt"));
     } else {
-      res = getData(new SqlSelect().addCount("cnt").addFrom(ss.resetOrder(), "als"));
+      res = getData(new SqlSelect().addCount("cnt").addFrom(ss, "als"));
     }
     if (res == null) {
       return -1;
@@ -424,13 +427,12 @@ public class QueryServiceBean {
     ResponseObject res = processSql(query.getQuery(), new SqlHandler<ResponseObject>() {
       @Override
       public ResponseObject processError(SQLException ex) {
-        return ResponseObject.error(ex).setResponse(-1);
+        throw new BeeRuntimeException(ex);
       }
 
       @Override
       public ResponseObject processResultSet(ResultSet rs) throws SQLException {
-        return ResponseObject.error("Data modification query must not return a ResultSet")
-            .setResponse(-1);
+        throw new BeeRuntimeException("Data modification query must not return a ResultSet");
       }
 
       @Override
@@ -449,7 +451,7 @@ public class QueryServiceBean {
     Collection<String> sources = query.getSources();
 
     if (!BeeUtils.isEmpty(sources)) {
-      for (String source : query.getSources()) {
+      for (String source : sources) {
         if (sys.isTable(source)) {
           sys.activateTable(source);
         }

@@ -57,6 +57,48 @@ import java.util.List;
 
 public class TransportHandler {
 
+  private static class Profit implements ClickHandler {
+    private final String idName;
+
+    private Profit(String idName) {
+      this.idName = idName;
+    }
+
+    @Override
+    public void onClick(ClickEvent event) {
+      ParameterList args = TransportHandler.createArgs(TransportConstants.SVC_GET_PROFIT);
+      final FormView form = UiHelper.getForm((Widget) event.getSource());
+      args.addDataItem(idName, BeeUtils.transform(form.getRow().getId()));
+
+      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          Assert.notNull(response);
+
+          if (response.hasErrors()) {
+            Global.showError((Object[]) response.getErrors());
+
+          } else if (response.hasArrayResponse(String.class)) {
+            form.notifyInfo(Codec.beeDeserializeCollection((String) response.getResponse()));
+
+          } else {
+            Global.showError("Unknown response");
+          }
+        }
+      });
+    }
+  }
+
+  private static class CargoFormHandler extends AbstractFormCallback {
+    @Override
+    public void afterCreateWidget(String name, Widget widget) {
+      if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
+        ((HasClickHandlers) widget)
+            .addClickHandler(new Profit(TransportConstants.VAR_CARGO_ID));
+      }
+    }
+  }
+
   private static class CargoTripsGridHandler extends AbstractGridCallback {
     @Override
     public boolean beforeAddRow(final GridPresenter presenter) {
@@ -110,6 +152,14 @@ public class TransportHandler {
   }
 
   private static class OrderFormHandler extends AbstractFormCallback {
+    @Override
+    public void afterCreateWidget(String name, Widget widget) {
+      if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
+        ((HasClickHandlers) widget)
+            .addClickHandler(new Profit(TransportConstants.VAR_ORDER_ID));
+      }
+    }
+
     @Override
     public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
       newRow.setValue(form.getDataIndex(TransportConstants.COL_STATUS),
@@ -181,36 +231,10 @@ public class TransportHandler {
 
   private static class TripFormHandler extends AbstractFormCallback {
     @Override
-    public void afterCreateWidget(String name, final Widget widget) {
+    public void afterCreateWidget(String name, Widget widget) {
       if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            FormView form = UiHelper.getForm(widget);
-            IsRow row = form.getRow();
-
-            ParameterList args = TransportHandler.createArgs(TransportConstants.SVC_GET_PROFIT);
-            args.addDataItem(TransportConstants.VAR_TRIP_ID, BeeUtils.transform(row.getId()));
-
-            BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-              @Override
-              public void onResponse(ResponseObject response) {
-                Assert.notNull(response);
-
-                if (response.hasErrors()) {
-                  Global.showError((Object[]) response.getErrors());
-
-                } else if (response.hasArrayResponse(String.class)) {
-                  BeeKeeper.getScreen()
-                      .notifyInfo(Codec.beeDeserializeCollection((String) response.getResponse()));
-
-                } else {
-                  Global.showError("Unknown response");
-                }
-              }
-            });
-          }
-        });
+        ((HasClickHandlers) widget)
+            .addClickHandler(new Profit(TransportConstants.VAR_TRIP_ID));
       }
     }
   }
@@ -373,6 +397,7 @@ public class TransportHandler {
     GridFactory.registerGridCallback("TripRoutes", new TripRoutesGridHandler());
     GridFactory.registerGridCallback("CargoTrips", new CargoTripsGridHandler());
     FormFactory.registerFormCallback("Trip", new TripFormHandler());
+    FormFactory.registerFormCallback("OrderCargo", new CargoFormHandler());
   }
 
   static ParameterList createArgs(String name) {

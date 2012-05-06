@@ -21,6 +21,9 @@ class OracleSqlBuilder extends SqlBuilder {
     int offset = ss.getOffset();
     String sql = super.getSelect(ss);
 
+    if (BeeUtils.isEmpty(ss.getFrom())) {
+      sql = BeeUtils.concat(1, sql, "FROM DUAL");
+    }
     if (BeeUtils.allEmpty(limit, offset)) {
       return sql;
     }

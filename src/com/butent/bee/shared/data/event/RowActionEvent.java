@@ -51,6 +51,10 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
     return TYPE;
   }
 
+  public String getOptions() {
+    return options;
+  }
+
   public IsRow getRow() {
     return row;
   }
@@ -59,24 +63,20 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
     return getRow().getId();
   }
 
-  public String getViewName() {
-    return viewName;
-  }
-
   public String getService() {
     return service;
   }
 
-  public void setService(String service) {
-    this.service = service;
-  }
-
-  public String getOptions() {
-    return options;
+  public String getViewName() {
+    return viewName;
   }
 
   public void setOptions(String options) {
     this.options = options;
+  }
+
+  public void setService(String service) {
+    this.service = service;
   }
 
   @Override

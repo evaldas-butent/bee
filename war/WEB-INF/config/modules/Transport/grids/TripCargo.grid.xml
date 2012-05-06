@@ -87,5 +87,6 @@
         </ui:function>
       </render>
     </CalcColumn>
+    <DataColumn name="XXX" caption="Pajamos" />
   </columns>
 </Grid>
