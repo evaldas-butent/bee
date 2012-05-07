@@ -3,11 +3,8 @@ package com.butent.bee.client.modules.calendar;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
-import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -37,33 +34,22 @@ import com.butent.bee.client.calendar.event.UpdateEvent;
 import com.butent.bee.client.calendar.event.UpdateHandler;
 import com.butent.bee.client.calendar.monthview.MonthView;
 import com.butent.bee.client.calendar.resourceview.ResourceView;
-import com.butent.bee.client.calendar.theme.Appearance;
-import com.butent.bee.client.calendar.theme.DefaultTheme;
-import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.datepicker.DatePicker;
-import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.Edges;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.grid.FlexTable;
-import com.butent.bee.client.i18n.DateTimeFormat;
-import com.butent.bee.client.i18n.DateTimeFormat.PredefinedFormat;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeImage;
-import com.butent.bee.client.widget.Html;
-import com.butent.bee.client.widget.InputArea;
-import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
@@ -140,7 +126,7 @@ public class CalendarPanel extends Complex {
       public void onClick(ClickEvent event) {
         DateTime date = calendar.getDate().getDateTime();
         date.setHour(12);
-        openDialog(null, date);
+        CalendarKeeper.openAppointment(null, date, calendar);
       }
     });
 
@@ -201,7 +187,7 @@ public class CalendarPanel extends Complex {
 
     calendar.addOpenHandler(new OpenHandler<Appointment>() {
       public void onOpen(OpenEvent<Appointment> event) {
-        openDialog(event.getTarget(), null);
+        CalendarKeeper.openAppointment(event.getTarget(), null, calendar);
       }
     });
 
@@ -213,7 +199,7 @@ public class CalendarPanel extends Complex {
 
     calendar.addTimeBlockClickHandler(new TimeBlockClickHandler<HasDateValue>() {
       public void onTimeBlockClick(TimeBlockClickEvent<HasDateValue> event) {
-        openDialog(null, event.getTarget());
+        CalendarKeeper.openAppointment(null, event.getTarget(), calendar);
       }
     });
 
@@ -367,158 +353,6 @@ public class CalendarPanel extends Complex {
     
     calendar.setDate(newDate);
     datePicker.setDate(newDate);
-  }
-  
-  private void openDialog(Appointment appointment, HasDateValue date) {
-    final boolean isNew = appointment == null;
-    String caption = isNew ? "New Appointment" : "Edit Appointment";
-    final DialogBox dialogBox = new DialogBox(caption);
-
-    FlexTable panel = new FlexTable();
-    panel.setCellSpacing(4);
-    
-    int row = 0;
-    panel.setWidget(row, 0, new Html("Summary"));
-    
-    final InputText summary = new InputText();
-    StyleUtils.setWidth(summary, 300);
-    panel.setWidget(row, 1, summary);
-
-    DateTimeFormat dtFormat = DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT);
-    
-    row++;
-    panel.setWidget(row, 0, new Html("Start"));
-    final InputDate start = new InputDate(ValueType.DATETIME, dtFormat);
-    panel.setWidget(row, 1, start);
-
-    row++;
-    panel.setWidget(row, 0, new Html("End"));
-    final InputDate end = new InputDate(ValueType.DATETIME, dtFormat);
-    panel.setWidget(row, 1, end);
-    
-    row++;
-    panel.setWidget(row, 0, new Html("Description"));
-    final InputArea description = new InputArea();
-    description.setVisibleLines(3);
-    StyleUtils.setWidth(description, 300);
-    panel.setWidget(row, 1, description);
-
-    row++;
-    panel.setWidget(row, 0, new Html("Color"));
-    final TabBar colors = new TabBar("bee-ColorBar-");
-
-    for (AppointmentStyle style : AppointmentStyle.values()) {
-      if (AppointmentStyle.DEFAULT.equals(style) || AppointmentStyle.CUSTOM.equals(style)) {
-        continue;
-      }
-      Appearance gs = DefaultTheme.STYLES.get(style);
-      if (gs == null) {
-        continue;
-      }
-
-      Html color = new Html();
-      StyleUtils.setSize(color, 14, 14);
-      color.getElement().getStyle().setBackgroundColor(gs.getBackground());
-      color.getElement().getStyle().setPaddingBottom(2, Unit.PX);
-
-      colors.addItem(color);
-    }
-
-    colors.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {
-      public void onBeforeSelection(BeforeSelectionEvent<Integer> event) {
-        Widget widget = colors.getSelectedWidget();
-        if (widget != null) {
-          widget.getElement().setInnerHTML(BeeConst.STRING_EMPTY);
-        }
-      }
-    });
-
-    colors.addSelectionHandler(new SelectionHandler<Integer>() {
-      public void onSelection(SelectionEvent<Integer> event) {
-        Widget widget = colors.getSelectedWidget();
-        if (widget != null) {
-          widget.getElement().setInnerHTML(BeeUtils.toString(BeeConst.CHECK_MARK));
-        }
-      }
-    });
-
-    panel.setWidget(row, 1, colors);
-
-    final Appointment ap = isNew ? new Appointment() : appointment;
-    
-    if (!isNew && !ap.getAttendees().isEmpty()) {
-      row++;
-      panel.setWidget(row, 0, new Html("Attendees"));
-      
-      StringBuilder sb = new StringBuilder();
-      for (Attendee attendee : ap.getAttendees()) {
-        if (!BeeUtils.isEmpty(attendee.getName())) {
-          sb.append(' ').append(attendee.getName().trim());
-        }
-      }
-      panel.setWidget(row, 1, new Html(sb.toString().trim()));
-    }
-
-    if (isNew && date != null) {
-      ap.setStart(date.getDateTime());
-      DateTime to = DateTime.copyOf(ap.getStart());
-      TimeUtils.addHour(to, 1);
-      ap.setEnd(to);
-    }
-    if (isNew) {
-      ap.setStyle(AppointmentStyle.BLUE);
-    }
-
-    summary.setText(ap.getTitle());
-    start.setDate(ap.getStart());
-    end.setDate(ap.getEnd());
-    description.setText(ap.getDescription());
-    colors.selectTab(ap.getStyle().ordinal());
-
-    BeeButton confirm = new BeeButton(isNew ? "Create" : "Update", new ClickHandler() {
-      public void onClick(ClickEvent ev) {
-        HasDateValue from = start.getDate();
-        HasDateValue to = end.getDate();
-        if (from == null || to == null || TimeUtils.isMeq(from, to)) {
-          Global.showError("Sorry, no appointment");
-          return;
-        }
-
-        ap.setTitle(summary.getText());
-        ap.setStart(from.getDateTime());
-        ap.setEnd(to.getDateTime());
-        ap.setDescription(description.getText());
-        ap.setStyle(AppointmentStyle.values()[colors.getSelectedTab()]);
-
-        if (isNew) {
-          calendar.addAppointment(ap);
-        } else {
-          calendar.refresh();
-        }
-
-        dialogBox.hide();
-      }
-    });
-    
-    row++;
-    panel.setWidget(row, 0, confirm);
-
-    if (!isNew) {
-      BeeButton delete = new BeeButton("Delete", new ClickHandler() {
-        public void onClick(ClickEvent ev) {
-          calendar.removeAppointment(ap);
-          dialogBox.hide();
-        }
-      });
-      panel.setWidget(row, 1, delete);
-    }
-
-    dialogBox.setWidget(panel);
-    
-    dialogBox.setAnimationEnabled(true);
-    dialogBox.center();
-
-    summary.setFocus(true);
   }
 
   private void refresh() {

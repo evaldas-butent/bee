@@ -7,6 +7,10 @@
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="5">
       <row>
+        <DataSelector source="Company" caption="Įmonė:" />
+        <TextLabel renderColumns="CompanyPhone CompanyMobile" />
+      </row>
+      <row>
         <DataSelector source="AppointmentType" caption="Tipas:" />
         <InputText source="Summary" caption="Pavadinimas:" />
       </row>
