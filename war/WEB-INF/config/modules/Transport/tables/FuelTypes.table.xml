@@ -7,5 +7,6 @@
   >
   <BeeFields>
     <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />
+    <BeeField name="Item" type="LONG" relation="Items" />
   </BeeFields>
 </BeeTable>

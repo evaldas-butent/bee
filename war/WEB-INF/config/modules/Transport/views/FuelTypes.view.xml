@@ -6,6 +6,10 @@
   >
   <Columns>
     <SimpleColumn name="Name" />
+    <SimpleColumn name="Item"/>
+    <SimpleJoin joinType="LEFT" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="Name" />

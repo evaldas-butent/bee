@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="DriverTrips"
+  source="TripDrivers"
+  >
+  <Columns>
+    <SimpleColumn name="DateFrom" />
+    <SimpleColumn name="DateTo" />
+    <SimpleColumn name="Driver" />
+    <SimpleJoin joinType="LEFT" name="Trip">
+      <SimpleColumn name="Date" />
+      <SimpleColumn name="TripNo" />
+      <SimpleJoin joinType="LEFT" name="Forwarder">
+        <SimpleColumn name="Name" alias="ForwarderName" />
+      </SimpleJoin>
+      <SimpleColumn name="ForwarderVehicle" />
+      <SimpleJoin name="Vehicle" joinType="LEFT">
+        <SimpleColumn name="Number" alias="VehicleNumber" />
+      </SimpleJoin>
+      <SimpleJoin name="Trailer" joinType="LEFT">
+        <SimpleColumn name="Number" alias="TrailerNumber" />
+      </SimpleJoin>
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="DateFrom" descending="true" />
+  </Order>
+</View>

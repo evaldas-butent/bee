@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="DriverAdvances"
+  source="DriverAdvances"
+  >
+  <Columns>
+    <SimpleColumn name="Driver" />
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Number" />
+    <SimpleColumn name="Amount" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
+  </Columns>
+</View>

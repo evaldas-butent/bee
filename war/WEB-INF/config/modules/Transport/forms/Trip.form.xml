@@ -84,6 +84,7 @@
             </FlowPanel>
 
             <ChildGrid name="TripDrivers" relColumn="Trip" class="flexible" />
+            <ChildGrid name="DriverAdvances" parent="TripDrivers" relColumn="Driver" class="flexible" />
           </FlowPanel>
         </FlowPanel>
       </page>

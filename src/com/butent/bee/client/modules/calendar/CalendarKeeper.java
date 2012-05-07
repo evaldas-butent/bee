@@ -318,6 +318,151 @@ public class CalendarKeeper {
     });
   }
 
+  public static void openAppointment(Appointment appointment, HasDateValue date,
+      final Calendar calendar) {
+    final boolean isNew = appointment == null;
+    String caption = isNew ? "Naujas Vizitas" : "Vizitas";
+    final DialogBox dialogBox = new DialogBox(caption);
+  
+    FlexTable panel = new FlexTable();
+    panel.setCellSpacing(4);
+    
+    int row = 0;
+    panel.setWidget(row, 0, new Html("Pavadinimas:"));
+    
+    final InputText summary = new InputText();
+    StyleUtils.setWidth(summary, 300);
+    panel.setWidget(row, 1, summary);
+  
+    DateTimeFormat dtFormat = DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT);
+    
+    row++;
+    panel.setWidget(row, 0, new Html("Pradžia:"));
+    final InputDate start = new InputDate(ValueType.DATETIME, dtFormat);
+    panel.setWidget(row, 1, start);
+  
+    row++;
+    panel.setWidget(row, 0, new Html("Pabaiga:"));
+    final InputDate end = new InputDate(ValueType.DATETIME, dtFormat);
+    panel.setWidget(row, 1, end);
+    
+    row++;
+    panel.setWidget(row, 0, new Html("Aprašymas:"));
+    final InputArea description = new InputArea();
+    description.setVisibleLines(3);
+    StyleUtils.setWidth(description, 300);
+    panel.setWidget(row, 1, description);
+  
+    row++;
+    panel.setWidget(row, 0, new Html("Spalva"));
+    final TabBar colors = new TabBar("bee-ColorBar-");
+  
+    for (AppointmentStyle style : AppointmentStyle.values()) {
+      if (AppointmentStyle.DEFAULT.equals(style) || AppointmentStyle.CUSTOM.equals(style)) {
+        continue;
+      }
+      Appearance gs = DefaultTheme.STYLES.get(style);
+      if (gs == null) {
+        continue;
+      }
+  
+      Html color = new Html();
+      StyleUtils.setSize(color, 14, 14);
+      color.getElement().getStyle().setBackgroundColor(gs.getBackground());
+      color.getElement().getStyle().setPaddingBottom(2, Unit.PX);
+  
+      colors.addItem(color);
+    }
+  
+    colors.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {
+      public void onBeforeSelection(BeforeSelectionEvent<Integer> event) {
+        Widget widget = colors.getSelectedWidget();
+        if (widget != null) {
+          widget.getElement().setInnerHTML(BeeConst.STRING_EMPTY);
+        }
+      }
+    });
+  
+    colors.addSelectionHandler(new SelectionHandler<Integer>() {
+      public void onSelection(SelectionEvent<Integer> event) {
+        Widget widget = colors.getSelectedWidget();
+        if (widget != null) {
+          widget.getElement().setInnerHTML(BeeUtils.toString(BeeConst.CHECK_MARK));
+        }
+      }
+    });
+  
+    panel.setWidget(row, 1, colors);
+  
+    final Appointment ap = isNew ? new Appointment() : appointment;
+    
+    if (!isNew && !ap.getAttendees().isEmpty()) {
+      row++;
+      panel.setWidget(row, 0, new Html("Resursai"));
+      
+      StringBuilder sb = new StringBuilder();
+      for (Attendee attendee : ap.getAttendees()) {
+        if (!BeeUtils.isEmpty(attendee.getName())) {
+          sb.append(' ').append(attendee.getName().trim());
+        }
+      }
+      panel.setWidget(row, 1, new Html(sb.toString().trim()));
+    }
+  
+    if (isNew && date != null) {
+      ap.setStart(date.getDateTime());
+      DateTime to = DateTime.copyOf(ap.getStart());
+      TimeUtils.addHour(to, 1);
+      ap.setEnd(to);
+    }
+    if (isNew) {
+      ap.setStyle(AppointmentStyle.BLUE);
+    }
+  
+    summary.setText(ap.getTitle());
+    start.setDate(ap.getStart());
+    end.setDate(ap.getEnd());
+    description.setText(ap.getDescription());
+    colors.selectTab(ap.getStyle().ordinal());
+  
+    BeeButton confirm = new BeeButton("Išsaugoti", new ClickHandler() {
+      public void onClick(ClickEvent ev) {
+        HasDateValue from = start.getDate();
+        HasDateValue to = end.getDate();
+        if (from == null || to == null || TimeUtils.isMeq(from, to)) {
+          Global.showError("Sorry, no appointment");
+          return;
+        }
+  
+        ap.setTitle(summary.getText());
+        ap.setStart(from.getDateTime());
+        ap.setEnd(to.getDateTime());
+        ap.setDescription(description.getText());
+        ap.setStyle(AppointmentStyle.values()[colors.getSelectedTab()]);
+        
+        if (calendar != null) {
+          if (isNew) {
+            calendar.addAppointment(ap);
+          } else {
+            calendar.refresh();
+          }
+        }
+  
+        dialogBox.hide();
+      }
+    });
+    
+    row++;
+    panel.setWidget(row, 0, confirm);
+  
+    dialogBox.setWidget(panel);
+    
+    dialogBox.setAnimationEnabled(true);
+    dialogBox.center();
+  
+    summary.setFocus(true);
+  }
+
   public static void refreshConfiguration() {
     configurationHandler.load();
   }
@@ -468,151 +613,6 @@ public class CalendarKeeper {
     return null;
   }
 
-  public static void openAppointment(Appointment appointment, HasDateValue date,
-      final Calendar calendar) {
-    final boolean isNew = appointment == null;
-    String caption = isNew ? "Naujas Vizitas" : "Vizitas";
-    final DialogBox dialogBox = new DialogBox(caption);
-
-    FlexTable panel = new FlexTable();
-    panel.setCellSpacing(4);
-    
-    int row = 0;
-    panel.setWidget(row, 0, new Html("Pavadinimas:"));
-    
-    final InputText summary = new InputText();
-    StyleUtils.setWidth(summary, 300);
-    panel.setWidget(row, 1, summary);
-
-    DateTimeFormat dtFormat = DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT);
-    
-    row++;
-    panel.setWidget(row, 0, new Html("Pradžia:"));
-    final InputDate start = new InputDate(ValueType.DATETIME, dtFormat);
-    panel.setWidget(row, 1, start);
-
-    row++;
-    panel.setWidget(row, 0, new Html("Pabaiga:"));
-    final InputDate end = new InputDate(ValueType.DATETIME, dtFormat);
-    panel.setWidget(row, 1, end);
-    
-    row++;
-    panel.setWidget(row, 0, new Html("Aprašymas:"));
-    final InputArea description = new InputArea();
-    description.setVisibleLines(3);
-    StyleUtils.setWidth(description, 300);
-    panel.setWidget(row, 1, description);
-
-    row++;
-    panel.setWidget(row, 0, new Html("Spalva"));
-    final TabBar colors = new TabBar("bee-ColorBar-");
-
-    for (AppointmentStyle style : AppointmentStyle.values()) {
-      if (AppointmentStyle.DEFAULT.equals(style) || AppointmentStyle.CUSTOM.equals(style)) {
-        continue;
-      }
-      Appearance gs = DefaultTheme.STYLES.get(style);
-      if (gs == null) {
-        continue;
-      }
-
-      Html color = new Html();
-      StyleUtils.setSize(color, 14, 14);
-      color.getElement().getStyle().setBackgroundColor(gs.getBackground());
-      color.getElement().getStyle().setPaddingBottom(2, Unit.PX);
-
-      colors.addItem(color);
-    }
-
-    colors.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {
-      public void onBeforeSelection(BeforeSelectionEvent<Integer> event) {
-        Widget widget = colors.getSelectedWidget();
-        if (widget != null) {
-          widget.getElement().setInnerHTML(BeeConst.STRING_EMPTY);
-        }
-      }
-    });
-
-    colors.addSelectionHandler(new SelectionHandler<Integer>() {
-      public void onSelection(SelectionEvent<Integer> event) {
-        Widget widget = colors.getSelectedWidget();
-        if (widget != null) {
-          widget.getElement().setInnerHTML(BeeUtils.toString(BeeConst.CHECK_MARK));
-        }
-      }
-    });
-
-    panel.setWidget(row, 1, colors);
-
-    final Appointment ap = isNew ? new Appointment() : appointment;
-    
-    if (!isNew && !ap.getAttendees().isEmpty()) {
-      row++;
-      panel.setWidget(row, 0, new Html("Resursai"));
-      
-      StringBuilder sb = new StringBuilder();
-      for (Attendee attendee : ap.getAttendees()) {
-        if (!BeeUtils.isEmpty(attendee.getName())) {
-          sb.append(' ').append(attendee.getName().trim());
-        }
-      }
-      panel.setWidget(row, 1, new Html(sb.toString().trim()));
-    }
-
-    if (isNew && date != null) {
-      ap.setStart(date.getDateTime());
-      DateTime to = DateTime.copyOf(ap.getStart());
-      TimeUtils.addHour(to, 1);
-      ap.setEnd(to);
-    }
-    if (isNew) {
-      ap.setStyle(AppointmentStyle.BLUE);
-    }
-
-    summary.setText(ap.getTitle());
-    start.setDate(ap.getStart());
-    end.setDate(ap.getEnd());
-    description.setText(ap.getDescription());
-    colors.selectTab(ap.getStyle().ordinal());
-
-    BeeButton confirm = new BeeButton("Išsaugoti", new ClickHandler() {
-      public void onClick(ClickEvent ev) {
-        HasDateValue from = start.getDate();
-        HasDateValue to = end.getDate();
-        if (from == null || to == null || TimeUtils.isMeq(from, to)) {
-          Global.showError("Sorry, no appointment");
-          return;
-        }
-
-        ap.setTitle(summary.getText());
-        ap.setStart(from.getDateTime());
-        ap.setEnd(to.getDateTime());
-        ap.setDescription(description.getText());
-        ap.setStyle(AppointmentStyle.values()[colors.getSelectedTab()]);
-        
-        if (calendar != null) {
-          if (isNew) {
-            calendar.addAppointment(ap);
-          } else {
-            calendar.refresh();
-          }
-        }
-
-        dialogBox.hide();
-      }
-    });
-    
-    row++;
-    panel.setWidget(row, 0, confirm);
-
-    dialogBox.setWidget(panel);
-    
-    dialogBox.setAnimationEnabled(true);
-    dialogBox.center();
-
-    summary.setFocus(true);
-  }
-  
   private static void openCalendar(long id) {
     BeeKeeper.getScreen().updateActivePanel(new CalendarPanel(id, getSettings(id)));
   }

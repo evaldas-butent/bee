@@ -69,6 +69,7 @@
         <text>Papildoma informacija</text>
         <FlowPanel class="flexBox-horizontal">
           <FlowPanel class="flexBox-vertical" style="-webkit-box-align: end; margin-right: 1em;">
+            <DataSelector source="Fuel" caption="Kuro rūšis" />
             <FlowPanel>
               <InlineLabel html="Kuro bako talpa l" style="&LABEL_STYLE;" />
               <InputInteger source="TankCapacity" style="width: 2em" />
@@ -99,7 +100,7 @@
       </page>
       <page>
         <text>Reisai</text>
-        <InlineLabel/>
+        <ChildGrid name="Trips" relColumn="Vehicle" />
       </page>
       <page>
         <text>Dokumentai</text>

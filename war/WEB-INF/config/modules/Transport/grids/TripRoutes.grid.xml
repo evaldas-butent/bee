@@ -39,12 +39,12 @@
       </editor>
     </DataColumn>
     <DataColumn name="Temperature" caption="Temp." updateMode="row" />
-    <DataColumn name="Consumption" caption="Litrai">
+    <DataColumn name="Consumption" caption="Litrai" updateMode="row">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </DataColumn>
-    <RelColumn name="Fuel" caption="Kuro rūšis" />
+    <RelColumn name="Item" caption="Apskaitos prekė" />
   </columns>
 </Grid>

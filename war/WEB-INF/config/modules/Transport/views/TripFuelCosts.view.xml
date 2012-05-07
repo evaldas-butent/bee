@@ -5,12 +5,8 @@
   source="TripFuelCosts"
   >
   <Columns>
-    <SimpleColumn name="Trip"/>
-    <SimpleColumn name="Date"/>
-    <SimpleColumn name="Fuel"/>
-    <SimpleJoin joinType="LEFT" name="Fuel">
-      <SimpleColumn name="Name" alias="FuelType" />
-    </SimpleJoin>
+    <SimpleColumn name="Trip" />
+    <SimpleColumn name="Date" />
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Price" />
     <SimpleColumn name="Currency" />
@@ -27,6 +23,10 @@
       <SimpleColumn name="Name" alias="CountryName" />
     </SimpleJoin>
     <SimpleColumn name="Note" />
+    <SimpleColumn name="Item" />
+    <SimpleJoin joinType="LEFT" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
+    </SimpleJoin>
   </Columns>
   <Order>
     <OrderBy column="Date" />

@@ -15,6 +15,7 @@
     <BeeField name="ProductionDate" type="DATE" />
     <BeeField name="Owner" type="LONG" relation="Companies" />
     <BeeField name="Speedometer" type="INTEGER" />
+    <BeeField name="Fuel" type="LONG" relation="FuelTypes" />
     <BeeField name="TankCapacity" type="DECIMAL" precision="4" />
     <BeeField name="Power" type="DECIMAL" precision="4" />
     <BeeField name="Netto" type="DOUBLE" />

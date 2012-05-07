@@ -24,6 +24,10 @@
     <SimpleColumn name="EngineVolume" />
     <SimpleColumn name="ProductionDate" />
     <SimpleColumn name="Speedometer" />
+    <SimpleColumn name="Fuel" />
+    <SimpleJoin name="Fuel" joinType="LEFT">
+      <SimpleColumn name="Name" alias="FuelType" />
+    </SimpleJoin>
     <SimpleColumn name="TankCapacity" />
     <SimpleColumn name="Power" />
     <SimpleColumn name="Netto" />

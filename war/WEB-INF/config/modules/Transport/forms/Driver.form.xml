@@ -53,6 +53,15 @@
       </FlowPanel>
     </FlowPanel>
 
-    <ChildGrid name="DriverDocuments" relColumn="Driver" class="flexible" />
+    <TabbedPages class="flexible" style="margin-top: 1ex;">
+      <page>
+        <text>Dokumentai</text>
+        <ChildGrid name="DriverDocuments" relColumn="Driver" />
+      </page>
+      <page>
+        <text>Reisai</text>
+        <ChildGrid name="DriverTrips" relColumn="Driver" />
+      </page>
+    </TabbedPages>
   </FlowPanel>
 </f:Form>  

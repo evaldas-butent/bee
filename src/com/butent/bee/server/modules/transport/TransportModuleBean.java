@@ -301,8 +301,7 @@ public class TransportModuleBean implements BeeModule {
         .addFrom(routes)
         .addFromInner(tmpId, SqlUtils.joinUsing(routes, tmpId, routeId))
         .addFromInner(trips, SqlUtils.join(routes, "Trip", trips, sys.getIdName(trips)))
-        .addFromInner(fuel, SqlUtils.and(SqlUtils.joinUsing(trips, fuel, "Vehicle"),
-            SqlUtils.joinUsing(fuel, routes, "Fuel")))
+        .addFromInner(fuel, SqlUtils.joinUsing(trips, fuel, "Vehicle"))
         .addFromLeft(temps,
             SqlUtils.and(SqlUtils.join(fuel, sys.getIdName(fuel), temps, "Consumption"),
                 SqlUtils.joinUsing(temps, routes, "Season"),
@@ -441,7 +440,8 @@ public class TransportModuleBean implements BeeModule {
     String crs = getTripCost(new SqlSelect().addConstant(tripId, "Trip"));
 
     SqlSelect ss = new SqlSelect()
-        .addAllFields(crs)
+        .addSum(crs, "Cost")
+        .addSum(crs, "FuelCost")
         .addFrom(crs);
 
     Map<String, String> res = qs.getRow(ss);

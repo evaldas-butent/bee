@@ -35,6 +35,7 @@
     <DataColumn name="Number" source="Number" caption="Valst.Nr." />
     <RelColumn name="Owner" caption="Savininkas" />
     <DataColumn name="ProductionDate" source="ProductionDate" caption="Pag. data" />
+    <RelColumn name="Fuel" caption="Kuro rūšis" />
     <DataColumn name="Power" source="Power" caption="Galia kW" />
     <DataColumn name="EngineVolume" source="EngineVolume" caption="Tūris cm&#x00b3;" />
   </columns>

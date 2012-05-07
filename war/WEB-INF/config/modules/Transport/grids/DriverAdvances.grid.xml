@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="TripFuelConsumptions" viewName="TripFuelConsumptions" caption="Papildomos kuro sąnaudos"
+  name="DriverAdvances" viewName="DriverAdvances" caption="Avansai"
   >
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">
@@ -14,14 +14,18 @@
 
   <columns>
     <DataColumn name="Date" caption="Data" />
-    <RelColumn name="Country" caption="Šalis" />
-    <DataColumn name="Note" caption="Pastaba" />
-    <DataColumn name="Quantity" caption="Litrai" format="#.00">
+    <DataColumn name="Number" caption="Dok.Nr." />
+    <DataColumn name="Amount" caption="Suma" format="#.00">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </DataColumn>
-    <RelColumn name="Item" caption="Apskaitos prekė" />
+    <RelColumn name="Currency" caption="Val.">
+      <style>
+        <headerStyle><ui:font>bold</ui:font></headerStyle>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+    </RelColumn>
   </columns>
 </Grid>

@@ -14,16 +14,20 @@
 
   <columns>
     <DataColumn name="Date" caption="Data" />
-    <RelColumn name="Fuel" caption="Kuro rūšis" />
     <DataColumn name="Quantity" caption="Kiekis" />
     <DataColumn name="Price" caption="Kaina" format="#.00" />
     <RelColumn name="Currency" caption="Val." />
     <CalcColumn name="Total" type="decimal" caption="Suma" format="#.00">
+      <style>
+        <headerStyle><ui:font>bold</ui:font></headerStyle>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
       <render><ui:expression>row.Quantity * row.Price</ui:expression></render>
     </CalcColumn>
     <DataColumn name="Number" caption="Numeris" />
     <RelColumn name="Supplier" caption="Tiekėjas" />
     <RelColumn name="Country" caption="Šalis" />
     <DataColumn name="Note" caption="Pastaba" />
+    <RelColumn name="Item" caption="Apskaitos prekė" />
   </columns>
 </Grid>

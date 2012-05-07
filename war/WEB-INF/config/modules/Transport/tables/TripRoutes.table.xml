@@ -10,7 +10,6 @@
     <BeeField name="Date" type="DATE" notNull="true" />
     <BeeField name="Country" type="LONG" relation="Countries" />
     <BeeField name="Route" type="STRING" precision="100" />
-    <BeeField name="Fuel" type="LONG" notNull="true" relation="FuelTypes" />
     <BeeField name="SpeedometerFrom" type="DOUBLE" />
     <BeeField name="SpeedometerTo" type="DOUBLE" />
     <BeeField name="Kilometers" type="DOUBLE" />
@@ -19,5 +18,6 @@
     <BeeField name="Season" type="DECIMAL" precision="1" notNull="true" />
     <BeeField name="Temperature" type="DECIMAL" precision="3" scale="0" />
     <BeeField name="Consumption" type="DOUBLE" />
+    <BeeField name="Item" type="LONG" relation="Items" />
   </BeeFields>
 </BeeTable>

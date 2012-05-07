@@ -11,6 +11,6 @@
     <BeeField name="Country" type="LONG" relation="Countries" />
     <BeeField name="Note" type="STRING" precision="100" />
     <BeeField name="Quantity" type="DOUBLE" notNull="true" />
-    <BeeField name="Fuel" type="LONG" notNull="true" relation="FuelTypes" />
+    <BeeField name="Item" type="LONG" relation="Items" />
   </BeeFields>
 </BeeTable>

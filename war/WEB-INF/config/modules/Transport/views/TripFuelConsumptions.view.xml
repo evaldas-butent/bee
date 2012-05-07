@@ -13,9 +13,9 @@
     </SimpleJoin>
     <SimpleColumn name="Note" />
     <SimpleColumn name="Quantity" />
-    <SimpleColumn name="Fuel"/>
-    <SimpleJoin joinType="LEFT" name="Fuel">
-      <SimpleColumn name="Name" alias="FuelType" />
+    <SimpleColumn name="Item" />
+    <SimpleJoin joinType="LEFT" name="Item">
+      <SimpleColumn name="Name" alias="ItemName" />
     </SimpleJoin>
   </Columns>
   <Order>
