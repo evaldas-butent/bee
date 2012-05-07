@@ -5,36 +5,40 @@
   
   name="Calendar" viewName="Calendars" caption="Kalendorius">
 
-  <FlowPanel class="flexBox-vertical">
-    <HorizontalPanel cellSpacing="10">
-      <InputText source="Name" caption="Pavadinimas:"/>
-      <InputArea source="Description" caption="Aprašymas:" visibleLines="3" style="width: 200px;"
-        d:roleStyle="caption-cell = vertical-align: top;" />
-      <DataSelector source="ThemeName" caption="Tema:" />
-    </HorizontalPanel>
+  <FlowPanel>
+    <InputText source="Name" caption="Pavadinimas:" d:size="10" d:unit="em"
+       d:rootStyle="position: absolute; left: 2em; top: 2ex;" />
+    <Label html="Aprašymas:" style="position: absolute; left: 400px; top: 2ex;" />
+    <InputArea source="Description" visibleLines="3"
+       style="width: 200px; position: absolute; left: 500px; top: 2ex;" />
+
+    <DataSelector source="ThemeName" caption="Tema:" d:size="10" d:unit="em"
+       d:rootStyle="position: absolute; left: 2em; top: 80px;" />
+    <DataSelector source="Owner" caption="Savininkas:" style="width: 200px;" d:size="100" d:unit="px" 
+       d:rootStyle="position: absolute; left: 400px; top: 80px;" />
     
-    <StackPanel class="flexible">
-      <stack headerSize="22">
+    <TabbedPages style="position: absolute; left: 1em; right: 1em; top: 160px; bottom: 1ex;">
+      <page>
         <text>Resursų tipai</text>
         <ChildGrid name="CalAttendeeTypes" relColumn="Calendar" />
-      </stack>
-      <stack headerSize="22">
+      </page>
+      <page>
         <text>Resursai</text>
         <ChildGrid name="CalendarAttendees" relColumn="Calendar" />
-      </stack>
-      <stack headerSize="22">
+      </page>
+      <page>
         <text>Asmenys</text>
         <ChildGrid name="CalendarPersons" relColumn="Calendar" />
-      </stack>
-      <stack headerSize="22">
+      </page>
+      <page>
         <text>Vizitų tipai</text>
         <ChildGrid name="CalAppointmentTypes" relColumn="Calendar" />
-      </stack>
-      <stack headerSize="22">
+      </page>
+      <page>
         <text>Priminimai</text>
         <ChildGrid name="CalendarReminders" relColumn="Calendar" />
-      </stack>
-    </StackPanel>
+      </page>
+    </TabbedPages>
 
   </FlowPanel>
 </f:Form>  

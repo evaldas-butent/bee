@@ -13,6 +13,8 @@
     <SimpleColumn name="Name" />
     <SimpleColumn name="Description" />
 
+    <SimpleColumn name="Location" />
+
     <SimpleColumn name="CompanyPerson" />
     <SimpleJoin name="CompanyPerson" joinType="LEFT">
       <SimpleJoin name="Company" joinType="LEFT">

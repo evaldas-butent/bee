@@ -5,7 +5,7 @@
   
   name="UserTasks" viewName="UserTasks" caption="Užduotys"
   editForm="Task" editShowId="true" editSave="false" newRowForm="NewTask" newRowPopup="true"
-  caching="false"
+  cacheData="false"
   >
   <north size="40">
     <w:FlowPanel class="flexBox-horizontal-center" style="background-color: #f8f8f8; font-family: Tahoma; font-size: 12px;">

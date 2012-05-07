@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="AttendeeProps" viewName="AttendeeProps" caption="Parametrai"
+  name="AttendeeProps" viewName="AttendeeProps" cacheDescription="false"
+  hasHeaders="false" hasFooters="false"
   >
   <columns>
-    <DataColumn name="PropertyName" caption="Pavadinimas" />
+    <DataColumn name="GroupName" caption="Grupė" readOnly="true" minWidth="80" />
+    <RelColumn name="PropertyName" caption="Pavadinimas" minWidth="100" />
   </columns>
 </Grid>

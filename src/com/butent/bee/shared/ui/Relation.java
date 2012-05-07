@@ -49,9 +49,6 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
 
   public static final String TAG_SELECTOR_COLUMN = "selectorColumn";
 
-  public static final String ATTR_FILTER = "filter";
-  public static final String ATTR_ORDER = "order";
-
   public static final String ATTR_CACHING = "caching";
   public static final String ATTR_OPERATOR = "operator";
 
@@ -61,9 +58,10 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   public static final String ATTR_ITEM_TYPE = "itemType";
 
   private static final Predicate<String> RELEVANT_ATTRIBUTE =
-      Predicates.in(Sets.newHashSet(UiConstants.ATTR_VIEW_NAME, ATTR_FILTER, ATTR_ORDER,
-          ATTR_CACHING, ATTR_OPERATOR, ATTR_CHOICE_COLUMNS, ATTR_SEARCHABLE_COLUMNS,
-          ATTR_ITEM_TYPE, HasVisibleLines.ATTR_VISIBLE_LINES, HasItems.ATTR_ITEM_KEY));
+      Predicates.in(Sets.newHashSet(UiConstants.ATTR_VIEW_NAME, UiConstants.ATTR_FILTER,
+          UiConstants.ATTR_ORDER, ATTR_CACHING, ATTR_OPERATOR, ATTR_CHOICE_COLUMNS,
+          ATTR_SEARCHABLE_COLUMNS, ATTR_ITEM_TYPE, HasVisibleLines.ATTR_VISIBLE_LINES,
+          HasItems.ATTR_ITEM_KEY));
 
   public static Relation create(Map<String, String> attributes,
       List<SelectorColumn> selectorColumns,  RendererDescription rowRendererDescription,
@@ -317,8 +315,8 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
       setItemKey(key);
     }
     
-    String flt = getAttribute(ATTR_FILTER);
-    String ord = getAttribute(ATTR_ORDER);
+    String flt = getAttribute(UiConstants.ATTR_FILTER);
+    String ord = getAttribute(UiConstants.ATTR_ORDER);
 
     List<String> displCols = NameUtils.toList(getAttribute(ATTR_CHOICE_COLUMNS));
     List<String> searchCols = NameUtils.toList(getAttribute(ATTR_SEARCHABLE_COLUMNS));

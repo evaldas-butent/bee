@@ -3,7 +3,7 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="TaskEvents" viewName="TaskEvents" caption="Įvykių istorija"
-  readOnly="true" order="TaskEventID desc" caching="false">
+  readOnly="true" order="TaskEventID desc" cacheData="false">
 
   <body height="48" borderWidth="0">
     <style>

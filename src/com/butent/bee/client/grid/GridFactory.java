@@ -309,7 +309,9 @@ public class GridFactory {
           GridDescription gridDescription =
               GridDescription.restore((String) response.getResponse());
           callback.onSuccess(gridDescription);
-          descriptionCache.put(gridDescriptionKey(name), gridDescription);
+          if (!BeeUtils.isFalse(gridDescription.getCacheDescription())) {
+            descriptionCache.put(gridDescriptionKey(name), gridDescription);
+          }
         } else {
           callback.onFailure(response.getErrors());
           descriptionCache.put(gridDescriptionKey(name), null);

@@ -534,6 +534,10 @@
         <xs:extension base="hasName">
           <xs:attribute name="relColumn" type="type:nameType" use="required" />
           <xs:attribute name="source" type="type:nameType" />
+          <xs:attribute name="caption" type="xs:string" />
+          <xs:attribute name="viewName" type="type:nameType" />
+          <xs:attribute name="filter" type="xs:normalizedString" />
+          <xs:attribute name="order" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

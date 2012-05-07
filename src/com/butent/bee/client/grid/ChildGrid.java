@@ -5,6 +5,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.layout.ResizePanel;
@@ -16,12 +17,17 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.ParentRowEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
@@ -32,10 +38,14 @@ import java.util.Map;
  */
 
 public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, HasFosterParent,
-    ParentRowEvent.Handler {
+    ParentRowEvent.Handler, HasViewName {
 
-  private final String gridName;
+  private String viewName = null;
+  private String caption = null;
 
+  private Filter filter = null;
+  private Order order = null;
+  
   private final int parentIndex;
   private final String relSource;
 
@@ -49,13 +59,14 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
   private String parentId = null;
   private HandlerRegistration parentRowReg = null;
 
-  public ChildGrid(String gridName, int parentIndex, String relSource) {
+  public ChildGrid(String name, int parentIndex, String relSource, Map<String, String> attributes) {
     super();
-    this.gridName = gridName;
     this.parentIndex = parentIndex;
     this.relSource = relSource;
+    
+    setAttributes(name, attributes);
 
-    this.gridCallback = GridFactory.getGridCallback(gridName);
+    this.gridCallback = GridFactory.getGridCallback(getViewName());
 
     addStyleName("bee-child-grid");
   }
@@ -73,6 +84,10 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     return presenter;
   }
 
+  public String getViewName() {
+    return viewName;
+  }
+
   public boolean isEnabled() {
     if (getPresenter() == null) {
       return false;
@@ -81,7 +96,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
   }
 
   public void launch() {
-    GridFactory.getGrid(getGridName(), new Callback<GridDescription>() {
+    GridFactory.getGrid(getViewName(), new Callback<GridDescription>() {
       public void onSuccess(GridDescription result) {
         if (getGridCallback() != null && !getGridCallback().onLoad(result)) {
           return;
@@ -116,6 +131,10 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     }
   }
 
+  public void setViewName(String viewName) {
+    this.viewName = viewName;
+  }
+
   @Override
   protected void onLoad() {
     super.onLoad();
@@ -128,33 +147,17 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     super.onUnload();
   }
 
-  private void register() {
-    unregister();
-    if (!BeeUtils.isEmpty(getParentId())) {
-      setParentRowReg(BeeKeeper.getBus().registerParentRowHandler(getParentId(), this));
-    }
-  }
-
-  private void unregister() {
-    if (getParentRowReg() != null) {
-      getParentRowReg().removeHandler();
-      setParentRowReg(null);
-    }
-  }
-
   private void createPresenter(final IsRow row) {
-    final String viewName = getGridDescription().getViewName();
-
     final Map<String, Filter> initialFilters =
         (getGridCallback() == null) ? null : getGridCallback().getInitialFilters();
-    Filter filter = Filter.and(getFilter(row),
+    Filter flt = Filter.and(getFilter(row),
         GridFactory.getInitialQueryFilter(getGridDescription(), initialFilters));
 
-    Queries.getRowSet(viewName, null, filter, getGridDescription().getOrder(),
+    Queries.getRowSet(getViewName(), null, flt, getGridDescription().getOrder(),
         getGridDescription().getCachingPolicy(), new Queries.RowSetCallback() {
           public void onSuccess(BeeRowSet rowSet) {
             Assert.notNull(rowSet);
-            GridPresenter gp = new GridPresenter(viewName, rowSet.getNumberOfRows(),
+            GridPresenter gp = new GridPresenter(getViewName(), rowSet.getNumberOfRows(),
                 rowSet, Provider.Type.ASYNC, getGridDescription(), getGridCallback(),
                 initialFilters, EnumSet.of(UiOption.CHILD));
 
@@ -175,6 +178,14 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
         });
   }
 
+  private String getCaption() {
+    return caption;
+  }
+
+  private Filter getFilter() {
+    return filter;
+  }
+
   private Filter getFilter(IsRow row) {
     return ComparisonFilter.isEqual(getRelSource(), new LongValue(getParentValue(row)));
   }
@@ -187,8 +198,8 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     return gridDescription;
   }
 
-  private String getGridName() {
-    return gridName;
+  private Order getOrder() {
+    return order;
   }
 
   private int getParentIndex() {
@@ -223,6 +234,13 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
 
   private boolean hasParentValue(IsRow row) {
     return getParentValue(row) != 0;
+  }
+
+  private void register() {
+    unregister();
+    if (!BeeUtils.isEmpty(getParentId())) {
+      setParentRowReg(BeeKeeper.getBus().registerParentRowHandler(getParentId(), this));
+    }
   }
 
   private void resetState() {
@@ -262,8 +280,64 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     }
   }
 
+  private void setAttributes(String name, Map<String, String> attributes) {
+    if (attributes == null) {
+      return;
+    }
+    
+    String view = attributes.get(UiConstants.ATTR_VIEW_NAME);
+    if (BeeUtils.isEmpty(view)) {
+      setViewName(name.trim());
+    } else {
+      setViewName(view.trim());
+    }
+
+    String cap = attributes.get(UiConstants.ATTR_CAPTION);
+    if (!BeeUtils.isEmpty(cap)) {
+      setCaption(cap.trim());
+    }
+
+    String flt = attributes.get(UiConstants.ATTR_FILTER);
+    String ord = attributes.get(UiConstants.ATTR_ORDER);
+    
+    if (!BeeUtils.allEmpty(flt, ord)) {
+      DataInfo viewInfo = Global.getDataInfo(getViewName(), true);
+
+      if (viewInfo != null && !BeeUtils.isEmpty(flt)) {
+        setFilter(DataUtils.parseCondition(flt, viewInfo.getColumns(),
+            viewInfo.getIdColumn(), viewInfo.getVersionColumn()));
+      }
+      if (viewInfo != null && !BeeUtils.isEmpty(ord)) {
+        setOrder(Order.parse(ord, viewInfo.getColumnNames()));
+      }
+    }
+  }
+
+  private void setCaption(String caption) {
+    this.caption = caption;
+  }
+
+  private void setFilter(Filter filter) {
+    this.filter = filter;
+  }
+
   private void setGridDescription(GridDescription gridDescription) {
     this.gridDescription = gridDescription;
+    
+    if (!BeeUtils.isEmpty(getCaption())) {
+      this.gridDescription.setCaption(getCaption());
+    }
+
+    if (getFilter() != null) {
+      this.gridDescription.setFilter(getFilter());
+    }
+    if (getOrder() != null) {
+      this.gridDescription.setOrder(getOrder());
+    }
+  }
+
+  private void setOrder(Order order) {
+    this.order = order;
   }
 
   private void setParentRowReg(HandlerRegistration parentRowReg) {
@@ -282,6 +356,13 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     this.presenter = presenter;
   }
 
+  private void unregister() {
+    if (getParentRowReg() != null) {
+      getParentRowReg().removeHandler();
+      setParentRowReg(null);
+    }
+  }
+  
   private void updateFilter(IsRow row) {
     if (getPresenter() != null) {
       getPresenter().getDataProvider().setParentFilter(getId(), getFilter(row));

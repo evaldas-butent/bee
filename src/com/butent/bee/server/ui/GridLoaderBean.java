@@ -93,7 +93,9 @@ public class GridLoaderBean {
   private static final String ATTR_HAS_FOOTERS = "hasFooters";
   private static final String ATTR_FOOTER_EVENTS = "footerEvents";
 
-  private static final String ATTR_CACHING = "caching";
+  private static final String ATTR_CACHE_DATA = "cacheData";
+  private static final String ATTR_CACHE_DESCRIPTION = "cacheDescription";
+
   private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
   private static final String ATTR_PAGING_THRESHOLD = "pagingThreshold";
   private static final String ATTR_SEARCH_THRESHOLD = "searchThreshold";
@@ -669,9 +671,13 @@ public class GridLoaderBean {
       dst.setShowColumnWidths(showColumnWidths);
     }
 
-    Boolean caching = XmlUtils.getAttributeBoolean(src, ATTR_CACHING);
-    if (caching != null) {
-      dst.setCaching(caching);
+    Boolean cacheData = XmlUtils.getAttributeBoolean(src, ATTR_CACHE_DATA);
+    if (cacheData != null) {
+      dst.setCacheData(cacheData);
+    }
+    Boolean cacheDescription = XmlUtils.getAttributeBoolean(src, ATTR_CACHE_DESCRIPTION);
+    if (cacheDescription != null) {
+      dst.setCacheDescription(cacheDescription);
     }
 
     Integer asyncThreshold = XmlUtils.getAttributeInteger(src, ATTR_ASYNC_THRESHOLD);

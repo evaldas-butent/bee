@@ -494,7 +494,7 @@ public enum FormWidget {
 
         if (!BeeUtils.isEmpty(name) && !BeeUtils.isEmpty(relColumn)
             && !BeeConst.isUndef(sourceIndex)) {
-          widget = new ChildGrid(name, sourceIndex, relColumn);
+          widget = new ChildGrid(name, sourceIndex, relColumn, attributes);
         }
         break;
 

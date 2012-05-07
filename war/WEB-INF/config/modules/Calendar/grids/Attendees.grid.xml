@@ -2,12 +2,14 @@
 <Grid xmlns="http://www.butent.com/grid"
 
   name="Attendees" viewName="Attendees" caption="Resursai"
+  editForm="Attendee" newRowForm="Attendee"
   >
   <columns>
     <RelColumn name="TypeName" caption="Tipas" />
 
     <DataColumn name="Name" caption="Pavadinimas" />
     <DataColumn name="Description" caption="Aprašymas" />
+    <DataColumn name="Location" caption="Vieta" />
 
     <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="Vardas, Pavardė"
       choiceColumns="FirstName LastName CompanyName" searchableColumns="FirstName LastName" />

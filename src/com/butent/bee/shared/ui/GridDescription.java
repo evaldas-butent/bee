@@ -34,12 +34,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private enum Serial {
     NAME, PARENT, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HAS_HEADERS, HAS_FOOTERS,
-    CACHING, ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE, READONLY,
+    ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE, READONLY,
     NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_CAPTION, NEW_ROW_POPUP, EDIT_FORM, EDIT_MODE, EDIT_SAVE,
     EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_IN_PLACE, EDIT_NEW_ROW, EDIT_POPUP, ENABLED_ACTIONS,
     DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER, ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE,
     ROW_VALIDATION, SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH, COLUMNS, WIDGETS,
-    FOOTER_EVENTS, AUTO_FIT, FAVORITE
+    FOOTER_EVENTS, AUTO_FIT, FAVORITE, CACHE_DATA, CACHE_DESCRIPTION
   }
 
   public static GridDescription restore(String s) {
@@ -66,7 +66,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Boolean hasFooters = null;
   private String footerEvents = null;
 
-  private Boolean caching = null;
+  private Boolean cacheData = null;
+  private Boolean cacheDescription = null;
 
   private Integer asyncThreshold = null;
   private Integer pagingThreshold = null;
@@ -280,8 +281,11 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case VERSION_NAME:
           setVersionName(value);
           break;
-        case CACHING:
-          setCaching(BeeUtils.toBooleanOrNull(value));
+        case CACHE_DATA:
+          setCacheData(BeeUtils.toBooleanOrNull(value));
+          break;
+        case CACHE_DESCRIPTION:
+          setCacheDescription(BeeUtils.toBooleanOrNull(value));
           break;
 
         case ENABLED_ACTIONS:
@@ -365,8 +369,16 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return body;
   }
 
+  public Boolean getCacheData() {
+    return cacheData;
+  }
+
+  public Boolean getCacheDescription() {
+    return cacheDescription;
+  }
+
   public CachingPolicy getCachingPolicy() {
-    return BeeUtils.isTrue(getCaching()) ? CachingPolicy.FULL : CachingPolicy.NONE;
+    return BeeUtils.isTrue(getCacheData()) ? CachingPolicy.FULL : CachingPolicy.NONE;
   }
 
   public String getCaption() {
@@ -436,7 +448,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Has Headers", hasHeaders(),
         "Has Footers", hasFooters(),
         "Footer Events", getFooterEvents(),
-        "Caching", getCaching(),
+        "Cache Data", getCacheData(),
+        "Cache Description", getCacheDescription(),
         "Async Threshold", getAsyncThreshold(),
         "Paging Threshold", getPagingThreshold(),
         "Search Threshold", getSearchThreshold(),
@@ -788,8 +801,11 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case VERSION_NAME:
           arr[i++] = getVersionName();
           break;
-        case CACHING:
-          arr[i++] = getCaching();
+        case CACHE_DATA:
+          arr[i++] = getCacheData();
+          break;
+        case CACHE_DESCRIPTION:
+          arr[i++] = getCacheDescription();
           break;
         case ENABLED_ACTIONS:
           arr[i++] = getEnabledActions();
@@ -838,8 +854,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.body = body;
   }
 
-  public void setCaching(Boolean caching) {
-    this.caching = caching;
+  public void setCacheData(Boolean cacheData) {
+    this.cacheData = cacheData;
+  }
+
+  public void setCacheDescription(Boolean cacheDescription) {
+    this.cacheDescription = cacheDescription;
   }
 
   public void setCaption(String caption) {
@@ -850,7 +870,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     setHasHeaders(true);
     setHasFooters(true);
 
-    setCaching(true);
+    setCacheData(true);
+    setCacheDescription(true);
 
     setAsyncThreshold(DataUtils.getDefaultAsyncThreshold());
     setSearchThreshold(DataUtils.getDefaultSearchThreshold());
@@ -966,7 +987,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setParent(String parent) {
     this.parent = parent;
   }
-
+  
   public void setReadOnly(Boolean readOnly) {
     this.readOnly = readOnly;
   }
@@ -998,17 +1019,13 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setStyleSheets(Map<String, String> styleSheets) {
     this.styleSheets = styleSheets;
   }
-  
+
   public void setWidgets(List<String> widgets) {
     this.widgets = widgets;
   }
 
   public Boolean showColumnWidths() {
     return showColumnWidths;
-  }
-
-  private Boolean getCaching() {
-    return caching;
   }
 
   private void setIdName(String idName) {

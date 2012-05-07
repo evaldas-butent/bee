@@ -11,7 +11,7 @@
     <DataColumn name="Summary" />
     <DataColumn name="Description" caption="Aprašymas" />
 
-    <DataColumn name="Location" />
+    <DataColumn name="Location" caption="Vieta" />
     <DataColumn name="HtmlLink" />
 
     <DataColumn name="ColorName" />

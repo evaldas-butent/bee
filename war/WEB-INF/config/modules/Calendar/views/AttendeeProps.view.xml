@@ -10,6 +10,10 @@
     <SimpleColumn name="Property" />
     <SimpleJoin name="Property" joinType="INNER">
       <SimpleColumn alias="PropertyName" name="Name" />
+      <SimpleColumn name="PropertyGroup" />
+      <SimpleJoin joinType="INNER" name="PropertyGroup">
+        <SimpleColumn alias="GroupName" name="Name" />
+      </SimpleJoin>
     </SimpleJoin>
   </Columns>
   <Order>

@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="TaskObservers" viewName="TaskObservers" caption="Stebėtojai"
-  caching="false" hasFooters="false" hasHeaders="false"
+  cacheData="false" hasFooters="false" hasHeaders="false"
   readOnly="true" enabledActions="add delete" disabledActions="save configure">
 
   <body borderWidth="0" />

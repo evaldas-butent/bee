@@ -7,6 +7,9 @@ public class UiConstants {
   
   public static final String ATTR_VIEW_NAME = "viewName";
 
+  public static final String ATTR_FILTER = "filter";
+  public static final String ATTR_ORDER = "order";
+  
   public static final String ATTR_CAPTION = "caption";
   public static final String ATTR_READ_ONLY = "readOnly";
   
