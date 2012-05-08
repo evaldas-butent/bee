@@ -49,9 +49,8 @@ public class MultiSelector extends DialogBox {
 
     this.selectionCallback = selectionCallback;
     
-    GridPresenter gp = new GridPresenter(rowSet.getViewName(), rowSet.getNumberOfRows(),
-        rowSet, Provider.Type.CACHED, createGridDescription(rowSet, columnNames), null, null,
-        EnumSet.of(UiOption.SELECTOR));
+    GridPresenter gp = new GridPresenter(createGridDescription(rowSet, columnNames),
+        rowSet.getNumberOfRows(), rowSet, Provider.Type.CACHED, EnumSet.of(UiOption.SELECTOR));
     setPresenter(gp);
     gp.setEventSource(getId());
     
@@ -91,7 +90,7 @@ public class MultiSelector extends DialogBox {
 
   private GridDescription createGridDescription(BeeRowSet rowSet, List<String> columnNames) {
     String viewName = rowSet.getViewName();
-    GridDescription gridDescription = new GridDescription(viewName, viewName, null, null);
+    GridDescription gridDescription = new GridDescription(viewName, viewName);
     gridDescription.setReadOnly(true);
 
     gridDescription.setHasHeaders(false);

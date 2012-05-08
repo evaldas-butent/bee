@@ -348,11 +348,10 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
         ? null : provider.getDataInfo(getViewName(), true);
 
     if (viewInfo != null && !BeeUtils.isEmpty(flt)) {
-      setFilter(DataUtils.parseCondition(flt, viewInfo.getColumns(),
-          viewInfo.getIdColumn(), viewInfo.getVersionColumn()));
+      setFilter(viewInfo.parseFilter(flt));
     }
     if (viewInfo != null && !BeeUtils.isEmpty(ord)) {
-      setOrder(Order.parse(ord, viewInfo.getColumnNames()));
+      setOrder(viewInfo.parseOrder(ord));
     }
 
     if (!BeeUtils.isEmpty(displCols)) {
@@ -538,7 +537,8 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     String result = null;
 
     if (BeeUtils.allEmpty(source, renderColumns, displCols, searchCols, selectorColumnNames)) {
-      for (String colName : sourceInfo.getColumnNames()) {
+      List<String> columnNames = sourceInfo.getColumnNames(false);
+      for (String colName : columnNames) {
         result = deduceViewName(sourceInfo, colName);
         if (!BeeUtils.isEmpty(result)) {
           break;

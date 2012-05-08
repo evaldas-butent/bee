@@ -21,8 +21,8 @@ public class LocalProvider extends CachedProvider {
   }
   
   public LocalProvider(HasDataTable display, String viewName, List<BeeColumn> columns,
-      Filter dataFilter, IsTable<?, ?> table) {
-    super(display, viewName, columns, dataFilter, table);
+      Filter immutableFilter, IsTable<?, ?> table) {
+    super(display, viewName, columns, immutableFilter, table);
   }
   
   public void addRow(BeeRow row) {

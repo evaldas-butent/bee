@@ -432,7 +432,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   public void create(final List<BeeColumn> dataCols, int rowCount, BeeRowSet rowSet,
-      GridDescription gridDescr, GridCallback callback, boolean hasSearch) {
+      GridDescription gridDescr, GridCallback callback, boolean hasSearch, Order order) {
     Assert.notEmpty(dataCols);
     Assert.notNull(gridDescr);
 
@@ -706,7 +706,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       getGrid().setRowData(rowSet.getRows().getList(), false);
     }
 
-    initOrder(gridDescr.getOrder());
+    initOrder(order);
 
     getGrid().addEditStartHandler(this);
 

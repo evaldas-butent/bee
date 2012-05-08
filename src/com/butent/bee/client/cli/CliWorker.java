@@ -94,7 +94,6 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.time.DateTime;
@@ -1164,7 +1163,7 @@ public class CliWorker {
       return;
     }
 
-    JsData<?> table = (JsData<?>) DataUtils.createTable(prp, "property", "type", "value");
+    JsData<?> table = (JsData<?>) GridFactory.createTable(prp, "property", "type", "value");
     table.sort(0);
 
     if (showModal(table.getNumberOfRows())) {
@@ -1203,7 +1202,7 @@ public class CliWorker {
       return;
     }
 
-    JsData<?> table = (JsData<?>) DataUtils.createTable(fnc, "function");
+    JsData<?> table = (JsData<?>) GridFactory.createTable(fnc, "function");
     table.sort(0);
 
     if (BeeUtils.same(arr[0], "f") && showModal(table.getNumberOfRows())) {
@@ -1605,7 +1604,7 @@ public class CliWorker {
       return;
     }
 
-    JsData<?> table = (JsData<?>) DataUtils.createTable(prp, "property", "type", "value");
+    JsData<?> table = (JsData<?>) GridFactory.createTable(prp, "property", "type", "value");
     table.sort(0);
 
     if (BeeUtils.same(arr[0], "p") && showModal(table.getNumberOfRows())) {

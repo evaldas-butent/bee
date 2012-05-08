@@ -520,30 +520,29 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:complexType name="hasName">
+  <xs:complexType name="gridType">
     <xs:complexContent>
-      <xs:restriction base="widgetType">
-        <xs:attribute name="name" type="xs:normalizedString" use="required" />
-      </xs:restriction>
+      <xs:extension base="widgetType">
+        <xs:attribute name="gridName" type="type:nameType" />
+        <xs:attribute name="caption" type="xs:string" />
+        <xs:attribute name="filter" type="xs:normalizedString" />
+        <xs:attribute name="order" type="xs:normalizedString" />
+      </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:element name="ChildGrid" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="hasName">
+        <xs:extension base="gridType">
           <xs:attribute name="relColumn" type="type:nameType" use="required" />
           <xs:attribute name="source" type="type:nameType" />
-          <xs:attribute name="caption" type="xs:string" />
-          <xs:attribute name="viewName" type="type:nameType" />
-          <xs:attribute name="filter" type="xs:normalizedString" />
-          <xs:attribute name="order" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="GridPanel" type="hasName" substitutionGroup="widget" />
+  <xs:element name="GridPanel" type="gridType" substitutionGroup="widget" />
 
   <xs:complexType name="hasOneChild">
     <xs:complexContent>
@@ -780,6 +779,14 @@
       <xs:attribute name="html" type="xs:normalizedString" use="required" />
     </xs:complexType>
   </xs:element>
+
+  <xs:complexType name="hasName">
+    <xs:complexContent>
+      <xs:restriction base="widgetType">
+        <xs:attribute name="name" type="xs:normalizedString" use="required" />
+      </xs:restriction>
+    </xs:complexContent>
+  </xs:complexType>
 
   <xs:element name="Custom" type="hasName" substitutionGroup="widget" />
   <xs:element name="CustomChild" type="hasName" substitutionGroup="widget" />

@@ -118,13 +118,16 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private List<String> widgets = Lists.newArrayList();
 
   public GridDescription(String name) {
-    Assert.notEmpty(name);
+    this(name, null);
+  }
+  
+  public GridDescription(String name, String viewName) {
+    super();
     this.name = name;
+    this.viewName = viewName;
   }
 
   public GridDescription(String name, String viewName, String idName, String versionName) {
-    Assert.notEmpty(name);
-
     this.name = name;
     this.viewName = viewName;
     this.idName = idName;

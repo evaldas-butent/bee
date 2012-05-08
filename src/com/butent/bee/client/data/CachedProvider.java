@@ -45,13 +45,13 @@ public class CachedProvider extends Provider {
   }
 
   public CachedProvider(HasDataTable display, String viewName, List<BeeColumn> columns,
-      Filter dataFilter, IsTable<?, ?> table) {
-    this(display, viewName, columns, null, null, dataFilter, table);
+      Filter immutableFilter, IsTable<?, ?> table) {
+    this(display, viewName, columns, null, null, immutableFilter, table);
   }
 
   public CachedProvider(HasDataTable display, String viewName, List<BeeColumn> columns,
-      String idColumnName, String versionColumnName, Filter dataFilter, IsTable<?, ?> table) {
-    super(display, viewName, columns, idColumnName, versionColumnName, dataFilter);
+      String idColumnName, String versionColumnName, Filter immutableFilter, IsTable<?, ?> table) {
+    super(display, viewName, columns, idColumnName, versionColumnName, immutableFilter);
     Assert.notNull(table);
     this.table = table;
   }

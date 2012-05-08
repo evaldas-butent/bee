@@ -213,7 +213,7 @@ public class CalendarPanel extends Complex {
 
   private GridDescription createGridDescription(BeeRowSet rowSet, List<String> columnNames) {
     String viewName = rowSet.getViewName();
-    GridDescription gridDescription = new GridDescription(viewName, viewName, null, null);
+    GridDescription gridDescription = new GridDescription(viewName, viewName);
 
     gridDescription.setCaption("Resources");
     gridDescription.setReadOnly(true);
@@ -238,9 +238,8 @@ public class CalendarPanel extends Complex {
   }
   
   private void createGridPresenter(BeeRowSet rowSet, List<String> columnNames) {
-    GridPresenter gp = new GridPresenter(rowSet.getViewName(), rowSet.getNumberOfRows(),
-        rowSet, Provider.Type.LOCAL, createGridDescription(rowSet, columnNames), null, null,
-        EnumSet.of(UiOption.CHILD));
+    GridPresenter gp = new GridPresenter(createGridDescription(rowSet, columnNames),
+        rowSet.getNumberOfRows(), rowSet, Provider.Type.LOCAL, EnumSet.of(UiOption.CHILD));
     setGridPresenter(gp);
     gp.setEventSource(getId());
     

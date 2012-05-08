@@ -19,6 +19,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.BeeCommand;
@@ -177,20 +178,33 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private final Set<HandlerRegistration> filterChangeHandlers = Sets.newHashSet();
   private Filter lastFilter = null;
 
-  public GridPresenter(String viewName, int rowCount, BeeRowSet rowSet, Provider.Type providerType,
-      GridDescription gridDescription, GridCallback gridCallback,
-      Map<String, Filter> initialFilters, Collection<UiOption> options) {
+  public GridPresenter(GridDescription gridDescription, int rowCount, BeeRowSet rowSet,
+      Provider.Type providerType, Collection<UiOption> uiOptions) {
+    this(gridDescription, rowCount, rowSet, providerType, uiOptions, null, null, null, null);
+  }
+
+  public GridPresenter(GridDescription gridDescription, int rowCount, BeeRowSet rowSet,
+      Provider.Type providerType, Collection<UiOption> uiOptions, GridCallback gridCallback,
+      Filter immutableFilter, Map<String, Filter> initialFilters, Order order) {
+    this(gridDescription, rowCount, rowSet, providerType, uiOptions, gridCallback,
+        immutableFilter, initialFilters, order, null);
+  }
+  
+  public GridPresenter(GridDescription gridDescription, int rowCount, BeeRowSet rowSet,
+      Provider.Type providerType, Collection<UiOption> uiOptions, GridCallback gridCallback,
+      Filter immutableFilter, Map<String, Filter> initialFilters, Order order,
+      GridFactory.GridOptions gridOptions) {
     if (gridCallback != null) {
       gridCallback.setGridPresenter(this);
     }
 
     this.gridContainer = createView(gridDescription, rowSet.getColumns(), rowCount, rowSet,
-        gridCallback, options);
+        order, gridCallback, uiOptions, gridOptions);
 
-    this.dataProvider = createProvider(gridContainer, viewName, rowSet.getColumns(),
-        gridDescription.getIdName(), gridDescription.getVersionName(),
-        gridDescription.getFilter(), initialFilters, gridDescription.getOrder(),
-        rowSet, providerType, gridDescription.getCachingPolicy());
+    this.dataProvider = createProvider(gridContainer, gridDescription.getViewName(),
+        rowSet.getColumns(), gridDescription.getIdName(), gridDescription.getVersionName(),
+        immutableFilter, initialFilters, order, rowSet, providerType,
+        gridDescription.getCachingPolicy());
 
     bind();
   }
@@ -474,7 +488,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private Provider createProvider(GridContainerView view, String viewName, List<BeeColumn> columns,
-      String idColumnName, String versionColumnName, Filter dataFilter,
+      String idColumnName, String versionColumnName, Filter immutableFilter,
       Map<String, Filter> initialFilters, Order order, BeeRowSet rowSet,
       Provider.Type providerType, CachingPolicy cachingPolicy) {
 
@@ -488,7 +502,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     switch (providerType) {
       case ASYNC:
         provider = new AsyncProvider(display, viewName, columns,
-            idColumnName, versionColumnName, dataFilter);
+            idColumnName, versionColumnName, immutableFilter);
         if (cachingPolicy != null) {
           ((AsyncProvider) provider).setCachingPolicy(cachingPolicy);
         }
@@ -496,11 +510,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       case CACHED:
         provider = new CachedProvider(display, viewName, columns,
-            idColumnName, versionColumnName, dataFilter, rowSet);
+            idColumnName, versionColumnName, immutableFilter, rowSet);
         break;
 
       case LOCAL:
-        provider = new LocalProvider(display, viewName, columns, dataFilter, rowSet);
+        provider = new LocalProvider(display, viewName, columns, immutableFilter, rowSet);
         break;
 
       default:
@@ -525,10 +539,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private GridContainerView createView(GridDescription gridDescription, List<BeeColumn> columns,
-      int rowCount, BeeRowSet rowSet, GridCallback gridCallback, Collection<UiOption> options) {
+      int rowCount, BeeRowSet rowSet, Order order, GridCallback gridCallback,
+      Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
 
     GridContainerView view = new GridContainerImpl();
-    view.create(gridDescription, columns, rowCount, rowSet, gridCallback, options);
+    view.create(gridDescription, columns, rowCount, rowSet, order, gridCallback, uiOptions,
+        gridOptions);
 
     return view;
   }

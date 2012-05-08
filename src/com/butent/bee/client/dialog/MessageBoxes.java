@@ -18,6 +18,7 @@ import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.FlexTable;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Vertical;
@@ -32,7 +33,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -277,7 +277,7 @@ public class MessageBoxes {
 
   public void showGrid(String cap, Object data, String... columnLabels) {
     Assert.notNull(data);
-    IsTable<?, ?> table = DataUtils.createTable(data, columnLabels);
+    IsTable<?, ?> table = GridFactory.createTable(data, columnLabels);
     Assert.notNull(table);
 
     int c = table.getNumberOfColumns();

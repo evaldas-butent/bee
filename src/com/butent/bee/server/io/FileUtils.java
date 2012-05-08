@@ -123,7 +123,8 @@ public class FileUtils {
   }
 
   public static List<File> findFiles(String search, Collection<File> defaultRoots,
-      Collection<Filter> requiredFilters, String defaultExtension, boolean recurse, boolean all) {
+      Collection<? extends Filter> requiredFilters, String defaultExtension, boolean recurse,
+      boolean all) {
     if (BeeUtils.isEmpty(search)) {
       return null;
     }
@@ -170,8 +171,8 @@ public class FileUtils {
     return findFiles(roots, filters, recurse, all);
   }
 
-  public static List<File> findFiles(Collection<File> directories, Collection<Filter> filters,
-      boolean recurse, boolean all) {
+  public static List<File> findFiles(Collection<File> directories,
+      Collection<? extends Filter> filters, boolean recurse, boolean all) {
     Assert.notEmpty(directories);
     List<File> files = Lists.newArrayList();
 
@@ -184,11 +185,12 @@ public class FileUtils {
     return files;
   }
 
-  public static List<File> findFiles(File dir, Collection<Filter> filters) {
+  public static List<File> findFiles(File dir, Collection<? extends Filter> filters) {
     return findFiles(dir, filters, true);
   }
 
-  public static List<File> findFiles(File dir, Collection<Filter> filters, boolean recurse) {
+  public static List<File> findFiles(File dir, Collection<? extends Filter> filters,
+      boolean recurse) {
     Assert.notNull(dir);
 
     List<File> found = Lists.newArrayList();

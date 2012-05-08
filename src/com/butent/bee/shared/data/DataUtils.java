@@ -1,9 +1,7 @@
 package com.butent.bee.shared.data;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.core.client.JsArrayString;
 
-import com.butent.bee.client.data.JsData;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -12,14 +10,13 @@ import com.butent.bee.shared.data.filter.CompoundType;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
-import com.butent.bee.shared.utils.Property;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Contains a set of utility functions for data management, for example {@code parseExpression}.
@@ -74,39 +71,6 @@ public class DataUtils {
   
   public static IsRow createEmptyRow(int columnCount) {
     return new BeeRow(NEW_ROW_ID, new String[Assert.isPositive(columnCount)]);
-  }
-
-  @SuppressWarnings("unchecked")
-  public static IsTable<?, ?> createTable(Object data, String... columnLabels) {
-    Assert.notNull(data);
-    IsTable<?, ?> table = null;
-
-    if (data instanceof IsTable) {
-      table = (IsTable<?, ?>) data;
-
-    } else if (data instanceof String[][]) {
-      table = new StringMatrix<TableColumn>((String[][]) data, columnLabels);
-
-    } else if (data instanceof JsArrayString) {
-      table = new JsData<TableColumn>((JsArrayString) data, columnLabels);
-
-    } else if (data instanceof List) {
-      Object el = BeeUtils.getQuietly((List<?>) data, 0);
-
-      if (el instanceof ExtendedProperty) {
-        table = new ExtendedPropertiesData((List<ExtendedProperty>) data, columnLabels);
-      } else if (el instanceof Property) {
-        table = new PropertiesData((List<Property>) data, columnLabels);
-      } else if (el instanceof String[]) {
-        table = new StringMatrix<TableColumn>((List<String[]>) data, columnLabels);
-      }
-
-    } else if (data instanceof Map) {
-      table = new PropertiesData((Map<?, ?>) data, columnLabels);
-    }
-
-    Assert.notNull(table, "createTable: data not recognized");
-    return table;
   }
 
   public static String defaultColumnId(int index) {
@@ -412,7 +376,25 @@ public class DataUtils {
     }
     return flt;
   }
+  
+  public static Filter parseFilter(String input, DataInfo.Provider provider, String viewName) {
+    if (BeeUtils.isEmpty(input)) {
+      return null;
+    }
 
+    DataInfo dataInfo = provider.getDataInfo(viewName, true);
+    return (dataInfo == null) ? null : dataInfo.parseFilter(input); 
+  }
+
+  public static Order parseOrder(String input, DataInfo.Provider provider, String viewName) {
+    if (BeeUtils.isEmpty(input)) {
+      return null;
+    }
+
+    DataInfo dataInfo = provider.getDataInfo(viewName, true);
+    return (dataInfo == null) ? null : dataInfo.parseOrder(input); 
+  }
+  
   public static boolean same(IsRow r1, IsRow r2) {
     if (r1 == null) {
       return r2 == null;

@@ -6,6 +6,7 @@ import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.cell.client.TextInputCell;
+import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.view.client.MultiSelectionModel;
@@ -14,6 +15,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.data.KeyProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
@@ -52,14 +54,21 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.ExtendedPropertiesData;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.IsTable;
+import com.butent.bee.shared.data.PropertiesData;
+import com.butent.bee.shared.data.StringMatrix;
+import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -70,11 +79,53 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Creates simple and scroll grid objects for usage in the user interface.
- */
-
 public class GridFactory {
+
+  public static class GridOptions {
+
+    private String caption = null;
+    private String filter = null;
+    private String order = null;
+
+    private GridOptions(String caption, String filter, String order) {
+      super();
+      this.caption = caption;
+      this.filter = filter;
+      this.order = order;
+    }
+
+    public String getCaption() {
+      return caption;
+    }
+
+    public String getFilter() {
+      return filter;
+    }
+
+    public String getOrder() {
+      return order;
+    }
+
+    public boolean hasFilter() {
+      return !BeeUtils.isEmpty(getFilter());
+    }
+
+    public boolean hasOrder() {
+      return !BeeUtils.isEmpty(getOrder());
+    }
+
+    public void setCaption(String caption) {
+      this.caption = caption;
+    }
+
+    public void setFilter(String filter) {
+      this.filter = filter;
+    }
+
+    public void setOrder(String order) {
+      this.order = order;
+    }
+  }
 
   public interface PresenterCallback {
     void onCreate(GridPresenter presenter);
@@ -175,7 +226,7 @@ public class GridFactory {
   public static Widget cellTable(Object data, TextCellType cellType, String... columnLabels) {
     Assert.notNull(data);
 
-    IsTable<?, ?> table = DataUtils.createTable(data, columnLabels);
+    IsTable<?, ?> table = createTable(data, columnLabels);
     Assert.notNull(table);
 
     int c = table.getNumberOfColumns();
@@ -260,8 +311,14 @@ public class GridFactory {
     }
   }
 
+  public static void createGrid(String gridName, Collection<UiOption> uiOptions,
+      GridOptions gridOptions, PresenterCallback presenterCallback) {
+    createGrid(gridName, getGridCallback(gridName), uiOptions, gridOptions, presenterCallback);
+  }
+
   public static void createGrid(String gridName, final GridCallback gridCallback,
-      final PresenterCallback presenterCallback, final Collection<UiOption> options) {
+      final Collection<UiOption> uiOptions, final GridOptions gridOptions,
+      final PresenterCallback presenterCallback) {
     Assert.notEmpty(gridName);
     Assert.notNull(presenterCallback);
 
@@ -271,22 +328,50 @@ public class GridFactory {
         if (gridCallback != null && !gridCallback.onLoad(result)) {
           return;
         }
-        getInitialRowSet(result, gridCallback, presenterCallback, options);
+        getInitialRowSet(result, gridCallback, presenterCallback, uiOptions, gridOptions);
       }
     });
   }
 
-  public static void createGrid(String gridName, PresenterCallback presenterCallback,
-      Collection<UiOption> options) {
-    createGrid(gridName, getGridCallback(gridName), presenterCallback, options);
-  }
-
-  public static DataColumn<?> createRenderableColumn(AbstractCellRenderer renderer, 
+  public static DataColumn<?> createRenderableColumn(AbstractCellRenderer renderer,
       IsColumn dataColumn, int index, CellType cellType) {
     Cell<String> cell = (cellType == null) ? new RenderableCell() : createCell(cellType);
     return new RenderableColumn(cell, index, dataColumn, renderer);
   }
   
+  @SuppressWarnings("unchecked")
+  public static IsTable<?, ?> createTable(Object data, String... columnLabels) {
+    Assert.notNull(data);
+    IsTable<?, ?> table = null;
+
+    if (data instanceof IsTable) {
+      table = (IsTable<?, ?>) data;
+
+    } else if (data instanceof String[][]) {
+      table = new StringMatrix<TableColumn>((String[][]) data, columnLabels);
+
+    } else if (data instanceof JsArrayString) {
+      table = new JsData<TableColumn>((JsArrayString) data, columnLabels);
+
+    } else if (data instanceof List) {
+      Object el = BeeUtils.getQuietly((List<?>) data, 0);
+
+      if (el instanceof ExtendedProperty) {
+        table = new ExtendedPropertiesData((List<ExtendedProperty>) data, columnLabels);
+      } else if (el instanceof Property) {
+        table = new PropertiesData((List<Property>) data, columnLabels);
+      } else if (el instanceof String[]) {
+        table = new StringMatrix<TableColumn>((List<String[]>) data, columnLabels);
+      }
+
+    } else if (data instanceof Map) {
+      table = new PropertiesData((Map<?, ?>) data, columnLabels);
+    }
+
+    Assert.notNull(table, "createTable: data not recognized");
+    return table;
+  }
+
   public static void getGrid(String name, Callback<GridDescription> callback) {
     getGrid(name, callback, false);
   }
@@ -327,18 +412,45 @@ public class GridFactory {
       GridCallback instance = callback.getInstance();
       if (instance != null) {
         return instance;
-      }      
+      }
     }
     return callback;
   }
-  
-  public static Filter getInitialQueryFilter(GridDescription gridDescription, 
-      Map<String, Filter> initialFilters) {
-    List<Filter> filters = Lists.newArrayList();
 
-    if (gridDescription != null && gridDescription.getFilter() != null) {
-      filters.add(gridDescription.getFilter());
+  public static GridOptions getGridOptions(Map<String, String> attributes) {
+    if (BeeUtils.isEmpty(attributes)) {
+      return null;
     }
+    
+    String caption = attributes.get(UiConstants.ATTR_CAPTION);
+    String filter = attributes.get(UiConstants.ATTR_FILTER);
+    String order = attributes.get(UiConstants.ATTR_ORDER);
+    
+    if (BeeUtils.allEmpty(caption, filter, order)) {
+      return null;
+    } else {
+      return new GridOptions(caption, filter, order);
+    }
+  }
+
+  public static Filter getImmutableFilter(GridDescription gridDescription, GridOptions gridOptions) {
+    Assert.notNull(gridDescription);
+    if (gridOptions == null || !gridOptions.hasFilter()) {
+      return gridDescription.getFilter();
+    }
+
+    return Filter.and(gridDescription.getFilter(), DataUtils.parseFilter(gridOptions.getFilter(),
+        Global.getDataInfoProvider(), gridDescription.getViewName()));
+  }
+  
+  public static Filter getInitialQueryFilter(Filter immutableFilter,
+      Map<String, Filter> initialFilters) {
+
+    List<Filter> filters = Lists.newArrayList();
+    if (immutableFilter != null) {
+      filters.add(immutableFilter);
+    }
+
     if (initialFilters != null) {
       for (Filter filter : initialFilters.values()) {
         if (filter != null) {
@@ -346,17 +458,34 @@ public class GridFactory {
         }
       }
     }
-    
     return Filter.and(filters);
   }
 
+  public static Order getOrder(GridDescription gridDescription, GridOptions gridOptions) {
+    Assert.notNull(gridDescription);
+    if (gridOptions == null || !gridOptions.hasOrder()) {
+      return gridDescription.getOrder();
+    }
+
+    Order order = DataUtils.parseOrder(gridOptions.getOrder(), Global.getDataInfoProvider(),
+        gridDescription.getViewName());
+    if (order == null) {
+      order = gridDescription.getOrder(); 
+    }
+    return order;
+  }
+
   public static void openGrid(String gridName) {
-    openGrid(gridName, getGridCallback(gridName));
+    openGrid(gridName, getGridCallback(gridName), null);
   }
 
   public static void openGrid(String gridName, GridCallback gridCallback) {
+    openGrid(gridName, gridCallback, null);
+  }
+  
+  public static void openGrid(String gridName, GridCallback gridCallback, GridOptions gridOptions) {
     BeeKeeper.getScreen().updateActivePanel(ensureLoadingWidget());
-    createGrid(gridName, gridCallback, SHOW, EnumSet.of(UiOption.ROOT));
+    createGrid(gridName, gridCallback, EnumSet.of(UiOption.ROOT), gridOptions, SHOW);
   }
 
   public static void registerGridCallback(String gridName, GridCallback callback) {
@@ -367,7 +496,7 @@ public class GridFactory {
   public static Widget scrollGrid(int width, Object data, String... columnLabels) {
     Assert.notNull(data);
 
-    IsTable<?, ?> table = DataUtils.createTable(data, columnLabels);
+    IsTable<?, ?> table = createTable(data, columnLabels);
     Assert.notNull(table);
 
     int c = table.getNumberOfColumns();
@@ -441,7 +570,7 @@ public class GridFactory {
   public static Widget simpleGrid(Object data, String... columnLabels) {
     Assert.notNull(data);
 
-    IsTable<?, ?> table = DataUtils.createTable(data, columnLabels);
+    IsTable<?, ?> table = createTable(data, columnLabels);
     Assert.notNull(table);
 
     int c = table.getNumberOfColumns();
@@ -503,12 +632,13 @@ public class GridFactory {
     return cell;
   }
 
-  private static void createPresenter(int rowCount, BeeRowSet rowSet, Provider.Type providerType,
-      GridDescription gridDescription, GridCallback gridCallback,
-      PresenterCallback presenterCallback, Map<String, Filter> initialFilters,
-      Collection<UiOption> options) {
-    GridPresenter presenter = new GridPresenter(gridDescription.getViewName(), rowCount, rowSet,
-        providerType, gridDescription, gridCallback, initialFilters, options);
+  private static void createPresenter(GridDescription gridDescription, int rowCount,
+      BeeRowSet rowSet, Provider.Type providerType, Collection<UiOption> uiOptions,
+      GridCallback gridCallback, Filter immutableFilter, Map<String, Filter> initialFilters,
+      Order order, GridOptions gridOptions, PresenterCallback presenterCallback) {
+
+    GridPresenter presenter = new GridPresenter(gridDescription, rowCount, rowSet, providerType,
+        uiOptions, gridCallback, immutableFilter, initialFilters, order, gridOptions);
     if (gridCallback != null) {
       gridCallback.onShow(presenter);
     }
@@ -525,35 +655,40 @@ public class GridFactory {
 
   private static void getInitialRowSet(final GridDescription gridDescription,
       final GridCallback gridCallback, final PresenterCallback presenterCallback,
-      final Collection<UiOption> options) {
+      final Collection<UiOption> uiOptions, final GridOptions gridOptions) {
 
+    final Filter immutableFilter = getImmutableFilter(gridDescription, gridOptions);
     final Map<String, Filter> initialFilters =
         (gridCallback == null) ? null : gridCallback.getInitialFilters();
-    Filter filter = getInitialQueryFilter(gridDescription, initialFilters);
-    
+
+    final Order order = getOrder(gridDescription, gridOptions);
+
     String viewName = gridDescription.getViewName();
     if (BeeUtils.isEmpty(viewName)) {
       BeeRowSet brs = null;
       if (gridCallback != null) {
         brs = gridCallback.getInitialRowSet();
       }
-      
+
       if (brs == null) {
         BeeKeeper.getLog().severe("grid", gridDescription.getName(), "has no initial data");
       } else {
-        createPresenter(brs.getNumberOfRows(), brs, Provider.Type.LOCAL, gridDescription,
-            gridCallback, presenterCallback, initialFilters, options);
+        createPresenter(gridDescription, brs.getNumberOfRows(), brs, Provider.Type.LOCAL,
+            uiOptions, gridCallback, immutableFilter, initialFilters, order, gridOptions,
+            presenterCallback);
       }
       return;
     }
-    
+
     final int threshold = BeeUtils.unbox(gridDescription.getAsyncThreshold());
     int limit = BeeUtils.unbox(gridDescription.getInitialRowSetSize());
     if (limit <= 0) {
       limit = DataUtils.getMaxInitialRowSetSize();
     }
+
+    Filter queryFilter = getInitialQueryFilter(immutableFilter, initialFilters);
     
-    Queries.getRowSet(viewName, null, filter, gridDescription.getOrder(), 0, limit,
+    Queries.getRowSet(viewName, null, queryFilter, order, 0, limit,
         gridDescription.getCachingPolicy(),
         PropertyUtils.createProperties(Service.VAR_VIEW_SIZE, threshold),
         new Queries.RowSetCallback() {
@@ -561,13 +696,13 @@ public class GridFactory {
             Assert.notNull(rowSet);
 
             int rc = BeeUtils.toInt(rowSet.getTableProperty(Service.VAR_VIEW_SIZE));
-            Provider.Type providerType = 
+            Provider.Type providerType =
                 (threshold <= 0 || rc >= threshold || rc != rowSet.getNumberOfRows())
-                ? Provider.Type.ASYNC : Provider.Type.CACHED;
+                    ? Provider.Type.ASYNC : Provider.Type.CACHED;
             rc = Math.max(rc, rowSet.getNumberOfRows());
 
-            createPresenter(rc, rowSet, providerType, gridDescription, gridCallback,
-                presenterCallback, initialFilters, options);
+            createPresenter(gridDescription, rc, rowSet, providerType, uiOptions, gridCallback,
+                immutableFilter, initialFilters, order, gridOptions, presenterCallback);
           }
         });
   }

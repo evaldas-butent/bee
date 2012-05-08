@@ -48,21 +48,21 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   private boolean cacheEnabled = true;
 
-  private final Filter dataFilter;
+  private final Filter immutableFilter;
   private final Map<String, Filter> parentFilters = Maps.newHashMap();
   private Filter userFilter = null;
 
   private Order order = null;
 
   protected Provider(HasDataTable display, String viewName, List<BeeColumn> columns,
-      String idColumnName, String versionColumnName, Filter dataFilter) {
+      String idColumnName, String versionColumnName, Filter immutableFilter) {
     Assert.notNull(display);
     this.display = display;
     this.viewName = viewName;
     this.columns = columns;
     this.idColumnName = idColumnName;
     this.versionColumnName = versionColumnName;
-    this.dataFilter = dataFilter;
+    this.immutableFilter = immutableFilter;
 
     this.handlerRegistry.add(display.addDataRequestHandler(new DataRequestEvent.Handler() {
       public void onDataRequest(DataRequestEvent event) {
@@ -108,8 +108,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   public Filter getQueryFilter(Filter filter) {
     List<Filter> lst = Lists.newArrayList();
 
-    if (getDataFilter() != null) {
-      lst.add(getDataFilter());
+    if (getImmutableFilter() != null) {
+      lst.add(getImmutableFilter());
     }
     if (!getParentFilters().isEmpty()) {
       for (Filter flt : getParentFilters().values()) {
@@ -261,8 +261,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     getDisplay().fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADING);
   }
 
-  private Filter getDataFilter() {
-    return dataFilter;
+  private Filter getImmutableFilter() {
+    return immutableFilter;
   }
 
   private Map<String, Filter> getParentFilters() {

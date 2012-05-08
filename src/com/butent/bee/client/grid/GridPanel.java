@@ -12,16 +12,22 @@ import java.util.EnumSet;
 public class GridPanel extends ResizePanel implements HasEnabled {
 
   private final String gridName;
+  private GridFactory.GridOptions gridOptions;
 
   private GridPresenter presenter = null;
   private GridCallback gridCallback = null;
 
-  public GridPanel(String gridName) {
+  public GridPanel(String gridName, GridFactory.GridOptions gridOptions) {
     super();
     this.gridName = gridName;
-    
+    this.gridOptions = gridOptions;
+
     addStyleName("bee-grid-panel");
     setDummyWidget();
+  }
+
+  public GridFactory.GridOptions getGridOptions() {
+    return gridOptions;
   }
 
   @Override
@@ -50,27 +56,32 @@ public class GridPanel extends ResizePanel implements HasEnabled {
     this.gridCallback = gridCallback;
   }
 
+  public void setGridOptions(GridFactory.GridOptions gridOptions) {
+    this.gridOptions = gridOptions;
+  }
+
   @Override
   protected void onLoad() {
     super.onLoad();
     if (getPresenter() != null) {
       return;
     }
-    
+
     GridCallback gcb = getGridCallback();
     if (gcb == null) {
       gcb = GridFactory.getGridCallback(getGridName());
     }
-    
-    GridFactory.createGrid(getGridName(), gcb, new GridFactory.PresenterCallback() {
-      public void onCreate(GridPresenter gp) {
-        if (gp != null) {
-          setPresenter(gp);
-          setWidget(gp.getWidget());
-          gp.setEventSource(getId());
-        }
-      }
-    }, EnumSet.of(UiOption.EMBEDDED));
+
+    GridFactory.createGrid(getGridName(), gcb, EnumSet.of(UiOption.EMBEDDED), getGridOptions(),
+        new GridFactory.PresenterCallback() {
+          public void onCreate(GridPresenter gp) {
+            if (gp != null) {
+              setPresenter(gp);
+              setWidget(gp.getWidget());
+              gp.setEventSource(getId());
+            }
+          }
+        });
   }
 
   private GridCallback getGridCallback() {

@@ -45,6 +45,7 @@ import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.ChildGrid;
 import com.butent.bee.client.grid.FlexTable;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
@@ -353,6 +354,7 @@ public enum FormWidget {
   private static final String ATTR_PRELOAD = "preload";
   private static final String ATTR_VOLUME = "volume";
 
+  private static final String ATTR_GRID_NAME = "gridName";
   private static final String ATTR_REL_COLUMN = "relColumn";
 
   private static final String ATTR_ANIMATE = "animate";
@@ -487,14 +489,17 @@ public enum FormWidget {
         break;
 
       case CHILD_GRID:
+        String gridName = BeeUtils.ifString(attributes.get(ATTR_GRID_NAME), name);
+
         String relColumn = attributes.get(ATTR_REL_COLUMN);
         String source = attributes.get(UiConstants.ATTR_SOURCE);
         int sourceIndex = BeeUtils.isEmpty(source)
             ? DataUtils.ID_INDEX : DataUtils.getColumnIndex(source, columns);
 
-        if (!BeeUtils.isEmpty(name) && !BeeUtils.isEmpty(relColumn)
+        if (!BeeUtils.isEmpty(gridName) && !BeeUtils.isEmpty(relColumn)
             && !BeeConst.isUndef(sourceIndex)) {
-          widget = new ChildGrid(name, sourceIndex, relColumn, attributes);
+          widget = new ChildGrid(gridName, sourceIndex, relColumn,
+              GridFactory.getGridOptions(attributes));
         }
         break;
 
@@ -603,8 +608,9 @@ public enum FormWidget {
         break;
 
       case GRID_PANEL:
-        if (!BeeUtils.isEmpty(name)) {
-          widget = new GridPanel(name);
+        String gName = BeeUtils.ifString(attributes.get(ATTR_GRID_NAME), name);
+        if (!BeeUtils.isEmpty(gName)) {
+          widget = new GridPanel(gName, GridFactory.getGridOptions(attributes));
         }
         break;
 

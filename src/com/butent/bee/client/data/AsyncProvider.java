@@ -85,13 +85,13 @@ public class AsyncProvider extends Provider {
   }
 
   public AsyncProvider(HasDataTable display, String viewName, List<BeeColumn> columns,
-      Filter dataFilter) {
-    this(display, viewName, columns, null, null, dataFilter);
+      Filter immutableFilter) {
+    this(display, viewName, columns, null, null, immutableFilter);
   }
 
   public AsyncProvider(HasDataTable display, String viewName, List<BeeColumn> columns,
-      String idColumnName, String versionColumnName, Filter dataFilter) {
-    super(display, viewName, columns, idColumnName, versionColumnName, dataFilter);
+      String idColumnName, String versionColumnName, Filter immutableFilter) {
+    super(display, viewName, columns, idColumnName, versionColumnName, immutableFilter);
   }
 
   @Override

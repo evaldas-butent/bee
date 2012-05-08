@@ -6,6 +6,7 @@ import com.google.common.collect.Iterables;
 import com.butent.bee.shared.Assert;
 
 import java.util.Collection;
+import java.util.Map;
 
 public class XmlHelper {
 
@@ -16,6 +17,10 @@ public class XmlHelper {
   public static final char LIST_SEPARATOR = ' ';
   public static final Joiner LIST_JOINER = Joiner.on(LIST_SEPARATOR);
 
+  public static String getAttribute(Map<String, String> attributes, String name) {
+    return (attributes == null) ? null : attributes.get(name);
+  }
+  
   public static String getList(Collection<String> items) {
     Assert.notNull(items);
     return LIST_JOINER.join(Iterables.filter(items, StringPredicate.NOT_EMPTY));

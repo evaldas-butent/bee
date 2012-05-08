@@ -16,6 +16,7 @@ import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
@@ -43,6 +44,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.ActiveRowChangeEvent;
 import com.butent.bee.shared.data.event.DataRequestEvent;
 import com.butent.bee.shared.data.event.ParentRowEvent;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -184,20 +186,25 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public void create(GridDescription gridDescription, List<BeeColumn> dataColumns, int rowCount,
-      BeeRowSet rowSet, GridCallback gridCallback, Collection<UiOption> options) {
+      BeeRowSet rowSet, Order order, GridCallback gridCallback, Collection<UiOption> uiOptions,
+      GridFactory.GridOptions gridOptions) {
 
     int minRows = BeeUtils.unbox(gridDescription.getPagingThreshold());
-    setHasPaging(UiOption.hasPaging(options) && rowCount >= minRows);
+    setHasPaging(UiOption.hasPaging(uiOptions) && rowCount >= minRows);
 
     minRows = BeeUtils.unbox(gridDescription.getSearchThreshold());
-    setHasSearch(UiOption.hasSearch(options) && rowCount >= minRows);
+    setHasSearch(UiOption.hasSearch(uiOptions) && rowCount >= minRows);
 
     boolean readOnly = BeeUtils.isTrue(gridDescription.isReadOnly());
 
     HeaderView header;
-    if (UiOption.hasHeader(options)) {
+    if (UiOption.hasHeader(uiOptions)) {
       header = new HeaderImpl();
+
       String caption = (gridCallback == null) ? null : gridCallback.getCaption();
+      if (caption == null) {
+        caption = (gridOptions == null) ? null : gridOptions.getCaption();
+      }
       if (caption == null) {
         caption = gridDescription.getCaption();
       }
@@ -217,7 +224,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         }
       }
       
-      header.create(caption, !BeeUtils.isEmpty(gridDescription.getViewName()), readOnly, options,
+      header.create(caption, !BeeUtils.isEmpty(gridDescription.getViewName()), readOnly, uiOptions,
           enabledActions, gridDescription.getDisabledActions());
     } else {
       header = null;
@@ -226,7 +233,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     String name = gridDescription.getName();
 
     GridView content = new CellGridImpl(name);
-    content.create(dataColumns, rowCount, rowSet, gridDescription, gridCallback, hasSearch());
+    content.create(dataColumns, rowCount, rowSet, gridDescription, gridCallback, hasSearch(),
+        order);
 
     FooterView footer;
     ScrollPager scroller;

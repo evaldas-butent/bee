@@ -10,6 +10,7 @@ import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -174,8 +175,12 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return index;
   }
   
-  public List<String> getColumnNames() {
-    return DataUtils.getColumnNames(getColumns(), getIdColumn(), getVersionColumn());
+  public List<String> getColumnNames(boolean includeIdAndVersion) {
+    if (includeIdAndVersion) {
+      return DataUtils.getColumnNames(getColumns(), getIdColumn(), getVersionColumn());
+    } else {
+      return DataUtils.getColumnNames(getColumns());
+    }
   }
 
   public List<BeeColumn> getColumns() {
@@ -420,7 +425,15 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   public List<String> parseColumns(String input) {
     return DataUtils.parseColumns(input, getColumns(), getIdColumn(), getVersionColumn());
   }
+  
+  public Filter parseFilter(String input) {
+    return DataUtils.parseCondition(input, getColumns(), getIdColumn(), getVersionColumn());
+  }
 
+  public Order parseOrder(String input) {
+    return Order.parse(input, getColumnNames(true));
+  }
+  
   public String serialize() {
     return Codec.beeSerialize(
         new Object[] {getViewName(), getTableName(), getIdColumn(), getVersionColumn(),

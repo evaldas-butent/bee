@@ -675,6 +675,10 @@ public class BeeUtils {
     return bracket(toSeconds(System.currentTimeMillis() - start));
   }
 
+  public static String emptyToNull(String s) {
+    return isEmpty(s) ? null : s;
+  }
+  
   /**
    * Checks if Object {@code x} and Object {@code y} are equal.
    * 

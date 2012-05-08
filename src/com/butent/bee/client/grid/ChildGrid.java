@@ -5,7 +5,6 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.layout.ResizePanel;
@@ -17,17 +16,13 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.ParentRowEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
@@ -38,16 +33,14 @@ import java.util.Map;
  */
 
 public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, HasFosterParent,
-    ParentRowEvent.Handler, HasViewName {
+    ParentRowEvent.Handler {
 
-  private String viewName = null;
-  private String caption = null;
+  private final String gridName;
 
-  private Filter filter = null;
-  private Order order = null;
-  
   private final int parentIndex;
   private final String relSource;
+
+  private GridFactory.GridOptions gridOptions;
 
   private GridCallback gridCallback = null;
   private GridDescription gridDescription = null;
@@ -59,16 +52,22 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
   private String parentId = null;
   private HandlerRegistration parentRowReg = null;
 
-  public ChildGrid(String name, int parentIndex, String relSource, Map<String, String> attributes) {
+  public ChildGrid(String gridName, int parentIndex, String relSource,
+      GridFactory.GridOptions gridOptions) {
     super();
+
+    this.gridName = gridName;
     this.parentIndex = parentIndex;
     this.relSource = relSource;
-    
-    setAttributes(name, attributes);
+    this.gridOptions = gridOptions;
 
-    this.gridCallback = GridFactory.getGridCallback(getViewName());
+    this.gridCallback = GridFactory.getGridCallback(gridName);
 
     addStyleName("bee-child-grid");
+  }
+
+  public GridFactory.GridOptions getGridOptions() {
+    return gridOptions;
   }
 
   @Override
@@ -84,10 +83,6 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     return presenter;
   }
 
-  public String getViewName() {
-    return viewName;
-  }
-
   public boolean isEnabled() {
     if (getPresenter() == null) {
       return false;
@@ -96,7 +91,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
   }
 
   public void launch() {
-    GridFactory.getGrid(getViewName(), new Callback<GridDescription>() {
+    GridFactory.getGrid(gridName, new Callback<GridDescription>() {
       public void onSuccess(GridDescription result) {
         if (getGridCallback() != null && !getGridCallback().onLoad(result)) {
           return;
@@ -124,15 +119,15 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     this.gridCallback = gridCallback;
   }
 
+  public void setGridOptions(GridFactory.GridOptions gridOptions) {
+    this.gridOptions = gridOptions;
+  }
+
   public void setParentId(String parentId) {
     this.parentId = parentId;
     if (isAttached()) {
       register();
     }
-  }
-
-  public void setViewName(String viewName) {
-    this.viewName = viewName;
   }
 
   @Override
@@ -148,18 +143,22 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
   }
 
   private void createPresenter(final IsRow row) {
+    final Filter immutableFilter =
+        GridFactory.getImmutableFilter(getGridDescription(), getGridOptions());
     final Map<String, Filter> initialFilters =
         (getGridCallback() == null) ? null : getGridCallback().getInitialFilters();
-    Filter flt = Filter.and(getFilter(row),
-        GridFactory.getInitialQueryFilter(getGridDescription(), initialFilters));
 
-    Queries.getRowSet(getViewName(), null, flt, getGridDescription().getOrder(),
+    Filter queryFilter = Filter.and(getFilter(row),
+        GridFactory.getInitialQueryFilter(immutableFilter, initialFilters));
+    final Order order = GridFactory.getOrder(getGridDescription(), getGridOptions());
+
+    Queries.getRowSet(getGridDescription().getViewName(), null, queryFilter, order,
         getGridDescription().getCachingPolicy(), new Queries.RowSetCallback() {
           public void onSuccess(BeeRowSet rowSet) {
             Assert.notNull(rowSet);
-            GridPresenter gp = new GridPresenter(getViewName(), rowSet.getNumberOfRows(),
-                rowSet, Provider.Type.ASYNC, getGridDescription(), getGridCallback(),
-                initialFilters, EnumSet.of(UiOption.CHILD));
+            GridPresenter gp = new GridPresenter(getGridDescription(),
+                rowSet.getNumberOfRows(), rowSet, Provider.Type.ASYNC, EnumSet.of(UiOption.CHILD),
+                getGridCallback(), immutableFilter, initialFilters, order, getGridOptions());
 
             gp.getView().getContent().setRelColumn(getRelSource());
             gp.getView().getContent().getGrid().setPageSize(BeeConst.UNDEF, false, false);
@@ -178,14 +177,6 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
         });
   }
 
-  private String getCaption() {
-    return caption;
-  }
-
-  private Filter getFilter() {
-    return filter;
-  }
-
   private Filter getFilter(IsRow row) {
     return ComparisonFilter.isEqual(getRelSource(), new LongValue(getParentValue(row)));
   }
@@ -196,10 +187,6 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
 
   private GridDescription getGridDescription() {
     return gridDescription;
-  }
-
-  private Order getOrder() {
-    return order;
   }
 
   private int getParentIndex() {
@@ -280,64 +267,8 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     }
   }
 
-  private void setAttributes(String name, Map<String, String> attributes) {
-    if (attributes == null) {
-      return;
-    }
-    
-    String view = attributes.get(UiConstants.ATTR_VIEW_NAME);
-    if (BeeUtils.isEmpty(view)) {
-      setViewName(name.trim());
-    } else {
-      setViewName(view.trim());
-    }
-
-    String cap = attributes.get(UiConstants.ATTR_CAPTION);
-    if (!BeeUtils.isEmpty(cap)) {
-      setCaption(cap.trim());
-    }
-
-    String flt = attributes.get(UiConstants.ATTR_FILTER);
-    String ord = attributes.get(UiConstants.ATTR_ORDER);
-    
-    if (!BeeUtils.allEmpty(flt, ord)) {
-      DataInfo viewInfo = Global.getDataInfo(getViewName(), true);
-
-      if (viewInfo != null && !BeeUtils.isEmpty(flt)) {
-        setFilter(DataUtils.parseCondition(flt, viewInfo.getColumns(),
-            viewInfo.getIdColumn(), viewInfo.getVersionColumn()));
-      }
-      if (viewInfo != null && !BeeUtils.isEmpty(ord)) {
-        setOrder(Order.parse(ord, viewInfo.getColumnNames()));
-      }
-    }
-  }
-
-  private void setCaption(String caption) {
-    this.caption = caption;
-  }
-
-  private void setFilter(Filter filter) {
-    this.filter = filter;
-  }
-
   private void setGridDescription(GridDescription gridDescription) {
     this.gridDescription = gridDescription;
-    
-    if (!BeeUtils.isEmpty(getCaption())) {
-      this.gridDescription.setCaption(getCaption());
-    }
-
-    if (getFilter() != null) {
-      this.gridDescription.setFilter(getFilter());
-    }
-    if (getOrder() != null) {
-      this.gridDescription.setOrder(getOrder());
-    }
-  }
-
-  private void setOrder(Order order) {
-    this.order = order;
   }
 
   private void setParentRowReg(HandlerRegistration parentRowReg) {
@@ -362,7 +293,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
       setParentRowReg(null);
     }
   }
-  
+
   private void updateFilter(IsRow row) {
     if (getPresenter() != null) {
       getPresenter().getDataProvider().setParentFilter(getId(), getFilter(row));
