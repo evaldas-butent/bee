@@ -112,15 +112,10 @@ public class Global implements Module {
   }
 
   public static void choice(String caption, String prompt, List<String> options,
-      DialogCallback<Integer> callback, String cancelHtml) {
-    choice(caption, prompt, options, callback, BeeConst.UNDEF, BeeConst.UNDEF, cancelHtml, null);
-  }
-  
-  public static void choice(String caption, String prompt, List<String> options,
       DialogCallback<Integer> callback, int defaultValue) {
     choice(caption, prompt, options, callback, defaultValue, BeeConst.UNDEF, null, null);
   }
-
+  
   public static void choice(String caption, String prompt, List<String> options,
       DialogCallback<Integer> callback, int defaultValue, int timeout) {
     choice(caption, prompt, options, callback, defaultValue, timeout, null, null);
@@ -136,6 +131,11 @@ public class Global implements Module {
       WidgetInitializer initializer) {
     msgBoxen.choice(caption, prompt, options, callback, defaultValue, timeout, cancelHtml,
         initializer);
+  }
+
+  public static void choice(String caption, String prompt, List<String> options,
+      DialogCallback<Integer> callback, String cancelHtml) {
+    choice(caption, prompt, options, callback, BeeConst.UNDEF, BeeConst.UNDEF, cancelHtml, null);
   }
   
   public static boolean closeDialog(Widget source) {
@@ -185,10 +185,15 @@ public class Global implements Module {
     BeeKeeper.getLog().debug(s);
   }
 
+  public static int getApproximateRowCount(String viewName) {
+    DataInfo dataInfo = getDataInfo(viewName, true);
+    return (dataInfo == null) ? BeeConst.UNDEF : dataInfo.getRowCount(); 
+  }
+
   public static CacheManager getCache() {
     return cache;
   }
-
+  
   public static String getCaption(String key, int index) {
     if (BeeUtils.isEmpty(key)) {
       BeeKeeper.getLog().severe("Caption key not specified");
@@ -215,7 +220,7 @@ public class Global implements Module {
       return UiHelper.getCaptions(clazz);
     }
   }
-  
+
   public static DataInfo getDataInfo(String viewName, boolean warn) {
     return getDataInfoProvider().getDataInfo(viewName, warn);
   }
@@ -231,7 +236,7 @@ public class Global implements Module {
   public static MessageBoxes getMsgBoxen() {
     return msgBoxen;
   }
-
+  
   public static Set<String> getRegisteredCaptionKeys() {
     return captions.keySet();
   }
@@ -290,6 +295,10 @@ public class Global implements Module {
     msgBoxen.showInfo(obj);
   }
 
+  public static void inputString(String caption, DialogCallback<String> callback) {
+    inputString(caption, null, callback);
+  }
+
   public static void inputString(String caption, String prompt, DialogCallback<String> callback) {
     inputString(caption, prompt, callback, null);
   }
@@ -311,10 +320,6 @@ public class Global implements Module {
       String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
     inpBoxen.inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
         timeout, confirmHtml, cancelHtml, initializer);
-  }
-
-  public static void inputString(String caption, DialogCallback<String> callback) {
-    inputString(caption, null, callback);
   }
 
   public static void inputVars(Stage bst, String cap, String... names) {

@@ -458,7 +458,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return name;
   }
 
-  public SqlSelect getQuery(Filter flt, Order ord, String... cols) {
+  public SqlSelect getQuery(Filter flt, Order ord, List<String> cols) {
     SqlSelect ss = query.copyOf();
     Collection<String> activeCols = null;
 
@@ -526,8 +526,12 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return ss.addFields(src, idCol, verCol);
   }
 
-  public SqlSelect getQuery(String... cols) {
-    return getQuery(null, null, cols);
+  public SqlSelect getQuery(Filter flt) {
+    return getQuery(flt, null, null);
+  }
+  
+  public SqlSelect getQuery() {
+    return getQuery(null, null, null);
   }
 
   public String getSourceAlias() {

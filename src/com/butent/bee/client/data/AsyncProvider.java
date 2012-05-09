@@ -3,6 +3,8 @@ package com.butent.bee.client.data;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
+import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -12,6 +14,7 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
@@ -77,21 +80,24 @@ public class AsyncProvider extends Provider {
   }
 
   private CachingPolicy cachingPolicy = CachingPolicy.FULL;
-  
+
   private final List<Integer> pendingRequests = Lists.newArrayList();
 
-  public AsyncProvider(HasDataTable display, String viewName, List<BeeColumn> columns) {
-    this(display, viewName, columns, null, null, null);
+  public AsyncProvider(HasDataTable display, NotificationListener notificationListener,
+      String viewName, List<BeeColumn> columns) {
+    this(display, notificationListener, viewName, columns, null, null, null);
   }
 
-  public AsyncProvider(HasDataTable display, String viewName, List<BeeColumn> columns,
+  public AsyncProvider(HasDataTable display, NotificationListener notificationListener,
+      String viewName, List<BeeColumn> columns, Filter immutableFilter) {
+    this(display, notificationListener, viewName, columns, null, null, immutableFilter);
+  }
+
+  public AsyncProvider(HasDataTable display, NotificationListener notificationListener,
+      String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter) {
-    this(display, viewName, columns, null, null, immutableFilter);
-  }
-
-  public AsyncProvider(HasDataTable display, String viewName, List<BeeColumn> columns,
-      String idColumnName, String versionColumnName, Filter immutableFilter) {
-    super(display, viewName, columns, idColumnName, versionColumnName, immutableFilter);
+    super(display, notificationListener, viewName, columns, idColumnName, versionColumnName,
+        immutableFilter);
   }
 
   @Override
@@ -104,6 +110,28 @@ public class AsyncProvider extends Provider {
     return cachingPolicy;
   }
 
+  public void onFilterChange(final Filter newFilter) {
+    if (newFilter == null) {
+      acceptFilter(newFilter);
+      refresh();
+ 
+    } else {
+      Filter flt = getQueryFilter(newFilter);
+      Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
+        @Override
+        public void onSuccess(Integer result) {
+          if (BeeUtils.isPositive(result)) {
+            acceptFilter(newFilter);
+            getDisplay().setRowCount(result, true);
+            onRequest(true);
+          } else {
+            rejectFilter(newFilter);
+          }
+        }
+      });
+    }
+  }
+
   @Override
   public void onRowInsert(RowInsertEvent event) {
   }
@@ -114,7 +142,7 @@ public class AsyncProvider extends Provider {
     setOrder(event.getOrder());
     goTop();
   }
-  
+
   @Override
   public void requery(boolean updateActiveRow) {
     onRequest(updateActiveRow);
@@ -125,23 +153,33 @@ public class AsyncProvider extends Provider {
   }
 
   @Override
-  protected void onRefresh() {
-    onRequest(true);
+  public void refresh() {
+    startLoading();
+    Global.getCache().removeQuietly(getViewName());
+
+    Filter flt = getFilter();
+    Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
+      @Override
+      public void onSuccess(Integer result) {
+        getDisplay().setRowCount(result, true);
+        onRequest(true);
+      }
+    });
   }
 
   @Override
   protected void onRequest(boolean updateActiveRow) {
     cancelPendingRequests();
     startLoading();
-    
+
     int offset = getPageStart();
     int limit = getPageSize();
 
     Filter flt = getFilter();
     Order ord = getOrder();
-    
+
     CachingPolicy caching = isCacheEnabled() ? getCachingPolicy() : CachingPolicy.NONE;
-    Callback callback = new Callback(offset, limit, updateActiveRow);    
+    Callback callback = new Callback(offset, limit, updateActiveRow);
 
     int rpcId = Queries.getRowSet(getViewName(), null, flt, ord,
         offset, limit, caching, callback);
@@ -160,7 +198,7 @@ public class AsyncProvider extends Provider {
       getPendingRequests().clear();
     }
   }
-  
+
   private List<Integer> getPendingRequests() {
     return pendingRequests;
   }
@@ -168,8 +206,8 @@ public class AsyncProvider extends Provider {
   private void updateDisplay(int start, int length, BeeRowSet data, boolean updateActiveRow) {
     Assert.nonNegative(start);
     int rowCount = data.getNumberOfRows();
-    
-    List<? extends IsRow> rowValues; 
+
+    List<? extends IsRow> rowValues;
     if (rowCount <= 0) {
       rowValues = Lists.newArrayList();
     } else if (length <= 0 || length >= rowCount) {

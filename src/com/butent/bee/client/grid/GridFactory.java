@@ -338,7 +338,7 @@ public class GridFactory {
     Cell<String> cell = (cellType == null) ? new RenderableCell() : createCell(cellType);
     return new RenderableColumn(cell, index, dataColumn, renderer);
   }
-  
+
   @SuppressWarnings("unchecked")
   public static IsTable<?, ?> createTable(Object data, String... columnLabels) {
     Assert.notNull(data);
@@ -421,11 +421,11 @@ public class GridFactory {
     if (BeeUtils.isEmpty(attributes)) {
       return null;
     }
-    
+
     String caption = attributes.get(UiConstants.ATTR_CAPTION);
     String filter = attributes.get(UiConstants.ATTR_FILTER);
     String order = attributes.get(UiConstants.ATTR_ORDER);
-    
+
     if (BeeUtils.allEmpty(caption, filter, order)) {
       return null;
     } else {
@@ -442,7 +442,7 @@ public class GridFactory {
     return Filter.and(gridDescription.getFilter(), DataUtils.parseFilter(gridOptions.getFilter(),
         Global.getDataInfoProvider(), gridDescription.getViewName()));
   }
-  
+
   public static Filter getInitialQueryFilter(Filter immutableFilter,
       Map<String, Filter> initialFilters) {
 
@@ -470,7 +470,7 @@ public class GridFactory {
     Order order = DataUtils.parseOrder(gridOptions.getOrder(), Global.getDataInfoProvider(),
         gridDescription.getViewName());
     if (order == null) {
-      order = gridDescription.getOrder(); 
+      order = gridDescription.getOrder();
     }
     return order;
   }
@@ -482,7 +482,7 @@ public class GridFactory {
   public static void openGrid(String gridName, GridCallback gridCallback) {
     openGrid(gridName, gridCallback, null);
   }
-  
+
   public static void openGrid(String gridName, GridCallback gridCallback, GridOptions gridOptions) {
     BeeKeeper.getScreen().updateActivePanel(ensureLoadingWidget());
     createGrid(gridName, gridCallback, EnumSet.of(UiOption.ROOT), gridOptions, SHOW);
@@ -652,7 +652,7 @@ public class GridFactory {
     }
     return loadingWidget;
   }
-
+  
   private static void getInitialRowSet(final GridDescription gridDescription,
       final GridCallback gridCallback, final PresenterCallback presenterCallback,
       final Collection<UiOption> uiOptions, final GridOptions gridOptions) {
@@ -680,26 +680,53 @@ public class GridFactory {
       return;
     }
 
-    final int threshold = BeeUtils.unbox(gridDescription.getAsyncThreshold());
-    int limit = BeeUtils.unbox(gridDescription.getInitialRowSetSize());
-    if (limit <= 0) {
-      limit = DataUtils.getMaxInitialRowSetSize();
+    Filter queryFilter = getInitialQueryFilter(immutableFilter, initialFilters);
+
+    int approximateRowCount = Global.getApproximateRowCount(viewName);
+
+    int threshold;
+    if (gridDescription.getAsyncThreshold() != null) {
+      threshold = gridDescription.getAsyncThreshold();
+    } else {
+      threshold = DataUtils.getDefaultAsyncThreshold();
     }
 
-    Filter queryFilter = getInitialQueryFilter(immutableFilter, initialFilters);
+    final Provider.Type providerType;
+    if (threshold <= 0 || approximateRowCount > threshold) {
+      providerType = Provider.Type.ASYNC;
+    } else {
+      providerType = Provider.Type.CACHED;
+    }
     
+    int limit;
+    if (Provider.Type.CACHED.equals(providerType)) {
+      limit = BeeConst.UNDEF;
+    } else if (gridDescription.getInitialRowSetSize() != null) {
+      limit = gridDescription.getInitialRowSetSize();
+    } else if (approximateRowCount >= 0
+        && approximateRowCount <= DataUtils.getMaxInitialRowSetSize()) {
+      limit = BeeConst.UNDEF;
+    } else {
+      limit = DataUtils.getMaxInitialRowSetSize();
+    }
+    
+    final boolean requestSize = limit > 0;
+    Collection<Property> queryOptions;
+    if (requestSize) {
+      queryOptions = PropertyUtils.createProperties(Service.VAR_VIEW_SIZE, requestSize);
+    } else {
+      queryOptions = null;
+    }
+
     Queries.getRowSet(viewName, null, queryFilter, order, 0, limit,
-        gridDescription.getCachingPolicy(),
-        PropertyUtils.createProperties(Service.VAR_VIEW_SIZE, threshold),
-        new Queries.RowSetCallback() {
-          public void onSuccess(final BeeRowSet rowSet) {
+        gridDescription.getCachingPolicy(), queryOptions, new Queries.RowSetCallback() {
+          public void onSuccess(BeeRowSet rowSet) {
             Assert.notNull(rowSet);
 
-            int rc = BeeUtils.toInt(rowSet.getTableProperty(Service.VAR_VIEW_SIZE));
-            Provider.Type providerType =
-                (threshold <= 0 || rc >= threshold || rc != rowSet.getNumberOfRows())
-                    ? Provider.Type.ASYNC : Provider.Type.CACHED;
-            rc = Math.max(rc, rowSet.getNumberOfRows());
+            int rc = rowSet.getNumberOfRows();
+            if (requestSize) {
+              rc = Math.max(rc, BeeUtils.toInt(rowSet.getTableProperty(Service.VAR_VIEW_SIZE)));
+            }
 
             createPresenter(gridDescription, rc, rowSet, providerType, uiOptions, gridCallback,
                 immutableFilter, initialFilters, order, gridOptions, presenterCallback);

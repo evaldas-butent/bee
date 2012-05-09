@@ -175,8 +175,7 @@ public class CrmModuleBean implements BeeModule {
               }
               if (!response.hasErrors()) {
                 BeeView view = sys.getView(rs.getViewName());
-                rs = sys.getViewData(view.getName(),
-                    ComparisonFilter.compareId(projectId), null, 0, 0);
+                rs = sys.getViewData(view.getName(), ComparisonFilter.compareId(projectId));
 
                 if (rs.isEmpty()) {
                   String msg = "Optimistic lock exception";

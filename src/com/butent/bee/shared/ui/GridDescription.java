@@ -876,11 +876,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     setCacheData(true);
     setCacheDescription(true);
 
-    setAsyncThreshold(DataUtils.getDefaultAsyncThreshold());
     setSearchThreshold(DataUtils.getDefaultSearchThreshold());
     setPagingThreshold(DataUtils.getDefaultPagingThreshold());
-
-    setInitialRowSetSize(DataUtils.getMaxInitialRowSetSize());
   }
 
   public void setDisabledActions(Set<Action> disabledActions) {

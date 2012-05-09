@@ -18,6 +18,7 @@ import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.DialogConstants;
+import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.UiOption;
@@ -57,11 +58,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-/**
- * Contains necessary methods for implementing grid presentation on the client side (view, filters,
- * content etc).
- */
 
 public class GridPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasSearch {
@@ -141,33 +137,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     private void afterMulti(long[] rowIds) {
       for (long rowId : rowIds) {
         afterDelete(rowId);
-      }
-    }
-  }
-
-  private class FilterCallback extends Queries.IntCallback {
-    private Filter filter;
-
-    private FilterCallback(Filter filter) {
-      this.filter = filter;
-    }
-
-    @Override
-    public void onFailure(String... reason) {
-      showFailure("Filter", reason);
-    }
-
-    public void onSuccess(Integer result) {
-      if (!Objects.equal(filter, getLastFilter())) {
-        BeeKeeper.getLog().warning("filter not the same");
-        BeeKeeper.getLog().warning(getLastFilter());
-        return;
-      }
-
-      if (result > 0) {
-        getDataProvider().onFilterChanged(filter, result);
-      } else if (filter != null) {
-        showWarning("Filter: " + filter.transform(), "no data found");
       }
     }
   }
@@ -442,7 +411,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (Objects.equal(filter, getLastFilter())) {
       getDataProvider().refresh();
     } else {
-      applyFilter(filter);
+      getDataProvider().onFilterChange(filter);
     }
   }
 
@@ -457,12 +426,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (getGridCallback() != null) {
       getGridCallback().afterDeleteRow(rowId);
     }
-  }
-
-  private void applyFilter(Filter filter) {
-    setLastFilter(filter);
-    Queries.getRowCount(getViewName(), getDataProvider().getQueryFilter(filter),
-        new FilterCallback(filter));
   }
 
   private void bind() {
@@ -498,10 +461,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     Provider provider;
     CellGrid display = view.getContent().getGrid();
+    NotificationListener notificationListener = view.getContent();
 
     switch (providerType) {
       case ASYNC:
-        provider = new AsyncProvider(display, viewName, columns,
+        provider = new AsyncProvider(display, notificationListener, viewName, columns,
             idColumnName, versionColumnName, immutableFilter);
         if (cachingPolicy != null) {
           ((AsyncProvider) provider).setCachingPolicy(cachingPolicy);
@@ -509,12 +473,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case CACHED:
-        provider = new CachedProvider(display, viewName, columns,
+        provider = new CachedProvider(display, notificationListener, viewName, columns,
             idColumnName, versionColumnName, immutableFilter, rowSet);
         break;
 
       case LOCAL:
-        provider = new LocalProvider(display, viewName, columns, immutableFilter, rowSet);
+        provider = new LocalProvider(display, notificationListener, viewName, columns,
+            immutableFilter, rowSet);
         break;
 
       default:
@@ -625,16 +590,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     getView().getContent().notifyInfo(messages);
   }
 
-  private void showWarning(String... messages) {
-    getView().getContent().notifyWarning(messages);
-  }
-
   private void updateFilter() {
     Filter filter = ViewHelper.getFilter(this, getDataProvider());
     if (Objects.equal(filter, getLastFilter())) {
       showInfo("filter not changed", BeeUtils.transform(filter));
     } else {
-      applyFilter(filter);
+      setLastFilter(filter);
+      getDataProvider().onFilterChange(filter);
     }
   }
 }

@@ -49,11 +49,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Contains necessary methods for implementing form presentation on the client side (filter, view
- * name, widgets etc).
- */
-
 public class FormPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, HasViewName, HasSearch {
 
@@ -82,33 +77,6 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
           BeeKeeper.getBus().fireEvent(new RowDeleteEvent(getViewName(), rowId));
         }
       });
-    }
-  }
-
-  private class FilterCallback extends Queries.IntCallback {
-    private Filter filter;
-
-    private FilterCallback(Filter filter) {
-      this.filter = filter;
-    }
-    
-    @Override
-    public void onFailure(String... reason) {
-      showFailure("Filter", reason);
-    }
-
-    public void onSuccess(Integer result) {
-      if (!Objects.equal(filter, getLastFilter())) {
-        BeeKeeper.getLog().warning("filter not the same");
-        BeeKeeper.getLog().warning(getLastFilter());
-        return;
-      }
-
-      if (result > 0) {
-        getDataProvider().onFilterChanged(filter, result);
-      } else if (filter != null) {
-        showWarning("Filter: " + filter.transform(), "no data found");
-      }
     }
   }
 
@@ -324,17 +292,18 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
 
     HasDataTable display = view.getContent().getDisplay();
+    NotificationListener notificationListener = view.getContent();
     Provider provider;
 
     switch (providerType) {
       case ASYNC:
-        provider = new AsyncProvider(display, viewName, columns);
+        provider = new AsyncProvider(display, notificationListener, viewName, columns);
         break;
       case CACHED:
-        provider = new CachedProvider(display, viewName, columns, rowSet);
+        provider = new CachedProvider(display, notificationListener, viewName, columns, rowSet);
         break;
       case LOCAL:
-        provider = new LocalProvider(display, viewName, columns, rowSet);
+        provider = new LocalProvider(display, notificationListener, viewName, columns, rowSet);
         break;
       default:
         Assert.untouchable();
@@ -378,18 +347,13 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     getNotificationListener().notifySevere(messages.toArray(new String[0]));
   }
 
-  private void showWarning(String... messages) {
-    getNotificationListener().notifyWarning(messages);
-  }
-
   private void updateFilter() {
     Filter filter = ViewHelper.getFilter(this, getDataProvider());
     if (Objects.equal(filter, getLastFilter())) {
       BeeKeeper.getLog().info("filter not changed", filter);
-      return;
+    } else {
+      lastFilter = filter;
+      getDataProvider().onFilterChange(filter);
     }
-
-    lastFilter = filter;
-    Queries.getRowCount(getViewName(), filter, new FilterCallback(filter));
   }
 }

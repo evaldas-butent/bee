@@ -6,7 +6,7 @@ import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
+import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
@@ -37,12 +37,13 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   }
   
   private final HasDataTable display;
+  private final NotificationListener notificationListener;
 
   private final String viewName;
+  private final List<BeeColumn> columns;
+
   private final String idColumnName;
   private final String versionColumnName;
-
-  private final List<BeeColumn> columns;
 
   private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
 
@@ -54,14 +55,18 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   private Order order = null;
 
-  protected Provider(HasDataTable display, String viewName, List<BeeColumn> columns,
-      String idColumnName, String versionColumnName, Filter immutableFilter) {
-    Assert.notNull(display);
+  protected Provider(HasDataTable display, NotificationListener notificationListener,
+      String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
+      Filter immutableFilter) {
     this.display = display;
+    this.notificationListener = notificationListener;
+
     this.viewName = viewName;
     this.columns = columns;
+
     this.idColumnName = idColumnName;
     this.versionColumnName = versionColumnName;
+    
     this.immutableFilter = immutableFilter;
 
     this.handlerRegistry.add(display.addDataRequestHandler(new DataRequestEvent.Handler() {
@@ -147,11 +152,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     }
   }
 
-  public void onFilterChanged(Filter newFilter, int rowCount) {
-    setUserFilter(newFilter);
-    getDisplay().setRowCount(rowCount, true);
-    goTop();
-  }
+  public abstract void onFilterChange(Filter newFilter);
 
   public void onMultiDelete(MultiDeleteEvent event) {
     if (BeeUtils.same(getViewName(), event.getViewName())) {
@@ -189,25 +190,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     }
   }
 
-  public void refresh() {
-    if (BeeUtils.isEmpty(getViewName())) {
-      return;
-    }
-    startLoading();
-    Global.getCache().removeQuietly(getViewName());
-
-    final Filter flt = getFilter();
-    Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
-      @Override
-      public void onSuccess(Integer result) {
-        if (result <= 0) {
-          BeeKeeper.getLog().warning(getViewName(), flt, "refresh: row count", result);
-        }
-        getDisplay().setRowCount(result, true);
-        onRefresh();
-      }
-    });
-  }
+  public abstract void refresh();
 
   public abstract void requery(boolean updateActiveRow);
 
@@ -228,10 +211,11 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     }
   }
 
-  public void setUserFilter(Filter userFilter) {
-    this.userFilter = userFilter;
+  protected void acceptFilter(Filter newFilter) {
+    setUserFilter(newFilter);
+    getDisplay().setPageStart(0, true, false);
   }
-
+  
   protected HasDataTable getDisplay() {
     return display;
   }
@@ -253,10 +237,18 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     onRequest(true);
   }
 
-  protected abstract void onRefresh();
-
   protected abstract void onRequest(boolean updateActiveRow);
 
+  protected void rejectFilter(Filter filter) {
+    if (filter != null && notificationListener != null) {
+      notificationListener.notifyWarning("no rows found", filter.toString());
+    }
+  }
+
+  protected void setUserFilter(Filter userFilter) {
+    this.userFilter = userFilter;
+  }
+  
   protected void startLoading() {
     getDisplay().fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADING);
   }

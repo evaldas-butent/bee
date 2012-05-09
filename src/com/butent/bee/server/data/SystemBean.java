@@ -360,12 +360,16 @@ public class SystemBean {
     return getViewData(viewName, null, null);
   }
 
+  public BeeRowSet getViewData(String viewName, Filter filter) {
+    return getViewData(viewName, filter, null);
+  }
+
   public BeeRowSet getViewData(String viewName, Filter filter, Order order) {
-    return getViewData(viewName, filter, order, BeeConst.UNDEF, BeeConst.UNDEF);
+    return getViewData(viewName, filter, order, BeeConst.UNDEF, BeeConst.UNDEF, null);
   }
 
   public BeeRowSet getViewData(String viewName, Filter filter, Order order, int limit, int offset,
-      String... columns) {
+      List<String> columns) {
 
     BeeView view = getView(viewName);
     SqlSelect ss = view.getQuery(filter, order, columns);
@@ -393,7 +397,7 @@ public class SystemBean {
   }
 
   public int getViewSize(String viewName, Filter filter) {
-    return qs.sqlCount(getView(viewName).getQuery(filter, null));
+    return qs.sqlCount(getView(viewName).getQuery(filter));
   }
 
   public XmlState getXmlState(String moduleName, String stateName) {

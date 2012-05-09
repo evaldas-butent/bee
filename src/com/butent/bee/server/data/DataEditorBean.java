@@ -191,8 +191,7 @@ public class DataEditorBean {
         if (RowInfo.class.equals(returnType)) {
           response.setResponse(new BeeRow(id, tblInfo.version));
         } else {
-          BeeRowSet newRs = sys.getViewData(view.getName(),
-              ComparisonFilter.compareId(id), null, 0, 0);
+          BeeRowSet newRs = sys.getViewData(view.getName(), ComparisonFilter.compareId(id));
 
           if (newRs.isEmpty()) {
             response.addError("Optimistic lock exception");
