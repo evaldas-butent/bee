@@ -551,8 +551,8 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
       if (BeeUtils.isEmpty(oldValue)) {
         return;
       }
-
-      updateCell(index, editableColumn.getColumnForUpdate().getId(), null);
+      
+      validateAndUpdate(editableColumn, index, oldValue, null, false);
       return;
     }
 
@@ -560,14 +560,14 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
         && BeeUtils.inList(charCode, EditorFactory.START_MOUSE_CLICK,
             EditorFactory.START_KEY_ENTER)) {
 
-      String oldValue = getRow().getString(editableColumn.getColIndex());
+      String oldValue = editableColumn.getOldValueForUpdate(getRow());
       Boolean b = !BeeUtils.toBoolean(oldValue);
       if (!b && editableColumn.isNullable()) {
         b = null;
       }
       String newValue = BooleanValue.pack(b);
-
-      updateCell(index, editableColumn.getColumnId(), newValue);
+      
+      validateAndUpdate(editableColumn, index, oldValue, newValue, true);
       return;
     }
 
@@ -604,4 +604,19 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
       renderCell(index, value);
     }
   }
+  
+  private boolean validateAndUpdate(EditableColumn editableColumn, int index, String oldValue,
+      String newValue, boolean tab) {
+    Boolean ok = editableColumn.validate(oldValue, newValue, false);
+    if (BeeUtils.isEmpty(ok)) {
+      return false;
+    }
+    
+    updateCell(index, editableColumn.getColumnForUpdate().getId(), newValue);
+    if (tab) {
+      handleKeyboardNavigation(KeyCodes.KEY_TAB, false);
+    }
+    return true;
+  }
+  
 }

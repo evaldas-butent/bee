@@ -1114,9 +1114,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       if (BeeUtils.isEmpty(oldValue)) {
         return;
       }
-
-      updateCell(rowValue, editableColumn.getColumnForUpdate(), oldValue, null,
-          editableColumn.getRowModeForUpdate());
+      
+      validateAndUpdate(editableColumn, rowValue, oldValue, null, false);
       return;
     }
 
@@ -1124,14 +1123,14 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         && BeeUtils.inList(event.getCharCode(), EditorFactory.START_MOUSE_CLICK,
             EditorFactory.START_KEY_ENTER)) {
 
-      String oldValue = rowValue.getString(editableColumn.getColIndex());
+      String oldValue = editableColumn.getOldValueForUpdate(rowValue);
       Boolean b = !BeeUtils.toBoolean(oldValue);
       if (!b && editableColumn.isNullable()) {
         b = null;
       }
       String newValue = BooleanValue.pack(b);
 
-      updateCell(rowValue, editableColumn.getDataColumn(), oldValue, newValue, false);
+      validateAndUpdate(editableColumn, rowValue, oldValue, newValue, true);
       return;
     }
 
@@ -1817,6 +1816,21 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private boolean useFormForInsert() {
     return getForm(false) != null;
+  }
+  
+  private boolean validateAndUpdate(EditableColumn editableColumn, IsRow row, String oldValue,
+      String newValue, boolean tab) {
+    Boolean ok = editableColumn.validate(oldValue, newValue, false);
+    if (BeeUtils.isEmpty(ok)) {
+      return false;
+    }
+    
+    updateCell(row, editableColumn.getColumnForUpdate(), oldValue, newValue,
+        editableColumn.getRowModeForUpdate());
+    if (tab) {
+      getGrid().handleKeyboardNavigation(KeyCodes.KEY_TAB, false);
+    }
+    return true;
   }
 
   private boolean validateRow(IsRow row, boolean force) {

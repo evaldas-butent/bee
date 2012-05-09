@@ -387,6 +387,14 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     this.notificationListener = notificationListener;
   }
 
+  public Boolean validate(String oldValue, String newValue, boolean force) {
+    CellValidation cellValidation = new CellValidation(oldValue, newValue, getValidation(),
+        getRowValue(), getIndexForUpdate(), getTypeForUpdate(), isNullable(), getMinValue(),
+        getMaxValue(), getCaption(), getNotificationListener(), force);
+
+    return ValidationHelper.validateCell(cellValidation, this);
+  }
+
   private void adjustEditor(Element sourceElement, Element editorElement, Element adjustElement) {
     if (sourceElement != null) {
       if (getEditor() instanceof AdjustmentListener) {
@@ -679,13 +687,5 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   private void setState(State state) {
     this.state = state;
-  }
-
-  private Boolean validate(String oldValue, String newValue, boolean force) {
-    CellValidation cellValidation = new CellValidation(oldValue, newValue, getValidation(),
-        getRowValue(), getIndexForUpdate(), getTypeForUpdate(), isNullable(), getMinValue(),
-        getMaxValue(), getCaption(), getNotificationListener(), force);
-
-    return ValidationHelper.validateCell(cellValidation, this);
   }
 }
