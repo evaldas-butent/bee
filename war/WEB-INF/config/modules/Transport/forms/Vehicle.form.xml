@@ -15,7 +15,7 @@
       <InputText source="Number" />
       <InlineLabel html="Modelis" class="bee-required" style="&LABEL_STYLE;" />
       <DataSelector source="Model" class="flexible" style="min-width: 50px;"
-        renderColumns="ParentModelName ModelName" searchableColumns="ParentName Name" />
+        renderColumns="ParentModelName ModelName" />
       <InlineLabel html="Tipas" class="bee-required" style="&LABEL_STYLE;" />
       <DataSelector source="Type" class="flexible" style="min-width: 50px;" />
     </FlowPanel>

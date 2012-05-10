@@ -384,8 +384,17 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
       if (sourceInfo != null && !BeeUtils.isEmpty(renderColumns.get())) {
         for (String columnId : renderColumns.get()) {
           ViewColumn vc = sourceInfo.getViewColumn(columnId);
+
           if (vc != null) {
-            fields.add(vc.getField());
+            if (viewInfo == null) {
+              fields.add(vc.getField());
+            } else {
+              int index = viewInfo.getColumnIndexBySource(vc.getTable(), vc.getField(),
+                  vc.getLevel() - 1);
+              if (!BeeConst.isUndef(index)) {
+                fields.add(viewInfo.getColumnId(index));
+              }
+            }
           }
         }
       }

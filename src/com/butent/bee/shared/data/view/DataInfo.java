@@ -1,5 +1,6 @@
 package com.butent.bee.shared.data.view;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -159,9 +160,18 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return DataUtils.getColumnIndex(columnId, getColumns());
   }
 
-  public int getColumnIndexBySource(String table, String field) {
+  public int getColumnIndexBySource(String table, String field, int preferredLevel) {
+    int index = getColumnIndexBySource(table, field, ViewColumn.Level.of(preferredLevel));
+    if (BeeConst.isUndef(index)) {
+      index = getColumnIndexBySource(table, field, null);
+    }
+    
+    return index;
+  }
+
+  public int getColumnIndexBySource(String table, String field, Predicate<ViewColumn> predicate) {
     int index = BeeConst.UNDEF;
-    Collection<ViewColumn> vcs = getViewColumnsBySource(table, field);
+    List<ViewColumn> vcs = getViewColumnsBySource(table, field, predicate);
     if (vcs.isEmpty()) {
       return index;
     }
@@ -395,7 +405,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return viewColumns;
   }
   
-  public Collection<ViewColumn> getViewColumnsBySource(String table, String field) {
+  public List<ViewColumn> getViewColumnsBySource(String table, String field,
+      Predicate<ViewColumn> predicate) {
     List<ViewColumn> result = Lists.newArrayList();
     if (BeeUtils.anyEmpty(table, field)) {
       return result;
@@ -403,7 +414,9 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
     for (ViewColumn vc : getViewColumns()) {
       if (BeeUtils.same(table, vc.getTable()) && BeeUtils.same(field, vc.getField())) {
-        result.add(vc);
+        if (BeeUtils.check(predicate, vc)) {
+          result.add(vc);
+        }
       }
     }
     return result;

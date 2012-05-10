@@ -487,6 +487,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private static final Operator DEFAULT_SEARCH_TYPE = Operator.CONTAINS;
 
+  private static final char SHOW_SELECTOR = '*';
+  
   private final Callback callback = new Callback() {
     public void onSuggestionsReady(Request request, Response response) {
       if (isEditing()) {
@@ -713,6 +715,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
           switch (keyCode) {
             case KeyCodes.KEY_BACKSPACE:
+              if (!BeeUtils.isEmpty(getDisplayValue())) {
+                start(SHOW_SELECTOR);
+              }
               consumed = true;
               break;
             case KeyCodes.KEY_DELETE:
@@ -813,7 +818,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     setOffset(0);
 
     if (charCode != BeeConst.CHAR_SPACE && Codec.isValidUnicodeChar(charCode)) {
-      if (charCode == '*') {
+      if (charCode == SHOW_SELECTOR) {
         clearDisplay();
       } else {
         setDisplayValue(BeeUtils.toString(charCode));

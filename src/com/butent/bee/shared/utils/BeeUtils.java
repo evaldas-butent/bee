@@ -1,5 +1,6 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
@@ -161,7 +162,7 @@ public class BeeUtils {
   public static boolean betweenExclusive(int x, int min, int max) {
     return x >= min && x < max;
   }
-
+  
   /**
    * Checks if the specified value {@code x} is between values {@code min} and {@code max}
    * inclusively.
@@ -189,6 +190,10 @@ public class BeeUtils {
     } else {
       return BeeConst.STRING_LEFT_BRACKET + s + BeeConst.STRING_RIGHT_BRACKET;
     }
+  }
+
+  public static <T> boolean check(Predicate<T> predicate, T input) {
+    return (predicate == null) ? true : predicate.apply(input);
   }
 
   /**

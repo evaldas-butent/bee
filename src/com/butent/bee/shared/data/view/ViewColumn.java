@@ -1,6 +1,10 @@
 package com.butent.bee.shared.data.view;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Range;
+
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -11,10 +15,47 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.List;
 
 public class ViewColumn implements BeeSerializable, HasInfo {
+  
+  public static class Level implements Predicate<ViewColumn> {
+    
+    public static Level of(int level) {
+      return new Level(level, null);
+    }
+
+    public static Level of(Range<Integer> range) {
+      return (range == null) ? null : new Level(BeeConst.UNDEF, range);
+    }
+    
+    private final int level;
+    private final Range<Integer> range;
+
+    private Level(int level, Range<Integer> range) {
+      this.level = level;
+      this.range = range;
+    }
+
+    @Override
+    public boolean apply(ViewColumn input) {
+      if (input == null) {
+        return false;
+      } else if (range == null) {
+        return input.getLevel() == level;
+      } else {
+        return range.contains(input.getLevel());
+      }
+    }
+  }
 
   private enum Serial {
     NAME, PARENT, TABLE, FIELD, RELATION, LEVEL, LOCALE, AGGREGATE, EXPRESSION, HIDDEN, READ_ONLY
   }
+
+  public static Predicate<ViewColumn> VISIBLE = new Predicate<ViewColumn>() {
+    @Override
+    public boolean apply(ViewColumn input) {
+      return (input == null) ? false : !input.isHidden();
+    }
+  };
   
   public static ViewColumn restore(String s) {
     if (BeeUtils.isEmpty(s)) {
