@@ -167,9 +167,12 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
             setWidget(gp.getWidget());
             setPresenter(gp);
 
-            if (row == getPendingRow()) {
+            if (BeeUtils.equals(row, getPendingRow())) {
               updateFilter(row);
               resetState();
+              if (row == null) {
+                setEnabled(false);
+              }
             } else {
               resolveState();
             }
@@ -243,19 +246,16 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
       return;
     }
 
-    boolean hasParent = hasParentValue(getPendingRow());
-
     if (getPresenter() == null) {
-      if (hasParent) {
-        createPresenter(getPendingRow());
-      }
+      createPresenter(getPendingRow());
+
     } else {
       getPresenter().getView().getContent().getGrid().deactivate();
       getPresenter().getView().getContent().ensureGridVisible();
 
       updateFilter(getPendingRow());
 
-      if (hasParent) {
+      if (hasParentValue(getPendingRow())) {
         getPresenter().requery(false);
       } else {
         setEnabled(false);

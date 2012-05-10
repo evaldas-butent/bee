@@ -191,7 +191,7 @@ public class MessageBoxes {
 
     final Popup panel;
     if (BeeUtils.isEmpty(caption)) {
-      panel = new Popup(true);
+      panel = new Popup(true, true);
     } else {
       panel = new DialogBox(caption);
     }
@@ -329,7 +329,7 @@ public class MessageBoxes {
       grid.getFlexCellFormatter().setColSpan(index, 0, c);
     }
 
-    Popup box = new Popup(true);
+    Popup box = new Popup(true, true);
     box.setAnimationEnabled(true);
 
     box.setWidget(grid);
@@ -349,7 +349,7 @@ public class MessageBoxes {
   public void showWidget(Widget widget) {
     Assert.notNull(widget);
 
-    Popup box = new Popup(true);
+    Popup box = new Popup(true, true);
     box.setAnimationEnabled(true);
 
     box.setWidget(widget);
@@ -386,7 +386,7 @@ public class MessageBoxes {
       vp.add(bottom);
     }
 
-    Popup popup = new Popup(true);
+    Popup popup = new Popup(true, true);
     popup.setAnimationEnabled(true);
 
     popup.setWidget(vp);

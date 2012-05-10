@@ -64,7 +64,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
 
     this.box = new InputText();
     this.datePicker = new DatePicker(new JustDate());
-    this.popup = new Popup(true);
+    this.popup = new Popup(true, false);
 
     this.format = format;
     this.dateType = type;

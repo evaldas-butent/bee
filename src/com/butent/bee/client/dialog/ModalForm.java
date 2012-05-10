@@ -31,7 +31,7 @@ public class ModalForm extends Popup {
   }
   
   public ModalForm(Widget widget, HasDimensions dimensions, boolean requiresUnload) {
-    super(false, STYLE_NAME);
+    super(false, true, STYLE_NAME);
     this.requiresUnload = requiresUnload;
 
     if (Stacking.getWidgetCount() <= 0) {

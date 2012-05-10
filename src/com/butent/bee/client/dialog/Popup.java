@@ -328,27 +328,16 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private boolean dragging = false;
   private MouseHandler mouseHandler = null;
   
-  public Popup(boolean autoHide) {
-    this(autoHide, STYLE_POPUP);
-  }
-  
   public Popup(boolean autoHide, boolean modal) {
     this(autoHide, modal, STYLE_POPUP);
   }
 
   public Popup(boolean autoHide, boolean modal, String styleName) {
-    this(autoHide, styleName);
-    this.modal = modal;
-  }
-  
-  public Popup(boolean autoHide, String styleName) {
-    this(styleName);
+    super();
+
     this.autoHide = autoHide;
     this.autoHideOnHistoryEvents = autoHide;
-  }
-
-  private Popup(String styleName) {
-    super();
+    this.modal = modal;
 
     setPopupPosition(0, 0);
     DomUtils.createId(this, getIdPrefix());
