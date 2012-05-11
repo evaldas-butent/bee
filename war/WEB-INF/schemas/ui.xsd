@@ -334,7 +334,7 @@
     <xs:attributeGroup ref="appearance" />
     <xs:attributeGroup ref="alignment" />
     <xs:attribute name="itemKey" type="xs:normalizedString" />
-    <xs:attribute name="renderColumns" type="type:nameList" />
+    <xs:attribute name="renderColumns" type="xs:normalizedString" />
   </xs:complexType>
 
   <xs:simpleType name="relationCaching">
@@ -348,7 +348,7 @@
   
   <xs:attributeGroup name="relation">
     <xs:attribute name="viewName" type="type:nameType" />
-    <xs:attribute name="choiceColumns" type="type:nameList" />
+    <xs:attribute name="choiceColumns" type="xs:normalizedString" />
     <xs:attribute name="searchableColumns" type="type:nameList" />
     <xs:attribute name="filter" type="xs:normalizedString" />
     <xs:attribute name="order" type="xs:normalizedString" />

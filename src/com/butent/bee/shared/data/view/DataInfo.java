@@ -207,13 +207,17 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
     String table = root.getTable();
     String field = root.getField();
+    String parent = root.getParent();
+
     if (BeeUtils.anyEmpty(table, field)) {
       return result;
     }
 
     Set<String> parents = Sets.newHashSet(root.getName());
     for (ViewColumn vc : getViewColumns()) {
-      if (BeeUtils.same(vc.getField(), field) && BeeUtils.same(vc.getTable(), table)
+      if (BeeUtils.same(vc.getField(), field) 
+          && BeeUtils.same(vc.getTable(), table)
+          && BeeUtils.same(vc.getParent(), parent) 
           && !BeeUtils.same(vc.getName(), root.getName())) {
         parents.add(vc.getName());
       }
@@ -221,8 +225,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     
     while (!parents.isEmpty()) {
       Set<ViewColumn> children = Sets.newHashSet();
-      for (String parent : parents) {
-        children.addAll(getImmediateChildren(parent));
+      for (String p : parents) {
+        children.addAll(getImmediateChildren(p));
       }
       if (children.isEmpty()) {
         break;
@@ -298,25 +302,6 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return children;
   }
 
-  public List<String> getRelatedFields(String table) {
-    List<String> fields = Lists.newArrayList();
-
-    for (ViewColumn viewColumn : getViewColumns()) {
-      if (viewColumn.isHidden() || viewColumn.isReadOnly()) {
-        continue;
-      }
-      if (viewColumn.getLevel() <= 0 || !BeeUtils.same(viewColumn.getTable(), table)) {
-        continue;
-      }
-
-      String field = viewColumn.getField();
-      if (!BeeUtils.isEmpty(field) && !fields.contains(field)) {
-        fields.add(field);
-      }
-    }
-    return fields;
-  }
-
   public List<String> getRelatedTables() {
     List<String> tables = Lists.newArrayList();
 
@@ -340,8 +325,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     }
     
     if (viewColumn.getLevel() <= 0 && !BeeUtils.isEmpty(viewColumn.getRelation())
-        && containsColumn(viewColumn.getField())) {
-      return viewColumn.getField();
+        && containsColumn(viewColumn.getName())) {
+      return viewColumn.getName();
     } else if (!BeeUtils.isEmpty(viewColumn.getParent())) {
       return getRelationSource(viewColumn.getParent());
     } else {
@@ -356,25 +341,10 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     }
     
     if (viewColumn.getLevel() <= 0 && !BeeUtils.isEmpty(viewColumn.getRelation())
-        && containsColumn(viewColumn.getField())) {
+        && !viewColumn.isHidden()) {
       return viewColumn.getRelation();
     } else if (!BeeUtils.isEmpty(viewColumn.getParent())) {
       return getRelationView(viewColumn.getParent());
-    } else {
-      return null;
-    }
-  }
-  
-  public ViewColumn getRootColumn(String colName) {
-    ViewColumn viewColumn = getViewColumn(colName);
-    if (viewColumn == null) {
-      return null;
-    }
-    
-    if (!BeeUtils.isEmpty(viewColumn.getParent())) {
-      return getRootColumn(viewColumn.getParent());
-    } else if (containsColumn(viewColumn.getField())) {
-      return viewColumn;
     } else {
       return null;
     }

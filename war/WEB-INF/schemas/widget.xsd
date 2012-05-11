@@ -85,7 +85,7 @@
         <xs:attribute name="source" type="type:nameType" />
         <xs:attribute name="format" type="xs:normalizedString" />
         <xs:attribute name="itemKey" type="xs:normalizedString" />
-        <xs:attribute name="renderColumns" type="type:nameList" />
+        <xs:attribute name="renderColumns" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -698,7 +698,7 @@
           </xs:sequence>
           <xs:attributeGroup ref="ui:relation" />
           <xs:attribute name="itemKey" type="xs:normalizedString" />
-          <xs:attribute name="renderColumns" type="type:nameList" />
+          <xs:attribute name="renderColumns" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

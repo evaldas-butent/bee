@@ -400,7 +400,9 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       }
 
       if (filter == null) {
-        getRequestData().addRows(getViewData().getRows().getList());
+        if (!getViewData().isEmpty()) {
+          getRequestData().addRows(getViewData().getRows().getList());
+        }
       } else {
         List<BeeColumn> columns = getViewData().getColumns();
         for (BeeRow row : getViewData().getRows()) {

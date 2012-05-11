@@ -23,6 +23,7 @@
 
     <DataSelector source="CompanyPerson" caption="Atsakingas:" style="width: 180px;"
        d:size="100" d:unit="px" d:rootStyle="position: absolute; left: 20px; top: 300px;" />
+
     <Radio source="Transparency" itemKey="Transparency" vertical="false"
        style="position: absolute; left: 420px; top: 300px" />
 

@@ -150,7 +150,7 @@ public class RendererDescription extends PotentialRenderer implements HasOptions
       if (BeeUtils.same(key, HasValueStartIndex.ATTR_VALUE_START_INDEX)) {
         setValueStartIndex(BeeUtils.toIntOrNull(value));
       } else if (BeeUtils.same(key, ATTR_SEPARATOR)) {
-        setSeparator(value.trim());
+        setSeparator(value);
       } else if (BeeUtils.same(key, ATTR_OPTIONS)) {
         setOptions(value.trim());
       }
@@ -192,7 +192,7 @@ public class RendererDescription extends PotentialRenderer implements HasOptions
           setValueStartIndex(BeeUtils.toIntOrNull(value));
           break;
         case SEPARATOR:
-          setSeparator(value.trim());
+          setSeparator(value);
           break;
         case OPTIONS:
           setOptions(value.trim());

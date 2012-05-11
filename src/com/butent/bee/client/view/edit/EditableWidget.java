@@ -525,6 +525,10 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     if (!eq && !validate(oldValue, newValue, false)) {
       return false;
     }
+    
+    if (eq) {
+      reset();
+    }
 
     if (getEditEndHandler() != null) {
       getEditEndHandler().onEditEnd(new EditEndEvent(getRowValue(), getColumnForUpdate(),

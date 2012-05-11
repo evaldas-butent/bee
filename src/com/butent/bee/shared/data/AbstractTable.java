@@ -145,7 +145,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   public int addRows(Collection<RowType> rowsToAdd) {
-    Assert.hasLength(rowsToAdd);
+    Assert.notNull(rowsToAdd);
     int lastIndex = BeeConst.UNDEF;
     for (RowType row : rowsToAdd) {
       lastIndex = addRow(row);

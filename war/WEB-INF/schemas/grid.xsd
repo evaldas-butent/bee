@@ -66,7 +66,7 @@
     <xs:attribute name="editPopup" type="xs:boolean" />
     <xs:attribute name="enabledActions" type="ui:viewActions" />
     <xs:attribute name="disabledActions" type="ui:viewActions" />
-    <xs:attribute name="favorite" type="type:nameList" />
+    <xs:attribute name="favorite" type="xs:normalizedString" />
   </xs:complexType>
 
   <xs:complexType name="extWidget">
