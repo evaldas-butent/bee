@@ -267,10 +267,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     private Selector(ITEM_TYPE itemType, UIObject partner) {
       this.menu = new MenuBar(MenuConstants.ROOT_MENU_INDEX, true, BAR_TYPE.TABLE, itemType);
 
-      menu.addStyleName(getStyle(STYLE_MENU));
+      menu.addStyleName(STYLE_MENU);
 
       this.popup = new Popup(true, false);
-      popup.setStyleName(getStyle(STYLE_POPUP));
+      popup.setStyleName(STYLE_POPUP);
       popup.setWidget(menu);
 
       popup.addAutoHidePartner(partner.getElement());
@@ -307,7 +307,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       }
 
       MenuItem item = new MenuItem(menu, next ? ITEM_NEXT : ITEM_PREV, ITEM_TYPE.LABEL, command);
-      item.addStyleName(getStyle(STYLE_NAVIGATION));
+      item.addStyleName(STYLE_NAVIGATION);
 
       return item;
     }
@@ -365,7 +365,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
 
     private void initNavigationItem(MenuItem item) {
-      addClassToCell(item, getStyle(STYLE_NAVIGATION_CELL));
+      addClassToCell(item, STYLE_NAVIGATION_CELL);
       if (isTableMode() && getColumnCount() > 1) {
         DomUtils.setColSpan(DomUtils.getParentCell(item, true), getColumnCount());
       }
@@ -468,20 +468,24 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private static final String ITEM_NEXT = String.valueOf('\u25bc');
 
   private static final String STYLE_SELECTOR = "bee-DataSelector";
-  private static final String STYLE_EMBEDDED = "embedded";
 
-  private static final String STYLE_POPUP = "popup";
-  private static final String STYLE_MENU = "menu";
+  private static final String STYLE_EMBEDDED = STYLE_SELECTOR + "-embedded";
 
-  private static final String STYLE_TABLE = "table";
-  private static final String STYLE_ROW = "row";
-  private static final String STYLE_CELL = "cell";
+  private static final String STYLE_WAITING = STYLE_SELECTOR + "-waiting";
+  private static final String STYLE_NOT_FOUND = STYLE_SELECTOR + "-notFound";
 
-  private static final String STYLE_CONTENT = "content";
-  private static final String STYLE_ITEM = "item";
+  private static final String STYLE_POPUP = STYLE_SELECTOR + "-popup";
+  private static final String STYLE_MENU = STYLE_SELECTOR + "-menu";
 
-  private static final String STYLE_NAVIGATION = "navigation";
-  private static final String STYLE_NAVIGATION_CELL = "navigationCell";
+  private static final String STYLE_TABLE = STYLE_SELECTOR + "-table";
+  private static final String STYLE_ROW = STYLE_SELECTOR + "-row";
+  private static final String STYLE_CELL = STYLE_SELECTOR + "-cell";
+
+  private static final String STYLE_CONTENT = STYLE_SELECTOR + "-content";
+  private static final String STYLE_ITEM = STYLE_SELECTOR + "-item";
+
+  private static final String STYLE_NAVIGATION = STYLE_SELECTOR + "-navigation";
+  private static final String STYLE_NAVIGATION_CELL = STYLE_SELECTOR + "-navigationCell";
 
   private static final int DEFAULT_VISIBLE_LINES = 10;
 
@@ -491,6 +495,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   
   private final Callback callback = new Callback() {
     public void onSuggestionsReady(Request request, Response response) {
+      DataSelector.this.getInput().removeStyleName(STYLE_WAITING);
+      DataSelector.this.getInput().setStyleName(STYLE_NOT_FOUND,
+          response == null || BeeUtils.isEmpty(response.getSuggestions()));
+
       if (isEditing()) {
         setHasMore(response.hasMoreSuggestions());
         getSelector().showSuggestions(response, DataSelector.this);
@@ -566,7 +574,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     if (tableMode) {
       initCellRenderers(viewInfo);
-      getSelector().getMenu().addStyleName(getStyle(STYLE_TABLE));
+      getSelector().getMenu().addStyleName(STYLE_TABLE);
     }
 
     if (BeeUtils.isPositive(relation.getVisibleLines())) {
@@ -575,13 +583,13 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     input.addStyleName(STYLE_SELECTOR);
     if (embedded) {
-      input.addStyleName(getStyle(STYLE_EMBEDDED));
+      input.addStyleName(STYLE_EMBEDDED);
     }
 
     initWidget(input);
 
     input.addMouseWheelHandler(inputEvents);
-    Binder.addMouseWheelHandler(selector.getMenu(), inputEvents);
+    Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
 
     sinkEvents(Event.ONBLUR | Event.ONCLICK | Event.KEYEVENTS);
   }
@@ -692,7 +700,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         if (showing) {
           return;
         } else {
-          setActive(false);
+          deactivate();
         }
         break;
 
@@ -700,12 +708,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         if (isEmbedded() && !isActive()) {
           start(EditorFactory.START_MOUSE_CLICK);
         } else if (!showing) {
-          if (BeeUtils.isEmpty(getDisplayValue())) {
-            askOracle();
-          } else if (getInput().isAllSelected()) {
-            clearDisplay();
-            askOracle();
-          }
+          clearDisplay();
+          askOracle();
         }
         break;
 
@@ -827,10 +831,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         askOracle();
       }
 
-    } else if (isEmbedded()) {
-      getInput().selectAll();
-
-    } else {
+    } else if (!isEmbedded()) {
       String text = (sourceElement == null) ? null : sourceElement.getInnerText();
       if (BeeUtils.isEmpty(text)) {
         clearDisplay();
@@ -861,10 +862,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       SelectorColumn selectorColumn = getSelectorColumns().get(i);
 
       TableCellElement cellElement = DomUtils.createTableCell();
-      cellElement.addClassName(getStyle(STYLE_CELL));
+      cellElement.addClassName(STYLE_CELL);
 
       Element contentElement = DomUtils.createSpan(cellContent);
-      contentElement.addClassName(getStyle(STYLE_CONTENT));
+      contentElement.addClassName(STYLE_CONTENT);
 
       if (selectorColumn != null) {
         StyleUtils.updateAppearance(contentElement, selectorColumn.getClasses(),
@@ -904,11 +905,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     menu.addItem(item);
 
-    item.addStyleName(getStyle(STYLE_ITEM));
+    item.addStyleName(STYLE_ITEM);
     if (isTableMode()) {
-      item.addStyleName(getStyle(STYLE_ROW));
+      item.addStyleName(STYLE_ROW);
     } else {
-      addClassToCell(item, getStyle(STYLE_CELL));
+      addClassToCell(item, STYLE_CELL);
     }
   }
 
@@ -932,11 +933,20 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
     setLastRequest(request);
 
+    getInput().addStyleName(STYLE_WAITING);
+    
     getOracle().requestSuggestions(request, getCallback());
   }
 
   private void clearDisplay() {
     setDisplayValue(BeeConst.STRING_EMPTY);
+  }
+  
+  private void deactivate() {
+    setActive(false);
+
+    getInput().removeStyleName(STYLE_WAITING);
+    getInput().removeStyleName(STYLE_NOT_FOUND);
   }
 
   private void exit(boolean hideSelector, State state) {
@@ -947,7 +957,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     if (hideSelector) {
       getSelector().hide();
     }
-    setActive(false);
+    deactivate();
+
     fireEvent(new EditStopEvent(state, keyCode, hasModifiers));
   }
 
@@ -1005,10 +1016,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private Map<Integer, SelectorColumn> getSelectorColumns() {
     return selectorColumns;
-  }
-
-  private String getStyle(String suffix) {
-    return BeeUtils.concat(BeeConst.CHAR_MINUS, STYLE_SELECTOR, suffix);
   }
 
   private boolean hasMore() {
@@ -1118,7 +1125,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     setEditorValue(row == null ? null : BeeUtils.toString(row.getId()));
 
     getSelector().hide();
-    setActive(false);
+    deactivate();
+
     fireEvent(new EditStopEvent(State.CHANGED, KeyCodes.KEY_TAB, false));
   }
 

@@ -93,17 +93,21 @@ public class MenuBar extends Widget implements HasId, CloseHandler<Popup> {
   }
 
   public MenuBar(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it) {
-    this(level, vert, bt, it, false);
+    this(level, vert, bt, it, false, false);
   }
 
   public MenuBar(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it, boolean hover) {
+    this(level, vert, bt, it, hover, false);
+  }
+  
+  public MenuBar(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it, boolean hover, boolean wheel) {
     this.level = level;
     this.vertical = vert;
 
     this.barType = (bt == null) ? BAR_TYPE.TABLE : bt;  
     this.itemType = (it == null) ? MenuItem.defaultType : it;
 
-    init(hover);
+    init(hover, wheel);
     DomUtils.createId(this, getIdPrefix());
   }
 
@@ -608,7 +612,7 @@ public class MenuBar extends Widget implements HasId, CloseHandler<Popup> {
     }
   }
 
-  private void init(boolean hover) {
+  private void init(boolean hover, boolean wheel) {
 
     Element elem;
     switch (barType) {
@@ -653,10 +657,12 @@ public class MenuBar extends Widget implements HasId, CloseHandler<Popup> {
     DOM.appendChild(outer, elem);
     setElement(outer);
 
-    sinkEvents(Event.ONCLICK | Event.ONKEYDOWN | Event.ONKEYPRESS | Event.ONMOUSEWHEEL
-        | Event.ONBLUR);
+    sinkEvents(Event.ONCLICK | Event.ONKEYDOWN | Event.ONKEYPRESS | Event.ONBLUR);
     if (hover) {
       sinkEvents(Event.ONMOUSEOVER | Event.ONMOUSEOUT);
+    }
+    if (wheel) {
+      sinkEvents(Event.ONMOUSEWHEEL);
     }
 
     setStyleName(MenuConstants.isRootLevel(getLevel()) ? STYLENAME_ROOT : STYLENAME_DEFAULT);

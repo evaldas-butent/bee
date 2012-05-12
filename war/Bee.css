@@ -903,7 +903,16 @@ body, select {
 }
 
 .bee-DataSelector-embedded {
-  background-color: #ffc;
+  color: #060;
+  font-weight: bolder;
+}
+
+.bee-DataSelector-waiting {
+  cursor: wait;
+  background-color: rgba(255, 255, 0, 0.15);
+}
+.bee-DataSelector-notFound {
+  text-decoration: line-through;
 }
 
 .bee-DataSelector-popup {

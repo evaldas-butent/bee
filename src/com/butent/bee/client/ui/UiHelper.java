@@ -2,6 +2,7 @@ package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.VerticalAlign;
@@ -337,6 +338,23 @@ public class UiHelper {
   public static void registerSave(UIObject obj) {
     Assert.notNull(obj);
     obj.sinkEvents(Event.ONKEYDOWN);
+  }
+  
+  public static void selectDeferred(final ValueBoxBase<?> widget) {
+    Assert.notNull(widget);
+    final String text = widget.getText();
+    if (BeeUtils.isEmpty(text)) {
+      return;
+    }
+    
+    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+      @Override
+      public void execute() {
+        if (text.equals(widget.getText())) {
+          widget.selectAll();
+        }
+      }
+    });
   }
 
   public static void setDefaultHorizontalAlignment(HasHorizontalAlignment obj, ValueType type) {

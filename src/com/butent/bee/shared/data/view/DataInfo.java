@@ -146,7 +146,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     }
     return BeeUtils.same(getViewName(), ((DataInfo) obj).getViewName());
   }
-  
+
   public int getColumnCount() {
     return (getColumns() == null) ? BeeConst.UNDEF : getColumns().size();
   }
@@ -155,7 +155,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     Assert.isIndex(getColumns(), index);
     return getColumns().get(index).getId();
   }
-  
+
   public int getColumnIndex(String columnId) {
     return DataUtils.getColumnIndex(columnId, getColumns());
   }
@@ -165,7 +165,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     if (BeeConst.isUndef(index)) {
       index = getColumnIndexBySource(table, field, null);
     }
-    
+
     return index;
   }
 
@@ -175,7 +175,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     if (vcs.isEmpty()) {
       return index;
     }
-    
+
     for (ViewColumn vc : vcs) {
       index = getColumnIndex(vc.getName());
       if (!BeeConst.isUndef(index)) {
@@ -184,7 +184,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     }
     return index;
   }
-  
+
   public List<String> getColumnNames(boolean includeIdAndVersion) {
     if (includeIdAndVersion) {
       return DataUtils.getColumnNames(getColumns(), getIdColumn(), getVersionColumn());
@@ -215,14 +215,14 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
     Set<String> parents = Sets.newHashSet(root.getName());
     for (ViewColumn vc : getViewColumns()) {
-      if (BeeUtils.same(vc.getField(), field) 
+      if (BeeUtils.same(vc.getField(), field)
           && BeeUtils.same(vc.getTable(), table)
-          && BeeUtils.same(vc.getParent(), parent) 
+          && BeeUtils.same(vc.getParent(), parent)
           && !BeeUtils.same(vc.getName(), root.getName())) {
         parents.add(vc.getName());
       }
     }
-    
+
     while (!parents.isEmpty()) {
       Set<ViewColumn> children = Sets.newHashSet();
       for (String p : parents) {
@@ -241,7 +241,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
           }
         }
       }
-      
+
       parents.clear();
       for (ViewColumn vc : children) {
         parents.add(vc.getName());
@@ -323,11 +323,17 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     if (viewColumn == null) {
       return null;
     }
-    
-    if (viewColumn.getLevel() <= 0 && !BeeUtils.isEmpty(viewColumn.getRelation())
-        && containsColumn(viewColumn.getName())) {
-      return viewColumn.getName();
-    } else if (!BeeUtils.isEmpty(viewColumn.getParent())) {
+
+    if (viewColumn.getLevel() <= 0 && !BeeUtils.isEmpty(viewColumn.getRelation())) {
+      if (containsColumn(viewColumn.getName())) {
+        return viewColumn.getName();
+      }
+      if (containsColumn(viewColumn.getField())) {
+        return viewColumn.getField();
+      }
+    }
+
+    if (!BeeUtils.isEmpty(viewColumn.getParent())) {
       return getRelationSource(viewColumn.getParent());
     } else {
       return null;
@@ -339,9 +345,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     if (viewColumn == null) {
       return null;
     }
-    
-    if (viewColumn.getLevel() <= 0 && !BeeUtils.isEmpty(viewColumn.getRelation())
-        && !viewColumn.isHidden()) {
+
+    if (viewColumn.getLevel() <= 0 && !BeeUtils.isEmpty(viewColumn.getRelation())) {
       return viewColumn.getRelation();
     } else if (!BeeUtils.isEmpty(viewColumn.getParent())) {
       return getRelationView(viewColumn.getParent());
@@ -349,7 +354,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
       return null;
     }
   }
-  
+
   public int getRowCount() {
     return rowCount;
   }
@@ -374,7 +379,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   public List<ViewColumn> getViewColumns() {
     return viewColumns;
   }
-  
+
   public List<ViewColumn> getViewColumnsBySource(String table, String field,
       Predicate<ViewColumn> predicate) {
     List<ViewColumn> result = Lists.newArrayList();
@@ -408,7 +413,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   public List<String> parseColumns(String input) {
     return DataUtils.parseColumns(input, getColumns(), getIdColumn(), getVersionColumn());
   }
-  
+
   public Filter parseFilter(String input) {
     return DataUtils.parseCondition(input, getColumns(), getIdColumn(), getVersionColumn());
   }
@@ -416,7 +421,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   public Order parseOrder(String input) {
     return Order.parse(input, getColumnNames(true));
   }
-  
+
   public String serialize() {
     return Codec.beeSerialize(
         new Object[] {getViewName(), getTableName(), getIdColumn(), getVersionColumn(),

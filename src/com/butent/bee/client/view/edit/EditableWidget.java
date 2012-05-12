@@ -19,6 +19,7 @@ import com.butent.bee.client.data.HasDataRow;
 import com.butent.bee.client.data.RelationUtils;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent;
@@ -133,11 +134,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   }
 
   public boolean checkForUpdate(boolean reset) {
-    boolean ok = update(null, false);
-    if (!ok && reset) {
-      reset();
-    }
-    return ok;
+    return update(null, false, reset);
   }
 
   @Override
@@ -320,7 +317,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
 
   public void onEditStop(EditStopEvent event) {
     if (event.isChanged()) {
-      update(KeyCodes.KEY_TAB, false);
+      update(KeyCodes.KEY_TAB, false, true);
 
     } else if (event.isError()) {
       if (getForm() != null) {
@@ -363,7 +360,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
           widget.setCursorPos(0);
           break;
         case SELECT:
-          widget.selectAll();
+          UiHelper.selectDeferred(widget);
           break;
         default:
       }
@@ -389,15 +386,13 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       case KeyCodes.KEY_UP:
       case KeyCodes.KEY_DOWN:
         event.preventDefault();
-        update(keyCode, EventUtils.hasModifierKey(nativeEvent));
+        update(keyCode, EventUtils.hasModifierKey(nativeEvent), true);
         break;
     }
   }
 
   public void onValueChange(ValueChangeEvent<String> event) {
-    if (!update(null, false)) {
-      reset();
-    }
+    update(null, false, true);
   }
 
   public void refresh(IsRow row) {
@@ -514,20 +509,23 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     this.initialized = initialized;
   }
 
-  private boolean update(Integer keyCode, boolean hasModifiers) {
+  private boolean update(Integer keyCode, boolean hasModifiers, boolean reset) {
     String oldValue = getOldValueForUpdate();
     String newValue = getEditor().getNormalizedValue();
 
     boolean eq = BeeUtils.equalsTrimRight(oldValue, newValue);
+    if (eq && reset) {
+      reset();
+    }
     if (eq && keyCode == null) {
       return true;
     }
+
     if (!eq && !validate(oldValue, newValue, false)) {
+      if (reset) {
+        reset();
+      }
       return false;
-    }
-    
-    if (eq) {
-      reset();
     }
 
     if (getEditEndHandler() != null) {
