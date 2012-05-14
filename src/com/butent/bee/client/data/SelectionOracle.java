@@ -172,7 +172,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private final List<IsColumn> searchColumns = Lists.newArrayList();
 
-  private final Filter viewFilter;
+  private final Filter immutableFilter;
   private final Order viewOrder;
 
   private final Relation.Caching caching;
@@ -188,6 +188,8 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   private boolean dataInitialized = false;
 
   private BeeRowSet translator = null;
+  
+  private Filter additionalFilter = null;
 
   public SelectionOracle(Relation relation, DataInfo viewInfo) {
     Assert.notNull(relation);
@@ -202,7 +204,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       }
     }
 
-    this.viewFilter = relation.getFilter();
+    this.immutableFilter = relation.getFilter();
     this.viewOrder = relation.getOrder();
 
     this.caching = (relation.getCaching() == null) ? DEFAULT_CACHING : relation.getCaching();
@@ -217,6 +219,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     for (int i = 0; i < values.size(); i++) {
       getTranslator().addRow(i + startIndex, new String[] {values.get(i)});
     }
+  }
+
+  public Filter getAdditionalFilter() {
+    return additionalFilter;
   }
 
   public String getViewName() {
@@ -283,6 +289,19 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     processRequest(request, callback);
   }
 
+  public void setAdditionalFilter(Filter additionalFilter) {
+    if (Objects.equal(additionalFilter, this.additionalFilter)) {
+      return;
+    }
+    this.additionalFilter = additionalFilter;
+    
+    if (isFullCaching()) {
+      setViewData(null);
+      setDataInitialized(false);
+    }
+    setLastRequest(null);
+  }
+
   private void checkPendingRequest() {
     if (getPendingRequest() != null) {
       Request request = getPendingRequest().getRequest();
@@ -292,7 +311,19 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
   }
 
-  private Filter getFilter(String query, Operator searchType) {
+  private Filter getFilter(Filter queryFilter) {
+    return Filter.and(Filter.and(immutableFilter, getAdditionalFilter()), queryFilter);    
+  }
+
+  private Request getLastRequest() {
+    return lastRequest;
+  }
+
+  private PendingRequest getPendingRequest() {
+    return pendingRequest;
+  }
+
+  private Filter getQueryFilter(String query, Operator searchType) {
     if (BeeUtils.isEmpty(query)) {
       return null;
     }
@@ -316,14 +347,6 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     return filter;
   }
 
-  private Request getLastRequest() {
-    return lastRequest;
-  }
-
-  private PendingRequest getPendingRequest() {
-    return pendingRequest;
-  }
-
   private BeeRowSet getRequestData() {
     return requestData;
   }
@@ -344,7 +367,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     CachingPolicy cachingPolicy =
         Relation.Caching.GLOBAL.equals(caching) ? CachingPolicy.FULL : CachingPolicy.NONE;
 
-    Queries.getRowSet(getViewName(), null, viewFilter, viewOrder, cachingPolicy,
+    Queries.getRowSet(getViewName(), null, getFilter(null), viewOrder, cachingPolicy,
         new Queries.RowSetCallback() {
           public void onSuccess(BeeRowSet result) {
             setViewData(result);
@@ -382,7 +405,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       }
     }
 
-    final Filter filter = getFilter(request.getQuery(), request.getSearchType());
+    final Filter filter = getQueryFilter(request.getQuery(), request.getSearchType());
     if (filter == null && !isCachingEnabled()) {
       setRequestData(null);
       return true;
@@ -424,7 +447,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       limit = request.getLimit() + 1;
     }
 
-    Queries.getRowSet(getViewName(), null, Filter.and(viewFilter, filter), viewOrder,
+    Queries.getRowSet(getViewName(), null, getFilter(filter), viewOrder,
         offset, limit, new Queries.RowSetCallback() {
           public void onSuccess(BeeRowSet result) {
             if (getPendingRequest() == null) {
@@ -493,7 +516,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   private void setViewData(BeeRowSet viewData) {
     this.viewData = viewData;
   }
-
+  
   private Filter translateQuery(String query, Operator searchType, IsColumn targetColumn) {
     Filter filter = ComparisonFilter.compareWithValue(getTranslator().getColumn(0), searchType,
         query);

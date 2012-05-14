@@ -31,6 +31,7 @@ import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.data.HasActiveRow;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
@@ -86,7 +87,7 @@ import java.util.Set;
  */
 
 public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStartHandlers,
-    HasEnabled {
+    HasEnabled, HasActiveRow {
 
   /**
    * Contains a list of possible resizing modes (horizontal, vertical).
@@ -909,8 +910,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private int minCellWidth = defaultMinCellWidth;
   private int maxCellWidth = defaultMaxCellWidth;
 
-  private int activeRow = BeeConst.UNDEF;
-  private int activeColumn = BeeConst.UNDEF;
+  private int activeRowIndex = BeeConst.UNDEF;
+  private int activeColumnIndex = BeeConst.UNDEF;
 
   private int pageSize = BeeConst.UNDEF;
   private int pageStart = 0;
@@ -1131,8 +1132,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
-  public IsRow getActiveRowData() {
-    int index = getActiveRow();
+  public IsRow getActiveRow() {
+    int index = getActiveRowIndex();
     if (isRowWithinBounds(index)) {
       return getRowData().get(index);
     } else {
@@ -1261,7 +1262,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   public boolean handleKeyboardNavigation(int keyCode, boolean hasModifiers) {
-    if (getActiveRow() < 0 || getActiveColumn() < 0) {
+    if (getActiveRowIndex() < 0 || getActiveColumnIndex() < 0) {
       return false;
     }
 
@@ -1303,8 +1304,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         return true;
 
       case KeyCodes.KEY_LEFT:
-        if (getActiveColumn() > 0) {
-          setActiveColumn(getActiveColumn() - 1);
+        if (getActiveColumnIndex() > 0) {
+          setActiveColumnIndex(getActiveColumnIndex() - 1);
         }
         return true;
 
@@ -1313,8 +1314,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         return true;
 
       case KeyCodes.KEY_RIGHT:
-        if (getActiveColumn() < getColumnCount() - 1) {
-          setActiveColumn(getActiveColumn() + 1);
+        if (getActiveColumnIndex() < getColumnCount() - 1) {
+          setActiveColumnIndex(getActiveColumnIndex() + 1);
         }
         return true;
 
@@ -1336,7 +1337,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     int rc = getRowCount();
     int ps = getPageSize();
-    int ar = getActiveRow();
+    int ar = getActiveRowIndex();
 
     int nr = BeeConst.UNDEF;
 
@@ -1372,9 +1373,9 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       estimateColumnWidths(getRowData(), nr, nr + 1);
     }
 
-    this.activeRow = nr;
-    if (getActiveColumn() < 0) {
-      this.activeColumn = 0;
+    this.activeRowIndex = nr;
+    if (getActiveColumnIndex() < 0) {
+      this.activeColumnIndex = 0;
     }
     render();
   }
@@ -1617,13 +1618,13 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       refreshRow(row);
       checkZindex = true;
     } else {
-      if (hasCalculatedColumns()) {
-        refreshCalculatedColumns(row);
+      if (hasCalculatedColumns() || hasActionColumns()) {
+        refreshCalculatedAndActionColumns(row);
         checkZindex = true;
       }
 
       for (int i : indexBySource) {
-        if (getColumnInfo(i).isCalculated()) {
+        if (getColumnInfo(i).isCalculated() || getColumnInfo(i).isActionColumn()) {
           continue;
         }
         if (getColumnInfo(i).isRenderable()) {
@@ -1680,8 +1681,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
 
     refreshRow(row);
-    if (getActiveRow() == row && getActiveColumn() >= 0) {
-      bringToFront(row, getActiveColumn());
+    if (getActiveRowIndex() == row && getActiveColumnIndex() >= 0) {
+      bringToFront(row, getActiveColumnIndex());
     }
   }
 
@@ -2005,12 +2006,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     this.rowCount = count;
 
-    if (getActiveRow() >= count) {
+    if (getActiveRowIndex() >= count) {
       if (count <= 0) {
-        this.activeRow = BeeConst.UNDEF;
-        this.activeColumn = BeeConst.UNDEF;
+        this.activeRowIndex = BeeConst.UNDEF;
+        this.activeColumnIndex = BeeConst.UNDEF;
       } else {
-        this.activeRow = count - 1;
+        this.activeRowIndex = count - 1;
       }
     }
 
@@ -2048,7 +2049,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   public void updateActiveRow(List<? extends IsRow> values) {
     Assert.notNull(values);
-    int oldRow = getActiveRow();
+    int oldRow = getActiveRowIndex();
 
     if (oldRow >= 0 && oldRow < getDataSize()) {
       int newRow = 0;
@@ -2059,7 +2060,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
           break;
         }
       }
-      this.activeRow = newRow;
+      this.activeRowIndex = newRow;
     }
   }
 
@@ -2111,15 +2112,15 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private void activateCell(int row, int col) {
-    if (getActiveRow() == row) {
-      setActiveColumn(col);
+    if (getActiveRowIndex() == row) {
+      setActiveColumnIndex(col);
       return;
     }
     onActivateCell(false);
     onActivateRow(false);
 
-    this.activeRow = row;
-    this.activeColumn = col;
+    this.activeRowIndex = row;
+    this.activeColumnIndex = col;
 
     onActivateRow(true);
     onActivateCell(true);
@@ -2135,23 +2136,23 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       return;
     }
     if (rc <= 1) {
-      setActiveRow(0);
+      setActiveRowIndex(0);
       return;
     }
 
     int absIndex = BeeUtils.clamp(index, 0, rc - 1);
     int oldPageStart = getPageStart();
-    if (oldPageStart + getActiveRow() == absIndex) {
+    if (oldPageStart + getActiveRowIndex() == absIndex) {
       return;
     }
 
     int size = getPageSize();
     if (size <= 0 || size >= rc) {
-      setActiveRow(absIndex);
+      setActiveRowIndex(absIndex);
       return;
     }
     if (size == 1) {
-      setActiveRow(0);
+      setActiveRowIndex(0);
       setPageStart(absIndex, true, true);
       return;
     }
@@ -2163,14 +2164,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       newPageStart = oldPageStart;
     } else if (absIndex == oldPageStart - 1) {
       newPageStart = absIndex;
-    } else if (absIndex == oldPageStart + size && getActiveRow() == size - 1) {
+    } else if (absIndex == oldPageStart + size && getActiveRowIndex() == size - 1) {
       newPageStart = oldPageStart + 1;
     } else {
       newPageStart = (absIndex / size) * size;
     }
     newPageStart = BeeUtils.clamp(newPageStart, 0, rc - size);
 
-    setActiveRow(absIndex - newPageStart);
+    setActiveRowIndex(absIndex - newPageStart);
 
     if (newPageStart != oldPageStart) {
       setPageStart(newPageStart, true, true);
@@ -2411,25 +2412,25 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private Element getActiveCellElement() {
-    if (getActiveRow() >= 0 && getActiveColumn() >= 0) {
-      return getBodyCellElement(getActiveRow(), getActiveColumn());
+    if (getActiveRowIndex() >= 0 && getActiveColumnIndex() >= 0) {
+      return getBodyCellElement(getActiveRowIndex(), getActiveColumnIndex());
     } else {
       return null;
     }
   }
 
-  private int getActiveColumn() {
-    return activeColumn;
-  }
-
-  private int getActiveRow() {
-    return activeRow;
+  private int getActiveColumnIndex() {
+    return activeColumnIndex;
   }
 
   private NodeList<Element> getActiveRowElements() {
-    return getRowElements(getActiveRow());
+    return getRowElements(getActiveRowIndex());
   }
 
+  private int getActiveRowIndex() {
+    return activeRowIndex;
+  }
+  
   private Edges getBodyBorderWidth() {
     return getBodyComponent().getBorderWidth();
   }
@@ -3109,6 +3110,15 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return false;
   }
 
+  private boolean hasActionColumns() {
+    for (ColumnInfo columnInfo : columns) {
+      if (columnInfo.isActionColumn()) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
   private boolean hasCalculatedColumns() {
     for (ColumnInfo columnInfo : columns) {
       if (columnInfo.isCalculated()) {
@@ -3137,11 +3147,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private boolean hasKeyboardNext() {
-    return getActiveRow() + getPageStart() < getRowCount() - 1;
+    return getActiveRowIndex() + getPageStart() < getRowCount() - 1;
   }
 
   private boolean hasKeyboardPrev() {
-    return getActiveRow() > 0 || getPageStart() > 0;
+    return getActiveRowIndex() > 0 || getPageStart() > 0;
   }
 
   private void hideResizer() {
@@ -3249,7 +3259,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private boolean isCellActive(int row, int col) {
-    return row >= 0 && col >= 0 && getActiveRow() == row && getActiveColumn() == col;
+    return row >= 0 && col >= 0 && getActiveRowIndex() == row && getActiveColumnIndex() == col;
   }
 
   private boolean isCellResized(int row, int col) {
@@ -3335,19 +3345,19 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private void keyboardLeft() {
-    int prevColumn = getActiveColumn() - 1;
+    int prevColumn = getActiveColumnIndex() - 1;
     if (prevColumn < 0) {
       if (hasKeyboardPrev()) {
-        setActiveColumn(getColumnCount() - 1);
+        setActiveColumnIndex(getColumnCount() - 1);
         keyboardPrev();
       }
     } else {
-      setActiveColumn(prevColumn);
+      setActiveColumnIndex(prevColumn);
     }
   }
 
   private void keyboardNext() {
-    activateRow(getPageStart() + getActiveRow() + 1);
+    activateRow(getPageStart() + getActiveRowIndex() + 1);
   }
 
   private void keyboardNextPage() {
@@ -3370,7 +3380,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private void keyboardPrev() {
-    activateRow(getPageStart() + getActiveRow() - 1);
+    activateRow(getPageStart() + getActiveRowIndex() - 1);
   }
 
   private void keyboardPrevPage() {
@@ -3387,14 +3397,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private void keyboardRight() {
-    int nextColumn = getActiveColumn() + 1;
+    int nextColumn = getActiveColumnIndex() + 1;
     if (nextColumn >= getColumnCount()) {
       if (hasKeyboardNext()) {
-        setActiveColumn(0);
+        setActiveColumnIndex(0);
         keyboardNext();
       }
     } else {
-      setActiveColumn(nextColumn);
+      setActiveColumnIndex(nextColumn);
     }
   }
 
@@ -3454,7 +3464,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private void onActivateRow(boolean activate) {
-    if (getActiveRow() >= 0) {
+    if (getActiveRowIndex() >= 0) {
       NodeList<Element> rowElements = getActiveRowElements();
       if (rowElements != null && rowElements.getLength() > 0) {
         if (activate) {
@@ -3466,7 +3476,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
 
     if (activate) {
-      fireEvent(new ActiveRowChangeEvent(getActiveRowData()));
+      fireEvent(new ActiveRowChangeEvent(getActiveRow()));
     }
   }
 
@@ -3481,10 +3491,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
-  private void refreshCalculatedColumns(int rowIndex) {
+  private void refreshCalculatedAndActionColumns(int rowIndex) {
     List<Integer> colIndexes = Lists.newArrayList();
     for (int col = 0; col < getColumnCount(); col++) {
-      if (getColumnInfo(col).isCalculated()) {
+      if (getColumnInfo(col).isCalculated() || getColumnInfo(col).isActionColumn()) {
         colIndexes.add(col);
       }
     }
@@ -3556,9 +3566,9 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     setZIndex(0);
 
-    fireEvent(new ActiveRowChangeEvent(getActiveRowData()));
+    fireEvent(new ActiveRowChangeEvent(getActiveRow()));
 
-    if (isRowWithinBounds(getActiveRow()) && getActiveColumn() >= 0) {
+    if (isRowWithinBounds(getActiveRowIndex()) && getActiveColumnIndex() >= 0) {
       Scheduler.get().scheduleDeferred(new ScheduledCommand() {
         public void execute() {
           Element cellElement = getActiveCellElement();
@@ -3575,8 +3585,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       Collection<Integer> colIndexes) {
     int size = getDataSize();
     int start = getPageStart();
-    int actRow = getActiveRow();
-    int actCol = getActiveColumn();
+    int actRow = getActiveRowIndex();
+    int actCol = getActiveColumnIndex();
 
     String classes =
         StyleUtils.buildClasses(STYLE_CELL, STYLE_BODY, getBodyComponent().getClassName());
@@ -4238,25 +4248,25 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     fireSelectionCountChange();
   }
 
-  private void setActiveColumn(int activeColumn) {
-    if (this.activeColumn == activeColumn) {
+  private void setActiveColumnIndex(int activeColumnIndex) {
+    if (this.activeColumnIndex == activeColumnIndex) {
       return;
     }
     onActivateCell(false);
 
-    this.activeColumn = activeColumn;
+    this.activeColumnIndex = activeColumnIndex;
 
     onActivateCell(true);
   }
 
-  private void setActiveRow(int activeRow) {
-    if (this.activeRow == activeRow) {
+  private void setActiveRowIndex(int activeRowIndex) {
+    if (this.activeRowIndex == activeRowIndex) {
       return;
     }
     onActivateCell(false);
     onActivateRow(false);
 
-    this.activeRow = activeRow;
+    this.activeRowIndex = activeRowIndex;
 
     onActivateRow(true);
     onActivateCell(true);

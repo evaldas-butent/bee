@@ -28,37 +28,37 @@ public class TestWildcardsPattern {
 
   @Test
   public final void testGetExpr() {
-    Pattern a = Wildcards.getPattern("File*.txt=5", '*', '\0', false);
+    Pattern a = Wildcards.getPattern("File*.txt=5", '*', '\0', false, null);
 
     assertEquals("File*.txt=5", a.getExpr());
 
-    a = Wildcards.getPattern("     File*.txt=5   \t \t \t \r ", '*', '\0', false);
+    a = Wildcards.getPattern("     File*.txt=5   \t \t \t \r ", '*', '\0', false, null);
     assertEquals("File*.txt=5", a.getExpr());
   }
 
   @Test
   public final void testGetTokens() {
-    Pattern a = Wildcards.getPattern("File*.txt=5", '*', '\0', false);
+    Pattern a = Wildcards.getPattern("File*.txt=5", '*', '\0', false, null);
 
     String b[] = {"File", "*", ".txt=5"};
     assertArrayEquals(b, a.getTokens());
 
-    a = Wildcards.getPattern("File*.txt=5", '*', '.', false);
+    a = Wildcards.getPattern("File*.txt=5", '*', '.', false, null);
     String c[] = {"File", ".", "*", "txt=5"};
     assertArrayEquals(c, a.getTokens());
 
     assertEquals("File*.txt=5", a.toString());
 
-    a = Wildcards.getPattern("File*.txt=5", '*', '.', true);
+    a = Wildcards.getPattern("File*.txt=5", '*', '.', true, null);
     assertEquals("File*.txt=5 (sensitive)", a.toString());
 
-    a = Wildcards.getPattern("File*.txt5=", ';', '>', true);
+    a = Wildcards.getPattern("File*.txt5=", ';', '>', true, null);
     assertEquals("File*.txt5 (sensitive) (exact)", a.toString());
 
-    a = Wildcards.getPattern("File*.txt5", ';', '>', true);
+    a = Wildcards.getPattern("File*.txt5", ';', '>', true, null);
     assertEquals("File*.txt5 (sensitive)", a.toString());
 
-    a = Wildcards.getPattern("abcd>efgh>opkg<asdda>>>", '>', '<', false);
+    a = Wildcards.getPattern("abcd>efgh>opkg<asdda>>>", '>', '<', false, null);
     assertEquals("abcd>efgh>opkg<asdda>>>", a.toString());
 
     Object[] mas = {"abcd", ">", "efgh", ">", "opkg", "<", "asdda", ">"};
@@ -69,7 +69,7 @@ public class TestWildcardsPattern {
   @Test
   public final void testPattern() {
     try {
-      Pattern a = Wildcards.getPattern(null, '\0', '\0', false);
+      Pattern a = Wildcards.getPattern(null, '\0', '\0', false, null);
       fail("Exceptions not work");
     } catch (BeeRuntimeException e) {
       assertTrue(true);

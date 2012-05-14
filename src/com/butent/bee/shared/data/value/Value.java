@@ -12,7 +12,6 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  * Class {@code Value} is the root of the class hierarchy. {@code BooleanValue},
@@ -69,9 +68,6 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
 
       } else if (value instanceof CharSequence) {
         val = new TextValue(value.toString());
-
-      } else if (value instanceof Date) {
-        val = new DateValue(new JustDate((Date) value));
 
       } else if (value instanceof JustDate) {
         val = new DateValue((JustDate) value);

@@ -112,8 +112,6 @@ public class ScreenImpl implements Screen {
 
   private Notification notification = null;
   
-  private Favorites favorites = null;
-
   public ScreenImpl() {
   }
 
@@ -184,10 +182,6 @@ public class ScreenImpl implements Screen {
 
   public HasWidgets getCommandPanel() {
     return commandPanel;
-  }
-
-  public Favorites getFavorites() {
-    return favorites;
   }
 
   public String getName() {
@@ -529,9 +523,7 @@ public class ScreenImpl implements Screen {
   protected Widget initWest() {
     TabbedPages tp = new TabbedPages();
 
-    Favorites fav = new Favorites();
-    tp.add(fav, new BeeImage(Global.getImages().bookmark()));
-    setFavorites(fav);
+    tp.add(Global.getFavorites(), new BeeImage(Global.getImages().bookmark()));
 
     tp.add(new BeeLabel(), "Recent");
 
@@ -726,10 +718,6 @@ public class ScreenImpl implements Screen {
 
   private void setCommandPanel(HasWidgets commandPanel) {
     this.commandPanel = commandPanel;
-  }
-
-  private void setFavorites(Favorites favorites) {
-    this.favorites = favorites;
   }
 
   private void setLogToggle(BeeCheckBox logToggle) {

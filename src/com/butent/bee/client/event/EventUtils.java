@@ -1071,7 +1071,7 @@ public class EventUtils {
     double rowVersion;
 
     FormView form = UiHelper.getForm(widget);
-    IsRow data = (form == null) ? null : form.getRow();
+    IsRow data = (form == null) ? null : form.getActiveRow();
 
     if (data == null) {
       row = null;

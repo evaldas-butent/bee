@@ -4,14 +4,73 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.Defaults;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 public class RelationUtils {
 
+  public static int setDefaults(String viewName, IsRow row, Collection<String> colNames,
+      List<BeeColumn> columns) {
+    int result = 0;
+    if (BeeUtils.isEmpty(viewName) || row == null || BeeUtils.isEmpty(colNames) 
+        || BeeUtils.isEmpty(columns)) {
+      return result;
+    }
+    
+    if (!BeeKeeper.getUser().isLoggedIn()) {
+      return result;
+    }
+    
+    DataInfo dataInfo = null;
+    
+    for (String colName : colNames) {
+      BeeColumn column = DataUtils.getColumn(colName, columns);
+      if (column == null || !column.hasDefaults()) {
+        continue;
+      }
+      if (!Defaults.DefaultExpression.CURRENT_USER.equals(column.getDefaults().getA())) {
+        continue;
+      }
+
+      if (dataInfo == null) {
+        dataInfo = Global.getDataInfo(viewName, true);
+        if (dataInfo == null) {
+          break;
+        }
+      }
+
+      Collection<ViewColumn> descendants = dataInfo.getDescendants(column.getId(), false);
+      if (descendants.isEmpty()) {
+        continue;
+      }
+      
+      for (ViewColumn vc : descendants) {
+        int index = DataUtils.getColumnIndex(vc.getName(), columns);
+        if (BeeConst.isUndef(index))  {
+          continue;
+        }
+        
+        if (BeeUtils.same(vc.getField(), UserData.FLD_FIRST_NAME)) {
+          row.setValue(index, BeeKeeper.getUser().getFirstName());
+          result++;
+        } else if (BeeUtils.same(vc.getField(), UserData.FLD_LAST_NAME)) {
+          row.setValue(index, BeeKeeper.getUser().getLastName());
+          result++;
+        }
+      }
+    }
+    return result;
+  }
+  
   public static int updateRow(String targetView, String targetColumn, IsRow targetRow,
       String sourceView, IsRow sourceRow) {
     return updateRow(targetView, targetColumn, targetRow, sourceView, sourceRow, false);

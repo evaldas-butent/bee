@@ -13,6 +13,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.AsyncProvider;
 import com.butent.bee.client.data.CachedProvider;
+import com.butent.bee.client.data.HasActiveRow;
+import com.butent.bee.client.data.HasDataProvider;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.data.LocalProvider;
 import com.butent.bee.client.data.Provider;
@@ -50,7 +52,7 @@ import java.util.List;
 import java.util.Set;
 
 public class FormPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
-    ReadyForUpdateEvent.Handler, HasViewName, HasSearch {
+    ReadyForUpdateEvent.Handler, HasViewName, HasSearch, HasDataProvider, HasActiveRow {
 
   private class DeleteCallback extends BeeCommand {
     private final long rowId;
@@ -97,7 +99,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   public IsRow getActiveRow() {
-    return getView().getContent().getRow();
+    return getView().getContent().getActiveRow();
   }
 
   public Provider getDataProvider() {

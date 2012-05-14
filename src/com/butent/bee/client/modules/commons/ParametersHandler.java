@@ -160,7 +160,7 @@ public class ParametersHandler extends AbstractGridCallback {
   public boolean onPrepareForUpdate(GridView gridView, long id, long version,
       List<? extends IsColumn> cols, List<String> oldValues, List<String> newValues) {
 
-    BeeParameter prm = params.get(gridView.getActiveRowData().getString(id(NAME)));
+    BeeParameter prm = params.get(gridView.getActiveRow().getString(id(NAME)));
 
     Map<String, String> data = Maps.newHashMap();
 

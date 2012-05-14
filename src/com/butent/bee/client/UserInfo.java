@@ -39,6 +39,14 @@ public class UserInfo implements Module {
     }
   }
 
+  public String getFirstName() {
+    return isLoggedIn() ? userData.getFirstName() : null;
+  }
+
+  public String getLastName() {
+    return isLoggedIn() ? userData.getLastName() : null;
+  }
+  
   public String getLogin() {
     if (!isLoggedIn()) {
       return null;

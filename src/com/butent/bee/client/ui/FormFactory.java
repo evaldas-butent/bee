@@ -60,6 +60,8 @@ public class FormFactory {
 
     boolean onPrepareForInsert(FormView form, DataView dataView, IsRow row);
 
+    void onSetActiveRow(IsRow row);
+
     void onShow(FormPresenter presenter);
 
     void onStartEdit(FormView form, IsRow row);
@@ -293,19 +295,20 @@ public class FormFactory {
     if (rowCount >= limit) {
       providerType = Provider.Type.ASYNC;
       if (rowCount <= DataUtils.getMaxInitialRowSetSize()) {
-        limit = -1;
+        limit = BeeConst.UNDEF;
       } else {
         limit = DataUtils.getMaxInitialRowSetSize();
       }
     } else {
       providerType = Provider.Type.CACHED;
-      limit = -1;
+      limit = BeeConst.UNDEF;
     }
 
     Queries.getRowSet(viewName, null, null, null, 0, limit, CachingPolicy.FULL,
         new Queries.RowSetCallback() {
           public void onSuccess(final BeeRowSet rowSet) {
-            showForm(formDescription, viewName, rowCount, rowSet, providerType, callback);
+            int rc = Math.max(rowCount, rowSet.getNumberOfRows());
+            showForm(formDescription, viewName, rc, rowSet, providerType, callback);
           }
         });
   }

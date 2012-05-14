@@ -15,7 +15,6 @@ import com.butent.bee.client.view.add.HasAddStartHandlers;
 import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.RowInfo;
 
@@ -27,7 +26,7 @@ import java.util.List;
 
 public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,  
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
-    ActionEvent.HasActionHandlers, HasDimensions, HasViewName {
+    ActionEvent.HasActionHandlers, HasDimensions  {
 
   void applyOptions(String options);
 
@@ -50,8 +49,6 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   
   String getFormName();
 
-  IsRow getRow();
-
   JavaScriptObject getRowJso();
 
   Widget getWidgetBySource(String source);
@@ -62,7 +59,7 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void refreshCellContent(String columnSource);
 
-  void setRow(IsRow row);
+  void setActiveRow(IsRow activeRow);
 
   void start(Integer rowCount);
 

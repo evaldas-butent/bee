@@ -844,7 +844,7 @@ public class TaskEventHandler {
   }
 
   private static boolean availableEvent(TaskEvent ev, int status, FormView form) {
-    IsRow row = form.getRow();
+    IsRow row = form.getActiveRow();
     return availableEvent(ev, status, row.getLong(form.getDataIndex(CrmConstants.COL_OWNER)),
         row.getLong(form.getDataIndex(CrmConstants.COL_EXECUTOR)));
   }
@@ -885,22 +885,23 @@ public class TaskEventHandler {
               form.updateRow(row, false);
 
             } else {
-              form.setRow(row);
+              form.setActiveRow(row);
             }
           } else if (response.hasResponse(Long.class)) {
             int dataIndex = form.getDataIndex(CrmConstants.COL_LAST_ACCESS);
             String newValue = (String) response.getResponse();
 
             CellUpdateEvent cellUpdateEvent =
-                new CellUpdateEvent(VIEW_TASKS, form.getRow().getId(), form.getRow().getVersion(),
-                    CrmConstants.COL_LAST_ACCESS, dataIndex, newValue);
+                new CellUpdateEvent(VIEW_TASKS, form.getActiveRow().getId(),
+                    form.getActiveRow().getVersion(), CrmConstants.COL_LAST_ACCESS, dataIndex,
+                    newValue);
             BeeKeeper.getBus().fireEvent(cellUpdateEvent);
 
             if (BeeUtils.contains(actions, Action.CLOSE)) {
               form.fireEvent(new ActionEvent(actions));
 
             } else {
-              form.getRow().setValue(dataIndex, newValue);
+              form.getActiveRow().setValue(dataIndex, newValue);
 
               if (BeeUtils.contains(actions, Action.REQUERY)) {
                 form.refresh(true);
@@ -924,7 +925,7 @@ public class TaskEventHandler {
       @Override
       public void onClick(ClickEvent e) {
         String comment = dialog.getComment();
-        IsRow data = form.getRow();
+        IsRow data = form.getActiveRow();
         int evOld = data.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
         TaskEvent event = TaskEvent.APPROVED;
         BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, CrmConstants.COL_EVENT));
@@ -956,7 +957,7 @@ public class TaskEventHandler {
           Global.showError("Įveskite komentarą");
           return;
         }
-        IsRow data = form.getRow();
+        IsRow data = form.getActiveRow();
         int evOld = data.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
         TaskEvent event = TaskEvent.CANCELED;
         BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, CrmConstants.COL_EVENT));
@@ -987,7 +988,7 @@ public class TaskEventHandler {
           return;
         }
         ParameterList args = createParams(TaskEvent.COMMENTED.name());
-        args.addDataItem(CrmConstants.VAR_TASK_ID, form.getRow().getId());
+        args.addDataItem(CrmConstants.VAR_TASK_ID, form.getActiveRow().getId());
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
         int minutes = dialog.getMinutes();
@@ -1026,7 +1027,7 @@ public class TaskEventHandler {
         }
         TaskEvent event = TaskEvent.COMPLETED;
         TaskEvent ev = event;
-        IsRow data = form.getRow();
+        IsRow data = form.getActiveRow();
         int evOld = data.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
         BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, CrmConstants.COL_EVENT));
         rs.setViewName(VIEW_TASKS);
@@ -1068,7 +1069,7 @@ public class TaskEventHandler {
   }
 
   private static void doEvent(final TaskEvent ev, final FormView form) {
-    IsRow row = form.getRow();
+    IsRow row = form.getActiveRow();
     Assert.notEmpty(row.getId());
 
     if (!availableEvent(ev, row.getInteger(form.getDataIndex(CrmConstants.COL_EVENT)), form)) {
@@ -1134,7 +1135,7 @@ public class TaskEventHandler {
           Global.showError("Įveskite terminą");
           return;
         }
-        IsRow data = form.getRow();
+        IsRow data = form.getActiveRow();
         Long oldTerm = data.getLong(form.getDataIndex("FinishTime"));
         if (BeeUtils.equals(newTerm, oldTerm)
             || newTerm < BeeUtils.max(data.getLong(form.getDataIndex("StartTime")),
@@ -1162,7 +1163,7 @@ public class TaskEventHandler {
   }
 
   private static void doForward(final FormView form) {
-    final IsRow data = form.getRow();
+    final IsRow data = form.getActiveRow();
     final Long owner = data.getLong(form.getDataIndex(CrmConstants.COL_OWNER));
     final Long oldUser = data.getLong(form.getDataIndex(CrmConstants.COL_EXECUTOR));
 
@@ -1217,7 +1218,7 @@ public class TaskEventHandler {
       @Override
       public void onClick(ClickEvent e) {
         String comment = dialog.getComment();
-        IsRow data = form.getRow();
+        IsRow data = form.getActiveRow();
         int evOld = data.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
         BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, CrmConstants.COL_EVENT));
         rs.setViewName(VIEW_TASKS);
@@ -1249,7 +1250,7 @@ public class TaskEventHandler {
           Global.showError("Įveskite komentarą");
           return;
         }
-        IsRow data = form.getRow();
+        IsRow data = form.getActiveRow();
         int evOld = data.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
         TaskEvent event = TaskEvent.SUSPENDED;
         BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, CrmConstants.COL_EVENT));
@@ -1269,7 +1270,7 @@ public class TaskEventHandler {
   }
 
   private static void doUpdate(final FormView form) {
-    final IsRow data = form.getRow();
+    final IsRow data = form.getActiveRow();
     final int oldPriority =
         BeeUtils.unbox(data.getInteger(form.getDataIndex(CrmConstants.COL_PRIORITY)));
     final int oldTerm = BeeUtils.unbox(data.getInteger(form.getDataIndex("ExpectedDuration")));
@@ -1335,7 +1336,7 @@ public class TaskEventHandler {
 
   private static void doVisit(FormView form) {
     ParameterList args = createParams(TaskEvent.VISITED.name());
-    args.addDataItem(CrmConstants.VAR_TASK_ID, form.getRow().getId());
+    args.addDataItem(CrmConstants.VAR_TASK_ID, form.getActiveRow().getId());
 
     createRequest(args, null, form, null);
   }

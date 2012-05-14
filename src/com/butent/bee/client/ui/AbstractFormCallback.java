@@ -57,6 +57,9 @@ public class AbstractFormCallback implements FormFactory.FormCallback {
     return true;
   }
 
+  public void onSetActiveRow(IsRow row) {
+  }
+
   public void onShow(FormPresenter presenter) {
   }
 

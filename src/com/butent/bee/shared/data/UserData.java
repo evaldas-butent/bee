@@ -26,6 +26,9 @@ public class UserData implements BeeSerializable {
     LOGIN, USER_ID, FIRST_NAME, LAST_NAME, ROLES, LOCALE, PROPERTIES
   }
 
+  public static final String FLD_FIRST_NAME = "FirstName";
+  public static final String FLD_LAST_NAME = "LastName";
+  
   public static UserData restore(String s) {
     UserData data = new UserData();
     data.deserialize(s);

@@ -18,20 +18,20 @@
 
     <BeeField name="Transparency" type="INTEGER" />
 
-    <BeeField name="DefaultDisplayedDays" type="INTEGER" />
+    <BeeField name="DefaultDisplayedDays" type="INTEGER" defValue="4" />
 
-    <BeeField name="PixelsPerInterval" type="INTEGER" />
-    <BeeField name="IntervalsPerHour" type="INTEGER" />
+    <BeeField name="PixelsPerInterval" type="INTEGER" defValue="30" />
+    <BeeField name="IntervalsPerHour" type="INTEGER" defValue="2" />
 
-    <BeeField name="WorkingHourStart" type="INTEGER" />
-    <BeeField name="WorkingHourEnd" type="INTEGER" />
-    <BeeField name="ScrollToHour" type="INTEGER" />
+    <BeeField name="WorkingHourStart" type="INTEGER" defValue="8" />
+    <BeeField name="WorkingHourEnd" type="INTEGER" defValue="17" />
+    <BeeField name="ScrollToHour" type="INTEGER" defValue="8" />
     <BeeField name="OffsetHourLabels" type="BOOLEAN" />
 
-    <BeeField name="EnableDragDrop" type="BOOLEAN" />
-    <BeeField name="DragDropCreation" type="BOOLEAN" />
+    <BeeField name="EnableDragDrop" type="BOOLEAN" defValue="true" />
+    <BeeField name="DragDropCreation" type="BOOLEAN" defValue="true" />
 
-    <BeeField name="TimeBlockClickNumber" type="INTEGER" />
+    <BeeField name="TimeBlockClickNumber" type="INTEGER" defValue="1" />
     
     <BeeField name="Owner" type="LONG" relation="Users" defExpr="CURRENT_USER" />
   </BeeFields>

@@ -15,7 +15,7 @@ import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.data.HasDataRow;
+import com.butent.bee.client.data.HasRelatedRow;
 import com.butent.bee.client.data.RelationUtils;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -302,10 +302,10 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
 
   public boolean maybeUpdateRelation(String viewName, IsRow row, boolean updateColumn) {
     boolean ok = false;
-    if (!BeeUtils.isEmpty(viewName) && row != null && getEditor() instanceof HasDataRow
+    if (!BeeUtils.isEmpty(viewName) && row != null && getEditor() instanceof HasRelatedRow
         && getRelation() != null) {
       ok = RelationUtils.updateRow(viewName, getColumnId(), row, getRelation().getViewName(),
-          ((HasDataRow) getEditor()).getRow(), updateColumn) > 0;
+          ((HasRelatedRow) getEditor()).getRelatedRow(), updateColumn) > 0;
     }
     return ok;
   }
@@ -466,7 +466,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     if (getForm() == null) {
       return null;
     }
-    return getForm().getRow();
+    return getForm().getActiveRow();
   }
 
   private RefreshType getUpdateMode() {

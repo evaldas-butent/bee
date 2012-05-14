@@ -2,6 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
 
   name="PropertyGroups" viewName="PropertyGroups" caption="Parametrų grupės"
+  newRowColumns="Name Description"
   >
   <columns>
     <DataColumn name="Name" caption="Pavadinimas" />

@@ -35,11 +35,12 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private enum Serial {
     NAME, PARENT, CAPTION, VIEW, ID_NAME, VERSION_NAME, FILTER, ORDER, HAS_HEADERS, HAS_FOOTERS,
     ASYNC_THRESHOLD, PAGING_THRESHOLD, SEARCH_THRESHOLD, INITIAL_ROW_SET_SIZE, READONLY,
-    NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_CAPTION, NEW_ROW_POPUP, EDIT_FORM, EDIT_MODE, EDIT_SAVE,
-    EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_IN_PLACE, EDIT_NEW_ROW, EDIT_POPUP, ENABLED_ACTIONS,
-    DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER, ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE,
-    ROW_VALIDATION, SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH, COLUMNS, WIDGETS,
-    FOOTER_EVENTS, AUTO_FIT, FAVORITE, CACHE_DATA, CACHE_DESCRIPTION
+    NEW_ROW_FORM, NEW_ROW_COLUMNS, NEW_ROW_DEFAULTS, NEW_ROW_CAPTION, NEW_ROW_POPUP,
+    EDIT_FORM, EDIT_MODE, EDIT_SAVE, EDIT_MESSAGE, EDIT_SHOW_ID, EDIT_IN_PLACE, EDIT_NEW_ROW,
+    EDIT_POPUP, ENABLED_ACTIONS, DISABLED_ACTIONS, STYLE_SHEETS, HEADER, BODY, FOOTER,
+    ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION,
+    SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
+    COLUMNS, WIDGETS, FOOTER_EVENTS, AUTO_FIT, FAVORITE, CACHE_DATA, CACHE_DESCRIPTION
   }
 
   public static GridDescription restore(String s) {
@@ -79,6 +80,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   private String newRowForm = null;
   private String newRowColumns = null;
+  private String newRowDefaults = null;
   private String newRowCaption = null;
   private Boolean newRowPopup = null;
 
@@ -208,6 +210,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case NEW_ROW_COLUMNS:
           setNewRowColumns(value);
+          break;
+        case NEW_ROW_DEFAULTS:
+          setNewRowDefaults(value);
           break;
         case NEW_ROW_CAPTION:
           setNewRowCaption(value);
@@ -460,6 +465,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Read Only", isReadOnly(),
         "New Row Form", getNewRowForm(),
         "New Row Columns", getNewRowColumns(),
+        "New Row Defaults", getNewRowDefaults(),
         "New Row Caption", getNewRowCaption(),
         "New Row Popup", getNewRowPopup(),
         "Edit Form", getEditForm(),
@@ -593,6 +599,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public String getNewRowColumns() {
     return newRowColumns;
+  }
+
+  public String getNewRowDefaults() {
+    return newRowDefaults;
   }
 
   public String getNewRowForm() {
@@ -740,6 +750,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
           break;
         case NEW_ROW_COLUMNS:
           arr[i++] = getNewRowColumns();
+          break;
+        case NEW_ROW_DEFAULTS:
+          arr[i++] = getNewRowDefaults();
           break;
         case NEW_ROW_CAPTION:
           arr[i++] = getNewRowCaption();
@@ -968,6 +981,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     this.newRowColumns = newRowColumns;
   }
 
+  public void setNewRowDefaults(String newRowDefaults) {
+    this.newRowDefaults = newRowDefaults;
+  }
+
   public void setNewRowForm(String newRowForm) {
     this.newRowForm = newRowForm;
   }
@@ -979,7 +996,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setOrder(Order order) {
     this.order = order;
   }
-
+  
   public void setPagingThreshold(Integer pagingThreshold) {
     this.pagingThreshold = pagingThreshold;
   }
@@ -987,7 +1004,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setParent(String parent) {
     this.parent = parent;
   }
-  
+
   public void setReadOnly(Boolean readOnly) {
     this.readOnly = readOnly;
   }
@@ -995,7 +1012,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setRowEditable(Calculation rowEditable) {
     this.rowEditable = rowEditable;
   }
-
+  
   public void setRowMessage(Calculation rowMessage) {
     this.rowMessage = rowMessage;
   }
@@ -1003,7 +1020,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setRowStyles(Collection<ConditionalStyleDeclaration> rowStyles) {
     this.rowStyles = rowStyles;
   }
-  
+
   public void setRowValidation(Calculation rowValidation) {
     this.rowValidation = rowValidation;
   }

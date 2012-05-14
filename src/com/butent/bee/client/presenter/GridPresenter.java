@@ -13,6 +13,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.AsyncProvider;
 import com.butent.bee.client.data.CachedProvider;
+import com.butent.bee.client.data.HasActiveRow;
+import com.butent.bee.client.data.HasDataProvider;
 import com.butent.bee.client.data.LocalProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
@@ -60,7 +62,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class GridPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
-    ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasSearch {
+    ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasSearch, HasDataProvider, HasActiveRow {
 
   private class DeleteCallback extends BeeCommand {
     private final Collection<RowInfo> rows;
@@ -158,7 +160,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     this(gridDescription, rowCount, rowSet, providerType, uiOptions, gridCallback,
         immutableFilter, initialFilters, order, null);
   }
-  
+
   public GridPresenter(GridDescription gridDescription, int rowCount, BeeRowSet rowSet,
       Provider.Type providerType, Collection<UiOption> uiOptions, GridCallback gridCallback,
       Filter immutableFilter, Map<String, Filter> initialFilters, Order order,
@@ -216,7 +218,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   public IsRow getActiveRow() {
-    return getView().getContent().getActiveRowData();
+    return getView().getContent().getActiveRow();
   }
 
   public List<BeeColumn> getDataColumns() {
@@ -244,6 +246,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   public GridContainerView getView() {
     return gridContainer;
+  }
+
+  public String getViewName() {
+    return getDataProvider().getViewName();
   }
 
   public Widget getWidget() {
@@ -300,10 +306,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       case REQUERY:
         requery(true);
         break;
-      
+
       case BOOKMARK:
-        BeeKeeper.getScreen().getFavorites().bookmark(getViewName(), getActiveRow(),
-            getDataColumns(), getView().getFavorite());
+        Global.getFavorites().bookmark(getViewName(), getActiveRow(), getDataColumns(),
+            getView().getFavorite());
         break;
 
       default:
@@ -562,10 +568,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private GridCallback getGridCallback() {
     return getView().getContent().getGridCallback();
-  }
-
-  private String getViewName() {
-    return getDataProvider().getViewName();
   }
 
   private void setLastFilter(Filter lastFilter) {

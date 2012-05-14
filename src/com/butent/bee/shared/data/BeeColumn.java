@@ -261,6 +261,14 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   public String getTypeName() {
     return typeName;
   }
+  
+  public boolean hasDefaults() {
+    if (getDefaults() == null) {
+      return false;
+    } else {
+      return getDefaults().getA() != null || getDefaults().getB() != null;
+    }
+  }
 
   public boolean isAutoIncrement() {
     return autoIncrement;
@@ -326,7 +334,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     Object[] arr = new Object[members.length];
     int i = 0;
 
-    for (Serial member : Serial.values()) {
+    for (Serial member : members) {
       switch (member) {
         case ID:
           arr[i++] = getId();

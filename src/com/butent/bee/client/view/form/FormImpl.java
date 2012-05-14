@@ -213,7 +213,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private int pageStart = 0;
   private int rowCount = BeeConst.UNDEF;
 
-  private IsRow row = null;
+  private IsRow activeRow = null;
   private IsRow rowBuffer = null;
   private JavaScriptObject rowJso = null;
 
@@ -352,9 +352,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     fireEvent(new AddEndEvent(false));
 
     if (rowValue != null) {
-      setRow(rowValue);
+      setActiveRow(rowValue);
     } else {
-      setRow(getRowBuffer());
+      setActiveRow(getRowBuffer());
     }
 
     refreshData(true, true);
@@ -389,11 +389,15 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
   
+  public IsRow getActiveRow() {
+    return activeRow;
+  }
+
   public RowInfo getActiveRowInfo() {
-    if (getRow() == null) {
+    if (getActiveRow() == null) {
       return null;
     }
-    return new RowInfo(getRow());
+    return new RowInfo(getActiveRow());
   }
 
   public String getCaption() {
@@ -440,31 +444,27 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return pageStart;
   }
 
-  public IsRow getRow() {
-    return row;
-  }
-
   public int getRowCount() {
     return rowCount;
   }
 
   public List<? extends IsRow> getRowData() {
     List<IsRow> data = Lists.newArrayList();
-    if (getRow() != null) {
-      data.add(getRow());
+    if (getActiveRow() != null) {
+      data.add(getActiveRow());
     }
     return data;
   }
 
   public JavaScriptObject getRowJso() {
-    if (!hasData() || getRow() == null) {
+    if (!hasData() || getActiveRow() == null) {
       return null;
     }
 
     if (rowJso == null) {
       setRowJso(EvalHelper.createJso(getDataColumns()));
     }
-    EvalHelper.toJso(getDataColumns(), getRow(), rowJso);
+    EvalHelper.toJso(getDataColumns(), getActiveRow(), rowJso);
 
     return rowJso;
   }
@@ -512,10 +512,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public boolean isRowEditable(boolean warn) {
-    if (getRow() == null || isReadOnly() || !isEnabled()) {
+    if (getActiveRow() == null || isReadOnly() || !isEnabled()) {
       return false;
     }
-    return isRowEditable(getRow(), warn);
+    return isRowEditable(getActiveRow(), warn);
   }
 
   public void notifyInfo(String... messages) {
@@ -545,11 +545,17 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public void onCellUpdate(CellUpdateEvent event) {
     Assert.notNull(event);
+
+    IsRow rowValue = getActiveRow();
+    long rowId = event.getRowId();
+    if (rowValue == null || rowValue.getId() != rowId) {
+      return;
+    }
+
     long version = event.getVersion();
     String source = event.getColumnName();
     String value = event.getValue();
 
-    IsRow rowValue = getRow();
     boolean wasRowEnabled = isRowEnabled(rowValue);
 
     rowValue.setVersion(version);
@@ -592,7 +598,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public void onEditEnd(EditEndEvent event, EditEndEvent.HasEditEndHandler source) {
     Assert.notNull(event);
 
-    IsRow rowValue = getRow();
+    IsRow rowValue = getActiveRow();
     IsColumn column = event.getColumn();
 
     Integer keyCode = event.getKeyCode();
@@ -657,14 +663,16 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public void onRowUpdate(RowUpdateEvent event) {
     Assert.notNull(event);
     IsRow newRow = event.getRow();
-    Assert.notNull(newRow);
-
-    setRow(newRow);
-    refreshData(false, false);
+    
+    if (DataUtils.sameId(getActiveRow(), newRow)) {
+      setActiveRow(newRow);
+      refreshData(false, false);
+    }
   }
 
   public void prepareForInsert() {
-    if (getFormCallback() != null && !getFormCallback().onPrepareForInsert(this, this, getRow())) {
+    if (getFormCallback() != null 
+        && !getFormCallback().onPrepareForInsert(this, this, getActiveRow())) {
       return;
     }
     if (!validate(true)) {
@@ -675,7 +683,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     List<String> values = Lists.newArrayList();
 
     for (int i = 0; i < getDataColumns().size(); i++) {
-      String value = getRow().getString(i);
+      String value = getActiveRow().getString(i);
       if (BeeUtils.isEmpty(value)) {
         continue;
       }
@@ -696,13 +704,20 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public void refresh(boolean refreshChildren) {
-    refreshData(refreshChildren, getRow() != null);
+    refreshData(refreshChildren, getActiveRow() != null);
   }
 
   public void refreshCellContent(String columnSource) {
   }
 
   public void reset() {
+  }
+
+  public void setActiveRow(IsRow activeRow) {
+    if (getFormCallback() != null) {
+      getFormCallback().onSetActiveRow(activeRow);
+    }
+    this.activeRow = activeRow;
   }
 
   public void setEditing(boolean editing) {
@@ -744,10 +759,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
-  public void setRow(IsRow row) {
-    this.row = row;
-  }
-
   public void setRowCount(int count, boolean fireScopeChange) {
     Assert.nonNegative(count);
     if (count == getRowCount()) {
@@ -765,9 +776,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   public void setRowData(List<? extends IsRow> values, boolean refresh) {
     if (BeeUtils.isEmpty(values)) {
-      setRow(null);
+      setActiveRow(null);
     } else {
-      setRow(values.get(0));
+      setActiveRow(values.get(0));
     }
 
     if (refresh) {
@@ -806,7 +817,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         if (count > 0) {
           fireDataRequest();
         } else {
-          setRow(null);
+          setActiveRow(null);
           fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
         }
       }
@@ -817,7 +828,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     setAdding(true);
     fireEvent(new AddStartEvent(NEW_ROW_CAPTION, false));
 
-    IsRow oldRow = getRow();
+    IsRow oldRow = getActiveRow();
     setRowBuffer(oldRow);
     if (oldRow == null) {
       oldRow = DataUtils.createEmptyRow(getDataColumns().size());
@@ -839,7 +850,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       getFormCallback().onStartNewRow(this, oldRow, newRow);
     }
 
-    setRow(newRow);
+    setActiveRow(newRow);
     refreshData(true, true);
   }
 
@@ -849,7 +860,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public void updateCell(String columnId, String newValue) {
     Assert.notEmpty(columnId);
 
-    IsRow rowValue = getRow();
+    IsRow rowValue = getActiveRow();
     if (rowValue == null) {
       notifySevere("update cell:", columnId, newValue, "form has no data");
       return;
@@ -877,7 +888,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public void updateRow(IsRow rowValue, boolean refreshChildren) {
-    setRow(rowValue);
+    setActiveRow(rowValue);
     render(refreshChildren);
   }
 
@@ -886,13 +897,18 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (!editableWidget.validate(force)) {
+        Widget widget = getWidgetById(editableWidget.getWidgetId());
+        if (widget != null) {
+          DomUtils.setFocus(widget, true);
+        }
+
         ok = false;
         break;
       }
     }
 
-    if (ok && getRow() != null) {
-      ok = ValidationHelper.validateRow(getRow(), getRowValidation(), this);
+    if (ok && getActiveRow() != null) {
+      ok = ValidationHelper.validateRow(getActiveRow(), getRowValidation(), this);
     }
 
     return ok;
@@ -1156,7 +1172,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       if (widget == null) {
         BeeKeeper.getLog().warning("refresh display:", id, "widget not found");
       } else {
-        displayWidget.refresh(widget, getRow());
+        displayWidget.refresh(widget, getActiveRow());
       }
     }
   }
@@ -1164,7 +1180,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private void refreshEditableWidget(int dataIndex) {
     for (EditableWidget editableWidget : getEditableWidgets()) {
       if (editableWidget.getIndexForUpdate() == dataIndex) {
-        editableWidget.refresh(getRow());
+        editableWidget.refresh(getActiveRow());
       }
     }
   }
@@ -1180,16 +1196,16 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
       boolean editable;
 
-      if (getRow() == null) {
+      if (getActiveRow() == null) {
         editable = false;
       } else {
         editable = rowEnabled && !editableWidget.isReadOnly();
         if (editable) {
-          editable = editableWidget.isEditable(getRow());
+          editable = editableWidget.isEditable(getActiveRow());
         }
       }
 
-      editableWidget.refresh(getRow());
+      editableWidget.refresh(getActiveRow());
       if (editable != editor.isEnabled()) {
         editor.setEnabled(editable);
       }
@@ -1198,20 +1214,20 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private void render(boolean refreshChildren) {
     if (getFormCallback() != null) {
-      getFormCallback().beforeRefresh(this, getRow());
+      getFormCallback().beforeRefresh(this, getActiveRow());
     }
 
     refreshEditableWidgets();
     refreshDisplayWidgets();
 
     if (refreshChildren) {
-      refreshChildWidgets(getRow());
+      refreshChildWidgets(getActiveRow());
     }
 
-    fireEvent(new ActiveRowChangeEvent(getRow()));
+    fireEvent(new ActiveRowChangeEvent(getActiveRow()));
 
     if (getFormCallback() != null) {
-      getFormCallback().afterRefresh(this, getRow());
+      getFormCallback().afterRefresh(this, getActiveRow());
     }
   }
 

@@ -8,8 +8,8 @@ import com.google.gwt.user.client.ui.RequiresResize;
 import com.butent.bee.client.calendar.dayview.DayView;
 import com.butent.bee.client.calendar.monthview.MonthView;
 import com.butent.bee.client.calendar.resourceview.ResourceView;
-import com.butent.bee.client.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.modules.calendar.CalendarSettings;
 
 import java.util.Map;
 

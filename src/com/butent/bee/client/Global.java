@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.data.DataInfoProvider;
 import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.DialogConstants;
@@ -15,6 +16,7 @@ import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.images.Images;
+import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.BeeCommand;
@@ -25,6 +27,7 @@ import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.Variable;
+import com.butent.bee.shared.data.Defaults;
 import com.butent.bee.shared.data.cache.CacheManager;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
@@ -64,6 +67,10 @@ public class Global implements Module {
   private static final Map<String, String> styleSheets = Maps.newHashMap();
   
   private static final Map<String, Class<? extends Enum<?>>> captions = Maps.newHashMap();
+
+  private static final Favorites favorites = new Favorites();
+  
+  private static final Defaults defaults = new ClientDefaults();
 
   public static void addStyleSheet(String name, String text) {
     if (BeeUtils.isEmpty(name)) {
@@ -227,6 +234,14 @@ public class Global implements Module {
 
   public static DataInfoProvider getDataInfoProvider() {
     return dataInfoProvider;
+  }
+
+  public static Defaults getDefaults() {
+    return defaults;
+  }
+
+  public static Favorites getFavorites() {
+    return favorites;
   }
 
   public static Images.Resources getImages() {
@@ -493,6 +508,7 @@ public class Global implements Module {
     initDataInfoProvider();
     initVars();
     initImages();
+    initFavorites();
 
     exportMethods();
   }
@@ -518,6 +534,11 @@ public class Global implements Module {
     BeeKeeper.getBus().registerRowInsertHandler(getDataInfoProvider());
   }
 
+  private void initFavorites() {
+    BeeKeeper.getBus().registerRowDeleteHandler(getFavorites());
+    BeeKeeper.getBus().registerMultiDeleteHandler(getFavorites());
+  }
+  
   private void initImages() {
     Images.init(getImages());
   }

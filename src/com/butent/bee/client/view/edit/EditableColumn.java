@@ -12,7 +12,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.data.HasDataRow;
+import com.butent.bee.client.data.HasRelatedRow;
 import com.butent.bee.client.data.RelationUtils;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.Stacking;
@@ -304,9 +304,9 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   public boolean maybeUpdateRelation(IsRow row, boolean updateColumn) {
     boolean ok = false;
-    if (row != null && getEditor() instanceof HasDataRow && getRelation() != null) {
-      ok = RelationUtils.updateRow(getViewName(), getColumnId(), row,
-          getRelation().getViewName(), ((HasDataRow) getEditor()).getRow(), updateColumn) > 0;
+    if (row != null && getEditor() instanceof HasRelatedRow && getRelation() != null) {
+      ok = RelationUtils.updateRow(getViewName(), getColumnId(), row, getRelation().getViewName(),
+          ((HasRelatedRow) getEditor()).getRelatedRow(), updateColumn) > 0;
     }
     return ok;
   }

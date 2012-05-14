@@ -8,10 +8,10 @@
     <SimpleColumn name="Attendee" />
 
     <SimpleColumn name="Property" />
-    <SimpleJoin name="Property" joinType="INNER">
+    <SimpleJoin name="Property" joinType="LEFT">
       <SimpleColumn alias="PropertyName" name="Name" />
       <SimpleColumn name="PropertyGroup" />
-      <SimpleJoin joinType="INNER" name="PropertyGroup">
+      <SimpleJoin joinType="LEFT" name="PropertyGroup">
         <SimpleColumn alias="GroupName" name="Name" />
       </SimpleJoin>
     </SimpleJoin>

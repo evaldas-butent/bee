@@ -1,9 +1,11 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Stack;
 
@@ -16,8 +18,6 @@ public class Wildcards {
    */
 
   public static class Pattern {
-    private static final char CHAR_EXACT = '=';
-
     private final String expr;
     private final char wildcardAny;
     private final char wildcardOne;
@@ -27,7 +27,8 @@ public class Wildcards {
     private final String[] tokens;
     private final boolean exact;
 
-    private Pattern(String expr, char wildcardAny, char wildcardOne, boolean sensitive) {
+    private Pattern(String expr, char wildcardAny, char wildcardOne, boolean sensitive,
+        Character charExact) {
       Assert.notEmpty(expr);
       this.wildcardAny = wildcardAny;
       this.wildcardOne = wildcardOne;
@@ -38,8 +39,8 @@ public class Wildcards {
         this.containsWildcards = true;
         this.tokens = tokenize();
         this.exact = false;
-      } else if (BeeUtils.isPrefixOrSuffix(expr, CHAR_EXACT)) {
-        this.expr = BeeUtils.removePrefixAndSuffix(expr, CHAR_EXACT);
+      } else if (charExact != null && BeeUtils.isPrefixOrSuffix(expr, charExact)) {
+        this.expr = BeeUtils.removePrefixAndSuffix(expr, charExact);
         this.containsWildcards = false;
         this.tokens = null;
         this.exact = true;
@@ -49,6 +50,22 @@ public class Wildcards {
         this.tokens = null;
         this.exact = false;
       }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      } else if (obj == null) {
+        return false;
+      } else if (!(obj instanceof Pattern)) {
+        return false;
+      }
+
+      Pattern other = (Pattern) obj;
+      return BeeUtils.equals(expr, other.expr)
+          && wildcardAny == other.wildcardAny && wildcardOne == other.wildcardOne
+          && sensitive == other.sensitive && exact == other.exact;
     }
 
     /**
@@ -77,6 +94,12 @@ public class Wildcards {
      */
     public char getWildcardOne() {
       return wildcardOne;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hashCode(getExpr(), getWildcardAny(), getWildcardOne(), isSensitive(),
+          isExact());
     }
 
     /**
@@ -161,7 +184,11 @@ public class Wildcards {
     }
 
     private DefaultPattern(String expr, boolean sensitive) {
-      super(expr, defaultAny, defaultOne, sensitive);
+      this(expr, sensitive, defaultCharExact);
+    }
+
+    private DefaultPattern(String expr, boolean sensitive, Character charExact) {
+      super(expr, defaultAny, defaultOne, sensitive, charExact);
     }
   }
 
@@ -175,7 +202,11 @@ public class Wildcards {
     }
 
     private FsPattern(String expr, boolean sensitive) {
-      super(expr, FS_ANY, FS_ONE, sensitive);
+      this(expr, sensitive, fsCharExact);
+    }
+
+    private FsPattern(String expr, boolean sensitive, Character charExact) {
+      super(expr, FS_ANY, FS_ONE, sensitive, charExact);
     }
   }
 
@@ -189,21 +220,41 @@ public class Wildcards {
     }
 
     private SqlPattern(String expr, boolean sensitive) {
-      super(expr, SQL_ANY, SQL_ONE, sensitive);
+      this(expr, sensitive, sqlCharExact);
+    }
+
+    private SqlPattern(String expr, boolean sensitive, Character charExact) {
+      super(expr, SQL_ANY, SQL_ONE, sensitive, charExact);
     }
   }
 
   private static final char SQL_ANY = '%';
   private static final char SQL_ONE = '_';
   private static boolean sqlCaseSensitivity = false;
+  private static Character sqlCharExact = null;
 
   private static final char FS_ANY = '*';
   private static final char FS_ONE = '?';
   private static boolean fsCaseSensitivity = false;
+  private static Character fsCharExact = null;
 
   private static char defaultAny = FS_ANY;
   private static char defaultOne = FS_ONE;
   private static boolean defaultCaseSensitivity = false;
+  private static Character defaultCharExact = null;
+  
+  public static boolean contains(Collection<? extends Pattern> patterns, String input) {
+    if (patterns == null || BeeUtils.isEmpty(input)) {
+      return false;
+    }
+    
+    for (Pattern pattern : patterns) {
+      if (isLike(input, pattern)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   /**
    * @return the default ANY wildcard.
@@ -236,6 +287,10 @@ public class Wildcards {
     return new DefaultPattern(expr, sens);
   }
 
+  public static Pattern getDefaultPattern(String expr, boolean sens, Character charExact) {
+    return new DefaultPattern(expr, sens, charExact);
+  }
+  
   /**
    * @return the current FS ANY wildcard.
    */
@@ -268,6 +323,10 @@ public class Wildcards {
     return new FsPattern(expr, sens);
   }
 
+  public static Pattern getFsPattern(String expr, boolean sens, Character charExact) {
+    return new FsPattern(expr, sens, charExact);
+  }
+  
   /**
    * @param expr the expression for a pattern
    * @param any the ANY wildcard
@@ -275,10 +334,10 @@ public class Wildcards {
    * @param sens specifies if Sensitive mode is set
    * @return a Pattern with the specified expression, ONE wilcdard, ANY wildcard and Sensitive mode.
    */
-  public static Pattern getPattern(String expr, char any, char one, boolean sens) {
-    return new Pattern(expr, any, one, sens);
+  public static Pattern getPattern(String expr, char any, char one, boolean sens, Character exact) {
+    return new Pattern(expr, any, one, sens, exact);
   }
-
+  
   /**
    * @return the current SQL ANY wildcard.
    */
@@ -310,6 +369,10 @@ public class Wildcards {
     return new SqlPattern(expr, sens);
   }
 
+  public static Pattern getSqlPattern(String expr, boolean sens, Character charExact) {
+    return new SqlPattern(expr, sens, charExact);
+  }
+  
   /**
    * Checks if an expression {@code expr} has any of default wildcards.
    * 
@@ -414,6 +477,11 @@ public class Wildcards {
     return isLike(input, new FsPattern(expr, sensitive));
   }
 
+  public static boolean isFsLike(String input, String expr, boolean sensitive,
+      Character charExact) {
+    return isLike(input, new FsPattern(expr, sensitive, charExact));
+  }
+  
   /**
    * Checks if {@code expr} is a FS Pattern.
    * 
@@ -532,6 +600,10 @@ public class Wildcards {
     return isLike(input, new DefaultPattern(expr, sensitive));
   }
 
+  public static boolean isLike(String input, String expr, boolean sensitive, Character charExact) {
+    return isLike(input, new DefaultPattern(expr, sensitive, charExact));
+  }
+  
   /**
    * Checks if an expression {@code expr} contains only of the SQL ANY wildcards.
    * 
@@ -571,6 +643,11 @@ public class Wildcards {
     return isLike(input, new SqlPattern(expr, sensitive));
   }
 
+  public static boolean isSqlLike(String input, String expr, boolean sensitive,
+      Character charExact) {
+    return isLike(input, new SqlPattern(expr, sensitive, charExact));
+  }
+  
   /**
    * Checks if {@code expr} is an Sql Pattern.
    * 

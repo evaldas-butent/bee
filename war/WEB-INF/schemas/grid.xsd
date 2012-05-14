@@ -54,7 +54,8 @@
     <xs:attribute name="initialRowSetSize" type="xs:int" />
     <xs:attribute name="readOnly" type="xs:boolean" />
     <xs:attribute name="newRowForm" type="type:nameType" />
-    <xs:attribute name="newRowColumns" type="xs:normalizedString" />
+    <xs:attribute name="newRowColumns" type="type:nameList" />
+    <xs:attribute name="newRowDefaults" type="xs:normalizedString" />
     <xs:attribute name="newRowCaption" type="xs:string" />
     <xs:attribute name="newRowPopup" type="xs:boolean" />
     <xs:attribute name="editForm" type="type:nameType" />

@@ -36,7 +36,7 @@ public class PasswordService extends CompositeService {
       if (ok) {
         formView = (FormView) params[0];
         List<Variable> vars = Lists.newArrayList();
-        oldPass = formView.getRow().getString(formView.getDataIndex(PASSWORD));
+        oldPass = formView.getActiveRow().getString(formView.getDataIndex(PASSWORD));
 
         if (!BeeUtils.isEmpty(oldPass)) {
           varOld = new Variable("Old password", BeeType.STRING, "", BeeWidget.PASSWORD);

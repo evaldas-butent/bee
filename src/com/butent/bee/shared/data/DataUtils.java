@@ -1,6 +1,7 @@
 package com.butent.bee.shared.data;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -9,6 +10,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.CompoundType;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
@@ -16,7 +18,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Contains a set of utility functions for data management, for example {@code parseExpression}.
@@ -44,9 +48,9 @@ public class DataUtils {
 
   private static int maxInitialRowSetSize = 50;
   
-  public static BeeRow cloneRow(IsRow original, int columnCount) {
+  public static BeeRow cloneRow(IsRow original) {
     Assert.notNull(original);
-    String[] arr = new String[Assert.isPositive(columnCount)];
+    String[] arr = new String[original.getNumberOfCells()];
     for (int i = 0; i < arr.length; i++) {
       arr[i] = original.getString(i);
     }
@@ -62,9 +66,8 @@ public class DataUtils {
       return result;
     }
 
-    int cc = original.getNumberOfColumns();
     for (BeeRow row : original.getRows()) {
-      result.addRow(cloneRow(row, cc));
+      result.addRow(cloneRow(row));
     }
     return result;
   }
@@ -85,6 +88,31 @@ public class DataUtils {
     return "Column " + index;
   }
 
+  public static boolean equals(IsRow r1, IsRow r2) {
+    if (r1 == null) {
+      return r2 == null;
+    } else if (r2 == null) {
+      return false;
+    } else if (r1 == r2) {
+      return true;
+
+    } else if (r1.getId() != r2.getId()) {
+      return false;
+    } else if (r1.getVersion() != r2.getVersion()) {
+      return false;
+    } else if (r1.getNumberOfCells() != r2.getNumberOfCells()) {
+      return false;
+
+    } else {
+      for (int i = 0; i < r1.getNumberOfCells(); i++) {
+        if (!BeeUtils.equalsTrimRight(r1.getString(i), r2.getString(i))) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+  
   public static <T extends IsColumn> T getColumn(String columnId, List<T> columns) {
     int index = getColumnIndex(columnId, columns);
 
@@ -205,6 +233,21 @@ public class DataUtils {
 
   public static int getDefaultSearchThreshold() {
     return defaultSearchThreshold;
+  }
+  
+  public static Set<Long> getDistinct(Collection<? extends IsRow> rows, int index, Long exclude) {
+    Set<Long> result = Sets.newHashSet();
+    if (BeeUtils.isEmpty(rows)) {
+      return result;
+    }
+    
+    for (IsRow row : rows) {
+      Long value = row.getLong(index);
+      if (value != null && !value.equals(exclude)) {
+        result.add(value);
+      }
+    }
+    return result;
   }
 
   public static Long getLong(BeeRowSet rowSet, IsRow row, String columnId) {
@@ -395,7 +438,17 @@ public class DataUtils {
     return (dataInfo == null) ? null : dataInfo.parseOrder(input); 
   }
   
-  public static boolean same(IsRow r1, IsRow r2) {
+  public static boolean sameId(IsRow r1, IsRow r2) {
+    if (r1 == null) {
+      return r2 == null;
+    } else if (r2 == null) {
+      return false;
+    } else {
+      return r1.getId() == r2.getId();
+    }
+  }
+
+  public static boolean sameIdAndVersion(IsRow r1, IsRow r2) {
     if (r1 == null) {
       return r2 == null;
     } else if (r2 == null) {
@@ -403,6 +456,36 @@ public class DataUtils {
     } else {
       return r1.getId() == r2.getId() && r1.getVersion() == r2.getVersion();
     }
+  }
+  
+  public static int setDefaults(IsRow row, Collection<String> colNames, List<BeeColumn> columns,
+      Defaults defaults) {
+    int result = 0;
+    if (row == null || BeeUtils.isEmpty(colNames) || BeeUtils.isEmpty(columns) 
+        || defaults == null) {
+      return result;
+    }
+    
+    for (String colName : colNames) {
+      int index = getColumnIndex(colName, columns);
+      if (BeeConst.isUndef(index)) {
+        continue;
+      }
+      
+      BeeColumn column = columns.get(index);
+      if (!column.hasDefaults()) {
+        continue;
+      }
+      
+      Object value = defaults.getValue(column.getDefaults().getA(), column.getDefaults().getB());
+      if (value == null) {
+        continue;
+      }
+      
+      row.setValue(index, Value.getValue(value));
+      result++;
+    }
+    return result;
   }
   
   public static void setValue(BeeRowSet rowSet, IsRow row, String columnId, String value) {
@@ -432,15 +515,14 @@ public class DataUtils {
     return result;
   }
   
-  public static void updateRow(IsRow target, IsRow source, int columnCount) {
+  public static void updateRow(IsRow target, IsRow source) {
     Assert.notNull(target);
     Assert.notNull(source);
-    Assert.isPositive(columnCount);
     
     target.setId(source.getId());
     target.setVersion(source.getVersion());
     
-    for (int i = 0; i < columnCount; i++) {
+    for (int i = 0; i < target.getNumberOfCells(); i++) {
       target.setValue(i, source.getString(i));
     }
   }

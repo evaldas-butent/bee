@@ -23,18 +23,22 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.HandlesDeleteEvents;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowActionEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
 
-public class Favorites extends Stack {
+public class Favorites extends Stack implements HandlesDeleteEvents {
 
   public enum Group implements HasCaption, HasViewName {
     APPOINTMENTS("Vizitai", "Appointments"),
@@ -192,7 +196,7 @@ public class Favorites extends Stack {
   private static final String HEADER_STYLE = "bee-FavoritesHeader";
   private static final String GROUP_STYLE = "bee-FavoritesGroup";
   private static final String ITEM_STYLE = "bee-FavoritesItem";
-  
+
   private static final String VIEW_NAME = "Favorites";
 
   private static final String COL_USER = "User";
@@ -219,7 +223,7 @@ public class Favorites extends Stack {
     for (Group group : Group.values()) {
       Widget display = new Vertical();
       display.addStyleName(GROUP_STYLE);
-      
+
       Widget header = new Html(group.getCaption());
       header.addStyleName(HEADER_STYLE);
 
@@ -233,7 +237,7 @@ public class Favorites extends Stack {
     Item item = new Item(id, html, order);
     group.add(item);
     getDisplay(group).add(group.createItemWidget(item));
-    
+
     Queries.insert(VIEW_NAME,
         DataUtils.getColumns(columns, groupIndex, itemIndex, orderIndex, htmlIndex),
         Lists.newArrayList(BeeUtils.toString(group.ordinal()), BeeUtils.toString(id),
@@ -266,7 +270,7 @@ public class Favorites extends Stack {
       public void onSuccess(String value) {
         addItem(group, row.getId(), value);
         showWidget(group.getWidgetIndex());
-        
+
         BeeKeeper.getBus().fireEvent(new BookmarkEvent(group, row.getId()));
       }
     }, html);
@@ -298,6 +302,24 @@ public class Favorites extends Stack {
         });
   }
 
+  @Override
+  public void onMultiDelete(MultiDeleteEvent event) {
+    Group group = Group.getByViewName(event.getViewName());
+    if (group != null) {
+      for (RowInfo rowInfo : event.getRows()) {
+        removeItem(group, rowInfo.getId());
+      }
+    }
+  }
+
+  @Override
+  public void onRowDelete(RowDeleteEvent event) {
+    Group group = Group.getByViewName(event.getViewName());
+    if (group != null) {
+      removeItem(group, event.getRowId());
+    }
+  }
+
   public boolean removeItem(Group group, long id) {
     Item item = group.find(id);
     if (item == null) {
@@ -306,7 +328,7 @@ public class Favorites extends Stack {
 
     HasIndexedWidgets display = getDisplay(group);
     display.remove(display.getWidget(group.indexOf(item)));
-    
+
     Filter filter = Filter.and(
         ComparisonFilter.isEqual(COL_GROUP, new IntegerValue(group.ordinal())),
         ComparisonFilter.isEqual(COL_ITEM, new LongValue(id)));
@@ -324,7 +346,8 @@ public class Favorites extends Stack {
 
     refreshDisplay(group);
 
-//    Queries.updateCell(VIEW_NAME, id, BeeConst.UNDEF, columns.get(htmlIndex), oldValue, html, null);
+    // Queries.updateCell(VIEW_NAME, id, BeeConst.UNDEF, columns.get(htmlIndex), oldValue, html,
+    // null);
     return true;
   }
 
@@ -342,7 +365,7 @@ public class Favorites extends Stack {
     if (itm == null) {
       return null;
     }
-    
+
     Integer ord = row.getInteger(orderIndex);
     String html = row.getString(htmlIndex);
 

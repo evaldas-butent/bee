@@ -223,7 +223,7 @@ public class ViewColumn implements BeeSerializable, HasInfo {
     Object[] arr = new Object[members.length];
     int i = 0;
 
-    for (Serial member : Serial.values()) {
+    for (Serial member : members) {
       switch (member) {
         case NAME:
           arr[i++] = getName();

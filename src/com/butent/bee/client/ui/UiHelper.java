@@ -24,6 +24,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasCharacterFilter;
 import com.butent.bee.client.view.form.FormView;
@@ -175,6 +176,25 @@ public class UiHelper {
     return result;
   }
   
+  public static DataView getDataView(Widget widget) {
+    if (widget == null) {
+      return null;
+    }
+
+    Widget p = widget;
+    for (int i = 0; i < DomUtils.MAX_GENERATIONS; i++) {
+      if (p instanceof DataView) {
+        return (DataView) p;
+      }
+
+      p = p.getParent();
+      if (p == null) {
+        break;
+      }
+    }
+    return null;
+  }
+  
   public static HorizontalAlignmentConstant getDefaultHorizontalAlignment(ValueType type) {
     if (type == null) {
       return null;
@@ -198,7 +218,9 @@ public class UiHelper {
   }
 
   public static FormView getForm(Widget widget) {
-    Assert.notNull(widget);
+    if (widget == null) {
+      return null;
+    }
 
     Widget p = widget;
     for (int i = 0; i < DomUtils.MAX_GENERATIONS; i++) {

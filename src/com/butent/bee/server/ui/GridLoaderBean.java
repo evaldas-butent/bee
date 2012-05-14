@@ -106,6 +106,7 @@ public class GridLoaderBean {
 
   private static final String ATTR_NEW_ROW_FORM = "newRowForm";
   private static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";
+  private static final String ATTR_NEW_ROW_DEFAULTS = "newRowDefaults";
   private static final String ATTR_NEW_ROW_CAPTION = "newRowCaption";
   private static final String ATTR_NEW_ROW_POPUP = "newRowPopup";
 
@@ -453,7 +454,8 @@ public class GridLoaderBean {
       case DATA:
       case RELATED:
         if (view.hasColumn(source)) {
-          if (view.isColReadOnly(source)) {
+          if (view.isColReadOnly(source) 
+              || colType.equals(ColType.DATA) && view.getColumnLevel(source) > 0) {
             columnDescription.setReadOnly(true);
           }
           ok = true;
@@ -464,7 +466,13 @@ public class GridLoaderBean {
 
       case CALCULATED:
       case SELECTION:
+        ok = true;
+        break;
+
       case ACTION:
+        if (BeeUtils.isEmpty(source) && view.hasColumn(columnDescription.getName())) {
+          columnDescription.setSource(columnDescription.getName());
+        }
         ok = true;
         break;
     }
@@ -720,10 +728,16 @@ public class GridLoaderBean {
     if (!BeeUtils.isEmpty(newRowForm)) {
       dst.setNewRowForm(newRowForm);
     }
+
     String newRowColumns = src.getAttribute(ATTR_NEW_ROW_COLUMNS);
     if (!BeeUtils.isEmpty(newRowColumns)) {
       dst.setNewRowColumns(newRowColumns.trim());
     }
+    String newRowDefaults = src.getAttribute(ATTR_NEW_ROW_DEFAULTS);
+    if (!BeeUtils.isEmpty(newRowDefaults)) {
+      dst.setNewRowDefaults(newRowDefaults.trim());
+    }
+
     String newRowCaption = src.getAttribute(ATTR_NEW_ROW_CAPTION);
     if (!BeeUtils.isEmpty(newRowCaption)) {
       dst.setNewRowCaption(newRowCaption.trim());

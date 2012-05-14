@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.data.HasActiveRow;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.dom.StyleUtils;
@@ -39,7 +40,7 @@ import java.util.List;
  * Implements a data editing functionality for table rows.
  */
 
-public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.Handler {
+public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.Handler, HasActiveRow {
 
   /**
    * Requires implementing classes to handle confirm and cancel situations.
@@ -62,7 +63,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
   private class ConfirmCommand extends BeeCommand {
     @Override
     public void execute() {
-      getCallback().onConfirm(getRow());
+      getCallback().onConfirm(getActiveRow());
     }
   }
 
@@ -125,6 +126,10 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
 
     addStyleName(STYLE_ROW_EDITOR);
     sinkEvents(Event.ONCLICK + Event.ONKEYDOWN + Event.ONKEYPRESS);
+  }
+
+  public IsRow getActiveRow() {
+    return row;
   }
 
   public boolean handleKeyboardNavigation(int keyCode, boolean hasModifiers) {
@@ -232,7 +237,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
         getCallback().onCancel();
       } else if (keyCode == KeyCodes.KEY_ENTER && hasModifiers) {
         event.preventDefault();
-        getCallback().onConfirm(getRow());
+        getCallback().onConfirm(getActiveRow());
       } else if (keyCode == KeyCodes.KEY_ENTER || keyCode == KeyCodes.KEY_DELETE) {
         event.preventDefault();
         startEdit(index, target, EditorFactory.getStartKey(keyCode));
@@ -429,10 +434,6 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     return BeeUtils.clamp(getContainerElement().getOffsetWidth() - 100, defaultCellWidth, 400);
   }
 
-  private IsRow getRow() {
-    return row;
-  }
-
   private int getSize() {
     return getEditableColumns().size();
   }
@@ -465,14 +466,14 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
       cell.getElement().setInnerHTML(BeeConst.STRING_EMPTY);
     } else {
       SafeHtmlBuilder builder = new SafeHtmlBuilder();
-      getEditableColumn(index).getUiColumn().render(null, getRow(), builder);
+      getEditableColumn(index).getUiColumn().render(null, getActiveRow(), builder);
       cell.getElement().setInnerHTML(builder.toSafeHtml().asString());
     }
   }
 
   private void renderRow() {
     for (int i = 0; i < getSize(); i++) {
-      renderCell(i, getRow().getString(getEditableColumn(i).getColIndex()));
+      renderCell(i, getActiveRow().getString(getEditableColumn(i).getColIndex()));
     }
   }
 
@@ -547,7 +548,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
       if (!editableColumn.isNullable()) {
         return;
       }
-      String oldValue = editableColumn.getOldValueForUpdate(getRow());
+      String oldValue = editableColumn.getOldValueForUpdate(getActiveRow());
       if (BeeUtils.isEmpty(oldValue)) {
         return;
       }
@@ -560,7 +561,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
         && BeeUtils.inList(charCode, EditorFactory.START_MOUSE_CLICK,
             EditorFactory.START_KEY_ENTER)) {
 
-      String oldValue = editableColumn.getOldValueForUpdate(getRow());
+      String oldValue = editableColumn.getOldValueForUpdate(getActiveRow());
       Boolean b = !BeeUtils.toBoolean(oldValue);
       if (!b && editableColumn.isNullable()) {
         b = null;
@@ -591,14 +592,14 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     sourceElement.blur();
 
     editableColumn.openEditor(getEditorContainer(), getEditorBox(), getContainerElement(),
-        StyleUtils.getZIndex(this) + 1, getRow(), BeeUtils.toChar(charCode), this);
+        StyleUtils.getZIndex(this) + 1, getActiveRow(), BeeUtils.toChar(charCode), this);
   }
 
   private void updateCell(int index, String columnId, String value) {
-    getRow().setValue(getDataIndex(columnId), value);
+    getActiveRow().setValue(getDataIndex(columnId), value);
 
     if (getEditableColumn(index).hasRelation()) {
-      getEditableColumn(index).maybeUpdateRelation(getRow(), false);
+      getEditableColumn(index).maybeUpdateRelation(getActiveRow(), false);
       renderRow();
     } else {
       renderCell(index, value);

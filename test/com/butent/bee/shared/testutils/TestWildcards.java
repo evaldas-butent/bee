@@ -242,10 +242,10 @@ public class TestWildcards {
   @Test
   public final void testIsLikeStringPattern() {
     // Pattern a = Wildcards.getPattern("File*.txt=5", '*', '\0', false);
-    Pattern a = Wildcards.getPattern("expression", '>', '<', false);
-    Pattern aa = Wildcards.getPattern("expression", '>', '<', true);
-    Pattern a2 = Wildcards.getPattern("=expression", '>', '<', false);
-    Pattern aa2 = Wildcards.getPattern("=expression", '>', '<', true);
+    Pattern a = Wildcards.getPattern("expression", '>', '<', false, null);
+    Pattern aa = Wildcards.getPattern("expression", '>', '<', true, null);
+    Pattern a2 = Wildcards.getPattern("=expression", '>', '<', false, '=');
+    Pattern aa2 = Wildcards.getPattern("=expression", '>', '<', true, '=');
     assertEquals(false, Wildcards.isLike("abc", a));
     assertEquals(false, Wildcards.isLike("abc", a2));
     assertEquals(false, Wildcards.isLike("abc", a2));
@@ -254,52 +254,31 @@ public class TestWildcards {
     assertEquals(false, Wildcards.isLike("abc", aa));
     assertEquals(false, Wildcards.isLike("abc", aa2));
 
-    assertEquals(
-        true,
-        Wildcards.isLike("abc",
-            Wildcards.getPattern("*b?", '*', '?', false)));
-    assertEquals(
-        true,
-        Wildcards.isLike("abc",
-            Wildcards.getPattern("*b?", '*', '?', true)));
-    assertEquals(
-        false,
-        Wildcards.isLike("ABc",
-            Wildcards.getPattern("*b?", '*', '?', true)));
-    assertEquals(
-        true,
-        Wildcards.isLike("aaabc",
-            Wildcards.getPattern("*b?", '*', '?', false)));
-    assertEquals(
-        false,
-        Wildcards.isLike("abcccc",
-            Wildcards.getPattern("*b?", '*', '?', false)));
+    assertEquals(true,
+        Wildcards.isLike("abc", Wildcards.getPattern("*b?", '*', '?', false, null)));
+    assertEquals(true,
+        Wildcards.isLike("abc", Wildcards.getPattern("*b?", '*', '?', true, null)));
+    assertEquals(false,
+        Wildcards.isLike("ABc", Wildcards.getPattern("*b?", '*', '?', true, null)));
+    assertEquals(true,
+        Wildcards.isLike("aaabc", Wildcards.getPattern("*b?", '*', '?', false, null)));
+    assertEquals(false,
+        Wildcards.isLike("abcccc", Wildcards.getPattern("*b?", '*', '?', false, null)));
 
-    assertEquals(
-        false,
-        Wildcards.isLike("abcccc",
-            Wildcards.getPattern("*b?????", '*', '?', false)));
-    assertEquals(
-        true,
-        Wildcards.isLike("abcccc",
-            Wildcards.getPattern("abcc*", '*', '?', false)));
-    assertEquals(
-        false,
-        Wildcards.isLike("abcccc",
-            Wildcards.getPattern("abcc=", '*', '?', false)));
+    assertEquals(false,
+        Wildcards.isLike("abcccc", Wildcards.getPattern("*b?????", '*', '?', false, null)));
+    assertEquals(true,
+        Wildcards.isLike("abcccc", Wildcards.getPattern("abcc*", '*', '?', false, null)));
+    assertEquals(false,
+        Wildcards.isLike("abcccc", Wildcards.getPattern("abcc=", '*', '?', false, '=')));
 
-    assertEquals(
-        true,
+    assertEquals(true,
         Wildcards.isLike("abcdefghijklm",
-            Wildcards.getPattern("*cde*ghijk?m", '*', '?', false)));
-    assertEquals(
-        true,
-        Wildcards.isLike("abc",
-            Wildcards.getPattern("***", '*', '?', false)));
-    assertEquals(
-        false,
-        Wildcards.isLike("abc",
-            Wildcards.getPattern(">>>", '*', '?', false)));
+            Wildcards.getPattern("*cde*ghijk?m", '*', '?', false, null)));
+    assertEquals(true,
+        Wildcards.isLike("abc", Wildcards.getPattern("***", '*', '?', false, null)));
+    assertEquals(false,
+        Wildcards.isLike("abc", Wildcards.getPattern(">>>", '*', '?', false, null)));
   }
 
   @Test

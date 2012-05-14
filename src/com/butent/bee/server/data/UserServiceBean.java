@@ -120,8 +120,6 @@ public class UserServiceBean {
 
   public static final String FLD_LOGIN = "Login";
   public static final String FLD_PASSWORD = "Password";
-  public static final String FLD_FIRST_NAME = "FirstName";
-  public static final String FLD_LAST_NAME = "LastName";
   public static final String FLD_PROPERTIES = "Properties";
   public static final String FLD_ROLE_NAME = "Name";
   public static final String FLD_USER = "User";
@@ -345,7 +343,7 @@ public class UserServiceBean {
 
     ss = new SqlSelect()
         .addFields("u", userIdName, FLD_LOGIN, FLD_PROPERTIES)
-        .addFields("cc", FLD_FIRST_NAME, FLD_LAST_NAME)
+        .addFields("cc", UserData.FLD_FIRST_NAME, UserData.FLD_LAST_NAME)
         .addFrom(TBL_USERS, "u").addFromLeft(TBL_PERSONS, "cc",
             SqlUtils.join("u", FLD_PERSON, "cc", personIdName));
 
@@ -356,8 +354,9 @@ public class UserServiceBean {
       userCache.put(userId, login);
 
       UserInfo user = new UserInfo(
-          new UserData(userId, login, row.get(FLD_FIRST_NAME), row.get(FLD_LAST_NAME))
-              .setRoles(userRoles.get(userId)))
+          new UserData(userId, login, row.get(UserData.FLD_FIRST_NAME),
+              row.get(UserData.FLD_LAST_NAME))
+          .setRoles(userRoles.get(userId)))
           .setProperties(row.get(FLD_PROPERTIES));
 
       UserInfo oldInfo = expiredCache.get(login);

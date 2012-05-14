@@ -910,9 +910,14 @@ body, select {
 .bee-DataSelector-waiting {
   cursor: wait;
   background-color: rgba(255, 255, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.2);
 }
 .bee-DataSelector-notFound {
   text-decoration: line-through;
+}
+.bee-DataSelector-empty {
+  background-color: #EBEBE4;
+  border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .bee-DataSelector-popup {

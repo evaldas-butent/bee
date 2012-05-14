@@ -106,6 +106,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     return idColumnName;
   }
 
+  public Filter getImmutableFilter() {
+    return immutableFilter;
+  }
+
   public Order getOrder() {
     return order;
   }
@@ -210,12 +214,12 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       getParentFilters().put(key, filter);
     }
   }
-
+  
   protected void acceptFilter(Filter newFilter) {
     setUserFilter(newFilter);
     getDisplay().setPageStart(0, true, false);
   }
-  
+
   protected HasDataTable getDisplay() {
     return display;
   }
@@ -244,17 +248,13 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       notificationListener.notifyWarning("no rows found", filter.toString());
     }
   }
-
+  
   protected void setUserFilter(Filter userFilter) {
     this.userFilter = userFilter;
   }
-  
+
   protected void startLoading() {
     getDisplay().fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADING);
-  }
-
-  private Filter getImmutableFilter() {
-    return immutableFilter;
   }
 
   private Map<String, Filter> getParentFilters() {

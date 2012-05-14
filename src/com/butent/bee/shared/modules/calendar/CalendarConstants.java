@@ -67,17 +67,22 @@ public class CalendarConstants {
   public static final String CALENDAR_METHOD = CALENDAR_MODULE + "Method";
 
   public static final String SVC_GET_CONFIGURATION = "get_configuration"; 
-  public static final String SVC_GET_USER_CALENDARS = "get_user_calendars"; 
+  public static final String SVC_GET_USER_CALENDAR = "get_user_calendar"; 
 
+  public static final String PARAM_CALENDAR_ID = "calendar_id";
+  
   public static final String TBL_USER_CALENDARS = "UserCalendars";
   public static final String TBL_CONFIGURATION = "Configuration";
 
-  public static final String VIEW_USER_CALENDARS = "UserCalendars";
   public static final String VIEW_CALENDARS = "Calendars";
+  public static final String VIEW_USER_CALENDARS = "UserCalendars";
   public static final String VIEW_CONFIGURATION = "Configuration";
 
+  public static final String VIEW_PROPERTY_GROUPS = "PropertyGroups";
+  public static final String VIEW_EXTENDED_PROPERTIES = "ExtendedProperties";
+  public static final String VIEW_ATTENDEE_PROPS = "AttendeeProps";
+
   public static final String GRID_CALENDARS = "Calendars";
-  public static final String GRID_USER_CALENDARS = "UserCalendars";
 
   public static final String FORM_CALENDAR_SETTINGS = "CalendarSettings";
   public static final String FORM_CONFIGURATION = "Configuration";
@@ -108,22 +113,9 @@ public class CalendarConstants {
 
   public static final String COL_TIME_ZONE = "TimeZone";
   public static final String COL_THEME = "Theme";
-  
-  public static final int DEFAULT_PIXELS_PER_INTERVAL = 30;
-  public static final int DEFAULT_INTERVALS_PER_HOUR = 2;
 
-  public static final int DEFAULT_WORKING_HOUR_START = 8;
-  public static final int DEFAULT_WORKING_HOUR_END = 17;
-  public static final int DEFAULT_SCROLL_TO_HOUR = 8;
-  
-  public static final int DEFAULT_DISPLAYED_DAYS = 4;
-  
-  public static final boolean DEFAULT_OFFSET_HOUR_LABELS = false;
-
-  public static final boolean DEFAULT_ENABLE_DRAG_DROP = true;
-  public static final boolean DEFAULT_DRAG_DROP_CREATION = true;
-
-  public static final TimeBlockClick DEFAULT_TIME_BLOCK_CLICK_NUMBER = TimeBlockClick.Single;
+  public static final String COL_PROPERTY = "Property";
+  public static final String COL_PROPERTY_GROUP = "PropertyGroup";
   
   private CalendarConstants() {
   }

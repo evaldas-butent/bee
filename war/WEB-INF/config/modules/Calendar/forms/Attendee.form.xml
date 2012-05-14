@@ -18,7 +18,7 @@
       filter="GroupName serv"
       style="position: absolute; left: 20px; width: 280px; top: 100px; height: 180px;" />
     <ChildGrid name="PropsB" gridName="AttendeeProps" relColumn="Attendee" caption="Remonto tipas"
-      filter="GroupName $ rem"
+      filter="GroupName rem"
       style="position: absolute; left: 360px; width: 260px; top: 100px; height: 180px;" />
 
     <DataSelector source="CompanyPerson" caption="Atsakingas:" style="width: 180px;"

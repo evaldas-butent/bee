@@ -68,7 +68,7 @@ public class TransportHandler {
     public void onClick(ClickEvent event) {
       ParameterList args = TransportHandler.createArgs(TransportConstants.SVC_GET_PROFIT);
       final FormView form = UiHelper.getForm((Widget) event.getSource());
-      args.addDataItem(idName, BeeUtils.transform(form.getRow().getId()));
+      args.addDataItem(idName, BeeUtils.transform(form.getActiveRow().getId()));
 
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
         @Override

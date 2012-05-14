@@ -2,6 +2,7 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:d="http://www.butent.com/decorator"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   
   name="Calendar" viewName="Calendars" caption="Kalendorius">
 
@@ -37,6 +38,11 @@
       <page>
         <text>Priminimai</text>
         <ChildGrid name="CalendarReminders" relColumn="Calendar" />
+      </page>
+      
+      <page>
+        <text>Nustatymai</text>
+        <xi:include href="widgets/Settings.widget.xml" />
       </page>
     </TabbedPages>
 

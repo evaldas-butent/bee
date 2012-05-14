@@ -17,7 +17,7 @@ public abstract class Defaults {
     } else {
       switch (defExpr) {
         case CURRENT_DATE:
-          value = TimeUtils.today(0).getDays();
+          value = TimeUtils.today().getDays();
           break;
 
         case CURRENT_TIME:

@@ -9,7 +9,7 @@
   xmlns:d="http://www.butent.com/decorator"
   
   name="Configuration" viewName="Configuration" caption="Nustatymai"
-  disabledActions="add delete bookmark" enabledActions="save">
+  disabledActions="add delete" enabledActions="save">
 
   <FlowPanel style="margin: 2ex 3em;">
     <DataSelector source="Company" caption="Įmonė:" style="&is;" d:size="&cw;" />

@@ -668,6 +668,10 @@ public class Codec {
     return value ? BooleanValue.S_TRUE : BooleanValue.S_FALSE;
   }
 
+  public static String pack(Enum<?> value) {
+    return (value == null) ? null : BeeUtils.toString(value.ordinal());
+  }
+  
   /**
    * Serializes an Object using a default serialization separator.
    * 
@@ -901,6 +905,19 @@ public class Codec {
     }
   }
 
+  public static <E extends Enum<?>> E unpack(Class<E> clazz, String value) {
+    if (clazz == null || !BeeUtils.isDigit(value)) {
+      return null;
+    }
+
+    int index = BeeUtils.toInt(value);
+    if (BeeUtils.isOrdinal(clazz, index)) {
+      return clazz.getEnumConstants()[index];
+    } else {
+      return null;
+    }
+  }
+  
   private Codec() {
   }
 }

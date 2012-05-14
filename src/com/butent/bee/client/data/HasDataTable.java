@@ -21,7 +21,7 @@ import java.util.List;
 
 public interface HasDataTable extends HasLoadingState, HasSortHandlers,
     HandlesDeleteEvents, HandlesUpdateEvents, HasSelectionCountChangeHandlers, HasEditState,
-    HasActiveRowChangeHandlers {
+    HasActiveRowChangeHandlers, HasDataRows {
 
   HandlerRegistration addScopeChangeHandler(ScopeChangeEvent.Handler handler);
   
@@ -33,8 +33,6 @@ public interface HasDataTable extends HasLoadingState, HasSortHandlers,
 
   int getRowCount();
 
-  List<? extends IsRow> getRowData();
-  
   void refresh(boolean refreshChildren);
 
   void reset();

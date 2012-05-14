@@ -583,7 +583,7 @@ public class ProjectEventHandler {
   }
 
   private static ParameterList addEventArgs(FormView form, ParameterList args, ProjectEvent event) {
-    IsRow data = form.getRow();
+    IsRow data = form.getActiveRow();
     int evOld = data.getInteger(form.getDataIndex(CrmConstants.COL_EVENT));
     BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, CrmConstants.COL_EVENT));
     rs.setViewName(VIEW_PROJECTS);
@@ -596,7 +596,7 @@ public class ProjectEventHandler {
   }
 
   private static boolean availableEvent(ProjectEvent ev, int status, FormView form) {
-    IsRow row = form.getRow();
+    IsRow row = form.getActiveRow();
     return availableEvent(ev, status, row.getLong(form.getDataIndex(CrmConstants.COL_OWNER)));
   }
 
@@ -636,22 +636,22 @@ public class ProjectEventHandler {
               form.updateRow(row, false);
 
             } else {
-              form.setRow(row);
+              form.setActiveRow(row);
             }
           } else if (response.hasResponse(Long.class)) {
             int dataIndex = form.getDataIndex(CrmConstants.COL_LAST_ACCESS);
             String newValue = (String) response.getResponse();
 
             CellUpdateEvent cellUpdateEvent =  new CellUpdateEvent(VIEW_PROJECTS,
-                form.getRow().getId(), form.getRow().getVersion(), CrmConstants.COL_LAST_ACCESS,
-                dataIndex, newValue);
+                form.getActiveRow().getId(), form.getActiveRow().getVersion(),
+                CrmConstants.COL_LAST_ACCESS, dataIndex, newValue);
             BeeKeeper.getBus().fireEvent(cellUpdateEvent);
 
             if (BeeUtils.contains(actions, Action.CLOSE)) {
               form.fireEvent(new ActionEvent(actions));
 
             } else {
-              form.getRow().setValue(dataIndex, newValue);
+              form.getActiveRow().setValue(dataIndex, newValue);
 
               if (BeeUtils.contains(actions, Action.REQUERY)) {
                 form.refresh(true);
@@ -669,7 +669,7 @@ public class ProjectEventHandler {
   }
 
   private static void doEvent(final ProjectEvent ev, final FormView form) {
-    IsRow row = form.getRow();
+    IsRow row = form.getActiveRow();
     Assert.notEmpty(row.getId());
 
     if (!availableEvent(ev, row.getInteger(form.getDataIndex(CrmConstants.COL_EVENT)), form)) {
@@ -763,7 +763,7 @@ public class ProjectEventHandler {
           return;
         }
         ParameterList args = createArgs(ProjectEvent.COMMENTED.name());
-        args.addDataItem(CrmConstants.VAR_PROJECT_ID, form.getRow().getId());
+        args.addDataItem(CrmConstants.VAR_PROJECT_ID, form.getActiveRow().getId());
         args.addDataItem(CrmConstants.VAR_PROJECT_COMMENT, comment);
         createRequest(args, dialog, form, EnumSet.of(Action.REQUERY));
       }
@@ -773,7 +773,7 @@ public class ProjectEventHandler {
 
   private static void doVisit(FormView form) {
     ParameterList args = createArgs(ProjectEvent.VISITED.name());
-    args.addDataItem(CrmConstants.VAR_PROJECT_ID, form.getRow().getId());
+    args.addDataItem(CrmConstants.VAR_PROJECT_ID, form.getActiveRow().getId());
     createRequest(args, null, form, null);
   }
 
