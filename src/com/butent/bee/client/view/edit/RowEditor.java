@@ -608,7 +608,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
   
   private boolean validateAndUpdate(EditableColumn editableColumn, int index, String oldValue,
       String newValue, boolean tab) {
-    Boolean ok = editableColumn.validate(oldValue, newValue, false);
+    Boolean ok = editableColumn.validate(oldValue, newValue, getActiveRow(), false);
     if (BeeUtils.isEmpty(ok)) {
       return false;
     }
@@ -619,5 +619,4 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     }
     return true;
   }
-  
 }

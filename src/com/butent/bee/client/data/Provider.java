@@ -240,6 +240,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     getDisplay().setPageStart(0, true, false);
     onRequest(true);
   }
+  
+  protected boolean hasPaging() {
+    return getPageSize() > 0;
+  }
 
   protected abstract void onRequest(boolean updateActiveRow);
 

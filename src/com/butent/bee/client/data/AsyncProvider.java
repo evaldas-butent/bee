@@ -55,7 +55,7 @@ public class AsyncProvider extends Provider {
         return;
       }
 
-      updateDisplay(getOffset(), getLimit(), rowSet, updateActiveRow());
+      updateDisplay(rowSet, getLimit(), updateActiveRow());
     }
 
     private int getLimit() {
@@ -114,7 +114,7 @@ public class AsyncProvider extends Provider {
     if (newFilter == null) {
       acceptFilter(newFilter);
       refresh();
- 
+
     } else {
       Filter flt = getQueryFilter(newFilter);
       Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
@@ -154,17 +154,21 @@ public class AsyncProvider extends Provider {
 
   @Override
   public void refresh() {
-    startLoading();
     Global.getCache().removeQuietly(getViewName());
 
-    Filter flt = getFilter();
-    Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
-      @Override
-      public void onSuccess(Integer result) {
-        getDisplay().setRowCount(result, true);
-        onRequest(true);
-      }
-    });
+    if (hasPaging()) {
+      startLoading();
+      Queries.getRowCount(getViewName(), getFilter(), new Queries.IntCallback() {
+        @Override
+        public void onSuccess(Integer result) {
+          getDisplay().setRowCount(result, true);
+          onRequest(true);
+        }
+      });
+
+    } else {
+      onRequest(true);
+    }
   }
 
   @Override
@@ -203,8 +207,7 @@ public class AsyncProvider extends Provider {
     return pendingRequests;
   }
 
-  private void updateDisplay(int start, int length, BeeRowSet data, boolean updateActiveRow) {
-    Assert.nonNegative(start);
+  private void updateDisplay(BeeRowSet data, int length, boolean updateActiveRow) {
     int rowCount = data.getNumberOfRows();
 
     List<? extends IsRow> rowValues;
@@ -216,7 +219,7 @@ public class AsyncProvider extends Provider {
       rowValues = data.getRows().getList().subList(0, length);
     }
 
-    if (getPageSize() <= 0) {
+    if (!hasPaging()) {
       getDisplay().setRowCount(rowCount, true);
     }
     if (updateActiveRow) {

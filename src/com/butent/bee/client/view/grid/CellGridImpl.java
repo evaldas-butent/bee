@@ -1870,7 +1870,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private boolean validateAndUpdate(EditableColumn editableColumn, IsRow row, String oldValue,
       String newValue, boolean tab) {
-    Boolean ok = editableColumn.validate(oldValue, newValue, false);
+    Boolean ok = editableColumn.validate(oldValue, newValue, row, false);
     if (BeeUtils.isEmpty(ok)) {
       return false;
     }

@@ -387,9 +387,9 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     this.notificationListener = notificationListener;
   }
 
-  public Boolean validate(String oldValue, String newValue, boolean force) {
+  public Boolean validate(String oldValue, String newValue, IsRow row, boolean force) {
     CellValidation cellValidation = new CellValidation(oldValue, newValue, getValidation(),
-        getRowValue(), getIndexForUpdate(), getTypeForUpdate(), isNullable(), getMinValue(),
+        row, getIndexForUpdate(), getTypeForUpdate(), isNullable(), getMinValue(),
         getMaxValue(), getCaption(), getNotificationListener(), force);
 
     return ValidationHelper.validateCell(cellValidation, this);
@@ -559,7 +559,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       }
 
       String newValue = getEditor().getNormalizedValue();
-      Boolean ok = validate(oldValue, newValue, false);
+      Boolean ok = validate(oldValue, newValue, getRowValue(), false);
 
       if (BeeUtils.isEmpty(ok)) {
         if (ok == null) {

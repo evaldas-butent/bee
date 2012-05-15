@@ -5,6 +5,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.layout.ResizePanel;
@@ -21,6 +22,7 @@ import com.butent.bee.shared.data.event.ParentRowEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -142,42 +144,29 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     super.onUnload();
   }
 
-  private void createPresenter(final IsRow row) {
-    final Filter immutableFilter =
-        GridFactory.getImmutableFilter(getGridDescription(), getGridOptions());
-    final Map<String, Filter> initialFilters =
-        (getGridCallback() == null) ? null : getGridCallback().getInitialFilters();
+  private void createPresenter(IsRow row, BeeRowSet rowSet, Filter immutableFilter,
+      Map<String, Filter> initialFilters, Order order) {
 
-    Filter queryFilter = Filter.and(getFilter(row),
-        GridFactory.getInitialQueryFilter(immutableFilter, initialFilters));
-    final Order order = GridFactory.getOrder(getGridDescription(), getGridOptions());
+    GridPresenter gp = new GridPresenter(getGridDescription(), rowSet.getNumberOfRows(), rowSet,
+        Provider.Type.ASYNC, EnumSet.of(UiOption.CHILD), getGridCallback(), immutableFilter,
+        initialFilters, order, getGridOptions());
 
-    Queries.getRowSet(getGridDescription().getViewName(), null, queryFilter, order,
-        getGridDescription().getCachingPolicy(), new Queries.RowSetCallback() {
-          public void onSuccess(BeeRowSet rowSet) {
-            Assert.notNull(rowSet);
-            GridPresenter gp = new GridPresenter(getGridDescription(),
-                rowSet.getNumberOfRows(), rowSet, Provider.Type.ASYNC, EnumSet.of(UiOption.CHILD),
-                getGridCallback(), immutableFilter, initialFilters, order, getGridOptions());
+    gp.getView().getContent().setRelColumn(getRelSource());
+    gp.getView().getContent().getGrid().setPageSize(BeeConst.UNDEF, false, false);
+    gp.setEventSource(getId());
 
-            gp.getView().getContent().setRelColumn(getRelSource());
-            gp.getView().getContent().getGrid().setPageSize(BeeConst.UNDEF, false, false);
-            gp.setEventSource(getId());
+    setWidget(gp.getWidget());
+    setPresenter(gp);
 
-            setWidget(gp.getWidget());
-            setPresenter(gp);
-
-            if (BeeUtils.equals(row, getPendingRow())) {
-              updateFilter(row);
-              resetState();
-              if (row == null) {
-                setEnabled(false);
-              }
-            } else {
-              resolveState();
-            }
-          }
-        });
+    if (BeeUtils.equals(row, getPendingRow())) {
+      updateFilter(row);
+      resetState();
+      if (row == null) {
+        setEnabled(false);
+      }
+    } else {
+      resolveState();
+    }
   }
 
   private Filter getFilter(IsRow row) {
@@ -190,6 +179,34 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
 
   private GridDescription getGridDescription() {
     return gridDescription;
+  }
+
+  private void getInitialRowSet(final IsRow row) {
+    final Filter immutableFilter =
+        GridFactory.getImmutableFilter(getGridDescription(), getGridOptions());
+    final Map<String, Filter> initialFilters =
+        (getGridCallback() == null) ? null : getGridCallback().getInitialFilters();
+
+    final Order order = GridFactory.getOrder(getGridDescription(), getGridOptions());
+
+    if (row == null) {
+      DataInfo dataInfo = Global.getDataInfo(getGridDescription().getViewName(), true);
+      if (dataInfo != null) {
+        BeeRowSet rowSet = new BeeRowSet(dataInfo.getColumns());
+        createPresenter(row, rowSet, immutableFilter, initialFilters, order);
+        return;
+      }
+    }
+
+    Filter queryFilter = Filter.and(getFilter(row),
+        GridFactory.getInitialQueryFilter(immutableFilter, initialFilters));
+
+    Queries.getRowSet(getGridDescription().getViewName(), null, queryFilter, order,
+        getGridDescription().getCachingPolicy(), new Queries.RowSetCallback() {
+          public void onSuccess(BeeRowSet rowSet) {
+            createPresenter(row, rowSet, immutableFilter, initialFilters, order);
+          }
+        });
   }
 
   private int getParentIndex() {
@@ -247,7 +264,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     }
 
     if (getPresenter() == null) {
-      createPresenter(getPendingRow());
+      getInitialRowSet(getPendingRow());
 
     } else {
       getPresenter().getView().getContent().getGrid().deactivate();
