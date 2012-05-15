@@ -142,6 +142,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
           getEditableWidgets().add(editableWidget);
 
           result.setNullable(editableWidget.isNullable());
+          result.setHasDefaults(editableWidget.hasDefaults());
         } else {
           onFailure("editable source not found", source, id);
         }
@@ -675,7 +676,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         && !getFormCallback().onPrepareForInsert(this, this, getActiveRow())) {
       return;
     }
-    if (!validate(true)) {
+    if (!validate()) {
       return;
     }
 
@@ -892,11 +893,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     render(refreshChildren);
   }
 
-  public boolean validate(boolean force) {
+  public boolean validate() {
     boolean ok = true;
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
-      if (!editableWidget.validate(force)) {
+      if (!editableWidget.validate()) {
         Widget widget = getWidgetById(editableWidget.getWidgetId());
         if (widget != null) {
           DomUtils.setFocus(widget, true);
@@ -1179,7 +1180,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private void refreshEditableWidget(int dataIndex) {
     for (EditableWidget editableWidget : getEditableWidgets()) {
-      if (editableWidget.getIndexForUpdate() == dataIndex) {
+      if (editableWidget.getDataIndex() == dataIndex) {
         editableWidget.refresh(getActiveRow());
       }
     }

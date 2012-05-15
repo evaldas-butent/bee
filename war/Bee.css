@@ -1029,6 +1029,13 @@ body, select {
   color: brown;
 }
 
+.bee-GridFormContainer-newRow .bee-hasDefaults:after {
+  content: " *";
+  color: blue;
+  font-size: 13px;
+  font-weight: bold;
+}
+
 .bee-Form {
   position: absolute;
   left: 0;

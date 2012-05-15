@@ -54,9 +54,14 @@ public class ValidationHelper {
   }
 
   private static boolean validateCell(CellValidation cv) {
-    if (!cv.isForced() && BeeUtils.equalsTrimRight(cv.getOldValue(), cv.getNewValue())) {
+    if (cv.isAdding()) {
+      if (cv.hasDefaults() && BeeUtils.isEmpty(cv.getNewValue())) {
+        return true;
+      }
+    } else if (BeeUtils.equalsTrimRight(cv.getOldValue(), cv.getNewValue())) {
       return true;
     }
+
     String errorMessage = null;
 
     if (cv.getEvaluator() != null) {

@@ -271,13 +271,17 @@ public class DataUtils {
       return row.getValue(index, type).toString();
     }
   }
+
+  public static boolean hasId(IsRow row) {
+    return row != null && isId(row.getId());
+  }
   
   public static boolean isId(Long id) {
     return id != null && id > 0;
   }
   
   public static boolean isNewRow(IsRow row) {
-    return Assert.notNull(row).getId() == NEW_ROW_ID;
+    return row != null && row.getId() == NEW_ROW_ID;
   }
 
   public static List<String> parseColumns(List<String> input, List<? extends IsColumn> columns,

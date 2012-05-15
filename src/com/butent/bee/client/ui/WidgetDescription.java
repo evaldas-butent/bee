@@ -54,6 +54,7 @@ public class WidgetDescription implements HasInfo {
   private String maxValue = null;
   private Boolean required = null;
   private Boolean nullable = null;
+  private Boolean hasDefaults = null;
   
   private boolean disablable = false;
   
@@ -91,6 +92,10 @@ public class WidgetDescription implements HasInfo {
     return editable;
   }
 
+  public Boolean getHasDefaults() {
+    return hasDefaults;
+  }
+
   public List<Property> getInfo() {
     List<Property> info = PropertyUtils.createProperties(
         "Widget Type", getWidgetType(),
@@ -104,6 +109,7 @@ public class WidgetDescription implements HasInfo {
         "Max Value", getMaxValue(),
         "Required", getRequired(),
         "Nullable", getNullable(),
+        "Has Defaults", getHasDefaults(),
         "Render Columns", getRenderColumns(),
         "Item Key", getItemKey(),
         "On Focus", getOnFocus(),
@@ -170,11 +176,11 @@ public class WidgetDescription implements HasInfo {
   public String getParentName() {
     return parentName;
   }
-
+  
   public Boolean getReadOnly() {
     return readOnly;
   }
-  
+
   public Relation getRelation() {
     return relation;
   }
@@ -288,6 +294,10 @@ public class WidgetDescription implements HasInfo {
 
   public void setEditable(Calculation editable) {
     this.editable = editable;
+  }
+
+  public void setHasDefaults(Boolean hasDefaults) {
+    this.hasDefaults = hasDefaults;
   }
 
   public void setItemKey(String itemKey) {

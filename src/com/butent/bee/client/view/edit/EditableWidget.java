@@ -201,10 +201,6 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return null;
   }
 
-  public BeeColumn getColumnForUpdate() {
-    return getDataColumn();
-  }
-
   public String getColumnId() {
     return getDataColumn().getId();
   }
@@ -225,10 +221,6 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return editor;
   }
 
-  public int getIndexForUpdate() {
-    return getDataIndex();
-  }
-
   public Relation getRelation() {
     return getWidgetDescription().getRelation();
   }
@@ -241,10 +233,6 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     }
   }
 
-  public ValueType getTypeForUpdate() {
-    return getColumnForUpdate().getType();
-  }
-
   public String getWidgetId() {
     return getWidgetDescription().getWidgetId();
   }
@@ -253,6 +241,10 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return getCarry() != null;
   }
 
+  public boolean hasDefaults() {
+    return getDataColumn().hasDefaults();
+  }
+  
   @Override
   public int hashCode() {
     return getWidgetDescription().hashCode();
@@ -411,14 +403,11 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     }
   }
 
-  public boolean validate(boolean force) {
-    String oldValue = getOldValueForUpdate();
+  public boolean validate() {
+    String oldValue = getOldValue();
     String newValue = getEditor().getNormalizedValue();
 
-    if (!force && BeeUtils.equalsTrimRight(oldValue, newValue)) {
-      return true;
-    }
-    return validate(oldValue, newValue, force);
+    return validate(oldValue, newValue);
   }
 
   private void end(Integer keyCode, boolean hasModifiers) {
@@ -455,11 +444,11 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return minValue;
   }
 
-  private String getOldValueForUpdate() {
+  private String getOldValue() {
     if (getRowValue() == null) {
       return null;
     }
-    return getRowValue().getString(getIndexForUpdate());
+    return getRowValue().getString(getDataIndex());
   }
 
   private IsRow getRowValue() {
@@ -510,7 +499,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   }
 
   private boolean update(Integer keyCode, boolean hasModifiers, boolean reset) {
-    String oldValue = getOldValueForUpdate();
+    String oldValue = getOldValue();
     String newValue = getEditor().getNormalizedValue();
 
     boolean eq = BeeUtils.equalsTrimRight(oldValue, newValue);
@@ -521,7 +510,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       return true;
     }
 
-    if (!eq && !validate(oldValue, newValue, false)) {
+    if (!eq && !validate(oldValue, newValue)) {
       if (reset) {
         reset();
       }
@@ -529,17 +518,17 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     }
 
     if (getEditEndHandler() != null) {
-      getEditEndHandler().onEditEnd(new EditEndEvent(getRowValue(), getColumnForUpdate(),
+      getEditEndHandler().onEditEnd(new EditEndEvent(getRowValue(), getDataColumn(),
           oldValue, newValue, getRowModeForUpdate(), hasRelation(), keyCode, hasModifiers,
           getWidgetId()), this);
     }
     return true;
   }
 
-  private boolean validate(String oldValue, String newValue, boolean force) {
+  private boolean validate(String oldValue, String newValue) {
     CellValidation cellValidation = new CellValidation(oldValue, newValue, getValidation(),
-        getRowValue(), getIndexForUpdate(), getTypeForUpdate(), isNullable(), getMinValue(),
-        getMaxValue(), getCaption(), getForm(), force);
+        getRowValue(), getDataColumn(), getDataIndex(), getDataType(), isNullable(),
+        getMinValue(), getMaxValue(), getCaption(), getForm());
 
     return !BeeUtils.isEmpty(ValidationHelper.validateCell(cellValidation, this));
   }

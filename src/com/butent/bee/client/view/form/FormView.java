@@ -67,5 +67,5 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void updateRow(IsRow row, boolean refreshChildren);
   
-  boolean validate(boolean force);
+  boolean validate();
 }

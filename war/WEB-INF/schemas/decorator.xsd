@@ -9,6 +9,7 @@
 
   <xs:attribute name="caption" type="xs:string" />
   <xs:attribute name="valueRequired" type="xs:boolean" />
+  <xs:attribute name="hasDefaults" type="xs:boolean" />
 
   <xs:attribute name="size" type="xs:decimal" />
   <xs:attribute name="unit" type="ui:cssUnit" />
@@ -122,8 +123,8 @@
 
   <xs:complexType name="baseType">
     <xs:sequence>
-      <xs:element name="requiredParam" type="decoratorParameter" minOccurs="0" maxOccurs="1" />
-      <xs:element name="optionalParam" type="decoratorParameter" minOccurs="0" maxOccurs="1" />
+      <xs:element name="requiredParam" type="decoratorParameter" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="optionalParam" type="decoratorParameter" minOccurs="0" maxOccurs="unbounded" />
       <xs:element ref="const" minOccurs="0" maxOccurs="unbounded" />
       <xs:element name="style" type="ui:styleSheet" minOccurs="0" maxOccurs="unbounded" />
       <xs:element ref="lifecycle" minOccurs="0" maxOccurs="1" />

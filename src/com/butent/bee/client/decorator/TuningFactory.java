@@ -106,6 +106,10 @@ public class TuningFactory {
           && !result.containsKey(DecoratorConstants.OPTION_VALUE_REQUIRED)) {
         result.put(DecoratorConstants.OPTION_VALUE_REQUIRED, BeeConst.STRING_TRUE);
       }
+      if (BeeUtils.isTrue(wd.getHasDefaults()) 
+          && !result.containsKey(DecoratorConstants.OPTION_HAS_DEFAULTS)) {
+        result.put(DecoratorConstants.OPTION_HAS_DEFAULTS, BeeConst.STRING_TRUE);
+      }
     }
     
     return result;

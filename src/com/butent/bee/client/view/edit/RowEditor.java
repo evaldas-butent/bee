@@ -40,7 +40,8 @@ import java.util.List;
  * Implements a data editing functionality for table rows.
  */
 
-public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.Handler, HasActiveRow {
+public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.Handler,
+    HasActiveRow {
 
   /**
    * Requires implementing classes to handle confirm and cancel situations.
@@ -343,8 +344,12 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     for (int i = 0; i < getSize(); i++) {
       label = new BeeLabel(getEditableColumn(i).getCaption());
       label.addStyleName(STYLE_LABEL);
+
       if (!getEditableColumn(i).isNullable()) {
         label.addStyleName(StyleUtils.NAME_REQUIRED);
+      }
+      if (getEditableColumn(i).hasDefaults()) {
+        label.addStyleName(StyleUtils.NAME_HAS_DEFAULTS);
       }
 
       setWidget(r, 0, label);
@@ -548,11 +553,11 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
       if (!editableColumn.isNullable()) {
         return;
       }
-      String oldValue = editableColumn.getOldValueForUpdate(getActiveRow());
+      String oldValue = editableColumn.getOldValue(getActiveRow());
       if (BeeUtils.isEmpty(oldValue)) {
         return;
       }
-      
+
       validateAndUpdate(editableColumn, index, oldValue, null, false);
       return;
     }
@@ -561,13 +566,13 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
         && BeeUtils.inList(charCode, EditorFactory.START_MOUSE_CLICK,
             EditorFactory.START_KEY_ENTER)) {
 
-      String oldValue = editableColumn.getOldValueForUpdate(getActiveRow());
+      String oldValue = editableColumn.getOldValue(getActiveRow());
       Boolean b = !BeeUtils.toBoolean(oldValue);
       if (!b && editableColumn.isNullable()) {
         b = null;
       }
       String newValue = BooleanValue.pack(b);
-      
+
       validateAndUpdate(editableColumn, index, oldValue, newValue, true);
       return;
     }
@@ -576,7 +581,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
     setEditIndex(index);
 
     StyleUtils.copySize(sourceElement, getEditorBox());
-    
+
     int left;
     int top;
     if (getContainerElement().isOrHasChild(sourceElement)) {
@@ -605,15 +610,15 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
       renderCell(index, value);
     }
   }
-  
+
   private boolean validateAndUpdate(EditableColumn editableColumn, int index, String oldValue,
       String newValue, boolean tab) {
-    Boolean ok = editableColumn.validate(oldValue, newValue, getActiveRow(), false);
+    Boolean ok = editableColumn.validate(oldValue, newValue, getActiveRow());
     if (BeeUtils.isEmpty(ok)) {
       return false;
     }
-    
-    updateCell(index, editableColumn.getColumnForUpdate().getId(), newValue);
+
+    updateCell(index, editableColumn.getColumnId(), newValue);
     if (tab) {
       handleKeyboardNavigation(KeyCodes.KEY_TAB, false);
     }

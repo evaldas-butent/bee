@@ -2,6 +2,8 @@ package com.butent.bee.client.validation;
 
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
 
@@ -13,6 +15,7 @@ public class CellValidation {
   private Evaluator evaluator;
   
   private IsRow row;
+  private BeeColumn column;
   private int colIndex;
   
   private ValueType type;
@@ -24,16 +27,15 @@ public class CellValidation {
   private String caption;
   private NotificationListener notificationListener;
   
-  private boolean forced;
- 
   public CellValidation(String oldValue, String newValue, Evaluator evaluator, IsRow row,
-      int colIndex, ValueType type, boolean nullable, String minValue, String maxValue,
-      String caption, NotificationListener notificationListener, boolean forced) {
+      BeeColumn column, int colIndex, ValueType type, boolean nullable, String minValue,
+      String maxValue, String caption, NotificationListener notificationListener) {
     super();
     this.oldValue = oldValue;
     this.newValue = newValue;
     this.evaluator = evaluator;
     this.row = row;
+    this.column = column;
     this.colIndex = colIndex;
     this.type = type;
     this.nullable = nullable;
@@ -41,7 +43,6 @@ public class CellValidation {
     this.maxValue = maxValue;
     this.caption = caption;
     this.notificationListener = notificationListener;
-    this.forced = forced;
   }
 
   public String getCaption() {
@@ -50,6 +51,10 @@ public class CellValidation {
 
   public int getColIndex() {
     return colIndex;
+  }
+
+  public BeeColumn getColumn() {
+    return column;
   }
 
   public Evaluator getEvaluator() {
@@ -79,13 +84,21 @@ public class CellValidation {
   public IsRow getRow() {
     return row;
   }
-
+  
   public ValueType getType() {
     return type;
   }
+  
+  public boolean hasDefaults() {
+    return getColumn() != null && getColumn().hasDefaults();
+  }
 
-  public boolean isForced() {
-    return forced;
+  public boolean isAdding() {
+    return DataUtils.isNewRow(getRow());
+  }
+
+  public boolean isEditing() {
+    return DataUtils.hasId(getRow());
   }
 
   public boolean isNullable() {
@@ -100,12 +113,12 @@ public class CellValidation {
     this.colIndex = colIndex;
   }
 
-  public void setEvaluator(Evaluator evaluator) {
-    this.evaluator = evaluator;
+  public void setColumn(BeeColumn column) {
+    this.column = column;
   }
 
-  public void setForced(boolean forced) {
-    this.forced = forced;
+  public void setEvaluator(Evaluator evaluator) {
+    this.evaluator = evaluator;
   }
 
   public void setMaxValue(String maxValue) {

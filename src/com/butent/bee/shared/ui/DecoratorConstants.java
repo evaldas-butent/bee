@@ -56,6 +56,7 @@ public class DecoratorConstants {
 
   public static final String OPTION_CAPTION = "caption";
   public static final String OPTION_VALUE_REQUIRED = "valueRequired";
+  public static final String OPTION_HAS_DEFAULTS = "hasDefaults";
   
   public static final String ROLE_DEFINITION_SEPARATOR = "|";
   public static final String ROLE_VALUE_SEPARATOR = "=";

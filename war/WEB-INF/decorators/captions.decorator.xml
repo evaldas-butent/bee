@@ -4,12 +4,16 @@
   <abstract id="caption" eventTarget="caption" appearanceTarget="caption">
     <requiredParam p:caption="" />
     <optionalParam p:valueRequired="false" />
+    <optionalParam p:hasDefaults="false" />
 
     <const name="caption-style" />
     <const name="content-element"><ins>content</ins></const>
     
     <lifecycle>
       <created>
+        if ({hasDefaults}) {
+          $wnd.Bee_updateActor(this, "caption", "className", "bee-hasDefaults");
+        }
         if ({valueRequired}) {
           $wnd.Bee_updateActor(this, "caption", "className", "bee-required");
         }

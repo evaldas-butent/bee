@@ -81,7 +81,7 @@ public class GridFormPresenter extends AbstractPresenter {
         break;
 
       case SAVE:
-        if (getForm().validate(true)) {
+        if (getForm().validate()) {
           gridView.formConfirm();
         }
         break;
@@ -114,7 +114,10 @@ public class GridFormPresenter extends AbstractPresenter {
     header.showAction(action, visible);
   }
   
-  public void updateCaptionStyle(boolean edit) {
+  public void updateStyle(boolean edit) {
+    container.removeStyleName(getFormStyle(STYLE_FORM_CONTAINER, !edit));
+    container.addStyleName(getFormStyle(STYLE_FORM_CONTAINER, edit));
+
     header.removeCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, !edit));
     header.addCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, edit));
   }

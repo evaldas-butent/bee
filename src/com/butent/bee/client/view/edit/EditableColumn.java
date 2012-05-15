@@ -195,10 +195,6 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return colIndex;
   }
 
-  public BeeColumn getColumnForUpdate() {
-    return getDataColumn();
-  }
-
   public String getColumnId() {
     return getDataColumn().getId();
   }
@@ -219,10 +215,6 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return editorDescription;
   }
 
-  public int getIndexForUpdate() {
-    return getColIndex();
-  }
-
   public String getMaxValue() {
     return maxValue;
   }
@@ -231,8 +223,8 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return minValue;
   }
 
-  public String getOldValueForUpdate(IsRow row) {
-    return row.getString(getIndexForUpdate());
+  public String getOldValue(IsRow row) {
+    return row.getString(getColIndex());
   }
 
   public boolean getRowModeForUpdate() {
@@ -241,10 +233,6 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     } else {
       return RefreshType.ROW.equals(updateMode);
     }
-  }
-
-  public ValueType getTypeForUpdate() {
-    return getColumnForUpdate().getType();
   }
 
   public AbstractColumn<?> getUiColumn() {
@@ -261,6 +249,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   public boolean hasCarry() {
     return getCarry() != null;
+  }
+
+  public boolean hasDefaults() {
+    return getDataColumn().hasDefaults();
   }
 
   @Override
@@ -376,7 +368,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
     getEditor().setEditing(true);
 
-    String oldValue = (row == null) ? null : getOldValueForUpdate(row);
+    String oldValue = (row == null) ? null : getOldValue(row);
     EditorAction onEntry =
         (getEditorDescription() == null) ? null : getEditorDescription().getOnEntry();
 
@@ -387,10 +379,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     this.notificationListener = notificationListener;
   }
 
-  public Boolean validate(String oldValue, String newValue, IsRow row, boolean force) {
+  public Boolean validate(String oldValue, String newValue, IsRow row) {
     CellValidation cellValidation = new CellValidation(oldValue, newValue, getValidation(),
-        row, getIndexForUpdate(), getTypeForUpdate(), isNullable(), getMinValue(),
-        getMaxValue(), getCaption(), getNotificationListener(), force);
+        row, getDataColumn(), getColIndex(), getDataType(), isNullable(),
+        getMinValue(), getMaxValue(), getCaption(), getNotificationListener());
 
     return ValidationHelper.validateCell(cellValidation, this);
   }
@@ -542,7 +534,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   private boolean endEdit(Integer keyCode, boolean hasModifiers) {
     if (State.OPEN.equals(getState())) {
-      String oldValue = getOldValueForUpdate(getRowValue());
+      String oldValue = getOldValue(getRowValue());
       String editorValue = getEditor().getValue();
 
       if (BeeUtils.equalsTrimRight(oldValue, editorValue)) {
@@ -559,7 +551,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       }
 
       String newValue = getEditor().getNormalizedValue();
-      Boolean ok = validate(oldValue, newValue, getRowValue(), false);
+      Boolean ok = validate(oldValue, newValue, getRowValue());
 
       if (BeeUtils.isEmpty(ok)) {
         if (ok == null) {
@@ -568,8 +560,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
         return false;
       }
 
-      closeEditor(getColumnForUpdate(), oldValue, newValue, getRowModeForUpdate(), keyCode,
-          hasModifiers);
+      closeEditor(getDataColumn(), oldValue, newValue, getRowModeForUpdate(), keyCode, hasModifiers);
       return true;
     }
     return false;
