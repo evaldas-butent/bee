@@ -67,7 +67,7 @@ public abstract class SqlBuilder {
     }
     query.append("TABLE ");
 
-    query.append(sc.getTarget().getSqlString(this));
+    query.append(SqlUtils.name(sc.getTarget()).getSqlString(this));
 
     List<SqlField> fieldList = sc.getFields();
 
@@ -106,17 +106,8 @@ public abstract class SqlBuilder {
 
     StringBuilder query = new StringBuilder("DELETE FROM ");
 
-    query.append(sd.getTarget().getSqlString(this));
+    query.append(SqlUtils.name(sd.getTarget()).getSqlString(this));
 
-    List<IsFrom> fromList = sd.getFrom();
-
-    if (!BeeUtils.isEmpty(fromList)) {
-      query.append(" FROM ");
-
-      for (IsFrom from : fromList) {
-        query.append(from.getSqlString(this));
-      }
-    }
     String wh = sd.getWhere().getSqlString(this);
 
     if (!BeeUtils.isEmpty(wh)) {
@@ -139,7 +130,7 @@ public abstract class SqlBuilder {
 
     StringBuilder query = new StringBuilder("INSERT INTO ");
 
-    query.append(si.getTarget().getSqlString(this));
+    query.append(SqlUtils.name(si.getTarget()).getSqlString(this));
 
     List<IsExpression> fieldList = si.getFields();
 
@@ -284,33 +275,38 @@ public abstract class SqlBuilder {
     Assert.notNull(su);
     Assert.state(!su.isEmpty());
 
-    StringBuilder query = new StringBuilder("UPDATE ");
+    StringBuilder query = new StringBuilder();
+    String dst = SqlUtils.name(su.getTarget()).getSqlString(this);
+    IsFrom fromSource = su.getFromSource();
 
-    query.append(su.getTarget().getSqlString(this));
-
-    List<IsExpression[]> updates = su.getUpdates();
-
+    if (fromSource == null) {
+      query.append("UPDATE ").append(dst);
+    } else {
+      query = new StringBuilder("MERGE INTO ").append(dst)
+          .append(" USING ")
+          .append(fromSource.getSqlString(this))
+          .append(" ON ")
+          .append(BeeUtils.parenthesize(su.getFromJoin().getSqlString(this)))
+          .append(" WHEN MATCHED THEN UPDATE");
+    }
     query.append(" SET ");
 
-    for (int i = 0; i < updates.size(); i++) {
-      if (i > 0) {
+    Map<String, IsSql> updates = su.getUpdates();
+    boolean first = true;
+
+    for (String field : updates.keySet()) {
+      if (first) {
+        first = false;
+      } else {
         query.append(", ");
       }
-      IsExpression[] updateEntry = updates.get(i);
-      IsExpression field = updateEntry[SqlUpdate.FIELD];
-      query.append(field.getSqlString(this));
+      query.append(SqlUtils.name(field).getSqlString(this));
 
-      IsExpression value = updateEntry[SqlUpdate.VALUE];
-      query.append("=").append(value.getSqlString(this));
-    }
-    List<IsFrom> fromList = su.getFrom();
-
-    if (!BeeUtils.isEmpty(fromList)) {
-      query.append(" FROM ");
-
-      for (IsFrom from : fromList) {
-        query.append(from.getSqlString(this));
-      }
+      IsSql value = updates.get(field);
+      query.append("=")
+          .append(value instanceof SqlSelect
+              ? BeeUtils.parenthesize(value.getSqlString(this))
+              : value.getSqlString(this));
     }
     IsCondition whereClause = su.getWhere();
 

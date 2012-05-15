@@ -172,11 +172,13 @@ public class TransportHandler {
 
     private static final String FILTER_KEY = "f1";
     private IsRow selectedType = null;
+    private TreePresenter typeTree = null;
 
     @Override
     public void afterCreateWidget(String name, Widget widget) {
       if (widget instanceof TreeView && BeeUtils.same(name, "SparePartTypes")) {
         ((TreeView) widget).addSelectionHandler(this);
+        typeTree = ((TreeView) widget).getTreePresenter();
       }
     }
 
@@ -208,6 +210,10 @@ public class TransportHandler {
       if (type != null) {
         List<BeeColumn> cols = getGridPresenter().getDataColumns();
         newRow.setValue(DataUtils.getColumnIndex("Type", cols), type.getId());
+        newRow.setValue(DataUtils.getColumnIndex("ParentTypeName", cols),
+            getTypeValue(type, "ParentName"));
+        newRow.setValue(DataUtils.getColumnIndex("TypeName", cols),
+            getTypeValue(type, "Name"));
       }
       return true;
     }
@@ -222,6 +228,13 @@ public class TransportHandler {
 
     private IsRow getSelectedType() {
       return selectedType;
+    }
+
+    private String getTypeValue(IsRow type, String colName) {
+      if (BeeUtils.allNotEmpty(type, typeTree, typeTree.getDataColumns())) {
+        return type.getString(DataUtils.getColumnIndex(colName, typeTree.getDataColumns()));
+      }
+      return null;
     }
 
     private void setSelectedType(IsRow selectedType) {
@@ -356,8 +369,10 @@ public class TransportHandler {
       if (model != null) {
         List<BeeColumn> cols = getGridPresenter().getDataColumns();
         newRow.setValue(DataUtils.getColumnIndex("Model", cols), model.getId());
+        newRow.setValue(DataUtils.getColumnIndex("ParentModelName", cols),
+            getModelValue(model, "ParentName"));
         newRow.setValue(DataUtils.getColumnIndex("ModelName", cols),
-            getModelValue(model, "ModelName"));
+            getModelValue(model, "Name"));
       }
       return true;
     }

@@ -34,10 +34,10 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SqlConstants;
-import com.butent.bee.shared.data.XmlState;
-import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
+import com.butent.bee.shared.data.XmlState;
+import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlKey;
 import com.butent.bee.shared.data.XmlView;
@@ -710,7 +710,7 @@ public class SystemBean {
     Map<String, String> rebuilds = Maps.newHashMap();
 
     for (SqlCreate sc : newTables.values()) {
-      tblName = (String) sc.getTarget().getSource();
+      tblName = sc.getTarget();
       String tblBackup = null;
       boolean update = !qs.dbExists(getDbName(), getDbSchema(), tblName);
 

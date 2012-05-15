@@ -15,12 +15,12 @@ import java.util.Set;
  * Builds an INSERT SQL statement for a given target using specified field and value lists.
  */
 
-public class SqlInsert extends SqlQuery<SqlInsert> {
+public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
 
-  private final IsFrom target;
+  private final String target;
   private Set<String> fieldList = Sets.newLinkedHashSet();
-  private List<IsExpression> valueList;
-  private SqlSelect dataSource;
+  private List<IsExpression> valueList = null;
+  private SqlSelect dataSource = null;
 
   /**
    * Creates an SqlInserte statement with a specified target {@code target}. Target type is
@@ -29,7 +29,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
    * @param target the FromSingle target
    */
   public SqlInsert(String target) {
-    this.target = FromJoin.fromSingle(target, null);
+    Assert.notEmpty(target);
+    this.target = target;
   }
 
   /**
@@ -117,7 +118,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
    */
   @Override
   public Collection<String> getSources() {
-    Collection<String> sources = target.getSources();
+    Collection<String> sources = Sets.newHashSet(getTarget());
 
     if (!BeeUtils.isEmpty(dataSource)) {
       sources = SqlUtils.addCollection(sources, dataSource.getSources());
@@ -128,7 +129,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
   /**
    * @return the current target {@code target}
    */
-  public IsFrom getTarget() {
+  @Override
+  public String getTarget() {
     return target;
   }
 
@@ -175,8 +177,8 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
    */
   @Override
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(target) || BeeUtils.isEmpty(fieldList)
-        || (BeeUtils.isEmpty(valueList) && BeeUtils.isEmpty(dataSource));
+    return BeeUtils.isEmpty(fieldList)
+        || (BeeUtils.isEmpty(valueList) && dataSource == null);
   }
 
   /**
@@ -184,13 +186,11 @@ public class SqlInsert extends SqlQuery<SqlInsert> {
    * 
    * @return object's SqlInsert instance.
    */
+  @Override
   public SqlInsert reset() {
     fieldList.clear();
-    if (!BeeUtils.isEmpty(valueList)) {
-      valueList.clear();
-    }
+    valueList = null;
     dataSource = null;
-
     return getReference();
   }
 

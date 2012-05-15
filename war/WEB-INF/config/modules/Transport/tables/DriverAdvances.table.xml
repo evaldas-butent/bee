@@ -6,7 +6,7 @@
   x="0" y="0"
   >
   <BeeFields>
-    <BeeField name="Driver" type="LONG" notNull="true" relation="Drivers" cascade="DELETE" />
+    <BeeField name="Driver" type="LONG" notNull="true" relation="TripDrivers" cascade="DELETE" />
     <BeeField name="Date" type="DATE" />
     <BeeField name="Number" type="STRING" precision="30" />
     <BeeField name="Amount" type="DECIMAL" precision="12" scale="2" notNull="true" />

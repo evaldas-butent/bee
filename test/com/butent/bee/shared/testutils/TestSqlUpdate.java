@@ -8,7 +8,6 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -28,23 +27,6 @@ public class TestSqlUpdate {
 
   @After
   public void tearDown() throws Exception {
-  }
-
-  @Test
-  public final void testGetSources() {
-    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
-    SqlUpdate update2 = new SqlUpdate("Source1");
-    IsCondition where = SqlUtils.equal("Source2", "name", "John");
-    update2.addConstant("name", "Petras");
-    update2.setWhere(where);
-    update2.addFrom("Source5");
-    update2.addFrom("Source4");
-    update2.addFrom("Source3");
-
-    Object[] arr = update2.getSources().toArray();
-    Object[] expected = {"Source5", "Source4", "Source3", "Source1"};
-
-    assertArrayEquals(expected, arr);
   }
 
   @Test

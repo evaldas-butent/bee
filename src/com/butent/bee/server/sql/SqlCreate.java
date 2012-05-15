@@ -13,7 +13,7 @@ import java.util.List;
  * servers.
  */
 
-public class SqlCreate extends SqlQuery<SqlCreate> {
+public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
   public class SqlField {
     private final String name;
@@ -72,7 +72,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
     }
   }
 
-  private IsFrom target;
+  private String target;
   private final boolean temporary;
   private List<SqlField> fieldList = new ArrayList<SqlField>();
 
@@ -292,7 +292,8 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
   /**
    * @return the current target {@code target}
    */
-  public IsFrom getTarget() {
+  @Override
+  public String getTarget() {
     return target;
   }
 
@@ -313,8 +314,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    */
   @Override
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(target) ||
-        (BeeUtils.isEmpty(fieldList) && BeeUtils.isEmpty(dataSource));
+    return BeeUtils.isEmpty(fieldList) && BeeUtils.isEmpty(dataSource);
   }
 
   /**
@@ -324,6 +324,11 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    */
   public boolean isTemporary() {
     return temporary;
+  }
+
+  @Override
+  public SqlCreate reset() {
+    return getReference();
   }
 
   /**
@@ -350,7 +355,8 @@ public class SqlCreate extends SqlQuery<SqlCreate> {
    * @return object's SqlCreate instance
    */
   public SqlCreate setTarget(String target) {
-    this.target = FromJoin.fromSingle(target, null);
+    Assert.notEmpty(target);
+    this.target = target;
     return this;
   }
 }

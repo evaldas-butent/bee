@@ -70,4 +70,9 @@ class SqlCommand extends SqlQuery<SqlCommand> {
   public boolean isEmpty() {
     return BeeUtils.isEmpty(command);
   }
+
+  @Override
+  public SqlCommand reset() {
+    return getReference();
+  }
 }

@@ -204,7 +204,14 @@ public class SqlUtils {
   }
 
   public static IsCondition equal(IsExpression expr, Object value) {
-    return compare(expr, Operator.EQ, constant(value));
+    IsSql v;
+
+    if (value instanceof IsSql) {
+      v = (IsSql) value;
+    } else {
+      v = constant(value);
+    }
+    return compare(expr, Operator.EQ, v);
   }
 
   public static IsCondition equal(String source, String field, Object value) {
@@ -335,7 +342,14 @@ public class SqlUtils {
   }
 
   public static IsCondition less(IsExpression expr, Object value) {
-    return compare(expr, Operator.LT, constant(value));
+    IsSql v;
+
+    if (value instanceof IsSql) {
+      v = (IsSql) value;
+    } else {
+      v = constant(value);
+    }
+    return compare(expr, Operator.LT, v);
   }
 
   public static IsCondition less(String source, String field, Object value) {
@@ -343,7 +357,14 @@ public class SqlUtils {
   }
 
   public static IsCondition lessEqual(IsExpression expr, Object value) {
-    return compare(expr, Operator.LE, constant(value));
+    IsSql v;
+
+    if (value instanceof IsSql) {
+      v = (IsSql) value;
+    } else {
+      v = constant(value);
+    }
+    return compare(expr, Operator.LE, v);
   }
 
   public static IsCondition lessEqual(String source, String field, Object value) {
@@ -366,7 +387,14 @@ public class SqlUtils {
   }
 
   public static IsCondition more(IsExpression expr, Object value) {
-    return compare(expr, Operator.GT, constant(value));
+    IsSql v;
+
+    if (value instanceof IsSql) {
+      v = (IsSql) value;
+    } else {
+      v = constant(value);
+    }
+    return compare(expr, Operator.GT, v);
   }
 
   public static IsCondition more(String source, String field, Object value) {
@@ -374,7 +402,14 @@ public class SqlUtils {
   }
 
   public static IsCondition moreEqual(IsExpression expr, Object value) {
-    return compare(expr, Operator.GE, constant(value));
+    IsSql v;
+
+    if (value instanceof IsSql) {
+      v = (IsSql) value;
+    } else {
+      v = constant(value);
+    }
+    return compare(expr, Operator.GE, v);
   }
 
   public static IsCondition moreEqual(String source, String field, Object value) {
@@ -391,12 +426,43 @@ public class SqlUtils {
     return new NameExpression(name);
   }
 
+  public static IsCondition negative(IsExpression expr) {
+    return less(expr, 0);
+  }
+
+  public static IsCondition negative(String source, String field) {
+    return less(source, field, 0);
+  }
+
+  public static IsCondition nonNegative(IsExpression expr) {
+    return moreEqual(expr, 0);
+  }
+
+  public static IsCondition nonNegative(String source, String field) {
+    return moreEqual(source, field, 0);
+  }
+
+  public static IsCondition nonPositive(IsExpression expr) {
+    return lessEqual(expr, 0);
+  }
+
+  public static IsCondition nonPositive(String source, String field) {
+    return lessEqual(source, field, 0);
+  }
+
   public static IsCondition not(IsCondition condition) {
     return new NegationCondition(condition);
   }
 
   public static IsCondition notEqual(IsExpression expr, Object value) {
-    return compare(expr, Operator.NE, constant(value));
+    IsSql v;
+
+    if (value instanceof IsSql) {
+      v = (IsSql) value;
+    } else {
+      v = constant(value);
+    }
+    return compare(expr, Operator.NE, v);
   }
 
   public static IsCondition notEqual(String source, String field, Object value) {
@@ -425,6 +491,14 @@ public class SqlUtils {
     Assert.minLength(members, 2);
     Assert.noNulls(members);
     return new FunctionExpression(SqlFunction.PLUS, getMemberMap(members));
+  }
+
+  public static IsCondition positive(IsExpression expr) {
+    return more(expr, 0);
+  }
+
+  public static IsCondition positive(String source, String field) {
+    return more(source, field, 0);
   }
 
   public static IsQuery renameTable(String from, String to) {

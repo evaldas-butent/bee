@@ -27,6 +27,8 @@ abstract class SqlQuery<T> implements IsQuery {
     return builder.getQuery(this);
   }
 
+  public abstract T reset();
+
   @SuppressWarnings("unchecked")
   protected T getReference() {
     return (T) this;

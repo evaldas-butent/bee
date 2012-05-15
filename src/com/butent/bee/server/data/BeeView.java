@@ -19,9 +19,9 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.IsColumn;
-import com.butent.bee.shared.data.XmlExpression;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
+import com.butent.bee.shared.data.XmlExpression;
 import com.butent.bee.shared.data.XmlExpression.XmlBulk;
 import com.butent.bee.shared.data.XmlExpression.XmlCase;
 import com.butent.bee.shared.data.XmlExpression.XmlCast;
@@ -49,6 +49,8 @@ import com.butent.bee.shared.data.filter.ColumnValueFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.IdFilter;
+import com.butent.bee.shared.data.filter.IsFalseFilter;
+import com.butent.bee.shared.data.filter.IsTrueFilter;
 import com.butent.bee.shared.data.filter.VersionFilter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.ViewColumn;
@@ -403,6 +405,12 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       } else if (NameUtils.getClassName(VersionFilter.class).equals(clazz)) {
         return getCondition((VersionFilter) flt);
 
+      } else if (NameUtils.getClassName(IsFalseFilter.class).equals(clazz)) {
+        return SqlUtils.sqlFalse();
+
+      } else if (NameUtils.getClassName(IsTrueFilter.class).equals(clazz)) {
+        return SqlUtils.sqlTrue();
+
       } else {
         Assert.unsupported("Unsupported class name: " + clazz);
       }
@@ -529,7 +537,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   public SqlSelect getQuery(Filter flt) {
     return getQuery(flt, null, null);
   }
-  
+
   public SqlSelect getQuery() {
     return getQuery(null, null, null);
   }
@@ -549,19 +557,19 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   public String getSourceVersionName() {
     return source.getVersionName();
   }
-  
+
   public List<ViewColumn> getViewColumns() {
     List<ViewColumn> result = Lists.newArrayList();
 
     for (ColumnInfo cInf : columns.values()) {
       BeeField cf = cInf.getField();
-      
-      String table = (cf == null) ? null : cf.getTable(); 
-      String field = (cf == null) ? null : cf.getName(); 
+
+      String table = (cf == null) ? null : cf.getTable();
+      String field = (cf == null) ? null : cf.getName();
       String relation = (cf == null) ? null : cf.getRelation();
-      
+
       String agg = (cInf.getAggregate() == null) ? null : cInf.getAggregate().name();
-      String expr = (cInf.getExpression() == null) ? null 
+      String expr = (cInf.getExpression() == null) ? null
           : cInf.getExpression().getSqlString(SqlBuilderFactory.getBuilder(SqlEngine.GENERIC));
 
       result.add(new ViewColumn(cInf.getName(), cInf.getParent(), table, field, relation,

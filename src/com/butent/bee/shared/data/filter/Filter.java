@@ -30,7 +30,7 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
       return new CompoundFilter(CompoundType.AND, f1, f2);
     }
   }
-  
+
   public static CompoundFilter and() {
     return new CompoundFilter(CompoundType.AND);
   }
@@ -41,7 +41,7 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
     } else {
       Filter[] arr = filters.toArray(new Filter[0]);
       int size = arr.length;
-      
+
       switch (size) {
         case 1:
           return arr[0];
@@ -58,9 +58,17 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
     return new ColumnIsEmptyFilter(column);
   }
 
+  public static Filter isFalse() {
+    return new IsFalseFilter();
+  }
+
   public static Filter isNot(Filter filter) {
     Assert.notNull(filter);
     return new CompoundFilter(CompoundType.NOT, filter);
+  }
+
+  public static Filter isTrue() {
+    return new IsTrueFilter();
   }
 
   public static Filter notEmpty(String column) {
@@ -84,7 +92,7 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
     } else {
       Filter[] arr = filters.toArray(new Filter[0]);
       int size = arr.length;
-      
+
       switch (size) {
         case 1:
           return arr[0];
@@ -95,7 +103,7 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
       }
     }
   }
-  
+
   public static CompoundFilter or() {
     return new CompoundFilter(CompoundType.OR);
   }
@@ -141,6 +149,12 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
 
     } else if (NameUtils.getClassName(VersionFilter.class).equals(clazz)) {
       flt = new VersionFilter();
+
+    } else if (NameUtils.getClassName(IsFalseFilter.class).equals(clazz)) {
+      flt = new IsFalseFilter();
+
+    } else if (NameUtils.getClassName(IsTrueFilter.class).equals(clazz)) {
+      flt = new IsTrueFilter();
 
     } else {
       Assert.unsupported("Unsupported class name: " + clazz);

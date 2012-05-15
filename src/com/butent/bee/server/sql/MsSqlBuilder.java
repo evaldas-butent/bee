@@ -24,8 +24,8 @@ class MsSqlBuilder extends SqlBuilder {
     if (BeeUtils.isEmpty(sc.getDataSource())) {
       return super.getCreate(sc);
     }
-    return sc.getDataSource().getSqlString(this).replace(" FROM ",
-        " INTO " + sc.getTarget().getSqlString(this) + " FROM ");
+    return sc.getDataSource().getSqlString(this).replaceFirst(" FROM ",
+        " INTO " + SqlUtils.name(sc.getTarget()).getSqlString(this) + " FROM ");
   }
 
   @Override
@@ -77,6 +77,55 @@ class MsSqlBuilder extends SqlBuilder {
           "WHERE", queryAlias + "." + idAlias, ">", offset);
     }
     return sql;
+  }
+
+  @Override
+  protected String getUpdate(SqlUpdate su) {
+    Assert.notNull(su);
+    Assert.state(!su.isEmpty());
+
+    IsFrom fromSource = su.getFromSource();
+
+    if (fromSource == null) {
+      return super.getUpdate(su);
+    }
+    StringBuilder query = new StringBuilder("MERGE INTO ")
+        .append(SqlUtils.name(su.getTarget()).getSqlString(this))
+        .append(" USING ")
+        .append(fromSource.getSqlString(this))
+        .append(" ON ")
+        .append(su.getFromJoin().getSqlString(this))
+        .append(" WHEN MATCHED");
+
+    IsCondition whereClause = su.getWhere();
+
+    if (!BeeUtils.isEmpty(whereClause)) {
+      String wh = whereClause.getSqlString(this);
+
+      if (!BeeUtils.isEmpty(wh)) {
+        query.append(" AND ").append(wh);
+      }
+    }
+    query.append(" THEN UPDATE SET ");
+
+    Map<String, IsSql> updates = su.getUpdates();
+    boolean first = true;
+
+    for (String field : updates.keySet()) {
+      if (first) {
+        first = false;
+      } else {
+        query.append(", ");
+      }
+      query.append(SqlUtils.name(field).getSqlString(this));
+
+      IsSql value = updates.get(field);
+      query.append("=")
+          .append(value instanceof SqlSelect
+              ? BeeUtils.parenthesize(value.getSqlString(this))
+              : value.getSqlString(this));
+    }
+    return query.append(";").toString();
   }
 
   @Override
@@ -140,8 +189,8 @@ class MsSqlBuilder extends SqlBuilder {
           String relField = entry[2];
 
           text = BeeUtils.concat(1, text,
-              new SqlDelete(relTable).addFrom("deleted")
-                  .setWhere(SqlUtils.join(relTable, relField, "deleted", fldName))
+              new SqlDelete(relTable)
+                  .setWhere(SqlUtils.in(relTable, relField, "deleted", fldName, null))
                   .getQuery(),
               ";");
         }

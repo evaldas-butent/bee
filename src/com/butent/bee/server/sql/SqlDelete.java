@@ -1,5 +1,8 @@
 package com.butent.bee.server.sql;
 
+import com.google.common.collect.Sets;
+
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -8,9 +11,9 @@ import java.util.Collection;
  * Builds a DELETE SQL statement for a given target using specified WHERE clause.
  */
 
-public class SqlDelete extends HasFrom<SqlDelete> {
+public class SqlDelete extends SqlQuery<SqlDelete> implements HasTarget {
 
-  private final IsFrom target;
+  private final String target;
   private IsCondition whereClause;
 
   /**
@@ -20,7 +23,8 @@ public class SqlDelete extends HasFrom<SqlDelete> {
    * @param target the FromSingle target
    */
   public SqlDelete(String target) {
-    this.target = FromJoin.fromSingle(target, null);
+    Assert.notEmpty(target);
+    this.target = target;
   }
 
   /**
@@ -28,7 +32,7 @@ public class SqlDelete extends HasFrom<SqlDelete> {
    */
   @Override
   public Collection<String> getSources() {
-    Collection<String> sources = SqlUtils.addCollection(target.getSources(), super.getSources());
+    Collection<String> sources = Sets.newHashSet(getTarget());
 
     if (!BeeUtils.isEmpty(whereClause)) {
       sources = SqlUtils.addCollection(sources, whereClause.getSources());
@@ -39,7 +43,8 @@ public class SqlDelete extends HasFrom<SqlDelete> {
   /**
    * @return the current target {@code target}
    */
-  public IsFrom getTarget() {
+  @Override
+  public String getTarget() {
     return target;
   }
 
@@ -57,7 +62,13 @@ public class SqlDelete extends HasFrom<SqlDelete> {
    */
   @Override
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(target) || BeeUtils.isEmpty(whereClause);
+    return whereClause == null;
+  }
+
+  @Override
+  public SqlDelete reset() {
+    whereClause = null;
+    return getReference();
   }
 
   /**

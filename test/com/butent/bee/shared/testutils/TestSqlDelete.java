@@ -35,12 +35,10 @@ public class TestSqlDelete {
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
 
     SqlDelete delete = new SqlDelete("Target_table");
-    delete.addFrom("From_source1");
-    delete.addFrom("From_source2");
     delete.setWhere(SqlUtils.sqlFalse());
 
     Object[] arr = delete.getSources().toArray();
-    Object[] rez = {"From_source1", "Target_table", "From_source2"};
+    Object[] rez = {"Target_table"};
 
     assertArrayEquals(rez, arr);
   }
@@ -51,13 +49,11 @@ public class TestSqlDelete {
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlDelete delete = new SqlDelete("Target_table");
-    delete.addFrom("From_source1");
-    delete.addFrom("From_source2");
 
     delete.setWhere(SqlUtils.equal(SqlUtils.name("username"), "root"));
 
     assertEquals(
-        "DELETE FROM Target_table FROM From_source1, From_source2 WHERE username = 'root'",
+        "DELETE FROM Target_table WHERE username = 'root'",
         delete.getSqlString(builder));
   }
 
@@ -67,13 +63,11 @@ public class TestSqlDelete {
     SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlDelete delete = new SqlDelete("Target_table");
-    delete.addFrom("From_source1");
-    delete.addFrom("From_source2");
 
     delete.setWhere(SqlUtils.equal(SqlUtils.name("username"), "root"));
 
     assertEquals(
-        "DELETE FROM Target_table FROM From_source1, From_source2 WHERE username = 'root'",
+        "DELETE FROM Target_table WHERE username = 'root'",
         delete.getSqlString(builder));
   }
 

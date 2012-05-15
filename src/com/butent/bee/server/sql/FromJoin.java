@@ -104,6 +104,10 @@ class FromJoin extends FromSource {
     this.on = on;
   }
 
+  public IsCondition getJoinCondition() {
+    return on;
+  }
+
   public JoinMode getJoinMode() {
     return join;
   }

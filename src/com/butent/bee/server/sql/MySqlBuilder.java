@@ -1,5 +1,6 @@
 package com.butent.bee.server.sql;
 
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
@@ -40,6 +41,54 @@ class MySqlBuilder extends SqlBuilder {
       sql += " OFFSET " + offset;
     }
     return sql;
+  }
+
+  @Override
+  protected String getUpdate(SqlUpdate su) {
+    Assert.notNull(su);
+    Assert.state(!su.isEmpty());
+
+    IsFrom fromSource = su.getFromSource();
+
+    if (fromSource == null) {
+      return super.getUpdate(su);
+    }
+    StringBuilder query = new StringBuilder("UPDATE ")
+        .append(SqlUtils.name(su.getTarget()).getSqlString(this))
+        .append(", ")
+        .append(fromSource.getSqlString(this))
+        .append(" SET ");
+
+    Map<String, IsSql> updates = su.getUpdates();
+    boolean first = true;
+
+    for (String field : updates.keySet()) {
+      if (first) {
+        first = false;
+      } else {
+        query.append(", ");
+      }
+      query.append(SqlUtils.field(su.getTarget(), field).getSqlString(this));
+
+      IsSql value = updates.get(field);
+      query.append("=")
+          .append(value instanceof SqlSelect
+              ? BeeUtils.parenthesize(value.getSqlString(this))
+              : value.getSqlString(this));
+    }
+    query.append(" WHERE ")
+        .append(su.getFromJoin().getSqlString(this));
+
+    IsCondition whereClause = su.getWhere();
+
+    if (!BeeUtils.isEmpty(whereClause)) {
+      String wh = whereClause.getSqlString(this);
+
+      if (!BeeUtils.isEmpty(wh)) {
+        query.append(" AND ").append(wh);
+      }
+    }
+    return query.toString();
   }
 
   @Override

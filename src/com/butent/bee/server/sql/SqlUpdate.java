@@ -1,23 +1,24 @@
 package com.butent.bee.server.sql;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Map;
 
 /**
  * Generates UPDATE SQL statements for specified target, update values and WHERE condition.
  */
 
-public class SqlUpdate extends HasFrom<SqlUpdate> {
+public class SqlUpdate extends SqlQuery<SqlUpdate> implements HasTarget {
 
-  static final int FIELD = 0;
-  static final int VALUE = 1;
-
-  private final IsFrom target;
-  private List<IsExpression[]> updates;
+  private final String target;
+  private IsFrom fromSource;
+  private IsCondition fromJoin;
+  private Map<String, IsSql> updates = Maps.newLinkedHashMap();
   private IsCondition whereClause;
 
   /**
@@ -26,7 +27,8 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
    * @param target the String target
    */
   public SqlUpdate(String target) {
-    this.target = FromJoin.fromSingle(target, null);
+    Assert.notEmpty(target);
+    this.target = target;
   }
 
   /**
@@ -47,17 +49,20 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
    * @param value the expression to add
    * @return object's SqlInsert instance.
    */
-  public SqlUpdate addExpression(String field, IsExpression value) {
-    IsExpression[] updateEntry = new IsExpression[2];
-    updateEntry[FIELD] = SqlUtils.name(field);
-    updateEntry[VALUE] = value;
+  public SqlUpdate addExpression(String field, IsSql value) {
+    Assert.notEmpty(field);
+    Assert.notNull(value);
 
-    if (BeeUtils.isEmpty(updates)) {
-      updates = Lists.newArrayList();
-    }
-    updates.add(updateEntry);
-
+    updates.put(field, value);
     return getReference();
+  }
+
+  public IsCondition getFromJoin() {
+    return fromJoin;
+  }
+
+  public IsFrom getFromSource() {
+    return fromSource;
   }
 
   /**
@@ -65,9 +70,13 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
    */
   @Override
   public Collection<String> getSources() {
-    Collection<String> sources = SqlUtils.addCollection(target.getSources(), super.getSources());
+    Collection<String> sources = Sets.newHashSet(target);
 
-    if (!BeeUtils.isEmpty(whereClause)) {
+    if (fromSource != null) {
+      sources = SqlUtils.addCollection(sources, fromSource.getSources());
+      sources = SqlUtils.addCollection(sources, fromJoin.getSources());
+    }
+    if (whereClause != null) {
       sources = SqlUtils.addCollection(sources, whereClause.getSources());
     }
     return sources;
@@ -76,14 +85,15 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
   /**
    * @return the current target {@code target}
    */
-  public IsFrom getTarget() {
+  @Override
+  public String getTarget() {
     return target;
   }
 
   /**
    * @return the current update {@code updates} list.
    */
-  public List<IsExpression[]> getUpdates() {
+  public Map<String, IsSql> getUpdates() {
     return updates;
   }
 
@@ -102,7 +112,7 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
    */
   @Override
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(target) || BeeUtils.isEmpty(updates);
+    return BeeUtils.isEmpty(updates);
   }
 
   /**
@@ -110,12 +120,30 @@ public class SqlUpdate extends HasFrom<SqlUpdate> {
    * 
    * @return object's SqlUpdate instance
    */
+  @Override
   public SqlUpdate reset() {
-    if (!BeeUtils.isEmpty(updates)) {
-      updates.clear();
-    }
+    updates.clear();
+    fromSource = null;
+    fromJoin = null;
     whereClause = null;
+    return getReference();
+  }
 
+  public SqlUpdate setFrom(String source, IsCondition on) {
+    return setFrom(source, null, on);
+  }
+
+  public SqlUpdate setFrom(String source, String alias, IsCondition on) {
+    Assert.notNull(on);
+    fromSource = FromJoin.fromSingle(source, alias);
+    fromJoin = on;
+    return getReference();
+  }
+
+  public SqlUpdate setFrom(SqlSelect source, String alias, IsCondition on) {
+    Assert.notNull(on);
+    fromSource = FromJoin.fromSingle(source, alias);
+    fromJoin = on;
     return getReference();
   }
 

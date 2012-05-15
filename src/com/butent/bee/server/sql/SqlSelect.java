@@ -721,6 +721,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * 
    * @return a cleared SqlSelect object.
    */
+  @Override
   public SqlSelect reset() {
     resetFields();
     resetGroup();

@@ -343,8 +343,8 @@ public class QueryServiceBean {
   public ResponseObject insertDataWithResponse(SqlInsert si) {
     Assert.notNull(si);
 
-    String source = (String) si.getTarget().getSource();
-    boolean requiresId = BeeUtils.isEmpty(si.getDataSource()) && sys.isTable(source);
+    String target = si.getTarget();
+    boolean requiresId = BeeUtils.isEmpty(si.getDataSource()) && sys.isTable(target);
     long id = 0;
 
     Assert.state(requiresId || !si.isEmpty());
@@ -352,17 +352,17 @@ public class QueryServiceBean {
     activateTables(si);
 
     if (requiresId) {
-      String versionFld = sys.getVersionName(source);
+      String versionFld = sys.getVersionName(target);
 
       if (!si.hasField(versionFld)) {
         si.addConstant(versionFld, System.currentTimeMillis());
       }
-      String idFld = sys.getIdName(source);
+      String idFld = sys.getIdName(target);
 
       if (si.hasField(idFld)) {
         id = ((Value) si.getValue(idFld).getValue()).getLong();
       } else {
-        id = ig.getId(source);
+        id = ig.getId(target);
         si.addConstant(idFld, id);
       }
     }
