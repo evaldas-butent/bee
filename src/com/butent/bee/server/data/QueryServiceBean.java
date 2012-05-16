@@ -3,6 +3,7 @@ package com.butent.bee.server.data;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.server.DataSourceBean;
+import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
 import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsQuery;
@@ -321,11 +322,7 @@ public class QueryServiceBean {
       @Override
       public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
         BeeRowSet rowset = rsToBeeRowSet(rs, view);
-        ViewCallback callback = sys.getViewCallback(view);
-
-        if (callback != null) {
-          callback.afterViewData(query, rowset);
-        }
+        sys.postViewEvent(new ViewQueryEvent(view.getName(), query, rowset));
         return rowset;
       }
 

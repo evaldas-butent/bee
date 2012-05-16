@@ -353,9 +353,8 @@ public class UserServiceBean {
 
       userCache.put(userId, login);
 
-      UserInfo user = new UserInfo(
-          new UserData(userId, login, row.get(UserData.FLD_FIRST_NAME),
-              row.get(UserData.FLD_LAST_NAME))
+      UserInfo user = new UserInfo(new UserData(userId, login, row.get(UserData.FLD_FIRST_NAME),
+          row.get(UserData.FLD_LAST_NAME))
           .setRoles(userRoles.get(userId)))
           .setProperties(row.get(FLD_PROPERTIES));
 

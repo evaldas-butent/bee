@@ -1,13 +1,15 @@
 package com.butent.bee.server.modules.calendar;
 
+import com.google.common.eventbus.Subscribe;
+
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.ViewCallback;
+import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
+import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.SqlInsert;
-import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -80,11 +82,16 @@ public class CalendarModuleBean implements BeeModule {
 
   @Override
   public void init() {
-    sys.registerViewCallback(CalendarConstants.VIEW_CONFIGURATION, new ViewCallback(getName()) {
-      @Override
-      public void afterViewData(SqlSelect query, BeeRowSet rowset) {
-        if (rowset.isEmpty()) {
-          rowset.addEmptyRow();
+    sys.registerViewEventHandler(new ViewEventHandler() {
+      @SuppressWarnings("unused")
+      @Subscribe
+      public void initConfiguration(ViewQueryEvent event) {
+        if (BeeUtils.same(event.getViewName(), CalendarConstants.VIEW_CONFIGURATION)) {
+          BeeRowSet rowset = event.getRowset();
+
+          if (rowset.isEmpty()) {
+            rowset.addEmptyRow();
+          }
         }
       }
     });

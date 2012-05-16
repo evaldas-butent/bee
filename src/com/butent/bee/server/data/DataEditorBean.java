@@ -5,6 +5,9 @@ import com.google.common.collect.Maps;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
+import com.butent.bee.server.data.ViewEvent.ViewDeleteEvent;
+import com.butent.bee.server.data.ViewEvent.ViewInsertEvent;
+import com.butent.bee.server.data.ViewEvent.ViewUpdateEvent;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsQuery;
@@ -205,8 +208,12 @@ public class DataEditorBean {
     }
     if (response.hasErrors()) {
       ctx.setRollbackOnly();
-    } else if (usr.isUserTable(view.getSourceName())) {
-      usr.invalidateCache();
+    } else {
+      if (BeeUtils.isEmpty(row.getId())) {
+        sys.postViewEvent(new ViewInsertEvent(rs.getViewName(), rs.getColumns(), row));
+      } else {
+        sys.postViewEvent(new ViewUpdateEvent(rs.getViewName(), rs.getColumns(), row));
+      }
     }
     return response;
   }
@@ -221,8 +228,10 @@ public class DataEditorBean {
     if (view.isReadOnly()) {
       return ResponseObject.error("View", BeeUtils.bracket(view.getName()), "is read only.");
     }
+    List<Long> ids = Lists.newArrayList();
 
     for (RowInfo row : rows) {
+      ids.add(row.getId());
       IsCondition whId = SqlUtils.equal(tblName, view.getSourceIdName(), row.getId());
       long version = row.getVersion();
 
@@ -232,21 +241,32 @@ public class DataEditorBean {
         wh.add(whId);
       }
     }
+    ResponseObject response;
+    ViewDeleteEvent event = new ViewDeleteEvent(view.getName(), ids);
+    sys.postViewEvent(event);
 
-    ResponseObject response = qs.updateDataWithResponse(new SqlDelete(tblName).setWhere(wh));
-    int cnt = response.getResponse(-1, logger);
+    if (event.hasErrors()) {
+      response = new ResponseObject();
 
-    if (cnt < rows.length) {
-      if (!response.hasErrors()) {
+      for (String error : event.getErrorMessages()) {
+        response.addError(error);
+      }
+    } else {
+      response = qs.updateDataWithResponse(new SqlDelete(tblName).setWhere(wh));
+      int cnt = response.getResponse(-1, logger);
+
+      if (cnt < rows.length && !response.hasErrors()) {
         String err = "Optimistic lock exception";
         LogUtils.severe(logger, err, "Deleted", cnt, "of", rows.length);
         response.addError(err);
         response.setResponse(0);
       }
+    }
+    if (response.hasErrors()) {
       ctx.setRollbackOnly();
-
-    } else if (usr.isUserTable(tblName)) {
-      usr.invalidateCache();
+    } else {
+      event.setAfter();
+      sys.postViewEvent(event);
     }
     return response;
   }

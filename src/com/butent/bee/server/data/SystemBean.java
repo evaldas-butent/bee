@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.eventbus.EventBus;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.Config;
@@ -121,7 +122,7 @@ public class SystemBean {
   private Map<String, BeeState> stateCache = Maps.newHashMap();
   private Map<String, BeeTable> tableCache = Maps.newHashMap();
   private Map<String, BeeView> viewCache = Maps.newHashMap();
-  private Map<String, ViewCallback> viewCallbacks = Maps.newHashMap();
+  private EventBus viewEventBus = new EventBus();
 
   public void activateTable(String tblName) {
     BeeTable table = getTable(tblName);
@@ -330,26 +331,6 @@ public class SystemBean {
       register(view, viewCache);
     }
     return view;
-  }
-
-  public ViewCallback getViewCallback(BeeView view) {
-    ViewCallback callback = null;
-
-    if (view != null) {
-      callback = viewCallbacks.get(BeeUtils.normalize(view.getName()));
-
-      if (callback != null) {
-        ViewCallback instance = callback.getInstance();
-
-        if (instance != null) {
-          callback = instance;
-        }
-        if (!callback.sameModule(view.getModuleName())) {
-          callback = null;
-        }
-      }
-    }
-    return callback;
   }
 
   public IsCondition getViewCondition(String viewName, Filter filter) {
@@ -600,6 +581,10 @@ public class SystemBean {
     return XmlUtils.unmarshal(XmlView.class, resource, SysObject.VIEW.getSchemaPath());
   }
 
+  public void postViewEvent(ViewEvent viewEvent) {
+    viewEventBus.post(viewEvent);
+  }
+
   public void rebuildActiveTables() {
     initTables();
 
@@ -614,9 +599,8 @@ public class SystemBean {
     rebuildTable(getTable(tblName), ref);
   }
 
-  public void registerViewCallback(String viewName, ViewCallback callback) {
-    Assert.notEmpty(viewName);
-    viewCallbacks.put(BeeUtils.normalize(viewName), callback);
+  public void registerViewEventHandler(ViewEventHandler eventHandler) {
+    viewEventBus.register(eventHandler);
   }
 
   public SqlSelect verifyStates(SqlSelect query, String tblName, String tblAlias, String... states) {

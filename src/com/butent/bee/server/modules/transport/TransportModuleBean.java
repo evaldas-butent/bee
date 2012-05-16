@@ -1,9 +1,12 @@
 package com.butent.bee.server.modules.transport;
 
+import com.google.common.eventbus.Subscribe;
+
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
-import com.butent.bee.server.data.ViewCallback;
+import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
+import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.IsCondition;
@@ -105,45 +108,53 @@ public class TransportModuleBean implements BeeModule {
 
   @Override
   public void init() {
-    sys.registerViewCallback("TripRoutes", new ViewCallback(getName()) {
-      @Override
-      public void afterViewData(SqlSelect query, BeeRowSet rowset) {
-        if (rowset.isEmpty()) {
-          return;
-        }
-        int colIndex = rowset.getColumnIndex("Consumption");
+    sys.registerViewEventHandler(new ViewEventHandler() {
+      @SuppressWarnings("unused")
+      @Subscribe
+      public void fillFuelConsumptions(ViewQueryEvent event) {
+        if (BeeUtils.same(event.getViewName(), TransportConstants.VIEW_TRIP_ROUTES)) {
+          BeeRowSet rowset = event.getRowset();
 
-        SimpleRowSet rs = qs.getData(getFuelConsumptionsQuery(query, true));
+          if (!rowset.isEmpty()) {
+            int colIndex = rowset.getColumnIndex("Consumption");
 
-        for (int i = 0; i < rs.getNumberOfRows(); i++) {
-          rowset.updateCell(rs.getLong(i, 0), colIndex, rs.getValue(i, 1));
+            SimpleRowSet rs = qs.getData(getFuelConsumptionsQuery(event.getQuery(), true));
+
+            for (int i = 0; i < rs.getNumberOfRows(); i++) {
+              rowset.updateCell(rs.getLong(i, 0), colIndex, rs.getValue(i, 1));
+            }
+          }
         }
       }
     });
 
-    sys.registerViewCallback("TripCargo", new ViewCallback(getName()) {
-      @Override
-      public void afterViewData(SqlSelect query, BeeRowSet rowset) {
-        if (rowset.isEmpty()) {
-          return;
-        }
-        int colIndex = rowset.getColumnIndex("XXX");
-        int cargoIndex = rowset.getColumnIndex("Cargo");
-        String crs = getTripIncome(query.resetFields().resetOrder()
-            .addFields("CargoTrips", "Trip"));
+    sys.registerViewEventHandler(new ViewEventHandler() {
+      @SuppressWarnings("unused")
+      @Subscribe
+      public void fillCargoIncomes(ViewQueryEvent event) {
+        if (BeeUtils.same(event.getViewName(), TransportConstants.VIEW_TRIP_CARGO)) {
+          BeeRowSet rowset = event.getRowset();
 
-        SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
-        qs.sqlDropTemp(crs);
+          if (!rowset.isEmpty()) {
+            int colIndex = rowset.getColumnIndex("XXX");
+            int cargoIndex = rowset.getColumnIndex("Cargo");
+            String crs = getTripIncome(event.getQuery().resetFields().resetOrder()
+                .addFields("CargoTrips", "Trip"));
 
-        for (int i = 0; i < rs.getNumberOfRows(); i++) {
-          Long cargoId = rs.getLong(i, "Cargo");
+            SimpleRowSet rs = qs.getData(new SqlSelect().addAllFields(crs).addFrom(crs));
+            qs.sqlDropTemp(crs);
 
-          for (int j = 0; j < rowset.getNumberOfRows(); j++) {
-            BeeRow row = rowset.getRow(j);
+            for (int i = 0; i < rs.getNumberOfRows(); i++) {
+              Long cargoId = rs.getLong(i, "Cargo");
 
-            if (row.getLong(cargoIndex) == cargoId) {
-              row.setValue(colIndex, rs.getValue(i, "Income"));
-              break;
+              for (int j = 0; j < rowset.getNumberOfRows(); j++) {
+                BeeRow row = rowset.getRow(j);
+
+                if (row.getLong(cargoIndex) == cargoId) {
+                  row.setValue(colIndex, rs.getValue(i, "Income"));
+                  break;
+                }
+              }
             }
           }
         }
