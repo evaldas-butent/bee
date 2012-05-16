@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -53,6 +54,7 @@ import com.butent.bee.client.view.edit.SelectorEvent;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.IsRow;
@@ -501,10 +503,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     public void onSuggestionsReady(Request request, Response response) {
       DataSelector.this.getInput().removeStyleName(STYLE_WAITING);
       
-      boolean found = response != null && !BeeUtils.isEmpty(response.getSuggestions());
+      boolean found = !response.isEmpty();
       DataSelector.this.getInput().setStyleName(STYLE_NOT_FOUND, !found);
-      if (!found && BeeUtils.isEmpty(request.getQuery())) {
-        DataSelector.this.getInput().addStyleName(STYLE_EMPTY);
+      if (request.isEmpty()) {
+        DataSelector.this.setAlive(found);
       }
 
       if (isEditing()) {
@@ -543,6 +545,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private int offset = 0;
   private boolean hasMore = false;
 
+  private boolean alive = true;
+
   public DataSelector(Relation relation, boolean embedded) {
     super();
 
@@ -579,6 +583,13 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       oracle.createTranslator(((EnumRenderer) rowRenderer).getCaptions(),
           ((EnumRenderer) rowRenderer).getValueStartIndex());
     }
+    
+    oracle.addRowCountChangeHandler(new Procedure<Integer>() {
+      @Override
+      public void call(Integer parameter) {
+        DataSelector.this.setAlive(parameter > 0);
+      }
+    });
 
     if (tableMode) {
       initCellRenderers(viewInfo);
@@ -600,6 +611,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
 
     sinkEvents(Event.ONBLUR | Event.ONCLICK | Event.KEYEVENTS);
+
+    SelectorEvent.fire(this, State.INITIALIZED);
   }
 
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
@@ -701,6 +714,12 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   @Override
+  public boolean isOrHasPartner(Node node) {
+    return getInput().isOrHasPartner(node)
+        || getSelector().getPopup().getElement().isOrHasChild(node);
+  }
+  
+  @Override
   public void onBrowserEvent(Event event) {
     boolean showing = getSelector().isShowing();
     int type = event.getTypeInt();
@@ -787,9 +806,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     if (Objects.equal(additionalFilter, getOracle().getAdditionalFilter())) {
       return;
     }
-    getInput().removeStyleName(STYLE_EMPTY);
-    
     getOracle().setAdditionalFilter(additionalFilter);
+    setAlive(true);
   }
   
   public void setDisplayValue(String value) {
@@ -863,7 +881,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         getInput().selectAll();
       }
     }
-
+    
+    inputEvents.consume();
     setActive(true);
   }
 
@@ -1075,6 +1094,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return active;
   }
 
+  private boolean isAlive() {
+    return alive;
+  }
+
   private boolean isInstant() {
     Operator operator = getSearchType();
     return Operator.CONTAINS.equals(operator) || Operator.STARTS.equals(operator);
@@ -1118,6 +1141,13 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private void setActive(boolean active) {
     this.active = active;
+  }
+
+  private void setAlive(boolean alive) {
+    if (isAlive() != alive) {
+      this.alive = alive;
+      getInput().setStyleName(STYLE_EMPTY, !alive);
+    }
   }
 
   private void setEditorValue(String editorValue) {

@@ -2,6 +2,8 @@ package com.butent.bee.shared;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.shared.utils.BeeUtils;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,29 +13,15 @@ import java.util.List;
  * @param <T> type of object
  */
 public class ListSequence<T> extends AbstractSequence<T> {
-  private List<T> values;
+  private final List<T> values = Lists.newArrayList();
 
-  /**
-   * Creates a new list with finite size. All elements of list are setting {@code null}
-   * 
-   * @param size size of the list;
-   */
-  public ListSequence(int size) {
-    Assert.nonNegative(size);
-    this.values = Lists.newArrayListWithCapacity(size);
-    for (int i = 0; i < size; i++) {
-      this.values.add(null);
-    }
+  public ListSequence() {
   }
 
-  /**
-   * Creates a new list with {@code List} type values.
-   * 
-   * @param values values of the list
-   */
   public ListSequence(List<T> values) {
-    Assert.notNull(values);
-    this.values = values;
+    if (values != null) {
+      this.values.addAll(values);
+    }
   }
 
   /**
@@ -56,7 +44,6 @@ public class ListSequence<T> extends AbstractSequence<T> {
    * @return the value of the list by index
    */
   public T get(int index) {
-    assertIndex(index);
     return values.get(index);
   }
 
@@ -122,8 +109,7 @@ public class ListSequence<T> extends AbstractSequence<T> {
    * @param lst the list of new values
    */
   public void setValues(List<T> lst) {
-    Assert.notNull(lst);
-    values = lst;
+    BeeUtils.overwrite(values, lst);
   }
 
   /**

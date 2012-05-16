@@ -1,6 +1,7 @@
 package com.butent.bee.client.composite;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
@@ -125,6 +126,11 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
 
   public boolean isNullable() {
     return getArea().isNullable();
+  }
+
+  @Override
+  public boolean isOrHasPartner(Node node) {
+    return node != null && getElement().isOrHasChild(node);
   }
 
   @Override

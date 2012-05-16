@@ -25,7 +25,7 @@ public class LocalProvider extends CachedProvider {
   }
   
   @Override
-  public void refresh() {
-    updateDisplay(true);
+  public void refresh(boolean updateActiveRow) {
+    updateDisplay(updateActiveRow);
   }
 }

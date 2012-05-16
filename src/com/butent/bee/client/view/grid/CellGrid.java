@@ -1649,13 +1649,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     for (RowInfo rowInfo : event.getRows()) {
       deleteRow(rowInfo.getId());
     }
-    setRowCount(getRowCount() - event.getRows().size(), true);
   }
 
   public void onRowDelete(RowDeleteEvent event) {
     Assert.notNull(event);
     deleteRow(event.getRowId());
-    setRowCount(getRowCount() - 1, true);
   }
 
   public void onRowUpdate(RowUpdateEvent event) {

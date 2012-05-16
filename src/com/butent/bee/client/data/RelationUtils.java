@@ -21,17 +21,17 @@ public class RelationUtils {
   public static int setDefaults(String viewName, IsRow row, Collection<String> colNames,
       List<BeeColumn> columns) {
     int result = 0;
-    if (BeeUtils.isEmpty(viewName) || row == null || BeeUtils.isEmpty(colNames) 
+    if (BeeUtils.isEmpty(viewName) || row == null || BeeUtils.isEmpty(colNames)
         || BeeUtils.isEmpty(columns)) {
       return result;
     }
-    
+
     if (!BeeKeeper.getUser().isLoggedIn()) {
       return result;
     }
-    
+
     DataInfo dataInfo = null;
-    
+
     for (String colName : colNames) {
       BeeColumn column = DataUtils.getColumn(colName, columns);
       if (column == null || !column.hasDefaults()) {
@@ -52,13 +52,13 @@ public class RelationUtils {
       if (descendants.isEmpty()) {
         continue;
       }
-      
+
       for (ViewColumn vc : descendants) {
         int index = DataUtils.getColumnIndex(vc.getName(), columns);
-        if (BeeConst.isUndef(index))  {
+        if (BeeConst.isUndef(index)) {
           continue;
         }
-        
+
         if (BeeUtils.same(vc.getField(), UserData.FLD_FIRST_NAME)) {
           row.setValue(index, BeeKeeper.getUser().getFirstName());
           result++;
@@ -70,23 +70,51 @@ public class RelationUtils {
     }
     return result;
   }
-  
+
+  public static int setRelatedValues(String viewName, String colName, IsRow targetRow,
+      IsRow sourceRow) {
+    int result = 0;
+    if (BeeUtils.isEmpty(viewName) || BeeUtils.isEmpty(colName) || targetRow == null
+        || sourceRow == null) {
+      return result;
+    }
+
+    DataInfo dataInfo = Global.getDataInfo(viewName, true);
+    if (dataInfo == null) {
+      return result;
+    }
+
+    Collection<ViewColumn> descendants = dataInfo.getDescendants(colName, false);
+    if (descendants.isEmpty()) {
+      return result;
+    }
+
+    for (ViewColumn vc : descendants) {
+      int index = dataInfo.getColumnIndex(vc.getName());
+      if (!BeeConst.isUndef(index)) {
+        targetRow.setValue(index, sourceRow.getString(index));
+        result++;
+      }
+    }
+    return result;
+  }
+
   public static int updateRow(String targetView, String targetColumn, IsRow targetRow,
       String sourceView, IsRow sourceRow) {
     return updateRow(targetView, targetColumn, targetRow, sourceView, sourceRow, false);
   }
-  
+
   public static int updateRow(String targetView, String targetColumn, IsRow targetRow,
       String sourceView, IsRow sourceRow, boolean updateRelationColumn) {
     Assert.notEmpty(targetView);
     Assert.notEmpty(targetColumn);
     Assert.notNull(targetRow);
     Assert.notEmpty(sourceView);
-    
+
     boolean clear = (sourceRow == null);
-    
+
     int result = BeeConst.UNDEF;
-    
+
     DataInfo targetInfo = Global.getDataInfo(targetView, true);
     if (targetInfo == null) {
       return result;
@@ -109,21 +137,21 @@ public class RelationUtils {
         result = 1;
       }
     }
-    
+
     Collection<ViewColumn> targetColumns = targetInfo.getDescendants(targetColumn, false);
     if (targetColumns.isEmpty()) {
       BeeKeeper.getLog().warning(targetView, targetColumn, "no descendants found");
       return result;
     }
-    
+
     result = Math.max(result, 0);
     for (ViewColumn tc : targetColumns) {
-      int targetIndex = targetInfo.getColumnIndex(tc.getName()); 
+      int targetIndex = targetInfo.getColumnIndex(tc.getName());
       if (BeeConst.isUndef(targetIndex)) {
         BeeKeeper.getLog().warning(targetView, tc.getName(), "column not found");
         continue;
       }
-      
+
       if (clear) {
         targetRow.clearCell(targetIndex);
         result++;

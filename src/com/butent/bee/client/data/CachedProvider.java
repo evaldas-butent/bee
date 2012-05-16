@@ -203,7 +203,7 @@ public class CachedProvider extends Provider {
   }
 
   @Override
-  public void refresh() {
+  public void refresh(final boolean updateActiveRow) {
     String name = getViewName();
     if (BeeUtils.isEmpty(name)) {
       BeeKeeper.getLog().warning("refresh: view name not available");
@@ -229,14 +229,20 @@ public class CachedProvider extends Provider {
           getDisplay().setPageSize(newTableSize, true, false);
         }
 
-        updateDisplay(true);
+        updateDisplay(updateActiveRow);
       }
     });
   }
 
   @Override
   public void requery(boolean updateActiveRow) {
-    refresh();
+    refresh(updateActiveRow);
+  }
+
+  @Override
+  protected void onDelete() {
+    getDisplay().setRowCount(getRowCount(), true);
+    onRequest(false);
   }
 
   @Override

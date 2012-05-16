@@ -1,6 +1,7 @@
 package com.butent.bee.client.view.edit;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.HasAllFocusHandlers;
 import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.user.client.ui.Focusable;
@@ -26,6 +27,8 @@ public interface Editor extends HasId, IsWidget, HasValue<String>, Focusable, Ha
 
   boolean isNullable();
 
+  boolean isOrHasPartner(Node node);
+  
   void setNullable(boolean nullable);
 
   void startEdit(String oldValue, char charCode, EditorAction onEntry, Element sourceElement);

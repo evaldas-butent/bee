@@ -6,7 +6,7 @@
   newRowForm="Appointment" editForm="Appointment" favorite="Summary"
   >
   <columns>
-    <DataColumn name="TypeName" caption="Tipas" />
+    <RelColumn name="TypeName" caption="Tipas" />
 
     <DataColumn name="Summary" />
     <DataColumn name="Description" caption="Aprašymas" />
@@ -14,11 +14,11 @@
     <DataColumn name="Location" caption="Vieta" />
     <DataColumn name="HtmlLink" />
 
-    <DataColumn name="ColorName" />
+    <RelColumn name="ColorName" />
     <DataColumn name="Background" readOnly="true" />
     <DataColumn name="Foreground" readOnly="true" />
     
-    <DataColumn name="StyleName" />
+    <RelColumn name="StyleName" />
 
     <DataColumn name="Status" caption="Būsena" itemKey="AppointmentStatus" />
     <DataColumn name="Created" readOnly="true">
@@ -27,11 +27,13 @@
       </carry>
     </DataColumn>
 
-    <DataColumn name="CreatorFirstName" />
-    <DataColumn name="CreatorLastName" />
+    <RelColumn name="Creator">
+      <carry>
+        <ui:expression>row.Creator</ui:expression>
+      </carry>
+    </RelColumn>
     
-    <DataColumn name="OrganizerFirstName" />
-    <DataColumn name="OrganizerLastName" />
+    <RelColumn name="Organizer" />
     
     <DataColumn name="StartDate" />
     <DataColumn name="StartDateTime" />
@@ -57,10 +59,11 @@
 
     <DataColumn name="UseDefaultReminders" />
     
-    <DataColumn name="CompanyName" />
-    <DataColumn name="CompanyPhone" />
-    <DataColumn name="CompanyMobile" />
-    <DataColumn name="CompanyEmail" />
+    <RelColumn name="CompanyName">
+      <carry>
+        <ui:expression>row.Company</ui:expression>
+      </carry>
+    </RelColumn>
 
     <DataColumn name="VehicleType" />
     <DataColumn name="VehicleNumber" />

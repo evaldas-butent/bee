@@ -2,6 +2,7 @@ package com.butent.bee.client.composite;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -266,6 +267,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     return false;
   }
 
+  @Override
+  public boolean isOrHasPartner(Node node) {
+    return node != null && getElement().isOrHasChild(node);
+  }
+  
   public boolean isVertical() {
     return vertical;
   }

@@ -603,8 +603,12 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
   private void updateCell(int index, String columnId, String value) {
     getActiveRow().setValue(getDataIndex(columnId), value);
 
-    if (getEditableColumn(index).hasRelation()) {
-      getEditableColumn(index).maybeUpdateRelation(getActiveRow(), false);
+    EditableColumn editableColumn = getEditableColumn(index);
+    if (editableColumn.hasRelation()) {
+      editableColumn.maybeUpdateRelation(getActiveRow(), false);
+    }
+
+    if (editableColumn.getRowModeForUpdate()) {
       renderRow();
     } else {
       renderCell(index, value);

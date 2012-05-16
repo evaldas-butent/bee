@@ -1237,7 +1237,13 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
       String carry = editableColumn.getCarryValue(oldRow);
       if (!BeeUtils.isEmpty(carry)) {
-        newRow.setValue(editableColumn.getColIndex(), carry);
+        int index = editableColumn.getColIndex();
+        newRow.setValue(index, carry);
+
+        if (editableColumn.hasRelation() && BeeUtils.equalsTrim(carry, oldRow.getString(index))) {
+          RelationUtils.setRelatedValues(getViewName(), editableColumn.getColumnId(),
+              newRow, oldRow);
+        }
       }
     }
 

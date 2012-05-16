@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Display;
 import com.google.gwt.dom.client.Style.Overflow;
@@ -655,8 +656,8 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
   private boolean eventTargetsPopup(NativeEvent event) {
     EventTarget target = event.getEventTarget();
-    if (Element.is(target)) {
-      return getElement().isOrHasChild(Element.as(target));
+    if (Node.is(target)) {
+      return getElement().isOrHasChild(Node.as(target));
     }
     return false;
   }

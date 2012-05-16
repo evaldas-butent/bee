@@ -113,7 +113,7 @@ public class AsyncProvider extends Provider {
   public void onFilterChange(final Filter newFilter) {
     if (newFilter == null) {
       acceptFilter(newFilter);
-      refresh();
+      refresh(true);
 
     } else {
       Filter flt = getQueryFilter(newFilter);
@@ -153,7 +153,7 @@ public class AsyncProvider extends Provider {
   }
 
   @Override
-  public void refresh() {
+  public void refresh(final boolean updateActiveRow) {
     Global.getCache().removeQuietly(getViewName());
 
     if (hasPaging()) {
@@ -162,12 +162,19 @@ public class AsyncProvider extends Provider {
         @Override
         public void onSuccess(Integer result) {
           getDisplay().setRowCount(result, true);
-          onRequest(true);
+          onRequest(updateActiveRow);
         }
       });
 
     } else {
-      onRequest(true);
+      onRequest(updateActiveRow);
+    }
+  }
+
+  @Override
+  protected void onDelete() {
+    if (getDisplay().getRowCount() > 0) {
+      refresh(false);
     }
   }
 

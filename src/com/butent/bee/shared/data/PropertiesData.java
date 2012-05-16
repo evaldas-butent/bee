@@ -48,7 +48,7 @@ public class PropertiesData extends RowList<StringRow, TableColumn> {
   public PropertiesData clone() {
     PropertiesData result = new PropertiesData();
     cloneTableDescription(result);
-    result.setRows(getRows());
+    result.setRows(getRows().getList());
     return result;
   }
 
@@ -64,7 +64,7 @@ public class PropertiesData extends RowList<StringRow, TableColumn> {
 
   @Override
   public StringRow createRow(long id) {
-    return new StringRow(id, new ListSequence<String>(0));
+    return new StringRow(id, new ListSequence<String>());
   }
   
   private void addRow(long id, String name, String value) {

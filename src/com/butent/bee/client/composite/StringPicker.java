@@ -9,6 +9,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
@@ -212,6 +213,11 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     return nullable;
   }
 
+  @Override
+  public boolean isOrHasPartner(Node node) {
+    return node != null && getElement().isOrHasChild(node);
+  }
+  
   @Override
   public void onBlur(BlurEvent event) {
     if (isSelectionPending()) {

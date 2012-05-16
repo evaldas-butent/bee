@@ -1,6 +1,7 @@
 package com.butent.bee.client.composite;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
@@ -187,6 +188,11 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     return getBox().isNullable();
   }
 
+  @Override
+  public boolean isOrHasPartner(Node node) {
+    return getBox().isOrHasPartner(node) || getPopup().getElement().isOrHasChild(node);
+  }
+  
   @Override
   public void onBrowserEvent(Event event) {
     boolean dp = getPopup().isShowing();

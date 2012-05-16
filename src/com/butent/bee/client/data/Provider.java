@@ -162,7 +162,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     if (BeeUtils.same(getViewName(), event.getViewName())) {
       disableCache();
       getDisplay().onMultiDelete(event);
-      onRequest(false);
+      onDelete();
       enableCache();
     }
   }
@@ -171,7 +171,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     if (BeeUtils.same(getViewName(), event.getViewName())) {
       disableCache();
       getDisplay().onRowDelete(event);
-      onRequest(false);
+      onDelete();
       enableCache();
     }
   }
@@ -194,7 +194,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     }
   }
 
-  public abstract void refresh();
+  public abstract void refresh(boolean updateActiveRow);
 
   public abstract void requery(boolean updateActiveRow);
 
@@ -244,6 +244,8 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   protected boolean hasPaging() {
     return getPageSize() > 0;
   }
+
+  protected abstract void onDelete();
 
   protected abstract void onRequest(boolean updateActiveRow);
 

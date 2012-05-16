@@ -1,6 +1,7 @@
 package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -119,6 +120,11 @@ public class InputBoolean extends Composite implements Editor {
     return nullable;
   }
 
+  @Override
+  public boolean isOrHasPartner(Node node) {
+    return node != null && getElement().isOrHasChild(node);
+  }
+  
   public void setAccessKey(char key) {
     getCheckBox().setAccessKey(key);
   }

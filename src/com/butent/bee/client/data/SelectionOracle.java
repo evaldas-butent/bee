@@ -2,11 +2,13 @@ package com.butent.bee.client.data;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -34,6 +36,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Provides suggestions data management functionality for data changing events.
@@ -100,6 +103,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     public int hashCode() {
       return Objects.hashCode(BeeUtils.trim(getQuery()), getSearchType(), getOffset(), getLimit());
     }
+
+    public boolean isEmpty() {
+      return BeeUtils.isEmpty(query);
+    }
   }
 
   /**
@@ -122,6 +129,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
     public boolean hasMoreSuggestions() {
       return moreSuggestions;
+    }
+
+    public boolean isEmpty() {
+      return suggestions == null || suggestions.isEmpty();
     }
   }
 
@@ -184,11 +195,12 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   private PendingRequest pendingRequest = null;
 
   private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
+  private final Set<Procedure<Integer>> rowCountChangeHandlers = Sets.newHashSet();
 
   private boolean dataInitialized = false;
 
   private BeeRowSet translator = null;
-  
+
   private Filter additionalFilter = null;
 
   public SelectionOracle(Relation relation, DataInfo viewInfo) {
@@ -212,6 +224,12 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this));
   }
 
+  public void addRowCountChangeHandler(Procedure<Integer> handler) {
+    if (handler != null) {
+      rowCountChangeHandlers.add(handler);
+    }
+  }
+
   public void createTranslator(List<String> values, int startIndex) {
     Assert.notEmpty(values);
 
@@ -232,35 +250,43 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   public void onCellUpdate(CellUpdateEvent event) {
     if (isEventRelevant(event)
         && getViewData().updateCell(event.getRowId(), event.getColumnIndex(), event.getValue())) {
-      setLastRequest(null);
+      resetState();
     }
   }
 
   public void onMultiDelete(MultiDeleteEvent event) {
     if (isEventRelevant(event)) {
+      boolean changed = false;
       for (RowInfo rowInfo : event.getRows()) {
-        getViewData().removeRowById(rowInfo.getId());
+        if (getViewData().removeRowById(rowInfo.getId())) {
+          changed = true;
+        }
       }
-      setLastRequest(null);
+      if (changed) {
+        resetState();
+        onRowCountChange(getViewData().getNumberOfRows());
+      }
     }
   }
 
   public void onRowDelete(RowDeleteEvent event) {
     if (isEventRelevant(event) && getViewData().removeRowById(event.getRowId())) {
-      setLastRequest(null);
+      resetState();
+      onRowCountChange(getViewData().getNumberOfRows());
     }
   }
 
   public void onRowInsert(RowInsertEvent event) {
     if (isEventRelevant(event) && !getViewData().containsRow(event.getRowId())) {
       getViewData().addRow(event.getRow());
-      setLastRequest(null);
+      resetState();
+      onRowCountChange(getViewData().getNumberOfRows());
     }
   }
 
   public void onRowUpdate(RowUpdateEvent event) {
     if (isEventRelevant(event) && getViewData().updateRow(event.getRow())) {
-      setLastRequest(null);
+      resetState();
     }
   }
 
@@ -270,6 +296,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
         entry.removeHandler();
       }
     }
+    rowCountChangeHandlers.clear();
   }
 
   public void requestSuggestions(Request request, Callback callback) {
@@ -294,12 +321,12 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       return;
     }
     this.additionalFilter = additionalFilter;
-    
+
     if (isFullCaching()) {
       setViewData(null);
       setDataInitialized(false);
     }
-    setLastRequest(null);
+    resetState();
   }
 
   private void checkPendingRequest() {
@@ -312,7 +339,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   }
 
   private Filter getFilter(Filter queryFilter) {
-    return Filter.and(Filter.and(immutableFilter, getAdditionalFilter()), queryFilter);    
+    return Filter.and(Filter.and(immutableFilter, getAdditionalFilter()), queryFilter);
   }
 
   private Request getLastRequest() {
@@ -327,7 +354,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     if (BeeUtils.isEmpty(query)) {
       return null;
     }
-    
+
     if (hasTranslator()) {
       return translateQuery(query, searchType, searchColumns.get(0));
     }
@@ -393,6 +420,12 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     return Relation.Caching.LOCAL.equals(caching) || Relation.Caching.GLOBAL.equals(caching);
   }
 
+  private void onRowCountChange(int count) {
+    for (Procedure<Integer> handler : rowCountChangeHandlers) {
+      handler.call(count);
+    }
+  }
+
   private boolean prepareData(final Request request) {
     if (getLastRequest() != null) {
       if (isCachingEnabled()) {
@@ -406,10 +439,6 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
 
     final Filter filter = getQueryFilter(request.getQuery(), request.getSearchType());
-    if (filter == null && !isCachingEnabled()) {
-      setRequestData(null);
-      return true;
-    }
 
     if (isFullCaching()) {
       if (getViewData() == null) {
@@ -418,14 +447,16 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
       if (getRequestData() == null) {
         setRequestData(new BeeRowSet(getViewData().getColumns()));
-      } else {
+      } else if (!getRequestData().isEmpty()) {
         getRequestData().getRows().clear();
       }
 
+      if (getViewData().isEmpty()) {
+        return true;
+      }
+
       if (filter == null) {
-        if (!getViewData().isEmpty()) {
-          getRequestData().addRows(getViewData().getRows().getList());
-        }
+        getRequestData().setRows(getViewData().getRows().getList());
       } else {
         List<BeeColumn> columns = getViewData().getColumns();
         for (BeeRow row : getViewData().getRows()) {
@@ -493,6 +524,10 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     callback.onSuggestionsReady(request, response);
   }
 
+  private void resetState() {
+    setLastRequest(null);
+  }
+
   private void setDataInitialized(boolean dataInitialized) {
     this.dataInitialized = dataInitialized;
   }
@@ -516,7 +551,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   private void setViewData(BeeRowSet viewData) {
     this.viewData = viewData;
   }
-  
+
   private Filter translateQuery(String query, Operator searchType, IsColumn targetColumn) {
     Filter filter = ComparisonFilter.compareWithValue(getTranslator().getColumn(0), searchType,
         query);
@@ -524,7 +559,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       return null;
     }
     CompoundFilter result = Filter.or();
-    
+
     List<BeeColumn> columns = getTranslator().getColumns();
     for (BeeRow row : getTranslator().getRows()) {
       if (filter.isMatch(columns, row)) {
@@ -532,7 +567,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
             BeeUtils.toString(row.getId())));
       }
     }
-    
+
     if (result.isEmpty()) {
       return null;
     }

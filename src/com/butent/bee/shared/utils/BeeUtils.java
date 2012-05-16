@@ -2027,7 +2027,7 @@ public class BeeUtils {
     return z;
   }
 
-  public static <T> void overwrite(Collection<T> target, Collection<T> source) {
+  public static <T> void overwrite(final Collection<T> target, Collection<T> source) {
     Assert.notNull(target);
     if (!target.isEmpty()) {
       target.clear();

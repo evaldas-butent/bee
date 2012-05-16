@@ -2,6 +2,7 @@ package com.butent.bee.client.widget;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -194,6 +195,11 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     return nullable;
   }
 
+  @Override
+  public boolean isOrHasPartner(Node node) {
+    return node != null && getElement().isOrHasChild(node);
+  }
+  
   public boolean isValueNumeric() {
     return valueNumeric;
   }

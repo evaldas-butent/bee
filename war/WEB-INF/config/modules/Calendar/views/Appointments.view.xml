@@ -29,8 +29,8 @@
     </SimpleJoin>
 
     <SimpleColumn name="Status" />
-    <SimpleColumn name="Created" />
 
+    <SimpleColumn name="Created" />
     <SimpleColumn name="Creator" />
     <SimpleJoin name="Creator" joinType="LEFT">
       <SimpleJoin name="Company" joinType="LEFT">
@@ -52,7 +52,6 @@
         <SimpleColumn alias="OrganizerLastName" name="LastName" />
       </SimpleJoin>
     </SimpleJoin>
-    
 
     <SimpleColumn name="StartDate" />
     <SimpleColumn name="StartDateTime" />

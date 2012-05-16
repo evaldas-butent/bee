@@ -414,8 +414,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
 
     Filter filter = ViewHelper.getFilter(this, getDataProvider());
-    if (Objects.equal(filter, getLastFilter())) {
-      getDataProvider().refresh();
+    if (filter != null && getView().getContent().getGrid().getRowCount() <= 0) {
+      setLastFilter(null);
+      getDataProvider().onFilterChange(null);
+    } else if (Objects.equal(filter, getLastFilter())) {
+      getDataProvider().refresh(true);
     } else {
       getDataProvider().onFilterChange(filter);
     }

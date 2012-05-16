@@ -4,6 +4,7 @@ import com.google.common.base.CharMatcher;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.InputElement;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.TextBoxBase;
@@ -137,6 +138,11 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     return nullable;
   }
 
+  @Override
+  public boolean isOrHasPartner(Node node) {
+    return getElement().equals(node);
+  }
+  
   @Override
   public void onBrowserEvent(Event event) {
     if (EventUtils.isKeyPress(event.getType()) && !acceptChar((char) event.getCharCode())) {

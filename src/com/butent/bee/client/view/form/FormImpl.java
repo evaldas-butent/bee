@@ -3,6 +3,7 @@ package com.butent.bee.client.view.form;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
@@ -634,20 +635,23 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
   
   public void onMultiDelete(MultiDeleteEvent event) {
-    setRowCount(getRowCount() - event.getRows().size(), true);
   }
 
   public void onPreviewNativeEvent(NativePreviewEvent event) {
-    if (EventUtils.isClick(event.getNativeEvent().getType())) {
+    String type = event.getNativeEvent().getType();
+
+    if (EventUtils.isClick(type)) {
       if (!BeeUtils.isEmpty(getPreviewId())) {
         setPreviewId(null);
         event.cancel();
       }
-    } else if (EventUtils.isMouseDown(event.getNativeEvent().getType())) {
+
+    } else if (EventUtils.isMouseDown(type)) {
       if (!BeeConst.isUndef(getActiveEditableIndex())) {
+        Element targetElement = EventUtils.getEventTargetElement(event);
         EditableWidget editableWidget = getEditableWidgets().get(getActiveEditableIndex());
-        if (!DomUtils.isOrHasChild(editableWidget.getWidgetId(),
-            EventUtils.getEventTargetElement(event))) {
+
+        if (!editableWidget.getEditor().isOrHasPartner(targetElement)) {
           if (!editableWidget.checkForUpdate(true)) {
             setPreviewId(editableWidget.getWidgetId());
             event.cancel();
@@ -658,7 +662,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public void onRowDelete(RowDeleteEvent event) {
-    setRowCount(getRowCount() - 1, true);
   }
 
   public void onRowUpdate(RowUpdateEvent event) {

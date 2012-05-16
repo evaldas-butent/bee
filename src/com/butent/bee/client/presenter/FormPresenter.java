@@ -173,7 +173,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       case REFRESH:
         if (hasData()) {
-          getDataProvider().refresh();
+          getDataProvider().refresh(true);
         }
         break;
 

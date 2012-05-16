@@ -1,6 +1,7 @@
 package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -119,6 +120,11 @@ public class Toggle extends CustomButton implements Editor {
     return nullable;
   }
 
+  @Override
+  public boolean isOrHasPartner(Node node) {
+    return node != null && getElement().isOrHasChild(node);
+  }
+  
   @Override
   public void onBrowserEvent(Event event) {
     if (!isEnabled()) {

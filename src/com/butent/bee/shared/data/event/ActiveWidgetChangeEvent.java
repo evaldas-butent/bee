@@ -1,9 +1,9 @@
 package com.butent.bee.shared.data.event;
 
 import com.google.gwt.event.shared.EventHandler;
-import com.google.gwt.event.shared.GwtEvent;
+import com.google.web.bindery.event.shared.Event;
 
-public class ActiveWidgetChangeEvent extends GwtEvent<ActiveWidgetChangeEvent.Handler> {
+public class ActiveWidgetChangeEvent extends Event<ActiveWidgetChangeEvent.Handler> {
 
   public interface Handler extends EventHandler {
     void onActiveWidgetChange(ActiveWidgetChangeEvent event);

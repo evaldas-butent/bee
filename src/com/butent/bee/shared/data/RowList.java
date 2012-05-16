@@ -14,16 +14,16 @@ import java.util.List;
 
 public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> extends
     AbstractTable<RowType, ColType> {
-  private ListSequence<RowType> rows;
+  private final ListSequence<RowType> rows;
 
   public RowList() {
     super();
-    this.rows = new ListSequence<RowType>(0);
+    this.rows = new ListSequence<RowType>();
   }
 
-  public RowList(ListSequence<RowType> rows) {
+  public RowList(List<RowType> rows) {
     super();
-    this.rows = rows;
+    this.rows = new ListSequence<RowType>(rows);
   }
 
   @Override
@@ -52,8 +52,8 @@ public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> e
     getRows().remove(rowIndex);
   }
 
-  public void setRows(ListSequence<RowType> rows) {
-    this.rows = rows;
+  public void setRows(List<RowType> list) {
+    this.rows.setValues(list);
   }
 
   @Override

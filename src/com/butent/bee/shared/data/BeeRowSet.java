@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.ListSequence;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -56,7 +55,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
 
   public BeeRowSet(String viewName, List<BeeColumn> columns, List<BeeRow> rows) {
     this(viewName, columns);
-    setRows(new ListSequence<BeeRow>(rows));
+    setRows(rows);
   }
 
   public int addEmptyRow() {

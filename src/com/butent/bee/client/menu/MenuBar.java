@@ -267,7 +267,7 @@ public class MenuBar extends Widget implements HasId, CloseHandler<Popup> {
   public void onBrowserEvent(Event event) {
     Element target = DOM.eventGetTarget(event);
     int type = DOM.eventGetType(event);
-
+    
     if (type == Event.ONBLUR) {
       if (childMenu == null) {
         selectItem(null);

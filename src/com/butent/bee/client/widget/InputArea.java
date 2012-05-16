@@ -1,6 +1,7 @@
 package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
@@ -113,6 +114,11 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     return nullable;
   }
 
+  @Override
+  public boolean isOrHasPartner(Node node) {
+    return getElement().equals(node);
+  }
+  
   public boolean isValueChanged() {
     String v = getValue();
     String d = getDigest();
