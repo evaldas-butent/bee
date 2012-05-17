@@ -13,7 +13,9 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="Date" caption="Data" />
+    <DataColumn name="Date" caption="Data">
+      <carry><ui:expression>row.Date</ui:expression></carry>
+    </DataColumn>
     <RelColumn name="Item" caption="Prekė/Paslauga" />
     <RelColumn name="Unit" caption="Mato v." />
     <DataColumn name="Quantity" caption="Kiekis" />
@@ -28,7 +30,9 @@
     </CalcColumn>
     <DataColumn name="Number" caption="Numeris" />
     <RelColumn name="Supplier" caption="Tiekėjas" />
-    <RelColumn name="Country" caption="Šalis" />
+    <RelColumn name="Country" caption="Šalis">
+      <carry><ui:expression>row.Country</ui:expression></carry>
+    </RelColumn>
     <DataColumn name="Note" caption="Pastaba" />
   </columns>
 </Grid>

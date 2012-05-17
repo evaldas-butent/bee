@@ -13,10 +13,16 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="Date" caption="Data" updateMode="row" />
-    <RelColumn name="Country" caption="Šalis" />
+    <DataColumn name="Date" caption="Data" updateMode="row">
+      <carry><ui:expression>row.Date</ui:expression></carry>
+    </DataColumn>
+    <RelColumn name="Country" caption="Šalis">
+      <carry><ui:expression>row.Country</ui:expression></carry>
+    </RelColumn>
     <DataColumn name="Route" caption="Maršrutas" />
-    <DataColumn name="SpeedometerFrom" caption="Spid.nuo" format="#.0" minValue="0" />
+    <DataColumn name="SpeedometerFrom" caption="Spid.nuo" format="#.0" minValue="0">
+      <carry><ui:expression>row.SpeedometerTo</ui:expression></carry>
+    </DataColumn>
     <DataColumn name="SpeedometerTo" caption="Spid.iki" format="#.0" minValue="0" />
     <DataColumn name="Kilometers" caption="Km" format="#.0" minValue="0">
       <style>
@@ -30,13 +36,16 @@
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </DataColumn>
-    <DataColumn name="CargoWeight" caption="Pakrauta t" format="#.000" updateMode="row" />
+    <DataColumn name="CargoWeight" caption="Pakrauta t" format="#.000" updateMode="row">
+      <carry><ui:expression>row.CargoWeight</ui:expression></carry>
+    </DataColumn>
     <DataColumn name="Season" caption="Sezonas" updateMode="row">
       <renderer type="list" />
       <editor type="list">
         <ui:item>Vasara</ui:item>
         <ui:item>Žiema</ui:item>
       </editor>
+      <carry><ui:expression>row.Season</ui:expression></carry>
     </DataColumn>
     <DataColumn name="Temperature" caption="Temp." updateMode="row" />
     <DataColumn name="Consumption" caption="Litrai" updateMode="row">
@@ -45,6 +54,8 @@
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </DataColumn>
-    <RelColumn name="Item" caption="Apskaitos prekė" />
+    <RelColumn name="Item" caption="Apskaitos prekė">
+      <carry><ui:expression>row.Item</ui:expression></carry>
+    </RelColumn>
   </columns>
 </Grid>

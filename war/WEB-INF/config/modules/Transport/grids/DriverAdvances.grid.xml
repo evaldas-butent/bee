@@ -13,7 +13,9 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="Date" caption="Data" />
+    <DataColumn name="Date" caption="Data">
+      <carry><ui:expression>row.Date</ui:expression></carry>
+    </DataColumn>
     <DataColumn name="Number" caption="Dok.Nr." />
     <DataColumn name="Amount" caption="Suma" format="#.00">
       <style>
@@ -26,6 +28,7 @@
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
+      <carry><ui:expression>row.Currency</ui:expression></carry>
     </RelColumn>
   </columns>
 </Grid>

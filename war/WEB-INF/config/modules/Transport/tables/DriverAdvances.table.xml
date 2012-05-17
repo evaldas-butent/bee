@@ -10,6 +10,6 @@
     <BeeField name="Date" type="DATE" />
     <BeeField name="Number" type="STRING" precision="30" />
     <BeeField name="Amount" type="DECIMAL" precision="12" scale="2" notNull="true" />
-    <BeeField name="Currency" type="LONG" relation="Currencies" />
+    <BeeField name="Currency" type="LONG" relation="Currencies" notNull="true" />
   </BeeFields>
 </BeeTable>

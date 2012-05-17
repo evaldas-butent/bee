@@ -263,60 +263,77 @@ public class TransportHandler {
         editableColumn.addCellValidationHandler(new CellValidateEvent.Handler() {
           @Override
           public Boolean validateCell(CellValidateEvent event) {
-            if (event.isPostValidation()
-                && !BeeUtils.isEmpty(event.getCellValidation().getRow().getId())) {
-
+            if (event.isPostValidation()) {
               final String viewName = getGridPresenter().getDataProvider().getViewName();
               List<BeeColumn> columns = getGridPresenter().getDataProvider().getColumns();
               CellValidation cv = event.getCellValidation();
               IsRow row = cv.getRow();
-
-              List<BeeColumn> cols = Lists.newArrayList(editableColumn.getDataColumn());
-              List<String> values = Lists.newArrayList(cv.getOldValue());
-
               String updColName;
 
-              if (BeeUtils.equals(columnId, "Kilometers")) {
-                updColName = "SpeedometerTo";
-              } else {
-                updColName = "Kilometers";
-              }
-              cols.add(DataUtils.getColumn(updColName, columns));
-              values.add(row.getString(DataUtils.getColumnIndex(updColName, columns)));
+              if (event.isNewRow()) {
+                Integer a = 0;
 
-              BeeRowSet rs = new BeeRowSet(viewName, cols);
-              rs.addRow(row.getId(), row.getVersion(), values.toArray(new String[0]));
-              rs.getRow(0).preliminaryUpdate(0, cv.getNewValue());
-
-              ParameterList args = TransportHandler.createArgs(TransportConstants.SVC_UPDATE_KM);
-              args.addDataItem("Rowset", Codec.beeSerialize(rs));
-
-              if (BeeUtils.equals(columnId, "SpeedometerFrom")) {
-                updColName = "SpeedometerTo";
-              } else {
-                updColName = "SpeedometerFrom";
-              }
-              args.addDataItem(updColName,
-                  Codec.beeSerialize(row.getString(DataUtils.getColumnIndex(updColName, columns))));
-
-              BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-                @Override
-                public void onResponse(ResponseObject response) {
-                  Assert.notNull(response);
-
-                  if (response.hasErrors()) {
-                    Global.showError((Object[]) response.getErrors());
-
-                  } else if (response.hasResponse(BeeRow.class)) {
-                    BeeRow newRow = BeeRow.restore((String) response.getResponse());
-                    BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, newRow));
-
+                if (BeeUtils.equals(columnId, "Kilometers")) {
+                  a = row.getInteger(DataUtils.getColumnIndex("SpeedometerFrom", columns));
+                  updColName = "SpeedometerTo";
+                } else {
+                  if (BeeUtils.equals(columnId, "SpeedometerFrom")) {
+                    a = row.getInteger(DataUtils.getColumnIndex("SpeedometerTo", columns));
                   } else {
-                    Global.showError("Unknown response");
+                    a = 0 - BeeUtils.unbox(
+                        row.getInteger(DataUtils.getColumnIndex("SpeedometerFrom", columns)));
                   }
+                  updColName = "Kilometers";
                 }
-              });
-              return null;
+                row.setValue(DataUtils.getColumnIndex(updColName, columns),
+                    BeeUtils.unbox(a) + BeeUtils.toInt(cv.getNewValue()));
+
+              } else {
+                if (BeeUtils.equals(columnId, "Kilometers")) {
+                  updColName = "SpeedometerTo";
+                } else {
+                  updColName = "Kilometers";
+                }
+                List<BeeColumn> cols = Lists.newArrayList(editableColumn.getDataColumn());
+                List<String> values = Lists.newArrayList(cv.getOldValue());
+
+                cols.add(DataUtils.getColumn(updColName, columns));
+                values.add(row.getString(DataUtils.getColumnIndex(updColName, columns)));
+
+                BeeRowSet rs = new BeeRowSet(viewName, cols);
+                rs.addRow(row.getId(), row.getVersion(), values.toArray(new String[0]));
+                rs.getRow(0).preliminaryUpdate(0, cv.getNewValue());
+
+                ParameterList args = TransportHandler.createArgs(TransportConstants.SVC_UPDATE_KM);
+                args.addDataItem("Rowset", Codec.beeSerialize(rs));
+
+                if (BeeUtils.equals(columnId, "SpeedometerFrom")) {
+                  updColName = "SpeedometerTo";
+                } else {
+                  updColName = "SpeedometerFrom";
+                }
+                args.addDataItem(updColName, Codec.beeSerialize(row
+                    .getString(DataUtils.getColumnIndex(updColName, columns))));
+
+                BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+                  @Override
+                  public void onResponse(ResponseObject response) {
+                    Assert.notNull(response);
+
+                    if (response.hasErrors()) {
+                      Global.showError((Object[]) response.getErrors());
+
+                    } else if (response.hasResponse(BeeRow.class)) {
+                      BeeRow newRow = BeeRow.restore((String) response.getResponse());
+                      BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, newRow));
+
+                    } else {
+                      Global.showError("Unknown response");
+                    }
+                  }
+                });
+                return null;
+              }
             }
             return true;
           }

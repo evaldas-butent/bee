@@ -7,7 +7,7 @@
   >
   <BeeFields>
     <BeeField name="Trip" type="LONG" notNull="true" relation="Trips" cascade="DELETE" />
-    <BeeField name="Date" type="DATE" notNull="true" />
+    <BeeField name="Date" type="DATE" notNull="true" defExpr="CURRENT_DATE" />
     <BeeField name="Item" type="LONG" notNull="true" relation="Items" />
     <BeeField name="Unit" type="LONG" notNull="true" relation="Units" />
     <BeeField name="Quantity" type="DOUBLE" notNull="true" />

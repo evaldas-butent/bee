@@ -13,7 +13,9 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="DateFrom" source="DateFrom" caption="Data nuo" />
+    <DataColumn name="DateFrom" source="DateFrom" caption="Data nuo">
+      <carry><ui:expression>row.DateTo</ui:expression></carry>
+    </DataColumn>
     <DataColumn name="DateTo" source="DateTo" caption="Data iki" />
     <RelColumn name="Driver" caption="Vardas, Pavardė" />
     <DataColumn name="Note" source="Note" caption="Pastaba" />

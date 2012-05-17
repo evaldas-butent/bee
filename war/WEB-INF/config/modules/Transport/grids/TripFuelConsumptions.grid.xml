@@ -13,8 +13,12 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="Date" caption="Data" />
-    <RelColumn name="Country" caption="Šalis" />
+    <DataColumn name="Date" caption="Data">
+      <carry><ui:expression>row.Date</ui:expression></carry>
+    </DataColumn>
+    <RelColumn name="Country" caption="Šalis">
+      <carry><ui:expression>row.Country</ui:expression></carry>
+    </RelColumn>
     <DataColumn name="Note" caption="Pastaba" />
     <DataColumn name="Quantity" caption="Litrai" format="#.00">
       <style>
@@ -22,6 +26,8 @@
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </DataColumn>
-    <RelColumn name="Item" caption="Apskaitos prekė" />
+    <RelColumn name="Item" caption="Apskaitos prekė">
+      <carry><ui:expression>row.Item</ui:expression></carry>
+    </RelColumn>
   </columns>
 </Grid>

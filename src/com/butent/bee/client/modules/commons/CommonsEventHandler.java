@@ -56,7 +56,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class CommonEventHandler {
+public class CommonsEventHandler {
 
   private static class CategoryCollector {
     private Long itemId;
@@ -460,6 +460,6 @@ public class CommonEventHandler {
     return args;
   }
 
-  private CommonEventHandler() {
+  private CommonsEventHandler() {
   }
 }

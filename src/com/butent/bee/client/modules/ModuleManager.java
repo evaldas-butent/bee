@@ -6,7 +6,7 @@ import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
-import com.butent.bee.client.modules.commons.CommonEventHandler;
+import com.butent.bee.client.modules.commons.CommonsEventHandler;
 import com.butent.bee.client.modules.crm.CrmKeeper;
 import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.ui.AbstractFormCallback;
@@ -35,7 +35,7 @@ public class ModuleManager {
     });
 
     TransportHandler.register();
-    CommonEventHandler.register();
+    CommonsEventHandler.register();
    
     CrmKeeper.register();
     CalendarKeeper.register();
