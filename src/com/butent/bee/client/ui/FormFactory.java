@@ -13,6 +13,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.DataView;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
@@ -44,6 +45,10 @@ public class FormFactory {
 
     void afterAction(Action action, FormPresenter presenter);
 
+    void afterCreate(FormView form);
+
+    void afterCreateEditableWidget(EditableWidget editableWidget);
+
     void afterRefresh(FormView form, IsRow row);
 
     boolean beforeAction(Action action, FormPresenter presenter);
@@ -63,6 +68,8 @@ public class FormFactory {
     void onSetActiveRow(IsRow row);
 
     void onShow(FormPresenter presenter);
+
+    void onStart(FormView form);
 
     void onStartEdit(FormView form, IsRow row);
 

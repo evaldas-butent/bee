@@ -86,7 +86,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     private CreationCallback() {
       super();
     }
-
+    
+    @Override
     public void onSuccess(WidgetDescription result) {
       if (result == null) {
         onFailure("widget description is null");
@@ -144,6 +145,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
           result.setNullable(editableWidget.isNullable());
           result.setHasDefaults(editableWidget.hasDefaults());
+          
+          if (getFormCallback() != null) {
+            getFormCallback().afterCreateEditableWidget(editableWidget);
+          }
         } else {
           onFailure("editable source not found", source, id);
         }
@@ -348,6 +353,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     add(getNotification());
 
     creationCallback.bind(this, getId());
+    
+    if (callback != null) {
+      callback.afterCreate(this);
+    }
   }
 
   public void finishNewRow(IsRow rowValue) {
@@ -825,6 +834,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
           fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
         }
       }
+    }
+    
+    if (getFormCallback() != null) {
+      getFormCallback().onStart(this);
     }
   }
 

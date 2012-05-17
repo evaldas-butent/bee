@@ -6,6 +6,7 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.view.DataView;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
@@ -14,6 +15,12 @@ import com.butent.bee.shared.ui.Action;
 public class AbstractFormCallback implements FormFactory.FormCallback {
 
   public void afterAction(Action action, FormPresenter presenter) {
+  }
+
+  public void afterCreate(FormView form) {
+  }
+
+  public void afterCreateEditableWidget(EditableWidget editableWidget) {
   }
 
   public void afterCreateWidget(String name, Widget widget) {
@@ -61,6 +68,9 @@ public class AbstractFormCallback implements FormFactory.FormCallback {
   }
 
   public void onShow(FormPresenter presenter) {
+  }
+
+  public void onStart(FormView form) {
   }
 
   public void onStartEdit(FormView form, IsRow row) {
