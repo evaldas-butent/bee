@@ -1588,6 +1588,10 @@ public class BeeUtils {
     }
   }
 
+  public static boolean isNonNegative(Integer x) {
+    return (x == null) ? false : x >= 0;
+  }
+  
   public static boolean isNonNegativeDouble(String s) {
     return isDouble(s, BeeConst.DOUBLE_ZERO, true);
   }

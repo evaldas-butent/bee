@@ -8,14 +8,26 @@
     <FlexTable cellSpacing="5">
       <row>
         <DataSelector source="CompanyName" caption="Įmonė:" />
-        <TextLabel renderColumns="CompanyPhone CompanyMobile" />
-        <DataSelector source="Creator" />
+        <TextLabel>
+          <renderToken source="CompanyPhone" prefix="tel: " suffix=" " />
+          <renderToken source="CompanyMobile" prefix="mob: " suffix=" " />
+          <renderToken source="CompanyEmail" prefix="mail: " />
+        </TextLabel>
+        <DataSelector source="Creator">
+          <renderToken source="CreatorFirstName" />
+          <renderToken source="CreatorLastName" />
+          <renderToken source="CreatorCompanyName" prefix=", " />
+        </DataSelector>
       </row>
 
       <row>
         <DataSelector source="AppointmentType" caption="Tipas:" />
         <InputText source="Summary" caption="Pavadinimas:" />
-        <DataSelector source="Organizer" />
+        <DataSelector source="Organizer">
+          <renderToken source="OrganizerCompanyName" suffix=", " />
+          <renderToken source="OrganizerFirstName" />
+          <renderToken source="OrganizerLastName" />
+        </DataSelector>
       </row>
 
       <row>  
@@ -25,7 +37,11 @@
       </row>
 
       <row>
-        <DataSelector source="ColorName" caption="Spalva:" />
+        <DataSelector source="Color" caption="Spalva:">
+          <renderToken source="ColorName" suffix=" = "/>
+          <renderToken source="Background" />
+          <renderToken source="Foreground" prefix="," />
+        </DataSelector>
         <DataSelector source="Style" caption="Stilius:" />
         <ListBox source="Status" itemKey="AppointmentStatus" decorator="caption-left"
           caption="Būsena:" />

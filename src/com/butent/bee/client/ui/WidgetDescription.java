@@ -1,5 +1,7 @@
 package com.butent.bee.client.ui;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.ui.Calculation;
@@ -7,6 +9,7 @@ import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.RefreshType;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.RenderableToken;
 import com.butent.bee.shared.ui.RendererDescription;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -40,6 +43,8 @@ public class WidgetDescription implements HasInfo {
 
   private RendererDescription rendererDescription = null;
   private Calculation render = null;
+  private List<RenderableToken> renderTokens = null;
+
   private String renderColumns = null;
   private String itemKey = null;
 
@@ -65,6 +70,16 @@ public class WidgetDescription implements HasInfo {
     this.widgetType = widgetType;
     this.widgetId = widgetId;
     this.widgetName = widgetName;
+  }
+
+  public void addRenderToken(RenderableToken renderToken) {
+    if (renderToken != null) {
+      if (getRenderTokens() == null) {
+        this.renderTokens = Lists.newArrayList(renderToken);
+      } else {
+        getRenderTokens().add(renderToken);
+      }
+    }
   }
 
   @Override
@@ -135,6 +150,9 @@ public class WidgetDescription implements HasInfo {
     if (getRender() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Render", getRender().getInfo());
     }
+    if (getRenderTokens() != null) {
+      PropertyUtils.appendWithIndex(info, "Render Tokens", "token", getRenderTokens());
+    }
 
     if (getDynStyles() != null && !getDynStyles().isEmpty()) {
       int cnt = getDynStyles().size();
@@ -172,11 +190,11 @@ public class WidgetDescription implements HasInfo {
   public EditorAction getOnFocus() {
     return onFocus;
   }
-
+  
   public String getParentName() {
     return parentName;
   }
-  
+
   public Boolean getReadOnly() {
     return readOnly;
   }
@@ -195,6 +213,10 @@ public class WidgetDescription implements HasInfo {
 
   public RendererDescription getRendererDescription() {
     return rendererDescription;
+  }
+
+  public List<RenderableToken> getRenderTokens() {
+    return renderTokens;
   }
 
   public Boolean getRequired() {

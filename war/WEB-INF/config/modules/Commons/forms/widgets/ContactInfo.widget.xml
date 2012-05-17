@@ -27,7 +27,10 @@
     <row>
       <Label html="Miestas" />
       <cell colSpan="2">
-        <DataSelector source="City" style="width:100%" />
+        <DataSelector source="City" style="width:100%">
+          <renderToken source="CityName" />
+          <renderToken source="CountryName" prefix=", " />
+        </DataSelector>
       </cell>
     </row>
   </FlexTable>

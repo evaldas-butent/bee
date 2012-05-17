@@ -576,8 +576,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     int dataIndex = (size == 1) ? viewInfo.getColumnIndex(choiceColumns.get(0)) : BeeConst.UNDEF;
     this.rowRenderer = RendererFactory.getRenderer(relation.getRowRendererDescription(),
-        relation.getRowRender(), relation.getItemKey(), choiceColumns, viewInfo.getColumns(),
-        dataIndex);
+        relation.getRowRender(), relation.getRowRenderTokens(), relation.getItemKey(),
+        choiceColumns, viewInfo.getColumns(), dataIndex);
 
     if (rowRenderer instanceof EnumRenderer && relation.getSearchableColumns().size() == 1) {
       oracle.createTranslator(((EnumRenderer) rowRenderer).getCaptions(),
@@ -1069,8 +1069,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     for (Map.Entry<Integer, SelectorColumn> entry : getSelectorColumns().entrySet()) {
       SelectorColumn sc = entry.getValue();
       AbstractCellRenderer renderer = RendererFactory.getRenderer(sc.getRendererDescription(),
-          sc.getRender(), sc.getItemKey(), sc.getRenderColumns(), viewInfo.getColumns(),
-          viewInfo.getColumnIndex(sc.getSource()));
+          sc.getRender(), sc.getRenderTokens(), sc.getItemKey(), sc.getRenderColumns(),
+          viewInfo.getColumns(), viewInfo.getColumnIndex(sc.getSource()));
 
       if (renderer != null) {
         getCellRenderers().put(entry.getKey(), renderer);

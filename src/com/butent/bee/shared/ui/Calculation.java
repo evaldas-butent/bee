@@ -3,6 +3,8 @@ package com.butent.bee.shared.ui;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -15,7 +17,7 @@ import java.util.List;
  * Enables using calculation expressions and functions in user interface components.
  */
 
-public class Calculation extends PotentialRenderer implements Transformable {
+public class Calculation implements BeeSerializable, HasInfo, Transformable {
 
   private enum Serial {
     EXPRESSION, FUNCTION

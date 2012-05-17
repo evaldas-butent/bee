@@ -24,6 +24,7 @@ import com.butent.bee.shared.ui.GridComponentDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.RefreshType;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.RenderableToken;
 import com.butent.bee.shared.ui.RendererDescription;
 import com.butent.bee.shared.ui.RendererType;
 import com.butent.bee.shared.ui.SelectorColumn;
@@ -125,7 +126,6 @@ public class GridLoaderBean {
 
   private static final String ATTR_SORTABLE = "sortable";
   private static final String ATTR_VISIBLE = "visible";
-  private static final String ATTR_FORMAT = "format";
 
   private static final String ATTR_HAS_FOOTER = "hasFooter";
   private static final String ATTR_SHOW_WIDTH = "showWidth";
@@ -137,7 +137,6 @@ public class GridLoaderBean {
 
   private static final String ATTR_TYPE = "type";
   private static final String ATTR_PRECISION = "precision";
-  private static final String ATTR_SCALE = "scale";
 
   private static final String ATTR_SORT_BY = "sortBy";
   private static final String ATTR_SEARCH_BY = "searchBy";
@@ -179,7 +178,7 @@ public class GridLoaderBean {
       if (readOnly) {
         columnDescription.setReadOnly(true);
       } else if (ColType.RELATED.equals(colType)) {
-        columnDescription.setRelation(Relation.create(null, null, null, null));
+        columnDescription.setRelation(Relation.create(null, null, null, null, null));
       }
 
       gridDescription.addColumn(columnDescription);
@@ -349,6 +348,7 @@ public class GridLoaderBean {
 
     RendererDescription rowRenderer = null;
     Calculation rowRender = null;
+    List<RenderableToken> rowRenderTokens = null;
     
     List<SelectorColumn> selectorColumns = Lists.newArrayList();
 
@@ -357,17 +357,31 @@ public class GridLoaderBean {
 
       if (BeeUtils.same(tagName, Relation.TAG_ROW_RENDERER)) {
         rowRenderer = getRenderer(child, null);
+
       } else if (BeeUtils.same(tagName, Relation.TAG_ROW_RENDER)) {
         rowRender = XmlUtils.getCalculation(child);
+      
+      } else if (BeeUtils.same(tagName, Relation.TAG_ROW_RENDER_TOKEN)) {
+        RenderableToken token = RenderableToken.create(XmlUtils.getAttributes(child));
+        if (token != null) {
+          if (rowRenderTokens == null) {
+            rowRenderTokens = Lists.newArrayList(token);
+          } else {
+            rowRenderTokens.add(token);
+          }
+        }
 
       } else if (BeeUtils.same(tagName, Relation.TAG_SELECTOR_COLUMN)) {
         RendererDescription renderer = getRenderer(child, RendererDescription.TAG_RENDERER, null);
         Calculation render = XmlUtils.getCalculation(child, RendererDescription.TAG_RENDER);
-        selectorColumns.add(SelectorColumn.create(XmlUtils.getAttributes(child), renderer, render));
+        List<RenderableToken> tokens = getRenderTokens(child, RenderableToken.TAG_RENDER_TOKEN);
+        
+        selectorColumns.add(SelectorColumn.create(XmlUtils.getAttributes(child),
+            renderer, render, tokens));
       }
     }
     return Relation.create(XmlUtils.getAttributes(element), selectorColumns, rowRenderer,
-        rowRender);
+        rowRender, rowRenderTokens);
   }
 
   private RendererDescription getRenderer(Element parent, String tagName,
@@ -422,6 +436,25 @@ public class GridLoaderBean {
     return renderer;
   }
 
+  private List<RenderableToken> getRenderTokens(Element parent, String tagName) {
+    if (parent == null) {
+      return null;
+    }
+    List<Element> tokens = XmlUtils.getElementsByLocalName(parent, tagName);
+    if (tokens.isEmpty()) {
+      return null;
+    }
+
+    List<RenderableToken> result = Lists.newArrayList();
+    for (Element token : tokens) {
+      RenderableToken renderableToken = RenderableToken.create(XmlUtils.getAttributes(token));
+      if (renderableToken != null) {
+        result.add(renderableToken);
+      }
+    }
+    return result;
+  }
+  
   private boolean initColumn(BeeView view, ColumnDescription columnDescription) {
     Assert.notNull(columnDescription);
 
@@ -512,7 +545,7 @@ public class GridLoaderBean {
           dst.setSortable(BeeUtils.toBooleanOrNull(value));
         } else if (BeeUtils.same(key, ATTR_VISIBLE)) {
           dst.setVisible(BeeUtils.toBooleanOrNull(value));
-        } else if (BeeUtils.same(key, ATTR_FORMAT)) {
+        } else if (BeeUtils.same(key, UiConstants.ATTR_FORMAT)) {
           dst.setFormat(value.trim());
         } else if (BeeUtils.same(key, UiConstants.ATTR_HORIZONTAL_ALIGNMENT)) {
           dst.setHorAlign(value.trim());
@@ -536,7 +569,7 @@ public class GridLoaderBean {
           dst.setValueType(ValueType.getByTypeCode(value));
         } else if (BeeUtils.same(key, ATTR_PRECISION)) {
           dst.setPrecision(BeeUtils.toIntOrNull(value));
-        } else if (BeeUtils.same(key, ATTR_SCALE)) {
+        } else if (BeeUtils.same(key, UiConstants.ATTR_SCALE)) {
           dst.setScale(BeeUtils.toIntOrNull(value));
 
         } else if (BeeUtils.same(key, RendererDescription.ATTR_RENDER_COLUMNS)) {
@@ -620,6 +653,10 @@ public class GridLoaderBean {
     Calculation render = XmlUtils.getCalculation(src, RendererDescription.TAG_RENDER);
     if (render != null) {
       dst.setRender(render);
+    }
+    List<RenderableToken> renderTokens = getRenderTokens(src, RenderableToken.TAG_RENDER_TOKEN);
+    if (!BeeUtils.isEmpty(renderTokens)) {
+      dst.setRenderTokens(renderTokens);
     }
   }
 

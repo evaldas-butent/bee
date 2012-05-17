@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Grid xmlns="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
+<Grid xmlns="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
 
-  name="Render" viewName="DataTypes" caption="Rendering"
-  >
+  name="Render" viewName="DataTypes" caption="Rendering">
+
   <columns>
     <DataColumn name="Bbb" source="Boolean" />
 
@@ -33,6 +32,10 @@
 
     <DataColumn name="Reval" source="Long" horizontalAlignment="right">
       <render><ui:expression>row.Long / 2</ui:expression></render>
+    </DataColumn>
+    
+    <DataColumn name="Join" source="Integer" renderColumns="Integer Long">
+      <renderer type="join" separator=", " />
     </DataColumn>
 
     <DataColumn name="Nnn" source="Numeric" cell="html" width="100" >
@@ -80,6 +83,16 @@
         <ui:item>13, , never</ui:item>
       </renderer>
     </DataColumn>
+    
+    <CalcColumn type="string" name="Tokens" width="600" >
+      <renderToken source="Id" prefix="id=" />
+      <renderToken source="Boolean" prefix="," />
+      <renderToken source="Integer" prefix=" [" suffix="] " addPrefixWhenEmpty="true" addSuffixWhenEmpty="true" />
+      <renderToken source="Currency" scale="2" suffix="Lt " />
+      <renderToken source="Date" format="year_month" />
+      <renderToken source="Datetime" format="EEEE, y MMMM dd" prefix=" , " />
+      <renderToken source="Version" prefix=" ver:" />
+    </CalcColumn>
 
   </columns>
 

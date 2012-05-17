@@ -28,6 +28,7 @@ import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.RenderableToken;
 import com.butent.bee.shared.ui.RendererDescription;
 import com.butent.bee.shared.ui.RendererType;
 import com.butent.bee.shared.ui.SelectorColumn;
@@ -380,6 +381,7 @@ public class XmlUtils {
   public static Relation getRelation(Map<String, String> attributes, List<Element> children) {
     RendererDescription rowRenderer = null;
     Calculation rowRender = null;
+    List<RenderableToken> rowRenderTokens = null;
     
     List<SelectorColumn> selectorColumns = Lists.newArrayList();
 
@@ -388,18 +390,32 @@ public class XmlUtils {
       
       if (BeeUtils.same(tagName, Relation.TAG_ROW_RENDERER)) {
         rowRenderer = getRendererDescription(child);
+
       } else if (BeeUtils.same(tagName, Relation.TAG_ROW_RENDER)) {
         rowRender = getCalculation(child);
 
+      } else if (BeeUtils.same(tagName, Relation.TAG_ROW_RENDER_TOKEN)) {
+        RenderableToken token = RenderableToken.create(getAttributes(child, false));
+        if (token != null) {
+          if (rowRenderTokens == null) {
+            rowRenderTokens = Lists.newArrayList(token);
+          } else {
+            rowRenderTokens.add(token);
+          }
+        }
+        
       } else if (BeeUtils.same(tagName, Relation.TAG_SELECTOR_COLUMN)) {
         RendererDescription renderer = getRendererDescription(child,
             RendererDescription.TAG_RENDERER);
-        Calculation render = getCalculation(child, RendererDescription.TAG_RENDERER);
-        selectorColumns.add(SelectorColumn.create(getAttributes(child, false), renderer, render));
+        Calculation render = getCalculation(child, RendererDescription.TAG_RENDER);
+        List<RenderableToken> tokens = getRenderTokens(child, RenderableToken.TAG_RENDER_TOKEN);
+
+        selectorColumns.add(SelectorColumn.create(getAttributes(child, false),
+            renderer, render, tokens));
       }
     }
 
-    return Relation.create(attributes, selectorColumns, rowRenderer, rowRender);
+    return Relation.create(attributes, selectorColumns, rowRenderer, rowRender, rowRenderTokens);
   }
   
   public static RendererDescription getRendererDescription(Element element) {
@@ -434,6 +450,25 @@ public class XmlUtils {
       return null;
     }
     return getRendererDescription(element);
+  }
+  
+  public static List<RenderableToken> getRenderTokens(Element parent, String tagName) {
+    if (parent == null) {
+      return null;
+    }
+    List<Element> tokens = getElementsByLocalName(parent, tagName);
+    if (tokens.isEmpty()) {
+      return null;
+    }
+
+    List<RenderableToken> result = Lists.newArrayList();
+    for (Element token : tokens) {
+      RenderableToken renderableToken = RenderableToken.create(getAttributes(token, false));
+      if (renderableToken != null) {
+        result.add(renderableToken);
+      }
+    }
+    return result;
   }
   
   public static StyleDeclaration getStyle(Element element) {

@@ -5,7 +5,6 @@ import com.google.gwt.cell.client.Cell.Context;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
-import com.butent.bee.client.grid.cell.BooleanCell;
 import com.butent.bee.client.grid.cell.CalculatedCell;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
@@ -19,9 +18,6 @@ import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.JustDate;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -103,7 +99,10 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
     if (BeeUtils.isEmpty(value)) {
       return;
     }
-    getCell().render(context, format(value), sb);
+
+    getCell().render(context,
+        Format.render(value, getValueType(), getDateTimeFormat(), getNumberFormat(), getScale()),
+        sb);
   }
 
   public void setDateTimeFormat(DateTimeFormat format) {
@@ -124,67 +123,5 @@ public class CalculatedColumn extends AbstractColumn<String> implements HasDateT
 
   public void setScale(int scale) {
     this.scale = scale;
-  }
-
-  private String format(String value) {
-    if (getValueType() == null) {
-      return value;
-    }
-
-    switch (getValueType()) {
-      case BOOLEAN:
-        return BooleanCell.format(BeeUtils.toBooleanOrNull(value));
-
-      case DATE:
-      case DATETIME:
-        DateTime dt = TimeUtils.toDateTimeOrNull(value);
-        if (dt == null) {
-          return null;
-        }
-
-        boolean isDate = ValueType.DATE.equals(getValueType());
-        DateTimeFormat df = getDateTimeFormat();
-        if (df == null) {
-          df = isDate ? Format.getDefaultDateFormat() : Format.getDefaultDateTimeFormat();
-        }
-        if (df == null) {
-          if (isDate) {
-            return new JustDate(dt).toString();
-          } else {
-            return dt.toString();
-          }
-        }
-        return df.format(dt);
-
-      case DECIMAL:
-        return formatNumber(BeeUtils.toDecimalOrNull(value));
-      case INTEGER:
-        return formatNumber(BeeUtils.toIntOrNull(value));
-      case LONG:
-        return formatNumber(BeeUtils.toLongOrNull(value));
-      case NUMBER:
-        return formatNumber(BeeUtils.toDoubleOrNull(value));
-
-      case TEXT:
-      case TIMEOFDAY:
-        return BeeUtils.trimRight(value);
-    }
-    return null;
-  }
-
-  private String formatNumber(Number value) {
-    if (value == null) {
-      return null;
-    }
-    NumberFormat format = getNumberFormat();
-    if (format == null) {
-      format = Format.getDefaultNumberFormat(getValueType(), getScale());
-    }
-
-    if (format == null) {
-      return value.toString();
-    } else {
-      return format.format(value);
-    }
   }
 }

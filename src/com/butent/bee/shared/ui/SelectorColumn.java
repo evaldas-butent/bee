@@ -18,11 +18,14 @@ import java.util.Map;
 public class SelectorColumn implements BeeSerializable, HasInfo {
 
   private enum Serial {
-    SOURCE, CLASSES, STYLE, HOR_ALIGN, VERT_ALIGN, RENDERER_DESCR, RENDER, ITEM_KEY, RENDER_COLUMNS
+    SOURCE, CLASSES, STYLE, HOR_ALIGN, VERT_ALIGN, RENDERER_DESCR, RENDER, RENDER_TOKENS, 
+    ITEM_KEY, RENDER_COLUMNS
   }
 
   public static SelectorColumn create(Map<String, String> attributes,
-      RendererDescription rendererDescription, Calculation render) {
+      RendererDescription rendererDescription, Calculation render,
+      List<RenderableToken> renderTokens) {
+
     SelectorColumn selectorColumn = new SelectorColumn();
     selectorColumn.setAttributes(attributes);
 
@@ -32,6 +35,10 @@ public class SelectorColumn implements BeeSerializable, HasInfo {
     if (render != null) {
       selectorColumn.setRender(render);
     }
+    if (!BeeUtils.isEmpty(renderTokens)) {
+      selectorColumn.setRenderTokens(renderTokens);
+    }
+    
     return selectorColumn;
   }
 
@@ -54,6 +61,7 @@ public class SelectorColumn implements BeeSerializable, HasInfo {
 
   private RendererDescription rendererDescription = null;
   private Calculation render = null;
+  private List<RenderableToken> renderTokens = null;
 
   private String itemKey = null;
   private List<String> renderColumns = null;
@@ -95,6 +103,9 @@ public class SelectorColumn implements BeeSerializable, HasInfo {
         case RENDER:
           setRender(Calculation.restore(value));
           break;
+        case RENDER_TOKENS:
+          setRenderTokens(RenderableToken.restoreList(value));
+          break;
         case ITEM_KEY:
           setItemKey(value);
           break;
@@ -135,6 +146,9 @@ public class SelectorColumn implements BeeSerializable, HasInfo {
     if (getRender() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Render", getRender().getInfo());
     }
+    if (getRenderTokens() != null) {
+      PropertyUtils.appendWithIndex(info, "Render Tokens", "token", getRenderTokens());
+    }
 
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
@@ -154,6 +168,10 @@ public class SelectorColumn implements BeeSerializable, HasInfo {
 
   public RendererDescription getRendererDescription() {
     return rendererDescription;
+  }
+
+  public List<RenderableToken> getRenderTokens() {
+    return renderTokens;
   }
 
   public String getSource() {
@@ -195,6 +213,9 @@ public class SelectorColumn implements BeeSerializable, HasInfo {
           break;
         case RENDER:
           arr[i++] = getRender();
+          break;
+        case RENDER_TOKENS:
+          arr[i++] = getRenderTokens();
           break;
         case ITEM_KEY:
           arr[i++] = getItemKey();
@@ -262,6 +283,10 @@ public class SelectorColumn implements BeeSerializable, HasInfo {
 
   public void setRendererDescription(RendererDescription rendererDescription) {
     this.rendererDescription = rendererDescription;
+  }
+
+  public void setRenderTokens(List<RenderableToken> renderTokens) {
+    this.renderTokens = renderTokens;
   }
 
   public void setSource(String source) {

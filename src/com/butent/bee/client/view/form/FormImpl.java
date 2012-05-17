@@ -123,8 +123,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         if (ok) {
           AbstractCellRenderer renderer =
               RendererFactory.getRenderer(result.getRendererDescription(), result.getRender(),
-                  result.getItemKey(), NameUtils.toList(result.getRenderColumns()),
-                  getDataColumns(), index, result.getRelation());
+                  result.getRenderTokens(), result.getItemKey(),
+                  NameUtils.toList(result.getRenderColumns()), getDataColumns(), index,
+                  result.getRelation());
 
           ok = (index >= 0 || renderer != null);
           if (ok) {

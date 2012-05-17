@@ -12,6 +12,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -27,79 +28,79 @@ public class Format {
   private static class NumberConstantsImpl implements NumberConstants {
 
     public String currencyPattern() {
-      return defaultNumberConstants.currencyPattern();
+      return DEFAULT_NUMBER_CONSTANTS.currencyPattern();
     }
 
     public String decimalPattern() {
-      return defaultNumberConstants.decimalPattern();
+      return DEFAULT_NUMBER_CONSTANTS.decimalPattern();
     }
 
     public String decimalSeparator() {
       if (defaultDecimalSeparator == null) {
-        return defaultNumberConstants.decimalSeparator();
+        return DEFAULT_NUMBER_CONSTANTS.decimalSeparator();
       } else {
         return defaultDecimalSeparator;
       }
     }
 
     public String defCurrencyCode() {
-      return defaultNumberConstants.defCurrencyCode();
+      return DEFAULT_NUMBER_CONSTANTS.defCurrencyCode();
     }
 
     public String exponentialSymbol() {
-      return defaultNumberConstants.exponentialSymbol();
+      return DEFAULT_NUMBER_CONSTANTS.exponentialSymbol();
     }
 
     public String groupingSeparator() {
       if (defaultGroupingSeparator == null) {
-        return defaultNumberConstants.groupingSeparator();
+        return DEFAULT_NUMBER_CONSTANTS.groupingSeparator();
       } else {
         return defaultGroupingSeparator;
       }
     }
 
     public String infinity() {
-      return defaultNumberConstants.infinity();
+      return DEFAULT_NUMBER_CONSTANTS.infinity();
     }
 
     public String minusSign() {
-      return defaultNumberConstants.minusSign();
+      return DEFAULT_NUMBER_CONSTANTS.minusSign();
     }
 
     public String monetaryGroupingSeparator() {
-      return defaultNumberConstants.monetaryGroupingSeparator();
+      return DEFAULT_NUMBER_CONSTANTS.monetaryGroupingSeparator();
     }
 
     public String monetarySeparator() {
-      return defaultNumberConstants.monetarySeparator();
+      return DEFAULT_NUMBER_CONSTANTS.monetarySeparator();
     }
 
     public String notANumber() {
-      return defaultNumberConstants.notANumber();
+      return DEFAULT_NUMBER_CONSTANTS.notANumber();
     }
 
     public String percent() {
-      return defaultNumberConstants.percent();
+      return DEFAULT_NUMBER_CONSTANTS.percent();
     }
 
     public String percentPattern() {
-      return defaultNumberConstants.percentPattern();
+      return DEFAULT_NUMBER_CONSTANTS.percentPattern();
     }
 
     public String perMill() {
-      return defaultNumberConstants.perMill();
+      return DEFAULT_NUMBER_CONSTANTS.perMill();
     }
 
     public String plusSign() {
-      return defaultNumberConstants.plusSign();
+      return DEFAULT_NUMBER_CONSTANTS.plusSign();
     }
 
     public String scientificPattern() {
-      return defaultNumberConstants.scientificPattern();
+      return DEFAULT_NUMBER_CONSTANTS.scientificPattern();
     }
 
     public String zeroDigit() {
-      return defaultNumberConstants.zeroDigit();
+      return DEFAULT_NUMBER_CONSTANTS.zeroDigit();
     }
   }
 
@@ -114,34 +115,33 @@ public class Format {
     }
 
     private NumberFormatter(String pattern, CurrencyData cdata, boolean userSuppliedPattern) {
-      super(numberConstants, pattern, cdata, userSuppliedPattern);
+      super(NUMBER_CONSTANTS, pattern, cdata, userSuppliedPattern);
     }
   }
 
-  private static final NumberConstants defaultNumberConstants =
+  private static final NumberConstants DEFAULT_NUMBER_CONSTANTS =
       LocaleInfo.getCurrentLocale().getNumberConstants();
 
-  private static final NumberConstants numberConstants = new Format.NumberConstantsImpl();
+  private static final NumberConstants NUMBER_CONSTANTS = new Format.NumberConstantsImpl();
 
   private static String defaultDecimalSeparator = BeeConst.STRING_POINT;
-
   private static String defaultGroupingSeparator = BeeConst.STRING_SPACE;
 
   private static NumberFormat defaultDoubleFormat = getNumberFormat("#.#######");
-
   private static NumberFormat defaultIntegerFormat = getNumberFormat("#");
-
   private static NumberFormat defaultLongFormat = getNumberFormat("#,###");
-
   private static NumberFormat defaultCurrencyFormat = getNumberFormat("#,##0.00;(#)");
 
   private static String defaultDecimalPatternInteger = "#,##0";
 
   private static DateTimeFormat defaultDateFormat =
       DateTimeFormat.getFormat(PredefinedFormat.DATE_SHORT);
-
   private static DateTimeFormat defaultDateTimeFormat =
       DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT);
+  
+  private static Character defaultTrueChar = BeeConst.CHECK_MARK;
+  private static Character defaultFalseChar = null;
+  private static Character defaultNullChar = null;
   
   public static DateTimeFormat getDateTimeFormat(String pattern) {
     Assert.notEmpty(pattern);
@@ -151,7 +151,7 @@ public class Format {
     }
     return format;
   }
-
+  
   public static DateTimeFormat getDateTimeFormat(String pattern, DateTimeFormat defaultFormat) {
     if (BeeUtils.isEmpty(pattern)) {
       return defaultFormat;
@@ -159,7 +159,7 @@ public class Format {
       return getDateTimeFormat(pattern);
     }
   }
-  
+
   public static NumberFormat getDecimalFormat(int scale) {
     if (scale <= 0) {
       return getNumberFormat(defaultDecimalPatternInteger);
@@ -167,7 +167,7 @@ public class Format {
     return getNumberFormat(defaultDecimalPatternInteger + BeeConst.STRING_POINT
         + BeeUtils.replicate(BeeConst.CHAR_ZERO, scale));
   }
-
+  
   public static NumberFormat getDefaultCurrencyFormat() {
     return defaultCurrencyFormat;
   }
@@ -192,6 +192,10 @@ public class Format {
     return defaultDoubleFormat;
   }
 
+  public static Character getDefaultFalseChar() {
+    return defaultFalseChar;
+  }
+
   public static String getDefaultGroupingSeparator() {
     return defaultGroupingSeparator;
   }
@@ -202,6 +206,10 @@ public class Format {
 
   public static NumberFormat getDefaultLongFormat() {
     return defaultLongFormat;
+  }
+
+  public static Character getDefaultNullChar() {
+    return defaultNullChar;
   }
 
   public static NumberFormat getDefaultNumberFormat(ValueType type, int scale) {
@@ -227,6 +235,10 @@ public class Format {
     return format;
   }
 
+  public static Character getDefaultTrueChar() {
+    return defaultTrueChar;
+  }
+  
   public static NumberFormat getNumberFormat(String pattern) {
     Assert.notEmpty(pattern);
     return new NumberFormatter(pattern);
@@ -249,7 +261,7 @@ public class Format {
     }
     return null;
   }
-
+  
   public static JustDate parseDateQuietly(DateTimeFormat format, String s) {
     return JustDate.get(parseDateTimeQuietly(format, s));
   }
@@ -282,40 +294,101 @@ public class Format {
     return d;
   }
   
-  public static void setDefaultCurrencyFormat(NumberFormat defaultCurrencyFormat) {
-    Format.defaultCurrencyFormat = defaultCurrencyFormat;
+  public static String render(Boolean value) {
+    Character ch = (value == null) ? defaultNullChar : (value ? defaultTrueChar : defaultFalseChar);
+    if (ch == null) {
+      return BeeConst.STRING_EMPTY;
+    } else {
+      return BeeUtils.toString(ch);
+    }
+  }
+  
+  public static String render(Number value, ValueType type, NumberFormat format, int scale) {
+    if (value == null) {
+      return null;
+    }
+    
+    NumberFormat nf;
+    if (format != null) {
+      nf = format;
+    } else if (ValueType.isNumeric(type)) {
+      nf = getDefaultNumberFormat(type, scale);
+    } else {
+      nf = null;
+    }
+
+    if (nf == null) {
+      return value.toString();
+    } else {
+      return nf.format(value);
+    }
   }
 
-  public static void setDefaultDateFormat(DateTimeFormat defaultDateFormat) {
-    Format.defaultDateFormat = defaultDateFormat;
-  }
+  public static String render(String value, ValueType type, DateTimeFormat dateTimeFormat,
+      NumberFormat numberFormat, int scale) {
+    if (type == null) {
+      return value;
+    }
+    
+    final String result;
 
-  public static void setDefaultDateTimeFormat(DateTimeFormat defaultDateTimeFormat) {
-    Format.defaultDateTimeFormat = defaultDateTimeFormat;
-  }
+    switch (type) {
+      case BOOLEAN:
+        result = render(BeeUtils.toBooleanOrNull(value));
+        break;
 
-  public static void setDefaultDecimalPatternInteger(String defaultDecimalPatternInteger) {
-    Format.defaultDecimalPatternInteger = defaultDecimalPatternInteger;
-  }
+      case DATE:
+        JustDate jd = TimeUtils.toDateOrNull(value);
+        if (jd == null) {
+          result = null;
+        } else if (dateTimeFormat != null) {
+          result = dateTimeFormat.format(jd);
+        } else if (getDefaultDateFormat() != null) {
+          result = getDefaultDateFormat().format(jd);
+        } else {
+          result = jd.toString(); 
+        }
+        break;
 
-  public static void setDefaultDecimalSeparator(String defaultDecimalSeparator) {
-    Format.defaultDecimalSeparator = defaultDecimalSeparator;
-  }
+      case DATETIME:
+        DateTime dt = TimeUtils.toDateTimeOrNull(value);
+        if (dt == null) {
+          result = null;
+        } else if (dateTimeFormat != null) {
+          result = dateTimeFormat.format(dt);
+        } else if (getDefaultDateTimeFormat() != null) {
+          result = getDefaultDateTimeFormat().format(dt);
+        } else {
+          result = dt.toString(); 
+        }
+        break;
 
-  public static void setDefaultDoubleFormat(NumberFormat defaultDoubleFormat) {
-    Format.defaultDoubleFormat = defaultDoubleFormat;
-  }
+      case DECIMAL:
+        result = render(BeeUtils.toDecimalOrNull(value), type, numberFormat, scale);
+        break;
 
-  public static void setDefaultGroupingSeparator(String defaultGroupingSeparator) {
-    Format.defaultGroupingSeparator = defaultGroupingSeparator;
-  }
+      case INTEGER:
+        result = render(BeeUtils.toIntOrNull(value), type, numberFormat, scale);
+        break;
 
-  public static void setDefaultIntegerFormat(NumberFormat defaultIntegerFormat) {
-    Format.defaultIntegerFormat = defaultIntegerFormat;
-  }
+      case LONG:
+        result = render(BeeUtils.toLongOrNull(value), type, numberFormat, scale);
+        break;
 
-  public static void setDefaultLongFormat(NumberFormat defaultLongFormat) {
-    Format.defaultLongFormat = defaultLongFormat;
+      case NUMBER:
+        result = render(BeeUtils.toDoubleOrNull(value), type, numberFormat, scale);
+        break;
+
+      case TEXT:
+      case TIMEOFDAY:
+        result = BeeUtils.trimRight(value);
+        break;
+      
+      default:
+        Assert.untouchable();
+        result = null;
+    }
+    return result;
   }
 
   public static void setFormat(Object target, ValueType type, String pattern) {

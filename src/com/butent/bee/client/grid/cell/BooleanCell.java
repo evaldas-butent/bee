@@ -3,8 +3,7 @@ package com.butent.bee.client.grid.cell;
 import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
-import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.client.i18n.Format;
 
 /**
  * Enables using a cell for representing boolean data.
@@ -12,29 +11,16 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class BooleanCell extends AbstractCell<Boolean> {
 
-  public static Character defaultTrueChar = BeeConst.CHECK_MARK;
-  public static Character defaultFalseChar = null;
-  public static Character defaultNullChar = null;
-  
-  public static String format(Boolean value) {
-    Character ch = (value == null) ? defaultNullChar : (value ? defaultTrueChar : defaultFalseChar);
-    if (ch == null) {
-      return BeeConst.STRING_EMPTY;
-    } else {
-      return BeeUtils.toString(ch);
-    }
-  }
-  
   private Character trueChar;
   private Character falseChar;
   private Character nullChar;
 
   public BooleanCell() {
-    this(defaultTrueChar, defaultFalseChar, defaultNullChar);
+    this(Format.getDefaultTrueChar(), Format.getDefaultFalseChar(), Format.getDefaultNullChar());
   }
   
   public BooleanCell(Character trueChar, Character falseChar) {
-    this(trueChar, falseChar, defaultNullChar);
+    this(trueChar, falseChar, Format.getDefaultNullChar());
   }
   
   public BooleanCell(Character trueChar, Character falseChar, Character nullChar) {

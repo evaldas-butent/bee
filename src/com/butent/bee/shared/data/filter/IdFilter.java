@@ -1,5 +1,6 @@
 package com.butent.bee.shared.data.filter;
 
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.LongValue;
@@ -16,7 +17,7 @@ public class IdFilter extends ColumnValueFilter {
   }
 
   protected IdFilter(Operator operator, long value) {
-    super("ID", operator, new LongValue(value));
+    super(DataUtils.ID_TAG, operator, new LongValue(value));
   }
 
   @Override

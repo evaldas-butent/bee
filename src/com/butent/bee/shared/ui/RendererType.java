@@ -7,7 +7,8 @@ public enum RendererType {
   MAP("map", true),
   RANGE("range", true),
   ENUM("enum", true),
-  JOIN("join", false);
+  JOIN("join", false),
+  TOKEN("token", false);
 
   public static RendererType getByTypeCode(String code) {
     if (code == null || code.isEmpty()) {

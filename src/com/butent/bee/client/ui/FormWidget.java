@@ -126,6 +126,7 @@ import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.ui.HasVisibleLines;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.ui.RenderableToken;
 import com.butent.bee.shared.ui.RendererDescription;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -291,8 +292,6 @@ public enum FormWidget {
   private static final String ATTR_DISABLABLE = "disablable";
 
   private static final String ATTR_INLINE = "inline";
-  private static final String ATTR_FORMAT = "format";
-  private static final String ATTR_SCALE = "scale";
 
   private static final String ATTR_URL = "url";
   private static final String ATTR_HISTORY_TOKEN = "historyToken";
@@ -508,7 +507,7 @@ public enum FormWidget {
         break;
 
       case CURRENCY_LABEL:
-        format = attributes.get(ATTR_FORMAT);
+        format = attributes.get(UiConstants.ATTR_FORMAT);
         inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
           widget = new DecimalLabel(Format.getDefaultCurrencyFormat(), inline);
@@ -535,7 +534,7 @@ public enum FormWidget {
         break;
 
       case DATE_LABEL:
-        format = attributes.get(ATTR_FORMAT);
+        format = attributes.get(UiConstants.ATTR_FORMAT);
         inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
           widget = new DateLabel(inline);
@@ -545,7 +544,7 @@ public enum FormWidget {
         break;
 
       case DATE_TIME_LABEL:
-        format = attributes.get(ATTR_FORMAT);
+        format = attributes.get(UiConstants.ATTR_FORMAT);
         inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
           widget = new DateTimeLabel(inline);
@@ -555,10 +554,10 @@ public enum FormWidget {
         break;
 
       case DECIMAL_LABEL:
-        format = attributes.get(ATTR_FORMAT);
+        format = attributes.get(UiConstants.ATTR_FORMAT);
         inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
-          widget = new DecimalLabel(BeeUtils.toInt(attributes.get(ATTR_SCALE)), inline);
+          widget = new DecimalLabel(BeeUtils.toInt(attributes.get(UiConstants.ATTR_SCALE)), inline);
         } else {
           widget = new DecimalLabel(format, inline);
         }
@@ -581,7 +580,7 @@ public enum FormWidget {
         break;
 
       case DOUBLE_LABEL:
-        format = attributes.get(ATTR_FORMAT);
+        format = attributes.get(UiConstants.ATTR_FORMAT);
         inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
           widget = new DoubleLabel(inline);
@@ -679,32 +678,33 @@ public enum FormWidget {
 
       case INPUT_CURRENCY:
         widget = new InputNumber();
-        ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(attributes.get(ATTR_FORMAT),
-            Format.getDefaultCurrencyFormat()));
+        ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(
+            attributes.get(UiConstants.ATTR_FORMAT), Format.getDefaultCurrencyFormat()));
         break;
 
       case INPUT_DATE:
-        format = attributes.get(ATTR_FORMAT);
+        format = attributes.get(UiConstants.ATTR_FORMAT);
         widget = new InputDate(ValueType.DATE, Format.getDateTimeFormat(format,
             Format.getDefaultDateFormat()));
         break;
 
       case INPUT_DATE_TIME:
-        format = attributes.get(ATTR_FORMAT);
+        format = attributes.get(UiConstants.ATTR_FORMAT);
         widget = new InputDate(ValueType.DATETIME, Format.getDateTimeFormat(format,
             Format.getDefaultDateTimeFormat()));
         break;
 
       case INPUT_DECIMAL:
         widget = new InputNumber();
-        ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(attributes.get(ATTR_FORMAT),
-            Format.getDecimalFormat(BeeUtils.toInt(attributes.get(ATTR_SCALE)))));
+        ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(
+            attributes.get(UiConstants.ATTR_FORMAT),
+            Format.getDecimalFormat(BeeUtils.toInt(attributes.get(UiConstants.ATTR_SCALE)))));
         break;
 
       case INPUT_DOUBLE:
         widget = new InputNumber();
-        ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(attributes.get(ATTR_FORMAT),
-            Format.getDefaultDoubleFormat()));
+        ((InputNumber) widget).setNumberFormat(Format.getNumberFormat(
+            attributes.get(UiConstants.ATTR_FORMAT), Format.getDefaultDoubleFormat()));
         break;
 
       case INPUT_FILE:
@@ -716,19 +716,19 @@ public enum FormWidget {
 
       case INPUT_INTEGER:
         widget = new InputInteger();
-        ((InputInteger) widget).setNumberFormat(Format.getNumberFormat(attributes.get(ATTR_FORMAT),
-            Format.getDefaultIntegerFormat()));
+        ((InputInteger) widget).setNumberFormat(Format.getNumberFormat(
+            attributes.get(UiConstants.ATTR_FORMAT), Format.getDefaultIntegerFormat()));
         break;
 
       case INPUT_LONG:
         widget = new InputLong();
-        ((InputLong) widget).setNumberFormat(Format.getNumberFormat(attributes.get(ATTR_FORMAT),
-            Format.getDefaultLongFormat()));
+        ((InputLong) widget).setNumberFormat(Format.getNumberFormat(
+            attributes.get(UiConstants.ATTR_FORMAT), Format.getDefaultLongFormat()));
         break;
 
       case INPUT_SLIDER:
         widget = new InputSlider();
-        format = attributes.get(ATTR_FORMAT);
+        format = attributes.get(UiConstants.ATTR_FORMAT);
         if (!BeeUtils.isEmpty(format)) {
           ((InputSlider) widget).setNumberFormat(Format.getNumberFormat(format));
         }
@@ -736,7 +736,7 @@ public enum FormWidget {
 
       case INPUT_SPINNER:
         widget = new InputSpinner();
-        format = attributes.get(ATTR_FORMAT);
+        format = attributes.get(UiConstants.ATTR_FORMAT);
         if (!BeeUtils.isEmpty(format)) {
           ((InputSpinner) widget).setNumberFormat(Format.getNumberFormat(format));
         }
@@ -747,7 +747,7 @@ public enum FormWidget {
         break;
 
       case INTEGER_LABEL:
-        format = attributes.get(ATTR_FORMAT);
+        format = attributes.get(UiConstants.ATTR_FORMAT);
         inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
           widget = new IntegerLabel(inline);
@@ -787,7 +787,7 @@ public enum FormWidget {
         break;
 
       case LONG_LABEL:
-        format = attributes.get(ATTR_FORMAT);
+        format = attributes.get(UiConstants.ATTR_FORMAT);
         inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
         if (BeeUtils.isEmpty(format)) {
           widget = new LongLabel(inline);
@@ -1089,6 +1089,11 @@ public enum FormWidget {
           Calculation render = XmlUtils.getCalculation(child);
           if (render != null) {
             widgetDescription.setRender(render);
+          }
+        } else if (BeeUtils.same(childTag, RenderableToken.TAG_RENDER_TOKEN)) {
+          RenderableToken token = RenderableToken.create(XmlUtils.getAttributes(child, false));
+          if (token != null) {
+            widgetDescription.addRenderToken(token);
           }
 
         } else if (BeeUtils.same(childTag, TAG_EDITABLE)) {

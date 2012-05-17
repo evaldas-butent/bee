@@ -15,8 +15,8 @@
     <DataColumn name="HtmlLink" />
 
     <RelColumn name="ColorName" />
-    <DataColumn name="Background" readOnly="true" />
-    <DataColumn name="Foreground" readOnly="true" />
+    <DataColumn name="Background" />
+    <DataColumn name="Foreground" />
     
     <RelColumn name="StyleName" />
 
@@ -28,12 +28,19 @@
     </DataColumn>
 
     <RelColumn name="Creator">
+      <renderToken source="CreatorFirstName" />
+      <renderToken source="CreatorLastName" />
+      <renderToken source="CreatorCompanyName" prefix=", " />
       <carry>
         <ui:expression>row.Creator</ui:expression>
       </carry>
     </RelColumn>
     
-    <RelColumn name="Organizer" />
+    <RelColumn name="Organizer">
+      <renderToken source="OrganizerCompanyName" suffix=", " />
+      <renderToken source="OrganizerFirstName" />
+      <renderToken source="OrganizerLastName" />
+    </RelColumn>
     
     <DataColumn name="StartDate" />
     <DataColumn name="StartDateTime" />
@@ -64,6 +71,12 @@
         <ui:expression>row.Company</ui:expression>
       </carry>
     </RelColumn>
+    
+    <CalcColumn type="string" name="Contact">
+      <renderToken source="CompanyPhone" prefix="tel: " />
+      <renderToken source="CompanyMobile" prefix=" mob: " />
+      <renderToken source="CompanyEmail" prefix=" mail: " />
+    </CalcColumn>
 
     <DataColumn name="VehicleType" />
     <DataColumn name="VehicleNumber" />

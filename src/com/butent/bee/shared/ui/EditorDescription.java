@@ -30,7 +30,6 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
   }
 
   private static final String ATTR_STEP_VALUE = "stepValue";
-  private static final String ATTR_FORMAT = "format";
   private static final String ATTR_WIDTH = "width";
   private static final String ATTR_HEIGHT = "height";
   private static final String ATTR_MIN_WIDTH = "minWidth";
@@ -291,7 +290,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
         setCharacterWidth(BeeUtils.toIntOrNull(value));
       } else if (BeeUtils.same(key, HasVisibleLines.ATTR_VISIBLE_LINES)) {
         setVisibleLines(BeeUtils.toIntOrNull(value));
-      } else if (BeeUtils.same(key, ATTR_FORMAT)) {
+      } else if (BeeUtils.same(key, UiConstants.ATTR_FORMAT)) {
         setFormat(value.trim());
       } else if (BeeUtils.same(key, ATTR_WIDTH)) {
         setWidth(BeeUtils.toIntOrNull(value));

@@ -30,6 +30,7 @@
       <xs:choice minOccurs="0" maxOccurs="1">
         <xs:element name="renderer" type="ui:renderer" />
         <xs:element name="render" type="ui:calcType" />
+        <xs:element name="renderToken" type="ui:renderableToken" maxOccurs="unbounded" />
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="name" type="xs:ID" use="required" />
@@ -46,7 +47,7 @@
     <xs:attribute name="hasFooter" type="xs:boolean" default="true" />
     <xs:attribute name="showWidth" type="xs:boolean" />
     <xs:attribute name="cell" type="ui:cellType" />
-    <xs:attribute name="renderColumns" type="xs:string" />
+    <xs:attribute name="renderColumns" type="type:nameList" />
     <xs:attribute name="sortBy" type="type:nameList" />
     <xs:attribute name="searchBy" type="type:nameList" />
     <xs:attribute name="options" type="xs:normalizedString" />

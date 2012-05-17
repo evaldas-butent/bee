@@ -3,6 +3,8 @@ package com.butent.bee.shared.ui;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -12,7 +14,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.List;
 import java.util.Map;
 
-public class RendererDescription extends PotentialRenderer implements HasOptions {
+public class RendererDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private enum Serial {
     TYPE, VALUE_START_INDEX, SEPARATOR, OPTIONS, ITEMS

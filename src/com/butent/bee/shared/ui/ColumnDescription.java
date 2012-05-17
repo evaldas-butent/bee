@@ -67,9 +67,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     COL_TYPE, NAME, CAPTION, READ_ONLY, WIDTH, SOURCE, RELATION,
     MIN_WIDTH, MAX_WIDTH, SORTABLE, VISIBLE, FORMAT, HOR_ALIGN, HAS_FOOTER, SHOW_WIDTH,
     VALIDATION, EDITABLE, CARRY, EDITOR, MIN_VALUE, MAX_VALUE, REQUIRED, ITEM_KEY,
-    RENDERER_DESCR, RENDER, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS, SEARCH_BY, SORT_BY,
-    HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE, UPDATE_MODE, AUTO_FIT,
-    OPTIONS, SERVICE, ELEMENT_TYPE
+    RENDERER_DESCR, RENDER, RENDER_TOKENS, VALUE_TYPE, PRECISION, SCALE, RENDER_COLUMNS,
+    SEARCH_BY, SORT_BY, HEADER_STYLE, BODY_STYLE, FOOTER_STYLE, DYN_STYLES, CELL_TYPE,
+    UPDATE_MODE, AUTO_FIT, OPTIONS, SERVICE, ELEMENT_TYPE
   }
 
   public static ColumnDescription restore(String s) {
@@ -109,6 +109,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
 
   private RendererDescription rendererDescription = null;
   private Calculation render = null;
+  private List<RenderableToken> renderTokens = null;
 
   private EditorDescription editor = null;
 
@@ -254,12 +255,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case DYN_STYLES:
           String[] scs = Codec.beeDeserializeCollection(value);
-
           if (BeeUtils.isEmpty(scs)) {
             setDynStyles(null);
           } else {
             List<ConditionalStyleDeclaration> lst = Lists.newArrayList();
-
             for (String z : scs) {
               lst.add(ConditionalStyleDeclaration.restore(z));
             }
@@ -283,6 +282,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case RENDER:
           setRender(Calculation.restore(value));
+          break;
+        case RENDER_TOKENS:
+          setRenderTokens(RenderableToken.restoreList(value));
           break;
         case ITEM_KEY:
           setItemKey(value);
@@ -417,11 +419,15 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     if (getCarry() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Carry", getCarry().getInfo());
     }
+
     if (getRendererDescription() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Renderer", getRendererDescription().getInfo());
     }
     if (getRender() != null) {
       PropertyUtils.appendChildrenToProperties(info, "Render", getRender().getInfo());
+    }
+    if (getRenderTokens() != null) {
+      PropertyUtils.appendWithIndex(info, "Render Tokens", "token", getRenderTokens());
     }
 
     if (getHeaderStyle() != null) {
@@ -499,6 +505,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     return rendererDescription;
   }
   
+  public List<RenderableToken> getRenderTokens() {
+    return renderTokens;
+  }
+
   public Integer getScale() {
     return scale;
   }
@@ -672,6 +682,9 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
         case RENDER:
           arr[i++] = getRender();
           break;
+        case RENDER_TOKENS:
+          arr[i++] = getRenderTokens();
+          break;
         case ITEM_KEY:
           arr[i++] = getItemKey();
           break;
@@ -722,11 +735,11 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public void setEditable(Calculation editable) {
     this.editable = editable;
   }
-
+  
   public void setEditor(EditorDescription editor) {
     this.editor = editor;
   }
-  
+
   public void setElementType(String elementType) {
     this.elementType = elementType;
   }
@@ -782,11 +795,11 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public void setReadOnly(Boolean readOnly) {
     this.readOnly = readOnly;
   }
-
+  
   public void setRelation(Relation relation) {
     this.relation = relation;
   }
-  
+
   public void setRelationInitialized(boolean relationInitialized) {
     this.relationInitialized = relationInitialized;
   }
@@ -803,6 +816,10 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
     this.rendererDescription = rendererDescription;
   }
 
+  public void setRenderTokens(List<RenderableToken> renderTokens) {
+    this.renderTokens = renderTokens;
+  }
+
   public void setRequired(Boolean required) {
     this.required = required;
   }
@@ -810,7 +827,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public void setScale(Integer scale) {
     this.scale = scale;
   }
-
+  
   public void setSearchBy(String searchBy) {
     this.searchBy = searchBy;
   }
@@ -818,7 +835,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public void setService(String service) {
     this.service = service;
   }
-  
+
   public void setShowWidth(Boolean showWidth) {
     this.showWidth = showWidth;
   }
@@ -834,7 +851,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public void setSource(String source) {
     this.source = source;
   }
-
+  
   public void setUpdateMode(RefreshType updateMode) {
     this.updateMode = updateMode;
   }
@@ -842,7 +859,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   public void setValidation(Calculation validation) {
     this.validation = validation;
   }
-  
+
   public void setValueType(ValueType valueType) {
     this.valueType = valueType;
   }

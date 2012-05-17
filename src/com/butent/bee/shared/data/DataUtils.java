@@ -33,6 +33,9 @@ public class DataUtils {
   public static final String VIEW_NAMESPACE = "http://www.butent.com/view";
   public static final String EXPRESSION_NAMESPACE = "http://www.butent.com/expression";
 
+  public static final String ID_TAG = "ID";
+  public static final String VERSION_TAG = "VERSION";
+  
   public static final int ID_INDEX = -2;
   public static final int VERSION_INDEX = -3;
 
@@ -260,6 +263,18 @@ public class DataUtils {
   
   public static String getString(BeeRowSet rowSet, IsRow row, String columnId) {
     return row.getString(getColumnIndex(columnId, rowSet.getColumns()));
+  }
+
+  public static String getString(IsRow row, int index) {
+    if (row == null) {
+      return null;
+    } else if (index == ID_INDEX) {
+      return BeeUtils.toString(row.getId());
+    } else if (index == VERSION_INDEX) {
+      return BeeUtils.toString(row.getVersion());
+    } else {
+      return row.getString(index);
+    }
   }
   
   public static String getValue(IsRow row, int index, ValueType type) {
