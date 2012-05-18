@@ -93,6 +93,10 @@ body, select {
   bottom: 0;
 }
 
+.childrenFloat > div {
+  float: left;
+}
+
 .bee-Screen {
   background-color: #FBFBFB;  
 }

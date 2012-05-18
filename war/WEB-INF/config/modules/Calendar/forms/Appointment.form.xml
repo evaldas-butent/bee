@@ -2,63 +2,193 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
-  
+  xmlns:d="http://www.butent.com/decorator"
+
   name="Appointment" viewName="Appointments" caption="Vizitas">
 
-  <FlowPanel class="flexBox-vertical">
-    <FlexTable cellSpacing="5">
-      <row>
-        <DataSelector source="CompanyName" caption="Įmonė:" />
-        <TextLabel>
-          <renderToken source="CompanyPhone" prefix="tel: " suffix=" " />
-          <renderToken source="CompanyMobile" prefix="mob: " suffix=" " />
-          <renderToken source="CompanyEmail" prefix="mail: " />
-        </TextLabel>
-        <DataSelector source="Creator">
-          <renderToken source="CreatorFirstName" />
-          <renderToken source="CreatorLastName" />
-          <renderToken source="CreatorCompanyName" prefix=", " />
-        </DataSelector>
-      </row>
+  <FlowPanel style="margin-left: 1em; margin-right: 1em; margin-top: 2ex;">
+    <AbsolutePanel style="height: 255px; left: 0; right: 0;">
+      <layer top="0" bottom="0" width="240">
+        <FlowPanel>
+          <DataSelector source="CompanyName" caption="Įmonė:"
+            style="width: 140px;" d:size="80" d:unit="px" />
+          <TextLabel source="CompanyPhone" caption="Telefonas:" inline="true"
+            d:size="80" d:unit="px" />
+          <TextLabel source="CompanyEmail" caption="El. Paštas:" inline="true"
+            d:size="80" d:unit="px" />
+          <br/>  
+          <InputText source="Summary" caption="Santrauka:"
+            style="width: 220px;" decorator="caption-top" />
+          <InputArea source="Description" caption="Aprašymas:" visibleLines="5"
+            style="width: 220px;" decorator="caption-top" />
+        </FlowPanel>
+      </layer>
 
-      <row>
-        <DataSelector source="AppointmentType" caption="Tipas:" />
-        <InputText source="Summary" caption="Pavadinimas:" />
-        <DataSelector source="Organizer">
-          <renderToken source="OrganizerCompanyName" suffix=", " />
-          <renderToken source="OrganizerFirstName" />
-          <renderToken source="OrganizerLastName" />
-        </DataSelector>
-      </row>
+      <layer top="0" bottom="0" left="260" right="260">
+        <FlowPanel>
+          <InputDate source="StartDate" caption="Planuojama pradžios data:"
+            style="width: 80px;" d:size="180" d:unit="px" />
+          <InputDate source="EndDate" caption="Planuojama pabaigos data:"
+            style="width: 80px;" d:size="180" d:unit="px" />
+          <br/>  
 
-      <row>  
-        <InputDateTime source="StartDateTime" caption="Pradžia:" />
-        <InputDateTime source="EndDateTime" caption="Pabaiga:" />
-        <InputDateTime source="Created" />
-      </row>
+          <InputDateTime source="StartDateTime" caption="Planuojamas pradžios laikas:"
+            style="width: 120px;" d:size="180" d:unit="px" />
+          <InputDateTime source="EndDateTime" caption="Planuojamas pabaigos laikas:"
+            style="width: 120px;" d:size="180" d:unit="px" />
+          <br/>  
 
-      <row>
-        <DataSelector source="ColorName" caption="Spalva:" />
-        <DataSelector source="Style" caption="Stilius:" />
-        <ListBox source="Status" itemKey="AppointmentStatus" decorator="caption-left"
-          caption="Būsena:" />
-      </row>
-      
-      <row>
-        <InputArea source="Description" caption="Aprašymas:" visibleLines="3" />
-        <Radio source="Visibility" itemKey="Calendar_Visibility" vertical="true" />
-        <CheckBox source="UseDefaultReminders" html="Use Default Reminders" />
-      </row>
-    </FlexTable>
-    
-    <ComplexPanel class="flexible" style="position: relative; margin-top: 3ex;">
-      <layer left="1" leftUnit="em" width="60" widthUnit="%" top="0" bottom="1">
+          <InputDateTime source="EffectiveStart" caption="Pradėta:"
+            style="width: 120px;" d:size="180" d:unit="px" />
+          <InputDateTime source="EffectiveEnd" caption="Baigta:"
+            style="width: 120px;" d:size="180" d:unit="px" />
+          <br/>  
+          <ListBox source="Status" itemKey="AppointmentStatus" caption="Būsena:"
+            style="width: 120px;" d:size="180" d:unit="px" />
+        </FlowPanel>
+      </layer>
+
+      <layer top="0" bottom="0" width="240" right="0">
+        <FlowPanel>
+          <DataSelector source="AppointmentType" caption="Tipas:" 
+            style="width: 140px;" d:size="80" d:unit="px" />
+          <DataSelector source="ColorName" caption="Spalva:"
+            style="width: 140px;" d:size="80" d:unit="px" />
+          <DataSelector source="Style" caption="Stilius:"
+            style="width: 140px;" d:size="80" d:unit="px" />
+          <br/>  
+          <DataSelector source="Organizer" caption="Atsakingas darbuotojas:"
+            style="width: 220px;" decorator="caption-top">
+            <renderToken source="OrganizerCompanyName" suffix=", " />
+            <renderToken source="OrganizerFirstName" />
+            <renderToken source="OrganizerLastName" />
+          </DataSelector>
+          <br/>  
+          <InputDateTime source="Created" caption="Registruotas:"
+            style="width: 140px;" d:size="80" d:unit="px" />
+          <DataSelector source="Creator" caption="Registravo:"
+            style="width: 140px;" d:size="80" d:unit="px"/>
+        </FlowPanel>
+      </layer>
+    </AbsolutePanel>
+
+    <TabbedPages style="position: absolute; left: 0; right: 0; top: 256px; bottom: 1ex;">
+      <page>
+        <text>Resursai</text>
         <ChildGrid name="AppointmentAttendees" relColumn="Appointment" />
-      </layer>
-      <layer left="65" leftUnit="%" right="1" rightUnit="em" top="0" bottom="1">
-        <ChildGrid name="AppointmentReminders" relColumn="Appointment" />
-      </layer>
-    </ComplexPanel>
+      </page>
 
+      <page>
+        <text>Priminimai</text>
+        <SplitPanel splitterSize="0">
+          <north size="40">
+            <CheckBox source="UseDefaultReminders" html="Use Default Reminders"
+              style="margin-left: 3em; margin-top: 8px;" />
+          </north>
+          <center>
+            <ChildGrid name="AppointmentReminders" relColumn="Appointment" />
+          </center>
+        </SplitPanel>
+      </page>
+
+      <page>
+        <text>Transportas</text>
+        <FlexTable borderWidth="1" cellPadding="3"
+          style="border-color: #ccc; border-collapse: collapse; margin-top: 2ex;">
+          <row>
+            <DataSelector source="VehicleNumber" caption="Valst. Nr.:" />
+            <TextLabel source="Vehicle" caption="Modelis:" inline="true"
+              renderColumns="VehicleParentModel VehicleModel" />
+            <TextLabel source="VehicleType" caption="Tipas:" inline="true" />
+          </row>
+
+          <row>
+            <cell colSpan="3">
+              <TextLabel source="VehicleOwner" caption="Savininkas:" inline="true" />
+            </cell>
+          </row>
+
+          <row>
+            <DateLabel source="VehicleProductionDate" caption="Pagaminimo data:" inline="true" />
+            <TextLabel source="VehicleEngineNumber" caption="Variklio Nr.:" inline="true" />
+            <TextLabel source="VehicleBodyNumber" caption="Kėbulo Nr.:" inline="true" />
+          </row>
+
+          <row>
+            <IntegerLabel source="VehicleNetto" caption="Svoris Neto:" inline="true"
+              style="width: 100px;" />
+            <IntegerLabel source="VehicleBrutto" caption="Svoris Bruto:" inline="true"
+              style="width: 100px;" />
+          </row>
+
+          <row>
+            <DecimalLabel source="VehiclePower" caption="Galia kW:" inline="true"
+              style="width: 100px;" />
+            <IntegerLabel source="VehicleEngineVolume" caption="Darbinis tūris cm&#x00b3;:"
+              inline="true" style="width: 100px;" />
+          </row>
+
+          <row>
+            <TextLabel source="VehicleFuel" caption="Kuro rūšis:" inline="true" />
+            <DecimalLabel source="VehicleTankCapacity" caption="Kuro bako talpa l:"
+              inline="true" style="width: 100px;" />
+            <IntegerLabel source="VehicleSpeedometer" caption="Spidometro skalė:"
+              inline="true" style="width: 100px;" />
+          </row>
+
+          <row>
+            <cell colSpan="3">
+              <TextLabel source="VehicleNotes" caption="Pastabos:" style="white-space: pre-wrap;" />
+            </cell>  
+          </row>
+        </FlexTable>
+      </page>
+
+      <page>
+        <text>Papildomi parametrai</text>
+        <FlexTable cellPadding="5" style="margin-top: 2ex;">
+          <row>
+            <Radio source="Transparency" itemKey="Transparency" vertical="false" />
+            <Radio source="Visibility" itemKey="Calendar_Visibility" vertical="false" />
+            <CheckBox source="ReadOnly" html="Read Only" />
+          </row>
+
+          <row>
+            <InputText source="Location" caption="Location:" 
+              style="width: 200px;" d:size="120" d:unit="px" />
+            <InputText source="HtmlLink" caption="Html Link:"
+              style="width: 200px;" d:size="120" d:unit="px" />
+          </row>
+
+          <row>
+            <DataSelector source="StartTimeZone" caption="Start Time Zone:"
+              style="width: 200px;" d:size="120" d:unit="px" />
+            <DataSelector source="EndTimeZone" caption="End Time Zone:"
+              style="width: 200px;" d:size="120" d:unit="px" />
+          </row>
+
+          <row>
+            <InputArea source="Recurrence" caption="Recurrence:" style="width: 320px;" 
+              decorator="caption-top" />
+            <LongLabel source="RecurringEventId" caption="Recurring Event Id:" inline="true"
+              style="width: 200px;" d:size="120" d:unit="px" />
+          </row>
+
+          <row>
+            <InputText source="ICalUID" caption="ICal UID:"
+              style="width: 200px;" d:size="120" d:unit="px" />
+            <InputInteger source="Sequence" caption="Sequence:"
+              style="width: 200px;" d:size="120" d:unit="px" />
+          </row>
+
+          <row>
+            <CheckBox source="AnyoneCanAddSelf" html="Anyone Can Add Self" />
+            <CheckBox source="GuestsCanInviteOthers" html="Guests Can Invite Others" />
+            <CheckBox source="GuestsCanSeeOtherGuests" html="Guests Can See Other Guests" />
+          </row>
+        </FlexTable>
+      </page>
+
+    </TabbedPages>
   </FlowPanel>
 </f:Form>  

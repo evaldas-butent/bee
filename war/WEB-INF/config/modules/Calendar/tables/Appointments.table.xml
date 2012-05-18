@@ -17,9 +17,10 @@
     <BeeField name="Style" type="LONG" relation="AppointmentStyles" />
 
     <BeeField name="Status" type="INTEGER" />
-    <BeeField name="Created" type="DATETIME" />
 
-    <BeeField name="Creator" type="LONG" relation="CompanyPersons" />
+    <BeeField name="Created" type="DATETIME" defExpr="CURRENT_TIME" />
+    <BeeField name="Creator" type="LONG" relation="Users" defExpr="CURRENT_USER" />
+
     <BeeField name="Organizer" type="LONG" relation="CompanyPersons" />
 
     <BeeField name="StartDate" type="DATE" />

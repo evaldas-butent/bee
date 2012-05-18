@@ -33,9 +33,6 @@
     <SimpleColumn name="Created" />
     <SimpleColumn name="Creator" />
     <SimpleJoin name="Creator" joinType="LEFT">
-      <SimpleJoin name="Company" joinType="LEFT">
-        <SimpleColumn alias="CreatorCompanyName" name="Name" />
-      </SimpleJoin>
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn alias="CreatorFirstName" name="FirstName" />
         <SimpleColumn alias="CreatorLastName" name="LastName" />
@@ -98,16 +95,32 @@
       <SimpleJoin name="Type" joinType="LEFT">
         <SimpleColumn alias="VehicleType" name="Name" />
       </SimpleJoin>
+      <SimpleJoin name="Model" joinType="LEFT">
+        <SimpleJoin name="Parent" joinType="LEFT">
+          <SimpleColumn alias="VehicleParentModel" name="Name" />
+        </SimpleJoin>
+        <SimpleColumn alias="VehicleModel" name="Name" />
+      </SimpleJoin>
+
       <SimpleColumn alias="VehicleNumber" name="Number" />
       <SimpleColumn alias="VehicleBodyNumber" name="BodyNumber" />
       <SimpleColumn alias="VehicleEngineNumber" name="EngineNumber" />
       <SimpleColumn alias="VehicleEngineVolume" name="EngineVolume" />
       <SimpleColumn alias="VehicleProductionDate" name="ProductionDate" />
       <SimpleColumn alias="VehicleSpeedometer" name="Speedometer" />
+
+      <SimpleJoin name="Fuel" joinType="LEFT">
+        <SimpleColumn alias="VehicleFuel" name="Name" />
+      </SimpleJoin>
       <SimpleColumn alias="VehicleTankCapacity" name="TankCapacity" />
       <SimpleColumn alias="VehiclePower" name="Power" />
       <SimpleColumn alias="VehicleNetto" name="Netto" />
       <SimpleColumn alias="VehicleBrutto" name="Brutto" />
+
+      <SimpleJoin name="Owner" joinType="LEFT">
+        <SimpleColumn alias="VehicleOwner" name="Name" />
+      </SimpleJoin>
+      <SimpleColumn alias="VehicleNotes" name="Notes" />
     </SimpleJoin>
     
     <SimpleColumn name="EffectiveStart" />

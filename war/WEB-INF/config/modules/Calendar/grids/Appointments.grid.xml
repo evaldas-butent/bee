@@ -8,11 +8,8 @@
   <columns>
     <RelColumn name="TypeName" caption="Tipas" />
 
-    <DataColumn name="Summary" />
+    <DataColumn name="Summary" caption="Santrauka" />
     <DataColumn name="Description" caption="Aprašymas" />
-
-    <DataColumn name="Location" caption="Vieta" />
-    <DataColumn name="HtmlLink" />
 
     <RelColumn name="ColorName">
       <dynStyle>
@@ -20,80 +17,37 @@
       </dynStyle>
     </RelColumn>
     
-    <RelColumn name="StyleName" />
+    <RelColumn name="StyleName" caption="Stilius" />
 
     <DataColumn name="Status" caption="Būsena" itemKey="AppointmentStatus" />
-    <DataColumn name="Created" readOnly="true">
-      <carry>
-        <ui:expression>new Date()</ui:expression>
-      </carry>
-    </DataColumn>
 
-    <RelColumn name="Creator">
-      <renderToken source="CreatorFirstName" />
-      <renderToken source="CreatorLastName" />
-      <renderToken source="CreatorCompanyName" prefix=", " />
-      <carry>
-        <ui:expression>row.Creator</ui:expression>
-      </carry>
-    </RelColumn>
+    <DataColumn name="Created" readOnly="true" />
+    <RelColumn name="Creator" renderColumns="CreatorFirstName CreatorLastName" />
     
-    <RelColumn name="Organizer">
-      <renderToken source="OrganizerCompanyName" suffix=", " />
+    <RelColumn name="Organizer" caption="Atsakingas darbuotojas">
       <renderToken source="OrganizerFirstName" />
       <renderToken source="OrganizerLastName" />
+      <renderToken source="OrganizerCompanyName" prefix=", " />
     </RelColumn>
     
     <DataColumn name="StartDate" />
     <DataColumn name="StartDateTime" />
-    <DataColumn name="StartTimeZoneName" />
+    <DataColumn name="EffectiveStart" />
 
     <DataColumn name="EndDate" />
     <DataColumn name="EndDateTime" />
-    <DataColumn name="EndTimeZoneName" />
+    <DataColumn name="EffectiveEnd" />
 
-    <DataColumn name="Recurrence" />
-    <DataColumn name="RecurringEventId" readOnly="true" />
-
-    <DataColumn name="Transparency" itemKey="Transparency" />
-    <DataColumn name="Visibility" itemKey="Calendar_Visibility" />
-    <DataColumn name="ReadOnly" />
-
-    <DataColumn name="ICalUID" />
-    <DataColumn name="Sequence" />
-
-    <DataColumn name="AnyoneCanAddSelf" />
-    <DataColumn name="GuestsCanInviteOthers" />
-    <DataColumn name="GuestsCanSeeOtherGuests" />
-
-    <DataColumn name="UseDefaultReminders" />
+    <RelColumn name="CompanyName" caption="Įmonė:" />
     
-    <RelColumn name="CompanyName">
-      <carry>
-        <ui:expression>row.Company</ui:expression>
-      </carry>
-    </RelColumn>
-    
-    <CalcColumn type="string" name="Contact">
+    <CalcColumn type="string" name="Contact" caption="Telefonai, el. paštas" >
       <renderToken source="CompanyPhone" prefix="tel: " />
       <renderToken source="CompanyMobile" prefix=" mob: " />
       <renderToken source="CompanyEmail" prefix=" mail: " />
     </CalcColumn>
 
-    <DataColumn name="VehicleType" />
-    <DataColumn name="VehicleNumber" />
-    <DataColumn name="VehicleBodyNumber" />
-    <DataColumn name="VehicleEngineNumber" />
-    <DataColumn name="VehicleEngineVolume" />
-    <DataColumn name="VehicleProductionDate" />
-    <DataColumn name="VehicleSpeedometer" />
-    <DataColumn name="VehicleTankCapacity" />
-    <DataColumn name="VehiclePower" />
-    <DataColumn name="VehicleNetto" />
-    <DataColumn name="VehicleBrutto" />
+    <RelColumn name="VehicleNumber" caption="Valst. Nr." />
 
-    <DataColumn name="EffectiveStart" />
-    <DataColumn name="EffectiveEnd" />
   </columns>
   
   <rowEditable>

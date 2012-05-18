@@ -310,6 +310,7 @@
           <xs:attribute name="valueNumeric" type="xs:boolean" default="false" />
           <xs:attribute name="valueStartIndex" type="xs:int" />
           <xs:attribute name="itemKey" type="xs:normalizedString" />
+          <xs:attribute name="defaultDecorator" type="d:registeredDecorator" default="caption-left" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -377,6 +378,8 @@
     <xs:complexContent>
       <xs:extension base="display">
         <xs:attribute name="inline" type="xs:boolean" />
+        <xs:attribute name="caption" type="xs:string" />
+        <xs:attribute name="defaultDecorator" type="d:registeredDecorator" default="caption-left" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

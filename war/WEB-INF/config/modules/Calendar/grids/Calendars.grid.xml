@@ -13,6 +13,6 @@
     <DataColumn name="Visibility" itemKey="Calendar_Visibility" caption="Matomumas" />
     <DataColumn name="Transparency" itemKey="Transparency" />
 
-    <RelColumn name="Owner" caption="Savininkas" renderColumns="OwnerFirstName OwnerLastName" />
+    <RelColumn name="Owner" caption="Savininkas" />
   </columns>
 </Grid>
