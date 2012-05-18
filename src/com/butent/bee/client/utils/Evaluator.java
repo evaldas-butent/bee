@@ -282,6 +282,14 @@ public class Evaluator extends Calculation {
     return evaluator;
   }
 
+  public static Evaluator createEmpty(String colName, List<? extends IsColumn> dataColumns) {
+    Evaluator evaluator = new Evaluator(null, null);
+    if (dataColumns != null && !dataColumns.isEmpty()) {
+      evaluator.init(colName, dataColumns);
+    }
+    return evaluator;
+  }
+  
   public static native JavaScriptObject createExprInterpreter(String xpr) /*-{
     return new Function("row", "rowId", "rowVersion", "rowIndex", "colName", "colIndex", "cell", "return " + xpr + ";");
   }-*/;
@@ -326,6 +334,10 @@ public class Evaluator extends Calculation {
       s = null;
     }
     return s;
+  }
+  
+  public boolean hasInterpreter() {
+    return getInterpeter() != null;
   }
 
   public void init(String colName, List<? extends IsColumn> dataColumns) {

@@ -24,13 +24,11 @@ class CalendarConfigurationHandler extends AbstractFormCallback {
   private Long company = null;
   private Long appointmentType = null;
 
-  private Long theme = null;
   private Long timeZone = null;
   
   private int companyIndex = BeeConst.UNDEF;
   private int appointmentTypeIndex = BeeConst.UNDEF;
 
-  private int themeIndex = BeeConst.UNDEF;
   private int timeZoneIndex = BeeConst.UNDEF;
   
   private IsRow oldRow = null;
@@ -117,7 +115,6 @@ class CalendarConfigurationHandler extends AbstractFormCallback {
     
     setCompanyIndex(provider.getColumnIndex(CalendarConstants.COL_COMPANY));
     setAppointmentTypeIndex(provider.getColumnIndex(CalendarConstants.COL_APPOINTMENT_TYPE));
-    setThemeIndex(provider.getColumnIndex(CalendarConstants.COL_THEME));
     setTimeZoneIndex(provider.getColumnIndex(CalendarConstants.COL_TIME_ZONE));
   }
 
@@ -127,10 +124,6 @@ class CalendarConfigurationHandler extends AbstractFormCallback {
 
   Long getCompany() {
     return company;
-  }
-
-  Long getTheme() {
-    return theme;
   }
 
   Long getTimeZone() {
@@ -147,10 +140,6 @@ class CalendarConfigurationHandler extends AbstractFormCallback {
 
   private IsRow getOldRow() {
     return oldRow;
-  }
-
-  private int getThemeIndex() {
-    return themeIndex;
   }
 
   private int getTimeZoneIndex() {
@@ -177,14 +166,6 @@ class CalendarConfigurationHandler extends AbstractFormCallback {
     this.oldRow = oldRow;
   }
 
-  private void setTheme(Long theme) {
-    this.theme = theme;
-  }
-
-  private void setThemeIndex(int themeIndex) {
-    this.themeIndex = themeIndex;
-  }
-
   private void setTimeZone(Long timeZone) {
     this.timeZone = timeZone;
   }
@@ -201,7 +182,6 @@ class CalendarConfigurationHandler extends AbstractFormCallback {
     setCompany(row.getLong(getCompanyIndex()));
     setAppointmentType(row.getLong(getAppointmentTypeIndex()));
     
-    setTheme(row.getLong(getThemeIndex()));
     setTimeZone(row.getLong(getTimeZoneIndex()));
   }
 }

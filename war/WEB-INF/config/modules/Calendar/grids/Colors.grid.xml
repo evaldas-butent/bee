@@ -12,10 +12,7 @@
   </columns>
   
   <rowStyle>
-    <ui:style>
-      <ui:inline>background: [row.Background]; color: [row.Foreground];</ui:inline>
-    </ui:style>
-    <ui:condition><ui:expression>true</ui:expression></ui:condition>
+    <ui:inline>background: [row.Background]; color: [row.Foreground];</ui:inline>
   </rowStyle>
   
 </Grid>

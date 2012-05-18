@@ -6,10 +6,11 @@
   name="Theme" viewName="Themes" caption="Spalvų Tema">
 
   <FlowPanel class="flexBox-vertical">
-    <HorizontalPanel cellSpacing="20">
-      <InputText source="Name" caption="Pavadinimas:"/>
+    <HorizontalPanel cellSpacing="32">
+      <InputText source="Name" caption="Pavadinimas:" decorator="caption-top" />
       <InputArea source="Description" caption="Aprašymas:" visibleLines="3" style="width: 200px;"
-        d:roleStyle="caption-cell = vertical-align: top;" />
+        decorator="caption-top" />
+      <DataSelector source="DefaultColorName" caption="Pagrindinė spalva:" decorator="caption-top" />
     </HorizontalPanel>
 
     <ChildGrid class="flexible" name="ThemeColors" relColumn="Theme" />

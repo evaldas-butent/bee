@@ -26,15 +26,12 @@
           <ui:inline>background-color: lightgray;</ui:inline>
           <ui:font>Courier</ui:font>
         </bodyStyle>
-        <dynStyle>
-          <ui:style>
-            <ui:inline>border-radius: [rowIndex]px;</ui:inline>
-          </ui:style>
-          <ui:condition>
-            <ui:expression>rowIndex != 0</ui:expression>
-          </ui:condition>
-        </dynStyle>
       </style>
+
+      <dynStyle>
+        <ui:inline>border-radius: [rowIndex]px;</ui:inline>
+        <ui:expression>rowIndex != 0</ui:expression>
+      </dynStyle>
     </IdColumn>
 
     <VerColumn name="Version">
@@ -46,7 +43,7 @@
       </style>
     </VerColumn>
 
-    <CalcColumn name="Calc1" type="date" caption="Ver Dt" format="date_short"
+    <CalcColumn name="Calc1" type="datetime" caption="Ver Dt" format="date_short"
       width="80" source="Version">
       <render>
         <ui:expression>rowVersion</ui:expression>
@@ -78,27 +75,17 @@
     </DataColumn>
 
     <DataColumn name="Lll" source="Long" showWidth="false" minWidth="40">
-      <style>
-        <dynStyle>
-          <ui:style>
-            <ui:inline>color: red</ui:inline>
-          </ui:style>
-          <ui:condition>
-            <ui:expression>row.Long &lt; 0</ui:expression>
-          </ui:condition>
-        </dynStyle>
-        <dynStyle>
-          <ui:style>
-            <ui:inline>color: green</ui:inline>
-          </ui:style>
-          <ui:condition>
-            <ui:function>
-                var z = cell.value;
-                return z &gt; 0;
-              </ui:function>
-          </ui:condition>
-        </dynStyle>
-      </style>
+      <dynStyle>
+        <ui:inline>color: red</ui:inline>
+        <ui:expression>row.Long &lt; 0</ui:expression>
+      </dynStyle>
+      <dynStyle>
+        <ui:inline>color: green</ui:inline>
+        <ui:function>
+          var z = cell.value;
+          return z &gt; 0;
+        </ui:function>
+      </dynStyle>
       <editor type="long" />
     </DataColumn>
 
@@ -192,20 +179,12 @@
   </columns>
 
   <rowStyle>
-    <ui:style>
-      <ui:inline>="color: rgb(" + rowIndex * 10 + "," + rowIndex * 5 + ",0)"</ui:inline>
-    </ui:style>
-    <ui:condition>
-      <ui:expression>new Date().getMinutes() % 15 != 0</ui:expression>
-    </ui:condition>
+    <ui:inline>="color: rgb(" + rowIndex * 10 + "," + rowIndex * 5 + ",0)"</ui:inline>
+    <ui:expression>new Date().getMinutes() % 15 != 0</ui:expression>
   </rowStyle>
   <rowStyle>
-    <ui:style>
-      <ui:inline>="opacity: " + 30 / (new Date().getSeconds() + 30)</ui:inline>
-    </ui:style>
-    <ui:condition>
-      <ui:expression>true</ui:expression>
-    </ui:condition>
+    <ui:inline>="opacity: " + 30 / (new Date().getSeconds() + 30)</ui:inline>
+    <ui:expression>true</ui:expression>
   </rowStyle>
 
   <rowMessage>
@@ -218,11 +197,11 @@
 
   <rowValidation>
     <ui:function>
-        if (row.Integer + row.Long + row.Double &gt; 0) {
-          return null;
-        }
-        return "sum 'Integer+Long+Double' must be positive";
-      </ui:function>
+      if (row.Integer + row.Long + row.Double &gt; 0) {
+        return null;
+      }
+      return "sum 'Integer+Long+Double' must be positive";
+    </ui:function>
   </rowValidation>
 
 </Grid>

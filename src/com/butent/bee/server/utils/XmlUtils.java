@@ -370,8 +370,8 @@ public class XmlUtils {
   public static ConditionalStyleDeclaration getConditionalStyle(Element element) {
     Assert.notNull(element);
 
-    StyleDeclaration style = getStyle(element, ConditionalStyleDeclaration.TAG_STYLE);
-    Calculation condition = getCalculation(element, ConditionalStyleDeclaration.TAG_CONDITION);
+    StyleDeclaration style = getStyle(element);
+    Calculation condition = getCalculation(element);
 
     if (style == null && condition == null) {
       return null;
@@ -711,7 +711,7 @@ public class XmlUtils {
     }
     return new StyleDeclaration(className, inline, font);
   }
-
+  
   public static StyleDeclaration getStyle(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
@@ -721,7 +721,7 @@ public class XmlUtils {
       return null;
     }
     return getStyle(element);
-  }
+  }  
 
   public static String getText(String xml, String tag) {
     Assert.notEmpty(xml);

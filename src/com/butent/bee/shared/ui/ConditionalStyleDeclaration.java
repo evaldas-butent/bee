@@ -18,9 +18,8 @@ import java.util.List;
 
 public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
 
-  public static final String TAG_STYLE = "style";
-  public static final String TAG_CONDITION = "condition";
-
+  public static final String TAG_DYN_STYLE = "dynStyle";
+  
   public static ConditionalStyleDeclaration restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -80,7 +79,7 @@ public class ConditionalStyleDeclaration implements BeeSerializable, HasInfo {
   }
 
   public boolean validState() {
-    return getStyle() != null && !getStyle().isEmpty() && getCondition() != null;
+    return getStyle() != null && !getStyle().isEmpty();
   }
 
   private void setCondition(Calculation condition) {

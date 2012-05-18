@@ -71,7 +71,6 @@ public class GridLoaderBean {
   private static final String TAG_HEADER_STYLE = "headerStyle";
   private static final String TAG_BODY_STYLE = "bodyStyle";
   private static final String TAG_FOOTER_STYLE = "footerStyle";
-  private static final String TAG_DYN_STYLE = "dynStyle";
 
   private static final String TAG_VALIDATION = "validation";
   private static final String TAG_EDITABLE = "editable";
@@ -612,22 +611,23 @@ public class GridLoaderBean {
       if (footerStyle != null) {
         dst.setFooterStyle(footerStyle);
       }
-
-      List<Element> dynStyleNodes = XmlUtils.getElementsByLocalName(styleElement, TAG_DYN_STYLE);
-      if (!dynStyleNodes.isEmpty()) {
-        List<ConditionalStyleDeclaration> dynStyles = Lists.newArrayList();
-        for (int i = 0; i < dynStyleNodes.size(); i++) {
-          ConditionalStyleDeclaration cs = XmlUtils.getConditionalStyle(dynStyleNodes.get(i));
-          if (cs != null) {
-            dynStyles.add(cs);
-          }
-        }
-        if (!dynStyles.isEmpty()) {
-          dst.setDynStyles(dynStyles);
-        }
-      }
     }
 
+    List<Element> dynStyleNodes = XmlUtils.getElementsByLocalName(src,
+        ConditionalStyleDeclaration.TAG_DYN_STYLE);
+    if (!dynStyleNodes.isEmpty()) {
+      List<ConditionalStyleDeclaration> dynStyles = Lists.newArrayList();
+      for (int i = 0; i < dynStyleNodes.size(); i++) {
+        ConditionalStyleDeclaration cs = XmlUtils.getConditionalStyle(dynStyleNodes.get(i));
+        if (cs != null) {
+          dynStyles.add(cs);
+        }
+      }
+      if (!dynStyles.isEmpty()) {
+        dst.setDynStyles(dynStyles);
+      }
+    }
+    
     Calculation validation = XmlUtils.getCalculation(src, TAG_VALIDATION);
     if (validation != null) {
       dst.setValidation(validation);

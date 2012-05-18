@@ -6,19 +6,15 @@
   
   name="Calendar" viewName="Calendars" caption="Kalendorius">
 
-  <FlowPanel>
-    <InputText source="Name" caption="Pavadinimas:" d:size="10" d:unit="em"
-       d:rootStyle="position: absolute; left: 2em; top: 2ex;" />
-    <Label html="Aprašymas:" style="position: absolute; left: 400px; top: 2ex;" />
-    <InputArea source="Description" visibleLines="3"
-       style="width: 200px; position: absolute; left: 500px; top: 2ex;" />
-
-    <DataSelector source="ThemeName" caption="Tema:" d:size="10" d:unit="em"
-       d:rootStyle="position: absolute; left: 2em; top: 80px;" />
-    <DataSelector source="Owner" caption="Savininkas:" style="width: 200px;" d:size="100" d:unit="px" 
-       d:rootStyle="position: absolute; left: 400px; top: 80px;" />
+  <FlowPanel style="margin-left: 2em; margin-right: 2em; margin-top: 2ex;">
+    <InputText source="Name" caption="Pavadinimas:" decorator="caption-top" 
+      d:rootStyle="float: left;" />
+    <InputArea source="Description" caption="Aprašymas:" visibleLines="3" style="width: 300px;"
+      decorator="caption-top" d:rootStyle="margin-left: 5%; float: left;" />
+    <DataSelector source="Owner" caption="Savininkas:" style="width: 200px;"
+       decorator="caption-top" d:rootStyle="float: right;" />
     
-    <TabbedPages style="position: absolute; left: 1em; right: 1em; top: 160px; bottom: 1ex;">
+    <TabbedPages style="position: absolute; left: 0; right: 0; top: 120px; bottom: 1ex;">
       <page>
         <text>Resursų tipai</text>
         <ChildGrid name="CalAttendeeTypes" relColumn="Calendar" />

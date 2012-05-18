@@ -53,27 +53,14 @@
   </columns>
 
   <rowStyle>
-    <ui:style>
-      <ui:inline>color: red;</ui:inline>
-    </ui:style>
-    <ui:condition>
-      <ui:expression>row.Event == 0 &amp;&amp; row.FinishTime &lt; new Date()</ui:expression>
-    </ui:condition>
+    <ui:inline>color: red;</ui:inline>
+    <ui:expression>row.Event == 0 &amp;&amp; row.FinishTime &lt; new Date()</ui:expression>
   </rowStyle>
   <rowStyle>
-    <ui:style>
-      <ui:inline>color: black;</ui:inline>
-    </ui:style>
-    <ui:condition>
-      <ui:expression>row.Event == 0</ui:expression>
-    </ui:condition>
+    <ui:inline>color: black;</ui:inline>
+    <ui:expression>row.Event == 0</ui:expression>
   </rowStyle>
   <rowStyle>
-    <ui:style>
-      <ui:inline>color: gray;</ui:inline>
-    </ui:style>
-    <ui:condition>
-      <ui:expression>true</ui:expression>
-    </ui:condition>
+    <ui:inline>color: gray;</ui:inline>
   </rowStyle>
 </Grid>

@@ -370,7 +370,6 @@ public enum FormWidget {
   private static final String ATTR_DEFAULT_DECORATOR = "defaultDecorator";
 
   private static final String TAG_CSS = "css";
-  private static final String TAG_DYN_STYLE = "dynStyle";
   private static final String TAG_HANDLER = "handler";
 
   private static final String TAG_CALC = "calc";
@@ -1071,7 +1070,7 @@ public enum FormWidget {
         if (BeeUtils.same(childTag, TAG_CSS)) {
           Global.addStyleSheet(child.getAttribute(ATTR_ID), XmlUtils.getText(child));
 
-        } else if (BeeUtils.same(childTag, TAG_DYN_STYLE)) {
+        } else if (BeeUtils.same(childTag, ConditionalStyleDeclaration.TAG_DYN_STYLE)) {
           ConditionalStyleDeclaration csd = XmlUtils.getConditionalStyle(child);
           if (csd != null) {
             dynStyles.add(csd);

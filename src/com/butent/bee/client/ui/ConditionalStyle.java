@@ -92,8 +92,15 @@ public class ConditionalStyle {
       if (conditionalStyle == null) {
         conditionalStyle = new ConditionalStyle();
       }
-      conditionalStyle.addStyle(StyleDescriptor.copyOf(csd.getStyle()),
-          Evaluator.create(csd.getCondition(), colName, dataColumns));
+      
+      Evaluator evaluator;
+      if (csd.getCondition() == null) {
+        evaluator = Evaluator.createEmpty(colName, dataColumns);
+      } else {
+        evaluator = Evaluator.create(csd.getCondition(), colName, dataColumns);
+      }
+
+      conditionalStyle.addStyle(StyleDescriptor.copyOf(csd.getStyle()), evaluator);
     }
     return conditionalStyle;
   }
@@ -141,9 +148,11 @@ public class ConditionalStyle {
         entry.getEvaluator().update(rowValue, rowIndex, colIndex);
       }
 
-      String z = entry.getEvaluator().evaluate();
-      if (!BeeUtils.toBoolean(z)) {
-        continue;
+      if (entry.getEvaluator().hasInterpreter()) {
+        String z = entry.getEvaluator().evaluate();
+        if (!BeeUtils.toBoolean(z)) {
+          continue;
+        }
       }
 
       if (!entry.hasStyleInterpreter() && !entry.hasStyleReplacement()) {

@@ -14,9 +14,11 @@
     <DataColumn name="Location" caption="Vieta" />
     <DataColumn name="HtmlLink" />
 
-    <RelColumn name="ColorName" />
-    <DataColumn name="Background" />
-    <DataColumn name="Foreground" />
+    <RelColumn name="ColorName">
+      <dynStyle>
+        <ui:inline>background: [row.Background]; color: [row.Foreground];</ui:inline>
+      </dynStyle>
+    </RelColumn>
     
     <RelColumn name="StyleName" />
 

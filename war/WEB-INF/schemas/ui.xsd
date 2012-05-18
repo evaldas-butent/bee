@@ -22,10 +22,14 @@
   </xs:complexType>
 
   <xs:complexType name="conditionalStyle">
-    <xs:sequence>
-      <xs:element name="style" type="styleType" />
-      <xs:element name="condition" type="calcType" />
-    </xs:sequence>
+    <xs:complexContent>
+      <xs:extension base="styleType">
+        <xs:choice minOccurs="0" maxOccurs="1">
+          <xs:element name="expression" type="xs:normalizedString" />
+          <xs:element name="function" type="xs:string" />
+        </xs:choice>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:simpleType name="edges">

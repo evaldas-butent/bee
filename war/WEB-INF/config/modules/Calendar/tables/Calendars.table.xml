@@ -11,8 +11,6 @@
     <BeeField name="Location" type="STRING" precision="100" />
     <BeeField name="TimeZone" type="LONG" relation="TimeZones" />
 
-    <BeeField name="Theme" type="LONG" relation="Themes" />
-
     <BeeField name="ReadOnly" type="BOOLEAN" />
     <BeeField name="Visibility" type="INTEGER" />
 

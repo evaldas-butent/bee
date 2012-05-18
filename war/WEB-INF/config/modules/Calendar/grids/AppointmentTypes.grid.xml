@@ -7,6 +7,8 @@
     <DataColumn name="Name" caption="Pavadinimas" />
     <DataColumn name="Description" caption="Aprašymas" />
 
+    <RelColumn name="ThemeName" caption="Tema" />
+
     <DataColumn name="AppointmentCreator" />
     <DataColumn name="AppointmentEditor" />
 

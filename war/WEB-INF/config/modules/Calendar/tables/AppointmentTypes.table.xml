@@ -8,6 +8,8 @@
     <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />
     <BeeField name="Description" type="TEXT" />
 
+    <BeeField name="Theme" type="LONG" relation="Themes" />
+
     <BeeField name="AppointmentCreator" type="STRING" precision="30" />
     <BeeField name="AppointmentEditor" type="STRING" precision="30" />
 

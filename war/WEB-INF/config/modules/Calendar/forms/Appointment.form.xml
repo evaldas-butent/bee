@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
   
   name="Appointment" viewName="Appointments" caption="Vizitas">
 
@@ -37,11 +38,7 @@
       </row>
 
       <row>
-        <DataSelector source="Color" caption="Spalva:">
-          <renderToken source="ColorName" suffix=" = "/>
-          <renderToken source="Background" />
-          <renderToken source="Foreground" prefix="," />
-        </DataSelector>
+        <DataSelector source="ColorName" caption="Spalva:" />
         <DataSelector source="Style" caption="Stilius:" />
         <ListBox source="Status" itemKey="AppointmentStatus" decorator="caption-left"
           caption="Būsena:" />

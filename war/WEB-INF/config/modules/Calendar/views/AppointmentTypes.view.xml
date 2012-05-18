@@ -8,6 +8,11 @@
     <SimpleColumn name="Name" />
     <SimpleColumn name="Description" />
 
+    <SimpleColumn name="Theme" />
+    <SimpleJoin name="Theme" joinType="LEFT">
+      <SimpleColumn alias="ThemeName" name="Name" />
+    </SimpleJoin>
+
     <SimpleColumn name="AppointmentCreator" />
     <SimpleColumn name="AppointmentEditor" />
 

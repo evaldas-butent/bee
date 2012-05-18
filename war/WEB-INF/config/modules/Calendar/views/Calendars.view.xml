@@ -14,11 +14,6 @@
       <SimpleColumn alias="TimeZoneName" name="Name" />
     </SimpleJoin>
 
-    <SimpleColumn name="Theme" />
-    <SimpleJoin name="Theme" joinType="LEFT">
-      <SimpleColumn alias="ThemeName" name="Name" />
-    </SimpleJoin>
-
     <SimpleColumn name="ReadOnly" />
     <SimpleColumn name="Visibility" />
 

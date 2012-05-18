@@ -7,5 +7,7 @@
   <BeeFields>
     <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />
     <BeeField name="Description" type="TEXT" />
+
+    <BeeField name="DefaultColor" type="LONG" relation="Colors" />
   </BeeFields>
 </BeeTable>

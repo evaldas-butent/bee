@@ -10,8 +10,6 @@
 
     <DataColumn name="Description" caption="Aprašymas" sortable="false" />
 
-    <RelColumn name="ThemeName" caption="Tema" />
-
     <DataColumn name="Visibility" itemKey="Calendar_Visibility" caption="Matomumas" />
     <DataColumn name="Transparency" itemKey="Transparency" />
 

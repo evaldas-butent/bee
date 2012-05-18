@@ -27,6 +27,7 @@
   <xs:complexType name="column">
     <xs:sequence>
       <xs:element name="style" type="columnStyle" minOccurs="0" />
+      <xs:element name="dynStyle" type="ui:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
       <xs:choice minOccurs="0" maxOccurs="1">
         <xs:element name="renderer" type="ui:renderer" />
         <xs:element name="render" type="ui:calcType" />
@@ -119,7 +120,6 @@
       <xs:element name="headerStyle" type="ui:styleType" minOccurs="0" />
       <xs:element name="bodyStyle" type="ui:styleType" minOccurs="0" />
       <xs:element name="footerStyle" type="ui:styleType" minOccurs="0" />
-      <xs:element name="dynStyle" type="ui:conditionalStyle" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
   </xs:complexType>
 

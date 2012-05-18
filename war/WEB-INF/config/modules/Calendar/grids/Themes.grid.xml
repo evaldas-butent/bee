@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
-
+  xmlns:ui="http://www.butent.com/ui"
+ 
   name="Themes" viewName="Themes" caption="Temos" editForm="Theme"
+  minColumnWidth="100"
   >
+  <body height="40" />
   <columns>
     <DataColumn name="Name" caption="Pavadinimas" />
     <DataColumn name="Description" caption="Aprašymas" />
+
+    <RelColumn name="DefaultColorName" caption="Pagrindinė spalva:">
+      <dynStyle>
+        <ui:inline>background: [row.DefaultBackground]; color: [row.DefaultForeground];</ui:inline>
+        <ui:expression>row.DefaultColor > 0</ui:expression>
+      </dynStyle>
+    </RelColumn>
   </columns>
 </Grid>

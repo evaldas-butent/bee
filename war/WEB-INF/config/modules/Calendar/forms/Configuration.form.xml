@@ -18,7 +18,5 @@
     &sep;&sep;
 
     <DataSelector source="TimeZone" caption="Laiko juosta:" style="&is;" d:size="&cw;" />
-    &sep;
-    <DataSelector source="Theme" caption="Tema:" style="&is;" d:size="&cw;" />
   </FlowPanel>
 </f:Form>  

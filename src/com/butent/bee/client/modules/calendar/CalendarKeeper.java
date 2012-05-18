@@ -328,10 +328,6 @@ public class CalendarKeeper {
     return BeeUtils.unbox(configurationHandler.getAppointmentType());
   }
 
-  static long getDefaultTheme() {
-    return BeeUtils.unbox(configurationHandler.getTheme());
-  }
-
   static long getDefaultTimeZone() {
     return BeeUtils.unbox(configurationHandler.getTimeZone());
   }
