@@ -38,6 +38,7 @@ import com.butent.bee.client.utils.EvalHelper;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.validation.ValidationHelper;
+import com.butent.bee.client.validation.ValidationOrigin;
 import com.butent.bee.client.view.ActionEvent;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
@@ -321,6 +322,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     setHasData(!BeeUtils.isEmpty(dataCols));
 
     setFormCallback(callback);
+    if (callback != null) {
+      callback.setFormView(this);
+    }
 
     if (hasData()) {
       Calculation calc = formDescription.getRowEditable();
@@ -914,7 +918,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     boolean ok = true;
 
     for (EditableWidget editableWidget : getEditableWidgets()) {
-      if (!editableWidget.validate()) {
+      if (!editableWidget.validate(ValidationOrigin.FORM)) {
         Widget widget = getWidgetById(editableWidget.getWidgetId());
         if (widget != null) {
           DomUtils.setFocus(widget, true);

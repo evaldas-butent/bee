@@ -55,6 +55,8 @@ public class FormFactory {
 
     void beforeRefresh(FormView form, IsRow row);
     
+    FormView getFormView();
+    
     FormCallback getInstance();
     
     BeeRowSet getRowSet();
@@ -74,6 +76,8 @@ public class FormFactory {
     void onStartEdit(FormView form, IsRow row);
 
     void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow);
+  
+    void setFormView(FormView form);
   }
 
   public abstract static class FormViewCallback {

@@ -10,13 +10,15 @@ public class CellValidateEvent {
   }
 
   private final CellValidation cellValidation;
+  private final ValidationOrigin validationOrigin;
 
   private ValidationPhase validationPhase = null;
   private boolean canceled = false;
 
-  public CellValidateEvent(CellValidation cellValidation) {
+  public CellValidateEvent(CellValidation cellValidation, ValidationOrigin validationOrigin) {
     super();
     this.cellValidation = cellValidation;
+    this.validationOrigin = validationOrigin;
   }
 
   public void cancel() {
@@ -35,6 +37,10 @@ public class CellValidateEvent {
     return cellValidation.getRow().getId();
   }
   
+  public ValidationOrigin getValidationOrigin() {
+    return validationOrigin;
+  }
+  
   public ValidationPhase getValidationPhase() {
     return validationPhase;
   }
@@ -43,6 +49,18 @@ public class CellValidateEvent {
     return canceled;
   }
 
+  public boolean isCellValidation() {
+    return validationOrigin != null && validationOrigin.isCell();
+  }
+
+  public boolean isFormValidation() {
+    return validationOrigin != null && validationOrigin.isForm();
+  }
+
+  public boolean isGridValidation() {
+    return validationOrigin != null && validationOrigin.isGrid();
+  }
+  
   public boolean isNewRow() {
     return DataUtils.isNewRow(cellValidation.getRow());
   }

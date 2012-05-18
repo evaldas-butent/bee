@@ -47,6 +47,7 @@ import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.validation.ValidationHelper;
+import com.butent.bee.client.validation.ValidationOrigin;
 import com.butent.bee.client.view.ActionEvent;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
@@ -1885,7 +1886,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private boolean validateAndUpdate(EditableColumn editableColumn, IsRow row, String oldValue,
       String newValue, boolean tab) {
-    Boolean ok = editableColumn.validate(oldValue, newValue, row);
+    Boolean ok = editableColumn.validate(oldValue, newValue, row, ValidationOrigin.CELL);
     if (BeeUtils.isEmpty(ok)) {
       return false;
     }
@@ -1934,7 +1935,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           ec.getDataColumn(), index, ec.getDataType(), ec.isNullable(), ec.getMinValue(),
           ec.getMaxValue(), ec.getCaption(), notificationListener);
 
-      ok = !BeeUtils.isEmpty(ValidationHelper.validateCell(cv, ec));
+      ok = !BeeUtils.isEmpty(ValidationHelper.validateCell(cv, ec, ValidationOrigin.GRID));
       if (!ok) {
         if (form != null) {
           form.focus(ec.getColumnId());

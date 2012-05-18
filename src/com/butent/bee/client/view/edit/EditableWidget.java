@@ -27,6 +27,7 @@ import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.validation.CellValidationBus;
 import com.butent.bee.client.validation.HasCellValidationHandlers;
 import com.butent.bee.client.validation.ValidationHelper;
+import com.butent.bee.client.validation.ValidationOrigin;
 import com.butent.bee.client.view.form.DisplayWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
@@ -403,11 +404,11 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     }
   }
 
-  public boolean validate() {
+  public boolean validate(ValidationOrigin origin) {
     String oldValue = getOldValue();
     String newValue = getEditor().getNormalizedValue();
 
-    return validate(oldValue, newValue);
+    return validate(oldValue, newValue, origin);
   }
 
   private void end(Integer keyCode, boolean hasModifiers) {
@@ -510,7 +511,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       return true;
     }
 
-    if (!eq && !validate(oldValue, newValue)) {
+    if (!eq && !validate(oldValue, newValue, ValidationOrigin.CELL)) {
       if (reset) {
         reset();
       }
@@ -525,11 +526,11 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return true;
   }
 
-  private boolean validate(String oldValue, String newValue) {
+  private boolean validate(String oldValue, String newValue, ValidationOrigin origin) {
     CellValidation cellValidation = new CellValidation(oldValue, newValue, getValidation(),
         getRowValue(), getDataColumn(), getDataIndex(), getDataType(), isNullable(),
         getMinValue(), getMaxValue(), getCaption(), getForm());
 
-    return !BeeUtils.isEmpty(ValidationHelper.validateCell(cellValidation, this));
+    return !BeeUtils.isEmpty(ValidationHelper.validateCell(cellValidation, this, origin));
   }
 }

@@ -30,6 +30,7 @@ import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.validation.CellValidationBus;
 import com.butent.bee.client.validation.HasCellValidationHandlers;
 import com.butent.bee.client.validation.ValidationHelper;
+import com.butent.bee.client.validation.ValidationOrigin;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -379,12 +380,12 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     this.notificationListener = notificationListener;
   }
 
-  public Boolean validate(String oldValue, String newValue, IsRow row) {
+  public Boolean validate(String oldValue, String newValue, IsRow row, ValidationOrigin origin) {
     CellValidation cellValidation = new CellValidation(oldValue, newValue, getValidation(),
         row, getDataColumn(), getColIndex(), getDataType(), isNullable(),
         getMinValue(), getMaxValue(), getCaption(), getNotificationListener());
 
-    return ValidationHelper.validateCell(cellValidation, this);
+    return ValidationHelper.validateCell(cellValidation, this, origin);
   }
 
   private void adjustEditor(Element sourceElement, Element editorElement, Element adjustElement) {
@@ -551,7 +552,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       }
 
       String newValue = getEditor().getNormalizedValue();
-      Boolean ok = validate(oldValue, newValue, getRowValue());
+      Boolean ok = validate(oldValue, newValue, getRowValue(), ValidationOrigin.CELL);
 
       if (BeeUtils.isEmpty(ok)) {
         if (ok == null) {

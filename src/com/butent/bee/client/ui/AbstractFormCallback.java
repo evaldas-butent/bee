@@ -13,6 +13,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
 
 public class AbstractFormCallback implements FormFactory.FormCallback {
+  
+  private FormView formView;
 
   public void afterAction(Action action, FormPresenter presenter) {
   }
@@ -44,6 +46,10 @@ public class AbstractFormCallback implements FormFactory.FormCallback {
     return null;
   }
 
+  public FormView getFormView() {
+    return formView;
+  }
+
   public FormCallback getInstance() {
     return null;
   }
@@ -72,10 +78,14 @@ public class AbstractFormCallback implements FormFactory.FormCallback {
 
   public void onStart(FormView form) {
   }
-
+  
   public void onStartEdit(FormView form, IsRow row) {
   }
-  
+
   public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
+  }
+
+  public void setFormView(FormView formView) {
+    this.formView = formView;
   }
 }

@@ -10,13 +10,14 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class ValidationHelper {
 
-  public static Boolean validateCell(CellValidation validation, HasCellValidationHandlers source) {
+  public static Boolean validateCell(CellValidation validation, HasCellValidationHandlers source,
+      ValidationOrigin origin) {
     Assert.notNull(validation);
     if (source == null) {
       return validateCell(validation);
     }
 
-    CellValidateEvent event = new CellValidateEvent(validation);
+    CellValidateEvent event = new CellValidateEvent(validation, origin);
     event.setValidationPhase(ValidationPhase.PRE);
     Boolean ok = source.fireCellValidation(event);
 

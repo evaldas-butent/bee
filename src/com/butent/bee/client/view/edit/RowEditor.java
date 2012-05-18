@@ -22,6 +22,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.validation.ValidationOrigin;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
@@ -617,7 +618,7 @@ public class RowEditor extends FlexTable implements HasEditState, EditEndEvent.H
 
   private boolean validateAndUpdate(EditableColumn editableColumn, int index, String oldValue,
       String newValue, boolean tab) {
-    Boolean ok = editableColumn.validate(oldValue, newValue, getActiveRow());
+    Boolean ok = editableColumn.validate(oldValue, newValue, getActiveRow(), ValidationOrigin.CELL);
     if (BeeUtils.isEmpty(ok)) {
       return false;
     }
