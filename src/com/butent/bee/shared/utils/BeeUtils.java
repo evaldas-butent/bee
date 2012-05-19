@@ -45,7 +45,7 @@ public class BeeUtils {
       return true;
     }
   }
-  
+
   /**
    * Checks if all specified objects are empty.
    * 
@@ -103,7 +103,7 @@ public class BeeUtils {
     }
     return ok;
   }
-  
+
   /**
    * Appends specified list's {@code iterable} elements to a specified StringBuilder {@code bld}.
    * 
@@ -148,7 +148,7 @@ public class BeeUtils {
     }
     return bld;
   }
-  
+
   /**
    * Checks if the specified value {@code x} is between values {@code min} and {@code max}. Note:
    * {@code min} value is inclusive, {@code max} value - exclusive.
@@ -162,7 +162,7 @@ public class BeeUtils {
   public static boolean betweenExclusive(int x, int min, int max) {
     return x >= min && x < max;
   }
-  
+
   /**
    * Checks if the specified value {@code x} is between values {@code min} and {@code max}
    * inclusively.
@@ -683,7 +683,7 @@ public class BeeUtils {
   public static String emptyToNull(String s) {
     return isEmpty(s) ? null : s;
   }
-  
+
   /**
    * Checks if Object {@code x} and Object {@code y} are equal.
    * 
@@ -1591,7 +1591,7 @@ public class BeeUtils {
   public static boolean isNonNegative(Integer x) {
     return (x == null) ? false : x >= 0;
   }
-  
+
   public static boolean isNonNegativeDouble(String s) {
     return isDouble(s, BeeConst.DOUBLE_ZERO, true);
   }
@@ -2000,7 +2000,7 @@ public class BeeUtils {
   public static String normSep(Object x, Object def) {
     String sep;
 
-    if (x instanceof CharSequence && length(x) > 0 
+    if (x instanceof CharSequence && length(x) > 0
         || x instanceof Integer && isPositive((Integer) x) || x instanceof Character) {
       sep = normSep(x);
     } else {
@@ -2036,7 +2036,7 @@ public class BeeUtils {
     if (!target.isEmpty()) {
       target.clear();
     }
-    
+
     if (source != null) {
       target.addAll(source);
     }
@@ -3305,6 +3305,16 @@ public class BeeUtils {
   }
 
   /**
+   * Null-safe Double unboxing.
+   * 
+   * @param box an Double to unbox
+   * @return unboxed double value or 0 if {@code box} is null
+   */
+  public static double unbox(Double box) {
+    return (box == null) ? 0 : box;
+  }
+
+  /**
    * Null-safe Integer unboxing.
    * 
    * @param box an Integer to unbox
@@ -3354,7 +3364,7 @@ public class BeeUtils {
     }
     return result;
   }
-  
+
   /**
    * Searches for an Integer value from a String {@code s}.
    * 

@@ -9,6 +9,10 @@
     <BeeField name="Date" type="DATETIME" notNull="true" />
     <BeeField name="Quantity" type="INTEGER" notNull="true" />
     <BeeField name="Rate" type="DECIMAL" precision="10" scale="4" notNull="true" />
-    <BeeField name="BaseCurrency" type="LONG" relation="Currencies" notNull="true" />
   </BeeFields>
+  <BeeKeys>
+    <BeeKey>
+      <KeyField>Date</KeyField>
+    </BeeKey>
+  </BeeKeys>
 </BeeTable>

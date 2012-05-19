@@ -28,6 +28,7 @@ import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.view.grid.GridView;
@@ -248,6 +249,55 @@ public class TransportHandler {
       if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
         ((HasClickHandlers) widget)
             .addClickHandler(new Profit(TransportConstants.VAR_TRIP_ID));
+      }
+    }
+
+    @Override
+    public void afterCreateEditableWidget(EditableWidget editableWidget) {
+      if (BeeUtils.same(editableWidget.getColumnId(), "Vehicle")) {
+        List<BeeColumn> columns = getFormView().getDataColumns();
+        final int dateIdx = DataUtils.getColumnIndex("Date", columns);
+        final int speedIdx = DataUtils.getColumnIndex("SpeedometerBefore", columns);
+        final int fuelIdx = DataUtils.getColumnIndex("FuelBefore", columns);
+
+        editableWidget.addCellValidationHandler(new CellValidateEvent.Handler() {
+          @Override
+          public Boolean validateCell(CellValidateEvent event) {
+            if (event.isCellValidation() && event.isPostValidation()) {
+              CellValidation cv = event.getCellValidation();
+              String id = cv.getNewValue();
+
+              if (!BeeUtils.isEmpty(id)) {
+                final IsRow row = cv.getRow();
+
+                ParameterList args = TransportHandler.createArgs(TransportConstants.SVC_GET_BEFORE);
+                args.addDataItem("Vehicle", id);
+                args.addDataItem("Date", row.getString(dateIdx));
+
+                BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+                  @Override
+                  public void onResponse(ResponseObject response) {
+                    Assert.notNull(response);
+
+                    if (response.hasErrors()) {
+                      Global.showError((Object[]) response.getErrors());
+
+                    } else if (response.hasArrayResponse(String.class)) {
+                      String[] r = Codec.beeDeserializeCollection((String) response.getResponse());
+                      row.setValue(speedIdx, r[0]);
+                      row.setValue(fuelIdx, r[1]);
+                      getFormView().refresh(false);
+
+                    } else {
+                      Global.showError("Unknown response");
+                    }
+                  }
+                });
+              }
+            }
+            return true;
+          }
+        });
       }
     }
   }

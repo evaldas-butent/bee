@@ -9,13 +9,9 @@
     <SimpleColumn name="Date" />
     <SimpleColumn name="Quantity" />
     <SimpleColumn name="Rate" />
-    <SimpleColumn name="BaseCurrency" />
-    <SimpleJoin joinType="LEFT" name="BaseCurrency">
-      <SimpleColumn name="Name" alias="BaseCurrencyName"/>
-    </SimpleJoin>
   </Columns>
   <Order>
-    <OrderBy column="Date" />
+    <OrderBy column="Date" descending="true" />
   </Order>
 </View>
  

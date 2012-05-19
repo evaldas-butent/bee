@@ -20,11 +20,11 @@
       <carry><ui:expression>row.Country</ui:expression></carry>
     </RelColumn>
     <DataColumn name="Route" caption="Maršrutas" />
-    <DataColumn name="SpeedometerFrom" caption="Spid.nuo" format="#.0" minValue="0">
+    <DataColumn name="SpeedometerFrom" caption="Spid.nuo" format="#.0" minValue="0" updateMode="row">
       <carry><ui:expression>row.SpeedometerTo</ui:expression></carry>
     </DataColumn>
-    <DataColumn name="SpeedometerTo" caption="Spid.iki" format="#.0" minValue="0" />
-    <DataColumn name="Kilometers" caption="Km" format="#.0" minValue="0">
+    <DataColumn name="SpeedometerTo" caption="Spid.iki" format="#.0" minValue="0" updateMode="row" />
+    <DataColumn name="Kilometers" caption="Km" format="#.0" minValue="0" updateMode="row">
       <style>
         <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>

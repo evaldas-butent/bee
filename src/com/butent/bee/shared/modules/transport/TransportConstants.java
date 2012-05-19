@@ -18,12 +18,14 @@ public class TransportConstants {
   public static final String TRANSPORT_METHOD = TRANSPORT_MODULE + "Method";
 
   public static final String SVC_UPDATE_KM = "UpdateKilometers";
+  public static final String SVC_GET_BEFORE = "GetBeforeData";
   public static final String SVC_GET_PROFIT = "GetProfit";
 
   public static final String VAR_TRIP_ID = Service.RPC_VAR_PREFIX + "trip_id";
   public static final String VAR_CARGO_ID = Service.RPC_VAR_PREFIX + "cargo_id";
   public static final String VAR_ORDER_ID = Service.RPC_VAR_PREFIX + "order_id";
 
+  public static final String VIEW_TRIPS = "Trips";
   public static final String VIEW_TRIP_CARGO = "TripCargo";
   public static final String VIEW_TRIP_ROUTES = "TripRoutes";
 

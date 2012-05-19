@@ -58,6 +58,77 @@ public class TransportModuleBean implements BeeModule {
     if (BeeUtils.same(svc, TransportConstants.SVC_UPDATE_KM)) {
       response = updateKilometers(reqInfo);
 
+    } else if (BeeUtils.same(svc, TransportConstants.SVC_GET_BEFORE)) {
+      String[] resp = new String[2];
+      long id = BeeUtils.toLong(reqInfo.getParameter("Vehicle"));
+      long dt = BeeUtils.toLong(reqInfo.getParameter("Date"));
+
+      if (!BeeUtils.isEmpty(dt)) {
+        String trips = TransportConstants.VIEW_TRIPS;
+        String routes = TransportConstants.VIEW_TRIP_ROUTES;
+        String vehicles = "Vehicles";
+        String fuels = "TripFuelCosts";
+        String consumptions = "TripFuelConsumptions";
+        String tripId = sys.getIdName(trips);
+
+        SimpleRowSet rs = qs.getData(new SqlSelect()
+            .addFields(trips,
+                tripId, "SpeedometerBefore", "SpeedometerAfter", "FuelBefore", "FuelAfter")
+            .addFrom(trips)
+            .setWhere(SqlUtils.and(SqlUtils.equal(trips, "Vehicle", id),
+                SqlUtils.less(trips, "Date", dt))));
+
+        int cnt = rs.getNumberOfRows();
+
+        if (cnt > 0) {
+          cnt--;
+          Double speedometer = rs.getDouble(cnt, "SpeedometerAfter");
+          Double fuel = rs.getDouble(cnt, "FuelAfter");
+
+          if (speedometer == null) {
+            Double km = qs.getDouble(new SqlSelect()
+                .addSum(routes, "Kilometers")
+                .addFrom(routes)
+                .setWhere(SqlUtils.equal(routes, "Trip", rs.getLong(cnt, tripId))));
+
+            speedometer = BeeUtils.unbox(rs.getDouble(cnt, "SpeedometerBefore"))
+                + BeeUtils.unbox(km);
+
+            Integer scale = qs.getInt(new SqlSelect()
+                .addFields(vehicles, "Speedometer")
+                .addFrom(vehicles)
+                .setWhere(SqlUtils.equal(vehicles, sys.getIdName(vehicles), id)));
+
+            if (BeeUtils.isPositive(scale) && scale < speedometer) {
+              speedometer -= scale;
+            }
+          }
+          if (fuel == null) {
+            Double fill = qs.getDouble(new SqlSelect()
+                .addSum(fuels, "Quantity")
+                .addFrom(fuels)
+                .setWhere(SqlUtils.equal(fuels, "Trip", rs.getLong(cnt, tripId))));
+
+            Double consume = BeeUtils.toDouble(qs.getRow(getFuelConsumptionsQuery(new SqlSelect()
+                .addFields(routes, sys.getIdName(routes))
+                .addFrom(routes)
+                .setWhere(SqlUtils.equal(routes, "Trip", rs.getLong(cnt, tripId))), false))
+                .get("Quantity"));
+
+            Double addit = qs.getDouble(new SqlSelect()
+                .addSum(consumptions, "Quantity")
+                .addFrom(consumptions)
+                .setWhere(SqlUtils.equal(consumptions, "Trip", rs.getLong(cnt, tripId))));
+
+            fuel = BeeUtils.unbox(rs.getDouble(cnt, "FuelBefore")) + BeeUtils.unbox(fill)
+                - consume - BeeUtils.unbox(addit);
+          }
+          resp[0] = BeeUtils.transform(speedometer);
+          resp[1] = BeeUtils.transform(fuel);
+        }
+      }
+      response = ResponseObject.response(resp);
+
     } else if (BeeUtils.same(svc, TransportConstants.SVC_GET_PROFIT)) {
       if (reqInfo.hasParameter(TransportConstants.VAR_TRIP_ID)) {
         response =

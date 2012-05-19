@@ -10,8 +10,5 @@
       <carry><ui:expression>row.Quantity</ui:expression></carry>
     </DataColumn>
     <DataColumn name="Rate" source="Rate" caption="Kursas" />
-    <RelColumn name="BaseCurrency" caption="Valiuta">
-      <carry><ui:expression>row.Quantity</ui:expression></carry>
-    </RelColumn>
   </columns>
 </Grid>
