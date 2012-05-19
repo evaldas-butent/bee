@@ -330,6 +330,9 @@ public class Queries {
 
     BeeRowSet rs = getNotEmpty(viewName, columns, row);
     if (rs == null) {
+      if (callback != null) {
+        callback.onFailure(viewName, "nothing to insert");
+      }
       return 0;
     }
 
@@ -356,12 +359,19 @@ public class Queries {
     BeeKeeper.getRpc().sendText(Service.INSERT_ROW, Codec.beeSerialize(rowSet),
         new ResponseCallback() {
           public void onResponse(ResponseObject response) {
-            if (response.hasErrors()) {
-              if (callback != null) {
+            if (callback != null) {
+              if (response.hasErrors()) {
                 callback.onFailure(response.getErrors());
+              } else if (!response.hasResponse(BeeRow.class)) {
+                callback.onFailure("insertRow: response not a BeeRow");
+              } else {
+                BeeRow row = BeeRow.restore((String) response.getResponse());
+                if (row == null) {
+                  callback.onFailure("insertRow: cannot restore row");
+                } else {
+                  callback.onSuccess(row);
+                }
               }
-            } else if (callback != null && response.hasResponse(BeeRow.class)) {
-              callback.onSuccess(BeeRow.restore((String) response.getResponse()));
             }
           }
         });

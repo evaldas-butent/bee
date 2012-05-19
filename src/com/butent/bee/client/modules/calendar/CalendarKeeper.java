@@ -26,6 +26,7 @@ import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.HasDataProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.dom.StyleUtils;
@@ -336,6 +337,20 @@ public class CalendarKeeper {
   }
 
   private static void createCommands() {
+    BeeKeeper.getScreen().addCommandItem(new Html("Naujas klientas",
+        new Scheduler.ScheduledCommand() {
+          public void execute() {
+            RowFactory.createRow("Companies", "Company", "Naujas klientas", null);
+          }
+        }));
+
+    BeeKeeper.getScreen().addCommandItem(new Html("Naujas automobilis",
+        new Scheduler.ScheduledCommand() {
+          public void execute() {
+            RowFactory.createRow("Vehicles", "Vehicle", "Naujas automobilis", null);
+          }
+        }));
+    
     BeeKeeper.getScreen().addCommandItem(new Html("Naujas vizitas",
         new Scheduler.ScheduledCommand() {
           public void execute() {

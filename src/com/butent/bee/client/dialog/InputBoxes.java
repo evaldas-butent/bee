@@ -57,6 +57,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class InputBoxes {
 
+  public static final String SILENT_ERROR = "-";
+  
   private class KeyboardHandler implements KeyDownHandler {
 
     private final DialogBox dialog;
@@ -507,7 +509,7 @@ public class InputBoxes {
   }
 
   private void showError(Widget widget, String message) {
-    if (!BeeUtils.isEmpty(message)) {
+    if (!BeeUtils.isEmpty(message) && !SILENT_ERROR.equals(message)) {
       if (widget instanceof HasText) {
         ((HasText) widget).setText(message);
       } else if (widget instanceof NotificationListener) {

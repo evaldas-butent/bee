@@ -21,7 +21,22 @@ public class RelationUtils {
   public static int setDefaults(String viewName, IsRow row, Collection<String> colNames,
       List<BeeColumn> columns) {
     int result = 0;
-    if (BeeUtils.isEmpty(viewName) || row == null || BeeUtils.isEmpty(colNames)
+    if (BeeUtils.isEmpty(viewName) || BeeUtils.isEmpty(colNames)) {
+      return result;
+    }
+
+    DataInfo dataInfo = Global.getDataInfo(viewName, true);
+    if (dataInfo == null) {
+      return result;
+    }
+    
+    return setDefaults(dataInfo, row, colNames, columns);
+  }
+
+  public static int setDefaults(DataInfo dataInfo, IsRow row, Collection<String> colNames,
+      List<BeeColumn> columns) {
+    int result = 0;
+    if (dataInfo == null || row == null || BeeUtils.isEmpty(colNames)
         || BeeUtils.isEmpty(columns)) {
       return result;
     }
@@ -30,8 +45,6 @@ public class RelationUtils {
       return result;
     }
 
-    DataInfo dataInfo = null;
-
     for (String colName : colNames) {
       BeeColumn column = DataUtils.getColumn(colName, columns);
       if (column == null || !column.hasDefaults()) {
@@ -39,13 +52,6 @@ public class RelationUtils {
       }
       if (!Defaults.DefaultExpression.CURRENT_USER.equals(column.getDefaults().getA())) {
         continue;
-      }
-
-      if (dataInfo == null) {
-        dataInfo = Global.getDataInfo(viewName, true);
-        if (dataInfo == null) {
-          break;
-        }
       }
 
       Collection<ViewColumn> descendants = dataInfo.getDescendants(column.getId(), false);
@@ -70,7 +76,7 @@ public class RelationUtils {
     }
     return result;
   }
-
+  
   public static int setRelatedValues(String viewName, String colName, IsRow targetRow,
       IsRow sourceRow) {
     int result = 0;

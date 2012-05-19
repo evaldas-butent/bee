@@ -932,7 +932,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     if (ok && getActiveRow() != null) {
       ok = ValidationHelper.validateRow(getActiveRow(), getRowValidation(), this);
     }
-
     return ok;
   }
 
