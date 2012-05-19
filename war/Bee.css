@@ -579,8 +579,11 @@ body, select {
   font-weight: bolder;
 }
 
-.bee-WindowMessage {
+.bee-Header-message {
   margin-left: 1em;
+}
+.bee-Header-control {
+  cursor: pointer;
 }
 
 .bee-FooterCell {
@@ -1013,7 +1016,7 @@ body, select {
 }
 
 .bee-GridFormContainer-newRow {
-  background-color: #ecf6ce;
+  background-color: #fafffa;
 }
 
 .bee-GridFormContainer-edit {

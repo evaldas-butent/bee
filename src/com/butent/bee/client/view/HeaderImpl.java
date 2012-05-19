@@ -1,9 +1,6 @@
 package com.butent.bee.client.view;
 
 import com.google.common.collect.Maps;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.resources.client.ClientBundle;
-import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.ui.HasEnabled;
@@ -34,49 +31,6 @@ import java.util.Set;
 
 public class HeaderImpl extends Complex implements HeaderView {
 
-  /**
-   * Specifies which styling resources to use for a data header implementation.
-   */
-
-  public interface Resources extends ClientBundle {
-    @Source("HeaderImpl.css")
-    Style headerStyle();
-  }
-
-  /**
-   * Specifies which styling aspects have to be implemented on data header implementations.
-   */
-
-  public interface Style extends CssResource {
-    String caption();
-
-    int captionLeft();
-
-    int captionTop();
-
-    String close();
-
-    int closeRight();
-
-    int closeTop();
-
-    String container();
-
-    String control();
-
-    int controlsRight();
-
-    int controlTop();
-
-    int controlWidth();
-
-    String loadingIndicator();
-
-    int loadingIndicatorRightMargin();
-
-    int loadingIndicatorTop();
-  }
-
   private class ActionListener extends BeeCommand {
     private final Action action;
 
@@ -95,24 +49,29 @@ public class HeaderImpl extends Complex implements HeaderView {
   
   private static final int HEIGHT = 22;
 
-  private static Resources defaultResources = null;
-  private static Style defaultStyle = null;
+  private static final int CAPTION_LEFT = 8;
+  private static final int CAPTION_TOP = 1;
 
-  private static Resources getDefaultResources() {
-    if (defaultResources == null) {
-      defaultResources = GWT.create(Resources.class);
-    }
-    return defaultResources;
-  }
+  private static final int CONTROL_WIDTH = 32;
+  private static final int CONTROL_TOP = 2;
 
-  private static Style getDefaultStyle() {
-    if (defaultStyle == null) {
-      defaultStyle = getDefaultResources().headerStyle();
-      defaultStyle.ensureInjected();
-    }
-    return defaultStyle;
-  }
+  private static final int CONTROLS_RIGHT = 48;
 
+  private static final int CLOSE_RIGHT = 2;
+  private static final int CLOSE_TOP = 2;
+  
+  private static final int LOADING_INDICATOR_TOP = 2;
+  private static final int LOADING_INDICATOR_RIGHT_MARGIN = 48;
+  
+  private static final String STYLE_CONTAINER = "bee-Header-container";
+
+  private static final String STYLE_CAPTION = "bee-Header-caption";
+  private static final String STYLE_MESSAGE = "bee-Header-message";
+
+  private static final String STYLE_LOADING_INDICATOR = "bee-Header-loadingIndicator";
+  private static final String STYLE_CONTROL = "bee-Header-control";
+  private static final String STYLE_CLOSE = "bee-Header-close";
+  
   private Presenter viewPresenter = null;
 
   private String loadingIndicatorId = null;
@@ -134,75 +93,76 @@ public class HeaderImpl extends Complex implements HeaderView {
 
   public void create(String caption, boolean hasData, boolean readOnly,
       Collection<UiOption> options, Set<Action> enabledActions, Set<Action> disabledActions) {
-    Style style = getDefaultStyle();
     addStyleName(StyleUtils.WINDOW_HEADER);
-    addStyleName(style.container());
+    addStyleName(STYLE_CONTAINER);
     
     boolean isWindow = UiOption.isWindow(options);
     
     captionWidget.setText(BeeUtils.trim(caption));
+    captionWidget.addStyleName(STYLE_CAPTION);
     if (isWindow) {
       captionWidget.addStyleName(StyleUtils.WINDOW_CAPTION);
     }
-    messageWidget.addStyleName(StyleUtils.WINDOW_MESSAGE);
+
+    messageWidget.addStyleName(STYLE_MESSAGE);
     
     Flow panel = new Flow();
     panel.add(captionWidget);
     panel.add(messageWidget);
-    addLeftTop(panel, style.captionLeft(), style.captionTop());
+    addLeftTop(panel, CAPTION_LEFT, CAPTION_TOP);
     
     boolean hasClose = hasAction(Action.CLOSE, isWindow, enabledActions, disabledActions);
     
-    int x = hasClose ? style.controlsRight() : style.closeRight();
-    int y = style.controlTop();
-    int w = style.controlWidth();
+    int x = hasClose ? CONTROLS_RIGHT : CLOSE_RIGHT;
+    int y = CONTROL_TOP;
+    int w = CONTROL_WIDTH;
 
-    String cst = style.control();
-    
     if (hasAction(Action.CONFIGURE, false, enabledActions, disabledActions)) {
-      addRightTop(createControl(Global.getImages().configure(), Action.CONFIGURE, cst), x, y);
+      addRightTop(createControl(Global.getImages().configure(), Action.CONFIGURE, STYLE_CONTROL),
+          x, y);
       x += w;
     }
 
     if (hasAction(Action.SAVE, false, enabledActions, disabledActions)) {
-      addRightTop(createControl(Global.getImages().save(), Action.SAVE, cst), x, y);
+      addRightTop(createControl(Global.getImages().save(), Action.SAVE, STYLE_CONTROL), x, y);
       x += w;
     }
     if (hasAction(Action.EDIT, false, enabledActions, disabledActions)) {
-      addRightTop(createControl(Global.getImages().edit(), Action.EDIT, cst), x, y);
+      addRightTop(createControl(Global.getImages().edit(), Action.EDIT, STYLE_CONTROL), x, y);
       x += w;
     }
 
     if (hasAction(Action.BOOKMARK, false, enabledActions, disabledActions)) {
-      addRightTop(createControl(Global.getImages().bookmarkAdd(), Action.BOOKMARK, cst), x, y);
+      addRightTop(createControl(Global.getImages().bookmarkAdd(), Action.BOOKMARK, STYLE_CONTROL),
+          x, y);
       x += w;
     }
 
     if (hasAction(Action.DELETE, hasData && !readOnly, enabledActions, disabledActions)) {
-      addRightTop(createControl(Global.getImages().editDelete(), Action.DELETE, cst), x, y);
+      addRightTop(createControl(Global.getImages().editDelete(), Action.DELETE, STYLE_CONTROL),
+          x, y);
       x += w;
     }
     if (hasAction(Action.ADD, hasData && !readOnly, enabledActions, disabledActions)) {
-      addRightTop(createControl(Global.getImages().editAdd(), Action.ADD, cst), x, y);
+      addRightTop(createControl(Global.getImages().editAdd(), Action.ADD, STYLE_CONTROL), x, y);
       x += w;
     }
 
     if (hasAction(Action.REFRESH, hasData, enabledActions, disabledActions)) {
-      addRightTop(createControl(Global.getImages().reload(), Action.REFRESH, cst), x, y);
+      addRightTop(createControl(Global.getImages().reload(), Action.REFRESH, STYLE_CONTROL), x, y);
       x += w;
     }
     
     if (hasData) {
       BeeImage loadingIndicator = new BeeImage(Global.getImages().loading());
       setLoadingIndicatorId(loadingIndicator.getId());
-      loadingIndicator.addStyleName(style.loadingIndicator());
-      addRightTop(loadingIndicator,
-          x + style.loadingIndicatorRightMargin(), style.loadingIndicatorTop());
+      loadingIndicator.addStyleName(STYLE_LOADING_INDICATOR);
+      addRightTop(loadingIndicator, x + LOADING_INDICATOR_RIGHT_MARGIN, LOADING_INDICATOR_TOP);
     }
     
     if (hasClose) {
-      addRightTop(createControl(Global.getImages().close(), Action.CLOSE, style.close()),
-          style.closeRight(), style.closeTop());
+      addRightTop(createControl(Global.getImages().close(), Action.CLOSE, STYLE_CLOSE),
+          CLOSE_RIGHT, CLOSE_TOP);
     }
   }
   

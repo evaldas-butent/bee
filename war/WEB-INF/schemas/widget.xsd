@@ -592,6 +592,7 @@
       <xs:extension base="editableWidget">
         <xs:attribute name="defaultDecorator" type="d:registeredDecorator" default="caption-left" />
         <xs:attribute name="onFocus" type="ui:focusAction" />
+        <xs:attribute name="placeholder" type="xs:normalizedString" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -606,6 +607,7 @@
           <xs:attribute name="defaultDecorator" type="d:registeredDecorator"
             default="caption-left-cell" />
           <xs:attribute name="onFocus" type="ui:focusAction" />
+          <xs:attribute name="placeholder" type="xs:normalizedString" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

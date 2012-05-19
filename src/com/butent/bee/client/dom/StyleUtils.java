@@ -207,7 +207,6 @@ public class StyleUtils {
   public static final String DROP_AREA = "bee-dropArea";
 
   public static final String WINDOW_CAPTION = "bee-WindowCaption";
-  public static final String WINDOW_MESSAGE = "bee-WindowMessage";
   public static final String WINDOW_HEADER = "bee-WindowHeader";
   public static final String WINDOW_FOOTER = "bee-WindowFooter";
 

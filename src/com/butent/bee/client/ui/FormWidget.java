@@ -369,6 +369,8 @@ public enum FormWidget {
   private static final String ATTR_DECORATOR = "decorator";
   private static final String ATTR_DEFAULT_DECORATOR = "defaultDecorator";
 
+  private static final String ATTR_PLACEHOLDER = "placeholder";
+
   private static final String TAG_CSS = "css";
   private static final String TAG_HANDLER = "handler";
 
@@ -1836,6 +1838,9 @@ public enum FormWidget {
         if (widget instanceof AcceptsCaptions) {
           ((AcceptsCaptions) widget).addCaptions(value);
         }
+
+      } else if (BeeUtils.same(name, ATTR_PLACEHOLDER)) {
+        DomUtils.setPlaceholder(widget, value);
       }
     }
   }

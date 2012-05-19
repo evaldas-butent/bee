@@ -1353,6 +1353,13 @@ public class DomUtils {
     return el.getTagName().equalsIgnoreCase(TAG_TD);
   }
 
+  public static boolean isTextAreaElement(Element el) {
+    if (el == null) {
+      return false;
+    }
+    return el.getTagName().equalsIgnoreCase(TAG_TEXT_AREA);
+  }
+  
   public static boolean isThElement(Element el) {
     if (el == null) {
       return false;
@@ -1711,10 +1718,8 @@ public class DomUtils {
   }
 
   public static boolean setPlaceholder(Element elem, String value) {
-    assertInputElement(elem);
-    Assert.notEmpty(value);
-
-    if (Features.supportsAttributePlaceholder()) {
+    if ((isInputElement(elem) || isTextAreaElement(elem)) 
+        && Features.supportsAttributePlaceholder()) {
       elem.setAttribute(ATTRIBUTE_PLACEHOLDER, value);
       return true;
     } else {

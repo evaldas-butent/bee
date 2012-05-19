@@ -3,11 +3,11 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="Appointments" viewName="Appointments" caption="Vizitai"
-  newRowForm="Appointment" editForm="Appointment" favorite="Summary"
+  newRowForm="NewAppointment" editForm="Appointment" favorite="Summary"
   >
   <columns>
-    <DataColumn name="CompanyName" caption="Įmonė" />
-    <DataColumn name="CompanyPhone" caption="Telefonai" />
+    <DataColumn name="CompanyName" caption="Klientas" />
+    <DataColumn name="CompanyPhone" caption="Telefonas" />
 
     <DataColumn name="VehicleNumber" caption="Valst. Nr." />
     <DataColumn name="VehicleModel" renderColumns="VehicleParentModel VehicleModel" caption="Modelis" />

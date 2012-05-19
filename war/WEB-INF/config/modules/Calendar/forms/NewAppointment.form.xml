@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY absolute "position: absolute;">
+  <!ENTITY relative "position: relative;">
+  <!ENTITY header "font-size: large;">
+  <!ENTITY separator '<hr style="position: absolute; left: 120px; right: 0; top: 5px;"/>'>
+  <!ENTITY display "-webkit-appearance: textfield; padding: 3px; margin: 2px 0px;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
+  xmlns:d="http://www.butent.com/decorator" name="NewAppointment" viewName="Appointments" caption="Naujas Vizitas">
+
+  <FlowPanel style="&relative; margin-left: 1em; margin-right: 1em; margin-top: 2ex;">
+    <FlowPanel style="&relative; height: 30px;">
+      <Label html="Klientas:" style="&header;" />
+      &separator;
+    </FlowPanel>
+
+    <FlowPanel style="&relative; height: 60px;">
+      <DataSelector source="CompanyName" caption="Klientas:" style="width: 300px;"
+        choiceColumns="Name Phone Email" d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
+      <DataSelector source="CompanyPhone" caption="Telefonas:" style="width: 200px;"
+        filter="Phone" choiceColumns="Phone Name" d:size="80" d:unit="px"
+        d:rootStyle="&absolute; left: 460px; top: 0;" />
+      <DataSelector source="CompanyEmail" caption="El. Paštas:" style="width: 200px;"
+        filter="Email" choiceColumns="Email Name" d:size="80" d:unit="px"
+        d:rootStyle="&absolute; left: 460px; top: 30px;" />
+    </FlowPanel>
+
+    <FlowPanel style="&relative; height: 30px;">
+      <Label html="Automobilis:" style="&header;" />
+      &separator;
+    </FlowPanel>
+
+    <FlowPanel style="&relative; height: 90px;">
+      <DataSelector source="VehicleNumber" caption="Valst. Nr.:" style="width: 100px;"
+        choiceColumns="Number ParentModelName ModelName OwnerName" d:size="80" d:unit="px"
+        d:rootStyle="&absolute; left: 0; top: 0;" />
+
+      <TextLabel caption="Modelis:" inline="true" style="&display; width: 160px;"
+        renderColumns="VehicleParentModel VehicleModel" d:size="80" d:unit="px"
+        d:rootStyle="&absolute; left: 0; top: 30px;" />
+      <TextLabel source="VehicleType" caption="Tipas:" inline="true"
+        style="&display; width: 160px;" d:size="80" d:unit="px"
+        d:rootStyle="&absolute; left: 0; top: 60px;" />
+
+      <DateLabel source="VehicleProductionDate" caption="Pagaminimo data:" inline="true"
+        style="&display; width: 100px;" d:size="140" d:unit="px"
+        d:rootStyle="&absolute; left: 280px; top: 0;" />
+      <TextLabel source="VehicleEngineNumber" caption="Variklio Nr.:" inline="true"
+        style="&display; width: 160px;" d:size="80" d:unit="px"
+        d:rootStyle="&absolute; left: 280px; top: 30px;" />
+      <TextLabel source="VehicleBodyNumber" caption="Kėbulo Nr.:" inline="true"
+        style="&display; width: 160px;" d:size="80" d:unit="px"
+        d:rootStyle="&absolute; left: 280px; top: 60px;" />
+
+      <IntegerLabel source="VehiclePower" caption="Galia kW:" inline="true"
+        style="&display; width: 60px;" d:size="120" d:unit="px"
+        d:rootStyle="&absolute; left: 560px; top: 0;" />
+      <IntegerLabel source="VehicleEngineVolume" caption="Darbinis tūris cm&#x00b3;:" inline="true" 
+        style="&display; width: 60px;" d:size="120" d:unit="px"
+        d:rootStyle="&absolute; left: 560px; top: 30px;" />
+      <TextLabel source="VehicleFuel" caption="Kuro rūšis:" inline="true"
+        style="&display; width: 100px;" d:size="80" d:unit="px"
+        d:rootStyle="&absolute; left: 560px; top: 60px;" />
+    </FlowPanel>
+
+    <FlowPanel style="&relative; height: 30px;">
+      <Label html="Servisas:" style="&header;" />
+      &separator;
+    </FlowPanel>
+
+    <FlowPanel style="&relative; height: 200px;">
+      <ListBox name="ServiceType" caption="Serviso tipas:" style="width: 120px;"
+        d:size="100" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
+      <ListBox name="RepairType" caption="Remonto tipas:" style="width: 120px;"
+        d:size="100" d:unit="px" d:rootStyle="&absolute; left: 0; top: 30px;" />
+      <ListBox name="RepairPlace" caption="Remonto vieta:" style="width: 200px;"
+        d:size="100" d:unit="px" d:rootStyle="&absolute; left: 0; top: 60px;" />
+
+      <DataSelector source="Organizer" caption="Atsakingas:" style="width: 200px;"
+        d:size="100" d:unit="px" d:rootStyle="&absolute; left: 0; top: 90px;">
+        <renderToken source="OrganizerFirstName" />
+        <renderToken source="OrganizerLastName" />
+        <renderToken source="OrganizerCompanyName" prefix=", " />
+      </DataSelector>
+
+      <InputText source="Summary" caption="Santrauka:" style="width: 300px;"
+        d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 0;" />
+      <InputArea source="Description" placeholder="Remonto aprašymas" visibleLines="5" 
+        style="&absolute; left: 360px; top: 30px; width: 380px;" />
+
+      <InputDateTime source="StartDateTime" caption="Planuojamas pradžios laikas:"
+        style="width: 120px;" d:size="180" d:unit="px"
+        d:rootStyle="&absolute; left: 0; top: 128px;" />
+
+      <InputSpinner name="Hours" caption="Trukmė" min="0" max="99"
+        style="width: 40px;" d:size="60" d:unit="px"
+        d:rootStyle="&absolute; left: 360px; top: 128px;" />
+      <InputSpinner name="Minutes" min="0" max="60" step="5"
+        style="&absolute; left: 480px; top: 128px; width: 40px;" />
+
+      <InputDateTime source="EndDateTime" caption="Planuojamas pabaigos laikas:"
+        style="width: 120px;" d:size="180" d:unit="px"
+        d:rootStyle="&absolute; left: 0; top: 160px;" />
+
+      <DataSelector source="ColorName" caption="Spalva:" style="width: 120px;"
+        d:size="60" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 160px;" />
+    </FlowPanel>
+
+    <hr />
+
+    <CheckBox html="Priminimas klientui" />
+
+  </FlowPanel>
+</f:Form>  
