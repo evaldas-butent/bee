@@ -14,6 +14,9 @@
       <SimpleJoin joinType="LEFT" name="PropertyGroup">
         <SimpleColumn alias="GroupName" name="Name" />
       </SimpleJoin>
+      <SimpleColumn name="Hours" />
+      <SimpleColumn name="Minutes" />
+      <SimpleColumn name="Description" />
     </SimpleJoin>
   </Columns>
   <Order>

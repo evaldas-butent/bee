@@ -30,6 +30,7 @@ import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.FlexTable;
+import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.DateTimeFormat.PredefinedFormat;
 import com.butent.bee.client.ui.FormDescription;
@@ -294,6 +295,8 @@ public class CalendarKeeper {
     Global.registerCaptions(TimeBlockClick.class);
 
     FormFactory.registerFormCallback(FORM_CONFIGURATION, configurationHandler);
+    
+    GridFactory.registerGridCallback(GRID_APPOINTMENTS, new AppointmentGridHandler());
 
     BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler());
     SelectorEvent.register(new SelectorHandler());

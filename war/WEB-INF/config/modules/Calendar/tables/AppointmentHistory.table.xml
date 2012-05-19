@@ -6,8 +6,8 @@
   >
   <BeeFields>
     <BeeField name="Appointment" type="LONG" notNull="true" relation="Appointments" cascade="DELETE" />
-    <BeeField name="Publisher" type="LONG" notNull="true" relation="Users" />
-    <BeeField name="PublishTime" type="DATETIME" notNull="true" />
+    <BeeField name="Publisher" type="LONG" notNull="true" relation="Users" defExpr="CURRENT_USER" />
+    <BeeField name="PublishTime" type="DATETIME" notNull="true" defExpr="CURRENT_TIME" />
 
     <BeeField name="Status" type="INTEGER" />
     <BeeField name="Hours" type="INTEGER" />

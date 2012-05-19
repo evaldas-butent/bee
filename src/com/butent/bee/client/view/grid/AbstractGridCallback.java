@@ -7,6 +7,7 @@ import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -116,6 +117,11 @@ public class AbstractGridCallback implements GridCallback {
   }
 
   public GridCallback getInstance() {
+    return null;
+  }
+
+  public AbstractCellRenderer getRenderer(String columnId, List<? extends IsColumn> dataColumns,
+      ColumnDescription columnDescription) {
     return null;
   }
 

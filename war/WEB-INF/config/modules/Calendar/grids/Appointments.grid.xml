@@ -6,48 +6,36 @@
   newRowForm="Appointment" editForm="Appointment" favorite="Summary"
   >
   <columns>
-    <RelColumn name="TypeName" caption="Tipas" />
+    <DataColumn name="CompanyName" caption="Įmonė" />
+    <DataColumn name="CompanyPhone" caption="Telefonai" />
+
+    <DataColumn name="VehicleNumber" caption="Valst. Nr." />
+    <DataColumn name="VehicleModel" renderColumns="VehicleParentModel VehicleModel" caption="Modelis" />
 
     <DataColumn name="Summary" caption="Santrauka" />
     <DataColumn name="Description" caption="Aprašymas" />
 
-    <RelColumn name="ColorName">
-      <dynStyle>
-        <ui:inline>background: [row.Background]; color: [row.Foreground];</ui:inline>
-      </dynStyle>
-    </RelColumn>
-    
-    <RelColumn name="StyleName" caption="Stilius" />
-
     <DataColumn name="Status" caption="Būsena" itemKey="AppointmentStatus" />
-
-    <DataColumn name="Created" readOnly="true" />
-    <RelColumn name="Creator" renderColumns="CreatorFirstName CreatorLastName" />
     
-    <RelColumn name="Organizer" caption="Atsakingas darbuotojas">
+    <CalcColumn type="string" name="Start" sortBy="EffectiveStart StartDateTime StartDate"
+      caption="Pradžia" />
+    <CalcColumn type="string" name="End" sortBy="EffectiveEnd EndDateTime EndDate"
+      caption="Pabaiga" />
+
+    <DataColumn name="Organizer" caption="Atsakingas darbuotojas">
       <renderToken source="OrganizerFirstName" />
       <renderToken source="OrganizerLastName" />
       <renderToken source="OrganizerCompanyName" prefix=", " />
-    </RelColumn>
-    
-    <DataColumn name="StartDate" />
-    <DataColumn name="StartDateTime" />
-    <DataColumn name="EffectiveStart" />
+    </DataColumn>
 
-    <DataColumn name="EndDate" />
-    <DataColumn name="EndDateTime" />
-    <DataColumn name="EffectiveEnd" />
+    <DataColumn name="ColorName" caption="Spalva">
+      <dynStyle>
+        <ui:inline>background: [row.Background]; color: [row.Foreground];</ui:inline>
+      </dynStyle>
+    </DataColumn>
+    <DataColumn name="StyleName" caption="Stilius" />
 
-    <RelColumn name="CompanyName" caption="Įmonė:" />
-    
-    <CalcColumn type="string" name="Contact" caption="Telefonai, el. paštas" >
-      <renderToken source="CompanyPhone" prefix="tel: " />
-      <renderToken source="CompanyMobile" prefix=" mob: " />
-      <renderToken source="CompanyEmail" prefix=" mail: " />
-    </CalcColumn>
-
-    <RelColumn name="VehicleNumber" caption="Valst. Nr." />
-
+    <DataColumn name="TypeName" caption="Tipas" />
   </columns>
   
   <rowEditable>

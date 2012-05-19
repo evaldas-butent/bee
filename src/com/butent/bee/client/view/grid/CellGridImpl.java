@@ -82,6 +82,7 @@ import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.RenderableToken;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -541,6 +542,17 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       String source = columnDescr.getSource();
       List<String> renderColumns = columnDescr.getRenderColumns();
 
+      if (BeeUtils.isEmpty(renderColumns) && !BeeUtils.isEmpty(columnDescr.getRenderTokens())) {
+        if (renderColumns == null) {
+          renderColumns = Lists.newArrayList();
+        }
+        for (RenderableToken renderableToken : columnDescr.getRenderTokens()) {
+          if (DataUtils.contains(dataCols, renderableToken.getSource())) {
+            renderColumns.add(renderableToken.getSource());
+          }
+        }
+      }
+
       if (colType == ColType.RELATED && columnDescr.getRelation() != null
           && !columnDescr.isRelationInitialized()) {
         Holder<String> sourceHolder = Holder.of(source);
@@ -572,10 +584,15 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       CellType cellType = columnDescr.getCellType();
       column = null;
 
-      AbstractCellRenderer renderer =
-          RendererFactory.getRenderer(columnDescr.getRendererDescription(),
-              columnDescr.getRender(), columnDescr.getRenderTokens(), columnDescr.getItemKey(),
-              renderColumns, dataCols, dataIndex, columnDescr.getRelation());
+      AbstractCellRenderer renderer = null;
+      if (callback != null) {
+        renderer = callback.getRenderer(columnId, dataCols, columnDescr);
+      }
+      if (renderer == null) {
+        renderer = RendererFactory.getRenderer(columnDescr.getRendererDescription(),
+            columnDescr.getRender(), columnDescr.getRenderTokens(), columnDescr.getItemKey(),
+            renderColumns, dataCols, dataIndex, columnDescr.getRelation());
+      }
 
       switch (colType) {
         case ID:
@@ -629,7 +646,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           column = new SelectionColumn(getGrid());
           source = null;
           break;
-        
+
         case ACTION:
           column = new ActionColumn(ActionCell.create(viewName, columnDescr), dataIndex, renderer);
           break;
@@ -1135,7 +1152,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       if (BeeUtils.isEmpty(oldValue)) {
         return;
       }
-      
+
       validateAndUpdate(editableColumn, rowValue, oldValue, null, false);
       return;
     }
@@ -1222,7 +1239,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     IsRow oldRow = getGrid().getActiveRow();
     IsRow newRow = DataUtils.createEmptyRow(getDataColumns().size());
-    
+
     if (!getNewRowDefaults().isEmpty()) {
       DataUtils.setDefaults(newRow, getNewRowDefaults(), getDataColumns(), Global.getDefaults());
       RelationUtils.setDefaults(getViewName(), newRow, getNewRowDefaults(), getDataColumns());
@@ -1341,7 +1358,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     fireEvent(new EditFormEvent(State.CLOSED, showEditPopup()));
     getGrid().refocus();
   }
-  
+
   private String createFormContainer(FormView formView, boolean edit, String defaultCaption,
       boolean asPopup) {
     String caption = BeeUtils.ifString(formView.getCaption(), defaultCaption);
@@ -1378,7 +1395,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     formView.setViewPresenter(gfp);
 
     formView.addActionHandler(this);
-    
+
     return DomUtils.getId(container);
   }
 
@@ -1539,11 +1556,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (!getNewRowDefaults().isEmpty()) {
       getNewRowDefaults().clear();
     }
-    
+
     if (BeeUtils.same(input, BeeConst.STRING_MINUS) || BeeUtils.isEmpty(columns)) {
       return;
     }
-    
+
     if (BeeUtils.isEmpty(input) || Wildcards.isDefaultAny(input)) {
       for (BeeColumn column : columns) {
         if (column.hasDefaults()) {
@@ -1557,7 +1574,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     for (String s : NameUtils.NAME_SPLITTER.split(input)) {
       patterns.add(Wildcards.getDefaultPattern(s, false));
     }
-    
+
     for (BeeColumn column : columns) {
       if (column.hasDefaults() && Wildcards.contains(patterns, column.getId())) {
         getNewRowDefaults().add(column.getId());
@@ -1619,7 +1636,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       if (BeeUtils.isEmpty(value)) {
         continue;
       }
-      
+
       if (dataColumn.isWritable()) {
         columns.add(dataColumn);
         values.add(value);
@@ -1840,7 +1857,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     StyleUtils.setZIndex(getNotification(), getGrid().getZIndex() + 1);
     getNotification().show(level, messages);
   }
-  
+
   private void updateCell(IsRow rowValue, IsColumn dataColumn, String oldValue, String newValue,
       boolean rowMode) {
 
@@ -1879,7 +1896,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
     return !BeeUtils.containsSame(getEditInPlace(), columnId);
   }
-  
+
   private boolean useFormForInsert() {
     return getForm(false) != null;
   }
@@ -1890,7 +1907,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (BeeUtils.isEmpty(ok)) {
       return false;
     }
-    
+
     updateCell(row, editableColumn.getDataColumn(), oldValue, newValue,
         editableColumn.getRowModeForUpdate());
     if (tab) {

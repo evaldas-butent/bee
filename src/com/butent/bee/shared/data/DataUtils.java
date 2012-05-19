@@ -75,6 +75,10 @@ public class DataUtils {
     return result;
   }
   
+  public static boolean contains(List<? extends IsColumn> columns, String columnId) {
+    return !BeeConst.isUndef(getColumnIndex(columnId, columns));
+  }
+  
   public static IsRow createEmptyRow(int columnCount) {
     return new BeeRow(NEW_ROW_ID, new String[Assert.isPositive(columnCount)]);
   }

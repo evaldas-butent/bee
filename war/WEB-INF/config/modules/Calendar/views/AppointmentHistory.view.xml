@@ -5,7 +5,9 @@
   >
   <Columns>
     <SimpleColumn name="Appointment" />
-    <SimpleJoin name="Publisher" joinType="INNER">
+
+    <SimpleColumn name="Publisher" />
+    <SimpleJoin name="Publisher" joinType="LEFT">
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn name="FirstName" />
         <SimpleColumn name="LastName" />

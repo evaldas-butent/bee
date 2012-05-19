@@ -4,21 +4,20 @@
   name="AppointmentReminders" viewName="AppointmentReminders" caption="Priminimai"
   >
   <columns>
-    <RelColumn name="FirstName" caption="Vardas" />
-    <RelColumn name="LastName" caption="Pavardė" />
-    <DataColumn name="Mobile" />
-    <DataColumn name="Email" />
+    <RelColumn name="Recipient" caption="Gavėjas">
+      <renderToken source="FirstName" />
+      <renderToken source="LastName" />
+      <renderToken source="CompanyName" prefix=", " />
+    </RelColumn>
+    <DataColumn name="Mobile" caption="Mobilus" />
+    <DataColumn name="Email" caption="El. paštas" />
 
     <RelColumn name="Method" caption="Metodas" itemKey="ReminderMethod" />
-    <DataColumn name="Hours" caption="Valandos" />
-    <DataColumn name="Minutes" caption="Minutės" />
-    <DataColumn name="Scheduled" />
+    <DataColumn name="Hours" caption="Valandos iki" />
+    <DataColumn name="Minutes" caption="Minutės iki" />
+    <DataColumn name="Scheduled" caption="Siųsti" />
 
-    <DataColumn name="Message" />
-    <DataColumn name="Sent" />
-
-    <DataColumn name="DefaultHours" readOnly="true" />
-    <DataColumn name="DefaultMinutes" readOnly="true" />
-    <DataColumn name="DefaultTemplate" readOnly="true" />
+    <DataColumn name="Message" caption="Tekstas" />
+    <DataColumn name="Sent" caption="Išsiųstas" readOnly="true" />
   </columns>
 </Grid>

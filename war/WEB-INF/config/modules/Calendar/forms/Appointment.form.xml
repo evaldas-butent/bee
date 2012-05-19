@@ -59,9 +59,9 @@
           <br/>  
           <DataSelector source="Organizer" caption="Atsakingas darbuotojas:"
             style="width: 220px;" decorator="caption-top">
-            <renderToken source="OrganizerCompanyName" suffix=", " />
             <renderToken source="OrganizerFirstName" />
             <renderToken source="OrganizerLastName" />
+            <renderToken source="OrganizerCompanyName" prefix=", " />
           </DataSelector>
           <br/>  
           <InputDateTime source="Created" caption="Registruotas:"
@@ -79,10 +79,15 @@
       </page>
 
       <page>
+        <text>Parametrai</text>
+        <ChildGrid name="AppointmentProps" relColumn="Appointment" />
+      </page>
+
+      <page>
         <text>Priminimai</text>
         <SplitPanel splitterSize="0">
           <north size="40">
-            <CheckBox source="UseDefaultReminders" html="Use Default Reminders"
+            <CheckBox source="UseDefaultReminders" html="Siųsti standartinius priminimus"
               style="margin-left: 3em; margin-top: 8px;" />
           </north>
           <center>
@@ -145,7 +150,12 @@
       </page>
 
       <page>
-        <text>Papildomi parametrai</text>
+        <text>Istorija</text>
+        <ChildGrid name="AppointmentHistory" relColumn="Appointment" />
+      </page>
+
+      <page>
+        <text>Papildoma informacija</text>
         <FlexTable cellPadding="5" style="margin-top: 2ex;">
           <row>
             <Radio source="Transparency" itemKey="Transparency" vertical="false" />

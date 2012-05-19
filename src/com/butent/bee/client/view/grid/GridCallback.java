@@ -6,6 +6,7 @@ import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
+import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.ui.WidgetCallback;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.shared.Pair;
@@ -76,6 +77,9 @@ public interface GridCallback extends WidgetCallback {
 
   GridCallback getInstance();
 
+  AbstractCellRenderer getRenderer(String columnId, List<? extends IsColumn> dataColumns,
+      ColumnDescription columnDescription);
+  
   String getRowCaption(IsRow row, boolean edit);
 
   boolean onClose(GridPresenter presenter);

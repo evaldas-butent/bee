@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="AppointmentProps" viewName="AppointmentProps" caption="Parametrai"
+  name="AppointmentProps" viewName="AppointmentProps"
   >
   <columns>
-    <DataColumn name="PropertyName" caption="Pavadinimas" />
+    <DataColumn name="GroupName" caption="Grupė" minWidth="100" />
+    <RelColumn name="PropertyName" caption="Pavadinimas" choiceColumns="Name GroupName" minWidth="100" />
+
+    <DataColumn name="Hours" caption="Valandos" />
+    <DataColumn name="Minutes" caption="Minutės" />
   </columns>
 </Grid>

@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="AppointmentHistory" viewName="AppointmentHistory" caption="Istorija"
+  name="AppointmentHistory" viewName="AppointmentHistory"
   >
   <columns>
     <DataColumn name="PublishTime" caption="Laikas" />
-    <DataColumn name="FirstName" caption="Vardas" />
-    <DataColumn name="LastName" caption="Pavardė" />
+    <RelColumn name="Publisher" caption="Vartotojas" renderColumns="FirstName LastName" />
 
     <DataColumn name="Status" caption="Būsena" itemKey="AppointmentStatus" />
     <DataColumn name="Hours" caption="Valandos" />

@@ -83,6 +83,7 @@ public class CalendarConstants {
   public static final String VIEW_ATTENDEE_PROPS = "AttendeeProps";
 
   public static final String GRID_CALENDARS = "Calendars";
+  public static final String GRID_APPOINTMENTS = "Appointments";
 
   public static final String FORM_CALENDAR_SETTINGS = "CalendarSettings";
   public static final String FORM_CONFIGURATION = "Configuration";
@@ -116,7 +117,19 @@ public class CalendarConstants {
 
   public static final String COL_PROPERTY = "Property";
   public static final String COL_PROPERTY_GROUP = "PropertyGroup";
+
+  public static final String COL_START_DATE = "StartDate";
+  public static final String COL_START_DATE_TIME = "StartDateTime";
+
+  public static final String COL_END_DATE = "EndDate";
+  public static final String COL_END_DATE_TIME = "EndDateTime";
   
+  public static final String COL_EFFECTIVE_START = "EffectiveStart";
+  public static final String COL_EFFECTIVE_END = "EffectiveEnd";
+
+  public static final String NAME_START = "Start";
+  public static final String NAME_END = "End";
+
   private CalendarConstants() {
   }
 }
