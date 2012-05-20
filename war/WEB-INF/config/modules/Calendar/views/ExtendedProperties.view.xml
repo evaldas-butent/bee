@@ -8,6 +8,7 @@
     <SimpleColumn name="PropertyGroup" />
     <SimpleJoin joinType="INNER" name="PropertyGroup">
       <SimpleColumn alias="GroupName" name="Name" />
+      <SimpleColumn name="DefaultProperty" />
     </SimpleJoin>
 
     <SimpleColumn name="Name" />

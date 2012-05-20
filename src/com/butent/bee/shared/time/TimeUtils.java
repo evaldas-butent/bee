@@ -382,6 +382,16 @@ public class TimeUtils {
     return new JustDate(ref.getDate().getDays() + increment);
   }
 
+  public static DateTime nextHour(int increment) {
+    return nextHour(new DateTime(), increment);
+  }
+
+  public static DateTime nextHour(DateTime ref, int increment) {
+    Assert.notNull(ref);
+    long millis = (ref.getTime() / MILLIS_PER_HOUR + 1) * MILLIS_PER_HOUR;
+    return new DateTime(millis + MILLIS_PER_HOUR * increment);
+  }
+  
   public static String normalize(AbstractDate x) {
     if (x == null) {
       return null;

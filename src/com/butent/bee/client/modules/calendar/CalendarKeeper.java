@@ -70,18 +70,121 @@ public class CalendarKeeper {
       }
     }
   }
-  
+
   private static final CalendarConfigurationHandler configurationHandler =
       new CalendarConfigurationHandler();
 
   private static FormView settingsForm = null;
-  
-  private static DataInfo appointmentViewInfo = null;
 
-  public static void openAppointment(Appointment appointment, HasDateValue date,
-      final Calendar calendar) {
-    final boolean isNew = appointment == null;
-    String caption = isNew ? "Naujas Vizitas" : "Vizitas";
+  private static DataInfo appointmentViewInfo = null;
+  private static DataInfo attendeeViewInfo = null;
+  private static DataInfo extendedPropertiesViewInfo = null;
+
+  public static void register() {
+    Global.registerCaptions(AppointmentStatus.class);
+    Global.registerCaptions(ReminderMethod.class);
+    Global.registerCaptions(ResponseStatus.class);
+    Global.registerCaptions(Transparency.class);
+    Global.registerCaptions("Calendar_Visibility", Visibility.class);
+
+    Global.registerCaptions(TimeBlockClick.class);
+
+    FormFactory.registerFormCallback(FORM_CONFIGURATION, configurationHandler);
+
+    GridFactory.registerGridCallback(GRID_APPOINTMENTS, new AppointmentGridHandler());
+
+    BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler());
+    SelectorEvent.register(new SelectorHandler());
+
+    createCommands();
+  }
+
+  static void createAppointment(boolean modal) {
+    createAppointment(TimeUtils.nextHour(0), modal);
+  }
+
+  static void createAppointment(final DateTime start, boolean modal) {
+    final AppointmentBuilder builder = new AppointmentBuilder(start);
+
+    if (modal) {
+      FormFactory.createFormView(FORM_NEW_APPOINTMENT, VIEW_APPOINTMENTS,
+          getAppointmentViewInfo().getColumns(), builder, new FormFactory.FormViewCallback() {
+            public void onSuccess(FormDescription formDescription, FormView result) {
+              if (result != null) {
+                result.start(null);
+                result.updateRow(AppointmentBuilder.createEmptyRow(start), false);
+
+                Global.inputWidget(result.getCaption(), result.asWidget(),
+                    builder.getModalCallback(), RowFactory.OK, RowFactory.CANCEL, true,
+                    RowFactory.DIALOG_STYLE);
+              }
+            }
+          }, false);
+
+    } else {
+      FormFactory.openForm(FORM_NEW_APPOINTMENT, builder);
+    }
+  }
+
+  static ParameterList createRequestParameters(String service) {
+    ParameterList params = BeeKeeper.getRpc().createParameters(CALENDAR_MODULE);
+    params.addQueryItem(CALENDAR_METHOD, service);
+    return params;
+  }
+
+  static void createVehicle(Long owner) {
+    RowFactory.createRow(TransportConstants.VIEW_VEHICLES,
+        TransportConstants.FORM_NEW_VEHICLE, "Nauja transporto priemonė");
+  }
+
+  static void editSettings(long id, final CalendarWidget calendarWidget) {
+    getUserCalendar(id, new Queries.RowSetCallback() {
+      @Override
+      public void onSuccess(BeeRowSet result) {
+        if (getSettingsForm() == null) {
+          createSettingsForm(result, calendarWidget);
+        } else {
+          openSettingsForm(result, calendarWidget);
+        }
+      }
+    });
+  }
+
+  static DataInfo getAppointmentViewInfo() {
+    if (appointmentViewInfo == null) {
+      appointmentViewInfo = Global.getDataInfo(VIEW_APPOINTMENTS);
+    }
+    return appointmentViewInfo;
+  }
+
+  static DataInfo getAttendeeViewInfo() {
+    if (attendeeViewInfo == null) {
+      attendeeViewInfo = Global.getDataInfo(VIEW_ATTENDEES);
+    }
+    return attendeeViewInfo;
+  }
+
+  static long getCompany() {
+    return BeeUtils.unbox(configurationHandler.getCompany());
+  }
+
+  static long getDefaultAppointmentType() {
+    return BeeUtils.unbox(configurationHandler.getAppointmentType());
+  }
+
+  static long getDefaultTimeZone() {
+    return BeeUtils.unbox(configurationHandler.getTimeZone());
+  }
+
+  static DataInfo getExtendedPropertiesViewInfo() {
+    if (extendedPropertiesViewInfo == null) {
+      extendedPropertiesViewInfo = Global.getDataInfo(VIEW_EXTENDED_PROPERTIES);
+    }
+    return extendedPropertiesViewInfo;
+  }
+
+  static void openAppointment(final Appointment appointment, final Calendar calendar) {
+    String caption = "Vizitas";
     final DialogBox dialogBox = new DialogBox(caption);
 
     FlexTable panel = new FlexTable();
@@ -154,14 +257,12 @@ public class CalendarKeeper {
 
     panel.setWidget(row, 1, colors);
 
-    final Appointment ap = isNew ? new Appointment() : appointment;
-
-    if (!isNew && !ap.getAttendees().isEmpty()) {
+    if (!appointment.getAttendees().isEmpty()) {
       row++;
       panel.setWidget(row, 0, new Html("Resursai"));
 
       StringBuilder sb = new StringBuilder();
-      for (Attendee attendee : ap.getAttendees()) {
+      for (Attendee attendee : appointment.getAttendees()) {
         if (!BeeUtils.isEmpty(attendee.getName())) {
           sb.append(' ').append(attendee.getName().trim());
         }
@@ -169,21 +270,11 @@ public class CalendarKeeper {
       panel.setWidget(row, 1, new Html(sb.toString().trim()));
     }
 
-    if (isNew && date != null) {
-      ap.setStart(date.getDateTime());
-      DateTime to = DateTime.copyOf(ap.getStart());
-      TimeUtils.addHour(to, 1);
-      ap.setEnd(to);
-    }
-    if (isNew) {
-      ap.setStyle(AppointmentStyle.BLUE);
-    }
-
-    summary.setText(ap.getTitle());
-    start.setDate(ap.getStart());
-    end.setDate(ap.getEnd());
-    description.setText(ap.getDescription());
-    colors.selectTab(ap.getStyle().ordinal());
+    summary.setText(appointment.getTitle());
+    start.setDate(appointment.getStart());
+    end.setDate(appointment.getEnd());
+    description.setText(appointment.getDescription());
+    colors.selectTab(appointment.getStyle().ordinal());
 
     BeeButton confirm = new BeeButton("Išsaugoti", new ClickHandler() {
       public void onClick(ClickEvent ev) {
@@ -194,18 +285,14 @@ public class CalendarKeeper {
           return;
         }
 
-        ap.setTitle(summary.getText());
-        ap.setStart(from.getDateTime());
-        ap.setEnd(to.getDateTime());
-        ap.setDescription(description.getText());
-        ap.setStyle(AppointmentStyle.values()[colors.getSelectedTab()]);
+        appointment.setTitle(summary.getText());
+        appointment.setStart(from.getDateTime());
+        appointment.setEnd(to.getDateTime());
+        appointment.setDescription(description.getText());
+        appointment.setStyle(AppointmentStyle.values()[colors.getSelectedTab()]);
 
         if (calendar != null) {
-          if (isNew) {
-            calendar.addAppointment(ap);
-          } else {
-            calendar.refresh();
-          }
+          calendar.refresh();
         }
 
         dialogBox.hide();
@@ -223,74 +310,12 @@ public class CalendarKeeper {
     summary.setFocus(true);
   }
 
-  public static void register() {
-    Global.registerCaptions(AppointmentStatus.class);
-    Global.registerCaptions(ReminderMethod.class);
-    Global.registerCaptions(ResponseStatus.class);
-    Global.registerCaptions(Transparency.class);
-    Global.registerCaptions("Calendar_Visibility", Visibility.class);
-
-    Global.registerCaptions(TimeBlockClick.class);
-
-    FormFactory.registerFormCallback(FORM_CONFIGURATION, configurationHandler);
-    
-    GridFactory.registerGridCallback(GRID_APPOINTMENTS, new AppointmentGridHandler());
-
-    BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler());
-    SelectorEvent.register(new SelectorHandler());
-
-    createCommands();
-  }
-
-  static ParameterList createRequestParameters(String service) {
-    ParameterList params = BeeKeeper.getRpc().createParameters(CALENDAR_MODULE);
-    params.addQueryItem(CALENDAR_METHOD, service);
-    return params;
-  }
-  
-  static void createVehicle(Long owner) {
-    RowFactory.createRow(TransportConstants.VIEW_VEHICLES,
-        TransportConstants.FORM_NEW_VEHICLE, "Nauja transporto priemonė", null);
-  }
-
-  static void editSettings(long id, final CalendarWidget calendarWidget) {
-    getUserCalendar(id, new Queries.RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        if (getSettingsForm() == null) {
-          createSettingsForm(result, calendarWidget);
-        } else {
-          openSettingsForm(result, calendarWidget);
-        }
-      }
-    });
-  }
-
-  static DataInfo getAppointmentViewInfo() {
-    if (appointmentViewInfo == null) {
-      appointmentViewInfo = Global.getDataInfo(VIEW_APPOINTMENTS);
-    }
-    return appointmentViewInfo;
-  }
-
-  static long getCompany() {
-    return BeeUtils.unbox(configurationHandler.getCompany());
-  }
-
-  static long getDefaultAppointmentType() {
-    return BeeUtils.unbox(configurationHandler.getAppointmentType());
-  }
-
-  static long getDefaultTimeZone() {
-    return BeeUtils.unbox(configurationHandler.getTimeZone());
-  }
-  
   private static void createCommands() {
     BeeKeeper.getScreen().addCommandItem(new Html("Naujas klientas",
         new Scheduler.ScheduledCommand() {
           public void execute() {
             RowFactory.createRow(CommonsConstants.VIEW_COMPANIES,
-                CommonsConstants.FORM_NEW_COMPANY, "Naujas klientas", null);
+                CommonsConstants.FORM_NEW_COMPANY, "Naujas klientas");
           }
         }));
 
@@ -300,11 +325,11 @@ public class CalendarKeeper {
             createVehicle(null);
           }
         }));
-    
+
     BeeKeeper.getScreen().addCommandItem(new Html("Naujas vizitas",
         new Scheduler.ScheduledCommand() {
           public void execute() {
-            RowFactory.createRow(VIEW_APPOINTMENTS, FORM_NEW_APPOINTMENT, null);
+            createAppointment(null, true);
           }
         }));
   }
@@ -318,7 +343,7 @@ public class CalendarKeeper {
               getSettingsForm().setEditing(true);
               getSettingsForm().start(null);
             }
-            
+
             openSettingsForm(rowSet, cw);
           }
         }, false);
@@ -340,7 +365,7 @@ public class CalendarKeeper {
       }
     });
   }
-  
+
   private static void openCalendar(final long id) {
     getUserCalendar(id, new Queries.RowSetCallback() {
       @Override
@@ -350,7 +375,7 @@ public class CalendarKeeper {
       }
     });
   }
-  
+
   private static void openSettingsForm(final BeeRowSet rowSet, final CalendarWidget cw) {
     if (getSettingsForm() == null || getSettingsForm().asWidget().isAttached()) {
       return;
@@ -358,7 +383,7 @@ public class CalendarKeeper {
 
     final BeeRow oldRow = rowSet.getRow(0);
     final BeeRow newRow = DataUtils.cloneRow(oldRow);
-    
+
     getSettingsForm().updateRow(newRow, false);
 
     String caption = getSettingsForm().getCaption();

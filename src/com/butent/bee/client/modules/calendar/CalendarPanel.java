@@ -125,9 +125,7 @@ public class CalendarPanel extends Complex {
     createButton.setStyleName("bee-CreateAppointment");
     createButton.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
-        DateTime date = calendar.getDate().getDateTime();
-        date.setHour(12);
-        CalendarKeeper.openAppointment(null, date, calendar);
+        CalendarKeeper.createAppointment(false);
       }
     });
 
@@ -188,7 +186,7 @@ public class CalendarPanel extends Complex {
 
     calendar.addOpenHandler(new OpenHandler<Appointment>() {
       public void onOpen(OpenEvent<Appointment> event) {
-        CalendarKeeper.openAppointment(event.getTarget(), null, calendar);
+        CalendarKeeper.openAppointment(event.getTarget(), calendar);
       }
     });
 
@@ -198,9 +196,9 @@ public class CalendarPanel extends Complex {
       }
     });
 
-    calendar.addTimeBlockClickHandler(new TimeBlockClickHandler<HasDateValue>() {
-      public void onTimeBlockClick(TimeBlockClickEvent<HasDateValue> event) {
-        CalendarKeeper.openAppointment(null, event.getTarget(), calendar);
+    calendar.addTimeBlockClickHandler(new TimeBlockClickHandler<DateTime>() {
+      public void onTimeBlockClick(TimeBlockClickEvent<DateTime> event) {
+        CalendarKeeper.createAppointment(event.getTarget(), true);
       }
     });
 
@@ -407,14 +405,20 @@ public class CalendarPanel extends Complex {
     }
     
     for (IsRow row : apprs.getRows()) {
+      DateTime start = row.getDateTime(startIndex);
+      DateTime end = row.getDateTime(endIndex);
+      if (start == null || end == null || start.getTime() >= end.getTime()) {
+        continue;
+      }
+
       Appointment appt = new Appointment();
       appt.setId(row.getId());
       
       appt.setTitle(row.getString(summaryIndex));
       appt.setDescription(row.getString(descrIndex));
 
-      appt.setStart(row.getDateTime(startIndex));
-      appt.setEnd(row.getDateTime(endIndex));
+      appt.setStart(start);
+      appt.setEnd(end);
 
       appt.setStyle(styles[Random.nextInt(styles.length - 2)]);
       

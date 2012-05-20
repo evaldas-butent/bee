@@ -6,8 +6,13 @@
   <!ENTITY separator '<hr style="position: absolute; left: 120px; right: 0; top: 5px;"/>'>
   <!ENTITY display "-webkit-appearance: textfield; padding: 3px; margin: 2px 0px;">
 ]>
-<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
-  xmlns:d="http://www.butent.com/decorator" name="NewAppointment" viewName="Appointments" caption="Naujas Vizitas">
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:d="http://www.butent.com/decorator"
+  
+  name="NewAppointment" viewName="Appointments" caption="Naujas Vizitas"
+  disabledActions="add delete" enabledActions="save">
 
   <FlowPanel style="&relative; margin-left: 1em; margin-right: 1em; margin-top: 2ex; min-width: 760px;">
     <FlowPanel style="&relative; height: 30px;">

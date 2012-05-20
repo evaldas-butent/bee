@@ -79,7 +79,7 @@ public class DataUtils {
     return !BeeConst.isUndef(getColumnIndex(columnId, columns));
   }
   
-  public static IsRow createEmptyRow(int columnCount) {
+  public static BeeRow createEmptyRow(int columnCount) {
     return new BeeRow(NEW_ROW_ID, new String[Assert.isPositive(columnCount)]);
   }
 

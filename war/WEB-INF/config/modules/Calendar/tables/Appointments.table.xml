@@ -5,7 +5,7 @@
   idName="AppointmentID"
   >
   <BeeFields>
-    <BeeField name="AppointmentType" type="LONG" notNull="true" relation="AppointmentTypes" />
+    <BeeField name="AppointmentType" type="LONG" relation="AppointmentTypes" />
 
     <BeeField name="Summary" type="STRING" precision="100" />
     <BeeField name="Description" type="TEXT" />

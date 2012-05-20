@@ -80,6 +80,8 @@ public class CalendarConstants {
 
   public static final String VIEW_PROPERTY_GROUPS = "PropertyGroups";
   public static final String VIEW_EXTENDED_PROPERTIES = "ExtendedProperties";
+
+  public static final String VIEW_ATTENDEES = "Attendees";
   public static final String VIEW_ATTENDEE_PROPS = "AttendeeProps";
 
   public static final String VIEW_APPOINTMENTS = "Appointments";
@@ -116,13 +118,19 @@ public class CalendarConstants {
   public static final String COL_COMPANY_NAME = "CompanyName";
 
   public static final String COL_APPOINTMENT_TYPE = "AppointmentType";
+  public static final String COL_TYPE_NAME = "TypeName";
 
   public static final String COL_TIME_ZONE = "TimeZone";
   public static final String COL_THEME = "Theme";
 
   public static final String COL_PROPERTY = "Property";
   public static final String COL_PROPERTY_GROUP = "PropertyGroup";
+  public static final String COL_GROUP_NAME = "GroupName";
+  public static final String COL_DEFAULT_PROPERTY = "DefaultProperty";
 
+  public static final String COL_HOURS = "Hours";
+  public static final String COL_MINUTES = "Minutes";
+  
   public static final String COL_START_DATE = "StartDate";
   public static final String COL_START_DATE_TIME = "StartDateTime";
 

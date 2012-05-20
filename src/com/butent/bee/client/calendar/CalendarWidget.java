@@ -33,6 +33,7 @@ import com.butent.bee.client.calendar.event.UpdateEvent;
 import com.butent.bee.client.calendar.event.UpdateHandler;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -42,7 +43,7 @@ import java.util.List;
 
 public class CalendarWidget extends InteractiveWidget implements
     HasSelectionHandlers<Appointment>, HasDeleteHandlers<Appointment>,
-    HasOpenHandlers<Appointment>, HasTimeBlockClickHandlers<HasDateValue>,
+    HasOpenHandlers<Appointment>, HasTimeBlockClickHandlers<DateTime>,
     HasUpdateHandlers<Appointment>, HasDateRequestHandlers<HasDateValue>,
     HasMouseOverHandlers<Appointment>,
     HasLayout, HasAppointments {
@@ -113,7 +114,7 @@ public class CalendarWidget extends InteractiveWidget implements
     return addHandler(handler, SelectionEvent.getType());
   }
 
-  public HandlerRegistration addTimeBlockClickHandler(TimeBlockClickHandler<HasDateValue> handler) {
+  public HandlerRegistration addTimeBlockClickHandler(TimeBlockClickHandler<DateTime> handler) {
     return addHandler(handler, TimeBlockClickEvent.getType());
   }
 
@@ -183,7 +184,7 @@ public class CalendarWidget extends InteractiveWidget implements
   }
 
   public void fireTimeBlockClickEvent(HasDateValue dt) {
-    TimeBlockClickEvent.fire(this, dt);
+    TimeBlockClickEvent.fire(this, dt.getDateTime());
   }
 
   public void fireUpdateEvent(Appointment appointment) {

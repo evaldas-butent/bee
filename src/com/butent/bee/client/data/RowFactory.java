@@ -8,6 +8,7 @@ import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -22,37 +23,62 @@ import java.util.List;
 
 public class RowFactory {
 
-  private static final String DIALOG_STYLE = "bee-NewRow";
+  public static final String OK = "Išsaugoti";
+  public static final String CANCEL = "Atšaukti";
   
-  public static void createRow(String viewName, String formName, Queries.RowCallback callback) {
-    createRow(viewName, formName, null, callback);
+  public static final String DIALOG_STYLE = "bee-NewRow";
+  
+  public static BeeRow createEmptyRow(DataInfo dataInfo, boolean defaults) {
+    BeeRow row = DataUtils.createEmptyRow(dataInfo.getColumnCount());
+    if (defaults) {
+      setDefaults(row, dataInfo);
+    }
+    return row;
+  }
+
+  public static void createRow(String viewName, String formName, Queries.RowCallback rowCallback) {
+    createRow(viewName, formName, null, null, rowCallback);
+  }
+
+  public static void createRow(String viewName, String formName, FormCallback formCallback,
+      Queries.RowCallback rowCallback) {
+    createRow(viewName, formName, null, formCallback, rowCallback);
   }
 
   public static void createRow(String viewName, String formName, String caption,
-      Queries.RowCallback callback) {
+      Queries.RowCallback rowCallback) {
+    createRow(viewName, formName, caption, null, rowCallback);
+  }
+
+  public static void createRow(String viewName, String formName, String caption) {
+    createRow(viewName, formName, caption, null, null);
+  }
+  
+  public static void createRow(String viewName, String formName, String caption,
+      FormCallback formCallback, Queries.RowCallback rowCallback) {
 
     if (BeeUtils.isEmpty(viewName)) {
-      if (callback != null) {
-        callback.onFailure("viewName not specified");
+      if (rowCallback != null) {
+        rowCallback.onFailure("viewName not specified");
       }
       return;
     }
     if (BeeUtils.isEmpty(formName)) {
-      if (callback != null) {
-        callback.onFailure("formName not specified");
+      if (rowCallback != null) {
+        rowCallback.onFailure("formName not specified");
       }
       return;
     }
-    
+
     DataInfo dataInfo = Global.getDataInfo(viewName);
     if (dataInfo == null) {
       return;
     }
-    
-    getForm(formName, dataInfo, caption, callback);
+
+    getForm(formName, caption, formCallback, dataInfo, rowCallback);
   }
-  
-  public static int setDefaults(IsRow row, DataInfo dataInfo) {
+
+  public static int setDefaults(BeeRow row, DataInfo dataInfo) {
     if (row == null || dataInfo == null) {
       return BeeConst.UNDEF;
     }
@@ -65,8 +91,8 @@ public class RowFactory {
     }
     if (colNames.isEmpty()) {
       return 0;
-    }  
-    
+    }
+
     return DataUtils.setDefaults(row, colNames, dataInfo.getColumns(), Global.getDefaults())
         + RelationUtils.setDefaults(dataInfo, row, colNames, dataInfo.getColumns());
   }
@@ -80,21 +106,25 @@ public class RowFactory {
     }
     return cnt;
   }
-  
-  private static void getForm(String formName, final DataInfo dataInfo,
-      final String caption, final Queries.RowCallback callback) {
-    FormFactory.createFormView(formName, dataInfo.getViewName(), dataInfo.getColumns(),
+
+  private static void getForm(String formName, final String caption, FormCallback formCallback,
+      final DataInfo dataInfo, final Queries.RowCallback rowCallback) {
+
+    FormCallback fcb =
+        (formCallback == null) ? FormFactory.getFormCallback(formName) : formCallback;
+
+    FormFactory.createFormView(formName, dataInfo.getViewName(), dataInfo.getColumns(), fcb,
         new FormFactory.FormViewCallback() {
           public void onSuccess(FormDescription formDescription, FormView result) {
             if (result != null) {
               result.setEditing(true);
               result.start(null);
-              openForm(result, dataInfo, caption, callback);
+              openForm(result, dataInfo, caption, rowCallback);
             }
           }
         }, false);
   }
-  
+
   private static void insert(IsRow row, final DataInfo dataInfo,
       final Queries.RowCallback callback) {
 
@@ -108,14 +138,12 @@ public class RowFactory {
       }
     });
   }
-  
+
   private static void openForm(final FormView formView, final DataInfo dataInfo, String caption,
       final Queries.RowCallback callback) {
-    IsRow row = DataUtils.createEmptyRow(dataInfo.getColumnCount());
-    setDefaults(row, dataInfo);
-    
+    BeeRow row = createEmptyRow(dataInfo, true);
     formView.updateRow(row, false);
-    
+
     String cap = BeeUtils.ifString(caption, formView.getCaption());
     Global.inputWidget(cap, formView.asWidget(), new InputWidgetCallback() {
       @Override
@@ -133,9 +161,9 @@ public class RowFactory {
       public void onSuccess() {
         insert(formView.getActiveRow(), dataInfo, callback);
       }
-    }, "Išsaugoti", "Atšaukti", true, DIALOG_STYLE);
+    }, OK, CANCEL, true, DIALOG_STYLE);
   }
-  
+
   private RowFactory() {
   }
 }
