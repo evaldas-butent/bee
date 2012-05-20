@@ -32,15 +32,15 @@
             style="width: 80px;" d:size="180" d:unit="px" />
           <br/>  
 
-          <InputDateTime source="StartDateTime" caption="Planuojamas pradžios laikas:"
+          <InputDateTime source="StartDateTime" caption="Planuojamas pradžios laikas:" step="30"
             style="width: 120px;" d:size="180" d:unit="px" />
-          <InputDateTime source="EndDateTime" caption="Planuojamas pabaigos laikas:"
+          <InputDateTime source="EndDateTime" caption="Planuojamas pabaigos laikas:" step="30"
             style="width: 120px;" d:size="180" d:unit="px" />
           <br/>  
 
-          <InputDateTime source="EffectiveStart" caption="Pradėta:"
+          <InputDateTime source="EffectiveStart" caption="Pradėta:" step="5"
             style="width: 120px;" d:size="180" d:unit="px" />
-          <InputDateTime source="EffectiveEnd" caption="Baigta:"
+          <InputDateTime source="EffectiveEnd" caption="Baigta:" step="5"
             style="width: 120px;" d:size="180" d:unit="px" />
           <br/>  
           <ListBox source="Status" itemKey="AppointmentStatus" caption="Būsena:"
@@ -109,7 +109,7 @@
 
           <row>
             <cell colSpan="3">
-              <TextLabel source="VehicleOwner" caption="Savininkas:" inline="true" />
+              <TextLabel source="VehicleOwnerName" caption="Savininkas:" inline="true" />
             </cell>
           </row>
 

@@ -260,7 +260,7 @@ public class FormFactory {
       }
     }
     
-    DataInfo dataInfo = Global.getDataInfo(viewName, true);
+    DataInfo dataInfo = Global.getDataInfo(viewName);
     if (dataInfo != null) {
       getInitialRowSet(viewName, dataInfo.getRowCount(), formDescription, callback);
     }

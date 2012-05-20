@@ -143,7 +143,7 @@ public class VolumeSlider extends Absolute implements RequiresResize {
     if (event.getTypeInt() == Event.ONMOUSEWHEEL && isEnabled()) {
       int z = event.getMouseWheelVelocityY();
       if (z != 0) {
-        spinner.doStep(spinner.getValue(), z < 0);
+        spinner.doStep(spinner.getValue(), z > 0);
         event.preventDefault();
       }
     }

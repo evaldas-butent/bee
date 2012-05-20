@@ -25,7 +25,7 @@ public class RelationUtils {
       return result;
     }
 
-    DataInfo dataInfo = Global.getDataInfo(viewName, true);
+    DataInfo dataInfo = Global.getDataInfo(viewName);
     if (dataInfo == null) {
       return result;
     }
@@ -85,7 +85,7 @@ public class RelationUtils {
       return result;
     }
 
-    DataInfo dataInfo = Global.getDataInfo(viewName, true);
+    DataInfo dataInfo = Global.getDataInfo(viewName);
     if (dataInfo == null) {
       return result;
     }
@@ -121,11 +121,11 @@ public class RelationUtils {
 
     int result = BeeConst.UNDEF;
 
-    DataInfo targetInfo = Global.getDataInfo(targetView, true);
+    DataInfo targetInfo = Global.getDataInfo(targetView);
     if (targetInfo == null) {
       return result;
     }
-    DataInfo sourceInfo = Global.getDataInfo(sourceView, true);
+    DataInfo sourceInfo = Global.getDataInfo(sourceView);
     if (sourceInfo == null) {
       return result;
     }

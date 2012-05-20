@@ -29,8 +29,16 @@ public class TransportConstants {
   public static final String VIEW_TRIP_CARGO = "TripCargo";
   public static final String VIEW_TRIP_ROUTES = "TripRoutes";
 
-  public static final String COL_STATUS = "Status";
+  public static final String VIEW_VEHICLES = "Vehicles";
 
+  public static final String COL_STATUS = "Status";
+  public static final String COL_OWNER = "Owner";
+  public static final String COL_PARENT_MODEL_NAME = "ParentModelName";
+  public static final String COL_MODEL_NAME = "ModelName";
+  public static final String COL_NUMBER = "Number";
+
+  public static final String FORM_NEW_VEHICLE = "Vehicle";
+  
   private TransportConstants() {
   }
 }

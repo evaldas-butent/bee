@@ -433,7 +433,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     if (redraw) {
-      getGrid().refresh(true);
+      getGrid().refresh();
     }
   }
 
@@ -1179,6 +1179,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     editableColumn.openEditor(this, event.getSourceElement(), getGrid().getElement(),
         getGrid().getZIndex() + 1, rowValue, BeeUtils.toChar(event.getCharCode()), this);
+  }
+
+  @Override
+  public void refresh(boolean refreshChildren) {
+    getGrid().refresh();
   }
 
   public void refreshCellContent(long rowId, String columnSource) {

@@ -193,7 +193,7 @@ public class Global implements Module {
   }
 
   public static int getApproximateRowCount(String viewName) {
-    DataInfo dataInfo = getDataInfo(viewName, true);
+    DataInfo dataInfo = getDataInfo(viewName);
     return (dataInfo == null) ? BeeConst.UNDEF : dataInfo.getRowCount(); 
   }
 
@@ -228,8 +228,8 @@ public class Global implements Module {
     }
   }
 
-  public static DataInfo getDataInfo(String viewName, boolean warn) {
-    return getDataInfoProvider().getDataInfo(viewName, warn);
+  public static DataInfo getDataInfo(String viewName) {
+    return getDataInfoProvider().getDataInfo(viewName, true);
   }
 
   public static DataInfoProvider getDataInfoProvider() {
@@ -353,13 +353,21 @@ public class Global implements Module {
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback) {
-    inpBoxen.inputWidget(caption, input, callback, BeeConst.UNDEF, DialogConstants.OK,
-        DialogConstants.CANCEL, null);
+    inpBoxen.inputWidget(caption, input, callback, DialogConstants.OK, DialogConstants.CANCEL,
+        false, null, BeeConst.UNDEF, null);
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,
-      int timeout, String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
-    inpBoxen.inputWidget(caption, input, callback, timeout, confirmHtml, cancelHtml, initializer);
+      String confirmHtml, String cancelHtml, boolean enableGlass, String dialogStyle) {
+    inpBoxen.inputWidget(caption, input, callback, confirmHtml, cancelHtml, enableGlass,
+        dialogStyle, BeeConst.UNDEF, null);
+  }
+
+  public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,
+      String confirmHtml, String cancelHtml, boolean enableGlass, String dialogStyle, int timeout,
+      WidgetInitializer initializer) {
+    inpBoxen.inputWidget(caption, input, callback, confirmHtml, cancelHtml, enableGlass,
+        dialogStyle, timeout, initializer);
   }
 
   public static boolean isDebug() {

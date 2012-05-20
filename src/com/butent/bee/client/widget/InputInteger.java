@@ -84,14 +84,13 @@ public class InputInteger extends InputNumber {
   }
 
   @Override
-  public void setStepValue(Number stepValue) {
+  public void setStepValue(int stepValue) {
     super.setStepValue(stepValue);
     
-    int step = (stepValue == null) ? 0 : stepValue.intValue();
-    if (step == 0) {
-      DomUtils.removeStep(this);
+    if (stepValue > 0) {
+      DomUtils.setStep(this, stepValue);
     } else {
-      DomUtils.setStep(this, step);
+      DomUtils.removeStep(this);
     }
   }
 

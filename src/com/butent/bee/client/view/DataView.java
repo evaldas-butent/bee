@@ -16,5 +16,7 @@ public interface DataView extends View, NotificationListener, HasViewName, HasAc
 
   void finishNewRow(IsRow row);
 
+  void refresh(boolean refreshChildren);
+  
   void startNewRow();
 }

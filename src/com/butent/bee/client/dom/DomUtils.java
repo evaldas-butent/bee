@@ -369,6 +369,10 @@ public class DomUtils {
     return ensureId(obj.getElement(), prefix);
   }
 
+  public static native Element getActiveElement() /*-{
+    return $doc.activeElement;
+  }-*/;
+  
   public static List<String> getAncestry(Widget w) {
     Assert.notNull(w);
     List<String> lst = new ArrayList<String>();
@@ -1259,6 +1263,14 @@ public class DomUtils {
     head.appendChild(link);
   }
 
+  public static boolean isActive(Element elem) {
+    if (elem == null) {
+      return false;
+    } else {
+      return elem.equals(getActiveElement());
+    }
+  }
+  
   public static boolean isChecked(Element elem) {
     Assert.notNull(elem);
     InputElement input = getInputElement(elem);

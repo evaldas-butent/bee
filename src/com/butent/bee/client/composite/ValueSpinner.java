@@ -143,7 +143,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     public void onMouseWheel(MouseWheelEvent event) {
       int z = event.getNativeEvent().getMouseWheelVelocityY();
       if (focus && isEnabled() && z != 0) {
-        doStep(z < 0);
+        doStep(z > 0);
       }
     }
   };

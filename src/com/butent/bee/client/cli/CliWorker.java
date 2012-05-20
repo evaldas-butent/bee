@@ -973,7 +973,7 @@ public class CliWorker {
       Global.getDataInfoProvider().load();
     
     } else {
-      DataInfo dataInfo = Global.getDataInfo(viewName, true);
+      DataInfo dataInfo = Global.getDataInfo(viewName);
       if (dataInfo != null) {
         BeeKeeper.getScreen().showGrid(dataInfo.getExtendedInfo());
       }

@@ -643,8 +643,16 @@
   <xs:element name="InputSpinner" type="editableInteger" substitutionGroup="widget" />
   <xs:element name="InputSlider" type="editableInteger" substitutionGroup="widget" />
 
-  <xs:element name="InputDate" type="inputWidget" substitutionGroup="widget" />
-  <xs:element name="InputDateTime" type="inputWidget" substitutionGroup="widget" />
+  <xs:complexType name="editableDate">
+    <xs:complexContent>
+      <xs:extension base="inputWidget">
+        <xs:attribute name="step" type="xs:positiveInteger" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="InputDate" type="editableDate" substitutionGroup="widget" />
+  <xs:element name="InputDateTime" type="editableDate" substitutionGroup="widget" />
 
   <xs:complexType name="spinnerBase">
     <xs:complexContent>

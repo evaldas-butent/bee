@@ -10,6 +10,8 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.calendar.Appointment;
@@ -23,8 +25,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.TabBar;
-import com.butent.bee.client.data.HasDataProvider;
-import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
@@ -36,8 +36,6 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.DateTimeFormat.PredefinedFormat;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.edit.SelectorEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeButton;
@@ -49,22 +47,16 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowActionEvent;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
-import com.butent.bee.shared.data.filter.CompoundFilter;
-import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-
-import java.util.Set;
 
 public class CalendarKeeper {
 
@@ -79,67 +71,12 @@ public class CalendarKeeper {
     }
   }
   
-  private static class SelectorHandler implements SelectorEvent.Handler {
-    @Override
-    public void onDataSelector(SelectorEvent event) {
-      if (!event.isOpened()) {
-        return;
-      }
-      if (!BeeUtils.same(event.getRelatedViewName(), VIEW_EXTENDED_PROPERTIES)) {
-        return;
-      }
-
-      DataView dataView = UiHelper.getDataView(event.getSelector());
-      if (dataView == null) {
-        return;
-      }
-      IsRow row = dataView.getActiveRow();
-      if (row == null) {
-        return;
-      }
-      
-      long id = row.getId();
-      Filter filter = null;
-
-      if (BeeUtils.same(dataView.getViewName(), VIEW_PROPERTY_GROUPS)) {
-        if (DataUtils.isId(id)) {
-          filter = ComparisonFilter.isEqual(COL_PROPERTY_GROUP, new LongValue(id));
-        } else {
-          filter = Filter.isEmpty(COL_PROPERTY_GROUP);
-        }
-      
-      } else if (BeeUtils.same(dataView.getViewName(), VIEW_ATTENDEE_PROPS)) {
-        if (dataView.getViewPresenter() instanceof HasDataProvider) {
-          Provider provider = ((HasDataProvider) dataView.getViewPresenter()).getDataProvider();
-
-          if (provider != null) {
-            int index = provider.getColumnIndex(COL_PROPERTY);
-            Long exclude = DataUtils.isId(id) ? row.getLong(index) : null;
-            Set<Long> used = DataUtils.getDistinct(dataView.getRowData(), index, exclude);
-            
-            if (used.isEmpty()) {
-              filter = provider.getImmutableFilter();
-            } else {  
-              CompoundFilter and = Filter.and();
-              and.add(provider.getImmutableFilter());
-              
-              for (Long value : used) {
-                and.add(ComparisonFilter.compareId(Operator.NE, value));
-              }
-              filter = and;
-            }
-          }
-        }
-      }
-
-      event.getSelector().setAdditionalFilter(filter);
-    }
-  }
-
   private static final CalendarConfigurationHandler configurationHandler =
       new CalendarConfigurationHandler();
 
   private static FormView settingsForm = null;
+  
+  private static DataInfo appointmentViewInfo = null;
 
   public static void openAppointment(Appointment appointment, HasDateValue date,
       final Calendar calendar) {
@@ -310,6 +247,11 @@ public class CalendarKeeper {
     params.addQueryItem(CALENDAR_METHOD, service);
     return params;
   }
+  
+  static void createVehicle(Long owner) {
+    RowFactory.createRow(TransportConstants.VIEW_VEHICLES,
+        TransportConstants.FORM_NEW_VEHICLE, "Nauja transporto priemonė", null);
+  }
 
   static void editSettings(long id, final CalendarWidget calendarWidget) {
     getUserCalendar(id, new Queries.RowSetCallback() {
@@ -324,6 +266,13 @@ public class CalendarKeeper {
     });
   }
 
+  static DataInfo getAppointmentViewInfo() {
+    if (appointmentViewInfo == null) {
+      appointmentViewInfo = Global.getDataInfo(VIEW_APPOINTMENTS);
+    }
+    return appointmentViewInfo;
+  }
+
   static long getCompany() {
     return BeeUtils.unbox(configurationHandler.getCompany());
   }
@@ -335,26 +284,27 @@ public class CalendarKeeper {
   static long getDefaultTimeZone() {
     return BeeUtils.unbox(configurationHandler.getTimeZone());
   }
-
+  
   private static void createCommands() {
     BeeKeeper.getScreen().addCommandItem(new Html("Naujas klientas",
         new Scheduler.ScheduledCommand() {
           public void execute() {
-            RowFactory.createRow("Companies", "Company", "Naujas klientas", null);
+            RowFactory.createRow(CommonsConstants.VIEW_COMPANIES,
+                CommonsConstants.FORM_NEW_COMPANY, "Naujas klientas", null);
           }
         }));
 
     BeeKeeper.getScreen().addCommandItem(new Html("Naujas automobilis",
         new Scheduler.ScheduledCommand() {
           public void execute() {
-            RowFactory.createRow("Vehicles", "Vehicle", "Naujas automobilis", null);
+            createVehicle(null);
           }
         }));
     
     BeeKeeper.getScreen().addCommandItem(new Html("Naujas vizitas",
         new Scheduler.ScheduledCommand() {
           public void execute() {
-            openAppointment(null, new DateTime(), null);
+            RowFactory.createRow(VIEW_APPOINTMENTS, FORM_NEW_APPOINTMENT, null);
           }
         }));
   }

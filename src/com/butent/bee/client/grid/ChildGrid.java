@@ -190,7 +190,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     final Order order = GridFactory.getOrder(getGridDescription(), getGridOptions());
 
     if (row == null) {
-      DataInfo dataInfo = Global.getDataInfo(getGridDescription().getViewName(), true);
+      DataInfo dataInfo = Global.getDataInfo(getGridDescription().getViewName());
       if (dataInfo != null) {
         BeeRowSet rowSet = new BeeRowSet(dataInfo.getColumns());
         createPresenter(row, rowSet, immutableFilter, initialFilters, order);

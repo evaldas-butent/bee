@@ -187,7 +187,7 @@ public class RendererFactory {
     Assert.notEmpty(viewName);
     Assert.notEmpty(renderColumns);
     
-    DataInfo dataInfo = Global.getDataInfo(viewName, true);
+    DataInfo dataInfo = Global.getDataInfo(viewName);
     if (dataInfo == null) {
       return null;
     }

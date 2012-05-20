@@ -117,8 +117,9 @@
       <SimpleColumn alias="VehicleNetto" name="Netto" />
       <SimpleColumn alias="VehicleBrutto" name="Brutto" />
 
+      <SimpleColumn alias="VehicleOwner" name="Owner" />
       <SimpleJoin name="Owner" joinType="LEFT">
-        <SimpleColumn alias="VehicleOwner" name="Name" />
+        <SimpleColumn alias="VehicleOwnerName" name="Name" />
       </SimpleJoin>
       <SimpleColumn alias="VehicleNotes" name="Notes" />
     </SimpleJoin>

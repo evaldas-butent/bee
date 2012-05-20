@@ -491,7 +491,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       public void execute() {
         CellGrid grid = getContent().getGrid();
         if (!hasPaging()) {
-          grid.refresh(true);
+          grid.refresh();
           return;
         }
 
@@ -508,11 +508,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         int ds = grid.getDataSize();
         if (ps > 0 && ps < ds) {
           grid.getRowData().subList(ps, ds).clear();
-          grid.refresh(true);
+          grid.refresh();
         } else if (ps > 0 && ps > ds && ds < grid.getRowCount()) {
           DataRequestEvent.fire(grid);
         } else {
-          grid.refresh(true);
+          grid.refresh();
         }
       }
     });

@@ -8,7 +8,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasNumberBounds;
-import com.butent.bee.shared.HasNumberStep;
+import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.HasStringValue;
@@ -19,7 +19,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements a user interface component for inserting number type values.
  */
 
-public class InputNumber extends InputText implements HasNumberBounds, HasNumberStep,
+public class InputNumber extends InputText implements HasNumberBounds, HasIntStep,
     HasNumberFormat, HasPrecision, HasScale {
 
   private int precision = BeeConst.UNDEF;
@@ -27,7 +27,7 @@ public class InputNumber extends InputText implements HasNumberBounds, HasNumber
 
   private Number minValue = null;
   private Number maxValue = null;
-  private Number stepValue = null;
+  private int stepValue = BeeConst.UNDEF;
 
   private NumberFormat format = null;
 
@@ -103,7 +103,7 @@ public class InputNumber extends InputText implements HasNumberBounds, HasNumber
     return scale;
   }
 
-  public Number getStepValue() {
+  public int getStepValue() {
     return stepValue;
   }
 
@@ -127,7 +127,7 @@ public class InputNumber extends InputText implements HasNumberBounds, HasNumber
     this.scale = scale;
   }
 
-  public void setStepValue(Number stepValue) {
+  public void setStepValue(int stepValue) {
     this.stepValue = stepValue;
   }
 

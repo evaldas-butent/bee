@@ -1723,7 +1723,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
-  public void refresh(boolean refreshChildren) {
+  public void refresh() {
     maybeUpdateColumnWidths();
     render();
   }
@@ -2037,7 +2037,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
 
     if (refresh) {
-      refresh(true);
+      refresh();
     }
   }
 

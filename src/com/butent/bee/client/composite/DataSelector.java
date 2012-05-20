@@ -212,6 +212,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
         case KeyCodes.KEY_ESCAPE:
           consume();
+          if (getSelector().isShowing()) {
+            event.stopPropagation();
+          }
           if (getSelector().isItemSelected()) {
             getSelector().cancelSelection();
           } else {
@@ -552,7 +555,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     this.embedded = embedded;
 
-    DataInfo viewInfo = Global.getDataInfo(relation.getViewName(), true);
+    DataInfo viewInfo = Global.getDataInfo(relation.getViewName());
     this.oracle = new SelectionOracle(relation, viewInfo);
     this.searchType =
         (relation.getOperator() == null) ? DEFAULT_SEARCH_TYPE : relation.getOperator();

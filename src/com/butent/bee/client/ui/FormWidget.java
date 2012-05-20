@@ -111,6 +111,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasNumberBounds;
+import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.HasStage;
@@ -1813,10 +1814,10 @@ public enum FormWidget {
         if (widget instanceof InputInteger && BeeUtils.isInt(value)) {
           ((InputInteger) widget).setMaxValue(BeeUtils.toInt(value));
         }
+
       } else if (BeeUtils.same(name, ATTR_STEP)) {
-        if (widget instanceof InputInteger && BeeUtils.isDigit(value)
-            && BeeUtils.toInt(value) > 0) {
-          ((InputInteger) widget).setStepValue(BeeUtils.toInt(value));
+        if (widget instanceof HasIntStep && BeeUtils.isPositiveInt(value)) {
+          ((HasIntStep) widget).setStepValue(BeeUtils.toInt(value));
         }
 
       } else if (BeeUtils.same(name, HasValueStartIndex.ATTR_VALUE_START_INDEX)

@@ -24,6 +24,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
@@ -366,13 +367,15 @@ public class InputBoxes {
   }
 
   public void inputWidget(String caption, Widget widget, final InputWidgetCallback callback,
-      final int timeout, String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
+      String confirmHtml, String cancelHtml, boolean enableGlass, String dialogStyle,
+      final int timeout, WidgetInitializer initializer) {
+
     Assert.notNull(widget);
     Assert.notNull(callback);
 
     final Holder<State> state = Holder.of(State.OPEN);
 
-    final DialogBox dialog = new DialogBox(caption);
+    final DialogBox dialog = new DialogBox(caption, dialogStyle);
     UiHelper.initialize(dialog, initializer, DialogConstants.WIDGET_DIALOG);
 
     final Timer timer = (timeout > 0) ? new DialogTimer(dialog, state) : null;
@@ -449,6 +452,10 @@ public class InputBoxes {
 
     UiHelper.setWidget(dialog, panel, initializer, DialogConstants.WIDGET_PANEL);
 
+    if (enableGlass && Stacking.getWidgetCount() <= 0) {
+      dialog.enableGlass();
+    }
+    
     dialog.setAnimationEnabled(true);
     dialog.center();
 

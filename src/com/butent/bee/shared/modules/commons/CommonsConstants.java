@@ -28,11 +28,15 @@ public class CommonsConstants {
   public static final String TBL_CATEGORIES = "CategoryTree";
   public static final String TBL_ITEM_CATEGORIES = "ItemCategories";
 
+  public static final String VIEW_COMPANIES = "Companies";
+
   public static final String COL_NAME = "Name";
   public static final String COL_ITEM = "Item";
   public static final String COL_CATEGORY = "Category";
   public static final String COL_SERVICE = "IsService";
 
+  public static final String FORM_NEW_COMPANY = "Company";
+  
   private CommonsConstants() {
   }
 }

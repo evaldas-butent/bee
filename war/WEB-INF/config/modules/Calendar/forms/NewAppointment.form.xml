@@ -9,7 +9,7 @@
 <f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
   xmlns:d="http://www.butent.com/decorator" name="NewAppointment" viewName="Appointments" caption="Naujas Vizitas">
 
-  <FlowPanel style="&relative; margin-left: 1em; margin-right: 1em; margin-top: 2ex;">
+  <FlowPanel style="&relative; margin-left: 1em; margin-right: 1em; margin-top: 2ex; min-width: 760px;">
     <FlowPanel style="&relative; height: 30px;">
       <Label html="Klientas:" style="&header;" />
       &separator;
@@ -89,7 +89,7 @@
       <InputArea source="Description" placeholder="Remonto aprašymas" visibleLines="5" 
         style="&absolute; left: 360px; top: 30px; width: 380px;" />
 
-      <InputDateTime source="StartDateTime" caption="Planuojamas pradžios laikas:"
+      <InputDateTime source="StartDateTime" caption="Planuojamas pradžios laikas:" step="30"
         style="width: 120px;" d:size="180" d:unit="px"
         d:rootStyle="&absolute; left: 0; top: 128px;" />
 
@@ -99,7 +99,7 @@
       <InputSpinner name="Minutes" min="0" max="60" step="5"
         style="&absolute; left: 480px; top: 128px; width: 40px;" />
 
-      <InputDateTime source="EndDateTime" caption="Planuojamas pabaigos laikas:"
+      <InputDateTime source="EndDateTime" caption="Planuojamas pabaigos laikas:" step="30"
         style="width: 120px;" d:size="180" d:unit="px"
         d:rootStyle="&absolute; left: 0; top: 160px;" />
 

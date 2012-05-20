@@ -33,8 +33,6 @@ public interface HasDataTable extends HasLoadingState, HasSortHandlers,
 
   int getRowCount();
 
-  void refresh(boolean refreshChildren);
-
   void reset();
   
   void setPageSize(int pageSize, boolean fireScopeChange, boolean fireDataRequest);

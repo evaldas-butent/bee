@@ -6,7 +6,9 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.utils.BeeUtils;
 
 public class SelectorEvent extends Event<SelectorEvent.Handler> {
 
@@ -58,6 +60,14 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
 
   public State getState() {
     return state;
+  }
+  
+  public long getValue() {
+    if (BeeUtils.isLong(getSelector().getNormalizedValue())) {
+      return BeeUtils.toLong(getSelector().getNormalizedValue());
+    } else {
+      return BeeConst.UNDEF;
+    }
   }
   
   public boolean isCanceled() {

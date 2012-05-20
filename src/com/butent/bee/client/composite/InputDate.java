@@ -31,6 +31,7 @@ import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.AbstractDate;
@@ -41,7 +42,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class InputDate extends Composite implements Editor, HasDateTimeFormat, HasTextBox {
+public class InputDate extends Composite implements Editor, HasDateTimeFormat, HasTextBox, HasIntStep {
 
   public static final String DEFAULT_STYLENAME = "bee-DateBox";
 
@@ -52,6 +53,8 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   private final ValueType dateType;
   private DateTimeFormat format;
 
+  private int stepValue = BeeConst.UNDEF;
+  
   private boolean editing = false;
 
   public InputDate(ValueType type) {
@@ -90,6 +93,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     datePicker.addKeyDownHandler(new KeyDownHandler() {
       public void onKeyDown(KeyDownEvent event) {
         if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+          event.stopPropagation();
           hideDatePicker();
           getBox().setFocus(true);
         }
@@ -105,7 +109,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
       }
     });
 
-    sinkEvents(Event.ONCLICK + Event.ONKEYPRESS + Event.ONBLUR);
+    sinkEvents(Event.ONCLICK + Event.ONKEYPRESS + Event.ONBLUR + Event.ONMOUSEWHEEL);
   }
 
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
@@ -160,14 +164,18 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     return date.serialize();
   }
 
+  public int getStepValue() {
+    return stepValue;
+  }
+
   public int getTabIndex() {
     return getBox().getTabIndex();
   }
-
+  
   public TextBoxBase getTextBox() {
     return getBox();
   }
-  
+
   public String getValue() {
     return getBox().getValue();
   }
@@ -187,12 +195,12 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   public boolean isNullable() {
     return getBox().isNullable();
   }
-
+  
   @Override
   public boolean isOrHasPartner(Node node) {
     return getBox().isOrHasPartner(node) || getPopup().getElement().isOrHasChild(node);
   }
-  
+
   @Override
   public void onBrowserEvent(Event event) {
     boolean dp = getPopup().isShowing();
@@ -213,6 +221,13 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
 
     } else if (EventUtils.isKeyPress(type)) {
       if (handleChar(event.getCharCode())) {
+        event.preventDefault();
+        return;
+      }
+
+    } else if (EventUtils.isMouseWheel(type) && DomUtils.isActive(getBox().getElement())) {
+      int charCode = event.getMouseWheelVelocityY() > 0 ? BeeConst.CHAR_PLUS : BeeConst.CHAR_MINUS;
+      if (handleChar(charCode)) {
         event.preventDefault();
         return;
       }
@@ -266,6 +281,10 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
 
   public void setNullable(boolean nullable) {
     getBox().setNullable(nullable);
+  }
+
+  public void setStepValue(int stepValue) {
+    this.stepValue = stepValue;
   }
 
   public void setTabIndex(int index) {
@@ -522,13 +541,30 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
         int cnt = TimeUtils.countFields(getBox().getValue());
         if (cnt == 0 || cnt >= 3) {
           int incr = (charCode == '+') ? 1 : -1;
+          if (getStepValue() > 1) {
+            incr *= getStepValue();
+          }
+
           if (oldDate == null) {
-            newDate = TimeUtils.today(incr);
+            if (ValueType.DATETIME.equals(getDateType()) && getStepValue() > 0) {
+              long millis = TimeUtils.MILLIS_PER_MINUTE * getStepValue();
+              long now = new DateTime().getTime();
+              newDate = new DateTime(now / millis * millis + TimeUtils.MILLIS_PER_MINUTE * incr);
+            } else {
+              newDate = TimeUtils.today(incr);
+            }
+
           } else if (oldDate instanceof JustDate) {
             newDate = new JustDate(oldDate.getDate().getDays() + incr);
+
           } else if (oldDate instanceof DateTime) {
-            newDate =
-                new DateTime(oldDate.getDateTime().getTime() + TimeUtils.MILLIS_PER_DAY * incr);
+            if (getStepValue() > 0) {
+              newDate = new DateTime(oldDate.getDateTime().getTime() 
+                  + TimeUtils.MILLIS_PER_MINUTE * incr);
+            } else {
+              newDate = new DateTime(oldDate.getDateTime().getTime() 
+                  + TimeUtils.MILLIS_PER_DAY * incr);
+            }
           }
         }
         break;

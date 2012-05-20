@@ -22,7 +22,7 @@ import com.butent.bee.client.widget.Toggle;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
-import com.butent.bee.shared.HasNumberStep;
+import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.HasPrecision;
 import com.butent.bee.shared.HasScale;
 import com.butent.bee.shared.State;
@@ -241,8 +241,8 @@ public class EditorFactory {
     if (editor instanceof HasValueStartIndex && description.getValueStartIndex() != null) {
       ((HasValueStartIndex) editor).setValueStartIndex(description.getValueStartIndex());
     }
-    if (editor instanceof HasNumberStep && description.getStepValue() != null) {
-      ((HasNumberStep) editor).setStepValue(description.getStepValue());
+    if (editor instanceof HasIntStep && description.getStepValue() != null) {
+      ((HasIntStep) editor).setStepValue(description.getStepValue());
     }
 
     if (editor instanceof HasItems && description.getItems() != null) {

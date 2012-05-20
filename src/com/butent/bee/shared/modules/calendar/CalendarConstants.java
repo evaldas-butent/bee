@@ -82,11 +82,14 @@ public class CalendarConstants {
   public static final String VIEW_EXTENDED_PROPERTIES = "ExtendedProperties";
   public static final String VIEW_ATTENDEE_PROPS = "AttendeeProps";
 
+  public static final String VIEW_APPOINTMENTS = "Appointments";
+
   public static final String GRID_CALENDARS = "Calendars";
   public static final String GRID_APPOINTMENTS = "Appointments";
 
   public static final String FORM_CALENDAR_SETTINGS = "CalendarSettings";
   public static final String FORM_CONFIGURATION = "Configuration";
+  public static final String FORM_NEW_APPOINTMENT = "NewAppointment";
   
   public static final String COL_USER = "User";
   public static final String COL_CALENDAR = "Calendar";
@@ -110,6 +113,8 @@ public class CalendarConstants {
   public static final String COL_FAVORITE = "Favorite";
 
   public static final String COL_COMPANY = "Company";
+  public static final String COL_COMPANY_NAME = "CompanyName";
+
   public static final String COL_APPOINTMENT_TYPE = "AppointmentType";
 
   public static final String COL_TIME_ZONE = "TimeZone";
@@ -127,6 +132,9 @@ public class CalendarConstants {
   public static final String COL_EFFECTIVE_START = "EffectiveStart";
   public static final String COL_EFFECTIVE_END = "EffectiveEnd";
 
+  public static final String COL_VEHICLE = "Vehicle";
+  public static final String COL_VEHICLE_OWNER = "VehicleOwner";
+  
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";
 

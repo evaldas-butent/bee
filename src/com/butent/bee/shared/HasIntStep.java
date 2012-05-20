@@ -4,9 +4,9 @@ package com.butent.bee.shared;
  * Requires implementing classes to have methods for getting and setting step value.
  */
 
-public interface HasNumberStep {
+public interface HasIntStep {
 
-  Number getStepValue();
+  int getStepValue();
 
-  void setStepValue(Number stepValue);
+  void setStepValue(int stepValue);
 }

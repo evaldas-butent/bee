@@ -21,7 +21,13 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 
 public class RowFactory {
+
+  private static final String DIALOG_STYLE = "bee-NewRow";
   
+  public static void createRow(String viewName, String formName, Queries.RowCallback callback) {
+    createRow(viewName, formName, null, callback);
+  }
+
   public static void createRow(String viewName, String formName, String caption,
       Queries.RowCallback callback) {
 
@@ -38,7 +44,7 @@ public class RowFactory {
       return;
     }
     
-    DataInfo dataInfo = Global.getDataInfo(viewName, true);
+    DataInfo dataInfo = Global.getDataInfo(viewName);
     if (dataInfo == null) {
       return;
     }
@@ -127,7 +133,7 @@ public class RowFactory {
       public void onSuccess() {
         insert(formView.getActiveRow(), dataInfo, callback);
       }
-    });
+    }, "Išsaugoti", "Atšaukti", true, DIALOG_STYLE);
   }
   
   private RowFactory() {
