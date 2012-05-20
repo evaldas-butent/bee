@@ -12,13 +12,13 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.HandlerRegistration;
+
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.calendar.Appointment;
-import com.butent.bee.client.calendar.AppointmentStyle;
 import com.butent.bee.client.calendar.Attendee;
 import com.butent.bee.client.calendar.Calendar;
 import com.butent.bee.client.calendar.CalendarView.Type;
@@ -67,7 +67,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-public class CalendarPanel extends Complex {
+public class CalendarPanel extends Complex implements NewAppointmentEvent.Handler {
   
   private final long calendarId; 
 
@@ -78,6 +78,8 @@ public class CalendarPanel extends Complex {
   private GridPresenter gridPresenter = null;
   
   private int resourceNameIndex = BeeConst.UNDEF;
+
+  private HandlerRegistration newAppointmentRegistration;
 
   public CalendarPanel(long calendarId, CalendarSettings settings) {
     this.calendarId = calendarId;
@@ -157,6 +159,13 @@ public class CalendarPanel extends Complex {
     
     loadResources();
     loadAppointments(null);
+    
+    setNewAppointmentRegistration(NewAppointmentEvent.register(this));
+  }
+
+  @Override
+  public void onNewAppointment(NewAppointmentEvent event) {
+    refresh();
   }
 
   @Override
@@ -169,6 +178,16 @@ public class CalendarPanel extends Complex {
         calendar.scrollToHour(calendar.getSettings().getScrollToHour());
       }
     });
+  }
+  
+  @Override
+  protected void onUnload() {
+    super.onUnload();
+    
+    if (!BeeKeeper.getScreen().isTemporaryDetach() && getNewAppointmentRegistration() != null) {
+      getNewAppointmentRegistration().removeHandler();
+      setNewAppointmentRegistration(null);
+    }
   }
 
   private void configureCalendar() {
@@ -209,7 +228,7 @@ public class CalendarPanel extends Complex {
       }
     });
   }
-
+  
   private GridDescription createGridDescription(BeeRowSet rowSet, List<String> columnNames) {
     String viewName = rowSet.getViewName();
     GridDescription gridDescription = new GridDescription(viewName, viewName);
@@ -235,7 +254,7 @@ public class CalendarPanel extends Complex {
     }
     return gridDescription;
   }
-  
+
   private void createGridPresenter(BeeRowSet rowSet, List<String> columnNames) {
     GridPresenter gp = new GridPresenter(createGridDescription(rowSet, columnNames),
         rowSet.getNumberOfRows(), rowSet, Provider.Type.LOCAL, EnumSet.of(UiOption.CHILD));
@@ -288,40 +307,44 @@ public class CalendarPanel extends Complex {
     });
     return tabBar;
   }
-
+  
   private GridPresenter getGridPresenter() {
     return gridPresenter;
   }
-  
+
+  private HandlerRegistration getNewAppointmentRegistration() {
+    return newAppointmentRegistration;
+  }
+
   private int getResourceNameIndex() {
     return resourceNameIndex;
   }
-
+  
   private void loadAppointmentAttendees(final BeeRowSet appRowSet, final Set<Long> attIds) {
-    Queries.getRowSet("AppointmentAttendees", null, new Queries.RowSetCallback() {
+    Queries.getRowSet(VIEW_APPOINTMENT_ATTENDEES, null, new Queries.RowSetCallback() {
       public void onSuccess(BeeRowSet result) {
         setAppointments(appRowSet, result, attIds);
       }
     }); 
   }
-
+  
   private void loadAppointments(final Set<Long> attIds) {
-    Queries.getRowSet("Appointments", null, new Queries.RowSetCallback() {
+    Queries.getRowSet(VIEW_APPOINTMENTS, null, new Queries.RowSetCallback() {
       public void onSuccess(BeeRowSet result) {
         loadAppointmentAttendees(result, attIds);
       }
     }); 
   }
-  
+
   private void loadResources() {
-    Queries.getRowSet("Attendees", null, new Queries.RowSetCallback() {
+    Queries.getRowSet(VIEW_ATTENDEES, null, new Queries.RowSetCallback() {
       public void onSuccess(BeeRowSet result) {
-        setResourceNameIndex(DataUtils.getColumnIndex("Name", result.getColumns()));
-        createGridPresenter(result, Lists.newArrayList("Name"));
+        setResourceNameIndex(DataUtils.getColumnIndex(COL_NAME, result.getColumns()));
+        createGridPresenter(result, Lists.newArrayList(COL_NAME));
       }
     }); 
   }
-  
+
   private void navigate(boolean forward) {
     JustDate oldDate = calendar.getDate();
     JustDate newDate;
@@ -386,22 +409,21 @@ public class CalendarPanel extends Complex {
     }
     
     List<Appointment> lst = Lists.newArrayList();
-    AppointmentStyle[] styles = AppointmentStyle.values();
     
-    int startIndex = DataUtils.getColumnIndex("StartDateTime", apprs.getColumns());
-    int endIndex = DataUtils.getColumnIndex("EndDateTime", apprs.getColumns());
+    int startIndex = DataUtils.getColumnIndex(COL_START_DATE_TIME, apprs.getColumns());
+    int endIndex = DataUtils.getColumnIndex(COL_END_DATE_TIME, apprs.getColumns());
 
-    int summaryIndex = DataUtils.getColumnIndex("Summary", apprs.getColumns());
-    int descrIndex = DataUtils.getColumnIndex("Description", apprs.getColumns());
+    int summaryIndex = DataUtils.getColumnIndex(COL_SUMMARY, apprs.getColumns());
+    int descrIndex = DataUtils.getColumnIndex(COL_DESCRIPTION, apprs.getColumns());
     
     int appIndex = BeeConst.UNDEF;
     int attIndex = BeeConst.UNDEF;
     int nameIndex = BeeConst.UNDEF;
     
     if (aars != null && !aars.isEmpty()) {
-      appIndex = DataUtils.getColumnIndex("Appointment", aars.getColumns());
-      attIndex = DataUtils.getColumnIndex("Attendee", aars.getColumns());
-      nameIndex = DataUtils.getColumnIndex("AttendeeName", aars.getColumns());
+      appIndex = DataUtils.getColumnIndex(COL_APPOINTMENT, aars.getColumns());
+      attIndex = DataUtils.getColumnIndex(COL_ATTENDEE, aars.getColumns());
+      nameIndex = DataUtils.getColumnIndex(COL_ATTENDEE_NAME, aars.getColumns());
     }
     
     for (IsRow row : apprs.getRows()) {
@@ -420,8 +442,6 @@ public class CalendarPanel extends Complex {
       appt.setStart(start);
       appt.setEnd(end);
 
-      appt.setStyle(styles[Random.nextInt(styles.length - 2)]);
-      
       if (nameIndex >= 0) {
         for (IsRow aa : aars.getRows()) {
           if (attIds != null && !attIds.isEmpty()) {
@@ -446,6 +466,10 @@ public class CalendarPanel extends Complex {
 
   private void setGridPresenter(GridPresenter gridPresenter) {
     this.gridPresenter = gridPresenter;
+  }
+
+  private void setNewAppointmentRegistration(HandlerRegistration newAppointmentRegistration) {
+    this.newAppointmentRegistration = newAppointmentRegistration;
   }
 
   private void setResourceNameIndex(int resourceNameIndex) {

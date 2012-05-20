@@ -22,8 +22,8 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.shared.time.DateTime;
 
 public class AppointmentWidget extends FlowPanel {

@@ -4,9 +4,9 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.calendar.util.AppointmentWidget;
 import com.butent.bee.client.dnd.AbstractDragController;
+import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.shared.time.DateTime;
 
 public class ResourceViewResizeController extends AbstractDragController {

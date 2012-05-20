@@ -85,6 +85,10 @@ public class CalendarConstants {
   public static final String VIEW_ATTENDEE_PROPS = "AttendeeProps";
 
   public static final String VIEW_APPOINTMENTS = "Appointments";
+  public static final String VIEW_APPOINTMENT_PROPS = "AppointmentProps";
+  public static final String VIEW_APPOINTMENT_ATTENDEES = "AppointmentAttendees";
+
+  public static final String VIEW_THEME_COLORS = "ThemeColors";
 
   public static final String GRID_CALENDARS = "Calendars";
   public static final String GRID_APPOINTMENTS = "Appointments";
@@ -117,8 +121,12 @@ public class CalendarConstants {
   public static final String COL_COMPANY = "Company";
   public static final String COL_COMPANY_NAME = "CompanyName";
 
+  public static final String COL_APPOINTMENT = "Appointment";
   public static final String COL_APPOINTMENT_TYPE = "AppointmentType";
   public static final String COL_TYPE_NAME = "TypeName";
+
+  public static final String COL_ATTENDEE = "Attendee";
+  public static final String COL_ATTENDEE_NAME = "AttendeeName";
 
   public static final String COL_TIME_ZONE = "TimeZone";
   public static final String COL_THEME = "Theme";
@@ -142,6 +150,13 @@ public class CalendarConstants {
 
   public static final String COL_VEHICLE = "Vehicle";
   public static final String COL_VEHICLE_OWNER = "VehicleOwner";
+
+  public static final String COL_COLOR = "Color";
+  public static final String COL_BACKGROUND = "Background";
+  public static final String COL_FOREGROUND = "Foreground";
+
+  public static final String COL_SUMMARY = "Summary";
+  public static final String COL_DESCRIPTION = "Description";
   
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";

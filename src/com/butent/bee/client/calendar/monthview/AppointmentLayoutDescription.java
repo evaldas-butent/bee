@@ -1,6 +1,6 @@
 package com.butent.bee.client.calendar.monthview;
 
-import com.butent.bee.client.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.Appointment;
 
 public class AppointmentLayoutDescription {
 

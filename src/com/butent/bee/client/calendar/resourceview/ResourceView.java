@@ -7,7 +7,6 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 
-import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.calendar.Attendee;
 import com.butent.bee.client.calendar.CalendarView;
 import com.butent.bee.client.calendar.CalendarWidget;
@@ -23,6 +22,7 @@ import com.butent.bee.client.dnd.DragStartEvent;
 import com.butent.bee.client.dnd.PickupDragController;
 import com.butent.bee.client.dnd.VetoDragException;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;

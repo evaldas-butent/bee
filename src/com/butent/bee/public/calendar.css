@@ -369,12 +369,6 @@
   overflow: hidden;
 }
 
-.bee-ColorBar-item {
-  margin-left: 4px;
-  color: white;
-  text-align: center;
-}
-
 .bee-CreateAppointment {
   background-color: #D14836;
   background-image: -webkit-linear-gradient(top, #DD4B39, #D14836);

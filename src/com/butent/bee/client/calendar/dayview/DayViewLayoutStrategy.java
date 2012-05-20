@@ -3,11 +3,11 @@ package com.butent.bee.client.calendar.dayview;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.calendar.Appointment;
 import com.butent.bee.client.calendar.HasSettings;
 import com.butent.bee.client.calendar.util.AppointmentAdapter;
 import com.butent.bee.client.calendar.util.AppointmentUtil;
 import com.butent.bee.client.calendar.util.TimeBlock;
+import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 

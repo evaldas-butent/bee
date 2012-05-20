@@ -1,30 +1,19 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
-import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.calendar.Appointment;
-import com.butent.bee.client.calendar.AppointmentStyle;
 import com.butent.bee.client.calendar.Attendee;
 import com.butent.bee.client.calendar.Calendar;
 import com.butent.bee.client.calendar.CalendarWidget;
-import com.butent.bee.client.calendar.theme.Appearance;
-import com.butent.bee.client.calendar.theme.DefaultTheme;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.InputDate;
-import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
@@ -42,7 +31,6 @@ import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -79,6 +67,7 @@ public class CalendarKeeper {
   private static DataInfo appointmentViewInfo = null;
   private static DataInfo attendeeViewInfo = null;
   private static DataInfo extendedPropertiesViewInfo = null;
+  private static DataInfo themeColorViewInfo = null;
 
   public static void register() {
     Global.registerCaptions(AppointmentStatus.class);
@@ -183,6 +172,13 @@ public class CalendarKeeper {
     return extendedPropertiesViewInfo;
   }
 
+  static DataInfo getThemeColorViewInfo() {
+    if (themeColorViewInfo == null) {
+      themeColorViewInfo = Global.getDataInfo(VIEW_THEME_COLORS);
+    }
+    return themeColorViewInfo;
+  }
+
   static void openAppointment(final Appointment appointment, final Calendar calendar) {
     String caption = "Vizitas";
     final DialogBox dialogBox = new DialogBox(caption);
@@ -216,47 +212,6 @@ public class CalendarKeeper {
     StyleUtils.setWidth(description, 300);
     panel.setWidget(row, 1, description);
 
-    row++;
-    panel.setWidget(row, 0, new Html("Spalva"));
-    final TabBar colors = new TabBar("bee-ColorBar-");
-
-    for (AppointmentStyle style : AppointmentStyle.values()) {
-      if (AppointmentStyle.DEFAULT.equals(style) || AppointmentStyle.CUSTOM.equals(style)) {
-        continue;
-      }
-      Appearance gs = DefaultTheme.STYLES.get(style);
-      if (gs == null) {
-        continue;
-      }
-
-      Html color = new Html();
-      StyleUtils.setSize(color, 14, 14);
-      color.getElement().getStyle().setBackgroundColor(gs.getBackground());
-      color.getElement().getStyle().setPaddingBottom(2, Unit.PX);
-
-      colors.addItem(color);
-    }
-
-    colors.addBeforeSelectionHandler(new BeforeSelectionHandler<Integer>() {
-      public void onBeforeSelection(BeforeSelectionEvent<Integer> event) {
-        Widget widget = colors.getSelectedWidget();
-        if (widget != null) {
-          widget.getElement().setInnerHTML(BeeConst.STRING_EMPTY);
-        }
-      }
-    });
-
-    colors.addSelectionHandler(new SelectionHandler<Integer>() {
-      public void onSelection(SelectionEvent<Integer> event) {
-        Widget widget = colors.getSelectedWidget();
-        if (widget != null) {
-          widget.getElement().setInnerHTML(BeeUtils.toString(BeeConst.CHECK_MARK));
-        }
-      }
-    });
-
-    panel.setWidget(row, 1, colors);
-
     if (!appointment.getAttendees().isEmpty()) {
       row++;
       panel.setWidget(row, 0, new Html("Resursai"));
@@ -274,7 +229,6 @@ public class CalendarKeeper {
     start.setDate(appointment.getStart());
     end.setDate(appointment.getEnd());
     description.setText(appointment.getDescription());
-    colors.selectTab(appointment.getStyle().ordinal());
 
     BeeButton confirm = new BeeButton("Išsaugoti", new ClickHandler() {
       public void onClick(ClickEvent ev) {
@@ -289,7 +243,6 @@ public class CalendarKeeper {
         appointment.setStart(from.getDateTime());
         appointment.setEnd(to.getDateTime());
         appointment.setDescription(description.getText());
-        appointment.setStyle(AppointmentStyle.values()[colors.getSelectedTab()]);
 
         if (calendar != null) {
           calendar.refresh();
@@ -329,7 +282,7 @@ public class CalendarKeeper {
     BeeKeeper.getScreen().addCommandItem(new Html("Naujas vizitas",
         new Scheduler.ScheduledCommand() {
           public void execute() {
-            createAppointment(null, true);
+            createAppointment(true);
           }
         }));
   }

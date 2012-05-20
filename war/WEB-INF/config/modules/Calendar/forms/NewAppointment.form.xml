@@ -21,7 +21,7 @@
     </FlowPanel>
 
     <FlowPanel style="&relative; height: 60px;">
-      <DataSelector source="CompanyName" caption="Klientas:" style="width: 300px;"
+      <DataSelector source="CompanyName" required="true" caption="Klientas:" style="width: 300px;"
         choiceColumns="Name Phone Email" d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
       <DataSelector source="CompanyPhone" caption="Telefonas:" style="width: 200px;"
         filter="Phone" choiceColumns="Phone Name" d:size="80" d:unit="px"
@@ -37,7 +37,7 @@
     </FlowPanel>
 
     <FlowPanel style="&relative; height: 90px;">
-      <DataSelector source="VehicleNumber" caption="Valst. Nr.:" style="width: 100px;"
+      <DataSelector source="VehicleNumber" required="true" caption="Valst. Nr.:" style="width: 100px;"
         choiceColumns="Number ParentModelName ModelName OwnerName" d:size="80" d:unit="px"
         d:rootStyle="&absolute; left: 0; top: 0;" />
 
@@ -75,9 +75,9 @@
     </FlowPanel>
 
     <FlowPanel style="&relative; height: 200px;">
-      <ListBox name="ServiceType" caption="Serviso tipas:" style="width: 120px;"
+      <ListBox name="ServiceType" required="true" caption="Serviso tipas:" style="width: 120px;"
         d:size="100" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
-      <ListBox name="RepairType" caption="Remonto tipas:" style="width: 120px;"
+      <ListBox name="RepairType" required="true" caption="Remonto tipas:" style="width: 120px;"
         d:size="100" d:unit="px" d:rootStyle="&absolute; left: 0; top: 30px;" />
       <ListBox name="RepairPlace" caption="Remonto vieta:" style="width: 200px;"
         d:size="100" d:unit="px" d:rootStyle="&absolute; left: 0; top: 60px;" />
@@ -94,8 +94,8 @@
       <InputArea source="Description" placeholder="Remonto aprašymas" visibleLines="5" 
         style="&absolute; left: 360px; top: 30px; width: 380px;" />
 
-      <InputDateTime source="StartDateTime" caption="Planuojamas pradžios laikas:" step="30"
-        style="width: 120px;" d:size="180" d:unit="px"
+      <InputDateTime source="StartDateTime" required="true" caption="Planuojamas pradžios laikas:"
+        step="30" style="width: 112px;" d:size="188" d:unit="px"
         d:rootStyle="&absolute; left: 0; top: 128px;" />
 
       <InputSpinner name="Hours" caption="Trukmė" min="0" max="99"
@@ -105,11 +105,10 @@
         style="&absolute; left: 480px; top: 128px; width: 40px;" />
 
       <InputDateTime source="EndDateTime" caption="Planuojamas pabaigos laikas:" step="30"
-        style="width: 120px;" d:size="180" d:unit="px"
+        style="width: 112px;" d:size="188" d:unit="px"
         d:rootStyle="&absolute; left: 0; top: 160px;" />
 
-      <DataSelector source="ColorName" caption="Spalva:" style="width: 120px;"
-        d:size="60" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 160px;" />
+      <FlowPanel name="Colors" style="&absolute; left: 360px; top: 168px; width: 380px;" />
     </FlowPanel>
 
     <hr />

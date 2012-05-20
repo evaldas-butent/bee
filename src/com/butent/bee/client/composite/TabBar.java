@@ -225,7 +225,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   }
   
   public void clear() {
-    for (int i = getItemCount(); i >= 0; i--) {
+    for (int i = getItemCount() - 1; i >= 0; i--) {
       removeTab(i);
     }
   }

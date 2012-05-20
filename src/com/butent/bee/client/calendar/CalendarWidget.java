@@ -31,6 +31,7 @@ import com.butent.bee.client.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.calendar.event.TimeBlockClickHandler;
 import com.butent.bee.client.calendar.event.UpdateEvent;
 import com.butent.bee.client.calendar.event.UpdateHandler;
+import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;

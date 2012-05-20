@@ -1,7 +1,8 @@
-package com.butent.bee.client.calendar;
+package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.client.calendar.Attendee;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
@@ -26,7 +27,6 @@ public class Appointment implements Comparable<Appointment> {
 
   private boolean allDay = false;
   
-  private AppointmentStyle style = AppointmentStyle.DEFAULT;
   private String customStyle = null;
 
   private boolean readOnly = false;
@@ -50,7 +50,6 @@ public class Appointment implements Comparable<Appointment> {
 
     clone.setAllDay(this.allDay);
     
-    clone.setStyle(this.style);
     clone.setCustomStyle(this.customStyle);
     
     clone.setReadOnly(this.readOnly);
@@ -96,10 +95,6 @@ public class Appointment implements Comparable<Appointment> {
 
   public DateTime getStart() {
     return start;
-  }
-
-  public AppointmentStyle getStyle() {
-    return style;
   }
 
   public String getTitle() {
@@ -156,10 +151,6 @@ public class Appointment implements Comparable<Appointment> {
 
   public void setStart(DateTime start) {
     this.start = start;
-  }
-
-  public void setStyle(AppointmentStyle style) {
-    this.style = style;
   }
 
   public void setTitle(String title) {

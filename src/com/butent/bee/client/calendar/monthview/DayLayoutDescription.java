@@ -2,7 +2,7 @@ package com.butent.bee.client.calendar.monthview;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.shared.Assert;
 
 import java.util.List;
