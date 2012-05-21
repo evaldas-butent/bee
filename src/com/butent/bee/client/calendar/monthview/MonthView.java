@@ -386,7 +386,7 @@ public class MonthView extends CalendarView {
     boolean selected = calendarWidget.isTheSelectedAppointment(appointment);
     styleManager.applyStyle(panel, selected);
 
-    if (calendarWidget.getSettings().isDragDropEnabled() && !appointment.isReadOnly()) {
+    if (calendarWidget.getSettings().isDragDropEnabled()) {
       dragController.makeDraggable(panel);
     }
 

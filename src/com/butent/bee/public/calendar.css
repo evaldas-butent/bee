@@ -159,7 +159,6 @@
   border-style: solid;
   border-width: 1px;
   position: absolute;
-  font-size: 11px;
   font-family: Arial, sans-serif;
   overflow: hidden;
   opacity: 0.75;
@@ -169,19 +168,17 @@
 .bee-cal .dv-appointment-selected {
   border-style: solid;
   border-width: 1px;
+  border-radius: 6px;
   position: absolute;
-  font-size: 11px;
   font-family: Arial, sans-serif;
   overflow: hidden;
   opacity: 1;
-  border-radius: 6px;
 }
 
 .bee-cal .dv-appointment-multiday {
   border-style: solid;
   border-width: 1px;
   position: absolute;
-  font-size: 11px;
   font-family: Arial, sans-serif;
   overflow: hidden;
   opacity: 0.6;
@@ -192,7 +189,6 @@
   border-style: solid;
   border-width: 1px;
   position: absolute;
-  font-size: 11px;
   font-family: Arial, sans-serif;
   overflow: hidden;
   opacity: 1;
@@ -202,7 +198,6 @@
 .bee-cal .dv-appointment .header, .bee-cal .dv-appointment-selected .header {
   white-space: nowrap;
   overflow: hidden;
-  color: #FFF;
   padding: 1px;
   padding-left: 8px;
   border-top-left-radius: 5px;
@@ -216,7 +211,7 @@
 .bee-cal .dv-appointment .body, .bee-cal .dv-appointment-selected .body, .bee-cal .dv-appointment-multiday .body, .bee-cal .dv-appointment-multiday-selected .body {
   padding-left: 8px;
   padding-top: 1px;
-  white-space: wrap;
+  white-space: pre-line;
 }
 
 .bee-cal .dv-appointment .footer, .bee-cal .dv-appointment-selected .footer {
@@ -349,7 +344,6 @@
   border-radius: 6px;
   position: absolute;
   height: 20px;
-  color: #FFF;
   overflow: hidden;
   border-style: solid;
   border-width: 1px;
@@ -365,7 +359,6 @@
   border-radius: 6px;
   position: absolute;
   height: 20px;
-  color: #FFF;
   overflow: hidden;
 }
 

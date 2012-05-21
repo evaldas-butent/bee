@@ -139,6 +139,10 @@ public class CalendarKeeper {
     });
   }
 
+  static int getAppointmentColumnIndex(String columnId) {
+    return getAppointmentViewInfo().getColumnIndex(columnId);
+  }
+  
   static DataInfo getAppointmentViewInfo() {
     if (appointmentViewInfo == null) {
       appointmentViewInfo = Global.getDataInfo(VIEW_APPOINTMENTS);
@@ -225,7 +229,7 @@ public class CalendarKeeper {
       panel.setWidget(row, 1, new Html(sb.toString().trim()));
     }
 
-    summary.setText(appointment.getTitle());
+    summary.setText(appointment.getSummary());
     start.setDate(appointment.getStart());
     end.setDate(appointment.getEnd());
     description.setText(appointment.getDescription());
@@ -239,11 +243,8 @@ public class CalendarKeeper {
           return;
         }
 
-        appointment.setTitle(summary.getText());
         appointment.setStart(from.getDateTime());
         appointment.setEnd(to.getDateTime());
-        appointment.setDescription(description.getText());
-
         if (calendar != null) {
           calendar.refresh();
         }

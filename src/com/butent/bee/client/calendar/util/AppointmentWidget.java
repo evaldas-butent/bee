@@ -22,9 +22,12 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.calendar.Attendee;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.utils.BeeUtils;
 
 public class AppointmentWidget extends FlowPanel {
 
@@ -181,21 +184,48 @@ public class AppointmentWidget extends FlowPanel {
 
   public void setAppointment(Appointment appointment) {
     this.appointment = appointment;
+    
+    setTitle(appointment.getSummary());
 
-    if (appointment.isReadOnly()) {
-      remove(footerPanel);
+    setBackground(appointment.getBackground());
+    setForeground(appointment.getForeground());
+  }
+  
+  public void setBackground(String background) {
+    if (!BeeUtils.isEmpty(background)) {
+      getElement().getStyle().setBackgroundColor(background);
     }
   }
 
-  public void setDescription(String description) {
-    this.description = description;
-    DOM.setInnerHTML(bodyPanel.getElement(), description);
+  public void setDescription(Appointment appointment) {
+    String sep = "<br/>";
+    String attNames = BeeConst.STRING_EMPTY;
+    
+    if (!appointment.getAttendees().isEmpty()) {
+      for (Attendee att : appointment.getAttendees()) {
+        attNames = BeeUtils.concat(sep, attNames, att.getName());
+      }
+    }
+    
+    String text = BeeUtils.concat(sep, appointment.getCompanyName(),
+        BeeUtils.concat(1, appointment.getVehicleNumber(), appointment.getVehicleParentModel(),
+            appointment.getVehicleModel()), appointment.getProperties(), attNames,
+            appointment.getDescription());
+
+    this.description = text;
+    DOM.setInnerHTML(bodyPanel.getElement(), text);
   }
 
   public void setEnd(DateTime end) {
     this.end = end;
   }
 
+  public void setForeground(String foreground) {
+    if (!BeeUtils.isEmpty(foreground)) {
+      getElement().getStyle().setColor(foreground);
+    }
+  }
+  
   public void setHeight(double height) {
     this.height = height;
     StyleUtils.setHeight(this, height, Unit.PX);

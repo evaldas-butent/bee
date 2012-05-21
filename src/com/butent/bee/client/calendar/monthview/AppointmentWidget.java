@@ -12,7 +12,7 @@ public class AppointmentWidget extends FocusPanel {
   public AppointmentWidget(Appointment appointment) {
     this.appointment = appointment;
     Label titleLabel = new Label();
-    titleLabel.getElement().setInnerHTML(this.appointment.getTitle());
+    titleLabel.getElement().setInnerHTML(this.appointment.getSummary());
     this.add(titleLabel);
   }
 

@@ -372,10 +372,6 @@ class AppointmentBuilder extends AbstractFormCallback {
     return hourWidgetId;
   }
 
-  private int getIndex(String columnId) {
-    return CalendarKeeper.getAppointmentViewInfo().getColumnIndex(columnId);
-  }
-
   private String getMinuteWidgetId() {
     return minuteWidgetId;
   }
@@ -486,7 +482,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   }
 
   private boolean isEmpty(IsRow row, String columnId) {
-    return BeeUtils.isEmpty(row.getString(getIndex(columnId)));
+    return BeeUtils.isEmpty(row.getString(CalendarKeeper.getAppointmentColumnIndex(columnId)));
   }
 
   private void loadAttendees() {
@@ -584,7 +580,7 @@ class AppointmentBuilder extends AbstractFormCallback {
     if (isEmpty(row, COL_END_DATE_TIME)) {
       long millis = row.getDateTime(getStartTimeIndex()).getTime()
           + getDuration() * TimeUtils.MILLIS_PER_MINUTE;
-      row.setValue(getIndex(COL_END_DATE_TIME), millis);
+      row.setValue(CalendarKeeper.getAppointmentColumnIndex(COL_END_DATE_TIME), millis);
     }
 
     int index = colorWidget.getSelectedTab();
@@ -592,7 +588,8 @@ class AppointmentBuilder extends AbstractFormCallback {
       index = 0;
     }
     if (colors != null && index < colors.getNumberOfRows()) {
-      row.setValue(getIndex(COL_COLOR), colors.getRow(index).getLong(getColorIndex()));
+      row.setValue(CalendarKeeper.getAppointmentColumnIndex(COL_COLOR),
+          colors.getRow(index).getLong(getColorIndex()));
     }
 
     final Long serviceType = getSelectedId(getServiceTypeWidgetId(), serviceTypes);
@@ -706,7 +703,7 @@ class AppointmentBuilder extends AbstractFormCallback {
       return false;
     }
 
-    DateTime end = row.getDateTime(getIndex(COL_END_DATE_TIME));
+    DateTime end = row.getDateTime(CalendarKeeper.getAppointmentColumnIndex(COL_END_DATE_TIME));
     if (end == null) {
       if (getDuration() <= 0) {
         getFormView().notifySevere("Įveskite trukmę arba planuojamą pabaigos laiką");

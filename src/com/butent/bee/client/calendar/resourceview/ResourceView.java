@@ -1,8 +1,6 @@
 package com.butent.bee.client.calendar.resourceview;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
@@ -243,8 +241,7 @@ public class ResourceView extends CalendarView {
       panel.setHeight(appt.getHeight());
 
       panel.setAppointment(appt.getAppointment());
-      panel.setTitle(appt.getAppointment().getTitle());
-
+      
       boolean selected = calendarWidget.isTheSelectedAppointment(panel.getAppointment());
       if (selected) {
         selectedAppointmentWidgets.add(panel);
@@ -256,10 +253,10 @@ public class ResourceView extends CalendarView {
         panel.setMultiDay(true);
         viewMulti.getGrid().add(panel);
       } else {
-        panel.setDescription(appt.getAppointment().getDescription());
+        panel.setDescription(appt.getAppointment());
         viewBody.getGrid().getGrid().add(panel);
 
-        if (calendarWidget.getSettings().isDragDropEnabled() && !appt.getAppointment().isReadOnly()) {
+        if (calendarWidget.getSettings().isDragDropEnabled()) {
           resizeController.makeDraggable(panel.getResizeHandle());
           dragController.makeDraggable(panel, panel.getMoveHandle());
         }
@@ -424,45 +421,7 @@ public class ResourceView extends CalendarView {
   }
 
   private void timeBlockClick(int x, int y) {
-    int left = viewBody.getGrid().getGridOverlay().getAbsoluteLeft();
-    int top = viewBody.getScrollPanel().getAbsoluteTop();
-    int width = viewBody.getGrid().getGridOverlay().getOffsetWidth();
-    int scrollOffset = viewBody.getScrollPanel().getVerticalScrollPosition();
-
-    double relativeY = y - top + scrollOffset;
-    double relativeX = x - left;
-
-    double day = Math.floor(relativeX / ((double) width / days));
-
     DateTime newStartDate = getCoordinatesDate(x, y);
-
-    if (getSettings().getTimeBlockClickNumber() != TimeBlockClick.Drag) {
-      calendarWidget.fireTimeBlockClickEvent(newStartDate);
-    } else {
-      int snapSize = calendarWidget.getSettings().getPixelsPerInterval();
-      width = width / days;
-
-      int height = snapSize;
-      
-      left = (int) day * width;
-      top = (int) Math.floor(relativeY / snapSize) * snapSize;
-
-      Appointment app = new Appointment();
-      app.setStart(newStartDate);
-      app.setEnd(newStartDate);
-      
-      AppointmentWidget proxy = new AppointmentWidget();
-      proxy.setAppointment(app);
-      proxy.setStart(newStartDate);
-      proxy.setPixelSize(width, height);
-
-      viewBody.getGrid().getGrid().add(proxy, left, top);
-      styleManager.applyStyle(proxy, false);
-      proxyResizeController.makeDraggable(proxy.getResizeHandle());
-
-      NativeEvent evt = Document.get().createMouseDownEvent(1, 0, 0, x, y, false,
-          false, false, false, NativeEvent.BUTTON_LEFT);
-      proxy.getResizeHandle().getElement().dispatchEvent(evt);
-    }
+    calendarWidget.fireTimeBlockClickEvent(newStartDate);
   }
 }

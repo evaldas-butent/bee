@@ -1,8 +1,6 @@
 package com.butent.bee.client.calendar.dayview;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
@@ -241,7 +239,6 @@ public class DayView extends CalendarView {
       panel.setHeight(appt.getHeight());
 
       panel.setAppointment(appt.getAppointment());
-      panel.setTitle(appt.getAppointment().getTitle());
 
       boolean selected = calendarWidget.isTheSelectedAppointment(panel.getAppointment());
       if (selected) {
@@ -254,10 +251,10 @@ public class DayView extends CalendarView {
         panel.setMultiDay(true);
         multiViewBody.getGrid().add(panel);
       } else {
-        panel.setDescription(appt.getAppointment().getDescription());
+        panel.setDescription(appt.getAppointment());
         dayViewBody.getGrid().getGrid().add(panel);
 
-        if (calendarWidget.getSettings().isDragDropEnabled() && !appt.getAppointment().isReadOnly()) {
+        if (calendarWidget.getSettings().isDragDropEnabled()) {
           resizeController.makeDraggable(panel.getResizeHandle());
           dragController.makeDraggable(panel, panel.getMoveHandle());
         }
@@ -422,45 +419,7 @@ public class DayView extends CalendarView {
   }
 
   private void timeBlockClick(int x, int y) {
-    int left = dayViewBody.getGrid().getGridOverlay().getAbsoluteLeft();
-    int top = dayViewBody.getScrollPanel().getAbsoluteTop();
-    int width = dayViewBody.getGrid().getGridOverlay().getOffsetWidth();
-    int scrollOffset = dayViewBody.getScrollPanel().getVerticalScrollPosition();
-
-    double relativeY = y - top + scrollOffset;
-    double relativeX = x - left;
-
-    double day = Math.floor(relativeX / ((double) width / calendarWidget.getDays()));
-
     DateTime newStartDate = getCoordinatesDate(x, y);
-
-    if (getSettings().getTimeBlockClickNumber() != TimeBlockClick.Drag) {
-      calendarWidget.fireTimeBlockClickEvent(newStartDate);
-    } else {
-      int snapSize = calendarWidget.getSettings().getPixelsPerInterval();
-      width = width / calendarWidget.getDays();
-
-      int height = snapSize;
-      
-      left = (int) day * width;
-      top = (int) Math.floor(relativeY / snapSize) * snapSize;
-
-      Appointment app = new Appointment();
-      app.setStart(newStartDate);
-      app.setEnd(newStartDate);
-      
-      AppointmentWidget proxy = new AppointmentWidget();
-      proxy.setAppointment(app);
-      proxy.setStart(newStartDate);
-      proxy.setPixelSize(width, height);
-
-      dayViewBody.getGrid().getGrid().add(proxy, left, top);
-      styleManager.applyStyle(proxy, false);
-      proxyResizeController.makeDraggable(proxy.getResizeHandle());
-
-      NativeEvent evt = Document.get().createMouseDownEvent(1, 0, 0, x, y, false,
-          false, false, false, NativeEvent.BUTTON_LEFT);
-      proxy.getResizeHandle().getElement().dispatchEvent(evt);
-    }
+    calendarWidget.fireTimeBlockClickEvent(newStartDate);
   }
 }

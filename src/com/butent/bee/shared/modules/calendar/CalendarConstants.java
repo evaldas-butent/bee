@@ -133,6 +133,7 @@ public class CalendarConstants {
 
   public static final String COL_PROPERTY = "Property";
   public static final String COL_PROPERTY_GROUP = "PropertyGroup";
+  public static final String COL_PROPERTY_NAME = "PropertyName";
   public static final String COL_GROUP_NAME = "GroupName";
   public static final String COL_DEFAULT_PROPERTY = "DefaultProperty";
 
@@ -150,6 +151,9 @@ public class CalendarConstants {
 
   public static final String COL_VEHICLE = "Vehicle";
   public static final String COL_VEHICLE_OWNER = "VehicleOwner";
+  public static final String COL_VEHICLE_NUMBER = "VehicleNumber";
+  public static final String COL_VEHICLE_PARENT_MODEL = "VehicleParentModel";
+  public static final String COL_VEHICLE_MODEL = "VehicleModel";
 
   public static final String COL_COLOR = "Color";
   public static final String COL_BACKGROUND = "Background";

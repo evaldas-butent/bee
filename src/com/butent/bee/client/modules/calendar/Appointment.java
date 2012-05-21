@@ -2,8 +2,12 @@ package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
 
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+
 import com.butent.bee.client.calendar.Attendee;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -12,47 +16,20 @@ import java.util.List;
 
 public class Appointment implements Comparable<Appointment> {
 
-  private Long id = null;
+  private final IsRow row;
   
-  private String title = null;
-  private String description = null;
-
-  private DateTime start = null;
-  private DateTime end = null;
-  
-  private String location = null;
-  private String createdBy = null;
-
   private final List<Attendee> attendees = Lists.newArrayList();
+  private final List<String> properties = Lists.newArrayList();
 
-  private boolean allDay = false;
-  
-  private String customStyle = null;
-
-  private boolean readOnly = false;
-
-  public Appointment() {
+  public Appointment(IsRow row) {
+    this.row = row;
   }
 
   public Appointment clone() {
-    Appointment clone = new Appointment();
-
-    clone.setId(this.id);
-    clone.setTitle(this.title);
-    clone.setDescription(this.description);
-
-    clone.setStart(this.start);
-    clone.setEnd(this.end);
-    
-    clone.setLocation(this.location);
-    clone.setCreatedBy(this.createdBy);
-    clone.getAttendees().addAll(this.attendees);
-
-    clone.setAllDay(this.allDay);
-    
-    clone.setCustomStyle(this.customStyle);
-    
-    clone.setReadOnly(this.readOnly);
+    Appointment clone = new Appointment(DataUtils.cloneRow(row));
+    if (!getAttendees().isEmpty()) {
+      clone.getAttendees().addAll(getAttendees());
+    }
 
     return clone;
   }
@@ -64,45 +41,61 @@ public class Appointment implements Comparable<Appointment> {
     }
     return compare;
   }
-
+  
   public List<Attendee> getAttendees() {
     return attendees;
   }
 
-  public String getCreatedBy() {
-    return createdBy;
+  public String getBackground() {
+    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_BACKGROUND));
   }
 
-  public String getCustomStyle() {
-    return customStyle;
+  public String getCompanyName() {
+    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_COMPANY_NAME));
   }
-
+  
   public String getDescription() {
-    return description;
+    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_DESCRIPTION));
   }
 
   public DateTime getEnd() {
-    return end;
+    return row.getDateTime(CalendarKeeper.getAppointmentColumnIndex(COL_END_DATE_TIME));
   }
 
-  public Long getId() {
-    return id;
+  public String getForeground() {
+    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_FOREGROUND));
+  }
+  
+  public long getId() {
+    return row.getId();
   }
 
-  public String getLocation() {
-    return location;
+  public List<String> getProperties() {
+    return properties;
   }
 
   public DateTime getStart() {
-    return start;
+    return row.getDateTime(CalendarKeeper.getAppointmentColumnIndex(COL_START_DATE_TIME));
   }
 
-  public String getTitle() {
-    return title;
+  public String getSummary() {
+    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_SUMMARY));
   }
 
+  public String getVehicleModel() {
+    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_VEHICLE_MODEL));
+  }
+
+  public String getVehicleNumber() {
+    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_VEHICLE_NUMBER));
+  }
+
+  public String getVehicleParentModel() {
+    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_VEHICLE_PARENT_MODEL));
+  }
+  
   public boolean isAllDay() {
-    return allDay;
+    return isMultiDay();
   }
 
   public boolean isMultiDay() {
@@ -113,47 +106,11 @@ public class Appointment implements Comparable<Appointment> {
     }
   }
 
-  public boolean isReadOnly() {
-    return readOnly;
-  }
-
-  public void setAllDay(boolean allDay) {
-    this.allDay = allDay;
-  }
-
-  public void setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
-  }
-
-  public void setCustomStyle(String customStyle) {
-    this.customStyle = customStyle;
-  }
-
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
   public void setEnd(DateTime end) {
-    this.end = end;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public void setLocation(String location) {
-    this.location = location;
-  }
-
-  public void setReadOnly(boolean readOnly) {
-    this.readOnly = readOnly;
+    row.setValue(CalendarKeeper.getAppointmentColumnIndex(COL_END_DATE_TIME), end);
   }
 
   public void setStart(DateTime start) {
-    this.start = start;
-  }
-
-  public void setTitle(String title) {
-    this.title = title;
+    row.setValue(CalendarKeeper.getAppointmentColumnIndex(COL_START_DATE_TIME), start);
   }
 }

@@ -11,7 +11,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
@@ -22,16 +21,8 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.calendar.Attendee;
 import com.butent.bee.client.calendar.Calendar;
 import com.butent.bee.client.calendar.CalendarView.Type;
-import com.butent.bee.client.calendar.event.CreateEvent;
-import com.butent.bee.client.calendar.event.CreateHandler;
-import com.butent.bee.client.calendar.event.DateRequestEvent;
-import com.butent.bee.client.calendar.event.DateRequestHandler;
-import com.butent.bee.client.calendar.event.DeleteEvent;
-import com.butent.bee.client.calendar.event.DeleteHandler;
 import com.butent.bee.client.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.calendar.event.TimeBlockClickHandler;
-import com.butent.bee.client.calendar.event.UpdateEvent;
-import com.butent.bee.client.calendar.event.UpdateHandler;
 import com.butent.bee.client.calendar.monthview.MonthView;
 import com.butent.bee.client.calendar.resourceview.ResourceView;
 import com.butent.bee.client.composite.TabBar;
@@ -53,7 +44,6 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -191,40 +181,15 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
   }
 
   private void configureCalendar() {
-    calendar.addDeleteHandler(new DeleteHandler<Appointment>() {
-      public void onDelete(DeleteEvent<Appointment> event) {
-        BeeKeeper.getLog().debug("Appointment deleted");
-      }
-    });
-
-    calendar.addUpdateHandler(new UpdateHandler<Appointment>() {
-      public void onUpdate(UpdateEvent<Appointment> event) {
-        BeeKeeper.getLog().debug("Appointment updated");
-      }
-    });
-
     calendar.addOpenHandler(new OpenHandler<Appointment>() {
       public void onOpen(OpenEvent<Appointment> event) {
         CalendarKeeper.openAppointment(event.getTarget(), calendar);
       }
     });
 
-    calendar.addCreateHandler(new CreateHandler<Appointment>() {
-      public void onCreate(CreateEvent<Appointment> event) {
-        BeeKeeper.getLog().debug("Appointment created");
-      }
-    });
-
     calendar.addTimeBlockClickHandler(new TimeBlockClickHandler<DateTime>() {
       public void onTimeBlockClick(TimeBlockClickEvent<DateTime> event) {
         CalendarKeeper.createAppointment(event.getTarget(), true);
-      }
-    });
-
-    calendar.addDateRequestHandler(new DateRequestHandler<HasDateValue>() {
-      public void onDateRequested(DateRequestEvent<HasDateValue> event) {
-        BeeKeeper.getLog().debug("Requested", event.getTarget(),
-            ((Element) event.getClicked()).getInnerText());
       }
     });
   }
@@ -323,7 +288,7 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
   private void loadAppointmentAttendees(final BeeRowSet appRowSet, final Set<Long> attIds) {
     Queries.getRowSet(VIEW_APPOINTMENT_ATTENDEES, null, new Queries.RowSetCallback() {
       public void onSuccess(BeeRowSet result) {
-        setAppointments(appRowSet, result, attIds);
+        loadAppointmentProperties(appRowSet, result, attIds);
       }
     }); 
   }
@@ -336,6 +301,15 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     }); 
   }
 
+  private void loadAppointmentProperties(final BeeRowSet appRowSet, final BeeRowSet aaRowSet,
+      final Set<Long> attIds) {
+    Queries.getRowSet(VIEW_APPOINTMENT_PROPS, null, new Queries.RowSetCallback() {
+      public void onSuccess(BeeRowSet result) {
+        setAppointments(appRowSet, aaRowSet, result, attIds);
+      }
+    }); 
+  }
+  
   private void loadResources() {
     Queries.getRowSet(VIEW_ATTENDEES, null, new Queries.RowSetCallback() {
       public void onSuccess(BeeRowSet result) {
@@ -403,7 +377,7 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     }
   }
 
-  private void setAppointments(BeeRowSet apprs, BeeRowSet aars, Set<Long> attIds) {
+  private void setAppointments(BeeRowSet apprs, BeeRowSet aars, BeeRowSet props, Set<Long> attIds) {
     if (apprs == null || apprs.isEmpty()) {
       return;
     }
@@ -413,9 +387,6 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     int startIndex = DataUtils.getColumnIndex(COL_START_DATE_TIME, apprs.getColumns());
     int endIndex = DataUtils.getColumnIndex(COL_END_DATE_TIME, apprs.getColumns());
 
-    int summaryIndex = DataUtils.getColumnIndex(COL_SUMMARY, apprs.getColumns());
-    int descrIndex = DataUtils.getColumnIndex(COL_DESCRIPTION, apprs.getColumns());
-    
     int appIndex = BeeConst.UNDEF;
     int attIndex = BeeConst.UNDEF;
     int nameIndex = BeeConst.UNDEF;
@@ -426,6 +397,14 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
       nameIndex = DataUtils.getColumnIndex(COL_ATTENDEE_NAME, aars.getColumns());
     }
     
+    int propAppIndex = BeeConst.UNDEF; 
+    int propNameIndex = BeeConst.UNDEF; 
+
+    if (props != null && !props.isEmpty()) {
+      propAppIndex = DataUtils.getColumnIndex(COL_APPOINTMENT, props.getColumns());
+      propNameIndex = DataUtils.getColumnIndex(COL_PROPERTY_NAME, props.getColumns());
+    }
+    
     for (IsRow row : apprs.getRows()) {
       DateTime start = row.getDateTime(startIndex);
       DateTime end = row.getDateTime(endIndex);
@@ -433,14 +412,7 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
         continue;
       }
 
-      Appointment appt = new Appointment();
-      appt.setId(row.getId());
-      
-      appt.setTitle(row.getString(summaryIndex));
-      appt.setDescription(row.getString(descrIndex));
-
-      appt.setStart(start);
-      appt.setEnd(end);
+      Appointment appt = new Appointment(row);
 
       if (nameIndex >= 0) {
         for (IsRow aa : aars.getRows()) {
@@ -458,6 +430,15 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
       if (attIds != null && !attIds.isEmpty() && appt.getAttendees().isEmpty()) {
         continue;
       }
+      
+      if (propAppIndex >= 0 && propNameIndex >= 0) {
+        for (IsRow pRow : props.getRows()) {
+          if (pRow.getLong(propAppIndex) == row.getId()) {
+            appt.getProperties().add(pRow.getString(propNameIndex));
+          }
+        }
+      }
+      
       lst.add(appt);
     }
     

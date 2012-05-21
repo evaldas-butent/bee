@@ -64,13 +64,4 @@ public class AppointmentLayoutDescription {
     }
     return secondPart;
   }
-
-  @Override
-  public String toString() {
-    return "AppointmentLayoutDescription{" +
-        "stackOrder=" + stackOrder +
-        ", fromWeekDay=" + fromWeekDay +
-        ", toWeekDay=" + toWeekDay +
-        ", appointment=[" + appointment.getTitle() + "]@" + appointment.hashCode() + '}';
-  }
 }
