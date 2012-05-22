@@ -795,9 +795,9 @@ public abstract class SqlBuilder {
       case BOOLEAN:
         return "BIT";
       case INTEGER:
-      case DATE:
         return "INTEGER";
       case LONG:
+      case DATE:
       case DATETIME:
         return "BIGINT";
       case DOUBLE:

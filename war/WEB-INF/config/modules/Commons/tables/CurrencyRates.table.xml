@@ -11,7 +11,8 @@
     <BeeField name="Rate" type="DECIMAL" precision="10" scale="4" notNull="true" />
   </BeeFields>
   <BeeKeys>
-    <BeeKey>
+    <BeeKey unique="true">
+      <KeyField>Currency</KeyField>
       <KeyField>Date</KeyField>
     </BeeKey>
   </BeeKeys>

@@ -107,11 +107,11 @@ class MySqlBuilder extends SqlBuilder {
             break;
 
           case INTEGER:
-          case DATE:
             dataType = "DECIMAL(10)";
             break;
 
           case LONG:
+          case DATE:
           case DATETIME:
             dataType = "DECIMAL(19)";
             break;

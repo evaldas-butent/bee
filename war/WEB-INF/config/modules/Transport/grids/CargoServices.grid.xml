@@ -26,6 +26,5 @@
       <render><ui:expression>row.Quantity * row.Price</ui:expression></render>
     </CalcColumn>
     <DataColumn name="CostPrice" caption="Savikaina" format="#.00" />
-    <RelColumn name="CostCurrency" caption="Val." />
   </columns>
 </Grid>

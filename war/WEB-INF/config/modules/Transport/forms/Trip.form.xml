@@ -76,7 +76,8 @@
 
           <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em;">
             <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
-              <DataSelector source="Vehicle" class="flexible" caption="Vilkikas" d:size="6" d:align="right" />
+              <DataSelector source="Vehicle" class="flexible" caption="Vilkikas" 
+                renderColumns="VehicleNumber" d:size="6" d:align="right" />
             </FlowPanel>
 
             <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">

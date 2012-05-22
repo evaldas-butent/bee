@@ -15,6 +15,7 @@
     <SimpleColumn name="Vehicle" />
     <SimpleJoin name="Vehicle" joinType="LEFT">
       <SimpleColumn name="Number" alias="VehicleNumber" />
+      <SimpleColumn name="Speedometer" />
     </SimpleJoin>
     <SimpleColumn name="Trailer" />
     <SimpleJoin name="Trailer" joinType="LEFT">

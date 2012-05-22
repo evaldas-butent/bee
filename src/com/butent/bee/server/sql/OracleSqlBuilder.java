@@ -276,9 +276,9 @@ class OracleSqlBuilder extends SqlBuilder {
       case BOOLEAN:
         return "NUMERIC(1)";
       case INTEGER:
-      case DATE:
         return "NUMERIC(10)";
       case LONG:
+      case DATE:
       case DATETIME:
         return "NUMERIC(19)";
       case DOUBLE:

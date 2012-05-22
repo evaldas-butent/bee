@@ -23,6 +23,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
@@ -31,6 +32,7 @@ import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
+import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -300,9 +302,21 @@ public class TransportHandler {
         });
       }
     }
+
+    @Override
+    public FormCallback getInstance() {
+      return new TripFormHandler();
+    }
   }
 
   private static class TripRoutesGridHandler extends AbstractGridCallback {
+    private FormView form;
+
+    @Override
+    public void afterCreate(GridView gridView) {
+      this.form = UiHelper.getForm(gridView.asWidget());
+    }
+
     @Override
     public boolean afterCreateColumn(final String columnId, List<? extends IsColumn> dataColumns,
         AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
@@ -335,8 +349,19 @@ public class TransportHandler {
                   }
                   updColName = "Kilometers";
                 }
-                row.setValue(DataUtils.getColumnIndex(updColName, columns),
-                    BeeUtils.unbox(a) + BeeUtils.toInt(cv.getNewValue()));
+                a = BeeUtils.unbox(a) + BeeUtils.toInt(cv.getNewValue());
+
+                Integer scale = form.getActiveRow()
+                    .getInteger(DataUtils.getColumnIndex("Speedometer", form.getDataColumns()));
+
+                if (BeeUtils.isPositive(scale) && !BeeUtils.betweenInclusive(a, 0, scale)) {
+                  if (a < 0) {
+                    a = scale + a;
+                  } else {
+                    a = a - scale;
+                  }
+                }
+                row.setValue(DataUtils.getColumnIndex(updColName, columns), a);
 
               } else {
                 if (BeeUtils.equals(columnId, "Kilometers")) {
@@ -390,6 +415,11 @@ public class TransportHandler {
         });
       }
       return true;
+    }
+
+    @Override
+    public GridCallback getInstance() {
+      return new TripRoutesGridHandler();
     }
   }
 
