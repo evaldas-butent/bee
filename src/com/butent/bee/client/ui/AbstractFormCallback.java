@@ -60,10 +60,6 @@ public abstract class AbstractFormCallback implements FormFactory.FormCallback {
     return true;
   }
 
-  public boolean onLoad(Element formElement) {
-    return true;
-  }
-
   public boolean onPrepareForInsert(FormView form, DataView dataView, IsRow row) {
     return true;
   }

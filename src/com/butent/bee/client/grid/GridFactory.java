@@ -735,7 +735,6 @@ public class GridFactory {
   }
 
   private static String gridDescriptionKey(String name) {
-    Assert.notEmpty(name);
     return name.trim().toLowerCase();
   }
 

@@ -219,7 +219,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     }
     if (formView == null) {
       formView = new FormImpl(FormDescription.getName(editor));
-      formView.create(new FormDescription(editor), getDataColumns(), null, false);
+      formView.create(new FormDescription(editor), null, getDataColumns(), null, false);
       formView.setEditing(true);
       formView.start(null);
     }

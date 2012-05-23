@@ -313,11 +313,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public void applyOptions(String options) {
   }
 
-  public void create(FormDescription formDescription, List<BeeColumn> dataCols,
+  public void create(FormDescription formDescription, String view, List<BeeColumn> dataCols,
       FormCallback callback, boolean addStyle) {
     Assert.notNull(formDescription);
     
-    setViewName(formDescription.getViewName());
+    setViewName(BeeUtils.ifString(view, formDescription.getViewName()));
     setDataColumns(dataCols);
     setHasData(!BeeUtils.isEmpty(dataCols));
 
@@ -343,7 +343,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
     setDimensions(formDescription.getDimensions());
 
-    Widget root = FormFactory.createForm(formDescription, dataCols, creationCallback, callback);
+    Widget root = FormFactory.createForm(formDescription, getViewName(), dataCols,
+        creationCallback, callback);
     if (root == null) {
       return;
     }

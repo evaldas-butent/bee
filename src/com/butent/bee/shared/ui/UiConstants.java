@@ -22,6 +22,8 @@ public class UiConstants {
   public static final String ATTR_FORMAT = "format";
   public static final String ATTR_SCALE = "scale";
   
+  public static final String ATTR_CACHE_DESCRIPTION = "cacheDescription";
+  
   private UiConstants() {
   }
 }

@@ -36,13 +36,17 @@ public class FormDescription implements HasViewName {
   }
   
   private final Element formElement;
-  private String viewName = null;
   
   public FormDescription(Element formElement) {
     Assert.notNull(formElement);
     this.formElement = formElement;
   }
 
+  public boolean cacheDescription() {
+    return BeeUtils.isTrue(XmlUtils.getAttributeBoolean(getFormElement(),
+        UiConstants.ATTR_CACHE_DESCRIPTION));
+  }
+  
   public int getAsyncThreshold() {
     Integer asyncThreshold = XmlUtils.getAttributeInteger(getFormElement(), ATTR_ASYNC_THRESHOLD);
     if (asyncThreshold == null) {
@@ -106,11 +110,7 @@ public class FormDescription implements HasViewName {
   }
 
   public String getViewName() {
-    if (BeeUtils.isEmpty(viewName)) {
-      return getFormElement().getAttribute(UiConstants.ATTR_VIEW_NAME);
-    } else {
-      return viewName;
-    }
+    return getFormElement().getAttribute(UiConstants.ATTR_VIEW_NAME);
   }
 
   public boolean isReadOnly() {
@@ -119,10 +119,6 @@ public class FormDescription implements HasViewName {
       return false;
     }
     return readOnly;
-  }
-
-  public void setViewName(String viewName) {
-    this.viewName = viewName;
   }
 
   Element getFormElement() {

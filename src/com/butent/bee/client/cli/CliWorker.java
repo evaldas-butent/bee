@@ -128,13 +128,16 @@ public class CliWorker {
       BeeKeeper.getLog().clear();
     } else if (BeeUtils.startsSame(args, "grids")) {
       GridFactory.clearDescriptionCache();
-      BeeKeeper.getLog().info("grid cache cleared");
+      BeeKeeper.getLog().debugWithSeparator("grid cache cleared");
+    } else if (BeeUtils.startsSame(args, "forms")) {
+      FormFactory.clearDescriptionCache();
+      BeeKeeper.getLog().debugWithSeparator("form cache cleared");
     } else if (BeeUtils.startsSame(args, "cache")) {
       Global.getCache().removeAll();
-      BeeKeeper.getLog().info("cache cleared");
+      BeeKeeper.getLog().debugWithSeparator("cache cleared");
     } else if (BeeUtils.startsSame(args, "rpc")) {
       BeeKeeper.getRpc().getRpcList().clear();
-      BeeKeeper.getLog().info("rpc list cleared");
+      BeeKeeper.getLog().debugWithSeparator("rpc list cleared");
     }
   }
 
@@ -419,6 +422,8 @@ public class CliWorker {
       showFunctions(v, arr);
     } else if (z.equals("form") && arr.length == 2) {
       FormFactory.openForm(arr[1]);
+    } else if (z.startsWith("forminf") || z.equals("ff")) {
+      BeeKeeper.getScreen().showGrid(FormFactory.getInfo());
     } else if (z.equals("fs")) {
       getFs();
     } else if (z.equals("gen") && BeeUtils.isDigit(ArrayUtils.getQuietly(arr, 2))) {
@@ -768,8 +773,9 @@ public class CliWorker {
               }
             });
             String url = GWT.getHostPageBaseURL() + "SqlDesigner/index.html?keyword=" + tmpKey;
-            FormFactory.parseForm("<BeeForm><ResizePanel><Frame url=\"" + url
-                + "\" /></ResizePanel></BeeForm>");
+            String xml = "<Form><ResizePanel><Frame url=\"" + url + "\" /></ResizePanel></Form>";
+            
+            FormFactory.openForm(FormFactory.parseFormDescription(xml), null);
           }
         } else if (response.hasResponse()) {
           BeeKeeper.getScreen().showGrid(

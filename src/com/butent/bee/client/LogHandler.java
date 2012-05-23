@@ -62,6 +62,11 @@ public class LogHandler implements Module {
       }
     }
   }
+
+  public void debugWithSeparator(Object... obj) {
+    debug(obj);
+    addSeparator();
+  }
   
   public void end() {
   }

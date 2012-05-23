@@ -524,7 +524,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     int dataIndex;
     EditableColumn editableColumn = null;
 
-    String viewName = gridDescr.getViewName();
+    final String viewName = gridDescr.getViewName();
 
     for (ColumnDescription columnDescr : columnDescriptions) {
       String columnId = columnDescr.getName();
@@ -762,7 +762,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
                   setNewRowFormContainerId(containerId);
                 } else if (isSingleForm()) {
                   FormView newRowFormView = new FormImpl(newRowFormName);
-                  newRowFormView.create(formDescription, dataCols,
+                  newRowFormView.create(formDescription, viewName, dataCols,
                       FormFactory.getFormCallback(newRowFormName), true);
                   embraceNewRowForm(newRowFormView);
                 }

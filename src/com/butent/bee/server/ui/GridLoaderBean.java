@@ -94,7 +94,6 @@ public class GridLoaderBean {
   private static final String ATTR_FOOTER_EVENTS = "footerEvents";
 
   private static final String ATTR_CACHE_DATA = "cacheData";
-  private static final String ATTR_CACHE_DESCRIPTION = "cacheDescription";
 
   private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
   private static final String ATTR_PAGING_THRESHOLD = "pagingThreshold";
@@ -144,7 +143,7 @@ public class GridLoaderBean {
   private static final String ATTR_ELEMENT = "element";
 
   private static final String ATTR_ID = "id";
-  
+
   private static final String ATTR_FAVORITE = "favorite";
 
   private static Logger logger = Logger.getLogger(GridLoaderBean.class.getName());
@@ -348,7 +347,7 @@ public class GridLoaderBean {
     RendererDescription rowRenderer = null;
     Calculation rowRender = null;
     List<RenderableToken> rowRenderTokens = null;
-    
+
     List<SelectorColumn> selectorColumns = Lists.newArrayList();
 
     for (Element child : XmlUtils.getChildrenElements(element)) {
@@ -359,7 +358,7 @@ public class GridLoaderBean {
 
       } else if (BeeUtils.same(tagName, Relation.TAG_ROW_RENDER)) {
         rowRender = XmlUtils.getCalculation(child);
-      
+
       } else if (BeeUtils.same(tagName, Relation.TAG_ROW_RENDER_TOKEN)) {
         RenderableToken token = RenderableToken.create(XmlUtils.getAttributes(child));
         if (token != null) {
@@ -374,7 +373,7 @@ public class GridLoaderBean {
         RendererDescription renderer = getRenderer(child, RendererDescription.TAG_RENDERER, null);
         Calculation render = XmlUtils.getCalculation(child, RendererDescription.TAG_RENDER);
         List<RenderableToken> tokens = getRenderTokens(child, RenderableToken.TAG_RENDER_TOKEN);
-        
+
         selectorColumns.add(SelectorColumn.create(XmlUtils.getAttributes(child),
             renderer, render, tokens));
       }
@@ -453,7 +452,7 @@ public class GridLoaderBean {
     }
     return result;
   }
-  
+
   private boolean initColumn(BeeView view, ColumnDescription columnDescription) {
     Assert.notNull(columnDescription);
 
@@ -486,7 +485,7 @@ public class GridLoaderBean {
       case DATA:
       case RELATED:
         if (view.hasColumn(source)) {
-          if (view.isColReadOnly(source) 
+          if (view.isColReadOnly(source)
               || colType.equals(ColType.DATA) && view.getColumnLevel(source) > 0) {
             columnDescription.setReadOnly(true);
           }
@@ -627,7 +626,7 @@ public class GridLoaderBean {
         dst.setDynStyles(dynStyles);
       }
     }
-    
+
     Calculation validation = XmlUtils.getCalculation(src, TAG_VALIDATION);
     if (validation != null) {
       dst.setValidation(validation);
@@ -720,7 +719,8 @@ public class GridLoaderBean {
     if (cacheData != null) {
       dst.setCacheData(cacheData);
     }
-    Boolean cacheDescription = XmlUtils.getAttributeBoolean(src, ATTR_CACHE_DESCRIPTION);
+    Boolean cacheDescription = XmlUtils.getAttributeBoolean(src,
+        UiConstants.ATTR_CACHE_DESCRIPTION);
     if (cacheDescription != null) {
       dst.setCacheDescription(cacheDescription);
     }
@@ -760,7 +760,7 @@ public class GridLoaderBean {
     if (!BeeUtils.isEmpty(favorite)) {
       dst.setFavorite(favorite.trim());
     }
-    
+
     String newRowForm = src.getAttribute(ATTR_NEW_ROW_FORM);
     if (!BeeUtils.isEmpty(newRowForm)) {
       dst.setNewRowForm(newRowForm);
