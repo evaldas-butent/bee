@@ -100,6 +100,11 @@ public class TransportHandler {
             .addClickHandler(new Profit(TransportConstants.VAR_CARGO_ID));
       }
     }
+
+    @Override
+    public FormCallback getInstance() {
+      return this;
+    }
   }
 
   private static class CargoTripsGridHandler extends AbstractGridCallback {
@@ -161,6 +166,11 @@ public class TransportHandler {
         ((HasClickHandlers) widget)
             .addClickHandler(new Profit(TransportConstants.VAR_ORDER_ID));
       }
+    }
+
+    @Override
+    public FormCallback getInstance() {
+      return this;
     }
 
     @Override

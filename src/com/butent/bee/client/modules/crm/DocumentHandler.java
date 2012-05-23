@@ -13,6 +13,7 @@ import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.utils.FileUtils.FileInfo;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.TreeView;
@@ -39,7 +40,7 @@ public class DocumentHandler {
 
   private static class CreationHandler extends AbstractFormCallback {
 
-    private FileCollector collector = null;
+    private final FileCollector collector = new FileCollector();
 
     private CreationHandler() {
     }
@@ -54,10 +55,8 @@ public class DocumentHandler {
     }
 
     @Override
-    public CreationHandler getInstance() {
-      CreationHandler instance = new CreationHandler();
-      instance.setCollector(new FileCollector());
-      return instance;
+    public FormCallback getInstance() {
+      return new CreationHandler();
     }
 
     @Override
@@ -147,10 +146,6 @@ public class DocumentHandler {
 
     private FileCollector getCollector() {
       return collector;
-    }
-
-    private void setCollector(FileCollector collector) {
-      this.collector = collector;
     }
 
     private void sendFiles(long docId) {

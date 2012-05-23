@@ -75,7 +75,6 @@ import java.util.Set;
 public class ProjectEventHandler {
 
   private static class ProjectCreateHandler extends AbstractFormCallback {
-    private static int counter = 0;
 
     private final UserCollector observers = new UserCollector();
 
@@ -105,11 +104,7 @@ public class ProjectEventHandler {
 
     @Override
     public FormCallback getInstance() {
-      if (counter++ == 0) {
-        return this;
-      } else {
-        return new ProjectCreateHandler();
-      }
+      return new ProjectCreateHandler();
     }
 
     @Override
@@ -250,8 +245,8 @@ public class ProjectEventHandler {
 
   private static class ProjectEditHandler extends AbstractFormCallback
       implements SelectionHandler<IsRow> {
-    private static int counter = 0;
-    private Map<String, Widget> formWidgets = Maps.newHashMap();
+
+    private final Map<String, Widget> formWidgets = Maps.newHashMap();
     private final UserCollector observers = new UserCollector();
     private TreePresenter stageTree = null;
 
@@ -341,12 +336,8 @@ public class ProjectEventHandler {
     }
 
     @Override
-    public ProjectEditHandler getInstance() {
-      if (counter++ == 0) {
-        return this;
-      } else {
-        return new ProjectEditHandler();
-      }
+    public FormCallback getInstance() {
+      return new ProjectEditHandler();
     }
 
     @Override

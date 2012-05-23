@@ -22,8 +22,8 @@ public class Pair<A, B> implements Transformable {
     return new Pair<A, B>(a, b);
   }
 
-  private final A a;
-  private final B b;
+  private A a;
+  private B b;
 
   private Pair(A a, B b) {
     this.a = a;
@@ -63,6 +63,14 @@ public class Pair<A, B> implements Transformable {
   @Override
   public int hashCode() {
     return 1 + Objects.hashCode(getA(), getB());
+  }
+
+  public void setA(A a) {
+    this.a = a;
+  }
+
+  public void setB(B b) {
+    this.b = b;
   }
 
   /**

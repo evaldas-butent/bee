@@ -36,6 +36,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.ActionEvent;
 import com.butent.bee.client.view.DataView;
@@ -293,8 +294,6 @@ public class TaskEventHandler {
       }
     }
 
-    private static int counter = 0;
-
     private final List<IsRow> executors = Lists.newArrayList();
     private final List<IsRow> observers = Lists.newArrayList();
 
@@ -342,12 +341,8 @@ public class TaskEventHandler {
     }
 
     @Override
-    public TaskCreateHandler getInstance() {
-      if (counter++ == 0) {
-        return this;
-      } else {
-        return new TaskCreateHandler();
-      }
+    public FormCallback getInstance() {
+      return new TaskCreateHandler();
     }
 
     @Override
@@ -698,9 +693,8 @@ public class TaskEventHandler {
   }
 
   private static class TaskEditHandler extends AbstractFormCallback {
-    private static int counter = 0;
 
-    private Map<String, Widget> formWidgets = Maps.newHashMap();
+    private final Map<String, Widget> formWidgets = Maps.newHashMap();
     private ObserverHandler observerHandler = null;
 
     @Override
@@ -767,12 +761,8 @@ public class TaskEventHandler {
     }
 
     @Override
-    public TaskEditHandler getInstance() {
-      if (counter++ == 0) {
-        return this;
-      } else {
-        return new TaskEditHandler();
-      }
+    public FormCallback getInstance() {
+      return new TaskEditHandler();
     }
 
     @Override

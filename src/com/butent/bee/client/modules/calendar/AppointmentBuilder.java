@@ -21,10 +21,12 @@ import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
+import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.Html;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
@@ -296,6 +298,12 @@ class AppointmentBuilder extends AbstractFormCallback {
       default:
         return true;
     }
+  }
+
+  @Override
+  public FormCallback getInstance() {
+    Assert.untouchable();
+    return null;
   }
 
   @Override

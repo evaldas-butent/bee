@@ -6,6 +6,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowCallback;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
+import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -89,6 +90,11 @@ class CalendarConfigurationHandler extends AbstractFormCallback {
       return false;
     }
     return true;
+  }
+
+  @Override
+  public FormCallback getInstance() {
+    return new CalendarConfigurationHandler();
   }
 
   @Override

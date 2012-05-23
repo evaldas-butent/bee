@@ -19,6 +19,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -98,7 +99,7 @@ public class FormFactory {
 
   private static final String ATTR_TYPE = "type";
 
-  private static final Map<String, FormCallback> formCallbacks = Maps.newHashMap();
+  private static final Map<String, Pair<FormCallback, Integer>> formCallbacks = Maps.newHashMap();
 
   public static Widget createForm(FormDescription formDescription, List<BeeColumn> columns,
       WidgetDescriptionCallback widgetDescriptionCallback, FormCallback formCallback) {
@@ -207,18 +208,17 @@ public class FormFactory {
 
   public static FormCallback getFormCallback(String formName) {
     Assert.notEmpty(formName);
-    FormCallback callback = formCallbacks.get(BeeUtils.normalize(formName));
-    return getInstance(callback);
-  }
-
-  public static FormCallback getInstance(FormCallback callback) {
-    if (callback != null) {
-      FormCallback instance = callback.getInstance();
-      if (instance != null) {
-        return instance;
-      }
+    Pair<FormCallback, Integer> pair = formCallbacks.get(BeeUtils.normalize(formName));
+    if (pair == null || pair.getA() == null) {
+      return null;
     }
-    return callback;
+    
+    pair.setB(pair.getB() + 1);
+    if (pair.getB() > 1) {
+      return pair.getA().getInstance();
+    } else {
+      return pair.getA();
+    }
   }
 
   public static void openForm(String name) {
@@ -268,7 +268,7 @@ public class FormFactory {
   
   public static void registerFormCallback(String formName, FormCallback callback) {
     Assert.notEmpty(formName);
-    formCallbacks.put(BeeUtils.normalize(formName), callback);
+    formCallbacks.put(BeeUtils.normalize(formName), Pair.of(callback, 0));
   }
 
   private static void getForm(String name, ResponseCallback responseCallback) {

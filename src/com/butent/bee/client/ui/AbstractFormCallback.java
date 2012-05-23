@@ -12,7 +12,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.ui.Action;
 
-public class AbstractFormCallback implements FormFactory.FormCallback {
+public abstract class AbstractFormCallback implements FormFactory.FormCallback {
   
   private FormView formView;
 
@@ -50,9 +50,7 @@ public class AbstractFormCallback implements FormFactory.FormCallback {
     return formView;
   }
 
-  public FormCallback getInstance() {
-    return null;
-  }
+  public abstract FormCallback getInstance();
 
   public BeeRowSet getRowSet() {
     return null;

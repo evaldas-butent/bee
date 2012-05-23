@@ -12,27 +12,35 @@ import com.butent.bee.client.modules.transport.TransportHandler;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.PasswordService;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class ModuleManager {
+  
+  private static class UserFormCallback extends AbstractFormCallback {
+    @Override
+    public void afterCreateWidget(String name, final Widget widget) {
+      if (BeeUtils.same(name, "ChangePassword") && widget instanceof HasClickHandlers) {
+        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            CompositeService.doService(new PasswordService().name(),
+                PasswordService.STG_GET_PASS, UiHelper.getForm(widget));
+          }
+        });
+      }
+    }
+
+    @Override
+    public FormCallback getInstance() {
+      return this;
+    }
+  }
 
   public static void onLoad() {
-    FormFactory.registerFormCallback("User", new AbstractFormCallback() {
-      @Override
-      public void afterCreateWidget(String name, final Widget widget) {
-        if (BeeUtils.same(name, "ChangePassword") && widget instanceof HasClickHandlers) {
-          ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-            @Override
-            public void onClick(ClickEvent event) {
-              CompositeService.doService(new PasswordService().name(),
-                  PasswordService.STG_GET_PASS, UiHelper.getForm(widget));
-            }
-          });
-        }
-      }
-    });
+    FormFactory.registerFormCallback("User", new UserFormCallback());
 
     TransportHandler.register();
     CommonsEventHandler.register();
