@@ -26,6 +26,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
@@ -572,6 +573,10 @@ public class QueryServiceBean {
             if (rs.wasNull()) {
               row[i] = null;
             }
+            break;
+          case DATE:
+            Long time = BeeUtils.toLongOrNull(rs.getString(colIndex));
+            row[i] = (time == null) ? null : BeeUtils.toString(time / TimeUtils.MILLIS_PER_DAY);
             break;
           case NUMBER:
           case DECIMAL:

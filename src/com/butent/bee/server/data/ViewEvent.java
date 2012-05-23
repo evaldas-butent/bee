@@ -1,6 +1,6 @@
 package com.butent.bee.server.data;
 
-import com.google.gwt.thirdparty.guava.common.collect.Lists;
+import com.google.common.collect.Lists;
 
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.shared.Assert;

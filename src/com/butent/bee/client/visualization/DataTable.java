@@ -133,16 +133,12 @@ public class DataTable extends AbstractDataTable {
     this.setColumnLabel(columnIndex, label);
   }-*/;
 
-  public final void setDate(int rowIndex, int columnIndex, DateTime date) {
+  public final void setDateTime(int rowIndex, int columnIndex, DateTime date) {
     if (date == null) {
       setValueNull(rowIndex, columnIndex);
     } else {
       setValueDate(rowIndex, columnIndex, date.getTime());
     }
-  }
-
-  public final void setDate(int rowIndex, int columnIndex, double time) {
-    setValueDate(rowIndex, columnIndex, time);
   }
 
   public final native void setFormattedValue(int rowIndex, int columnIndex, String value) /*-{

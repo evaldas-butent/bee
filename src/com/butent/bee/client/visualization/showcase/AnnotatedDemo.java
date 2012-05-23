@@ -41,11 +41,11 @@ public class AnnotatedDemo implements LeftTabPanel.WidgetProvider {
     data.addRows(rows);
 
     DateTime now = new DateTime();
-    double start = new DateTime(now.getYear(), now.getMonth(), now.getDom()).getTime();
-    start -= Double.valueOf(TimeUtils.MILLIS_PER_DAY) * (rows + 1);
+    long start = new DateTime(now.getYear(), now.getMonth(), now.getDom()).getTime();
+    start -= TimeUtils.MILLIS_PER_DAY * (rows + 1);
 
     for (int i = 0; i < rows; i++) {
-      data.setDate(i, 0, start += TimeUtils.MILLIS_PER_DAY);
+      data.setDateTime(i, 0, new DateTime(start += TimeUtils.MILLIS_PER_DAY));
       int x = BeeUtils.randomInt(0, 300);
       int y = BeeUtils.randomInt(100, 200);
       data.setValue(i, 1, x);

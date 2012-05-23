@@ -222,7 +222,7 @@ public class JustDate extends AbstractDate implements Comparable<JustDate> {
   }
 
   public long getTime() {
-    return (long) TimeUtils.MILLIS_PER_DAY * days;
+    return TimeUtils.MILLIS_PER_DAY * days;
   }
 
   @Override

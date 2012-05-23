@@ -50,8 +50,8 @@ public class TimeUtils {
   public static final int MILLIS_PER_SECOND = 1000;
   public static final int MILLIS_PER_MINUTE = 60 * MILLIS_PER_SECOND;
   public static final int MILLIS_PER_HOUR = 60 * MILLIS_PER_MINUTE;
-  public static final int MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
-  public static final int MILLIS_PER_WEEK = 7 * MILLIS_PER_DAY;
+  public static final long MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
+  public static final long MILLIS_PER_WEEK = 7 * MILLIS_PER_DAY;
 
   public static final RangeOptions OPEN_REQUIRED = new RangeOptions(false, true, true);
   public static final RangeOptions OPEN_NOT_REQUIRED = new RangeOptions(false, true, false);

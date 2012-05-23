@@ -62,12 +62,12 @@ public class MotionDemo implements LeftTabPanel.WidgetProvider {
     data.setValue(5, 3, 617);
     data.setValue(5, 4, "Vilnius");
 
-    data.setDate(0, 1, new DateTime(2010, 1, 1));
-    data.setDate(1, 1, new DateTime(2010, 1, 1));
-    data.setDate(2, 1, new DateTime(2010, 1, 1));
-    data.setDate(3, 1, new DateTime(2010, 2, 1));
-    data.setDate(4, 1, new DateTime(2010, 2, 1));
-    data.setDate(5, 1, new DateTime(2010, 2, 1));
+    data.setDateTime(0, 1, new DateTime(2010, 1, 1));
+    data.setDateTime(1, 1, new DateTime(2010, 1, 1));
+    data.setDateTime(2, 1, new DateTime(2010, 1, 1));
+    data.setDateTime(3, 1, new DateTime(2010, 2, 1));
+    data.setDateTime(4, 1, new DateTime(2010, 2, 1));
+    data.setDateTime(5, 1, new DateTime(2010, 2, 1));
 
     widget = new MotionChart(data, options);
   }
