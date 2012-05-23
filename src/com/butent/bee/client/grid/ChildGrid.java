@@ -13,7 +13,6 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.HasFosterParent;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridCallback;
-import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -105,9 +104,13 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
   }
 
   public void onParentRow(ParentRowEvent event) {
-    Assert.notNull(event);
+    if (getGridCallback() != null) {
+      getGridCallback().onParentRow(event);
+    }
+
     setPendingRow(event.getRow());
     setPendingEnabled(event.isEnabled());
+    
     resolveState();
   }
 

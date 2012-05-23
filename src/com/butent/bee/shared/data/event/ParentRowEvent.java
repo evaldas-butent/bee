@@ -5,9 +5,10 @@ import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
 
-public class ParentRowEvent extends Event<ParentRowEvent.Handler> {
+public class ParentRowEvent extends Event<ParentRowEvent.Handler> implements HasViewName {
 
   public interface Handler {
     void onParentRow(ParentRowEvent event);
@@ -25,11 +26,13 @@ public class ParentRowEvent extends Event<ParentRowEvent.Handler> {
     return eventBus.addHandlerToSource(TYPE, source, handler);
   }
   
+  private final String viewName;
   private final IsRow row;
   private final boolean enabled;
 
-  public ParentRowEvent(IsRow row, boolean enabled) {
+  public ParentRowEvent(String viewName, IsRow row, boolean enabled) {
     super();
+    this.viewName = viewName;
     this.row = row;
     this.enabled = enabled;
   }
@@ -41,6 +44,11 @@ public class ParentRowEvent extends Event<ParentRowEvent.Handler> {
 
   public IsRow getRow() {
     return row;
+  }
+
+  @Override
+  public String getViewName() {
+    return viewName;
   }
 
   public boolean isEnabled() {

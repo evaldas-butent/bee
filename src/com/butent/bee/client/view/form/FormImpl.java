@@ -1171,8 +1171,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   private void refreshChildWidgets(IsRow rowValue) {
-    BeeKeeper.getBus().fireEventFromSource(new ParentRowEvent(rowValue, isRowEnabled(rowValue)),
-        getId());
+    BeeKeeper.getBus().fireEventFromSource(new ParentRowEvent(getViewName(), rowValue,
+        isRowEnabled(rowValue)), getId());
   }
 
   private void refreshData(boolean refreshChildren, boolean focus) {

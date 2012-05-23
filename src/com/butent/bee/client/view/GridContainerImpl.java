@@ -354,12 +354,12 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   public void onActiveRowChange(ActiveRowChangeEvent event) {
     IsRow rowValue = event.getRowValue();
+    GridView gridView = getContent();
 
     boolean rowEnabled;
     if (rowValue == null) {
       rowEnabled = false;
     } else {
-      GridView gridView = getContent();
       rowEnabled = !gridView.isReadOnly() && isEnabled() && gridView.isEnabled()
           && gridView.isRowEditable(rowValue, false);
     }
@@ -378,7 +378,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
     
     String eventSource = BeeUtils.ifString(getViewPresenter().getEventSource(), getId());
-    BeeKeeper.getBus().fireEventFromSource(new ParentRowEvent(rowValue, rowEnabled), eventSource);
+    BeeKeeper.getBus().fireEventFromSource(new ParentRowEvent(gridView.getViewName(), rowValue,
+        rowEnabled), eventSource);
     
     setLastRow(rowValue);
     setLastEnabled(rowEnabled);

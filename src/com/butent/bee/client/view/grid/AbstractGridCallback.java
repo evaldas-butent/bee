@@ -13,6 +13,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.ParentRowEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Action;
@@ -139,6 +140,10 @@ public class AbstractGridCallback implements GridCallback {
 
   public boolean onLoadExtWidget(Element root) {
     return true;
+  }
+
+  @Override
+  public void onParentRow(ParentRowEvent event) {
   }
 
   @Override

@@ -13,6 +13,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.ParentRowEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Action;
@@ -23,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public interface GridCallback extends WidgetCallback {
+public interface GridCallback extends WidgetCallback, ParentRowEvent.Handler {
   
   int DELETE_CANCEL = -1;
   int DELETE_DEFAULT = 0;
