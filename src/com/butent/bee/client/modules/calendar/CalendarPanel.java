@@ -26,6 +26,7 @@ import com.butent.bee.client.calendar.event.TimeBlockClickHandler;
 import com.butent.bee.client.calendar.monthview.MonthView;
 import com.butent.bee.client.calendar.resourceview.ResourceView;
 import com.butent.bee.client.composite.TabBar;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.datepicker.DatePicker;
@@ -42,6 +43,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -67,8 +69,6 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
   private final Complex gridPanel = new Complex();
   private GridPresenter gridPresenter = null;
   
-  private int resourceNameIndex = BeeConst.UNDEF;
-
   private HandlerRegistration newAppointmentRegistration;
 
   public CalendarPanel(long calendarId, CalendarSettings settings) {
@@ -281,10 +281,6 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     return newAppointmentRegistration;
   }
 
-  private int getResourceNameIndex() {
-    return resourceNameIndex;
-  }
-  
   private void loadAppointmentAttendees(final BeeRowSet appRowSet, final Set<Long> attIds) {
     Queries.getRowSet(VIEW_APPOINTMENT_ATTENDEES, null, new Queries.RowSetCallback() {
       public void onSuccess(BeeRowSet result) {
@@ -313,7 +309,6 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
   private void loadResources() {
     Queries.getRowSet(VIEW_ATTENDEES, null, new Queries.RowSetCallback() {
       public void onSuccess(BeeRowSet result) {
-        setResourceNameIndex(DataUtils.getColumnIndex(COL_NAME, result.getColumns()));
         createGridPresenter(result, Lists.newArrayList(COL_NAME));
       }
     }); 
@@ -366,7 +361,8 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     for (RowInfo rowInfo : selectedRows) {
       IsRow row = getGridPresenter().getView().getContent().getGrid().getRowById(rowInfo.getId());
       if (row != null) {
-        lst.add(new Attendee(row.getId(), row.getString(getResourceNameIndex())));
+        lst.add(new Attendee(row.getId(),
+            Data.getString(VIEW_ATTENDEES, row, CalendarConstants.COL_NAME)));
         attIds.add(row.getId());
       }
     }
@@ -451,9 +447,5 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
 
   private void setNewAppointmentRegistration(HandlerRegistration newAppointmentRegistration) {
     this.newAppointmentRegistration = newAppointmentRegistration;
-  }
-
-  private void setResourceNameIndex(int resourceNameIndex) {
-    this.resourceNameIndex = resourceNameIndex;
   }
 }

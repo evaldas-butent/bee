@@ -35,6 +35,7 @@ import com.butent.bee.client.composite.StringPicker;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.composite.ValueSpinner;
 import com.butent.bee.client.composite.VolumeSlider;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
@@ -1332,7 +1333,7 @@ public enum FormWidget {
     Holder<String> sourceHolder = Holder.of(source);
     Holder<List<String>> listHolder = Holder.of(renderColumns);
     
-    relation.initialize(Global.getDataInfoProvider(), viewName, sourceHolder, listHolder);
+    relation.initialize(Data.getDataInfoProvider(), viewName, sourceHolder, listHolder);
     if (relation.getViewName() == null) {
       BeeKeeper.getLog().severe("Cannot create relation");
       BeeKeeper.getLog().severe(viewName, source, renderColumns);

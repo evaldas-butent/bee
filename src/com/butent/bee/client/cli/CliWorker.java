@@ -40,6 +40,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcList;
 import com.butent.bee.client.composite.SliderBar;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.DialogCallback;
@@ -394,6 +395,8 @@ public class CliWorker {
       clear(args);
     } else if (z.startsWith("client")) {
       showClientLocation();
+    } else if (z.startsWith("col")) {
+      BeeKeeper.getScreen().showGrid(Data.getColumnMapper().getExtendedInfo());
     } else if (z.startsWith("data")) {
       showDataInfo(args);
     } else if (z.startsWith("conf")) {
@@ -952,7 +955,7 @@ public class CliWorker {
 
   public static void showDataInfo(String viewName) {
     if (BeeUtils.isEmpty(viewName)) {
-      List<DataInfo> list = Lists.newArrayList(Global.getDataInfoProvider().getViews());
+      List<DataInfo> list = Lists.newArrayList(Data.getDataInfoProvider().getViews());
       if (list.isEmpty()) {
         Global.showError("no data infos available");
         return;
@@ -976,10 +979,10 @@ public class CliWorker {
       BeeKeeper.getScreen().showGrid(data, "view", "table", "id", "version", "cc", "vc", "rc");
 
     } else if (BeeUtils.inListSame(viewName, "load", "refresh", "+", "x")) {
-      Global.getDataInfoProvider().load();
+      Data.getDataInfoProvider().load();
     
     } else {
-      DataInfo dataInfo = Global.getDataInfo(viewName);
+      DataInfo dataInfo = Data.getDataInfo(viewName);
       if (dataInfo != null) {
         BeeKeeper.getScreen().showGrid(dataInfo.getExtendedInfo());
       }

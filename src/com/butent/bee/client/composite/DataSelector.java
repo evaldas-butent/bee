@@ -26,7 +26,7 @@ import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasRelatedRow;
 import com.butent.bee.client.data.SelectionOracle;
 import com.butent.bee.client.data.SelectionOracle.Callback;
@@ -555,7 +555,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     this.embedded = embedded;
 
-    DataInfo viewInfo = Global.getDataInfo(relation.getViewName());
+    DataInfo viewInfo = Data.getDataInfo(relation.getViewName());
     this.oracle = new SelectionOracle(relation, viewInfo);
     this.searchType =
         (relation.getOperator() == null) ? DEFAULT_SEARCH_TYPE : relation.getOperator();

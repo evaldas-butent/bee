@@ -5,7 +5,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.layout.ResizePanel;
@@ -193,7 +193,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     final Order order = GridFactory.getOrder(getGridDescription(), getGridOptions());
 
     if (row == null) {
-      DataInfo dataInfo = Global.getDataInfo(getGridDescription().getViewName());
+      DataInfo dataInfo = Data.getDataInfo(getGridDescription().getViewName());
       if (dataInfo != null) {
         BeeRowSet rowSet = new BeeRowSet(dataInfo.getColumns());
         createPresenter(row, rowSet, immutableFilter, initialFilters, order);

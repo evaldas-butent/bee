@@ -14,6 +14,7 @@ import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.InputDate;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
@@ -65,9 +66,6 @@ public class CalendarKeeper {
   private static FormView settingsForm = null;
 
   private static DataInfo appointmentViewInfo = null;
-  private static DataInfo attendeeViewInfo = null;
-  private static DataInfo extendedPropertiesViewInfo = null;
-  private static DataInfo themeColorViewInfo = null;
 
   public static void register() {
     Global.registerCaptions(AppointmentStatus.class);
@@ -139,22 +137,11 @@ public class CalendarKeeper {
     });
   }
 
-  static int getAppointmentColumnIndex(String columnId) {
-    return getAppointmentViewInfo().getColumnIndex(columnId);
-  }
-  
   static DataInfo getAppointmentViewInfo() {
     if (appointmentViewInfo == null) {
-      appointmentViewInfo = Global.getDataInfo(VIEW_APPOINTMENTS);
+      appointmentViewInfo = Data.getDataInfo(VIEW_APPOINTMENTS);
     }
     return appointmentViewInfo;
-  }
-
-  static DataInfo getAttendeeViewInfo() {
-    if (attendeeViewInfo == null) {
-      attendeeViewInfo = Global.getDataInfo(VIEW_ATTENDEES);
-    }
-    return attendeeViewInfo;
   }
 
   static long getCompany() {
@@ -167,20 +154,6 @@ public class CalendarKeeper {
 
   static long getDefaultTimeZone() {
     return BeeUtils.unbox(configurationHandler.getTimeZone());
-  }
-
-  static DataInfo getExtendedPropertiesViewInfo() {
-    if (extendedPropertiesViewInfo == null) {
-      extendedPropertiesViewInfo = Global.getDataInfo(VIEW_EXTENDED_PROPERTIES);
-    }
-    return extendedPropertiesViewInfo;
-  }
-
-  static DataInfo getThemeColorViewInfo() {
-    if (themeColorViewInfo == null) {
-      themeColorViewInfo = Global.getDataInfo(VIEW_THEME_COLORS);
-    }
-    return themeColorViewInfo;
   }
 
   static void openAppointment(final Appointment appointment, final Calendar calendar) {

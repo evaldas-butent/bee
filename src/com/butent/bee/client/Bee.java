@@ -5,6 +5,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.modules.ModuleManager;
 import com.butent.bee.shared.BeeConst;
@@ -38,7 +39,8 @@ public class Bee implements EntryPoint {
         BeeKeeper.getBus().dispatchService(Service.REFRESH_MENU);
 
         Global.getFavorites().load();
-        Global.getDataInfoProvider().load();
+        
+        Data.init();
 
         TuningFactory.getTools();
 

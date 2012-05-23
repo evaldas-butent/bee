@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasDataProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
@@ -13,7 +14,6 @@ import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.edit.SelectorEvent;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -30,10 +30,6 @@ import java.util.List;
 import java.util.Set;
 
 class SelectorHandler implements SelectorEvent.Handler {
-
-  private int vehicleOwnerIndex = BeeConst.UNDEF;
-  private int companyIndex = BeeConst.UNDEF;
-  private int companyNameIndex = BeeConst.UNDEF;
 
   SelectorHandler() {
     super();
@@ -82,27 +78,15 @@ class SelectorHandler implements SelectorEvent.Handler {
   }
 
   private int getCompanyIndex() {
-    if (BeeConst.isUndef(this.companyIndex)) {
-      int index = CalendarKeeper.getAppointmentViewInfo().getColumnIndex(COL_COMPANY);
-      setCompanyIndex(index);
-    }
-    return companyIndex;
+    return Data.getColumnIndex(VIEW_APPOINTMENTS, COL_COMPANY);
   }
 
   private int getCompanyNameIndex() {
-    if (BeeConst.isUndef(this.companyNameIndex)) {
-      int index = CalendarKeeper.getAppointmentViewInfo().getColumnIndex(COL_COMPANY_NAME);
-      setCompanyNameIndex(index);
-    }
-    return companyNameIndex;
+    return Data.getColumnIndex(VIEW_APPOINTMENTS, COL_COMPANY_NAME);
   }
 
   private int getVehicleOwnerIndex() {
-    if (BeeConst.isUndef(this.vehicleOwnerIndex)) {
-      int index = CalendarKeeper.getAppointmentViewInfo().getColumnIndex(COL_VEHICLE_OWNER);
-      setVehicleOwnerIndex(index);
-    }
-    return vehicleOwnerIndex;
+    return Data.getColumnIndex(VIEW_APPOINTMENTS, COL_VEHICLE_OWNER);
   }
 
   private void handleCompany(SelectorEvent event) {
@@ -228,17 +212,5 @@ class SelectorHandler implements SelectorEvent.Handler {
       Filter filter = ComparisonFilter.isEqual(TransportConstants.COL_OWNER, new LongValue(owner));
       event.getSelector().setAdditionalFilter(filter);
     }
-  }
-
-  private void setCompanyIndex(int companyIndex) {
-    this.companyIndex = companyIndex;
-  }
-
-  private void setCompanyNameIndex(int companyNameIndex) {
-    this.companyNameIndex = companyNameIndex;
-  }
-
-  private void setVehicleOwnerIndex(int vehicleOwnerIndex) {
-    this.vehicleOwnerIndex = vehicleOwnerIndex;
   }
 }

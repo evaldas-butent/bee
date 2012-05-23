@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.calendar.Attendee;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -47,23 +48,23 @@ public class Appointment implements Comparable<Appointment> {
   }
 
   public String getBackground() {
-    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_BACKGROUND));
+    return Data.getString(VIEW_APPOINTMENTS, row, COL_BACKGROUND);
   }
 
   public String getCompanyName() {
-    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_COMPANY_NAME));
+    return Data.getString(VIEW_APPOINTMENTS, row, COL_COMPANY_NAME);
   }
   
   public String getDescription() {
-    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_DESCRIPTION));
+    return Data.getString(VIEW_APPOINTMENTS, row, COL_DESCRIPTION);
   }
 
   public DateTime getEnd() {
-    return row.getDateTime(CalendarKeeper.getAppointmentColumnIndex(COL_END_DATE_TIME));
+    return Data.getDateTime(VIEW_APPOINTMENTS, row, COL_END_DATE_TIME);
   }
 
   public String getForeground() {
-    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_FOREGROUND));
+    return Data.getString(VIEW_APPOINTMENTS, row, COL_FOREGROUND);
   }
   
   public long getId() {
@@ -75,23 +76,23 @@ public class Appointment implements Comparable<Appointment> {
   }
 
   public DateTime getStart() {
-    return row.getDateTime(CalendarKeeper.getAppointmentColumnIndex(COL_START_DATE_TIME));
+    return Data.getDateTime(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME);
   }
 
   public String getSummary() {
-    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_SUMMARY));
+    return Data.getString(VIEW_APPOINTMENTS, row, COL_SUMMARY);
   }
 
   public String getVehicleModel() {
-    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_VEHICLE_MODEL));
+    return Data.getString(VIEW_APPOINTMENTS, row, COL_VEHICLE_MODEL);
   }
 
   public String getVehicleNumber() {
-    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_VEHICLE_NUMBER));
+    return Data.getString(VIEW_APPOINTMENTS, row, COL_VEHICLE_NUMBER);
   }
 
   public String getVehicleParentModel() {
-    return row.getString(CalendarKeeper.getAppointmentColumnIndex(COL_VEHICLE_PARENT_MODEL));
+    return Data.getString(VIEW_APPOINTMENTS, row, COL_VEHICLE_PARENT_MODEL);
   }
   
   public boolean isAllDay() {
@@ -107,10 +108,10 @@ public class Appointment implements Comparable<Appointment> {
   }
 
   public void setEnd(DateTime end) {
-    row.setValue(CalendarKeeper.getAppointmentColumnIndex(COL_END_DATE_TIME), end);
+    Data.setValue(VIEW_APPOINTMENTS, row, COL_END_DATE_TIME, end);
   }
 
   public void setStart(DateTime start) {
-    row.setValue(CalendarKeeper.getAppointmentColumnIndex(COL_START_DATE_TIME), start);
+    Data.setValue(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME, start);
   }
 }

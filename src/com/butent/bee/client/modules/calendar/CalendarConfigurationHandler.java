@@ -1,13 +1,12 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.data.Provider;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowCallback;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -27,11 +26,6 @@ class CalendarConfigurationHandler extends AbstractFormCallback {
 
   private Long timeZone = null;
   
-  private int companyIndex = BeeConst.UNDEF;
-  private int appointmentTypeIndex = BeeConst.UNDEF;
-
-  private int timeZoneIndex = BeeConst.UNDEF;
-  
   private IsRow oldRow = null;
 
   CalendarConfigurationHandler() {
@@ -46,14 +40,16 @@ class CalendarConfigurationHandler extends AbstractFormCallback {
         return false;
       }
 
-      String co = row.getString(getCompanyIndex());
+      final String viewName = presenter.getViewName();
+
+      String co = Data.getString(viewName, row, CalendarConstants.COL_COMPANY);
       if (BeeUtils.isEmpty(co)) {
         presenter.getNotificationListener().notifySevere("Company is required");
         presenter.getView().getContent().focus(CalendarConstants.COL_COMPANY);
         return false;
       }
 
-      String at = row.getString(getAppointmentTypeIndex());
+      String at = Data.getString(viewName, row, CalendarConstants.COL_APPOINTMENT_TYPE);
       if (BeeUtils.isEmpty(at)) {
         presenter.getNotificationListener().notifySevere("Appointment type is required");
         presenter.getView().getContent().focus(CalendarConstants.COL_APPOINTMENT_TYPE);
@@ -62,13 +58,12 @@ class CalendarConfigurationHandler extends AbstractFormCallback {
       
       final boolean insert = DataUtils.isNewRow(row);
       
-      final String viewName = presenter.getViewName();
       List<BeeColumn> columns = presenter.getDataProvider().getColumns();
 
       RowCallback callback = new Queries.RowCallback() {
         @Override
         public void onSuccess(BeeRow result) {
-          updateFields(result);
+          updateFields(viewName, result);
           presenter.getView().getContent().updateRow(result, false);
 
           if (insert) {
@@ -116,12 +111,6 @@ class CalendarConfigurationHandler extends AbstractFormCallback {
   @Override
   public void onShow(FormPresenter presenter) {
     presenter.getView().getContent().setEditing(true);
-    
-    Provider provider = presenter.getDataProvider();
-    
-    setCompanyIndex(provider.getColumnIndex(CalendarConstants.COL_COMPANY));
-    setAppointmentTypeIndex(provider.getColumnIndex(CalendarConstants.COL_APPOINTMENT_TYPE));
-    setTimeZoneIndex(provider.getColumnIndex(CalendarConstants.COL_TIME_ZONE));
   }
 
   Long getAppointmentType() {
@@ -136,36 +125,16 @@ class CalendarConfigurationHandler extends AbstractFormCallback {
     return timeZone;
   }
 
-  private int getAppointmentTypeIndex() {
-    return appointmentTypeIndex;
-  }
-
-  private int getCompanyIndex() {
-    return companyIndex;
-  }
-
   private IsRow getOldRow() {
     return oldRow;
-  }
-
-  private int getTimeZoneIndex() {
-    return timeZoneIndex;
   }
 
   private void setAppointmentType(Long appointmentType) {
     this.appointmentType = appointmentType;
   }
 
-  private void setAppointmentTypeIndex(int appointmentTypeIndex) {
-    this.appointmentTypeIndex = appointmentTypeIndex;
-  }
-
   private void setCompany(Long company) {
     this.company = company;
-  }
-
-  private void setCompanyIndex(int companyIndex) {
-    this.companyIndex = companyIndex;
   }
 
   private void setOldRow(IsRow oldRow) {
@@ -176,18 +145,14 @@ class CalendarConfigurationHandler extends AbstractFormCallback {
     this.timeZone = timeZone;
   }
 
-  private void setTimeZoneIndex(int timeZoneIndex) {
-    this.timeZoneIndex = timeZoneIndex;
-  }
-
-  private void updateFields(BeeRow row) {
+  private void updateFields(String viewName, BeeRow row) {
     if (row == null) {
       return;
     }
 
-    setCompany(row.getLong(getCompanyIndex()));
-    setAppointmentType(row.getLong(getAppointmentTypeIndex()));
+    setCompany(Data.getLong(viewName, row, CalendarConstants.COL_COMPANY));
+    setAppointmentType(Data.getLong(viewName, row, CalendarConstants.COL_APPOINTMENT_TYPE));
     
-    setTimeZone(row.getLong(getTimeZoneIndex()));
+    setTimeZone(Data.getLong(viewName, row, CalendarConstants.COL_TIME_ZONE));
   }
 }

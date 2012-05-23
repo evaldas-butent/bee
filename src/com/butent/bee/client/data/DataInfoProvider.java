@@ -1,5 +1,6 @@
 package com.butent.bee.client.data;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.client.BeeKeeper;
@@ -11,6 +12,7 @@ import com.butent.bee.shared.data.event.HandlesDeleteEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.view.ColumnNamesProvider;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -19,12 +21,17 @@ import java.util.Collection;
 import java.util.Map;
 
 public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Handler,
-    DataInfo.Provider {
+    DataInfo.Provider, ColumnNamesProvider {
 
   private final Map<String, DataInfo> views = Maps.newHashMap();
 
   public DataInfoProvider() {
     super();
+  }
+
+  public ImmutableList<String> getColumnNames(String viewName) {
+    DataInfo dataInfo = getDataInfo(viewName, true);
+    return (dataInfo == null) ? null : ImmutableList.copyOf(dataInfo.getColumnNames(false));
   }
 
   public DataInfo getDataInfo(String viewName, boolean warn) {
@@ -34,7 +41,7 @@ public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Han
     }
     return dataInfo;
   }
-
+  
   public Collection<DataInfo> getViews() {
     return views.values();
   }

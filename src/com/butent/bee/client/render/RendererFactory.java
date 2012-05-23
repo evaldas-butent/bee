@@ -3,7 +3,7 @@ package com.butent.bee.client.render;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -187,7 +187,7 @@ public class RendererFactory {
     Assert.notEmpty(viewName);
     Assert.notEmpty(renderColumns);
     
-    DataInfo dataInfo = Global.getDataInfo(viewName);
+    DataInfo dataInfo = Data.getDataInfo(viewName);
     if (dataInfo == null) {
       return null;
     }

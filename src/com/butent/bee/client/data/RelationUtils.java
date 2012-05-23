@@ -1,7 +1,6 @@
 package com.butent.bee.client.data;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -25,7 +24,7 @@ public class RelationUtils {
       return result;
     }
 
-    DataInfo dataInfo = Global.getDataInfo(viewName);
+    DataInfo dataInfo = Data.getDataInfo(viewName);
     if (dataInfo == null) {
       return result;
     }
@@ -85,7 +84,7 @@ public class RelationUtils {
       return result;
     }
 
-    DataInfo dataInfo = Global.getDataInfo(viewName);
+    DataInfo dataInfo = Data.getDataInfo(viewName);
     if (dataInfo == null) {
       return result;
     }
@@ -121,11 +120,11 @@ public class RelationUtils {
 
     int result = BeeConst.UNDEF;
 
-    DataInfo targetInfo = Global.getDataInfo(targetView);
+    DataInfo targetInfo = Data.getDataInfo(targetView);
     if (targetInfo == null) {
       return result;
     }
-    DataInfo sourceInfo = Global.getDataInfo(sourceView);
+    DataInfo sourceInfo = Data.getDataInfo(sourceView);
     if (sourceInfo == null) {
       return result;
     }

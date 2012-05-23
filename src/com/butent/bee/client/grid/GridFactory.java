@@ -15,6 +15,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.data.KeyProvider;
 import com.butent.bee.client.data.Provider;
@@ -440,7 +441,7 @@ public class GridFactory {
     }
 
     return Filter.and(gridDescription.getFilter(), DataUtils.parseFilter(gridOptions.getFilter(),
-        Global.getDataInfoProvider(), gridDescription.getViewName()));
+        Data.getDataInfoProvider(), gridDescription.getViewName()));
   }
 
   public static Filter getInitialQueryFilter(Filter immutableFilter,
@@ -467,7 +468,7 @@ public class GridFactory {
       return gridDescription.getOrder();
     }
 
-    Order order = DataUtils.parseOrder(gridOptions.getOrder(), Global.getDataInfoProvider(),
+    Order order = DataUtils.parseOrder(gridOptions.getOrder(), Data.getDataInfoProvider(),
         gridDescription.getViewName());
     if (order == null) {
       order = gridDescription.getOrder();
@@ -682,7 +683,7 @@ public class GridFactory {
 
     Filter queryFilter = getInitialQueryFilter(immutableFilter, initialFilters);
 
-    int approximateRowCount = Global.getApproximateRowCount(viewName);
+    int approximateRowCount = Data.getApproximateRowCount(viewName);
 
     int threshold;
     if (gridDescription.getAsyncThreshold() != null) {

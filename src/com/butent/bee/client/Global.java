@@ -7,7 +7,6 @@ import com.google.gwt.dom.client.StyleInjector;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.ClientDefaults;
-import com.butent.bee.client.data.DataInfoProvider;
 import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputBoxes;
@@ -29,7 +28,6 @@ import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.data.Defaults;
 import com.butent.bee.shared.data.cache.CacheManager;
-import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.menu.MenuConstants;
@@ -54,24 +52,23 @@ public class Global implements Module {
   public static final LocalizableConstants CONSTANTS = GWT.create(LocalizableConstants.class);
   public static final LocalizableMessages MESSAGES = GWT.create(LocalizableMessages.class);
 
-  private static final MessageBoxes msgBoxen = new MessageBoxes();
-  private static final InputBoxes inpBoxen = new InputBoxes();
-  private static final DataInfoProvider dataInfoProvider = new DataInfoProvider();
+  private static final MessageBoxes MSG_BOXEN = new MessageBoxes();
+  private static final InputBoxes INP_BOXEN = new InputBoxes();
 
-  private static final Map<String, Variable> vars = Maps.newHashMap();
+  private static final Map<String, Variable> VARS = Maps.newHashMap();
 
-  private static final CacheManager cache = new CacheManager();
+  private static final CacheManager CACHE = new CacheManager();
 
-  private static final Images.Resources images = Images.createResources();
+  private static final Images.Resources IMAGES = Images.createResources();
 
-  private static final Map<String, String> styleSheets = Maps.newHashMap();
+  private static final Map<String, String> STYLE_SHEETS = Maps.newHashMap();
   
-  private static final Map<String, Class<? extends Enum<?>>> captions = Maps.newHashMap();
+  private static final Map<String, Class<? extends Enum<?>>> CAPTIONS = Maps.newHashMap();
 
-  private static final Favorites favorites = new Favorites();
+  private static final Favorites FAVORITES = new Favorites();
   
-  private static final Defaults defaults = new ClientDefaults();
-
+  private static final Defaults DEFAULTS = new ClientDefaults();
+  
   public static void addStyleSheet(String name, String text) {
     if (BeeUtils.isEmpty(name)) {
       BeeKeeper.getLog().warning("style sheet name not specified");
@@ -85,9 +82,9 @@ public class Global implements Module {
     String key = name.trim().toLowerCase();
     String value = text.trim();
 
-    if (!value.equals(styleSheets.get(key))) {
+    if (!value.equals(STYLE_SHEETS.get(key))) {
       StyleInjector.inject(value);
-      styleSheets.put(key, value);
+      STYLE_SHEETS.put(key, value);
     }
   }
 
@@ -101,7 +98,7 @@ public class Global implements Module {
   }
 
   public static void alert(Object... obj) {
-    msgBoxen.alert(obj);
+    MSG_BOXEN.alert(obj);
   }
 
   public static Widget cellTable(Object data, TextCellType cellType, String... columnLabels) {
@@ -136,7 +133,7 @@ public class Global implements Module {
   public static void choice(String caption, String prompt, List<String> options,
       DialogCallback<Integer> callback, int defaultValue, int timeout, String cancelHtml,
       WidgetInitializer initializer) {
-    msgBoxen.choice(caption, prompt, options, callback, defaultValue, timeout, cancelHtml,
+    MSG_BOXEN.choice(caption, prompt, options, callback, defaultValue, timeout, cancelHtml,
         initializer);
   }
 
@@ -149,24 +146,24 @@ public class Global implements Module {
     if (source == null) {
       return false;
     } else {
-      return msgBoxen.close(source);
+      return MSG_BOXEN.close(source);
     }
   }
 
   public static void confirm(List<String> messages, BeeCommand command) {
-    msgBoxen.confirm(null, messages, command);
+    MSG_BOXEN.confirm(null, messages, command);
   }
 
   public static void confirm(String message, BeeCommand command) {
-    msgBoxen.confirm(message, command);
+    MSG_BOXEN.confirm(message, command);
   }
 
   public static void confirm(String caption, List<String> messages, BeeCommand command) {
-    msgBoxen.confirm(caption, messages, command);
+    MSG_BOXEN.confirm(caption, messages, command);
   }
 
   public static void confirm(String caption, String message, BeeCommand command) {
-    msgBoxen.confirm(caption, message, command);
+    MSG_BOXEN.confirm(caption, message, command);
   }
 
   public static void createVar(String name, String caption) {
@@ -177,7 +174,7 @@ public class Global implements Module {
     Assert.notEmpty(name);
     Assert.notNull(type);
 
-    vars.put(name, new Variable(caption, type, value));
+    VARS.put(name, new Variable(caption, type, value));
   }
 
   public static void createVar(String name, String caption, BeeType type, String value,
@@ -185,20 +182,15 @@ public class Global implements Module {
     Assert.notEmpty(name);
     Assert.notNull(type);
 
-    vars.put(name, new Variable(caption, type, value, widget, items));
+    VARS.put(name, new Variable(caption, type, value, widget, items));
   }
   
   public static void debug(String s) {
     BeeKeeper.getLog().debug(s);
   }
 
-  public static int getApproximateRowCount(String viewName) {
-    DataInfo dataInfo = getDataInfo(viewName);
-    return (dataInfo == null) ? BeeConst.UNDEF : dataInfo.getRowCount(); 
-  }
-
   public static CacheManager getCache() {
-    return cache;
+    return CACHE;
   }
   
   public static String getCaption(String key, int index) {
@@ -218,7 +210,7 @@ public class Global implements Module {
   
   public static List<String> getCaptions(String key) {
     Assert.notEmpty(key);
-    Class<? extends Enum<?>> clazz = captions.get(BeeUtils.normalize(key));
+    Class<? extends Enum<?>> clazz = CAPTIONS.get(BeeUtils.normalize(key));
 
     if (clazz == null) {
       BeeKeeper.getLog().severe("Captions not registered: " + key);
@@ -228,41 +220,33 @@ public class Global implements Module {
     }
   }
 
-  public static DataInfo getDataInfo(String viewName) {
-    return getDataInfoProvider().getDataInfo(viewName, true);
-  }
-
-  public static DataInfoProvider getDataInfoProvider() {
-    return dataInfoProvider;
-  }
-
   public static Defaults getDefaults() {
-    return defaults;
+    return DEFAULTS;
   }
 
   public static Favorites getFavorites() {
-    return favorites;
+    return FAVORITES;
   }
 
   public static Images.Resources getImages() {
-    return images;
+    return IMAGES;
   }
 
   public static MessageBoxes getMsgBoxen() {
-    return msgBoxen;
+    return MSG_BOXEN;
   }
   
   public static Set<String> getRegisteredCaptionKeys() {
-    return captions.keySet();
+    return CAPTIONS.keySet();
   }
   
   public static Map<String, String> getStylesheets() {
-    return styleSheets;
+    return STYLE_SHEETS;
   }
 
   public static Variable getVar(String name) {
-    Assert.contains(vars, name);
-    return vars.get(name);
+    Assert.contains(VARS, name);
+    return VARS.get(name);
   }
 
   public static boolean getVarBoolean(String name) {
@@ -287,7 +271,7 @@ public class Global implements Module {
 
   public static String getVarName(Variable var) {
     Assert.notNull(var);
-    return BeeUtils.getKey(vars, var);
+    return BeeUtils.getKey(VARS, var);
   }
 
   public static BeeType getVarType(String name) {
@@ -307,7 +291,7 @@ public class Global implements Module {
   }
 
   public static void inform(Object... obj) {
-    msgBoxen.showInfo(obj);
+    MSG_BOXEN.showInfo(obj);
   }
 
   public static void inputString(String caption, DialogCallback<String> callback) {
@@ -333,7 +317,7 @@ public class Global implements Module {
   public static void inputString(String caption, String prompt, DialogCallback<String> callback,
       String defaultValue, int maxLength, double width, Unit widthUnit, int timeout,
       String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
-    inpBoxen.inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
+    INP_BOXEN.inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
         timeout, confirmHtml, cancelHtml, initializer);
   }
 
@@ -341,32 +325,32 @@ public class Global implements Module {
     Assert.notNull(names);
     List<Variable> lst = new ArrayList<Variable>();
     for (String name : names) {
-      if (vars.containsKey(name)) {
-        lst.add(vars.get(name));
+      if (VARS.containsKey(name)) {
+        lst.add(VARS.get(name));
       }
     }
     inputVars(bst, cap, lst.toArray(new Variable[0]));
   }
 
   public static void inputVars(Stage bst, String cap, Variable... variables) {
-    inpBoxen.inputVars(bst, cap, variables);
+    INP_BOXEN.inputVars(bst, cap, variables);
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback) {
-    inpBoxen.inputWidget(caption, input, callback, DialogConstants.OK, DialogConstants.CANCEL,
+    INP_BOXEN.inputWidget(caption, input, callback, DialogConstants.OK, DialogConstants.CANCEL,
         false, null, BeeConst.UNDEF, null);
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,
       String confirmHtml, String cancelHtml, boolean enableGlass, String dialogStyle) {
-    inpBoxen.inputWidget(caption, input, callback, confirmHtml, cancelHtml, enableGlass,
+    INP_BOXEN.inputWidget(caption, input, callback, confirmHtml, cancelHtml, enableGlass,
         dialogStyle, BeeConst.UNDEF, null);
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,
       String confirmHtml, String cancelHtml, boolean enableGlass, String dialogStyle, int timeout,
       WidgetInitializer initializer) {
-    inpBoxen.inputWidget(caption, input, callback, confirmHtml, cancelHtml, enableGlass,
+    INP_BOXEN.inputWidget(caption, input, callback, confirmHtml, cancelHtml, enableGlass,
         dialogStyle, timeout, initializer);
   }
 
@@ -375,15 +359,15 @@ public class Global implements Module {
   }
 
   public static boolean isVar(String name) {
-    return vars.containsKey(name);
+    return VARS.containsKey(name);
   }
 
   public static void modalGrid(String cap, Object data, String... cols) {
-    msgBoxen.showGrid(cap, data, cols);
+    MSG_BOXEN.showGrid(cap, data, cols);
   }
 
   public static boolean nativeConfirm(Object... obj) {
-    return msgBoxen.nativeConfirm(obj);
+    return MSG_BOXEN.nativeConfirm(obj);
   }
 
   public static <E extends Enum<?> & HasCaption> void registerCaptions(Class<E> clazz) {
@@ -394,11 +378,11 @@ public class Global implements Module {
   public static <E extends Enum<?> & HasCaption> void registerCaptions(String key, Class<E> clazz) {
     Assert.notEmpty(key);
     Assert.notNull(clazz);
-    captions.put(BeeUtils.normalize(key), clazz);
+    CAPTIONS.put(BeeUtils.normalize(key), clazz);
   }
   
   public static void sayHuh(Object... obj) {
-    msgBoxen.showInfo("Huh ?", obj);
+    MSG_BOXEN.showInfo("Huh ?", obj);
   }
 
   public static Widget scrollGrid(int width, Object data, String... columnLabels) {
@@ -413,7 +397,7 @@ public class Global implements Module {
     Assert.notEmpty(name);
     Assert.notNull(var);
 
-    vars.put(name, var);
+    VARS.put(name, var);
   }
 
   public static void setVarValue(String name, boolean value) {
@@ -437,19 +421,19 @@ public class Global implements Module {
   }
 
   public static void showDialog(Object... obj) {
-    msgBoxen.showInfo(obj);
+    MSG_BOXEN.showInfo(obj);
   }
 
   public static void showDialog(String cap, String msg, Throwable err) {
     if (err == null) {
-      msgBoxen.showInfo(cap, msg);
+      MSG_BOXEN.showInfo(cap, msg);
     } else {
-      msgBoxen.showError(cap, msg, err);
+      MSG_BOXEN.showError(cap, msg, err);
     }
   }
 
   public static void showError(Object... obj) {
-    msgBoxen.showError(obj);
+    MSG_BOXEN.showError(obj);
   }
 
   public static void showVars(String... context) {
@@ -457,7 +441,7 @@ public class Global implements Module {
     Variable[] arr = null;
 
     if (n > 0) {
-      Set<String> names = vars.keySet();
+      Set<String> names = VARS.keySet();
       Set<String> keys = new LinkedHashSet<String>();
       for (String z : context) {
         keys.addAll(BeeUtils.getContext(z, names));
@@ -466,11 +450,11 @@ public class Global implements Module {
         arr = new Variable[keys.size()];
         int idx = 0;
         for (String key : keys) {
-          arr[idx++] = vars.get(key);
+          arr[idx++] = VARS.get(key);
         }
       }
     } else {
-      arr = vars.values().toArray(new Variable[0]);
+      arr = VARS.values().toArray(new Variable[0]);
     }
 
     if (BeeUtils.isEmpty(arr)) {
@@ -481,7 +465,7 @@ public class Global implements Module {
   }
 
   public static void showWidget(Widget widget) {
-    msgBoxen.showWidget(widget);
+    MSG_BOXEN.showWidget(widget);
   }
 
   public static Widget simpleGrid(Object data, String... columnLabels) {
@@ -513,7 +497,6 @@ public class Global implements Module {
 
   public void init() {
     initCache();
-    initDataInfoProvider();
     initVars();
     initImages();
     initFavorites();
@@ -533,13 +516,6 @@ public class Global implements Module {
 
   private void initCache() {
     BeeKeeper.getBus().registerDataHandler(getCache());
-  }
-
-  private void initDataInfoProvider() {
-    BeeKeeper.getBus().registerRowDeleteHandler(getDataInfoProvider());
-    BeeKeeper.getBus().registerMultiDeleteHandler(getDataInfoProvider());
-
-    BeeKeeper.getBus().registerRowInsertHandler(getDataInfoProvider());
   }
 
   private void initFavorites() {

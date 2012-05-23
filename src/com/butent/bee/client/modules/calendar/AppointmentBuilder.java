@@ -14,6 +14,7 @@ import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.TabBar;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.InputBoxes;
@@ -77,23 +78,11 @@ class AppointmentBuilder extends AbstractFormCallback {
 
   private static final String NAME_COLORS = "Colors";
 
-  private static int startTimeIndex = BeeConst.UNDEF;
-  private static int appTypeIndex = BeeConst.UNDEF;
-
   private static BeeRowSet attendees = null;
   private static State attState = State.UNKNOWN;
 
-  private static int attTypeNameIndex = BeeConst.UNDEF;
-  private static int attNameIndex = BeeConst.UNDEF;
-
   private static BeeRowSet properties = null;
   private static State propState = State.UNKNOWN;
-
-  private static int propGroupNameIndex = BeeConst.UNDEF;
-  private static int propNameIndex = BeeConst.UNDEF;
-  private static int propDefaultIndex = BeeConst.UNDEF;
-  private static int propHoursIndex = BeeConst.UNDEF;
-  private static int propMinutesIndex = BeeConst.UNDEF;
 
   private static final List<Long> serviceTypes = Lists.newArrayList();
   private static Long defaultServiceType = null;
@@ -106,107 +95,17 @@ class AppointmentBuilder extends AbstractFormCallback {
   private static BeeRowSet colors = null;
   private static State colorState = State.UNKNOWN;
 
-  private static int colorIndex = BeeConst.UNDEF;
-  private static int backgroundIndex = BeeConst.UNDEF;
-  private static int foregroundIndex = BeeConst.UNDEF;
-
   static BeeRow createEmptyRow(DateTime start) {
     BeeRow row = RowFactory.createEmptyRow(CalendarKeeper.getAppointmentViewInfo(), true);
 
     long type = CalendarKeeper.getDefaultAppointmentType();
     if (DataUtils.isId(type)) {
-      row.setValue(getAppTypeIndex(), type);
+      Data.setValue(VIEW_APPOINTMENTS, row, COL_APPOINTMENT_TYPE, type);
     }
     if (start != null) {
-      row.setValue(getStartTimeIndex(), start);
+      Data.setValue(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME, start);
     }
     return row;
-  }
-
-  private static int getAppTypeIndex() {
-    if (BeeConst.isUndef(appTypeIndex)) {
-      appTypeIndex = CalendarKeeper.getAppointmentViewInfo().getColumnIndex(COL_APPOINTMENT_TYPE);
-    }
-    return appTypeIndex;
-  }
-
-  private static int getAttNameIndex() {
-    if (BeeConst.isUndef(attNameIndex)) {
-      attNameIndex = CalendarKeeper.getAttendeeViewInfo().getColumnIndex(COL_NAME);
-    }
-    return attNameIndex;
-  }
-
-  private static int getAttTypeNameIndex() {
-    if (BeeConst.isUndef(attTypeNameIndex)) {
-      attTypeNameIndex = CalendarKeeper.getAttendeeViewInfo().getColumnIndex(COL_TYPE_NAME);
-    }
-    return attTypeNameIndex;
-  }
-
-  private static int getBackgroundIndex() {
-    if (BeeConst.isUndef(backgroundIndex)) {
-      backgroundIndex = CalendarKeeper.getThemeColorViewInfo().getColumnIndex(COL_BACKGROUND);
-    }
-    return backgroundIndex;
-  }
-
-  private static int getColorIndex() {
-    if (BeeConst.isUndef(colorIndex)) {
-      colorIndex = CalendarKeeper.getThemeColorViewInfo().getColumnIndex(COL_COLOR);
-    }
-    return colorIndex;
-  }
-
-  private static int getForegroundIndex() {
-    if (BeeConst.isUndef(foregroundIndex)) {
-      foregroundIndex = CalendarKeeper.getThemeColorViewInfo().getColumnIndex(COL_FOREGROUND);
-    }
-    return foregroundIndex;
-  }
-
-  private static int getPropDefaultIndex() {
-    if (BeeConst.isUndef(propDefaultIndex)) {
-      propDefaultIndex =
-          CalendarKeeper.getExtendedPropertiesViewInfo().getColumnIndex(COL_DEFAULT_PROPERTY);
-    }
-    return propDefaultIndex;
-  }
-
-  private static int getPropGroupNameIndex() {
-    if (BeeConst.isUndef(propGroupNameIndex)) {
-      propGroupNameIndex =
-          CalendarKeeper.getExtendedPropertiesViewInfo().getColumnIndex(COL_GROUP_NAME);
-    }
-    return propGroupNameIndex;
-  }
-
-  private static int getPropHoursIndex() {
-    if (BeeConst.isUndef(propHoursIndex)) {
-      propHoursIndex = CalendarKeeper.getExtendedPropertiesViewInfo().getColumnIndex(COL_HOURS);
-    }
-    return propHoursIndex;
-  }
-
-  private static int getPropMinutesIndex() {
-    if (BeeConst.isUndef(propMinutesIndex)) {
-      propMinutesIndex = CalendarKeeper.getExtendedPropertiesViewInfo().getColumnIndex(COL_MINUTES);
-    }
-    return propMinutesIndex;
-  }
-
-  private static int getPropNameIndex() {
-    if (BeeConst.isUndef(propNameIndex)) {
-      propNameIndex = CalendarKeeper.getExtendedPropertiesViewInfo().getColumnIndex(COL_NAME);
-    }
-    return propNameIndex;
-  }
-
-  private static int getStartTimeIndex() {
-    if (BeeConst.isUndef(startTimeIndex)) {
-      startTimeIndex = CalendarKeeper.getAppointmentViewInfo().getColumnIndex(COL_START_DATE_TIME);
-    }
-    return startTimeIndex;
   }
 
   private final DateTime originalStart;
@@ -420,10 +319,11 @@ class AppointmentBuilder extends AbstractFormCallback {
     if (colors == null) {
       return;
     }
+    String viewName = colors.getViewName();
 
     for (BeeRow row : colors.getRows()) {
-      String bc = row.getString(getBackgroundIndex());
-      String fc = row.getString(getForegroundIndex());
+      String bc = Data.getString(viewName, row, COL_BACKGROUND);
+      String fc = Data.getString(viewName, row, COL_FOREGROUND);
 
       Html color = new Html();
       color.getElement().getStyle().setBackgroundColor(bc);
@@ -447,7 +347,7 @@ class AppointmentBuilder extends AbstractFormCallback {
 
       for (long id : rowIds) {
         BeeRow row = properties.getRowById(id);
-        String item = row.getString(getPropNameIndex());
+        String item = Data.getString(properties.getViewName(), row, COL_NAME);
         listBox.addItem(item);
       }
 
@@ -463,11 +363,12 @@ class AppointmentBuilder extends AbstractFormCallback {
       if (listBox.getItemCount() > 0) {
         listBox.clear();
       }
-
+      
+      String viewName = attendees.getViewName();
       for (long id : repairPlaces) {
         BeeRow row = attendees.getRowById(id);
         String item = BeeUtils.concat(BeeConst.DEFAULT_LIST_SEPARATOR,
-            row.getString(getAttNameIndex()), row.getString(getAttTypeNameIndex()));
+            Data.getString(viewName, row, COL_NAME), Data.getString(viewName, row, COL_TYPE_NAME));
         listBox.addItem(item);
       }
     }
@@ -490,7 +391,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   }
 
   private boolean isEmpty(IsRow row, String columnId) {
-    return BeeUtils.isEmpty(row.getString(CalendarKeeper.getAppointmentColumnIndex(columnId)));
+    return BeeUtils.isEmpty(Data.getString(VIEW_APPOINTMENTS, row, columnId));
   }
 
   private void loadAttendees() {
@@ -550,12 +451,13 @@ class AppointmentBuilder extends AbstractFormCallback {
 
         defaultServiceType = null;
         defaultRepairType = null;
-
+        
+        String viewName = properties.getViewName();
         for (BeeRow row : properties.getRows()) {
           long id = row.getId();
 
-          String groupName = row.getString(getPropGroupNameIndex());
-          boolean isDef = BeeUtils.equals(row.getLong(getPropDefaultIndex()), id);
+          String groupName = Data.getString(viewName, row, COL_GROUP_NAME);
+          boolean isDef = BeeUtils.equals(Data.getLong(viewName, row, COL_DEFAULT_PROPERTY), id);
 
           if (BeeUtils.context("serv", groupName)) {
             serviceTypes.add(id);
@@ -586,9 +488,9 @@ class AppointmentBuilder extends AbstractFormCallback {
     BeeRow row = DataUtils.cloneRow(getFormView().getActiveRow());
 
     if (isEmpty(row, COL_END_DATE_TIME)) {
-      long millis = row.getDateTime(getStartTimeIndex()).getTime()
+      long millis = Data.getDateTime(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME).getTime()
           + getDuration() * TimeUtils.MILLIS_PER_MINUTE;
-      row.setValue(CalendarKeeper.getAppointmentColumnIndex(COL_END_DATE_TIME), millis);
+      Data.setValue(VIEW_APPOINTMENTS, row, COL_END_DATE_TIME, millis);
     }
 
     int index = colorWidget.getSelectedTab();
@@ -596,8 +498,8 @@ class AppointmentBuilder extends AbstractFormCallback {
       index = 0;
     }
     if (colors != null && index < colors.getNumberOfRows()) {
-      row.setValue(CalendarKeeper.getAppointmentColumnIndex(COL_COLOR),
-          colors.getRow(index).getLong(getColorIndex()));
+      Data.setValue(VIEW_APPOINTMENTS, row, COL_COLOR,
+          Data.getLong(colors.getViewName(), colors.getRow(index), COL_COLOR));
     }
 
     final Long serviceType = getSelectedId(getServiceTypeWidgetId(), serviceTypes);
@@ -660,10 +562,11 @@ class AppointmentBuilder extends AbstractFormCallback {
     Integer hours = null;
     Integer minutes = null;
 
+    String viewName = properties.getViewName();
     for (BeeRow row : properties.getRows()) {
-      if (BeeUtils.equalsTrim(propName, row.getString(getPropNameIndex()))) {
-        hours = row.getInteger(getPropHoursIndex());
-        minutes = row.getInteger(getPropMinutesIndex());
+      if (BeeUtils.equalsTrim(propName, Data.getString(viewName, row, COL_NAME))) {
+        hours = Data.getInteger(viewName, row, COL_HOURS);
+        minutes = Data.getInteger(viewName, row, COL_MINUTES);
         break;
       }
     }
@@ -711,13 +614,14 @@ class AppointmentBuilder extends AbstractFormCallback {
       return false;
     }
 
-    DateTime end = row.getDateTime(CalendarKeeper.getAppointmentColumnIndex(COL_END_DATE_TIME));
+    DateTime end = Data.getDateTime(VIEW_APPOINTMENTS, row, COL_END_DATE_TIME);
     if (end == null) {
       if (getDuration() <= 0) {
         getFormView().notifySevere("Įveskite trukmę arba planuojamą pabaigos laiką");
         return false;
       }
-    } else if (TimeUtils.isLeq(end, row.getDateTime(getStartTimeIndex()))) {
+    } else if (TimeUtils.isLeq(end,
+        Data.getDateTime(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME))) {
       getFormView().notifySevere("Pabaigos laikas turi būti didesnis už pradžios laiką");
       return false;
     }

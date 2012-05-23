@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RelationUtils;
 import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Notification;
@@ -558,7 +559,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         Holder<String> sourceHolder = Holder.of(source);
         Holder<List<String>> listHolder = Holder.of(renderColumns);
 
-        columnDescr.getRelation().initialize(Global.getDataInfoProvider(), viewName,
+        columnDescr.getRelation().initialize(Data.getDataInfoProvider(), viewName,
             sourceHolder, listHolder);
 
         source = sourceHolder.get();

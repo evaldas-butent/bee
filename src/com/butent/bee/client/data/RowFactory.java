@@ -70,7 +70,7 @@ public class RowFactory {
       return;
     }
 
-    DataInfo dataInfo = Global.getDataInfo(viewName);
+    DataInfo dataInfo = Data.getDataInfo(viewName);
     if (dataInfo == null) {
       return;
     }

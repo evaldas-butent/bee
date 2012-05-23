@@ -8,8 +8,8 @@ import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
@@ -249,7 +249,7 @@ public class FormFactory {
       }
     }
 
-    DataInfo dataInfo = Global.getDataInfo(viewName);
+    DataInfo dataInfo = Data.getDataInfo(viewName);
     if (dataInfo != null) {
       getInitialRowSet(viewName, dataInfo.getRowCount(), formDescription, formCallback);
     }
