@@ -17,7 +17,6 @@ public class TransportConstants {
   public static final String TRANSPORT_MODULE = "Transport";
   public static final String TRANSPORT_METHOD = TRANSPORT_MODULE + "Method";
 
-  public static final String SVC_UPDATE_KM = "UpdateKilometers";
   public static final String SVC_GET_BEFORE = "GetBeforeData";
   public static final String SVC_GET_PROFIT = "GetProfit";
 
@@ -25,11 +24,24 @@ public class TransportConstants {
   public static final String VAR_CARGO_ID = Service.RPC_VAR_PREFIX + "cargo_id";
   public static final String VAR_ORDER_ID = Service.RPC_VAR_PREFIX + "order_id";
 
+  public static final String VIEW_ORDERS = "TransportationOrders";
+
+  public static final String VIEW_CARGO = "OrderCargo";
+  public static final String VIEW_CARGO_SERVICES = "CargoServices";
+  public static final String VIEW_CARGO_TRIPS = "CargoTrips";
+
   public static final String VIEW_TRIPS = "Trips";
   public static final String VIEW_TRIP_CARGO = "TripCargo";
   public static final String VIEW_TRIP_ROUTES = "TripRoutes";
+  public static final String VIEW_TRIP_COSTS = "TripCosts";
+  public static final String VIEW_TRIP_FUEL_COSTS = "TripFuelCosts";
+  public static final String VIEW_TRIP_FUEL_CONSUMPTIONS = "TripFuelConsumptions";
 
   public static final String VIEW_VEHICLES = "Vehicles";
+  public static final String VIEW_FUEL_CONSUMPTIONS = "FuelConsumptions";
+  public static final String VIEW_FUEL_TEMPERATURES = "FuelTemperatures";
+
+  public static final String VIEW_SPARE_PARTS = "SpareParts";
 
   public static final String COL_STATUS = "Status";
   public static final String COL_OWNER = "Owner";
@@ -38,7 +50,10 @@ public class TransportConstants {
   public static final String COL_NUMBER = "Number";
 
   public static final String FORM_NEW_VEHICLE = "Vehicle";
-  
+  public static final String FORM_ORDER = "TransportationOrder";
+  public static final String FORM_TRIP = "Trip";
+  public static final String FORM_CARGO = "OrderCargo";
+
   private TransportConstants() {
   }
 }

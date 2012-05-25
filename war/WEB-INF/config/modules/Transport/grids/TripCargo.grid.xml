@@ -29,64 +29,13 @@
       </style>
     </DataColumn>
     <DataColumn name="CargoPercent" caption="%" minValue="0" />
-    <CalcColumn name="Loading" type="string" cell="html" caption="Pakrauta">
-      <render>
-        <ui:function>
-          var s = "";
-          var tr = "&lt;tr&gt;";
-          var tr_ = "&lt;/tr&gt;";
-          var tdc = "&lt;td align=\"right\" style=\"font-weight: bold;\"&gt;";
-          var td = "&lt;td&gt;";
-          var td_ = "&lt;/td&gt;";
-          
-          if (row.LoadingDate) {
-            s = s + tr + tdc + "Data:" + td_ + td + row.LoadingDate.toDateString() + td_ + tr_;
-          }
-          if (row.LoadingCountryName) {
-            s = s + tr + tdc + "Šalis:" + td_ + td + row.LoadingCountryName + td_ + tr_;
-          }
-          if (row.LoadingPlace) {
-            s = s + tr + tdc + "Vieta:" + td_ + td + row.LoadingPlace + td_ + tr_;
-          }
-          if (row.LoadingTerminal) {
-            s = s + tr + tdc + "Terminalas:" + td_ + td + row.LoadingTerminal + td_ + tr_;
-          }
-          if (s.length > 0) {
-            s = "&lt;table border=\"0\" style=\"border-collapse: collapse;\"&gt;" + s + "&lt;/table&gt;";
-          }
-          return s;
-        </ui:function>
-      </render>
-    </CalcColumn>
-    <CalcColumn name="Unloading" type="string" cell="html" caption="Iškrauta">
-      <render>
-        <ui:function>
-          var s = "";
-          var tr = "&lt;tr&gt;";
-          var tr_ = "&lt;/tr&gt;";
-          var tdc = "&lt;td align=\"right\" style=\"font-weight: bold;\"&gt;";
-          var td = "&lt;td&gt;";
-          var td_ = "&lt;/td&gt;";
-          
-          if (row.UnloadingDate) {
-            s = s + tr + tdc + "Data:" + td_ + td + row.UnloadingDate.toDateString() + td_ + tr_;
-          }
-          if (row.UnloadingCountryName) {
-            s = s + tr + tdc + "Šalis:" + td_ + td + row.UnloadingCountryName + td_ + tr_;
-          }
-          if (row.UnloadingPlace) {
-            s = s + tr + tdc + "Vieta:" + td_ + td + row.UnloadingPlace + td_ + tr_;
-          }
-          if (row.UnloadingTerminal) {
-            s = s + tr + tdc + "Terminalas:" + td_ + td + row.UnloadingTerminal + td_ + tr_;
-          }
-          if (s.length > 0) {
-            s = "&lt;table border=\"0\" style=\"border-collapse: collapse;\"&gt;" + s + "&lt;/table&gt;";
-          }
-          return s;
-        </ui:function>
-      </render>
-    </CalcColumn>
-    <DataColumn name="XXX" caption="Pajamos" />
+    <CalcColumn name="Loading" type="string" cell="html" caption="Pakrauta" />
+    <CalcColumn name="Unloading" type="string" cell="html" caption="Iškrauta" />
+    <DataColumn name="Income" caption="Pajamos" format="#.00">
+      <style>
+        <headerStyle><ui:font>bold</ui:font></headerStyle>
+        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
+      </style>
+    </DataColumn>
   </columns>
 </Grid>

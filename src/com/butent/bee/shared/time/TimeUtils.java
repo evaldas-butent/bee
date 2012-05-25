@@ -171,18 +171,18 @@ public class TimeUtils {
       return dateToString(date.getYear(), date.getMonth(), date.getDom(), sep);
     }
   }
-  
+
   public static int dayDiff(HasDateValue start, HasDateValue end) {
     Assert.notNull(start);
     Assert.notNull(end);
-    
+
     return end.getDate().getDays() - start.getDate().getDays();
   }
-  
+
   public static String dayOfMonthToString(int dom) {
     return padTwo(dom);
   }
-  
+
   public static JustDate endOfMonth(HasYearMonth ref) {
     return endOfMonth(ref, 0);
   }
@@ -191,7 +191,7 @@ public class TimeUtils {
     Assert.notNull(ref);
     return YearMonth.get(ref).shiftMonth(increment).getLast();
   }
-  
+
   public static JustDate endOfPreviousMonth(HasYearMonth ref) {
     return endOfMonth(ref, -1);
   }
@@ -257,12 +257,12 @@ public class TimeUtils {
 
     return min;
   }
-  
+
   public static JustDate getDate(HasDateValue src, int increment) {
     Assert.notNull(src);
     return new JustDate(src.getDate().getDays() + increment);
   }
-  
+
   public static int getMillis(int hour, int minute, int second, int millis) {
     int z = 0;
     if (hour != 0) {
@@ -347,7 +347,7 @@ public class TimeUtils {
   public static boolean isWeekend(HasDateValue dt) {
     return (dt == null) ? false : dt.getDow() >= 6;
   }
-  
+
   /**
    * @param millis the value to convert
    * @return the String representation of milliseconds.
@@ -364,11 +364,11 @@ public class TimeUtils {
     Assert.notNull(dt);
     return dt.getHour() * 60 + dt.getMinute();
   }
-  
+
   public static String monthToString(int month) {
     return padTwo(month);
   }
-  
+
   public static void moveOneDayForward(JustDate date) {
     addDay(date, 1);
   }
@@ -391,7 +391,7 @@ public class TimeUtils {
     long millis = (ref.getTime() / MILLIS_PER_HOUR + 1) * MILLIS_PER_HOUR;
     return new DateTime(millis + MILLIS_PER_HOUR * increment);
   }
-  
+
   public static String normalize(AbstractDate x) {
     if (x == null) {
       return null;
@@ -491,7 +491,7 @@ public class TimeUtils {
     }
     return x.getDateTime().getTime() == y.getDateTime().getTime();
   }
-  
+
   public static boolean sameMonth(HasYearMonth x, HasYearMonth y) {
     if (x == null || y == null) {
       return false;
@@ -510,12 +510,12 @@ public class TimeUtils {
   public static DateTime startOfDay(HasDateValue ref) {
     return startOfDay(ref, 0);
   }
-  
+
   public static DateTime startOfDay(HasDateValue ref, int increment) {
     Assert.notNull(ref);
     return new DateTime(ref.getYear(), ref.getMonth(), ref.getDom() + increment);
   }
-  
+
   public static JustDate startOfMonth() {
     JustDate date = new JustDate();
     int dom = date.getDom();
@@ -528,7 +528,7 @@ public class TimeUtils {
   public static JustDate startOfMonth(HasYearMonth ref) {
     return startOfMonth(ref, 0);
   }
-  
+
   public static JustDate startOfMonth(HasYearMonth ref, int increment) {
     Assert.notNull(ref);
     if (increment == 0) {
@@ -545,7 +545,7 @@ public class TimeUtils {
   public static JustDate startOfPreviousMonth(HasYearMonth ref) {
     return startOfMonth(ref, -1);
   }
-  
+
   public static JustDate startOfQuarter(HasYearMonth ref, int increment) {
     Assert.notNull(ref);
     return startOfMonth(ref, increment * 3 - (ref.getMonth() - 1) % 3);
@@ -554,11 +554,11 @@ public class TimeUtils {
   public static JustDate startOfWeek() {
     return startOfWeek(today());
   }
-  
+
   public static JustDate startOfWeek(HasDateValue ref) {
     return startOfWeek(ref, 0);
   }
-  
+
   public static JustDate startOfWeek(HasDateValue ref, int increment) {
     Assert.notNull(ref);
     JustDate date = new JustDate(ref.getYear(), ref.getMonth(), ref.getDom());
@@ -581,11 +581,11 @@ public class TimeUtils {
   public static JustDate startOfYear() {
     return startOfYear(today());
   }
-  
+
   public static JustDate startOfYear(HasYearMonth ref) {
     return startOfYear(ref, 0);
   }
-  
+
   public static JustDate startOfYear(HasYearMonth ref, int increment) {
     Assert.notNull(ref);
     int year = ref.getYear();
@@ -672,7 +672,7 @@ public class TimeUtils {
   public static JustDate today() {
     return new JustDate();
   }
-  
+
   public static JustDate today(int increment) {
     JustDate date = new JustDate();
     if (increment != 0) {
@@ -706,7 +706,7 @@ public class TimeUtils {
   public static String yearToString(int year) {
     return Integer.toString(year);
   }
-  
+
   private static void assertDateOrDateTime(Object x) {
     Assert.isTrue(isDateOrDateTime(x), "Argument must be Date or DateTime");
   }

@@ -84,6 +84,7 @@ class OracleSqlBuilder extends SqlBuilder {
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
       case CREATE_TRIGGER:
+        @SuppressWarnings("unchecked")
         List<String[]> content = (List<String[]>) params.get("content");
         String text = null;
 
@@ -120,6 +121,7 @@ class OracleSqlBuilder extends SqlBuilder {
         }
         return new SqlSelect()
             .addField("t", "TABLE_NAME", SqlConstants.TBL_NAME)
+            .addField("t", "NUM_ROWS", SqlConstants.ROW_COUNT)
             .addFrom("ALL_TABLES", "t")
             .setWhere(wh)
             .getSqlString(this);

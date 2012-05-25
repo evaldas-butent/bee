@@ -529,6 +529,7 @@ public abstract class SqlBuilder {
         return "";
 
       case CREATE_TRIGGER:
+        @SuppressWarnings("unchecked")
         List<String[]> content = (List<String[]>) params.get("content");
         String text = null;
 
@@ -571,6 +572,7 @@ public abstract class SqlBuilder {
         }
         return new SqlSelect()
             .addField("t", "table_name", SqlConstants.TBL_NAME)
+            .addField("t", "table_rows", SqlConstants.ROW_COUNT)
             .addFrom("information_schema.tables", "t")
             .setWhere(wh)
             .getSqlString(this);

@@ -34,13 +34,14 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.XmlState;
 import com.butent.bee.shared.data.XmlTable;
-import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
@@ -344,7 +345,9 @@ public class UiServiceBean {
     if (BeeUtils.isEmpty(viewName)) {
       return ResponseObject.response(sys.getDataInfo());
     } else {
-      return ResponseObject.response(sys.getDataInfo(viewName));
+      DataInfo dataInfo = sys.getDataInfo(viewName);
+      dataInfo.setRowCount(sys.getViewSize(viewName, null));
+      return ResponseObject.response(dataInfo);
     }
   }
 
@@ -467,12 +470,12 @@ public class UiServiceBean {
     }
 
     List<String> colNames = NameUtils.toList(columns);
-    
+
     int cnt = BeeConst.UNDEF;
     if (!BeeUtils.isEmpty(getSize)) {
       cnt = sys.getViewSize(viewName, filter);
     }
-    
+
     BeeRowSet res = sys.getViewData(viewName, filter, order, limit, offset, colNames);
     if (cnt >= 0 && res != null) {
       res.setTableProperty(Service.VAR_VIEW_SIZE,

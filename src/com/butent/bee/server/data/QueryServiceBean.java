@@ -14,12 +14,12 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.BeeDataSource;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
-import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
@@ -108,7 +108,7 @@ public class QueryServiceBean {
 
   public boolean dbExists(String dbName, String dbSchema, String table) {
     Assert.notEmpty(table);
-    return !BeeUtils.isEmpty(dbTables(dbName, dbSchema, table));
+    return dbTables(dbName, dbSchema, table).getNumberOfRows() > 0;
   }
 
   public SimpleRowSet dbFields(String dbName, String dbSchema, String table) {
@@ -146,8 +146,8 @@ public class QueryServiceBean {
     return "";
   }
 
-  public String[] dbTables(String dbName, String dbSchema, String table) {
-    return getData(SqlUtils.dbTables(dbName, dbSchema, table)).getColumn(SqlConstants.TBL_NAME);
+  public SimpleRowSet dbTables(String dbName, String dbSchema, String table) {
+    return getData(SqlUtils.dbTables(dbName, dbSchema, table));
   }
 
   public SimpleRowSet dbTriggers(String dbName, String dbSchema, String table) {
@@ -273,42 +273,6 @@ public class QueryServiceBean {
     return getSingleRow(query).getValues(0);
   }
 
-  public List<BeeColumn> getColumns(final BeeView view) {
-    Assert.notNull(view);
-
-    SqlSelect ss = view.getQuery().setWhere(SqlUtils.sqlFalse()).resetOrder();
-    activateTables(ss);
-
-    return processSql(ss.getQuery(), new SqlHandler<List<BeeColumn>>() {
-      @Override
-      public List<BeeColumn> processError(SQLException ex) {
-        LogUtils.error(logger, ex);
-        return null;
-      }
-
-      @Override
-      public List<BeeColumn> processResultSet(ResultSet rs) throws SQLException {
-        BeeColumn[] rsCols = JdbcUtils.getColumns(rs);
-        List<BeeColumn> columns = Lists.newArrayList();
-
-        for (BeeColumn col : rsCols) {
-          String colName = col.getId();
-          if (view.hasColumn(colName)) {
-            initColumn(view, colName, col);
-            columns.add(col);
-          }
-        }
-        return columns;
-      }
-
-      @Override
-      public List<BeeColumn> processUpdateCount(int updateCount) {
-        LogUtils.warning(logger, "Query must return a ResultSet");
-        return null;
-      }
-    });
-  }
-
   public BeeRowSet getViewData(final SqlSelect query, final BeeView view) {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
@@ -347,8 +311,6 @@ public class QueryServiceBean {
 
     Assert.state(requiresId || !si.isEmpty());
 
-    activateTables(si);
-
     if (requiresId) {
       String versionFld = sys.getVersionName(target);
 
@@ -386,7 +348,7 @@ public class QueryServiceBean {
       res = getData(new SqlSelect().addCount("cnt").addFrom(ss, "als"));
     }
     if (res == null) {
-      return -1;
+      return BeeConst.UNDEF;
     }
     return BeeUtils.unbox(res.getInt(0, 0));
   }
@@ -410,6 +372,13 @@ public class QueryServiceBean {
   public void sqlIndex(String tmp, String... fields) {
     Assert.state(!sys.isTable(tmp), "Can't index a base table: " + tmp);
     updateData(SqlUtils.createIndex(false, tmp, SqlUtils.uniqueName(), fields));
+  }
+
+  public String sqlValue(String source, String field, long id) {
+    return getValue(new SqlSelect()
+        .addFields(source, field)
+        .addFrom(source)
+        .setWhere(SqlUtils.equal(source, sys.getIdName(source), id)));
   }
 
   public int updateData(IsQuery query) {
@@ -479,16 +448,6 @@ public class QueryServiceBean {
     return res;
   }
 
-  private void initColumn(BeeView view, String colName, BeeColumn column) {
-    column.setType(view.getColumnType(colName).toValueType());
-
-    if (view.isColReadOnly(colName)) {
-      column.setReadOnly(true);
-    }
-    column.setLevel(view.getColumnLevel(colName));
-    column.setDefaults(view.getColumnDefaults(colName));
-  }
-
   private <T> T processSql(String sql, SqlHandler<T> callback) {
     Assert.notEmpty(sql);
     Assert.notEmpty(callback);
@@ -543,7 +502,7 @@ public class QueryServiceBean {
         String colName = col.getId();
 
         if (view.hasColumn(colName)) {
-          initColumn(view, colName, col);
+          view.initColumn(colName, col);
 
         } else if (BeeUtils.same(colName, view.getSourceIdName())) {
           idIndex = col.getIndex();

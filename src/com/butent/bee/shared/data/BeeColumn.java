@@ -36,10 +36,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     ID, LABEL, VALUE_TYPE, PRECISION, SCALE, ISNULL, READ_ONLY, LEVEL, DEFAULTS
   }
 
-  public static final int NO_NULLS = 0;
-  public static final int NULLABLE = 1;
-  public static final int NULLABLE_UNKNOWN = 2;
-
   public static BeeColumn restore(String s) {
     BeeColumn c = new BeeColumn();
     c.deserialize(s);
@@ -48,28 +44,8 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
 
   private int index = BeeConst.UNDEF;
 
-  private String schema = null;
-  private String catalog = null;
-  private String table = null;
-
-  private String clazz = null;
-  private int sqlType = 0;
-  private String typeName = null;
-
-  private int displaySize = BeeConst.UNDEF;
-
-  private int nullable = NULLABLE_UNKNOWN;
-
-  private boolean signed = false;
-  private boolean autoIncrement = false;
-  private boolean caseSensitive = false;
-
-  private boolean currency = false;
-  private boolean searchable = false;
-
+  private boolean nullable = false;
   private boolean readOnly = false;
-  private boolean sqlWritable = false;
-  private boolean definitelyWritable = false;
 
   private int level = 0;
   private Pair<DefaultExpression, Object> defaults = null;
@@ -88,7 +64,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
 
   public BeeColumn(ValueType type, String id, boolean nillable) {
     this(type, id, id);
-    setNullable(nillable ? NULLABLE : NO_NULLS);
+    setNullable(nillable);
   }
 
   public BeeColumn(ValueType type, String label, String id) {
@@ -107,24 +83,10 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     }
 
     result.setIndex(getIndex());
-    result.setSchema(getSchema());
-    result.setCatalog(getCatalog());
-    result.setTable(getTable());
-    result.setClazz(getClazz());
-    result.setSqlType(getSqlType());
-    result.setTypeName(getTypeName());
-    result.setDisplaySize(getDisplaySize());
     result.setPrecision(getPrecision());
     result.setScale(getScale());
-    result.setNullable(getNullable());
-    result.setSigned(isSigned());
-    result.setAutoIncrement(isAutoIncrement());
-    result.setCaseSensitive(isCaseSensitive());
-    result.setCurrency(isCurrency());
-    result.setSearchable(isSearchable());
+    result.setNullable(isNullable());
     result.setReadOnly(isReadOnly());
-    result.setSqlWritable(isSqlWritable());
-    result.setDefinitelyWritable(isDefinitelyWritable());
 
     return result;
   }
@@ -155,7 +117,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
           setScale(BeeUtils.toInt(value));
           break;
         case ISNULL:
-          setNullable(BeeUtils.toInt(value));
+          setNullable(Codec.unpack(value));
           break;
         case READ_ONLY:
           setReadOnly(Codec.unpack(value));
@@ -175,20 +137,8 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     }
   }
 
-  public String getCatalog() {
-    return catalog;
-  }
-
-  public String getClazz() {
-    return clazz;
-  }
-
   public Pair<DefaultExpression, Object> getDefaults() {
     return defaults;
-  }
-
-  public int getDisplaySize() {
-    return displaySize;
   }
 
   public List<ExtendedProperty> getExtendedInfo() {
@@ -196,20 +146,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
 
     PropertyUtils.addProperties(lst,
         "Index", valueAsString(getIndex()),
-        "Schema", getSchema(),
-        "Catalog", getCatalog(),
-        "Table", getTable(),
-        "Class", getClazz(),
-        "Sql Type", getSqlType(),
-        "Type Name", getTypeName(),
-        "Display Size", valueAsString(getDisplaySize()),
-        "Signed", valueAsString(isSigned()),
-        "Auto Increment", valueAsString(isAutoIncrement()),
-        "Case Sensitive", isCaseSensitive(),
-        "Currency", valueAsString(isCurrency()),
-        "Searchable", isSearchable(),
-        "Sql Writable", isSqlWritable(),
-        "Definitely Writable", isDefinitelyWritable(),
         "Pattern", getPattern());
 
     if (getProperties() != null) {
@@ -232,7 +168,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
         "Type", getType(),
         "Precision", valueAsString(getPrecision()),
         "Scale", valueAsString(getScale()),
-        "Nullable", nullableAsString(),
+        "Nullable", isNullable(),
         "Read Only", isReadOnly(),
         "Level", getLevel(),
         "Defaults", getDefaults());
@@ -242,26 +178,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     return level;
   }
 
-  public int getNullable() {
-    return nullable;
-  }
-
-  public String getSchema() {
-    return schema;
-  }
-
-  public int getSqlType() {
-    return sqlType;
-  }
-
-  public String getTable() {
-    return table;
-  }
-
-  public String getTypeName() {
-    return typeName;
-  }
-  
   public boolean hasDefaults() {
     if (getDefaults() == null) {
       return false;
@@ -270,61 +186,20 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     }
   }
 
-  public boolean isAutoIncrement() {
-    return autoIncrement;
-  }
-
-  public boolean isCaseSensitive() {
-    return caseSensitive;
-  }
-
-  public boolean isCurrency() {
-    return currency;
-  }
-
-  public boolean isDefinitelyWritable() {
-    return definitelyWritable;
-  }
-
   public boolean isForeign() {
     return getLevel() > 0;
   }
 
   public boolean isNullable() {
-    return getNullable() == NULLABLE;
+    return nullable;
   }
 
   public boolean isReadOnly() {
     return readOnly;
   }
 
-  public boolean isSearchable() {
-    return searchable;
-  }
-
-  public boolean isSigned() {
-    return signed;
-  }
-
-  public boolean isSqlWritable() {
-    return sqlWritable;
-  }
-  
   public boolean isWritable() {
     return !isReadOnly() && !isForeign();
-  }
-
-  public String nullableAsString() {
-    switch (getNullable()) {
-      case NULLABLE:
-        return "nullable";
-      case NO_NULLS:
-        return "no nulls";
-      case NULLABLE_UNKNOWN:
-        return "nullable unkown";
-      default:
-        return BeeConst.UNKNOWN;
-    }
   }
 
   public String serialize() {
@@ -352,7 +227,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
           arr[i++] = getScale();
           break;
         case ISNULL:
-          arr[i++] = getNullable();
+          arr[i++] = Codec.pack(isNullable());
           break;
         case READ_ONLY:
           arr[i++] = Codec.pack(isReadOnly());
@@ -369,36 +244,8 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     return Codec.beeSerialize(arr);
   }
 
-  public void setAutoIncrement(boolean autoIncrement) {
-    this.autoIncrement = autoIncrement;
-  }
-
-  public void setCaseSensitive(boolean caseSensitive) {
-    this.caseSensitive = caseSensitive;
-  }
-
-  public void setCatalog(String catalog) {
-    this.catalog = catalog;
-  }
-
-  public void setClazz(String clazz) {
-    this.clazz = clazz;
-  }
-
-  public void setCurrency(boolean currency) {
-    this.currency = currency;
-  }
-
   public void setDefaults(Pair<DefaultExpression, Object> defaults) {
     this.defaults = defaults;
-  }
-
-  public void setDefinitelyWritable(boolean definitelyWritable) {
-    this.definitelyWritable = definitelyWritable;
-  }
-
-  public void setDisplaySize(int displaySize) {
-    this.displaySize = displaySize;
   }
 
   public void setIndex(int index) {
@@ -409,40 +256,12 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     this.level = level;
   }
 
-  public void setNullable(int nullable) {
+  public void setNullable(boolean nullable) {
     this.nullable = nullable;
   }
 
   public void setReadOnly(boolean readOnly) {
     this.readOnly = readOnly;
-  }
-
-  public void setSchema(String schema) {
-    this.schema = schema;
-  }
-
-  public void setSearchable(boolean searchable) {
-    this.searchable = searchable;
-  }
-
-  public void setSigned(boolean signed) {
-    this.signed = signed;
-  }
-
-  public void setSqlType(int sqlType) {
-    this.sqlType = sqlType;
-  }
-
-  public void setSqlWritable(boolean sqlWritable) {
-    this.sqlWritable = sqlWritable;
-  }
-
-  public void setTable(String table) {
-    this.table = table;
-  }
-
-  public void setTypeName(String typeName) {
-    this.typeName = typeName;
   }
 
   @Override
@@ -460,10 +279,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
 
   private boolean validState() {
     return !BeeUtils.isEmpty(getId());
-  }
-
-  private String valueAsString(boolean v) {
-    return v ? Boolean.toString(v) : BeeConst.STRING_EMPTY;
   }
 
   private String valueAsString(int v) {

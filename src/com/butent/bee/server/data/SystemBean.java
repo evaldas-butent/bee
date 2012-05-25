@@ -217,13 +217,24 @@ public class SystemBean {
   }
 
   public List<DataInfo> getDataInfo() {
-    List<DataInfo> lst = Lists.newArrayList();
+    SimpleRowSet dbTables = qs.dbTables(dbName, dbSchema, null);
+    String[] tables = dbTables.getColumn(SqlConstants.TBL_NAME);
 
+    List<DataInfo> lst = Lists.newArrayList();
     Set<String> viewNames = Sets.newHashSet(getViewNames());
     viewNames.addAll(getTableNames());
 
     for (String viewName : viewNames) {
-      lst.add(getDataInfo(viewName));
+      String sourceName = getView(viewName).getSourceName();
+      DataInfo dataInfo = getDataInfo(viewName);
+
+      for (int i = 0; i < tables.length; i++) {
+        if (BeeUtils.same(tables[i], sourceName)) {
+          dataInfo.setRowCount(BeeUtils.unbox(dbTables.getInt(i, SqlConstants.ROW_COUNT)));
+          break;
+        }
+      }
+      lst.add(dataInfo);
     }
     return lst;
   }
@@ -234,15 +245,19 @@ public class SystemBean {
 
     List<BeeColumn> columns = null;
     List<ViewColumn> viewColumns = null;
-    int cnt = BeeConst.UNDEF;
 
     if (source.isActive()) {
-      cnt = getViewSize(viewName, null);
-      columns = qs.getColumns(view);
+      columns = Lists.newArrayList();
+
+      for (String col : view.getColumnNames()) {
+        BeeColumn column = new BeeColumn();
+        view.initColumn(col, column);
+        columns.add(column);
+      }
       viewColumns = view.getViewColumns();
     }
     return new DataInfo(viewName, source.getName(), source.getIdName(), source.getVersionName(),
-        columns, viewColumns, cnt);
+        columns, viewColumns);
   }
 
   public String getDbName() {
@@ -471,7 +486,7 @@ public class SystemBean {
     if (SqlBuilderFactory.setDefaultBuilder(qs.dbEngine(dsn), dsn)) {
       dbName = qs.dbName();
       dbSchema = qs.dbSchema();
-      dbTables = qs.dbTables(dbName, dbSchema, null);
+      dbTables = qs.dbTables(dbName, dbSchema, null).getColumn(SqlConstants.TBL_NAME);
     }
     for (BeeTable table : getTables()) {
       String tblName = table.getName();

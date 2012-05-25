@@ -115,6 +115,7 @@ public final class SqlConstants {
   }
 
   public static final String TBL_NAME = "tblName";
+  public static final String ROW_COUNT = "rowCount";
 
   public static final String FLD_NAME = "fldName";
   public static final String FLD_TYPE = "fldType";

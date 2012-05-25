@@ -13,6 +13,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.MultiSelector;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -21,6 +22,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
+import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
@@ -42,6 +44,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.ParentRowEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -53,6 +56,8 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants.OrderStatus;
+import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -103,7 +108,20 @@ public class TransportHandler {
 
     @Override
     public FormCallback getInstance() {
-      return this;
+      return new CargoFormHandler();
+    }
+  }
+
+  private static class CargoGridHandler extends AbstractGridCallback {
+    @Override
+    public AbstractCellRenderer getRenderer(String columnId, List<? extends IsColumn> dataColumns,
+        ColumnDescription columnDescription) {
+
+      if (BeeUtils.inListSame(columnId, "Loading", "Unloading")) {
+        return new CargoPlaceRenderer(dataColumns, columnId);
+      } else {
+        return null;
+      }
     }
   }
 
@@ -117,7 +135,7 @@ public class TransportHandler {
       for (IsRow row : presenter.getView().getContent().getGrid().getRowData()) {
         filter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(index)));
       }
-      Queries.getRowSet("Trips", null, filter, null, new RowSetCallback() {
+      Queries.getRowSet(TransportConstants.VIEW_TRIPS, null, filter, null, new RowSetCallback() {
         @Override
         public void onSuccess(BeeRowSet result) {
           if (result.isEmpty()) {
@@ -135,7 +153,7 @@ public class TransportHandler {
                   List<BeeColumn> columns =
                       Lists.newArrayList(new BeeColumn(ValueType.LONG, "Cargo"),
                           new BeeColumn(ValueType.LONG, "Trip"));
-                  BeeRowSet rowSet = new BeeRowSet("CargoTrips", columns);
+                  BeeRowSet rowSet = new BeeRowSet(TransportConstants.VIEW_CARGO_TRIPS, columns);
 
                   for (IsRow row : rows) {
                     rowSet.addRow(new BeeRow(DataUtils.NEW_ROW_ID,
@@ -157,6 +175,17 @@ public class TransportHandler {
       });
       return false;
     }
+
+    @Override
+    public AbstractCellRenderer getRenderer(String columnId, List<? extends IsColumn> dataColumns,
+        ColumnDescription columnDescription) {
+
+      if (BeeUtils.inListSame(columnId, "Loading", "Unloading")) {
+        return new CargoPlaceRenderer(dataColumns, columnId);
+      } else {
+        return null;
+      }
+    }
   }
 
   private static class OrderFormHandler extends AbstractFormCallback {
@@ -170,7 +199,7 @@ public class TransportHandler {
 
     @Override
     public FormCallback getInstance() {
-      return this;
+      return new OrderFormHandler();
     }
 
     @Override
@@ -267,10 +296,10 @@ public class TransportHandler {
     @Override
     public void afterCreateEditableWidget(EditableWidget editableWidget) {
       if (BeeUtils.same(editableWidget.getColumnId(), "Vehicle")) {
-        List<BeeColumn> columns = getFormView().getDataColumns();
-        final int dateIdx = DataUtils.getColumnIndex("Date", columns);
-        final int speedIdx = DataUtils.getColumnIndex("SpeedometerBefore", columns);
-        final int fuelIdx = DataUtils.getColumnIndex("FuelBefore", columns);
+        String viewName = getFormView().getViewName();
+        final int dateIndex = Data.getColumnIndex(viewName, "Date");
+        final int speedIndex = Data.getColumnIndex(viewName, "SpeedometerBefore");
+        final int fuelIndex = Data.getColumnIndex(viewName, "FuelBefore");
 
         editableWidget.addCellValidationHandler(new CellValidateEvent.Handler() {
           @Override
@@ -284,8 +313,10 @@ public class TransportHandler {
 
                 ParameterList args = TransportHandler.createArgs(TransportConstants.SVC_GET_BEFORE);
                 args.addDataItem("Vehicle", id);
-                args.addDataItem("Date", row.getString(dateIdx));
 
+                if (!row.isNull(dateIndex)) {
+                  args.addDataItem("Date", row.getString(dateIndex));
+                }
                 BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
                   @Override
                   public void onResponse(ResponseObject response) {
@@ -296,8 +327,8 @@ public class TransportHandler {
 
                     } else if (response.hasArrayResponse(String.class)) {
                       String[] r = Codec.beeDeserializeCollection((String) response.getResponse());
-                      row.setValue(speedIdx, r[0]);
-                      row.setValue(fuelIdx, r[1]);
+                      row.setValue(speedIndex, r[0]);
+                      row.setValue(fuelIndex, r[1]);
                       getFormView().refresh(false);
 
                     } else {
@@ -320,12 +351,14 @@ public class TransportHandler {
   }
 
   private static class TripRoutesGridHandler extends AbstractGridCallback {
-    private FormView form;
+    private String viewName;
+    private Integer speedFromIndex;
+    private Integer speedToIndex;
+    private BeeColumn speedToColumn;
+    private Integer kmIndex;
+    private BeeColumn kmColumn;
 
-    @Override
-    public void afterCreate(GridView gridView) {
-      this.form = UiHelper.getForm(gridView.asWidget());
-    }
+    private Integer scale = null;
 
     @Override
     public boolean afterCreateColumn(final String columnId, List<? extends IsColumn> dataColumns,
@@ -334,89 +367,61 @@ public class TransportHandler {
 
       if (BeeUtils.inList(columnId, "SpeedometerFrom", "SpeedometerTo", "Kilometers")
           && editableColumn != null) {
+
         editableColumn.addCellValidationHandler(new CellValidateEvent.Handler() {
           @Override
           public Boolean validateCell(CellValidateEvent event) {
-            if (event.isPostValidation()) {
-              final String viewName = getGridPresenter().getDataProvider().getViewName();
-              List<BeeColumn> columns = getGridPresenter().getDataProvider().getColumns();
+            if (event.isCellValidation() && event.isPostValidation()) {
               CellValidation cv = event.getCellValidation();
               IsRow row = cv.getRow();
-              String updColName;
 
-              if (event.isNewRow()) {
-                Integer a = 0;
+              BeeColumn updColumn;
+              int updIndex;
+              Double updValue;
+              double newVal = BeeUtils.toDouble(cv.getNewValue());
 
-                if (BeeUtils.equals(columnId, "Kilometers")) {
-                  a = row.getInteger(DataUtils.getColumnIndex("SpeedometerFrom", columns));
-                  updColName = "SpeedometerTo";
+              if (BeeUtils.equals(columnId, "Kilometers")) {
+                updValue = row.getDouble(speedFromIndex);
+                updColumn = speedToColumn;
+                updIndex = speedToIndex;
+              } else {
+                if (BeeUtils.equals(columnId, "SpeedometerFrom")) {
+                  newVal = 0 - newVal;
+                  updValue = row.getDouble(speedToIndex);
                 } else {
-                  if (BeeUtils.equals(columnId, "SpeedometerFrom")) {
-                    a = row.getInteger(DataUtils.getColumnIndex("SpeedometerTo", columns));
-                  } else {
-                    a = 0 - BeeUtils.unbox(
-                        row.getInteger(DataUtils.getColumnIndex("SpeedometerFrom", columns)));
-                  }
-                  updColName = "Kilometers";
+                  updValue = 0 - BeeUtils.unbox(row.getDouble(speedFromIndex));
                 }
-                a = BeeUtils.unbox(a) + BeeUtils.toInt(cv.getNewValue());
+                updColumn = kmColumn;
+                updIndex = kmIndex;
+              }
+              updValue = BeeUtils.unbox(updValue) + newVal;
 
-                Integer scale = form.getActiveRow()
-                    .getInteger(DataUtils.getColumnIndex("Speedometer", form.getDataColumns()));
-
-                if (BeeUtils.isPositive(scale) && !BeeUtils.betweenInclusive(a, 0, scale)) {
-                  if (a < 0) {
-                    a = scale + a;
-                  } else {
-                    a = a - scale;
-                  }
+              if (BeeUtils.isPositive(scale)) {
+                if (updValue < 0) {
+                  updValue += scale;
+                } else if (updValue >= scale) {
+                  updValue -= scale;
                 }
-                row.setValue(DataUtils.getColumnIndex(updColName, columns), a);
+              } else if (updValue < 0) {
+                updValue = null;
+              }
+              if (event.isNewRow()) {
+                row.setValue(updIndex, updValue);
 
               } else {
-                if (BeeUtils.equals(columnId, "Kilometers")) {
-                  updColName = "SpeedometerTo";
-                } else {
-                  updColName = "Kilometers";
-                }
-                List<BeeColumn> cols = Lists.newArrayList(editableColumn.getDataColumn());
-                List<String> values = Lists.newArrayList(cv.getOldValue());
+                List<BeeColumn> cols = Lists.newArrayList(cv.getColumn(), updColumn);
+                List<String> oldValues = Lists.newArrayList(cv.getOldValue(),
+                    row.getString(updIndex));
+                List<String> newValues = Lists.newArrayList(cv.getNewValue(),
+                    BeeUtils.transform(updValue));
 
-                cols.add(DataUtils.getColumn(updColName, columns));
-                values.add(row.getString(DataUtils.getColumnIndex(updColName, columns)));
-
-                BeeRowSet rs = new BeeRowSet(viewName, cols);
-                rs.addRow(row.getId(), row.getVersion(), values.toArray(new String[0]));
-                rs.getRow(0).preliminaryUpdate(0, cv.getNewValue());
-
-                ParameterList args = TransportHandler.createArgs(TransportConstants.SVC_UPDATE_KM);
-                args.addDataItem("Rowset", Codec.beeSerialize(rs));
-
-                if (BeeUtils.equals(columnId, "SpeedometerFrom")) {
-                  updColName = "SpeedometerTo";
-                } else {
-                  updColName = "SpeedometerFrom";
-                }
-                args.addDataItem(updColName, Codec.beeSerialize(row
-                    .getString(DataUtils.getColumnIndex(updColName, columns))));
-
-                BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-                  @Override
-                  public void onResponse(ResponseObject response) {
-                    Assert.notNull(response);
-
-                    if (response.hasErrors()) {
-                      Global.showError((Object[]) response.getErrors());
-
-                    } else if (response.hasResponse(BeeRow.class)) {
-                      BeeRow newRow = BeeRow.restore((String) response.getResponse());
-                      BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, newRow));
-
-                    } else {
-                      Global.showError("Unknown response");
-                    }
-                  }
-                });
+                Queries.update(viewName, row.getId(), row.getVersion(), cols, oldValues, newValues,
+                    new Queries.RowCallback() {
+                      @Override
+                      public void onSuccess(BeeRow result) {
+                        BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, result));
+                      }
+                    });
                 return null;
               }
             }
@@ -428,8 +433,29 @@ public class TransportHandler {
     }
 
     @Override
+    public void beforeCreate(List<? extends IsColumn> dataColumns, int rowCount,
+        GridDescription gridDescription, boolean hasSearch) {
+
+      viewName = gridDescription.getViewName();
+      speedFromIndex = Data.getColumnIndex(viewName, "SpeedometerFrom");
+      speedToIndex = Data.getColumnIndex(viewName, "SpeedometerTo");
+      speedToColumn = new BeeColumn(ValueType.NUMBER, "SpeedometerTo");
+      kmIndex = Data.getColumnIndex(viewName, "Kilometers");
+      kmColumn = new BeeColumn(ValueType.NUMBER, "Kilometers");
+    }
+
+    @Override
     public GridCallback getInstance() {
       return new TripRoutesGridHandler();
+    }
+
+    @Override
+    public void onParentRow(ParentRowEvent event) {
+      if (event.getRow() == null) {
+        scale = null;
+      } else {
+        scale = Data.getInteger(event.getViewName(), event.getRow(), "Speedometer");
+      }
     }
   }
 
@@ -513,13 +539,19 @@ public class TransportHandler {
 
   public static void register() {
     Global.registerCaptions(OrderStatus.class);
-    FormFactory.registerFormCallback("TransportationOrder", new OrderFormHandler());
-    GridFactory.registerGridCallback("Vehicles", new VehiclesGridHandler());
-    GridFactory.registerGridCallback("SpareParts", new SparePartsGridHandler());
-    GridFactory.registerGridCallback("TripRoutes", new TripRoutesGridHandler());
-    GridFactory.registerGridCallback("CargoTrips", new CargoTripsGridHandler());
-    FormFactory.registerFormCallback("Trip", new TripFormHandler());
-    FormFactory.registerFormCallback("OrderCargo", new CargoFormHandler());
+    GridFactory.registerGridCallback(TransportConstants.VIEW_VEHICLES, new VehiclesGridHandler());
+    GridFactory.registerGridCallback(TransportConstants.VIEW_SPARE_PARTS,
+        new SparePartsGridHandler());
+    GridFactory.registerGridCallback(TransportConstants.VIEW_TRIP_ROUTES,
+        new TripRoutesGridHandler());
+    GridFactory.registerGridCallback(TransportConstants.VIEW_CARGO_TRIPS,
+        new CargoTripsGridHandler());
+    GridFactory.registerGridCallback(TransportConstants.VIEW_CARGO, new CargoGridHandler());
+    GridFactory.registerGridCallback(TransportConstants.VIEW_TRIP_CARGO, new CargoGridHandler());
+
+    FormFactory.registerFormCallback(TransportConstants.FORM_ORDER, new OrderFormHandler());
+    FormFactory.registerFormCallback(TransportConstants.FORM_TRIP, new TripFormHandler());
+    FormFactory.registerFormCallback(TransportConstants.FORM_CARGO, new CargoFormHandler());
   }
 
   static ParameterList createArgs(String name) {

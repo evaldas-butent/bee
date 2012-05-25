@@ -96,6 +96,7 @@ class PostgreSqlBuilder extends SqlBuilder {
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
       case CREATE_TRIGGER_FUNCTION:
+        @SuppressWarnings("unchecked")
         List<String[]> content = (List<String[]>) params.get("content");
         String text = null;
 
@@ -129,10 +130,29 @@ class PostgreSqlBuilder extends SqlBuilder {
       case DB_SCHEMA:
         return "SELECT current_schema() as " + sqlQuote("dbSchema");
 
-      case DB_INDEXES:
+      case DB_TABLES:
         IsCondition wh = null;
 
         Object prm = params.get("dbSchema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("s", "nspname", prm));
+        }
+        prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("t", "relname", prm));
+        }
+        return new SqlSelect()
+            .addField("t", "relname", SqlConstants.TBL_NAME)
+            .addField("t", "reltuples", SqlConstants.ROW_COUNT)
+            .addFrom("pg_class", "t")
+            .addFromInner("pg_namespace", "s", SqlUtils.join("t", "relnamespace", "s", "oid"))
+            .setWhere(wh)
+            .getSqlString(this);
+
+      case DB_INDEXES:
+        wh = null;
+
+        prm = params.get("dbSchema");
         if (!BeeUtils.isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("s", "nspname", prm));
         }

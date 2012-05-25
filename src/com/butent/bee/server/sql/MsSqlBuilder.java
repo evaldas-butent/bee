@@ -180,6 +180,7 @@ class MsSqlBuilder extends SqlBuilder {
         return text;
 
       case CREATE_TRIGGER:
+        @SuppressWarnings("unchecked")
         List<String[]> content = (List<String[]>) params.get("content");
         text = "SET NOCOUNT ON;";
 
@@ -205,10 +206,34 @@ class MsSqlBuilder extends SqlBuilder {
       case DB_SCHEMA:
         return "SELECT schema_name() AS " + sqlQuote("dbSchema");
 
-      case DB_INDEXES:
-        IsCondition wh = SqlUtils.notNull("i", "name");
+      case DB_TABLES:
+        IsCondition wh = SqlUtils.and(SqlUtils.equal("o", "type", "U"),
+            SqlUtils.equal("o", "is_ms_shipped", 0),
+            SqlUtils.less("p", "index_id", 2));
 
         Object prm = params.get("dbSchema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("s", "name", prm));
+        }
+        prm = params.get("table");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("o", "name", prm));
+        }
+        return new SqlSelect()
+            .addField("o", "name", SqlConstants.TBL_NAME)
+            .addSum("p", "rows", SqlConstants.ROW_COUNT)
+            .addFrom("sys.objects", "o")
+            .addFromInner("sys.partitions", "p", SqlUtils.joinUsing("o", "p", "object_id"))
+            .addFromInner("sys.schemas", "s", SqlUtils.joinUsing("o", "s", "schema_id"))
+            .setWhere(wh)
+            .addGroup("o", "name")
+            .getSqlString(this);
+
+      case DB_INDEXES:
+        wh = SqlUtils.and(SqlUtils.notNull("i", "name"), SqlUtils.equal("o", "type", "U"),
+            SqlUtils.equal("o", "is_ms_shipped", 0));
+
+        prm = params.get("dbSchema");
         if (!BeeUtils.isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("s", "name", prm));
         }

@@ -32,19 +32,9 @@
     <SimpleColumn name="Number" />
     <SimpleColumn name="Cmr" />
     <SimpleColumn name="Notes" />
-    <ExternalJoin source="CargoServices" joinType="LEFT" name="Cargo">
-      <HiddenColumn name="Quantity" alias="Qty" />
-      <HiddenColumn name="Price" />
-      <AggregateColumn name="Total" aggregate="SUM">
-        <xpr:cast type="DECIMAL" precision="12" scale="2">
-          <xpr:number>"Qty" * "Price"</xpr:number>
-        </xpr:cast>
-      </AggregateColumn>
-      <AggregateJoin joinType="LEFT" name="Currency">
-        <AggregateColumn name="Name" aggregate="MIN" alias="MinCurr" />
-        <AggregateColumn name="Name" aggregate="MAX" alias="MaxCurr" />
-      </AggregateJoin>
-    </ExternalJoin>
+    <SimpleColumn name="Income">
+      <xpr:number>0</xpr:number>
+    </SimpleColumn>
   </Columns>
   <Order>
     <OrderBy column="LoadingDate" />

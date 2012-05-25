@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -60,6 +61,7 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
 
   private BiMap<String, Integer> columns;
   private List<String[]> rows;
+  private Map<Integer, Map<String, Integer>> indexes = null;
 
   public SimpleRowSet(String[] cols) {
     Assert.notEmpty(cols);
@@ -124,15 +126,14 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   }
 
   public Boolean getBoolean(int rowIndex, String colName) {
-    return BeeUtils.toBooleanOrNull(getValue(rowIndex, colName));
+    return getBoolean(rowIndex, getColumnIndex(colName));
   }
 
   public Boolean[] getBooleanColumn(int index) {
-    Assert.contains(columns.inverse(), index);
     Boolean[] col = new Boolean[getNumberOfRows()];
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      col[i] = BeeUtils.toBooleanOrNull(rows.get(i)[index]);
+      col[i] = getBoolean(i, index);
     }
     return col;
   }
@@ -142,11 +143,10 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   }
 
   public String[] getColumn(int index) {
-    Assert.contains(columns.inverse(), index);
     String[] col = new String[getNumberOfRows()];
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      col[i] = rows.get(i)[index];
+      col[i] = getValue(i, index);
     }
     return col;
   }
@@ -175,19 +175,19 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   }
 
   public JustDate getDate(int rowIndex, int colIndex) {
-    return TimeUtils.toDateOrNull(getValue(rowIndex, colIndex));
+    return TimeUtils.toDateOrNull(BeeUtils.transform(getLong(rowIndex, colIndex)
+        / TimeUtils.MILLIS_PER_DAY));
   }
 
   public JustDate getDate(int rowIndex, String colName) {
-    return TimeUtils.toDateOrNull(getValue(rowIndex, colName));
+    return getDate(rowIndex, getColumnIndex(colName));
   }
 
   public JustDate[] getDateColumn(int index) {
-    Assert.contains(columns.inverse(), index);
     JustDate[] col = new JustDate[getNumberOfRows()];
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      col[i] = TimeUtils.toDateOrNull(rows.get(i)[index]);
+      col[i] = getDate(i, index);
     }
     return col;
   }
@@ -201,15 +201,14 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   }
 
   public DateTime getDateTime(int rowIndex, String colName) {
-    return TimeUtils.toDateTimeOrNull(getValue(rowIndex, colName));
+    return getDateTime(rowIndex, getColumnIndex(colName));
   }
 
   public DateTime[] getDateTimeColumn(int index) {
-    Assert.contains(columns.inverse(), index);
     DateTime[] col = new DateTime[getNumberOfRows()];
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      col[i] = TimeUtils.toDateTimeOrNull(rows.get(i)[index]);
+      col[i] = getDateTime(i, index);
     }
     return col;
   }
@@ -223,15 +222,14 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   }
 
   public BigDecimal getDecimal(int rowIndex, String colName) {
-    return BeeUtils.toDecimalOrNull(getValue(rowIndex, colName));
+    return getDecimal(rowIndex, getColumnIndex(colName));
   }
 
   public BigDecimal[] getDecimalColumn(int index) {
-    Assert.contains(columns.inverse(), index);
     BigDecimal[] col = new BigDecimal[getNumberOfRows()];
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      col[i] = BeeUtils.toDecimalOrNull(rows.get(i)[index]);
+      col[i] = getDecimal(i, index);
     }
     return col;
   }
@@ -245,15 +243,14 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   }
 
   public Double getDouble(int rowIndex, String colName) {
-    return BeeUtils.toDoubleOrNull(getValue(rowIndex, colName));
+    return getDouble(rowIndex, getColumnIndex(colName));
   }
 
   public Double[] getDoubleColumn(int index) {
-    Assert.contains(columns.inverse(), index);
     Double[] col = new Double[getNumberOfRows()];
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      col[i] = BeeUtils.toDoubleOrNull(rows.get(i)[index]);
+      col[i] = getDouble(i, index);
     }
     return col;
   }
@@ -267,15 +264,14 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   }
 
   public Integer getInt(int rowIndex, String colName) {
-    return BeeUtils.toIntOrNull(getValue(rowIndex, colName));
+    return getInt(rowIndex, getColumnIndex(colName));
   }
 
   public Integer[] getIntColumn(int index) {
-    Assert.contains(columns.inverse(), index);
     Integer[] col = new Integer[getNumberOfRows()];
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      col[i] = BeeUtils.toIntOrNull(rows.get(i)[index]);
+      col[i] = getInt(i, index);
     }
     return col;
   }
@@ -289,15 +285,14 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   }
 
   public Long getLong(int rowIndex, String colName) {
-    return BeeUtils.toLongOrNull(getValue(rowIndex, colName));
+    return getLong(rowIndex, getColumnIndex(colName));
   }
 
   public Long[] getLongColumn(int index) {
-    Assert.contains(columns.inverse(), index);
     Long[] col = new Long[getNumberOfRows()];
 
     for (int i = 0; i < getNumberOfRows(); i++) {
-      col[i] = BeeUtils.toLongOrNull(rows.get(i)[index]);
+      col[i] = getLong(i, index);
     }
     return col;
   }
@@ -346,6 +341,10 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
     return getValue(rowIndex, getColumnIndex(colName));
   }
 
+  public String getValueByKey(String keyName, String keyValue, String colName) {
+    return getValue(getIndex(keyName, keyValue), getColumnIndex(colName));
+  }
+
   public String[] getValues(int index) {
     if (BeeUtils.isIndex(rows, index)) {
       return rows.get(index);
@@ -376,5 +375,27 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
       }
     }
     return Codec.beeSerialize(arr);
+  }
+
+  private int getIndex(String indexName, String indexValue) {
+    int colIndex = getColumnIndex(indexName);
+  
+    if (indexes == null) {
+      indexes = Maps.newHashMap();
+    }
+    if (!indexes.containsKey(colIndex)) {
+      Map<String, Integer> index = Maps.newHashMapWithExpectedSize(getNumberOfRows());
+  
+      for (int i = 0; i < getNumberOfRows(); i++) {
+        index.put(getValue(i, colIndex), i);
+      }
+      indexes.put(colIndex, index);
+    }
+    Integer idx = indexes.get(colIndex).get(indexValue);
+  
+    if (idx == null) {
+      idx = BeeConst.UNDEF;
+    }
+    return idx;
   }
 }

@@ -12,6 +12,7 @@ import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.Pair;
@@ -106,6 +107,15 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       return alias;
     }
 
+    public Pair<DefaultExpression, Object> getDefaults() {
+      Pair<DefaultExpression, Object> defaults = null;
+
+      if (field != null) {
+        defaults = field.getDefaults();
+      }
+      return defaults;
+    }
+
     public IsExpression getExpression() {
       if (expression == null) {
         expression = parse(xmlExpression, Sets.newHashSet(getName()));
@@ -113,8 +123,13 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       return expression;
     }
 
-    public BeeField getField() {
-      return field;
+    public String getField() {
+      String fldName = null;
+
+      if (field != null) {
+        fldName = field.getName();
+      }
+      return fldName;
     }
 
     public int getLevel() {
@@ -123,7 +138,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       if (!BeeUtils.isEmpty(getParent())) {
         ColumnInfo parent = getColumnInfo(getParent());
 
-        if (!parent.getField().hasEditableRelation()) {
+        if (!parent.field.hasEditableRelation()) {
           level = 1;
         }
         level = level + parent.getLevel();
@@ -147,16 +162,56 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       return parentName;
     }
 
+    public int getPrecision() {
+      int precision = BeeConst.UNDEF;
+
+      if (field != null) {
+        precision = field.getPrecision();
+      }
+      return precision;
+    }
+
+    public String getRelation() {
+      String relName = null;
+
+      if (field != null) {
+        relName = field.getRelation();
+      }
+      return relName;
+    }
+
+    public int getScale() {
+      int scale = BeeConst.UNDEF;
+
+      if (field != null) {
+        scale = field.getScale();
+      }
+      return scale;
+    }
+
+    public String getTable() {
+      String tblName = null;
+
+      if (field != null) {
+        tblName = field.getTable();
+      }
+      return tblName;
+    }
+
     public SqlDataType getType() {
       if (xmlExpression != null) {
         return SqlDataType.valueOf(xmlExpression.type);
       } else {
-        return getField().getType();
+        return field.getType();
       }
     }
 
     public boolean isHidden() {
       return hidden;
+    }
+
+    public boolean isNullable() {
+      return field == null || !field.isNotNull();
     }
 
     public boolean isReadOnly() {
@@ -308,13 +363,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   public Pair<DefaultExpression, Object> getColumnDefaults(String colName) {
-    Pair<DefaultExpression, Object> defaults = null;
-    BeeField field = getColumnInfo(colName).getField();
-
-    if (field != null) {
-      defaults = field.getDefaults();
-    }
-    return defaults;
+    return getColumnInfo(colName).getDefaults();
   }
 
   public IsExpression getColumnExpression(String colName) {
@@ -322,13 +371,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   public String getColumnField(String colName) {
-    String fldName = null;
-    BeeField field = getColumnInfo(colName).getField();
-
-    if (field != null) {
-      fldName = field.getName();
-    }
-    return fldName;
+    return getColumnInfo(colName).getField();
   }
 
   public int getColumnLevel(String colName) {
@@ -362,18 +405,24 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return getColumnInfo(colName).getParent();
   }
 
+  public int getColumnPrecision(String colName) {
+    return getColumnInfo(colName).getPrecision();
+  }
+
+  public String getColumnRelation(String colName) {
+    return getColumnInfo(colName).getRelation();
+  }
+
+  public int getColumnScale(String colName) {
+    return getColumnInfo(colName).getScale();
+  }
+
   public String getColumnSource(String colName) {
     return getColumnInfo(colName).getAlias();
   }
 
   public String getColumnTable(String colName) {
-    String tblName = null;
-    BeeField field = getColumnInfo(colName).getField();
-
-    if (field != null) {
-      tblName = field.getTable();
-    }
-    return tblName;
+    return getColumnInfo(colName).getTable();
   }
 
   public SqlDataType getColumnType(String colName) {
@@ -562,11 +611,9 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     List<ViewColumn> result = Lists.newArrayList();
 
     for (ColumnInfo cInf : columns.values()) {
-      BeeField cf = cInf.getField();
-
-      String table = (cf == null) ? null : cf.getTable();
-      String field = (cf == null) ? null : cf.getName();
-      String relation = (cf == null) ? null : cf.getRelation();
+      String table = cInf.getTable();
+      String field = cInf.getName();
+      String relation = cInf.getRelation();
 
       String agg = (cInf.getAggregate() == null) ? null : cInf.getAggregate().name();
       String expr = (cInf.getExpression() == null) ? null
@@ -582,6 +629,19 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return !BeeUtils.isEmpty(colName) && columns.containsKey(BeeUtils.normalize(colName));
   }
 
+  public void initColumn(String colName, BeeColumn column) {
+    ColumnInfo info = getColumnInfo(colName);
+
+    column.setId(info.getName());
+    column.setType(info.getType().toValueType());
+    column.setPrecision(info.getPrecision());
+    column.setScale(info.getScale());
+    column.setReadOnly(info.isReadOnly());
+    column.setNullable(info.isNullable());
+    column.setLevel(info.getLevel());
+    column.setDefaults(info.getDefaults());
+  }
+
   public boolean isColAggregate(String colName) {
     return getColumnAggregate(colName) != null;
   }
@@ -592,6 +652,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public boolean isColHidden(String colName) {
     return getColumnInfo(colName).isHidden();
+  }
+
+  public boolean isColNullable(String colName) {
+    return getColumnInfo(colName).isNullable();
   }
 
   public boolean isColReadOnly(String colName) {

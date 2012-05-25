@@ -48,10 +48,10 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   private final List<BeeColumn> columns = Lists.newArrayList();
   private final List<ViewColumn> viewColumns = Lists.newArrayList();
 
-  private int rowCount;
+  private int rowCount = BeeConst.UNDEF;
 
   public DataInfo(String viewName, String tableName, String idColumn, String versionColumn,
-      List<BeeColumn> columns, List<ViewColumn> viewColumns, int rowCount) {
+      List<BeeColumn> columns, List<ViewColumn> viewColumns) {
     this.viewName = viewName;
     this.tableName = tableName;
 
@@ -64,8 +64,6 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     if (viewColumns != null) {
       this.viewColumns.addAll(viewColumns);
     }
-
-    this.rowCount = rowCount;
   }
 
   private DataInfo() {

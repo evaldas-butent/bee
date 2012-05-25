@@ -74,6 +74,7 @@ public class ExchangeUtils {
     if (date != null) {
       dateClause = SqlUtils.less(TBL_CURRENCY_RATES, FLD_DATE, date);
     }
+    // TODO: ORACLE workaround needed
     query.addFromLeft(TBL_CURRENCY_RATES, ratesAlias,
         SqlUtils.and(SqlUtils.equal(ratesAlias, FLD_CURRENCY, currency),
             SqlUtils.equal(ratesAlias, FLD_DATE, new SqlSelect()

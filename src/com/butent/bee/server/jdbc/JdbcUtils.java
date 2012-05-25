@@ -593,37 +593,17 @@ public class JdbcUtils {
 
     try {
       col.setIndex(idx);
-      String name = rsmd.getColumnName(idx);
       String label = rsmd.getColumnLabel(idx);
-      col.setId(BeeUtils.ifString(label, name));
+      col.setId(BeeUtils.ifString(label, rsmd.getColumnName(idx)));
       col.setLabel(label);
 
-      col.setSchema(rsmd.getSchemaName(idx));
-      col.setCatalog(rsmd.getCatalogName(idx));
-      col.setTable(rsmd.getTableName(idx));
-
-      int sqlType = rsmd.getColumnType(idx);
-      col.setSqlType(sqlType);
-      col.setType(sqlTypeToValueType(sqlType));
-      col.setTypeName(rsmd.getColumnTypeName(idx));
-      col.setClazz(rsmd.getColumnClassName(idx));
+      col.setType(sqlTypeToValueType(rsmd.getColumnType(idx)));
 
       col.setPrecision(rsmd.getPrecision(idx));
       col.setScale(rsmd.getScale(idx));
 
-      col.setNullable(rsmd.isNullable(idx));
-
-      col.setDisplaySize(rsmd.getColumnDisplaySize(idx));
-
-      col.setAutoIncrement(rsmd.isAutoIncrement(idx));
-      col.setCaseSensitive(rsmd.isCaseSensitive(idx));
-      col.setCurrency(rsmd.isCurrency(idx));
-      col.setSigned(rsmd.isSigned(idx));
-
-      col.setDefinitelyWritable(rsmd.isDefinitelyWritable(idx));
+      col.setNullable(rsmd.isNullable(idx) == 1);
       col.setReadOnly(rsmd.isReadOnly(idx));
-      col.setSearchable(rsmd.isSearchable(idx));
-      col.setSqlWritable(rsmd.isWritable(idx));
 
       ok = true;
     } catch (SQLException ex) {

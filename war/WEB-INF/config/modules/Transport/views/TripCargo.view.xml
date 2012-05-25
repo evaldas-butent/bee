@@ -39,7 +39,7 @@
       <SimpleColumn name="Place" alias="UnloadingPlace" />
       <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
     </SimpleJoin>
-    <SimpleColumn name="XXX">
+    <SimpleColumn name="Income">
       <x:number>0</x:number>
     </SimpleColumn>
   </Columns>

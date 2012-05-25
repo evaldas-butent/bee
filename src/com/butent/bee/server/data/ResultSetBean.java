@@ -69,11 +69,9 @@ public class ResultSetBean {
     for (int i = 0; i < c; i++) {
       z = cols[i];
 
-      buff.add(z.getIndex(), z.getId(), z.getLabel(), z.getSchema(), z.getCatalog(),
-          z.getTable(), z.getClazz(), z.getSqlType(), z.getTypeName(), z.getType(),
-          z.getPrecision(), z.getScale(), z.getNullable(), z.getPattern(), z.getDisplaySize(),
-          z.isSigned(), z.isAutoIncrement(), z.isCaseSensitive(), z.isCurrency(), z.isSearchable(),
-          z.isReadOnly(), z.isSqlWritable(), z.isDefinitelyWritable(), z.getProperties());
+      buff.add(z.getIndex(), z.getId(), z.getLabel(), z.getType(),
+          z.getPrecision(), z.getScale(), z.isNullable(), z.getPattern(),
+          z.isReadOnly(), z.getProperties());
 
       if (debug) {
         buff.add(new DateTime().toTimeString());

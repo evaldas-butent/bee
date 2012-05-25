@@ -12,7 +12,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 
 class AppointmentGridHandler extends AbstractGridCallback {
-  
+
   AppointmentGridHandler() {
     super();
   }
