@@ -19,6 +19,7 @@ import com.butent.bee.client.images.Images;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
@@ -133,7 +134,7 @@ public class TaskList {
     }
 
     @Override
-    public void afterCreateWidget(String name, Widget widget) {
+    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
       if (widget instanceof HasClickHandlers && BeeUtils.same(name, "Filter")) {
         ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
           public void onClick(ClickEvent event) {
@@ -171,7 +172,7 @@ public class TaskList {
           row.getLong(provider.getColumnIndex(CrmConstants.COL_OWNER)),
           row.getLong(provider.getColumnIndex(CrmConstants.COL_EXECUTOR)))) {
 
-        presenter.getView().getContent().notifyWarning("Verboten");
+        presenter.getGridView().notifyWarning("Verboten");
         return GridCallback.DELETE_CANCEL;
       }
       return GridCallback.DELETE_DEFAULT;

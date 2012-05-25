@@ -959,52 +959,15 @@ body, select {
   background-color: white;
 }
 
-.bee-RowEditor {
-  border-collapse: collapse;
+.bee-GridNewRow-container {
+  margin-left: 1em;
+  margin-top: 1ex;
 }
-
-.bee-RowEditorCaption {
-  padding: 2px 0 4px;
-  text-align: center;
-  color: green;
-  font-size: medium;
-  font-weight: bolder;
+.bee-GridNewRow-labelCell {
+  vertical-align: top;
 }
-
-.bee-RowEditor tr:nth-child(odd) {
-  background-color: #ffe;
-}
-
-.bee-RowEditor tr:nth-child(even) {
-  background-color: #f3f7fb;
-}
-
-.bee-RowEditor tr:first-of-type {
-  background-color: #eee;
-}
-
-.bee-RowEditor tr:last-of-type {
-  background-color: #eee;
-}
-
-.bee-RowEditorLabel {
-  padding-left: 0.5em;
-  padding-right: 0.5em;
-}
-
-.bee-RowEditorCell {
-  padding-left: 0.5em;
-  padding-right: 0.5em;
-}
-
-.bee-RowEditorActiveLabel {
-  color: #00c;
-  text-decoration: underline;
-}
-
-.bee-RowEditorActiveCell {
-  outline: goldenrod solid 2px;
-  outline-offset: -1px;
+.bee-GridNewRow-label {
+  padding-right: 1em;
 }
 
 .bee-GridFormContainer {

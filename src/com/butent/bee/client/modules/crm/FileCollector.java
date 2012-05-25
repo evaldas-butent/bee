@@ -209,7 +209,7 @@ public class FileCollector extends AbstractGridCallback implements DragOverHandl
     if (getGridPresenter() == null) {
       return null;
     } else {
-      return getGridPresenter().getView().getContent().getGrid();
+      return getGridPresenter().getGridView().getGrid();
     }
   }
 

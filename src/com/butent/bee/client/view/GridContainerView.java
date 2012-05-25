@@ -5,7 +5,6 @@ import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridCallback;
-import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.view.Order;
@@ -19,7 +18,7 @@ import java.util.List;
  * and get it's content.
  */
 
-public interface GridContainerView extends View, HasAllDragAndDropHandlers {
+public interface GridContainerView extends View, HasAllDragAndDropHandlers, HasGridView {
 
   void bind();
 
@@ -27,8 +26,6 @@ public interface GridContainerView extends View, HasAllDragAndDropHandlers {
       BeeRowSet rowSet, Order order, GridCallback gridCallback, Collection<UiOption> uiOptions,
       GridFactory.GridOptions gridOptions);
 
-  GridView getContent();
-  
   List<String> getFavorite();
   
   HeaderView getHeader();

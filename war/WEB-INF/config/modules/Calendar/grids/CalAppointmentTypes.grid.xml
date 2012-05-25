@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
   
-  name="CalAppointmentTypes" viewName="CalAppointmentTypes"
+  name="CalAppointmentTypes" viewName="CalAppointmentTypes" newRowCaption="Naujas vizitų tipas"
   >
   <columns>
     <RelColumn name="TypeName" caption="Tipas" />

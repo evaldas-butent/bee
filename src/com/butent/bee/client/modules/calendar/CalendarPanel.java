@@ -350,7 +350,7 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
       return;
     }
 
-    Collection<RowInfo> selectedRows = getGridPresenter().getView().getContent().getSelectedRows();
+    Collection<RowInfo> selectedRows = getGridPresenter().getGridView().getSelectedRows();
     if (selectedRows.isEmpty()) {
       return;
     }
@@ -359,7 +359,7 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     Set<Long> attIds = Sets.newHashSet();
 
     for (RowInfo rowInfo : selectedRows) {
-      IsRow row = getGridPresenter().getView().getContent().getGrid().getRowById(rowInfo.getId());
+      IsRow row = getGridPresenter().getGridView().getGrid().getRowById(rowInfo.getId());
       if (row != null) {
         lst.add(new Attendee(row.getId(),
             Data.getString(VIEW_ATTENDEES, row, CalendarConstants.COL_NAME)));

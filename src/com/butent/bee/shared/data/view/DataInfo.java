@@ -145,6 +145,11 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return BeeUtils.same(getViewName(), ((DataInfo) obj).getViewName());
   }
 
+  public BeeColumn getColumn(String columnId) {
+    int index = getColumnIndex(columnId);
+    return BeeConst.isUndef(index) ? null : getColumns().get(index);
+  }
+
   public int getColumnCount() {
     return (getColumns() == null) ? BeeConst.UNDEF : getColumns().size();
   }

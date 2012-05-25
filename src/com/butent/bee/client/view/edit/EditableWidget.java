@@ -66,6 +66,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   private final boolean readOnly;
 
   private final CellValidationBus cellValidationBus = new CellValidationBus();
+  private HasCellValidationHandlers validationDelegate = null;
 
   private EditEndEvent.Handler editEndHandler = null;
   private boolean initialized = false;
@@ -150,7 +151,11 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   }
 
   public Boolean fireCellValidation(CellValidateEvent event) {
-    return cellValidationBus.fireCellValidation(event);
+    if (getValidationDelegate() == null) {
+      return cellValidationBus.fireCellValidation(event);
+    } else {
+      return getValidationDelegate().fireCellValidation(event);
+    }
   }
 
   public String getCaption() {
@@ -234,18 +239,26 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     }
   }
 
+  public HasCellValidationHandlers getValidationDelegate() {
+    return validationDelegate;
+  }
+
   public String getWidgetId() {
     return getWidgetDescription().getWidgetId();
+  }
+  
+  public String getWidgetName() {
+    return getWidgetDescription().getWidgetName();
   }
 
   public boolean hasCarry() {
     return getCarry() != null;
   }
-
+  
   public boolean hasDefaults() {
     return getDataColumn().hasDefaults();
   }
-  
+
   @Override
   public int hashCode() {
     return getWidgetDescription().hashCode();
@@ -402,6 +415,10 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
         getDisplayWidget().refresh((Widget) getEditor(), row);
       }
     }
+  }
+
+  public void setValidationDelegate(HasCellValidationHandlers validationDelegate) {
+    this.validationDelegate = validationDelegate;
   }
 
   public boolean validate(ValidationOrigin origin) {

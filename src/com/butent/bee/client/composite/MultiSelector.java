@@ -61,8 +61,8 @@ public class MultiSelector extends DialogBox {
       }
     });
     
-    int width = gp.getView().getContent().getGrid().getBodyWidth();
-    int height = gp.getView().getContent().getGrid().getChildrenHeight();
+    int width = gp.getGridView().getGrid().getBodyWidth();
+    int height = gp.getGridView().getGrid().getChildrenHeight();
     
     width = BeeUtils.clamp(width + DomUtils.getScrollBarWidth() + 2,
         100, Window.getClientWidth() * 3 / 4);
@@ -121,14 +121,14 @@ public class MultiSelector extends DialogBox {
   }
 
   private void select() {
-    Collection<RowInfo> selectedRows = getPresenter().getView().getContent().getSelectedRows();
+    Collection<RowInfo> selectedRows = getPresenter().getGridView().getSelectedRows();
     if (selectedRows.isEmpty()) {
       return;
     }
 
     List<IsRow> result = Lists.newArrayList();
     for (RowInfo rowInfo : selectedRows) {
-      IsRow row = getPresenter().getView().getContent().getGrid().getRowById(rowInfo.getId());
+      IsRow row = getPresenter().getGridView().getGrid().getRowById(rowInfo.getId());
       if (row != null) {
         result.add(row);
       }

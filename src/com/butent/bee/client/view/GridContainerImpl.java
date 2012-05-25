@@ -171,18 +171,18 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   public void bind() {
     if (hasHeader()) {
-      getContent().getGrid().addLoadingStateChangeHandler(getHeader());
+      getGridView().getGrid().addLoadingStateChangeHandler(getHeader());
     }
     if (hasFooter()) {
-      getContent().getGrid().addSelectionCountChangeHandler(getFooter());
+      getGridView().getGrid().addSelectionCountChangeHandler(getFooter());
     }
 
-    getContent().getGrid().addActiveRowChangeHandler(this);
+    getGridView().getGrid().addActiveRowChangeHandler(this);
 
-    getContent().addAddStartHandler(this);
-    getContent().addAddEndHandler(this);
+    getGridView().addAddStartHandler(this);
+    getGridView().addAddEndHandler(this);
 
-    getContent().addEditFormHandler(this);
+    getGridView().addEditFormHandler(this);
   }
 
   public void create(GridDescription gridDescription, List<BeeColumn> dataColumns, int rowCount,
@@ -295,15 +295,15 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
   }
 
-  public GridView getContent() {
+  public List<String> getFavorite() {
+    return favorite;
+  }
+
+  public GridView getGridView() {
     if (getCenter() == null) {
       return null;
     }
     return (GridView) getCenter();
-  }
-
-  public List<String> getFavorite() {
-    return favorite;
   }
 
   public HeaderView getHeader() {
@@ -354,7 +354,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   public void onActiveRowChange(ActiveRowChangeEvent event) {
     IsRow rowValue = event.getRowValue();
-    GridView gridView = getContent();
+    GridView gridView = getGridView();
 
     boolean rowEnabled;
     if (rowValue == null) {
@@ -409,7 +409,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (event.getTypeInt() == Event.ONMOUSEWHEEL) {
       int y = event.getMouseWheelVelocityY();
 
-      HasDataTable display = getContent().getGrid();
+      HasDataTable display = getGridView().getGrid();
       ScrollPager scroller = getScroller();
 
       if (y == 0 || display == null || scroller == null) {
@@ -460,7 +460,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   public void onResize() {
     if (isAttached() && providesResize()) {
       super.onResize();
-      getContent().getGrid().updatePageSize();
+      getGridView().getGrid().updatePageSize();
     }
   }
 
@@ -490,7 +490,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     super.onLoad();
     Scheduler.get().scheduleDeferred(new ScheduledCommand() {
       public void execute() {
-        CellGrid grid = getContent().getGrid();
+        CellGrid grid = getGridView().getGrid();
         if (!hasPaging()) {
           grid.refresh();
           return;
@@ -612,7 +612,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         h = DomUtils.getParentClientHeight(this);
       }
 
-      return estimatePageSize(getContent(), w, h);
+      return estimatePageSize(getGridView(), w, h);
     }
     return BeeConst.UNDEF;
   }

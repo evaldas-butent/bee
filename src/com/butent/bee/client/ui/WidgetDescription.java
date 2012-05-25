@@ -2,6 +2,7 @@ package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
 
+import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.ui.Calculation;
@@ -65,6 +66,8 @@ public class WidgetDescription implements HasInfo {
   
   private EditorAction onFocus = null;
   private RefreshType updateMode = null;
+  
+  private AbstractCellRenderer renderer = null;
   
   public WidgetDescription(FormWidget widgetType, String widgetId, String widgetName) {
     this.widgetType = widgetType;
@@ -209,6 +212,10 @@ public class WidgetDescription implements HasInfo {
 
   public String getRenderColumns() {
     return renderColumns;
+  }
+
+  public AbstractCellRenderer getRenderer() {
+    return renderer;
   }
 
   public RendererDescription getRendererDescription() {
@@ -360,6 +367,10 @@ public class WidgetDescription implements HasInfo {
 
   public void setRenderColumns(String renderColumns) {
     this.renderColumns = renderColumns;
+  }
+
+  public void setRenderer(AbstractCellRenderer renderer) {
+    this.renderer = renderer;
   }
 
   public void setRendererDescription(RendererDescription rendererDescription) {

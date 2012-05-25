@@ -14,6 +14,7 @@ import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.edit.SelectorEvent;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -143,11 +144,11 @@ class SelectorHandler implements SelectorEvent.Handler {
       return;
     }
 
-    DataView dataView = UiHelper.getDataView(event.getSelector());
-    if (dataView == null) {
+    GridView gridView = UiHelper.getGrid(event.getSelector());
+    if (gridView == null) {
       return;
     }
-    IsRow row = dataView.getActiveRow();
+    IsRow row = gridView.getActiveRow();
     if (row == null) {
       return;
     }
@@ -155,21 +156,21 @@ class SelectorHandler implements SelectorEvent.Handler {
     long id = row.getId();
     Filter filter = null;
 
-    if (BeeUtils.same(dataView.getViewName(), VIEW_PROPERTY_GROUPS)) {
+    if (BeeUtils.same(gridView.getViewName(), VIEW_PROPERTY_GROUPS)) {
       if (DataUtils.isId(id)) {
         filter = ComparisonFilter.isEqual(COL_PROPERTY_GROUP, new LongValue(id));
       } else {
         filter = Filter.isEmpty(COL_PROPERTY_GROUP);
       }
 
-    } else if (BeeUtils.same(dataView.getViewName(), VIEW_ATTENDEE_PROPS)) {
-      if (dataView.getViewPresenter() instanceof HasDataProvider) {
-        Provider provider = ((HasDataProvider) dataView.getViewPresenter()).getDataProvider();
+    } else if (BeeUtils.same(gridView.getViewName(), VIEW_ATTENDEE_PROPS)) {
+      if (gridView.getViewPresenter() instanceof HasDataProvider) {
+        Provider provider = ((HasDataProvider) gridView.getViewPresenter()).getDataProvider();
 
         if (provider != null) {
           int index = provider.getColumnIndex(COL_PROPERTY);
           Long exclude = DataUtils.isId(id) ? row.getLong(index) : null;
-          Set<Long> used = DataUtils.getDistinct(dataView.getRowData(), index, exclude);
+          Set<Long> used = DataUtils.getDistinct(gridView.getRowData(), index, exclude);
 
           if (used.isEmpty()) {
             filter = provider.getImmutableFilter();

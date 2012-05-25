@@ -44,7 +44,7 @@ public class BeeConst {
 
   public static final String DEFAULT_LIST_SEPARATOR = ", ";
   public static final String DEFAULT_VALUE_SEPARATOR = "=";
-  public static final String DEFAULT_OPTION_SEPARATOR = ";";
+  public static final String DEFAULT_OPTION_SEPARATOR = ", ";
   public static final String DEFAULT_ROW_SEPARATOR = ";";
   public static final String DEFAULT_PROPERTY_SEPARATOR = ".";
   public static final String DEFAULT_PROGRESS_SEPARATOR = "/";

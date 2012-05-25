@@ -587,6 +587,16 @@ public class XmlUtils {
     return doc;
   }
 
+  public static void setAttributes(Element element, Map<String, String> attributes) {
+    Assert.notNull(element);
+    
+    if (!BeeUtils.isEmpty(attributes)) {
+      for (Map.Entry<String, String> entry : attributes.entrySet()) {
+        element.setAttribute(entry.getKey().trim(), entry.getValue());
+      }
+    }
+  }
+  
   public static boolean tagIs(Element element, String tagName) {
     if (element == null) {
       return false;

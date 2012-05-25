@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="Attendees" viewName="Attendees" caption="Resursai"
-  editForm="Attendee" newRowForm="Attendee"
+  name="Attendees" viewName="Attendees" caption="Resursai" newRowCaption="Naujas resursas"
+  editForm="Attendee" newRowForm="Attendee" 
   >
   <columns>
     <RelColumn name="TypeName" caption="Tipas" />

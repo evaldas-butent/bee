@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="ExtendedProperties" viewName="ExtendedProperties" caption="Parametrai"
+  name="ExtendedProperties" viewName="ExtendedProperties"
+  caption="Parametrai" newRowCaption="Naujas parametras"
   >
   <columns>
     <RelColumn name="GroupName" caption="Grupė" />

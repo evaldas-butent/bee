@@ -108,7 +108,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
         formDescription.getDisabledActions());
 
     FormView content = new FormImpl(formDescription.getName());
-    content.create(formDescription, null, dataColumns, callback, true);
+    content.create(formDescription, null, dataColumns, true, callback);
 
     FooterView footer;
     if (hasData() && (callback == null || callback.hasFooter(rowCount))) {

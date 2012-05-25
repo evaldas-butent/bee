@@ -16,6 +16,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Absolute;
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
@@ -112,6 +113,11 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
     return getArea().getVisibleLines();
   }
 
+  @Override
+  public FormWidget getWidgetType() {
+    return FormWidget.INPUT_AREA;
+  }
+  
   public boolean handlesKey(int keyCode) {
     return getArea().handlesKey(keyCode);
   }

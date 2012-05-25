@@ -6,6 +6,7 @@ import com.google.gwt.i18n.client.NumberFormat;
 
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasNumberFormat;
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasNumberBounds;
 import com.butent.bee.shared.HasIntStep;
@@ -105,6 +106,11 @@ public class InputNumber extends InputText implements HasNumberBounds, HasIntSte
 
   public int getStepValue() {
     return stepValue;
+  }
+
+  @Override
+  public FormWidget getWidgetType() {
+    return FormWidget.INPUT_DECIMAL;
   }
 
   public void setMaxValue(Number maxValue) {

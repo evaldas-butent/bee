@@ -154,8 +154,8 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
         Provider.Type.ASYNC, EnumSet.of(UiOption.CHILD), getGridCallback(), immutableFilter,
         initialFilters, order, getGridOptions());
 
-    gp.getView().getContent().setRelColumn(getRelSource());
-    gp.getView().getContent().getGrid().setPageSize(BeeConst.UNDEF, false, false);
+    gp.getGridView().setRelColumn(getRelSource());
+    gp.getGridView().getGrid().setPageSize(BeeConst.UNDEF, false, false);
     gp.setEventSource(getId());
 
     setWidget(gp.getWidget());
@@ -270,8 +270,8 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
       getInitialRowSet(getPendingRow());
 
     } else {
-      getPresenter().getView().getContent().getGrid().deactivate();
-      getPresenter().getView().getContent().ensureGridVisible();
+      getPresenter().getGridView().getGrid().deactivate();
+      getPresenter().getGridView().ensureGridVisible();
 
       updateFilter(getPendingRow());
 
@@ -317,7 +317,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
   private void updateFilter(IsRow row) {
     if (getPresenter() != null) {
       getPresenter().getDataProvider().setParentFilter(getId(), getFilter(row));
-      getPresenter().getView().getContent().setRelId(getParentValue(row));
+      getPresenter().getGridView().setRelId(getParentValue(row));
     }
   }
 }

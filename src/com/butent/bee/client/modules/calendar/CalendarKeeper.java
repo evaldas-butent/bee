@@ -95,7 +95,7 @@ public class CalendarKeeper {
 
     if (modal) {
       FormFactory.createFormView(FORM_NEW_APPOINTMENT, VIEW_APPOINTMENTS,
-          getAppointmentViewInfo().getColumns(), builder, new FormFactory.FormViewCallback() {
+          getAppointmentViewInfo().getColumns(), false, builder, new FormFactory.FormViewCallback() {
             public void onSuccess(FormDescription formDescription, FormView result) {
               if (result != null) {
                 result.start(null);
@@ -106,7 +106,7 @@ public class CalendarKeeper {
                     RowFactory.DIALOG_STYLE);
               }
             }
-          }, false);
+          });
 
     } else {
       FormFactory.openForm(FORM_NEW_APPOINTMENT, builder);
@@ -262,7 +262,7 @@ public class CalendarKeeper {
   }
 
   private static void createSettingsForm(final BeeRowSet rowSet, final CalendarWidget cw) {
-    FormFactory.createFormView(FORM_CALENDAR_SETTINGS, null, rowSet.getColumns(),
+    FormFactory.createFormView(FORM_CALENDAR_SETTINGS, null, rowSet.getColumns(), false,
         new FormFactory.FormViewCallback() {
           public void onSuccess(FormDescription formDescription, FormView result) {
             if (result != null && getSettingsForm() == null) {
@@ -273,7 +273,7 @@ public class CalendarKeeper {
 
             openSettingsForm(rowSet, cw);
           }
-        }, false);
+        });
   }
 
   private static FormView getSettingsForm() {

@@ -26,6 +26,7 @@ import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
@@ -99,7 +100,7 @@ public class TransportHandler {
 
   private static class CargoFormHandler extends AbstractFormCallback {
     @Override
-    public void afterCreateWidget(String name, Widget widget) {
+    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
       if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
         ((HasClickHandlers) widget)
             .addClickHandler(new Profit(TransportConstants.VAR_CARGO_ID));
@@ -132,14 +133,14 @@ public class TransportHandler {
       filter.add(ComparisonFilter.isEmpty("DateTo"));
       int index = presenter.getDataProvider().getColumnIndex("Trip");
 
-      for (IsRow row : presenter.getView().getContent().getGrid().getRowData()) {
+      for (IsRow row : presenter.getGridView().getGrid().getRowData()) {
         filter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(index)));
       }
       Queries.getRowSet(TransportConstants.VIEW_TRIPS, null, filter, null, new RowSetCallback() {
         @Override
         public void onSuccess(BeeRowSet result) {
           if (result.isEmpty()) {
-            presenter.getView().getContent().notifyWarning("No trips available");
+            presenter.getGridView().notifyWarning("No trips available");
             return;
           }
           MultiSelector selector = new MultiSelector("Galimi reisai", result,
@@ -148,7 +149,7 @@ public class TransportHandler {
               new MultiSelector.SelectionCallback() {
                 @Override
                 public void onSelection(List<IsRow> rows) {
-                  String cargo = BeeUtils.toString(presenter.getView().getContent().getRelId());
+                  String cargo = BeeUtils.toString(presenter.getGridView().getRelId());
 
                   List<BeeColumn> columns =
                       Lists.newArrayList(new BeeColumn(ValueType.LONG, "Cargo"),
@@ -164,7 +165,7 @@ public class TransportHandler {
                     public void onSuccess(BeeRowSet res) {
                       for (BeeRow row : res.getRows()) {
                         BeeKeeper.getBus().fireEvent(new RowInsertEvent(res.getViewName(), row));
-                        presenter.getView().getContent().getGrid().insertRow(row);
+                        presenter.getGridView().getGrid().insertRow(row);
                       }
                     }
                   });
@@ -190,7 +191,7 @@ public class TransportHandler {
 
   private static class OrderFormHandler extends AbstractFormCallback {
     @Override
-    public void afterCreateWidget(String name, Widget widget) {
+    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
       if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
         ((HasClickHandlers) widget)
             .addClickHandler(new Profit(TransportConstants.VAR_ORDER_ID));
@@ -217,7 +218,7 @@ public class TransportHandler {
     private TreePresenter typeTree = null;
 
     @Override
-    public void afterCreateWidget(String name, Widget widget) {
+    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
       if (widget instanceof TreeView && BeeUtils.same(name, "SparePartTypes")) {
         ((TreeView) widget).addSelectionHandler(this);
         typeTree = ((TreeView) widget).getTreePresenter();
@@ -286,7 +287,7 @@ public class TransportHandler {
 
   private static class TripFormHandler extends AbstractFormCallback {
     @Override
-    public void afterCreateWidget(String name, Widget widget) {
+    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
       if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
         ((HasClickHandlers) widget)
             .addClickHandler(new Profit(TransportConstants.VAR_TRIP_ID));
@@ -467,7 +468,7 @@ public class TransportHandler {
     private TreePresenter modelTree = null;
 
     @Override
-    public void afterCreateWidget(String name, Widget widget) {
+    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
       if (widget instanceof TreeView && BeeUtils.same(name, "VehicleModels")) {
         ((TreeView) widget).addSelectionHandler(this);
         modelTree = ((TreeView) widget).getTreePresenter();

@@ -20,15 +20,15 @@ import java.util.Set;
 
 public class FormDescription implements HasViewName {
   
+  public static final String ATTR_ENABLED_ACTIONS = "enabledActions";
+  public static final String ATTR_DISABLED_ACTIONS = "disabledActions";
+
   private static final String TAG_ROW_MESSAGE = "rowMessage";
   private static final String TAG_ROW_EDITABLE = "rowEditable";
   private static final String TAG_ROW_VALIDATION = "rowValidation";
 
   private static final String ATTR_ASYNC_THRESHOLD = "asyncThreshold";
   private static final String ATTR_SEARCH_THRESHOLD = "searchThreshold";
-
-  private static final String ATTR_ENABLED_ACTIONS = "enabledActions";
-  private static final String ATTR_DISABLED_ACTIONS = "disabledActions";
 
   public static String getName(Element element) {
     Assert.notNull(element);
@@ -57,9 +57,6 @@ public class FormDescription implements HasViewName {
 
   public String getCaption() {
     String caption = getFormElement().getAttribute(UiConstants.ATTR_CAPTION);
-    if (BeeUtils.isEmpty(caption)) {
-      caption = getFormElement().getAttribute(UiConstants.ATTR_NAME);
-    }
     return BeeUtils.trim(caption);
   }
 

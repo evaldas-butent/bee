@@ -25,9 +25,11 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.view.DataView;
+import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasCharacterFilter;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasNumberBounds;
@@ -236,6 +238,20 @@ public class UiHelper {
     return null;
   }
 
+  public static GridView getGrid(Widget widget) {
+    DataView dataView = getDataView(widget);
+
+    if (dataView == null) {
+      return null;
+    } else if (dataView instanceof GridView) {
+      return (GridView) dataView;
+    } else if (dataView.getViewPresenter() instanceof HasGridView) {
+      return ((HasGridView) dataView.getViewPresenter()).getGridView();
+    } else {
+      return null;
+    }
+  }
+  
   public static String getValue(Widget widget) {
     if (widget instanceof Editor) {
       return ((Editor) widget).getValue();

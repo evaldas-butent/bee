@@ -12,6 +12,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.HasInputHandlers;
 import com.butent.bee.client.event.InputHandler;
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HandlesAfterSave;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.JsUtils;
@@ -102,10 +103,15 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     return this;
   }
   
+  @Override
+  public FormWidget getWidgetType() {
+    return FormWidget.INPUT_AREA;
+  }
+
   public boolean handlesKey(int keyCode) {
     return !BeeUtils.inList(keyCode, KeyCodes.KEY_ESCAPE, KeyCodes.KEY_TAB);
   }
-
+  
   public boolean isEditing() {
     return editing;
   }

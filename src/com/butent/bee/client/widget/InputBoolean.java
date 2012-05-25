@@ -16,6 +16,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Composite;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
@@ -104,6 +105,11 @@ public class InputBoolean extends Composite implements Editor {
     return BooleanValue.pack(getCheckBox().getValue());
   }
 
+  @Override
+  public FormWidget getWidgetType() {
+    return FormWidget.CHECK_BOX;
+  }
+  
   public boolean handlesKey(int keyCode) {
     return false;
   }

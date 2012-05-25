@@ -5,6 +5,7 @@ import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormView;
@@ -25,7 +26,7 @@ public abstract class AbstractFormCallback implements FormFactory.FormCallback {
   public void afterCreateEditableWidget(EditableWidget editableWidget) {
   }
 
-  public void afterCreateWidget(String name, Widget widget) {
+  public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
   }
 
   public void afterRefresh(FormView form, IsRow row) {

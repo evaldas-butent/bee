@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="TimeZones" viewName="TimeZones" caption="Laiko juostos"
+  name="TimeZones" viewName="TimeZones" caption="Laiko juostos" newRowCaption="Nauja laiko juosta"
   >
   <columns>
     <DataColumn name="Name" caption="Pavadinimas" />

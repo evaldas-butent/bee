@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
   
-  name="CalendarPersons" viewName="CalendarPersons"
+  name="CalendarPersons" viewName="CalendarPersons" newRowCaption="Naujas asmuo"
   >
   <columns>
     <RelColumn name="FirstName" caption="Vardas"

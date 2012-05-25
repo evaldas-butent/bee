@@ -10,7 +10,6 @@ import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.HasWidgets;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.data.HasRelatedRow;
 import com.butent.bee.client.data.RelationUtils;
@@ -23,6 +22,7 @@ import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.client.i18n.HasNumberFormat;
 import com.butent.bee.client.i18n.LocaleUtils;
+import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent;
@@ -32,6 +32,7 @@ import com.butent.bee.client.validation.HasCellValidationHandlers;
 import com.butent.bee.client.validation.ValidationHelper;
 import com.butent.bee.client.validation.ValidationOrigin;
 import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.widget.InputBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasNumberBounds;
@@ -128,6 +129,51 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return cellValidationBus.addCellValidationHandler(handler);
   }
 
+  public Editor createEditor(boolean embedded) {
+    Editor result;
+
+    String format = null;
+    if (getEditorDescription() != null) {
+      result = EditorFactory.getEditor(getEditorDescription(), getItemKey(), getDataType(),
+          getRelation());
+      format = getEditorDescription().getFormat();
+
+    } else if (getRelation() != null) {
+      result = new DataSelector(getRelation(), embedded);
+
+    } else if (!BeeUtils.isEmpty(getItemKey())) {
+      result = new BeeListBox();
+      ((BeeListBox) result).setValueNumeric(ValueType.isNumeric(getDataType()));
+      if (result instanceof AcceptsCaptions && !BeeUtils.isEmpty(getItemKey())) {
+        ((AcceptsCaptions) result).addCaptions(getItemKey());
+      }
+    
+    } else if (embedded && ValueType.isBoolean(getDataType())) {
+      result = new InputBoolean(null);
+
+    } else {
+      result = EditorFactory.createEditor(getDataColumn());
+    }
+
+    result.setNullable(isNullable());
+
+    if (BeeUtils.isEmpty(format)) {
+      if (getUiColumn() instanceof HasDateTimeFormat) {
+        LocaleUtils.copyDateTimeFormat(getUiColumn(), result);
+      }
+      if (getUiColumn() instanceof HasNumberFormat) {
+        LocaleUtils.copyNumberFormat(getUiColumn(), result);
+      }
+    } else {
+      Format.setFormat(result, getDataType(), format);
+    }
+
+    if (result instanceof HasNumberBounds) {
+      UiHelper.setNumberBounds((HasNumberBounds) result, getMinValue(), getMaxValue());
+    }
+    return result;
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
@@ -216,6 +262,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return editorDescription;
   }
 
+  public String getItemKey() {
+    return itemKey;
+  }
+
   public String getMaxValue() {
     return maxValue;
   }
@@ -228,6 +278,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return row.getString(getColIndex());
   }
 
+  public Relation getRelation() {
+    return relation;
+  }
+
   public boolean getRowModeForUpdate() {
     if (updateMode == null) {
       return hasRelation();
@@ -238,6 +292,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   public AbstractColumn<?> getUiColumn() {
     return uiColumn;
+  }
+
+  public RefreshType getUpdateMode() {
+    return updateMode;
   }
 
   public Evaluator getValidation() {
@@ -289,6 +347,10 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     } else {
       return getDataColumn().isNullable();
     }
+  }
+
+  public Boolean isRequired() {
+    return required;
   }
 
   public boolean isWritable() {
@@ -387,7 +449,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
     return ValidationHelper.validateCell(cellValidation, this, origin);
   }
-
+  
   private void adjustEditor(Element sourceElement, Element editorElement, Element adjustElement) {
     if (sourceElement != null) {
       if (getEditor() instanceof AdjustmentListener) {
@@ -519,6 +581,15 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     }
   }
 
+  private void bindEditor() {
+    if (getEditor() == null) {
+      return;
+    }
+    getEditor().addKeyDownHandler(this);
+    getEditor().addBlurHandler(this);
+    getEditor().addEditStopHandler(this);
+  }
+
   private void closeEditor(Integer keyCode, boolean hasModifiers) {
     closeEditor(null, null, null, false, keyCode, hasModifiers);
   }
@@ -569,50 +640,13 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   private void ensureEditor(HasWidgets editorContainer) {
     if (getEditor() != null) {
-      if (editorContainer != null && getEditor().asWidget().getParent() != editorContainer) {
-        BeeKeeper.getLog().debug(getCaption(), "editor moved");
-        editorContainer.add(getEditor().asWidget());
-      }
       return;
     }
-
-    String format = null;
-    if (getEditorDescription() != null) {
-      setEditor(EditorFactory.getEditor(getEditorDescription(), getItemKey(), getDataType(),
-          isNullable(), getRelation()));
-      format = getEditorDescription().getFormat();
-
-    } else if (getRelation() != null) {
-      setEditor(new DataSelector(getRelation(), false));
-      getEditor().setNullable(isNullable());
-
-    } else if (!BeeUtils.isEmpty(getItemKey())) {
-      BeeListBox listBox = new BeeListBox();
-      listBox.setValueNumeric(ValueType.isNumeric(getDataType()));
-      listBox.addCaptions(getItemKey());
-      listBox.setNullable(isNullable());
-      setEditor(listBox);
-
-    } else {
-      setEditor(EditorFactory.createEditor(getDataColumn(), isNullable()));
-    }
+    setEditor(createEditor(false));
 
     getEditor().asWidget().addStyleName(STYLE_EDITOR);
+    bindEditor();
 
-    if (BeeUtils.isEmpty(format)) {
-      if (getUiColumn() instanceof HasDateTimeFormat) {
-        LocaleUtils.copyDateTimeFormat(getUiColumn(), getEditor());
-      }
-      if (getUiColumn() instanceof HasNumberFormat) {
-        LocaleUtils.copyNumberFormat(getUiColumn(), getEditor());
-      }
-    } else {
-      Format.setFormat(getEditor(), getDataType(), format);
-    }
-
-    initEditor();
-
-    Assert.notNull(editorContainer);
     editorContainer.add(getEditor().asWidget());
   }
 
@@ -628,16 +662,8 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return editable;
   }
 
-  private String getItemKey() {
-    return itemKey;
-  }
-
   private NotificationListener getNotificationListener() {
     return notificationListener;
-  }
-
-  private Relation getRelation() {
-    return relation;
   }
 
   private IsRow getRowValue() {
@@ -646,23 +672,6 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
 
   private State getState() {
     return state;
-  }
-
-  private void initEditor() {
-    if (getEditor() == null) {
-      return;
-    }
-    getEditor().addKeyDownHandler(this);
-    getEditor().addBlurHandler(this);
-    getEditor().addEditStopHandler(this);
-
-    if (getEditor() instanceof HasNumberBounds) {
-      UiHelper.setNumberBounds((HasNumberBounds) getEditor(), getMinValue(), getMaxValue());
-    }
-  }
-
-  private Boolean isRequired() {
-    return required;
   }
 
   private void setCloseHandler(EditEndEvent.Handler closeHandler) {

@@ -24,6 +24,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.HasDateTimeFormat;
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -180,6 +181,11 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     return getBox().getValue();
   }
 
+  @Override
+  public FormWidget getWidgetType() {
+    return isDateTime() ? FormWidget.INPUT_DATE_TIME : FormWidget.INPUT_DATE;
+  }
+  
   public boolean handlesKey(int keyCode) {
     return false;
   }
@@ -244,7 +250,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     Assert.notNull(date);
     HasDateValue newValue;
 
-    if (ValueType.DATETIME.equals(getDateType())) {
+    if (isDateTime()) {
       HasDateValue oldValue = getDate();
 
       if (oldValue instanceof DateTime) {
@@ -429,7 +435,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
 
       case 'h':
       case 'H':
-        if (ValueType.DATETIME.equals(getDateType())) {
+        if (isDateTime()) {
           if (oldDate == null) {
             DateTime now = new DateTime();
             newDate =
@@ -444,7 +450,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
 
       case 'i':
       case 'I':
-        if (ValueType.DATETIME.equals(getDateType())) {
+        if (isDateTime()) {
           if (oldDate == null) {
             DateTime now = new DateTime();
             newDate = new DateTime(now.getYear(), now.getMonth(), now.getDom(), now.getHour(),
@@ -523,7 +529,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
 
       case 'x':
       case 'X':
-        if (ValueType.DATETIME.equals(getDateType())) {
+        if (isDateTime()) {
           if (oldDate == null) {
             DateTime now = new DateTime();
             newDate = new DateTime(now.getYear(), now.getMonth(), now.getDom(), now.getHour(),
@@ -546,7 +552,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
           }
 
           if (oldDate == null) {
-            if (ValueType.DATETIME.equals(getDateType()) && getStepValue() > 0) {
+            if (isDateTime() && getStepValue() > 0) {
               long millis = TimeUtils.MILLIS_PER_MINUTE * getStepValue();
               long now = new DateTime().getTime();
               newDate = new DateTime(now / millis * millis + TimeUtils.MILLIS_PER_MINUTE * incr);
@@ -593,6 +599,10 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
 
   private void hideDatePicker() {
     getPopup().hide();
+  }
+  
+  private boolean isDateTime() {
+    return ValueType.DATETIME.equals(getDateType());
   }
 
   private void setValue(HasDateValue value) {

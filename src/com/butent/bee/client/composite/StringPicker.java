@@ -31,6 +31,7 @@ import com.google.gwt.view.client.SelectionModel;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
@@ -197,6 +198,11 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     return value;
   }
 
+  @Override
+  public FormWidget getWidgetType() {
+    return FormWidget.STRING_PICKER;
+  }
+  
   public boolean handlesKey(int keyCode) {
     return BeeUtils.inList(keyCode, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN, KeyCodes.KEY_ENTER);
   }

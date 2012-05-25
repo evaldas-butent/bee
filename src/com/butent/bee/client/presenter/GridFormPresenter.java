@@ -3,6 +3,7 @@ package com.butent.bee.client.presenter;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Complex;
+import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
@@ -10,9 +11,9 @@ import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.ui.Action;
 
-import java.util.EnumSet;
+import java.util.Set;
 
-public class GridFormPresenter extends AbstractPresenter {
+public class GridFormPresenter extends AbstractPresenter implements HasGridView {
   
   public static final String STYLE_FORM_CONTAINER = "bee-GridFormContainer";
   public static final String STYLE_FORM_HEADER = "bee-GridFormHeader";
@@ -33,7 +34,7 @@ public class GridFormPresenter extends AbstractPresenter {
   private final boolean editSave;
 
   public GridFormPresenter(GridView gridView, FormView formView, String caption,
-      EnumSet<Action> actions, boolean edit, boolean editSave) {
+      Set<Action> actions, boolean edit, boolean editSave) {
     this.gridView = gridView;
 
     this.header = createHeader(caption, actions, edit);
@@ -52,9 +53,13 @@ public class GridFormPresenter extends AbstractPresenter {
     }
     return null;
   }
-
+  
   public GridCallback getGridCallback() {
     return gridView.getGridCallback();
+  }
+
+  public GridView getGridView() {
+    return gridView;
   }
   
   @Override
@@ -133,7 +138,7 @@ public class GridFormPresenter extends AbstractPresenter {
     return formContainer;
   }
   
-  private HeaderView createHeader(String caption, EnumSet<Action> actions, boolean edit) {
+  private HeaderView createHeader(String caption, Set<Action> actions, boolean edit) {
     HeaderView formHeader = new HeaderImpl();
     formHeader.asWidget().addStyleName(STYLE_FORM_HEADER);
     formHeader.asWidget().addStyleName(getFormStyle(STYLE_FORM_HEADER, edit));

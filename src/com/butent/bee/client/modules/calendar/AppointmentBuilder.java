@@ -23,6 +23,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeListBox;
@@ -130,7 +131,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   }
 
   @Override
-  public void afterCreateWidget(String name, Widget widget) {
+  public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
     if (BeeUtils.same(name, NAME_SERVICE_TYPE)) {
       setServiceTypeWidgetId(DomUtils.getId(widget));
       if (State.UNKNOWN.equals(propState)) {

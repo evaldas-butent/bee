@@ -228,7 +228,7 @@ public class ParametersHandler extends AbstractGridCallback {
   }
 
   private CellGrid getGrid() {
-    return getGridPresenter().getView().getContent().getGrid();
+    return getGridPresenter().getGridView().getGrid();
   }
 
   private int id(String colName) {

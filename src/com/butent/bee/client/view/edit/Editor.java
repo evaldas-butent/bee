@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.IsWidget;
 
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.ui.EditorAction;
 
@@ -22,6 +23,8 @@ public interface Editor extends HasId, IsWidget, HasValue<String>, Focusable, Ha
   EditorAction getDefaultFocusAction();
 
   String getNormalizedValue();
+
+  FormWidget getWidgetType();
   
   boolean handlesKey(int keyCode);
 

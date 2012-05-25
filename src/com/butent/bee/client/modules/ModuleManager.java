@@ -13,6 +13,7 @@ import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.PasswordService;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -21,7 +22,8 @@ public class ModuleManager {
   
   private static class UserFormCallback extends AbstractFormCallback {
     @Override
-    public void afterCreateWidget(String name, final Widget widget) {
+    public void afterCreateWidget(String name, final Widget widget,
+        WidgetDescriptionCallback callback) {
       if (BeeUtils.same(name, "ChangePassword") && widget instanceof HasClickHandlers) {
         ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
           @Override

@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
+import com.google.gwt.xml.client.XMLParser;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
@@ -33,6 +34,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
+import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 
@@ -98,6 +100,8 @@ public class FormFactory {
     void onSuccess(WidgetDescription result);
   }
 
+  private static final String TAG_FORM = "Form";
+
   private static final String ATTR_TYPE = "type";
 
   private static final Map<String, FormDescription> descriptionCache = Maps.newHashMap();
@@ -107,7 +111,7 @@ public class FormFactory {
     descriptionCache.clear();
   }
 
-  public static Widget createForm(FormDescription formDescription, String viewName, 
+  public static Widget createForm(FormDescription formDescription, String viewName,
       List<BeeColumn> columns, WidgetDescriptionCallback widgetDescriptionCallback,
       FormCallback formCallback) {
     Assert.notNull(formDescription);
@@ -117,9 +121,28 @@ public class FormFactory {
         widgetDescriptionCallback, formCallback, "createForm:");
   }
 
+  public static FormDescription createFormDescription(String formName,
+      Map<String, String> formAttributes, FormWidget rootWidget,
+      Map<String, String> rootAttributes) {
+    Assert.notNull(formName);
+
+    Document doc = XMLParser.createDocument();
+    Element formElement = doc.createElement(TAG_FORM);
+
+    formElement.setAttribute(UiConstants.ATTR_NAME, formName.trim());
+    XmlUtils.setAttributes(formElement, formAttributes);
+    
+    if (rootWidget != null) {
+      Element rootElement = doc.createElement(rootWidget.getTagName());
+      XmlUtils.setAttributes(rootElement, rootAttributes);
+      formElement.appendChild(rootElement);
+    }
+    return new FormDescription(formElement);
+  }
+
   public static void createFormView(final String formName, final String viewName,
-      final List<BeeColumn> columns, final FormCallback formCallback,
-      final FormViewCallback viewCallback, final boolean addStyle) {
+      final List<BeeColumn> columns, final boolean addStyle, final FormCallback formCallback,
+      final FormViewCallback viewCallback) {
     Assert.notEmpty(formName);
     Assert.notNull(viewCallback);
 
@@ -127,15 +150,15 @@ public class FormFactory {
       @Override
       public void onSuccess(FormDescription result) {
         FormView view = new FormImpl(formName);
-        view.create(result, viewName, columns, formCallback, addStyle);
+        view.create(result, viewName, columns, addStyle, formCallback);
         viewCallback.onSuccess(result, view);
       }
     });
   }
 
   public static void createFormView(String formName, String viewName, List<BeeColumn> columns,
-      FormViewCallback viewCallback, boolean addStyle) {
-    createFormView(formName, viewName, columns, getFormCallback(formName), viewCallback, addStyle);
+      boolean addStyle, FormViewCallback viewCallback) {
+    createFormView(formName, viewName, columns, addStyle, getFormCallback(formName), viewCallback);
   }
 
   public static Widget createWidget(Element parent, String viewName, List<BeeColumn> columns,
@@ -217,22 +240,26 @@ public class FormFactory {
     }
   }
 
+  public static FormDescription getFormDescription(String formName) {
+    return descriptionCache.get(getFormKey(Assert.notEmpty(formName)));
+  }
+
   public static List<Property> getInfo() {
     List<Property> info = Lists.newArrayList();
-    
+
     info.add(new Property("Registered Callbacks", BeeUtils.bracket(formCallbacks.size())));
     for (Map.Entry<String, Pair<FormCallback, Integer>> entry : formCallbacks.entrySet()) {
       info.add(new Property(entry.getKey(), BeeUtils.toString(entry.getValue().getB())));
     }
-    
+
     info.add(new Property("Description Cache", BeeUtils.bracket(descriptionCache.size())));
     for (Map.Entry<String, FormDescription> entry : descriptionCache.entrySet()) {
-      info.add(new Property(entry.getKey(), 
+      info.add(new Property(entry.getKey(),
           BeeUtils.toString(entry.getValue().getFormElement().toString().length())));
     }
     return info;
   }
-
+  
   public static void openForm(FormDescription formDescription, FormCallback formCallback) {
     String viewName = formDescription.getViewName();
     if (BeeUtils.isEmpty(viewName)) {
@@ -284,16 +311,20 @@ public class FormFactory {
     return new FormDescription(formElement);
   }
 
+  public static void putFormDescription(String formName, FormDescription formDescription) {
+    descriptionCache.put(getFormKey(Assert.notEmpty(formName)), Assert.notNull(formDescription));
+  }
+
   public static void registerFormCallback(String formName, FormCallback callback) {
     Assert.notEmpty(formName);
     formCallbacks.put(getFormKey(formName), Pair.of(callback, 0));
-  }  
-  
+  }
+
   private static void getFormDescription(final String formName,
       final Callback<FormDescription> callback) {
     Assert.notEmpty(formName);
     Assert.notNull(callback);
-    
+
     final String key = getFormKey(formName);
     if (descriptionCache.containsKey(key)) {
       callback.onSuccess(descriptionCache.get(key));

@@ -30,6 +30,7 @@ import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.ActionEvent;
@@ -79,7 +80,9 @@ public class ProjectEventHandler {
     private final UserCollector observers = new UserCollector();
 
     @Override
-    public void afterCreateWidget(final String name, final Widget widget) {
+    public void afterCreateWidget(final String name, final Widget widget,
+        WidgetDescriptionCallback callback) {
+
       if (BeeUtils.same(name, "Observers") && widget instanceof BeeListBox) {
         observers.setWidget((BeeListBox) widget);
 
@@ -251,7 +254,9 @@ public class ProjectEventHandler {
     private TreePresenter stageTree = null;
 
     @Override
-    public void afterCreateWidget(String name, final Widget widget) {
+    public void afterCreateWidget(String name, final Widget widget,
+        WidgetDescriptionCallback callback) {
+
       if (BeeUtils.same(name, "Observers") && widget instanceof BeeListBox) {
         observers.setWidget((BeeListBox) widget);
 

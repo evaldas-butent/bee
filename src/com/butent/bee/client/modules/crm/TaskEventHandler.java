@@ -37,6 +37,7 @@ import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.ActionEvent;
 import com.butent.bee.client.view.DataView;
@@ -96,7 +97,7 @@ public class TaskEventHandler {
     @Override
     public boolean beforeAddRow(final GridPresenter presenter) {
       if (!Objects.equal(BeeKeeper.getUser().getUserId(), getOwner())) {
-        presenter.getView().getContent().notifyWarning("Not an owner");
+        presenter.getGridView().notifyWarning("Not an owner");
         return false;
       }
 
@@ -109,16 +110,16 @@ public class TaskEventHandler {
       }
 
       int index = presenter.getDataProvider().getColumnIndex(CrmConstants.COL_USER);
-      for (IsRow row : presenter.getView().getContent().getGrid().getRowData()) {
+      for (IsRow row : presenter.getGridView().getGrid().getRowData()) {
         filters.add(excludeUser(row.getLong(index)));
       }
 
-      final long task = presenter.getView().getContent().getRelId();
+      final long task = presenter.getGridView().getRelId();
 
       Queries.getRowSet("Users", null, CompoundFilter.and(filters), null, new RowSetCallback() {
         public void onSuccess(final BeeRowSet result) {
           if (result.isEmpty()) {
-            presenter.getView().getContent().notifyWarning("Everybody is watching you");
+            presenter.getGridView().notifyWarning("Everybody is watching you");
             return;
           }
 
@@ -170,7 +171,7 @@ public class TaskEventHandler {
         } else if (usr.equals(obs)) {
           result = GridCallback.DELETE_DEFAULT;
         } else {
-          presenter.getView().getContent().notifyWarning("the only limit is yourself");
+          presenter.getGridView().notifyWarning("the only limit is yourself");
           result = GridCallback.DELETE_CANCEL;
         }
       }
@@ -222,7 +223,7 @@ public class TaskEventHandler {
         public void onSuccess(BeeRowSet result) {
           for (BeeRow row : result.getRows()) {
             BeeKeeper.getBus().fireEvent(new RowInsertEvent(result.getViewName(), row));
-            presenter.getView().getContent().getGrid().insertRow(row);
+            presenter.getGridView().getGrid().insertRow(row);
           }
         }
       });
@@ -301,7 +302,9 @@ public class TaskEventHandler {
     private BeeListBox observerWidget = null;
 
     @Override
-    public void afterCreateWidget(final String name, final Widget widget) {
+    public void afterCreateWidget(final String name, final Widget widget,
+        WidgetDescriptionCallback callback) {
+
       if (BeeUtils.same(name, "ExecutorList") && widget instanceof BeeListBox) {
         executorWidget = (BeeListBox) widget;
         executorWidget.addKeyDownHandler(new KeyDownHandler() {
@@ -698,7 +701,9 @@ public class TaskEventHandler {
     private ObserverHandler observerHandler = null;
 
     @Override
-    public void afterCreateWidget(String name, final Widget widget) {
+    public void afterCreateWidget(String name, final Widget widget,
+        WidgetDescriptionCallback callback) {
+
       if (BeeUtils.same(name, "TaskObservers") && widget instanceof ChildGrid) {
         setObserverHandler(new ObserverHandler());
         ((ChildGrid) widget).setGridCallback(getObserverHandler());

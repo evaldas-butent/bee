@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="AppointmentProps" viewName="AppointmentProps"
+  name="AppointmentProps" viewName="AppointmentProps" newRowCaption="Naujas parametras"
   >
   <columns>
     <DataColumn name="GroupName" caption="Grupė" minWidth="100" />

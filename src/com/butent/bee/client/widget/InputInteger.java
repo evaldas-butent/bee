@@ -3,6 +3,7 @@ package com.butent.bee.client.widget;
 import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -67,6 +68,11 @@ public class InputInteger extends InputNumber {
     return BeeUtils.toIntOrNull(BeeUtils.trim(getValue()));
   }
 
+  @Override
+  public FormWidget getWidgetType() {
+    return FormWidget.INPUT_INTEGER;
+  }
+  
   @Override
   public void setMaxValue(Number maxValue) {
     super.setMaxValue(maxValue);

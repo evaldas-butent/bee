@@ -14,6 +14,7 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.HasInputHandlers;
 import com.butent.bee.client.event.InputHandler;
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -117,6 +118,11 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     return getInputElement().getSize();
   }
 
+  @Override
+  public FormWidget getWidgetType() {
+    return FormWidget.INPUT_TEXT;
+  }
+  
   public boolean handlesKey(int keyCode) {
     return false;
   }

@@ -2,7 +2,8 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="AppointmentStyles" viewName="AppointmentStyles" caption="Vizitų stiliai" autoFit="true"
+  name="AppointmentStyles" viewName="AppointmentStyles"
+  caption="Vizitų stiliai" newRowCaption="Naujas stilius" autoFit="true"
   >
   <columns>
     <DataColumn name="Name" caption="Pavadinimas" />

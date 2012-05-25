@@ -426,7 +426,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
 
         if (fields.isEmpty()) {
           for (BeeColumn column : viewInfo.getColumns()) {
-            if (ValueType.TEXT.equals(column.getType()) && column.getPrecision() <= 100) {
+            if (ValueType.TEXT.equals(column.getType()) && !column.isText()) {
               fields.add(column.getId());
             }
           }

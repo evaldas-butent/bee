@@ -1,6 +1,7 @@
 package com.butent.bee.client.widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.ui.EditorAction;
 
@@ -47,5 +48,10 @@ public class InputSpinner extends InputInteger {
   @Override
   public String getIdPrefix() {
     return "inp-spin";
+  }
+
+  @Override
+  public FormWidget getWidgetType() {
+    return FormWidget.INPUT_SPINNER;
   }
 }

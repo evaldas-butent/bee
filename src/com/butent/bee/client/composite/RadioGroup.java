@@ -21,6 +21,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Span;
 import com.butent.bee.client.ui.AcceptsCaptions;
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
@@ -243,6 +244,11 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
 
   public int getValueStartIndex() {
     return valueStartIndex;
+  }
+
+  @Override
+  public FormWidget getWidgetType() {
+    return FormWidget.RADIO;
   }
 
   public boolean handlesKey(int keyCode) {

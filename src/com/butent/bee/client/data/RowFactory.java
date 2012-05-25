@@ -113,7 +113,7 @@ public class RowFactory {
     FormCallback fcb =
         (formCallback == null) ? FormFactory.getFormCallback(formName) : formCallback;
 
-    FormFactory.createFormView(formName, dataInfo.getViewName(), dataInfo.getColumns(), fcb,
+    FormFactory.createFormView(formName, dataInfo.getViewName(), dataInfo.getColumns(), false, fcb,
         new FormFactory.FormViewCallback() {
           public void onSuccess(FormDescription formDescription, FormView result) {
             if (result != null) {
@@ -122,7 +122,7 @@ public class RowFactory {
               openForm(result, dataInfo, caption, rowCallback);
             }
           }
-        }, false);
+        });
   }
 
   private static void insert(IsRow row, final DataInfo dataInfo,

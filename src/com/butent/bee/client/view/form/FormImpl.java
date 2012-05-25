@@ -122,11 +122,13 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         }
 
         if (ok) {
-          AbstractCellRenderer renderer =
-              RendererFactory.getRenderer(result.getRendererDescription(), result.getRender(),
-                  result.getRenderTokens(), result.getItemKey(),
-                  NameUtils.toList(result.getRenderColumns()), getDataColumns(), index,
-                  result.getRelation());
+          AbstractCellRenderer renderer = result.getRenderer();
+          if (renderer == null) {
+            renderer = RendererFactory.getRenderer(result.getRendererDescription(),
+                result.getRender(), result.getRenderTokens(), result.getItemKey(),
+                NameUtils.toList(result.getRenderColumns()), getDataColumns(), index,
+                result.getRelation());
+          }
 
           ok = (index >= 0 || renderer != null);
           if (ok) {
@@ -314,7 +316,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   public void create(FormDescription formDescription, String view, List<BeeColumn> dataCols,
-      FormCallback callback, boolean addStyle) {
+      boolean addStyle, FormCallback callback) {
     Assert.notNull(formDescription);
     
     setViewName(BeeUtils.ifString(view, formDescription.getViewName()));
@@ -636,11 +638,16 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
       if (isAdding() || isEditing()) {
         rowValue.setValue(index, newValue);
+
         if (event.hasRelation() && source instanceof EditableWidget) {
           ((EditableWidget) source).maybeUpdateRelation(getViewName(), rowValue, false);
           refreshEditableWidget(index);
           refreshDisplayWidgets();
+        } else if (event.isRowMode()) {
+          refreshEditableWidgets();
+          refreshDisplayWidgets();
         }
+
       } else {
         fireEvent(new ReadyForUpdateEvent(rowValue, column, oldValue, newValue, event.isRowMode()));
       }

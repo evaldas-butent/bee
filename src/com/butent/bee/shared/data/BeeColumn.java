@@ -197,6 +197,10 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   public boolean isReadOnly() {
     return readOnly;
   }
+  
+  public boolean isText() {
+    return ValueType.TEXT.equals(getType()) && (getPrecision() <= 0 || getPrecision() > 100);
+  }
 
   public boolean isWritable() {
     return !isReadOnly() && !isForeign();

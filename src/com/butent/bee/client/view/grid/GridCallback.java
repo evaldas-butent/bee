@@ -35,7 +35,7 @@ public interface GridCallback extends WidgetCallback, ParentRowEvent.Handler {
 
   void afterCreate(GridView gridView);
 
-  boolean afterCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
+  boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
       EditableColumn editableColumn);
 
@@ -50,7 +50,7 @@ public interface GridCallback extends WidgetCallback, ParentRowEvent.Handler {
   void beforeCreate(List<? extends IsColumn> dataColumns, int rowCount,
       GridDescription gridDescription, boolean hasSearch);
 
-  boolean beforeCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
+  boolean beforeCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
       ColumnDescription columnDescription);
 
   void beforeCreateColumns(List<? extends IsColumn> dataColumns,
@@ -78,7 +78,7 @@ public interface GridCallback extends WidgetCallback, ParentRowEvent.Handler {
 
   GridCallback getInstance();
 
-  AbstractCellRenderer getRenderer(String columnId, List<? extends IsColumn> dataColumns,
+  AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
       ColumnDescription columnDescription);
   
   String getRowCaption(IsRow row, boolean edit);

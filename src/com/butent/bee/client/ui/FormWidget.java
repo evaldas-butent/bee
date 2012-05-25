@@ -288,7 +288,6 @@ public enum FormWidget {
 
   private static final String ATTR_STYLE_PREFIX = "stylePrefix";
 
-  private static final String ATTR_HTML = "html";
   private static final String ATTR_TITLE = "title";
   private static final String ATTR_VISIBLE = "visible";
   private static final String ATTR_DISABLABLE = "disablable";
@@ -385,9 +384,6 @@ public enum FormWidget {
   private static final String TAG_TEXT = "text";
 
   private static final String TAG_LAYER = "layer";
-  private static final String TAG_ROW = "row";
-  private static final String TAG_COL = "col";
-  private static final String TAG_CELL = "cell";
   private static final String TAG_HEADER = "header";
   private static final String TAG_CONTENT = "content";
   private static final String TAG_FOOTER = "footer";
@@ -443,7 +439,7 @@ public enum FormWidget {
     Map<String, String> attributes = XmlUtils.getAttributes(element, false);
     List<Element> children = XmlUtils.getChildrenElements(element);
 
-    String html = attributes.get(ATTR_HTML);
+    String html = attributes.get(UiConstants.ATTR_HTML);
     String url;
     String format;
     String min;
@@ -1153,7 +1149,7 @@ public enum FormWidget {
     }
 
     if (widgetCallback != null) {
-      widgetCallback.afterCreateWidget(name, widget);
+      widgetCallback.afterCreateWidget(name, widget, widgetDescriptionCallback);
     }
     if (widget instanceof Launchable) {
       ((Launchable) widget).launch();
@@ -1416,7 +1412,7 @@ public enum FormWidget {
   }
 
   private Pair<String, BeeImage> getFaceOptions(Element element) {
-    String html = element.getAttribute(ATTR_HTML);
+    String html = element.getAttribute(UiConstants.ATTR_HTML);
     BeeImage image = null;
 
     String name = element.getAttribute(ATTR_RESOURCE);
@@ -1558,7 +1554,7 @@ public enum FormWidget {
     } else if (isTable() && parent instanceof HtmlTable) {
       HtmlTable table = (HtmlTable) parent;
 
-      if (BeeUtils.same(childTag, TAG_COL)) {
+      if (BeeUtils.same(childTag, UiConstants.TAG_COL)) {
         String idx = child.getAttribute(ATTR_INDEX);
         if (BeeUtils.isDigit(idx)) {
           int c = BeeUtils.toInt(idx);
@@ -1573,12 +1569,12 @@ public enum FormWidget {
               child.getAttribute(UiConstants.ATTR_STYLE));
         }
 
-      } else if (BeeUtils.same(childTag, TAG_ROW)) {
+      } else if (BeeUtils.same(childTag, UiConstants.TAG_ROW)) {
         int r = table.getRowCount();
         int c = 0;
 
         for (Element cell : XmlUtils.getChildrenElements(child)) {
-          if (XmlUtils.tagIs(cell, TAG_CELL)) {
+          if (XmlUtils.tagIs(cell, UiConstants.TAG_CELL)) {
             for (Element cellContent : XmlUtils.getChildrenElements(cell)) {
               if (createTableCell(table, cellContent, r, c, viewName, columns, wdcb,
                   widgetCallback)) {
@@ -1602,7 +1598,7 @@ public enum FormWidget {
 
     } else if (isCellVector() && parent instanceof HasWidgets) {
       Widget w = null;
-      if (BeeUtils.same(childTag, TAG_CELL)) {
+      if (BeeUtils.same(childTag, UiConstants.TAG_CELL)) {
         for (Element cellContent : XmlUtils.getChildrenElements(child)) {
           w = createIfWidgetOrHtmlOrText(cellContent, viewName, columns, wdcb, widgetCallback);
           if (w != null) {
@@ -1615,7 +1611,7 @@ public enum FormWidget {
 
       if (w != null) {
         ((HasWidgets) parent).add(w);
-        if (parent instanceof CellPanel && BeeUtils.same(childTag, TAG_CELL)) {
+        if (parent instanceof CellPanel && BeeUtils.same(childTag, UiConstants.TAG_CELL)) {
           setVectorCellAttributes((CellPanel) parent, child, w);
         }
       }
@@ -1737,7 +1733,7 @@ public enum FormWidget {
     if (!XmlUtils.tagIs(child, TAG_TREE_ITEM)) {
       return;
     }
-    TreeItem item = new TreeItem(child.getAttribute(ATTR_HTML));
+    TreeItem item = new TreeItem(child.getAttribute(UiConstants.ATTR_HTML));
     parent.addItem(item);
 
     for (Element chld : XmlUtils.getChildrenElements(child)) {
@@ -1911,7 +1907,7 @@ public enum FormWidget {
       table.getCellFormatter().setHeight(row, col, z);
     }
 
-    if (XmlUtils.tagIs(element, TAG_CELL)) {
+    if (XmlUtils.tagIs(element, UiConstants.TAG_CELL)) {
       z = element.getAttribute(ATTR_WORD_WRAP);
       if (BeeUtils.isBoolean(z)) {
         table.getCellFormatter().setWordWrap(row, col, BeeUtils.toBoolean(z));
@@ -1943,7 +1939,7 @@ public enum FormWidget {
       }
     }
 
-    if (XmlUtils.tagIs(element, TAG_ROW)) {
+    if (XmlUtils.tagIs(element, UiConstants.TAG_ROW)) {
       StyleUtils.updateAppearance(table.getRow(row), element.getAttribute(UiConstants.ATTR_CLASS),
           element.getAttribute(UiConstants.ATTR_STYLE));
     }
@@ -1976,7 +1972,7 @@ public enum FormWidget {
       parent.setCellHeight(cellContent, z);
     }
 
-    if (XmlUtils.tagIs(element, TAG_CELL)) {
+    if (XmlUtils.tagIs(element, UiConstants.TAG_CELL)) {
       StyleUtils.updateAppearance(DOM.getParent(cellContent.getElement()),
           element.getAttribute(UiConstants.ATTR_CLASS),
           element.getAttribute(UiConstants.ATTR_STYLE));

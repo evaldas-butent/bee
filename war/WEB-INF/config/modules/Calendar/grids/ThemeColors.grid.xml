@@ -2,7 +2,8 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="ThemeColors" viewName="ThemeColors" caption="Spalvos" autoFit="true"
+  name="ThemeColors" viewName="ThemeColors" caption="Spalvos" newRowCaption="Nauja spalva" 
+  autoFit="true"
   >
   <columns>
     <RelColumn name="ColorName" caption="Spalva" minWidth="100" />

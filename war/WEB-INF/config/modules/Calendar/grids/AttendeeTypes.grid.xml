@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="AttendeeTypes" viewName="AttendeeTypes" caption="Resursų tipai"
+  name="AttendeeTypes" viewName="AttendeeTypes"
+  caption="Resursų tipai" newRowCaption="Naujas resursų tipas"
   >
   <columns>
     <DataColumn name="Name" caption="Pavadinimas" />

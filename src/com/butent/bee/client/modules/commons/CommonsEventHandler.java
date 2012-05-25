@@ -27,6 +27,7 @@ import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.TreeView;
@@ -229,7 +230,9 @@ public class CommonsEventHandler {
     private final CategoryCollector categories = new CategoryCollector();
 
     @Override
-    public void afterCreateWidget(final String name, final Widget widget) {
+    public void afterCreateWidget(final String name, final Widget widget,
+        WidgetDescriptionCallback callback) {
+
       if (BeeUtils.same(name, "Categories") && widget instanceof BeeListBox) {
         categories.setWidget((BeeListBox) widget);
 
@@ -353,7 +356,7 @@ public class CommonsEventHandler {
     }
 
     @Override
-    public void afterCreateWidget(String name, Widget widget) {
+    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
       if (widget instanceof TreeView && BeeUtils.same(name, "Categories")) {
         ((TreeView) widget).addSelectionHandler(this);
         categoryTree = ((TreeView) widget).getTreePresenter();

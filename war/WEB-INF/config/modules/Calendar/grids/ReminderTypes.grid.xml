@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="ReminderTypes" viewName="ReminderTypes" caption="Priminimų tipai"
+  name="ReminderTypes" viewName="ReminderTypes"
+  caption="Priminimų tipai" newRowCaption="Naujas priminimų tipas"
   >
   <columns>
     <DataColumn name="Method" caption="Metodas" itemKey="ReminderMethod" />

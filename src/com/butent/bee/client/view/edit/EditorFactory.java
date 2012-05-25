@@ -89,11 +89,6 @@ public class EditorFactory {
 
   public static Editor createEditor(BeeColumn column) {
     Assert.notNull(column);
-    return createEditor(column, column.isNullable());
-  }
-
-  public static Editor createEditor(BeeColumn column, boolean nullable) {
-    Assert.notNull(column);
 
     ValueType type = column.getType();
     if (type == null) {
@@ -129,7 +124,7 @@ public class EditorFactory {
         break;
 
       case TEXT:
-        if (precision > 200) {
+        if (column.isText()) {
           editor = new InputArea();
         } else {
           editor = new InputText();
@@ -146,8 +141,6 @@ public class EditorFactory {
         }
         break;
     }
-    Assert.notNull(editor);
-    editor.setNullable(nullable);
 
     if (editor instanceof HasPrecision) {
       ((HasPrecision) editor).setPrecision(precision);
@@ -164,7 +157,7 @@ public class EditorFactory {
   }
 
   public static Editor getEditor(EditorDescription description, String itemKey, ValueType valueType,
-      boolean nullable, Relation relation) {
+      Relation relation) {
     Assert.notNull(description);
     EditorType editorType = description.getType();
     Assert.notNull(editorType);
@@ -236,7 +229,6 @@ public class EditorFactory {
     }
     
     Assert.notNull(editor, "cannot create editor");
-    editor.setNullable(nullable);
 
     if (editor instanceof HasValueStartIndex && description.getValueStartIndex() != null) {
       ((HasValueStartIndex) editor).setValueStartIndex(description.getValueStartIndex());

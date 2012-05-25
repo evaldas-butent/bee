@@ -45,6 +45,7 @@ import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.EnumRenderer;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.render.SimpleRenderer;
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -694,6 +695,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   public int getVisibleLines() {
     return visibleLines;
+  }
+
+  @Override
+  public FormWidget getWidgetType() {
+    return FormWidget.DATA_SELECTOR;
   }
 
   public boolean handlesKey(int keyCode) {

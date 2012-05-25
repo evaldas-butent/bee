@@ -8,6 +8,7 @@ import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -34,7 +35,7 @@ public class AbstractGridCallback implements GridCallback {
   public void afterCreate(GridView gridView) {
   }
 
-  public boolean afterCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
+  public boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
       EditableColumn editableColumn) {
     return true;
@@ -43,7 +44,7 @@ public class AbstractGridCallback implements GridCallback {
   public void afterCreateColumns(GridView gridView) {
   }
 
-  public void afterCreateWidget(String name, Widget widget) {
+  public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
   }
 
   public void afterDeleteRow(long rowId) {
@@ -61,7 +62,7 @@ public class AbstractGridCallback implements GridCallback {
       GridDescription gridDescription, boolean hasSearch) {
   }
 
-  public boolean beforeCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
+  public boolean beforeCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
       ColumnDescription columnDescription) {
     return true;
   }
@@ -121,7 +122,7 @@ public class AbstractGridCallback implements GridCallback {
     return null;
   }
 
-  public AbstractCellRenderer getRenderer(String columnId, List<? extends IsColumn> dataColumns,
+  public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
       ColumnDescription columnDescription) {
     return null;
   }

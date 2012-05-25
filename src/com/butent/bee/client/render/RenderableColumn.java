@@ -6,13 +6,9 @@ import com.butent.bee.client.grid.column.DataColumn;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 
-public class RenderableColumn extends DataColumn<String> {
+public class RenderableColumn extends DataColumn<String> implements HasCellRenderer {
 
-  private final AbstractCellRenderer renderer;
-
-  public RenderableColumn(int index, IsColumn dataColumn, AbstractCellRenderer renderer) {
-    this(new RenderableCell(), index, dataColumn, renderer);
-  }
+  private AbstractCellRenderer renderer;
 
   public RenderableColumn(Cell<String> cell, int index, IsColumn dataColumn,
       AbstractCellRenderer renderer) {
@@ -20,8 +16,20 @@ public class RenderableColumn extends DataColumn<String> {
     this.renderer = renderer;
   }
 
+  public RenderableColumn(int index, IsColumn dataColumn, AbstractCellRenderer renderer) {
+    this(new RenderableCell(), index, dataColumn, renderer);
+  }
+
+  public AbstractCellRenderer getRenderer() {
+    return renderer;
+  }
+
   @Override
   public String getValue(IsRow row) {
     return renderer.render(row);
+  }
+
+  public void setRenderer(AbstractCellRenderer renderer) {
+    this.renderer = renderer;
   }
 }

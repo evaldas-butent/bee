@@ -23,6 +23,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.AdjustmentListener;
 import com.butent.bee.client.view.edit.EditStopEvent;
@@ -114,6 +115,11 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
     return getArea().getHTML();
   }
 
+  @Override
+  public FormWidget getWidgetType() {
+    return null;
+  }
+  
   public boolean handlesKey(int keyCode) {
     return !BeeUtils.inList(keyCode, KeyCodes.KEY_ESCAPE, KeyCodes.KEY_TAB);
   }

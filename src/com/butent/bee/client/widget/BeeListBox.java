@@ -15,6 +15,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.ui.AcceptsCaptions;
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
@@ -183,6 +184,11 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     return valueStartIndex;
   }
 
+  @Override
+  public FormWidget getWidgetType() {
+    return FormWidget.LIST_BOX;
+  }
+  
   public boolean handlesKey(int keyCode) {
     return BeeUtils.inList(keyCode, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN);
   }

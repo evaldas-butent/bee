@@ -14,6 +14,7 @@ import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.utils.FileUtils.FileInfo;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.TreeView;
@@ -46,7 +47,7 @@ public class DocumentHandler {
     }
 
     @Override
-    public void afterCreateWidget(String name, Widget widget) {
+    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
       if (widget instanceof GridPanel) {
         ((GridPanel) widget).setGridCallback(getCollector());
       } else if (widget instanceof InputFile) {
@@ -185,7 +186,7 @@ public class DocumentHandler {
     private TreePresenter categoryTree = null;
 
     @Override
-    public void afterCreateWidget(String name, Widget widget) {
+    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
       if (widget instanceof TreeView && BeeUtils.same(name, "Tree")) {
         ((TreeView) widget).addSelectionHandler(this);
         categoryTree = ((TreeView) widget).getTreePresenter();

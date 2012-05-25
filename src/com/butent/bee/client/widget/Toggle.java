@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.Image;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
@@ -99,6 +100,11 @@ public class Toggle extends CustomButton implements Editor {
     return BooleanValue.pack(isDown());
   }
 
+  @Override
+  public FormWidget getWidgetType() {
+    return FormWidget.TOGGLE;
+  }
+  
   public boolean handlesKey(int keyCode) {
     return false;
   }
