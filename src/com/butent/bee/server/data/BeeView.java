@@ -612,7 +612,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
     for (ColumnInfo cInf : columns.values()) {
       String table = cInf.getTable();
-      String field = cInf.getName();
+      String field = cInf.getField();
       String relation = cInf.getRelation();
 
       String agg = (cInf.getAggregate() == null) ? null : cInf.getAggregate().name();
@@ -633,6 +633,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     ColumnInfo info = getColumnInfo(colName);
 
     column.setId(info.getName());
+    column.setLabel(column.getId());
     column.setType(info.getType().toValueType());
     column.setPrecision(info.getPrecision());
     column.setScale(info.getScale());
