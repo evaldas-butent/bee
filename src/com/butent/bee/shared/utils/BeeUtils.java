@@ -2009,6 +2009,17 @@ public class BeeUtils {
 
     return sep;
   }
+  
+  public static String notEmpty(String... strings) {
+    if (strings != null) {
+      for (String s : strings) {
+        if (!isEmpty(s)) {
+          return s;
+        }
+      }
+    }
+    return null;
+  }
 
   /**
    * Gets the first object which is not {@code null}. At least 2 Objects must be specified.

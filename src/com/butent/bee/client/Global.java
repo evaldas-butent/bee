@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.StyleInjector;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.ClientDefaults;
@@ -338,20 +339,21 @@ public class Global implements Module {
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback) {
     INP_BOXEN.inputWidget(caption, input, callback, DialogConstants.OK, DialogConstants.CANCEL,
-        false, null, BeeConst.UNDEF, null);
+        false, null, null, BeeConst.UNDEF, null);
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,
-      String confirmHtml, String cancelHtml, boolean enableGlass, String dialogStyle) {
+      String confirmHtml, String cancelHtml, boolean enableGlass, String dialogStyle,
+      UIObject target) {
     INP_BOXEN.inputWidget(caption, input, callback, confirmHtml, cancelHtml, enableGlass,
-        dialogStyle, BeeConst.UNDEF, null);
+        dialogStyle, target, BeeConst.UNDEF, null);
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,
-      String confirmHtml, String cancelHtml, boolean enableGlass, String dialogStyle, int timeout,
-      WidgetInitializer initializer) {
+      String confirmHtml, String cancelHtml, boolean enableGlass, String dialogStyle,
+      UIObject target, int timeout, WidgetInitializer initializer) {
     INP_BOXEN.inputWidget(caption, input, callback, confirmHtml, cancelHtml, enableGlass,
-        dialogStyle, timeout, initializer);
+        dialogStyle, target, timeout, initializer);
   }
 
   public static boolean isDebug() {

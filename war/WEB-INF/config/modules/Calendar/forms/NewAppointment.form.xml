@@ -22,7 +22,8 @@
 
     <FlowPanel style="&relative; height: 60px;">
       <DataSelector source="CompanyName" required="true" caption="Klientas:" style="width: 300px;"
-        choiceColumns="Name Phone Email" d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
+        choiceColumns="Name Phone Email" newRowForm="Company"
+        d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
       <DataSelector source="CompanyPhone" caption="Telefonas:" style="width: 200px;"
         filter="Phone" choiceColumns="Phone Name" d:size="80" d:unit="px"
         d:rootStyle="&absolute; left: 460px; top: 0;" />

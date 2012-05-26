@@ -14,6 +14,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
+import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.edit.EditableWidget;
@@ -65,6 +66,8 @@ public class FormFactory {
 
     FormCallback getInstance();
 
+    AbstractCellRenderer getRenderer(WidgetDescription widgetDescription);
+    
     BeeRowSet getRowSet();
 
     boolean hasFooter(int rowCount);
@@ -100,7 +103,7 @@ public class FormFactory {
     void onSuccess(WidgetDescription result);
   }
 
-  private static final String TAG_FORM = "Form";
+  public static final String TAG_FORM = "Form";
 
   private static final String ATTR_TYPE = "type";
 
@@ -258,6 +261,50 @@ public class FormFactory {
           BeeUtils.toString(entry.getValue().getFormElement().toString().length())));
     }
     return info;
+  }
+  
+  public static FormWidget getWidgetType(BeeColumn column) {
+    Assert.notNull(column);
+    
+    if (column.isForeign()) {
+      return FormWidget.DATA_SELECTOR;
+    }
+
+    FormWidget widgetType;
+
+    switch (column.getType()) {
+      case BOOLEAN:
+        widgetType = FormWidget.CHECK_BOX;
+        break;
+      case DATE:
+        widgetType = FormWidget.INPUT_DATE;
+        break;
+      case DATETIME:
+        widgetType = FormWidget.INPUT_DATE_TIME;
+        break;
+      case DECIMAL:
+        widgetType = FormWidget.INPUT_DECIMAL;
+        break;
+      case INTEGER:
+        widgetType = FormWidget.INPUT_INTEGER;
+        break;
+      case LONG:
+        widgetType = FormWidget.INPUT_LONG;
+        break;
+      case NUMBER:
+        widgetType = FormWidget.INPUT_DOUBLE;
+        break;
+      case TEXT:
+        widgetType = column.isText() ? FormWidget.INPUT_AREA : FormWidget.INPUT_TEXT;
+        break;
+      case TIMEOFDAY:
+        widgetType = FormWidget.INPUT_TEXT;
+        break;
+      default:
+        Assert.untouchable();
+        widgetType = null;
+    }
+    return widgetType;
   }
   
   public static void openForm(FormDescription formDescription, FormCallback formCallback) {

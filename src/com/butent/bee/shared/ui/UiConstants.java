@@ -26,6 +26,10 @@ public class UiConstants {
   
   public static final String ATTR_HTML = "html";
   
+  public static final String ATTR_NEW_ROW_FORM = "newRowForm";
+  public static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";
+  public static final String ATTR_NEW_ROW_CAPTION = "newRowCaption";
+  
   public static final String TAG_ROW = "row";
   public static final String TAG_COL = "col";
   public static final String TAG_CELL = "cell";

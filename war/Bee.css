@@ -1342,6 +1342,13 @@ body, select {
   font-style: italic;
 }
 
+.bee-NewRow-table {
+  margin: 1ex 1em;
+}
+.bee-NewRow-label {
+  padding-right: 1em;
+}
+
 .bee-ColorBar-item {
   width: 20px;
   height: 20px;

@@ -4,6 +4,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.presenter.FormPresenter;
+import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.view.DataView;
@@ -52,6 +53,10 @@ public abstract class AbstractFormCallback implements FormFactory.FormCallback {
   }
 
   public abstract FormCallback getInstance();
+
+  public AbstractCellRenderer getRenderer(WidgetDescription widgetDescription) {
+    return null;
+  }
 
   public BeeRowSet getRowSet() {
     return null;

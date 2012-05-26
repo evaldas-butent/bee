@@ -19,6 +19,7 @@ import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -368,7 +369,7 @@ public class InputBoxes {
 
   public void inputWidget(String caption, Widget widget, final InputWidgetCallback callback,
       String confirmHtml, String cancelHtml, boolean enableGlass, String dialogStyle,
-      final int timeout, WidgetInitializer initializer) {
+      UIObject target, final int timeout, WidgetInitializer initializer) {
 
     Assert.notNull(widget);
     Assert.notNull(callback);
@@ -457,7 +458,12 @@ public class InputBoxes {
     }
     
     dialog.setAnimationEnabled(true);
-    dialog.center();
+    
+    if (target == null) {
+      dialog.center();
+    } else {
+      dialog.showRelativeTo(target);
+    }
 
     UiHelper.focus(widget);
 

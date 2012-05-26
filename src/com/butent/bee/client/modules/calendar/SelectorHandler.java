@@ -10,11 +10,13 @@ import com.butent.bee.client.data.HasDataProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RelationUtils;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.edit.SelectorEvent;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -23,6 +25,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -47,8 +50,19 @@ class SelectorHandler implements SelectorEvent.Handler {
     }
   }
 
+  private void createVehicle(IsRow owner, RowFactory.NewRowCallback callback) {
+    DataInfo dataInfo = Data.getDataInfo(TransportConstants.VIEW_VEHICLES);
+    BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
+    if (owner != null) {
+      RelationUtils.updateRow(TransportConstants.VIEW_VEHICLES, TransportConstants.COL_OWNER, row,
+          CommonsConstants.VIEW_COMPANIES, owner, true);
+    }
+    RowFactory.createRow(TransportConstants.FORM_NEW_VEHICLE, "Nauja transporto priemonė",
+        dataInfo, row, callback);
+  }
+
   private void chooseVehicle(final DataView dataView, final BeeRowSet rowSet, String companyName,
-      final long companyId) {
+      final IsRow owner) {
 
     List<String> options = Lists.newArrayList();
 
@@ -71,8 +85,16 @@ class SelectorHandler implements SelectorEvent.Handler {
               RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_VEHICLE, dataView.getActiveRow(),
                   TransportConstants.VIEW_VEHICLES, rowSet.getRow(value), true);
               dataView.refresh(false);
+
             } else {
-              CalendarKeeper.createVehicle(companyId);
+              createVehicle(owner, new RowFactory.NewRowCallback() {
+                @Override
+                public void onSuccess(BeeRow result) {
+                  RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_VEHICLE, dataView.getActiveRow(),
+                      TransportConstants.VIEW_VEHICLES, result, true);
+                  dataView.refresh(false);
+                }
+              });
             }
           }
         });
@@ -90,11 +112,11 @@ class SelectorHandler implements SelectorEvent.Handler {
     return Data.getColumnIndex(VIEW_APPOINTMENTS, COL_VEHICLE_OWNER);
   }
 
-  private void handleCompany(SelectorEvent event) {
+  private void handleCompany(final SelectorEvent event) {
     if (!event.isChanged()) {
       return;
     }
-    final long companyId = event.getValue();
+    long companyId = event.getValue();
     if (!DataUtils.isId(companyId)) {
       return;
     }
@@ -133,7 +155,7 @@ class SelectorHandler implements SelectorEvent.Handler {
                   TransportConstants.VIEW_VEHICLES, result.getRow(0), true);
               dataView.refresh(false);
             } else {
-              chooseVehicle(dataView, result, companyName, companyId);
+              chooseVehicle(dataView, result, companyName, event.getRelatedRow());
             }
           }
         });
@@ -202,12 +224,12 @@ class SelectorHandler implements SelectorEvent.Handler {
     if (!BeeUtils.same(dataView.getViewName(), VIEW_APPOINTMENTS)) {
       return;
     }
-    
+
     IsRow row = dataView.getActiveRow();
     if (row == null) {
       return;
     }
-    
+
     Long owner = row.getLong(getCompanyIndex());
     if (DataUtils.isId(owner)) {
       Filter filter = ComparisonFilter.isEqual(TransportConstants.COL_OWNER, new LongValue(owner));

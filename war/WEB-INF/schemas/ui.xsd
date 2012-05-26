@@ -372,6 +372,9 @@
     <xs:attribute name="operator" type="type:operatorType" />
     <xs:attribute name="itemType" type="menuItemType" />
     <xs:attribute name="visibleLines" type="xs:positiveInteger" />
+    <xs:attribute name="newRowForm" type="type:nameType" />
+    <xs:attribute name="newRowColumns" type="type:nameList" />
+    <xs:attribute name="newRowCaption" type="xs:string" />
   </xs:attributeGroup>
   
   <xs:simpleType name="refreshType">

@@ -103,10 +103,7 @@ public class GridLoaderBean {
   private static final String ATTR_ENABLED_ACTIONS = "enabledActions";
   private static final String ATTR_DISABLED_ACTIONS = "disabledActions";
 
-  private static final String ATTR_NEW_ROW_FORM = "newRowForm";
-  private static final String ATTR_NEW_ROW_COLUMNS = "newRowColumns";
   private static final String ATTR_NEW_ROW_DEFAULTS = "newRowDefaults";
-  private static final String ATTR_NEW_ROW_CAPTION = "newRowCaption";
   private static final String ATTR_NEW_ROW_POPUP = "newRowPopup";
 
   private static final String ATTR_EDIT_FORM = "editForm";
@@ -761,12 +758,12 @@ public class GridLoaderBean {
       dst.setFavorite(favorite.trim());
     }
 
-    String newRowForm = src.getAttribute(ATTR_NEW_ROW_FORM);
+    String newRowForm = src.getAttribute(UiConstants.ATTR_NEW_ROW_FORM);
     if (!BeeUtils.isEmpty(newRowForm)) {
       dst.setNewRowForm(newRowForm);
     }
 
-    String newRowColumns = src.getAttribute(ATTR_NEW_ROW_COLUMNS);
+    String newRowColumns = src.getAttribute(UiConstants.ATTR_NEW_ROW_COLUMNS);
     if (!BeeUtils.isEmpty(newRowColumns)) {
       dst.setNewRowColumns(newRowColumns.trim());
     }
@@ -775,7 +772,7 @@ public class GridLoaderBean {
       dst.setNewRowDefaults(newRowDefaults.trim());
     }
 
-    String newRowCaption = src.getAttribute(ATTR_NEW_ROW_CAPTION);
+    String newRowCaption = src.getAttribute(UiConstants.ATTR_NEW_ROW_CAPTION);
     if (!BeeUtils.isEmpty(newRowCaption)) {
       dst.setNewRowCaption(newRowCaption.trim());
     }

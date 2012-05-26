@@ -99,7 +99,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             @Override
             public void onFailure(String... reason) {
               setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
-              showFailure("Delete Row", reason);
+              showFailure("Error deleting row", reason);
             }
 
             public void onSuccess(Integer result) {
@@ -124,7 +124,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
           Queries.deleteRows(getViewName(), rows, new Queries.IntCallback() {
             @Override
             public void onFailure(String... reason) {
-              showFailure("Delete Rows", reason);
+              showFailure("Error deleting rows", reason);
               setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
             }
 

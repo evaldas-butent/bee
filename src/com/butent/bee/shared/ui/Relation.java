@@ -1,10 +1,7 @@
 package com.butent.bee.shared.ui;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -57,12 +54,6 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
   public static final String ATTR_SEARCHABLE_COLUMNS = "searchableColumns";
 
   public static final String ATTR_ITEM_TYPE = "itemType";
-
-  private static final Predicate<String> RELEVANT_ATTRIBUTE =
-      Predicates.in(Sets.newHashSet(UiConstants.ATTR_VIEW_NAME, UiConstants.ATTR_FILTER,
-          UiConstants.ATTR_ORDER, ATTR_CACHING, ATTR_OPERATOR, ATTR_CHOICE_COLUMNS,
-          ATTR_SEARCHABLE_COLUMNS, ATTR_ITEM_TYPE, HasVisibleLines.ATTR_VISIBLE_LINES,
-          HasItems.ATTR_ITEM_KEY));
 
   public static Relation create(Map<String, String> attributes,
       List<SelectorColumn> selectorColumns, RendererDescription rowRendererDescription,
@@ -249,6 +240,18 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     return itemType;
   }
 
+  public String getNewRowCaption() {
+    return getAttribute(UiConstants.ATTR_NEW_ROW_CAPTION);
+  }
+
+  public String getNewRowColumns() {
+    return getAttribute(UiConstants.ATTR_NEW_ROW_COLUMNS);
+  }
+
+  public String getNewRowForm() {
+    return getAttribute(UiConstants.ATTR_NEW_ROW_FORM);
+  }
+  
   public Operator getOperator() {
     return operator;
   }
@@ -479,7 +482,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     if (BeeUtils.isEmpty(attributes)) {
       return;
     }
-    getAttributes().putAll(Maps.filterKeys(attributes, RELEVANT_ATTRIBUTE));
+    getAttributes().putAll(attributes);
   }
 
   public void setCaching(Caching caching) {
@@ -626,9 +629,11 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
       if (!descendants.isEmpty()) {
         List<Integer> columnIndexes = Lists.newArrayList();
         for (ViewColumn vc : descendants) {
-          int index = sourceInfo.getColumnIndex(vc.getName());
-          if (!BeeConst.isUndef(index)) {
-            columnIndexes.add(index);
+          if (BeeUtils.isEmpty(vc.getRelation())) { 
+            int index = sourceInfo.getColumnIndex(vc.getName());
+            if (!BeeConst.isUndef(index)) {
+              columnIndexes.add(index);
+            }
           }
         }
 
@@ -640,7 +645,6 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
         }
       }
     }
-
     return result;
   }
 

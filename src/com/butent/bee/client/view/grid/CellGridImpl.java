@@ -1316,22 +1316,33 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         new AbstractFormCallback() {
           @Override
           public void afterCreateEditableWidget(EditableWidget editableWidget) {
-            editableWidget.setValidationDelegate(getEditableColumn(editableWidget.getWidgetName(),
-                true));
+            EditableColumn ec = getEditableColumn(editableWidget.getWidgetName(), true);
+            editableWidget.setValidationDelegate(ec);
           }
 
           @Override
-          public void afterCreateWidget(String name, Widget widget,
-              WidgetDescriptionCallback callback) {
-            if (BeeUtils.same(name, rootName)) {
+          public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback wdc) {
+            if (BeeUtils.same(name, rootName) && widget instanceof FlexTable) {
               widget.addStyleName(STYLE_NEW_ROW_CONTAINER);
-              createNewRowWidgets((FlexTable) widget, columnNames, callback);
+              createNewRowWidgets((FlexTable) widget, columnNames, wdc);
             }
           }
 
           @Override
           public FormCallback getInstance() {
             return null;
+          }
+
+          @Override
+          public AbstractCellRenderer getRenderer(WidgetDescription widgetDescription) {
+            EditableColumn ec = getEditableColumn(widgetDescription.getWidgetName(), true);
+            AbstractColumn<?> uiColumn = (ec == null) ? null : ec.getUiColumn();
+
+            if (uiColumn instanceof HasCellRenderer) {
+              return ((HasCellRenderer) uiColumn).getRenderer();
+            } else {
+              return null;
+            }
           }
         });
 
@@ -1411,26 +1422,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         WidgetDescription widgetDescription = new WidgetDescription(editor.getWidgetType(),
             editor.getId(), columnName);
 
-        widgetDescription.setCaption(editableColumn.getCaption());
-        widgetDescription.setSource(editableColumn.getColumnId());
-
-        widgetDescription.setRequired(editableColumn.isRequired());
-        widgetDescription.setNullable(editableColumn.isNullable());
-        widgetDescription.setHasDefaults(editableColumn.hasDefaults());
-
-        widgetDescription.setMinValue(editableColumn.getMinValue());
-        widgetDescription.setMaxValue(editableColumn.getMaxValue());
-
-        widgetDescription.setItemKey(editableColumn.getItemKey());
-        widgetDescription.setRelation(editableColumn.getRelation());
-
-        widgetDescription.setUpdateMode(editableColumn.getUpdateMode());
-
-        AbstractColumn<?> uiColumn = editableColumn.getUiColumn();
-        if (uiColumn instanceof HasCellRenderer) {
-          widgetDescription.setRenderer(((HasCellRenderer) uiColumn).getRenderer());
-        }
-
+        widgetDescription.updateFrom(editableColumn);
         callback.onSuccess(widgetDescription);
       }
       r++;

@@ -408,6 +408,11 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   public int hashCode() {
     return BeeUtils.normalize(getViewName()).hashCode();
   }
+  
+  public boolean hasRelation(String colName) {
+    ViewColumn viewColumn = getViewColumn(colName);
+    return (viewColumn != null && !BeeUtils.isEmpty(viewColumn.getRelation()));
+  }
 
   public List<String> parseColumns(List<String> input) {
     return DataUtils.parseColumns(input, getColumns(), getIdColumn(), getVersionColumn());

@@ -8,6 +8,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class SelectorEvent extends Event<SelectorEvent.Handler> {
@@ -46,6 +47,10 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
     return TYPE;
   }
   
+  public IsRow getRelatedRow() {
+    return (getSelector() == null) ? null : getSelector().getRelatedRow();
+  }
+
   public String getRelatedViewName() {
     return (getSelector() == null) ? null : getSelector().getOracle().getViewName();
   }

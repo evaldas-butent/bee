@@ -2,7 +2,8 @@ package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.ui.Calculation;
@@ -66,8 +67,6 @@ public class WidgetDescription implements HasInfo {
   
   private EditorAction onFocus = null;
   private RefreshType updateMode = null;
-  
-  private AbstractCellRenderer renderer = null;
   
   public WidgetDescription(FormWidget widgetType, String widgetId, String widgetName) {
     this.widgetType = widgetType;
@@ -212,10 +211,6 @@ public class WidgetDescription implements HasInfo {
 
   public String getRenderColumns() {
     return renderColumns;
-  }
-
-  public AbstractCellRenderer getRenderer() {
-    return renderer;
   }
 
   public RendererDescription getRendererDescription() {
@@ -369,10 +364,6 @@ public class WidgetDescription implements HasInfo {
     this.renderColumns = renderColumns;
   }
 
-  public void setRenderer(AbstractCellRenderer renderer) {
-    this.renderer = renderer;
-  }
-
   public void setRendererDescription(RendererDescription rendererDescription) {
     this.rendererDescription = rendererDescription;
   }
@@ -391,5 +382,24 @@ public class WidgetDescription implements HasInfo {
 
   public void setValidation(Calculation validation) {
     this.validation = validation;
+  }
+  
+  public void updateFrom(EditableColumn editableColumn) {
+    Assert.notNull(editableColumn);
+
+    setCaption(editableColumn.getCaption());
+    setSource(editableColumn.getColumnId());
+
+    setRequired(editableColumn.isRequired());
+    setNullable(editableColumn.isNullable());
+    setHasDefaults(editableColumn.hasDefaults());
+
+    setMinValue(editableColumn.getMinValue());
+    setMaxValue(editableColumn.getMaxValue());
+
+    setItemKey(editableColumn.getItemKey());
+    setRelation(editableColumn.getRelation());
+
+    setUpdateMode(editableColumn.getUpdateMode());
   }
 }

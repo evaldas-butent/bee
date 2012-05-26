@@ -40,8 +40,6 @@ import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
-import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
@@ -103,7 +101,7 @@ public class CalendarKeeper {
 
                 Global.inputWidget(result.getCaption(), result.asWidget(),
                     builder.getModalCallback(), RowFactory.OK, RowFactory.CANCEL, true,
-                    RowFactory.DIALOG_STYLE);
+                    RowFactory.DIALOG_STYLE, null);
               }
             }
           });
@@ -117,11 +115,6 @@ public class CalendarKeeper {
     ParameterList params = BeeKeeper.getRpc().createParameters(CALENDAR_MODULE);
     params.addQueryItem(CALENDAR_METHOD, service);
     return params;
-  }
-
-  static void createVehicle(Long owner) {
-    RowFactory.createRow(TransportConstants.VIEW_VEHICLES,
-        TransportConstants.FORM_NEW_VEHICLE, "Nauja transporto priemonė");
   }
 
   static void editSettings(long id, final CalendarWidget calendarWidget) {
@@ -238,21 +231,6 @@ public class CalendarKeeper {
   }
 
   private static void createCommands() {
-    BeeKeeper.getScreen().addCommandItem(new Html("Naujas klientas",
-        new Scheduler.ScheduledCommand() {
-          public void execute() {
-            RowFactory.createRow(CommonsConstants.VIEW_COMPANIES,
-                CommonsConstants.FORM_NEW_COMPANY, "Naujas klientas");
-          }
-        }));
-
-    BeeKeeper.getScreen().addCommandItem(new Html("Naujas automobilis",
-        new Scheduler.ScheduledCommand() {
-          public void execute() {
-            createVehicle(null);
-          }
-        }));
-
     BeeKeeper.getScreen().addCommandItem(new Html("Naujas vizitas",
         new Scheduler.ScheduledCommand() {
           public void execute() {

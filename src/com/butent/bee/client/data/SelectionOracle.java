@@ -179,7 +179,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private static final String TRANSLATOR_COLUMN = "Original";
 
-  private final DataInfo viewInfo;
+  private final DataInfo dataInfo;
 
   private final List<IsColumn> searchColumns = Lists.newArrayList();
 
@@ -203,14 +203,14 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
   private Filter additionalFilter = null;
 
-  public SelectionOracle(Relation relation, DataInfo viewInfo) {
+  public SelectionOracle(Relation relation, DataInfo dataInfo) {
     Assert.notNull(relation);
-    Assert.notNull(viewInfo);
+    Assert.notNull(dataInfo);
 
-    this.viewInfo = viewInfo;
+    this.dataInfo = dataInfo;
 
     for (String colName : relation.getSearchableColumns()) {
-      IsColumn column = DataUtils.getColumn(colName, viewInfo.getColumns());
+      IsColumn column = DataUtils.getColumn(colName, dataInfo.getColumns());
       if (column != null) {
         this.searchColumns.add(column);
       }
@@ -243,8 +243,12 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     return additionalFilter;
   }
 
+  public DataInfo getDataInfo() {
+    return dataInfo;
+  }
+
   public String getViewName() {
-    return viewInfo.getViewName();
+    return dataInfo.getViewName();
   }
 
   public void onCellUpdate(CellUpdateEvent event) {
