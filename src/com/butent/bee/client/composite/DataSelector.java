@@ -230,7 +230,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
             getSelector().handleKeyboardSelection(isInstant(), hasModifiers);
           } else if (BeeUtils.isEmpty(getDisplayValue())) {
             askOracle();
-          } else if (!isWaiting()) {
+          } else if (!isWaiting() && isNewRowEnabled()) {
             RowFactory.createRelatedRow(DataSelector.this);
           }
           break;
@@ -547,6 +547,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private final String newRowForm;
   private final String newRowColumns;
   private final String newRowCaption;
+  private final boolean newRowEnabled;
   
   private boolean active = false;
 
@@ -617,6 +618,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     this.newRowForm = relation.getNewRowForm();
     this.newRowColumns = relation.getNewRowColumns();
     this.newRowCaption = relation.getNewRowCaption();
+    this.newRowEnabled = relation.isNewRowEnabled();
 
     input.addStyleName(STYLE_SELECTOR);
     if (embedded) {
@@ -1158,6 +1160,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private boolean isInstant() {
     Operator operator = getSearchType();
     return Operator.CONTAINS.equals(operator) || Operator.STARTS.equals(operator);
+  }
+
+  private boolean isNewRowEnabled() {
+    return newRowEnabled;
   }
 
   private boolean isTableMode() {

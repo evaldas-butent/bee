@@ -5,6 +5,7 @@
   source="ReminderTypes"
   >
   <Columns>
+    <SimpleColumn name="Name" />
     <SimpleColumn name="Method" />
     <SimpleColumn name="Hours" />
     <SimpleColumn name="Minutes" />
@@ -12,6 +13,6 @@
     <SimpleColumn name="Description" />
   </Columns>
   <Order>
-    <OrderBy column="Method" />
+    <OrderBy column="Name" />
   </Order>
 </View>

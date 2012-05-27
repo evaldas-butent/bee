@@ -31,10 +31,6 @@
         <text>Vizitų tipai</text>
         <ChildGrid name="CalAppointmentTypes" relColumn="Calendar" />
       </page>
-      <page>
-        <text>Priminimai</text>
-        <ChildGrid name="CalendarReminders" relColumn="Calendar" />
-      </page>
       
       <page>
         <text>Nustatymai</text>

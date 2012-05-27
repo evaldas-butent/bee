@@ -8,6 +8,6 @@
     <DataColumn name="Name" caption="Pavadinimas" />
     <DataColumn name="Description" caption="Aprašymas" />
 
-    <RelColumn name="DefaultPropertyName" caption="Default" />
+    <RelColumn name="DefaultPropertyName" caption="Default" newRowEnabled="false" />
   </columns>
 </Grid>

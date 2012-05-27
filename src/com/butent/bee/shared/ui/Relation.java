@@ -449,6 +449,10 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
       setSearchableColumns(getChoiceColumns());
     }
   }
+  
+  public boolean isNewRowEnabled() {
+    return !BeeConst.isFalse(getAttribute(UiConstants.ATTR_NEW_ROW_ENABLED));
+  }
 
   public String serialize() {
     Serial[] members = Serial.values();

@@ -5,7 +5,8 @@
   idName="ReminderTypeID"
   >
   <BeeFields>
-    <BeeField name="Method" type="INTEGER" notNull="true" unique="true" />
+    <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />
+    <BeeField name="Method" type="INTEGER" notNull="true" />
 
     <BeeField name="Hours" type="INTEGER" />
     <BeeField name="Minutes" type="INTEGER" />

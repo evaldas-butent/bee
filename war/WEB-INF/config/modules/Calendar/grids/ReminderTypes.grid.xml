@@ -5,6 +5,7 @@
   caption="Priminimų tipai" newRowCaption="Naujas priminimų tipas"
   >
   <columns>
+    <DataColumn name="Name" caption="Pavadinimas" />
     <DataColumn name="Method" caption="Metodas" itemKey="ReminderMethod" />
 
     <DataColumn name="Hours" caption="Valandos" />

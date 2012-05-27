@@ -375,6 +375,7 @@
     <xs:attribute name="newRowForm" type="type:nameType" />
     <xs:attribute name="newRowColumns" type="type:nameList" />
     <xs:attribute name="newRowCaption" type="xs:string" />
+    <xs:attribute name="newRowEnabled" type="xs:boolean" />
   </xs:attributeGroup>
   
   <xs:simpleType name="refreshType">

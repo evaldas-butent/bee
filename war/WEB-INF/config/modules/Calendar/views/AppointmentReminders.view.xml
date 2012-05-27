@@ -29,7 +29,8 @@
     <SimpleColumn name="Message" />
 
     <SimpleColumn name="ReminderType" />
-    <SimpleJoin name="ReminderType" joinType="INNER">
+    <SimpleJoin name="ReminderType" joinType="LEFT">
+      <SimpleColumn alias="TypeName" name="Name" />
       <SimpleColumn name="Method" />
       <SimpleColumn alias="DefaultHours" name="Hours" />
       <SimpleColumn alias="DefaultMinutes" name="Minutes" />
