@@ -12,15 +12,15 @@
     <DataColumn name="VehicleNumber" caption="Valst. Nr." />
     <DataColumn name="VehicleModel" renderColumns="VehicleParentModel VehicleModel" caption="Modelis" />
 
-    <DataColumn name="Summary" caption="Santrauka" />
-    <DataColumn name="Description" caption="Aprašymas" />
-
-    <DataColumn name="Status" caption="Būsena" itemKey="AppointmentStatus" />
-    
     <CalcColumn type="string" name="Start" sortBy="EffectiveStart StartDateTime StartDate"
       caption="Pradžia" />
     <CalcColumn type="string" name="End" sortBy="EffectiveEnd EndDateTime EndDate"
       caption="Pabaiga" />
+
+    <DataColumn name="Summary" caption="Santrauka" />
+    <DataColumn name="Description" caption="Aprašymas" />
+
+    <DataColumn name="Status" caption="Būsena" itemKey="AppointmentStatus" />
 
     <DataColumn name="Organizer" caption="Atsakingas darbuotojas">
       <renderToken source="OrganizerFirstName" />
@@ -37,9 +37,4 @@
 
     <DataColumn name="TypeName" caption="Tipas" />
   </columns>
-  
-  <rowEditable>
-    <ui:expression>!row.ReadOnly</ui:expression>
-  </rowEditable>
-
 </Grid>

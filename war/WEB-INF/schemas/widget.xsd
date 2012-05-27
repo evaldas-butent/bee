@@ -862,4 +862,17 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:complexType name="HtmlList">
+    <xs:complexContent>
+      <xs:extension base="widgetType">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="item" type="xs:normalizedString" />
+        </xs:choice>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="OrderedList" type="HtmlList" substitutionGroup="widget" />
+  <xs:element name="UnorderedList" type="HtmlList" substitutionGroup="widget" />
+
 </xs:schema>

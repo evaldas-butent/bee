@@ -1,5 +1,6 @@
 package com.butent.bee.client.widget;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.LIElement;
 import com.google.gwt.user.client.ui.Widget;
@@ -7,20 +8,22 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.HasItems;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * Implements a user interface component that can contain a list of HTML code items.
  */
 
-public class HtmlList extends Widget implements HasId {
+public class HtmlList extends Widget implements HasId, HasItems {
 
   private static final int INSERT_AT_END = -1;
-  private boolean ordered = false;
 
-  private List<LIElement> items = new ArrayList<LIElement>();
+  private final boolean ordered;
+
+  private final List<LIElement> items = Lists.newArrayList();
 
   public HtmlList() {
     this(false);
@@ -41,6 +44,12 @@ public class HtmlList extends Widget implements HasId {
 
   public void addItem(String item) {
     insertItem(item, INSERT_AT_END);
+  }
+
+  public void addItems(Collection<String> col) {
+    for (String item : col) {
+      addItem(item);
+    }
   }
 
   public void clear() {
@@ -65,6 +74,19 @@ public class HtmlList extends Widget implements HasId {
 
   public int getItemCount() {
     return items.size();
+  }
+  
+  public String getItemHtml(int index) {
+    checkIndex(index);
+    return getItem(index).getInnerHTML();
+  }
+
+  public List<String> getItems() {
+    List<String> result = Lists.newArrayList();
+    for (int i = 0; i < getItemCount(); i++) {
+      result.add(getItemHtml(i));
+    }
+    return result;
   }
 
   public String getItemText(int index) {
@@ -105,6 +127,15 @@ public class HtmlList extends Widget implements HasId {
     Assert.notNull(html);
 
     getItem(index).setInnerHTML(html);
+  }
+
+  public void setItems(Collection<String> items) {
+    if (getItemCount() > 0) {
+      clear();
+    }
+    if (items != null) {
+      addItems(items);
+    }
   }
 
   public void setItemText(int index, String text) {

@@ -341,10 +341,6 @@ body, select {
   list-style-type: lower-greek;
 }
 
-.bee-Button:focus {
-  background-color: LightCyan;
-}
-
 .bee-LayoutContainer > .bee-InputArea {
   width: 100%;
   height: 100%;
@@ -440,10 +436,6 @@ body, select {
 
 .bee-InputSpinner {
   text-align: right;
-}
-
-.bee-InputSpinner:hover {
-  background-color: LightCyan;
 }
 
 .bee-configPanel {
@@ -581,9 +573,6 @@ body, select {
 
 .bee-Header-message {
   margin-left: 1em;
-}
-.bee-Header-control {
-  cursor: pointer;
 }
 
 .bee-FooterCell {
@@ -780,7 +769,11 @@ body, select {
   border-radius: 2px;
 }
 
-.bee-DialogBox .Caption {
+.bee-Dialog-caption {
+  cursor: move;
+}
+
+.bee-DialogBox .bee-Dialog-caption {
   background-color: #e3e8f3;
   padding: 4px 20px 4px 8px;
   border-bottom: 1px solid #ddd;
@@ -789,14 +782,14 @@ body, select {
   min-height: 10px;
 }
 
-.bee-DialogBox .Close, .bee-ChoiceDialog .Close, .bee-NewRow .Close {
+.bee-Dialog-close {
   position: absolute;
   top: 2px;
   right: 2px;
   z-index: 1;
 }
 
-.bee-DialogBox .Content {
+.bee-DialogBox .bee-Dialog-content {
   background-color: #cfc;
   padding: 1ex 1em 4px;
 }
@@ -978,7 +971,7 @@ body, select {
   bottom: 0;
 }
 
-.bee-GridFormContainer-newRow, .bee-NewRow .Content {
+.bee-GridFormContainer-newRow, .bee-NewRow .bee-Dialog-content {
   background-color: #fafffa;
 }
 
@@ -1123,8 +1116,7 @@ body, select {
 
 .bee-DatePicker {
   border: 1px solid #ccc;
-  background-image: url(images/daypicker-gradient.gif);
-  font-family: Arial Unicode MS, Arial, sans-serif;
+  background-color: white;
   border-collapse: collapse;
 }
 
@@ -1141,37 +1133,30 @@ body, select {
   text-align: center;
   vertical-align: middle;
   white-space: nowrap;
+  color: #15c;
   font-weight: bold;
-  color: #333333;
-  font-size: 14px;
-  text-shadow: .75px 1px 1px #F3F3F3;
 }
 
 .bee-DatePicker-days {
   width: 100%;
   border-collapse: collapse;
+  outline: none;
 }
 
 .bee-DatePicker-day {
   padding: 4px;
   cursor: pointer;
-  border-right: 1px solid #B0B7C1;
-  border-left: 1px solid #DCE3EB;
-  border-bottom: 1px solid #B0B7C1;
-  border-top: 1px solid #DCE3EB;
-  text-shadow: 0px 1px 1px #E5E5E5;
   color: #333;
-  font-weight: bold;
   font-size: 12px;
   text-align: center;
 }
 
 .bee-DatePicker-dayIsWeekend {
-  opacity: 0.5;
+  color: #888;
 }
 
 .bee-DatePicker-dayIsFiller {
-  color: #A6A6A6;
+  opacity: 0.3;
 }
 
 .bee-DatePicker-weekdayLabel, .bee-DatePicker-weekendLabel {
@@ -1188,21 +1173,16 @@ body, select {
 }
 
 .bee-DatePicker-dayIsValue {
-  color: #FFF;
-  text-shadow: 0px 1px 5px #000;
-  background-image: url(images/selected-cell-gradient.gif);
-  border-right: 1px solid #4C6C93;
-  border-left: 1px solid #4C6C93;
-  border-bottom: 1px solid #4C6C93;
-  border-top: 1px solid #4C6C93;
+  background-color: #f1f1f1;
+  border: 1px solid #ccc;
 }
 
 .bee-DatePicker-dayIsToday {
-  background-color: #b0ffa0;
+  background-color: #eee;
 }
 
 .bee-DatePicker-dayIsDisabled {
-  color: #AAAAAA;
+  color: #999;
   font-style: italic;
 }
 
@@ -1300,7 +1280,7 @@ body, select {
   border: 1px solid #ccc;
 }
 
-.bee-ChoiceDialog .Caption {
+.bee-ChoiceDialog .bee-Dialog-caption {
   padding: 1ex 2em;
   font-weight: bolder;
 }
@@ -1333,7 +1313,7 @@ body, select {
   line-height: 30px; 
 }
 
-.bee-NewRow .Caption {
+.bee-NewRow .bee-Dialog-caption {
   background-color: #eee;
   color: green;
   padding: 2px 20px 2px 8px;
@@ -1349,12 +1329,8 @@ body, select {
   padding-right: 1em;
 }
 
-.bee-ColorBar-item {
-  width: 20px;
-  height: 20px;
-  margin-right: 8px;
-  color: white;
-  text-align: center;
+.bee-Image {
+  cursor: pointer;
 }
 
 .gwt-SplitLayoutPanel-HDragger {

@@ -56,7 +56,7 @@ public class CalendarConstants {
   }
 
   public enum TimeBlockClick implements HasCaption {
-    Double, Single, Drag;
+    Double, Single;
 
     public String getCaption() {
       return this.name();
@@ -87,8 +87,11 @@ public class CalendarConstants {
   public static final String VIEW_APPOINTMENTS = "Appointments";
   public static final String VIEW_APPOINTMENT_PROPS = "AppointmentProps";
   public static final String VIEW_APPOINTMENT_ATTENDEES = "AppointmentAttendees";
+  public static final String VIEW_APPOINTMENT_REMINDERS = "AppointmentReminders";
 
   public static final String VIEW_THEME_COLORS = "ThemeColors";
+
+  public static final String VIEW_REMINDER_TYPES = "ReminderTypes";
 
   public static final String GRID_CALENDARS = "Calendars";
   public static final String GRID_APPOINTMENTS = "Appointments";
@@ -161,6 +164,8 @@ public class CalendarConstants {
 
   public static final String COL_SUMMARY = "Summary";
   public static final String COL_DESCRIPTION = "Description";
+
+  public static final String COL_REMINDER_TYPE = "ReminderType";
   
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";

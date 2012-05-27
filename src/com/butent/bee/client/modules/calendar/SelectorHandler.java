@@ -50,15 +50,23 @@ class SelectorHandler implements SelectorEvent.Handler {
     }
   }
 
-  private void createVehicle(IsRow owner, RowFactory.NewRowCallback callback) {
+  private void createVehicle(IsRow owner, final DataView dataView) {
     DataInfo dataInfo = Data.getDataInfo(TransportConstants.VIEW_VEHICLES);
     BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
     if (owner != null) {
       RelationUtils.updateRow(TransportConstants.VIEW_VEHICLES, TransportConstants.COL_OWNER, row,
           CommonsConstants.VIEW_COMPANIES, owner, true);
     }
+
     RowFactory.createRow(TransportConstants.FORM_NEW_VEHICLE, "Nauja transporto priemonė",
-        dataInfo, row, callback);
+        dataInfo, row, new RowFactory.NewRowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_VEHICLE, dataView.getActiveRow(),
+                TransportConstants.VIEW_VEHICLES, result, true);
+            dataView.refresh(false);
+          }
+        });
   }
 
   private void chooseVehicle(final DataView dataView, final BeeRowSet rowSet, String companyName,
@@ -78,23 +86,14 @@ class SelectorHandler implements SelectorEvent.Handler {
 
     Global.choice("Pasirinkite transporto priemonę", companyName, options,
         new DialogCallback<Integer>() {
-
           @Override
           public void onSuccess(Integer value) {
             if (value < rowSet.getNumberOfRows()) {
               RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_VEHICLE, dataView.getActiveRow(),
                   TransportConstants.VIEW_VEHICLES, rowSet.getRow(value), true);
               dataView.refresh(false);
-
             } else {
-              createVehicle(owner, new RowFactory.NewRowCallback() {
-                @Override
-                public void onSuccess(BeeRow result) {
-                  RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_VEHICLE, dataView.getActiveRow(),
-                      TransportConstants.VIEW_VEHICLES, result, true);
-                  dataView.refresh(false);
-                }
-              });
+              createVehicle(owner, dataView);
             }
           }
         });
@@ -149,7 +148,7 @@ class SelectorHandler implements SelectorEvent.Handler {
             String companyName = dataView.getActiveRow().getString(getCompanyNameIndex());
 
             if (rowCount <= 0) {
-              dataView.notifyWarning(companyName, "neturi transporto priemonių");
+              createVehicle(event.getRelatedRow(), dataView);
             } else if (rowCount == 1) {
               RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_VEHICLE, dataView.getActiveRow(),
                   TransportConstants.VIEW_VEHICLES, result.getRow(0), true);

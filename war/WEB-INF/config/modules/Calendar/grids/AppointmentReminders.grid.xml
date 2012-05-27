@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="AppointmentReminders" viewName="AppointmentReminders"
-  caption="Priminimai" newRowCaption="Naujas priminimas"
+  name="AppointmentReminders" viewName="AppointmentReminders" newRowCaption="Naujas priminimas"
   >
   <columns>
     <RelColumn name="Recipient" caption="Gavėjas">

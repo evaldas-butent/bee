@@ -37,9 +37,9 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
 
   private static final String STYLE_DIALOG = "bee-DialogBox";
 
-  private static final String STYLE_CAPTION = "Caption";
-  private static final String STYLE_CONTENT = "Content";
-  private static final String STYLE_CLOSE = "Close";
+  private static final String STYLE_CAPTION = "bee-Dialog-caption";
+  private static final String STYLE_CONTENT = "bee-Dialog-content";
+  private static final String STYLE_CLOSE = "bee-Dialog-close";
 
   private final Complex container = new Complex(Position.RELATIVE);
   private final Vertical layout = new Vertical();

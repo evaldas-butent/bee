@@ -85,15 +85,7 @@
 
       <page>
         <text>Priminimai</text>
-        <SplitPanel splitterSize="0">
-          <north size="40">
-            <CheckBox source="UseDefaultReminders" html="Siųsti standartinius priminimus"
-              style="margin-left: 3em; margin-top: 8px;" />
-          </north>
-          <center>
-            <ChildGrid name="AppointmentReminders" relColumn="Appointment" />
-          </center>
-        </SplitPanel>
+        <ChildGrid name="AppointmentReminders" relColumn="Appointment" />
       </page>
 
       <page>
@@ -175,6 +167,7 @@
               style="width: 200px;" d:size="120" d:unit="px" />
             <DataSelector source="EndTimeZone" caption="End Time Zone:"
               style="width: 200px;" d:size="120" d:unit="px" />
+            <CheckBox source="UseDefaultReminders" html="Use Default Reminders" />
           </row>
 
           <row>

@@ -75,20 +75,18 @@
       &separator;
     </FlowPanel>
 
-    <FlowPanel style="&relative; height: 200px;">
-      <ListBox name="ServiceType" required="true" caption="Serviso tipas:" style="width: 120px;"
-        d:size="100" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
-      <ListBox name="RepairType" required="true" caption="Remonto tipas:" style="width: 120px;"
-        d:size="100" d:unit="px" d:rootStyle="&absolute; left: 0; top: 30px;" />
-      <ListBox name="RepairPlace" caption="Remonto vieta:" style="width: 200px;"
-        d:size="100" d:unit="px" d:rootStyle="&absolute; left: 0; top: 60px;" />
+    <FlowPanel style="&relative; height: 220px;">
+      <ListBox name="ServiceType" required="true" caption="Serviso tipas:" style="width: 140px;"
+        d:size="120" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
+      <ListBox name="RepairType" required="true" caption="Remonto tipas:" style="width: 140px;"
+        d:size="120" d:unit="px" d:rootStyle="&absolute; left: 0; top: 30px;" />
 
-      <DataSelector source="Organizer" caption="Atsakingas:" style="width: 200px;"
-        d:size="100" d:unit="px" d:rootStyle="&absolute; left: 0; top: 90px;">
-        <renderToken source="OrganizerFirstName" />
-        <renderToken source="OrganizerLastName" />
-        <renderToken source="OrganizerCompanyName" prefix=", " />
-      </DataSelector>
+      <Label html="Resursai:" style="&absolute; left: 0; top: 60px;" />
+      <Image name="AddResource" resource="add" style="&absolute; left: 8px; top: 88px;" />
+      <Image name="RemoveResource" resource="delete" style="&absolute; left: 36px; top: 88px;" />
+
+      <ListBox name="Resources" minSize="2" maxSize="3" 
+        style="&absolute; left: 80px; top: 60px; width: 220px; max-height: 60px;" />
 
       <InputText source="Summary" caption="Santrauka:" style="width: 300px;"
         d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 0;" />
@@ -109,12 +107,23 @@
         style="width: 112px;" d:size="188" d:unit="px"
         d:rootStyle="&absolute; left: 0; top: 160px;" />
 
-      <FlowPanel name="Colors" style="&absolute; left: 360px; top: 168px; width: 380px;" />
+      <FlowPanel name="Colors" style="&absolute; left: 360px; top: 162px; width: 380px;" />
+
+      <ListBox name="Reminder" caption="Priminimas klientui:" style="width: 160px;"
+        d:size="140" d:unit="px" d:rootStyle="&absolute; left: 0; top: 192px;" />
+
+      <DataSelector source="Organizer" caption="Atsakingas:" style="width: 300px;"
+        d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 192px;">
+        <renderToken source="OrganizerFirstName" />
+        <renderToken source="OrganizerLastName" />
+        <renderToken source="OrganizerCompanyName" prefix=", " />
+      </DataSelector>
     </FlowPanel>
 
     <hr />
 
-    <CheckBox html="Priminimas klientui" />
+    <Button name="Build" html="+ Servisas" style="margin-right: 1em;" />
+    <OrderedList name="BuildInfo" style="display: inline-block; color: green;" />
 
   </FlowPanel>
 </f:Form>  

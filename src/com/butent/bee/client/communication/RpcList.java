@@ -33,7 +33,7 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
       RpcInfo.COL_RESP_PART_SIZES, RpcInfo.COL_RESP_INFO, RpcInfo.COL_ERR_MSG,
       RpcInfo.COL_USR_DATA};
 
-  private static final int DEFAULT_MAX_SIZE = 1000;
+  private static final int DEFAULT_MAX_SIZE = 100;
 
   private int maxSize = DEFAULT_MAX_SIZE;
 

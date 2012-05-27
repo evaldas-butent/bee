@@ -127,6 +127,10 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     super.clear();
     updateSize();
   }
+  
+  public void deselect() {
+    setSelectedIndex(-1);
+  }
 
   public EditorAction getDefaultFocusAction() {
     return null;

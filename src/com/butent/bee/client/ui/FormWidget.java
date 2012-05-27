@@ -87,6 +87,7 @@ import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.Html;
+import com.butent.bee.client.widget.HtmlList;
 import com.butent.bee.client.widget.InlineInternalLink;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
@@ -198,6 +199,7 @@ public enum FormWidget {
   LIST_BOX("ListBox", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
   LONG_LABEL("LongLabel", EnumSet.of(Type.DISPLAY)),
   METER("Meter", EnumSet.of(Type.DISPLAY)),
+  ORDERED_LIST("OrderedList", null),
   PROGRESS("Progress", EnumSet.of(Type.DISPLAY)),
   RADIO("Radio", EnumSet.of(Type.EDITABLE)),
   RESIZE_PANEL("ResizePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
@@ -214,6 +216,7 @@ public enum FormWidget {
   TABBED_PAGES("TabbedPages", EnumSet.of(Type.PANEL)),
   TEXT_LABEL("TextLabel", EnumSet.of(Type.DISPLAY)),
   TOGGLE("Toggle", EnumSet.of(Type.EDITABLE)),
+  UNORDERED_LIST("UnorderedList", null),
   VALUE_SPINNER("ValueSpinner", EnumSet.of(Type.EDITABLE)),
   VERTICAL_PANEL("VerticalPanel", EnumSet.of(Type.CELL_VECTOR)),
   VIDEO("Video", EnumSet.of(Type.DISPLAY)),
@@ -649,9 +652,9 @@ public enum FormWidget {
         break;
 
       case IMAGE:
-        name = attributes.get(ATTR_RESOURCE);
-        if (!BeeUtils.isEmpty(name)) {
-          widget = new BeeImage(Images.get(name));
+        String resource = attributes.get(ATTR_RESOURCE);
+        if (!BeeUtils.isEmpty(resource)) {
+          widget = new BeeImage(Images.get(resource));
         } else {
           url = attributes.get(ATTR_URL);
           if (!BeeUtils.isEmpty(url)) {
@@ -819,6 +822,10 @@ public enum FormWidget {
           }
         }
         break;
+        
+      case ORDERED_LIST:
+        widget = new HtmlList(true);
+        break;
 
       case PROGRESS:
         max = attributes.get(ATTR_MAX);
@@ -886,11 +893,7 @@ public enum FormWidget {
         break;
 
       case STRING_PICKER:
-        List<String> items = XmlUtils.getChildrenText(element, HasItems.TAG_ITEM);
-        if (!BeeUtils.isEmpty(items)) {
-          widget = new StringPicker();
-          ((StringPicker) widget).setItems(items);
-        }
+        widget = new StringPicker();
         break;
 
       case SVG:
@@ -915,6 +918,10 @@ public enum FormWidget {
 
       case TOGGLE:
         widget = new Toggle();
+        break;
+
+      case UNORDERED_LIST:
+        widget = new HtmlList(false);
         break;
 
       case VALUE_SPINNER:
@@ -1676,10 +1683,10 @@ public enum FormWidget {
         ((RadioGroup) parent).addOption(opt, true);
       }
 
-    } else if (this == LIST_BOX && BeeUtils.same(childTag, HasItems.TAG_ITEM)) {
+    } else if (BeeUtils.same(childTag, HasItems.TAG_ITEM) && parent instanceof HasItems) {
       String item = XmlUtils.getText(child);
-      if (!BeeUtils.isEmpty(item) && parent instanceof BeeListBox) {
-        ((BeeListBox) parent).addItem(item);
+      if (!BeeUtils.isEmpty(item)) {
+        ((HasItems) parent).addItem(item);
       }
 
     } else if (this == HEADER_CONTENT_FOOTER) {
