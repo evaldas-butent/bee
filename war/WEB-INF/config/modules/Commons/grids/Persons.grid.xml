@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="Persons" viewName="Persons" caption="Asmenys"
-  editForm="Person" editMode="true" newRowForm="Person" newRowCaption="Naujas Asmuo"
+  editForm="Person" editMode="true"
   >
   <columns>
     <DataColumn name="FirstName" source="FirstName" caption="Vardas" />

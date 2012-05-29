@@ -377,7 +377,7 @@ public class Evaluator extends Calculation {
         IsColumn column = columns.get(i);
         value = BeeUtils.ifString(row.getString(i), BeeConst.NULL);
         result = BeeUtils.replace(result,
-            pfx + ROW_OBJECT + PROPERTY_SEPARATOR + column.getLabel() + sfx, value);
+            pfx + ROW_OBJECT + PROPERTY_SEPARATOR + column.getId() + sfx, value);
       }
     }
 

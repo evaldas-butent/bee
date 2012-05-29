@@ -45,7 +45,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   private String idColumn;
   private String versionColumn;
 
-  private String newRowFrom;
+  private String newRowForm;
   private String newRowColumns;
   private String newRowCaption;
 
@@ -63,7 +63,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     setIdColumn(idColumn);
     setVersionColumn(versionColumn);
 
-    setNewRowFrom(newRowForm);
+    setNewRowForm(newRowForm);
     setNewRowColumns(newRowColumns);
     setNewRowCaption(newRowCaption);
 
@@ -123,7 +123,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     setTableName(arr[index++]);
     setIdColumn(arr[index++]);
     setVersionColumn(arr[index++]);
-    setNewRowFrom(arr[index++]);
+    setNewRowForm(arr[index++]);
     setNewRowColumns(arr[index++]);
     setNewRowCaption(arr[index++]);
 
@@ -272,6 +272,9 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
         "Table Name", getTableName(),
         "Id Column", getIdColumn(),
         "Version Column", getVersionColumn(),
+        "New Row Form", getNewRowForm(),
+        "New Row Columns", getNewRowColumns(),
+        "New Row Caption", getNewRowCaption(),
         "Row Count", getRowCount(),
         "Column Count", getColumnCount());
 
@@ -325,8 +328,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     return newRowColumns;
   }
 
-  public String getNewRowFrom() {
-    return newRowFrom;
+  public String getNewRowForm() {
+    return newRowForm;
   }
 
   public List<String> getRelatedTables() {
@@ -457,7 +460,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   public String serialize() {
     return Codec.beeSerialize(
         new Object[] {getViewName(), getTableName(), getIdColumn(), getVersionColumn(),
-            getNewRowFrom(), getNewRowColumns(), getNewRowCaption(),
+            getNewRowForm(), getNewRowColumns(), getNewRowCaption(),
             getColumns(), getViewColumns(), getRowCount()});
   }
 
@@ -477,8 +480,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     this.newRowColumns = newRowColumns;
   }
 
-  private void setNewRowFrom(String newRowFrom) {
-    this.newRowFrom = newRowFrom;
+  private void setNewRowForm(String newRowForm) {
+    this.newRowForm = newRowForm;
   }
 
   private void setTableName(String tableName) {

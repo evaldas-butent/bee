@@ -145,6 +145,19 @@ public class DataUtils {
     return index;
   }
 
+  public static String getColumnLabel(String columnId, List<? extends IsColumn> columns) {
+    if (BeeUtils.isEmpty(columnId) || BeeUtils.isEmpty(columns)) {
+      return null;
+    }
+
+    for (IsColumn column : columns) {
+      if (BeeUtils.same(column.getId(), columnId)) {
+        return column.getLabel();
+      }
+    }
+    return null;
+  }
+  
   public static String getColumnName(String input, List<? extends IsColumn> columns,
       String idColumnName, String versionColumnName) {
     if (BeeUtils.isEmpty(input)) {

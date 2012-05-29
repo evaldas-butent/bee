@@ -62,7 +62,7 @@ public class CacheManager implements HandlesAllDataEvents {
       idx = 0;
       for (BeeColumn column : columns) {
         info.add(new ExtendedProperty(pfx + " column", BeeUtils.progress(++idx, columns.size()),
-            column.getLabel()));
+            column.getId()));
       }
 
       PropertyUtils.appendChildrenToExtended(info, pfx + " data", data.getInfo());
@@ -212,7 +212,7 @@ public class CacheManager implements HandlesAllDataEvents {
 
       boolean ok = false;
       for (int i = 0; i < columns.size(); i++) {
-        if (BeeUtils.same(columns.get(i).getLabel(), columnId)) {
+        if (BeeUtils.same(columns.get(i).getId(), columnId)) {
           row.setValue(i, value);
           ok = true;
         }
@@ -244,7 +244,7 @@ public class CacheManager implements HandlesAllDataEvents {
         oldRow.setValue(i, newRow.getString(i));
         ok = true;
 
-        checkColumnUpdate(columns.get(i).getLabel());
+        checkColumnUpdate(columns.get(i).getId());
       }
       return ok;
     }

@@ -6,8 +6,9 @@
   x="36" y="474"
   >
   <BeeFields>
-    <BeeField name="Name" type="STRING" precision="30" notNull="true" translatable="true" />
-    <BeeField name="Country" type="LONG" notNull="true" relation="Countries" />
+    <BeeField name="Name" type="STRING" precision="30" notNull="true" translatable="true"
+      label="Miestas" />
+    <BeeField name="Country" type="LONG" notNull="true" relation="Countries" label="Šalis" />
   </BeeFields>
   <BeeStates>
     <BeeState>Marked</BeeState>

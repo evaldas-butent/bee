@@ -6,8 +6,8 @@
   x="501" y="339"
   >
   <BeeFields>
-    <BeeField name="Company" type="LONG" notNull="true" relation="Companies" cascade="DELETE" />
-    <BeeField name="Person" type="LONG" notNull="true" relation="Persons" cascade="DELETE" />
+    <BeeField name="Company" type="LONG" notNull="true" relation="Companies" cascade="DELETE" label="Įmonė" />
+    <BeeField name="Person" type="LONG" notNull="true" relation="Persons" cascade="DELETE" label="Asmuo" />
     <BeeField name="Position" type="STRING" precision="50" />
     <BeeField name="Contact" type="LONG" unique="true" relation="Contacts" />
   </BeeFields>

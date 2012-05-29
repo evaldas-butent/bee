@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
-  name="Companies"
-  source="Companies"
+  name="Companies" source="Companies"
+  newRowForm="Company" newRowCaption="Nauja įmonė"
   >
   <Columns>
     <SimpleColumn name="Name" />

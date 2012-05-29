@@ -7,7 +7,8 @@
   x="59" y="262"
   >
   <BeeFields>
-    <BeeField name="Name" type="STRING" precision="60" notNull="true" unique="true" translatable="true" />
+    <BeeField name="Name" type="STRING" precision="60" notNull="true" unique="true"
+      translatable="true" label="Šalis" />
     <BeeField name="Code" type="STRING" precision="10" unique="true" />
   </BeeFields>
   <BeeStates>

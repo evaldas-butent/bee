@@ -220,7 +220,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   public void onReadyForUpdate(ReadyForUpdateEvent event) {
     final long rowId = event.getRowValue().getId();
     final long version = event.getRowValue().getVersion();
-    final String columnId = event.getColumn().getLabel();
+    final String columnId = event.getColumn().getId();
     final String newValue = event.getNewValue();
 
     BeeRowSet rs = new BeeRowSet(new BeeColumn(event.getColumn().getType(), columnId));

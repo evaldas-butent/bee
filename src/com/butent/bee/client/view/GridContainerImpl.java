@@ -232,7 +232,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     String name = gridDescription.getName();
 
-    GridView content = new CellGridImpl(name);
+    GridView content = new CellGridImpl(name, gridDescription.getViewName());
     content.create(dataColumns, rowCount, rowSet, gridDescription, gridCallback, hasSearch(),
         order);
 

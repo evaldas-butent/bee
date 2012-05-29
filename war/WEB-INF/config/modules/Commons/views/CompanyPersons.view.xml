@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
   xmlns:xpr="http://www.butent.com/expression"
-  name="CompanyPersons"
-  source="CompanyPersons"
+  name="CompanyPersons" source="CompanyPersons" newRowCaption="Naujas įmonės asmuo"
   >
   <Columns>
     <SimpleColumn name="Position" />

@@ -84,6 +84,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Action;
@@ -130,6 +131,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private static final String STYLE_NEW_ROW_INPUT = "bee-GridNewRow-input";
 
   private final String gridName;
+  private final DataInfo dataInfo; 
 
   private GridPresenter viewPresenter = null;
 
@@ -144,7 +146,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private final Map<String, EditableColumn> editableColumns = Maps.newLinkedHashMap();
 
   private final Notification notification = new Notification();
-
+  
   private List<BeeColumn> dataColumns = null;
 
   private String relColumn = null;
@@ -180,9 +182,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private GridCallback gridCallback = null;
 
-  public CellGridImpl(String gridName) {
+  public CellGridImpl(String gridName, String viewName) {
     super();
     this.gridName = gridName;
+    this.dataInfo = BeeUtils.isEmpty(viewName) ? null : Data.getDataInfo(viewName);
   }
 
   public HandlerRegistration addAddEndHandler(AddEndEvent.Handler handler) {
@@ -538,10 +541,17 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         continue;
       }
 
-      String caption = BeeUtils.ifString(columnDescr.getCaption(), columnName);
-
       String source = columnDescr.getSource();
       List<String> renderColumns = columnDescr.getRenderColumns();
+
+      String caption = columnDescr.getCaption();
+      if (BeeUtils.isEmpty(caption)) {
+        if (BeeUtils.isEmpty(source)) {
+          caption = columnName;
+        } else {
+          caption = BeeUtils.ifString(DataUtils.getColumnLabel(source, dataCols), columnName);
+        }
+      }
 
       if (BeeUtils.isEmpty(renderColumns) && !BeeUtils.isEmpty(columnDescr.getRenderTokens())) {
         if (renderColumns == null) {
@@ -720,7 +730,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     initNewRowDefaults(gridDescr.getNewRowDefaults(), dataCols);
-    setNewRowCaption(BeeUtils.ifString(gridDescr.getNewRowCaption(), DEFAULT_NEW_ROW_CAPTION));
+    setNewRowCaption(BeeUtils.notEmpty(gridDescr.getNewRowCaption(),
+        (getDataInfo() == null) ? null : getDataInfo().getNewRowCaption(),
+            DEFAULT_NEW_ROW_CAPTION));
 
     getGrid().estimateHeaderWidths(true);
 
@@ -740,7 +752,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     setEditSave(BeeUtils.unbox(gridDescr.getEditSave()));
 
     String editFormName = gridDescr.getEditForm();
-    final String newRowFormName = gridDescr.getNewRowForm();
+    final String newRowFormName = BeeUtils.ifString(gridDescr.getNewRowForm(),
+        (getDataInfo() == null) ? null : getDataInfo().getNewRowForm());
 
     setShowEditPopup(BeeUtils.unbox(gridDescr.getEditPopup()));
     setShowNewRowPopup(BeeUtils.unbox(gridDescr.getNewRowPopup()));
@@ -968,7 +981,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   @Override
   public String getViewName() {
-    return getViewPresenter() == null ? null : getViewPresenter().getViewName();
+    return (getDataInfo() == null) ? null : getDataInfo().getViewName();
   }
 
   public GridPresenter getViewPresenter() {
@@ -1297,7 +1310,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   private void createDefaultNewRowForm(GridDescription gridDescription) {
-    final List<String> columnNames = getNewRowColumnNames(gridDescription.getNewRowColumns());
+    String newRowColumns = BeeUtils.ifString(gridDescription.getNewRowColumns(),
+        (getDataInfo() == null) ? null : getDataInfo().getNewRowColumns());
+    final List<String> columnNames = getNewRowColumnNames(newRowColumns);
+
     if (columnNames.isEmpty()) {
       BeeKeeper.getLog().severe("grid", gridDescription.getName(),
           "new row columns not available");
@@ -1444,6 +1460,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private String getActiveFormContainerId() {
     return activeFormContainerId;
+  }
+
+  private DataInfo getDataInfo() {
+    return dataInfo;
   }
 
   private EditableColumn getEditableColumn(String columnId, boolean warn) {

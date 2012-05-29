@@ -38,10 +38,6 @@ public abstract class DataColumn<C> extends AbstractColumn<C> {
     return index;
   }
 
-  public String getLabel() {
-    return getDataColumn().getLabel();
-  }
-
   @Override
   public String getString(Context context, IsRow row) {
     if (row == null) {
