@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="ReminderTypes"
   idName="ReminderTypeID"
   >
-  <BeeFields>
-    <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />
-    <BeeField name="Method" type="INTEGER" notNull="true" />
+  <Fields>
+    <String name="Name" precision="30" notNull="true" unique="true" />
+    <Integer name="Method" notNull="true" />
 
-    <BeeField name="Hours" type="INTEGER" />
-    <BeeField name="Minutes" type="INTEGER" />
-    <BeeField name="Template" type="TEXT" />
+    <Integer name="Hours" />
+    <Integer name="Minutes" />
+    <Text name="Template" />
 
-    <BeeField name="Description" type="TEXT" />
-  </BeeFields>
-</BeeTable>
+    <Text name="Description" />
+  </Fields>
+</Table>

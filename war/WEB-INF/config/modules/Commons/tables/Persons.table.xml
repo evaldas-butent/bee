@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
   
   name="Persons"
   idName="PersonID"
   x="304" y="276"
   >
-  <BeeFields>
-    <BeeField name="FirstName" type="STRING" precision="30" notNull="true" label="Vardas" />
-    <BeeField name="LastName" type="STRING" precision="30" label="Pavardė" />
-    <BeeField name="DateOfBirth" type="DATE" />
-    <BeeField name="Contact" type="LONG" unique="true" relation="Contacts" />
-  </BeeFields>
-</BeeTable>
+  <Fields>
+    <String name="FirstName" precision="30" notNull="true" label="Vardas" />
+    <String name="LastName" precision="30" label="Pavardė" />
+    <Date name="DateOfBirth" />
+    <Relation name="Contact" unique="true" relation="Contacts" />
+  </Fields>
+</Table>

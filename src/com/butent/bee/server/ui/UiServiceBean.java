@@ -10,6 +10,7 @@ import com.butent.bee.client.ui.StateService;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.data.BeeTable.BeeField;
+import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.IdGeneratorBean;
@@ -38,6 +39,7 @@ import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.XmlState;
 import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
+import com.butent.bee.shared.data.XmlTable.XmlRelation;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
@@ -179,7 +181,8 @@ public class UiServiceBean {
     for (String tbl : sys.getTableNames()) {
       if (!tables.contains(BeeUtils.normalize(tbl))) {
         for (BeeField field : sys.getTableFields(tbl)) {
-          if (BeeUtils.same(field.getRelation(), root)) {
+          if (field instanceof BeeRelation
+              && BeeUtils.same(((BeeRelation) field).getRelation(), root)) {
             if (recurse) {
               buildDbList(tbl + '*', tables, false);
             } else {
@@ -244,8 +247,9 @@ public class UiServiceBean {
           fields.addAll(xmlTable.extFields);
         }
         for (XmlField xmlField : fields) {
-          if (!BeeUtils.isEmpty(xmlField.relation)) {
-            xmlField.relationField = sys.getIdName(xmlField.relation);
+          if (xmlField instanceof XmlRelation) {
+            XmlRelation xmlRelation = (XmlRelation) xmlField;
+            xmlRelation.relationField = sys.getIdName(xmlRelation.relation);
           }
         }
         designer.tables.add(xmlTable);

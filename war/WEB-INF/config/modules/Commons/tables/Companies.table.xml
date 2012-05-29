@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
   
   name="Companies"
   idName="CompanyID"
   x="752" y="484"
   >
-  <BeeFields>
-    <BeeField name="Owner" type="LONG" relation="Companies" />
-    <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />
-    <BeeField name="Code" type="STRING" precision="30" unique="true" />
-    <BeeField name="VATCode" type="STRING" precision="30" />
-    <BeeField name="Contact" type="LONG" unique="true" relation="Contacts" />
-  </BeeFields>
-</BeeTable>
+  <Fields>
+    <Relation name="Owner" relation="Companies" />
+    <String name="Name" precision="100" notNull="true" unique="true" />
+    <String name="Code" precision="30" unique="true" />
+    <String name="VATCode" precision="30" />
+    <Relation name="Contact" unique="true" relation="Contacts" />
+  </Fields>
+</Table>

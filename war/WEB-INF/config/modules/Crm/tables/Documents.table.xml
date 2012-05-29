@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="Documents"
   idName="DocumentID"
   >
-  <BeeFields>
-    <BeeField name="DocumentDate" type="DATETIME" />
-    <BeeField name="Expires" type="DATETIME" />
-    <BeeField name="Number" type="STRING" precision="30" />
-    <BeeField name="RegistrationNumber" type="STRING" precision="30" />
-    <BeeField name="Type" type="LONG" relation="DocumentTypes" />
-    <BeeField name="Group" type="LONG" relation="DocumentGroups" />
-    <BeeField name="Category" type="LONG" notNull="true" relation="DocumentTree" />
-    <BeeField name="Place" type="LONG" relation="DocumentPlaces" />
-    <BeeField name="Company" type="LONG" relation="Companies" />
-    <BeeField name="CompanyPerson" type="LONG" relation="CompanyPersons" />
-    <BeeField name="Project" type="LONG" relation="Projects" />
-    <BeeField name="Name" type="STRING" precision="100" notNull="true" />
-    <BeeField name="Description" type="TEXT" />
-  </BeeFields>
-</BeeTable>
+  <Fields>
+    <DateTime name="DocumentDate" />
+    <DateTime name="Expires" />
+    <String name="Number" precision="30" />
+    <String name="RegistrationNumber" precision="30" />
+    <Relation name="Type" relation="DocumentTypes" />
+    <Relation name="Group" relation="DocumentGroups" />
+    <Relation name="Category" notNull="true" relation="DocumentTree" />
+    <Relation name="Place" relation="DocumentPlaces" />
+    <Relation name="Company" relation="Companies" />
+    <Relation name="CompanyPerson" relation="CompanyPersons" />
+    <Relation name="Project" relation="Projects" />
+    <String name="Name" precision="100" notNull="true" />
+    <Text name="Description" />
+  </Fields>
+</Table>

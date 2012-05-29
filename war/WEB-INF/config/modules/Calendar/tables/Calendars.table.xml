@@ -1,36 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="Calendars"
   idName="CalendarID"
   >
-  <BeeFields>
-    <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />
-    <BeeField name="Description" type="TEXT" />
+  <Fields>
+    <String name="Name" precision="30" notNull="true" unique="true" />
+    <Text name="Description" />
 
-    <BeeField name="Location" type="STRING" precision="100" />
-    <BeeField name="TimeZone" type="LONG" relation="TimeZones" />
+    <String name="Location" precision="100" />
+    <Relation name="TimeZone" relation="TimeZones" />
 
-    <BeeField name="ReadOnly" type="BOOLEAN" />
-    <BeeField name="Visibility" type="INTEGER" />
+    <Boolean name="ReadOnly" />
+    <Integer name="Visibility" />
 
-    <BeeField name="Transparency" type="INTEGER" />
+    <Integer name="Transparency" />
 
-    <BeeField name="DefaultDisplayedDays" type="INTEGER" defValue="4" />
+    <Integer name="DefaultDisplayedDays" defValue="4" />
 
-    <BeeField name="PixelsPerInterval" type="INTEGER" defValue="30" />
-    <BeeField name="IntervalsPerHour" type="INTEGER" defValue="2" />
+    <Integer name="PixelsPerInterval" defValue="30" />
+    <Integer name="IntervalsPerHour" defValue="2" />
 
-    <BeeField name="WorkingHourStart" type="INTEGER" defValue="8" />
-    <BeeField name="WorkingHourEnd" type="INTEGER" defValue="17" />
-    <BeeField name="ScrollToHour" type="INTEGER" defValue="8" />
-    <BeeField name="OffsetHourLabels" type="BOOLEAN" />
+    <Integer name="WorkingHourStart" defValue="8" />
+    <Integer name="WorkingHourEnd" defValue="17" />
+    <Integer name="ScrollToHour" defValue="8" />
+    <Boolean name="OffsetHourLabels" />
 
-    <BeeField name="EnableDragDrop" type="BOOLEAN" defValue="true" />
-    <BeeField name="DragDropCreation" type="BOOLEAN" defValue="true" />
+    <Boolean name="EnableDragDrop" defValue="true" />
+    <Boolean name="DragDropCreation" defValue="true" />
 
-    <BeeField name="TimeBlockClickNumber" type="INTEGER" defValue="1" />
+    <Integer name="TimeBlockClickNumber" defValue="1" />
     
-    <BeeField name="Owner" type="LONG" relation="Users" defExpr="CURRENT_USER" />
-  </BeeFields>
-</BeeTable>
+    <Relation name="Owner" relation="Users" defExpr="CURRENT_USER" />
+  </Fields>
+</Table>

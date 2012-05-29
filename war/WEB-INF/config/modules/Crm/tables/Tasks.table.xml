@@ -1,35 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="Tasks"
   idName="TaskID"
   x="741" y="101"
   >
-  <BeeFields>
-    <BeeField name="Priority" type="INTEGER" notNull="true" />
-    <BeeField name="Description" type="TEXT" notNull="true" />
-    <BeeField name="StartTime" type="DATETIME" notNull="true" />
-    <BeeField name="FinishTime" type="DATETIME" notNull="true" />
-    <BeeField name="ExpectedDuration" type="DATETIME" />
-    <BeeField name="Event" type="INTEGER" notNull="true" />
-    <BeeField name="Owner" type="LONG" notNull="true" relation="Users" />
-    <BeeField name="Executor" type="LONG" notNull="true" relation="Users" />
-    <BeeField name="Company" type="LONG" relation="Companies" />
-    <BeeField name="CompanyPerson" type="LONG" relation="CompanyPersons" />
-    <BeeField name="ProjectStage" type="LONG" relation="ProjectStages" />
-  </BeeFields>
-  <BeeKeys>
-    <BeeKey>
+  <Fields>
+    <Integer name="Priority" notNull="true" />
+    <Text name="Description" notNull="true" />
+    <DateTime name="StartTime" notNull="true" />
+    <DateTime name="FinishTime" notNull="true" />
+    <DateTime name="ExpectedDuration" />
+    <Integer name="Event" notNull="true" />
+    <Relation name="Owner" notNull="true" relation="Users" />
+    <Relation name="Executor" notNull="true" relation="Users" />
+    <Relation name="Company" relation="Companies" />
+    <Relation name="CompanyPerson" relation="CompanyPersons" />
+    <Relation name="ProjectStage" relation="ProjectStages" />
+  </Fields>
+  <Keys>
+    <Key>
       <KeyField>Priority</KeyField>
-    </BeeKey>
-    <BeeKey>
+    </Key>
+    <Key>
       <KeyField>StartTime</KeyField>
-    </BeeKey>
-    <BeeKey>
+    </Key>
+    <Key>
       <KeyField>FinishTime</KeyField>
-    </BeeKey>
-    <BeeKey>
+    </Key>
+    <Key>
       <KeyField>Event</KeyField>
-    </BeeKey>
-  </BeeKeys>
-</BeeTable>
+    </Key>
+  </Keys>
+</Table>

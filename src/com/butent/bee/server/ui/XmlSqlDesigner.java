@@ -1,12 +1,12 @@
 package com.butent.bee.server.ui;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
-import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
+import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlKey;
+import com.butent.bee.shared.data.XmlTable.XmlRelation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Enables to design system database using graphical tool.
  */
 
+@SuppressWarnings("unused")
 @XmlRootElement(name = "sql")
 public class XmlSqlDesigner {
 
@@ -85,7 +86,6 @@ public class XmlSqlDesigner {
     private int isTranslatable;
     @XmlElement(name = "datatype")
     private String type;
-    @SuppressWarnings("unused")
     @XmlElement
     private String comment;
     @XmlElement
@@ -217,13 +217,13 @@ public class XmlSqlDesigner {
                 type = type + ")";
               }
               DataField field =
-                    new DataField(xmlField.name, type, xmlField.notNull, xmlField.translatable,
-                        xmlField.isProtected());
+                  new DataField(xmlField.name, type, xmlField.notNull, xmlField.translatable,
+                      xmlField.isProtected());
 
-              if (!BeeUtils.isEmpty(xmlField.relation)) {
+              if (xmlField instanceof XmlRelation) {
                 field.relation = new DataRelation();
-                field.relation.table = xmlField.relation;
-                field.relation.field = xmlField.relationField;
+                field.relation.table = ((XmlRelation) xmlField).relation;
+                field.relation.field = ((XmlRelation) xmlField).relationField;
               }
               table.fields.add(field);
 
@@ -251,73 +251,74 @@ public class XmlSqlDesigner {
     @Override
     public XmlTable unmarshal(DataTable table) throws Exception {
       XmlTable xmlTable = null;
+      /*TODO
+            if (table != null) {
+              xmlTable = new XmlTable();
+              xmlTable.name = table.name;
+              xmlTable.idName = table.getPrimaryKeyField();
+              xmlTable.x = table.x;
+              xmlTable.y = table.y;
 
-      if (table != null) {
-        xmlTable = new XmlTable();
-        xmlTable.name = table.name;
-        xmlTable.idName = table.getPrimaryKeyField();
-        xmlTable.x = table.x;
-        xmlTable.y = table.y;
+              if (!BeeUtils.isEmpty(table.fields)) {
+                for (DataField field : table.fields) {
+                  if (BeeUtils.same(field.type, STATE)) {
+                    if (xmlTable.states == null) {
+                      xmlTable.states = Sets.newHashSet();
+                    }
+                    xmlTable.states.add(field.name);
 
-        if (!BeeUtils.isEmpty(table.fields)) {
-          for (DataField field : table.fields) {
-            if (BeeUtils.same(field.type, STATE)) {
-              if (xmlTable.states == null) {
-                xmlTable.states = Sets.newHashSet();
-              }
-              xmlTable.states.add(field.name);
+                  } else if (!BeeUtils.same(field.name, xmlTable.idName)) {
+                    XmlField xmlField = new XmlField();
+                    xmlField.name = field.name;
+                    xmlField.notNull = BeeUtils.isEmpty(field.isNull);
+                    xmlField.unique = table.isUnique(field.name);
+                    xmlField.translatable = !BeeUtils.isEmpty(field.isTranslatable);
 
-            } else if (!BeeUtils.same(field.name, xmlTable.idName)) {
-              XmlField xmlField = new XmlField();
-              xmlField.name = field.name;
-              xmlField.notNull = BeeUtils.isEmpty(field.isNull);
-              xmlField.unique = table.isUnique(field.name);
-              xmlField.translatable = !BeeUtils.isEmpty(field.isTranslatable);
+                    if (field.relation != null) {
+                      xmlField.relation = field.relation.table;
+                      xmlField.relationField = field.relation.field;
+                    }
+                    boolean extMode = false;
 
-              if (field.relation != null) {
-                xmlField.relation = field.relation.table;
-                xmlField.relationField = field.relation.field;
-              }
-              boolean extMode = false;
-
-              if (!BeeUtils.isEmpty(field.type)) {
-                String pattern = "^([a-zA-Z]+)(" + EXT + "){0,1}(\\((\\d+)(,(\\d+)){0,1}\\)){0,1}$";
-                xmlField.type = field.type.replaceFirst(pattern, "$1");
-                extMode = !BeeUtils.isEmpty(field.type.replaceFirst(pattern, "$2"));
-                xmlField.precision = BeeUtils.toInt(field.type.replaceFirst(pattern, "$4"));
-                xmlField.scale = BeeUtils.toInt(field.type.replaceFirst(pattern, "$6"));
-              }
-              if (extMode) {
-                if (xmlTable.extFields == null) {
-                  xmlTable.extFields = Lists.newArrayList();
+                    if (!BeeUtils.isEmpty(field.type)) {
+                      String pattern = "^([a-zA-Z]+)(" + EXT + "){0,1}(\\((\\d+)(,(\\d+)){0,1}\\)){0,1}$";
+                      xmlField.type = field.type.replaceFirst(pattern, "$1");
+                      extMode = !BeeUtils.isEmpty(field.type.replaceFirst(pattern, "$2"));
+                      xmlField.precision = BeeUtils.toInt(field.type.replaceFirst(pattern, "$4"));
+                      xmlField.scale = BeeUtils.toInt(field.type.replaceFirst(pattern, "$6"));
+                    }
+                    if (extMode) {
+                      if (xmlTable.extFields == null) {
+                        xmlTable.extFields = Lists.newArrayList();
+                      }
+                      xmlTable.extFields.add(xmlField);
+                    } else {
+                      if (xmlTable.fields == null) {
+                        xmlTable.fields = Lists.newArrayList();
+                      }
+                      xmlTable.fields.add(xmlField);
+                    }
+                  }
                 }
-                xmlTable.extFields.add(xmlField);
-              } else {
-                if (xmlTable.fields == null) {
-                  xmlTable.fields = Lists.newArrayList();
+              }
+              if (!BeeUtils.isEmpty(table.keys)) {
+                for (DataKey key : table.keys) {
+                  if (key.type != KeyType.PRIMARY && key.parts != null) {
+                    if (key.type != KeyType.UNIQUE || key.parts.size() > 1) {
+                      XmlKey xmlKey = new XmlKey();
+                      xmlKey.unique = (key.type == KeyType.UNIQUE);
+                      xmlKey.fields = key.parts;
+
+                      if (xmlTable.keys == null) {
+                        xmlTable.keys = Sets.newHashSet();
+                      }
+                      xmlTable.keys.add(xmlKey);
+                    }
+                  }
                 }
-                xmlTable.fields.add(xmlField);
               }
             }
-          }
-        }
-        if (!BeeUtils.isEmpty(table.keys)) {
-          for (DataKey key : table.keys) {
-            if (key.type != KeyType.PRIMARY && key.parts != null) {
-              if (key.type != KeyType.UNIQUE || key.parts.size() > 1) {
-                XmlKey xmlKey = new XmlKey();
-                xmlKey.unique = (key.type == KeyType.UNIQUE);
-                xmlKey.fields = key.parts;
-
-                if (xmlTable.keys == null) {
-                  xmlTable.keys = Sets.newHashSet();
-                }
-                xmlTable.keys.add(xmlKey);
-              }
-            }
-          }
-        }
-      }
+      */
       return xmlTable;
     }
   }

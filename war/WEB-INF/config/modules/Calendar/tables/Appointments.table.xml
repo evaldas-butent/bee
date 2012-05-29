@@ -1,56 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="Appointments"
   idName="AppointmentID"
   >
-  <BeeFields>
-    <BeeField name="AppointmentType" type="LONG" relation="AppointmentTypes" />
+  <Fields>
+    <Relation name="AppointmentType" relation="AppointmentTypes" />
 
-    <BeeField name="Summary" type="STRING" precision="100" />
-    <BeeField name="Description" type="TEXT" />
+    <String name="Summary" precision="100" />
+    <Text name="Description" />
 
-    <BeeField name="Location" type="STRING" precision="100" />
-    <BeeField name="HtmlLink" type="STRING" precision="200" />
+    <String name="Location" precision="100" />
+    <String name="HtmlLink" precision="200" />
 
-    <BeeField name="Color" type="LONG" relation="Colors" />
-    <BeeField name="Style" type="LONG" relation="AppointmentStyles" />
+    <Relation name="Color" relation="Colors" />
+    <Relation name="Style" relation="AppointmentStyles" />
 
-    <BeeField name="Status" type="INTEGER" />
+    <Integer name="Status" />
 
-    <BeeField name="Created" type="DATETIME" defExpr="CURRENT_TIME" />
-    <BeeField name="Creator" type="LONG" relation="Users" defExpr="CURRENT_USER" />
+    <DateTime name="Created" defExpr="CURRENT_TIME" />
+    <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" />
 
-    <BeeField name="Organizer" type="LONG" relation="CompanyPersons" />
+    <Relation name="Organizer" relation="CompanyPersons" />
 
-    <BeeField name="StartDate" type="DATE" />
-    <BeeField name="StartDateTime" type="DATETIME" />
-    <BeeField name="StartTimeZone" type="LONG" relation="TimeZones" />
+    <Date name="StartDate" />
+    <DateTime name="StartDateTime" />
+    <Relation name="StartTimeZone" relation="TimeZones" />
 
-    <BeeField name="EndDate" type="DATE" />
-    <BeeField name="EndDateTime" type="DATETIME" />
-    <BeeField name="EndTimeZone" type="LONG" relation="TimeZones" />
+    <Date name="EndDate" />
+    <DateTime name="EndDateTime" />
+    <Relation name="EndTimeZone" relation="TimeZones" />
 
-    <BeeField name="Recurrence" type="TEXT" />
-    <BeeField name="RecurringEventId" type="LONG" relation="Appointments" />
+    <Text name="Recurrence" />
+    <Relation name="RecurringEventId" relation="Appointments" />
 
-    <BeeField name="Transparency" type="INTEGER" />
-    <BeeField name="Visibility" type="INTEGER" />
-    <BeeField name="ReadOnly" type="BOOLEAN" />
+    <Integer name="Transparency" />
+    <Integer name="Visibility" />
+    <Boolean name="ReadOnly" />
 
-    <BeeField name="ICalUID" type="STRING" precision="100" />
-    <BeeField name="Sequence" type="INTEGER" />
+    <String name="ICalUID" precision="100" />
+    <Integer name="Sequence" />
 
-    <BeeField name="AnyoneCanAddSelf" type="BOOLEAN" />
-    <BeeField name="GuestsCanInviteOthers" type="BOOLEAN" />
-    <BeeField name="GuestsCanSeeOtherGuests" type="BOOLEAN" />
+    <Boolean name="AnyoneCanAddSelf" />
+    <Boolean name="GuestsCanInviteOthers" />
+    <Boolean name="GuestsCanSeeOtherGuests" />
 
-    <BeeField name="UseDefaultReminders" type="BOOLEAN" />
+    <Boolean name="UseDefaultReminders" />
     
-    <BeeField name="Company" type="LONG" relation="Companies" />
-    <BeeField name="Vehicle" type="LONG" relation="Vehicles" />
+    <Relation name="Company" relation="Companies" />
+    <Relation name="Vehicle" relation="Vehicles" />
     
-    <BeeField name="EffectiveStart" type="DATETIME" />
-    <BeeField name="EffectiveEnd" type="DATETIME" />
-  </BeeFields>
-</BeeTable>
+    <DateTime name="EffectiveStart" />
+    <DateTime name="EffectiveEnd" />
+  </Fields>
+</Table>

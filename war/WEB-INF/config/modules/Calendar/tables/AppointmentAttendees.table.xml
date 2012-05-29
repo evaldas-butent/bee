@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="AppointmentAttendees"
   idName="AppointmentAttendeeID"
   >
-  <BeeFields>
-    <BeeField name="Appointment" type="LONG" notNull="true" relation="Appointments" cascade="DELETE" />
-    <BeeField name="Attendee" type="LONG" notNull="true" relation="Attendees" cascade="DELETE" />
+  <Fields>
+    <Relation name="Appointment" notNull="true" relation="Appointments" cascade="DELETE" />
+    <Relation name="Attendee" notNull="true" relation="Attendees" cascade="DELETE" />
 
-    <BeeField name="Optional" type="BOOLEAN" />
-    <BeeField name="ResponseStatus" type="INTEGER" />
-    <BeeField name="AdditionalGuests" type="INTEGER" />
+    <Boolean name="Optional" />
+    <Integer name="ResponseStatus" />
+    <Integer name="AdditionalGuests" />
 
-    <BeeField name="Comment" type="TEXT" />
-  </BeeFields>
-  <BeeKeys>
-    <BeeKey unique="true">
+    <Text name="Comment" />
+  </Fields>
+  <Keys>
+    <Key unique="true">
       <KeyField>Appointment</KeyField>
       <KeyField>Attendee</KeyField>
-    </BeeKey>
-  </BeeKeys>
+    </Key>
+  </Keys>
 
-</BeeTable>
+</Table>

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="VehicleModels"
   idName="ModelID"
   x="0" y="0"
   >
-  <BeeFields>
-    <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />
-    <BeeField name="Parent" type="LONG" relation="VehicleModels" />
-  </BeeFields>
-</BeeTable>
+  <Fields>
+    <String name="Name" precision="30" notNull="true" unique="true" />
+    <Relation name="Parent" relation="VehicleModels" />
+  </Fields>
+</Table>

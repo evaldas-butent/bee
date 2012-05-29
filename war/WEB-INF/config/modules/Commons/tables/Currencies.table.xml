@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="Currencies"
   idName="CurrencyID"
   x="0" y="0"
   >
-  <BeeFields>
-    <BeeField name="Name" type="STRING" precision="5" notNull="true" unique="true"
-      label="Valiuta" />
-    <BeeField name="Caption" type="STRING" precision="60" />
-    <BeeField name="MinorName" type="STRING" precision="5" />
-    <BeeField name="MinorCaption" type="STRING" precision="60" />
-  </BeeFields>
-</BeeTable>
+  <Fields>
+    <String name="Name" precision="5" notNull="true" unique="true" label="Valiuta" />
+    <String name="Caption" precision="60" />
+    <String name="MinorName" precision="5" />
+    <String name="MinorCaption" precision="60" />
+  </Fields>
+</Table>

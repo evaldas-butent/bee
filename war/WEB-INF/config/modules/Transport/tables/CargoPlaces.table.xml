@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="CargoPlaces"
   idName="PlaceID"
   x="0" y="0"
   >
-  <BeeFields>
-    <BeeField name="Date" type="DATE" />
-    <BeeField name="Country" type="LONG" relation="Countries" />
-    <BeeField name="Place" type="STRING" precision="50" />
-    <BeeField name="Terminal" type="STRING" precision="30" />
-  </BeeFields>
-</BeeTable>
+  <Fields>
+    <Date name="Date" />
+    <Relation name="Country" relation="Countries" />
+    <String name="Place" precision="50" />
+    <String name="Terminal" precision="30" />
+  </Fields>
+</Table>

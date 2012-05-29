@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
+import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.ViewEvent.ViewDeleteEvent;
 import com.butent.bee.server.data.ViewEvent.ViewInsertEvent;
 import com.butent.bee.server.data.ViewEvent.ViewUpdateEvent;
@@ -297,9 +298,8 @@ public class DataEditorBean {
 
     for (int row = 0; row < rowCount; row++) {
       for (BeeField field : fields) {
-        String relation = field.getRelation();
-
-        if (!BeeUtils.isEmpty(relation)) {
+        if (field instanceof BeeRelation) {
+          String relation = ((BeeRelation) field).getRelation();
           String[] rs = relations.get(relation);
 
           if (!relations.containsKey(relation)) {
@@ -509,7 +509,7 @@ public class DataEditorBean {
 
         if (!BeeUtils.isEmpty(defaults)) {
           for (String fldName : defaults.keySet()) {
-            if (!si.hasField(fldName) && !sys.getTableField(tblName, fldName).isExtended()) {
+            if (!si.hasField(fldName) && !sys.isExtField(tblName, fldName)) {
               Pair<DefaultExpression, Object> pair = defaults.get(fldName);
               si.addConstant(fldName, srvDef.getValue(tblName, fldName, pair.getA(), pair.getB()));
             }

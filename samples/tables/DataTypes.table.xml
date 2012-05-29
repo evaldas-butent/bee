@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table" name="DataTypes">
-  <BeeFields>
-    <BeeField name="Boolean" type="BOOLEAN" />
-    <BeeField name="Integer" type="INTEGER" />
-    <BeeField name="Long" type="LONG" />
-    <BeeField name="Double" type="DOUBLE" />
-    <BeeField name="Numeric" type="DECIMAL" precision="10" scale="5" />
-    <BeeField name="Currency" type="DECIMAL" precision="12" scale="2" />
-    <BeeField name="Char" type="CHAR" precision="10" />
-    <BeeField name="String" type="STRING" precision="30" />
-    <BeeField name="Memo" type="TEXT" />
-    <BeeField name="Date" type="DATE" />
-    <BeeField name="DateTime" type="DATETIME" />
-  </BeeFields>
-</BeeTable>
+<Table xmlns="http://www.butent.com/table" name="DataTypes">
+  <Fields>
+    <Boolean name="Boolean" />
+    <Integer name="Integer" />
+    <Long name="Long" />
+    <Double name="Double" />
+    <Numeric name="Numeric" precision="10" />
+    <Numeric name="Currency" precision="12" scale="2" />
+    <Char name="Char" precision="10" />
+    <String name="String" precision="30" />
+    <Text name="Memo" />
+    <Date name="Date" />
+    <DateTime name="DateTime" />
+  </Fields>
+</Table>

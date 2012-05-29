@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="TransportationOrders"
   idName="OrderID"
   x="741" y="101"
   >
-  <BeeFields>
-    <BeeField name="Status" type="INTEGER" notNull="true" />
-    <BeeField name="Date" type="DATETIME" notNull="true" defExpr="CURRENT_TIME" />
-    <BeeField name="OrderNo" type="STRING" precision="20" unique="true" notNull="true"
+  <Fields>
+    <Integer name="Status" notNull="true" />
+    <DateTime name="Date" notNull="true" defExpr="CURRENT_TIME" />
+    <String name="OrderNo" precision="20" unique="true" notNull="true"
       defExpr="NEXT_NUMBER" defValue="U/" />
-    <BeeField name="Customer" type="LONG" relation="Companies" notNull="true" />
-    <BeeField name="CustomerPerson" type="LONG" relation="CompanyPersons" />
-    <BeeField name="Payer" type="LONG" relation="Companies" />
-    <BeeField name="Manager" type="LONG" relation="Users" />
-  </BeeFields>
-</BeeTable>
+    <Relation name="Customer" relation="Companies" notNull="true" />
+    <Relation name="CustomerPerson" relation="CompanyPersons" />
+    <Relation name="Payer" relation="Companies" />
+    <Relation name="Manager" relation="Users" />
+  </Fields>
+</Table>

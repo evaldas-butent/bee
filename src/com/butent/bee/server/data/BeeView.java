@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
+import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
@@ -150,7 +151,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       if (!BeeUtils.isEmpty(getParent())) {
         ColumnInfo parent = getColumnInfo(getParent());
 
-        if (!parent.field.hasEditableRelation()) {
+        if (!((BeeRelation) parent.field).hasEditableRelation()) {
           level = 1;
         }
         level = level + parent.getLevel();
@@ -186,8 +187,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     public String getRelation() {
       String relName = null;
 
-      if (field != null) {
-        relName = field.getRelation();
+      if (field != null && field instanceof BeeRelation) {
+        relName = ((BeeRelation) field).getRelation();
       }
       return relName;
     }
@@ -212,7 +213,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
     public SqlDataType getType() {
       if (xmlExpression != null) {
-        return SqlDataType.valueOf(xmlExpression.type);
+        return NameUtils.getConstant(SqlDataType.class, xmlExpression.type);
       } else {
         return field.getType();
       }
@@ -673,7 +674,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     ColumnInfo info = getColumnInfo(colName);
 
     column.setId(info.getName());
-    column.setLabel(BeeUtils.notEmpty(info.getLabel(), info.getName()));
+    column.setLabel(BeeUtils.ifString(info.getLabel(), info.getName()));
     column.setType(info.getType().toValueType());
     column.setPrecision(info.getPrecision());
     column.setScale(info.getScale());
@@ -802,14 +803,14 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           join = SqlUtils.join(alias, table.getIdName(), relAls, field.getName());
         } else {
           field = table.getField(col.name);
+          Assert.state(field instanceof BeeRelation);
 
           if (field.isExtended()) {
             als = table.joinExtField(query, alias, field);
           } else {
             als = alias;
           }
-          relTable = tables.get(BeeUtils.normalize(field.getRelation()));
-          Assert.notEmpty(relTable);
+          relTable = tables.get(BeeUtils.normalize(((BeeRelation) field).getRelation()));
           join = SqlUtils.join(als, field.getName(), relAls, relTable.getIdName());
         }
         String relTbl = relTable.getName();

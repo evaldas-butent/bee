@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="AppointmentStyles"
   idName="AppointmentStyleID"
   >
-  <BeeFields>
-    <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />
-    <BeeField name="Description" type="TEXT" />
+  <Fields>
+    <String name="Name" precision="30" notNull="true" unique="true" />
+    <Text name="Description" />
 
-    <BeeField name="HeaderColor" type="LONG" relation="Colors" />
-    <BeeField name="HeaderClass" type="STRING" precision="200" />
-    <BeeField name="HeaderStyle" type="TEXT" />
+    <Relation name="HeaderColor" relation="Colors" />
+    <String name="HeaderClass" precision="200" />
+    <Text name="HeaderStyle" />
 
-    <BeeField name="BodyColor" type="LONG" relation="Colors" />
-    <BeeField name="BodyClass" type="STRING" precision="200" />
-    <BeeField name="BodyStyle" type="TEXT" />
+    <Relation name="BodyColor" relation="Colors" />
+    <String name="BodyClass" precision="200" />
+    <Text name="BodyStyle" />
 
-    <BeeField name="FooterColor" type="LONG" relation="Colors" />
-    <BeeField name="FooterClass" type="STRING" precision="200" />
-    <BeeField name="FooterStyle" type="TEXT" />
-  </BeeFields>
-</BeeTable>
+    <Relation name="FooterColor" relation="Colors" />
+    <String name="FooterClass" precision="200" />
+    <Text name="FooterStyle" />
+  </Fields>
+</Table>

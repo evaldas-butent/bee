@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="TaskEvents"
   idName="TaskEventID"
   x="559" y="5"
   >
-  <BeeFields>
-    <BeeField name="Task" type="LONG" notNull="true" relation="Tasks" cascade="DELETE" />
-    <BeeField name="Publisher" type="LONG" notNull="true" relation="Users" />
-    <BeeField name="PublishTime" type="DATETIME" notNull="true" />
-    <BeeField name="Comment" type="TEXT" />
-    <BeeField name="Event" type="INTEGER" notNull="true" />
-    <BeeField name="EventNote" type="STRING" precision="100" />
-    <BeeField name="EventDuration" type="LONG" unique="true" relation="EventDurations" />
-  </BeeFields>
-  <BeeKeys>
-    <BeeKey>
+  <Fields>
+    <Relation name="Task" notNull="true" relation="Tasks" cascade="DELETE" />
+    <Relation name="Publisher" notNull="true" relation="Users" />
+    <DateTime name="PublishTime" notNull="true" />
+    <Text name="Comment" />
+    <Integer name="Event" notNull="true" />
+    <String name="EventNote" precision="100" />
+    <Relation name="EventDuration" unique="true" relation="EventDurations" />
+  </Fields>
+  <Keys>
+    <Key>
       <KeyField>Event</KeyField>
-    </BeeKey>
-  </BeeKeys>
-</BeeTable>
+    </Key>
+  </Keys>
+</Table>

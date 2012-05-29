@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="UserCalendars"
   idName="UserCalendarID"
   >
-  <BeeFields>
-    <BeeField name="User" type="LONG" notNull="true" relation="Users" cascade="DELETE" />
-    <BeeField name="Calendar" type="LONG" notNull="true" relation="Calendars" cascade="DELETE" />
+  <Fields>
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" />
+    <Relation name="Calendar" notNull="true" relation="Calendars" cascade="DELETE" />
 
-    <BeeField name="DefaultDisplayedDays" type="INTEGER" />
+    <Integer name="DefaultDisplayedDays" />
 
-    <BeeField name="PixelsPerInterval" type="INTEGER" />
-    <BeeField name="IntervalsPerHour" type="INTEGER" />
+    <Integer name="PixelsPerInterval" />
+    <Integer name="IntervalsPerHour" />
 
-    <BeeField name="WorkingHourStart" type="INTEGER" />
-    <BeeField name="WorkingHourEnd" type="INTEGER" />
-    <BeeField name="ScrollToHour" type="INTEGER" />
-    <BeeField name="OffsetHourLabels" type="BOOLEAN" />
+    <Integer name="WorkingHourStart" />
+    <Integer name="WorkingHourEnd" />
+    <Integer name="ScrollToHour" />
+    <Boolean name="OffsetHourLabels" />
 
-    <BeeField name="EnableDragDrop" type="BOOLEAN" />
-    <BeeField name="DragDropCreation" type="BOOLEAN" />
+    <Boolean name="EnableDragDrop" />
+    <Boolean name="DragDropCreation" />
 
-    <BeeField name="TimeBlockClickNumber" type="INTEGER" />
-  </BeeFields>
-  <BeeKeys>
-    <BeeKey unique="true">
+    <Integer name="TimeBlockClickNumber" />
+  </Fields>
+  <Keys>
+    <Key unique="true">
       <KeyField>User</KeyField>
       <KeyField>Calendar</KeyField>
-    </BeeKey>
-  </BeeKeys>
-</BeeTable>
+    </Key>
+  </Keys>
+</Table>

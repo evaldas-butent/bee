@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="ExtendedProperties"
   idName="ExtendedPropertyID"
   >
-  <BeeFields>
-    <BeeField name="PropertyGroup" type="LONG" notNull="true" relation="PropertyGroups" />
-    <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />
+  <Fields>
+    <Relation name="PropertyGroup" notNull="true" relation="PropertyGroups" />
+    <String name="Name" precision="100" notNull="true" unique="true" />
     
-    <BeeField name="Hours" type="INTEGER" />
-    <BeeField name="Minutes" type="INTEGER" />
+    <Integer name="Hours" />
+    <Integer name="Minutes" />
     
-    <BeeField name="Description" type="TEXT" />
-  </BeeFields>
-</BeeTable>
+    <Text name="Description" />
+  </Fields>
+</Table>

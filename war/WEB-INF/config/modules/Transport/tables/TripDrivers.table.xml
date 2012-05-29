@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="TripDrivers"
   idName="TripDriverID"
   x="0" y="0"
   >
-  <BeeFields>
-    <BeeField name="Trip" type="LONG" notNull="true" relation="Trips" cascade="DELETE" />
-    <BeeField name="DateFrom" type="DATETIME" />
-    <BeeField name="DateTo" type="DATETIME" />
-    <BeeField name="Driver" type="LONG" notNull="true" relation="Drivers" />
-    <BeeField name="Note" type="STRING" precision="50" />
-  </BeeFields>
-</BeeTable>
+  <Fields>
+    <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" />
+    <DateTime name="DateFrom" />
+    <DateTime name="DateTo" />
+    <Relation name="Driver" notNull="true" relation="Drivers" />
+    <String name="Note" precision="50" />
+  </Fields>
+</Table>

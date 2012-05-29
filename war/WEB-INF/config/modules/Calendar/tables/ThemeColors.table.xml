@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="ThemeColors"
   idName="ThemeColorID"
   >
-  <BeeFields>
-    <BeeField name="Theme" type="LONG" notNull="true" relation="Themes" cascade="DELETE" />
-    <BeeField name="Color" type="LONG" notNull="true" relation="Colors" cascade="DELETE" />
-  </BeeFields>
-  <BeeKeys>
-    <BeeKey unique="true">
+  <Fields>
+    <Relation name="Theme" notNull="true" relation="Themes" cascade="DELETE" />
+    <Relation name="Color" notNull="true" relation="Colors" cascade="DELETE" />
+  </Fields>
+  <Keys>
+    <Key unique="true">
       <KeyField>Theme</KeyField>
       <KeyField>Color</KeyField>
-    </BeeKey>
-  </BeeKeys>
-</BeeTable>
+    </Key>
+  </Keys>
+</Table>

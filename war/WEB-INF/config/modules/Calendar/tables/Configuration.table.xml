@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="Configuration"
   idName="ConfigurationID"
   >
-  <BeeFields>
-    <BeeField name="Company" type="LONG" notNull="true" relation="Companies" />
-    <BeeField name="AppointmentType" type="LONG" notNull="true" relation="AppointmentTypes" />
+  <Fields>
+    <Relation name="Company" notNull="true" relation="Companies" />
+    <Relation name="AppointmentType" notNull="true" relation="AppointmentTypes" />
 
-    <BeeField name="TimeZone" type="LONG" relation="TimeZones" />
-  </BeeFields>
-</BeeTable>
+    <Relation name="TimeZone" relation="TimeZones" />
+  </Fields>
+</Table>

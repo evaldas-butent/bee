@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="AppointmentTypes"
   idName="AppointmentTypeID"
   >
-  <BeeFields>
-    <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />
-    <BeeField name="Description" type="TEXT" />
+  <Fields>
+    <String name="Name" precision="100" notNull="true" unique="true" />
+    <Text name="Description" />
 
-    <BeeField name="Theme" type="LONG" relation="Themes" />
+    <Relation name="Theme" relation="Themes" />
 
-    <BeeField name="AppointmentCreator" type="STRING" precision="30" />
-    <BeeField name="AppointmentEditor" type="STRING" precision="30" />
+    <String name="AppointmentCreator" precision="30" />
+    <String name="AppointmentEditor" precision="30" />
 
-    <BeeField name="AppointmentHeader" type="STRING" precision="100" />
-    <BeeField name="AppointmentBody" type="TEXT" />
-    <BeeField name="AppointmentFooter" type="STRING" precision="100" />
+    <String name="AppointmentHeader" precision="100" />
+    <Text name="AppointmentBody" />
+    <String name="AppointmentFooter" precision="100" />
 
-    <BeeField name="AppointmentTitle" type="TEXT" />
-  </BeeFields>
-</BeeTable>
+    <Text name="AppointmentTitle" />
+  </Fields>
+</Table>

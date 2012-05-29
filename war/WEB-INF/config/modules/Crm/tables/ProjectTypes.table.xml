@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="ProjectTypes"
   idName="ProjectTypeID"
   x="935" y="177"
   >
-  <BeeFields>
-    <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />
-  </BeeFields>
-</BeeTable>
+  <Fields>
+    <String name="Name" precision="100" notNull="true" unique="true" />
+  </Fields>
+</Table>

@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="AppointmentHistory"
   idName="AppointmentHistoryID"
   >
-  <BeeFields>
-    <BeeField name="Appointment" type="LONG" notNull="true" relation="Appointments" cascade="DELETE" />
-    <BeeField name="Publisher" type="LONG" notNull="true" relation="Users" defExpr="CURRENT_USER" />
-    <BeeField name="PublishTime" type="DATETIME" notNull="true" defExpr="CURRENT_TIME" />
+  <Fields>
+    <Relation name="Appointment" notNull="true" relation="Appointments" cascade="DELETE" />
+    <Relation name="Publisher" notNull="true" relation="Users" defExpr="CURRENT_USER" />
+    <DateTime name="PublishTime" notNull="true" defExpr="CURRENT_TIME" />
 
-    <BeeField name="Status" type="INTEGER" />
-    <BeeField name="Hours" type="INTEGER" />
-    <BeeField name="Minutes" type="INTEGER" />
+    <Integer name="Status" />
+    <Integer name="Hours" />
+    <Integer name="Minutes" />
 
-    <BeeField name="Comment" type="TEXT" />
-  </BeeFields>
-</BeeTable>
+    <Text name="Comment" />
+  </Fields>
+</Table>

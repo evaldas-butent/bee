@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="Vehicles"
   idName="VehicleID"
   x="0" y="0"
   >
-  <BeeFields>
-    <BeeField name="Type" type="LONG" notNull="true" relation="VehicleTypes" />
-    <BeeField name="Model" type="LONG" notNull="true" relation="VehicleModels" />
-    <BeeField name="Number" type="STRING" precision="10" unique="true" notNull="true" />
-    <BeeField name="BodyNumber" type="STRING" precision="20" unique="true" />
-    <BeeField name="EngineNumber" type="STRING" precision="20" unique="true" />
-    <BeeField name="EngineVolume" type="DECIMAL" precision="5" />
-    <BeeField name="ProductionDate" type="DATE" />
-    <BeeField name="Owner" type="LONG" relation="Companies" />
-    <BeeField name="Speedometer" type="INTEGER" />
-    <BeeField name="Fuel" type="LONG" relation="FuelTypes" />
-    <BeeField name="TankCapacity" type="DECIMAL" precision="4" />
-    <BeeField name="Power" type="DECIMAL" precision="4" />
-    <BeeField name="Netto" type="DOUBLE" />
-    <BeeField name="Brutto" type="DOUBLE" />
-    <BeeField name="Notes" type="TEXT" />
-  </BeeFields>
-</BeeTable>
+  <Fields>
+    <Relation name="Type" notNull="true" relation="VehicleTypes" />
+    <Relation name="Model" notNull="true" relation="VehicleModels" />
+    <String name="Number" precision="10" unique="true" notNull="true" />
+    <String name="BodyNumber" precision="20" unique="true" />
+    <String name="EngineNumber" precision="20" unique="true" />
+    <Numeric name="EngineVolume" precision="5" />
+    <Date name="ProductionDate" />
+    <Relation name="Owner" relation="Companies" />
+    <Integer name="Speedometer" />
+    <Relation name="Fuel" relation="FuelTypes" />
+    <Numeric name="TankCapacity" precision="4" />
+    <Numeric name="Power" precision="4" />
+    <Double name="Netto" />
+    <Double name="Brutto" />
+    <Text name="Notes" />
+  </Fields>
+</Table>

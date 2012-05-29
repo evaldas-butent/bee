@@ -14,27 +14,29 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * Handles data table information storage in XML structure.
  */
-@XmlRootElement(name = "BeeTable", namespace = DataUtils.TABLE_NAMESPACE)
+@XmlRootElement(name = "Table", namespace = DataUtils.TABLE_NAMESPACE)
 public class XmlTable {
 
-  /**
-   * Handles data field information storage in XML structure.
-   */
-  @XmlRootElement(name = "BeeField", namespace = DataUtils.TABLE_NAMESPACE)
-  public static class XmlField {
+  @XmlSeeAlso({XmlBoolean.class,
+      XmlInteger.class, XmlLong.class, XmlDouble.class, XmlNumeric.class,
+      XmlChar.class, XmlString.class, XmlText.class,
+      XmlDate.class, XmlDateTime.class,
+      XmlRelation.class})
+  public abstract static class XmlField {
     @XmlAttribute
     public String name;
     @XmlAttribute
     public String type;
     @XmlAttribute
-    public int precision;
+    public Integer precision;
     @XmlAttribute
-    public int scale;
+    public Integer scale;
     @XmlAttribute
     public boolean notNull;
     @XmlAttribute
@@ -43,12 +45,6 @@ public class XmlTable {
     public DefaultExpression defExpr;
     @XmlAttribute
     public String defValue;
-    @XmlAttribute
-    public String relation;
-    @XmlTransient
-    public String relationField;
-    @XmlAttribute
-    public String cascade;
     @XmlAttribute
     public boolean translatable;
     @XmlAttribute
@@ -92,10 +88,60 @@ public class XmlTable {
     }
   }
 
+  @XmlRootElement(name = "Boolean", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlBoolean extends XmlField {
+  }
+
+  @XmlRootElement(name = "Integer", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlInteger extends XmlField {
+  }
+
+  @XmlRootElement(name = "Long", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlLong extends XmlField {
+  }
+
+  @XmlRootElement(name = "Double", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlDouble extends XmlField {
+  }
+
+  @XmlRootElement(name = "Numeric", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlNumeric extends XmlField {
+  }
+
+  @XmlRootElement(name = "Char", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlChar extends XmlField {
+  }
+
+  @XmlRootElement(name = "String", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlString extends XmlField {
+  }
+
+  @XmlRootElement(name = "Text", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlText extends XmlField {
+  }
+
+  @XmlRootElement(name = "Date", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlDate extends XmlField {
+  }
+
+  @XmlRootElement(name = "DateTime", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlDateTime extends XmlField {
+  }
+
+  @XmlRootElement(name = "Relation", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlRelation extends XmlField {
+    @XmlAttribute
+    public String relation;
+    @XmlTransient
+    public String relationField;
+    @XmlAttribute
+    public String cascade;
+  }
+
   /**
    * Handles table key information storage in XML structure.
    */
-  @XmlRootElement(name = "BeeKey", namespace = DataUtils.TABLE_NAMESPACE)
+  @XmlRootElement(name = "Key", namespace = DataUtils.TABLE_NAMESPACE)
   public static class XmlKey {
     @XmlAttribute
     public boolean unique;
@@ -149,19 +195,19 @@ public class XmlTable {
   @XmlAttribute
   public int y;
 
-  @XmlElementWrapper(name = "BeeFields", namespace = DataUtils.TABLE_NAMESPACE)
+  @XmlElementWrapper(name = "Fields", namespace = DataUtils.TABLE_NAMESPACE)
   @XmlElementRef
   public List<XmlField> fields;
 
-  @XmlElementWrapper(name = "BeeExtended", namespace = DataUtils.TABLE_NAMESPACE)
+  @XmlElementWrapper(name = "Extensions", namespace = DataUtils.TABLE_NAMESPACE)
   @XmlElementRef
   public List<XmlField> extFields;
 
-  @XmlElementWrapper(name = "BeeStates", namespace = DataUtils.TABLE_NAMESPACE)
-  @XmlElement(name = "BeeState", namespace = DataUtils.TABLE_NAMESPACE)
+  @XmlElementWrapper(name = "States", namespace = DataUtils.TABLE_NAMESPACE)
+  @XmlElement(name = "State", namespace = DataUtils.TABLE_NAMESPACE)
   public Set<String> states;
 
-  @XmlElementWrapper(name = "BeeKeys", namespace = DataUtils.TABLE_NAMESPACE)
+  @XmlElementWrapper(name = "Keys", namespace = DataUtils.TABLE_NAMESPACE)
   @XmlElementRef
   public Set<XmlKey> keys;
 

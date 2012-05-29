@@ -12,6 +12,7 @@ import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.BeeTable.BeeKey;
+import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.BeeTable.BeeTrigger;
 import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.io.FileUtils;
@@ -35,8 +36,6 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SqlConstants;
-import com.butent.bee.shared.data.SqlConstants.SqlDataType;
-import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.XmlState;
 import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
@@ -273,14 +272,6 @@ public class SystemBean {
     return getTable(tblName).getIdName();
   }
 
-  public String getRelation(String tblName, String fldName) {
-    return getTableField(tblName, fldName).getRelation();
-  }
-
-  public int getScale(String tblName, String fldName) {
-    return getTableField(tblName, fldName).getScale();
-  }
-
   public BeeState getState(String stateName) {
     Assert.state(isState(stateName), "Not a state: " + stateName);
     return stateCache.get(BeeUtils.normalize(stateName));
@@ -302,10 +293,6 @@ public class SystemBean {
 
   public Map<String, Pair<DefaultExpression, Object>> getTableDefaults(String tblName) {
     return getTable(tblName).getDefaults();
-  }
-
-  public BeeField getTableField(String tblName, String fldName) {
-    return getTable(tblName).getField(fldName);
   }
 
   public Collection<BeeField> getTableFields(String tblName) {
@@ -974,9 +961,9 @@ public class SystemBean {
       Map<String, List<String[]>> tr = Maps.newHashMap();
 
       for (BeeField field : table.getFields()) {
-        if (field.hasEditableRelation()) {
+        if (field instanceof BeeRelation && ((BeeRelation) field).hasEditableRelation()) {
           String tblName = field.getTable();
-          String relTable = field.getRelation();
+          String relTable = ((BeeRelation) field).getRelation();
 
           List<String[]> entry = tr.get(tblName);
 
@@ -1106,33 +1093,7 @@ public class SystemBean {
 
           if (!BeeUtils.isEmpty(fields)) {
             for (XmlField field : fields) {
-              String fldName = field.name;
-              boolean notNull = field.notNull;
-
-              if (table.hasField(fldName)) {
-                LogUtils.warning(logger, "Dublicate field name:", tbl, fldName);
-              } else {
-                if (notNull && extMode) {
-                  LogUtils.warning(logger, "Extendend fields must bee nullable:", tbl, fldName);
-                  notNull = false;
-                }
-                BeeField fld = table.addField(fldName,
-                    NameUtils.getConstant(SqlDataType.class, field.type),
-                    field.precision, field.scale, notNull, field.unique,
-                    field.defExpr, field.defValue, field.relation,
-                    NameUtils.getConstant(SqlKeyword.class, field.cascade), field.label)
-                    .setTranslatable(field.translatable)
-                    .setExtended(extMode);
-
-                String tblName = fld.getTable();
-
-                if (!BeeUtils.isEmpty(fld.getRelation())) {
-                  table.addForeignKey(tblName, fldName, fld.getRelation(), fld.getCascade());
-                }
-                if (fld.isUnique()) {
-                  table.addKey(true, tblName, fldName);
-                }
-              }
+              table.addField(field, extMode);
             }
           }
         }

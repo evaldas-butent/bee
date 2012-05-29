@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="Themes"
   idName="ThemeID"
   >
-  <BeeFields>
-    <BeeField name="Name" type="STRING" precision="30" notNull="true" unique="true" />
-    <BeeField name="Description" type="TEXT" />
+  <Fields>
+    <String name="Name" precision="30" notNull="true" unique="true" />
+    <Text name="Description" />
 
-    <BeeField name="DefaultColor" type="LONG" relation="Colors" />
-  </BeeFields>
-</BeeTable>
+    <Relation name="DefaultColor" relation="Colors" />
+  </Fields>
+</Table>

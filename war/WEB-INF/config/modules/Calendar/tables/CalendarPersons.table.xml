@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="CalendarPersons"
   idName="CalendarPersonID"
   >
-  <BeeFields>
-    <BeeField name="Calendar" type="LONG" notNull="true" relation="Calendars" cascade="DELETE" />
-    <BeeField name="CompanyPerson" type="LONG" notNull="true" relation="CompanyPersons" cascade="DELETE" />
+  <Fields>
+    <Relation name="Calendar" notNull="true" relation="Calendars" cascade="DELETE" />
+    <Relation name="CompanyPerson" notNull="true" relation="CompanyPersons" cascade="DELETE" />
     
-    <BeeField name="Creator" type="BOOLEAN" />
-    <BeeField name="Organizer" type="BOOLEAN" />
-  </BeeFields>
-  <BeeKeys>
-    <BeeKey unique="true">
+    <Boolean name="Creator" />
+    <Boolean name="Organizer" />
+  </Fields>
+  <Keys>
+    <Key unique="true">
       <KeyField>Calendar</KeyField>
       <KeyField>CompanyPerson</KeyField>
-    </BeeKey>
-  </BeeKeys>
-</BeeTable>
+    </Key>
+  </Keys>
+</Table>

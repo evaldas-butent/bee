@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="Attendees"
   idName="AttendeeID"
   >
-  <BeeFields>
-    <BeeField name="AttendeeType" type="LONG" notNull="true" relation="AttendeeTypes" />
+  <Fields>
+    <Relation name="AttendeeType" notNull="true" relation="AttendeeTypes" />
 
-    <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />
-    <BeeField name="Location" type="STRING" precision="100" />
-    <BeeField name="Description" type="TEXT" />
+    <String name="Name" precision="100" notNull="true" unique="true" />
+    <String name="Location" precision="100" />
+    <Text name="Description" />
 
-    <BeeField name="CompanyPerson" type="LONG" relation="CompanyPersons" />
+    <Relation name="CompanyPerson" relation="CompanyPersons" />
 
-    <BeeField name="Transparency" type="INTEGER" />
-  </BeeFields>
-</BeeTable>
+    <Integer name="Transparency" />
+  </Fields>
+</Table>

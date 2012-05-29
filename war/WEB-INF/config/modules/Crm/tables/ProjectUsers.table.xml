@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
   
   name="ProjectUsers"
   idName="ProjectUserID"
   x="453" y="208"
   >
-  <BeeFields>
-    <BeeField name="Project" type="LONG" notNull="true" relation="Projects" cascade="DELETE" />
-    <BeeField name="User" type="LONG" notNull="true" relation="Users" cascade="DELETE" />
-    <BeeField name="LastAccess" type="DATETIME" />
-  </BeeFields>
-  <BeeKeys>
-    <BeeKey unique="true">
+  <Fields>
+    <Relation name="Project" notNull="true" relation="Projects" cascade="DELETE" />
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" />
+    <DateTime name="LastAccess" />
+  </Fields>
+  <Keys>
+    <Key unique="true">
       <KeyField>Project</KeyField>
       <KeyField>User</KeyField>
-    </BeeKey>
-  </BeeKeys>
-</BeeTable>
+    </Key>
+  </Keys>
+</Table>

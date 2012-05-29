@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
   
   name="Parameters"
   idName="ParameterID"
   x="0" y="0"
   >
-  <BeeFields>
-    <BeeField name="Module" type="STRING" precision="20" notNull="true"/>
-    <BeeField name="Name" type="STRING" precision="30" notNull="true" />
-    <BeeField name="Type" type="STRING" precision="20" notNull="true" />
-    <BeeField name="Value" type="TEXT" />
-    <BeeField name="Description" type="TEXT" />
-  </BeeFields>
-  <BeeKeys>
-    <BeeKey unique="true">
+  <Fields>
+    <String name="Module" precision="20" notNull="true"/>
+    <String name="Name" precision="30" notNull="true" />
+    <String name="Type" precision="20" notNull="true" />
+    <Text name="Value" />
+    <Text name="Description" />
+  </Fields>
+  <Keys>
+    <Key unique="true">
       <KeyField>Module</KeyField>
       <KeyField>Name</KeyField>
-    </BeeKey>
-  </BeeKeys>
-</BeeTable>
+    </Key>
+  </Keys>
+</Table>

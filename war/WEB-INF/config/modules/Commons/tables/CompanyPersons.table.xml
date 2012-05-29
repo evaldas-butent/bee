@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
   
   name="CompanyPersons"
   idName="CompanyPersonID"
   x="501" y="339"
   >
-  <BeeFields>
-    <BeeField name="Company" type="LONG" notNull="true" relation="Companies" cascade="DELETE" label="Įmonė" />
-    <BeeField name="Person" type="LONG" notNull="true" relation="Persons" cascade="DELETE" label="Asmuo" />
-    <BeeField name="Position" type="STRING" precision="50" />
-    <BeeField name="Contact" type="LONG" unique="true" relation="Contacts" />
-  </BeeFields>
-  <BeeKeys>
-    <BeeKey unique="true">
+  <Fields>
+    <Relation name="Company" notNull="true" relation="Companies" cascade="DELETE" label="Įmonė" />
+    <Relation name="Person" notNull="true" relation="Persons" cascade="DELETE" label="Asmuo" />
+    <String name="Position" precision="50" />
+    <Relation name="Contact" unique="true" relation="Contacts" />
+  </Fields>
+  <Keys>
+    <Key unique="true">
       <KeyField>Company</KeyField>
       <KeyField>Person</KeyField>
-    </BeeKey>
-  </BeeKeys>
-</BeeTable>
+    </Key>
+  </Keys>
+</Table>

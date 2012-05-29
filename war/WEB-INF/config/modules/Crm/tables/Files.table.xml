@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="Files"
   idName="FileID"
   >
-  <BeeFields>
-    <BeeField name="FileDate" type="DATETIME" notNull="true" />
-    <BeeField name="FileVersion" type="STRING" precision="30" />
-    <BeeField name="Document" type="LONG" notNull="true" relation="Documents" />
-    <BeeField name="Name" type="STRING" precision="100" notNull="true" />
-    <BeeField name="Description" type="TEXT" />
-    <BeeField name="Hash" type="STRING" precision="100" />
-    <BeeField name="Mime" type="STRING" precision="100" />
-    <BeeField name="Owner" type="LONG" notNull="true" relation="Users" />
-  </BeeFields>
-</BeeTable>
+  <Fields>
+    <DateTime name="FileDate" notNull="true" />
+    <String name="FileVersion" precision="30" />
+    <Relation name="Document" notNull="true" relation="Documents" />
+    <String name="Name" precision="100" notNull="true" />
+    <Text name="Description" />
+    <String name="Hash" precision="100" />
+    <String name="Mime" precision="100" />
+    <Relation name="Owner" notNull="true" relation="Users" />
+  </Fields>
+</Table>

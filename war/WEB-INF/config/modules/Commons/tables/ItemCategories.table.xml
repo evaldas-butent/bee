@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="ItemCategories"
   idName="ItemCategoryID"
   >
-  <BeeFields>
-    <BeeField name="Item" type="LONG" notNull="true" relation="Items" cascade="DELETE" />
-    <BeeField name="Category" type="LONG" notNull="true" relation="CategoryTree" />
-  </BeeFields>
-  <BeeKeys>
-    <BeeKey unique="true">
+  <Fields>
+    <Relation name="Item" notNull="true" relation="Items" cascade="DELETE" />
+    <Relation name="Category" notNull="true" relation="CategoryTree" />
+  </Fields>
+  <Keys>
+    <Key unique="true">
       <KeyField>Item</KeyField>
       <KeyField>Category</KeyField>
-    </BeeKey>
-  </BeeKeys>
-</BeeTable>
+    </Key>
+  </Keys>
+</Table>

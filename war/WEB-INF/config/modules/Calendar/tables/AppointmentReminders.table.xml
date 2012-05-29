@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="AppointmentReminders"
   idName="AppointmentReminderID"
   >
-  <BeeFields>
-    <BeeField name="Appointment" type="LONG" notNull="true" relation="Appointments" cascade="DELETE" />
-    <BeeField name="ReminderType" type="LONG" notNull="true" relation="ReminderTypes" cascade="DELETE" />
-    <BeeField name="Recipient" type="LONG" relation="CompanyPersons" cascade="DELETE" />
+  <Fields>
+    <Relation name="Appointment" notNull="true" relation="Appointments" cascade="DELETE" />
+    <Relation name="ReminderType" notNull="true" relation="ReminderTypes" cascade="DELETE" />
+    <Relation name="Recipient" relation="CompanyPersons" cascade="DELETE" />
 
-    <BeeField name="Hours" type="INTEGER" />
-    <BeeField name="Minutes" type="INTEGER" />
-    <BeeField name="Scheduled" type="DATETIME" />
+    <Integer name="Hours" />
+    <Integer name="Minutes" />
+    <DateTime name="Scheduled" />
 
-    <BeeField name="Message" type="TEXT" />
-    <BeeField name="Sent" type="DATETIME" />
-  </BeeFields>
-</BeeTable>
+    <Text name="Message" />
+    <DateTime name="Sent" />
+  </Fields>
+</Table>

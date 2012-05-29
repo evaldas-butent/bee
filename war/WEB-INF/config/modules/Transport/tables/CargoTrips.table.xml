@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<BeeTable xmlns="http://www.butent.com/table"
+<Table xmlns="http://www.butent.com/table"
 
   name="CargoTrips"
   idName="CargoTripID"
   x="0" y="0"
   >
-  <BeeFields>
-    <BeeField name="Cargo" type="LONG" notNull="true" relation="OrderCargo" cascade="DELETE" />
-    <BeeField name="Trip" type="LONG" notNull="true" relation="Trips" cascade="DELETE" />
-    <BeeField name="LoadingPlace" type="LONG" unique="true" relation="CargoPlaces" />
-    <BeeField name="UnloadingPlace" type="LONG" unique="true" relation="CargoPlaces" />
-    <BeeField name="CargoPercent" type="DECIMAL" precision="3" scale="0" />
-    <BeeField name="TripPercent" type="DECIMAL" precision="3" scale="0" />
-  </BeeFields>
-  <BeeKeys>
-    <BeeKey unique="true">
+  <Fields>
+    <Relation name="Cargo" notNull="true" relation="OrderCargo" cascade="DELETE" />
+    <Relation name="Trip" notNull="true" relation="Trips" cascade="DELETE" />
+    <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" />
+    <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" />
+    <Numeric name="CargoPercent" precision="3" scale="0" />
+    <Numeric name="TripPercent" precision="3" scale="0" />
+  </Fields>
+  <Keys>
+    <Key unique="true">
       <KeyField>Cargo</KeyField>
       <KeyField>Trip</KeyField>
-    </BeeKey>
-  </BeeKeys>
-</BeeTable>
+    </Key>
+  </Keys>
+</Table>
