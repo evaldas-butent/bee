@@ -14,7 +14,7 @@
   name="NewAppointment" viewName="Appointments" caption="Naujas Vizitas"
   disabledActions="add delete" enabledActions="save">
 
-  <FlowPanel style="&relative; margin-left: 1em; margin-right: 1em; margin-top: 2ex; min-width: 760px;">
+  <FlowPanel style="&relative; margin: 2ex 1em; min-width: 760px;">
     <FlowPanel style="&relative; height: 30px;">
       <Label html="Klientas:" style="&header;" />
       &separator;

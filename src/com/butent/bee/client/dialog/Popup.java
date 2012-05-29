@@ -137,6 +137,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
     private boolean show = false;
     private boolean isUnloading = false;
+    private int level = BeeConst.UNDEF;
 
     private int offsetHeight = BeeConst.UNDEF;
     private int offsetWidth = BeeConst.UNDEF;
@@ -208,6 +209,9 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     private void maybeShowGlass() {
       if (show) {
         if (curPanel.isGlassEnabled()) {
+          if (level > 0) {
+            curPanel.getGlass().getStyle().setZIndex(level);
+          }
           Document.get().getBody().appendChild(curPanel.getGlass());
           
           GlassResizer glassResizer = new GlassResizer(curPanel.getGlass());
@@ -242,8 +246,10 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       curPanel.getElement().getStyle().setOverflow(Overflow.VISIBLE);
     }
 
-    private void setState(boolean show, boolean isUnloading) {
+    private void setState(boolean show, boolean isUnloading, int level) {
       this.isUnloading = isUnloading;
+      this.level = level;
+
       cancel();
 
       if (showTimer != null) {
@@ -436,7 +442,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     }
     Stacking.removeContext(this);
 
-    resizeAnimation.setState(false, false);
+    resizeAnimation.setState(false, false, BeeConst.UNDEF);
     CloseEvent.fire(this, this, autoClosed);
   }
 
@@ -585,8 +591,9 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     if (isAttached()) {
       this.removeFromParent();
     }
-    Stacking.addContext(this);
-    resizeAnimation.setState(true, false);
+    
+    int level = Stacking.addContext(this);
+    resizeAnimation.setState(true, false, level);
   }
 
   public void showRelativeTo(final UIObject target) {
@@ -628,7 +635,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   protected void onUnload() {
     super.onUnload();
     if (isShowing()) {
-      resizeAnimation.setState(false, true);
+      resizeAnimation.setState(false, true, BeeConst.UNDEF);
     }
   }
 

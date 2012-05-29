@@ -6,7 +6,7 @@
   <columns>
     <DataColumn name="Unit" source="Name" caption="Mato vienetas" />
     <DataColumn name="Factor" caption="Koeficientas" />
-    <RelColumn  name="BaseUnit" caption="Pagrindinis mv." />
+    <RelColumn  name="BaseUnit" caption="Pagrindinis mv." newRowEnabled="false" />
     <DataColumn name="Caption" caption="Pavadinimas" />
   </columns>
 </Grid>

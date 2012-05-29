@@ -100,8 +100,7 @@ public class CalendarKeeper {
                 result.updateRow(AppointmentBuilder.createEmptyRow(start), false);
 
                 Global.inputWidget(result.getCaption(), result.asWidget(),
-                    builder.getModalCallback(), RowFactory.OK, RowFactory.CANCEL, true,
-                    RowFactory.DIALOG_STYLE, null);
+                    builder.getModalCallback(), true, RowFactory.DIALOG_STYLE, null);
               }
             }
           });

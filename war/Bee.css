@@ -775,7 +775,7 @@ body, select {
 
 .bee-DialogBox .bee-Dialog-caption {
   background-color: #e3e8f3;
-  padding: 4px 20px 4px 8px;
+  padding: 4px 50px 4px 8px;
   border-bottom: 1px solid #ddd;
   font-size: medium;
   font-weight: bolder;
@@ -1067,6 +1067,13 @@ body, select {
   margin-left: 1em;
 }
 
+.bee-InputSave {
+  position: absolute;
+  top: 2px;
+  right: 28px;
+  z-index: 1;
+}
+
 .bee-Tree {
   overflow: auto;
 }
@@ -1316,7 +1323,7 @@ body, select {
 .bee-NewRow .bee-Dialog-caption {
   background-color: #eee;
   color: green;
-  padding: 2px 20px 2px 8px;
+  padding: 2px 50px 2px 8px;
   border-bottom: 1px solid #ddd;
   font-size: medium;
   font-style: italic;

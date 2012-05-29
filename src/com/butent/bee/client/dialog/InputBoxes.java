@@ -1,6 +1,7 @@
 package com.butent.bee.client.dialog;
 
 import com.google.common.base.Supplier;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -23,9 +24,9 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
@@ -35,6 +36,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
+import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.BeeRadioButton;
@@ -60,7 +62,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class InputBoxes {
 
   public static final String SILENT_ERROR = "-";
-  
+
   private class KeyboardHandler implements KeyDownHandler {
 
     private final DialogBox dialog;
@@ -142,6 +144,8 @@ public class InputBoxes {
   private static final String STYLE_INPUT_COMMAND = "bee-InputCommand";
   private static final String STYLE_INPUT_CONFIRM = "bee-InputConfirm";
   private static final String STYLE_INPUT_CANCEL = "bee-InputCancel";
+
+  private static final String STYLE_INPUT_SAVE = "bee-InputSave";
 
   public void inputString(String caption, String prompt, final DialogCallback<String> callback,
       String defaultValue, int maxLength, double width, Unit widthUnit, final int timeout,
@@ -368,8 +372,8 @@ public class InputBoxes {
   }
 
   public void inputWidget(String caption, Widget widget, final InputWidgetCallback callback,
-      String confirmHtml, String cancelHtml, boolean enableGlass, String dialogStyle,
-      UIObject target, final int timeout, WidgetInitializer initializer) {
+      boolean enableGlass, String dialogStyle, UIObject target,
+      String confirmHtml, String cancelHtml, final int timeout, WidgetInitializer initializer) {
 
     Assert.notNull(widget);
     Assert.notNull(callback);
@@ -403,9 +407,28 @@ public class InputBoxes {
         return callback.getErrorMessage();
       }
     };
-
+    
     addCommandGroup(dialog, panel, confirmHtml, cancelHtml, initializer, state, errorDisplay,
         errorSupplier);
+
+    if (BeeUtils.isEmpty(confirmHtml)) {
+      BeeImage save = new BeeImage(Global.getImages().save(), new Scheduler.ScheduledCommand() {
+        @Override
+        public void execute() {
+          String message = errorSupplier.get();
+          if (BeeUtils.isEmpty(message)) {
+            state.set(State.CONFIRMED);
+            dialog.hide();
+          } else {
+            showError(errorDisplay.get(), message);
+          }
+        }
+      });
+      save.addStyleName(STYLE_INPUT_SAVE);
+      UiHelper.initialize(save, initializer, DialogConstants.WIDGET_SAVE);
+
+      dialog.addChild(save);
+    }
     
     Binder.addKeyDownHandler(dialog, new KeyDownHandler() {
       public void onKeyDown(KeyDownEvent event) {
@@ -453,7 +476,7 @@ public class InputBoxes {
 
     UiHelper.setWidget(dialog, panel, initializer, DialogConstants.WIDGET_PANEL);
 
-    if (enableGlass && Stacking.getWidgetCount() <= 0) {
+    if (enableGlass) {
       dialog.enableGlass();
     }
     

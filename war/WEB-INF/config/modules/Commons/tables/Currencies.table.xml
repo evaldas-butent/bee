@@ -6,7 +6,8 @@
   x="0" y="0"
   >
   <BeeFields>
-    <BeeField name="Name" type="STRING" precision="5" notNull="true" unique="true" />
+    <BeeField name="Name" type="STRING" precision="5" notNull="true" unique="true"
+      label="Valiuta" />
     <BeeField name="Caption" type="STRING" precision="60" />
     <BeeField name="MinorName" type="STRING" precision="5" />
     <BeeField name="MinorCaption" type="STRING" precision="60" />

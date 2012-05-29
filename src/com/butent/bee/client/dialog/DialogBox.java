@@ -1,5 +1,6 @@
 package com.butent.bee.client.dialog;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.Position;
@@ -14,7 +15,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Vertical;
-import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
@@ -67,7 +67,7 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
     this.layout.add(captionWidget);
     this.container.add(layout);
 
-    BeeImage close = new BeeImage(Global.getImages().close(), new BeeCommand() {
+    BeeImage close = new BeeImage(Global.getImages().close(), new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {
         hide();
@@ -89,6 +89,10 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
 
   public DialogBox(String html) {
     this(html, STYLE_DIALOG);
+  }
+  
+  public void addChild(Widget widget) {
+    this.container.add(widget);
   }
 
   public Caption getCaption() {

@@ -8,7 +8,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.Dimensions;
-import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
@@ -34,9 +33,7 @@ public class ModalForm extends Popup {
     super(false, true, STYLE_NAME);
     this.requiresUnload = requiresUnload;
 
-    if (Stacking.getWidgetCount() <= 0) {
-      enableGlass();
-    }
+    enableGlass();
     setAnimationEnabled(true);
 
     widget.addStyleName(STYLE_NAME + "-content");

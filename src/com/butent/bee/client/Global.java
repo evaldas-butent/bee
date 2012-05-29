@@ -338,22 +338,20 @@ public class Global implements Module {
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback) {
-    INP_BOXEN.inputWidget(caption, input, callback, DialogConstants.OK, DialogConstants.CANCEL,
-        false, null, null, BeeConst.UNDEF, null);
+    inputWidget(caption, input, callback, false, null, null);
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,
-      String confirmHtml, String cancelHtml, boolean enableGlass, String dialogStyle,
-      UIObject target) {
-    INP_BOXEN.inputWidget(caption, input, callback, confirmHtml, cancelHtml, enableGlass,
-        dialogStyle, target, BeeConst.UNDEF, null);
+      boolean enableGlass, String dialogStyle, UIObject target) {
+    INP_BOXEN.inputWidget(caption, input, callback, enableGlass, dialogStyle, target,
+        null, null, BeeConst.UNDEF, null);
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,
-      String confirmHtml, String cancelHtml, boolean enableGlass, String dialogStyle,
-      UIObject target, int timeout, WidgetInitializer initializer) {
-    INP_BOXEN.inputWidget(caption, input, callback, confirmHtml, cancelHtml, enableGlass,
-        dialogStyle, target, timeout, initializer);
+      boolean enableGlass, String dialogStyle, UIObject target,
+      String confirmHtml, String cancelHtml, int timeout, WidgetInitializer initializer) {
+    INP_BOXEN.inputWidget(caption, input, callback, enableGlass, dialogStyle, target,
+        confirmHtml, cancelHtml, timeout, initializer);
   }
 
   public static boolean isDebug() {

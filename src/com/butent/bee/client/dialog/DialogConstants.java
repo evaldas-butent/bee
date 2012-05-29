@@ -16,6 +16,8 @@ public class DialogConstants {
   public static final String WIDGET_CONFIRM = "confirm";
   public static final String WIDGET_CANCEL = "cancel";
 
+  public static final String WIDGET_SAVE = "save";
+
   private DialogConstants() {
   }
 }

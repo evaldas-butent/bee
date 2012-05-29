@@ -388,7 +388,7 @@ class AppointmentBuilder extends AbstractFormCallback {
           refreshResourceWidget();
         }
       }
-    }, "Pasirinkti", "Atšaukti", false, RowFactory.DIALOG_STYLE, null);
+    }, false, RowFactory.DIALOG_STYLE, null);
   }
   
   private void buildIncrementally() {

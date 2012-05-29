@@ -9,6 +9,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.LogUtils;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.logging.Logger;
 
@@ -26,10 +27,12 @@ public class ResultSetBean {
 
   static {
     String[] arr = new String[] {
-        "index", "id", "label", "schema", "catalog", "table", "class", "sql type",
-        "type name", "type", "precision", "scale", "nullable", "pattern", "display size", "signed",
-        "auto increment", "case sensitive", "currency", "searchable", "read only", "writable",
-        "definitely writable", "properties"};
+        "index", "name", "label",
+        "schema", "catalog", "table",
+        "class", "sql type", "type name", "value type",
+        "precision", "scale", "nullable",
+        "display size", "signed", "auto increment", "case sensitive", "currency",
+        "searchable", "read only", "writable", "definitely writable"};
 
     metaCols = new BeeColumn[arr.length];
     for (int i = 0; i < arr.length; i++) {
@@ -41,23 +44,6 @@ public class ResultSetBean {
     Assert.noNulls(rs, buff);
     DateTime start = new DateTime();
 
-    BeeColumn[] cols = null;
-    int c;
-
-    try {
-      cols = JdbcUtils.getColumns(rs);
-      c = cols.length;
-    } catch (JdbcException ex) {
-      LogUtils.error(logger, ex);
-      buff.addError(ex);
-      c = 0;
-    }
-
-    if (c <= 0) {
-      buff.addSevere("Cannot get result set meta data");
-      return;
-    }
-
     for (int i = 0; i < metaCols.length; i++) {
       buff.addColumn(metaCols[i]);
     }
@@ -65,17 +51,26 @@ public class ResultSetBean {
       buff.addColumn(new BeeColumn(start.toTimeString()));
     }
 
-    BeeColumn z;
-    for (int i = 0; i < c; i++) {
-      z = cols[i];
+    try {
+      ResultSetMetaData rsmd = rs.getMetaData();
+      for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+        int sqlType = rsmd.getColumnType(i);
 
-      buff.add(z.getIndex(), z.getId(), z.getLabel(), z.getType(),
-          z.getPrecision(), z.getScale(), z.isNullable(), z.getPattern(),
-          z.isReadOnly(), z.getProperties());
-
-      if (debug) {
-        buff.add(new DateTime().toTimeString());
+        buff.add(i, rsmd.getColumnName(i), rsmd.getColumnLabel(i),
+            rsmd.getSchemaName(i), rsmd.getCatalogName(i), rsmd.getTableName(i),
+            rsmd.getColumnClassName(i), sqlType, rsmd.getColumnTypeName(i),
+            JdbcUtils.sqlTypeToValueType(sqlType),
+            rsmd.getPrecision(i), rsmd.getScale(i), rsmd.isNullable(i),
+            rsmd.getColumnDisplaySize(i), rsmd.isSigned(i), rsmd.isAutoIncrement(i),
+            rsmd.isCaseSensitive(i), rsmd.isCurrency(i), rsmd.isSearchable(i),
+            rsmd.isReadOnly(i), rsmd.isWritable(i), rsmd.isDefinitelyWritable(i));
+        if (debug) {
+          buff.add(new DateTime().toTimeString());
+        }
       }
+    } catch (SQLException ex) {
+      LogUtils.error(logger, ex);
+      buff.addError(ex);
     }
   }
 

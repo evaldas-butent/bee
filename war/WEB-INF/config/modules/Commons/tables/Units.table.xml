@@ -5,7 +5,8 @@
   idName="UnitID"
   >
   <BeeFields>
-    <BeeField name="Name" type="STRING" precision="10" notNull="true" unique="true" />
+    <BeeField name="Name" type="STRING" precision="10" notNull="true" unique="true"
+      label="Mato vienetas" />
     <BeeField name="Caption" type="STRING" precision="30" />
     <BeeField name="BaseUnit" type="LONG" relation="Units" />
     <BeeField name="Factor" type="DOUBLE" />

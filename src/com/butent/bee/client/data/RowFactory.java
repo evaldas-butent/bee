@@ -41,9 +41,6 @@ public class RowFactory {
     }
   }
 
-  public static final String OK = "Išsaugoti";
-  public static final String CANCEL = "Atšaukti";
-
   public static final String DIALOG_STYLE = "bee-NewRow";
 
   private static final String DEFAULT_CAPTION = "Naujas";
@@ -337,7 +334,7 @@ public class RowFactory {
           callback.onTimeout();
         }
       }
-    }, OK, CANCEL, true, DIALOG_STYLE, target);
+    }, true, DIALOG_STYLE, target);
   }
 
   private RowFactory() {
