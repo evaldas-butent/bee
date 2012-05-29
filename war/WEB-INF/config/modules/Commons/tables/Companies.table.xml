@@ -7,7 +7,7 @@
   >
   <BeeFields>
     <BeeField name="Owner" type="LONG" relation="Companies" />
-    <BeeField name="Name" type="STRING" precision="100" notNull="true" />
+    <BeeField name="Name" type="STRING" precision="100" notNull="true" unique="true" />
     <BeeField name="Code" type="STRING" precision="30" unique="true" />
     <BeeField name="VATCode" type="STRING" precision="30" />
     <BeeField name="Contact" type="LONG" unique="true" relation="Contacts" />

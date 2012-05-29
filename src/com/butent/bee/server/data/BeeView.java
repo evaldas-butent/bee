@@ -85,9 +85,11 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     private final String ownerAlias;
     private final XmlExpression xmlExpression;
     private IsExpression expression = null;
+    private final String label;
 
     public ColumnInfo(String alias, BeeField field, String colName, String locale,
-        SqlFunction aggregate, boolean hidden, String parent, String owner, XmlExpression expression) {
+        SqlFunction aggregate, boolean hidden, String parent, String owner,
+        XmlExpression expression, String label) {
       this.colName = colName;
       this.alias = alias;
       this.field = field;
@@ -97,6 +99,12 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       this.parentName = parent;
       this.ownerAlias = owner;
       this.xmlExpression = expression;
+
+      if (BeeUtils.isEmpty(label) && field != null) {
+        this.label = field.getLabel();
+      } else {
+        this.label = label;
+      }
     }
 
     public SqlFunction getAggregate() {
@@ -130,6 +138,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         fldName = field.getName();
       }
       return fldName;
+    }
+
+    public String getLabel() {
+      return label;
     }
 
     public int getLevel() {
@@ -318,6 +330,11 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   private final BeeTable source;
   private final String sourceAlias;
   private final boolean readOnly;
+
+  private final String newRowForm;
+  private final String newRowColumns;
+  private final String newRowCaption;
+
   private boolean hasAggregate;
   private final SqlSelect query;
   private final Map<String, ColumnInfo> columns = Maps.newLinkedHashMap();
@@ -329,6 +346,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     this.moduleName = moduleName;
     this.name = xmlView.name;
     Assert.notEmpty(name);
+
+    this.newRowForm = xmlView.newRowForm;
+    this.newRowColumns = xmlView.newRowColumns;
+    this.newRowCaption = xmlView.newRowCaption;
 
     this.source = tables.get(BeeUtils.normalize(xmlView.source));
     Assert.notNull(source);
@@ -372,6 +393,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public String getColumnField(String colName) {
     return getColumnInfo(colName).getField();
+  }
+
+  public String getColumnLabel(String colName) {
+    return getColumnInfo(colName).getLabel();
   }
 
   public int getColumnLevel(String colName) {
@@ -473,8 +498,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     PropertyUtils.addProperties(info, false, "Module Name", getModuleName(), "Name", getName(),
         "Source", getSourceName(), "Source Alias", getSourceAlias(),
         "Source Id Name", getSourceIdName(), "Source Version Name", getSourceVersionName(),
-        "Filter", BeeUtils.transform(getFilter()),
-        "Read Only", isReadOnly(), "Query", query.getQuery(), "Columns", columns.size());
+        "Filter", BeeUtils.transform(getFilter()), "Read Only", isReadOnly(),
+        "NewRowForm", getNewRowForm(), "NewRowColumns", getNewRowColumns(),
+        "NewRowCaption", getNewRowCaption(),
+        "Query", query.getQuery(), "Columns", columns.size());
 
     int i = 0;
     for (String col : columns.keySet()) {
@@ -487,7 +514,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           "Read Only", isColReadOnly(col), "Level", getColumnLevel(col),
           "Expression", isColCalculated(col) ? getColumnExpression(col)
               .getSqlString(SqlBuilderFactory.getBuilder(SqlEngine.GENERIC)) : null,
-          "Parent Column", getColumnParent(col), "Owner Alias", getColumnOwner(col));
+          "Parent Column", getColumnParent(col), "Owner Alias", getColumnOwner(col),
+          "Label", getColumnLabel(col));
     }
     if (order != null) {
       info.add(new ExtendedProperty("Orders", BeeUtils.toString(order.getSize())));
@@ -513,6 +541,18 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   @Override
   public String getName() {
     return name;
+  }
+
+  public String getNewRowCaption() {
+    return newRowCaption;
+  }
+
+  public String getNewRowColumns() {
+    return newRowColumns;
+  }
+
+  public String getNewRowForm() {
+    return newRowForm;
   }
 
   public SqlSelect getQuery(Filter flt, Order ord, List<String> cols) {
@@ -633,7 +673,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     ColumnInfo info = getColumnInfo(colName);
 
     column.setId(info.getName());
-    column.setLabel(column.getId());
+    column.setLabel(BeeUtils.notEmpty(info.getLabel(), info.getName()));
     column.setType(info.getType().toValueType());
     column.setPrecision(info.getPrecision());
     column.setScale(info.getScale());
@@ -696,7 +736,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   private void addColumn(String alias, BeeField field, String colName, String locale,
-      String aggregateType, boolean hidden, String parent, XmlExpression expression) {
+      String aggregateType, boolean hidden, String parent, XmlExpression expression, String label) {
 
     Assert.state(!BeeUtils.inListSame(colName, getSourceIdName(), getSourceVersionName()),
         BeeUtils.concat(1, "Reserved column name:", getName(), colName));
@@ -729,7 +769,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     }
     columns.put(BeeUtils.normalize(colName),
         new ColumnInfo(alias, field, colName, locale, aggregate, hidden, parent, ownerAlias,
-            expression));
+            expression, label));
   }
 
   private void addColumns(BeeTable table, String alias, Collection<XmlColumn> cols, String parent,
@@ -789,7 +829,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
             break;
         }
         String colName = SqlUtils.uniqueName();
-        addColumn(als, field, colName, null, null, true, parent, null);
+        addColumn(als, field, colName, null, null, true, parent, null, null);
         addColumns(relTable, relAls, col.columns, colName, tables);
 
       } else if (column instanceof XmlSimpleColumn) {
@@ -803,10 +843,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           aggregate = ((XmlAggregateColumn) col).aggregate;
         }
         if (col.expr != null) {
-          addColumn(null, null, colName, null, aggregate, hidden, null, col.expr);
+          addColumn(null, null, colName, null, aggregate, hidden, null, col.expr, col.label);
         } else {
           addColumn(alias, table.getField(col.name), colName, col.locale, aggregate, hidden,
-              parent, null);
+              parent, null, col.label);
         }
       }
     }

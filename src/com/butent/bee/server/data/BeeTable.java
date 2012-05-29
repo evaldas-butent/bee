@@ -59,10 +59,11 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     private final SqlKeyword cascade;
     private boolean extended = false;
     private boolean translatable = false;
+    private final String label;
 
     private BeeField(String name, SqlDataType type, int precision, int scale,
         boolean notNull, boolean unique, DefaultExpression defExpr, String defValue,
-        String relation, SqlKeyword cascade) {
+        String relation, SqlKeyword cascade, String label) {
       Assert.notEmpty(name);
       Assert.notNull(type);
 
@@ -75,6 +76,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       this.defExpr = defExpr;
       this.relation = relation;
       this.cascade = cascade;
+      this.label = label;
 
       switch (type) {
         case DATE:
@@ -114,6 +116,10 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
         defaults = Pair.of(defExpr, defValue);
       }
       return defaults;
+    }
+
+    public String getLabel() {
+      return label;
     }
 
     public String getName() {
@@ -893,7 +899,8 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
           "Not Null", field.isNotNull(), "Unique", field.isUnique(),
           "Defaults", field.getDefaults(),
           "Relation", field.getRelation(), "Cascade", field.getCascade(),
-          "Extended", field.isExtended(), "Translatable", field.isTranslatable());
+          "Extended", field.isExtended(), "Translatable", field.isTranslatable(),
+          "Label", field.getLabel());
     }
 
     info.add(new ExtendedProperty("Foreign Keys", BeeUtils.toString(foreignKeys.size())));
@@ -1112,10 +1119,10 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
   BeeField addField(String name, SqlDataType type, int precision, int scale,
       boolean notNull, boolean unique, DefaultExpression defExpr, String defValue,
-      String relation, SqlKeyword cascade) {
+      String relation, SqlKeyword cascade, String label) {
 
     BeeField field = new BeeField(name, type, precision, scale, notNull, unique, defExpr, defValue,
-        relation, cascade);
+        relation, cascade, label);
     String fieldName = field.getName();
 
     Assert.state(!hasField(fieldName)

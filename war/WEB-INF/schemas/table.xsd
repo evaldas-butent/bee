@@ -57,6 +57,7 @@
     <xs:attribute name="relation" type="type:tableNameType" />
     <xs:attribute name="cascade" type="cascadeType" />
     <xs:attribute name="translatable" type="xs:boolean" />
+    <xs:attribute name="label" type="xs:string" />
   </xs:complexType>
 
   <xs:complexType name="keyType">

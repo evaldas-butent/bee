@@ -51,6 +51,8 @@ public class XmlTable {
     public String cascade;
     @XmlAttribute
     public boolean translatable;
+    @XmlAttribute
+    public String label;
 
     private boolean safe = false;
 

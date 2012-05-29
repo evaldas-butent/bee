@@ -30,6 +30,8 @@ public class XmlView {
     public String locale;
     @XmlElementRef
     public XmlExpression expr;
+    @XmlAttribute
+    public String label;
   }
 
   @XmlRootElement(name = "HiddenColumn", namespace = DataUtils.VIEW_NAMESPACE)
@@ -77,6 +79,13 @@ public class XmlView {
 
   @XmlAttribute
   public boolean readOnly;
+
+  @XmlAttribute
+  public String newRowForm;
+  @XmlAttribute
+  public String newRowColumns;
+  @XmlAttribute
+  public String newRowCaption;
 
   @XmlElementWrapper(name = "Columns", namespace = DataUtils.VIEW_NAMESPACE)
   @XmlElementRef

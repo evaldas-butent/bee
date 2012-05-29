@@ -257,6 +257,7 @@ public class SystemBean {
       viewColumns = view.getViewColumns();
     }
     return new DataInfo(viewName, source.getName(), source.getIdName(), source.getVersionName(),
+        view.getNewRowForm(), view.getNewRowColumns(), view.getNewRowCaption(),
         columns, viewColumns);
   }
 
@@ -1119,7 +1120,7 @@ public class SystemBean {
                     NameUtils.getConstant(SqlDataType.class, field.type),
                     field.precision, field.scale, notNull, field.unique,
                     field.defExpr, field.defValue, field.relation,
-                    NameUtils.getConstant(SqlKeyword.class, field.cascade))
+                    NameUtils.getConstant(SqlKeyword.class, field.cascade), field.label)
                     .setTranslatable(field.translatable)
                     .setExtended(extMode);
 
