@@ -4,6 +4,7 @@
 
   name="Drivers"
   source="Drivers"
+  newRowForm="Driver" newRowCaption="Naujas vairuotojas"
   >
   <Columns>
     <SimpleColumn name="CompanyPerson" />

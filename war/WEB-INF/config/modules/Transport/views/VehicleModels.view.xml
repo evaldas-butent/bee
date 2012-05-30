@@ -4,6 +4,7 @@
 
   name="VehicleModels"
   source="VehicleModels"
+  newRowCaption="Naujas modelis" newRowColumns="Name Parent"
   >
   <Columns>
     <SimpleColumn name="Name" />

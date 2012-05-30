@@ -25,9 +25,11 @@
     </SimpleJoin>
     <SimpleColumn name="Manager" />
     <SimpleJoin name="Manager" joinType="LEFT">
-      <SimpleJoin name="Person" joinType="LEFT">
-        <SimpleColumn alias="ManagerFirstName" name="FirstName" />
-        <SimpleColumn alias="ManagerLastName" name="LastName" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn alias="ManagerFirstName" name="FirstName" />
+          <SimpleColumn alias="ManagerLastName" name="LastName" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
     <ExternalJoin source="OrderCargo" name="Order" joinType="LEFT">

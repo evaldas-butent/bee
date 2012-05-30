@@ -17,6 +17,12 @@ public abstract class ViewEvent {
   private List<String> errors;
   private boolean afterStage = false;
 
+  public abstract static class ViewModifyEvent extends ViewEvent {
+    ViewModifyEvent(String viewName) {
+      super(viewName);
+    }
+  }
+
   public static class ViewDeleteEvent extends ViewModifyEvent {
     private final List<Long> ids;
 
@@ -31,6 +37,7 @@ public abstract class ViewEvent {
       return ids;
     }
   }
+
   public static class ViewInsertEvent extends ViewModifyEvent {
     private List<BeeColumn> columns;
     private BeeRow row;
@@ -55,9 +62,27 @@ public abstract class ViewEvent {
     }
   }
 
-  public static class ViewModifyEvent extends ViewEvent {
-    ViewModifyEvent(String viewName) {
+  public static class ViewUpdateEvent extends ViewModifyEvent {
+    private List<BeeColumn> columns;
+    private BeeRow row;
+  
+    ViewUpdateEvent(String viewName, List<BeeColumn> columns, BeeRow row) {
       super(viewName);
+      Assert.notEmpty(columns);
+      Assert.notNull(row);
+  
+      this.columns = columns;
+      this.row = row;
+  
+      setAfter();
+    }
+  
+    public List<BeeColumn> getColumns() {
+      return columns;
+    }
+  
+    public BeeRow getRow() {
+      return row;
     }
   }
 
@@ -81,30 +106,6 @@ public abstract class ViewEvent {
 
     public BeeRowSet getRowset() {
       return rowset;
-    }
-  }
-
-  public static class ViewUpdateEvent extends ViewModifyEvent {
-    private List<BeeColumn> columns;
-    private BeeRow row;
-
-    ViewUpdateEvent(String viewName, List<BeeColumn> columns, BeeRow row) {
-      super(viewName);
-      Assert.notEmpty(columns);
-      Assert.notNull(row);
-
-      this.columns = columns;
-      this.row = row;
-
-      setAfter();
-    }
-
-    public List<BeeColumn> getColumns() {
-      return columns;
-    }
-
-    public BeeRow getRow() {
-      return row;
     }
   }
 

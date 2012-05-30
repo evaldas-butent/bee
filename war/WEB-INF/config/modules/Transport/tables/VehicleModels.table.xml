@@ -6,7 +6,7 @@
   x="0" y="0"
   >
   <Fields>
-    <String name="Name" precision="30" notNull="true" unique="true" />
-    <Relation name="Parent" relation="VehicleModels" />
+    <String name="Name" precision="30" notNull="true" unique="true" label="Modelis" />
+    <Relation name="Parent" relation="VehicleModels" label="Markė" />
   </Fields>
 </Table>

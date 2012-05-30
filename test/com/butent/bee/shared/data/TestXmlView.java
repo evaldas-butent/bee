@@ -11,7 +11,7 @@ public class TestXmlView {
   @Test
   public void testRead() {
     String resource = Config.getPath("modules/Commons/" + SysObject.VIEW.getPath() + "/"
-        + SysObject.VIEW.getFileName("CompanyPersons"), true);
+        + SysObject.VIEW.getFileName("Users"), true);
     String schemaSource = SysObject.VIEW.getSchemaPath();
 
     if (!BeeUtils.isEmpty(resource)) {

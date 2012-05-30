@@ -859,6 +859,7 @@ public class UiServiceBean {
     if (!BeeUtils.isEmpty(dsn)) {
       ig.destroy();
       sys.initDatabase(dsn);
+      usr.initUsers();
       return ResponseObject.response(dsn);
     }
     return ResponseObject.error("DSN not specified");

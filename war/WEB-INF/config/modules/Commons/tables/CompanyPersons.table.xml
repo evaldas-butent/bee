@@ -7,8 +7,8 @@
   >
   <Fields>
     <Relation name="Company" notNull="true" relation="Companies" cascade="DELETE" label="Įmonė" />
-    <Relation name="Person" notNull="true" relation="Persons" cascade="DELETE" label="Asmuo" />
-    <String name="Position" precision="50" />
+    <Relation name="Person" notNull="true" relation="Persons" cascade="DELETE" label="Vardas, pavardė" />
+    <String name="Position" precision="50" label="Pareigos" />
     <Relation name="Contact" unique="true" relation="Contacts" />
   </Fields>
   <Keys>

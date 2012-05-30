@@ -2,11 +2,15 @@ package com.butent.bee.server.modules.commons;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.eventbus.Subscribe;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.data.ViewEvent.ViewModifyEvent;
+import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
@@ -45,6 +49,8 @@ public class CommonsModuleBean implements BeeModule {
 
   @EJB
   SystemBean sys;
+  @EJB
+  UserServiceBean usr;
   @EJB
   DataEditorBean deb;
   @EJB
@@ -98,6 +104,15 @@ public class CommonsModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    sys.registerViewEventHandler(new ViewEventHandler() {
+      @SuppressWarnings("unused")
+      @Subscribe
+      public void refreshUserCache(ViewModifyEvent event) {
+        if (usr.isUserTable(event.getViewName()) && event.isAfter()) {
+          usr.initUsers();
+        }
+      }
+    });
   }
 
   private ResponseObject doItemEvent(String svc, RequestInfo reqInfo) {

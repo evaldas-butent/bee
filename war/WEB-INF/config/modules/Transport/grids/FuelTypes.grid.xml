@@ -4,7 +4,7 @@
   name="FuelTypes" viewName="FuelTypes" caption="Kuro rūšys"
   >
   <columns>
-    <DataColumn name="Name" source="Name" caption="Rūšis" />
-    <RelColumn name="Item" caption="Apskaitos prekė" />
+    <DataColumn name="Name" source="Name" />
+    <RelColumn name="Item" />
   </columns>
 </Grid>

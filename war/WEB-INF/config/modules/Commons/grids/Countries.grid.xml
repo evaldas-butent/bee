@@ -4,7 +4,7 @@
   name="Countries" viewName="Countries" caption="Šalys"
   >
   <columns>
-    <DataColumn name="Name" source="Name" caption="Šalis" />
-    <DataColumn name="Code" source="Code" caption="Kodas" />
+    <DataColumn name="Name" />
+    <DataColumn name="Code" />
   </columns>
 </Grid>

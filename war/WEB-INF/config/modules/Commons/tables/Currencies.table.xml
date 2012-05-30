@@ -6,7 +6,7 @@
   x="0" y="0"
   >
   <Fields>
-    <String name="Name" precision="5" notNull="true" unique="true" label="Valiuta" />
+    <String name="Name" precision="5" notNull="true" unique="true" label="Val." />
     <String name="Caption" precision="60" />
     <String name="MinorName" precision="5" />
     <String name="MinorCaption" precision="60" />

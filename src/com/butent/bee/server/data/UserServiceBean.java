@@ -115,6 +115,7 @@ public class UserServiceBean {
   public static final String TBL_USERS = "Users";
   public static final String TBL_ROLES = "Roles";
   public static final String TBL_USER_ROLES = "UserRoles";
+  public static final String TBL_COMPANY_PERSONS = "CompanyPersons";
   public static final String TBL_PERSONS = "Persons";
   public static final String TBL_USER_HISTORY = "UserHistory";
 
@@ -124,6 +125,7 @@ public class UserServiceBean {
   public static final String FLD_ROLE_NAME = "Name";
   public static final String FLD_USER = "User";
   public static final String FLD_ROLE = "Role";
+  public static final String FLD_COMPANY_PERSON = "CompanyPerson";
   public static final String FLD_PERSON = "Person";
 
   @Resource
@@ -137,8 +139,6 @@ public class UserServiceBean {
   private final Map<Long, String> userCache = Maps.newHashMap();
   private Map<String, UserInfo> infoCache = Maps.newHashMap();
 
-  private boolean cacheUpToDate = false;
-
   public String getCurrentUser() {
     Principal p = ctx.getCallerPrincipal();
     Assert.notEmpty(p);
@@ -150,7 +150,6 @@ public class UserServiceBean {
   }
 
   public Map<Long, String> getRoles() {
-    initUsers();
     return ImmutableMap.copyOf(roleCache);
   }
 
@@ -177,7 +176,6 @@ public class UserServiceBean {
   }
 
   public Map<Long, String> getUsers() {
-    initUsers();
     return ImmutableMap.copyOf(userCache);
   }
 
@@ -186,8 +184,63 @@ public class UserServiceBean {
   }
 
   @Lock(LockType.WRITE)
-  public void invalidateCache() {
-    cacheUpToDate = false;
+  public void initUsers() {
+    roleCache.clear();
+    userCache.clear();
+    Map<String, UserInfo> expiredCache = infoCache;
+    infoCache = Maps.newHashMap();
+
+    String userIdName = sys.getIdName(TBL_USERS);
+    String roleIdName = sys.getIdName(TBL_ROLES);
+
+    SqlSelect ss = new SqlSelect()
+        .addFields("r", roleIdName, FLD_ROLE_NAME)
+        .addFrom(TBL_ROLES, "r");
+
+    for (Map<String, String> row : qs.getData(ss)) {
+      roleCache.put(BeeUtils.toLong(row.get(roleIdName)), row.get(FLD_ROLE_NAME));
+    }
+
+    ss = new SqlSelect()
+        .addFields("r", FLD_USER, FLD_ROLE)
+        .addFrom(TBL_USER_ROLES, "r");
+
+    Multimap<Long, Long> userRoles = HashMultimap.create();
+
+    for (Map<String, String> row : qs.getData(ss)) {
+      userRoles.put(BeeUtils.toLong(row.get(FLD_USER)), BeeUtils.toLong(row.get(FLD_ROLE)));
+    }
+
+    ss = new SqlSelect()
+        .addFields(TBL_USERS, userIdName, FLD_LOGIN, FLD_PROPERTIES)
+        .addFields(TBL_PERSONS, UserData.FLD_FIRST_NAME, UserData.FLD_LAST_NAME)
+        .addFrom(TBL_USERS)
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            SqlUtils.join(TBL_USERS, FLD_COMPANY_PERSON,
+                TBL_COMPANY_PERSONS, sys.getIdName(TBL_COMPANY_PERSONS)))
+        .addFromLeft(TBL_PERSONS,
+            SqlUtils.join(TBL_COMPANY_PERSONS, FLD_PERSON,
+                TBL_PERSONS, sys.getIdName(TBL_PERSONS)));
+
+    for (Map<String, String> row : qs.getData(ss)) {
+      long userId = BeeUtils.toLong(row.get(userIdName));
+      String login = row.get(FLD_LOGIN).toLowerCase();
+
+      userCache.put(userId, login);
+
+      UserInfo user = new UserInfo(new UserData(userId, login, row.get(UserData.FLD_FIRST_NAME),
+          row.get(UserData.FLD_LAST_NAME))
+          .setRoles(userRoles.get(userId)))
+          .setProperties(row.get(FLD_PROPERTIES));
+
+      UserInfo oldInfo = expiredCache.get(login);
+
+      if (!BeeUtils.isEmpty(oldInfo)) {
+        user.setLocale(oldInfo.getUserData().getLocale())
+            .setOnline(oldInfo.isOnline());
+      }
+      infoCache.put(login, user);
+    }
   }
 
   public boolean isUser(String user) {
@@ -307,65 +360,5 @@ public class UserServiceBean {
 
   private UserInfo getUserInfo(String user) {
     return getUserInfo(getUserId(user));
-  }
-
-  @Lock(LockType.WRITE)
-  private void initUsers() {
-    if (cacheUpToDate) {
-      return;
-    }
-    roleCache.clear();
-    userCache.clear();
-    Map<String, UserInfo> expiredCache = infoCache;
-    infoCache = Maps.newHashMap();
-
-    String userIdName = sys.getIdName(TBL_USERS);
-    String roleIdName = sys.getIdName(TBL_ROLES);
-    String personIdName = sys.getIdName(TBL_PERSONS);
-
-    SqlSelect ss = new SqlSelect()
-        .addFields("r", roleIdName, FLD_ROLE_NAME)
-        .addFrom(TBL_ROLES, "r");
-
-    for (Map<String, String> row : qs.getData(ss)) {
-      roleCache.put(BeeUtils.toLong(row.get(roleIdName)), row.get(FLD_ROLE_NAME));
-    }
-
-    ss = new SqlSelect()
-        .addFields("r", FLD_USER, FLD_ROLE)
-        .addFrom(TBL_USER_ROLES, "r");
-
-    Multimap<Long, Long> userRoles = HashMultimap.create();
-
-    for (Map<String, String> row : qs.getData(ss)) {
-      userRoles.put(BeeUtils.toLong(row.get(FLD_USER)), BeeUtils.toLong(row.get(FLD_ROLE)));
-    }
-
-    ss = new SqlSelect()
-        .addFields("u", userIdName, FLD_LOGIN, FLD_PROPERTIES)
-        .addFields("cc", UserData.FLD_FIRST_NAME, UserData.FLD_LAST_NAME)
-        .addFrom(TBL_USERS, "u").addFromLeft(TBL_PERSONS, "cc",
-            SqlUtils.join("u", FLD_PERSON, "cc", personIdName));
-
-    for (Map<String, String> row : qs.getData(ss)) {
-      long userId = BeeUtils.toLong(row.get(userIdName));
-      String login = row.get(FLD_LOGIN).toLowerCase();
-
-      userCache.put(userId, login);
-
-      UserInfo user = new UserInfo(new UserData(userId, login, row.get(UserData.FLD_FIRST_NAME),
-          row.get(UserData.FLD_LAST_NAME))
-          .setRoles(userRoles.get(userId)))
-          .setProperties(row.get(FLD_PROPERTIES));
-
-      UserInfo oldInfo = expiredCache.get(login);
-
-      if (!BeeUtils.isEmpty(oldInfo)) {
-        user.setLocale(oldInfo.getUserData().getLocale())
-            .setOnline(oldInfo.isOnline());
-      }
-      infoCache.put(login, user);
-    }
-    cacheUpToDate = true;
   }
 }

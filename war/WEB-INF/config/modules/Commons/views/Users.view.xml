@@ -6,10 +6,17 @@
   <Columns>
     <SimpleColumn name="Login" />
     <SimpleColumn name="Password" />
-    <SimpleJoin name="Person" joinType="LEFT">
-      <SimpleColumn name="FirstName" />
-      <SimpleColumn name="LastName" />
-      <SimpleColumn name="DateOfBirth" />
+    <SimpleColumn name="CompanyPerson" />
+    <SimpleJoin name="CompanyPerson" joinType="LEFT">
+      <SimpleJoin name="Person" joinType="LEFT">
+        <SimpleColumn name="FirstName" />
+        <SimpleColumn name="LastName" />
+        <SimpleColumn name="DateOfBirth" />
+      </SimpleJoin>
+      <SimpleColumn name="Position" />
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn name="Name" alias="CompanyName" />
+      </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="Properties" />
   </Columns>

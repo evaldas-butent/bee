@@ -7,9 +7,11 @@
   <Columns>
     <SimpleColumn name="Project" />
     <SimpleJoin name="Publisher" joinType="LEFT">
-      <SimpleJoin name="Person" joinType="LEFT">
-        <SimpleColumn alias="PublisherFirstName" name="FirstName" />
-        <SimpleColumn alias="PublisherLastName" name="LastName" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn alias="PublisherFirstName" name="FirstName" />
+          <SimpleColumn alias="PublisherLastName" name="LastName" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="PublishTime" />

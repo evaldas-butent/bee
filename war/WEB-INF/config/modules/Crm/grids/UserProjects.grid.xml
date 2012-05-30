@@ -37,11 +37,11 @@
       horizontalAlignment="center" width="15" options="greenSmall, yellowSmall" />
     <IdColumn name="Id" caption="ID" />
     <DataColumn name="Priority" caption="Prioritetas" itemKey="Priority" />
-    <DataColumn name="TypeName" caption="Tipas" />
+    <RelColumn name="ProjectType" caption="Tipas" />
     <DataColumn name="Name" caption="Pavadinimas" />
-    <DataColumn name="CompanyName" caption="Įmonė" />
+    <RelColumn name="Company" caption="Įmonė" />
     <DataColumn name="Event" caption="Būsena" itemKey="ProjectEvent" />
-    <DataColumn name="Owner" caption="Vadovas" renderColumns="OwnerFirstName OwnerLastName" />
+    <RelColumn name="Owner" caption="Vadovas" />
     <DataColumn name="StartDate" caption="Pradžia" />
     <DataColumn name="FinishDate" caption="Terminas" />
   </columns>

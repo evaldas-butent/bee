@@ -8,24 +8,26 @@
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="10">
       <row>
-        <cell><Label html="Prisijungimo vardas" /></cell>
-        <cell><InputText source="Login" style="width:150px" /></cell>
+        <Label html="Prisijungimo vardas" />
+        <InputText source="Login" style="width:150px" />
         <cell horizontalAlignment="center" colSpan="2">
           <Button html="Pakeisti slaptažodį" name="ChangePassword" />
         </cell>
-        <cell><Label html="Parametrai" /></cell>
+        <Label html="Parametrai" />
       </row>
       <row>
-        <cell><Label html="Vardas" /></cell>
-        <cell><InputText source="FirstName" style="width:150px" /></cell>
-        <cell><Label html="Pavardė" horizontalAlignment="right" /></cell>
-        <cell><InputText source="LastName" style="width:150px" /></cell>
+        <Label html="Vardas, pavardė" />
+        <DataSelector source="CompanyPerson" style="width:150px"
+          renderColumns="FirstName Lastname" searchableColumns="FirstName Lastname CompanyName" />
+        <Label html="Įmonė" horizontalAlignment="right" />
+        <TextLabel source="CompanyName" style="width:150px" />
         <cell rowSpan="3"><InputArea source="Properties" style="width:200px; height:100%" /></cell>
       </row>
       <row>
-        <cell colSpan="2"><Label html="" /></cell>
-        <cell><Label html="Gimimo data" horizontalAlignment="right" /></cell>
-        <cell><InputDate source="DateOfBirth" /></cell>
+        <Label html="Gimimo data" />
+        <DateLabel source="DateOfBirth" />
+        <Label html="Pareigos" horizontalAlignment="right" />
+        <TextLabel source="Position" />
       </row>
     </FlexTable>
 

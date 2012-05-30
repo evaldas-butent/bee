@@ -6,13 +6,13 @@
   x="313" y="493"
   >
   <Fields>
-    <String name="Phone" precision="50" />
-    <String name="Mobile" precision="50" />
-    <String name="Fax" precision="50" />
-    <String name="Email" precision="50" />
-    <String name="Website" precision="100" />
-    <String name="Address" precision="100" />
-    <String name="PostIndex" precision="20" />
-    <Relation name="City" relation="Cities" />
+    <String name="Phone" precision="50" label="Tel." />
+    <String name="Mobile" precision="50" label="Mob." />
+    <String name="Fax" precision="50" label="Fax" />
+    <String name="Email" precision="50" label="El.paštas" />
+    <String name="Website" precision="100" label="Interneto svetainė" />
+    <String name="Address" precision="100" label="Adresas" />
+    <String name="PostIndex" precision="20" label="Pašto indeksas" />
+    <Relation name="City" relation="Cities" label="Miestas" />
   </Fields>
 </Table>

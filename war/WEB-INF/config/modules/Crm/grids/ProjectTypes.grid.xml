@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
   
-  name="DurationTypes" viewName="DurationTypes" caption="Darbų tipai">
-  
+  name="ProjectTypes" viewName="ProjectTypes" caption="Projektų tipai"
+  >
   <columns>
     <DataColumn name="Name" />
   </columns>

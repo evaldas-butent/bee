@@ -6,7 +6,7 @@
   x="0" y="0"
   >
   <Fields>
-    <String name="Name" precision="30" notNull="true" unique="true" />
-    <Relation name="Item" relation="Items" />
+    <String name="Name" precision="30" notNull="true" unique="true" label="Rūšis" />
+    <Relation name="Item" relation="Items" label="Apskaitos prekė" />
   </Fields>
 </Table>

@@ -5,10 +5,8 @@
   maxColumnWidth="300"
   >
   <columns>
-    <DataColumn name="City" source="Name" caption="Miestas" />
-
-    <RelColumn name="Country" caption="Šalis" />
-
+    <DataColumn name="Name" />
+    <RelColumn name="Country" />
     <VerColumn name="Version" caption="Paskutinio koregavimo data" />
   </columns>
 </Grid>

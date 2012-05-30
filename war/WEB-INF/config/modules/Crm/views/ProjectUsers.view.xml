@@ -8,9 +8,11 @@
     <SimpleColumn name="Project" />
     <SimpleColumn name="User" />
     <SimpleJoin name="User" joinType="LEFT">
-      <SimpleJoin name="Person" joinType="LEFT">
-        <SimpleColumn name="FirstName" />
-        <SimpleColumn name="LastName" />
+      <SimpleJoin name="CompanyPerson" joinType="LEFT">
+        <SimpleJoin name="Person" joinType="LEFT">
+          <SimpleColumn name="FirstName" />
+          <SimpleColumn name="LastName" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
     <SimpleColumn name="LastAccess" />

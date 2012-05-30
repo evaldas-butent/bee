@@ -3,6 +3,7 @@
 
   name="VehicleTypes"
   source="VehicleTypes"
+  newRowCaption="Naujas transporto tipas" 
   >
   <Columns>
     <SimpleColumn name="Name" />

@@ -7,9 +7,9 @@
   >
   <Fields>
     <Relation name="Owner" relation="Companies" />
-    <String name="Name" precision="100" notNull="true" unique="true" />
-    <String name="Code" precision="30" unique="true" />
-    <String name="VATCode" precision="30" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="Įmonė" />
+    <String name="Code" precision="30" unique="true" label="Įm.kodas" />
+    <String name="VATCode" precision="30" label="PVM kodas" />
     <Relation name="Contact" unique="true" relation="Contacts" />
   </Fields>
 </Table>

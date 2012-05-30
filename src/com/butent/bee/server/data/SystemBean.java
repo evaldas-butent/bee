@@ -492,7 +492,6 @@ public class SystemBean {
         table.setStateActive(state, tableFields.get(tblName));
       }
     }
-    usr.invalidateCache();
   }
 
   @Lock(LockType.WRITE)

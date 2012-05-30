@@ -7,7 +7,8 @@
   <columns>
     <IdColumn name="Id" caption="ID" />
     <DataColumn name="Login" caption="Prisijungimo vardas" />
-    <DataColumn name="FirstName" caption="Vardas" />
-    <DataColumn name="LastName" caption="Pavardė" />
+    <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="Vardas, pavardė" />
+    <DataColumn name="CompanyName" />
+    <DataColumn name="Position" />
   </columns>
 </Grid>

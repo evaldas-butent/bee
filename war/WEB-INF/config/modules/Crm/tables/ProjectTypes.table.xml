@@ -6,6 +6,6 @@
   x="935" y="177"
   >
   <Fields>
-    <String name="Name" precision="100" notNull="true" unique="true" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="Tipas" />
   </Fields>
 </Table>

@@ -4,9 +4,9 @@
   name="PersonCompanies" viewName="CompanyPersons" caption="Įmonių kontaktai"
   >
   <columns>
-    <RelColumn name="Company" caption="Įmonė" />
-    <DataColumn name="Position" source="Position" caption="Pareigos" />
-    <DataColumn name="Phone" source="Phone" caption="Tel." />
-    <DataColumn name="Email" source="Email" caption="El. paštas" />
+    <RelColumn name="Company" />
+    <DataColumn name="Position" />
+    <DataColumn name="Phone" />
+    <DataColumn name="Email" />
   </columns>
 </Grid>

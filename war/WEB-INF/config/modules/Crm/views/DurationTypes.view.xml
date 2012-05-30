@@ -3,6 +3,7 @@
 
   name="DurationTypes"
   source="DurationTypes"
+  newRowCaption="Naujas darbo tipas"
   >
   <Columns>
     <SimpleColumn name="Name" />

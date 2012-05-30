@@ -3,6 +3,7 @@
 
   name="ProjectTypes"
   source="ProjectTypes"
+  newRowCaption="Naujas projekto tipas"
   >
   <Columns>
     <SimpleColumn name="Name" />
