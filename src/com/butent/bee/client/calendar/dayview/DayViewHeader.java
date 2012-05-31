@@ -61,7 +61,7 @@ public class DayViewHeader extends Composite {
     JustDate tmp = JustDate.copyOf(date);
 
     for (int i = 0; i < days; i++) {
-      Label dayLabel = new Label(CalendarFormat.INSTANCE.getDateFormat().format(tmp));
+      Label dayLabel = new Label(CalendarFormat.format(tmp));
       dayLabel.setStylePrimaryName("day-cell");
 
       StyleUtils.setLeft(dayLabel, dayWidth * i, Unit.PCT);

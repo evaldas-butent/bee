@@ -4,16 +4,15 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
-import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.Panel;
 
 import com.butent.bee.client.calendar.HasSettings;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.dom.StyleUtils.ScrollBars;
+import com.butent.bee.client.layout.Simple;
 
 public class DayViewBody extends Composite {
 
-  private final ScrollPanel scrollPanel = new ScrollPanel();
+  private final Simple scrollArea = new Simple();
   private final FlexTable layout = new FlexTable();
 
   private final HasSettings settings;
@@ -22,7 +21,7 @@ public class DayViewBody extends Composite {
   private final DayViewGrid grid;
 
   public DayViewBody(HasSettings settings) {
-    initWidget(scrollPanel);
+    initWidget(scrollArea);
 
     this.settings = settings;
     
@@ -31,9 +30,7 @@ public class DayViewBody extends Composite {
     this.grid = new DayViewGrid(settings);
     grid.setStyleName("bee-appointment-panel");
 
-    scrollPanel.setStylePrimaryName("scroll-area");
-    StyleUtils.hideScroll(scrollPanel, ScrollBars.HORIZONTAL);
-    StyleUtils.alwaysScroll(scrollPanel, ScrollBars.VERTICAL);
+    scrollArea.addStyleName("scroll-area");
 
     layout.setCellPadding(0);
     layout.setBorderWidth(0);
@@ -51,27 +48,15 @@ public class DayViewBody extends Composite {
     layout.setWidget(0, 0, timeline);
     layout.setWidget(0, 1, grid);
 
-    scrollPanel.add(layout);
-  }
-
-  public void add(Widget w) {
-    scrollPanel.add(w);
-  }
-
-  public DayViewGrid getDayViewGrid() {
-    return grid;
-  }
-
-  public DayViewTimeline getDayViewTimeline() {
-    return timeline;
+    scrollArea.setWidget(layout);
   }
 
   public DayViewGrid getGrid() {
     return grid;
   }
 
-  public ScrollPanel getScrollPanel() {
-    return scrollPanel;
+  public Panel getScrollArea() {
+    return scrollArea;
   }
 
   public DayViewTimeline getTimeline() {

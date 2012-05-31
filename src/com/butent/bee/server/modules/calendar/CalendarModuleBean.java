@@ -63,6 +63,8 @@ public class CalendarModuleBean implements BeeModule {
       response = getUserCalendar(reqInfo);
     } else if (BeeUtils.same(svc, SVC_CREATE_APPOINTMENT)) {
       response = createAppointment(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_GET_CALENDAR_APPOINTMENTS)) {
+      response = getCalendarAppointments(reqInfo);
 
     } else {
       String msg = BeeUtils.concat(1, "Calendar service not recognized:", svc);
@@ -146,6 +148,16 @@ public class CalendarModuleBean implements BeeModule {
     return response;
   }
 
+  private ResponseObject getCalendarAppointments(RequestInfo reqInfo) {
+    long calendarId = BeeUtils.toLong(reqInfo.getParameter(PARAM_CALENDAR_ID));
+    if (!DataUtils.isId(calendarId)) {
+      return ResponseObject.error(SVC_GET_USER_CALENDAR, PARAM_CALENDAR_ID, "parameter not found");
+    }
+
+    BeeRowSet res = sys.getViewData(VIEW_APPOINTMENTS);
+    return ResponseObject.response(res);
+  }
+  
   private ResponseObject getConfiguration() {
     if (!checkTable(TBL_CONFIGURATION)) {
       return ResponseObject.error("table not active:", TBL_CONFIGURATION);

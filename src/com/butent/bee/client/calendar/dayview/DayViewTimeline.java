@@ -9,7 +9,6 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.butent.bee.client.calendar.CalendarFormat;
 import com.butent.bee.client.calendar.HasSettings;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.shared.utils.BeeUtils;
 
 public class DayViewTimeline extends Composite {
 
@@ -41,8 +40,8 @@ public class DayViewTimeline extends Composite {
       timelinePanel.add(sp);
     }
 
-    while (i < CalendarFormat.HOURS_IN_DAY) {
-      String hour = CalendarFormat.INSTANCE.getHourLabels()[i];
+    while (i < 24) {
+      String hour = CalendarFormat.getHourLabels()[i];
       i++;
 
       SimplePanel hourWrapper = new SimplePanel();
@@ -52,26 +51,10 @@ public class DayViewTimeline extends Composite {
       FlowPanel flowPanel = new FlowPanel();
       flowPanel.setStyleName("hour-layout");
 
-      String amPm;
-      if (i < 13) {
-        amPm = CalendarFormat.INSTANCE.getAm();
-      } else if (i > 13) {
-        amPm = CalendarFormat.INSTANCE.getPm();
-      } else {
-        hour = CalendarFormat.INSTANCE.getNoon();
-        amPm = null;
-      }
-
       Label hourLabel = new Label(hour);
       hourLabel.setStylePrimaryName("hour-text");
       flowPanel.add(hourLabel);
       
-      if (!BeeUtils.isEmpty(amPm)) {
-        Label ampmLabel = new Label(amPm);
-        ampmLabel.setStylePrimaryName("ampm-text");
-        flowPanel.add(ampmLabel);
-      }
-
       hourWrapper.add(flowPanel);
       timelinePanel.add(hourWrapper);
     }

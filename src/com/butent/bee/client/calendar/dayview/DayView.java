@@ -155,7 +155,7 @@ public class DayView extends CalendarView {
       selectedAppointmentWidgets.addAll(clickedAppointmentAdapters);
 
       double height = clickedAppointmentAdapters.get(0).getHeight();
-      if (dayViewBody.getScrollPanel().getOffsetHeight() > height) {
+      if (dayViewBody.getScrollArea().getOffsetHeight() > height) {
         DOM.scrollIntoView(clickedAppointmentAdapters.get(0).getElement());
       }
     }
@@ -200,7 +200,7 @@ public class DayView extends CalendarView {
   }
 
   public void onSingleClick(Element element, Event event) {
-    if (dayViewBody.getScrollPanel().getElement().equals(element)) {
+    if (dayViewBody.getScrollArea().getElement().equals(element)) {
       return;
     }
 
@@ -223,7 +223,7 @@ public class DayView extends CalendarView {
 
   @Override
   public void scrollToHour(int hour) {
-    dayViewBody.getScrollPanel().setVerticalScrollPosition(hour *
+    dayViewBody.getScrollArea().getElement().setScrollTop(hour *
         getSettings().getIntervalsPerHour() * getSettings().getPixelsPerInterval());
   }
 
@@ -393,9 +393,9 @@ public class DayView extends CalendarView {
 
   private DateTime getCoordinatesDate(int x, int y) {
     int left = dayViewBody.getGrid().getGridOverlay().getAbsoluteLeft();
-    int top = dayViewBody.getScrollPanel().getAbsoluteTop();
+    int top = dayViewBody.getScrollArea().getAbsoluteTop();
     int width = dayViewBody.getGrid().getGridOverlay().getOffsetWidth();
-    int scrollOffset = dayViewBody.getScrollPanel().getVerticalScrollPosition();
+    int scrollOffset = dayViewBody.getScrollArea().getElement().getScrollTop();
 
     double relativeY = y - top + scrollOffset;
     double relativeX = x - left;
@@ -414,7 +414,7 @@ public class DayView extends CalendarView {
   }
 
   private int getMaxProxyHeight() {
-    int maxProxyHeight = 2 * (dayViewBody.getScrollPanel().getOffsetHeight() / 3);
+    int maxProxyHeight = 2 * (dayViewBody.getScrollArea().getOffsetHeight() / 3);
     return maxProxyHeight;
   }
 

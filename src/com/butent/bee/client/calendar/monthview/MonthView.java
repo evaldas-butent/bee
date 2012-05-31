@@ -260,7 +260,7 @@ public class MonthView extends CalendarView {
 
   private void buildCalendarGrid() {
     for (int i = 0; i < DAYS_IN_A_WEEK; i++) {
-      monthCalendarGrid.setText(0, i, CalendarFormat.INSTANCE.getDayOfWeekAbbreviatedNames()[i]);
+      monthCalendarGrid.setText(0, i, CalendarFormat.getDayOfWeekNames()[i]);
       cellFormatter.setVerticalAlignment(0, i, HasVerticalAlignment.ALIGN_TOP);
       cellFormatter.setStyleName(0, i, WEEKDAY_LABEL_STYLE);
     }
@@ -399,7 +399,7 @@ public class MonthView extends CalendarView {
   }
 
   private void layOnNMoreLabel(int moreCount, int dayOfWeek, int weekOfMonth) {
-    Label more = new Label(CalendarFormat.MESSAGES.more(moreCount));
+    Label more = new Label("+ " + moreCount);
     more.setStyleName(MORE_LABEL_STYLE);
     placeItemInGrid(more, dayOfWeek, dayOfWeek, weekOfMonth, calculatedCellAppointments);
     appointmentCanvas.add(more);
