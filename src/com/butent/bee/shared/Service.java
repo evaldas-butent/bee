@@ -61,6 +61,7 @@ public class Service {
   public static final String GET_DECORATORS = DATA_SERVICE_PREFIX + "get_decorators";
 
   public static final String REBUILD = DATA_SERVICE_PREFIX + "rebuild";
+  public static final String MAIL = DATA_SERVICE_PREFIX + "mail";
   public static final String DO_SQL = DATA_SERVICE_PREFIX + "do_sql";
   public static final String QUERY = DATA_SERVICE_PREFIX + "query";
   public static final String GET_DATA_INFO = DATA_SERVICE_PREFIX + "data_info";

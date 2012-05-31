@@ -525,6 +525,8 @@ public class CliWorker {
       showWidgetInfo(arr);
     } else if (z.startsWith("xml") && arr.length >= 2) {
       showXmlInfo(arr);
+    } else if (z.equals("mail")) {
+      BeeKeeper.getRpc().sendText(Service.MAIL, args);
 
     } else {
       Global.showDialog("wtf", v);
@@ -587,7 +589,8 @@ public class CliWorker {
     }
 
     if (BeeUtils.same(arr[0], "download")) {
-      String url = GWT.getModuleBaseURL() + "file/" + Codec.encodeBase64(ArrayUtils.join(arr, 1, 1));
+      String url =
+          GWT.getModuleBaseURL() + "file/" + Codec.encodeBase64(ArrayUtils.join(arr, 1, 1));
       Window.open(url, "", "");
       return;
     }
@@ -777,7 +780,7 @@ public class CliWorker {
             });
             String url = GWT.getHostPageBaseURL() + "SqlDesigner/index.html?keyword=" + tmpKey;
             String xml = "<Form><ResizePanel><Frame url=\"" + url + "\" /></ResizePanel></Form>";
-            
+
             FormFactory.openForm(FormFactory.parseFormDescription(xml), null);
           }
         } else if (response.hasResponse()) {
@@ -903,7 +906,7 @@ public class CliWorker {
           options.add(arr[i]);
       }
     }
-    
+
     if (options.isEmpty()) {
       for (int i = 0; i < BeeUtils.randomInt(1, 10); i++) {
         options.add(BeeUtils.randomString(3, 20, ' ', 'z'));
@@ -938,7 +941,7 @@ public class CliWorker {
           }
         });
   }
-  
+
   public static void showClientLocation() {
     AjaxLoader.load(new Runnable() {
       public void run() {
@@ -960,7 +963,7 @@ public class CliWorker {
         Global.showError("no data infos available");
         return;
       }
-      
+
       Collections.sort(list);
       String[][] data = new String[list.size()][7];
 
@@ -971,7 +974,7 @@ public class CliWorker {
         data[i][1] = di.getTableName();
         data[i][2] = di.getIdColumn();
         data[i][3] = di.getVersionColumn();
- 
+
         data[i][4] = BeeUtils.toString(di.getColumnCount());
         data[i][5] = BeeUtils.toString(di.getViewColumns().size());
         data[i][6] = BeeUtils.toString(di.getRowCount());
@@ -980,7 +983,7 @@ public class CliWorker {
 
     } else if (BeeUtils.inListSame(viewName, "load", "refresh", "+", "x")) {
       Data.getDataInfoProvider().load();
-    
+
     } else {
       DataInfo dataInfo = Data.getDataInfo(viewName);
       if (dataInfo != null) {
@@ -1116,7 +1119,7 @@ public class CliWorker {
         dtf = Format.getDateTimeFormat(args);
         t = new DateTime();
       }
-      
+
       if (dtf == null || t == null) {
         BeeKeeper.getLog().severe("cannot parse", args);
       } else {

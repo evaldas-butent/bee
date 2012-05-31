@@ -3,10 +3,10 @@ package com.butent.bee.server;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
-import com.butent.bee.server.io.FileUtils;
-import com.butent.bee.server.io.Filter;
 import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.io.FileNameUtils.Component;
+import com.butent.bee.server.io.FileUtils;
+import com.butent.bee.server.io.Filter;
 import com.butent.bee.server.io.WildcardFilter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -48,7 +48,7 @@ public class Config {
   static {
     Class<?> z = Config.class;
     String path = z.getResource(z.getSimpleName() + ".class").getPath();
-    
+
     String sub = "/WEB-INF/";
     String w = path.substring(path.indexOf('/'), path.indexOf(sub) + sub.length() - 1);
     LogUtils.infoNow(logger, "web inf path:", w);
@@ -57,7 +57,7 @@ public class Config {
 
     WAR_DIR = dir.getParentFile();
     WEB_INF_DIR = dir;
-    
+
     SOURCE_DIR = new File(WAR_DIR.getParentFile(), "src");
 
     SCHEMA_DIR = new File(dir, "schemas");

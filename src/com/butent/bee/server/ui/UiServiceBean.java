@@ -1,5 +1,6 @@
 package com.butent.bee.server.ui;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -9,6 +10,7 @@ import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.StateService;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
+import com.butent.bee.server.communication.MailerBean;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.BeeView;
@@ -100,6 +102,8 @@ public class UiServiceBean {
   GridLoaderBean grd;
   @EJB
   DataSourceBean dsb;
+  @EJB
+  MailerBean mail;
 
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response = null;
@@ -121,6 +125,8 @@ public class UiServiceBean {
     } else if (BeeUtils.same(svc, Service.GET_DECORATORS)) {
       response = getDecorators();
 
+    } else if (BeeUtils.same(svc, Service.MAIL)) {
+      response = doMail(reqInfo);
     } else if (BeeUtils.same(svc, Service.REBUILD)) {
       response = rebuildData(reqInfo);
     } else if (BeeUtils.same(svc, Service.DO_SQL)) {
@@ -286,6 +292,34 @@ public class UiServiceBean {
       rows[i] = RowInfo.restore(entries[i]);
     }
     return deb.deleteRows(viewName, rows);
+  }
+
+  private ResponseObject doMail(RequestInfo reqInfo) {
+    int c = 0;
+    String to = null;
+    String subject = null;
+    String body = null;
+
+    if (!BeeUtils.isEmpty(reqInfo.getContent())) {
+      for (String part : Splitter.on(CharMatcher.is(';')).trimResults().omitEmptyStrings()
+          .split(reqInfo.getContent())) {
+        switch (++c) {
+          case 1:
+            to = part;
+            break;
+          case 2:
+            subject = part;
+            break;
+          case 3:
+            body = part;
+            break;
+        }
+      }
+    }
+    if (c < 3) {
+      return ResponseObject.error("Syntax: mail <ToAddress>;<Subject>;<Body>");
+    }
+    return mail.sendMail(to, subject, body);
   }
 
   private ResponseObject doSql(RequestInfo reqInfo) {
