@@ -131,7 +131,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private static final String STYLE_NEW_ROW_INPUT = "bee-GridNewRow-input";
 
   private final String gridName;
-  private final DataInfo dataInfo; 
+  private final DataInfo dataInfo;
 
   private GridPresenter viewPresenter = null;
 
@@ -146,7 +146,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private final Map<String, EditableColumn> editableColumns = Maps.newLinkedHashMap();
 
   private final Notification notification = new Notification();
-  
+
   private List<BeeColumn> dataColumns = null;
 
   private String relColumn = null;
@@ -541,18 +541,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         continue;
       }
 
-      String source = columnDescr.getSource();
       List<String> renderColumns = columnDescr.getRenderColumns();
-
-      String caption = columnDescr.getCaption();
-      if (BeeUtils.isEmpty(caption)) {
-        if (BeeUtils.isEmpty(source)) {
-          caption = columnName;
-        } else {
-          caption = BeeUtils.ifString(DataUtils.getColumnLabel(source, dataCols), columnName);
-        }
-      }
-
       if (BeeUtils.isEmpty(renderColumns) && !BeeUtils.isEmpty(columnDescr.getRenderTokens())) {
         if (renderColumns == null) {
           renderColumns = Lists.newArrayList();
@@ -564,31 +553,52 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         }
       }
 
-      if (colType == ColType.RELATED && columnDescr.getRelation() != null
-          && !columnDescr.isRelationInitialized()) {
-        Holder<String> sourceHolder = Holder.of(source);
-        Holder<List<String>> listHolder = Holder.of(renderColumns);
+      String source = columnDescr.getSource();
+      String originalSource;
 
-        columnDescr.getRelation().initialize(Data.getDataInfoProvider(), viewName,
-            sourceHolder, listHolder);
+      if (colType == ColType.RELATED && columnDescr.getRelation() != null) {
+        if (!columnDescr.isRelationInitialized()) {
+          Holder<String> sourceHolder = Holder.of(source);
+          Holder<List<String>> listHolder = Holder.of(renderColumns);
 
-        source = sourceHolder.get();
-        renderColumns = listHolder.get();
+          columnDescr.getRelation().initialize(Data.getDataInfoProvider(), viewName,
+              sourceHolder, listHolder);
 
-        columnDescr.setSource(source);
-        columnDescr.setRenderColumns(renderColumns);
-        columnDescr.setRelationInitialized(true);
+          source = sourceHolder.get();
+          renderColumns = listHolder.get();
+
+          columnDescr.setSource(source);
+          columnDescr.setRenderColumns(renderColumns);
+          columnDescr.setRelationInitialized(true);
+        }
+        originalSource = columnDescr.getRelation().getOriginalSource();
+      } else {
+        originalSource = null;
       }
 
       dataIndex = BeeConst.UNDEF;
       if (!BeeUtils.isEmpty(source)) {
-        source = DataUtils.getColumnName(source, dataCols, idName, versionName);
-        if (BeeUtils.isEmpty(source)) {
-          BeeKeeper.getLog().warning("columnName:", columnName, "source:", columnDescr.getSource(),
-              "source not found");
+        String normalized = DataUtils.getColumnName(source, dataCols, idName, versionName);
+        if (BeeUtils.isEmpty(normalized)) {
+          BeeKeeper.getLog().warning("columnName:", columnName, "source:", source, "not found");
           continue;
         } else {
+          if (!source.equals(normalized)) {
+            source = normalized;
+          }
           dataIndex = DataUtils.getColumnIndex(source, dataCols);
+        }
+      }
+
+      String caption = columnDescr.getCaption();
+      if (BeeUtils.isEmpty(caption)) {
+        if (!BeeUtils.isEmpty(originalSource) && !originalSource.equals(source)) {
+          caption = DataUtils.getColumnLabel(originalSource, dataCols);
+        } else if (!BeeConst.isUndef(dataIndex)) {
+          caption = dataCols.get(dataIndex).getLabel();
+        }
+        if (BeeUtils.isEmpty(caption)) {
+          caption = columnName;
         }
       }
 
@@ -732,7 +742,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     initNewRowDefaults(gridDescr.getNewRowDefaults(), dataCols);
     setNewRowCaption(BeeUtils.notEmpty(gridDescr.getNewRowCaption(),
         (getDataInfo() == null) ? null : getDataInfo().getNewRowCaption(),
-            DEFAULT_NEW_ROW_CAPTION));
+        DEFAULT_NEW_ROW_CAPTION));
 
     getGrid().estimateHeaderWidths(true);
 

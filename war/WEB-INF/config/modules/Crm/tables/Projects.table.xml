@@ -6,16 +6,16 @@
   x="41" y="121"
   >
   <Fields>
-    <Integer name="Priority" notNull="true" />
-    <Relation name="ProjectType" notNull="true" relation="ProjectTypes" />
-    <String name="Name" precision="100" notNull="true" />
+    <Integer name="Priority" notNull="true" label="Prioritetas" />
+    <Relation name="ProjectType" notNull="true" relation="ProjectTypes" label="Tipas" />
+    <String name="Name" precision="100" notNull="true" label="Pavadinimas" />
     <Text name="Description" />
-    <Date name="StartDate" notNull="true" />
-    <Date name="FinishDate" notNull="true" />
+    <Date name="StartDate" notNull="true" label="Pradžia" />
+    <Date name="FinishDate" notNull="true" label="Terminas" />
     <DateTime name="ExpectedDuration" />
-    <Integer name="Event" notNull="true" />
-    <Relation name="Owner" notNull="true" relation="Users" />
-    <Relation name="Company" relation="Companies" />
+    <Integer name="Event" notNull="true" label="Būsena" />
+    <Relation name="Owner" notNull="true" relation="Users" label="Vadovas" />
+    <Relation name="Company" relation="Companies" label="Įmonė" />
     <Relation name="CompanyPerson" relation="CompanyPersons" />
   </Fields>
   <Keys>

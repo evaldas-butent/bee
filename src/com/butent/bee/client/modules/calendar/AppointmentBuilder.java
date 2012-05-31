@@ -1,6 +1,7 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -517,7 +518,7 @@ class AppointmentBuilder extends AbstractFormCallback {
 
   private void initPropWidget(Widget widget, List<Long> rowIds, Long def) {
     if (widget instanceof BeeListBox && !rowIds.isEmpty()) {
-      BeeListBox listBox = (BeeListBox) widget;
+      final BeeListBox listBox = (BeeListBox) widget;
       if (listBox.getItemCount() > 0) {
         listBox.clear();
       }
@@ -531,14 +532,19 @@ class AppointmentBuilder extends AbstractFormCallback {
       if (def != null && rowIds.contains(def)) {
         listBox.setSelectedIndex(rowIds.indexOf(def));
       } else {
-        listBox.deselect();
+        Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+          @Override
+          public void execute() {
+            listBox.deselect();
+          }
+        });
       }
     }
   }
 
   private void initReminderWidget(Widget widget) {
     if (widget instanceof BeeListBox && !reminderTypes.isEmpty()) {
-      BeeListBox listBox = (BeeListBox) widget;
+      final BeeListBox listBox = (BeeListBox) widget;
       if (listBox.getItemCount() > 0) {
         listBox.clear();
       }
@@ -549,7 +555,13 @@ class AppointmentBuilder extends AbstractFormCallback {
         String item = Data.getString(viewName, row, COL_NAME);
         listBox.addItem(BeeUtils.trimRight(item));
       }
-      listBox.deselect();
+
+      Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+        @Override
+        public void execute() {
+          listBox.deselect();
+        }
+      });
     }
   }
 
