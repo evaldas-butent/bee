@@ -90,17 +90,6 @@ public class ResponseBuffer {
     }
   }
 
-  public void addBinary(CharSequence s) {
-    if (s == null || s.length() <= 0) {
-      return;
-    }
-
-    buffer.append(s);
-    count++;
-
-    setContentType(ContentType.BINARY);
-  }
-
   public void addColumn(BeeColumn col) {
     Assert.notEmpty(col);
 
@@ -255,6 +244,17 @@ public class ResponseBuffer {
 
   public void addSevere(Object... obj) {
     messages.add(new ResponseMessage(Level.SEVERE, BeeUtils.concat(1, obj)));
+  }
+
+  public void addText(CharSequence s) {
+    if (s == null || s.length() <= 0) {
+      return;
+    }
+
+    buffer.append(s);
+    count++;
+
+    setContentType(ContentType.TEXT);
   }
 
   public void addWarning(Object... obj) {

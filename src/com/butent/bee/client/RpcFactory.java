@@ -242,13 +242,17 @@ public class RpcFactory implements Module {
   }
 
   public int sendText(String svc, String data) {
-    return makePostRequest(svc, ContentType.BINARY, data);
+    return makePostRequest(svc, ContentType.TEXT, data);
   }
 
   public int sendText(String svc, String data, ResponseCallback callback) {
-    return makePostRequest(svc, ContentType.BINARY, data, callback);
+    return makePostRequest(svc, ContentType.TEXT, data, callback);
   }
 
+  public int sendText(ParameterList params, String data, ResponseCallback callback) {
+    return makePostRequest(params, ContentType.TEXT, data, callback);
+  }
+  
   public void setReqCallBack(AsyncCallback reqCallBack) {
     this.reqCallBack = reqCallBack;
   }

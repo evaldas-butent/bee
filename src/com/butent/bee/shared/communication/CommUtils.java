@@ -60,7 +60,7 @@ public class CommUtils {
   }
 
   public static String getContent(ContentType type, String data) {
-    if ((isBinary(type) || isHtml(type)) && BeeUtils.length(data) > 0) {
+    if (isHtml(type) && BeeUtils.length(data) > 0) {
       return Codec.decodeBase64(data);
     } else {
       return data;
@@ -111,12 +111,8 @@ public class CommUtils {
     return mt;
   }
 
-  public static boolean isBinary(ContentType ctp) {
-    return ctp == ContentType.BINARY;
-  }
-
   public static boolean isHtml(ContentType ctp) {
-    return ctp == ContentType.HTML;
+    return ContentType.HTML.equals(ctp);
   }
 
   public static boolean isReservedParameter(String name) {
@@ -125,7 +121,11 @@ public class CommUtils {
   }
 
   public static boolean isResource(ContentType ctp) {
-    return ctp == ContentType.RESOURCE;
+    return ContentType.RESOURCE.equals(ctp);
+  }
+
+  public static boolean isText(ContentType ctp) {
+    return ContentType.TEXT.equals(ctp);
   }
 
   public static boolean isValidParameter(String name) {
@@ -142,7 +142,7 @@ public class CommUtils {
   }
 
   public static String prepareContent(ContentType type, String data) {
-    if ((isBinary(type) || isHtml(type)) && BeeUtils.length(data) > 0) {
+    if (isHtml(type) && BeeUtils.length(data) > 0) {
       return Codec.encodeBase64(data);
     } else {
       return data;

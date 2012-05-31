@@ -68,12 +68,17 @@ public class CalendarConstants {
 
   public static final String SVC_GET_CONFIGURATION = "get_configuration"; 
   public static final String SVC_GET_USER_CALENDAR = "get_user_calendar"; 
+  public static final String SVC_CREATE_APPOINTMENT = "create_appointment"; 
 
   public static final String PARAM_CALENDAR_ID = "calendar_id";
   
   public static final String TBL_USER_CALENDARS = "UserCalendars";
   public static final String TBL_CONFIGURATION = "Configuration";
 
+  public static final String TBL_APPOINTMENT_PROPS = "AppointmentProps";
+  public static final String TBL_APPOINTMENT_ATTENDEES = "AppointmentAttendees";
+  public static final String TBL_APPOINTMENT_REMINDERS = "AppointmentReminders";
+  
   public static final String VIEW_CALENDARS = "Calendars";
   public static final String VIEW_USER_CALENDARS = "UserCalendars";
   public static final String VIEW_CONFIGURATION = "Configuration";

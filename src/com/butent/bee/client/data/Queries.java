@@ -54,6 +54,33 @@ public class Queries {
 
   private static final int RESPONSE_FROM_CACHE = 0;
 
+  public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns, IsRow row) {
+    List<BeeColumn> newColumns = Lists.newArrayList();
+    List<String> values = Lists.newArrayList();
+
+    for (int i = 0; i < columns.size(); i++) {
+      BeeColumn column = columns.get(i);
+      if (!column.isWritable()) {
+        continue;
+      }
+
+      String value = row.getString(i);
+      if (BeeUtils.isEmpty(value)) {
+        continue;
+      }
+
+      newColumns.add(column);
+      values.add(value);
+    }
+    if (newColumns.isEmpty()) {
+      return null;
+    }
+
+    BeeRowSet rs = new BeeRowSet(viewName, newColumns);
+    rs.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
+    return rs;
+  }
+
   public static void delete(final String viewName, Filter filter, final IntCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(filter, "Delete: filter required");
@@ -328,7 +355,7 @@ public class Queries {
     Assert.notEmpty(columns);
     Assert.notNull(row);
 
-    BeeRowSet rs = getNotEmpty(viewName, columns, row);
+    BeeRowSet rs = createRowSetForInsert(viewName, columns, row);
     if (rs == null) {
       if (callback != null) {
         callback.onFailure(viewName, "nothing to insert");
@@ -487,33 +514,6 @@ public class Queries {
     Assert.notNull(rowSet, "rowSet is null");
     Assert.notEmpty(rowSet.getViewName(), "rowSet view name not specified");
     Assert.isTrue(rowSet.getNumberOfColumns() > 0 && rowSet.getNumberOfRows() > 0, "rowSet empty");
-  }
-
-  private static BeeRowSet getNotEmpty(String viewName, List<BeeColumn> columns, IsRow row) {
-    List<BeeColumn> newColumns = Lists.newArrayList();
-    List<String> values = Lists.newArrayList();
-
-    for (int i = 0; i < columns.size(); i++) {
-      BeeColumn column = columns.get(i);
-      if (!column.isWritable()) {
-        continue;
-      }
-
-      String value = row.getString(i);
-      if (BeeUtils.isEmpty(value)) {
-        continue;
-      }
-
-      newColumns.add(column);
-      values.add(value);
-    }
-    if (newColumns.isEmpty()) {
-      return null;
-    }
-
-    BeeRowSet rs = new BeeRowSet(viewName, newColumns);
-    rs.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
-    return rs;
   }
 
   private static BeeRowSet getUpdated(String viewName, List<BeeColumn> columns, IsRow oldRow,

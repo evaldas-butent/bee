@@ -2,6 +2,9 @@ package com.butent.bee.server.modules.calendar;
 
 import com.google.common.eventbus.Subscribe;
 
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+
+import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
@@ -11,13 +14,13 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -41,6 +44,8 @@ public class CalendarModuleBean implements BeeModule {
   UserServiceBean usr;
   @EJB
   QueryServiceBean qs;
+  @EJB
+  DataEditorBean deb;
 
   @Override
   public String dependsOn() {
@@ -50,12 +55,14 @@ public class CalendarModuleBean implements BeeModule {
   @Override
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(CalendarConstants.CALENDAR_METHOD);
+    String svc = reqInfo.getParameter(CALENDAR_METHOD);
 
-    if (BeeUtils.same(svc, CalendarConstants.SVC_GET_CONFIGURATION)) {
+    if (BeeUtils.same(svc, SVC_GET_CONFIGURATION)) {
       response = getConfiguration();
-    } else if (BeeUtils.same(svc, CalendarConstants.SVC_GET_USER_CALENDAR)) {
+    } else if (BeeUtils.same(svc, SVC_GET_USER_CALENDAR)) {
       response = getUserCalendar(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_CREATE_APPOINTMENT)) {
+      response = createAppointment(reqInfo);
 
     } else {
       String msg = BeeUtils.concat(1, "Calendar service not recognized:", svc);
@@ -72,7 +79,7 @@ public class CalendarModuleBean implements BeeModule {
 
   @Override
   public String getName() {
-    return CalendarConstants.CALENDAR_MODULE;
+    return CALENDAR_MODULE;
   }
 
   @Override
@@ -86,7 +93,7 @@ public class CalendarModuleBean implements BeeModule {
       @SuppressWarnings("unused")
       @Subscribe
       public void initConfiguration(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), CalendarConstants.VIEW_CONFIGURATION)) {
+        if (BeeUtils.same(event.getViewName(), VIEW_CONFIGURATION)) {
           BeeRowSet rowset = event.getRowset();
 
           if (rowset.isEmpty()) {
@@ -101,64 +108,97 @@ public class CalendarModuleBean implements BeeModule {
     return sys.isTable(name) && sys.getTable(name).isActive();
   }
 
-  private ResponseObject getConfiguration() {
-    if (!checkTable(CalendarConstants.TBL_CONFIGURATION)) {
-      return ResponseObject.error("table not active:", CalendarConstants.TBL_CONFIGURATION);
+  private ResponseObject createAppointment(RequestInfo reqInfo) {
+    BeeRowSet rowSet = BeeRowSet.restore(reqInfo.getContent());
+    if (rowSet.isEmpty()) {
+      return ResponseObject.error(SVC_CREATE_APPOINTMENT, ": rowSet is empty");
     }
 
-    BeeRowSet res = sys.getViewData(CalendarConstants.VIEW_CONFIGURATION);
+    String propIds = rowSet.getTableProperty(COL_PROPERTY);
+    String attIds = rowSet.getTableProperty(COL_ATTENDEE);
+    String rtIds = rowSet.getTableProperty(COL_REMINDER_TYPE);
+
+    ResponseObject response = deb.commitRow(rowSet, true);
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    long appId = ((BeeRow) response.getResponse()).getId();
+
+    if (!BeeUtils.isEmpty(propIds)) {
+      for (long propId : DataUtils.parseIdList(propIds)) {
+        insertAppointmentProperty(appId, propId);
+      }
+    }
+
+    if (!BeeUtils.isEmpty(attIds)) {
+      for (long attId : DataUtils.parseIdList(attIds)) {
+        insertAppointmentAttendee(appId, attId);
+      }
+    }
+    
+    if (!BeeUtils.isEmpty(rtIds)) {
+      for (long rtId : DataUtils.parseIdList(rtIds)) {
+        insertAppointmentReminder(appId, rtId);
+      }
+    }
+    
+    return response;
+  }
+
+  private ResponseObject getConfiguration() {
+    if (!checkTable(TBL_CONFIGURATION)) {
+      return ResponseObject.error("table not active:", TBL_CONFIGURATION);
+    }
+
+    BeeRowSet res = sys.getViewData(VIEW_CONFIGURATION);
     return ResponseObject.response(res);
   }
 
   private ResponseObject getUserCalendar(RequestInfo reqInfo) {
-    if (!checkTable(CalendarConstants.TBL_USER_CALENDARS)) {
-      return ResponseObject.error("table not active:", CalendarConstants.TBL_USER_CALENDARS);
+    if (!checkTable(TBL_USER_CALENDARS)) {
+      return ResponseObject.error("table not active:", TBL_USER_CALENDARS);
     }
 
-    long calendarId = BeeUtils.toLong(reqInfo.getParameter(CalendarConstants.PARAM_CALENDAR_ID));
+    long calendarId = BeeUtils.toLong(reqInfo.getParameter(PARAM_CALENDAR_ID));
     if (!DataUtils.isId(calendarId)) {
-      return ResponseObject.error(CalendarConstants.SVC_GET_USER_CALENDAR,
-          CalendarConstants.PARAM_CALENDAR_ID, "parameter not found");
+      return ResponseObject.error(SVC_GET_USER_CALENDAR, PARAM_CALENDAR_ID, "parameter not found");
     }
 
     long userId = usr.getCurrentUserId();
 
-    Filter filter = Filter.and(
-        ComparisonFilter.isEqual(CalendarConstants.COL_CALENDAR, new LongValue(calendarId)),
-        ComparisonFilter.isEqual(CalendarConstants.COL_USER, new LongValue(userId)));
+    Filter filter = Filter.and(ComparisonFilter.isEqual(COL_CALENDAR, new LongValue(calendarId)),
+        ComparisonFilter.isEqual(COL_USER, new LongValue(userId)));
 
-    BeeRowSet ucRowSet = sys.getViewData(CalendarConstants.VIEW_USER_CALENDARS, filter);
+    BeeRowSet ucRowSet = sys.getViewData(VIEW_USER_CALENDARS, filter);
     if (!ucRowSet.isEmpty()) {
       return ResponseObject.response(ucRowSet);
     }
 
-    BeeRowSet calRowSet = sys.getViewData(CalendarConstants.VIEW_CALENDARS,
-        ComparisonFilter.compareId(calendarId));
+    BeeRowSet calRowSet = sys.getViewData(VIEW_CALENDARS, ComparisonFilter.compareId(calendarId));
     if (calRowSet.isEmpty()) {
-      return ResponseObject.error(CalendarConstants.SVC_GET_USER_CALENDAR,
-          CalendarConstants.PARAM_CALENDAR_ID, calendarId, "calendar not found");
+      return ResponseObject.error(SVC_GET_USER_CALENDAR, PARAM_CALENDAR_ID, calendarId,
+          "calendar not found");
     }
 
     CalendarSettings settings = CalendarSettings.create(calRowSet.getRow(0),
         calRowSet.getColumns());
 
-    SqlInsert sqlInsert = new SqlInsert(CalendarConstants.TBL_USER_CALENDARS)
-        .addConstant(CalendarConstants.COL_CALENDAR, calendarId)
-        .addConstant(CalendarConstants.COL_USER, userId)
-        .addConstant(CalendarConstants.COL_PIXELS_PER_INTERVAL, settings.getPixelsPerInterval())
-        .addConstant(CalendarConstants.COL_INTERVALS_PER_HOUR, settings.getIntervalsPerHour())
-        .addConstant(CalendarConstants.COL_WORKING_HOUR_START, settings.getWorkingHourStart())
-        .addConstant(CalendarConstants.COL_WORKING_HOUR_END, settings.getWorkingHourEnd())
-        .addConstant(CalendarConstants.COL_SCROLL_TO_HOUR, settings.getScrollToHour())
-        .addConstant(CalendarConstants.COL_DEFAULT_DISPLAYED_DAYS,
-            settings.getDefaultDisplayedDays())
-        .addConstant(CalendarConstants.COL_ENABLE_DRAG_DROP, settings.isDragDropEnabled())
-        .addConstant(CalendarConstants.COL_DRAG_DROP_CREATION,
-            settings.isDragDropCreationEnabled())
-        .addConstant(CalendarConstants.COL_OFFSET_HOUR_LABELS, settings.offsetHourLabels());
+    SqlInsert sqlInsert = new SqlInsert(TBL_USER_CALENDARS)
+        .addConstant(COL_CALENDAR, calendarId)
+        .addConstant(COL_USER, userId)
+        .addConstant(COL_PIXELS_PER_INTERVAL, settings.getPixelsPerInterval())
+        .addConstant(COL_INTERVALS_PER_HOUR, settings.getIntervalsPerHour())
+        .addConstant(COL_WORKING_HOUR_START, settings.getWorkingHourStart())
+        .addConstant(COL_WORKING_HOUR_END, settings.getWorkingHourEnd())
+        .addConstant(COL_SCROLL_TO_HOUR, settings.getScrollToHour())
+        .addConstant(COL_DEFAULT_DISPLAYED_DAYS, settings.getDefaultDisplayedDays())
+        .addConstant(COL_ENABLE_DRAG_DROP, settings.isDragDropEnabled())
+        .addConstant(COL_DRAG_DROP_CREATION, settings.isDragDropCreationEnabled())
+        .addConstant(COL_OFFSET_HOUR_LABELS, settings.offsetHourLabels());
 
     if (settings.getTimeBlockClickNumber() != null) {
-      sqlInsert.addConstant(CalendarConstants.COL_TIME_BLOCK_CLICK_NUMBER,
+      sqlInsert.addConstant(COL_TIME_BLOCK_CLICK_NUMBER,
           settings.getTimeBlockClickNumber().ordinal());
     }
 
@@ -167,12 +207,26 @@ public class CalendarModuleBean implements BeeModule {
       return response;
     }
 
-    BeeRowSet result = sys.getViewData(CalendarConstants.VIEW_USER_CALENDARS, filter);
+    BeeRowSet result = sys.getViewData(VIEW_USER_CALENDARS, filter);
     if (result.isEmpty()) {
-      return ResponseObject.error(CalendarConstants.SVC_GET_USER_CALENDAR,
-          CalendarConstants.PARAM_CALENDAR_ID, calendarId, "user calendar not created");
+      return ResponseObject.error(SVC_GET_USER_CALENDAR, PARAM_CALENDAR_ID, calendarId,
+          "user calendar not created");
     }
-
     return ResponseObject.response(result);
+  }
+
+  private void insertAppointmentAttendee(long appId, long attId) {
+    qs.insertData(new SqlInsert(TBL_APPOINTMENT_ATTENDEES).addConstant(COL_APPOINTMENT, appId)
+        .addConstant(COL_ATTENDEE, attId));
+  }
+
+  private void insertAppointmentProperty(long appId, long propId) {
+    qs.insertData(new SqlInsert(TBL_APPOINTMENT_PROPS).addConstant(COL_APPOINTMENT, appId)
+        .addConstant(COL_PROPERTY, propId));
+  }
+  
+  private void insertAppointmentReminder(long appId, long rtId) {
+    qs.insertData(new SqlInsert(TBL_APPOINTMENT_REMINDERS).addConstant(COL_APPOINTMENT, appId)
+        .addConstant(COL_REMINDER_TYPE, rtId));
   }
 }

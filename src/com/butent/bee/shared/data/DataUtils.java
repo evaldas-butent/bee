@@ -1,5 +1,9 @@
 package com.butent.bee.shared.data;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -45,11 +49,40 @@ public class DataUtils {
   public static final long NEW_ROW_ID = 0L;
   public static final long NEW_ROW_VERSION = 0L;
 
+  private static final Predicate<Long> IS_ID = new Predicate<Long>() {
+    @Override
+    public boolean apply(Long input) {
+      return isId(input);
+    }
+  }; 
+
+  private static final char ID_LIST_SEPARATOR = ',';
+  
+  private static final Joiner ID_JOINER = Joiner.on(ID_LIST_SEPARATOR).skipNulls(); 
+  private static final Splitter ID_SPLITTER =
+      Splitter.on(ID_LIST_SEPARATOR).omitEmptyStrings().trimResults(); 
+  
   private static int defaultAsyncThreshold = 100;
   private static int defaultSearchThreshold = 2;
   private static int defaultPagingThreshold = 20;
 
   private static int maxInitialRowSetSize = 50;
+
+  public static String buildIdList(Long... ids) {
+    if (ids == null) {
+      return null;
+    } else {
+      return buildIdList(Lists.newArrayList(ids));
+    }
+  }
+  
+  public static String buildIdList(Collection<Long> ids) {
+    if (BeeUtils.isEmpty(ids)) {
+      return null;
+    } else {
+      return ID_JOINER.join(Iterables.filter(ids, IS_ID));
+    }
+  }
   
   public static BeeRow cloneRow(IsRow original) {
     Assert.notNull(original);
@@ -463,6 +496,21 @@ public class DataUtils {
 
     DataInfo dataInfo = provider.getDataInfo(viewName, true);
     return (dataInfo == null) ? null : dataInfo.parseFilter(input); 
+  }
+  
+  public static List<Long> parseIdList(String input) {
+    List<Long> result = Lists.newArrayList();
+    if (BeeUtils.isEmpty(input)) {
+      return result;
+    }
+    
+    for (String s : ID_SPLITTER.split(input)) {
+      Long id = BeeUtils.toLongOrNull(s);
+      if (isId(id)) {
+        result.add(id);
+      }
+    }
+    return result;
   }
 
   public static Order parseOrder(String input, DataInfo.Provider provider, String viewName) {

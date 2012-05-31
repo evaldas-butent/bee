@@ -127,7 +127,7 @@ public class Invocation {
       return;
     }
 
-    buff.addBinary(data);
+    buff.addText(data);
 
     byte[] arr = Codec.toBytes(data);
 

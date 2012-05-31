@@ -198,7 +198,7 @@ public class CliWorker {
     BeeKeeper.getLog().info("js fast", JsUtils.md5fast(src));
     BeeKeeper.getLog().info(BeeConst.CLIENT, Codec.md5(src));
 
-    BeeKeeper.getRpc().makePostRequest(Service.GET_DIGEST, ContentType.BINARY, src);
+    BeeKeeper.getRpc().makePostRequest(Service.GET_DIGEST, ContentType.TEXT, src);
   }
 
   public static void doAjaxKeys(String[] arr) {
@@ -2372,7 +2372,7 @@ public class CliWorker {
     if (len < 2 || len == 2 && BeeUtils.isDigit(ArrayUtils.getQuietly(arr, 1))) {
       int n = (len < 2) ? 10 : BeeUtils.toInt(arr[1]);
       for (int i = 0; i < n; i++) {
-        sb.append((char) BeeUtils.randomInt(Character.MIN_VALUE, Character.MAX_VALUE + 1));
+        sb.append((char) BeeUtils.randomInt(Character.MIN_VALUE, Character.MIN_SURROGATE));
       }
 
     } else {
@@ -2405,7 +2405,7 @@ public class CliWorker {
     String s = sb.toString();
     byte[] bytes = Codec.toBytes(s);
 
-    int id = BeeKeeper.getRpc().invoke("stringInfo", ContentType.BINARY, s);
+    int id = BeeKeeper.getRpc().invoke("stringInfo", ContentType.TEXT, s);
     BeeKeeper.getRpc().addUserData(id, "length", s.length(), "data", s,
         "adler32", Codec.adler32(bytes), "crc16", Codec.crc16(bytes),
         "crc32", Codec.crc32(bytes), "crc32d", Codec.crc32Direct(bytes));
