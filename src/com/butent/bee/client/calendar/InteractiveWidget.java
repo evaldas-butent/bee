@@ -102,8 +102,6 @@ public abstract class InteractiveWidget extends Composite implements Focusable {
     super.onBrowserEvent(event);
   }
 
-  public abstract void onDeleteKeyPressed();
-
   public abstract void onDoubleClick(Element element, Event event);
 
   public abstract void onDownArrowKeyPressed();
@@ -140,10 +138,6 @@ public abstract class InteractiveWidget extends Composite implements Focusable {
 
   protected void keyboardNavigation(int key) {
     switch (key) {
-      case KeyCodes.KEY_DELETE: {
-        onDeleteKeyPressed();
-        break;
-      }
       case KeyCodes.KEY_LEFT: {
         onLeftArrowKeyPressed();
         break;

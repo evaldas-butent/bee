@@ -56,7 +56,7 @@ public class CalendarConstants {
   }
 
   public enum TimeBlockClick implements HasCaption {
-    Double, Single;
+    Single, Double;
 
     public String getCaption() {
       return this.name();
@@ -99,6 +99,11 @@ public class CalendarConstants {
 
   public static final String VIEW_REMINDER_TYPES = "ReminderTypes";
 
+  public static final String VIEW_CAL_APPOINTMENT_TYPES = "CalAppointmentTypes";
+  public static final String VIEW_CAL_ATTENDEE_TYPES = "CalAttendeeTypes";
+  public static final String VIEW_CALENDAR_ATTENDEES = "CalendarAttendees";
+  public static final String VIEW_CALENDAR_PERSONS = "CalendarPersons";
+
   public static final String GRID_CALENDARS = "Calendars";
   public static final String GRID_APPOINTMENTS = "Appointments";
 
@@ -122,7 +127,6 @@ public class CalendarConstants {
   public static final String COL_OFFSET_HOUR_LABELS = "OffsetHourLabels";
 
   public static final String COL_ENABLE_DRAG_DROP = "EnableDragDrop";
-  public static final String COL_DRAG_DROP_CREATION = "DragDropCreation";
   public static final String COL_TIME_BLOCK_CLICK_NUMBER = "TimeBlockClickNumber";
   
   public static final String COL_FAVORITE = "Favorite";
@@ -136,6 +140,7 @@ public class CalendarConstants {
 
   public static final String COL_ATTENDEE = "Attendee";
   public static final String COL_ATTENDEE_NAME = "AttendeeName";
+  public static final String COL_ATTENDEE_TYPE = "AttendeeType";
 
   public static final String COL_TIME_ZONE = "TimeZone";
   public static final String COL_THEME = "Theme";
@@ -172,6 +177,11 @@ public class CalendarConstants {
   public static final String COL_DESCRIPTION = "Description";
 
   public static final String COL_REMINDER_TYPE = "ReminderType";
+
+  public static final String COL_STATUS = "Status";
+
+  public static final String COL_ORGANIZER = "Organizer";
+  public static final String COL_COMPANY_PERSON = "CompanyPerson";
   
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";

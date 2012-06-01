@@ -14,14 +14,9 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.calendar.event.CreateEvent;
-import com.butent.bee.client.calendar.event.CreateHandler;
 import com.butent.bee.client.calendar.event.DateRequestEvent;
 import com.butent.bee.client.calendar.event.DateRequestHandler;
-import com.butent.bee.client.calendar.event.DeleteEvent;
-import com.butent.bee.client.calendar.event.DeleteHandler;
 import com.butent.bee.client.calendar.event.HasDateRequestHandlers;
-import com.butent.bee.client.calendar.event.HasDeleteHandlers;
 import com.butent.bee.client.calendar.event.HasMouseOverHandlers;
 import com.butent.bee.client.calendar.event.HasTimeBlockClickHandlers;
 import com.butent.bee.client.calendar.event.HasUpdateHandlers;
@@ -32,6 +27,7 @@ import com.butent.bee.client.calendar.event.TimeBlockClickHandler;
 import com.butent.bee.client.calendar.event.UpdateEvent;
 import com.butent.bee.client.calendar.event.UpdateHandler;
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.Attendee;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
@@ -42,8 +38,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import java.util.Collection;
 import java.util.List;
 
-public class CalendarWidget extends InteractiveWidget implements
-    HasSelectionHandlers<Appointment>, HasDeleteHandlers<Appointment>,
+public class CalendarWidget extends InteractiveWidget implements HasSelectionHandlers<Appointment>,
     HasOpenHandlers<Appointment>, HasTimeBlockClickHandlers<DateTime>,
     HasUpdateHandlers<Appointment>, HasDateRequestHandlers<HasDateValue>,
     HasMouseOverHandlers<Appointment>,
@@ -84,10 +79,6 @@ public class CalendarWidget extends InteractiveWidget implements
     refresh();
   }
 
-  public HandlerRegistration addCreateHandler(CreateHandler<Appointment> handler) {
-    return addHandler(handler, CreateEvent.getType());
-  }
-  
   public HandlerRegistration addDateRequestHandler(DateRequestHandler<HasDateValue> handler) {
     return addHandler(handler, DateRequestEvent.getType());
   }
@@ -97,10 +88,6 @@ public class CalendarWidget extends InteractiveWidget implements
       TimeUtils.addDay(date, numOfDays);
       refresh();
     }
-  }
-
-  public HandlerRegistration addDeleteHandler(DeleteHandler<Appointment> handler) {
-    return addHandler(handler, DeleteEvent.getType());
   }
 
   public HandlerRegistration addMouseOverHandler(MouseOverHandler<Appointment> handler) {
@@ -144,28 +131,12 @@ public class CalendarWidget extends InteractiveWidget implements
     }
   }
 
-  public void fireCreateEvent(Appointment appointment) {
-    boolean allow = CreateEvent.fire(this, appointment);
-    if (!allow) {
-      appointmentManager.rollback();
-      refresh();
-    }
-  }
-
   public void fireDateRequestEvent(HasDateValue dt) {
     DateRequestEvent.fire(this, dt);
   }
 
   public void fireDateRequestEvent(HasDateValue dt, Element clicked) {
     DateRequestEvent.fire(this, dt, clicked);
-  }
-
-  public void fireDeleteEvent(Appointment appointment) {
-    boolean allow = DeleteEvent.fire(this, appointment);
-    if (allow) {
-      appointmentManager.removeAppointment(appointment);
-      refresh();
-    }
   }
 
   public void fireMouseOverEvent(Appointment appointment, Element element) {
@@ -235,13 +206,6 @@ public class CalendarWidget extends InteractiveWidget implements
   }
 
   @Override
-  public void onDeleteKeyPressed() {
-    if (view != null) {
-      view.onDeleteKeyPressed();
-    }
-  }
-
-  @Override
   public void onDoubleClick(Element element, Event event) {
     if (view != null) {
       view.onDoubleClick(element, event);
@@ -308,31 +272,6 @@ public class CalendarWidget extends InteractiveWidget implements
 
     doLayout();
     doSizing();
-  }
-
-  public void removeAppointment(Appointment appointment) {
-    removeAppointment(appointment, false);
-  }
-
-  public void removeAppointment(Appointment appointment, boolean fireEvents) {
-    Assert.notNull(appointment);
-    boolean commitChange = true;
-    if (fireEvents) {
-      commitChange = DeleteEvent.fire(this, appointment);
-    }
-
-    if (commitChange) {
-      appointmentManager.removeAppointment(appointment);
-      refresh();
-    }
-  }
-
-  public void removeCurrentlySelectedAppointment() {
-    appointmentManager.removeCurrentlySelectedAppointment();
-  }
-
-  public void resetSelectedAppointment() {
-    appointmentManager.resetSelectedAppointment();
   }
 
   public void resumeLayout() {

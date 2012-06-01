@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.calendar;
 
+import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
@@ -18,14 +19,21 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.ejb.EJB;
@@ -138,13 +146,13 @@ public class CalendarModuleBean implements BeeModule {
         insertAppointmentAttendee(appId, attId);
       }
     }
-    
+
     if (!BeeUtils.isEmpty(rtIds)) {
       for (long rtId : DataUtils.parseIdList(rtIds)) {
         insertAppointmentReminder(appId, rtId);
       }
     }
-    
+
     return response;
   }
 
@@ -154,10 +162,96 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.error(SVC_GET_USER_CALENDAR, PARAM_CALENDAR_ID, "parameter not found");
     }
 
-    BeeRowSet res = sys.getViewData(VIEW_APPOINTMENTS);
-    return ResponseObject.response(res);
+    Filter calFilter = ComparisonFilter.isEqual(COL_CALENDAR, new LongValue(calendarId));
+
+    BeeRowSet calAttTypes = sys.getViewData(VIEW_CAL_ATTENDEE_TYPES, calFilter);
+    BeeRowSet calAttendees = sys.getViewData(VIEW_CALENDAR_ATTENDEES, calFilter);
+
+    BeeRowSet calAppTypes = sys.getViewData(VIEW_CAL_APPOINTMENT_TYPES, calFilter);
+    BeeRowSet calPersons = sys.getViewData(VIEW_CALENDAR_PERSONS, calFilter);
+
+    CompoundFilter attFilter = Filter.or();
+    if (!calAttTypes.isEmpty()) {
+      attFilter.add(Filter.in(COL_ATTENDEE_TYPE,
+          DataUtils.getDistinct(calAttTypes, COL_ATTENDEE_TYPE)));
+    }
+    if (!calAttendees.isEmpty()) {
+      attFilter.add(Filter.idIn(DataUtils.getDistinct(calAttendees, COL_ATTENDEE)));
+    }
+
+    BeeRowSet attendees = sys.getViewData(VIEW_ATTENDEES, attFilter);
+    
+    CompoundFilter appFilter = Filter.and();
+    appFilter.add(ComparisonFilter.isNotEqual(COL_STATUS,
+        new IntegerValue(AppointmentStatus.CANCELED.ordinal())));
+
+    if (!calAppTypes.isEmpty()) {
+      appFilter.add(Filter.in(COL_APPOINTMENT_TYPE,
+          DataUtils.getDistinct(calAppTypes, COL_APPOINTMENT_TYPE)));
+    }
+    if (!calPersons.isEmpty()) {
+      appFilter.add(Filter.in(COL_ORGANIZER,
+          DataUtils.getDistinct(calPersons, COL_COMPANY_PERSON)));
+    }
+
+    BeeRowSet appAtts = sys.getViewData(VIEW_APPOINTMENT_ATTENDEES);
+    BeeRowSet appProps = sys.getViewData(VIEW_APPOINTMENT_PROPS);
+    
+    BeeRowSet appointments = sys.getViewData(VIEW_APPOINTMENTS, appFilter);
+    
+    Set<Long> attIds = Sets.newHashSet();
+    boolean filterByAttendee = !attFilter.isEmpty();
+    if (filterByAttendee) {
+      for (BeeRow row : attendees.getRows()) {
+        attIds.add(row.getId());
+      }
+    }
+    
+    List<BeeRow> children;
+    Iterator<BeeRow> iterator = appointments.getRows().iterator();
+
+    while (iterator.hasNext()) {
+      BeeRow row = iterator.next();
+      String appId = BeeUtils.toString(row.getId());
+
+      children = DataUtils.filterRows(appAtts, COL_APPOINTMENT, appId);
+
+      if (filterByAttendee) {
+        int index = appAtts.getColumnIndex(COL_ATTENDEE);
+        boolean ok = false;
+
+        for (BeeRow r : children) {
+          if (attIds.contains(r.getLong(index))) {
+            ok = true;
+            break;
+          }
+        }
+        if (!ok) {
+          iterator.remove();
+          continue;
+        }
+      }
+
+      if (!children.isEmpty()) {
+        row.setProperty(VIEW_APPOINTMENT_ATTENDEES, Codec.beeSerialize(children));
+      }
+      
+      children = DataUtils.filterRows(appProps, COL_APPOINTMENT, appId);
+      if (!children.isEmpty()) {
+        row.setProperty(VIEW_APPOINTMENT_PROPS, Codec.beeSerialize(children));
+      }
+    }
+
+    if (!attendees.isEmpty()) {
+      appointments.setTableProperty(VIEW_ATTENDEES, Codec.beeSerialize(attendees));
+    }
+    
+    LogUtils.infoNow(logger, SVC_GET_CALENDAR_APPOINTMENTS, appointments.getNumberOfRows(),
+        appointments.getViewName(), attendees.getNumberOfRows(), attendees.getViewName());
+    
+    return ResponseObject.response(appointments);
   }
-  
+
   private ResponseObject getConfiguration() {
     if (!checkTable(TBL_CONFIGURATION)) {
       return ResponseObject.error("table not active:", TBL_CONFIGURATION);
@@ -206,7 +300,6 @@ public class CalendarModuleBean implements BeeModule {
         .addConstant(COL_SCROLL_TO_HOUR, settings.getScrollToHour())
         .addConstant(COL_DEFAULT_DISPLAYED_DAYS, settings.getDefaultDisplayedDays())
         .addConstant(COL_ENABLE_DRAG_DROP, settings.isDragDropEnabled())
-        .addConstant(COL_DRAG_DROP_CREATION, settings.isDragDropCreationEnabled())
         .addConstant(COL_OFFSET_HOUR_LABELS, settings.offsetHourLabels());
 
     if (settings.getTimeBlockClickNumber() != null) {
@@ -236,7 +329,7 @@ public class CalendarModuleBean implements BeeModule {
     qs.insertData(new SqlInsert(TBL_APPOINTMENT_PROPS).addConstant(COL_APPOINTMENT, appId)
         .addConstant(COL_PROPERTY, propId));
   }
-  
+
   private void insertAppointmentReminder(long appId, long rtId) {
     qs.insertData(new SqlInsert(TBL_APPOINTMENT_REMINDERS).addConstant(COL_APPOINTMENT, appId)
         .addConstant(COL_REMINDER_TYPE, rtId));

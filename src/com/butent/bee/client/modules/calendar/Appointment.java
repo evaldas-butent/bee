@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
-import com.butent.bee.client.calendar.Attendee;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
@@ -25,7 +24,19 @@ public class Appointment implements Comparable<Appointment> {
   public Appointment(IsRow row) {
     this.row = row;
   }
+  
+  public void addAttendee(Attendee attendee) {
+    if (attendee != null) {
+      attendees.add(attendee);
+    }
+  }
 
+  public void addProperty(String propName) {
+    if (!BeeUtils.isEmpty(propName)) {
+      properties.add(propName);
+    }
+  }
+  
   public Appointment clone() {
     Appointment clone = new Appointment(DataUtils.cloneRow(row));
     if (!getAttendees().isEmpty()) {

@@ -16,8 +16,7 @@ public class CalendarSettings implements BeeSerializable {
 
   private enum Serial {
     PIXELS_PER_INTERVAL, INTERVALS_PER_HOUR, WORKING_HOUR_START, WORKING_HOUR_END, SCROLL_TO_HOUR,
-    DEFAULT_DISPLAYED_DAYS, OFFSET_HOUR_LABELS, ENABLE_DRAG_DROP, DRAG_DROP_CREATION,
-    TIME_BLOCK_CLICK_NUMBER
+    DEFAULT_DISPLAYED_DAYS, OFFSET_HOUR_LABELS, ENABLE_DRAG_DROP, TIME_BLOCK_CLICK_NUMBER
   }
 
   public static CalendarSettings create(IsRow row, List<? extends IsColumn> columns) {
@@ -50,7 +49,6 @@ public class CalendarSettings implements BeeSerializable {
   private boolean offsetHourLabels;
 
   private boolean enableDragDrop;
-  private boolean dragDropCreation;
 
   private TimeBlockClick timeBlockClickNumber;
 
@@ -70,9 +68,6 @@ public class CalendarSettings implements BeeSerializable {
       switch (member) {
         case DEFAULT_DISPLAYED_DAYS:
           setDefaultDisplayedDays(BeeUtils.toInt(value));
-          break;
-        case DRAG_DROP_CREATION:
-          setDragDropCreationEnabled(Codec.unpack(value));
           break;
         case ENABLE_DRAG_DROP:
           setDragDropEnabled(Codec.unpack(value));
@@ -130,10 +125,6 @@ public class CalendarSettings implements BeeSerializable {
     return workingHourStart;
   }
 
-  public boolean isDragDropCreationEnabled() {
-    return dragDropCreation;
-  }
-
   public boolean isDragDropEnabled() {
     return enableDragDrop;
   }
@@ -149,7 +140,6 @@ public class CalendarSettings implements BeeSerializable {
     setDefaultDisplayedDays(getInt(row, columns, CalendarConstants.COL_DEFAULT_DISPLAYED_DAYS));
 
     setDragDropEnabled(getBool(row, columns, CalendarConstants.COL_ENABLE_DRAG_DROP));
-    setDragDropCreationEnabled(getBool(row, columns, CalendarConstants.COL_DRAG_DROP_CREATION));
 
     setOffsetHourLabels(getBool(row, columns, CalendarConstants.COL_OFFSET_HOUR_LABELS));
 
@@ -176,7 +166,6 @@ public class CalendarSettings implements BeeSerializable {
     setInt(row, columns, CalendarConstants.COL_DEFAULT_DISPLAYED_DAYS, getDefaultDisplayedDays());
 
     setBool(row, columns, CalendarConstants.COL_ENABLE_DRAG_DROP, isDragDropEnabled());
-    setBool(row, columns, CalendarConstants.COL_DRAG_DROP_CREATION, isDragDropCreationEnabled());
 
     setBool(row, columns, CalendarConstants.COL_OFFSET_HOUR_LABELS, offsetHourLabels());
 
@@ -195,9 +184,6 @@ public class CalendarSettings implements BeeSerializable {
       switch (member) {
         case DEFAULT_DISPLAYED_DAYS:
           arr[i++] = getDefaultDisplayedDays();
-          break;
-        case DRAG_DROP_CREATION:
-          arr[i++] = Codec.pack(isDragDropCreationEnabled());
           break;
         case ENABLE_DRAG_DROP:
           arr[i++] = Codec.pack(isDragDropEnabled());
@@ -230,10 +216,6 @@ public class CalendarSettings implements BeeSerializable {
 
   public void setDefaultDisplayedDays(int defaultDisplayedDays) {
     this.defaultDisplayedDays = defaultDisplayedDays;
-  }
-
-  public void setDragDropCreationEnabled(boolean dragDropCreation) {
-    this.dragDropCreation = dragDropCreation;
   }
 
   public void setDragDropEnabled(boolean enableDragDrop) {

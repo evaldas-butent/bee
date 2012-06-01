@@ -6,7 +6,7 @@
   >
   <Columns>
     <SimpleColumn name="AttendeeType" />
-    <SimpleJoin joinType="INNER" name="AttendeeType">
+    <SimpleJoin joinType="LEFT" name="AttendeeType">
       <SimpleColumn alias="TypeName" name="Name" />
     </SimpleJoin>
 

@@ -53,6 +53,10 @@
     <when-property-is name='screen' value='hello'/> 
   </replace-with>
    
+  <replace-with class='com.butent.bee.client.view.HeaderSilverImpl'> 
+    <when-type-is class='com.butent.bee.client.view.HeaderImpl'/>   
+  </replace-with>
+   
   <source path='client'/>
   <source path='shared'/>
   <super-source path='translatable'/> 

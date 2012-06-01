@@ -7,6 +7,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.RowFilter;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -51,6 +52,34 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
           return new CompoundFilter(CompoundType.AND, arr);
       }
     }
+  }
+  
+  public static Filter idIn(Collection<Long> values) {
+    Assert.notNull(values);
+    if (values.isEmpty()) {
+      return null;
+    }
+    
+    CompoundFilter filter = or();
+    for (Long value : values) {
+      filter.add(ComparisonFilter.compareId(value));
+    }
+    return filter;
+  }
+
+  public static Filter in(String column, Collection<Long> values) {
+    Assert.notEmpty(column);
+    Assert.notNull(values);
+    
+    if (values.isEmpty()) {
+      return null;
+    }
+    
+    CompoundFilter filter = or();
+    for (Long value : values) {
+      filter.add(ComparisonFilter.isEqual(column, new LongValue(value)));
+    }
+    return filter;
   }
 
   public static Filter isEmpty(String column) {

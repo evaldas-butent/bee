@@ -22,7 +22,6 @@
     <SimpleColumn name="OffsetHourLabels" />
 
     <SimpleColumn name="EnableDragDrop" />
-    <SimpleColumn name="DragDropCreation" />
     <SimpleColumn name="TimeBlockClickNumber" />
   </Columns>
   <Order>

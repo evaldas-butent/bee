@@ -5,7 +5,6 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 
-import com.butent.bee.client.calendar.Attendee;
 import com.butent.bee.client.calendar.CalendarView;
 import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.calendar.drop.ResourceViewDropController;
@@ -21,6 +20,7 @@ import com.butent.bee.client.dnd.PickupDragController;
 import com.butent.bee.client.dnd.VetoDragException;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.Attendee;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -44,7 +44,6 @@ public class ResourceView extends CalendarView {
   private ResourceViewDropController dropController = null;
 
   private ResourceViewResizeController resizeController = null;
-  private ResourceViewResizeController proxyResizeController = null;
   
   private final int days = 1;
 
@@ -99,9 +98,6 @@ public class ResourceView extends CalendarView {
     resizeController.setIntervalsPerHour(calendarWidget.getSettings().getIntervalsPerHour());
     resizeController.setSnapSize(calendarWidget.getSettings().getPixelsPerInterval());
 
-    proxyResizeController.setSnapSize(calendarWidget.getSettings().getPixelsPerInterval());
-    proxyResizeController.setIntervalsPerHour(calendarWidget.getSettings().getIntervalsPerHour());
-
     appointmentWidgets.clear();
     selectedAppointmentWidgets.clear();
 
@@ -141,6 +137,11 @@ public class ResourceView extends CalendarView {
   }
 
   @Override
+  public Type getType() {
+    return Type.RESOURCE;
+  }
+  
+  @Override
   public void onAppointmentSelected(Appointment appt) {
     List<AppointmentWidget> clickedAppointmentAdapters = findAppointmentWidget(appt);
 
@@ -160,12 +161,6 @@ public class ResourceView extends CalendarView {
       if (viewBody.getScrollPanel().getOffsetHeight() > height) {
         DOM.scrollIntoView(clickedAppointmentAdapters.get(0).getElement());
       }
-    }
-  }
-
-  public void onDeleteKeyPressed() {
-    if (calendarWidget.getSelectedAppointment() != null) {
-      calendarWidget.fireDeleteEvent(calendarWidget.getSelectedAppointment());
     }
   }
 
@@ -210,8 +205,7 @@ public class ResourceView extends CalendarView {
 
     if (appt != null) {
       selectAppointment(appt);
-    } else if ((getSettings().getTimeBlockClickNumber() == TimeBlockClick.Single
-        || getSettings().isDragDropCreationEnabled())
+    } else if (getSettings().getTimeBlockClickNumber() == TimeBlockClick.Single
         && element == viewBody.getGrid().getGridOverlay().getElement()) {
       int x = DOM.eventGetClientX(event);
       int y = DOM.eventGetClientY(event);
@@ -318,43 +312,6 @@ public class ResourceView extends CalendarView {
         public void onDragStart(DragStartEvent event) {
           calendarWidget.setRollbackAppointment(((AppointmentWidget) event.getContext().draggable
               .getParent()).getAppointment().clone());
-        }
-
-        public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
-        }
-
-        public void onPreviewDragStart(DragStartEvent event) throws VetoDragException {
-        }
-      });
-    }
-
-    if (proxyResizeController == null) {
-      proxyResizeController = new ResourceViewResizeController(viewBody.getGrid().getGrid());
-
-      proxyResizeController.addDragHandler(new DragHandler() {
-        long startTime = 0L;
-        int initialX = 0;
-        int initialY = 0;
-
-        DateTime startDate;
-
-        public void onDragEnd(DragEndEvent event) {
-          long clickTime = System.currentTimeMillis() - startTime;
-          int y = event.getContext().mouseY;
-          if (clickTime <= 500 && initialY == y) {
-            calendarWidget.fireTimeBlockClickEvent(startDate);
-          } else {
-            Appointment appt =
-                ((AppointmentWidget) event.getContext().draggable.getParent()).getAppointment();
-            calendarWidget.fireCreateEvent(appt);
-          }
-        }
-
-        public void onDragStart(DragStartEvent event) {
-          startTime = System.currentTimeMillis();
-          initialX = event.getContext().mouseX;
-          initialY = event.getContext().mouseY;
-          startDate = getCoordinatesDate(initialX, initialY);
         }
 
         public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {

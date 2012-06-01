@@ -8,7 +8,6 @@ import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.calendar.Attendee;
 import com.butent.bee.client.calendar.Calendar;
 import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.communication.ParameterList;
@@ -52,7 +51,9 @@ public class CalendarKeeper {
       if (event.hasView(VIEW_CALENDARS)) {
         Long id = event.getRowId();
         if (DataUtils.isId(id)) {
-          openCalendar(id);
+          String name = event.hasRow() ?
+              Data.getString(VIEW_CALENDARS, event.getRow(), COL_NAME) : event.getOptions();
+          openCalendar(id, name);
         }
       }
     }
@@ -270,12 +271,12 @@ public class CalendarKeeper {
     });
   }
 
-  private static void openCalendar(final long id) {
+  private static void openCalendar(final long id, final String name) {
     getUserCalendar(id, new Queries.RowSetCallback() {
       @Override
       public void onSuccess(BeeRowSet result) {
         CalendarSettings settings = CalendarSettings.create(result.getRow(0), result.getColumns());
-        BeeKeeper.getScreen().updateActivePanel(new CalendarPanel(id, settings));
+        BeeKeeper.getScreen().updateActivePanel(new CalendarPanel(id, name, settings));
       }
     });
   }

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="CurrencyRates"
-  source="CurrencyRates"
+  name="CurrencyRates" source="CurrencyRates" newRowCaption="Naujas kursas"
   >
   <Columns>
     <SimpleColumn name="Currency" />

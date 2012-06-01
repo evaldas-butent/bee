@@ -21,7 +21,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
    * Contains a list of parameters for row serialization.
    */
   private enum Serial {
-    ID, VERSION, VALUES, SHADOW
+    ID, VERSION, VALUES, SHADOW, PROPERTIES
   }
 
   public static BeeRow restore(String s) {
@@ -29,7 +29,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
     row.deserialize(s);
     return row;
   }
-
+  
   private Map<Integer, String> shadow = null;
 
   public BeeRow(long id, long version) {
@@ -93,6 +93,12 @@ public class BeeRow extends StringRow implements BeeSerializable {
             }
           }
           break;
+
+        case PROPERTIES:
+          if (!BeeUtils.isEmpty(value)) {
+            setProperties(CustomProperties.restore(value));
+          }
+          break;
       }
     }
   }
@@ -150,6 +156,10 @@ public class BeeRow extends StringRow implements BeeSerializable {
 
         case SHADOW:
           arr[i++] = shadow;
+          break;
+
+        case PROPERTIES:
+          arr[i++] = getProperties();
           break;
       }
     }

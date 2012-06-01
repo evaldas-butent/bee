@@ -2,8 +2,8 @@ package com.butent.bee.client.calendar.util;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.calendar.Attendee;
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.Attendee;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;

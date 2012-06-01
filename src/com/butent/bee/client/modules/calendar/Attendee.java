@@ -1,4 +1,4 @@
-package com.butent.bee.client.calendar;
+package com.butent.bee.client.modules.calendar;
 
 public class Attendee {
   

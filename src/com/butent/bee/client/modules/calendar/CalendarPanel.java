@@ -1,7 +1,7 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.OpenEvent;
@@ -13,8 +13,9 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.calendar.Calendar;
 import com.butent.bee.client.calendar.CalendarView.Type;
 import com.butent.bee.client.calendar.event.TimeBlockClickEvent;
@@ -24,29 +25,38 @@ import com.butent.bee.client.calendar.resourceview.ResourceView;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.TabBar;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.layout.Complex;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
-import com.butent.bee.client.widget.BeeImage;
+import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.view.HeaderImpl;
+import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.modules.calendar.CalendarConstants;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.EnumSet;
 import java.util.List;
 
-public class CalendarPanel extends Complex implements NewAppointmentEvent.Handler {
+public class CalendarPanel extends Complex implements NewAppointmentEvent.Handler, Presenter, View {
   
   private static final String STYLE_PANEL = "bee-cal-Panel";
+  private static final String STYLE_CONTROLS = "bee-cal-Panel-controls";
 
   private static final String STYLE_TODAY = "bee-cal-Panel-today";
   
@@ -59,13 +69,12 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
   
   private static final String STYLE_VIEW_PREFIX = "bee-cal-Panel-view-";
   
-  private static final String STYLE_REFRESH = "bee-cal-Panel-refresh";
-  private static final String STYLE_SETTINGS = "bee-cal-Panel-settings";
-  
   private static final String STYLE_CALENDAR = "bee-cal-Panel-calendar";
 
   private static final DateTimeFormat DATE_FORMAT = 
       DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_FULL);
+  private static final DateTimeFormat MONTH_FORMAT = 
+      DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.YEAR_MONTH);
 
   private final long calendarId;
 
@@ -73,8 +82,10 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
   private final Html dateBox;
 
   private HandlerRegistration newAppointmentRegistration;
+  
+  private boolean enabled = true;
 
-  public CalendarPanel(long calendarId, CalendarSettings settings) {
+  public CalendarPanel(long calendarId, String caption, CalendarSettings settings) {
     super();
     addStyleName(STYLE_PANEL);
 
@@ -97,7 +108,12 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     calendar.suspendLayout();
     calendar.setType(Type.DAY, calendar.getSettings().getDefaultDisplayedDays());
 
-    this.dateBox = new Html(DATE_FORMAT.format(calendar.getDate()));
+    HeaderView header = GWT.create(HeaderImpl.class);
+    header.create(caption, false, true, EnumSet.of(UiOption.ROOT),
+        EnumSet.of(Action.REFRESH, Action.CONFIGURE), null);
+    header.setViewPresenter(this);
+    
+    this.dateBox = new Html();
     dateBox.addStyleName(STYLE_DATE);
 
     dateBox.addClickHandler(new ClickHandler() {
@@ -105,7 +121,9 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
         pickDate();
       }
     });
-
+    
+    add(header);
+    
     Html today = new Html("Šiandien");
     today.addStyleName(STYLE_TODAY);
 
@@ -135,62 +153,90 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
       }
     });
 
-    BeeImage config = new BeeImage(Global.getImages().settings(), new Scheduler.ScheduledCommand() {
-      public void execute() {
-        CalendarKeeper.editSettings(CalendarPanel.this.calendarId, CalendarPanel.this.calendar);
-      }
-    });
-    config.addStyleName(STYLE_SETTINGS);
+    Flow controls = new Flow();
+    controls.addStyleName(STYLE_CONTROLS);
 
-    BeeImage refresh = new BeeImage(Global.getImages().refresh(), new Scheduler.ScheduledCommand() {
-      public void execute() {
-        refresh();
-      }
-    });
-    refresh.addStyleName(STYLE_REFRESH);
-
-    add(today);
+    controls.add(today);
 
     Horizontal nav = new Horizontal();
     nav.addStyleName(STYLE_NAV_CONTAINER);
     nav.add(prev);
     nav.add(next);
-    add(nav);
+    controls.add(nav);
 
-    add(dateBox);
+    controls.add(dateBox);
 
-    add(createViews());
-
-    add(refresh);
-    add(config);
-    
+    controls.add(createViewWidget());
+    add(controls);
+   
     Simple container = new Simple();
     container.addStyleName(STYLE_CALENDAR);
     container.setWidget(calendar);
     add(container);
-
+    
+    refreshDateBox();
     loadAppointments();
 
     setNewAppointmentRegistration(NewAppointmentEvent.register(this));
   }
 
+  public String getEventSource() {
+    return null;
+  }
+
+  public Presenter getViewPresenter() {
+    return this;
+  }
+
+  public Widget getWidget() {
+    return this;
+  }
+
+  public String getWidgetId() {
+    return getId();
+  }
+
+  public void handleAction(Action action) {
+    switch (action) {
+      case REFRESH:
+        refresh();
+        break;
+        
+      case CONFIGURE:
+        CalendarKeeper.editSettings(calendarId, calendar);
+        break;
+        
+      case CLOSE:
+        BeeKeeper.getScreen().closeView(this);
+        break;
+
+      default:
+        BeeKeeper.getLog().info(action, "not implemented");
+    }
+  }
+
+  public boolean isEnabled() {
+    return enabled;
+  }
+  
   @Override
   public void onNewAppointment(NewAppointmentEvent event) {
     refresh();
   }
 
-  @Override
-  protected void onLoad() {
-    super.onLoad();
-
-    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-      public void execute() {
-        calendar.resumeLayout();
-        calendar.scrollToHour(calendar.getSettings().getScrollToHour());
-      }
-    });
+  public void onViewUnload() {
   }
 
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
+
+  public void setEventSource(String eventSource) {
+  }
+  
+  public void setViewPresenter(Presenter viewPresenter) {
+  }
+  
   @Override
   protected void onUnload() {
     super.onUnload();
@@ -201,7 +247,7 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     }
   }
 
-  private Widget createViews() {
+  private Widget createViewWidget() {
     TabBar tabBar = new TabBar(STYLE_VIEW_PREFIX);
 
     tabBar.addItem("Diena");
@@ -235,9 +281,9 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
             break;
           case 5:
             calendar.setType(Type.RESOURCE);
-            refresh();
             break;
         }
+        refreshDateBox();
       }
     });
     return tabBar;
@@ -248,9 +294,8 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
   }
 
   private void loadAppointments() {
-    ParameterList params =
-        CalendarKeeper.createRequestParameters(CalendarConstants.SVC_GET_CALENDAR_APPOINTMENTS);
-    params.addQueryItem(CalendarConstants.PARAM_CALENDAR_ID, calendarId);
+    ParameterList params = CalendarKeeper.createRequestParameters(SVC_GET_CALENDAR_APPOINTMENTS);
+    params.addQueryItem(PARAM_CALENDAR_ID, calendarId);
 
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
       public void onResponse(ResponseObject response) {
@@ -289,7 +334,7 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     }
     setDate(newDate);
   }
-  
+
   private void pickDate() {
     final Popup popup = new Popup(true, false);
     DatePicker datePicker = new DatePicker(calendar.getDate());
@@ -310,26 +355,66 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     loadAppointments();
   }
 
+  private void refreshDateBox() {
+    JustDate date = calendar.getDate();
+    DateTimeFormat format = Type.MONTH.equals(calendar.getType()) ? MONTH_FORMAT : DATE_FORMAT;
+
+    dateBox.setHTML(format.format(date));
+  }
+
   private void setAppointments(BeeRowSet rowSet) {
-    if (rowSet == null || rowSet.isEmpty()) {
-      return;
+    calendar.suspendLayout();
+    
+    String property = rowSet.getTableProperty(VIEW_ATTENDEES);
+
+    if (!BeeUtils.isEmpty(property)) {
+      BeeRowSet attRs = BeeRowSet.restore(property);
+
+      List<Attendee> attendees = Lists.newArrayList();
+      for (BeeRow row : attRs.getRows()) {
+        attendees.add(new Attendee(row.getId(), DataUtils.getString(attRs, row, COL_NAME)));
+      }
+
+      calendar.setAttendees(attendees);
     }
 
-    List<Appointment> lst = Lists.newArrayList();
-    for (IsRow row : rowSet.getRows()) {
-      lst.add(new Appointment(row));
+    List<Appointment> appointments = Lists.newArrayList();
+    for (BeeRow row : rowSet.getRows()) {
+      Appointment app = new Appointment(row);
+      
+      property = row.getProperty(VIEW_APPOINTMENT_ATTENDEES);
+      if (!BeeUtils.isEmpty(property)) {
+        for (BeeRow r : DataUtils.restoreRows(property)) {
+          app.addAttendee(new Attendee(Data.getLong(VIEW_APPOINTMENT_ATTENDEES, r, COL_ATTENDEE),
+              Data.getString(VIEW_APPOINTMENT_ATTENDEES, r, COL_ATTENDEE_NAME)));
+        }
+      }
+
+      property = row.getProperty(VIEW_APPOINTMENT_PROPS);
+      if (!BeeUtils.isEmpty(property)) {
+        for (BeeRow r : DataUtils.restoreRows(property)) {
+          app.addProperty(Data.getString(VIEW_APPOINTMENT_PROPS, r, COL_PROPERTY_NAME));
+        }
+      }
+      
+      appointments.add(app);
     }
 
-    calendar.setAppointments(lst);
+    calendar.setAppointments(appointments);
+    
+    calendar.resumeLayout();
+    calendar.scrollToHour(calendar.getSettings().getScrollToHour());
   }
 
   private void setDate(JustDate date) {
-    if (date != null && !date.equals(calendar.getDate())) {
-      calendar.setDate(date);
-      dateBox.setHTML(DATE_FORMAT.format(date));
+    if (date != null) {
+      if (!date.equals(calendar.getDate())) {
+        calendar.setDate(date);
+      }
+      refreshDateBox();
     }
   }
-  
+
   private void setNewAppointmentRegistration(HandlerRegistration newAppointmentRegistration) {
     this.newAppointmentRegistration = newAppointmentRegistration;
   }

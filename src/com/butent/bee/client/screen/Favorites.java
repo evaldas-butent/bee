@@ -109,7 +109,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
         @Override
         public void onClick(ClickEvent event) {
           BeeKeeper.getBus().fireEvent(new RowActionEvent(getViewName(), id,
-              Service.OPEN_FAVORITE));
+              Service.OPEN_FAVORITE, html));
         }
       });
 

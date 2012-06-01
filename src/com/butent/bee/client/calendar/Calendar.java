@@ -47,6 +47,14 @@ public class Calendar extends CalendarWidget implements RequiresResize, Provides
     setType(viewType);
   }
 
+  public CalendarView.Type getType() {
+    if (getView() == null) {
+      return null;
+    } else {
+      return getView().getType();
+    }
+  }
+  
   public void onResize() {
     resizeTimer.schedule(500);
   }

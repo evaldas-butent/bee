@@ -12,7 +12,7 @@ import com.butent.bee.shared.time.DateTime;
 public abstract class CalendarView implements HasSettings {
 
   public enum Type {
-    DAY, MONTH, AGENDA, RESOURCE
+    DAY, MONTH, RESOURCE
   }
   
   protected CalendarWidget calendarWidget = null;
@@ -31,11 +31,6 @@ public abstract class CalendarView implements HasSettings {
   public void createAppointment(DateTime start) {
     Assert.notNull(calendarWidget);
     calendarWidget.fireTimeBlockClickEvent(start);
-  }
-
-  public final void deleteAppointment(Appointment appt) {
-    Assert.notNull(calendarWidget);
-    calendarWidget.fireDeleteEvent(appt);
   }
 
   public void detatch() {
@@ -57,11 +52,10 @@ public abstract class CalendarView implements HasSettings {
   }
 
   public abstract String getStyleName();
+  
+  public abstract Type getType();
 
   public abstract void onAppointmentSelected(Appointment appt);
-
-  public void onDeleteKeyPressed() {
-  }
 
   public abstract void onDoubleClick(Element element, Event event);
 

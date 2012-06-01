@@ -9,7 +9,6 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -49,7 +48,6 @@ public class MonthView extends CalendarView {
           if (compare == 0) {
             compare = a2.getEnd().compareTo(a1.getEnd());
           }
-
           return compare;
         }
       };
@@ -195,6 +193,11 @@ public class MonthView extends CalendarView {
   }
 
   @Override
+  public Type getType() {
+    return Type.MONTH;
+  }
+  
+  @Override
   public void onAppointmentSelected(Appointment appt) {
     List<AppointmentWidget> clickedAppointmentWidgets = findAppointmentWidgets(appt);
 
@@ -209,12 +212,6 @@ public class MonthView extends CalendarView {
 
       selectedAppointmentWidgets.clear();
       selectedAppointmentWidgets.addAll(clickedAppointmentWidgets);
-    }
-  }
-
-  public void onDeleteKeyPressed() {
-    if (calendarWidget.getSelectedAppointment() != null) {
-      calendarWidget.fireDeleteEvent(calendarWidget.getSelectedAppointment());
     }
   }
 
@@ -261,7 +258,6 @@ public class MonthView extends CalendarView {
   private void buildCalendarGrid() {
     for (int i = 0; i < DAYS_IN_A_WEEK; i++) {
       monthCalendarGrid.setText(0, i, CalendarFormat.getDayOfWeekNames()[i]);
-      cellFormatter.setVerticalAlignment(0, i, HasVerticalAlignment.ALIGN_TOP);
       cellFormatter.setStyleName(0, i, WEEKDAY_LABEL_STYLE);
     }
 
@@ -331,7 +327,6 @@ public class MonthView extends CalendarView {
     }
 
     monthCalendarGrid.setWidget(row, col, label);
-    cellFormatter.setVerticalAlignment(row, col, HasVerticalAlignment.ALIGN_TOP);
     cellFormatter.setStyleName(row, col, cellStyle.toString());
   }
 

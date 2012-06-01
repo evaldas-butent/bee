@@ -44,7 +44,6 @@ public class DayView extends CalendarView {
   private DayViewDropController dropController = null;
 
   private DayViewResizeController resizeController = null;
-  private DayViewResizeController proxyResizeController = null;
 
   public DayView() {
     super();
@@ -95,9 +94,6 @@ public class DayView extends CalendarView {
     resizeController.setIntervalsPerHour(calendarWidget.getSettings().getIntervalsPerHour());
     resizeController.setSnapSize(calendarWidget.getSettings().getPixelsPerInterval());
 
-    proxyResizeController.setSnapSize(calendarWidget.getSettings().getPixelsPerInterval());
-    proxyResizeController.setIntervalsPerHour(calendarWidget.getSettings().getIntervalsPerHour());
-
     appointmentWidgets.clear();
     selectedAppointmentWidgets.clear();
 
@@ -139,6 +135,11 @@ public class DayView extends CalendarView {
   }
 
   @Override
+  public Type getType() {
+    return Type.DAY;
+  }
+
+  @Override
   public void onAppointmentSelected(Appointment appt) {
     List<AppointmentWidget> clickedAppointmentAdapters = findAppointmentWidget(appt);
 
@@ -158,12 +159,6 @@ public class DayView extends CalendarView {
       if (dayViewBody.getScrollArea().getOffsetHeight() > height) {
         DOM.scrollIntoView(clickedAppointmentAdapters.get(0).getElement());
       }
-    }
-  }
-
-  public void onDeleteKeyPressed() {
-    if (calendarWidget.getSelectedAppointment() != null) {
-      calendarWidget.fireDeleteEvent(calendarWidget.getSelectedAppointment());
     }
   }
 
@@ -208,8 +203,7 @@ public class DayView extends CalendarView {
 
     if (appt != null) {
       selectAppointment(appt);
-    } else if ((getSettings().getTimeBlockClickNumber() == TimeBlockClick.Single
-        || getSettings().isDragDropCreationEnabled())
+    } else if (getSettings().getTimeBlockClickNumber() == TimeBlockClick.Single
         && element == dayViewBody.getGrid().getGridOverlay().getElement()) {
       int x = DOM.eventGetClientX(event);
       int y = DOM.eventGetClientY(event);
@@ -316,43 +310,6 @@ public class DayView extends CalendarView {
         public void onDragStart(DragStartEvent event) {
           calendarWidget.setRollbackAppointment(((AppointmentWidget) event.getContext().draggable
               .getParent()).getAppointment().clone());
-        }
-
-        public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
-        }
-
-        public void onPreviewDragStart(DragStartEvent event) throws VetoDragException {
-        }
-      });
-    }
-
-    if (proxyResizeController == null) {
-      proxyResizeController = new DayViewResizeController(dayViewBody.getGrid().getGrid());
-
-      proxyResizeController.addDragHandler(new DragHandler() {
-        long startTime = 0L;
-        int initialX = 0;
-        int initialY = 0;
-
-        DateTime startDate;
-
-        public void onDragEnd(DragEndEvent event) {
-          long clickTime = System.currentTimeMillis() - startTime;
-          int y = event.getContext().mouseY;
-          if (clickTime <= 500 && initialY == y) {
-            calendarWidget.fireTimeBlockClickEvent(startDate);
-          } else {
-            Appointment appt =
-                ((AppointmentWidget) event.getContext().draggable.getParent()).getAppointment();
-            calendarWidget.fireCreateEvent(appt);
-          }
-        }
-
-        public void onDragStart(DragStartEvent event) {
-          startTime = System.currentTimeMillis();
-          initialX = event.getContext().mouseX;
-          initialY = event.getContext().mouseY;
-          startDate = getCoordinatesDate(initialX, initialY);
         }
 
         public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {

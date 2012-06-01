@@ -16,7 +16,7 @@
     <Relation name="Color" relation="Colors" />
     <Relation name="Style" relation="AppointmentStyles" />
 
-    <Integer name="Status" />
+    <Integer name="Status" defValue="0" />
 
     <DateTime name="Created" defExpr="CURRENT_TIME" />
     <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" />

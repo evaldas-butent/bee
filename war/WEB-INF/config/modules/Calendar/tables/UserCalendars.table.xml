@@ -19,7 +19,6 @@
     <Boolean name="OffsetHourLabels" />
 
     <Boolean name="EnableDragDrop" />
-    <Boolean name="DragDropCreation" />
 
     <Integer name="TimeBlockClickNumber" />
   </Fields>

@@ -22,7 +22,6 @@
   <row>
     <InputSpinner source="WorkingHourStart" caption="Darbo dienos pradžia:"
       minValue="0" maxValue="23" d:size="180" d:unit="px" />
-    <CheckBox source="DragDropCreation" html="Drag Drop Creation" />
   </row>
 
   <row>

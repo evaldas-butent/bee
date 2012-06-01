@@ -19,6 +19,7 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -151,6 +152,18 @@ public class DataUtils {
       }
       return true;
     }
+  }
+  
+  public static List<BeeRow> filterRows(BeeRowSet rowSet, String columnId, String value) {
+    List<BeeRow> result = Lists.newArrayList();
+    int index = rowSet.getColumnIndex(columnId);
+    
+    for (BeeRow row : rowSet.getRows()) {
+      if (BeeUtils.equalsTrim(row.getString(index), value)) {
+        result.add(row);
+      }
+    }
+    return result;
   }
   
   public static <T extends IsColumn> T getColumn(String columnId, List<T> columns) {
@@ -286,6 +299,14 @@ public class DataUtils {
 
   public static int getDefaultSearchThreshold() {
     return defaultSearchThreshold;
+  }
+
+  public static Set<Long> getDistinct(BeeRowSet rowSet, String columnId) {
+    return getDistinct(rowSet.getRows().getList(), rowSet.getColumnIndex(columnId));
+  }
+  
+  public static Set<Long> getDistinct(Collection<? extends IsRow> rows, int index) {
+    return getDistinct(rows, index, null);
   }
   
   public static Set<Long> getDistinct(Collection<? extends IsRow> rows, int index, Long exclude) {
@@ -520,6 +541,22 @@ public class DataUtils {
 
     DataInfo dataInfo = provider.getDataInfo(viewName, true);
     return (dataInfo == null) ? null : dataInfo.parseOrder(input); 
+  }
+  
+  public static List<BeeRow> restoreRows(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      return null;
+    }
+
+    List<BeeRow> result = Lists.newArrayList();
+    String[] arr = Codec.beeDeserializeCollection(s);
+
+    if (arr != null) {
+      for (String r : arr) {
+        result.add(BeeRow.restore(r));
+      }
+    }
+    return result;
   }
   
   public static boolean sameId(IsRow r1, IsRow r2) {
