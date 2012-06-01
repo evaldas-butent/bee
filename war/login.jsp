@@ -27,10 +27,13 @@ body {
   -webkit-box-align: center;
 }
 .bee-SignIn-Panel {
-  background-color: whitesmoke;
-  border: 1px solid #e5e5e5;
+  background-color: whiteSmoke;
+  border: 1px solid #EDEAEA;
   width: 400px;
-  height: 320px;	
+  height: 320px;
+  color: #6B6B6D;
+  font: 13px Arial;
+  border-radius: 2px;	
 }
 .bee-Error-Caption {
   font-size: 16px;
@@ -41,28 +44,31 @@ body {
 }
 .bee-SignIn-Caption {
   font-size: 16px;
-  color: #222;
+  color: #A7A7A7;
   position: absolute;
   left: 20px;
   top: 20px;
 }
 .bee-SignIn-Label {
   font-size: 13px;
-  font-weight: bold;
-  color: #222;
+ /* font-weight: bold;
+  color: #222; */
   position: absolute;
   right: 220px;
 }
 .bee-SignIn-Input {
-  font-size: 15px;
-  height: 32px;
-  padding-left: 8px;
-  border: 1px solid #d9d9d9;
-  border-top: 1px solid silver;
-  background-color: #faffbd;
+  font-size: 13px;
+  font: 13px Arial;
+  /* height: 32px; 
+  padding-left: 8px; */
+  border: 1px solid #D8D7D7;
+  /* border-top: 1px solid silver; */
+  /* background-color: #faffbd; */
   position: absolute;
   left: 200px;
   right: 20px;
+  border-radius: 2px;
+  padding: 7px;
 }
 .bee-SignIn-User {
   top: 80px;
@@ -77,16 +83,20 @@ body {
   top: 220px;
 }
 .bee-SignIn-Button {
-  font-size: 13px;
-  font-weight: bold;
-  height: 32px;
+  font-size: 14px;
+  font-weight: bold; 
+  /* height: 32px; 
   padding-left: 8px;
-  padding-right: 8px;
+  padding-right: 8px; */
+  padding: 10px 25px;
   color: white;
-  background-color: #4d90fe;
+  background-color: #878586;
   position: absolute;
   right: 20px;
   bottom: 20px;
+  border-radius: 2px;
+  border: 0;
+  cursor: pointer;
 }
 .bee-RadioButton input:checked + label {
   text-transform: uppercase;

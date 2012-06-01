@@ -83,10 +83,10 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     HasAllMouseHandlers, HasEnabled, HasId {
 
   public interface Resources extends ClientBundle {
-    @Source("treeClosed.gif")
+    @Source("silver/treeClosed.png")
     ImageResource treeClosed();
 
-    @Source("treeOpen.gif")
+    @Source("silver/treeOpen.png")
     ImageResource treeOpen();
   }
 

@@ -1,5 +1,6 @@
 package com.butent.bee.client.presenter;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Complex;
@@ -139,7 +140,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView 
   }
   
   private HeaderView createHeader(String caption, Set<Action> actions, boolean edit) {
-    HeaderView formHeader = new HeaderImpl();
+    HeaderView formHeader = GWT.create(HeaderImpl.class);//new HeaderImpl();
     formHeader.asWidget().addStyleName(STYLE_FORM_HEADER);
     formHeader.asWidget().addStyleName(getFormStyle(STYLE_FORM_HEADER, edit));
 

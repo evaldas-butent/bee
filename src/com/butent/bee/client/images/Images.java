@@ -39,6 +39,9 @@ public class Images {
     @Source("arrowDownPressed.png")
     ImageResource arrowDownPressed();
 
+    @Source("silver/arrowDown_small.png")
+    ImageResource arrowDownSmall();
+
     @Source("arrowLeft.png")
     ImageResource arrowLeft();
 
@@ -90,24 +93,36 @@ public class Images {
     @Source("close.png")
     ImageResource close();
 
-    @Source("configure.png")
+    @Source("silver/configure.png")
     ImageResource configure();
 
-    @Source("delete.png")
+    @Source("silver/configure_small.png")
+    ImageResource configureSmall();
+
+    @Source("silver/delete.png")
     ImageResource delete();
+
+    @Source("silver/delete_small.png")
+    ImageResource deleteSmall();
 
     @Source("descending.gif")
     ImageResource descending();
 
     @Source("edit.png")
     ImageResource edit();
-    
-    @Source("edit_add.png")
+
+    @Source("silver/edit_add.png")
     ImageResource editAdd();
 
-    @Source("edit_delete.png")
+    @Source("silver/edit_add_small.png")
+    ImageResource editAddSmall();
+
+    @Source("silver/edit_delete.png")
     ImageResource editDelete();
-    
+
+    @Source("silver/edit_delete_small.png")
+    ImageResource editDeleteSmall();
+
     @Source("exit.gif")
     ImageResource exit();
 
@@ -116,12 +131,15 @@ public class Images {
 
     @Source("forward.png")
     ImageResource forward();
-    
+
     @Source("green.gif")
     ImageResource green();
 
     @Source("greenSmall.gif")
     ImageResource greenSmall();
+
+    @Source("silver/close.png")
+    ImageResource headerClose();
 
     @Source("html.png")
     ImageResource html();
@@ -137,7 +155,7 @@ public class Images {
 
     @Source("logo2.gif")
     ImageResource logo2();
-    
+
     @Source("next.png")
     ImageResource next();
 
@@ -161,28 +179,34 @@ public class Images {
 
     @Source("redSmall.gif")
     ImageResource redSmall();
-    
+
     @Source("refresh.png")
     ImageResource refresh();
 
-    @Source("reload.png")
+    @Source("silver/reload.png")
     ImageResource reload();
+
+    @Source("silver/reload_small.png")
+    ImageResource reloadSmall();
 
     @Source("rewind.png")
     ImageResource rewind();
 
-    @Source("save.png")
+    @Source("silver/save.png")
     ImageResource save();
+
+    @Source("silver/save_small.png")
+    ImageResource saveSmall();
 
     @Source("search.png")
     ImageResource search();
 
     @Source("searchOptions.gif")
     ImageResource searchOptions();
-    
+
     @Source("settings.png")
     ImageResource settings();
-    
+
     @Source("slider.gif")
     ImageResource slider();
 
@@ -251,6 +275,8 @@ public class Images {
     map.put(key("cancel"), resources.cancel());
     map.put(key("close"), resources.close());
 
+    map.put(key("closeHeader"), resources.headerClose());
+
     map.put(key("configure"), resources.configure());
 
     map.put(key("delete"), resources.delete());
@@ -292,6 +318,8 @@ public class Images {
 
     map.put(key("refresh"), resources.refresh());
     map.put(key("reload"), resources.reload());
+
+    map.put(key("reloadSmall"), resources.reloadSmall());
 
     map.put(key("rewind"), resources.rewind());
 

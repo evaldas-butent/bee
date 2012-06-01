@@ -1,5 +1,6 @@
 package com.butent.bee.client.view;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -102,7 +103,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
     setHasSearch(hasData() && rowCount >= formDescription.getSearchThreshold());
 
-    HeaderView header = new HeaderImpl();
+    HeaderView header = GWT.create(HeaderImpl.class);//new HeaderImpl();
     header.create(formDescription.getCaption(), hasData(), formDescription.isReadOnly(),
         EnumSet.of(UiOption.ROOT), formDescription.getEnabledActions(),
         formDescription.getDisabledActions());
