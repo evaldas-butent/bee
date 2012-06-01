@@ -11,8 +11,8 @@ import com.butent.bee.shared.time.DateTime;
 
 public class DayViewResizeController extends AbstractDragController {
 
-  int snapSize;
-  int intervalsPerHour;
+  private int snapSize;
+  private int intervalsPerHour;
 
   public DayViewResizeController(AbsolutePanel boundaryPanel) {
     super(boundaryPanel);

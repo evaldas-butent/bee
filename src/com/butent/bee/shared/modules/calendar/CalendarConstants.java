@@ -110,6 +110,7 @@ public class CalendarConstants {
   public static final String FORM_CALENDAR_SETTINGS = "CalendarSettings";
   public static final String FORM_CONFIGURATION = "Configuration";
   public static final String FORM_NEW_APPOINTMENT = "NewAppointment";
+  public static final String FORM_EDIT_APPOINTMENT = "EditAppointment";
   
   public static final String COL_USER = "User";
   public static final String COL_CALENDAR = "Calendar";

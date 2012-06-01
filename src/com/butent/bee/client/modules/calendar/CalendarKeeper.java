@@ -1,8 +1,6 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
@@ -12,37 +10,29 @@ import com.butent.bee.client.calendar.Calendar;
 import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.InputWidgetCallback;
-import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.i18n.DateTimeFormat;
-import com.butent.bee.client.i18n.DateTimeFormat.PredefinedFormat;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.edit.SelectorEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.Html;
-import com.butent.bee.client.widget.InputArea;
-import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowActionEvent;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 public class CalendarKeeper {
 
@@ -94,7 +84,7 @@ public class CalendarKeeper {
 
     if (modal) {
       FormFactory.createFormView(FORM_NEW_APPOINTMENT, VIEW_APPOINTMENTS,
-          getAppointmentViewInfo().getColumns(), false, builder, new FormFactory.FormViewCallback() {
+          getAppointmentViewColumns(), false, builder, new FormFactory.FormViewCallback() {
             public void onSuccess(FormDescription formDescription, FormView result) {
               if (result != null) {
                 result.start(null);
@@ -129,6 +119,10 @@ public class CalendarKeeper {
       }
     });
   }
+  
+  static List<BeeColumn> getAppointmentViewColumns() {
+    return getAppointmentViewInfo().getColumns();
+  }
 
   static DataInfo getAppointmentViewInfo() {
     if (appointmentViewInfo == null) {
@@ -150,84 +144,6 @@ public class CalendarKeeper {
   }
 
   static void openAppointment(final Appointment appointment, final Calendar calendar) {
-    String caption = "Vizitas";
-    final DialogBox dialogBox = new DialogBox(caption);
-
-    FlexTable panel = new FlexTable();
-    panel.setCellSpacing(4);
-
-    int row = 0;
-    panel.setWidget(row, 0, new Html("Pavadinimas:"));
-
-    final InputText summary = new InputText();
-    StyleUtils.setWidth(summary, 300);
-    panel.setWidget(row, 1, summary);
-
-    DateTimeFormat dtFormat = DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT);
-
-    row++;
-    panel.setWidget(row, 0, new Html("Pradžia:"));
-    final InputDate start = new InputDate(ValueType.DATETIME, dtFormat);
-    panel.setWidget(row, 1, start);
-
-    row++;
-    panel.setWidget(row, 0, new Html("Pabaiga:"));
-    final InputDate end = new InputDate(ValueType.DATETIME, dtFormat);
-    panel.setWidget(row, 1, end);
-
-    row++;
-    panel.setWidget(row, 0, new Html("Aprašymas:"));
-    final InputArea description = new InputArea();
-    description.setVisibleLines(3);
-    StyleUtils.setWidth(description, 300);
-    panel.setWidget(row, 1, description);
-
-    if (!appointment.getAttendees().isEmpty()) {
-      row++;
-      panel.setWidget(row, 0, new Html("Resursai"));
-
-      StringBuilder sb = new StringBuilder();
-      for (Attendee attendee : appointment.getAttendees()) {
-        if (!BeeUtils.isEmpty(attendee.getName())) {
-          sb.append(' ').append(attendee.getName().trim());
-        }
-      }
-      panel.setWidget(row, 1, new Html(sb.toString().trim()));
-    }
-
-    summary.setText(appointment.getSummary());
-    start.setDate(appointment.getStart());
-    end.setDate(appointment.getEnd());
-    description.setText(appointment.getDescription());
-
-    BeeButton confirm = new BeeButton("Išsaugoti", new ClickHandler() {
-      public void onClick(ClickEvent ev) {
-        HasDateValue from = start.getDate();
-        HasDateValue to = end.getDate();
-        if (from == null || to == null || TimeUtils.isMeq(from, to)) {
-          Global.showError("Sorry, no appointment");
-          return;
-        }
-
-        appointment.setStart(from.getDateTime());
-        appointment.setEnd(to.getDateTime());
-        if (calendar != null) {
-          calendar.refresh();
-        }
-
-        dialogBox.hide();
-      }
-    });
-
-    row++;
-    panel.setWidget(row, 0, confirm);
-
-    dialogBox.setWidget(panel);
-
-    dialogBox.setAnimationEnabled(true);
-    dialogBox.center();
-
-    summary.setFocus(true);
   }
 
   private static void createCommands() {

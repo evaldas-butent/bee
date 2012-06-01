@@ -188,6 +188,10 @@ public class MonthView extends CalendarView {
     }
   }
 
+  @Override
+  public void doSizing() {
+  }
+
   public String getStyleName() {
     return MONTH_VIEW;
   }

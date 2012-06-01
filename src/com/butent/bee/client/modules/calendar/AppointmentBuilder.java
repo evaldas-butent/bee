@@ -299,8 +299,7 @@ class AppointmentBuilder extends AbstractFormCallback {
 
   @Override
   public BeeRowSet getRowSet() {
-    BeeRowSet rowSet = new BeeRowSet(VIEW_APPOINTMENTS,
-        CalendarKeeper.getAppointmentViewInfo().getColumns());
+    BeeRowSet rowSet = new BeeRowSet(VIEW_APPOINTMENTS, CalendarKeeper.getAppointmentViewColumns());
     rowSet.addRow(createEmptyRow(originalStart));
     return rowSet;
   }
@@ -803,7 +802,7 @@ class AppointmentBuilder extends AbstractFormCallback {
     }
 
     BeeRowSet rowSet = Queries.createRowSetForInsert(VIEW_APPOINTMENTS,
-        CalendarKeeper.getAppointmentViewInfo().getColumns(), row);
+        CalendarKeeper.getAppointmentViewColumns(), row);
 
     String propIds = DataUtils.buildIdList(getSelectedId(getServiceTypeWidgetId(), serviceTypes),
         getSelectedId(getRepairTypeWidgetId(), repairTypes));

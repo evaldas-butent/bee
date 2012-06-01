@@ -39,8 +39,12 @@ public class Appointment implements Comparable<Appointment> {
   
   public Appointment clone() {
     Appointment clone = new Appointment(DataUtils.cloneRow(row));
+
     if (!getAttendees().isEmpty()) {
       clone.getAttendees().addAll(getAttendees());
+    }
+    if (!getProperties().isEmpty()) {
+      clone.getProperties().addAll(getProperties());
     }
 
     return clone;
@@ -84,6 +88,10 @@ public class Appointment implements Comparable<Appointment> {
 
   public List<String> getProperties() {
     return properties;
+  }
+
+  public IsRow getRow() {
+    return row;
   }
 
   public DateTime getStart() {

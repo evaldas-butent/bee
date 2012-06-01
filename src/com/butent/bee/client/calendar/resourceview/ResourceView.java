@@ -179,21 +179,9 @@ public class ResourceView extends CalendarView {
     }
   }
 
-  public void onDownArrowKeyPressed() {
-    calendarWidget.selectNextAppointment();
-  }
-
-  public void onLeftArrowKeyPressed() {
-    calendarWidget.selectPreviousAppointment();
-  }
-
   public void onMouseOver(Element element, Event event) {
     Appointment appointment = findAppointmentByElement(element);
     calendarWidget.fireMouseOverEvent(appointment, element);
-  }
-
-  public void onRightArrowKeyPressed() {
-    calendarWidget.selectNextAppointment();
   }
 
   public void onSingleClick(Element element, Event event) {
@@ -211,10 +199,6 @@ public class ResourceView extends CalendarView {
       int y = DOM.eventGetClientY(event);
       timeBlockClick(x, y);
     }
-  }
-
-  public void onUpArrowKeyPressed() {
-    calendarWidget.selectPreviousAppointment();
   }
 
   @Override

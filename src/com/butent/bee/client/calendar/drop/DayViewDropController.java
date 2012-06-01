@@ -12,15 +12,15 @@ import com.butent.bee.shared.time.JustDate;
 
 public class DayViewDropController extends AbsolutePositionDropController {
 
-  int intervalsPerHour;
-  int snapSize;
-  int columns;
-  int rows;
+  private int intervalsPerHour;
+  private int snapSize;
+
+  private int columns;
+  private int rows;
   
-  JustDate date;
+  private JustDate date;
 
   private int gridX;
-
   private int gridY;
 
   private int maxProxyHeight = -1;
@@ -31,7 +31,6 @@ public class DayViewDropController extends AbsolutePositionDropController {
 
   @Override
   public void onDrop(DragContext context) {
-
     super.onDrop(context);
 
     int top = draggableList.get(0).desiredY;

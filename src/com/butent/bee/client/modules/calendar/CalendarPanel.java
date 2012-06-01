@@ -20,12 +20,15 @@ import com.butent.bee.client.calendar.Calendar;
 import com.butent.bee.client.calendar.CalendarView.Type;
 import com.butent.bee.client.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.calendar.event.TimeBlockClickHandler;
+import com.butent.bee.client.calendar.event.UpdateEvent;
+import com.butent.bee.client.calendar.event.UpdateHandler;
 import com.butent.bee.client.calendar.monthview.MonthView;
 import com.butent.bee.client.calendar.resourceview.ResourceView;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.i18n.DateTimeFormat;
@@ -102,6 +105,15 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     calendar.addTimeBlockClickHandler(new TimeBlockClickHandler<DateTime>() {
       public void onTimeBlockClick(TimeBlockClickEvent<DateTime> event) {
         CalendarKeeper.createAppointment(event.getTarget(), true);
+      }
+    });
+    
+    calendar.addUpdateHandler(new UpdateHandler<Appointment>() {
+      @Override
+      public void onUpdate(UpdateEvent<Appointment> event) {
+        if (!updateAppointmentDates(event.getTarget())) {
+          event.setCanceled(true);
+        }
       }
     });
     
@@ -417,5 +429,16 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
 
   private void setNewAppointmentRegistration(HandlerRegistration newAppointmentRegistration) {
     this.newAppointmentRegistration = newAppointmentRegistration;
+  }
+  
+  private boolean updateAppointmentDates(Appointment newApp) {
+    Appointment oldApp = calendar.getRollbackAppointment();
+    if (oldApp == null) {
+      return false;
+    }
+    
+    Queries.update(VIEW_APPOINTMENTS, CalendarKeeper.getAppointmentViewColumns(),
+        oldApp.getRow(), newApp.getRow(), null);
+    return true;
   }
 }

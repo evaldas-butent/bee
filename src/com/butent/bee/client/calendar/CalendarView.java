@@ -24,23 +24,14 @@ public abstract class CalendarView implements HasSettings {
     this.calendarWidget = widget;
   }
 
-  public void createAppointment(Appointment appt) {
-    createAppointment(appt.getStart());
-  }
-
   public void createAppointment(DateTime start) {
     Assert.notNull(calendarWidget);
     calendarWidget.fireTimeBlockClickEvent(start);
   }
 
-  public void detatch() {
-    calendarWidget = null;
-  }
-
   public abstract void doLayout();
 
-  public void doSizing() {
-  }
+  public abstract void doSizing();
 
   public int getDisplayedDays() {
     return displayedDays;
@@ -59,21 +50,9 @@ public abstract class CalendarView implements HasSettings {
 
   public abstract void onDoubleClick(Element element, Event event);
 
-  public void onDownArrowKeyPressed() {
-  }
-
-  public void onLeftArrowKeyPressed() {
-  }
-
   public abstract void onMouseOver(Element element, Event event);
 
-  public void onRightArrowKeyPressed() {
-  }
-
   public abstract void onSingleClick(Element element, Event event);
-
-  public void onUpArrowKeyPressed() {
-  }
 
   public void openAppointment(Appointment appt) {
     Assert.notNull(calendarWidget);
@@ -87,22 +66,7 @@ public abstract class CalendarView implements HasSettings {
     calendarWidget.setSelectedAppointment(appt, true);
   }
 
-  public void selectNextAppointment() {
-    Assert.notNull(calendarWidget);
-    calendarWidget.selectNextAppointment();
-  }
-
-  public void selectPreviousAppointment() {
-    Assert.notNull(calendarWidget);
-    calendarWidget.selectPreviousAppointment();
-  }
-
   public void setDisplayedDays(int displayedDays) {
     this.displayedDays = displayedDays;
-  }
-
-  public final void updateAppointment(Appointment toAppt) {
-    Assert.notNull(calendarWidget);
-    calendarWidget.fireUpdateEvent(toAppt);
   }
 }

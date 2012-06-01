@@ -185,6 +185,10 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
     return view == null ? settings.getDefaultDisplayedDays() : view.getDisplayedDays();
   }
 
+  public Appointment getRollbackAppointment() {
+    return appointmentManager.getRollbackAppointment();
+  }
+  
   public Appointment getSelectedAppointment() {
     return appointmentManager.getSelectedAppointment();
   }
@@ -212,20 +216,6 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
     }
   }
 
-  @Override
-  public void onDownArrowKeyPressed() {
-    if (view != null) {
-      view.onDownArrowKeyPressed();
-    }
-  }
-
-  @Override
-  public void onLeftArrowKeyPressed() {
-    if (view != null) {
-      view.onLeftArrowKeyPressed();
-    }
-  }
-
   public void onLoad() {
     Scheduler.get().scheduleDeferred(new ScheduledCommand() {
       public void execute() {
@@ -244,20 +234,6 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
   public void onMouseOver(Element element, Event event) {
     if (view != null) {
       view.onMouseOver(element, event);
-    }
-  }
-
-  @Override
-  public void onRightArrowKeyPressed() {
-    if (view != null) {
-      view.onRightArrowKeyPressed();
-    }
-  }
-
-  @Override
-  public void onUpArrowKeyPressed() {
-    if (view != null) {
-      view.onUpArrowKeyPressed();
     }
   }
 
@@ -285,22 +261,6 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
     if (view != null) {
       view.scrollToHour(hour);
     }
-  }
-
-  public boolean selectNextAppointment() {
-    boolean selected = appointmentManager.selectNextAppointment();
-    if (selected) {
-      fireSelectionEvent(getSelectedAppointment());
-    }
-    return selected;
-  }
-
-  public boolean selectPreviousAppointment() {
-    boolean selected = appointmentManager.selectPreviousAppointment();
-    if (selected) {
-      fireSelectionEvent(getSelectedAppointment());
-    }
-    return selected;
   }
 
   public void setAppointments(Collection<Appointment> appointments) {

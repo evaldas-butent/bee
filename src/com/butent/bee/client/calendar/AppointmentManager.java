@@ -58,6 +58,10 @@ public class AppointmentManager {
     return hoveredAppointment;
   }
 
+  public Appointment getRollbackAppointment() {
+    return rollbackAppointment;
+  }
+
   public Appointment getSelectedAppointment() {
     return selectedAppointment;
   }
@@ -115,40 +119,6 @@ public class AppointmentManager {
     }
 
     commit();
-  }
-
-  public boolean selectNextAppointment() {
-    boolean moveSucceeded = false;
-
-    if (getSelectedAppointment() != null) {
-      int selectedApptIndex = getAppointments().indexOf(getSelectedAppointment());
-      int lastIndex = getAppointments().size() - 1;
-
-      if (selectedApptIndex < lastIndex) {
-        Appointment nextAppt = getAppointments().get(selectedApptIndex + 1);
-        if (nextAppt != null) {
-          selectedAppointment = nextAppt;
-          moveSucceeded = true;
-        }
-      }
-    }
-    return moveSucceeded;
-  }
-
-  public boolean selectPreviousAppointment() {
-    boolean moveSucceeded = false;
- 
-    if (getSelectedAppointment() != null) {
-      int selectedApptIndex = getAppointments().indexOf(getSelectedAppointment());
-      if (selectedApptIndex > 0) {
-        Appointment prevAppt = getAppointments().get(selectedApptIndex - 1);
-        if (prevAppt != null) {
-          selectedAppointment = prevAppt;
-          moveSucceeded = true;
-        }
-      }
-    }
-    return moveSucceeded;
   }
 
   public void setCommittedAppointment(Appointment appt) {
