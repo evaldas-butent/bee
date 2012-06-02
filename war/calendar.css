@@ -349,8 +349,9 @@
   width: 20px;
   height: 20px;
   margin-right: 8px;
-  color: white;
+  color: black;
   text-align: center;
+  padding-top: 2px;
 }
 
 .bee-cal-AddResources {

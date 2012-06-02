@@ -67,15 +67,19 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
     this.date = date;
   }
 
-  public void addAppointment(Appointment appointment) {
+  public void addAppointment(Appointment appointment, boolean refresh) {
     Assert.notNull(appointment, "Added appointment cannot be null.");
     appointmentManager.addAppointment(appointment);
-    refresh();
+    if (refresh) {
+      refresh();
+    }
   }
 
-  public void addAppointments(Collection<Appointment> appointments) {
+  public void addAppointments(Collection<Appointment> appointments, boolean refresh) {
     appointmentManager.addAppointments(appointments);
-    refresh();
+    if (refresh) {
+      refresh();
+    }
   }
 
   public HandlerRegistration addDateRequestHandler(DateRequestHandler<HasDateValue> handler) {
@@ -247,6 +251,15 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
 
     doLayout();
     doSizing();
+  }
+  
+  @Override
+  public boolean removeAppointment(long id, boolean refresh) {
+    boolean removed = appointmentManager.removeAppointment(id);
+    if (removed && refresh) {
+      refresh();
+    }
+    return removed;
   }
 
   public void resumeLayout() {

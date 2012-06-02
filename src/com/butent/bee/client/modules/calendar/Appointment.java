@@ -20,20 +20,23 @@ public class Appointment implements Comparable<Appointment> {
   
   private final List<Long> attendees = Lists.newArrayList();
   private final List<Long> properties = Lists.newArrayList();
+  private final List<Long> reminders = Lists.newArrayList();
 
   public Appointment(IsRow row) {
     this.row = row;
   }
   
-  public void addAttendee(Long attendeeId) {
-    if (attendeeId != null) {
-      attendees.add(attendeeId);
+  public Appointment(IsRow row, String attList, String propList, String remindList) {
+    this(row);
+    
+    if (!BeeUtils.isEmpty(attList)) {
+      attendees.addAll(DataUtils.parseList(attList));
     }
-  }
-
-  public void addProperty(Long propertyId) {
-    if (!BeeUtils.isEmpty(propertyId)) {
-      properties.add(propertyId);
+    if (!BeeUtils.isEmpty(propList)) {
+      properties.addAll(DataUtils.parseList(propList));
+    }
+    if (!BeeUtils.isEmpty(remindList)) {
+      reminders.addAll(DataUtils.parseList(remindList));
     }
   }
   
@@ -45,6 +48,9 @@ public class Appointment implements Comparable<Appointment> {
     }
     if (!getProperties().isEmpty()) {
       clone.getProperties().addAll(getProperties());
+    }
+    if (!getReminders().isEmpty()) {
+      clone.getReminders().addAll(getReminders());
     }
 
     return clone;
@@ -66,6 +72,10 @@ public class Appointment implements Comparable<Appointment> {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_BACKGROUND);
   }
 
+  public Long getColor() {
+    return Data.getLong(VIEW_APPOINTMENTS, row, COL_COLOR);
+  }
+  
   public String getCompanyName() {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_COMPANY_NAME);
   }
@@ -88,6 +98,10 @@ public class Appointment implements Comparable<Appointment> {
 
   public List<Long> getProperties() {
     return properties;
+  }
+
+  public List<Long> getReminders() {
+    return reminders;
   }
 
   public IsRow getRow() {

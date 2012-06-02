@@ -200,6 +200,10 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
   public boolean isEditing() {
     return editing;
   }
+  
+  public boolean isEmpty() {
+    return getItemCount() <= 0;
+  }
 
   public boolean isNullable() {
     return nullable;

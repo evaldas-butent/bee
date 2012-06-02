@@ -3,6 +3,7 @@ package com.butent.bee.client.calendar;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.shared.BeeConst;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -74,24 +75,19 @@ public class AppointmentManager {
     return hasAppointmentSelected() && selectedAppointment.equals(appointment);
   }
 
-  public void removeAppointment(Appointment appointment) {
-    if (appointment != null) {
-      boolean wasRemoved = appointments.remove(appointment);
-      if (wasRemoved) {
-        sortPending = true;
-      }
+  public boolean removeAppointment(long id) {
+    int index = getAppointmentIndex(id);
+    if (BeeConst.isUndef(index)) {
+      return false;
+    }  
 
-      if (hasAppointmentSelected() && getSelectedAppointment().equals(appointment)) {
-        selectedAppointment = null;
-      }
-    }
-  }
+    appointments.remove(index);
+    sortPending = true;
 
-  public void removeCurrentlySelectedAppointment() {
-    if (hasAppointmentSelected()) {
-      removeAppointment(getSelectedAppointment());
-      selectedAppointment = null;
+    if (hasAppointmentSelected() && getSelectedAppointment().getId() == id) {
+      setSelectedAppointment(null);
     }
+    return true;
   }
 
   public void resetHoveredAppointment() {
@@ -112,9 +108,9 @@ public class AppointmentManager {
     if (committedAppointment == null) {
       addAppointment(rollbackAppointment);
     } else if (rollbackAppointment == null) {
-      removeAppointment(committedAppointment);
+      removeAppointment(committedAppointment.getId());
     } else {
-      removeAppointment(committedAppointment);
+      removeAppointment(committedAppointment.getId());
       addAppointment(rollbackAppointment);
     }
 
@@ -137,9 +133,7 @@ public class AppointmentManager {
   }
 
   public void setSelectedAppointment(Appointment selectedAppointment) {
-    if (selectedAppointment != null && appointments.contains(selectedAppointment)) {
-      this.selectedAppointment = selectedAppointment;
-    }
+    this.selectedAppointment = selectedAppointment;
   }
 
   public void sortAppointments() {
@@ -147,5 +141,14 @@ public class AppointmentManager {
       Collections.sort(appointments);
       sortPending = false;
     }
+  }
+  
+  private int getAppointmentIndex(long id) {
+    for (int i = 0; i < appointments.size(); i++) {
+      if (appointments.get(i).getId() == id) {
+        return i;
+      }
+    }
+    return BeeConst.UNDEF;
   }
 }

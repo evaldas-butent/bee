@@ -202,6 +202,7 @@ public class AppointmentWidget extends FlowPanel {
 
     String attNames = BeeConst.STRING_EMPTY;
     String propNames = BeeConst.STRING_EMPTY;
+    String remindNames = BeeConst.STRING_EMPTY;
     
     if (!appointment.getAttendees().isEmpty()) {
       for (Long id : appointment.getAttendees()) {
@@ -213,10 +214,16 @@ public class AppointmentWidget extends FlowPanel {
         propNames = BeeUtils.concat(sep, propNames, CalendarKeeper.getPropertyName(id));
       }
     }
+    if (!appointment.getReminders().isEmpty()) {
+      for (Long id : appointment.getReminders()) {
+        remindNames = BeeUtils.concat(sep, remindNames, CalendarKeeper.getReminderTypeName(id));
+      }
+    }
     
     String text = BeeUtils.concat(sep, appointment.getCompanyName(),
         BeeUtils.concat(1, appointment.getVehicleNumber(), appointment.getVehicleParentModel(),
-            appointment.getVehicleModel()), propNames, attNames, appointment.getDescription());
+            appointment.getVehicleModel()), propNames, attNames, appointment.getDescription(),
+            remindNames);
 
     this.description = text;
     DOM.setInnerHTML(bodyPanel.getElement(), text);

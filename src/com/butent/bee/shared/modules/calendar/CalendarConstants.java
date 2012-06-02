@@ -68,6 +68,7 @@ public class CalendarConstants {
 
   public static final String SVC_GET_USER_CALENDAR = "get_user_calendar"; 
   public static final String SVC_CREATE_APPOINTMENT = "create_appointment"; 
+  public static final String SVC_UPDATE_APPOINTMENT = "update_appointment"; 
   public static final String SVC_GET_CALENDAR_APPOINTMENTS = "get_calendar_appointments"; 
 
   public static final String PARAM_CALENDAR_ID = "calendar_id";

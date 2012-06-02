@@ -67,11 +67,11 @@ public class DataUtils {
 
   private static int maxInitialRowSetSize = 50;
 
-  public static String buildList(Long... ids) {
-    if (ids == null) {
+  public static String buildList(BeeRowSet rowSet) {
+    if (rowSet == null) {
       return null;
     } else {
-      return buildList(Lists.newArrayList(ids));
+      return buildList(getRowIds(rowSet));
     }
   }
   
@@ -83,11 +83,11 @@ public class DataUtils {
     }
   }
 
-  public static String buildList(BeeRowSet rowSet) {
-    if (rowSet == null) {
+  public static String buildList(Long... ids) {
+    if (ids == null) {
       return null;
     } else {
-      return buildList(getRowIds(rowSet));
+      return buildList(Lists.newArrayList(ids));
     }
   }
   
@@ -362,6 +362,42 @@ public class DataUtils {
     }
   }
   
+  public static BeeRowSet getUpdated(String viewName, List<BeeColumn> columns, IsRow oldRow,
+      IsRow newRow) {
+    String oldValue;
+    String newValue;
+
+    List<BeeColumn> updatedColumns = Lists.newArrayList();
+    List<String> oldValues = Lists.newArrayList();
+    List<String> newValues = Lists.newArrayList();
+
+    for (int i = 0; i < columns.size(); i++) {
+      BeeColumn column = columns.get(i);
+      if (!column.isWritable()) {
+        continue;
+      }
+
+      oldValue = oldRow.getString(i);
+      newValue = newRow.getString(i);
+
+      if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
+        updatedColumns.add(column);
+        oldValues.add(oldValue);
+        newValues.add(newValue);
+      }
+    }
+    if (updatedColumns.isEmpty()) {
+      return null;
+    }
+
+    BeeRowSet rs = new BeeRowSet(viewName, updatedColumns);
+    rs.addRow(oldRow.getId(), oldRow.getVersion(), oldValues);
+    for (int i = 0; i < rs.getNumberOfColumns(); i++) {
+      rs.getRow(0).preliminaryUpdate(i, newValues.get(i));
+    }
+    return rs;
+  }
+
   public static String getValue(IsRow row, int index, ValueType type) {
     if (row.isNull(index)) {
       return null;
@@ -371,7 +407,7 @@ public class DataUtils {
       return row.getValue(index, type).toString();
     }
   }
-
+  
   public static boolean hasId(IsRow row) {
     return row != null && isId(row.getId());
   }

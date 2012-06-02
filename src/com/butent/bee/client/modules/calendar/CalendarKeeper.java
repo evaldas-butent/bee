@@ -7,7 +7,6 @@ import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.calendar.Calendar;
 import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -55,7 +54,7 @@ public class CalendarKeeper {
   
   private static final List<String> CACHED_VIEWS =
       Lists.newArrayList(VIEW_CONFIGURATION, VIEW_APPOINTMENT_TYPES, VIEW_ATTENDEES,
-          VIEW_EXTENDED_PROPERTIES);
+          VIEW_EXTENDED_PROPERTIES, VIEW_REMINDER_TYPES, VIEW_THEMES, VIEW_THEME_COLORS);
 
   private static FormView settingsForm = null;
 
@@ -67,6 +66,10 @@ public class CalendarKeeper {
     return CACHE.getString(VIEW_EXTENDED_PROPERTIES, id, COL_NAME);
   }
 
+  public static String getReminderTypeName(long id) {
+    return CACHE.getString(VIEW_REMINDER_TYPES, id, COL_NAME);
+  }
+  
   public static void register() {
     Global.registerCaptions(AppointmentStatus.class);
     Global.registerCaptions(ReminderMethod.class);
@@ -91,7 +94,7 @@ public class CalendarKeeper {
   }
 
   static void createAppointment(final DateTime start, final boolean glass) {
-    final AppointmentBuilder builder = new AppointmentBuilder(true, start);
+    final AppointmentBuilder builder = new AppointmentBuilder(true);
 
     FormFactory.createFormView(FORM_NEW_APPOINTMENT, VIEW_APPOINTMENTS,
         getAppointmentViewColumns(), false, builder, new FormFactory.FormViewCallback() {
@@ -138,10 +141,6 @@ public class CalendarKeeper {
     return CACHE.getRowSet(VIEW_ATTENDEES);
   }
 
-  static void getAttendees(CalendarCache.Callback callback) {
-    CACHE.getData(VIEW_ATTENDEES, callback);
-  }
-
   static Long getDefaultAppointmentType() {
     BeeRowSet rowSet = CACHE.getRowSet(VIEW_CONFIGURATION);
     if (rowSet != null) {
@@ -159,42 +158,25 @@ public class CalendarKeeper {
     return CACHE.getRowSet(VIEW_EXTENDED_PROPERTIES);
   }
 
-  static void getExtendedProperties(CalendarCache.Callback callback) {
-    CACHE.getData(VIEW_EXTENDED_PROPERTIES, callback);
-  }
-
-  static void getReminderTypes(CalendarCache.Callback callback) {
-    CACHE.getData(VIEW_REMINDER_TYPES, callback);
+  static BeeRowSet getReminderTypes() {
+    return CACHE.getRowSet(VIEW_REMINDER_TYPES);
   }
 
   static BeeRowSet getThemeColors() {
     return CACHE.getRowSet(VIEW_THEME_COLORS);
   }
 
-  static void getThemeColors(CalendarCache.Callback callback) {
-    CACHE.getData(VIEW_THEME_COLORS, callback);
-  }
-
   static BeeRowSet getThemes() {
     return CACHE.getRowSet(VIEW_THEMES);
-  }
-
-  static boolean isAttendeesLoaded() {
-    return CACHE.isLoaded(VIEW_ATTENDEES);
-  }
-
-  static boolean isExtendedPropertiesLoaded() {
-    return CACHE.isLoaded(VIEW_EXTENDED_PROPERTIES);
   }
 
   static void loadData(Collection<String> viewNames, CalendarCache.MultiCallback multiCallback) {
     CACHE.getData(viewNames, multiCallback);
   }
 
-  static void openAppointment(final Appointment appointment, final Calendar calendar,
-      final boolean glass) {
+  static void openAppointment(final Appointment appointment, final boolean glass) {
     Assert.notNull(appointment);
-    final AppointmentBuilder builder = new AppointmentBuilder(false, null);
+    final AppointmentBuilder builder = new AppointmentBuilder(false);
 
     FormFactory.createFormView(FORM_EDIT_APPOINTMENT, VIEW_APPOINTMENTS,
         getAppointmentViewColumns(), false, builder, new FormFactory.FormViewCallback() {
@@ -202,6 +184,12 @@ public class CalendarKeeper {
             if (result != null) {
               result.start(null);
               result.updateRow(appointment.getRow(), false);
+              
+              builder.setAttenddes(appointment.getAttendees());
+              builder.setProperties(appointment.getProperties());
+              builder.setReminders(appointment.getReminders());
+              
+              builder.setColor(appointment.getColor());
 
               Global.inputWidget(result.getCaption(), result.asWidget(),
                   builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE, null);

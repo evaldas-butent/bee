@@ -460,7 +460,7 @@ public class Queries {
     Assert.notNull(oldRow);
     Assert.notNull(newRow);
 
-    BeeRowSet rs = getUpdated(viewName, columns, oldRow, newRow);
+    BeeRowSet rs = DataUtils.getUpdated(viewName, columns, oldRow, newRow);
     if (rs == null) {
       return 0;
     }
@@ -514,42 +514,6 @@ public class Queries {
     Assert.notNull(rowSet, "rowSet is null");
     Assert.notEmpty(rowSet.getViewName(), "rowSet view name not specified");
     Assert.isTrue(rowSet.getNumberOfColumns() > 0 && rowSet.getNumberOfRows() > 0, "rowSet empty");
-  }
-
-  private static BeeRowSet getUpdated(String viewName, List<BeeColumn> columns, IsRow oldRow,
-      IsRow newRow) {
-    String oldValue;
-    String newValue;
-
-    List<BeeColumn> updatedColumns = Lists.newArrayList();
-    List<String> oldValues = Lists.newArrayList();
-    List<String> newValues = Lists.newArrayList();
-
-    for (int i = 0; i < columns.size(); i++) {
-      BeeColumn column = columns.get(i);
-      if (!column.isWritable()) {
-        continue;
-      }
-
-      oldValue = oldRow.getString(i);
-      newValue = newRow.getString(i);
-
-      if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
-        updatedColumns.add(column);
-        oldValues.add(oldValue);
-        newValues.add(newValue);
-      }
-    }
-    if (updatedColumns.isEmpty()) {
-      return null;
-    }
-
-    BeeRowSet rs = new BeeRowSet(viewName, updatedColumns);
-    rs.addRow(oldRow.getId(), oldRow.getVersion(), oldValues);
-    for (int i = 0; i < rs.getNumberOfColumns(); i++) {
-      rs.getRow(0).preliminaryUpdate(i, newValues.get(i));
-    }
-    return rs;
   }
 
   private Queries() {

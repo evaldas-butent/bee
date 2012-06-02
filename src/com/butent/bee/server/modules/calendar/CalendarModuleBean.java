@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.calendar;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
@@ -10,7 +11,10 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
+import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -65,6 +69,8 @@ public class CalendarModuleBean implements BeeModule {
       response = getUserCalendar(reqInfo);
     } else if (BeeUtils.same(svc, SVC_CREATE_APPOINTMENT)) {
       response = createAppointment(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_UPDATE_APPOINTMENT)) {
+      response = updateAppointment(reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_CALENDAR_APPOINTMENTS)) {
       response = getCalendarAppointments(reqInfo);
 
@@ -177,6 +183,7 @@ public class CalendarModuleBean implements BeeModule {
 
     BeeRowSet appAtts = sys.getViewData(VIEW_APPOINTMENT_ATTENDEES);
     BeeRowSet appProps = sys.getViewData(VIEW_APPOINTMENT_PROPS);
+    BeeRowSet appRemind = sys.getViewData(VIEW_APPOINTMENT_REMINDERS);
 
     BeeRowSet appointments = sys.getViewData(VIEW_APPOINTMENTS, appFilter);
 
@@ -221,6 +228,13 @@ public class CalendarModuleBean implements BeeModule {
       if (!children.isEmpty()) {
         index = appProps.getColumnIndex(COL_PROPERTY);
         row.setProperty(VIEW_APPOINTMENT_PROPS,
+            DataUtils.buildList(DataUtils.getDistinct(children, index)));
+      }
+
+      children = DataUtils.filterRows(appRemind, COL_APPOINTMENT, appId);
+      if (!children.isEmpty()) {
+        index = appRemind.getColumnIndex(COL_REMINDER_TYPE);
+        row.setProperty(VIEW_APPOINTMENT_REMINDERS,
             DataUtils.buildList(DataUtils.getDistinct(children, index)));
       }
     }
@@ -307,5 +321,82 @@ public class CalendarModuleBean implements BeeModule {
   private void insertAppointmentReminder(long appId, long rtId) {
     qs.insertData(new SqlInsert(TBL_APPOINTMENT_REMINDERS).addConstant(COL_APPOINTMENT, appId)
         .addConstant(COL_REMINDER_TYPE, rtId));
+  }
+
+  private ResponseObject updateAppointment(RequestInfo reqInfo) {
+    BeeRowSet newRowSet = BeeRowSet.restore(reqInfo.getContent());
+    if (newRowSet.isEmpty()) {
+      return ResponseObject.error(SVC_UPDATE_APPOINTMENT, ": rowSet is empty");
+    }
+
+    long appId = newRowSet.getRow(0).getId();
+    if (!DataUtils.isId(appId)) {
+      return ResponseObject.error(SVC_UPDATE_APPOINTMENT, ": invalid row id", appId);
+    }
+
+    String propIds = newRowSet.getTableProperty(COL_PROPERTY);
+    String attIds = newRowSet.getTableProperty(COL_ATTENDEE);
+    String rtIds = newRowSet.getTableProperty(COL_REMINDER_TYPE);
+    
+    String viewName = VIEW_APPOINTMENTS;
+    BeeRowSet oldRowSet = sys.getViewData(viewName, ComparisonFilter.compareId(appId));
+    if (oldRowSet == null || oldRowSet.isEmpty()) {
+      return ResponseObject.error(SVC_UPDATE_APPOINTMENT, ": old row not found", appId);
+    }
+    
+    BeeRowSet updated = DataUtils.getUpdated(viewName, oldRowSet.getColumns(), oldRowSet.getRow(0),
+        newRowSet.getRow(0));
+    
+    ResponseObject response;
+    if (updated == null) {
+      response = ResponseObject.response(oldRowSet.getRow(0)); 
+    } else {
+      response = deb.commitRow(updated, true);
+      if (response.hasErrors()) {
+        return response;
+      }
+    }
+
+    Filter appFilter = ComparisonFilter.isEqual(COL_APPOINTMENT, new LongValue(appId));
+
+    List<Long> oldProperties = 
+        DataUtils.getDistinct(sys.getViewData(VIEW_APPOINTMENT_PROPS, appFilter), COL_PROPERTY);
+    List<Long> oldAttendees = 
+        DataUtils.getDistinct(sys.getViewData(VIEW_APPOINTMENT_ATTENDEES, appFilter), COL_ATTENDEE);
+    List<Long> oldReminders = 
+        DataUtils.getDistinct(sys.getViewData(VIEW_APPOINTMENT_REMINDERS, appFilter),
+            COL_REMINDER_TYPE);
+    
+    List<Long> newProperties = DataUtils.parseList(propIds);
+    List<Long> newAttendess = DataUtils.parseList(attIds);
+    List<Long> newReminders = DataUtils.parseList(rtIds);
+    
+    updateChildren(TBL_APPOINTMENT_PROPS, COL_APPOINTMENT, appId,
+        COL_PROPERTY, oldProperties, newProperties);
+    updateChildren(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT, appId,
+        COL_ATTENDEE, oldAttendees, newAttendess);
+    updateChildren(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, appId,
+        COL_REMINDER_TYPE, oldReminders, newReminders);
+
+    return response;
+  }
+  
+  private void updateChildren(String tblName, String parentRelation, long parentId,
+      String columnId, List<Long> oldValues, List<Long> newValues) {
+    List<Long> insert = Lists.newArrayList(newValues);
+    insert.removeAll(oldValues);
+
+    List<Long> delete = Lists.newArrayList(oldValues);
+    delete.removeAll(newValues);
+    
+    for (Long value : insert) {
+      qs.insertData(new SqlInsert(tblName).addConstant(parentRelation, parentId)
+          .addConstant(columnId, value));
+    }
+    for (Long value : delete) {
+      IsCondition condition = SqlUtils.and(SqlUtils.equal(tblName, parentRelation, parentId),
+          SqlUtils.equal(tblName, columnId, value));
+      qs.updateData(new SqlDelete(tblName).setWhere(condition));
+    }
   }
 }

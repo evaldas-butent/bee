@@ -6,9 +6,9 @@ import java.util.Collection;
 
 public interface HasAppointments {
 
-  void addAppointment(Appointment appointment);
+  void addAppointment(Appointment appointment, boolean refresh);
 
-  void addAppointments(Collection<Appointment> appointments);
+  void addAppointments(Collection<Appointment> appointments, boolean refresh);
 
   void clearAppointments();
 
@@ -16,6 +16,8 @@ public interface HasAppointments {
 
   boolean hasAppointmentSelected();
 
+  boolean removeAppointment(long id, boolean refresh);
+  
   void setSelectedAppointment(Appointment appointment);
 
   void setSelectedAppointment(Appointment appointment, boolean fireEvents);
