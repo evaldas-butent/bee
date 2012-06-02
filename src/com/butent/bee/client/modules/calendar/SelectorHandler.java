@@ -31,7 +31,6 @@ import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
-import java.util.Set;
 
 class SelectorHandler implements SelectorEvent.Handler {
 
@@ -191,7 +190,7 @@ class SelectorHandler implements SelectorEvent.Handler {
         if (provider != null) {
           int index = provider.getColumnIndex(COL_PROPERTY);
           Long exclude = DataUtils.isId(id) ? row.getLong(index) : null;
-          Set<Long> used = DataUtils.getDistinct(gridView.getRowData(), index, exclude);
+          List<Long> used = DataUtils.getDistinct(gridView.getRowData(), index, exclude);
 
           if (used.isEmpty()) {
             filter = provider.getImmutableFilter();

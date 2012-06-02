@@ -8,7 +8,6 @@ import com.google.gwt.user.client.ui.SimplePanel;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.modules.calendar.Attendee;
 
 import java.util.List;
 
@@ -62,7 +61,7 @@ public class ResourceViewMulti extends Composite {
     return grid;
   }
 
-  public void setAttendees(List<Attendee> attendees) {
+  public void setAttendees(List<Long> attendees) {
     grid.clear();
     if (attendees.isEmpty()) {
       return;

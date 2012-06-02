@@ -5,7 +5,6 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -25,7 +24,6 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Contains a set of utility functions for data management, for example {@code parseExpression}.
@@ -69,19 +67,27 @@ public class DataUtils {
 
   private static int maxInitialRowSetSize = 50;
 
-  public static String buildIdList(Long... ids) {
+  public static String buildList(Long... ids) {
     if (ids == null) {
       return null;
     } else {
-      return buildIdList(Lists.newArrayList(ids));
+      return buildList(Lists.newArrayList(ids));
     }
   }
   
-  public static String buildIdList(Collection<Long> ids) {
+  public static String buildList(Collection<Long> ids) {
     if (BeeUtils.isEmpty(ids)) {
       return null;
     } else {
       return ID_JOINER.join(Iterables.filter(ids, IS_ID));
+    }
+  }
+
+  public static String buildList(BeeRowSet rowSet) {
+    if (rowSet == null) {
+      return null;
+    } else {
+      return buildList(getRowIds(rowSet));
     }
   }
   
@@ -301,23 +307,23 @@ public class DataUtils {
     return defaultSearchThreshold;
   }
 
-  public static Set<Long> getDistinct(BeeRowSet rowSet, String columnId) {
+  public static List<Long> getDistinct(BeeRowSet rowSet, String columnId) {
     return getDistinct(rowSet.getRows().getList(), rowSet.getColumnIndex(columnId));
   }
   
-  public static Set<Long> getDistinct(Collection<? extends IsRow> rows, int index) {
+  public static List<Long> getDistinct(Collection<? extends IsRow> rows, int index) {
     return getDistinct(rows, index, null);
   }
   
-  public static Set<Long> getDistinct(Collection<? extends IsRow> rows, int index, Long exclude) {
-    Set<Long> result = Sets.newHashSet();
+  public static List<Long> getDistinct(Collection<? extends IsRow> rows, int index, Long exclude) {
+    List<Long> result = Lists.newArrayList();
     if (BeeUtils.isEmpty(rows)) {
       return result;
     }
     
     for (IsRow row : rows) {
       Long value = row.getLong(index);
-      if (value != null && !value.equals(exclude)) {
+      if (value != null && !value.equals(exclude) && !result.contains(value)) {
         result.add(value);
       }
     }
@@ -330,6 +336,14 @@ public class DataUtils {
   
   public static int getMaxInitialRowSetSize() {
     return maxInitialRowSetSize;
+  }
+  
+  public static List<Long> getRowIds(BeeRowSet rowSet) {
+    List<Long> result = Lists.newArrayList();
+    for (BeeRow row : rowSet.getRows()) {
+      result.add(row.getId());
+    }
+    return result;
   }
   
   public static String getString(BeeRowSet rowSet, IsRow row, String columnId) {
@@ -519,7 +533,7 @@ public class DataUtils {
     return (dataInfo == null) ? null : dataInfo.parseFilter(input); 
   }
   
-  public static List<Long> parseIdList(String input) {
+  public static List<Long> parseList(String input) {
     List<Long> result = Lists.newArrayList();
     if (BeeUtils.isEmpty(input)) {
       return result;

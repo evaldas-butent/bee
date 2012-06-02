@@ -42,7 +42,6 @@ import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
-import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -112,23 +111,11 @@ class AppointmentBuilder extends AbstractFormCallback {
   private static final String STYLE_COLOR_BAR_PREFIX = "bee-cal-ColorBar-";
   private static final String STYLE_ADD_RESOURCES = "bee-cal-AddResources";
 
-  private static BeeRowSet attendees = null;
-  private static State attState = State.UNKNOWN;
-
-  private static BeeRowSet properties = null;
-  private static State propState = State.UNKNOWN;
-
   private static final List<Long> serviceTypes = Lists.newArrayList();
   private static Long defaultServiceType = null;
 
   private static final List<Long> repairTypes = Lists.newArrayList();
   private static Long defaultRepairType = null;
-
-  private static BeeRowSet colors = null;
-  private static State colorState = State.UNKNOWN;
-
-  private static BeeRowSet reminders = null;
-  private static State remindState = State.UNKNOWN;
 
   private static final List<Long> reminderTypes = Lists.newArrayList();
 
@@ -176,27 +163,23 @@ class AppointmentBuilder extends AbstractFormCallback {
   }
 
   @Override
+  public void afterCreate(FormView form) {
+    loadProperties();
+    loadAttendees();
+    loadColors();
+    loadReminders();
+  }
+
+  @Override
   public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
     if (BeeUtils.same(name, NAME_SERVICE_TYPE)) {
       setServiceTypeWidgetId(DomUtils.getId(widget));
-      if (State.UNKNOWN.equals(propState)) {
-        loadProperties();
-      } else {
-        initPropWidget(widget, serviceTypes, defaultServiceType);
-      }
-
       if (widget instanceof BeeListBox) {
         ((BeeListBox) widget).addKeyDownHandler(LIST_BOX_CLEANER);
       }
 
     } else if (BeeUtils.same(name, NAME_REPAIR_TYPE)) {
       setRepairTypeWidgetId(DomUtils.getId(widget));
-      if (State.UNKNOWN.equals(propState)) {
-        loadProperties();
-      } else {
-        initPropWidget(widget, repairTypes, defaultRepairType);
-      }
-
       if (widget instanceof Editor) {
         ((Editor) widget).addValueChangeHandler(propWidgetHandler);
       }
@@ -206,9 +189,6 @@ class AppointmentBuilder extends AbstractFormCallback {
 
     } else if (BeeUtils.same(name, NAME_RESOURCES)) {
       setResourceWidgetId(DomUtils.getId(widget));
-      if (State.UNKNOWN.equals(attState)) {
-        loadAttendees();
-      }
 
     } else if (BeeUtils.same(name, NAME_ADD_RESOURCE)) {
       if (widget instanceof HasClickHandlers) {
@@ -236,20 +216,9 @@ class AppointmentBuilder extends AbstractFormCallback {
 
     } else if (BeeUtils.same(name, NAME_COLORS) && widget instanceof HasWidgets) {
       ((HasWidgets) widget).add(colorWidget);
-      if (State.UNKNOWN.equals(colorState)) {
-        loadColors();
-      } else {
-        initColorWidget();
-      }
 
     } else if (BeeUtils.same(name, NAME_REMINDER)) {
       setReminderWidgetId(DomUtils.getId(widget));
-      if (State.UNKNOWN.equals(remindState)) {
-        loadReminders();
-      } else {
-        initReminderWidget(widget);
-      }
-
       if (widget instanceof BeeListBox) {
         ((BeeListBox) widget).addKeyDownHandler(LIST_BOX_CLEANER);
       }
@@ -342,6 +311,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   }
 
   private void addResources() {
+    BeeRowSet attendees = CalendarKeeper.getAttendees();
     if (attendees == null || attendees.isEmpty()) {
       getFormView().notifyWarning("Attendess not available");
       return;
@@ -490,17 +460,17 @@ class AppointmentBuilder extends AbstractFormCallback {
     }
   }
 
-  private void initColorWidget() {
+  private void initColorWidget(BeeRowSet rowSet) {
     if (colorWidget.getItemCount() > 0) {
       colorWidget.clear();
     }
 
-    if (colors == null) {
+    if (rowSet == null) {
       return;
     }
-    String viewName = colors.getViewName();
+    String viewName = rowSet.getViewName();
 
-    for (BeeRow row : colors.getRows()) {
+    for (BeeRow row : rowSet.getRows()) {
       String bc = Data.getString(viewName, row, COL_BACKGROUND);
       String fc = Data.getString(viewName, row, COL_FOREGROUND);
 
@@ -517,7 +487,7 @@ class AppointmentBuilder extends AbstractFormCallback {
     }
   }
 
-  private void initPropWidget(Widget widget, List<Long> rowIds, Long def) {
+  private void initPropWidget(Widget widget, BeeRowSet rowSet, List<Long> rowIds, Long def) {
     if (widget instanceof BeeListBox && !rowIds.isEmpty()) {
       final BeeListBox listBox = (BeeListBox) widget;
       if (listBox.getItemCount() > 0) {
@@ -525,8 +495,8 @@ class AppointmentBuilder extends AbstractFormCallback {
       }
 
       for (long id : rowIds) {
-        BeeRow row = properties.getRowById(id);
-        String item = Data.getString(properties.getViewName(), row, COL_NAME);
+        BeeRow row = rowSet.getRowById(id);
+        String item = Data.getString(rowSet.getViewName(), row, COL_NAME);
         listBox.addItem(item);
       }
 
@@ -543,16 +513,16 @@ class AppointmentBuilder extends AbstractFormCallback {
     }
   }
 
-  private void initReminderWidget(Widget widget) {
+  private void initReminderWidget(Widget widget, BeeRowSet rowSet) {
     if (widget instanceof BeeListBox && !reminderTypes.isEmpty()) {
       final BeeListBox listBox = (BeeListBox) widget;
       if (listBox.getItemCount() > 0) {
         listBox.clear();
       }
 
-      String viewName = reminders.getViewName();
+      String viewName = rowSet.getViewName();
       for (long id : reminderTypes) {
-        BeeRow row = reminders.getRowById(id);
+        BeeRow row = rowSet.getRowById(id);
         String item = Data.getString(viewName, row, COL_NAME);
         listBox.addItem(BeeUtils.trimRight(item));
       }
@@ -575,56 +545,30 @@ class AppointmentBuilder extends AbstractFormCallback {
   }
 
   private void loadAttendees() {
-    if (State.PENDING.equals(attState)) {
-      return;
-    }
-    attState = State.PENDING;
-
-    Queries.getRowSet(VIEW_ATTENDEES, null, new Queries.RowSetCallback() {
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        attendees = result.clone();
-        attState = State.INITIALIZED;
-      }
-    });
+    CalendarKeeper.loadAttendees();
   }
 
   private void loadColors() {
-    if (State.PENDING.equals(colorState)) {
-      return;
-    }
-    colorState = State.PENDING;
-
-    Queries.getRowSet(VIEW_THEME_COLORS, null, new Queries.RowSetCallback() {
+    CalendarKeeper.getThemeColors(new CalendarCache.Callback() {
       @Override
       public void onSuccess(BeeRowSet result) {
-        colors = result.clone();
-        initColorWidget();
-
-        colorState = State.INITIALIZED;
+        initColorWidget(result);
       }
     });
   }
 
   private void loadProperties() {
-    if (State.PENDING.equals(propState)) {
-      return;
-    }
-    propState = State.PENDING;
-
-    Queries.getRowSet(VIEW_EXTENDED_PROPERTIES, null, new Queries.RowSetCallback() {
+    CalendarKeeper.getExtendedProperties(new CalendarCache.Callback() {
       @Override
       public void onSuccess(BeeRowSet result) {
-        properties = result.clone();
-
         serviceTypes.clear();
         repairTypes.clear();
 
         defaultServiceType = null;
         defaultRepairType = null;
 
-        String viewName = properties.getViewName();
-        for (BeeRow row : properties.getRows()) {
+        String viewName = result.getViewName();
+        for (BeeRow row : result.getRows()) {
           long id = row.getId();
 
           String groupName = Data.getString(viewName, row, COL_GROUP_NAME);
@@ -645,42 +589,34 @@ class AppointmentBuilder extends AbstractFormCallback {
         }
 
         if (!BeeUtils.isEmpty(getServiceTypeWidgetId())) {
-          initPropWidget(getWidget(getServiceTypeWidgetId()), serviceTypes, defaultServiceType);
+          initPropWidget(getWidget(getServiceTypeWidgetId()), result, serviceTypes,
+              defaultServiceType);
         }
         if (!BeeUtils.isEmpty(getRepairTypeWidgetId())) {
-          initPropWidget(getWidget(getRepairTypeWidgetId()), repairTypes, defaultRepairType);
+          initPropWidget(getWidget(getRepairTypeWidgetId()), result, repairTypes,
+              defaultRepairType);
         }
-        propState = State.INITIALIZED;
       }
     });
   }
 
   private void loadReminders() {
-    if (State.PENDING.equals(remindState)) {
-      return;
-    }
-    remindState = State.PENDING;
-
-    Queries.getRowSet(VIEW_REMINDER_TYPES, null, new Queries.RowSetCallback() {
+    CalendarKeeper.getReminderTypes(new CalendarCache.Callback() {
       @Override
       public void onSuccess(BeeRowSet result) {
-        reminders = result.clone();
-
-        reminderTypes.clear();
-        for (BeeRow row : reminders.getRows()) {
-          reminderTypes.add(row.getId());
-        }
-
+        BeeUtils.overwrite(reminderTypes, DataUtils.getRowIds(result));
+        
         if (!BeeUtils.isEmpty(getReminderWidgetId())) {
-          initReminderWidget(getWidget(getReminderWidgetId()));
+          initReminderWidget(getWidget(getReminderWidgetId()), result);
         }
-        remindState = State.INITIALIZED;
       }
     });
   }
 
   private void refreshResourceWidget() {
     BeeListBox listBox = getListBox(getResourceWidgetId());
+    BeeRowSet attendees = CalendarKeeper.getAttendees();
+
     if (listBox != null && attendees != null) {
       if (listBox.getItemCount() > 0) {
         listBox.clear();
@@ -731,6 +667,7 @@ class AppointmentBuilder extends AbstractFormCallback {
     }
 
     if (!resources.isEmpty()) {
+      BeeRowSet attendees = CalendarKeeper.getAttendees();
       for (long attId : resources) {
         info.append(attendees.getStringByRowId(attId, COL_NAME)).append(separator);
       }
@@ -796,6 +733,7 @@ class AppointmentBuilder extends AbstractFormCallback {
     if (BeeConst.isUndef(index)) {
       index = 0;
     }
+    BeeRowSet colors = CalendarKeeper.getThemeColors();
     if (colors != null && index < colors.getNumberOfRows()) {
       Data.setValue(VIEW_APPOINTMENTS, row, COL_COLOR,
           Data.getLong(colors.getViewName(), colors.getRow(index), COL_COLOR));
@@ -804,13 +742,13 @@ class AppointmentBuilder extends AbstractFormCallback {
     BeeRowSet rowSet = Queries.createRowSetForInsert(VIEW_APPOINTMENTS,
         CalendarKeeper.getAppointmentViewColumns(), row);
 
-    String propIds = DataUtils.buildIdList(getSelectedId(getServiceTypeWidgetId(), serviceTypes),
+    String propIds = DataUtils.buildList(getSelectedId(getServiceTypeWidgetId(), serviceTypes),
         getSelectedId(getRepairTypeWidgetId(), repairTypes));
     if (!BeeUtils.isEmpty(propIds)) {
       rowSet.setTableProperty(COL_PROPERTY, propIds);
     }
 
-    String attIds = DataUtils.buildIdList(resources);
+    String attIds = DataUtils.buildList(resources);
     if (!BeeUtils.isEmpty(attIds)) {
       rowSet.setTableProperty(COL_ATTENDEE, attIds);
     }
@@ -885,6 +823,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   }
 
   private void updateDuration(String propName) {
+    BeeRowSet properties = CalendarKeeper.getExtendedProperties();
     if (BeeUtils.isEmpty(propName) || properties == null) {
       return;
     }

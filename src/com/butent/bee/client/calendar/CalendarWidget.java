@@ -27,7 +27,6 @@ import com.butent.bee.client.calendar.event.TimeBlockClickHandler;
 import com.butent.bee.client.calendar.event.UpdateEvent;
 import com.butent.bee.client.calendar.event.UpdateHandler;
 import com.butent.bee.client.modules.calendar.Appointment;
-import com.butent.bee.client.modules.calendar.Attendee;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
@@ -52,7 +51,7 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
   private final CalendarSettings settings;
 
   private final AppointmentManager appointmentManager;
-  private final List<Attendee> attendees = Lists.newArrayList();
+  private final List<Long> attendees = Lists.newArrayList();
 
   private CalendarView view = null;
 
@@ -173,7 +172,7 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
     return appointmentManager.getAppointments();
   }
 
-  public List<Attendee> getAttendees() {
+  public List<Long> getAttendees() {
     return attendees;
   }
   
@@ -269,7 +268,7 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
     refresh();
   }
   
-  public void setAttendees(Collection<Attendee> attendees) {
+  public void setAttendees(Collection<Long> attendees) {
     this.attendees.clear();
     this.attendees.addAll(attendees);
     refresh();

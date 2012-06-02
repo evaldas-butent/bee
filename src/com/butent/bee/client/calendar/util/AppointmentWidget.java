@@ -24,7 +24,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
-import com.butent.bee.client.modules.calendar.Attendee;
+import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -199,18 +199,24 @@ public class AppointmentWidget extends FlowPanel {
 
   public void setDescription(Appointment appointment) {
     String sep = "<br/>";
+
     String attNames = BeeConst.STRING_EMPTY;
+    String propNames = BeeConst.STRING_EMPTY;
     
     if (!appointment.getAttendees().isEmpty()) {
-      for (Attendee att : appointment.getAttendees()) {
-        attNames = BeeUtils.concat(sep, attNames, att.getName());
+      for (Long id : appointment.getAttendees()) {
+        attNames = BeeUtils.concat(sep, attNames, CalendarKeeper.getAttendeeName(id));
+      }
+    }
+    if (!appointment.getProperties().isEmpty()) {
+      for (Long id : appointment.getProperties()) {
+        propNames = BeeUtils.concat(sep, propNames, CalendarKeeper.getPropertyName(id));
       }
     }
     
     String text = BeeUtils.concat(sep, appointment.getCompanyName(),
         BeeUtils.concat(1, appointment.getVehicleNumber(), appointment.getVehicleParentModel(),
-            appointment.getVehicleModel()), appointment.getProperties(), attNames,
-            appointment.getDescription());
+            appointment.getVehicleModel()), propNames, attNames, appointment.getDescription());
 
     this.description = text;
     DOM.setInnerHTML(bodyPanel.getElement(), text);

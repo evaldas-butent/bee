@@ -3,7 +3,6 @@ package com.butent.bee.client.calendar.util;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.modules.calendar.Appointment;
-import com.butent.bee.client.modules.calendar.Attendee;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
@@ -16,8 +15,8 @@ public class AppointmentUtil {
   public static List<Appointment> filterListByAttendee(List<Appointment> fullList, long id) {
     List<Appointment> result = Lists.newArrayList();
     for (Appointment appointment : fullList) {
-      for (Attendee attendee : appointment.getAttendees()) {
-        if (attendee.getId() == id) {
+      for (Long attendeeId : appointment.getAttendees()) {
+        if (attendeeId == id) {
           result.add(appointment);
           break;
         }

@@ -27,7 +27,6 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.Collection;
@@ -136,19 +135,19 @@ public class CalendarModuleBean implements BeeModule {
     long appId = ((BeeRow) response.getResponse()).getId();
 
     if (!BeeUtils.isEmpty(propIds)) {
-      for (long propId : DataUtils.parseIdList(propIds)) {
+      for (long propId : DataUtils.parseList(propIds)) {
         insertAppointmentProperty(appId, propId);
       }
     }
 
     if (!BeeUtils.isEmpty(attIds)) {
-      for (long attId : DataUtils.parseIdList(attIds)) {
+      for (long attId : DataUtils.parseList(attIds)) {
         insertAppointmentAttendee(appId, attId);
       }
     }
 
     if (!BeeUtils.isEmpty(rtIds)) {
-      for (long rtId : DataUtils.parseIdList(rtIds)) {
+      for (long rtId : DataUtils.parseList(rtIds)) {
         insertAppointmentReminder(appId, rtId);
       }
     }
@@ -180,7 +179,7 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     BeeRowSet attendees = sys.getViewData(VIEW_ATTENDEES, attFilter);
-    
+
     CompoundFilter appFilter = Filter.and();
     appFilter.add(ComparisonFilter.isNotEqual(COL_STATUS,
         new IntegerValue(AppointmentStatus.CANCELED.ordinal())));
@@ -196,9 +195,9 @@ public class CalendarModuleBean implements BeeModule {
 
     BeeRowSet appAtts = sys.getViewData(VIEW_APPOINTMENT_ATTENDEES);
     BeeRowSet appProps = sys.getViewData(VIEW_APPOINTMENT_PROPS);
-    
+
     BeeRowSet appointments = sys.getViewData(VIEW_APPOINTMENTS, appFilter);
-    
+
     Set<Long> attIds = Sets.newHashSet();
     boolean filterByAttendee = !attFilter.isEmpty();
     if (filterByAttendee) {
@@ -206,7 +205,7 @@ public class CalendarModuleBean implements BeeModule {
         attIds.add(row.getId());
       }
     }
-    
+
     List<BeeRow> children;
     Iterator<BeeRow> iterator = appointments.getRows().iterator();
 
@@ -215,11 +214,10 @@ public class CalendarModuleBean implements BeeModule {
       String appId = BeeUtils.toString(row.getId());
 
       children = DataUtils.filterRows(appAtts, COL_APPOINTMENT, appId);
+      int index = appAtts.getColumnIndex(COL_ATTENDEE);
 
       if (filterByAttendee) {
-        int index = appAtts.getColumnIndex(COL_ATTENDEE);
         boolean ok = false;
-
         for (BeeRow r : children) {
           if (attIds.contains(r.getLong(index))) {
             ok = true;
@@ -233,22 +231,25 @@ public class CalendarModuleBean implements BeeModule {
       }
 
       if (!children.isEmpty()) {
-        row.setProperty(VIEW_APPOINTMENT_ATTENDEES, Codec.beeSerialize(children));
+        row.setProperty(VIEW_APPOINTMENT_ATTENDEES,
+            DataUtils.buildList(DataUtils.getDistinct(children, index)));
       }
-      
+
       children = DataUtils.filterRows(appProps, COL_APPOINTMENT, appId);
       if (!children.isEmpty()) {
-        row.setProperty(VIEW_APPOINTMENT_PROPS, Codec.beeSerialize(children));
+        index = appProps.getColumnIndex(COL_PROPERTY);
+        row.setProperty(VIEW_APPOINTMENT_PROPS,
+            DataUtils.buildList(DataUtils.getDistinct(children, index)));
       }
     }
 
     if (!attendees.isEmpty()) {
-      appointments.setTableProperty(VIEW_ATTENDEES, Codec.beeSerialize(attendees));
+      appointments.setTableProperty(VIEW_ATTENDEES, DataUtils.buildList(attendees));
     }
-    
+
     LogUtils.infoNow(logger, SVC_GET_CALENDAR_APPOINTMENTS, appointments.getNumberOfRows(),
         appointments.getViewName(), attendees.getNumberOfRows(), attendees.getViewName());
-    
+
     return ResponseObject.response(appointments);
   }
 

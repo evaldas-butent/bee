@@ -49,13 +49,21 @@ public class CalendarKeeper {
     }
   }
 
-  private static final CalendarConfigurationHandler configurationHandler =
+  private static final CalendarConfigurationHandler CONFIGURATION_HANDLER =
       new CalendarConfigurationHandler();
+  
+  private static final CalendarCache CACHE = new CalendarCache();
 
   private static FormView settingsForm = null;
+  
+  public static String getAttendeeName(long id) {
+    return CACHE.getString(VIEW_ATTENDEES, id, COL_NAME);
+  }
 
-  private static DataInfo appointmentViewInfo = null;
-
+  public static String getPropertyName(long id) {
+    return CACHE.getString(VIEW_EXTENDED_PROPERTIES, id, COL_NAME);
+  }
+  
   public static void register() {
     Global.registerCaptions(AppointmentStatus.class);
     Global.registerCaptions(ReminderMethod.class);
@@ -65,7 +73,7 @@ public class CalendarKeeper {
 
     Global.registerCaptions(TimeBlockClick.class);
 
-    FormFactory.registerFormCallback(FORM_CONFIGURATION, configurationHandler);
+    FormFactory.registerFormCallback(FORM_CONFIGURATION, CONFIGURATION_HANDLER);
 
     GridFactory.registerGridCallback(GRID_APPOINTMENTS, new AppointmentGridHandler());
 
@@ -78,7 +86,7 @@ public class CalendarKeeper {
   static void createAppointment(boolean modal) {
     createAppointment(TimeUtils.nextHour(0), modal);
   }
-
+  
   static void createAppointment(final DateTime start, boolean modal) {
     final AppointmentBuilder builder = new AppointmentBuilder(start);
 
@@ -100,7 +108,7 @@ public class CalendarKeeper {
       FormFactory.openForm(FORM_NEW_APPOINTMENT, builder);
     }
   }
-
+  
   static ParameterList createRequestParameters(String service) {
     ParameterList params = BeeKeeper.getRpc().createParameters(CALENDAR_MODULE);
     params.addQueryItem(CALENDAR_METHOD, service);
@@ -119,30 +127,71 @@ public class CalendarKeeper {
       }
     });
   }
-  
+
   static List<BeeColumn> getAppointmentViewColumns() {
-    return getAppointmentViewInfo().getColumns();
+    return CACHE.getAppointmentViewColumns();
   }
 
   static DataInfo getAppointmentViewInfo() {
-    if (appointmentViewInfo == null) {
-      appointmentViewInfo = Data.getDataInfo(VIEW_APPOINTMENTS);
-    }
-    return appointmentViewInfo;
+    return CACHE.getAppointmentViewInfo();
+  }
+
+  static BeeRowSet getAttendees() {
+    return CACHE.getRowSet(VIEW_ATTENDEES);
+  }
+
+  static void getAttendees(CalendarCache.Callback callback) {
+    CACHE.getData(VIEW_ATTENDEES, callback);
   }
 
   static long getCompany() {
-    return BeeUtils.unbox(configurationHandler.getCompany());
+    return BeeUtils.unbox(CONFIGURATION_HANDLER.getCompany());
   }
 
   static long getDefaultAppointmentType() {
-    return BeeUtils.unbox(configurationHandler.getAppointmentType());
+    return BeeUtils.unbox(CONFIGURATION_HANDLER.getAppointmentType());
   }
 
   static long getDefaultTimeZone() {
-    return BeeUtils.unbox(configurationHandler.getTimeZone());
+    return BeeUtils.unbox(CONFIGURATION_HANDLER.getTimeZone());
   }
 
+  static BeeRowSet getExtendedProperties() {
+    return CACHE.getRowSet(VIEW_EXTENDED_PROPERTIES);
+  }
+  
+  static void getExtendedProperties(CalendarCache.Callback callback) {
+    CACHE.getData(VIEW_EXTENDED_PROPERTIES, callback);
+  }
+
+  static void getReminderTypes(CalendarCache.Callback callback) {
+    CACHE.getData(VIEW_REMINDER_TYPES, callback);
+  }
+
+  static BeeRowSet getThemeColors() {
+    return CACHE.getRowSet(VIEW_THEME_COLORS);
+  }
+
+  static void getThemeColors(CalendarCache.Callback callback) {
+    CACHE.getData(VIEW_THEME_COLORS, callback);
+  }
+  
+  static boolean isAttendeesLoaded() {
+    return CACHE.isLoaded(VIEW_ATTENDEES);
+  }
+  
+  static boolean isExtendedPropertiesLoaded() {
+    return CACHE.isLoaded(VIEW_EXTENDED_PROPERTIES);
+  }
+  
+  static void loadAttendees() {
+    CACHE.ensureData(VIEW_ATTENDEES);
+  }
+
+  static void loadExtendedProperties() {
+    CACHE.ensureData(VIEW_EXTENDED_PROPERTIES);
+  }
+  
   static void openAppointment(final Appointment appointment, final Calendar calendar) {
   }
 

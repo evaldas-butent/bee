@@ -18,22 +18,22 @@ public class Appointment implements Comparable<Appointment> {
 
   private final IsRow row;
   
-  private final List<Attendee> attendees = Lists.newArrayList();
-  private final List<String> properties = Lists.newArrayList();
+  private final List<Long> attendees = Lists.newArrayList();
+  private final List<Long> properties = Lists.newArrayList();
 
   public Appointment(IsRow row) {
     this.row = row;
   }
   
-  public void addAttendee(Attendee attendee) {
-    if (attendee != null) {
-      attendees.add(attendee);
+  public void addAttendee(Long attendeeId) {
+    if (attendeeId != null) {
+      attendees.add(attendeeId);
     }
   }
 
-  public void addProperty(String propName) {
-    if (!BeeUtils.isEmpty(propName)) {
-      properties.add(propName);
+  public void addProperty(Long propertyId) {
+    if (!BeeUtils.isEmpty(propertyId)) {
+      properties.add(propertyId);
     }
   }
   
@@ -58,7 +58,7 @@ public class Appointment implements Comparable<Appointment> {
     return compare;
   }
   
-  public List<Attendee> getAttendees() {
+  public List<Long> getAttendees() {
     return attendees;
   }
 
@@ -86,7 +86,7 @@ public class Appointment implements Comparable<Appointment> {
     return row.getId();
   }
 
-  public List<String> getProperties() {
+  public List<Long> getProperties() {
     return properties;
   }
 

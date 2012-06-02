@@ -27,7 +27,6 @@ import com.butent.bee.client.calendar.resourceview.ResourceView;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.TabBar;
-import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
@@ -187,9 +186,20 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     add(container);
     
     refreshDateBox();
-    loadAppointments();
 
     setNewAppointmentRegistration(NewAppointmentEvent.register(this));
+    
+    CalendarCache.Callback callback = new CalendarCache.Callback() {
+      @Override
+      public void onSuccess(BeeRowSet result) {
+        if (CalendarKeeper.isAttendeesLoaded() && CalendarKeeper.isExtendedPropertiesLoaded()) {
+          loadAppointments();
+        }
+      }
+    };
+    
+    CalendarKeeper.getAttendees(callback);
+    CalendarKeeper.getExtendedProperties(callback);
   }
 
   public String getEventSource() {
@@ -378,16 +388,8 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     calendar.suspendLayout();
     
     String property = rowSet.getTableProperty(VIEW_ATTENDEES);
-
     if (!BeeUtils.isEmpty(property)) {
-      BeeRowSet attRs = BeeRowSet.restore(property);
-
-      List<Attendee> attendees = Lists.newArrayList();
-      for (BeeRow row : attRs.getRows()) {
-        attendees.add(new Attendee(row.getId(), DataUtils.getString(attRs, row, COL_NAME)));
-      }
-
-      calendar.setAttendees(attendees);
+      calendar.setAttendees(DataUtils.parseList(property));
     }
 
     List<Appointment> appointments = Lists.newArrayList();
@@ -396,19 +398,13 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
       
       property = row.getProperty(VIEW_APPOINTMENT_ATTENDEES);
       if (!BeeUtils.isEmpty(property)) {
-        for (BeeRow r : DataUtils.restoreRows(property)) {
-          app.addAttendee(new Attendee(Data.getLong(VIEW_APPOINTMENT_ATTENDEES, r, COL_ATTENDEE),
-              Data.getString(VIEW_APPOINTMENT_ATTENDEES, r, COL_ATTENDEE_NAME)));
-        }
+        app.getAttendees().addAll(DataUtils.parseList(property));
       }
 
       property = row.getProperty(VIEW_APPOINTMENT_PROPS);
       if (!BeeUtils.isEmpty(property)) {
-        for (BeeRow r : DataUtils.restoreRows(property)) {
-          app.addProperty(Data.getString(VIEW_APPOINTMENT_PROPS, r, COL_PROPERTY_NAME));
-        }
+        app.getProperties().addAll(DataUtils.parseList(property));
       }
-      
       appointments.add(app);
     }
 
@@ -416,6 +412,8 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     
     calendar.resumeLayout();
     calendar.scrollToHour(calendar.getSettings().getScrollToHour());
+    
+    BeeKeeper.getLog().debug(calendarId, "loaded", appointments.size(), "appointments");
   }
 
   private void setDate(JustDate date) {

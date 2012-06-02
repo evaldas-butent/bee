@@ -8,7 +8,7 @@ import com.google.gwt.user.client.ui.Label;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.modules.calendar.Attendee;
+import com.butent.bee.client.modules.calendar.CalendarKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -55,7 +55,7 @@ public class ResourceViewHeader extends Composite {
     header.setWidget(1, 0, splitter);
   }
 
-  public void setAttendees(List<Attendee> attendees) {
+  public void setAttendees(List<Long> attendees) {
     panel.clear();
     if (attendees.isEmpty()) {
       return;
@@ -63,7 +63,7 @@ public class ResourceViewHeader extends Composite {
 
     double width = 100d / attendees.size();
     for (int i = 0; i < attendees.size(); i++) {
-      Label label = new Label(attendees.get(i).getName());
+      Label label = new Label(CalendarKeeper.getAttendeeName(attendees.get(i)));
       label.setStylePrimaryName("day-cell");
 
       StyleUtils.setLeft(label, width * i, Unit.PCT);

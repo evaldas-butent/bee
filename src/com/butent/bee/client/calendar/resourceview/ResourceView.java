@@ -20,7 +20,6 @@ import com.butent.bee.client.dnd.PickupDragController;
 import com.butent.bee.client.dnd.VetoDragException;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
-import com.butent.bee.client.modules.calendar.Attendee;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -78,7 +77,7 @@ public class ResourceView extends CalendarView {
 
   public void doLayout() {
     JustDate date = calendarWidget.getDate();
-    List<Attendee> attendees = calendarWidget.getAttendees();
+    List<Long> attendees = calendarWidget.getAttendees();
     int cc = attendees.size();
     
     viewHeader.setAttendees(attendees);
@@ -105,7 +104,7 @@ public class ResourceView extends CalendarView {
     for (int i = 0; i < cc; i++) {
       List<Appointment> filteredList =
           AppointmentUtil.filterListByDateAndAttendee(calendarWidget.getAppointments(), tmpDate,
-              attendees.get(i).getId());
+              attendees.get(i));
       List<AppointmentAdapter> appointmentAdapters = layoutStrategy.doLayout(filteredList, i, cc);
 
       addAppointmentsToGrid(appointmentAdapters, false);
