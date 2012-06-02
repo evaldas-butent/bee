@@ -302,12 +302,12 @@
           <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="item" type="xs:normalizedString" />
           </xs:choice>
-          <xs:attribute name="multiSelect" type="xs:boolean" default="false" />
-          <xs:attribute name="allItemsVisible" type="xs:boolean" default="false" />
+          <xs:attribute name="multiSelect" type="xs:boolean" />
+          <xs:attribute name="allItemsVisible" type="xs:boolean" />
           <xs:attribute name="size" type="xs:positiveInteger" />
           <xs:attribute name="minSize" type="xs:positiveInteger" />
           <xs:attribute name="maxSize" type="xs:positiveInteger" />
-          <xs:attribute name="valueNumeric" type="xs:boolean" default="false" />
+          <xs:attribute name="valueNumeric" type="xs:boolean" />
           <xs:attribute name="valueStartIndex" type="xs:int" />
           <xs:attribute name="itemKey" type="xs:normalizedString" />
           <xs:attribute name="defaultDecorator" type="d:registeredDecorator" default="caption-left" />

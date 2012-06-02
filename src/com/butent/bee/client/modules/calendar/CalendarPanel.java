@@ -56,26 +56,26 @@ import java.util.EnumSet;
 import java.util.List;
 
 public class CalendarPanel extends Complex implements NewAppointmentEvent.Handler, Presenter, View {
-  
+
   private static final String STYLE_PANEL = "bee-cal-Panel";
   private static final String STYLE_CONTROLS = "bee-cal-Panel-controls";
 
   private static final String STYLE_TODAY = "bee-cal-Panel-today";
-  
+
   private static final String STYLE_NAV_CONTAINER = "bee-cal-Panel-navContainer";
   private static final String STYLE_NAV_ITEM = "bee-cal-Panel-navItem";
   private static final String STYLE_NAV_PREV = "bee-cal-Panel-navPrev";
   private static final String STYLE_NAV_NEXT = "bee-cal-Panel-navNext";
-  
+
   private static final String STYLE_DATE = "bee-cal-Panel-date";
-  
+
   private static final String STYLE_VIEW_PREFIX = "bee-cal-Panel-view-";
-  
+
   private static final String STYLE_CALENDAR = "bee-cal-Panel-calendar";
 
-  private static final DateTimeFormat DATE_FORMAT = 
+  private static final DateTimeFormat DATE_FORMAT =
       DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_FULL);
-  private static final DateTimeFormat MONTH_FORMAT = 
+  private static final DateTimeFormat MONTH_FORMAT =
       DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.YEAR_MONTH);
 
   private final long calendarId;
@@ -84,7 +84,7 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
   private final Html dateBox;
 
   private HandlerRegistration newAppointmentRegistration;
-  
+
   private boolean enabled = true;
 
   public CalendarPanel(long calendarId, String caption, CalendarSettings settings) {
@@ -97,16 +97,16 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
 
     calendar.addOpenHandler(new OpenHandler<Appointment>() {
       public void onOpen(OpenEvent<Appointment> event) {
-        CalendarKeeper.openAppointment(event.getTarget(), calendar);
+        CalendarKeeper.openAppointment(event.getTarget(), calendar, false);
       }
     });
 
     calendar.addTimeBlockClickHandler(new TimeBlockClickHandler<DateTime>() {
       public void onTimeBlockClick(TimeBlockClickEvent<DateTime> event) {
-        CalendarKeeper.createAppointment(event.getTarget(), true);
+        CalendarKeeper.createAppointment(event.getTarget(), false);
       }
     });
-    
+
     calendar.addUpdateHandler(new UpdateHandler<Appointment>() {
       @Override
       public void onUpdate(UpdateEvent<Appointment> event) {
@@ -115,7 +115,7 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
         }
       }
     });
-    
+
     calendar.suspendLayout();
     calendar.setType(Type.DAY, calendar.getSettings().getDefaultDisplayedDays());
 
@@ -123,7 +123,7 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     header.create(caption, false, true, EnumSet.of(UiOption.ROOT),
         EnumSet.of(Action.REFRESH, Action.CONFIGURE), null);
     header.setViewPresenter(this);
-    
+
     this.dateBox = new Html();
     dateBox.addStyleName(STYLE_DATE);
 
@@ -132,9 +132,9 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
         pickDate();
       }
     });
-    
+
     add(header);
-    
+
     Html today = new Html("Šiandien");
     today.addStyleName(STYLE_TODAY);
 
@@ -147,7 +147,7 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     Html prev = new Html("<");
     prev.addStyleName(STYLE_NAV_ITEM);
     prev.addStyleName(STYLE_NAV_PREV);
-    
+
     prev.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
         navigate(false);
@@ -179,27 +179,17 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
 
     controls.add(createViewWidget());
     add(controls);
-   
+
     Simple container = new Simple();
     container.addStyleName(STYLE_CALENDAR);
     container.setWidget(calendar);
     add(container);
-    
+
     refreshDateBox();
 
     setNewAppointmentRegistration(NewAppointmentEvent.register(this));
-    
-    CalendarCache.Callback callback = new CalendarCache.Callback() {
-      @Override
-      public void onSuccess(BeeRowSet result) {
-        if (CalendarKeeper.isAttendeesLoaded() && CalendarKeeper.isExtendedPropertiesLoaded()) {
-          loadAppointments();
-        }
-      }
-    };
-    
-    CalendarKeeper.getAttendees(callback);
-    CalendarKeeper.getExtendedProperties(callback);
+
+    loadAppointments();
   }
 
   public String getEventSource() {
@@ -223,11 +213,11 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
       case REFRESH:
         refresh();
         break;
-        
+
       case CONFIGURE:
         CalendarKeeper.editSettings(calendarId, calendar);
         break;
-        
+
       case CLOSE:
         BeeKeeper.getScreen().closeView(this);
         break;
@@ -240,7 +230,7 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
   public boolean isEnabled() {
     return enabled;
   }
-  
+
   @Override
   public void onNewAppointment(NewAppointmentEvent event) {
     refresh();
@@ -255,10 +245,10 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
 
   public void setEventSource(String eventSource) {
   }
-  
+
   public void setViewPresenter(Presenter viewPresenter) {
   }
-  
+
   @Override
   protected void onUnload() {
     super.onUnload();
@@ -368,7 +358,7 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
         setDate(event.getValue());
       }
     });
-    
+
     popup.setWidget(datePicker);
     popup.showRelativeTo(dateBox);
   }
@@ -386,7 +376,7 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
 
   private void setAppointments(BeeRowSet rowSet) {
     calendar.suspendLayout();
-    
+
     String property = rowSet.getTableProperty(VIEW_ATTENDEES);
     if (!BeeUtils.isEmpty(property)) {
       calendar.setAttendees(DataUtils.parseList(property));
@@ -395,7 +385,7 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     List<Appointment> appointments = Lists.newArrayList();
     for (BeeRow row : rowSet.getRows()) {
       Appointment app = new Appointment(row);
-      
+
       property = row.getProperty(VIEW_APPOINTMENT_ATTENDEES);
       if (!BeeUtils.isEmpty(property)) {
         app.getAttendees().addAll(DataUtils.parseList(property));
@@ -409,10 +399,10 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
     }
 
     calendar.setAppointments(appointments);
-    
+
     calendar.resumeLayout();
     calendar.scrollToHour(calendar.getSettings().getScrollToHour());
-    
+
     BeeKeeper.getLog().debug(calendarId, "loaded", appointments.size(), "appointments");
   }
 
@@ -428,13 +418,13 @@ public class CalendarPanel extends Complex implements NewAppointmentEvent.Handle
   private void setNewAppointmentRegistration(HandlerRegistration newAppointmentRegistration) {
     this.newAppointmentRegistration = newAppointmentRegistration;
   }
-  
+
   private boolean updateAppointmentDates(Appointment newApp) {
     Appointment oldApp = calendar.getRollbackAppointment();
     if (oldApp == null) {
       return false;
     }
-    
+
     Queries.update(VIEW_APPOINTMENTS, CalendarKeeper.getAppointmentViewColumns(),
         oldApp.getRow(), newApp.getRow(), null);
     return true;

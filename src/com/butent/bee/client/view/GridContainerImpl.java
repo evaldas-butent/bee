@@ -211,6 +211,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       }
       
       Set<Action> enabledActions = Sets.newHashSet(gridDescription.getEnabledActions());
+      Set<Action> disabledActions = Sets.newHashSet(gridDescription.getDisabledActions());
       
       boolean fav = !BeeUtils.isEmpty(gridDescription.getFavorite());
       if (fav) {
@@ -224,9 +225,18 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
           enabledActions.remove(Action.BOOKMARK);
         }
       }
+
+      int min = BeeUtils.unbox(gridDescription.getMinNumberOfRows());
+      if (min > 0 && rowCount <= min) {
+        disabledActions.add(Action.DELETE);
+      }
+      int max = BeeUtils.unbox(gridDescription.getMaxNumberOfRows());
+      if (max > 0 && rowCount >= max) {
+        disabledActions.add(Action.ADD);
+      }
       
       header.create(caption, !BeeUtils.isEmpty(gridDescription.getViewName()), readOnly, uiOptions,
-          enabledActions, gridDescription.getDisabledActions());
+          enabledActions, disabledActions);
     } else {
       header = null;
     }

@@ -66,7 +66,6 @@ public class CalendarConstants {
   public static final String CALENDAR_MODULE = "Calendar";
   public static final String CALENDAR_METHOD = CALENDAR_MODULE + "Method";
 
-  public static final String SVC_GET_CONFIGURATION = "get_configuration"; 
   public static final String SVC_GET_USER_CALENDAR = "get_user_calendar"; 
   public static final String SVC_CREATE_APPOINTMENT = "create_appointment"; 
   public static final String SVC_GET_CALENDAR_APPOINTMENTS = "get_calendar_appointments"; 
@@ -91,10 +90,12 @@ public class CalendarConstants {
   public static final String VIEW_ATTENDEE_PROPS = "AttendeeProps";
 
   public static final String VIEW_APPOINTMENTS = "Appointments";
+  public static final String VIEW_APPOINTMENT_TYPES = "AppointmentTypes";
   public static final String VIEW_APPOINTMENT_PROPS = "AppointmentProps";
   public static final String VIEW_APPOINTMENT_ATTENDEES = "AppointmentAttendees";
   public static final String VIEW_APPOINTMENT_REMINDERS = "AppointmentReminders";
 
+  public static final String VIEW_THEMES = "Themes";
   public static final String VIEW_THEME_COLORS = "ThemeColors";
 
   public static final String VIEW_REMINDER_TYPES = "ReminderTypes";
@@ -108,9 +109,9 @@ public class CalendarConstants {
   public static final String GRID_APPOINTMENTS = "Appointments";
 
   public static final String FORM_CALENDAR_SETTINGS = "CalendarSettings";
-  public static final String FORM_CONFIGURATION = "Configuration";
-  public static final String FORM_NEW_APPOINTMENT = "NewAppointment";
-  public static final String FORM_EDIT_APPOINTMENT = "EditAppointment";
+
+  public static final String FORM_NEW_APPOINTMENT = "ServiceAppointment";
+  public static final String FORM_EDIT_APPOINTMENT = "ServiceAppointment";
   
   public static final String COL_USER = "User";
   public static final String COL_CALENDAR = "Calendar";
@@ -171,6 +172,7 @@ public class CalendarConstants {
   public static final String COL_VEHICLE_MODEL = "VehicleModel";
 
   public static final String COL_COLOR = "Color";
+  public static final String COL_DEFAULT_COLOR = "DefaultColor";
   public static final String COL_BACKGROUND = "Background";
   public static final String COL_FOREGROUND = "Foreground";
 
@@ -183,7 +185,7 @@ public class CalendarConstants {
 
   public static final String COL_ORGANIZER = "Organizer";
   public static final String COL_COMPANY_PERSON = "CompanyPerson";
-  
+
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";
 

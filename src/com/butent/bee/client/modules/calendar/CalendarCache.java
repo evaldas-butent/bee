@@ -1,8 +1,8 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENTS;
 
@@ -22,9 +22,9 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 class CalendarCache implements HandlesAllDataEvents {
 
@@ -32,11 +32,15 @@ class CalendarCache implements HandlesAllDataEvents {
     void onSuccess(BeeRowSet result);
   }
 
+  interface MultiCallback {
+    void onSuccess(Integer result);
+  }
+  
   private final Map<String, BeeRowSet> data = Maps.newHashMap();
 
   private final Map<String, State> states = Maps.newHashMap();
 
-  private final Map<String, Set<Callback>> callbacks = Maps.newHashMap();
+  private final Map<String, List<Callback>> callbacks = Maps.newHashMap();
 
   private DataInfo appointmentViewInfo = null;
 
@@ -119,9 +123,9 @@ class CalendarCache implements HandlesAllDataEvents {
 
     } else {
       if (callback != null) {
-        Set<Callback> cbs = callbacks.get(viewName);
+        List<Callback> cbs = callbacks.get(viewName);
         if (cbs == null) {
-          callbacks.put(viewName, Sets.newHashSet(callback));
+          callbacks.put(viewName, Lists.newArrayList(callback));
         } else {
           cbs.add(callback);
         }
@@ -130,6 +134,52 @@ class CalendarCache implements HandlesAllDataEvents {
     }
   }
 
+  void getData(final Collection<String> viewNames, final MultiCallback multiCallback) {
+    if (multiCallback == null) {
+      for (String viewName : viewNames) {
+        ensureData(viewName);
+      }
+
+    } else {
+      Callback callback = new Callback() {
+        private boolean consumed = false;
+
+        @Override
+        public void onSuccess(BeeRowSet result) {
+          if (this.consumed) {
+            return;
+          }
+
+          boolean ok = true;
+          for (String viewName : viewNames) {
+            if (!isLoaded(viewName)) {
+              ok = false;
+              break;
+            }
+          }
+
+          if (ok) {
+            this.consumed = true;
+            multiCallback.onSuccess(viewNames.size());
+          }
+        }
+      };
+
+      for (String viewName : viewNames) {
+        getData(viewName, callback);
+      }
+    }
+  }
+
+  Long getLong(String viewName, long rowId, String columnId) {
+    BeeRow row = getRow(viewName, rowId);
+    if (row == null) {
+      return null;
+    } else {
+      return Data.getLong(viewName, row, columnId);
+    }
+  }
+  
   BeeRow getRow(String viewName, long rowId) {
     BeeRowSet rowSet = getRowSet(viewName);
     if (rowSet == null) {
@@ -183,7 +233,7 @@ class CalendarCache implements HandlesAllDataEvents {
         data.put(viewName, result.clone());
         states.put(viewName, State.LOADED);
 
-        Set<Callback> cbs = callbacks.get(viewName);
+        List<Callback> cbs = callbacks.get(viewName);
         if (cbs != null) {
           for (Callback callback : cbs) {
             callback.onSuccess(result);

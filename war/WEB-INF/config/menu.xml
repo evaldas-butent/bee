@@ -58,7 +58,7 @@
   <item id="appointment_styles" parent="calendar_menu" order="160" text="Vizitų stiliai" service="grid" parameters="AppointmentStyles" />
   <item id="reminder_types" parent="calendar_menu" order="170" text="Priminimų tipai" service="grid" parameters="ReminderTypes" separators="*" />
   <item id="time_zones" parent="calendar_menu" order="180" text="Laiko juostos" service="grid" parameters="TimeZones" />
-  <item id="configuration" parent="calendar_menu" order="200" text="Parametrai" service="form" parameters="Configuration" separators="*" />
+  <item id="configuration" parent="calendar_menu" order="200" text="Nustatymai" service="grid" parameters="Configuration" separators="*" />
 
   <item id="adm_menu" order="200" text="Administravimas" />
   <item id="roles" parent="adm_menu" order="10" text="Rolės" service="grid" parameters="Roles" />

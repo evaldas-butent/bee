@@ -11,7 +11,7 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="NewAppointment" viewName="Appointments" caption="Naujas Vizitas"
+  name="ServiceAppointment" viewName="Appointments" caption="Vizitas"
   disabledActions="add delete" enabledActions="save">
 
   <FlowPanel style="&relative; margin: 2ex 1em; min-width: 760px;">
@@ -97,11 +97,15 @@
         step="30" style="width: 112px;" d:size="188" d:unit="px"
         d:rootStyle="&absolute; left: 0; top: 128px;" />
 
-      <InputSpinner name="Hours" caption="Trukmė" min="0" max="99"
+      <InputSpinner name="Hours" caption="Trukmė:" min="0" max="99"
         style="width: 40px;" d:size="60" d:unit="px"
         d:rootStyle="&absolute; left: 360px; top: 128px;" />
       <InputSpinner name="Minutes" min="0" max="60" step="5"
         style="&absolute; left: 480px; top: 128px; width: 40px;" />
+
+      <ListBox source="Status" itemKey="AppointmentStatus" caption="Būsena:"
+        style="width: 120px;" d:size="60" d:unit="px"
+        d:rootStyle="&absolute; left: 560px; top: 128px;" />
 
       <InputDateTime source="EndDateTime" caption="Planuojamas pabaigos laikas:" step="30"
         style="width: 112px;" d:size="188" d:unit="px"
@@ -120,7 +124,7 @@
       </DataSelector>
     </FlowPanel>
 
-    <hr />
+    <hr name="BuildSeparator" />
 
     <Button name="Build" html="+ Servisas" style="margin-right: 1em;" />
     <OrderedList name="BuildInfo" style="display: inline-block; color: green;" />

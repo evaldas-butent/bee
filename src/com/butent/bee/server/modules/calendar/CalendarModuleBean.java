@@ -1,7 +1,6 @@
 package com.butent.bee.server.modules.calendar;
 
 import com.google.common.collect.Sets;
-import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
@@ -9,8 +8,6 @@ import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
-import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
-import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.SqlInsert;
@@ -64,9 +61,7 @@ public class CalendarModuleBean implements BeeModule {
     ResponseObject response = null;
     String svc = reqInfo.getParameter(CALENDAR_METHOD);
 
-    if (BeeUtils.same(svc, SVC_GET_CONFIGURATION)) {
-      response = getConfiguration();
-    } else if (BeeUtils.same(svc, SVC_GET_USER_CALENDAR)) {
+    if (BeeUtils.same(svc, SVC_GET_USER_CALENDAR)) {
       response = getUserCalendar(reqInfo);
     } else if (BeeUtils.same(svc, SVC_CREATE_APPOINTMENT)) {
       response = createAppointment(reqInfo);
@@ -98,19 +93,6 @@ public class CalendarModuleBean implements BeeModule {
 
   @Override
   public void init() {
-    sys.registerViewEventHandler(new ViewEventHandler() {
-      @SuppressWarnings("unused")
-      @Subscribe
-      public void initConfiguration(ViewQueryEvent event) {
-        if (BeeUtils.same(event.getViewName(), VIEW_CONFIGURATION)) {
-          BeeRowSet rowset = event.getRowset();
-
-          if (rowset.isEmpty()) {
-            rowset.addEmptyRow();
-          }
-        }
-      }
-    });
   }
 
   private boolean checkTable(String name) {
@@ -251,15 +233,6 @@ public class CalendarModuleBean implements BeeModule {
         appointments.getViewName(), attendees.getNumberOfRows(), attendees.getViewName());
 
     return ResponseObject.response(appointments);
-  }
-
-  private ResponseObject getConfiguration() {
-    if (!checkTable(TBL_CONFIGURATION)) {
-      return ResponseObject.error("table not active:", TBL_CONFIGURATION);
-    }
-
-    BeeRowSet res = sys.getViewData(VIEW_CONFIGURATION);
-    return ResponseObject.response(res);
   }
 
   private ResponseObject getUserCalendar(RequestInfo reqInfo) {
