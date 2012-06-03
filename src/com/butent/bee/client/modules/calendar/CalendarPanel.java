@@ -42,6 +42,7 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -82,6 +83,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   private final Calendar calendar;
   private final Html dateBox;
+  private final TabBar viewTabs;
 
   private HandlerRegistration appointmentEventRegistration;
 
@@ -132,6 +134,8 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         pickDate();
       }
     });
+    
+    this.viewTabs = createViewWidget();
 
     add(header);
 
@@ -177,7 +181,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     controls.add(dateBox);
 
-    controls.add(createViewWidget());
+    controls.add(viewTabs);
     add(controls);
 
     Simple container = new Simple();
@@ -215,7 +219,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         break;
 
       case CONFIGURE:
-        CalendarKeeper.editSettings(calendarId, calendar);
+        CalendarKeeper.editSettings(calendarId, this);
         break;
 
       case CLOSE:
@@ -251,7 +255,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   public void setViewPresenter(Presenter viewPresenter) {
   }
-
+  
   @Override
   protected void onUnload() {
     super.onUnload();
@@ -262,11 +266,30 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     }
   }
 
-  private Widget createViewWidget() {
+  void updateSettings(BeeRow row, List<BeeColumn> columns) {
+    int oldDays = calendar.getSettings().getDefaultDisplayedDays();
+
+    calendar.suspendLayout();
+    calendar.getSettings().loadFrom(row, columns);
+    
+    int newDays = calendar.getSettings().getDefaultDisplayedDays();
+    
+    if (newDays != oldDays) {
+      viewTabs.getTabWidget(1).getElement().setInnerHTML(getDaysViewCaption(newDays));
+      if (viewTabs.getSelectedTab() == 1) {
+        calendar.setType(Type.DAY, newDays);
+      }
+    }
+
+    calendar.refresh();
+    calendar.resumeLayout();
+  }
+
+  private TabBar createViewWidget() {
     TabBar tabBar = new TabBar(STYLE_VIEW_PREFIX);
 
     tabBar.addItem("Diena");
-    tabBar.addItem(BeeUtils.toString(calendar.getSettings().getDefaultDisplayedDays()) + " dienos");
+    tabBar.addItem(getDaysViewCaption(calendar.getSettings().getDefaultDisplayedDays()));
     tabBar.addItem("Darbo savaitė");
     tabBar.addItem("Savaitė");
     tabBar.addItem("Mėnuo");
@@ -306,6 +329,10 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   private HandlerRegistration getAppointmentEventRegistration() {
     return appointmentEventRegistration;
+  }
+  
+  private String getDaysViewCaption(int days) {
+    return BeeUtils.toString(days) + ((days < 10) ? " dienos" : " dien.");
   }
 
   private void loadAppointments() {

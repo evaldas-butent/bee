@@ -2,6 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="CalendarPersons" viewName="CalendarPersons" newRowCaption="Naujas asmuo"
+  minColumnWidth="100"
   >
   <columns>
     <RelColumn name="FirstName" caption="Vardas"
@@ -10,8 +11,5 @@
       choiceColumns="LastName FirstName CompanyName" searchableColumns="LastName" />
     <RelColumn name="CompanyName" caption="Įmonė"
       choiceColumns="CompanyName FirstName LastName" searchableColumns="CompanyName" />
-
-    <DataColumn name="Creator" />
-    <DataColumn name="Organizer" />
   </columns>
 </Grid>

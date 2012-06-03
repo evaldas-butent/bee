@@ -9,15 +9,15 @@
     <Text name="Description" />
 
     <Relation name="HeaderColor" relation="Colors" />
-    <String name="HeaderClass" precision="200" />
+    <String name="HeaderClass" precision="100" />
     <Text name="HeaderStyle" />
 
     <Relation name="BodyColor" relation="Colors" />
-    <String name="BodyClass" precision="200" />
+    <String name="BodyClass" precision="100" />
     <Text name="BodyStyle" />
 
     <Relation name="FooterColor" relation="Colors" />
-    <String name="FooterClass" precision="200" />
+    <String name="FooterClass" precision="100" />
     <Text name="FooterStyle" />
   </Fields>
 </Table>

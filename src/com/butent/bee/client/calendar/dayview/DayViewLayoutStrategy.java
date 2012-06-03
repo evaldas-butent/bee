@@ -118,7 +118,8 @@ public class DayViewLayoutStrategy {
       tb.setTotalColumns(groupMaxColumn + 1);
     }
 
-    double widthAdj = 1d / dayCount;
+    double dayWidth = 100 / dayCount;
+    double widthAdj = dayWidth / 100;
 
     double paddingLeft = 0.5d;
     double paddingRight = 0.5d;

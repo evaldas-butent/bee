@@ -117,7 +117,8 @@ public class ResourceViewLayoutStrategy {
       tb.setTotalColumns(groupMaxColumn + 1);
     }
 
-    double widthAdj = 1d / cc;
+    double colWidth = 100 / cc;
+    double widthAdj = colWidth / 100;
 
     double paddingLeft = 0.5d;
     double paddingRight = 0.5d;

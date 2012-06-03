@@ -67,7 +67,7 @@ public class ResourceViewMulti extends Composite {
       return;
     }
     
-    double width = 100d / attendees.size();
+    int width = 100 / attendees.size();
     for (int i = 0; i < attendees.size(); i++) {
       SimplePanel panel = new SimplePanel();
       panel.setStyleName("day-separator");

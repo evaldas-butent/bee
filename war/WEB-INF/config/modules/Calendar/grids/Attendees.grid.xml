@@ -5,16 +5,17 @@
   editForm="Attendee" newRowForm="Attendee" 
   >
   <columns>
-    <RelColumn name="TypeName" caption="Tipas" />
+    <DataColumn name="TypeName" caption="Tipas" minWidth="100" />
 
-    <DataColumn name="Name" caption="Pavadinimas" />
+    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" />
     <DataColumn name="Description" caption="Aprašymas" />
     <DataColumn name="Location" caption="Vieta" />
 
-    <RelColumn name="CompanyPerson" renderColumns="FirstName LastName" caption="Vardas, Pavardė"
-      choiceColumns="FirstName LastName CompanyName" searchableColumns="FirstName LastName" />
-    <RelColumn name="CompanyName" caption="Įmonė"
-      choiceColumns="CompanyName FirstName LastName" searchableColumns="CompanyName" />
+    <DataColumn name="CompanyPerson" caption="Atsakingas darbuotojas">
+      <renderToken source="FirstName" />
+      <renderToken source="LastName" />
+      <renderToken source="CompanyName" prefix=", " />
+    </DataColumn>
 
     <DataColumn name="Transparency" itemKey="Transparency" caption="Persidengiamumas" />
   </columns>

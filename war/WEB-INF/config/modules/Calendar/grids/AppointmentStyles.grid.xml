@@ -3,40 +3,40 @@
   xmlns:ui="http://www.butent.com/ui"
 
   name="AppointmentStyles" viewName="AppointmentStyles"
-  caption="Vizitų stiliai" newRowCaption="Naujas stilius" autoFit="true"
+  caption="Vizitų stiliai" newRowCaption="Naujas vizitų stilius"
   >
   <columns>
     <DataColumn name="Name" caption="Pavadinimas" />
     <DataColumn name="Description" caption="Aprašymas" />
 
-    <RelColumn name="HeaderColorName">
+    <RelColumn name="HeaderColorName" caption="Viršus - spalva" >
       <dynStyle>
         <ui:inline>background: [row.HeaderBackground]; color: [row.HeaderForeground];</ui:inline>
         <ui:expression>row.HeaderColor > 0</ui:expression>
       </dynStyle>
     </RelColumn>
 
-    <DataColumn name="HeaderClass" />
-    <DataColumn name="HeaderStyle" />
+    <DataColumn name="HeaderClass" caption="Viršus - klasė" />
+    <DataColumn name="HeaderStyle" caption="Viršus - stilius" />
 
-    <RelColumn name="BodyColorName">
+    <RelColumn name="BodyColorName" caption="Vidurys - spalva">
       <dynStyle>
         <ui:inline>background: [row.BodyBackground]; color: [row.BodyForeground];</ui:inline>
         <ui:expression>row.BodyColor > 0</ui:expression>
       </dynStyle>
     </RelColumn>
 
-    <DataColumn name="BodyClass" />
-    <DataColumn name="BodyStyle" />
+    <DataColumn name="BodyClass" caption="Vidurys - klasė" />
+    <DataColumn name="BodyStyle" caption="Vidurys - stilius" />
 
-    <RelColumn name="FooterColorName">
+    <RelColumn name="FooterColorName" caption="Apačia - spalva">
       <dynStyle>
         <ui:inline>background: [row.FooterBackground]; color: [row.FooterForeground];</ui:inline>
         <ui:expression>row.FooterColor > 0</ui:expression>
       </dynStyle>
     </RelColumn>
 
-    <DataColumn name="FooterClass" />
-    <DataColumn name="FooterStyle" />
+    <DataColumn name="FooterClass" caption="Apačia - klasė" />
+    <DataColumn name="FooterStyle" caption="Apačia - stilius" />
   </columns>
 </Grid>

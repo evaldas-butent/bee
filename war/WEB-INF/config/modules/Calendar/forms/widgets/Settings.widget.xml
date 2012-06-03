@@ -1,38 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<FlexTable xmlns="http://www.butent.com/widget" xmlns:d="http://www.butent.com/decorator"
-  cellSpacing="20">
-
+<FlexTable xmlns="http://www.butent.com/widget"
+  cellSpacing="10">
+  
   <row>
-    <InputSpinner source="DefaultDisplayedDays" caption="Dienos"
-      minValue="2" maxValue="99" d:size="180" d:unit="px" />
+    <Label html="Dienos:" />
+    <InputSpinner source="DefaultDisplayedDays" minValue="2" maxValue="99" />
   </row>
 
   <row>
-    <InputSpinner source="IntervalsPerHour" caption="Intervalų skaičius valandoje:"
-      minValue="1" maxValue="30" d:size="180" d:unit="px" />
-    <CheckBox source="OffsetHourLabels" html="Offset Hour Labels" />
+    <Label html="Intervalų skaičius valandoje:" />
+    <InputSpinner source="IntervalsPerHour" minValue="1" maxValue="30" />
   </row>
 
   <row>
-    <InputSpinner source="PixelsPerInterval" caption="Intervalo aukštis px:"
-      minValue="1" maxValue="30" d:size="180" d:unit="px" />
-    <CheckBox source="EnableDragDrop" html="Enable Drag Drop" />
+    <Label html="Intervalo aukštis px:" />
+    <InputSpinner source="PixelsPerInterval" minValue="1" maxValue="30" />
   </row>
 
   <row>
-    <InputSpinner source="WorkingHourStart" caption="Darbo dienos pradžia:"
-      minValue="0" maxValue="23" d:size="180" d:unit="px" />
+    <Label html="Darbo dienos pradžia:" />
+    <InputSpinner source="WorkingHourStart" minValue="0" maxValue="23" />
   </row>
 
   <row>
-    <InputSpinner source="WorkingHourEnd" caption="Darbo dienos pabaiga:"
-      minValue="0" maxValue="23" d:size="180" d:unit="px" />
-    <Label html="Time Block Click Number" />
+    <Label html="Darbo dienos pabaiga:" />
+    <InputSpinner source="WorkingHourEnd" minValue="0" maxValue="23" />
   </row>
 
   <row>
-    <InputSpinner source="ScrollToHour" caption="Scroll To Hour:"
-      minValue="0" maxValue="23" d:size="180" d:unit="px" />
+    <Label html="Rodyti nuo valandos:" />
+    <InputSpinner source="ScrollToHour" minValue="0" maxValue="23" />
+  </row>
+
+  <row>
+    <Label html="Pelės spragtelėjimai" />
     <Radio source="TimeBlockClickNumber" itemKey="TimeBlockClick" />
   </row>
 </FlexTable>

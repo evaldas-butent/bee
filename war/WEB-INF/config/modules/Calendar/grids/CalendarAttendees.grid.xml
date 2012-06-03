@@ -2,9 +2,10 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="CalendarAttendees" viewName="CalendarAttendees" newRowCaption="Naujas resursas"
+  minColumnWidth="100"
   >
   <columns>
-    <DataColumn name="TypeName" caption="Tipas" readOnly="true" />
+    <DataColumn name="TypeName" caption="Tipas" />
     <RelColumn name="AttendeeName" caption="Pavadinimas" />
   </columns>
 </Grid>

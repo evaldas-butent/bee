@@ -22,7 +22,11 @@
       style="position: absolute; left: 360px; width: 260px; top: 100px; height: 180px;" />
 
     <DataSelector source="CompanyPerson" caption="Atsakingas:" style="width: 180px;"
-       d:size="100" d:unit="px" d:rootStyle="position: absolute; left: 20px; top: 300px;" />
+        d:size="100" d:unit="px" d:rootStyle="position: absolute; left: 20px; top: 300px;">
+      <renderToken source="FirstName" />
+      <renderToken source="LastName" />
+      <renderToken source="CompanyName" prefix=", " />
+    </DataSelector>   
 
     <Radio source="Transparency" itemKey="Transparency" vertical="false"
        style="position: absolute; left: 360px; top: 300px" />

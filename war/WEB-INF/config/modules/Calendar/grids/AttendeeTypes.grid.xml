@@ -5,13 +5,9 @@
   caption="Resursų tipai" newRowCaption="Naujas resursų tipas"
   >
   <columns>
-    <DataColumn name="Name" caption="Pavadinimas" />
-    <DataColumn name="Description" caption="Aprašymas" />
+    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" />
+    <DataColumn name="Description" caption="Aprašymas" minWidth="100" />
 
-    <DataColumn name="Transparency" itemKey="Transparency" />
-    <DataColumn name="Resource" caption="Is Resource" />
-
-    <DataColumn name="AttendeeCreator" />
-    <DataColumn name="AttendeeEditor" />
+    <DataColumn name="Transparency" itemKey="Transparency" caption="Persidengiamumas" />
   </columns>
 </Grid>

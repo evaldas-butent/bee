@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="Calendars" viewName="Calendars" caption="Kalendoriai"
+  name="Calendars" viewName="Calendars" caption="Kalendoriai" newRowCaption="Naujas kalendorius"
   newRowForm="Calendar" editForm="Calendar" favorite="Name"
   >
   <columns>
-    <DataColumn name="Name" caption="Pavadinimas" />
+    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" />
     <ActionColumn name="Open" source="Name" caption="Atidaryti" element="link" sortable="false" />
 
     <DataColumn name="Description" caption="Aprašymas" sortable="false" />
 
-    <DataColumn name="Visibility" itemKey="Calendar_Visibility" caption="Matomumas" />
-    <DataColumn name="Transparency" itemKey="Transparency" />
+    <DataColumn name="Transparency" itemKey="Transparency" caption="Persidengiamumas" />
 
     <RelColumn name="Owner" caption="Savininkas" />
   </columns>

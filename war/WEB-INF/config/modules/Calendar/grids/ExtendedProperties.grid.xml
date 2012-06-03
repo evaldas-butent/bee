@@ -5,8 +5,8 @@
   caption="Parametrai" newRowCaption="Naujas parametras"
   >
   <columns>
-    <RelColumn name="GroupName" caption="Grupė" />
-    <DataColumn name="Name" caption="Pavadinimas" />
+    <RelColumn name="GroupName" caption="Grupė" minWidth="100" />
+    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" />
 
     <DataColumn name="Hours" caption="Valandos" />
     <DataColumn name="Minutes" caption="Minutės" />

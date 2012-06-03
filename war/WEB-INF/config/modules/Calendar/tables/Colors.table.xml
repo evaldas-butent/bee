@@ -7,7 +7,7 @@
   <Fields>
     <String name="Name" precision="30" notNull="true" unique="true" />
 
-    <String name="Background" precision="200" notNull="true" />
-    <String name="Foreground" precision="200" />
+    <String name="Background" precision="100" notNull="true" />
+    <String name="Foreground" precision="100" />
   </Fields>
 </Table>

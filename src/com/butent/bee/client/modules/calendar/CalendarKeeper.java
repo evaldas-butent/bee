@@ -7,7 +7,6 @@ import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
-import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -117,14 +116,14 @@ public class CalendarKeeper {
     return params;
   }
 
-  static void editSettings(long id, final CalendarWidget calendarWidget) {
+  static void editSettings(long id, final CalendarPanel calendarPanel) {
     getUserCalendar(id, new Queries.RowSetCallback() {
       @Override
       public void onSuccess(BeeRowSet result) {
         if (getSettingsForm() == null) {
-          createSettingsForm(result, calendarWidget);
+          createSettingsForm(result, calendarPanel);
         } else {
-          openSettingsForm(result, calendarWidget);
+          openSettingsForm(result, calendarPanel);
         }
       }
     });
@@ -217,7 +216,7 @@ public class CalendarKeeper {
         }));
   }
 
-  private static void createSettingsForm(final BeeRowSet rowSet, final CalendarWidget cw) {
+  private static void createSettingsForm(final BeeRowSet rowSet, final CalendarPanel cp) {
     FormFactory.createFormView(FORM_CALENDAR_SETTINGS, null, rowSet.getColumns(), false,
         new FormFactory.FormViewCallback() {
           public void onSuccess(FormDescription formDescription, FormView result) {
@@ -227,7 +226,7 @@ public class CalendarKeeper {
               getSettingsForm().start(null);
             }
 
-            openSettingsForm(rowSet, cw);
+            openSettingsForm(rowSet, cp);
           }
         });
   }
@@ -265,7 +264,7 @@ public class CalendarKeeper {
     });
   }
 
-  private static void openSettingsForm(final BeeRowSet rowSet, final CalendarWidget cw) {
+  private static void openSettingsForm(final BeeRowSet rowSet, final CalendarPanel cp) {
     if (getSettingsForm() == null || getSettingsForm().asWidget().isAttached()) {
       return;
     }
@@ -283,8 +282,7 @@ public class CalendarKeeper {
             null);
 
         if (updCount > 0) {
-          cw.getSettings().loadFrom(newRow, rowSet.getColumns());
-          cw.refresh();
+          cp.updateSettings(newRow, rowSet.getColumns());
         }
       }
     });

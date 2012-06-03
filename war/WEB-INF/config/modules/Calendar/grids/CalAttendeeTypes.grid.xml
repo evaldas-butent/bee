@@ -2,12 +2,10 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="CalAttendeeTypes" viewName="CalAttendeeTypes" newRowCaption="Naujas resursų tipas"
+  minColumnWidth="100"
   >
   <columns>
     <RelColumn name="TypeName" caption="Tipas" />
-
-    <DataColumn name="TypeDescription" caption="Aprašymas" readOnly="true" />
-    <DataColumn name="TypeTransparency" readOnly="true" itemKey="Transparency" />
-    <DataColumn name="TypeResource" readOnly="true" />
+    <DataColumn name="TypeDescription" caption="Aprašymas" />
   </columns>
 </Grid>

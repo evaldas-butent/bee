@@ -2,14 +2,14 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="ThemeColors" viewName="ThemeColors" caption="Spalvos" newRowCaption="Nauja spalva" 
-  autoFit="true"
+  name="ThemeColors" viewName="ThemeColors" caption="Spalvos" newRowCaption="Nauja temos spalva"
+  minColumnWidth="100" 
   >
   <columns>
-    <RelColumn name="ColorName" caption="Spalva" minWidth="100" />
+    <RelColumn name="ColorName" caption="Pavadinimas" />
 
-    <DataColumn name="Background" minWidth="200" />
-    <DataColumn name="Foreground" maxWidth="100" />
+    <DataColumn name="Background" caption="Fono spalva" />
+    <DataColumn name="Foreground" caption="Teksto spalva" />
   </columns>
 
   <rowStyle>

@@ -4,7 +4,7 @@
   name="TimeZones" viewName="TimeZones" caption="Laiko juostos" newRowCaption="Nauja laiko juosta"
   >
   <columns>
-    <DataColumn name="Name" caption="Pavadinimas" />
-    <DataColumn name="StandardOffset" />
+    <DataColumn name="Name" caption="Pavadinimas" minWidth="200" />
+    <DataColumn name="StandardOffset" caption="Santykis su UTC" />
   </columns>
 </Grid>

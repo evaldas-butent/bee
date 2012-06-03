@@ -2,9 +2,10 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="CalAppointmentTypes" viewName="CalAppointmentTypes" newRowCaption="Naujas vizitų tipas"
+  minColumnWidth="100"
   >
   <columns>
     <RelColumn name="TypeName" caption="Tipas" />
-    <DataColumn name="TypeDescription" caption="Aprašymas" readOnly="true" />
+    <DataColumn name="TypeDescription" caption="Aprašymas" />
   </columns>
 </Grid>
