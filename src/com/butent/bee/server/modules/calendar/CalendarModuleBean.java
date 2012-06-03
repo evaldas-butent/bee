@@ -368,13 +368,13 @@ public class CalendarModuleBean implements BeeModule {
             COL_REMINDER_TYPE);
     
     List<Long> newProperties = DataUtils.parseList(propIds);
-    List<Long> newAttendess = DataUtils.parseList(attIds);
+    List<Long> newAttendees = DataUtils.parseList(attIds);
     List<Long> newReminders = DataUtils.parseList(rtIds);
     
     updateChildren(TBL_APPOINTMENT_PROPS, COL_APPOINTMENT, appId,
         COL_PROPERTY, oldProperties, newProperties);
     updateChildren(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT, appId,
-        COL_ATTENDEE, oldAttendees, newAttendess);
+        COL_ATTENDEE, oldAttendees, newAttendees);
     updateChildren(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, appId,
         COL_REMINDER_TYPE, oldReminders, newReminders);
 

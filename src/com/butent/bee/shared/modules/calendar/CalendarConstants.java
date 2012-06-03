@@ -40,10 +40,16 @@ public class CalendarConstants {
   }
   
   public static enum Transparency implements HasCaption {
-    OPAQUE, TRANSPARENT;
+    OPAQUE("Nepersidengiantis"), TRANSPARENT("Persidengiantis");
+
+    private final String caption;
+    
+    private Transparency(String caption) {
+      this.caption = caption;
+    }
 
     public String getCaption() {
-      return this.name().toLowerCase();
+      return caption;
     }
   }
 
@@ -59,7 +65,7 @@ public class CalendarConstants {
     Single, Double;
 
     public String getCaption() {
-      return this.name();
+      return Integer.toString(this.ordinal() + 1);
     }
   }
   

@@ -16,6 +16,6 @@
     <RelColumn name="CompanyName" caption="Įmonė"
       choiceColumns="CompanyName FirstName LastName" searchableColumns="CompanyName" />
 
-    <DataColumn name="Transparency" itemKey="Transparency" />
+    <DataColumn name="Transparency" itemKey="Transparency" caption="Persidengiamumas" />
   </columns>
 </Grid>

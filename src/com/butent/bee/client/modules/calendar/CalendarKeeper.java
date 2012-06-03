@@ -54,7 +54,8 @@ public class CalendarKeeper {
   
   private static final List<String> CACHED_VIEWS =
       Lists.newArrayList(VIEW_CONFIGURATION, VIEW_APPOINTMENT_TYPES, VIEW_ATTENDEES,
-          VIEW_EXTENDED_PROPERTIES, VIEW_REMINDER_TYPES, VIEW_THEMES, VIEW_THEME_COLORS);
+          VIEW_EXTENDED_PROPERTIES, VIEW_REMINDER_TYPES, VIEW_THEMES, VIEW_THEME_COLORS,
+          VIEW_ATTENDEE_PROPS);
 
   private static FormView settingsForm = null;
 
@@ -137,10 +138,14 @@ public class CalendarKeeper {
     return CACHE.getAppointmentViewInfo();
   }
 
+  static BeeRowSet getAttendeeProps() {
+    return CACHE.getRowSet(VIEW_ATTENDEE_PROPS);
+  }
+
   static BeeRowSet getAttendees() {
     return CACHE.getRowSet(VIEW_ATTENDEES);
   }
-
+  
   static Long getDefaultAppointmentType() {
     BeeRowSet rowSet = CACHE.getRowSet(VIEW_CONFIGURATION);
     if (rowSet != null) {

@@ -338,7 +338,12 @@ public class Global implements Module {
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback) {
-    inputWidget(caption, input, callback, false, null, null);
+    inputWidget(caption, input, callback, false, null);
+  }
+
+  public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,
+      boolean enableGlass, String dialogStyle) {
+    inputWidget(caption, input, callback, enableGlass, dialogStyle, null);
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,

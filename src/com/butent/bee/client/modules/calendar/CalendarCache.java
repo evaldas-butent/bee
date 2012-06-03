@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENTS;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.shared.State;
@@ -21,6 +22,7 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -190,7 +192,11 @@ class CalendarCache implements HandlesAllDataEvents {
   }
   
   BeeRowSet getRowSet(String viewName) {
-    return data.get(viewName);
+    BeeRowSet rowSet = data.get(viewName);
+    if (rowSet == null) {
+      BeeKeeper.getLog().warning(NameUtils.getName(this), viewName, "data not available");
+    }
+    return rowSet;
   }
 
   String getString(String viewName, long rowId, String columnId) {

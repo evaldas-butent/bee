@@ -25,7 +25,7 @@
        d:size="100" d:unit="px" d:rootStyle="position: absolute; left: 20px; top: 300px;" />
 
     <Radio source="Transparency" itemKey="Transparency" vertical="false"
-       style="position: absolute; left: 420px; top: 300px" />
+       style="position: absolute; left: 360px; top: 300px" />
 
     <Label html="Aprašymas:" style="position: absolute; left: 20px; top: 360px;" />
     <InputArea source="Description" visibleLines="3"

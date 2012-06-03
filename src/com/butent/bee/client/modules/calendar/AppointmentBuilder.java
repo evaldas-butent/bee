@@ -1,9 +1,13 @@
 package com.butent.bee.client.modules.calendar;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.SetMultimap;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DoubleClickEvent;
+import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -30,6 +34,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputWidgetCallback;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.presenter.FormPresenter;
@@ -141,6 +146,9 @@ class AppointmentBuilder extends AbstractFormCallback {
   private Long defaultRepairType = null;
 
   private final List<Long> colors = Lists.newArrayList();
+  
+  private final SetMultimap<Long, Long> serviceResources = HashMultimap.create();
+  private final SetMultimap<Long, Long> repairResources = HashMultimap.create();
 
   private final List<Long> reminderTypes = Lists.newArrayList();
 
@@ -350,10 +358,13 @@ class AppointmentBuilder extends AbstractFormCallback {
   private void addResources() {
     BeeRowSet attendees = CalendarKeeper.getAttendees();
     if (attendees == null || attendees.isEmpty()) {
-      getFormView().notifyWarning("Attendess not available");
+      getFormView().notifyWarning("Attendees not available");
       return;
     }
 
+    Long serviceType = getSelectedId(getServiceTypeWidgetId(), serviceTypes);
+    Long repairType = getSelectedId(getRepairTypeWidgetId(), repairTypes);
+    
     final List<Long> attIds = Lists.newArrayList();
     final BeeListBox widget = new BeeListBox(true);
 
@@ -361,6 +372,15 @@ class AppointmentBuilder extends AbstractFormCallback {
     for (BeeRow row : attendees.getRows()) {
       long id = row.getId();
       if (resources.contains(id)) {
+        continue;
+      }
+      
+      if (serviceType != null && serviceResources.containsKey(id)
+          && !serviceResources.containsEntry(id, serviceType)) {
+        continue;
+      }
+      if (repairType != null && repairResources.containsKey(id)
+          && !repairResources.containsEntry(id, repairType)) {
         continue;
       }
 
@@ -371,7 +391,7 @@ class AppointmentBuilder extends AbstractFormCallback {
     }
 
     if (attIds.isEmpty()) {
-      getFormView().notifyWarning("Nothing to add");
+      getFormView().notifyWarning("Nerasta resursų, kuriuos galima pridėti");
       return;
     }
 
@@ -382,8 +402,8 @@ class AppointmentBuilder extends AbstractFormCallback {
     }
 
     widget.addStyleName(STYLE_ADD_RESOURCES);
-
-    Global.inputWidget("Pasirinkite resursus", widget, new InputWidgetCallback() {
+    
+    final InputWidgetCallback callback = new InputWidgetCallback() {
       @Override
       public void onSuccess() {
         int cnt = 0;
@@ -397,7 +417,20 @@ class AppointmentBuilder extends AbstractFormCallback {
           refreshResourceWidget();
         }
       }
-    }, false, RowFactory.DIALOG_STYLE, null);
+    };
+    
+    widget.addDoubleClickHandler(new DoubleClickHandler() {
+      @Override
+      public void onDoubleClick(DoubleClickEvent event) {
+        Popup popup = DomUtils.getParentPopup(widget);
+        if (popup != null) {
+          popup.hide();
+          callback.onSuccess();
+        }  
+      }
+    });
+
+    Global.inputWidget("Pasirinkite resursus", widget, callback, false, RowFactory.DIALOG_STYLE);
   }
 
   private void buildIncrementally() {
@@ -637,6 +670,8 @@ class AppointmentBuilder extends AbstractFormCallback {
         }
       }
     }
+    
+    loadResourceProperties();
 
     if (!BeeUtils.isEmpty(getServiceTypeWidgetId())) {
       initPropWidget(getWidget(getServiceTypeWidgetId()), properties, serviceTypes,
@@ -658,6 +693,32 @@ class AppointmentBuilder extends AbstractFormCallback {
     BeeUtils.overwrite(reminderTypes, DataUtils.getRowIds(rowSet));
     if (!BeeUtils.isEmpty(getReminderWidgetId())) {
       initReminderWidget(getWidget(getReminderWidgetId()), rowSet);
+    }
+  }
+  
+  private void loadResourceProperties() {
+    BeeRowSet rowSet = CalendarKeeper.getAttendeeProps();
+    
+    if (!serviceResources.isEmpty()) {
+      serviceResources.clear();
+    }
+    if (!repairResources.isEmpty()) {
+      repairResources.clear();
+    }
+    if (rowSet == null || rowSet.isEmpty()) {
+      return;
+    }
+    
+    String viewName = rowSet.getViewName();
+    for (BeeRow row : rowSet.getRows()) {
+      Long resource = Data.getLong(viewName, row, COL_ATTENDEE);
+      Long property = Data.getLong(viewName, row, COL_PROPERTY);
+      
+      if (serviceTypes.contains(property)) {
+        serviceResources.put(resource, property);
+      } else if (repairTypes.contains(property)) {
+        repairResources.put(resource, property);
+      }
     }
   }
 
