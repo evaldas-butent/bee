@@ -27,6 +27,7 @@ import com.butent.bee.client.calendar.resourceview.ResourceView;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.TabBar;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
@@ -41,11 +42,15 @@ import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.Html;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -112,7 +117,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     calendar.addUpdateHandler(new UpdateHandler<Appointment>() {
       @Override
       public void onUpdate(UpdateEvent<Appointment> event) {
-        if (!updateAppointmentDates(event.getTarget())) {
+        if (!updateAppointment(event.getTarget())) {
           event.setCanceled(true);
         }
       }
@@ -443,10 +448,52 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     }
   }
 
-  private boolean updateAppointmentDates(Appointment newApp) {
+  private boolean updateAppointment(Appointment newApp) {
     Appointment oldApp = calendar.getRollbackAppointment();
     if (oldApp == null) {
       return false;
+    }
+    
+    int dropColumn = newApp.getDropColumn();
+
+    if (!BeeConst.isUndef(dropColumn)) {
+      newApp.setDropColumn(BeeConst.UNDEF);
+
+      long oldAttendee = BeeConst.UNDEF;
+      long newAttendee = BeeConst.UNDEF;
+
+      if (BeeUtils.isIndex(calendar.getAttendees(), dropColumn)) {
+        newAttendee = calendar.getAttendees().get(dropColumn);
+        int cnt = 0;
+
+        if (!newApp.getAttendees().contains(newAttendee)) {
+          for (long attendee : newApp.getAttendees()) {
+            if (calendar.getAttendees().contains(attendee)) {
+              oldAttendee = attendee;
+              cnt++;
+            }
+          }
+        }
+        
+        if (cnt == 1) {
+          newApp.getAttendees().remove(oldAttendee);
+          newApp.getAttendees().add(newAttendee);
+          
+          String viewName = VIEW_APPOINTMENT_ATTENDEES; 
+          long appId = newApp.getId();
+          
+          Queries.delete(viewName,
+              Filter.and(ComparisonFilter.isEqual(COL_APPOINTMENT, new LongValue(appId)),
+                  ComparisonFilter.isEqual(COL_ATTENDEE, new LongValue(oldAttendee))), null);
+          
+          List<BeeColumn> columns = Lists.newArrayList(Data.getColumn(viewName, COL_APPOINTMENT),
+              Data.getColumn(viewName, COL_ATTENDEE));
+          List<String> values = Lists.newArrayList(Long.toString(appId),
+              Long.toString(newAttendee));
+
+          Queries.insert(viewName, columns, values, null);
+        }
+      }
     }
 
     Queries.update(VIEW_APPOINTMENTS, CalendarKeeper.getAppointmentViewColumns(),

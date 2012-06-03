@@ -2,6 +2,7 @@ package com.butent.bee.client.data;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.ColumnMapper;
 import com.butent.bee.shared.data.view.DataInfo;
@@ -29,6 +30,10 @@ public class Data {
     return COLUMN_MAPPER.getBoolean(viewName, row, colName);
   }
 
+  public static BeeColumn getColumn(String viewName, String colName) {
+    return getDataInfo(viewName).getColumn(colName);
+  }
+  
   public static int getColumnIndex(String viewName, String colName) {
     return COLUMN_MAPPER.getIndex(viewName, colName);
   }

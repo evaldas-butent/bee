@@ -2,6 +2,7 @@ package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
@@ -91,6 +92,28 @@ public class CalendarKeeper {
     createCommands();
   }
 
+  public static void renderCompact(Appointment appointment, Widget widget) {
+    if (appointment == null || widget == null) {
+      return;
+    }
+
+    BeeRow row = getAppointmentTypeRow(appointment);
+
+    String compact;
+    String title;
+
+    if (row == null) {
+      compact = null;
+      title = null;
+    } else {
+      String viewName = VIEW_APPOINTMENT_TYPES;
+      compact = Data.getString(viewName, row, COL_APPOINTMENT_COMPACT);
+      title = Data.getString(viewName, row, COL_APPOINTMENT_TITLE);
+    }
+
+    APPOINTMENT_RENDERER.renderCompact(appointment, widget, compact, title);
+  }
+
   static void createAppointment(boolean glass) {
     createAppointment(TimeUtils.nextHour(0), glass);
   }
@@ -130,6 +153,26 @@ public class CalendarKeeper {
       }
     });
   }
+  
+  static BeeRow getAppointmentTypeRow(Appointment appointment) {
+    Long type = appointment.getType();
+    if (type == null) {
+      type = getDefaultAppointmentType();
+    }
+
+    BeeRowSet rowSet = CACHE.getRowSet(VIEW_APPOINTMENT_TYPES);
+    
+    BeeRow row = null;
+    if (rowSet != null && !rowSet.isEmpty()) {
+      if (type != null) {
+        row = rowSet.getRowById(type);
+      }
+      if (row == null && rowSet.getNumberOfRows() == 1) {
+        row = rowSet.getRow(0);
+      }
+    }
+    return row;
+  }
 
   static List<BeeColumn> getAppointmentViewColumns() {
     return CACHE.getAppointmentViewColumns();
@@ -142,11 +185,11 @@ public class CalendarKeeper {
   static BeeRowSet getAttendeeProps() {
     return CACHE.getRowSet(VIEW_ATTENDEE_PROPS);
   }
-
+  
   static BeeRowSet getAttendees() {
     return CACHE.getRowSet(VIEW_ATTENDEES);
   }
-  
+
   static Long getDefaultAppointmentType() {
     BeeRowSet rowSet = CACHE.getRowSet(VIEW_CONFIGURATION);
     if (rowSet != null) {
@@ -179,7 +222,7 @@ public class CalendarKeeper {
   static void loadData(Collection<String> viewNames, CalendarCache.MultiCallback multiCallback) {
     CACHE.getData(viewNames, multiCallback);
   }
-
+  
   static void openAppointment(final Appointment appointment, final boolean glass) {
     Assert.notNull(appointment);
     final AppointmentBuilder builder = new AppointmentBuilder(false);
@@ -203,26 +246,9 @@ public class CalendarKeeper {
           }
         });
   }
-  
-  static void renderAppoinment(AppointmentWidget appointmentWidget, boolean multi) {
-    Long type = appointmentWidget.getAppointment().getType();
-    if (type == null) {
-      type = getDefaultAppointmentType();
-    }
 
-    String viewName = VIEW_APPOINTMENT_TYPES;
-    BeeRowSet rowSet = CACHE.getRowSet(viewName);
-    
-    BeeRow row = null;
-    if (rowSet != null && !rowSet.isEmpty()) {
-      if (type != null) {
-        row = rowSet.getRowById(type);
-      }
-      if (row == null && rowSet.getNumberOfRows() == 1) {
-        row = rowSet.getRow(0);
-      }
-    }
-    
+  static void renderAppoinment(AppointmentWidget appointmentWidget, boolean multi) {
+    BeeRow row = getAppointmentTypeRow(appointmentWidget.getAppointment());
     if (row == null) {
       if (multi) {
         APPOINTMENT_RENDERER.renderMulti(appointmentWidget);
@@ -231,14 +257,15 @@ public class CalendarKeeper {
       }
 
     } else {
+      String viewName = VIEW_APPOINTMENT_TYPES;
       String header = Data.getString(viewName, row, multi ? COL_MULTI_HEADER : COL_SIMPLE_HEADER);
       String body = Data.getString(viewName, row, multi ? COL_MULTI_BODY : COL_SIMPLE_BODY);
       String title = Data.getString(viewName, row, COL_APPOINTMENT_TITLE);
       
-      APPOINTMENT_RENDERER.render(appointmentWidget, body, header, title, multi);
+      APPOINTMENT_RENDERER.render(appointmentWidget, header, body, title, multi);
     }
   }
-
+  
   private static void createCommands() {
     BeeKeeper.getScreen().addCommandItem(new Html("Naujas vizitas",
         new Scheduler.ScheduledCommand() {

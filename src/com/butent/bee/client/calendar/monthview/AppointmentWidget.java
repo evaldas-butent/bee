@@ -4,16 +4,19 @@ import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.Label;
 
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.CalendarKeeper;
 
 public class AppointmentWidget extends FocusPanel {
 
-  private Appointment appointment;
+  private final Appointment appointment;
 
   public AppointmentWidget(Appointment appointment) {
     this.appointment = appointment;
-    Label titleLabel = new Label();
-    titleLabel.getElement().setInnerHTML(this.appointment.getSummary());
-    this.add(titleLabel);
+
+    Label label = new Label();
+    CalendarKeeper.renderCompact(appointment, label);
+    
+    this.add(label);
   }
 
   public Appointment getAppointment() {

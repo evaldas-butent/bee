@@ -67,7 +67,7 @@ public class DayViewDropController extends AbsolutePositionDropController {
     end.setMinute(0);
     end.setSecond(0);
     end.setMinute((intervalStart + intervalSpan) * (60 / intervalsPerHour));
-
+    
     appt.setStart(start);
     appt.setEnd(end);
   }

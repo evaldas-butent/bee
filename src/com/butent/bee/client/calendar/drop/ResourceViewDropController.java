@@ -12,15 +12,13 @@ import com.butent.bee.shared.time.JustDate;
 
 public class ResourceViewDropController extends AbsolutePositionDropController {
 
-  int intervalsPerHour;
-  int snapSize;
-  int columns;
-  int rows;
+  private int intervalsPerHour;
+  private int columns;
+  private int rows;
   
-  JustDate date;
+  private JustDate date;
 
   private int gridX;
-
   private int gridY;
 
   private int maxProxyHeight = -1;
@@ -31,7 +29,6 @@ public class ResourceViewDropController extends AbsolutePositionDropController {
 
   @Override
   public void onDrop(DragContext context) {
-
     super.onDrop(context);
 
     int top = draggableList.get(0).desiredY;
@@ -44,33 +41,22 @@ public class ResourceViewDropController extends AbsolutePositionDropController {
     top = Math.round((float) top / gridY) * gridY;
 
     int intervalStart = (int) Math.floor(top / gridY);
-    int intervalSpan = Math.round(widget.getOffsetHeight() / snapSize);
 
-    int day = (int) Math.floor(left / gridX);
-    day = Math.max(0, day);
-    day = Math.min(day, columns - 1);
+    int col = (int) Math.floor(left / gridX);
+    col = Math.max(0, col);
+    col = Math.min(col, columns - 1);
 
     Appointment appt = ((AppointmentWidget) widget).getAppointment();
-    DateTime start = date.getDateTime();
-    DateTime end = date.getDateTime();
+    appt.setDropColumn(col);
+
+    DateTime newStart = date.getDateTime();
+    newStart.setMinute((intervalStart) * (60 / intervalsPerHour));
     
-    if (day != 0) {
-      start.setDom(start.getDom() + day);
-      end.setDom(end.getDom() + day);
+    long diff = newStart.getTime() - appt.getStart().getTime();
+    if (diff != 0) {
+      appt.setStart(newStart);
+      appt.setEnd(new DateTime(appt.getEnd().getTime() + diff));
     }
-
-    start.setHour(0);
-    start.setMinute(0);
-    start.setSecond(0);
-    start.setMinute((intervalStart) * (60 / intervalsPerHour));
-    
-    end.setHour(0);
-    end.setMinute(0);
-    end.setSecond(0);
-    end.setMinute((intervalStart + intervalSpan) * (60 / intervalsPerHour));
-
-    appt.setStart(start);
-    appt.setEnd(end);
   }
 
   @Override
@@ -125,9 +111,5 @@ public class ResourceViewDropController extends AbsolutePositionDropController {
 
   public void setMaxProxyHeight(int maxProxyHeight) {
     this.maxProxyHeight = maxProxyHeight;
-  }
-
-  public void setSnapSize(int snapSize) {
-    this.snapSize = snapSize;
   }
 }

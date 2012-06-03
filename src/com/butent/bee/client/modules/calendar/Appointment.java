@@ -6,8 +6,8 @@ import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -16,17 +16,19 @@ import java.util.List;
 
 public class Appointment implements Comparable<Appointment> {
 
-  private final IsRow row;
+  private final BeeRow row;
   
   private final List<Long> attendees = Lists.newArrayList();
   private final List<Long> properties = Lists.newArrayList();
   private final List<Long> reminders = Lists.newArrayList();
+  
+  private int dropColumn = BeeConst.UNDEF;
 
-  public Appointment(IsRow row) {
+  public Appointment(BeeRow row) {
     this.row = row;
   }
   
-  public Appointment(IsRow row, String attList, String propList, String remindList) {
+  public Appointment(BeeRow row, String attList, String propList, String remindList) {
     this(row);
     
     if (!BeeUtils.isEmpty(attList)) {
@@ -84,14 +86,18 @@ public class Appointment implements Comparable<Appointment> {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_DESCRIPTION);
   }
 
+  public int getDropColumn() {
+    return dropColumn;
+  }
+
   public DateTime getEnd() {
     return Data.getDateTime(VIEW_APPOINTMENTS, row, COL_END_DATE_TIME);
   }
-
+  
   public String getForeground() {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_FOREGROUND);
   }
-  
+
   public long getId() {
     return row.getId();
   }
@@ -104,7 +110,7 @@ public class Appointment implements Comparable<Appointment> {
     return reminders;
   }
 
-  public IsRow getRow() {
+  public BeeRow getRow() {
     return row;
   }
 
@@ -115,11 +121,11 @@ public class Appointment implements Comparable<Appointment> {
   public String getSummary() {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_SUMMARY);
   }
-
+  
   public Long getType() {
     return Data.getLong(VIEW_APPOINTMENTS, row, COL_APPOINTMENT_TYPE);
   }
-  
+
   public String getVehicleModel() {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_VEHICLE_MODEL);
   }
@@ -127,15 +133,19 @@ public class Appointment implements Comparable<Appointment> {
   public String getVehicleNumber() {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_VEHICLE_NUMBER);
   }
-
+  
   public String getVehicleParentModel() {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_VEHICLE_PARENT_MODEL);
   }
-  
+
   public boolean isMultiDay() {
     DateTime start = getStart();
     DateTime end = getEnd();
     return start != null && TimeUtils.isMore(end, TimeUtils.startOfDay(start, 1));
+  }
+
+  public void setDropColumn(int dropColumn) {
+    this.dropColumn = dropColumn;
   }
 
   public void setEnd(DateTime end) {

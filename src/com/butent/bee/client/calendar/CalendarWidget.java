@@ -163,13 +163,11 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
   }
 
   public void fireUpdateEvent(Appointment appointment) {
-    refresh();
-
     boolean allow = UpdateEvent.fire(this, appointment);
     if (!allow) {
       appointmentManager.rollback();
-      refresh();
     }
+    refresh();
   }
 
   public List<Appointment> getAppointments() {

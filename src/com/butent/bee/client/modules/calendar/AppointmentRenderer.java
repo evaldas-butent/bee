@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.calendar;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
+import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
@@ -10,7 +11,8 @@ import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.BeeRow;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -30,13 +32,14 @@ class AppointmentRenderer {
   private static final String DEFAULT_TITLE_TEMPLATE;
 
   private static final Splitter TEMPLATE_SPLITTER =
-      Splitter.on(CharMatcher.inRange('\u0000', '\u001f')).omitEmptyStrings().trimResults();
+      Splitter.on(CharMatcher.inRange('\u0000', '\u001f'));
 
   private static final String HTML_LINE_SEPARATOR = "<br/>";
   private static final String TEXT_LINE_SEPARATOR = String.valueOf('\n');
 
   private static final String SIMPLE_HTML_SEPARATOR = HTML_LINE_SEPARATOR;
   private static final String MULTI_HTML_SEPARATOR = " ";
+  private static final String COMPACT_HTML_SEPARATOR = " ";
 
   private static final String CHILD_SEPARATOR = ", ";
   private static final String PERIOD_SEPARATOR = " - ";
@@ -92,6 +95,7 @@ class AppointmentRenderer {
 
   void render(AppointmentWidget appointmentWidget, String headerTemplate, String bodyTemplate,
       String titleTemplate, boolean multi) {
+
     Map<String, String> substitutes = getSubstitutes(appointmentWidget.getAppointment());
     String separator = multi ? MULTI_HTML_SEPARATOR : SIMPLE_HTML_SEPARATOR;
 
@@ -110,6 +114,24 @@ class AppointmentRenderer {
     appointmentWidget.setTitleText(title);
   }
 
+  void renderCompact(Appointment appointment, Widget widget, String compactTemplate,
+      String titleTemplate) {
+
+    Map<String, String> substitutes = getSubstitutes(appointment);
+
+    String template = BeeUtils.ifString(compactTemplate, DEFAULT_COMPACT_TEMPLATE);
+    String html = parseTemplate(template, substitutes, COMPACT_HTML_SEPARATOR);
+    if (!BeeUtils.isEmpty(html)) {
+      widget.getElement().setInnerHTML(html);
+    }
+
+    template = BeeUtils.ifString(titleTemplate, DEFAULT_TITLE_TEMPLATE);
+    String title = parseTemplate(template, substitutes, TEXT_LINE_SEPARATOR);
+    if (!BeeUtils.isEmpty(html)) {
+      widget.setTitle(title);
+    }
+  }
+  
   void renderMulti(AppointmentWidget appointmentWidget) {
     render(appointmentWidget, DEFAULT_MULTI_HEADER_TEMPLATE, DEFAULT_MULTI_BODY_TEMPLATE,
         DEFAULT_TITLE_TEMPLATE, true);
@@ -142,7 +164,7 @@ class AppointmentRenderer {
   private Map<String, String> getSubstitutes(Appointment appointment) {
     Map<String, String> result = Maps.newHashMap();
 
-    IsRow row = appointment.getRow();
+    BeeRow row = appointment.getRow();
     List<BeeColumn> columns = CalendarKeeper.getAppointmentViewColumns();
 
     for (int i = 0; i < columns.size(); i++) {
@@ -151,6 +173,8 @@ class AppointmentRenderer {
 
       if (key.equals(COL_STATUS) && BeeUtils.isInt(value)) {
         value = UiHelper.getCaption(AppointmentStatus.class, BeeUtils.toInt(value));
+      } else if (value != null && ValueType.DATETIME.equals(columns.get(i).getType())) {
+        value = renderDateTime(row.getDateTime(i));
       }
 
       result.put(wrap(key), BeeUtils.trim(value));
@@ -191,7 +215,7 @@ class AppointmentRenderer {
       return line;
     }
 
-    String result = line.trim();
+    String result = line;
     for (Map.Entry<String, String> entry : substitutes.entrySet()) {
       if (entry.getValue() != null) {
         result = result.replace(entry.getKey(), entry.getValue());
@@ -206,7 +230,7 @@ class AppointmentRenderer {
     }
 
     StringBuilder sb = new StringBuilder();
-    for (String line : TEMPLATE_SPLITTER.split(template)) {
+    for (String line : TEMPLATE_SPLITTER.split(template.trim())) {
       String s = parseLine(line, substitutes);
       if (!BeeUtils.isEmpty(s)) {
         if (sb.length() > 0) {

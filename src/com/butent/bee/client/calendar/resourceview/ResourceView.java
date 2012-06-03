@@ -91,7 +91,6 @@ public class ResourceView extends CalendarView {
     dropController.setColumns(cc);
     dropController.setIntervalsPerHour(calendarWidget.getSettings().getIntervalsPerHour());
     dropController.setDate(JustDate.copyOf(date));
-    dropController.setSnapSize(calendarWidget.getSettings().getPixelsPerInterval());
     dropController.setMaxProxyHeight(getMaxProxyHeight());
 
     resizeController.setIntervalsPerHour(calendarWidget.getSettings().getIntervalsPerHour());
