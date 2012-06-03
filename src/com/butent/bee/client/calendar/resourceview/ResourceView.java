@@ -12,7 +12,6 @@ import com.butent.bee.client.calendar.drop.ResourceViewPickupDragController;
 import com.butent.bee.client.calendar.drop.ResourceViewResizeController;
 import com.butent.bee.client.calendar.util.AppointmentAdapter;
 import com.butent.bee.client.calendar.util.AppointmentUtil;
-import com.butent.bee.client.calendar.util.AppointmentWidget;
 import com.butent.bee.client.dnd.DragEndEvent;
 import com.butent.bee.client.dnd.DragHandler;
 import com.butent.bee.client.dnd.DragStartEvent;
@@ -20,6 +19,7 @@ import com.butent.bee.client.dnd.PickupDragController;
 import com.butent.bee.client.dnd.VetoDragException;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.AppointmentWidget;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -209,7 +209,7 @@ public class ResourceView extends CalendarView {
   private void addAppointmentsToGrid(List<AppointmentAdapter> appointmentList,
       boolean addToMultiView) {
     for (AppointmentAdapter appt : appointmentList) {
-      AppointmentWidget panel = new AppointmentWidget();
+      AppointmentWidget panel = new AppointmentWidget(appt.getAppointment(), addToMultiView);
 
       panel.setLeft(appt.getLeft());
       panel.setWidth(appt.getWidth());
@@ -217,7 +217,7 @@ public class ResourceView extends CalendarView {
       panel.setTop(appt.getTop());
       panel.setHeight(appt.getHeight());
 
-      panel.setAppointment(appt.getAppointment());
+      panel.render();
       
       boolean selected = calendarWidget.isTheSelectedAppointment(panel.getAppointment());
       if (selected) {
@@ -227,10 +227,8 @@ public class ResourceView extends CalendarView {
       appointmentWidgets.add(panel);
 
       if (addToMultiView) {
-        panel.setMultiDay(true);
         viewMulti.getGrid().add(panel);
       } else {
-        panel.setDescription(appt.getAppointment());
         viewBody.getGrid().getGrid().add(panel);
 
         if (calendarWidget.getSettings().isDragDropEnabled()) {

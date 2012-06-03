@@ -1,7 +1,7 @@
 package com.butent.bee.client.calendar.dayview;
 
-import com.butent.bee.client.calendar.util.AppointmentWidget;
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.AppointmentWidget;
 
 public class DayViewStyleManager {
 
@@ -21,10 +21,8 @@ public class DayViewStyleManager {
   private void doApplyStyleInternal(AppointmentWidget widget, boolean selected) {
     Appointment appointment = widget.getAppointment();
 
-    boolean multiDay = appointment.isMultiDay() || appointment.isAllDay();
-
     String styleName = APPOINTMENT_STYLE;
-    if (multiDay) {
+    if (appointment.isMultiDay()) {
       styleName += APPOINTMENT_STYLE_MULTIDAY;
     }
     if (selected) {

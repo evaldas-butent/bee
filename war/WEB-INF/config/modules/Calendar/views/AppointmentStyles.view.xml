@@ -27,16 +27,6 @@
 
     <SimpleColumn name="BodyClass" />
     <SimpleColumn name="BodyStyle" />
-
-    <SimpleColumn name="FooterColor" />
-    <SimpleJoin name="FooterColor" joinType="LEFT">
-      <SimpleColumn alias="FooterColorName" name="Name" />
-      <SimpleColumn alias="FooterBackground" name="Background" />
-      <SimpleColumn alias="FooterForeground" name="Foreground" />
-    </SimpleJoin>
-
-    <SimpleColumn name="FooterClass" />
-    <SimpleColumn name="FooterStyle" />
   </Columns>
   <Order>
     <OrderBy column="Name" />

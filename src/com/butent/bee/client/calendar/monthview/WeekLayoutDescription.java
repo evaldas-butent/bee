@@ -35,7 +35,7 @@ public class WeekLayoutDescription {
 
   public void addAppointment(Appointment appointment) {
     int dayOfWeek = dayInWeek(appointment.getStart());
-    if (appointment.isAllDay()) {
+    if (appointment.isMultiDay()) {
       topAppointmentsManager.assignLayer(new AppointmentLayoutDescription(dayOfWeek, appointment));
     } else {
       initDay(dayOfWeek).addAppointment(appointment);

@@ -22,10 +22,9 @@ public class MonthViewStyleManager {
 
   protected void doApplyStyleInternal(AppointmentWidget widget, boolean selected) {
     Appointment appointment = widget.getAppointment();
-    boolean multiDay = appointment.isMultiDay() || appointment.isAllDay();
 
     String styleName = APPOINTMENT_STYLE;
-    if (multiDay) {
+    if (appointment.isMultiDay()) {
       styleName += APPOINTMENT_STYLE_MULTIDAY;
     }
     if (selected) {

@@ -186,11 +186,7 @@
   border-top-right-radius: 5px;
 }
 
-.bee-cal .dv-appointment-multiday .header, .bee-cal .dv-appointment-multiday-selected .header {
-  background: transparent;
-}
-
-.bee-cal .dv-appointment .body, .bee-cal .dv-appointment-selected .body, .bee-cal .dv-appointment-multiday .body, .bee-cal .dv-appointment-multiday-selected .body {
+.bee-cal .dv-appointment .body, .bee-cal .dv-appointment-selected .body {
   padding-left: 8px;
   padding-top: 1px;
   white-space: pre-line;
@@ -200,13 +196,19 @@
   border-bottom: 3px double #fff;
   position: absolute;
   bottom: 2px;
-  left: 48%;
   height: 4px;
-  width: 8px;
+  left: 40%;
+  right: 40%;
 }
 
-.bee-cal .dv-appointment-multiday .footer, .bee-cal .dv-appointment-multiday-selected .footer {
-  display: none;
+.bee-cal .dv-appointment-multiday .header, .bee-cal .dv-appointment-multiday-selected .header {
+  padding-left: 2px;
+  display: inline-block;
+}
+
+.bee-cal .dv-appointment-multiday .body, .bee-cal .dv-appointment-multiday-selected .body {
+  padding-left: 8px;
+  display: inline-block;
 }
 
 .bee-cal .multiDayBody {

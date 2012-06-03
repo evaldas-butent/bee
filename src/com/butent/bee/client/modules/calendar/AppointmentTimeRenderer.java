@@ -14,9 +14,9 @@ import java.util.List;
 
 class AppointmentTimeRenderer extends AbstractCellRenderer {
   
-  private static DateTimeFormat DATE_FORMAT =
+  private static final DateTimeFormat DATE_FORMAT =
       DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_SHORT);
-  private static DateTimeFormat DATE_TIME_FORMAT =
+  private static final DateTimeFormat DATE_TIME_FORMAT =
       DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_SHORT);
 
   private final int dateIndex;

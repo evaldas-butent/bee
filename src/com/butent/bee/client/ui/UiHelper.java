@@ -164,6 +164,20 @@ public class UiHelper {
     return false;
   }
 
+  public static String getCaption(Class<? extends Enum<?>> clazz, int index) {
+    Assert.notNull(clazz);
+    if (!BeeUtils.isOrdinal(clazz, index)) {
+      return null;
+    }
+
+    Enum<?> constant = clazz.getEnumConstants()[index];
+    if (constant instanceof HasCaption) {
+      return ((HasCaption) constant).getCaption();
+    } else {
+      return BeeUtils.proper(constant.name(), BeeConst.CHAR_UNDER);
+    }
+  }
+  
   public static List<String> getCaptions(Class<? extends Enum<?>> clazz) {
     Assert.notNull(clazz);
     List<String> result = Lists.newArrayList();

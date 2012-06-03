@@ -16,10 +16,13 @@
     <SimpleColumn name="AppointmentCreator" />
     <SimpleColumn name="AppointmentEditor" />
 
-    <SimpleColumn name="AppointmentHeader" />
-    <SimpleColumn name="AppointmentBody" />
-    <SimpleColumn name="AppointmentFooter" />
+    <SimpleColumn name="SimpleHeader" />
+    <SimpleColumn name="SimpleBody" />
+
+    <SimpleColumn name="MultiHeader" />
+    <SimpleColumn name="MultiBody" />
     
+    <SimpleColumn name="AppointmentCompact" />
     <SimpleColumn name="AppointmentTitle" />
   </Columns>
   <Order>

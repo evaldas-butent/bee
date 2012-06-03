@@ -28,15 +28,5 @@
 
     <DataColumn name="BodyClass" caption="Vidurys - klasė" />
     <DataColumn name="BodyStyle" caption="Vidurys - stilius" />
-
-    <RelColumn name="FooterColorName" caption="Apačia - spalva">
-      <dynStyle>
-        <ui:inline>background: [row.FooterBackground]; color: [row.FooterForeground];</ui:inline>
-        <ui:expression>row.FooterColor > 0</ui:expression>
-      </dynStyle>
-    </RelColumn>
-
-    <DataColumn name="FooterClass" caption="Apačia - klasė" />
-    <DataColumn name="FooterStyle" caption="Apačia - stilius" />
   </columns>
 </Grid>

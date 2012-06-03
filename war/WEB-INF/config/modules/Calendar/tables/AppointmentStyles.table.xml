@@ -15,9 +15,5 @@
     <Relation name="BodyColor" relation="Colors" />
     <String name="BodyClass" precision="100" />
     <Text name="BodyStyle" />
-
-    <Relation name="FooterColor" relation="Colors" />
-    <String name="FooterClass" precision="100" />
-    <Text name="FooterStyle" />
   </Fields>
 </Table>

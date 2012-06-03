@@ -56,6 +56,8 @@ public class CalendarKeeper {
           VIEW_EXTENDED_PROPERTIES, VIEW_REMINDER_TYPES, VIEW_THEMES, VIEW_THEME_COLORS,
           VIEW_ATTENDEE_PROPS);
 
+  private static final AppointmentRenderer APPOINTMENT_RENDERER = new AppointmentRenderer();
+
   private static FormView settingsForm = null;
 
   public static String getAttendeeName(long id) {
@@ -200,6 +202,41 @@ public class CalendarKeeper {
             }
           }
         });
+  }
+  
+  static void renderAppoinment(AppointmentWidget appointmentWidget, boolean multi) {
+    Long type = appointmentWidget.getAppointment().getType();
+    if (type == null) {
+      type = getDefaultAppointmentType();
+    }
+
+    String viewName = VIEW_APPOINTMENT_TYPES;
+    BeeRowSet rowSet = CACHE.getRowSet(viewName);
+    
+    BeeRow row = null;
+    if (rowSet != null && !rowSet.isEmpty()) {
+      if (type != null) {
+        row = rowSet.getRowById(type);
+      }
+      if (row == null && rowSet.getNumberOfRows() == 1) {
+        row = rowSet.getRow(0);
+      }
+    }
+    
+    if (row == null) {
+      if (multi) {
+        APPOINTMENT_RENDERER.renderMulti(appointmentWidget);
+      } else {
+        APPOINTMENT_RENDERER.renderSimple(appointmentWidget);
+      }
+
+    } else {
+      String header = Data.getString(viewName, row, multi ? COL_MULTI_HEADER : COL_SIMPLE_HEADER);
+      String body = Data.getString(viewName, row, multi ? COL_MULTI_BODY : COL_SIMPLE_BODY);
+      String title = Data.getString(viewName, row, COL_APPOINTMENT_TITLE);
+      
+      APPOINTMENT_RENDERER.render(appointmentWidget, body, header, title, multi);
+    }
   }
 
   private static void createCommands() {

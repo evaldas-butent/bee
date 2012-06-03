@@ -13,10 +13,13 @@
     <String name="AppointmentCreator" precision="30" />
     <String name="AppointmentEditor" precision="30" />
 
-    <String name="AppointmentHeader" precision="100" />
-    <Text name="AppointmentBody" />
-    <String name="AppointmentFooter" precision="100" />
+    <Text name="SimpleHeader" />
+    <Text name="SimpleBody" />
 
+    <Text name="MultiHeader" />
+    <Text name="MultiBody" />
+
+    <Text name="AppointmentCompact" />
     <Text name="AppointmentTitle" />
   </Fields>
 </Table>

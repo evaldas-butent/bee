@@ -191,8 +191,19 @@ public class CalendarConstants {
   public static final String COL_STATUS = "Status";
 
   public static final String COL_ORGANIZER = "Organizer";
+  public static final String COL_ORGANIZER_FIRST_NAME = "OrganizerFirstName";
+  public static final String COL_ORGANIZER_LAST_NAME = "OrganizerLastName";
+
   public static final String COL_COMPANY_PERSON = "CompanyPerson";
 
+  public static final String COL_SIMPLE_HEADER = "SimpleHeader";
+  public static final String COL_SIMPLE_BODY = "SimpleBody";
+  public static final String COL_MULTI_HEADER = "MultiHeader";
+  public static final String COL_MULTI_BODY = "MultiBody";
+  
+  public static final String COL_APPOINTMENT_COMPACT = "AppointmentCompact";
+  public static final String COL_APPOINTMENT_TITLE = "AppointmentTitle";
+  
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";
 

@@ -81,7 +81,7 @@ public class MonthLayoutDescription {
 
         if (startWeek >= 0 && startWeek < weeks.length) {
           initWeek(startWeek, maxLayer);
-          if (appointment.isMultiDay() || appointment.isAllDay()) {
+          if (appointment.isMultiDay()) {
             positionMultidayAppointment(startWeek, appointment, maxLayer);
           } else {
             weeks[startWeek].addAppointment(appointment);

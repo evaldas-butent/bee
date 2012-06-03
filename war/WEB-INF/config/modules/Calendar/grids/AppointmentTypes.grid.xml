@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<!DOCTYPE Grid [
+  <!ENTITY nowrap "<style><bodyStyle><ui:inline>white-space: pre-wrap;</ui:inline></bodyStyle></style>">
+]>
+<Grid xmlns="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
 
   name="AppointmentTypes" viewName="AppointmentTypes"
   caption="Vizitų tipai" newRowCaption="Naujas vizitų tipas"
   >
+  <body height="100" /> 
   <columns>
     <DataColumn name="Name" caption="Pavadinimas" />
-    <DataColumn name="Description" caption="Aprašymas" />
+    <DataColumn name="Description" caption="Aprašymas">&nowrap;</DataColumn>
 
-    <RelColumn name="ThemeName" caption="Tema" />
+    <RelColumn name="ThemeName" caption="Spalvų tema" />
 
-    <DataColumn name="AppointmentCreator" />
-    <DataColumn name="AppointmentEditor" />
+    <DataColumn name="SimpleHeader">&nowrap;</DataColumn>
+    <DataColumn name="SimpleBody">&nowrap;</DataColumn>
 
-    <DataColumn name="AppointmentHeader" />
-    <DataColumn name="AppointmentBody" />
-    <DataColumn name="AppointmentFooter" />
+    <DataColumn name="MultiHeader">&nowrap;</DataColumn>
+    <DataColumn name="MultiBody">&nowrap;</DataColumn>
    
-    <DataColumn name="AppointmentTitle" />
+    <DataColumn name="AppointmentCompact">&nowrap;</DataColumn>
+    <DataColumn name="AppointmentTitle">&nowrap;</DataColumn>
   </columns>
 </Grid>

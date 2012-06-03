@@ -191,6 +191,25 @@ public class BeeUtils {
       return BeeConst.STRING_LEFT_BRACKET + s + BeeConst.STRING_RIGHT_BRACKET;
     }
   }
+  
+  public static String buildLines(String... lines) {
+    if (lines == null) {
+      return null;
+    }
+
+    char sep = BeeConst.CHAR_EOL;
+    StringBuilder sb = new StringBuilder();
+
+    for (String line : lines) {
+      if (line != null) {
+        if (sb.length() > 0) {
+          sb.append(sep);
+        }
+        sb.append(line);
+      }
+    }
+    return sb.toString();
+  }
 
   public static <T> boolean check(Predicate<T> predicate, T input) {
     return (predicate == null) ? true : predicate.apply(input);

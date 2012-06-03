@@ -116,6 +116,10 @@ public class Appointment implements Comparable<Appointment> {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_SUMMARY);
   }
 
+  public Long getType() {
+    return Data.getLong(VIEW_APPOINTMENTS, row, COL_APPOINTMENT_TYPE);
+  }
+  
   public String getVehicleModel() {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_VEHICLE_MODEL);
   }
@@ -128,16 +132,10 @@ public class Appointment implements Comparable<Appointment> {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_VEHICLE_PARENT_MODEL);
   }
   
-  public boolean isAllDay() {
-    return isMultiDay();
-  }
-
   public boolean isMultiDay() {
-    if (getStart() != null) {
-      return !TimeUtils.sameDate(getStart(), getEnd());
-    } else {
-      return false;
-    }
+    DateTime start = getStart();
+    DateTime end = getEnd();
+    return start != null && TimeUtils.isMore(end, TimeUtils.startOfDay(start, 1));
   }
 
   public void setEnd(DateTime end) {
