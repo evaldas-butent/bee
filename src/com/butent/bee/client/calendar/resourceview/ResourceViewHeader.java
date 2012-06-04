@@ -61,7 +61,7 @@ public class ResourceViewHeader extends Composite {
       return;
     }
 
-    double width = 100d / attendees.size();
+    int width = 100 / attendees.size();
     for (int i = 0; i < attendees.size(); i++) {
       Label label = new Label(CalendarKeeper.getAttendeeName(attendees.get(i)));
       label.setStylePrimaryName("day-cell");

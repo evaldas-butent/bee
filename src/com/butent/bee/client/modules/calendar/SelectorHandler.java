@@ -211,11 +211,7 @@ class SelectorHandler implements SelectorEvent.Handler {
   }
 
   private void handleVehicle(SelectorEvent event) {
-    if (!event.isOpened()) {
-      return;
-    }
-
-    DataView dataView = UiHelper.getDataView(event.getSelector());
+    final DataView dataView = UiHelper.getDataView(event.getSelector());
     if (dataView == null) {
       return;
     }
@@ -223,15 +219,33 @@ class SelectorHandler implements SelectorEvent.Handler {
       return;
     }
 
-    IsRow row = dataView.getActiveRow();
+    final IsRow row = dataView.getActiveRow();
     if (row == null) {
       return;
     }
+    Long company = row.getLong(getCompanyIndex());
 
-    Long owner = row.getLong(getCompanyIndex());
-    if (DataUtils.isId(owner)) {
-      Filter filter = ComparisonFilter.isEqual(TransportConstants.COL_OWNER, new LongValue(owner));
-      event.getSelector().setAdditionalFilter(filter);
+    if (event.isOpened()) {
+      if (DataUtils.isId(company)) {
+        Filter filter = ComparisonFilter.isEqual(TransportConstants.COL_OWNER,
+            new LongValue(company));
+        event.getSelector().setAdditionalFilter(filter);
+      }
+
+    } else if (event.isChanged()) {
+      Long owner = Data.getLong(event.getRelatedViewName(), event.getRelatedRow(),
+          TransportConstants.COL_OWNER);
+
+      if (DataUtils.isId(owner) && !owner.equals(company)) {
+        Queries.getRow(CommonsConstants.VIEW_COMPANIES, owner, new Queries.RowCallback() {
+         @Override
+          public void onSuccess(BeeRow result) {
+            RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_COMPANY, row,
+                CommonsConstants.VIEW_COMPANIES, result, true);
+            dataView.refresh(false);
+          }
+        });
+      }
     }
   }
 }

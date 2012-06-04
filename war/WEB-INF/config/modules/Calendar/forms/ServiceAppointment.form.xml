@@ -4,7 +4,7 @@
   <!ENTITY relative "position: relative;">
   <!ENTITY header "font-size: large;">
   <!ENTITY separator '<hr style="position: absolute; left: 120px; right: 0; top: 5px;"/>'>
-  <!ENTITY display "-webkit-appearance: textfield; padding: 3px; margin: 2px 0px;">
+  <!ENTITY display "">
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
@@ -24,11 +24,13 @@
       <DataSelector source="CompanyName" required="true" caption="Klientas:" style="width: 300px;"
         choiceColumns="Name Phone Email"
         d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
-      <DataSelector source="CompanyPhone" caption="Telefonas:" style="width: 200px;"
-        filter="Phone" choiceColumns="Phone Name" d:size="80" d:unit="px"
+
+      <TextLabel source="CompanyPhone" caption="Telefonas:" inline="true"
+        style="&display; width: 200px;" d:size="80" d:unit="px"
         d:rootStyle="&absolute; left: 460px; top: 0;" />
-      <DataSelector source="CompanyEmail" caption="El. Paštas:" style="width: 200px;"
-        filter="Email" choiceColumns="Email Name" d:size="80" d:unit="px"
+
+      <TextLabel source="CompanyEmail" caption="El. Paštas:" inline="true"
+        style="&display; width: 200px;" d:size="80" d:unit="px"
         d:rootStyle="&absolute; left: 460px; top: 30px;" />
     </FlowPanel>
 

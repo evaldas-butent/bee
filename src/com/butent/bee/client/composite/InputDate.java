@@ -29,6 +29,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasTextBox;
+import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -74,7 +75,6 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     this.format = format;
     this.dateType = type;
 
-    popup.setWidget(datePicker);
     popup.setStyleName("dateBoxPopup");
 
     initWidget(box);
@@ -219,11 +219,12 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
       event.preventDefault();
       if (dp) {
         hideDatePicker();
-      } else { {
+      } else if (EventUtils.hasModifierKey(event) && isDateTime() && getDate() != null) {
+        pickTime();
+      } else {
         showDatePicker();
       }
       return;
-    }
 
     } else if (EventUtils.isKeyPress(type)) {
       if (handleChar(event.getCharCode())) {
@@ -605,6 +606,51 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     return ValueType.DATETIME.equals(getDateType());
   }
 
+  private void pickTime() {
+    final DateTime dateTime = getDate().getDateTime();
+    
+    int step = getStepValue();
+    if (step <= 0 || step > 60) {
+      step = 30;
+    }
+    
+    int hour = dateTime.getHour();
+    int minute = dateTime.getMinute();
+    
+    int start = minute % step;
+    final char sep = DateTime.TIME_FIELD_SEPARATOR;
+
+    BeeListBox widget = new BeeListBox();
+    for (int i = start; i < 60 * 24; i += step) {
+      String item = TimeUtils.padTwo(i / 60) + sep + TimeUtils.padTwo(i % 60);
+      widget.addItem(item);
+    }
+    widget.setVisibleItemCount(10);
+
+    widget.addValueChangeHandler(new ValueChangeHandler<String>() {
+      @Override
+      public void onValueChange(ValueChangeEvent<String> event) {
+        String value = event.getValue();
+        
+        dateTime.setHour(BeeUtils.toInt(BeeUtils.getPrefix(value, sep)));
+        dateTime.setMinute(BeeUtils.toInt(BeeUtils.getSuffix(value, sep)));
+        setValue(dateTime);
+
+        getPopup().hide();
+      }
+    });
+    
+    getPopup().setWidget(widget);
+    getPopup().showRelativeTo(getBox());
+    
+    widget.setFocus(true);
+
+    int index = widget.getItems().indexOf(TimeUtils.padTwo(hour) + sep + TimeUtils.padTwo(minute));
+    if (index > 0) {
+      widget.setSelectedIndex(index);
+    }
+  }
+
   private void setValue(HasDateValue value) {
     String text;
     if (value == null) {
@@ -616,13 +662,15 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     }
     getBox().setValue(text);
   }
-
+  
   private void showDatePicker() {
     HasDateValue date = getDate();
     if (date == null) {
       date = new JustDate();
     }
     getDatePicker().setDate(date.getDate());
+    
+    getPopup().setWidget(datePicker);
     getPopup().showRelativeTo(getBox());
     
     getDatePicker().setFocus(true);

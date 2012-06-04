@@ -745,6 +745,8 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       if (distanceToWindowRight < offsetWidth && distanceFromWindowLeft >= offsetWidthDiff) {
         left -= offsetWidthDiff;
       }
+    } else if (offsetWidthDiff < 0) {
+      left -= offsetWidthDiff;
     }
 
     int top = relativeObject.getAbsoluteTop();
