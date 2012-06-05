@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.server.Config;
-import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.FileNameUtils;
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
@@ -80,7 +80,7 @@ public class UiHolderBean {
   Map<String, String> gridCache = new HashMap<String, String>();
   Map<String, String> formCache = new HashMap<String, String>();
   Map<String, String> menuCache = new HashMap<String, String>();
-  
+
   public ResponseObject getForm(String formName) {
     Assert.state(isForm(formName), "Not a form: " + formName);
     String resource = formCache.get(key(formName));
@@ -228,7 +228,7 @@ public class UiHolderBean {
           String resourcePath = resource.getPath();
           String objectName = FileNameUtils.getBaseName(resourcePath);
           objectName = objectName.substring(0, objectName.length() - obj.name().length() - 1);
-          objects.add(key(objectName));
+          objects.add(objectName);
         }
         for (String objectName : objects) {
           boolean isOk = false;

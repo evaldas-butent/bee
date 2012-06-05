@@ -65,7 +65,7 @@ public class ModuleHolderBean {
 
     if (!BeeUtils.isEmpty(moduleName)) {
       resource = BeeUtils.concat("/",
-          PROPERTY_MODULES, getModule(moduleName).getResourcePath(), resource);
+          BeeUtils.normalize(PROPERTY_MODULES), getModule(moduleName).getResourcePath(), resource);
     }
     return resource;
   }
