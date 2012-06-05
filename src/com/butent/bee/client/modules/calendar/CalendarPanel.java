@@ -291,7 +291,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   }
 
   private TabBar createViewWidget() {
-    TabBar tabBar = new TabBar(STYLE_VIEW_PREFIX);
+    TabBar tabBar = new TabBar(STYLE_VIEW_PREFIX, false);
 
     tabBar.addItem("Diena");
     tabBar.addItem(getDaysViewCaption(calendar.getSettings().getDefaultDisplayedDays()));

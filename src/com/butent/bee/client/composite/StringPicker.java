@@ -215,6 +215,10 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     return enabled;
   }
 
+  public boolean isIndex(int index) {
+    return index >= 0 && index < getItemCount();
+  }
+  
   public boolean isNullable() {
     return nullable;
   }

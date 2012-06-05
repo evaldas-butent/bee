@@ -5,13 +5,12 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
-import com.butent.bee.shared.HasId;
 
 /**
  * Enables to use panel that lays all of its widgets out in a single vertical column.
  */
 
-public class Vertical extends VerticalPanel implements HasId, HasIndexedWidgets {
+public class Vertical extends VerticalPanel implements CellVector, HasIndexedWidgets  {
 
   public Vertical() {
     DomUtils.createId(this, getIdPrefix());

@@ -205,15 +205,19 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     return getItemCount() <= 0;
   }
 
+  public boolean isIndex(int index) {
+    return index >= 0 && index < getItemCount();
+  }
+
   public boolean isNullable() {
     return nullable;
   }
-
+  
   @Override
   public boolean isOrHasPartner(Node node) {
     return node != null && getElement().isOrHasChild(node);
   }
-  
+
   public boolean isValueNumeric() {
     return valueNumeric;
   }
@@ -388,10 +392,6 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
 
   private boolean isEditorInitialized() {
     return editorInitialized;
-  }
-
-  private boolean isIndex(int index) {
-    return index >= 0 && index < getItemCount();
   }
 
   private void setChangePending(boolean changePending) {

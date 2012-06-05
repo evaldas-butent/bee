@@ -51,9 +51,13 @@ public class MessageBoxes {
 
   private static final String STYLE_CHOICE_PANEL = "bee-ChoicePanel";
   private static final String STYLE_CHOICE_PROMPT = "bee-ChoicePrompt";
+  private static final String STYLE_CHOICE_CONTAINER = "bee-ChoiceContainer";
   private static final String STYLE_CHOICE_GROUP = "bee-ChoiceGroup-";
   private static final String STYLE_CHOICE_DEFAULT = "bee-ChoiceDefault";
   private static final String STYLE_CHOICE_CANCEL = "bee-ChoiceCancel";
+
+  private static final int CHOICE_MAX_HORIZONTAL_ITEMS = 10;
+  private static final int CHOICE_MAX_HORIZONTAL_CHARS = 100;
 
   public void alert(Object... obj) {
     Assert.notNull(obj);
@@ -84,9 +88,20 @@ public class MessageBoxes {
       UiHelper.add(panel, label, initializer, DialogConstants.WIDGET_PROMPT);
     }
 
-    TabBar group = new TabBar(STYLE_CHOICE_GROUP);
+    int size = options.size();
 
-    for (int i = 0; i < options.size(); i++) {
+    boolean vertical = size > CHOICE_MAX_HORIZONTAL_ITEMS;
+    if (!vertical && size > 1) {
+      int len = 0;
+      for (String option : options) {
+        len += option.trim().length();
+      }
+      vertical = len > CHOICE_MAX_HORIZONTAL_CHARS;
+    }
+
+    TabBar group = new TabBar(STYLE_CHOICE_GROUP, vertical);
+
+    for (int i = 0; i < size; i++) {
       Widget widget = UiHelper.initialize(new Html(options.get(i)), initializer,
           DialogConstants.WIDGET_COMMAND_ITEM);
       group.addItem(widget);
@@ -103,13 +118,14 @@ public class MessageBoxes {
         cancelIndex.set(group.getItemCount() - 1);
       }
     }
-
-    UiHelper.add(panel, group, initializer, DialogConstants.WIDGET_COMMAND_GROUP);
     
-    if (group.isIndex(defaultValue)) {
-      group.getTabWidget(defaultValue).addStyleName(STYLE_CHOICE_DEFAULT);
-      group.selectTab(defaultValue, false);
-    }
+    Flow container = new Flow();
+    container.addStyleName(STYLE_CHOICE_CONTAINER);
+    container.addStyleName(STYLE_CHOICE_CONTAINER + BeeConst.STRING_MINUS
+        + (vertical ? StyleUtils.NAME_VERTICAL : StyleUtils.NAME_HORIZONTAL));
+
+    UiHelper.add(container, group, initializer, DialogConstants.WIDGET_COMMAND_GROUP);
+    panel.add(container);
 
     final Holder<Integer> selectedIndex = Holder.absent();
 
@@ -119,7 +135,7 @@ public class MessageBoxes {
         dialog.hide();
       }
     });
-    
+
     dialog.setHideOnEscape(true);
 
     dialog.addCloseHandler(new CloseHandler<Popup>() {
@@ -143,8 +159,18 @@ public class MessageBoxes {
     dialog.setAnimationEnabled(true);
     dialog.center();
 
-    int focusIndex = group.isIndex(defaultValue) ? defaultValue 
-        : cancelIndex.isNotNull() ? cancelIndex.get() : 0;
+    int focusIndex;
+
+    if (group.isIndex(defaultValue)) {
+      group.getTabWidget(defaultValue).addStyleName(STYLE_CHOICE_DEFAULT);
+      group.selectTab(defaultValue, false);
+      focusIndex = defaultValue;
+    } else if (cancelIndex.isNotNull()) {
+      focusIndex = cancelIndex.get();
+    } else {
+      focusIndex = 0;
+    }
+
     group.focusTab(focusIndex);
 
     if (timer != null) {

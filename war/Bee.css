@@ -1303,13 +1303,33 @@ body, select {
   padding: 1ex 2em;
   font-weight: bolder;
 }
+
+.bee-ChoicePanel {
+  margin: 1ex 2em;
+}
+
+.bee-ChoiceContainer {
+  margin-top: 2ex;  
+  margin-bottom: 2ex;
+}
+
+.bee-ChoiceContainer-vertical {
+  max-height: 512px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.bee-ChoiceContainer-vertical::-webkit-scrollbar {
+  width: 3px;
+}
+
 .bee-ChoicePrompt {
   padding: 1ex 2em;
   text-align: center;
 }
 
-.bee-ChoiceGroup-panel {
-  margin: 2ex 0 2ex 2em;  
+.bee-ChoiceGroup-panel-vertical {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .bee-ChoiceGroup-item {
@@ -1321,10 +1341,25 @@ body, select {
   border: 1px solid #E4E4E4;
   border-radius: 2px;
   cursor: pointer;
+}
+
+.bee-ChoiceGroup-item-horizontal {
   margin-right: 2em;
 }
+.bee-ChoiceGroup-panel-horizontal td:last-of-type .bee-ChoiceGroup-item-horizontal {
+  margin-right: 0;
+}
+
+.bee-ChoiceGroup-item-vertical {
+  margin-bottom: 1ex;
+}
+
 .bee-ChoiceGroup-item:hover {
   border: 1px solid #BEBEBE;
+}
+
+.bee-ChoiceGroup-panel-vertical .bee-ChoiceCancel {
+  text-align: center;
 }
 
 .bee-FavoritesItem {
@@ -1352,9 +1387,58 @@ body, select {
   cursor: pointer;
 }
 
-.gwt-SplitLayoutPanel-HDragger {
-  background-color: #f6cef5;
-  cursor: col-resize;
+::-webkit-scrollbar {
+  height: 9px;
+  width: 9px;
+  overflow: visible;
+}
+
+::-webkit-scrollbar-button {
+  height: 0;
+  width: 0;
+}
+
+::-webkit-scrollbar-track {
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-track:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+::-webkit-scrollbar-track:horizontal:hover {
+  box-shadow: inset -1px 1px 0 rgba(0, 0, 0, 0.14), inset 1px -1px 0 rgba(0, 0, 0, 0.07);
+}
+::-webkit-scrollbar-track:vertical:hover {
+  box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.14), inset -1px -1px 0 rgba(0, 0, 0, 0.07);
+}
+::-webkit-scrollbar-track:active {
+  background-color: rgba(0, 0, 0, 0.05);
+  box-shadow: inset 1px -1px 0 rgba(0, 0, 0, 0.14), inset -1px 1px 0 rgba(0, 0, 0, 0.07);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  background-clip: padding-box;
+  min-height: 28px;
+}
+::-webkit-scrollbar-thumb:horizontal {
+  box-shadow: inset -1px 1px 0 rgba(0, 0, 0, 0.1), inset 1px -1px 0 rgba(0, 0, 0, 0.07);
+}
+::-webkit-scrollbar-thumb:vertical {
+  box-shadow: inset 1px 1px 0 rgba(0, 0, 0, 0.1), inset -1px -1px 0 rgba(0, 0, 0, 0.07);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+  box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.25);
+}
+::-webkit-scrollbar-thumb:active {
+  background-color: rgba(0, 0, 0, 0.5);
+  box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .bee-InputText {
@@ -1385,7 +1469,6 @@ body, select {
   border: 1px solid silver;
 }
 
-.bee-Header-caption
-{
+.bee-Header-caption {
   font-weight: bold;
 }

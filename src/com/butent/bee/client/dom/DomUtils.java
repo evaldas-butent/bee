@@ -1901,8 +1901,8 @@ public class DomUtils {
 
     body.removeChild(elem);
 
-    scrollBarWidth = w1 - w2;
-    scrollBarHeight = h1 - h2;
+    scrollBarWidth = (w1 > w2) ? w1 - w2 : StyleUtils.DEFAULT_SCROLL_BAR_WIDTH;
+    scrollBarHeight = (h1 > h2) ? h1 - h2 : StyleUtils.DEFAULT_SCROLL_BAR_HEIGHT;
   }
 
   private static void calculateTextBoxSize() {

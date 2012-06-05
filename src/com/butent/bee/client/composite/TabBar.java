@@ -30,7 +30,9 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.layout.CellVector;
 import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.BeeLabel;
@@ -115,9 +117,11 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
               selectTab(index);
               break;
             case KeyCodes.KEY_LEFT:
+            case KeyCodes.KEY_UP:
               navigateTo = BeeUtils.rotateBackwardExclusive(index, 0, size);
               break;
             case KeyCodes.KEY_RIGHT:
+            case KeyCodes.KEY_DOWN:
               navigateTo = BeeUtils.rotateForwardExclusive(index, 0, size);
               break;
             case KeyCodes.KEY_HOME:
@@ -156,33 +160,38 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
 
   private static final String DEFAULT_STYLE_PREFIX = "bee-TabBar-";
 
-  private final Horizontal panel = new Horizontal();
-  private DelegatePanel selectedTab = null;
+  private static final String STYLE_PANEL = "panel";
+  private static final String STYLE_ITEM = "item";
+
+  private static final String STYLE_DISABLED = "item-disabled";
+  private static final String STYLE_SELECTED = "item-selected";
+
+  private static final String STYLE_SUFFIX_HORIZONTAL = "-horizontal";
+  private static final String STYLE_SUFFIX_VERTICAL = "-vertical";
+
+  private final CellVector panel;
+  private final boolean vertical;
 
   private final String stylePrefix;
-  
-  public TabBar() {
-    this(DEFAULT_STYLE_PREFIX);
+
+  private DelegatePanel selectedTab = null;
+  public TabBar(boolean vertical) {
+    this(DEFAULT_STYLE_PREFIX, vertical);
   }
   
-  public TabBar(String stylePrefix) {
+  public TabBar(String stylePrefix, boolean vertical) {
+    this.panel = vertical ? new Vertical() : new Horizontal();
+    this.vertical = vertical;
     this.stylePrefix = stylePrefix;
-    initWidget(panel);
-    sinkEvents(Event.ONCLICK);
-    setStyleName(stylePrefix + "panel");
 
+    initWidget(panel.asWidget());
+
+    addStyleName(stylePrefix + STYLE_PANEL);
+    addStyleName(getStyle(STYLE_PANEL));
+    
     panel.setVerticalAlignment(HasVerticalAlignment.ALIGN_BOTTOM);
-
-    Html first = new Html(BeeConst.HTML_NBSP, true);
-    Html rest = new Html(BeeConst.HTML_NBSP, true);
-
-    first.setStyleName(stylePrefix + "first");
-    rest.setStyleName(stylePrefix + "rest");
-    first.setHeight("100%");
-    rest.setHeight("100%");
-
-    panel.add(first);
-    panel.add(rest);
+    
+    sinkEvents(Event.ONCLICK);
   }
 
   public HandlerRegistration addBeforeSelectionHandler(BeforeSelectionHandler<Integer> handler) {
@@ -244,7 +253,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   }
 
   public int getItemCount() {
-    return panel.getWidgetCount() - 2;
+    return panel.getWidgetCount();
   }
   
   public List<String> getItems() {
@@ -259,7 +268,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     if (selectedTab == null) {
       return BeeConst.UNDEF;
     }
-    return panel.getWidgetIndex(selectedTab) - 1;
+    return panel.getWidgetIndex(selectedTab);
   }
 
   public Widget getSelectedWidget() {
@@ -322,7 +331,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   public void removeTab(int index) {
     checkTabIndex(index, 0);
 
-    Widget toRemove = panel.getWidget(index + 1);
+    Widget toRemove = panel.getWidget(index);
     if (toRemove == selectedTab) {
       selectedTab = null;
     }
@@ -375,16 +384,17 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
 
     DelegatePanel delPanel = getWrapper(index);
     delPanel.setEnabled(enabled);
-    setStyleName(delPanel.getElement(), stylePrefix + "item-disabled", !enabled);
+    setStyleName(delPanel.getElement(), stylePrefix + STYLE_DISABLED, !enabled);
   }
 
   protected void insertTabWidget(Widget widget, int beforeIndex) {
     checkInsertBeforeTabIndex(beforeIndex);
 
     DelegatePanel delWidget = new DelegatePanel(widget);
-    delWidget.setStyleName(stylePrefix + "item");
+    delWidget.addStyleName(stylePrefix + STYLE_ITEM);
+    delWidget.addStyleName(getStyle(STYLE_ITEM));
 
-    panel.insert(delWidget, beforeIndex + 1);
+    panel.insert(delWidget, beforeIndex);
   }
 
   private void checkInsertBeforeTabIndex(int beforeIndex) {
@@ -393,6 +403,10 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
 
   private void checkTabIndex(int index, int min) {
     Assert.betweenExclusive(index, min, getItemCount());
+  }
+  
+  private String getStyle(String stem) {
+    return stylePrefix + stem + (vertical ? STYLE_SUFFIX_VERTICAL : STYLE_SUFFIX_HORIZONTAL);
   }
   
   private int getTabIndex(Widget wrapper) {
@@ -405,12 +419,12 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   }
   
   private DelegatePanel getWrapper(int index) {
-    return (DelegatePanel) panel.getWidget(index + 1);
+    return (DelegatePanel) panel.getWidget(index);
   }
 
   private void setSelectionStyle(Widget item, boolean selected) {
     if (item != null) {
-      setStyleName(item.getElement(), stylePrefix + "item-selected", selected);
+      setStyleName(item.getElement(), stylePrefix + STYLE_SELECTED, selected);
     }
   }
 }

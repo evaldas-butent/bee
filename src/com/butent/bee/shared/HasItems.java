@@ -16,5 +16,7 @@ public interface HasItems {
   
   List<String> getItems();
 
+  boolean isIndex(int index);
+  
   void setItems(Collection<String> items);
 }

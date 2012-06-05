@@ -107,6 +107,10 @@ public class HtmlList extends Widget implements HasId, HasItems {
     }
   }
 
+  public boolean isIndex(int index) {
+    return index >= 0 && index < getItemCount();
+  }
+  
   public boolean isOrdered() {
     return ordered;
   }

@@ -80,6 +80,10 @@ public class MapRenderer extends AbstractCellRenderer implements HasItems {
     return result;
   }
 
+  public boolean isIndex(int index) {
+    return index >= 0 && index < getItemCount();
+  }
+  
   public String render(IsRow row) {
     String key = getString(row);
     if (key == null) {

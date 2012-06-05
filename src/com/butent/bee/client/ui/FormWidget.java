@@ -904,7 +904,8 @@ public enum FormWidget {
 
       case TAB_BAR:
         stylePrefix = attributes.get(ATTR_STYLE_PREFIX);
-        widget = BeeUtils.isEmpty(stylePrefix) ? new TabBar() : new TabBar(stylePrefix);
+        boolean vert = BeeUtils.toBoolean(attributes.get(ATTR_VERTICAL));
+        widget = BeeUtils.isEmpty(stylePrefix) ? new TabBar(vert) : new TabBar(stylePrefix, vert);
         break;
 
       case TABBED_PAGES:

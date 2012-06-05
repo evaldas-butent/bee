@@ -166,7 +166,7 @@ class AppointmentBuilder extends AbstractFormCallback {
 
   private String buildInfoWidgetId = null;
 
-  private final TabBar colorWidget = new TabBar(STYLE_COLOR_BAR_PREFIX);
+  private final TabBar colorWidget = new TabBar(STYLE_COLOR_BAR_PREFIX, false);
 
   private boolean saving = false;
 

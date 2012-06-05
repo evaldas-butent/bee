@@ -857,6 +857,7 @@
             <xs:element name="tab" type="wdhtType" />
           </xs:choice>
           <xs:attribute name="stylePrefix" type="xs:normalizedString" />
+          <xs:attribute name="vertical" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
