@@ -16,6 +16,7 @@ import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.view.edit.SelectorEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -76,6 +77,8 @@ public class RowFactory {
         Data.setValue(dataInfo.getViewName(), row, column.getId(), value.trim());
       }
     }
+    
+    SelectorEvent.fireNewRow(selector, row);
 
     if (BeeUtils.isEmpty(formName)) {
       List<BeeColumn> columns = getColumns(dataInfo, selector.getNewRowColumns(),

@@ -106,6 +106,15 @@ class SelectorHandler implements SelectorEvent.Handler {
     return Data.getColumnIndex(VIEW_APPOINTMENTS, COL_COMPANY_NAME);
   }
 
+  private void getCompanyRow(Long company, final Queries.RowCallback callback) {
+    Queries.getRow(CommonsConstants.VIEW_COMPANIES, company, new Queries.RowCallback() {
+      @Override
+      public void onSuccess(BeeRow result) {
+        callback.onSuccess(result);
+      }
+    });
+  }
+
   private int getVehicleOwnerIndex() {
     return Data.getColumnIndex(VIEW_APPOINTMENTS, COL_VEHICLE_OWNER);
   }
@@ -210,7 +219,7 @@ class SelectorHandler implements SelectorEvent.Handler {
     event.getSelector().setAdditionalFilter(filter);
   }
 
-  private void handleVehicle(SelectorEvent event) {
+  private void handleVehicle(final SelectorEvent event) {
     final DataView dataView = UiHelper.getDataView(event.getSelector());
     if (dataView == null) {
       return;
@@ -237,14 +246,22 @@ class SelectorHandler implements SelectorEvent.Handler {
           TransportConstants.COL_OWNER);
 
       if (DataUtils.isId(owner) && !owner.equals(company)) {
-        Queries.getRow(CommonsConstants.VIEW_COMPANIES, owner, new Queries.RowCallback() {
-         @Override
+        getCompanyRow(owner, new Queries.RowCallback() {
+          @Override
           public void onSuccess(BeeRow result) {
             RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_COMPANY, row,
                 CommonsConstants.VIEW_COMPANIES, result, true);
             dataView.refresh(false);
           }
         });
+      }
+
+    } else if (event.isNewRow()) {
+      if (DataUtils.isId(company)) {
+        Data.setValue(event.getRelatedViewName(), event.getNewRow(),
+            TransportConstants.COL_OWNER, company);
+        Data.setValue(event.getRelatedViewName(), event.getNewRow(),
+            TransportConstants.COL_OWNER_NAME, row.getString(getCompanyNameIndex()));
       }
     }
   }

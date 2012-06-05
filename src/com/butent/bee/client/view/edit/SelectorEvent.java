@@ -22,6 +22,10 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
   public static void fire(DataSelector selector, State state) {
     BeeKeeper.getBus().fireEventFromSource(new SelectorEvent(state), selector);
   }
+
+  public static void fireNewRow(DataSelector selector, IsRow row) {
+    BeeKeeper.getBus().fireEventFromSource(new SelectorEvent(State.NEW, row), selector);
+  }
   
   public static Type<Handler> getType() {
     return TYPE;
@@ -36,17 +40,27 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
   }
 
   private final State state;
+  private final IsRow newRow;
 
   public SelectorEvent(State state) {
+    this(state, null);
+  }
+
+  public SelectorEvent(State state, IsRow newRow) {
     super();
     this.state = state;
+    this.newRow = newRow;
   }
 
   @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
   }
-  
+
+  public IsRow getNewRow() {
+    return newRow;
+  }
+
   public IsRow getRelatedRow() {
     return (getSelector() == null) ? null : getSelector().getRelatedRow();
   }
@@ -85,6 +99,10 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
 
   public boolean isClosed() {
     return State.CLOSED.equals(getState());
+  }
+
+  public boolean isNewRow() {
+    return State.NEW.equals(getState());
   }
   
   public boolean isOpened() {
