@@ -6,7 +6,7 @@
   name="Documents" viewName="Documents" caption="Dokumentai" 
   newRowForm="NewDocument" editForm="Document" parent="Tree">
   
-  <west size="200">
+  <west size="200" splitterSize="2">
     <w:DataTree name="Tree" caption="Kategorijos" source="DocumentTree" parentColumn="Parent"
               hideActions="true">
       <w:calc>

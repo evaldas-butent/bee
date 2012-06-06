@@ -47,17 +47,15 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     }
   }
   
-  private static final int HEIGHT = 45;
-  private static final int SMALL_HEIGHT = 35;
+  private static final int HEIGHT = 35;
 
   private static final int CAPTION_LEFT = 8;
   private static final int CAPTION_TOP = 1;
 
-  private static final int CONTROL_WIDTH = 48;
-  private static final int SMALL_CONTROL_WIDTH = 38;
+  private static final int CONTROL_WIDTH = 43;
   private static final int CONTROL_TOP = 2;
 
-  private static final int CONTROLS_RIGHT = 54;
+  private static final int CONTROLS_RIGHT = 43;
 
   private static final int CLOSE_RIGHT = 2;
   private static final int CLOSE_TOP = 2;
@@ -84,7 +82,6 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   private boolean enabled = true;
   private final Map<Action, String> actionControls = Maps.newHashMap();
   
-  private boolean isSmall = false;
 
   public HeaderSilverImpl() {
     super();
@@ -116,21 +113,19 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     addLeftTop(panel, CAPTION_LEFT, CAPTION_TOP);
     
     boolean hasClose = hasAction(Action.CLOSE, isWindow, enabledActions, disabledActions);
-    
-    isSmall = !hasClose;
-    
+        
     int x = hasClose ? CONTROLS_RIGHT : CLOSE_RIGHT;
     int y = CONTROL_TOP;
-    int w = hasClose ? CONTROL_WIDTH : SMALL_CONTROL_WIDTH;
+    int w = CONTROL_WIDTH;
 
     if (hasAction(Action.CONFIGURE, false, enabledActions, disabledActions)) {
-      addRightTop(createControl(hasClose ? Global.getImages().configure() : Global.getImages().configureSmall(), Action.CONFIGURE, STYLE_CONTROL),
+      addRightTop(createControl(Global.getImages().configure(), Action.CONFIGURE, STYLE_CONTROL),
           x, y);
       x += w;
     }
 
     if (hasAction(Action.SAVE, false, enabledActions, disabledActions)) {
-      addRightTop(createControl(hasClose ? Global.getImages().save() : Global.getImages().saveSmall() , Action.SAVE, STYLE_CONTROL), x, y);
+      addRightTop(createControl(Global.getImages().save(), Action.SAVE, STYLE_CONTROL), x, y);
       x += w;
     }
     if (hasAction(Action.EDIT, false, enabledActions, disabledActions)) {
@@ -145,17 +140,17 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     }
 
     if (hasAction(Action.DELETE, hasData && !readOnly, enabledActions, disabledActions)) {
-      addRightTop(createControl(hasClose ? Global.getImages().editDelete() : Global.getImages().editDeleteSmall(), Action.DELETE, STYLE_CONTROL),
+      addRightTop(createControl(Global.getImages().editDelete(), Action.DELETE, STYLE_CONTROL),
           x, y);
       x += w;
     }
     if (hasAction(Action.ADD, hasData && !readOnly, enabledActions, disabledActions)) {
-      addRightTop(createControl(hasClose ? Global.getImages().editAdd() : Global.getImages().editAddSmall() , Action.ADD, STYLE_CONTROL), x, y);
+      addRightTop(createControl(Global.getImages().editAdd(), Action.ADD, STYLE_CONTROL), x, y);
       x += w;
     }
 
     if (hasAction(Action.REFRESH, hasData, enabledActions, disabledActions)) {
-      addRightTop(createControl(hasClose ? Global.getImages().reload() : Global.getImages().reloadSmall(), Action.REFRESH, STYLE_CONTROL), x, y);
+      addRightTop(createControl(Global.getImages().reload(), Action.REFRESH, STYLE_CONTROL), x, y);
       x += w;
     }
     
@@ -177,7 +172,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   }
 
   public int getHeight() {
-    return isSmall ? SMALL_HEIGHT : HEIGHT;
+    return HEIGHT;
   }
 
   public Presenter getViewPresenter() {

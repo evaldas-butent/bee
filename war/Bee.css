@@ -1,7 +1,8 @@
 body, select {
   color: #7F7F7F;
-  font: 13px Arial;
-  background: #FBFBFB;
+  font-family: Arial, sans-serif;
+  font-size: small;
+  background: #FFFFFF;
 }
 
 [draggable] {
@@ -99,7 +100,7 @@ body, select {
 }
 
 .bee-Screen {
-  background-color: #FBFBFB;  
+  background-color: white;  
 }
 
 .bee-NorthContainer .bee-Logo {
@@ -436,10 +437,12 @@ body, select {
 
 .bee-InputInteger,.bee-InputLong,.bee-InputNumber {
   text-align: right;
+  border: 1px solid silver;
 }
 
 .bee-InputSpinner {
   text-align: right;
+  border: 1px solid silver;
 }
 
 .bee-configPanel {
@@ -599,36 +602,34 @@ body, select {
 
 .bee-HeaderCellSortInfo {
   position: absolute;
-  left: 8px;
-  bottom: 1px;
+  right: 1px;
+  top: 0px;
   font-weight: normal;
 }
 
 .bee-HeaderCellSortable {
-  opacity: 0.3;
+  opacity: 0.4;
   font-size: small;
 }
 
 .bee-HeaderCellSortable:before {
-  content: "\0021c5";
+  content: "\0025B3";
 }
 
 .bee-HeaderCellAscending {
-  color: green;
-  font-size: medium;
+  font-size: small;
 }
 
 .bee-HeaderCellAscending:after {
-  content: "\0021e7";
+  content: "\0025B2";
 }
 
 .bee-HeaderCellDescending {
-  color: maroon;
-  font-size: medium;
+  font-size: small;
 }
 
 .bee-HeaderCellDescending:after {
-  content: "\0021e9";
+  content: "\0025BC";
 }
 
 .bee-HeaderCellWidthInfo {
@@ -683,7 +684,7 @@ body, select {
 }
 
 .bee-CellGridSelectedRow {
-  background-color: #e1e1e1 !important;
+  background-color: #d5d5d5 !important;
 }
 
 .bee-CellGridActiveRow {
@@ -711,7 +712,7 @@ body, select {
 }
 
 .bee-CellGridResizerBar {
-  background-color: #a5c4ff;
+  background-color: #CFCFCF;
   z-index: 1;
 }
 
@@ -741,8 +742,8 @@ body, select {
 }
 
 .bee-afraid {
-  background-color: fuchsia !important;
-  font-size: x-large;
+  font-size: large;
+  font-weight: bold;  
 }
 
 @-webkit-keyframes scary {
@@ -782,13 +783,14 @@ body, select {
 
 .bee-Dialog-caption {
   cursor: move;
+  height: 30px;
 }
 
 .bee-DialogBox .bee-Dialog-caption {
   background-color: #e3e8f3;
-  padding: 4px 20px 4px 8px;
-  border-bottom: 1px solid #ddd;
-  font-size: medium;
+  padding: 4px 45px 4px 8px;
+ /* border-bottom: 1px solid #ddd;*/
+  font-size: small;
   font-weight: bolder;
   min-height: 10px;
 }
@@ -801,8 +803,8 @@ body, select {
 }
 
 .bee-DialogBox .bee-Dialog-content {
-  background-color: #cfc;
-  padding: 1ex 1em 4px;
+  background-color: whiteSmoke;
+  padding: 1ex 3em 4px;
 }
 
 .bee-NotificationContainer {
@@ -993,6 +995,7 @@ body, select {
 .bee-GridFormCaption {
   font-size: medium;
   font-style: italic;
+  vertical-align: middle;
 }
 
 .bee-GridFormCaption-newRow {
@@ -1081,7 +1084,7 @@ body, select {
 .bee-InputSave {
   position: absolute;
   top: 2px;
-  right: 28px;
+  right: 45px;
   z-index: 1;
 }
 
@@ -1114,7 +1117,6 @@ body, select {
 
 .bee-TreeItem-branch {
   white-space: nowrap;
-  font-weight:bold;
 }
 
 .bee-TreeItem-imageCell,.bee-TreeItem-contentCell {
@@ -1340,6 +1342,7 @@ body, select {
   padding: 0 10px;
   border: 1px solid #E4E4E4;
   border-radius: 2px;
+  margin-right: 2em;
   cursor: pointer;
 }
 
@@ -1369,11 +1372,11 @@ body, select {
 
 .bee-NewRow .bee-Dialog-caption {
   background-color: #eee;
-  color: green;
-  padding: 2px 50px 2px 8px;
+  padding: 2px 90px 2px 8px;
   border-bottom: 1px solid #ddd;
   font-size: medium;
   font-style: italic;
+  font-weight: bold;
 }
 
 .bee-NewRow-table {
@@ -1471,4 +1474,12 @@ body, select {
 
 .bee-Header-caption {
   font-weight: bold;
+}
+
+.bee-ListBox {
+	border: 1px solid silver;
+}
+
+.bee-InputSpinner {
+	border: 1px solid silver;
 }
