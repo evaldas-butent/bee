@@ -38,7 +38,7 @@ public class LeftTabPanel extends Composite {
 
   public LeftTabPanel() {
     initWidget(main);
-    main.setSpacing(15);
+    main.setCellSpacing(15);
     main.add(left);
     main.add(right);
 

@@ -55,15 +55,6 @@ public abstract class InteractiveWidget extends Composite implements Focusable {
         }
         break;
       }
-
-      case Event.ONMOUSEOVER: {
-        if (DOM.eventGetCurrentTarget(event) == getElement()) {
-          onMouseOver(element, event);
-          DOM.eventCancelBubble(event, true);
-          DOM.eventPreventDefault(event);
-          return;
-        }
-      }
     }
 
     super.onBrowserEvent(event);
@@ -72,8 +63,6 @@ public abstract class InteractiveWidget extends Composite implements Focusable {
   public abstract void onDoubleClick(Element element, Event event);
 
   public abstract void onMouseDown(Element element, Event event);
-
-  public abstract void onMouseOver(Element element, Event event);
 
   public void setAccessKey(char key) {
     FocusImpl.getFocusImplForPanel().setAccessKey(getElement(), key);

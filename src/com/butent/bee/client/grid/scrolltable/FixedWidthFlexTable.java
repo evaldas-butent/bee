@@ -53,11 +53,6 @@ public class FixedWidthFlexTable extends FlexTable {
     }
 
     @Override
-    public void setWidth(int row, int column, String width) {
-      Assert.unsupported("setWidth is not supported");
-    }
-
-    @Override
     protected Element getRawElement(int row, int column) {
       return super.getRawElement(row + 1, column);
     }

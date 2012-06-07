@@ -621,7 +621,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     final char sep = DateTime.TIME_FIELD_SEPARATOR;
 
     BeeListBox widget = new BeeListBox();
-    for (int i = start; i < 60 * 24; i += step) {
+    for (int i = start; i < TimeUtils.MINUTES_PER_DAY; i += step) {
       String item = TimeUtils.padTwo(i / 60) + sep + TimeUtils.padTwo(i % 60);
       widget.addItem(item);
     }

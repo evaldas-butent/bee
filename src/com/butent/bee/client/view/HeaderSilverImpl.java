@@ -80,8 +80,8 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   private final InlineLabel messageWidget = new InlineLabel();
 
   private boolean enabled = true;
+
   private final Map<Action, String> actionControls = Maps.newHashMap();
-  
 
   public HeaderSilverImpl() {
     super();

@@ -76,68 +76,52 @@ public class TestTimeUtils {
     end.setTime(1298362388327L);
 
     assertEquals(100,
-        TimeUtils.fieldDifference(start, end, TimeUtils.MILLISECOND));
+        TimeUtils.fieldDifference(start, end, TimeUtils.FIELD_MILLISECOND));
     assertEquals(-100,
-        TimeUtils.fieldDifference(end, start, TimeUtils.MILLISECOND));
+        TimeUtils.fieldDifference(end, start, TimeUtils.FIELD_MILLISECOND));
     assertEquals(0,
-        TimeUtils.fieldDifference(start, start, TimeUtils.MILLISECOND));
+        TimeUtils.fieldDifference(start, start, TimeUtils.FIELD_MILLISECOND));
 
     DateTime start1 = new DateTime(2010, 03, 7, 7, 10, 10);
 
     DateTime start2 = new DateTime(2011, 3, 7, 17, 30, 20);
     DateTime start3 = new DateTime(2011, 2, 7, 10, 30, 10);
 
-    assertEquals(365, TimeUtils.fieldDifference(start1, start2,
-        TimeUtils.DAY_OF_YEAR));
-    assertEquals(12,
-        TimeUtils.fieldDifference(start1, start2, TimeUtils.MONTH));
-    assertEquals(1,
-        TimeUtils.fieldDifference(start1, start2, TimeUtils.YEAR));
+    assertEquals(365, TimeUtils.fieldDifference(start1, start2, TimeUtils.FIELD_DAY_OF_YEAR));
+    assertEquals(12 ,TimeUtils.fieldDifference(start1, start2, TimeUtils.FIELD_MONTH));
+    assertEquals(1, TimeUtils.fieldDifference(start1, start2, TimeUtils.FIELD_YEAR));
     assertEquals(52, TimeUtils.fieldDifference(start1, start2,
-        TimeUtils.DAY_OF_WEEK_IN_MONTH));
+        TimeUtils.FIELD_DAY_OF_WEEK_IN_MONTH));
 
-    assertEquals(352,
-        TimeUtils.fieldDifference(start1, start, TimeUtils.DAY_OF_YEAR));
-    assertEquals(11,
-        TimeUtils.fieldDifference(start1, start, TimeUtils.MONTH));
-    assertEquals(0,
-        TimeUtils.fieldDifference(start1, start, TimeUtils.YEAR));
+    assertEquals(352, TimeUtils.fieldDifference(start1, start, TimeUtils.FIELD_DAY_OF_YEAR));
+    assertEquals(11, TimeUtils.fieldDifference(start1, start, TimeUtils.FIELD_MONTH));
+    assertEquals(0, TimeUtils.fieldDifference(start1, start, TimeUtils.FIELD_YEAR));
     assertEquals(50, TimeUtils.fieldDifference(start1, start,
-        TimeUtils.DAY_OF_WEEK_IN_MONTH));
+        TimeUtils.FIELD_DAY_OF_WEEK_IN_MONTH));
 
-    assertEquals(14,
-        TimeUtils.fieldDifference(start3, start, TimeUtils.DAY_OF_YEAR));
-    assertEquals(0,
-        TimeUtils.fieldDifference(start3, start, TimeUtils.MONTH));
-    assertEquals(0,
-        TimeUtils.fieldDifference(start3, start, TimeUtils.YEAR));
+    assertEquals(14, TimeUtils.fieldDifference(start3, start, TimeUtils.FIELD_DAY_OF_YEAR));
+    assertEquals(0, TimeUtils.fieldDifference(start3, start, TimeUtils.FIELD_MONTH));
+    assertEquals(0, TimeUtils.fieldDifference(start3, start, TimeUtils.FIELD_YEAR));
     assertEquals(2, TimeUtils.fieldDifference(start3, start,
-        TimeUtils.DAY_OF_WEEK_IN_MONTH));
+        TimeUtils.FIELD_DAY_OF_WEEK_IN_MONTH));
 
     DateTime start4 = new DateTime(2011, 03, 01);
     DateTime end1 = new DateTime(2012, 03, 01);
 
-    assertEquals(366,
-        TimeUtils.fieldDifference(start4, end1, TimeUtils.DAY_OF_YEAR));
-    assertEquals(12,
-        TimeUtils.fieldDifference(start4, end1, TimeUtils.MONTH));
-    assertEquals(1, TimeUtils.fieldDifference(start4, end1, TimeUtils.YEAR));
+    assertEquals(366, TimeUtils.fieldDifference(start4, end1, TimeUtils.FIELD_DAY_OF_YEAR));
+    assertEquals(12, TimeUtils.fieldDifference(start4, end1, TimeUtils.FIELD_MONTH));
+    assertEquals(1, TimeUtils.fieldDifference(start4, end1, TimeUtils.FIELD_YEAR));
     assertEquals(2, TimeUtils.fieldDifference(start3, start,
-        TimeUtils.DAY_OF_WEEK_IN_MONTH));
+        TimeUtils.FIELD_DAY_OF_WEEK_IN_MONTH));
 
     DateTime start5 = new DateTime(2011, 2, 7, 11, 30, 20);
     DateTime start6 = new DateTime(2011, 2, 8, 12, 30, 20);
 
-    assertEquals(0,
-        TimeUtils.fieldDifference(start3, start5, TimeUtils.AM_PM));
-    assertEquals(2,
-        TimeUtils.fieldDifference(start3, start6, TimeUtils.AM_PM));
-    assertEquals(60,
-        TimeUtils.fieldDifference(start3, start5, TimeUtils.MINUTE));
-    assertEquals(3610,
-        TimeUtils.fieldDifference(start3, start5, TimeUtils.SECOND));
-    assertEquals(1, TimeUtils.fieldDifference(start5, start6,
-        TimeUtils.DAY_OF_WEEK));
+    assertEquals(0, TimeUtils.fieldDifference(start3, start5, TimeUtils.FIELD_AM_PM));
+    assertEquals(2, TimeUtils.fieldDifference(start3, start6, TimeUtils.FIELD_AM_PM));
+    assertEquals(60, TimeUtils.fieldDifference(start3, start5, TimeUtils.FIELD_MINUTE));
+    assertEquals(3610, TimeUtils.fieldDifference(start3, start5, TimeUtils.FIELD_SECOND));
+    assertEquals(1, TimeUtils.fieldDifference(start5, start6, TimeUtils.FIELD_DAY_OF_WEEK));
   }
 
   @SuppressWarnings({"rawtypes", "unused"})

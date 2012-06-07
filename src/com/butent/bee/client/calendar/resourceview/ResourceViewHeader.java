@@ -1,61 +1,50 @@
 package com.butent.bee.client.calendar.resourceview;
 
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
-import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.time.HasDateValue;
-import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.client.modules.calendar.CalendarStyleManager;
+import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Html;
+import com.butent.bee.shared.time.JustDate;
 
 import java.util.List;
 
 public class ResourceViewHeader extends Composite {
 
-  private static final String CALENDAR_HEADER_STYLE = "bee-calendar-header";
-  private static final String CELL_CONTAINER_STYLE = "day-cell-container";
-  private static final String DATE_CELL_STYLE = "year-cell";
-  private static final String SPLITTER_STYLE = "splitter";
+  private static final DateTimeFormat DATE_FORMAT = DateTimeFormat.getFormat("MM-dd");
   
-  private final FlexTable header = new FlexTable();
+  private static final int DATE_CELL_INDEX = 0;
+  private static final int CAPTION_CONTAINER_INDEX = 1;
 
-  private final AbsolutePanel panel = new AbsolutePanel();
-  private final AbsolutePanel splitter = new AbsolutePanel();
+  private final Horizontal header = new Horizontal();
 
   public ResourceViewHeader() {
     initWidget(header);
-    header.setStyleName(CALENDAR_HEADER_STYLE);
+    header.addStyleName(CalendarStyleManager.CALENDAR_HEADER);
 
-    panel.setStyleName(CELL_CONTAINER_STYLE);
-    splitter.setStylePrimaryName(SPLITTER_STYLE);
-
-    header.insertRow(0);
-    header.insertRow(0);
-  
-    header.insertCell(0, 0);
-    header.insertCell(0, 0);
-    header.insertCell(0, 0);
+    BeeLabel dateLabel = new BeeLabel();
+    header.add(dateLabel);
+    header.addStyleToCell(dateLabel, CalendarStyleManager.RESOURCE_DATE_CELL);
     
-    header.setWidget(0, 1, panel);
+    Flow captionPanel = new Flow();
+    captionPanel.addStyleName(CalendarStyleManager.RESOURCE_CAPTION_CONTAINER);
+    header.add(captionPanel);
     
-    header.getCellFormatter().setStyleName(0, 0, DATE_CELL_STYLE);
-    header.getCellFormatter().setWidth(0, 2, DomUtils.getScrollBarWidth() + "px");
-
-    header.getFlexCellFormatter().setColSpan(1, 0, 3);
-    
-    header.setCellPadding(0);
-    header.setCellSpacing(0);
-    header.setBorderWidth(0);
-
-    header.setWidget(1, 0, splitter);
+    Html filler = new Html();
+    header.add(filler);
+    header.setCellWidth(filler, DomUtils.getScrollBarWidth());
   }
 
   public void setAttendees(List<Long> attendees) {
+    HasWidgets panel = (HasWidgets) header.getWidget(CAPTION_CONTAINER_INDEX); 
     panel.clear();
     if (attendees.isEmpty()) {
       return;
@@ -63,8 +52,8 @@ public class ResourceViewHeader extends Composite {
 
     int width = 100 / attendees.size();
     for (int i = 0; i < attendees.size(); i++) {
-      Label label = new Label(CalendarKeeper.getAttendeeName(attendees.get(i)));
-      label.setStylePrimaryName("day-cell");
+      BeeLabel label = new BeeLabel(CalendarKeeper.getAttendeeName(attendees.get(i)));
+      label.addStyleName(CalendarStyleManager.RESOURCE_CAPTION_CELL);
 
       StyleUtils.setLeft(label, width * i, Unit.PCT);
       StyleUtils.setWidth(label, width, Unit.PCT);
@@ -73,8 +62,7 @@ public class ResourceViewHeader extends Composite {
     }
   }
 
-  public void setDate(HasDateValue date) {
-    Assert.notNull(date);
-    header.setText(0, 0, BeeUtils.concat('-', date.getMonth(), date.getDom()));
+  public void setDate(JustDate date) {
+    header.getWidget(DATE_CELL_INDEX).getElement().setInnerHTML(DATE_FORMAT.format(date));
   }
 }

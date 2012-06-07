@@ -77,8 +77,6 @@ public class DateTimeFormat {
 
   private static final Map<String, DateTimeFormat> cache;
 
-  private static final int NUM_MILLISECONDS_IN_DAY = 24 * 60 * 60000;
-
   private static final String PATTERN_CHARS = "GyMLdkHmsSEcDahKzZv";
 
   private static final String NUMERIC_FORMAT_CHARS = "MLydhHmsSDkK";
@@ -87,8 +85,6 @@ public class DateTimeFormat {
 
   private static final String GMT = "GMT";
   private static final String UTC = "UTC";
-
-  private static final int MINUTES_PER_HOUR = 60;
 
   static {
     cache = new HashMap<String, DateTimeFormat>();
@@ -278,16 +274,16 @@ public class DateTimeFormat {
   }
 
   public String format(HasDateValue date, TimeZone timeZone) {
-    int diff = date.supportsTimezoneOffset() 
+    long diff = date.supportsTimezoneOffset() 
         ? (date.getTimezoneOffset() - timeZone.getOffset(date)) * 60000 : 0;
     DateTime keepDate = new DateTime(date.getTime() + diff);
     DateTime keepTime = keepDate;
     
     if (date.supportsTimezoneOffset() && keepDate.getTimezoneOffset() != date.getTimezoneOffset()) {
       if (diff > 0) {
-        diff -= NUM_MILLISECONDS_IN_DAY;
+        diff -= TimeUtils.MILLIS_PER_DAY;
       } else {
-        diff += NUM_MILLISECONDS_IN_DAY;
+        diff += TimeUtils.MILLIS_PER_DAY;
       }
       keepTime = new DateTime(date.getTime() + diff);
     }
@@ -786,7 +782,7 @@ public class DateTimeFormat {
 
     int offset;
     if (pos[0] < text.length() && text.charAt(pos[0]) == ':') {
-      offset = value * MINUTES_PER_HOUR;
+      offset = value * TimeUtils.MINUTES_PER_HOUR;
       ++(pos[0]);
       st = pos[0];
       value = parseInt(text, pos);
@@ -797,9 +793,9 @@ public class DateTimeFormat {
     } else {
       offset = value;
       if (offset < 24 && (pos[0] - st) <= 2) {
-        offset *= MINUTES_PER_HOUR;
+        offset *= TimeUtils.MINUTES_PER_HOUR;
       } else {
-        offset = offset % 100 + offset / 100 * MINUTES_PER_HOUR;
+        offset = offset % 100 + offset / 100 * TimeUtils.MINUTES_PER_HOUR;
       }
     }
 

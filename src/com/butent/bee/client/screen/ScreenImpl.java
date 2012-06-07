@@ -511,7 +511,7 @@ public class ScreenImpl implements Screen {
 
     BeeImage close = new BeeImage(Global.getImages().close(), new SplitCommand(true));
     hor.add(close);
-    hor.setCellWidth(close, "32px");
+    hor.setCellWidth(close, 32);
     hor.setCellHorizontalAlignment(close, HasHorizontalAlignment.ALIGN_RIGHT);
 
     p.add(hor);
@@ -564,7 +564,7 @@ public class ScreenImpl implements Screen {
     tp.add(fp, "Options");
 
     Vertical adm = new Vertical();
-    adm.setSpacing(5);
+    adm.setCellSpacing(5);
 
     adm.add(new BeeButton("DSN", new DsnService().name(), DsnService.SVC_GET_DSNS));
     adm.add(new BeeButton("States", new StateService().name(), StateService.SVC_GET_STATES));

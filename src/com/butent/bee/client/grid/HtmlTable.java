@@ -1,6 +1,7 @@
 package com.butent.bee.client.grid;
 
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.dom.client.TableRowElement;
@@ -24,6 +25,7 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
@@ -94,8 +96,12 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
       setVerticalAlignment(row, column, vAlign);
     }
 
-    public void setHeight(int row, int column, String height) {
-      DOM.setElementProperty(ensureElement(row, column), "height", height);
+    public void setHeight(int row, int column, int height) {
+      StyleUtils.setHeight(ensureElement(row, column), height);
+    }
+
+    public void setHeight(int row, int column, double height, Unit unit) {
+      StyleUtils.setHeight(ensureElement(row, column), height, unit);
     }
 
     public void setHorizontalAlignment(int row, int column, HorizontalAlignmentConstant align) {
@@ -120,8 +126,12 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
       UIObject.setVisible(e, visible);
     }
 
-    public void setWidth(int row, int column, String width) {
-      DOM.setElementProperty(ensureElement(row, column), "width", width);
+    public void setWidth(int row, int column, int width) {
+      StyleUtils.setWidth(ensureElement(row, column), width);
+    }
+
+    public void setWidth(int row, int column, double width, Unit unit) {
+      StyleUtils.setWidth(ensureElement(row, column), width, unit);
     }
 
     public void setWordWrap(int row, int column, boolean wrap) {

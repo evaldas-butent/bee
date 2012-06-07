@@ -1,4 +1,4 @@
-package com.butent.bee.client.calendar.util;
+package com.butent.bee.client.modules.calendar.layout;
 
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.shared.time.TimeUtils;

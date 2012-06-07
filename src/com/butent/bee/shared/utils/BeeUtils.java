@@ -1,6 +1,7 @@
 package com.butent.bee.shared.utils;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
@@ -1267,6 +1268,16 @@ public class BeeUtils {
       return false;
     } else {
       return (x instanceof String || x instanceof StringBuilder || x instanceof StringBuffer);
+    }
+  }
+  
+  public static <C extends Comparable<C>> boolean intersects(Range<C> r1, Range<C> r2) {
+    if (r1 == null || r2 == null) {
+      return false;
+    } else if (r1.isConnected(r2)) {
+      return !r1.intersection(r2).isEmpty();
+    } else {
+      return false;
     }
   }
 

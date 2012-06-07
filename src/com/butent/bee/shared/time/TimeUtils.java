@@ -16,43 +16,48 @@ import java.util.Date;
  */
 public class TimeUtils {
 
-  public static final int ERA = 0;
+  public static final int FIELD_ERA = 0;
 
-  public static final int YEAR = 1;
-  public static final int MONTH = 2;
-  public static final int WEEK_OF_YEAR = 3;
-  public static final int WEEK_OF_MONTH = 4;
-  public static final int DATE = 5;
-  public static final int DAY_OF_MONTH = 5;
-  public static final int DAY_OF_YEAR = 6;
-  public static final int DAY_OF_WEEK = 7;
-  public static final int DAY_OF_WEEK_IN_MONTH = 8;
+  public static final int FIELD_YEAR = 1;
+  public static final int FIELD_MONTH = 2;
+  public static final int FIELD_WEEK_OF_YEAR = 3;
+  public static final int FIELD_WEEK_OF_MONTH = 4;
+  public static final int FIELD_DATE = 5;
+  public static final int FIELD_DAY_OF_MONTH = 5;
+  public static final int FIELD_DAY_OF_YEAR = 6;
+  public static final int FIELD_DAY_OF_WEEK = 7;
+  public static final int FIELD_DAY_OF_WEEK_IN_MONTH = 8;
 
-  public static final int AM_PM = 9;
-  public static final int HOUR = 10;
-  public static final int HOUR_OF_DAY = 11;
-  public static final int MINUTE = 12;
-  public static final int SECOND = 13;
-  public static final int MILLISECOND = 14;
+  public static final int FIELD_AM_PM = 9;
+  public static final int FIELD_HOUR = 10;
+  public static final int FIELD_HOUR_OF_DAY = 11;
+  public static final int FIELD_MINUTE = 12;
+  public static final int FIELD_SECOND = 13;
+  public static final int FIELD_MILLISECOND = 14;
 
-  public static final int ZONE_OFFSET = 15;
-  public static final int DST_OFFSET = 16;
+  public static final int FIELD_ZONE_OFFSET = 15;
+  public static final int FIELD_DST_OFFSET = 16;
 
-  public static final int YEAR_WOY = 17;
+  public static final int FIELD_YEAR_WOY = 17;
 
-  public static final int DOW_LOCAL = 18;
+  public static final int FIELD_DOW_LOCAL = 18;
 
-  public static final int EXTENDED_YEAR = 19;
-  public static final int JULIAN_DAY = 20;
+  public static final int FIELD_EXTENDED_YEAR = 19;
+  public static final int FIELD_JULIAN_DAY = 20;
 
-  public static final int MILLISECONDS_IN_DAY = 21;
+  public static final int FIELD_MILLISECONDS_IN_DAY = 21;
 
+  public static final int HOURS_PER_DAY = 24;
+
+  public static final int MINUTES_PER_HOUR = 60;
+  public static final int MINUTES_PER_DAY = HOURS_PER_DAY * MINUTES_PER_HOUR;
+  
   public static final int MILLIS_PER_SECOND = 1000;
   public static final int MILLIS_PER_MINUTE = 60 * MILLIS_PER_SECOND;
-  public static final int MILLIS_PER_HOUR = 60 * MILLIS_PER_MINUTE;
-  public static final long MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
+  public static final int MILLIS_PER_HOUR = MINUTES_PER_HOUR * MILLIS_PER_MINUTE;
+  public static final long MILLIS_PER_DAY = HOURS_PER_DAY * MILLIS_PER_HOUR;
   public static final long MILLIS_PER_WEEK = 7 * MILLIS_PER_DAY;
-
+ 
   public static final RangeOptions OPEN_REQUIRED = new RangeOptions(false, true, true);
   public static final RangeOptions OPEN_NOT_REQUIRED = new RangeOptions(false, true, false);
   public static final RangeOptions CLOSED_REQUIRED = new RangeOptions(false, false, true);
@@ -94,11 +99,11 @@ public class TimeUtils {
   }
 
   public static void addHour(DateTime date, int amount) {
-    add(date, HOUR, amount);
+    add(date, FIELD_HOUR, amount);
   }
 
   public static void addMinute(DateTime date, int amount) {
-    add(date, MINUTE, amount);
+    add(date, FIELD_MINUTE, amount);
   }
 
   public static DateTime combine(HasDateValue datePart, DateTime timePart) {
@@ -157,7 +162,7 @@ public class TimeUtils {
    * @return the difference between {@code start} and {@code end} in days.
    */
   public static int dateDiff(DateTime start, DateTime end) {
-    return fieldDifference(start, end, DATE);
+    return fieldDifference(start, end, FIELD_DATE);
   }
 
   public static String dateToString(int year, int month, int dom, char sep) {
@@ -723,15 +728,15 @@ public class TimeUtils {
     long delta = amount;
 
     switch (field) {
-      case YEAR:
-      case MONTH:
+      case FIELD_YEAR:
+      case FIELD_MONTH:
         int y1 = date.getYear();
         int m1 = date.getMonth();
         int d1 = date.getDom();
         int y2 = y1;
         int m2 = m1;
 
-        if (field == YEAR) {
+        if (field == FIELD_YEAR) {
           y2 += amount;
         } else {
           m2 += amount;
@@ -746,39 +751,39 @@ public class TimeUtils {
         delta = new DateTime(y2, m2, d2).getTime() - new DateTime(y1, m1, d1).getTime();
         break;
 
-      case WEEK_OF_YEAR:
-      case WEEK_OF_MONTH:
-      case DAY_OF_WEEK_IN_MONTH:
+      case FIELD_WEEK_OF_YEAR:
+      case FIELD_WEEK_OF_MONTH:
+      case FIELD_DAY_OF_WEEK_IN_MONTH:
         delta *= MILLIS_PER_WEEK;
         break;
 
-      case AM_PM:
+      case FIELD_AM_PM:
         delta *= 12 * MILLIS_PER_HOUR;
         break;
 
-      case DAY_OF_MONTH:
-      case DAY_OF_YEAR:
-      case DAY_OF_WEEK:
-      case DOW_LOCAL:
-      case JULIAN_DAY:
+      case FIELD_DAY_OF_MONTH:
+      case FIELD_DAY_OF_YEAR:
+      case FIELD_DAY_OF_WEEK:
+      case FIELD_DOW_LOCAL:
+      case FIELD_JULIAN_DAY:
         delta *= MILLIS_PER_DAY;
         break;
 
-      case HOUR_OF_DAY:
-      case HOUR:
+      case FIELD_HOUR_OF_DAY:
+      case FIELD_HOUR:
         delta *= MILLIS_PER_HOUR;
         break;
 
-      case MINUTE:
+      case FIELD_MINUTE:
         delta *= MILLIS_PER_MINUTE;
         break;
 
-      case SECOND:
+      case FIELD_SECOND:
         delta *= MILLIS_PER_SECOND;
         break;
 
-      case MILLISECOND:
-      case MILLISECONDS_IN_DAY:
+      case FIELD_MILLISECOND:
+      case FIELD_MILLISECONDS_IN_DAY:
         break;
 
       default:

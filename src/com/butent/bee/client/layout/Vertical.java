@@ -1,34 +1,51 @@
 package com.butent.bee.client.layout;
 
-import com.google.gwt.dom.client.TableElement;
-import com.google.gwt.user.client.ui.VerticalPanel;
-
-import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.ui.HasIndexedWidgets;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * Enables to use panel that lays all of its widgets out in a single vertical column.
  */
 
-public class Vertical extends VerticalPanel implements CellVector, HasIndexedWidgets  {
+public class Vertical extends CellVector  {
 
   public Vertical() {
-    DomUtils.createId(this, getIdPrefix());
+    super();
   }
 
-  public String getId() {
-    return DomUtils.getId(this);
+  @Override
+  public void add(Widget w) {
+    Element tr = DOM.createTR();
+    Element td = createAlignedTd();
+    DOM.appendChild(tr, td);
+    DOM.appendChild(getBody(), tr);
+
+    add(w, td);
   }
 
   public String getIdPrefix() {
     return "vert";
   }
 
-  public void setId(String id) {
-    DomUtils.setId(this, id);
+  public void insert(Widget w, int beforeIndex) {
+    checkIndexBoundsForInsertion(beforeIndex);
+
+    Element tr = DOM.createTR();
+    Element td = createAlignedTd();
+    DOM.appendChild(tr, td);
+
+    DOM.insertChild(getBody(), tr, beforeIndex);
+    insert(w, td, beforeIndex, false);
   }
 
-  public void setPadding(int padding) {
-    TableElement.as(getElement()).setCellPadding(padding);
+  @Override
+  public boolean remove(Widget w) {
+    Element td = DOM.getParent(w.getElement());
+    boolean removed = super.remove(w);
+    if (removed) {
+      DOM.removeChild(getBody(), DOM.getParent(td));
+    }
+    return removed;
   }
 }

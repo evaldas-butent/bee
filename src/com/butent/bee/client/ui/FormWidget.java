@@ -1906,13 +1906,13 @@ public enum FormWidget {
     }
 
     Dimensions dimensions = XmlUtils.getDimensions(element);
-    z = dimensions.getCssWidth();
-    if (BeeUtils.isEmpty(z)) {
-      table.getCellFormatter().setWidth(row, col, z);
+    if (dimensions.hasWidth()) {
+      table.getCellFormatter().setWidth(row, col, dimensions.getWidthValue(),
+          Dimensions.normalizeUnit(dimensions.getWidthUnit()));
     }
-    z = dimensions.getCssHeight();
-    if (!BeeUtils.isEmpty(z)) {
-      table.getCellFormatter().setHeight(row, col, z);
+    if (dimensions.hasHeight()) {
+      table.getCellFormatter().setHeight(row, col, dimensions.getHeightValue(),
+          Dimensions.normalizeUnit(dimensions.getHeightUnit()));
     }
 
     if (XmlUtils.tagIs(element, UiConstants.TAG_CELL)) {

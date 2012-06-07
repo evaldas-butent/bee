@@ -2,12 +2,14 @@ package com.butent.bee.client.calendar;
 
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.modules.calendar.Appointment;
-import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
+
+import java.util.List;
 
 public abstract class CalendarView implements HasSettings {
 
@@ -15,31 +17,24 @@ public abstract class CalendarView implements HasSettings {
     DAY, MONTH, RESOURCE
   }
   
-  protected CalendarWidget calendarWidget = null;
-
-  private int displayedDays = BeeConst.UNDEF;
+  private CalendarWidget calendarWidget = null;
 
   public void attach(CalendarWidget widget) {
-    Assert.notNull(widget);
     this.calendarWidget = widget;
   }
 
   public void createAppointment(DateTime start) {
-    Assert.notNull(calendarWidget);
-    calendarWidget.fireTimeBlockClickEvent(start);
+    if (getCalendarWidget() != null) {
+      getCalendarWidget().fireTimeBlockClickEvent(start);
+    }
   }
 
   public abstract void doLayout();
 
   public abstract void doSizing();
 
-  public int getDisplayedDays() {
-    return displayedDays;
-  }
-
   public CalendarSettings getSettings() {
-    Assert.notNull(calendarWidget);
-    return calendarWidget.getSettings();
+    return getCalendarWidget().getSettings();
   }
 
   public abstract String getStyleName();
@@ -50,23 +45,39 @@ public abstract class CalendarView implements HasSettings {
 
   public abstract void onDoubleClick(Element element, Event event);
 
-  public abstract void onMouseOver(Element element, Event event);
-
   public abstract void onSingleClick(Element element, Event event);
 
   public void openAppointment(Appointment appt) {
-    Assert.notNull(calendarWidget);
-    calendarWidget.fireOpenEvent(appt);
+    if (getCalendarWidget() != null) {
+      getCalendarWidget().fireOpenEvent(appt);
+    }
   }
 
   public abstract void scrollToHour(int hour);
 
   public void selectAppointment(Appointment appt) {
-    Assert.notNull(calendarWidget);
-    calendarWidget.setSelectedAppointment(appt, true);
+    if (getCalendarWidget() != null) {
+      getCalendarWidget().setSelectedAppointment(appt, true);
+    }
+  }
+  
+  protected void addWidget(Widget widget) {
+    getCalendarWidget().addToRootPanel(widget);
   }
 
-  public void setDisplayedDays(int displayedDays) {
-    this.displayedDays = displayedDays;
+  protected List<Appointment> getAppointments() {
+    return getCalendarWidget().getAppointments();
+  }
+  
+  protected CalendarWidget getCalendarWidget() {
+    return calendarWidget;
+  }
+  
+  protected JustDate getDate() {
+    return getCalendarWidget().getDate();
+  }
+  
+  protected int getDays() {
+    return getCalendarWidget().getDisplayedDays();
   }
 }

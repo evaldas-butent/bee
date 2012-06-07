@@ -17,17 +17,15 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.calendar.event.DateRequestEvent;
 import com.butent.bee.client.calendar.event.DateRequestHandler;
 import com.butent.bee.client.calendar.event.HasDateRequestHandlers;
-import com.butent.bee.client.calendar.event.HasMouseOverHandlers;
 import com.butent.bee.client.calendar.event.HasTimeBlockClickHandlers;
 import com.butent.bee.client.calendar.event.HasUpdateHandlers;
-import com.butent.bee.client.calendar.event.MouseOverEvent;
-import com.butent.bee.client.calendar.event.MouseOverHandler;
 import com.butent.bee.client.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.calendar.event.TimeBlockClickHandler;
 import com.butent.bee.client.calendar.event.UpdateEvent;
 import com.butent.bee.client.calendar.event.UpdateHandler;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
@@ -40,7 +38,6 @@ import java.util.List;
 public class CalendarWidget extends InteractiveWidget implements HasSelectionHandlers<Appointment>,
     HasOpenHandlers<Appointment>, HasTimeBlockClickHandlers<DateTime>,
     HasUpdateHandlers<Appointment>, HasDateRequestHandlers<HasDateValue>,
-    HasMouseOverHandlers<Appointment>,
     HasLayout, HasAppointments {
 
   private boolean layoutSuspended = false;
@@ -54,6 +51,7 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
   private final List<Long> attendees = Lists.newArrayList();
 
   private CalendarView view = null;
+  private int displayedDays = BeeConst.UNDEF;
 
   public CalendarWidget(CalendarSettings settings) {
     this(TimeUtils.today(), settings);
@@ -84,17 +82,6 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
 
   public HandlerRegistration addDateRequestHandler(DateRequestHandler<HasDateValue> handler) {
     return addHandler(handler, DateRequestEvent.getType());
-  }
-
-  public void addDaysToDate(int numOfDays) {
-    if (numOfDays != 0) {
-      TimeUtils.addDay(date, numOfDays);
-      refresh();
-    }
-  }
-
-  public HandlerRegistration addMouseOverHandler(MouseOverHandler<Appointment> handler) {
-    return addHandler(handler, MouseOverEvent.getType());
   }
 
   public HandlerRegistration addOpenHandler(OpenHandler<Appointment> handler) {
@@ -142,13 +129,6 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
     DateRequestEvent.fire(this, dt, clicked);
   }
 
-  public void fireMouseOverEvent(Appointment appointment, Element element) {
-    if (appointment != null && !appointment.equals(appointmentManager.getHoveredAppointment())) {
-      appointmentManager.setHoveredAppointment(appointment);
-      MouseOverEvent.fire(this, appointment, element);
-    }
-  }
-
   public void fireOpenEvent(Appointment appointment) {
     OpenEvent.fire(this, appointment);
   }
@@ -182,14 +162,14 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
     return JustDate.copyOf(date);
   }
 
-  public int getDays() {
-    return view == null ? settings.getDefaultDisplayedDays() : view.getDisplayedDays();
+  public int getDisplayedDays() {
+    return displayedDays;
   }
-
+  
   public Appointment getRollbackAppointment() {
     return appointmentManager.getRollbackAppointment();
   }
-  
+
   public Appointment getSelectedAppointment() {
     return appointmentManager.getSelectedAppointment();
   }
@@ -231,26 +211,19 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
       view.onSingleClick(element, event);
     }
   }
-
-  public void onMouseOver(Element element, Event event) {
-    if (view != null) {
-      view.onMouseOver(element, event);
-    }
-  }
-
+  
   public void refresh() {
     if (layoutSuspended) {
       layoutPending = true;
       return;
     }
 
-    appointmentManager.resetHoveredAppointment();
     appointmentManager.sortAppointments();
 
     doLayout();
     doSizing();
   }
-  
+
   @Override
   public boolean removeAppointment(long id, boolean refresh) {
     boolean removed = appointmentManager.removeAppointment(id);
@@ -272,13 +245,13 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
       view.scrollToHour(hour);
     }
   }
-
+  
   public void setAppointments(Collection<Appointment> appointments) {
     appointmentManager.clearAppointments();
     appointmentManager.addAppointments(appointments);
     refresh();
   }
-  
+
   public void setAttendees(Collection<Long> attendees) {
     this.attendees.clear();
     this.attendees.addAll(attendees);
@@ -290,31 +263,33 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
   }
 
   public void setDate(JustDate newDate) {
-    setDate(newDate, getDays());
+    setDate(newDate, getDisplayedDays());
   }
 
   public void setDate(JustDate newDate, int days) {
     Assert.notNull(newDate);
-    Assert.notNull(view);
 
-    if (newDate.equals(date) && days == view.getDisplayedDays()) {
+    if (newDate.equals(date) && days == getDisplayedDays()) {
       return;
     }
 
     date.setDate(newDate);
-    view.setDisplayedDays(days);
+    setDisplayedDays(days);
 
     refresh();
   }
 
   public void setDays(int days) {
     Assert.isPositive(days);
-    Assert.notNull(view);
 
-    if (view.getDisplayedDays() != days) {
-      view.setDisplayedDays(days);
+    if (getDisplayedDays() != days) {
+      setDisplayedDays(days);
       refresh();
     }
+  }
+  
+  public void setDisplayedDays(int displayedDays) {
+    this.displayedDays = displayedDays;
   }
 
   public void setRollbackAppointment(Appointment appt) {

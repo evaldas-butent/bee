@@ -365,7 +365,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       }
 
     } else {
-      int days = (calendar.getView() instanceof ResourceView) ? 1 : Math.max(calendar.getDays(), 1);
+      int days = (calendar.getView() instanceof ResourceView) ? 1 : Math.max(calendar.getDisplayedDays(), 1);
       int shift = days;
       if (days == 5) {
         shift = 7;

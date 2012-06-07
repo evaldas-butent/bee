@@ -1,33 +1,50 @@
 package com.butent.bee.client.layout;
 
-import com.google.gwt.dom.client.TableElement;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-
-import com.butent.bee.client.dom.DomUtils;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * Contains a panel that lays all of its widgets out in a single horizontal row.
  */
 
-public class Horizontal extends HorizontalPanel implements CellVector {
+public class Horizontal extends CellVector {
+
+  private final Element tableRow;
 
   public Horizontal() {
-    DomUtils.createId(this, getIdPrefix());
+    super();
+
+    tableRow = DOM.createTR();
+    DOM.appendChild(getBody(), tableRow);
   }
 
-  public String getId() {
-    return DomUtils.getId(this);
+  @Override
+  public void add(Widget w) {
+    Element td = createAlignedTd();
+    DOM.appendChild(tableRow, td);
+    add(w, td);
   }
-
+  
   public String getIdPrefix() {
     return "hor";
   }
 
-  public void setId(String id) {
-    DomUtils.setId(this, id);
+  public void insert(Widget w, int beforeIndex) {
+    checkIndexBoundsForInsertion(beforeIndex);
+
+    Element td = createAlignedTd();
+    DOM.insertChild(tableRow, td, beforeIndex);
+    insert(w, td, beforeIndex, false);
   }
-  
-  public void setPadding(int padding) {
-    TableElement.as(getElement()).setCellPadding(padding);
+
+  @Override
+  public boolean remove(Widget w) {
+    Element td = DOM.getParent(w.getElement());
+    boolean removed = super.remove(w);
+    if (removed) {
+      DOM.removeChild(tableRow, td);
+    }
+    return removed;
   }
 }

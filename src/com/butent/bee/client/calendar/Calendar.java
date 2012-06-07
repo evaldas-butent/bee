@@ -60,7 +60,7 @@ public class Calendar extends CalendarWidget implements RequiresResize, Provides
   }
 
   public void setType(CalendarView.Type viewType) {
-    setType(viewType, getDays());
+    setType(viewType, getDisplayedDays());
   }
 
   public void setType(CalendarView.Type viewType, int days) {
@@ -70,12 +70,13 @@ public class Calendar extends CalendarWidget implements RequiresResize, Provides
     switch (viewType) {
       case DAY:
         DayView dayView = (cached instanceof DayView) ? (DayView) cached : new DayView();
-        if (days > 0) {
-          dayView.setDisplayedDays(days);
-        }
         if (!(cached instanceof DayView)) {
           viewCache.put(viewType, dayView);
         }  
+
+        if (days > 0) {
+          setDisplayedDays(days);
+        }
         setView(dayView);
         break;
 
@@ -84,22 +85,20 @@ public class Calendar extends CalendarWidget implements RequiresResize, Provides
         if (!(cached instanceof MonthView)) {
           viewCache.put(viewType, monthView);
         }  
+
         setView(monthView);
         break;
 
       case RESOURCE:
         ResourceView resourceView = (cached instanceof ResourceView) ? (ResourceView) cached : new ResourceView();
-        if (days > 0) {
-          resourceView.setDisplayedDays(days);
-        }
         if (!(cached instanceof ResourceView)) {
           viewCache.put(viewType, resourceView);
         }  
+
+        if (days > 0) {
+          setDisplayedDays(days);
+        }
         setView(resourceView);
-        break;
-        
-      default:
-        Assert.unsupported(viewType.name() + " view is not yet supported");
         break;
     }
   }

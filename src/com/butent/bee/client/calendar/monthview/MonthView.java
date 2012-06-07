@@ -106,7 +106,7 @@ public class MonthView extends CalendarView {
   public void attach(CalendarWidget widget) {
     super.attach(widget);
 
-    calendarWidget.addToRootPanel(monthCalendarGrid);
+    addWidget(monthCalendarGrid);
 
     monthCalendarGrid.setCellPadding(0);
     monthCalendarGrid.setCellSpacing(0);
@@ -114,7 +114,7 @@ public class MonthView extends CalendarView {
 
     monthCalendarGrid.setStyleName(GRID_STYLE);
 
-    calendarWidget.addToRootPanel(appointmentCanvas);
+    addWidget(appointmentCanvas);
     StyleUtils.makeAbsolute(appointmentCanvas);
     appointmentCanvas.setStyleName(CANVAS_STYLE);
 
@@ -125,13 +125,13 @@ public class MonthView extends CalendarView {
       dragController.addDragHandler(new DragHandler() {
         public void onDragEnd(DragEndEvent event) {
           Appointment appt = ((AppointmentWidget) event.getContext().draggable).getAppointment();
-          calendarWidget.setCommittedAppointment(appt);
-          calendarWidget.fireUpdateEvent(appt);
+          getCalendarWidget().setCommittedAppointment(appt);
+          getCalendarWidget().fireUpdateEvent(appt);
         }
 
         public void onDragStart(DragStartEvent event) {
           Appointment appt = ((AppointmentWidget) event.getContext().draggable).getAppointment();
-          calendarWidget.setRollbackAppointment(appt.clone());
+          getCalendarWidget().setRollbackAppointment(appt.clone());
         }
 
         public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
@@ -173,9 +173,9 @@ public class MonthView extends CalendarView {
     monthViewDropController.setWeeksPerMonth(monthViewRequiredRows);
     monthViewDropController.setFirstDateDisplayed(firstDateDisplayed);
 
-    Collections.sort(calendarWidget.getAppointments(), APPOINTMENT_COMPARATOR);
+    Collections.sort(getAppointments(), APPOINTMENT_COMPARATOR);
     MonthLayoutDescription monthLayoutDescription = new MonthLayoutDescription(firstDateDisplayed,
-        monthViewRequiredRows, calendarWidget.getAppointments(), calculatedCellAppointments - 1);
+        monthViewRequiredRows, getAppointments(), calculatedCellAppointments - 1);
 
     WeekLayoutDescription[] weeks = monthLayoutDescription.getWeekDescriptions();
     for (int weekOfMonth = 0; weekOfMonth < weeks.length
@@ -221,26 +221,21 @@ public class MonthView extends CalendarView {
 
   public void onDoubleClick(Element clickedElement, Event event) {
     if (clickedElement.equals(appointmentCanvas.getElement())) {
-      if (calendarWidget.getSettings().getTimeBlockClickNumber() == TimeBlockClick.Double) {
+      if (getSettings().getTimeBlockClickNumber() == TimeBlockClick.Double) {
         dayClicked(event);
       }
     } else {
       List<AppointmentWidget> list = findAppointmentWidgetsByElement(clickedElement);
       if (!list.isEmpty()) {
-        calendarWidget.fireOpenEvent(list.get(0).getAppointment());
+        getCalendarWidget().fireOpenEvent(list.get(0).getAppointment());
       }
     }
-  }
-
-  public void onMouseOver(Element element, Event event) {
-    Appointment appointment = findAppointmentByElement(element);
-    calendarWidget.fireMouseOverEvent(appointment, element);
   }
 
   @Override
   public void onSingleClick(Element clickedElement, Event event) {
     if (clickedElement.equals(appointmentCanvas.getElement())) {
-      if (calendarWidget.getSettings().getTimeBlockClickNumber() == TimeBlockClick.Single) {
+      if (getSettings().getTimeBlockClickNumber() == TimeBlockClick.Single) {
         dayClicked(event);
       }
     } else {
@@ -249,7 +244,7 @@ public class MonthView extends CalendarView {
         selectAppointment(appointment);
       } else {
         if (moreLabels.containsKey(clickedElement)) {
-          calendarWidget.fireDateRequestEvent(cellDate(moreLabels.get(clickedElement)),
+          getCalendarWidget().fireDateRequestEvent(cellDate(moreLabels.get(clickedElement)),
               clickedElement);
         }
       }
@@ -264,20 +259,20 @@ public class MonthView extends CalendarView {
       monthCalendarGrid.setText(0, i, CalendarFormat.getDayOfWeekNames()[i]);
       cellFormatter.setStyleName(0, i, WEEKDAY_LABEL_STYLE);
     }
+    
+    JustDate date = getDate();
+    int month = date.getMonth();
+    firstDateDisplayed = firstDateShownInAMonthView(date);
 
-    int month = calendarWidget.getDate().getMonth();
-    firstDateDisplayed = firstDateShownInAMonthView(calendarWidget.getDate());
+    monthViewRequiredRows = monthViewRequiredRows(date);
 
     JustDate today = TimeUtils.today();
-    JustDate date = JustDate.copyOf(firstDateDisplayed);
-
-    monthViewRequiredRows = monthViewRequiredRows(calendarWidget.getDate());
-
+    JustDate tmpDate = JustDate.copyOf(firstDateDisplayed);
     for (int i = 1; i <= monthViewRequiredRows; i++) {
       for (int j = 0; j < DAYS_IN_A_WEEK; j++) {
-        configureDayInGrid(i, j, BeeUtils.toString(date.getDom()), date.equals(today),
-            date.getMonth() != month);
-        TimeUtils.moveOneDayForward(date);
+        configureDayInGrid(i, j, BeeUtils.toString(tmpDate.getDom()), tmpDate.equals(today),
+            tmpDate.getMonth() != month);
+        TimeUtils.moveOneDayForward(tmpDate);
       }
     }
   }
@@ -341,7 +336,7 @@ public class MonthView extends CalendarView {
     int row = y / (appointmentCanvas.getOffsetHeight() / monthViewRequiredRows);
     int col = x / (appointmentCanvas.getOffsetWidth() / DAYS_IN_A_WEEK);
 
-    calendarWidget.fireTimeBlockClickEvent(cellDate(row * DAYS_IN_A_WEEK + col));
+    getCalendarWidget().fireTimeBlockClickEvent(cellDate(row * DAYS_IN_A_WEEK + col));
   }
 
   private Appointment findAppointmentByElement(Element element) {
@@ -382,10 +377,10 @@ public class MonthView extends CalendarView {
 
     placeItemInGrid(panel, colStart, colEnd, row, cellPosition);
 
-    boolean selected = calendarWidget.isTheSelectedAppointment(appointment);
+    boolean selected = getCalendarWidget().isTheSelectedAppointment(appointment);
     styleManager.applyStyle(panel, selected);
 
-    if (calendarWidget.getSettings().isDragDropEnabled()) {
+    if (getSettings().isDragDropEnabled()) {
       dragController.makeDraggable(panel);
     }
 

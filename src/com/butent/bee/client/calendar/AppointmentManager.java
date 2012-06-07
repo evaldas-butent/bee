@@ -13,8 +13,6 @@ public class AppointmentManager {
 
   private Appointment selectedAppointment = null;
 
-  private Appointment hoveredAppointment = null;
-
   private Appointment rollbackAppointment = null;
 
   private Appointment committedAppointment = null;
@@ -55,10 +53,6 @@ public class AppointmentManager {
     return appointments;
   }
 
-  public Appointment getHoveredAppointment() {
-    return hoveredAppointment;
-  }
-
   public Appointment getRollbackAppointment() {
     return rollbackAppointment;
   }
@@ -90,10 +84,6 @@ public class AppointmentManager {
     return true;
   }
 
-  public void resetHoveredAppointment() {
-    this.hoveredAppointment = null;
-  }
-
   public void resetSelectedAppointment() {
     if (hasAppointmentSelected()) {
       selectedAppointment = null;
@@ -120,10 +110,6 @@ public class AppointmentManager {
   public void setCommittedAppointment(Appointment appt) {
     sortPending = true;
     committedAppointment = appt;
-  }
-
-  public void setHoveredAppointment(Appointment hoveredAppointment) {
-    this.hoveredAppointment = hoveredAppointment;
   }
 
   public void setRollbackAppointment(Appointment appt) {

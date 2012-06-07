@@ -10,8 +10,6 @@ import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.calendar.drop.ResourceViewDropController;
 import com.butent.bee.client.calendar.drop.ResourceViewPickupDragController;
 import com.butent.bee.client.calendar.drop.ResourceViewResizeController;
-import com.butent.bee.client.calendar.util.AppointmentAdapter;
-import com.butent.bee.client.calendar.util.AppointmentUtil;
 import com.butent.bee.client.dnd.DragEndEvent;
 import com.butent.bee.client.dnd.DragHandler;
 import com.butent.bee.client.dnd.DragStartEvent;
@@ -19,7 +17,14 @@ import com.butent.bee.client.dnd.PickupDragController;
 import com.butent.bee.client.dnd.VetoDragException;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.AppointmentUtils;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
+import com.butent.bee.client.modules.calendar.CalendarStyleManager;
+import com.butent.bee.client.modules.calendar.layout.AppointmentAdapter;
+import com.butent.bee.client.modules.calendar.layout.AppointmentPanel;
+import com.butent.bee.client.modules.calendar.layout.CalendarLayoutManager;
+import com.butent.bee.client.modules.calendar.layout.MultiDayPanel;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -29,22 +34,18 @@ import java.util.List;
 public class ResourceView extends CalendarView {
 
   private ResourceViewHeader viewHeader = null;
-  private ResourceViewMulti viewMulti = null;
-  private ResourceViewBody viewBody = null;
-
-  private ResourceViewLayoutStrategy layoutStrategy = null;
+  private MultiDayPanel viewMulti = null;
+  private AppointmentPanel viewBody = null;
 
   private final List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
   private final List<AppointmentWidget> selectedAppointmentWidgets = Lists.newArrayList();
 
-  private final ResourceViewStyleManager styleManager = new ResourceViewStyleManager();
+  private final CalendarStyleManager styleManager = new CalendarStyleManager();
 
   private PickupDragController dragController = null;
   private ResourceViewDropController dropController = null;
 
   private ResourceViewResizeController resizeController = null;
-  
-  private final int days = 1;
 
   public ResourceView() {
     super();
@@ -56,19 +57,13 @@ public class ResourceView extends CalendarView {
 
     if (viewBody == null) {
       viewHeader = new ResourceViewHeader();
-      viewMulti = new ResourceViewMulti();
-      viewBody = new ResourceViewBody(this);
-
-      layoutStrategy = new ResourceViewLayoutStrategy(this);
+      viewMulti = new MultiDayPanel();
+      viewBody = new AppointmentPanel(getSettings());
     }
 
-    calendarWidget.getRootPanel().add(viewHeader);
-    calendarWidget.getRootPanel().add(viewMulti);
-    calendarWidget.getRootPanel().add(viewBody);
-
-    if (getSettings() != null) {
-      scrollToHour(getSettings().getScrollToHour());
-    }
+    addWidget(viewHeader);
+    addWidget(viewMulti);
+    addWidget(viewBody);
 
     createDragController();
     createDropController();
@@ -76,89 +71,91 @@ public class ResourceView extends CalendarView {
   }
 
   public void doLayout() {
-    JustDate date = calendarWidget.getDate();
-    List<Long> attendees = calendarWidget.getAttendees();
+    JustDate date = getDate();
+    List<Long> attendees = getCalendarWidget().getAttendees();
     int cc = attendees.size();
-    
+
     viewHeader.setAttendees(attendees);
     viewHeader.setDate(date);
 
-    viewMulti.setAttendees(attendees);
+    viewMulti.setColumnCount(cc);
 
-    viewBody.setColumns(cc);
-    viewBody.getTimeline().prepare();
+    viewBody.getTimeline().prepare(getSettings());
+    viewBody.getGrid().build(cc, getSettings());
 
     dropController.setColumns(cc);
-    dropController.setIntervalsPerHour(calendarWidget.getSettings().getIntervalsPerHour());
+    dropController.setIntervalsPerHour(getSettings().getIntervalsPerHour());
     dropController.setDate(JustDate.copyOf(date));
     dropController.setMaxProxyHeight(getMaxProxyHeight());
 
-    resizeController.setIntervalsPerHour(calendarWidget.getSettings().getIntervalsPerHour());
-    resizeController.setSnapSize(calendarWidget.getSettings().getPixelsPerInterval());
+    resizeController.setIntervalsPerHour(getSettings().getIntervalsPerHour());
+    resizeController.setSnapSize(getSettings().getPixelsPerInterval());
 
     appointmentWidgets.clear();
     selectedAppointmentWidgets.clear();
+    
+    int multiHeight = BeeConst.UNDEF;
 
-    JustDate tmpDate = JustDate.copyOf(date);
     for (int i = 0; i < cc; i++) {
-      List<Appointment> filteredList =
-          AppointmentUtil.filterListByDateAndAttendee(calendarWidget.getAppointments(), tmpDate,
-              attendees.get(i));
-      List<AppointmentAdapter> appointmentAdapters = layoutStrategy.doLayout(filteredList, i, cc);
+      Long id = attendees.get(i);
 
-      addAppointmentsToGrid(appointmentAdapters, false);
+      List<Appointment> simple = AppointmentUtils.filterSimple(getAppointments(), date, id);
+      if (!simple.isEmpty()) {
+        List<AppointmentAdapter> adapters =
+            CalendarLayoutManager.doLayout(simple, i, cc, getSettings());
+        addAppointmentsToGrid(adapters, false);
+      }
+
+      List<Appointment> multi = AppointmentUtils.filterMulti(getAppointments(), date, 1, id);
+      if (!multi.isEmpty()) {
+        List<AppointmentAdapter> adapters = Lists.newArrayList();
+        for (Appointment appointment : multi) {
+          adapters.add(new AppointmentAdapter(appointment));
+        }
+        
+        multiHeight = Math.max(multiHeight,
+            CalendarLayoutManager.doMultiLayout(adapters, date, i, cc));
+        addAppointmentsToGrid(adapters, true);
+      }
     }
-
-    List<Appointment> filteredList =
-        AppointmentUtil.filterListByDateRange(calendarWidget.getAppointments(),
-            calendarWidget.getDate(), days);
-
-    List<AppointmentAdapter> adapterList = Lists.newArrayList();
-    int desiredHeight = layoutStrategy.doMultiDayLayout(filteredList,
-        adapterList, calendarWidget.getDate(), days);
-
-    StyleUtils.setHeight(viewMulti.getGrid(), desiredHeight);
-    addAppointmentsToGrid(adapterList, true);
+    
+    if (multiHeight > 0) {
+      StyleUtils.setHeight(viewMulti.getGrid(), multiHeight);
+    }
   }
 
   public void doSizing() {
-    if (calendarWidget.getOffsetHeight() > 0) {
-      StyleUtils.setHeight(viewBody,
-          calendarWidget.getOffsetHeight() - 2 - viewHeader.getOffsetHeight()
-              - viewMulti.getOffsetHeight());
+    if (getCalendarWidget().getOffsetHeight() > 0) {
+      StyleUtils.setHeight(viewBody, getCalendarWidget().getOffsetHeight()
+          - 2 - viewHeader.getOffsetHeight() - viewMulti.getOffsetHeight());
     }
   }
 
   @Override
   public String getStyleName() {
-    return "bee-cal";
+    return CalendarStyleManager.RESOURCE_VIEW;
   }
 
   @Override
   public Type getType() {
     return Type.RESOURCE;
   }
-  
+
   @Override
   public void onAppointmentSelected(Appointment appt) {
     List<AppointmentWidget> clickedAppointmentAdapters = findAppointmentWidget(appt);
 
     if (!clickedAppointmentAdapters.isEmpty()) {
       for (AppointmentWidget adapter : selectedAppointmentWidgets) {
-        styleManager.applyStyle(adapter, false);
+        styleManager.applySelected(adapter, false);
       }
 
       for (AppointmentWidget adapter : clickedAppointmentAdapters) {
-        styleManager.applyStyle(adapter, true);
+        styleManager.applySelected(adapter, true);
       }
 
       selectedAppointmentWidgets.clear();
       selectedAppointmentWidgets.addAll(clickedAppointmentAdapters);
-
-      double height = clickedAppointmentAdapters.get(0).getHeight();
-      if (viewBody.getScrollPanel().getOffsetHeight() > height) {
-        DOM.scrollIntoView(clickedAppointmentAdapters.get(0).getElement());
-      }
     }
   }
 
@@ -167,7 +164,7 @@ public class ResourceView extends CalendarView {
 
     if (!list.isEmpty()) {
       Appointment appt = list.get(0).getAppointment();
-      calendarWidget.fireOpenEvent(appt);
+      getCalendarWidget().fireOpenEvent(appt);
 
     } else if (getSettings().getTimeBlockClickNumber() == TimeBlockClick.Double
         && element == viewBody.getGrid().getGridOverlay().getElement()) {
@@ -177,13 +174,8 @@ public class ResourceView extends CalendarView {
     }
   }
 
-  public void onMouseOver(Element element, Event event) {
-    Appointment appointment = findAppointmentByElement(element);
-    calendarWidget.fireMouseOverEvent(appointment, element);
-  }
-
   public void onSingleClick(Element element, Event event) {
-    if (viewBody.getScrollPanel().getElement().equals(element)) {
+    if (viewBody.getScrollArea().getElement().equals(element)) {
       return;
     }
 
@@ -201,8 +193,10 @@ public class ResourceView extends CalendarView {
 
   @Override
   public void scrollToHour(int hour) {
-    viewBody.getScrollPanel().setVerticalScrollPosition(hour *
-        getSettings().getIntervalsPerHour() * getSettings().getPixelsPerInterval());
+    if (hour > 0) {
+      viewBody.getScrollArea().getElement().setScrollTop(hour *
+          getSettings().getIntervalsPerHour() * getSettings().getPixelsPerInterval());
+    }
   }
 
   private void addAppointmentsToGrid(List<AppointmentAdapter> appointmentList,
@@ -217,8 +211,8 @@ public class ResourceView extends CalendarView {
       panel.setHeight(appt.getHeight());
 
       panel.render();
-      
-      boolean selected = calendarWidget.isTheSelectedAppointment(panel.getAppointment());
+
+      boolean selected = getCalendarWidget().isTheSelectedAppointment(panel.getAppointment());
       if (selected) {
         selectedAppointmentWidgets.add(panel);
       }
@@ -230,7 +224,7 @@ public class ResourceView extends CalendarView {
       } else {
         viewBody.getGrid().getGrid().add(panel);
 
-        if (calendarWidget.getSettings().isDragDropEnabled()) {
+        if (getSettings().isDragDropEnabled()) {
           resizeController.makeDraggable(panel.getResizeHandle());
           dragController.makeDraggable(panel, panel.getMoveHandle());
         }
@@ -251,14 +245,15 @@ public class ResourceView extends CalendarView {
       dragController.addDragHandler(new DragHandler() {
         public void onDragEnd(DragEndEvent event) {
           Appointment appt = ((AppointmentWidget) event.getContext().draggable).getAppointment();
-          calendarWidget.setCommittedAppointment(appt);
-          calendarWidget.fireUpdateEvent(appt);
+          getCalendarWidget().setCommittedAppointment(appt);
+          getCalendarWidget().fireUpdateEvent(appt);
         }
 
         public void onDragStart(DragStartEvent event) {
           Appointment appt = ((AppointmentWidget) event.getContext().draggable).getAppointment();
-          calendarWidget.setRollbackAppointment(appt.clone());
-          ((ResourceViewPickupDragController) dragController).setMaxProxyHeight(getMaxProxyHeight());
+          getCalendarWidget().setRollbackAppointment(appt.clone());
+          ((ResourceViewPickupDragController) dragController)
+              .setMaxProxyHeight(getMaxProxyHeight());
         }
 
         public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
@@ -285,13 +280,14 @@ public class ResourceView extends CalendarView {
         public void onDragEnd(DragEndEvent event) {
           Appointment appt =
               ((AppointmentWidget) event.getContext().draggable.getParent()).getAppointment();
-          calendarWidget.setCommittedAppointment(appt);
-          calendarWidget.fireUpdateEvent(appt);
+          getCalendarWidget().setCommittedAppointment(appt);
+          getCalendarWidget().fireUpdateEvent(appt);
         }
 
         public void onDragStart(DragStartEvent event) {
-          calendarWidget.setRollbackAppointment(((AppointmentWidget) event.getContext().draggable
-              .getParent()).getAppointment().clone());
+          getCalendarWidget().setRollbackAppointment(
+              ((AppointmentWidget) event.getContext().draggable
+                  .getParent()).getAppointment().clone());
         }
 
         public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
@@ -332,17 +328,17 @@ public class ResourceView extends CalendarView {
 
   private DateTime getCoordinatesDate(int x, int y) {
     int left = viewBody.getGrid().getGridOverlay().getAbsoluteLeft();
-    int top = viewBody.getScrollPanel().getAbsoluteTop();
+    int top = viewBody.getScrollArea().getAbsoluteTop();
     int width = viewBody.getGrid().getGridOverlay().getOffsetWidth();
-    int scrollOffset = viewBody.getScrollPanel().getVerticalScrollPosition();
+    int scrollOffset = viewBody.getScrollArea().getElement().getScrollTop();
 
     double relativeY = y - top + scrollOffset;
     double relativeX = x - left;
 
     double interval = Math.floor(relativeY / getSettings().getPixelsPerInterval());
-    double day = Math.floor(relativeX / ((double) width / days));
+    double day = Math.floor(relativeX / width);
 
-    DateTime newStartDate = calendarWidget.getDate().getDateTime();
+    DateTime newStartDate = getDate().getDateTime();
     newStartDate.setHour(0);
     newStartDate.setMinute(0);
     newStartDate.setSecond(0);
@@ -353,12 +349,12 @@ public class ResourceView extends CalendarView {
   }
 
   private int getMaxProxyHeight() {
-    int maxProxyHeight = 2 * (viewBody.getScrollPanel().getOffsetHeight() / 3);
+    int maxProxyHeight = 2 * (viewBody.getScrollArea().getOffsetHeight() / 3);
     return maxProxyHeight;
   }
 
   private void timeBlockClick(int x, int y) {
     DateTime newStartDate = getCoordinatesDate(x, y);
-    calendarWidget.fireTimeBlockClickEvent(newStartDate);
+    getCalendarWidget().fireTimeBlockClickEvent(newStartDate);
   }
 }

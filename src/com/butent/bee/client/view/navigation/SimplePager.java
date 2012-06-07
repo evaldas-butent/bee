@@ -162,7 +162,7 @@ public class SimplePager extends AbstractPager {
     initWidget(layout);
     addStyleName(style.container());
 
-    layout.setSpacing(2);
+    layout.setCellSpacing(2);
 
     layout.add(widgetFirst);
     if (widgetRewind != null) {

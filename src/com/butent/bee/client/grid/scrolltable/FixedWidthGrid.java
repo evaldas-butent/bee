@@ -22,11 +22,6 @@ import java.util.Map;
 public class FixedWidthGrid extends GridTable {
   public class FixedWidthGridCellFormatter extends CellFormatter {
     @Override
-    public void setWidth(int row, int column, String width) {
-      Assert.unsupported("setWidth is not supported");
-    }
-
-    @Override
     protected Element getRawElement(int row, int column) {
       return super.getRawElement(row + 1, column);
     }

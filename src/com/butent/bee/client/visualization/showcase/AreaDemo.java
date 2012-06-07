@@ -43,7 +43,7 @@ public class AreaDemo implements LeftTabPanel.WidgetProvider {
     viz.addOnMouseOutHandler(new OnMouseOutDemo(onMouseOverAndOutStatus));
 
     Vertical result = new Vertical();
-    result.setSpacing(3);
+    result.setCellSpacing(3);
 
     result.add(status);
     result.add(viz);

@@ -223,7 +223,7 @@ public class MessageBoxes {
     }
 
     Vertical content = new Vertical();
-    content.setSpacing(10);
+    content.setCellSpacing(10);
     content.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 
     for (String message : messages) {
