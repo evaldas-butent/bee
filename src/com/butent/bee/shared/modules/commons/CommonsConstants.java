@@ -1,8 +1,27 @@
 package com.butent.bee.shared.modules.commons;
 
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.ui.HasCaption;
 
 public class CommonsConstants {
+
+  public static enum RightsObjectType implements HasCaption {
+    EVENT("Įvykis"),
+    FORM("Forma"),
+    GRID("Lentelė"),
+    MENU("Meniu");
+
+    private final String caption;
+
+    private RightsObjectType(String caption) {
+      this.caption = caption;
+    }
+
+    public String getCaption() {
+      return caption;
+    }
+  }
+
   public static final String COMMONS_MODULE = "Commons";
   public static final String COMMONS_METHOD = COMMONS_MODULE + "Method";
 
@@ -36,7 +55,7 @@ public class CommonsConstants {
   public static final String COL_SERVICE = "IsService";
 
   public static final String FORM_NEW_COMPANY = "Company";
-  
+
   private CommonsConstants() {
   }
 }

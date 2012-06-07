@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  
+  name="RoleRights" viewName="Rights" caption="Teisės"
+  >
+  <columns>
+    <DataColumn name="ObjectType" caption="Tipas" readOnly="true" itemKey="RightsObjectType" />
+    <RelColumn name="ObjectName" caption="Objektas" />
+    <DataColumn name="State" caption="Būsena" />
+  </columns>
+</Grid>

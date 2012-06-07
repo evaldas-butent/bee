@@ -2,9 +2,9 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="UserRoles" viewName="UserRoles" caption="Rolės"
-  newRowColumns="RoleName" hasHeaders="false"
+  hasHeaders="false"
   >
   <columns>
-    <RelColumn name="RoleName" caption="Rolė" width="100" />
+    <RelColumn name="Role" caption="Rolė" width="100" />
   </columns>
 </Grid>

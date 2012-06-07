@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Objects"
+  idName="ObjectID"
+  x="0" y="0"
+  >
+  <Fields>
+    <Integer name="Type" notNull="true" label="Tipas" />
+    <String name="Name" precision="100" notNull="true" label="Objektas" />
+  </Fields>
+  <Keys>
+    <Key unique="true">
+      <KeyField>Type</KeyField>
+      <KeyField>Name</KeyField>
+    </Key>
+  </Keys>
+</Table>

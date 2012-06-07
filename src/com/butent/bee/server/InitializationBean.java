@@ -21,6 +21,7 @@ public class InitializationBean {
   @PostConstruct
   private void init() {
     usr.initUsers();
+    usr.initRights();
     moduleBean.initModules();
   }
 }

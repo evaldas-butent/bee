@@ -31,6 +31,7 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.TreeView;
+import com.butent.bee.client.view.edit.SelectorEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.view.grid.GridCallback;
@@ -49,6 +50,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -455,6 +457,9 @@ public class CommonsEventHandler {
         GridFactory.openGrid("Parameters", new ParametersHandler(parameters));
       }
     });
+
+    SelectorEvent.register(new CommonsSelectorHandler());
+    Global.registerCaptions(RightsObjectType.class);
   }
 
   static ParameterList createArgs(String name) {

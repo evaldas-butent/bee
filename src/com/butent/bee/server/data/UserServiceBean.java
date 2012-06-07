@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.SetMultimap;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.i18n.I18nUtils;
@@ -14,9 +15,11 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
@@ -26,6 +29,7 @@ import java.security.Principal;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.annotation.PreDestroy;
@@ -118,6 +122,8 @@ public class UserServiceBean {
   public static final String TBL_COMPANY_PERSONS = "CompanyPersons";
   public static final String TBL_PERSONS = "Persons";
   public static final String TBL_USER_HISTORY = "UserHistory";
+  public static final String TBL_OBJECTS = "Objects";
+  public static final String TBL_RIGHTS = "Rights";
 
   public static final String FLD_LOGIN = "Login";
   public static final String FLD_PASSWORD = "Password";
@@ -127,6 +133,10 @@ public class UserServiceBean {
   public static final String FLD_ROLE = "Role";
   public static final String FLD_COMPANY_PERSON = "CompanyPerson";
   public static final String FLD_PERSON = "Person";
+  public static final String FLD_OBJECT_TYPE = "Type";
+  public static final String FLD_OBJECT = "Object";
+  public static final String FLD_OBJECT_NAME = "Name";
+  public static final String FLD_STATE = "State";
 
   @Resource
   EJBContext ctx;
@@ -138,6 +148,8 @@ public class UserServiceBean {
   private final Map<Long, String> roleCache = Maps.newHashMap();
   private final Map<Long, String> userCache = Maps.newHashMap();
   private Map<String, UserInfo> infoCache = Maps.newHashMap();
+  private Map<RightsObjectType, Map<String, SetMultimap<BeeState, Long>>> rightsCache = Maps
+      .newHashMap();
 
   public String getCurrentUser() {
     Principal p = ctx.getCallerPrincipal();
@@ -181,6 +193,90 @@ public class UserServiceBean {
 
   public String getUserSign(long userId) {
     return getUserInfo(userId).getUserData().getUserSign();
+  }
+
+  public boolean hasEventRight(String object, String state) {
+    return hasRight(RightsObjectType.EVENT, object, state);
+  }
+
+  public boolean hasFormRight(String object, String state) {
+    return hasRight(RightsObjectType.FORM, object, state);
+  }
+
+  public boolean hasGridRight(String object, String state) {
+    return hasRight(RightsObjectType.GRID, object, state);
+  }
+
+  public boolean hasMenuRight(String object, String state) {
+    return hasRight(RightsObjectType.MENU, object, state);
+  }
+
+  public boolean hasRight(RightsObjectType type, String object, String stateName) {
+    Assert.notEmpty(object);
+
+    if (!sys.isState(stateName)) {
+      return false;
+    }
+    BeeState state = sys.getState(stateName);
+    boolean ok = state.isChecked();
+
+    Map<String, SetMultimap<BeeState, Long>> rightsObjects = rightsCache.get(type);
+
+    if (rightsObjects != null) {
+      SetMultimap<BeeState, Long> objectStates = rightsObjects.get(object);
+
+      if (objectStates != null && objectStates.containsKey(state)) {
+        Set<Long> roles = objectStates.get(state);
+
+        for (long role : getUserRoles(getCurrentUserId())) {
+          if (roles.contains(role)) {
+            ok = !ok;
+            break;
+          }
+        }
+      }
+    }
+    return ok;
+  }
+
+  @Lock(LockType.WRITE)
+  public void initRights() {
+    rightsCache.clear();
+
+    SqlSelect ss = new SqlSelect()
+        .addFields(TBL_OBJECTS, FLD_OBJECT_NAME)
+        .addFields(TBL_RIGHTS, FLD_ROLE, FLD_STATE)
+        .addFrom(TBL_OBJECTS)
+        .addFromInner(TBL_RIGHTS,
+            SqlUtils.join(TBL_OBJECTS, sys.getIdName(TBL_OBJECTS), TBL_RIGHTS, FLD_OBJECT));
+
+    for (RightsObjectType tp : RightsObjectType.values()) {
+      SimpleRowSet res = qs.getData(ss
+          .setWhere(SqlUtils.equal(TBL_OBJECTS, FLD_OBJECT_TYPE, tp.ordinal())));
+
+      if (res.getNumberOfRows() > 0) {
+        Map<String, SetMultimap<BeeState, Long>> rightsObjects = rightsCache.get(tp);
+
+        if (rightsObjects == null) {
+          rightsObjects = Maps.newHashMap();
+          rightsCache.put(tp, rightsObjects);
+        }
+        for (int i = 0; i < res.getNumberOfRows(); i++) {
+          String stateName = res.getValue(i, FLD_STATE);
+
+          if (sys.isState(stateName)) {
+            String objectName = res.getValue(i, FLD_OBJECT_NAME);
+            SetMultimap<BeeState, Long> objectStates = rightsObjects.get(objectName);
+
+            if (objectStates == null) {
+              objectStates = HashMultimap.create();
+              rightsObjects.put(objectName, objectStates);
+            }
+            objectStates.put(sys.getState(stateName), res.getLong(i, FLD_ROLE));
+          }
+        }
+      }
+    }
   }
 
   @Lock(LockType.WRITE)
@@ -241,6 +337,10 @@ public class UserServiceBean {
       }
       infoCache.put(login, user);
     }
+  }
+
+  public boolean isRightsTable(String tblName) {
+    return BeeUtils.inList(tblName, TBL_OBJECTS, TBL_RIGHTS);
   }
 
   public boolean isUser(String user) {

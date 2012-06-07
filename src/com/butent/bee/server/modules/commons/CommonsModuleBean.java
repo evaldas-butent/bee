@@ -103,13 +103,21 @@ public class CommonsModuleBean implements BeeModule {
   }
 
   @Override
+  @SuppressWarnings("unused")
   public void init() {
     sys.registerViewEventHandler(new ViewEventHandler() {
-      @SuppressWarnings("unused")
       @Subscribe
       public void refreshUserCache(ViewModifyEvent event) {
         if (usr.isUserTable(event.getViewName()) && event.isAfter()) {
           usr.initUsers();
+        }
+      }
+    });
+    sys.registerViewEventHandler(new ViewEventHandler() {
+      @Subscribe
+      public void refreshRightsCache(ViewModifyEvent event) {
+        if (usr.isRightsTable(event.getViewName()) && event.isAfter()) {
+          usr.initRights();
         }
       }
     });

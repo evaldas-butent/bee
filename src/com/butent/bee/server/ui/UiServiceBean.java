@@ -23,6 +23,7 @@ import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.ExtensionFilter;
 import com.butent.bee.server.io.FileUtils;
+import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
@@ -49,6 +50,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -102,6 +104,8 @@ public class UiServiceBean {
   GridLoaderBean grd;
   @EJB
   DataSourceBean dsb;
+  @EJB
+  ModuleHolderBean mod;
   @EJB
   MailerBean mail;
 
@@ -827,8 +831,8 @@ public class UiServiceBean {
         } else {
           try {
             XmlState userState = sys.loadXmlState(XmlUtils.marshal(xmlState, schemaPath));
-            XmlState configState =
-                sys.getXmlState(sys.getState(stateName).getModuleName(), stateName, false);
+            XmlState configState = !sys.isState(stateName) ? null
+                : sys.getXmlState(sys.getState(stateName).getModuleName(), stateName, false);
             XmlState diffState = null;
 
             if (configState == null) {
@@ -863,8 +867,10 @@ public class UiServiceBean {
         }
       }
       for (String stateName : updates.keySet()) {
-        String path = new File(Config.USER_DIR, SysObject.STATE.getPath() + "/"
-            + SysObject.STATE.getFileName(stateName)).getPath();
+        String path =
+            new File(Config.USER_DIR, mod.getResourcePath(CommonsConstants.COMMONS_MODULE,
+                SysObject.STATE.getPath(),
+                SysObject.STATE.getFileName(stateName))).getPath();
         XmlState diffState = updates.get(stateName);
 
         if (diffState == null) {
@@ -894,6 +900,7 @@ public class UiServiceBean {
       ig.destroy();
       sys.initDatabase(dsn);
       usr.initUsers();
+      usr.initRights();
       return ResponseObject.response(dsn);
     }
     return ResponseObject.error("DSN not specified");
