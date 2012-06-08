@@ -64,5 +64,5 @@
   <item id="users" parent="adm_menu" order="10" text="Vartotojai" service="grid" parameters="Users" />
   <item id="roles" parent="adm_menu" order="20" text="Rolės" service="form" parameters="Roles" separators="*" />
   <item id="objects" parent="adm_menu" order="30" text="Objektai" service="form" parameters="Objects" />
-  <item id="users" parent="adm_menu" order="40" text="Sistemos parametrai" service="system_parameters" parameters="Commons"  separators="*" />
+  <item id="parameters" parent="adm_menu" order="40" text="Sistemos parametrai" service="system_parameters" parameters="Commons"  separators="*" />
 </BeeMenu>

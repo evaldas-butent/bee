@@ -218,25 +218,28 @@ public class UserServiceBean {
       return false;
     }
     BeeState state = sys.getState(stateName);
-    boolean ok = state.isChecked();
+    boolean checked = state.isChecked();
 
     Map<String, SetMultimap<BeeState, Long>> rightsObjects = rightsCache.get(type);
 
     if (rightsObjects != null) {
-      SetMultimap<BeeState, Long> objectStates = rightsObjects.get(object);
+      SetMultimap<BeeState, Long> objectStates = rightsObjects.get(BeeUtils.normalize(object));
 
       if (objectStates != null && objectStates.containsKey(state)) {
         Set<Long> roles = objectStates.get(state);
+        boolean ok = checked;
 
         for (long role : getUserRoles(getCurrentUserId())) {
-          if (roles.contains(role)) {
-            ok = !ok;
+          ok = (checked != roles.contains(role));
+
+          if (ok) {
             break;
           }
         }
+        checked = ok;
       }
     }
-    return ok;
+    return checked;
   }
 
   @Lock(LockType.WRITE)
@@ -265,7 +268,7 @@ public class UserServiceBean {
           String stateName = res.getValue(i, FLD_STATE);
 
           if (sys.isState(stateName)) {
-            String objectName = res.getValue(i, FLD_OBJECT_NAME);
+            String objectName = BeeUtils.normalize(res.getValue(i, FLD_OBJECT_NAME));
             SetMultimap<BeeState, Long> objectStates = rightsObjects.get(objectName);
 
             if (objectStates == null) {

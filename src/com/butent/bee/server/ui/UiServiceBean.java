@@ -890,6 +890,7 @@ public class UiServiceBean {
         }
       }
       sys.initStates();
+      usr.initRights();
       response.addInfo("States OK");
     }
     return response;
