@@ -130,7 +130,8 @@
   border-width: 1px;
   position: absolute;
   overflow: hidden;
-  border-radius: 6px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .bee-cal .appointment-multiday {
@@ -138,7 +139,8 @@
   border-width: 1px;
   position: absolute;
   overflow: hidden;
-  border-radius: 6px;
+  border-radius: 2px;
+  cursor: pointer;
 }
 
 .bee-cal .appointment .header {

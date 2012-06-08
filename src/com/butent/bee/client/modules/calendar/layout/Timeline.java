@@ -17,7 +17,7 @@ public class Timeline extends Flow {
   public void build(CalendarSettings settings) {
     clear();
     
-    int labelHeight = settings.getIntervalsPerHour() * settings.getPixelsPerInterval();
+    int labelHeight = settings.getHourHeight();
 
     for (int i = 0; i < 24; i++) {
       String hour = CalendarFormat.getHourLabels()[i];

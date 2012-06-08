@@ -127,14 +127,6 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
     DateRequestEvent.fire(this, dt, clicked);
   }
 
-  public void fireOpenEvent(Appointment appointment) {
-    OpenEvent.fire(this, appointment);
-  }
-
-  public void fireTimeBlockClickEvent(HasDateValue dt) {
-    TimeBlockClickEvent.fire(this, dt.getDateTime());
-  }
-
   public void fireUpdateEvent(Appointment appointment) {
     boolean allow = UpdateEvent.fire(this, appointment);
     if (!allow) {
@@ -150,7 +142,7 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
   public List<Long> getAttendees() {
     return attendees;
   }
-  
+
   public JustDate getDate() {
     return JustDate.copyOf(date);
   }
@@ -158,7 +150,7 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
   public int getDisplayedDays() {
     return displayedDays;
   }
-  
+
   public Appointment getRollbackAppointment() {
     return appointmentManager.getRollbackAppointment();
   }
@@ -173,8 +165,8 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
 
   @Override
   public void onDoubleClick(Element element, Event event) {
-    if (view != null) {
-      view.onDoubleClick(element, event);
+    if (view != null && settings.isDoubleClick()) {
+      view.onClick(element, event);
     }
   }
 
@@ -188,11 +180,11 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
 
   @Override
   public void onMouseDown(Element element, Event event) {
-    if (view != null) {
-      view.onSingleClick(element, event);
+    if (view != null && settings.isSingleClick()) {
+      view.onClick(element, event);
     }
   }
-  
+
   public void refresh() {
     if (layoutSuspended) {
       layoutPending = true;
@@ -226,7 +218,7 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
       view.scrollToHour(hour);
     }
   }
-  
+
   public void setAppointments(Collection<Appointment> appointments) {
     appointmentManager.clearAppointments();
     appointmentManager.addAppointments(appointments);
@@ -268,7 +260,7 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
       refresh();
     }
   }
-  
+
   public void setDisplayedDays(int displayedDays) {
     this.displayedDays = displayedDays;
   }

@@ -4,7 +4,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Ranges;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.dnd.DragContext;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -107,6 +109,18 @@ public class AppointmentUtils {
   public static List<AppointmentWidget> findAppointmentWidgets(List<AppointmentWidget> widgets,
       Element element) {
     return findAppointmentWidgets(widgets, findAppointment(widgets, element));
+  }
+  
+  public static Appointment getDragAppointment(DragContext context) {
+    Widget widget = context.draggable;
+    
+    while (widget != null) {
+      if (widget instanceof AppointmentWidget) {
+        return ((AppointmentWidget) widget).getAppointment();
+      }
+      widget = widget.getParent();
+    }
+    return null;
   }
 
   public static Range<DateTime> getRange(Appointment appointment) {

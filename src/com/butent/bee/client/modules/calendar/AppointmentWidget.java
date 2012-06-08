@@ -8,7 +8,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class AppointmentWidget extends Flow {
+public class AppointmentWidget extends Flow implements HasAppointment {
 
   private final Appointment appointment;
   private final boolean multi;
@@ -66,12 +66,16 @@ public class AppointmentWidget extends Flow {
   public double getWidth() {
     return width;
   }
-
+  
   public void render() {
     setBackground(appointment.getBackground());
     setForeground(appointment.getForeground());
 
     CalendarKeeper.renderAppoinment(this, multi);
+  }
+
+  public void renderCompact() {
+    CalendarKeeper.renderCompact(appointment, headerPanel);
   }
 
   public void setBodyHtml(String html) {

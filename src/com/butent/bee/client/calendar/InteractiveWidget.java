@@ -39,16 +39,16 @@ public abstract class InteractiveWidget extends Composite implements Focusable {
 
     switch (eventType) {
       case Event.ONDBLCLICK: {
-        onDoubleClick(element, event);
         setFocus(true);
+        onDoubleClick(element, event);
         break;
       }
 
       case Event.ONMOUSEDOWN: {
         if (event.getButton() == NativeEvent.BUTTON_LEFT 
             && DOM.eventGetCurrentTarget(event) == getElement()) {
-          onMouseDown(element, event);
           setFocus(true);
+          onMouseDown(element, event);
           DOM.eventCancelBubble(event, true);
           DOM.eventPreventDefault(event);
           return;

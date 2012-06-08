@@ -24,7 +24,8 @@ import com.butent.bee.client.dnd.PickupDragController;
 import com.butent.bee.client.dnd.VetoDragException;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
+import com.butent.bee.client.modules.calendar.AppointmentUtils;
+import com.butent.bee.client.modules.calendar.AppointmentWidget;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -82,8 +83,6 @@ public class MonthView extends CalendarView {
   private PickupDragController dragController = null;
   private MonthViewDropController monthViewDropController = null;
 
-  private final MonthViewStyleManager styleManager = new MonthViewStyleManager();
-
   private JustDate firstDateDisplayed = null;
 
   private int monthViewRequiredRows = 5;
@@ -97,7 +96,7 @@ public class MonthView extends CalendarView {
   private int calculatedCellOffsetHeight;
 
   private int calculatedCellHeight;
-  
+
   public MonthView() {
     super();
   }
@@ -141,7 +140,7 @@ public class MonthView extends CalendarView {
       dragController.setBehaviorDragStartSensitivity(5);
       dragController.setBehaviorDragProxy(true);
     }
-    
+
     if (monthViewDropController == null) {
       monthViewDropController = new MonthViewDropController(appointmentCanvas, monthCalendarGrid);
       dragController.registerDropController(monthViewDropController);
@@ -155,7 +154,7 @@ public class MonthView extends CalendarView {
 
     appointmentsWidgets.clear();
     moreLabels.clear();
-    
+
     while (monthCalendarGrid.getRowCount() > 0) {
       monthCalendarGrid.removeRow(0);
     }
@@ -196,34 +195,17 @@ public class MonthView extends CalendarView {
   public Type getType() {
     return Type.MONTH;
   }
-  
-  public void onDoubleClick(Element clickedElement, Event event) {
-    if (clickedElement.equals(appointmentCanvas.getElement())) {
-      if (getSettings().getTimeBlockClickNumber() == TimeBlockClick.Double) {
-        dayClicked(event);
-      }
-    } else {
-      List<AppointmentWidget> list = findAppointmentWidgetsByElement(clickedElement);
-      if (!list.isEmpty()) {
-        getCalendarWidget().fireOpenEvent(list.get(0).getAppointment());
-      }
-    }
-  }
 
   @Override
-  public void onSingleClick(Element clickedElement, Event event) {
-    if (clickedElement.equals(appointmentCanvas.getElement())) {
-      if (getSettings().getTimeBlockClickNumber() == TimeBlockClick.Single) {
-        dayClicked(event);
-      }
+  public void onClick(Element element, Event event) {
+    if (element.equals(appointmentCanvas.getElement())) {
+      dayClicked(event);
     } else {
-      Appointment appointment = findAppointmentByElement(clickedElement);
+      Appointment appointment = AppointmentUtils.findAppointment(appointmentsWidgets, element);
       if (appointment != null) {
-      } else {
-        if (moreLabels.containsKey(clickedElement)) {
-          getCalendarWidget().fireDateRequestEvent(cellDate(moreLabels.get(clickedElement)),
-              clickedElement);
-        }
+        openAppointment(appointment);
+      } else if (moreLabels.containsKey(element)) {
+        getCalendarWidget().fireDateRequestEvent(cellDate(moreLabels.get(element)), element);
       }
     }
   }
@@ -236,7 +218,7 @@ public class MonthView extends CalendarView {
       monthCalendarGrid.setText(0, i, CalendarFormat.getDayOfWeekNames()[i]);
       cellFormatter.setStyleName(0, i, WEEKDAY_LABEL_STYLE);
     }
-    
+
     JustDate date = getDate();
     int month = date.getMonth();
     firstDateDisplayed = firstDateShownInAMonthView(date);
@@ -313,34 +295,7 @@ public class MonthView extends CalendarView {
     int row = y / (appointmentCanvas.getOffsetHeight() / monthViewRequiredRows);
     int col = x / (appointmentCanvas.getOffsetWidth() / DAYS_IN_A_WEEK);
 
-    getCalendarWidget().fireTimeBlockClickEvent(cellDate(row * DAYS_IN_A_WEEK + col));
-  }
-
-  private Appointment findAppointmentByElement(Element element) {
-    Appointment appointmentAtElement = null;
-    for (AppointmentWidget widget : appointmentsWidgets) {
-      if (DOM.isOrHasChild(widget.getElement(), element)) {
-        appointmentAtElement = widget.getAppointment();
-        break;
-      }
-    }
-    return appointmentAtElement;
-  }
-
-  private List<AppointmentWidget> findAppointmentWidgets(Appointment appt) {
-    List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
-    if (appt != null) {
-      for (AppointmentWidget widget : appointmentsWidgets) {
-        if (widget.getAppointment().equals(appt)) {
-          appointmentWidgets.add(widget);
-        }
-      }
-    }
-    return appointmentWidgets;
-  }
-
-  private List<AppointmentWidget> findAppointmentWidgetsByElement(Element element) {
-    return findAppointmentWidgets(findAppointmentByElement(element));
+    createAppointment(cellDate(row * DAYS_IN_A_WEEK + col).getDateTime());
   }
 
   private JustDate firstDateShownInAMonthView(HasDateValue dayInMonth) {
@@ -350,11 +305,10 @@ public class MonthView extends CalendarView {
 
   private void layOnAppointment(Appointment appointment, int colStart, int colEnd, int row,
       int cellPosition) {
-    AppointmentWidget panel = new AppointmentWidget(appointment);
+    AppointmentWidget panel = new AppointmentWidget(appointment, false);
+    panel.renderCompact();
 
     placeItemInGrid(panel, colStart, colEnd, row, cellPosition);
-
-    styleManager.applyStyle(panel, false);
 
     if (getSettings().isDragDropEnabled()) {
       dragController.makeDraggable(panel);
@@ -421,7 +375,7 @@ public class MonthView extends CalendarView {
       }
     }
   }
-  
+
   private int monthViewRequiredRows(HasDateValue dayInMonth) {
     int requiredRows = 5;
 

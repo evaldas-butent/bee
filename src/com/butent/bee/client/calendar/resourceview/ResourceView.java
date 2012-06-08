@@ -1,7 +1,6 @@
 package com.butent.bee.client.calendar.resourceview;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 
@@ -25,7 +24,6 @@ import com.butent.bee.client.modules.calendar.layout.AppointmentPanel;
 import com.butent.bee.client.modules.calendar.layout.CalendarLayoutManager;
 import com.butent.bee.client.modules.calendar.layout.MultiDayPanel;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 
@@ -131,42 +129,20 @@ public class ResourceView extends CalendarView {
     return Type.RESOURCE;
   }
 
-  public void onDoubleClick(Element element, Event event) {
-    List<AppointmentWidget> widgets = 
-        AppointmentUtils.findAppointmentWidgets(appointmentWidgets, element);
+  public void onClick(Element element, Event event) {
+    Appointment appointment = AppointmentUtils.findAppointment(appointmentWidgets, element);
 
-    if (!widgets.isEmpty()) {
-      getCalendarWidget().fireOpenEvent(widgets.get(0).getAppointment());
-
-    } else if (getSettings().getTimeBlockClickNumber() == TimeBlockClick.Double
-        && element == viewBody.getGrid().getOverlay().getElement()) {
-      int x = DOM.eventGetClientX(event);
-      int y = DOM.eventGetClientY(event);
-      timeBlockClick(x, y);
-    }
-  }
-
-  public void onSingleClick(Element element, Event event) {
-    if (viewBody.getScrollArea().getElement().equals(element)) {
-      return;
-    }
-
-    Appointment appt = AppointmentUtils.findAppointment(appointmentWidgets, element);
-
-    if (appt != null) {
-    } else if (getSettings().getTimeBlockClickNumber() == TimeBlockClick.Single
-        && element == viewBody.getGrid().getOverlay().getElement()) {
-      int x = DOM.eventGetClientX(event);
-      int y = DOM.eventGetClientY(event);
-      timeBlockClick(x, y);
+    if (appointment != null) {
+      openAppointment(appointment);
+    } else if (viewBody.isGrid(element)) {
+      timeBlockClick(event);
     }
   }
 
   @Override
   public void scrollToHour(int hour) {
     if (hour > 0) {
-      viewBody.getScrollArea().getElement().setScrollTop(hour *
-          getSettings().getIntervalsPerHour() * getSettings().getPixelsPerInterval());
+      viewBody.scrollToHour(hour, getSettings());
     }
   }
 
@@ -209,16 +185,15 @@ public class ResourceView extends CalendarView {
 
       dragController.addDragHandler(new DragHandler() {
         public void onDragEnd(DragEndEvent event) {
-          Appointment appt = ((AppointmentWidget) event.getContext().draggable).getAppointment();
+          Appointment appt = AppointmentUtils.getDragAppointment(event.getContext());
           getCalendarWidget().setCommittedAppointment(appt);
           getCalendarWidget().fireUpdateEvent(appt);
         }
 
         public void onDragStart(DragStartEvent event) {
-          Appointment appt = ((AppointmentWidget) event.getContext().draggable).getAppointment();
+          Appointment appt = AppointmentUtils.getDragAppointment(event.getContext());
           getCalendarWidget().setRollbackAppointment(appt.clone());
-          ((ResourceViewPickupDragController) dragController)
-              .setMaxProxyHeight(getMaxProxyHeight());
+          ((ResourceViewPickupDragController) dragController).setMaxProxyHeight(getMaxProxyHeight());
         }
 
         public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
@@ -243,16 +218,14 @@ public class ResourceView extends CalendarView {
 
       resizeController.addDragHandler(new DragHandler() {
         public void onDragEnd(DragEndEvent event) {
-          Appointment appt =
-              ((AppointmentWidget) event.getContext().draggable.getParent()).getAppointment();
+          Appointment appt = AppointmentUtils.getDragAppointment(event.getContext());
           getCalendarWidget().setCommittedAppointment(appt);
           getCalendarWidget().fireUpdateEvent(appt);
         }
 
         public void onDragStart(DragStartEvent event) {
-          getCalendarWidget().setRollbackAppointment(
-              ((AppointmentWidget) event.getContext().draggable
-                  .getParent()).getAppointment().clone());
+          Appointment appt = AppointmentUtils.getDragAppointment(event.getContext());
+          getCalendarWidget().setRollbackAppointment(appt.clone());
         }
 
         public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
@@ -264,35 +237,14 @@ public class ResourceView extends CalendarView {
     }
   }
 
-  private DateTime getCoordinatesDate(int x, int y) {
-    int left = viewBody.getGrid().getOverlay().getAbsoluteLeft();
-    int top = viewBody.getScrollArea().getAbsoluteTop();
-    int width = viewBody.getGrid().getOverlay().getOffsetWidth();
-    int scrollOffset = viewBody.getScrollArea().getElement().getScrollTop();
-
-    double relativeY = y - top + scrollOffset;
-    double relativeX = x - left;
-
-    double interval = Math.floor(relativeY / getSettings().getPixelsPerInterval());
-    double day = Math.floor(relativeX / width);
-
-    DateTime newStartDate = getDate().getDateTime();
-    newStartDate.setHour(0);
-    newStartDate.setMinute(0);
-    newStartDate.setSecond(0);
-    newStartDate.setMinute((int) interval * (60 / getSettings().getIntervalsPerHour()));
-    newStartDate.setDom(newStartDate.getDom() + (int) day);
-
-    return newStartDate;
-  }
-
   private int getMaxProxyHeight() {
     int maxProxyHeight = 2 * (viewBody.getScrollArea().getOffsetHeight() / 3);
     return maxProxyHeight;
   }
 
-  private void timeBlockClick(int x, int y) {
-    DateTime newStartDate = getCoordinatesDate(x, y);
-    getCalendarWidget().fireTimeBlockClickEvent(newStartDate);
+  private void timeBlockClick(Event event) {
+    DateTime dateTime = viewBody.getCoordinatesDate(event.getClientX(), event.getClientY(),
+        getSettings(), getDate(), 1);
+    createAppointment(dateTime);
   }
 }

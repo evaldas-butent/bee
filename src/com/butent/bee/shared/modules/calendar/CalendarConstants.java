@@ -62,7 +62,7 @@ public class CalendarConstants {
   }
 
   public enum TimeBlockClick implements HasCaption {
-    Single, Double;
+    SINGLE, DOUBLE;
 
     public String getCaption() {
       return Integer.toString(this.ordinal() + 1);

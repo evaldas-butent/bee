@@ -1,9 +1,11 @@
 package com.butent.bee.client.calendar;
 
+import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
@@ -25,7 +27,7 @@ public abstract class CalendarView implements HasSettings {
 
   public void createAppointment(DateTime start) {
     if (getCalendarWidget() != null) {
-      getCalendarWidget().fireTimeBlockClickEvent(start);
+      TimeBlockClickEvent.fire(getCalendarWidget(), start);
     }
   }
 
@@ -41,13 +43,11 @@ public abstract class CalendarView implements HasSettings {
   
   public abstract Type getType();
 
-  public abstract void onDoubleClick(Element element, Event event);
+  public abstract void onClick(Element element, Event event);
 
-  public abstract void onSingleClick(Element element, Event event);
-
-  public void openAppointment(Appointment appt) {
+  public void openAppointment(Appointment appointment) {
     if (getCalendarWidget() != null) {
-      getCalendarWidget().fireOpenEvent(appt);
+      OpenEvent.fire(getCalendarWidget(), appointment);
     }
   }
 

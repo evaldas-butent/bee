@@ -100,6 +100,10 @@ public class CalendarSettings implements BeeSerializable {
   public int getDefaultDisplayedDays() {
     return defaultDisplayedDays;
   }
+  
+  public int getHourHeight() {
+    return getIntervalsPerHour() * getPixelsPerInterval(); 
+  }
 
   public int getIntervalsPerHour() {
     return intervalsPerHour;
@@ -125,8 +129,16 @@ public class CalendarSettings implements BeeSerializable {
     return workingHourStart;
   }
 
+  public boolean isDoubleClick() {
+    return TimeBlockClick.DOUBLE.equals(getTimeBlockClickNumber());
+  }
+  
   public boolean isDragDropEnabled() {
     return enableDragDrop;
+  }
+
+  public boolean isSingleClick() {
+    return TimeBlockClick.SINGLE.equals(getTimeBlockClickNumber());
   }
 
   public void loadFrom(IsRow row, List<? extends IsColumn> columns) {

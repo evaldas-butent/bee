@@ -5,10 +5,10 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.FlexTable;
 
-import com.butent.bee.client.calendar.monthview.AppointmentWidget;
 import com.butent.bee.client.dnd.DragContext;
 import com.butent.bee.client.dnd.drop.AbsolutePositionDropController;
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.AppointmentWidget;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
