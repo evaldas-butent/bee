@@ -41,8 +41,6 @@ public abstract class CalendarView implements HasSettings {
   
   public abstract Type getType();
 
-  public abstract void onAppointmentSelected(Appointment appt);
-
   public abstract void onDoubleClick(Element element, Event event);
 
   public abstract void onSingleClick(Element element, Event event);
@@ -55,12 +53,6 @@ public abstract class CalendarView implements HasSettings {
 
   public abstract void scrollToHour(int hour);
 
-  public void selectAppointment(Appointment appt) {
-    if (getCalendarWidget() != null) {
-      getCalendarWidget().setSelectedAppointment(appt, true);
-    }
-  }
-  
   protected void addWidget(Widget widget) {
     getCalendarWidget().addToRootPanel(widget);
   }

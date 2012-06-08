@@ -41,30 +41,13 @@ public class CalendarStyleManager {
   
   public static final String COLUMN_SEPARATOR = "column-separator";
 
-  private static final String APPOINTMENT = "appointment";
-  private static final String APPOINTMENT_MULTIDAY = "appointment-multiday";
+  public static final String HEADER = "header";
+  public static final String BODY = "body";
+  public static final String FOOTER = "footer";
 
-  private static final String SELECTED = "-selected";
+  public static final String APPOINTMENT = "appointment";
+  public static final String APPOINTMENT_MULTIDAY = "appointment-multiday";
 
-  public CalendarStyleManager() {
-    super();
-  }
-
-  public void applySelected(AppointmentWidget widget, boolean selected) {
-    Appointment appointment = widget.getAppointment();
-
-    String styleName = (appointment.isMultiDay() ? APPOINTMENT_MULTIDAY : APPOINTMENT) + SELECTED;
-    widget.setStyleName(styleName, selected);
-  }
-  
-  public void applyStyle(AppointmentWidget widget, boolean selected) {
-    Appointment appointment = widget.getAppointment();
-
-    String styleName = appointment.isMultiDay() ? APPOINTMENT_MULTIDAY : APPOINTMENT;
-    widget.addStyleName(styleName);
-
-    if (selected) {
-      widget.addStyleName(styleName + SELECTED);
-    }
+  private CalendarStyleManager() {
   }
 }

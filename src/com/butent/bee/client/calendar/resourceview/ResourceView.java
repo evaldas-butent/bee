@@ -33,18 +33,14 @@ import java.util.List;
 
 public class ResourceView extends CalendarView {
 
-  private ResourceViewHeader viewHeader = null;
-  private MultiDayPanel viewMulti = null;
-  private AppointmentPanel viewBody = null;
+  private final ResourceViewHeader viewHeader = new ResourceViewHeader();
+  private final MultiDayPanel viewMulti = new MultiDayPanel();
+  private final AppointmentPanel viewBody = new AppointmentPanel();
 
   private final List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
-  private final List<AppointmentWidget> selectedAppointmentWidgets = Lists.newArrayList();
-
-  private final CalendarStyleManager styleManager = new CalendarStyleManager();
 
   private PickupDragController dragController = null;
   private ResourceViewDropController dropController = null;
-
   private ResourceViewResizeController resizeController = null;
 
   public ResourceView() {
@@ -54,12 +50,6 @@ public class ResourceView extends CalendarView {
   @Override
   public void attach(CalendarWidget widget) {
     super.attach(widget);
-
-    if (viewBody == null) {
-      viewHeader = new ResourceViewHeader();
-      viewMulti = new MultiDayPanel();
-      viewBody = new AppointmentPanel(getSettings());
-    }
 
     addWidget(viewHeader);
     addWidget(viewMulti);
@@ -80,8 +70,7 @@ public class ResourceView extends CalendarView {
 
     viewMulti.setColumnCount(cc);
 
-    viewBody.getTimeline().prepare(getSettings());
-    viewBody.getGrid().build(cc, getSettings());
+    viewBody.build(cc, getSettings());
 
     dropController.setColumns(cc);
     dropController.setIntervalsPerHour(getSettings().getIntervalsPerHour());
@@ -92,7 +81,6 @@ public class ResourceView extends CalendarView {
     resizeController.setSnapSize(getSettings().getPixelsPerInterval());
 
     appointmentWidgets.clear();
-    selectedAppointmentWidgets.clear();
     
     int multiHeight = BeeConst.UNDEF;
 
@@ -121,6 +109,8 @@ public class ResourceView extends CalendarView {
     
     if (multiHeight > 0) {
       StyleUtils.setHeight(viewMulti.getGrid(), multiHeight);
+    } else {
+      StyleUtils.clearHeight(viewMulti.getGrid());
     }
   }
 
@@ -141,33 +131,15 @@ public class ResourceView extends CalendarView {
     return Type.RESOURCE;
   }
 
-  @Override
-  public void onAppointmentSelected(Appointment appt) {
-    List<AppointmentWidget> clickedAppointmentAdapters = findAppointmentWidget(appt);
-
-    if (!clickedAppointmentAdapters.isEmpty()) {
-      for (AppointmentWidget adapter : selectedAppointmentWidgets) {
-        styleManager.applySelected(adapter, false);
-      }
-
-      for (AppointmentWidget adapter : clickedAppointmentAdapters) {
-        styleManager.applySelected(adapter, true);
-      }
-
-      selectedAppointmentWidgets.clear();
-      selectedAppointmentWidgets.addAll(clickedAppointmentAdapters);
-    }
-  }
-
   public void onDoubleClick(Element element, Event event) {
-    List<AppointmentWidget> list = findAppointmentWidgetsByElement(element);
+    List<AppointmentWidget> widgets = 
+        AppointmentUtils.findAppointmentWidgets(appointmentWidgets, element);
 
-    if (!list.isEmpty()) {
-      Appointment appt = list.get(0).getAppointment();
-      getCalendarWidget().fireOpenEvent(appt);
+    if (!widgets.isEmpty()) {
+      getCalendarWidget().fireOpenEvent(widgets.get(0).getAppointment());
 
     } else if (getSettings().getTimeBlockClickNumber() == TimeBlockClick.Double
-        && element == viewBody.getGrid().getGridOverlay().getElement()) {
+        && element == viewBody.getGrid().getOverlay().getElement()) {
       int x = DOM.eventGetClientX(event);
       int y = DOM.eventGetClientY(event);
       timeBlockClick(x, y);
@@ -179,12 +151,11 @@ public class ResourceView extends CalendarView {
       return;
     }
 
-    Appointment appt = findAppointmentByElement(element);
+    Appointment appt = AppointmentUtils.findAppointment(appointmentWidgets, element);
 
     if (appt != null) {
-      selectAppointment(appt);
     } else if (getSettings().getTimeBlockClickNumber() == TimeBlockClick.Single
-        && element == viewBody.getGrid().getGridOverlay().getElement()) {
+        && element == viewBody.getGrid().getOverlay().getElement()) {
       int x = DOM.eventGetClientX(event);
       int y = DOM.eventGetClientY(event);
       timeBlockClick(x, y);
@@ -199,34 +170,28 @@ public class ResourceView extends CalendarView {
     }
   }
 
-  private void addAppointmentsToGrid(List<AppointmentAdapter> appointmentList,
-      boolean addToMultiView) {
-    for (AppointmentAdapter appt : appointmentList) {
-      AppointmentWidget panel = new AppointmentWidget(appt.getAppointment(), addToMultiView);
+  private void addAppointmentsToGrid(List<AppointmentAdapter> adapters, boolean multi) {
+    for (AppointmentAdapter adapter : adapters) {
+      AppointmentWidget widget = new AppointmentWidget(adapter.getAppointment(), multi);
 
-      panel.setLeft(appt.getLeft());
-      panel.setWidth(appt.getWidth());
+      widget.setLeft(adapter.getLeft());
+      widget.setWidth(adapter.getWidth());
 
-      panel.setTop(appt.getTop());
-      panel.setHeight(appt.getHeight());
+      widget.setTop(adapter.getTop());
+      widget.setHeight(adapter.getHeight());
 
-      panel.render();
+      widget.render();
 
-      boolean selected = getCalendarWidget().isTheSelectedAppointment(panel.getAppointment());
-      if (selected) {
-        selectedAppointmentWidgets.add(panel);
-      }
-      styleManager.applyStyle(panel, selected);
-      appointmentWidgets.add(panel);
+      appointmentWidgets.add(widget);
 
-      if (addToMultiView) {
-        viewMulti.getGrid().add(panel);
+      if (multi) {
+        viewMulti.getGrid().add(widget);
       } else {
-        viewBody.getGrid().getGrid().add(panel);
+        viewBody.getGrid().add(widget);
 
         if (getSettings().isDragDropEnabled()) {
-          resizeController.makeDraggable(panel.getResizeHandle());
-          dragController.makeDraggable(panel, panel.getMoveHandle());
+          resizeController.makeDraggable(widget.getResizeHandle());
+          dragController.makeDraggable(widget, widget.getMoveHandle());
         }
       }
     }
@@ -234,7 +199,7 @@ public class ResourceView extends CalendarView {
 
   private void createDragController() {
     if (dragController == null) {
-      dragController = new ResourceViewPickupDragController(viewBody.getGrid().getGrid(), false);
+      dragController = new ResourceViewPickupDragController(viewBody.getGrid(), false);
 
       dragController.setBehaviorDragProxy(true);
       dragController.setBehaviorDragStartSensitivity(1);
@@ -267,14 +232,14 @@ public class ResourceView extends CalendarView {
 
   private void createDropController() {
     if (dropController == null) {
-      dropController = new ResourceViewDropController(viewBody.getGrid().getGrid());
+      dropController = new ResourceViewDropController(viewBody.getGrid());
       dragController.registerDropController(dropController);
     }
   }
 
   private void createResizeController() {
     if (resizeController == null) {
-      resizeController = new ResourceViewResizeController(viewBody.getGrid().getGrid());
+      resizeController = new ResourceViewResizeController(viewBody.getGrid());
 
       resizeController.addDragHandler(new DragHandler() {
         public void onDragEnd(DragEndEvent event) {
@@ -299,37 +264,10 @@ public class ResourceView extends CalendarView {
     }
   }
 
-  private Appointment findAppointmentByElement(Element element) {
-    Appointment appointmentAtElement = null;
-    for (AppointmentWidget widget : appointmentWidgets) {
-      if (DOM.isOrHasChild(widget.getElement(), element)) {
-        appointmentAtElement = widget.getAppointment();
-        break;
-      }
-    }
-    return appointmentAtElement;
-  }
-
-  private List<AppointmentWidget> findAppointmentWidget(Appointment appt) {
-    List<AppointmentWidget> appointmentAdapters = Lists.newArrayList();
-    if (appt != null) {
-      for (AppointmentWidget widget : appointmentWidgets) {
-        if (widget.getAppointment().equals(appt)) {
-          appointmentAdapters.add(widget);
-        }
-      }
-    }
-    return appointmentAdapters;
-  }
-
-  private List<AppointmentWidget> findAppointmentWidgetsByElement(Element element) {
-    return findAppointmentWidget(findAppointmentByElement(element));
-  }
-
   private DateTime getCoordinatesDate(int x, int y) {
-    int left = viewBody.getGrid().getGridOverlay().getAbsoluteLeft();
+    int left = viewBody.getGrid().getOverlay().getAbsoluteLeft();
     int top = viewBody.getScrollArea().getAbsoluteTop();
-    int width = viewBody.getGrid().getGridOverlay().getOffsetWidth();
+    int width = viewBody.getGrid().getOverlay().getOffsetWidth();
     int scrollOffset = viewBody.getScrollArea().getElement().getScrollTop();
 
     double relativeY = y - top + scrollOffset;

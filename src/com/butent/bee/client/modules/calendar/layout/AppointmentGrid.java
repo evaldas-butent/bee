@@ -1,25 +1,25 @@
 package com.butent.bee.client.modules.calendar.layout;
 
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.TimeUtils;
 
-public class AppointmentGrid extends Composite {
+public class AppointmentGrid extends Absolute {
+  
+  private int overlayIndex = BeeConst.UNDEF;
 
   public AppointmentGrid() {
-    Absolute grid = new Absolute();
-    initWidget(grid);
+    super();
   }
 
   public void build(int columnCount, CalendarSettings settings) {
-    Absolute grid = getGrid();
-    grid.clear();
+    clear();
 
     int intervalsPerHour = settings.getIntervalsPerHour();
     int intervalSize = settings.getPixelsPerInterval();
@@ -35,7 +35,7 @@ public class AppointmentGrid extends Composite {
           ? CalendarStyleManager.WORKING_HOURS : CalendarStyleManager.NON_WORKING);
 
       StyleUtils.setHeight(major, intervalSize - 1);
-      grid.add(major);
+      add(major);
 
       for (int x = 0; x < intervalsPerHour - 1; x++) {
         Simple minor = new Simple();
@@ -44,22 +44,28 @@ public class AppointmentGrid extends Composite {
             ? CalendarStyleManager.WORKING_HOURS : CalendarStyleManager.NON_WORKING);
 
         StyleUtils.setHeight(minor, intervalSize - 1);
-        grid.add(minor);
+        add(minor);
       }
     }
     
-    CalendarLayoutManager.addColumnSeparators(grid, columnCount);
+    CalendarLayoutManager.addColumnSeparators(this, columnCount);
 
-    Simple gridOverlay = new Simple();    
-    gridOverlay.addStyleName(StyleUtils.NAME_OCCUPY);
-    grid.add(gridOverlay);
+    Simple overlay = new Simple();    
+    overlay.addStyleName(StyleUtils.NAME_OCCUPY);
+    add(overlay);
+    
+    setOverlayIndex(getWidgetIndex(overlay));
   }
 
-  public Absolute getGrid() {
-    return (Absolute) getWidget();
+  public Widget getOverlay() {
+    return getWidget(getOverlayIndex());
   }
 
-  public Widget getGridOverlay() {
-    return getGrid().getWidget(getGrid().getWidgetCount() - 1);
+  private int getOverlayIndex() {
+    return overlayIndex;
+  }
+
+  private void setOverlayIndex(int overlayIndex) {
+    this.overlayIndex = overlayIndex;
   }
 }

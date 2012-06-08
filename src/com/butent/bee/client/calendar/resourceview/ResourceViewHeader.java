@@ -1,7 +1,6 @@
 package com.butent.bee.client.calendar.resourceview;
 
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -17,34 +16,32 @@ import com.butent.bee.shared.time.JustDate;
 
 import java.util.List;
 
-public class ResourceViewHeader extends Composite {
+public class ResourceViewHeader extends Horizontal {
 
   private static final DateTimeFormat DATE_FORMAT = DateTimeFormat.getFormat("MM-dd");
   
   private static final int DATE_CELL_INDEX = 0;
   private static final int CAPTION_CONTAINER_INDEX = 1;
 
-  private final Horizontal header = new Horizontal();
-
   public ResourceViewHeader() {
-    initWidget(header);
-    header.addStyleName(CalendarStyleManager.CALENDAR_HEADER);
+    super();
+    addStyleName(CalendarStyleManager.CALENDAR_HEADER);
 
     BeeLabel dateLabel = new BeeLabel();
-    header.add(dateLabel);
-    header.addStyleToCell(dateLabel, CalendarStyleManager.RESOURCE_DATE_CELL);
+    add(dateLabel);
+    addStyleToCell(dateLabel, CalendarStyleManager.RESOURCE_DATE_CELL);
     
     Flow captionPanel = new Flow();
     captionPanel.addStyleName(CalendarStyleManager.RESOURCE_CAPTION_CONTAINER);
-    header.add(captionPanel);
+    add(captionPanel);
     
     Html filler = new Html();
-    header.add(filler);
-    header.setCellWidth(filler, DomUtils.getScrollBarWidth());
+    add(filler);
+    setCellWidth(filler, DomUtils.getScrollBarWidth());
   }
 
   public void setAttendees(List<Long> attendees) {
-    HasWidgets panel = (HasWidgets) header.getWidget(CAPTION_CONTAINER_INDEX); 
+    HasWidgets panel = (HasWidgets) getWidget(CAPTION_CONTAINER_INDEX); 
     panel.clear();
     if (attendees.isEmpty()) {
       return;
@@ -63,6 +60,6 @@ public class ResourceViewHeader extends Composite {
   }
 
   public void setDate(JustDate date) {
-    header.getWidget(DATE_CELL_INDEX).getElement().setInnerHTML(DATE_FORMAT.format(date));
+    getWidget(DATE_CELL_INDEX).getElement().setInnerHTML(DATE_FORMAT.format(date));
   }
 }

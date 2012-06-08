@@ -24,16 +24,26 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 
 public class CalendarLayoutManager {
-  
+
+  private static final double SIMPLE_MARGIN_LEFT = 0.3;
+  private static final double SIMPLE_MARGIN_RIGHT = 0.3;
+
+  private static final double SIMPLE_SUB_MARGIN_LEFT = 0.15;
+  private static final double SIMPLE_SUB_MARGIN_RIGHT = 0.15;
+
+  private static final int SIMPLE_MARGIN_BOTTOM = 2;
+
+  private static final int SIMPLE_PERCENT_SCALE = 3;
+
   private static final int MULTI_ROW_HEIGHT = 17;
   private static final int MULTI_MARGIN_TOP = 4;
   private static final int MULTI_MARGIN_BOTTOM = 4;
 
-  private static final double MULTI_MARGIN_LEFT = 0.5;
-  private static final double MULTI_MARGIN_RIGHT = 0.5;
+  private static final double MULTI_MARGIN_LEFT = 0.3;
+  private static final double MULTI_MARGIN_RIGHT = 0.3;
 
   private static final int MULTI_PERCENT_SCALE = 3;
-  
+
   public static void addColumnSeparators(HasWidgets container, int columnCount) {
     if (columnCount <= 0) {
       return;
@@ -143,34 +153,36 @@ public class CalendarLayoutManager {
       tb.setTotalColumns(groupMaxColumn + 1);
     }
 
-    double dayWidth = 100 / columnCount;
-    double widthAdj = dayWidth / 100;
-
-    double paddingLeft = 0.5d;
-    double paddingRight = 0.5d;
-    double paddingBottom = 2;
+    int columnWidth = 100 / columnCount;
 
     for (AppointmentAdapter apptCell : appointmentCells) {
-      int totalColumns = apptCell.getIntersectingBlocks().get(0).getTotalColumns();
-      double width = 1d / totalColumns * 100;
-      double left = (double) apptCell.getColumnStart() / totalColumns * 100;
+      int subIndex = apptCell.getColumnStart();
+      int subCount = apptCell.getIntersectingBlocks().get(0).getTotalColumns();
 
-      apptCell.setLeft(widthAdj * 100 * columnIndex + left * widthAdj + paddingLeft);
-      apptCell.setWidth(width * widthAdj - paddingLeft - paddingRight);
+      double left = (double) columnWidth * subIndex / subCount;
+      double width = (double) columnWidth / subCount;
+
+      double paddingLeft = (subIndex == 0) ? SIMPLE_MARGIN_LEFT : SIMPLE_SUB_MARGIN_LEFT;
+      double paddingRight =
+          (subIndex == subCount - 1) ? SIMPLE_MARGIN_RIGHT : SIMPLE_SUB_MARGIN_RIGHT;
+
+      apptCell.setLeft(BeeUtils.round(columnWidth * columnIndex + left + paddingLeft,
+          SIMPLE_PERCENT_SCALE));
+      apptCell.setWidth(BeeUtils.round(width - paddingLeft - paddingRight, SIMPLE_PERCENT_SCALE));
 
       apptCell.setTop(apptCell.getCellStart() * intervalSize);
-      apptCell.setHeight(apptCell.getIntersectingBlocks().size() * intervalSize - paddingBottom);
+      apptCell.setHeight(apptCell.getIntersectingBlocks().size() * intervalSize
+          - SIMPLE_MARGIN_BOTTOM);
 
-      double apptStart = apptCell.getAppointmentStart();
-      double apptEnd = apptCell.getAppointmentEnd();
-      double apptDuration = apptEnd - apptStart;
+      int apptStart = apptCell.getDayMinutesStart();
+      int apptDuration = apptCell.getDayMinutesEnd() - apptStart;
 
-      double blockStart = timeBlocks[apptCell.getCellStart()].getStart();
-      double blockEnd = timeBlocks[apptCell.getCellStart() + apptCell.getCellSpan() - 1].getEnd();
-      double blockDuration = blockEnd - blockStart;
+      int blockStart = timeBlocks[apptCell.getCellStart()].getStart();
+      int blockEnd = timeBlocks[apptCell.getCellStart() + apptCell.getCellSpan() - 1].getEnd();
+      int blockDuration = blockEnd - blockStart;
 
-      double timeFillHeight = apptDuration / blockDuration * 100d;
-      double timeFillStart = (apptStart - blockStart) / blockDuration * 100d;
+      double timeFillHeight = 100d * apptDuration / blockDuration;
+      double timeFillStart = 100d * (apptStart - blockStart) / blockDuration;
 
       apptCell.setCellPercentFill(timeFillHeight);
       apptCell.setCellPercentStart(timeFillStart);
@@ -186,7 +198,7 @@ public class CalendarLayoutManager {
       int columnIndex, int columnCount) {
     return doMultiLayout(adapters, date, 1, columnIndex, columnCount);
   }
-  
+
   private static int doMultiLayout(List<AppointmentAdapter> adapters, JustDate date, int days,
       int columnIndex, int columnCount) {
     if (adapters.isEmpty()) {
@@ -194,20 +206,20 @@ public class CalendarLayoutManager {
     }
 
     Table<Integer, Integer, Range<DateTime>> slots = HashBasedTable.create();
-    
-    List<Range<DateTime>> dateRanges = Lists.newArrayList(); 
+
+    List<Range<DateTime>> dateRanges = Lists.newArrayList();
     for (int i = 0; i < days; i++) {
       dateRanges.add(Ranges.closedOpen(TimeUtils.startOfDay(date, i),
           TimeUtils.startOfDay(date, i + 1)));
     }
-    
+
     int columnWidth = 100 / columnCount;
-    double minuteWidth = (double) columnWidth / TimeUtils.MINUTES_PER_DAY;    
+    double minuteWidth = (double) columnWidth / TimeUtils.MINUTES_PER_DAY;
 
     for (AppointmentAdapter adapter : adapters) {
       int columnStart = BeeConst.UNDEF;
       int columnSpan = 0;
-      
+
       Range<DateTime> appointmenRange = AppointmentUtils.getRange(adapter.getAppointment());
 
       for (int i = 0; i < days; i++) {
@@ -224,10 +236,10 @@ public class CalendarLayoutManager {
             adapter.getAppointment().getId());
         continue;
       }
-      
+
       adapter.setColumnStart(columnStart);
       adapter.setColumnSpan(columnSpan);
-      
+
       DateTime startDate = adapter.getAppointment().getStart();
       DateTime endDate = adapter.getAppointment().getEnd();
 
@@ -253,7 +265,7 @@ public class CalendarLayoutManager {
           }
 
           adapter.setCellStart(r);
-          
+
           int minutes;
           if (TimeUtils.dayDiff(date, startDate) == columnStart) {
             minutes = TimeUtils.minutesSinceDayStarted(startDate);
@@ -267,7 +279,7 @@ public class CalendarLayoutManager {
           } else {
             marginLeft = MULTI_MARGIN_LEFT;
           }
-          
+
           if (TimeUtils.dayDiff(date, endDate) == columnStart + columnSpan - 1) {
             minutes = TimeUtils.minutesSinceDayStarted(endDate);
           } else {
@@ -280,7 +292,7 @@ public class CalendarLayoutManager {
           } else {
             marginRight = MULTI_MARGIN_RIGHT;
           }
-          
+
           double left = BeeUtils.round((columnStart + columnIndex) * columnWidth + marginLeft,
               MULTI_PERCENT_SCALE);
           double width = BeeUtils.round(columnSpan * columnWidth - marginLeft - marginRight,
@@ -297,10 +309,10 @@ public class CalendarLayoutManager {
         }
       }
     }
-    
+
     return slots.rowKeySet().size() * (MULTI_ROW_HEIGHT + MULTI_MARGIN_TOP) + MULTI_MARGIN_BOTTOM;
   }
-  
+
   private CalendarLayoutManager() {
   }
 }

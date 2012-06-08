@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.calendar;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Ranges;
+import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -25,7 +26,7 @@ public class AppointmentUtils {
     }
     return result;
   }
-  
+
   public static List<Appointment> filterMulti(List<Appointment> input, JustDate date, int days) {
     List<Appointment> result = Lists.newArrayList();
     DateTime min = TimeUtils.startOfDay(date);
@@ -50,15 +51,15 @@ public class AppointmentUtils {
 
   public static List<Appointment> filterSimple(List<Appointment> input, JustDate date) {
     List<Appointment> result = Lists.newArrayList();
-    
+
     DateTime min = TimeUtils.startOfDay(date);
-    DateTime max = TimeUtils.startOfDay(date, 1); 
+    DateTime max = TimeUtils.startOfDay(date, 1);
 
     for (Appointment appointment : input) {
       if (!appointment.isMultiDay()) {
         DateTime start = appointment.getStart();
         DateTime end = appointment.getEnd();
-        
+
         if (BeeUtils.isMeq(start, min) && BeeUtils.isLeq(end, max)) {
           result.add(appointment);
         }
@@ -66,7 +67,7 @@ public class AppointmentUtils {
     }
     return result;
   }
-  
+
   public static List<Appointment> filterSimple(List<Appointment> input, JustDate date, long id) {
     List<Appointment> lst = filterSimple(input, date);
     if (lst.isEmpty()) {
@@ -74,15 +75,48 @@ public class AppointmentUtils {
     }
     return filterByAttendee(lst, id);
   }
-  
+
+  public static Appointment findAppointment(List<AppointmentWidget> widgets, Element element) {
+    if (widgets.isEmpty() || element == null) {
+      return null;
+    }
+
+    for (AppointmentWidget widget : widgets) {
+      if (widget.getElement().isOrHasChild(element)) {
+        return widget.getAppointment();
+      }
+    }
+    return null;
+  }
+
+  public static List<AppointmentWidget> findAppointmentWidgets(List<AppointmentWidget> widgets,
+      Appointment appointment) {
+    List<AppointmentWidget> result = Lists.newArrayList();
+    if (widgets.isEmpty() || appointment == null) {
+      return result;
+    }
+
+    for (AppointmentWidget widget : widgets) {
+      if (widget.getAppointment().getId() == appointment.getId()) {
+        result.add(widget);
+      }
+    }
+    return result;
+  }
+
+  public static List<AppointmentWidget> findAppointmentWidgets(List<AppointmentWidget> widgets,
+      Element element) {
+    return findAppointmentWidgets(widgets, findAppointment(widgets, element));
+  }
+
   public static Range<DateTime> getRange(Appointment appointment) {
     return Ranges.closedOpen(appointment.getStart(), appointment.getEnd());
   }
-  
+
   public static boolean rangeContains(Appointment appointment, DateTime min, DateTime max) {
     DateTime start = appointment.getStart();
     DateTime end = appointment.getEnd();
-    
+
     return TimeUtils.isLess(start, max) && TimeUtils.isMore(end, min);
   }
 }

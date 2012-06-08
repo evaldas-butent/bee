@@ -71,7 +71,6 @@ public class MonthView extends CalendarView {
   }
 
   private final List<AppointmentWidget> appointmentsWidgets = Lists.newArrayList();
-  private final List<AppointmentWidget> selectedAppointmentWidgets = Lists.newArrayList();
 
   private final AbsolutePanel appointmentCanvas = new AbsolutePanel();
 
@@ -118,8 +117,6 @@ public class MonthView extends CalendarView {
     StyleUtils.makeAbsolute(appointmentCanvas);
     appointmentCanvas.setStyleName(CANVAS_STYLE);
 
-    selectedAppointmentWidgets.clear();
-
     if (dragController == null) {
       dragController = new MonthViewPickupDragController(appointmentCanvas, true);
       dragController.addDragHandler(new DragHandler() {
@@ -159,7 +156,6 @@ public class MonthView extends CalendarView {
     appointmentsWidgets.clear();
     moreLabels.clear();
     
-    selectedAppointmentWidgets.clear();
     while (monthCalendarGrid.getRowCount() > 0) {
       monthCalendarGrid.removeRow(0);
     }
@@ -201,24 +197,6 @@ public class MonthView extends CalendarView {
     return Type.MONTH;
   }
   
-  @Override
-  public void onAppointmentSelected(Appointment appt) {
-    List<AppointmentWidget> clickedAppointmentWidgets = findAppointmentWidgets(appt);
-
-    if (!clickedAppointmentWidgets.isEmpty()) {
-      for (AppointmentWidget widget : selectedAppointmentWidgets) {
-        styleManager.applyStyle(widget, false);
-      }
-
-      for (AppointmentWidget widget : clickedAppointmentWidgets) {
-        styleManager.applyStyle(widget, true);
-      }
-
-      selectedAppointmentWidgets.clear();
-      selectedAppointmentWidgets.addAll(clickedAppointmentWidgets);
-    }
-  }
-
   public void onDoubleClick(Element clickedElement, Event event) {
     if (clickedElement.equals(appointmentCanvas.getElement())) {
       if (getSettings().getTimeBlockClickNumber() == TimeBlockClick.Double) {
@@ -241,7 +219,6 @@ public class MonthView extends CalendarView {
     } else {
       Appointment appointment = findAppointmentByElement(clickedElement);
       if (appointment != null) {
-        selectAppointment(appointment);
       } else {
         if (moreLabels.containsKey(clickedElement)) {
           getCalendarWidget().fireDateRequestEvent(cellDate(moreLabels.get(clickedElement)),
@@ -377,15 +354,10 @@ public class MonthView extends CalendarView {
 
     placeItemInGrid(panel, colStart, colEnd, row, cellPosition);
 
-    boolean selected = getCalendarWidget().isTheSelectedAppointment(appointment);
-    styleManager.applyStyle(panel, selected);
+    styleManager.applyStyle(panel, false);
 
     if (getSettings().isDragDropEnabled()) {
       dragController.makeDraggable(panel);
-    }
-
-    if (selected) {
-      selectedAppointmentWidgets.add(panel);
     }
 
     appointmentsWidgets.add(panel);

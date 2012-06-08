@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.logical.shared.HasOpenHandlers;
-import com.google.gwt.event.logical.shared.HasSelectionHandlers;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -35,10 +34,9 @@ import com.butent.bee.shared.time.TimeUtils;
 import java.util.Collection;
 import java.util.List;
 
-public class CalendarWidget extends InteractiveWidget implements HasSelectionHandlers<Appointment>,
-    HasOpenHandlers<Appointment>, HasTimeBlockClickHandlers<DateTime>,
-    HasUpdateHandlers<Appointment>, HasDateRequestHandlers<HasDateValue>,
-    HasLayout, HasAppointments {
+public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers<Appointment>,
+    HasTimeBlockClickHandlers<DateTime>, HasUpdateHandlers<Appointment>,
+    HasDateRequestHandlers<HasDateValue>, HasLayout, HasAppointments {
 
   private boolean layoutSuspended = false;
   private boolean layoutPending = false;
@@ -133,11 +131,6 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
     OpenEvent.fire(this, appointment);
   }
 
-  public void fireSelectionEvent(Appointment appointment) {
-    view.onAppointmentSelected(appointment);
-    SelectionEvent.fire(this, appointment);
-  }
-
   public void fireTimeBlockClickEvent(HasDateValue dt) {
     TimeBlockClickEvent.fire(this, dt.getDateTime());
   }
@@ -170,24 +163,12 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
     return appointmentManager.getRollbackAppointment();
   }
 
-  public Appointment getSelectedAppointment() {
-    return appointmentManager.getSelectedAppointment();
-  }
-
   public CalendarSettings getSettings() {
     return settings;
   }
 
   public CalendarView getView() {
     return view;
-  }
-
-  public boolean hasAppointmentSelected() {
-    return appointmentManager.hasAppointmentSelected();
-  }
-
-  public boolean isTheSelectedAppointment(Appointment appointment) {
-    return appointmentManager.isTheSelectedAppointment(appointment);
   }
 
   @Override
@@ -294,17 +275,6 @@ public class CalendarWidget extends InteractiveWidget implements HasSelectionHan
 
   public void setRollbackAppointment(Appointment appt) {
     appointmentManager.setRollbackAppointment(appt);
-  }
-
-  public void setSelectedAppointment(Appointment appointment) {
-    setSelectedAppointment(appointment, true);
-  }
-
-  public void setSelectedAppointment(Appointment appointment, boolean fireEvents) {
-    appointmentManager.setSelectedAppointment(appointment);
-    if (fireEvents) {
-      fireSelectionEvent(appointment);
-    }
   }
 
   public void setView(CalendarView view) {

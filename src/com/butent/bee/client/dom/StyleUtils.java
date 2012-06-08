@@ -717,6 +717,16 @@ public class StyleUtils {
     clearFont(obj.getElement());
   }
 
+  public static void clearHeight(Element el) {
+    Assert.notNull(el);
+    el.getStyle().clearHeight();
+  }
+
+  public static void clearHeight(UIObject obj) {
+    Assert.notNull(obj);
+    clearHeight(obj.getElement());
+  }
+  
   public static void clearTableLayout(Element el) {
     Assert.notNull(el);
     clearTableLayout(el.getStyle());
@@ -732,6 +742,16 @@ public class StyleUtils {
     clearTableLayout(obj.getElement());
   }
 
+  public static void clearWidth(Element el) {
+    Assert.notNull(el);
+    el.getStyle().clearWidth();
+  }
+
+  public static void clearWidth(UIObject obj) {
+    Assert.notNull(obj);
+    clearWidth(obj.getElement());
+  }
+  
   public static void collapseBorders(Element el) {
     Assert.notNull(el);
     collapseBorders(el.getStyle());

@@ -130,11 +130,7 @@
   border-width: 1px;
   position: absolute;
   overflow: hidden;
-  opacity: 0.75;
   border-radius: 6px;
-}
-.bee-cal .appointment-selected {
-  opacity: 1;
 }
 
 .bee-cal .appointment-multiday {
@@ -142,11 +138,7 @@
   border-width: 1px;
   position: absolute;
   overflow: hidden;
-  opacity: 0.7;
   border-radius: 6px;
-}
-.bee-cal .appointment-multiday-selected {
-  opacity: 1;
 }
 
 .bee-cal .appointment .header {
@@ -266,12 +258,6 @@
   text-decoration: none;
 }
 
-.bee-cal-MonthView .appointment-selected {
-  text-decoration: underline;
-  border: 0px;
-  overflow: hidden;
-}
-
 .bee-cal-MonthView .appointment-multiday {
   border-radius: 6px;
   position: absolute;
@@ -279,19 +265,6 @@
   overflow: hidden;
   border-style: solid;
   border-width: 1px;
-}
-
-.bee-cal-MonthView .appointment-multiday-selected {
-  position: absolute;
-  height: 20px;
-  overflow: hidden;
-  border-style: solid;
-  border-width: 1px;
-  text-decoration: none;
-  border-radius: 6px;
-  position: absolute;
-  height: 20px;
-  overflow: hidden;
 }
 
 .bee-cal-ColorBar-item {

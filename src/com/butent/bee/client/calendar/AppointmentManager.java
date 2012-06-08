@@ -11,10 +11,7 @@ import java.util.List;
 
 public class AppointmentManager {
 
-  private Appointment selectedAppointment = null;
-
   private Appointment rollbackAppointment = null;
-
   private Appointment committedAppointment = null;
 
   private final List<Appointment> appointments = Lists.newArrayList();
@@ -57,18 +54,6 @@ public class AppointmentManager {
     return rollbackAppointment;
   }
 
-  public Appointment getSelectedAppointment() {
-    return selectedAppointment;
-  }
-
-  public boolean hasAppointmentSelected() {
-    return selectedAppointment != null;
-  }
-
-  public boolean isTheSelectedAppointment(Appointment appointment) {
-    return hasAppointmentSelected() && selectedAppointment.equals(appointment);
-  }
-
   public boolean removeAppointment(long id) {
     int index = getAppointmentIndex(id);
     if (BeeConst.isUndef(index)) {
@@ -78,16 +63,7 @@ public class AppointmentManager {
     appointments.remove(index);
     sortPending = true;
 
-    if (hasAppointmentSelected() && getSelectedAppointment().getId() == id) {
-      setSelectedAppointment(null);
-    }
     return true;
-  }
-
-  public void resetSelectedAppointment() {
-    if (hasAppointmentSelected()) {
-      selectedAppointment = null;
-    }
   }
 
   public void rollback() {
@@ -116,10 +92,6 @@ public class AppointmentManager {
     sortPending = true;
     commit();
     rollbackAppointment = appt;
-  }
-
-  public void setSelectedAppointment(Appointment selectedAppointment) {
-    this.selectedAppointment = selectedAppointment;
   }
 
   public void sortAppointments() {

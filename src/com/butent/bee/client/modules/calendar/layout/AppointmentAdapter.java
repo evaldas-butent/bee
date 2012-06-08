@@ -1,23 +1,25 @@
 package com.butent.bee.client.modules.calendar.layout;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AppointmentAdapter {
 
   private final Appointment appointment;
+  private final int dayMinutesStart;
+  private final int dayMinutesEnd;
 
-  private final List<TimeBlock> intersectingBlocks;
+  private final List<TimeBlock> intersectingBlocks = Lists.newArrayList();
   
   private int cellStart;
   private int cellSpan;
   private int columnStart = -1;
   private int columnSpan;
-  private int appointmentStart;
-  private int appointmentEnd;
 
   private double cellPercentFill;
   private double cellPercentStart;
@@ -28,22 +30,17 @@ public class AppointmentAdapter {
 
   public AppointmentAdapter(Appointment appointment) {
     this.appointment = appointment;
-    this.appointmentStart = TimeUtils.minutesSinceDayStarted(appointment.getStart());
-    this.appointmentEnd = TimeUtils.minutesSinceDayStarted(appointment.getEnd());
+    
+    DateTime start = appointment.getStart();
+    DateTime end = appointment.getEnd();
 
-    this.intersectingBlocks = new ArrayList<TimeBlock>();
+    this.dayMinutesStart = TimeUtils.minutesSinceDayStarted(start);
+    this.dayMinutesEnd = TimeUtils.sameDate(start, end)
+        ? TimeUtils.minutesSinceDayStarted(end) : TimeUtils.MINUTES_PER_DAY;
   }
 
   public Appointment getAppointment() {
     return appointment;
-  }
-
-  public int getAppointmentEnd() {
-    return appointmentEnd;
-  }
-
-  public int getAppointmentStart() {
-    return appointmentStart;
   }
 
   public double getCellPercentFill() {
@@ -70,6 +67,14 @@ public class AppointmentAdapter {
     return columnStart;
   }
 
+  public int getDayMinutesEnd() {
+    return dayMinutesEnd;
+  }
+
+  public int getDayMinutesStart() {
+    return dayMinutesStart;
+  }
+
   public double getHeight() {
     return height;
   }
@@ -88,14 +93,6 @@ public class AppointmentAdapter {
 
   public double getWidth() {
     return width;
-  }
-
-  public void setAppointmentEnd(int appointmentEnd) {
-    this.appointmentEnd = appointmentEnd;
-  }
-
-  public void setAppointmentStart(int appointmentStart) {
-    this.appointmentStart = appointmentStart;
   }
 
   public void setCellPercentFill(double cellPercentFill) {

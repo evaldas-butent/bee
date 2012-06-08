@@ -12,13 +12,5 @@ public interface HasAppointments {
 
   void clearAppointments();
 
-  Appointment getSelectedAppointment();
-
-  boolean hasAppointmentSelected();
-
   boolean removeAppointment(long id, boolean refresh);
-  
-  void setSelectedAppointment(Appointment appointment);
-
-  void setSelectedAppointment(Appointment appointment, boolean fireEvents);
 }

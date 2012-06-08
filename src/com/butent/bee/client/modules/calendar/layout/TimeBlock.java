@@ -14,7 +14,6 @@ public class TimeBlock {
   private int totalColumns = 1;
   private int order;
   
-  private String name;
   private int start;
   private int end;
 
@@ -44,10 +43,6 @@ public class TimeBlock {
     }
   }
 
-  public String getName() {
-    return name;
-  }
-
   public Map<Integer, Integer> getOccupiedColumns() {
     return occupiedColumns;
   }
@@ -69,7 +64,7 @@ public class TimeBlock {
   }
 
   public boolean intersectsWith(AppointmentAdapter appt) {
-    return intersectsWith(appt.getAppointmentStart(), appt.getAppointmentEnd());
+    return intersectsWith(appt.getDayMinutesStart(), appt.getDayMinutesEnd());
   }
 
   public boolean intersectsWith(int apptStart, int apptEnd) {
@@ -85,10 +80,6 @@ public class TimeBlock {
 
   public void setEnd(int end) {
     this.end = end;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   public void setOrder(int order) {

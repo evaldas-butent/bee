@@ -9,11 +9,11 @@ import com.butent.bee.shared.modules.calendar.CalendarSettings;
 
 public class AppointmentPanel extends Composite {
 
-  public AppointmentPanel(CalendarSettings settings) {
+  public AppointmentPanel() {
     Simple scrollArea = new Simple();
     scrollArea.addStyleName(CalendarStyleManager.SCROLL_AREA);
 
-    Timeline timeline = new Timeline(settings);
+    Timeline timeline = new Timeline();
     timeline.addStyleName(CalendarStyleManager.TIME_STRIP);
 
     AppointmentGrid grid = new AppointmentGrid();
@@ -29,6 +29,11 @@ public class AppointmentPanel extends Composite {
     initWidget(scrollArea);
   }
 
+  public void build(int columnCount, CalendarSettings settings) {
+    getTimeline().build(settings);
+    getGrid().build(columnCount, settings);
+  }
+  
   public AppointmentGrid getGrid() {
     return (AppointmentGrid) getLayoutPanel().getWidget(1);
   }

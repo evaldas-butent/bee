@@ -1,7 +1,5 @@
 package com.butent.bee.client.modules.calendar.layout;
 
-import com.google.gwt.user.client.ui.Composite;
-
 import com.butent.bee.client.calendar.CalendarFormat;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Flow;
@@ -10,18 +8,14 @@ import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 
-public class Timeline extends Composite {
+public class Timeline extends Flow {
 
-  public Timeline(CalendarSettings settings) {
-    Flow panel = new Flow();
-    initWidget(panel);
-
-    prepare(settings);
+  public Timeline() {
+    super();
   }
 
-  public void prepare(CalendarSettings settings) {
-    Flow panel = (Flow) getWidget();
-    panel.clear();
+  public void build(CalendarSettings settings) {
+    clear();
     
     int labelHeight = settings.getIntervalsPerHour() * settings.getPixelsPerInterval();
 
@@ -40,7 +34,7 @@ public class Timeline extends Composite {
       flowPanel.add(hourLabel);
       
       hourWrapper.add(flowPanel);
-      panel.add(hourWrapper);
+      add(hourWrapper);
     }
   }
 }
