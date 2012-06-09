@@ -1,14 +1,13 @@
 package com.butent.bee.client.calendar.dayview;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.user.client.Element;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.calendar.CalendarView;
 import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.calendar.drop.DayViewDropController;
 import com.butent.bee.client.calendar.drop.DayViewPickupDragController;
-import com.butent.bee.client.calendar.drop.DayViewResizeController;
 import com.butent.bee.client.dnd.DragEndEvent;
 import com.butent.bee.client.dnd.DragHandler;
 import com.butent.bee.client.dnd.DragStartEvent;
@@ -16,9 +15,10 @@ import com.butent.bee.client.dnd.PickupDragController;
 import com.butent.bee.client.dnd.VetoDragException;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
-import com.butent.bee.client.modules.calendar.AppointmentUtils;
+import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
+import com.butent.bee.client.modules.calendar.dnd.ResizeController;
 import com.butent.bee.client.modules.calendar.layout.AppointmentAdapter;
 import com.butent.bee.client.modules.calendar.layout.CalendarLayoutManager;
 import com.butent.bee.client.modules.calendar.layout.AppointmentPanel;
@@ -40,7 +40,7 @@ public class DayView extends CalendarView {
   private PickupDragController dragController = null;
   private DayViewDropController dropController = null;
 
-  private DayViewResizeController resizeController = null;
+  private ResizeController resizeController = null;
 
   public DayView() {
     super();
@@ -76,15 +76,14 @@ public class DayView extends CalendarView {
     dropController.setSnapSize(getSettings().getPixelsPerInterval());
     dropController.setMaxProxyHeight(getMaxProxyHeight());
 
-    resizeController.setIntervalsPerHour(getSettings().getIntervalsPerHour());
-    resizeController.setSnapSize(getSettings().getPixelsPerInterval());
+    resizeController.setSettings(getSettings());
 
     appointmentWidgets.clear();
 
     JustDate tmpDate = JustDate.copyOf(date);
 
     for (int i = 0; i < days; i++) {
-      List<Appointment> simple = AppointmentUtils.filterSimple(getAppointments(), tmpDate);
+      List<Appointment> simple = CalendarUtils.filterSimple(getAppointments(), tmpDate);
 
       if (!simple.isEmpty()) {
         List<AppointmentAdapter> adapters =
@@ -95,7 +94,7 @@ public class DayView extends CalendarView {
       TimeUtils.moveOneDayForward(tmpDate);
     }
 
-    List<Appointment> multi = AppointmentUtils.filterMulti(getAppointments(), date, days);
+    List<Appointment> multi = CalendarUtils.filterMulti(getAppointments(), date, days);
     if (!multi.isEmpty()) {
       List<AppointmentAdapter> adapters = Lists.newArrayList();
       for (Appointment appointment : multi) {
@@ -128,13 +127,23 @@ public class DayView extends CalendarView {
     return Type.DAY;
   }
 
-  public void onClick(Element element, Event event) {
-    Appointment appointment = AppointmentUtils.findAppointment(appointmentWidgets, element);
+  @Override
+  public boolean onClick(Element element, Event event) {
+    AppointmentWidget widget = CalendarUtils.findWidget(appointmentWidgets, element);
 
-    if (appointment != null) {
-      openAppointment(appointment);
+    if (widget != null) {
+      if (widget.canClick(element)) {
+        openAppointment(widget.getAppointment());
+        return true;
+      } else {
+        return false;
+      }
+
     } else if (appointmentPanel.isGrid(element)) {
       timeBlockClick(event);
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -184,13 +193,13 @@ public class DayView extends CalendarView {
 
       dragController.addDragHandler(new DragHandler() {
         public void onDragEnd(DragEndEvent event) {
-          Appointment appt = AppointmentUtils.getDragAppointment(event.getContext());
+          Appointment appt = CalendarUtils.getDragAppointment(event.getContext());
           getCalendarWidget().setCommittedAppointment(appt);
           getCalendarWidget().fireUpdateEvent(appt);
         }
 
         public void onDragStart(DragStartEvent event) {
-          Appointment appt = AppointmentUtils.getDragAppointment(event.getContext());
+          Appointment appt = CalendarUtils.getDragAppointment(event.getContext());
           getCalendarWidget().setRollbackAppointment(appt.clone());
           ((DayViewPickupDragController) dragController).setMaxProxyHeight(getMaxProxyHeight());
         }
@@ -213,26 +222,8 @@ public class DayView extends CalendarView {
 
   private void createResizeController() {
     if (resizeController == null) {
-      resizeController = new DayViewResizeController(appointmentPanel.getGrid());
-
-      resizeController.addDragHandler(new DragHandler() {
-        public void onDragEnd(DragEndEvent event) {
-          Appointment appt = AppointmentUtils.getDragAppointment(event.getContext());
-          getCalendarWidget().setCommittedAppointment(appt);
-          getCalendarWidget().fireUpdateEvent(appt);
-        }
-
-        public void onDragStart(DragStartEvent event) {
-          Appointment appt = AppointmentUtils.getDragAppointment(event.getContext());
-          getCalendarWidget().setRollbackAppointment(appt.clone());
-        }
-
-        public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
-        }
-
-        public void onPreviewDragStart(DragStartEvent event) throws VetoDragException {
-        }
-      });
+      resizeController = new ResizeController(appointmentPanel.getGrid());
+      resizeController.addDefaultHandler(getCalendarWidget());
     }
   }
 

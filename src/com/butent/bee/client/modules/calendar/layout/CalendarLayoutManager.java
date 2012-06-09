@@ -11,7 +11,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
-import com.butent.bee.client.modules.calendar.AppointmentUtils;
+import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
@@ -220,7 +220,7 @@ public class CalendarLayoutManager {
       int columnStart = BeeConst.UNDEF;
       int columnSpan = 0;
 
-      Range<DateTime> appointmenRange = AppointmentUtils.getRange(adapter.getAppointment());
+      Range<DateTime> appointmenRange = CalendarUtils.getRange(adapter.getAppointment());
 
       for (int i = 0; i < days; i++) {
         if (BeeUtils.intersects(appointmenRange, dateRanges.get(i))) {

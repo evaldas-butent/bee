@@ -719,6 +719,14 @@ public class EventUtils {
   public static boolean isClick(String type) {
     return isEventType(type, EVENT_TYPE_CLICK);
   }
+  
+  public static boolean isCurrentTarget(Event event, Element element) {
+    if (event == null || element == null || event.getCurrentEventTarget() == null) {
+      return false;
+    } else {
+      return event.getCurrentEventTarget().equals(element);
+    }
+  }
 
   public static boolean isDblClick(String type) {
     return isEventType(type, EVENT_TYPE_DBL_CLICK);

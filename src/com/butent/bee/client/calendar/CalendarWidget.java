@@ -3,13 +3,13 @@ package com.butent.bee.client.calendar;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.logical.shared.HasOpenHandlers;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -162,9 +162,11 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
   }
 
   @Override
-  public void onDoubleClick(Element element, Event event) {
+  public boolean onDoubleClick(Element element, Event event) {
     if (view != null && settings.isDoubleClick()) {
-      view.onClick(element, event);
+      return view.onClick(element, event);
+    } else {
+      return false;
     }
   }
 
@@ -177,9 +179,11 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
   }
 
   @Override
-  public void onMouseDown(Element element, Event event) {
+  public boolean onMouseDown(Element element, Event event) {
     if (view != null && settings.isSingleClick()) {
-      view.onClick(element, event);
+      return view.onClick(element, event);
+    } else {
+      return false;
     }
   }
 

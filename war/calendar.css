@@ -126,43 +126,41 @@
 }
 
 .bee-cal .appointment {
-  border-style: solid;
-  border-width: 1px;
   position: absolute;
   overflow: hidden;
+  border: 1px solid #444;
   border-radius: 4px;
-  cursor: pointer;
+  box-sizing: border-box;
+  -webkit-user-select: none;
 }
 
 .bee-cal .appointment-multiday {
-  border-style: solid;
-  border-width: 1px;
   position: absolute;
   overflow: hidden;
+  border: 1px solid #444;
   border-radius: 2px;
+  box-sizing: border-box;
   cursor: pointer;
 }
 
 .bee-cal .appointment .header {
+  min-height: 6px;
+  padding-left: 1%;
   white-space: nowrap;
-  overflow: hidden;
-  padding: 1px;
-  padding-left: 8px;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
+  border-bottom: 2px ridge #ccc;
 }
 .bee-cal .appointment .body {
-  padding-left: 8px;
-  padding-top: 1px;
+  padding-left: 2%;
   white-space: pre-line;
+  cursor: pointer;
 }
 .bee-cal .appointment .footer {
-  border-bottom: 3px double #fff;
   position: absolute;
-  bottom: 2px;
-  height: 4px;
-  left: 40%;
-  right: 40%;
+  bottom: 0;
+  height: 10px;
+  left: 0;
+  right: 0;
+  cursor: row-resize;
 }
 
 .bee-cal .appointment-multiday .header {

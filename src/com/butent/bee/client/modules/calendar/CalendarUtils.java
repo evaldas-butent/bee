@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dnd.DragContext;
+import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -15,7 +16,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 
-public class AppointmentUtils {
+public class CalendarUtils {
 
   public static List<Appointment> filterByAttendee(Collection<Appointment> input, long id) {
     List<Appointment> result = Lists.newArrayList();
@@ -81,7 +82,7 @@ public class AppointmentUtils {
     return filterByAttendee(lst, id);
   }
 
-  public static Appointment findAppointment(Collection<AppointmentWidget> widgets,
+  public static AppointmentWidget findWidget(Collection<AppointmentWidget> widgets,
       Element element) {
     if (widgets.isEmpty() || element == null) {
       return null;
@@ -89,12 +90,21 @@ public class AppointmentUtils {
 
     for (AppointmentWidget widget : widgets) {
       if (widget.getElement().isOrHasChild(element)) {
-        return widget.getAppointment();
+        return widget;
       }
     }
     return null;
   }
 
+  public static int getCoordinateMinutesSinceDayStarted(int y, CalendarSettings settings) {
+    int hour = y / settings.getHourHeight();
+    
+    int interval = (y - hour * settings.getHourHeight()) / settings.getPixelsPerInterval();
+    int minute = interval * TimeUtils.MINUTES_PER_HOUR / settings.getIntervalsPerHour();
+    
+    return hour * TimeUtils.MINUTES_PER_HOUR + minute;
+  }
+  
   public static Appointment getDragAppointment(DragContext context) {
     Widget widget = context.draggable;
     

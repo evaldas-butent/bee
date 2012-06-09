@@ -2649,6 +2649,14 @@ public class BeeUtils {
     }
     return z;
   }
+  
+  public static int snap(int x, int to) {
+    if (x == 0 || to <= 1) {
+      return x;
+    } else {
+      return Math.round((float) x / to) * to;
+    }
+  }
 
   /**
    * Creates a String with defined length of spaces.

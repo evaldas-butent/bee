@@ -2,9 +2,9 @@ package com.butent.bee.client.calendar.monthview;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -24,7 +24,7 @@ import com.butent.bee.client.dnd.PickupDragController;
 import com.butent.bee.client.dnd.VetoDragException;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
-import com.butent.bee.client.modules.calendar.AppointmentUtils;
+import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
@@ -71,7 +71,7 @@ public class MonthView extends CalendarView {
     return 4;
   }
 
-  private final List<AppointmentWidget> appointmentsWidgets = Lists.newArrayList();
+  private final List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
 
   private final AbsolutePanel appointmentCanvas = new AbsolutePanel();
 
@@ -152,7 +152,7 @@ public class MonthView extends CalendarView {
     appointmentCanvas.clear();
     monthCalendarGrid.clear();
 
-    appointmentsWidgets.clear();
+    appointmentWidgets.clear();
     moreLabels.clear();
 
     while (monthCalendarGrid.getRowCount() > 0) {
@@ -197,17 +197,23 @@ public class MonthView extends CalendarView {
   }
 
   @Override
-  public void onClick(Element element, Event event) {
+  public boolean onClick(Element element, Event event) {
     if (element.equals(appointmentCanvas.getElement())) {
       dayClicked(event);
+      return true;
+
+    } else if (moreLabels.containsKey(element)) {
+      getCalendarWidget().fireDateRequestEvent(cellDate(moreLabels.get(element)), element);
+      return true;
+
     } else {
-      Appointment appointment = AppointmentUtils.findAppointment(appointmentsWidgets, element);
-      if (appointment != null) {
-        openAppointment(appointment);
-      } else if (moreLabels.containsKey(element)) {
-        getCalendarWidget().fireDateRequestEvent(cellDate(moreLabels.get(element)), element);
+      AppointmentWidget widget = CalendarUtils.findWidget(appointmentWidgets, element);
+      if (widget != null && widget.canClick(element)) {
+        openAppointment(widget.getAppointment());
+        return true;
       }
     }
+    return false;
   }
 
   public void scrollToHour(int hour) {
@@ -314,7 +320,7 @@ public class MonthView extends CalendarView {
       dragController.makeDraggable(panel);
     }
 
-    appointmentsWidgets.add(panel);
+    appointmentWidgets.add(panel);
     appointmentCanvas.add(panel);
   }
 

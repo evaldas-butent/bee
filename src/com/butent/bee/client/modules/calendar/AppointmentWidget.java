@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.calendar;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -37,6 +38,16 @@ public class AppointmentWidget extends Flow implements HasAppointment {
     add(headerPanel);
     add(bodyPanel);
     add(footerPanel);
+  }
+  
+  public boolean canClick(Element element) {
+    if (element == null) {
+      return false;
+    } else if (multi) {
+      return true;
+    } else {
+      return bodyPanel.getElement().isOrHasChild(element);
+    }
   }
 
   public Appointment getAppointment() {

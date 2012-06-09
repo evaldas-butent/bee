@@ -1,8 +1,8 @@
 package com.butent.bee.client.calendar;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.Composite;
@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.impl.FocusImpl;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 
 public abstract class InteractiveWidget extends Composite implements Focusable {
 
@@ -35,23 +36,24 @@ public abstract class InteractiveWidget extends Composite implements Focusable {
   @Override
   public void onBrowserEvent(Event event) {
     int eventType = DOM.eventGetType(event);
-    Element element = DOM.eventGetTarget(event);
 
     switch (eventType) {
       case Event.ONDBLCLICK: {
-        setFocus(true);
-        onDoubleClick(element, event);
+        if (onDoubleClick(EventUtils.getEventTargetElement(event), event)) {
+          event.stopPropagation();
+          return;
+        }
         break;
       }
 
       case Event.ONMOUSEDOWN: {
         if (event.getButton() == NativeEvent.BUTTON_LEFT 
-            && DOM.eventGetCurrentTarget(event) == getElement()) {
-          setFocus(true);
-          onMouseDown(element, event);
-          DOM.eventCancelBubble(event, true);
-          DOM.eventPreventDefault(event);
-          return;
+            && EventUtils.isCurrentTarget(event, getElement())) {
+          if (onMouseDown(EventUtils.getEventTargetElement(event), event)) {
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+          }
         }
         break;
       }
@@ -60,9 +62,9 @@ public abstract class InteractiveWidget extends Composite implements Focusable {
     super.onBrowserEvent(event);
   }
 
-  public abstract void onDoubleClick(Element element, Event event);
+  public abstract boolean onDoubleClick(Element element, Event event);
 
-  public abstract void onMouseDown(Element element, Event event);
+  public abstract boolean onMouseDown(Element element, Event event);
 
   public void setAccessKey(char key) {
     FocusImpl.getFocusImplForPanel().setAccessKey(getElement(), key);

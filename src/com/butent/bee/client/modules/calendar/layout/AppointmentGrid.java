@@ -1,19 +1,14 @@
 package com.butent.bee.client.modules.calendar.layout;
 
-import com.google.gwt.user.client.ui.Widget;
-
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.TimeUtils;
 
 public class AppointmentGrid extends Absolute {
   
-  private int overlayIndex = BeeConst.UNDEF;
-
   public AppointmentGrid() {
     super();
   }
@@ -49,23 +44,5 @@ public class AppointmentGrid extends Absolute {
     }
     
     CalendarLayoutManager.addColumnSeparators(this, columnCount);
-
-    Simple overlay = new Simple();    
-    overlay.addStyleName(StyleUtils.NAME_OCCUPY);
-    add(overlay);
-    
-    setOverlayIndex(getWidgetIndex(overlay));
-  }
-
-  public Widget getOverlay() {
-    return getWidget(getOverlayIndex());
-  }
-
-  private int getOverlayIndex() {
-    return overlayIndex;
-  }
-
-  private void setOverlayIndex(int overlayIndex) {
-    this.overlayIndex = overlayIndex;
   }
 }

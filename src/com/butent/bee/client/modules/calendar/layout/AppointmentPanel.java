@@ -6,10 +6,10 @@ import com.google.gwt.user.client.ui.Composite;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
+import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
-import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class AppointmentPanel extends Composite {
@@ -40,7 +40,7 @@ public class AppointmentPanel extends Composite {
   }
 
   public int getColumnIndex(int x, int columnCount) {
-    int left = getGrid().getOverlay().getAbsoluteLeft();
+    int left = getGrid().getAbsoluteLeft();
     int relativeX = x - left;
 
     int index = relativeX / getColumnWidth(columnCount);
@@ -61,17 +61,10 @@ public class AppointmentPanel extends Composite {
       result.setDom(result.getDom() + day);
     }
     
-    int hour = relativeY / settings.getHourHeight();
-    if (hour > 0) {
-      result.setHour(hour);
+    int minutes = CalendarUtils.getCoordinateMinutesSinceDayStarted(relativeY, settings);
+    if (minutes > 0) {
+      result.setMinute(minutes);
     }
-    
-    int interval = (relativeY - hour * settings.getHourHeight()) / settings.getPixelsPerInterval();
-    int minute = interval * TimeUtils.MINUTES_PER_HOUR / settings.getIntervalsPerHour();
-    if (minute > 0) {
-      result.setMinute(minute);
-    }
-
     return result;
   }
   
@@ -88,7 +81,7 @@ public class AppointmentPanel extends Composite {
   }
   
   public boolean isGrid(Element element) {
-    return getGrid().getOverlay().getElement().equals(element);
+    return getGrid().getElement().isOrHasChild(element);
   }
 
   public void scrollToHour(int hour, CalendarSettings settings) {
@@ -99,7 +92,7 @@ public class AppointmentPanel extends Composite {
   }
   
   private int getColumnWidth(int columnCount) {
-    int totalWidth = getGrid().getOverlay().getOffsetWidth();
+    int totalWidth = getGrid().getOffsetWidth();
     if (columnCount <= 1) {
       return totalWidth;
     } else {
