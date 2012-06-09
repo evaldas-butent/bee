@@ -18,8 +18,6 @@ import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.calendar.Calendar;
 import com.butent.bee.client.calendar.CalendarView.Type;
-import com.butent.bee.client.calendar.event.TimeBlockClickEvent;
-import com.butent.bee.client.calendar.event.TimeBlockClickHandler;
 import com.butent.bee.client.calendar.event.UpdateEvent;
 import com.butent.bee.client.calendar.event.UpdateHandler;
 import com.butent.bee.client.calendar.monthview.MonthView;
@@ -36,6 +34,8 @@ import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
+import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
@@ -52,7 +52,6 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
-import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -108,9 +107,9 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       }
     });
 
-    calendar.addTimeBlockClickHandler(new TimeBlockClickHandler<DateTime>() {
-      public void onTimeBlockClick(TimeBlockClickEvent<DateTime> event) {
-        CalendarKeeper.createAppointment(event.getTarget(), false);
+    calendar.addTimeBlockClickHandler(new TimeBlockClickEvent.Handler() {
+      public void onTimeBlockClick(TimeBlockClickEvent event) {
+        CalendarKeeper.createAppointment(event.getStart(), event.getAttendeeId(), false);
       }
     });
 

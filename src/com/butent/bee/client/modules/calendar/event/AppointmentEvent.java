@@ -1,10 +1,11 @@
-package com.butent.bee.client.modules.calendar;
+package com.butent.bee.client.modules.calendar.event;
 
 import com.google.gwt.event.shared.EventHandler;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.shared.State;
 
 public class AppointmentEvent extends Event<AppointmentEvent.Handler> {

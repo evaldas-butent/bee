@@ -5,8 +5,8 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -25,9 +25,9 @@ public abstract class CalendarView implements HasSettings {
     this.calendarWidget = widget;
   }
 
-  public void createAppointment(DateTime start) {
+  public void createAppointment(DateTime start, Long attendeeId) {
     if (getCalendarWidget() != null) {
-      TimeBlockClickEvent.fire(getCalendarWidget(), start);
+      TimeBlockClickEvent.fire(getCalendarWidget(), start, attendeeId);
     }
   }
 

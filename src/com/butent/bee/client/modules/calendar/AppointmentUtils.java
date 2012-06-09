@@ -12,11 +12,12 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
 import java.util.List;
 
 public class AppointmentUtils {
 
-  public static List<Appointment> filterByAttendee(List<Appointment> input, long id) {
+  public static List<Appointment> filterByAttendee(Collection<Appointment> input, long id) {
     List<Appointment> result = Lists.newArrayList();
     for (Appointment appointment : input) {
       for (Long attendeeId : appointment.getAttendees()) {
@@ -29,7 +30,8 @@ public class AppointmentUtils {
     return result;
   }
 
-  public static List<Appointment> filterMulti(List<Appointment> input, JustDate date, int days) {
+  public static List<Appointment> filterMulti(Collection<Appointment> input, JustDate date,
+      int days) {
     List<Appointment> result = Lists.newArrayList();
     DateTime min = TimeUtils.startOfDay(date);
     DateTime max = TimeUtils.startOfDay(date, days);
@@ -42,7 +44,7 @@ public class AppointmentUtils {
     return result;
   }
 
-  public static List<Appointment> filterMulti(List<Appointment> input, JustDate date, int days,
+  public static List<Appointment> filterMulti(Collection<Appointment> input, JustDate date, int days,
       long id) {
     List<Appointment> lst = filterMulti(input, date, days);
     if (lst.isEmpty()) {
@@ -51,7 +53,7 @@ public class AppointmentUtils {
     return filterByAttendee(lst, id);
   }
 
-  public static List<Appointment> filterSimple(List<Appointment> input, JustDate date) {
+  public static List<Appointment> filterSimple(Collection<Appointment> input, JustDate date) {
     List<Appointment> result = Lists.newArrayList();
 
     DateTime min = TimeUtils.startOfDay(date);
@@ -70,7 +72,8 @@ public class AppointmentUtils {
     return result;
   }
 
-  public static List<Appointment> filterSimple(List<Appointment> input, JustDate date, long id) {
+  public static List<Appointment> filterSimple(Collection<Appointment> input, JustDate date,
+      long id) {
     List<Appointment> lst = filterSimple(input, date);
     if (lst.isEmpty()) {
       return lst;
@@ -78,7 +81,8 @@ public class AppointmentUtils {
     return filterByAttendee(lst, id);
   }
 
-  public static Appointment findAppointment(List<AppointmentWidget> widgets, Element element) {
+  public static Appointment findAppointment(Collection<AppointmentWidget> widgets,
+      Element element) {
     if (widgets.isEmpty() || element == null) {
       return null;
     }
@@ -91,26 +95,6 @@ public class AppointmentUtils {
     return null;
   }
 
-  public static List<AppointmentWidget> findAppointmentWidgets(List<AppointmentWidget> widgets,
-      Appointment appointment) {
-    List<AppointmentWidget> result = Lists.newArrayList();
-    if (widgets.isEmpty() || appointment == null) {
-      return result;
-    }
-
-    for (AppointmentWidget widget : widgets) {
-      if (widget.getAppointment().getId() == appointment.getId()) {
-        result.add(widget);
-      }
-    }
-    return result;
-  }
-
-  public static List<AppointmentWidget> findAppointmentWidgets(List<AppointmentWidget> widgets,
-      Element element) {
-    return findAppointmentWidgets(widgets, findAppointment(widgets, element));
-  }
-  
   public static Appointment getDragAppointment(DragContext context) {
     Widget widget = context.draggable;
     

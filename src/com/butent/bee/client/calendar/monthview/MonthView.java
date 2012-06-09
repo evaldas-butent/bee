@@ -295,7 +295,7 @@ public class MonthView extends CalendarView {
     int row = y / (appointmentCanvas.getOffsetHeight() / monthViewRequiredRows);
     int col = x / (appointmentCanvas.getOffsetWidth() / DAYS_IN_A_WEEK);
 
-    createAppointment(cellDate(row * DAYS_IN_A_WEEK + col).getDateTime());
+    createAppointment(cellDate(row * DAYS_IN_A_WEEK + col).getDateTime(), null);
   }
 
   private JustDate firstDateShownInAMonthView(HasDateValue dayInMonth) {

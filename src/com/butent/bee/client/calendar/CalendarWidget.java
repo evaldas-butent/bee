@@ -16,17 +16,15 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.calendar.event.DateRequestEvent;
 import com.butent.bee.client.calendar.event.DateRequestHandler;
 import com.butent.bee.client.calendar.event.HasDateRequestHandlers;
-import com.butent.bee.client.calendar.event.HasTimeBlockClickHandlers;
 import com.butent.bee.client.calendar.event.HasUpdateHandlers;
-import com.butent.bee.client.calendar.event.TimeBlockClickEvent;
-import com.butent.bee.client.calendar.event.TimeBlockClickHandler;
 import com.butent.bee.client.calendar.event.UpdateEvent;
 import com.butent.bee.client.calendar.event.UpdateHandler;
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.event.HasTimeBlockClickHandlers;
+import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
-import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -35,7 +33,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers<Appointment>,
-    HasTimeBlockClickHandlers<DateTime>, HasUpdateHandlers<Appointment>,
+    HasTimeBlockClickHandlers, HasUpdateHandlers<Appointment>,
     HasDateRequestHandlers<HasDateValue>, HasLayout, HasAppointments {
 
   private boolean layoutSuspended = false;
@@ -90,7 +88,7 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
     return addHandler(handler, SelectionEvent.getType());
   }
 
-  public HandlerRegistration addTimeBlockClickHandler(TimeBlockClickHandler<DateTime> handler) {
+  public HandlerRegistration addTimeBlockClickHandler(TimeBlockClickEvent.Handler handler) {
     return addHandler(handler, TimeBlockClickEvent.getType());
   }
 

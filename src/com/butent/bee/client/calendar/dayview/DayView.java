@@ -244,6 +244,6 @@ public class DayView extends CalendarView {
   private void timeBlockClick(Event event) {
     DateTime dateTime = appointmentPanel.getCoordinatesDate(event.getClientX(), event.getClientY(),
         getSettings(), getDate(), getDays());
-    createAppointment(dateTime);
+    createAppointment(dateTime, null);
   }
 }

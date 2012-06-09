@@ -115,10 +115,10 @@ public class CalendarKeeper {
   }
 
   static void createAppointment(boolean glass) {
-    createAppointment(TimeUtils.nextHour(0), glass);
+    createAppointment(TimeUtils.nextHour(0), null, glass);
   }
 
-  static void createAppointment(final DateTime start, final boolean glass) {
+  static void createAppointment(final DateTime start, final Long attendeeId, final boolean glass) {
     final AppointmentBuilder builder = new AppointmentBuilder(true);
 
     FormFactory.createFormView(FORM_NEW_APPOINTMENT, VIEW_APPOINTMENTS,
@@ -127,7 +127,11 @@ public class CalendarKeeper {
             if (result != null) {
               result.start(null);
               result.updateRow(AppointmentBuilder.createEmptyRow(start), false);
-
+              
+              if (DataUtils.isId(attendeeId)) {
+                builder.setAttenddes(Lists.newArrayList(attendeeId));
+              }
+              
               Global.inputWidget(getAppointmentViewInfo().getNewRowCaption(), result.asWidget(),
                   builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE, null);
             }

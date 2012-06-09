@@ -243,8 +243,14 @@ public class ResourceView extends CalendarView {
   }
 
   private void timeBlockClick(Event event) {
-    DateTime dateTime = viewBody.getCoordinatesDate(event.getClientX(), event.getClientY(),
-        getSettings(), getDate(), 1);
-    createAppointment(dateTime);
+    int x = event.getClientX();
+    int y = event.getClientY();
+
+    List<Long> attendees = getCalendarWidget().getAttendees();
+    int columnIndex = viewBody.getColumnIndex(x, attendees.size());
+    
+    DateTime dateTime = viewBody.getCoordinatesDate(x, y, getSettings(), getDate(), 1);
+
+    createAppointment(dateTime, attendees.get(columnIndex));
   }
 }
