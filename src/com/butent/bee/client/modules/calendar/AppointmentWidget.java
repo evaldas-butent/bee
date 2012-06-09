@@ -7,12 +7,14 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.widget.Html;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class AppointmentWidget extends Flow implements HasAppointment {
 
   private final Appointment appointment;
   private final boolean multi;
+  private final int columnIndex;
 
   private double top;
   private double left;
@@ -22,10 +24,14 @@ public class AppointmentWidget extends Flow implements HasAppointment {
   private final Widget headerPanel = new Html();
   private final Widget bodyPanel = new Html();
   private final Widget footerPanel = new Html();
+  
+  private int dropColumnIndex = BeeConst.UNDEF;
+  private int dropMinutes = BeeConst.UNDEF;
 
-  public AppointmentWidget(Appointment appointment, boolean multi) {
+  public AppointmentWidget(Appointment appointment, boolean multi, int columnIndex) {
     this.appointment = appointment;
     this.multi = multi;
+    this.columnIndex = columnIndex;
 
     StyleUtils.makeAbsolute(this);
     addStyleName(multi ? CalendarStyleManager.APPOINTMENT_MULTIDAY
@@ -54,6 +60,18 @@ public class AppointmentWidget extends Flow implements HasAppointment {
     return appointment;
   }
 
+  public int getColumnIndex() {
+    return columnIndex;
+  }
+
+  public int getDropColumnIndex() {
+    return dropColumnIndex;
+  }
+
+  public int getDropMinutes() {
+    return dropMinutes;
+  }
+
   public double getHeight() {
     return height;
   }
@@ -69,7 +87,7 @@ public class AppointmentWidget extends Flow implements HasAppointment {
   public Widget getResizeHandle() {
     return footerPanel;
   }
-
+  
   public double getTop() {
     return top;
   }
@@ -77,7 +95,7 @@ public class AppointmentWidget extends Flow implements HasAppointment {
   public double getWidth() {
     return width;
   }
-  
+
   public void render() {
     setBackground(appointment.getBackground());
     setForeground(appointment.getForeground());
@@ -93,6 +111,14 @@ public class AppointmentWidget extends Flow implements HasAppointment {
     if (!BeeUtils.isEmpty(html)) {
       bodyPanel.getElement().setInnerHTML(html);
     }
+  }
+
+  public void setDropColumnIndex(int dropColumnIndex) {
+    this.dropColumnIndex = dropColumnIndex;
+  }
+
+  public void setDropMinutes(int dropMinutes) {
+    this.dropMinutes = dropMinutes;
   }
 
   public void setHeaderHtml(String html) {

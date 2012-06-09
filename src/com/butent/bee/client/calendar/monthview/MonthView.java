@@ -26,6 +26,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -121,13 +122,10 @@ public class MonthView extends CalendarView {
       dragController.addDragHandler(new DragHandler() {
         public void onDragEnd(DragEndEvent event) {
           Appointment appt = ((AppointmentWidget) event.getContext().draggable).getAppointment();
-          getCalendarWidget().setCommittedAppointment(appt);
-          getCalendarWidget().fireUpdateEvent(appt);
+          updateAppointment(appt, null, null, -1, -1);
         }
 
         public void onDragStart(DragStartEvent event) {
-          Appointment appt = ((AppointmentWidget) event.getContext().draggable).getAppointment();
-          getCalendarWidget().setRollbackAppointment(appt.clone());
         }
 
         public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
@@ -311,7 +309,7 @@ public class MonthView extends CalendarView {
 
   private void layOnAppointment(Appointment appointment, int colStart, int colEnd, int row,
       int cellPosition) {
-    AppointmentWidget panel = new AppointmentWidget(appointment, false);
+    AppointmentWidget panel = new AppointmentWidget(appointment, false, BeeConst.UNDEF);
     panel.renderCompact();
 
     placeItemInGrid(panel, colStart, colEnd, row, cellPosition);

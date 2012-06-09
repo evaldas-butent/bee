@@ -16,12 +16,11 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.calendar.event.DateRequestEvent;
 import com.butent.bee.client.calendar.event.DateRequestHandler;
 import com.butent.bee.client.calendar.event.HasDateRequestHandlers;
-import com.butent.bee.client.calendar.event.HasUpdateHandlers;
-import com.butent.bee.client.calendar.event.UpdateEvent;
-import com.butent.bee.client.calendar.event.UpdateHandler;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.event.HasTimeBlockClickHandlers;
+import com.butent.bee.client.modules.calendar.event.HasUpdateHandlers;
 import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
+import com.butent.bee.client.modules.calendar.event.UpdateEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
@@ -33,7 +32,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers<Appointment>,
-    HasTimeBlockClickHandlers, HasUpdateHandlers<Appointment>,
+    HasTimeBlockClickHandlers, HasUpdateHandlers,
     HasDateRequestHandlers<HasDateValue>, HasLayout, HasAppointments {
 
   private boolean layoutSuspended = false;
@@ -96,7 +95,7 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
     getRootPanel().add(widget);
   }
 
-  public HandlerRegistration addUpdateHandler(UpdateHandler<Appointment> handler) {
+  public HandlerRegistration addUpdateHandler(UpdateEvent.Handler handler) {
     return addHandler(handler, UpdateEvent.getType());
   }
 
@@ -125,14 +124,6 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
     DateRequestEvent.fire(this, dt, clicked);
   }
 
-  public void fireUpdateEvent(Appointment appointment) {
-    boolean allow = UpdateEvent.fire(this, appointment);
-    if (!allow) {
-      appointmentManager.rollback();
-    }
-    refresh();
-  }
-
   public List<Appointment> getAppointments() {
     return appointmentManager.getAppointments();
   }
@@ -147,10 +138,6 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
 
   public int getDisplayedDays() {
     return displayedDays;
-  }
-
-  public Appointment getRollbackAppointment() {
-    return appointmentManager.getRollbackAppointment();
   }
 
   public CalendarSettings getSettings() {
@@ -233,10 +220,6 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
     refresh();
   }
 
-  public void setCommittedAppointment(Appointment appt) {
-    appointmentManager.setCommittedAppointment(appt);
-  }
-
   public void setDate(JustDate newDate) {
     setDate(newDate, getDisplayedDays());
   }
@@ -265,10 +248,6 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
 
   public void setDisplayedDays(int displayedDays) {
     this.displayedDays = displayedDays;
-  }
-
-  public void setRollbackAppointment(Appointment appt) {
-    appointmentManager.setRollbackAppointment(appt);
   }
 
   public void setView(CalendarView view) {

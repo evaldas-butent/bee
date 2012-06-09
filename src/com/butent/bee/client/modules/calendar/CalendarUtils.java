@@ -96,6 +96,15 @@ public class CalendarUtils {
     return null;
   }
 
+  public static int getColumnWidth(Widget widget, int columnCount) {
+    int totalWidth = widget.getElement().getClientWidth();
+    if (columnCount <= 1) {
+      return totalWidth;
+    } else {
+      return totalWidth * (100 / columnCount) / 100;
+    }
+  }
+  
   public static int getCoordinateMinutesSinceDayStarted(int y, CalendarSettings settings) {
     int hour = y / settings.getHourHeight();
     
@@ -106,17 +115,22 @@ public class CalendarUtils {
   }
   
   public static Appointment getDragAppointment(DragContext context) {
+    AppointmentWidget appointmentWidget = getDragAppointmentWidget(context);
+    return (appointmentWidget == null) ? null : appointmentWidget.getAppointment();
+  }
+
+  public static AppointmentWidget getDragAppointmentWidget(DragContext context) {
     Widget widget = context.draggable;
     
     while (widget != null) {
       if (widget instanceof AppointmentWidget) {
-        return ((AppointmentWidget) widget).getAppointment();
+        return (AppointmentWidget) widget;
       }
       widget = widget.getParent();
     }
     return null;
   }
-
+  
   public static Range<DateTime> getRange(Appointment appointment) {
     return Ranges.closedOpen(appointment.getStart(), appointment.getEnd());
   }

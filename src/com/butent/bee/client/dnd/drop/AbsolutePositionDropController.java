@@ -153,6 +153,14 @@ public class AbsolutePositionDropController extends AbstractPositioningDropContr
     calcDropTargetOffset();
   }
 
+  protected void calcDropTargetOffset() {
+    WidgetLocation dropTargetLocation = new WidgetLocation(dropTarget, null);
+    dropTargetOffsetX = dropTargetLocation.getLeft()
+        + DOMUtil.getBorderLeft(dropTarget.getElement());
+    dropTargetOffsetY = dropTargetLocation.getTop() + DOMUtil.getBorderTop(dropTarget.getElement());
+    // System.out.println(dropTargetOffsetX + ", " + dropTargetOffsetY);
+  }
+
   Widget makePositioner(Widget reference) {
     // Use two widgets so that setPixelSize() consistently affects dimensions
     // excluding positioner border in quirks and strict modes
@@ -177,13 +185,5 @@ public class AbsolutePositionDropController extends AbstractPositioningDropContr
     outer.setWidget(inner);
 
     return outer;
-  }
-
-  private void calcDropTargetOffset() {
-    WidgetLocation dropTargetLocation = new WidgetLocation(dropTarget, null);
-    dropTargetOffsetX = dropTargetLocation.getLeft()
-        + DOMUtil.getBorderLeft(dropTarget.getElement());
-    dropTargetOffsetY = dropTargetLocation.getTop() + DOMUtil.getBorderTop(dropTarget.getElement());
-    // System.out.println(dropTargetOffsetX + ", " + dropTargetOffsetY);
   }
 }

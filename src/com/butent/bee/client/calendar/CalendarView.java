@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
+import com.butent.bee.client.modules.calendar.event.UpdateEvent;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -52,6 +53,14 @@ public abstract class CalendarView implements HasSettings {
   }
 
   public abstract void scrollToHour(int hour);
+  
+  public void updateAppointment(Appointment appointment, DateTime newStart, DateTime newEnd,
+      int oldColumnIndex, int newColumnIndex) {
+    if (UpdateEvent.fire(getCalendarWidget(), appointment, newStart, newEnd, oldColumnIndex,
+        newColumnIndex)) {
+      getCalendarWidget().refresh();
+    }
+  }
 
   protected void addWidget(Widget widget) {
     getCalendarWidget().addToRootPanel(widget);
@@ -68,8 +77,8 @@ public abstract class CalendarView implements HasSettings {
   protected JustDate getDate() {
     return getCalendarWidget().getDate();
   }
-  
-  protected int getDays() {
+
+  protected int getDisplayedDays() {
     return getCalendarWidget().getDisplayedDays();
   }
 }

@@ -43,7 +43,7 @@ public class AppointmentPanel extends Composite {
     int left = getGrid().getAbsoluteLeft();
     int relativeX = x - left;
 
-    int index = relativeX / getColumnWidth(columnCount);
+    int index = relativeX / CalendarUtils.getColumnWidth(getGrid(), columnCount);
     return BeeUtils.clamp(index, 0, columnCount - 1);
   }
   
@@ -88,15 +88,6 @@ public class AppointmentPanel extends Composite {
     if (hour >= 0) {
       getScrollArea().getElement().setScrollTop(hour *
           settings.getIntervalsPerHour() * settings.getPixelsPerInterval());
-    }
-  }
-  
-  private int getColumnWidth(int columnCount) {
-    int totalWidth = getGrid().getOffsetWidth();
-    if (columnCount <= 1) {
-      return totalWidth;
-    } else {
-      return totalWidth * (100 / columnCount) / 100;
     }
   }
   

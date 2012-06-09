@@ -22,8 +22,6 @@ public class Appointment implements Comparable<Appointment> {
   private final List<Long> properties = Lists.newArrayList();
   private final List<Long> reminders = Lists.newArrayList();
   
-  private int dropColumn = BeeConst.UNDEF;
-
   public Appointment(BeeRow row) {
     this.row = row;
   }
@@ -86,10 +84,6 @@ public class Appointment implements Comparable<Appointment> {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_DESCRIPTION);
   }
 
-  public int getDropColumn() {
-    return dropColumn;
-  }
-
   public DateTime getEnd() {
     return Data.getDateTime(VIEW_APPOINTMENTS, row, COL_END_DATE_TIME);
   }
@@ -142,10 +136,6 @@ public class Appointment implements Comparable<Appointment> {
     DateTime start = getStart();
     DateTime end = getEnd();
     return start != null && TimeUtils.isMore(end, TimeUtils.startOfDay(start, 1));
-  }
-
-  public void setDropColumn(int dropColumn) {
-    this.dropColumn = dropColumn;
   }
 
   public void setEnd(DateTime end) {

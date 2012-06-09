@@ -84,7 +84,7 @@ public class CalendarLayoutManager {
       timeBlocks[i] = timeBlock;
     }
 
-    List<AppointmentAdapter> appointmentCells = Lists.newArrayList();
+    List<AppointmentAdapter> adapters = Lists.newArrayList();
 
     int groupMaxColumn = 0;
     int groupStartIndex = -1;
@@ -94,11 +94,11 @@ public class CalendarLayoutManager {
       TimeBlock startBlock = null;
       TimeBlock endBlock = null;
 
-      AppointmentAdapter apptCell = new AppointmentAdapter(appointment);
-      appointmentCells.add(apptCell);
+      AppointmentAdapter adapter = new AppointmentAdapter(appointment);
+      adapters.add(adapter);
 
       for (TimeBlock block : timeBlocks) {
-        if (block.intersectsWith(apptCell)) {
+        if (block.intersectsWith(adapter)) {
           startBlock = block;
 
           if (groupEndIndex < startBlock.getOrder()) {
@@ -113,26 +113,26 @@ public class CalendarLayoutManager {
         }
       }
 
-      startBlock.getAppointments().add(apptCell);
-      apptCell.getIntersectingBlocks().add(startBlock);
+      startBlock.getAppointments().add(adapter);
+      adapter.getIntersectingBlocks().add(startBlock);
 
       int column = startBlock.getFirstAvailableColumn();
-      apptCell.setColumnStart(column);
-      apptCell.setColumnSpan(1);
+      adapter.setColumnStart(column);
+      adapter.setColumnSpan(1);
 
       startBlock.getOccupiedColumns().put(column, column);
 
-      apptCell.setCellStart(startBlock.getOrder());
+      adapter.setCellStart(startBlock.getOrder());
 
       for (int i = startBlock.getOrder() + 1; i < timeBlocks.length; i++) {
         TimeBlock nextBlock = timeBlocks[i];
 
-        if (nextBlock.intersectsWith(apptCell)) {
-          nextBlock.getAppointments().add(apptCell);
+        if (nextBlock.intersectsWith(adapter)) {
+          nextBlock.getAppointments().add(adapter);
           nextBlock.getOccupiedColumns().put(column, column);
           endBlock = nextBlock;
 
-          apptCell.getIntersectingBlocks().add(nextBlock);
+          adapter.getIntersectingBlocks().add(nextBlock);
         }
       }
 
@@ -145,7 +145,7 @@ public class CalendarLayoutManager {
         groupEndIndex = endBlock.getOrder();
       }
 
-      apptCell.setCellSpan(endBlock.getOrder() - startBlock.getOrder() + 1);
+      adapter.setCellSpan(endBlock.getOrder() - startBlock.getOrder() + 1);
     }
 
     for (int i = groupStartIndex; i <= groupEndIndex; i++) {
@@ -155,9 +155,9 @@ public class CalendarLayoutManager {
 
     int columnWidth = 100 / columnCount;
 
-    for (AppointmentAdapter apptCell : appointmentCells) {
-      int subIndex = apptCell.getColumnStart();
-      int subCount = apptCell.getIntersectingBlocks().get(0).getTotalColumns();
+    for (AppointmentAdapter adapter : adapters) {
+      int subIndex = adapter.getColumnStart();
+      int subCount = adapter.getIntersectingBlocks().get(0).getTotalColumns();
 
       double left = (double) columnWidth * subIndex / subCount;
       double width = (double) columnWidth / subCount;
@@ -166,28 +166,28 @@ public class CalendarLayoutManager {
       double paddingRight =
           (subIndex == subCount - 1) ? SIMPLE_MARGIN_RIGHT : SIMPLE_SUB_MARGIN_RIGHT;
 
-      apptCell.setLeft(BeeUtils.round(columnWidth * columnIndex + left + paddingLeft,
+      adapter.setLeft(BeeUtils.round(columnWidth * columnIndex + left + paddingLeft,
           SIMPLE_PERCENT_SCALE));
-      apptCell.setWidth(BeeUtils.round(width - paddingLeft - paddingRight, SIMPLE_PERCENT_SCALE));
+      adapter.setWidth(BeeUtils.round(width - paddingLeft - paddingRight, SIMPLE_PERCENT_SCALE));
 
-      apptCell.setTop(apptCell.getCellStart() * intervalSize);
-      apptCell.setHeight(apptCell.getIntersectingBlocks().size() * intervalSize
+      adapter.setTop(adapter.getCellStart() * intervalSize);
+      adapter.setHeight(adapter.getIntersectingBlocks().size() * intervalSize
           - SIMPLE_MARGIN_BOTTOM);
 
-      int apptStart = apptCell.getDayMinutesStart();
-      int apptDuration = apptCell.getDayMinutesEnd() - apptStart;
+      int apptStart = adapter.getDayMinutesStart();
+      int apptDuration = adapter.getDayMinutesEnd() - apptStart;
 
-      int blockStart = timeBlocks[apptCell.getCellStart()].getStart();
-      int blockEnd = timeBlocks[apptCell.getCellStart() + apptCell.getCellSpan() - 1].getEnd();
+      int blockStart = timeBlocks[adapter.getCellStart()].getStart();
+      int blockEnd = timeBlocks[adapter.getCellStart() + adapter.getCellSpan() - 1].getEnd();
       int blockDuration = blockEnd - blockStart;
 
       double timeFillHeight = 100d * apptDuration / blockDuration;
       double timeFillStart = 100d * (apptStart - blockStart) / blockDuration;
 
-      apptCell.setCellPercentFill(timeFillHeight);
-      apptCell.setCellPercentStart(timeFillStart);
+      adapter.setCellPercentFill(timeFillHeight);
+      adapter.setCellPercentStart(timeFillStart);
     }
-    return appointmentCells;
+    return adapters;
   }
 
   public static int doMultiLayout(List<AppointmentAdapter> adapters, JustDate date, int days) {

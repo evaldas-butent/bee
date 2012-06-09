@@ -11,9 +11,6 @@ import java.util.List;
 
 public class AppointmentManager {
 
-  private Appointment rollbackAppointment = null;
-  private Appointment committedAppointment = null;
-
   private final List<Appointment> appointments = Lists.newArrayList();
 
   private boolean sortPending = false;
@@ -41,17 +38,8 @@ public class AppointmentManager {
     appointments.clear();
   }
 
-  public void commit() {
-    rollbackAppointment = null;
-    committedAppointment = null;
-  }
-
   public List<Appointment> getAppointments() {
     return appointments;
-  }
-
-  public Appointment getRollbackAppointment() {
-    return rollbackAppointment;
   }
 
   public boolean removeAppointment(long id) {
@@ -64,34 +52,6 @@ public class AppointmentManager {
     sortPending = true;
 
     return true;
-  }
-
-  public void rollback() {
-    if (rollbackAppointment == null && committedAppointment == null) {
-      return;
-    }
-
-    if (committedAppointment == null) {
-      addAppointment(rollbackAppointment);
-    } else if (rollbackAppointment == null) {
-      removeAppointment(committedAppointment.getId());
-    } else {
-      removeAppointment(committedAppointment.getId());
-      addAppointment(rollbackAppointment);
-    }
-
-    commit();
-  }
-
-  public void setCommittedAppointment(Appointment appt) {
-    sortPending = true;
-    committedAppointment = appt;
-  }
-
-  public void setRollbackAppointment(Appointment appt) {
-    sortPending = true;
-    commit();
-    rollbackAppointment = appt;
   }
 
   public void sortAppointments() {

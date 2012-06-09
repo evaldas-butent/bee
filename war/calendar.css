@@ -148,6 +148,7 @@
   padding-left: 1%;
   white-space: nowrap;
   border-bottom: 2px ridge #ccc;
+  cursor: move;
 }
 .bee-cal .appointment .body {
   padding-left: 2%;

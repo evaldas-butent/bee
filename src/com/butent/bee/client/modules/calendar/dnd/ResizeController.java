@@ -3,7 +3,7 @@ package com.butent.bee.client.modules.calendar.dnd;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.calendar.CalendarWidget;
+import com.butent.bee.client.calendar.CalendarView;
 import com.butent.bee.client.dnd.AbstractDragController;
 import com.butent.bee.client.dnd.DragEndEvent;
 import com.butent.bee.client.dnd.DragHandler;
@@ -25,17 +25,15 @@ public class ResizeController extends AbstractDragController {
     super(boundaryPanel);
   }
   
-  public void addDefaultHandler(final CalendarWidget calendarWidget) {
+  public void addDefaultHandler(final CalendarView calendarView) {
     addDragHandler(new DragHandler() {
       public void onDragEnd(DragEndEvent event) {
-        Appointment appointment = CalendarUtils.getDragAppointment(event.getContext());
-        calendarWidget.setCommittedAppointment(appointment);
-        calendarWidget.fireUpdateEvent(appointment);
+        AppointmentWidget appointmentWidget = 
+            CalendarUtils.getDragAppointmentWidget(event.getContext());
+        fireUpdate(calendarView, appointmentWidget);
       }
 
       public void onDragStart(DragStartEvent event) {
-        Appointment appointment = CalendarUtils.getDragAppointment(event.getContext());
-        calendarWidget.setRollbackAppointment(appointment.clone());
       }
 
       public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
@@ -57,13 +55,9 @@ public class ResizeController extends AbstractDragController {
     
     int y = BeeUtils.snap(top, snapSize) + BeeUtils.snap(height, snapSize);
     int minutes = CalendarUtils.getCoordinateMinutesSinceDayStarted(y, getSettings());
-
-    Appointment appointment = widget.getAppointment();
-    DateTime end = DateTime.copyOf(appointment.getStart());
-
-    end.setHour(0);
-    end.setMinute(minutes);
-    appointment.setEnd(end);
+    
+    widget.setDropColumnIndex(widget.getColumnIndex());
+    widget.setDropMinutes(minutes);
 
     super.dragEnd();
   }
@@ -91,6 +85,18 @@ public class ResizeController extends AbstractDragController {
     this.settings = settings;
   }
 
+  private void fireUpdate(CalendarView calendarView, AppointmentWidget appointmentWidget) {
+    Appointment appointment = appointmentWidget.getAppointment();
+
+    DateTime newEnd = DateTime.copyOf(appointment.getStart());
+
+    newEnd.setHour(0);
+    newEnd.setMinute(appointmentWidget.getDropMinutes());
+    
+    calendarView.updateAppointment(appointment, appointment.getStart(), newEnd,
+        appointmentWidget.getColumnIndex(), appointmentWidget.getDropColumnIndex());
+  }
+  
   private Widget getWidget() {
     return context.draggable.getParent();
   }

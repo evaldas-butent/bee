@@ -6,18 +6,13 @@ import com.google.gwt.user.client.Event;
 
 import com.butent.bee.client.calendar.CalendarView;
 import com.butent.bee.client.calendar.CalendarWidget;
-import com.butent.bee.client.calendar.drop.ResourceViewDropController;
-import com.butent.bee.client.calendar.drop.ResourceViewPickupDragController;
-import com.butent.bee.client.dnd.DragEndEvent;
-import com.butent.bee.client.dnd.DragHandler;
-import com.butent.bee.client.dnd.DragStartEvent;
-import com.butent.bee.client.dnd.PickupDragController;
-import com.butent.bee.client.dnd.VetoDragException;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
+import com.butent.bee.client.modules.calendar.dnd.DayDragController;
+import com.butent.bee.client.modules.calendar.dnd.DayDropController;
 import com.butent.bee.client.modules.calendar.dnd.ResizeController;
 import com.butent.bee.client.modules.calendar.layout.AppointmentAdapter;
 import com.butent.bee.client.modules.calendar.layout.AppointmentPanel;
@@ -37,8 +32,8 @@ public class ResourceView extends CalendarView {
 
   private final List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
 
-  private PickupDragController dragController = null;
-  private ResourceViewDropController dropController = null;
+  private DayDragController dragController = null;
+  private DayDropController dropController = null;
   private ResizeController resizeController = null;
 
   public ResourceView() {
@@ -70,10 +65,10 @@ public class ResourceView extends CalendarView {
 
     viewBody.build(cc, getSettings());
 
+    dragController.setDate(JustDate.copyOf(date));
+
     dropController.setColumns(cc);
-    dropController.setIntervalsPerHour(getSettings().getIntervalsPerHour());
-    dropController.setDate(JustDate.copyOf(date));
-    dropController.setMaxProxyHeight(getMaxProxyHeight());
+    dropController.setSettings(getSettings());
 
     resizeController.setSettings(getSettings());
 
@@ -88,7 +83,7 @@ public class ResourceView extends CalendarView {
       if (!simple.isEmpty()) {
         List<AppointmentAdapter> adapters =
             CalendarLayoutManager.doLayout(simple, i, cc, getSettings());
-        addAppointmentsToGrid(adapters, false);
+        addAppointmentsToGrid(adapters, false, i);
       }
 
       List<Appointment> multi = CalendarUtils.filterMulti(getAppointments(), date, 1, id);
@@ -100,7 +95,7 @@ public class ResourceView extends CalendarView {
         
         multiHeight = Math.max(multiHeight,
             CalendarLayoutManager.doMultiLayout(adapters, date, i, cc));
-        addAppointmentsToGrid(adapters, true);
+        addAppointmentsToGrid(adapters, true, i);
       }
     }
     
@@ -155,9 +150,12 @@ public class ResourceView extends CalendarView {
     }
   }
 
-  private void addAppointmentsToGrid(List<AppointmentAdapter> adapters, boolean multi) {
+  private void addAppointmentsToGrid(List<AppointmentAdapter> adapters, boolean multi,
+      int columnIndex) {
+
     for (AppointmentAdapter adapter : adapters) {
-      AppointmentWidget widget = new AppointmentWidget(adapter.getAppointment(), multi);
+      AppointmentWidget widget = new AppointmentWidget(adapter.getAppointment(), multi,
+          columnIndex);
 
       widget.setLeft(adapter.getLeft());
       widget.setWidth(adapter.getWidth());
@@ -184,39 +182,14 @@ public class ResourceView extends CalendarView {
 
   private void createDragController() {
     if (dragController == null) {
-      dragController = new ResourceViewPickupDragController(viewBody.getGrid(), false);
-
-      dragController.setBehaviorDragProxy(true);
-      dragController.setBehaviorDragStartSensitivity(1);
-      dragController.setBehaviorConstrainedToBoundaryPanel(true);
-      dragController.setConstrainWidgetToBoundaryPanel(true);
-      dragController.setBehaviorMultipleSelection(false);
-
-      dragController.addDragHandler(new DragHandler() {
-        public void onDragEnd(DragEndEvent event) {
-          Appointment appt = CalendarUtils.getDragAppointment(event.getContext());
-          getCalendarWidget().setCommittedAppointment(appt);
-          getCalendarWidget().fireUpdateEvent(appt);
-        }
-
-        public void onDragStart(DragStartEvent event) {
-          Appointment appt = CalendarUtils.getDragAppointment(event.getContext());
-          getCalendarWidget().setRollbackAppointment(appt.clone());
-          ((ResourceViewPickupDragController) dragController).setMaxProxyHeight(getMaxProxyHeight());
-        }
-
-        public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
-        }
-
-        public void onPreviewDragStart(DragStartEvent event) throws VetoDragException {
-        }
-      });
+      dragController = new DayDragController(viewBody.getGrid());
+      dragController.addDefaultHandler(this);
     }
   }
 
   private void createDropController() {
     if (dropController == null) {
-      dropController = new ResourceViewDropController(viewBody.getGrid());
+      dropController = new DayDropController(viewBody.getGrid());
       dragController.registerDropController(dropController);
     }
   }
@@ -224,13 +197,8 @@ public class ResourceView extends CalendarView {
   private void createResizeController() {
     if (resizeController == null) {
       resizeController = new ResizeController(viewBody.getGrid());
-      resizeController.addDefaultHandler(getCalendarWidget());
+      resizeController.addDefaultHandler(this);
     }
-  }
-
-  private int getMaxProxyHeight() {
-    int maxProxyHeight = 2 * (viewBody.getScrollArea().getOffsetHeight() / 3);
-    return maxProxyHeight;
   }
 
   private void timeBlockClick(Event event) {

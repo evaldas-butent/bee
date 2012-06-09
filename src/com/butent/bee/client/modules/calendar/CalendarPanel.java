@@ -18,8 +18,6 @@ import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.calendar.Calendar;
 import com.butent.bee.client.calendar.CalendarView.Type;
-import com.butent.bee.client.calendar.event.UpdateEvent;
-import com.butent.bee.client.calendar.event.UpdateHandler;
 import com.butent.bee.client.calendar.monthview.MonthView;
 import com.butent.bee.client.calendar.resourceview.ResourceView;
 import com.butent.bee.client.communication.ParameterList;
@@ -36,13 +34,13 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
+import com.butent.bee.client.modules.calendar.event.UpdateEvent;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.Html;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -52,6 +50,7 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
@@ -113,10 +112,11 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       }
     });
 
-    calendar.addUpdateHandler(new UpdateHandler<Appointment>() {
+    calendar.addUpdateHandler(new UpdateEvent.Handler() {
       @Override
-      public void onUpdate(UpdateEvent<Appointment> event) {
-        if (!updateAppointment(event.getTarget())) {
+      public void onUpdate(UpdateEvent event) {
+        if (!updateAppointment(event.getAppointment(), event.getNewStart(), event.getNewEnd(),
+            event.getOldColumnIndex(), event.getNewColumnIndex())) {
           event.setCanceled(true);
         }
       }
@@ -138,7 +138,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         pickDate();
       }
     });
-    
+
     this.viewTabs = createViewWidget();
 
     add(header);
@@ -259,7 +259,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   public void setViewPresenter(Presenter viewPresenter) {
   }
-  
+
   @Override
   protected void onUnload() {
     super.onUnload();
@@ -275,9 +275,9 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     calendar.suspendLayout();
     calendar.getSettings().loadFrom(row, columns);
-    
+
     int newDays = calendar.getSettings().getDefaultDisplayedDays();
-    
+
     if (newDays != oldDays) {
       viewTabs.getTabWidget(1).getElement().setInnerHTML(getDaysViewCaption(newDays));
       if (viewTabs.getSelectedTab() == 1) {
@@ -334,7 +334,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   private HandlerRegistration getAppointmentEventRegistration() {
     return appointmentEventRegistration;
   }
-  
+
   private String getDaysViewCaption(int days) {
     return BeeUtils.toString(days) + ((days < 10) ? " dienos" : " dien.");
   }
@@ -364,7 +364,9 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       }
 
     } else {
-      int days = (calendar.getView() instanceof ResourceView) ? 1 : Math.max(calendar.getDisplayedDays(), 1);
+      int days =
+          (calendar.getView() instanceof ResourceView) ? 1 : Math.max(calendar.getDisplayedDays(),
+              1);
       int shift = days;
       if (days == 5) {
         shift = 7;
@@ -447,56 +449,69 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     }
   }
 
-  private boolean updateAppointment(Appointment newApp) {
-    Appointment oldApp = calendar.getRollbackAppointment();
-    if (oldApp == null) {
-      return false;
-    }
-    
-    int dropColumn = newApp.getDropColumn();
+  private boolean updateAppointment(Appointment appointment, DateTime newStart, DateTime newEnd,
+      int oldColumnIndex, int newColumnIndex) {
+    boolean changed = false;
 
-    if (!BeeConst.isUndef(dropColumn)) {
-      newApp.setDropColumn(BeeConst.UNDEF);
+    if (Type.RESOURCE.equals(calendar.getView().getType())
+        && oldColumnIndex != newColumnIndex
+        && BeeUtils.isIndex(calendar.getAttendees(), oldColumnIndex)
+        && BeeUtils.isIndex(calendar.getAttendees(), newColumnIndex)) {
 
-      long oldAttendee = BeeConst.UNDEF;
-      long newAttendee = BeeConst.UNDEF;
+      long oldAttendee = calendar.getAttendees().get(oldColumnIndex);
+      long newAttendee = calendar.getAttendees().get(newColumnIndex);
 
-      if (BeeUtils.isIndex(calendar.getAttendees(), dropColumn)) {
-        newAttendee = calendar.getAttendees().get(dropColumn);
-        int cnt = 0;
+      boolean add = !appointment.getAttendees().contains(newAttendee);
 
-        if (!newApp.getAttendees().contains(newAttendee)) {
-          for (long attendee : newApp.getAttendees()) {
-            if (calendar.getAttendees().contains(attendee)) {
-              oldAttendee = attendee;
-              cnt++;
-            }
-          }
-        }
-        
-        if (cnt == 1) {
-          newApp.getAttendees().remove(oldAttendee);
-          newApp.getAttendees().add(newAttendee);
-          
-          String viewName = VIEW_APPOINTMENT_ATTENDEES; 
-          long appId = newApp.getId();
-          
-          Queries.delete(viewName,
-              Filter.and(ComparisonFilter.isEqual(COL_APPOINTMENT, new LongValue(appId)),
-                  ComparisonFilter.isEqual(COL_ATTENDEE, new LongValue(oldAttendee))), null);
-          
-          List<BeeColumn> columns = Lists.newArrayList(Data.getColumn(viewName, COL_APPOINTMENT),
-              Data.getColumn(viewName, COL_ATTENDEE));
-          List<String> values = Lists.newArrayList(Long.toString(appId),
-              Long.toString(newAttendee));
-
-          Queries.insert(viewName, columns, values, null);
-        }
+      appointment.getAttendees().remove(oldAttendee);
+      if (add) {
+        appointment.getAttendees().add(newAttendee);
       }
+
+      String viewName = VIEW_APPOINTMENT_ATTENDEES;
+      long appId = appointment.getId();
+
+      Queries.delete(viewName,
+          Filter.and(ComparisonFilter.isEqual(COL_APPOINTMENT, new LongValue(appId)),
+              ComparisonFilter.isEqual(COL_ATTENDEE, new LongValue(oldAttendee))), null);
+
+      if (add) {
+        List<BeeColumn> columns = Lists.newArrayList(Data.getColumn(viewName, COL_APPOINTMENT),
+            Data.getColumn(viewName, COL_ATTENDEE));
+        List<String> values = Lists.newArrayList(Long.toString(appId),
+            Long.toString(newAttendee));
+
+        Queries.insert(viewName, columns, values, null);
+      }
+      changed = true;
     }
 
-    Queries.update(VIEW_APPOINTMENTS, CalendarKeeper.getAppointmentViewColumns(),
-        oldApp.getRow(), newApp.getRow(), null);
+    if (appointment.getStart().equals(newStart) && appointment.getEnd().equals(newEnd)) {
+      return changed;
+    }
+
+    String viewName = VIEW_APPOINTMENTS;
+    final BeeRow row = appointment.getRow();
+
+    List<BeeColumn> columns = Lists.newArrayList(Data.getColumn(viewName, COL_START_DATE_TIME),
+        Data.getColumn(viewName, COL_END_DATE_TIME));
+
+    List<String> oldValues = Lists.newArrayList(Data.getString(viewName, row, COL_START_DATE_TIME),
+        Data.getString(viewName, row, COL_END_DATE_TIME));
+    List<String> newValues = Lists.newArrayList(BeeUtils.toString(newStart.getTime()),
+        BeeUtils.toString(newEnd.getTime()));
+
+    Queries.update(viewName, row.getId(), row.getVersion(), columns, oldValues, newValues,
+        new Queries.RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            row.setVersion(result.getVersion());
+          }
+        });
+
+    appointment.setStart(newStart);
+    appointment.setEnd(newEnd);
+
     return true;
   }
 }
