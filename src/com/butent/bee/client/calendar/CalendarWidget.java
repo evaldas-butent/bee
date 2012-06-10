@@ -13,9 +13,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.calendar.event.DateRequestEvent;
-import com.butent.bee.client.calendar.event.DateRequestHandler;
-import com.butent.bee.client.calendar.event.HasDateRequestHandlers;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.event.HasTimeBlockClickHandlers;
 import com.butent.bee.client.modules.calendar.event.HasUpdateHandlers;
@@ -24,7 +21,6 @@ import com.butent.bee.client.modules.calendar.event.UpdateEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
-import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 
@@ -32,8 +28,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers<Appointment>,
-    HasTimeBlockClickHandlers, HasUpdateHandlers,
-    HasDateRequestHandlers<HasDateValue>, HasLayout, HasAppointments {
+    HasTimeBlockClickHandlers, HasUpdateHandlers, HasLayout, HasAppointments {
 
   private boolean layoutSuspended = false;
   private boolean layoutPending = false;
@@ -75,10 +70,6 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
     }
   }
 
-  public HandlerRegistration addDateRequestHandler(DateRequestHandler<HasDateValue> handler) {
-    return addHandler(handler, DateRequestEvent.getType());
-  }
-
   public HandlerRegistration addOpenHandler(OpenHandler<Appointment> handler) {
     return addHandler(handler, OpenEvent.getType());
   }
@@ -114,14 +105,6 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
     if (view != null) {
       view.doSizing();
     }
-  }
-
-  public void fireDateRequestEvent(HasDateValue dt) {
-    DateRequestEvent.fire(this, dt);
-  }
-
-  public void fireDateRequestEvent(HasDateValue dt, Element clicked) {
-    DateRequestEvent.fire(this, dt, clicked);
   }
 
   public List<Appointment> getAppointments() {

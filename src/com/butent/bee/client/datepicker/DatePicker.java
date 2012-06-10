@@ -178,8 +178,8 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
   }
 
   public DatePicker(JustDate date, CssClasses cssClasses, MonthSelector monthSelector,
-      MonthView view,
-      Model model) {
+      MonthView view, Model model) {
+
     Assert.notNull(date);
     Assert.notNull(cssClasses);
     Assert.notNull(monthSelector);

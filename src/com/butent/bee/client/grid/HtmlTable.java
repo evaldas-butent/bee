@@ -339,8 +339,8 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
   }
 
   public void clear(boolean clearInnerHTML) {
-    for (int row = 0; row < getRowCount(); ++row) {
-      for (int col = 0; col < getCellCount(row); ++col) {
+    for (int row = 0; row < getRowCount(); row++) {
+      for (int col = 0; col < getCellCount(row); col++) {
         cleanCell(row, col, clearInnerHTML);
       }
     }

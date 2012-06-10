@@ -4,6 +4,7 @@ public class CalendarStyleManager {
 
   public static final String DAY_VIEW = "bee-cal";
   public static final String RESOURCE_VIEW = DAY_VIEW;
+  public static final String MONTH_VIEW = "bee-cal-MonthView";
 
   public static final String CALENDAR_HEADER = "calendar-header";
   public static final String YEAR_CELL = "year-cell";
@@ -48,6 +49,25 @@ public class CalendarStyleManager {
   public static final String APPOINTMENT = "appointment";
   public static final String APPOINTMENT_MULTIDAY = "appointment-multiday";
 
+  public static final String MONTH_GRID = "grid";
+  public static final String MONTH_CANVAS = "canvas";
+  
+  public static final String WEEKDAY_LABEL = "weekDayLabel";
+
+  public static final String MONTH_CELL = "dayCell";
+  public static final String MONTH_CELL_LABEL = "dayCellLabel";
+
+  public static final String MORE_LABEL = "moreAppointments";
+  public static final String MORE_POPUP = "bee-cal-morePopup";
+  public static final String MORE_PANEL = "morePanel";
+  public static final String MORE_CAPTION = "moreCaption";
+
+  public static final String TODAY = "today";
+  public static final String DISABLED = "disabled";
+
+  public static final String FIRST_COLUMN = "firstColumn";
+  public static final String LAST_COLUMN = "lastColumn";
+  
   private CalendarStyleManager() {
   }
 }

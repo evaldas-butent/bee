@@ -25,6 +25,7 @@ public class AppointmentWidget extends Flow implements HasAppointment {
   private final Widget bodyPanel = new Html();
   private final Widget footerPanel = new Html();
   
+  private int dropRowIndex = BeeConst.UNDEF;
   private int dropColumnIndex = BeeConst.UNDEF;
   private int dropMinutes = BeeConst.UNDEF;
 
@@ -33,7 +34,6 @@ public class AppointmentWidget extends Flow implements HasAppointment {
     this.multi = multi;
     this.columnIndex = columnIndex;
 
-    StyleUtils.makeAbsolute(this);
     addStyleName(multi ? CalendarStyleManager.APPOINTMENT_MULTIDAY
         : CalendarStyleManager.APPOINTMENT);
 
@@ -63,6 +63,10 @@ public class AppointmentWidget extends Flow implements HasAppointment {
   public int getColumnIndex() {
     return columnIndex;
   }
+  
+  public Widget getCompactBar() {
+    return footerPanel;
+  }
 
   public int getDropColumnIndex() {
     return dropColumnIndex;
@@ -70,6 +74,10 @@ public class AppointmentWidget extends Flow implements HasAppointment {
 
   public int getDropMinutes() {
     return dropMinutes;
+  }
+
+  public int getDropRowIndex() {
+    return dropRowIndex;
   }
 
   public double getHeight() {
@@ -83,17 +91,21 @@ public class AppointmentWidget extends Flow implements HasAppointment {
   public Widget getMoveHandle() {
     return headerPanel;
   }
-
+  
   public Widget getResizeHandle() {
     return footerPanel;
   }
-  
+
   public double getTop() {
     return top;
   }
 
   public double getWidth() {
     return width;
+  }
+
+  public boolean isMulti() {
+    return multi;
   }
 
   public void render() {
@@ -104,12 +116,17 @@ public class AppointmentWidget extends Flow implements HasAppointment {
   }
 
   public void renderCompact() {
-    CalendarKeeper.renderCompact(appointment, headerPanel);
+    String background = appointment.getBackground();
+    if (!BeeUtils.isEmpty(background)) {
+      getCompactBar().getElement().getStyle().setBackgroundColor(background);
+    }
+
+    CalendarKeeper.renderCompact(appointment, bodyPanel, this);
   }
 
   public void setBodyHtml(String html) {
     if (!BeeUtils.isEmpty(html)) {
-      bodyPanel.getElement().setInnerHTML(html);
+      bodyPanel.getElement().setInnerHTML(BeeUtils.trim(html));
     }
   }
 
@@ -121,9 +138,13 @@ public class AppointmentWidget extends Flow implements HasAppointment {
     this.dropMinutes = dropMinutes;
   }
 
+  public void setDropRowIndex(int dropRowIndex) {
+    this.dropRowIndex = dropRowIndex;
+  }
+
   public void setHeaderHtml(String html) {
     if (!BeeUtils.isEmpty(html)) {
-      headerPanel.getElement().setInnerHTML(html);
+      headerPanel.getElement().setInnerHTML(BeeUtils.trim(html));
     }
   }
 
@@ -140,9 +161,9 @@ public class AppointmentWidget extends Flow implements HasAppointment {
   public void setTitleText(String text) {
     if (!BeeUtils.isEmpty(text)) {
       if (multi) {
-        setTitle(text);
+        setTitle(BeeUtils.trim(text));
       } else {
-        bodyPanel.setTitle(text);
+        bodyPanel.setTitle(BeeUtils.trim(text));
       }
     }
   }

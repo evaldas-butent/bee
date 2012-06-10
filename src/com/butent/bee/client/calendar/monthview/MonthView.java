@@ -3,31 +3,31 @@ package com.butent.bee.client.calendar.monthview;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.user.client.DOM;
+import com.google.gwt.event.dom.client.MouseDownEvent;
+import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.client.Event;
-import com.google.gwt.user.client.ui.AbsolutePanel;
-import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.FlexTable.FlexCellFormatter;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.calendar.CalendarFormat;
 import com.butent.bee.client.calendar.CalendarView;
 import com.butent.bee.client.calendar.CalendarWidget;
-import com.butent.bee.client.calendar.drop.MonthViewDropController;
-import com.butent.bee.client.calendar.drop.MonthViewPickupDragController;
-import com.butent.bee.client.dnd.DragEndEvent;
-import com.butent.bee.client.dnd.DragHandler;
-import com.butent.bee.client.dnd.DragStartEvent;
-import com.butent.bee.client.dnd.PickupDragController;
-import com.butent.bee.client.dnd.VetoDragException;
-import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.FlexTable;
+import com.butent.bee.client.layout.Absolute;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
+import com.butent.bee.client.modules.calendar.dnd.MonthDropController;
+import com.butent.bee.client.modules.calendar.dnd.MonthDragController;
+import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.time.HasDateValue;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -43,12 +43,8 @@ public class MonthView extends CalendarView {
       new Comparator<Appointment>() {
         public int compare(Appointment a1, Appointment a2) {
           int compare = Boolean.valueOf(a2.isMultiDay()).compareTo(a1.isMultiDay());
-
-          if (compare == 0) {
-            compare = a1.getStart().compareTo(a2.getStart());
-          }
-          if (compare == 0) {
-            compare = a2.getEnd().compareTo(a1.getEnd());
+          if (compare == BeeConst.COMPARE_EQUAL) {
+            compare = a1.compareTo(a2);
           }
           return compare;
         }
@@ -56,127 +52,88 @@ public class MonthView extends CalendarView {
 
   private static final int DAYS_IN_A_WEEK = 7;
 
-  private static final String MONTH_VIEW = "bee-cal-MonthView";
-  private static final String CANVAS_STYLE = "canvas";
-  private static final String GRID_STYLE = "grid";
-  private static final String CELL_STYLE = "dayCell";
-  private static final String MORE_LABEL_STYLE = "moreAppointments";
-  private static final String CELL_HEADER_STYLE = "dayCellLabel";
-  private static final String WEEKDAY_LABEL_STYLE = "weekDayLabel";
+  private static final int APPOINTMENT_HEIGHT = 17;
+  private static final int APPOINTMENT_MARGIN_TOP = 3;
 
-  private static int appointmentHeight() {
-    return 20;
-  }
+  private static final double APPOINTMENT_MARGIN_LEFT = 0.3;
+  private static final double APPOINTMENT_MARGIN_RIGHT = 0.3;
 
-  private static int appointmentPaddingTop() {
-    return 4;
-  }
+  private static final int PERCENT_SCALE = 3;
+
+  private final FlexTable grid = new FlexTable();
+  private final Absolute canvas = new Absolute();
 
   private final List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();
+  private final Map<String, List<Appointment>> moreLabels = Maps.newHashMap();
 
-  private final AbsolutePanel appointmentCanvas = new AbsolutePanel();
+  private MonthDragController dragController = null;
+  private MonthDropController dropController = null;
 
-  private final Map<Element, Integer> moreLabels = Maps.newHashMap();
+  private JustDate firstDate;
+  private int requiredRows;
 
-  private final FlexTable monthCalendarGrid = new FlexTable();
-  private final FlexCellFormatter cellFormatter = monthCalendarGrid.getFlexCellFormatter();
+  private int cellOffsetHeight;
+  private int cellHeight;
 
-  private PickupDragController dragController = null;
-  private MonthViewDropController monthViewDropController = null;
+  private int weekDayHeaderHeight;
+  private int dayHeaderHeight;
 
-  private JustDate firstDateDisplayed = null;
-
-  private int monthViewRequiredRows = 5;
-
-  private int calculatedWeekDayHeaderHeight;
-
-  private int calculatedDayHeaderHeight;
-
-  private int calculatedCellAppointments;
-
-  private int calculatedCellOffsetHeight;
-
-  private int calculatedCellHeight;
+  private int maxCellAppointments;
 
   public MonthView() {
     super();
+
+    grid.addStyleName(CalendarStyleManager.MONTH_GRID);
+    canvas.addStyleName(CalendarStyleManager.MONTH_CANVAS);
   }
 
   public void attach(CalendarWidget widget) {
     super.attach(widget);
 
-    addWidget(monthCalendarGrid);
-
-    monthCalendarGrid.setCellPadding(0);
-    monthCalendarGrid.setCellSpacing(0);
-    monthCalendarGrid.setBorderWidth(0);
-
-    monthCalendarGrid.setStyleName(GRID_STYLE);
-
-    addWidget(appointmentCanvas);
-    StyleUtils.makeAbsolute(appointmentCanvas);
-    appointmentCanvas.setStyleName(CANVAS_STYLE);
+    addWidget(grid);
+    addWidget(canvas);
 
     if (dragController == null) {
-      dragController = new MonthViewPickupDragController(appointmentCanvas, true);
-      dragController.addDragHandler(new DragHandler() {
-        public void onDragEnd(DragEndEvent event) {
-          Appointment appt = ((AppointmentWidget) event.getContext().draggable).getAppointment();
-          updateAppointment(appt, null, null, -1, -1);
-        }
-
-        public void onDragStart(DragStartEvent event) {
-        }
-
-        public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
-        }
-
-        public void onPreviewDragStart(DragStartEvent event) throws VetoDragException {
-        }
-      });
-
-      dragController.setBehaviorDragStartSensitivity(5);
-      dragController.setBehaviorDragProxy(true);
+      dragController = new MonthDragController(canvas);
+      dragController.addDefaultHandler(this);
     }
 
-    if (monthViewDropController == null) {
-      monthViewDropController = new MonthViewDropController(appointmentCanvas, monthCalendarGrid);
-      dragController.registerDropController(monthViewDropController);
+    if (dropController == null) {
+      dropController = new MonthDropController(canvas);
+      dragController.registerDropController(dropController);
     }
   }
 
   @Override
   public void doLayout() {
-    appointmentCanvas.clear();
-    monthCalendarGrid.clear();
+    grid.clear();
+    grid.removeAllRows();
+
+    canvas.clear();
 
     appointmentWidgets.clear();
     moreLabels.clear();
 
-    while (monthCalendarGrid.getRowCount() > 0) {
-      monthCalendarGrid.removeRow(0);
-    }
+    buildGrid();
 
-    buildCalendarGrid();
+    calculateHeights();
 
-    calculateCellHeight();
-    calculateCellAppointments();
+    this.maxCellAppointments = cellHeight / (APPOINTMENT_HEIGHT + APPOINTMENT_MARGIN_TOP) - 1;
 
-    monthViewDropController.setDaysPerWeek(DAYS_IN_A_WEEK);
-    monthViewDropController.setWeeksPerMonth(monthViewRequiredRows);
-    monthViewDropController.setFirstDateDisplayed(firstDateDisplayed);
+    dropController.setRowCount(requiredRows);
+    dropController.setColumnCount(DAYS_IN_A_WEEK);
+    dropController.setHeaderHeight(weekDayHeaderHeight);
 
     Collections.sort(getAppointments(), APPOINTMENT_COMPARATOR);
-    MonthLayoutDescription monthLayoutDescription = new MonthLayoutDescription(firstDateDisplayed,
-        monthViewRequiredRows, getAppointments(), calculatedCellAppointments - 1);
+    MonthLayoutDescription monthLayoutDescription = new MonthLayoutDescription(firstDate,
+        requiredRows, getAppointments(), maxCellAppointments - 1);
 
     WeekLayoutDescription[] weeks = monthLayoutDescription.getWeekDescriptions();
-    for (int weekOfMonth = 0; weekOfMonth < weeks.length
-        && weekOfMonth < monthViewRequiredRows; weekOfMonth++) {
-      WeekLayoutDescription weekDescription = weeks[weekOfMonth];
+    for (int i = 0; i < requiredRows; i++) {
+      WeekLayoutDescription weekDescription = weeks[i];
       if (weekDescription != null) {
-        layOnTopOfTheWeekHangingAppointments(weekDescription, weekOfMonth);
-        layOnWeekDaysAppointments(weekDescription, weekOfMonth);
+        layOnTopAppointments(weekDescription, i);
+        layOnWeekDaysAppointments(weekDescription, i);
       }
     }
   }
@@ -185,8 +142,12 @@ public class MonthView extends CalendarView {
   public void doSizing() {
   }
 
+  public JustDate getFirstDate() {
+    return firstDate;
+  }
+
   public String getStyleName() {
-    return MONTH_VIEW;
+    return CalendarStyleManager.MONTH_VIEW;
   }
 
   @Override
@@ -196,17 +157,18 @@ public class MonthView extends CalendarView {
 
   @Override
   public boolean onClick(Element element, Event event) {
-    if (element.equals(appointmentCanvas.getElement())) {
+    if (element.equals(canvas.getElement())) {
       dayClicked(event);
       return true;
 
-    } else if (moreLabels.containsKey(element)) {
-      getCalendarWidget().fireDateRequestEvent(cellDate(moreLabels.get(element)), element);
+    } else if (moreLabels.containsKey(element.getId())) {
+      showAppointments(moreLabels.get(element.getId()));
       return true;
 
     } else {
       AppointmentWidget widget = CalendarUtils.findWidget(appointmentWidgets, element);
-      if (widget != null && widget.canClick(element)) {
+      if (widget != null 
+          && (widget.isMulti() || !widget.getCompactBar().getElement().isOrHasChild(element))) {
         openAppointment(widget.getAppointment());
         return true;
       }
@@ -217,174 +179,77 @@ public class MonthView extends CalendarView {
   public void scrollToHour(int hour) {
   }
 
-  private void buildCalendarGrid() {
+  private void buildCell(int row, int col, String text, boolean isToday, boolean currentMonth) {
+    BeeLabel label = new BeeLabel(text);
+    label.addStyleName(CalendarStyleManager.MONTH_CELL_LABEL);
+
+    grid.setWidget(row, col, label);
+    grid.getCellFormatter().addStyleName(row, col, CalendarStyleManager.MONTH_CELL);
+
+    if (isToday) {
+      label.addStyleName(CalendarStyleManager.TODAY);
+      grid.getCellFormatter().addStyleName(row, col, CalendarStyleManager.TODAY);
+    }
+    if (!currentMonth) {
+      label.addStyleName(CalendarStyleManager.DISABLED);
+      grid.getCellFormatter().addStyleName(row, col, CalendarStyleManager.DISABLED);
+    }
+
+    switch (col) {
+      case 0:
+        grid.getCellFormatter().addStyleName(row, col, CalendarStyleManager.FIRST_COLUMN);
+        break;
+      case DAYS_IN_A_WEEK - 1:
+        grid.getCellFormatter().addStyleName(row, col, CalendarStyleManager.LAST_COLUMN);
+        break;
+    }
+  }
+
+  private void buildGrid() {
     for (int i = 0; i < DAYS_IN_A_WEEK; i++) {
-      monthCalendarGrid.setText(0, i, CalendarFormat.getDayOfWeekNames()[i]);
-      cellFormatter.setStyleName(0, i, WEEKDAY_LABEL_STYLE);
+      grid.setText(0, i, CalendarFormat.getDayOfWeekNames()[i]);
+      grid.getCellFormatter().setStyleName(0, i, CalendarStyleManager.WEEKDAY_LABEL);
     }
 
     JustDate date = getDate();
     int month = date.getMonth();
-    firstDateDisplayed = firstDateShownInAMonthView(date);
 
-    monthViewRequiredRows = monthViewRequiredRows(date);
+    this.firstDate = calculateFirstDate(date);
+    this.requiredRows = calculateRequiredRows(date);
 
     JustDate today = TimeUtils.today();
-    JustDate tmpDate = JustDate.copyOf(firstDateDisplayed);
-    for (int i = 1; i <= monthViewRequiredRows; i++) {
+    JustDate tmpDate = JustDate.copyOf(firstDate);
+
+    for (int i = 1; i <= requiredRows; i++) {
       for (int j = 0; j < DAYS_IN_A_WEEK; j++) {
-        configureDayInGrid(i, j, BeeUtils.toString(tmpDate.getDom()), tmpDate.equals(today),
-            tmpDate.getMonth() != month);
+        buildCell(i, j, BeeUtils.toString(tmpDate.getDom()), tmpDate.equals(today),
+            tmpDate.getMonth() == month);
         TimeUtils.moveOneDayForward(tmpDate);
       }
     }
   }
 
-  private void calculateCellAppointments() {
-    int paddingTop = appointmentPaddingTop();
-    int height = appointmentHeight();
-
-    calculatedCellAppointments = (calculatedCellHeight - paddingTop) / (height + paddingTop) - 1;
-  }
-
-  private void calculateCellHeight() {
-    int gridHeight = monthCalendarGrid.getOffsetHeight();
-    int weekdayRowHeight = monthCalendarGrid.getRowFormatter().getElement(0).getOffsetHeight();
-    int dayHeaderHeight = cellFormatter.getElement(1, 0).getFirstChildElement().getOffsetHeight();
-
-    calculatedCellOffsetHeight = (gridHeight - weekdayRowHeight) / monthViewRequiredRows;
-    calculatedCellHeight = calculatedCellOffsetHeight - dayHeaderHeight;
-    calculatedWeekDayHeaderHeight = weekdayRowHeight;
-    calculatedDayHeaderHeight = dayHeaderHeight;
-  }
-
-  private JustDate cellDate(int cell) {
-    return TimeUtils.nextDay(firstDateDisplayed, cell);
-  }
-
-  private void configureDayInGrid(int row, int col, String text, boolean isToday,
-      boolean notInCurrentMonth) {
-    Label label = new Label(text);
-
-    StringBuilder headerStyle = new StringBuilder(CELL_HEADER_STYLE);
-    StringBuilder cellStyle = new StringBuilder(CELL_STYLE);
-
-    if (isToday) {
-      headerStyle.append("-today");
-      cellStyle.append("-today");
-    }
-    if (notInCurrentMonth) {
-      headerStyle.append("-disabled");
-    }
-
-    label.setStyleName(headerStyle.toString());
-
-    switch (col) {
-      case 0:
-        cellStyle.append(" firstColumn");
-        break;
-      case DAYS_IN_A_WEEK - 1:
-        cellStyle.append(" lastColumn");
-        break;
-    }
-
-    monthCalendarGrid.setWidget(row, col, label);
-    cellFormatter.setStyleName(row, col, cellStyle.toString());
-  }
-
-  private void dayClicked(Event event) {
-    int y = event.getClientY() - DOM.getAbsoluteTop(appointmentCanvas.getElement());
-    int x = event.getClientX() - DOM.getAbsoluteLeft(appointmentCanvas.getElement());
-
-    int row = y / (appointmentCanvas.getOffsetHeight() / monthViewRequiredRows);
-    int col = x / (appointmentCanvas.getOffsetWidth() / DAYS_IN_A_WEEK);
-
-    createAppointment(cellDate(row * DAYS_IN_A_WEEK + col).getDateTime(), null);
-  }
-
-  private JustDate firstDateShownInAMonthView(HasDateValue dayInMonth) {
+  private JustDate calculateFirstDate(JustDate dayInMonth) {
     JustDate date = TimeUtils.startOfMonth(dayInMonth);
     return TimeUtils.startOfWeek(date, (date.getDow() > 1) ? 0 : -1);
   }
 
-  private void layOnAppointment(Appointment appointment, int colStart, int colEnd, int row,
-      int cellPosition) {
-    AppointmentWidget panel = new AppointmentWidget(appointment, false, BeeConst.UNDEF);
-    panel.renderCompact();
+  private void calculateHeights() {
+    int gridHeight = grid.getOffsetHeight();
 
-    placeItemInGrid(panel, colStart, colEnd, row, cellPosition);
+    this.weekDayHeaderHeight = grid.getRowFormatter().getElement(0).getOffsetHeight();
+    this.dayHeaderHeight =
+        grid.getCellFormatter().getElement(1, 0).getFirstChildElement().getOffsetHeight();
 
-    if (getSettings().isDragDropEnabled()) {
-      dragController.makeDraggable(panel);
-    }
-
-    appointmentWidgets.add(panel);
-    appointmentCanvas.add(panel);
+    this.cellOffsetHeight = (gridHeight - weekDayHeaderHeight) / requiredRows;
+    this.cellHeight = cellOffsetHeight - dayHeaderHeight;
   }
 
-  private void layOnNMoreLabel(int moreCount, int dayOfWeek, int weekOfMonth) {
-    Label more = new Label("+ " + moreCount);
-    more.setStyleName(MORE_LABEL_STYLE);
-    placeItemInGrid(more, dayOfWeek, dayOfWeek, weekOfMonth, calculatedCellAppointments);
-    appointmentCanvas.add(more);
-    moreLabels.put(more.getElement(), (dayOfWeek) + (weekOfMonth * 7));
-  }
-
-  private void layOnTopOfTheWeekHangingAppointments(WeekLayoutDescription weekDescription,
-      int weekOfMonth) {
-    AppointmentStackingManager weekTopElements = weekDescription.getTopAppointmentsManager();
-    for (int layer = 0; layer < calculatedCellAppointments; layer++) {
-      List<AppointmentLayoutDescription> descriptionsInLayer =
-          weekTopElements.getDescriptionsInLayer(layer);
-      if (descriptionsInLayer == null) {
-        break;
-      }
-
-      for (AppointmentLayoutDescription weekTopElement : descriptionsInLayer) {
-        layOnAppointment(weekTopElement.getAppointment(), weekTopElement.getWeekStartDay(),
-            weekTopElement.getWeekEndDay(), weekOfMonth, layer);
-      }
-    }
-  }
-
-  private void layOnWeekDaysAppointments(WeekLayoutDescription week, int weekOfMonth) {
-    AppointmentStackingManager topAppointmentManager = week.getTopAppointmentsManager();
-
-    for (int dayOfWeek = 0; dayOfWeek < DAYS_IN_A_WEEK; dayOfWeek++) {
-      DayLayoutDescription dayAppointments = week.getDayLayoutDescription(dayOfWeek);
-      int appointmentLayer = topAppointmentManager.lowestLayerIndex(dayOfWeek);
-
-      if (dayAppointments != null) {
-        int count = dayAppointments.getAppointments().size();
-        for (int i = 0; i < count; i++) {
-          Appointment appointment = dayAppointments.getAppointments().get(i);
-          appointmentLayer =
-              topAppointmentManager.nextLowestLayerIndex(dayOfWeek, appointmentLayer);
-          if (appointmentLayer > calculatedCellAppointments - 1) {
-            int remaining =
-                count + topAppointmentManager.multidayAppointmentsOverLimitOn(dayOfWeek) - i;
-            if (remaining == 1) {
-              layOnAppointment(appointment, dayOfWeek, dayOfWeek, weekOfMonth, appointmentLayer);
-            } else {
-              layOnNMoreLabel(remaining, dayOfWeek, weekOfMonth);
-            }
-            break;
-          }
-          layOnAppointment(appointment, dayOfWeek, dayOfWeek, weekOfMonth, appointmentLayer);
-          appointmentLayer++;
-        }
-      } else if (topAppointmentManager.multidayAppointmentsOverLimitOn(dayOfWeek) > 0) {
-        layOnNMoreLabel(topAppointmentManager.multidayAppointmentsOverLimitOn(dayOfWeek),
-            dayOfWeek, weekOfMonth);
-      }
-    }
-  }
-
-  private int monthViewRequiredRows(HasDateValue dayInMonth) {
-    int requiredRows = 5;
+  private int calculateRequiredRows(JustDate dayInMonth) {
+    int rows = 5;
 
     JustDate firstOfTheMonth = TimeUtils.startOfMonth(dayInMonth);
-    JustDate firstDayInCalendar = firstDateShownInAMonthView(dayInMonth);
+    JustDate firstDayInCalendar = calculateFirstDate(dayInMonth);
 
     if (firstDayInCalendar.getMonth() != firstOfTheMonth.getMonth()) {
       JustDate lastDayOfPreviousMonth = TimeUtils.previousDay(firstOfTheMonth);
@@ -394,26 +259,222 @@ public class MonthView extends CalendarView {
       int daysInMonth = TimeUtils.dayDiff(firstOfTheMonth, firstOfNextMonth);
 
       if (prevMonthOverlap + daysInMonth > 35) {
-        requiredRows = 6;
+        rows = 6;
       }
     }
-    return requiredRows;
+    return rows;
   }
 
-  private void placeItemInGrid(Widget widget, int colStart, int colEnd, int row, int cellPosition) {
-    int paddingTop = appointmentPaddingTop();
-    int height = appointmentHeight();
+  private JustDate cellDate(int row, int col) {
+    return TimeUtils.nextDay(firstDate, row * DAYS_IN_A_WEEK + col);
+  }
 
-    double left = (double) colStart / (double) DAYS_IN_A_WEEK * 100d + .5d;
-    double width = ((double) (colEnd - colStart + 1) / (double) DAYS_IN_A_WEEK) * 100d - 1d;
+  private void dayClicked(Event event) {
+    int x = event.getClientX() - canvas.getElement().getAbsoluteLeft();
+    int y = event.getClientY() - canvas.getElement().getAbsoluteTop();
 
-    int top = calculatedWeekDayHeaderHeight + (row * calculatedCellOffsetHeight)
-        + calculatedDayHeaderHeight + paddingTop + (cellPosition * (height + paddingTop));
+    int colWidth = canvas.getOffsetWidth() / DAYS_IN_A_WEEK;
+    int col = x / colWidth;
+    int row = y / ((canvas.getOffsetHeight() - weekDayHeaderHeight) / requiredRows);
+    
+    DateTime start = cellDate(row, col).getDateTime();
 
-    StyleUtils.makeAbsolute(widget);
-    StyleUtils.setTop(widget, top);
+    double h = BeeUtils.rescale(x % colWidth, 0, colWidth, 0, 24);
+    int hour = BeeUtils.clamp((int) Math.round(h), 0, 23);
+    if (hour > 0) {
+      start.setHour(hour);
+    }
 
-    widget.getElement().getStyle().setLeft(left, Unit.PCT);
-    widget.getElement().getStyle().setWidth(width, Unit.PCT);
+    createAppointment(start, null);
+  }
+
+  private void layOnAppointment(Appointment appointment, boolean multi, int colStart, int colEnd,
+      int row, int cellPosition) {
+
+    AppointmentWidget widget = new AppointmentWidget(appointment, multi, BeeConst.UNDEF);
+    if (multi) {
+      widget.render();
+    } else {
+      widget.renderCompact();
+    }
+
+    placeItemInGrid(widget, appointment, multi, colStart, colEnd, row, cellPosition);
+
+    if (getSettings().isDragDropEnabled() && !multi) {
+      dragController.makeDraggable(widget, widget.getCompactBar());
+    }
+
+    appointmentWidgets.add(widget);
+    canvas.add(widget);
+  }
+
+  private void layOnMoreLabel(List<Appointment> appointments, int dayOfWeek, int weekOfMonth) {
+    BeeLabel more = new BeeLabel("+ " + appointments.size());
+    more.setStyleName(CalendarStyleManager.MORE_LABEL);
+
+    placeItemInGrid(more, null, false, dayOfWeek, dayOfWeek, weekOfMonth, maxCellAppointments);
+
+    canvas.add(more);
+    moreLabels.put(more.getId(), appointments);
+  }
+
+  private void layOnTopAppointments(WeekLayoutDescription weekDescription, int weekOfMonth) {
+    AppointmentStackingManager manager = weekDescription.getTopAppointmentsManager();
+    for (int layer = 0; layer < maxCellAppointments; layer++) {
+      List<AppointmentLayoutDescription> descriptions = manager.getDescriptionsInLayer(layer);
+      if (descriptions == null) {
+        break;
+      }
+
+      for (AppointmentLayoutDescription description : descriptions) {
+        layOnAppointment(description.getAppointment(), true, description.getWeekStartDay(),
+            description.getWeekEndDay(), weekOfMonth, layer);
+      }
+    }
+  }
+
+  private void layOnWeekDaysAppointments(WeekLayoutDescription week, int weekOfMonth) {
+    AppointmentStackingManager manager = week.getTopAppointmentsManager();
+
+    for (int dayOfWeek = 0; dayOfWeek < DAYS_IN_A_WEEK; dayOfWeek++) {
+      DayLayoutDescription dayAppointments = week.getDayLayoutDescription(dayOfWeek);
+      int layer = manager.lowestLayerIndex(dayOfWeek);
+
+      if (dayAppointments != null) {
+        int count = dayAppointments.getAppointments().size();
+
+        for (int i = 0; i < count; i++) {
+          Appointment appointment = dayAppointments.getAppointments().get(i);
+          layer = manager.nextLowestLayerIndex(dayOfWeek, layer);
+
+          if (layer > maxCellAppointments - 1) {
+            int remaining = count + manager.countOverLimit(dayOfWeek) - i;
+
+            if (remaining == 1) {
+              layOnAppointment(appointment, false, dayOfWeek, dayOfWeek, weekOfMonth, layer);
+            } else {
+              List<Appointment> overLimit = manager.getOverLimit(dayOfWeek);
+              overLimit.addAll(Lists.newArrayList(dayAppointments.getAppointments()
+                  .subList(i, count)));
+
+              layOnMoreLabel(overLimit, dayOfWeek, weekOfMonth);
+            }
+            break;
+          }
+
+          layOnAppointment(appointment, false, dayOfWeek, dayOfWeek, weekOfMonth, layer);
+          layer++;
+        }
+
+      } else if (manager.countOverLimit(dayOfWeek) > 0) {
+        layOnMoreLabel(manager.getOverLimit(dayOfWeek), dayOfWeek, weekOfMonth);
+      }
+    }
+  }
+
+  private void placeItemInGrid(Widget widget, Appointment appointment, boolean multi,
+      int colStart, int colEnd, int row, int cellPosition) {
+
+    double colWidth = 100d / DAYS_IN_A_WEEK;
+
+    double left = colStart * colWidth;
+    double width = (colEnd - colStart + 1) * colWidth;
+
+    double marginLeft = APPOINTMENT_MARGIN_LEFT;
+    double marginRight = APPOINTMENT_MARGIN_RIGHT;
+
+    if (appointment != null) {
+      DateTime start = appointment.getStart();
+      DateTime end = appointment.getEnd();
+
+      int startMinutes = TimeUtils.minutesSinceDayStarted(start);
+      int endMinutes = TimeUtils.minutesSinceDayStarted(end);
+
+      if (multi) {
+        if (TimeUtils.sameDate(start, cellDate(row, colStart)) && startMinutes > 0) {
+          marginLeft = startMinutes * colWidth / TimeUtils.MINUTES_PER_DAY;
+        }
+        if (TimeUtils.sameDate(end, cellDate(row, colEnd)) && endMinutes > 0) {
+          marginRight =
+              (TimeUtils.MINUTES_PER_DAY - endMinutes) * colWidth / TimeUtils.MINUTES_PER_DAY;
+        }
+
+      } else if (widget instanceof AppointmentWidget) {
+        Widget bar = ((AppointmentWidget) widget).getCompactBar();
+
+        double x = startMinutes * 100d / TimeUtils.MINUTES_PER_DAY;
+        bar.getElement().getStyle().setLeft(BeeUtils.round(x, PERCENT_SCALE), Unit.PCT);
+        
+        if (TimeUtils.sameDate(start, end)) {
+          x = (TimeUtils.MINUTES_PER_DAY - endMinutes) * 100d / TimeUtils.MINUTES_PER_DAY;
+        } else {
+          x = 0;
+        }
+        bar.getElement().getStyle().setRight(BeeUtils.round(x, PERCENT_SCALE), Unit.PCT);
+      }
+    }
+
+    left += marginLeft;
+    width -= (marginLeft + marginRight);
+
+    int y = weekDayHeaderHeight + row * cellOffsetHeight + dayHeaderHeight + APPOINTMENT_MARGIN_TOP
+        + cellPosition * (APPOINTMENT_HEIGHT + APPOINTMENT_MARGIN_TOP);
+    double top = 100d * y / grid.getOffsetHeight();
+
+    widget.getElement().getStyle().setLeft(BeeUtils.round(left, PERCENT_SCALE), Unit.PCT);
+    widget.getElement().getStyle().setWidth(BeeUtils.round(width, PERCENT_SCALE), Unit.PCT);
+
+    widget.getElement().getStyle().setTop(BeeUtils.round(top, PERCENT_SCALE), Unit.PCT);
+  }
+  
+  private void showAppointments(List<Appointment> appointments) {
+    if (BeeUtils.isEmpty(appointments)) {
+      return;
+    }
+    
+    final Flow panel = new Flow();
+    panel.addStyleName(CalendarStyleManager.MORE_PANEL);
+    
+    BeeLabel caption = new BeeLabel("Pasirinkite vizitą");
+    caption.addStyleName(CalendarStyleManager.MORE_CAPTION);
+    panel.add(caption);
+
+    for (Appointment appointment : appointments) {
+      boolean multi = appointment.isMultiDay();
+      AppointmentWidget widget = new AppointmentWidget(appointment, multi, BeeConst.UNDEF);
+      widget.render();
+      
+      panel.add(widget);
+    }
+    
+    final Popup popup = new Popup(true, true, CalendarStyleManager.MORE_POPUP);
+
+    Binder.addMouseDownHandler(panel, new MouseDownHandler() {
+      @Override
+      public void onMouseDown(MouseDownEvent event) {
+        if (event.getNativeButton() == NativeEvent.BUTTON_LEFT) {
+          Appointment appointment = null;
+
+          Element element = EventUtils.getEventTargetElement(event);
+          for (int i = 0; i < panel.getWidgetCount(); i++) {
+            if (panel.getWidget(i).getElement().isOrHasChild(element)) {
+              appointment = ((AppointmentWidget) panel.getWidget(i)).getAppointment();
+              popup.hide();
+              break;
+            }
+          }
+          
+          if (appointment != null) {
+            event.stopPropagation();
+            openAppointment(appointment);
+          }
+        }
+      }
+    });
+    
+    popup.setAnimationEnabled(true);
+
+    popup.setWidget(panel);
+    popup.center();
   }
 }

@@ -1,16 +1,17 @@
 package com.butent.bee.client.calendar.monthview;
 
+import com.google.common.collect.Range;
+import com.google.common.collect.Ranges;
+
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.shared.utils.BeeUtils;
 
 public class AppointmentLayoutDescription {
 
-  private int stackOrder = 0;
+  private final Appointment appointment;
 
   private int fromWeekDay = 0;
-
   private int toWeekDay = 0;
-
-  private Appointment appointment = null;
 
   public AppointmentLayoutDescription(int weekDay, Appointment appointment) {
     this(weekDay, weekDay, appointment);
@@ -26,10 +27,6 @@ public class AppointmentLayoutDescription {
     return appointment;
   }
 
-  public int getStackOrder() {
-    return stackOrder;
-  }
-
   public int getWeekEndDay() {
     return toWeekDay;
   }
@@ -38,20 +35,12 @@ public class AppointmentLayoutDescription {
     return fromWeekDay;
   }
 
-  public boolean overlapsWithRange(int from, int to) {
-    return fromWeekDay >= from && fromWeekDay <= to || fromWeekDay <= from && toWeekDay >= from;
-  }
-
-  public void setAppointment(Appointment appointment) {
-    this.appointment = appointment;
-  }
-
-  public void setStackOrder(int stackOrder) {
-    this.stackOrder = stackOrder;
+  public boolean overlaps(int from, int to) {
+    return BeeUtils.intersects(getRange(), Ranges.closed(from, to));
   }
 
   public boolean spansMoreThanADay() {
-    return fromWeekDay != toWeekDay;
+    return fromWeekDay < toWeekDay;
   }
 
   public AppointmentLayoutDescription split() {
@@ -63,5 +52,9 @@ public class AppointmentLayoutDescription {
       secondPart = this;
     }
     return secondPart;
+  }
+  
+  private Range<Integer> getRange() {
+    return Ranges.closed(getWeekStartDay(), getWeekEndDay());
   }
 }

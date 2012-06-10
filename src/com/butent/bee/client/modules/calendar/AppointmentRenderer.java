@@ -75,7 +75,9 @@ class AppointmentRenderer {
         wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL), wrap(COL_VEHICLE_NUMBER),
         wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES));
 
-    DEFAULT_COMPACT_TEMPLATE = wrap(COL_SUMMARY);
+    DEFAULT_COMPACT_TEMPLATE = BeeUtils.concat(1, wrap(COL_SUMMARY),
+        wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL), wrap(COL_VEHICLE_NUMBER));
+
     DEFAULT_TITLE_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
         BeeConst.STRING_EMPTY, wrap(COL_COMPANY_NAME),
         BeeUtils.concat(1, wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL),
@@ -114,21 +116,21 @@ class AppointmentRenderer {
     appointmentWidget.setTitleText(title);
   }
 
-  void renderCompact(Appointment appointment, Widget widget, String compactTemplate,
-      String titleTemplate) {
+  void renderCompact(Appointment appointment, String compactTemplate, Widget htmlWidget,
+      String titleTemplate, Widget titleWidget) {
 
     Map<String, String> substitutes = getSubstitutes(appointment);
 
     String template = BeeUtils.ifString(compactTemplate, DEFAULT_COMPACT_TEMPLATE);
     String html = parseTemplate(template, substitutes, COMPACT_HTML_SEPARATOR);
-    if (!BeeUtils.isEmpty(html)) {
-      widget.getElement().setInnerHTML(html);
+    if (!BeeUtils.isEmpty(html) && htmlWidget != null) {
+      htmlWidget.getElement().setInnerHTML(BeeUtils.trim(html));
     }
 
     template = BeeUtils.ifString(titleTemplate, DEFAULT_TITLE_TEMPLATE);
     String title = parseTemplate(template, substitutes, TEXT_LINE_SEPARATOR);
-    if (!BeeUtils.isEmpty(html)) {
-      widget.setTitle(title);
+    if (!BeeUtils.isEmpty(title) && titleWidget != null) {
+      titleWidget.setTitle(BeeUtils.trim(title));
     }
   }
   

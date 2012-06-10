@@ -92,8 +92,8 @@ public class CalendarKeeper {
     createCommands();
   }
 
-  public static void renderCompact(Appointment appointment, Widget widget) {
-    if (appointment == null || widget == null) {
+  public static void renderCompact(Appointment appointment, Widget htmlWidget, Widget titleWidget) {
+    if (appointment == null || htmlWidget == null) {
       return;
     }
 
@@ -111,7 +111,7 @@ public class CalendarKeeper {
       title = Data.getString(viewName, row, COL_APPOINTMENT_TITLE);
     }
 
-    APPOINTMENT_RENDERER.renderCompact(appointment, widget, compact, title);
+    APPOINTMENT_RENDERER.renderCompact(appointment, compact, htmlWidget, title, titleWidget);
   }
 
   static void createAppointment(boolean glass) {
