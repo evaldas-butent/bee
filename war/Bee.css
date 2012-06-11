@@ -1451,7 +1451,7 @@ body, select {
   border: 1px solid silver;
 }
 
-.bee-DateBox {
+.bee-DateBox, .bee-TimeBox {
   color: #7D7D7D;
   font: 12px Arial;
   background: white;

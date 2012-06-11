@@ -88,16 +88,18 @@
       <Image name="RemoveResource" resource="delete" style="&absolute; left: 45px; top: 88px;" />
 
       <ListBox name="Resources" minSize="2" maxSize="3" 
-        style="&absolute; left: 90px; top: 60px; width: 210px; max-height: 60px;" />
+        style="&absolute; left: 100px; top: 60px; width: 220px; max-height: 60px;" />
 
       <InputText source="Summary" caption="Santrauka:" style="width: 300px;"
         d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 0;" />
       <InputArea source="Description" placeholder="Remonto aprašymas" visibleLines="5" 
         style="&absolute; left: 360px; top: 30px; width: 380px;" />
 
-      <InputDateTime source="StartDateTime" required="true" caption="Planuojamas pradžios laikas:"
-        step="30" style="width: 112px;" d:size="188" d:unit="px"
+      <InputDate name="StartDate" required="true" caption="Planuojamas pradžios laikas:"
+        style="width: 80px;" d:size="188" d:unit="px"
         d:rootStyle="&absolute; left: 0; top: 128px;" />
+      <InputTime name="StartTime" step="30"
+        style="&absolute; left: 280px; top: 128px; width: 40px;" />
 
       <InputSpinner name="Hours" caption="Trukmė:" min="0" max="99"
         style="width: 40px;" d:size="60" d:unit="px"
@@ -109,9 +111,11 @@
         style="width: 120px;" d:size="60" d:unit="px"
         d:rootStyle="&absolute; left: 560px; top: 128px;" />
 
-      <InputDateTime source="EndDateTime" caption="Planuojamas pabaigos laikas:" step="30"
-        style="width: 112px;" d:size="188" d:unit="px"
+      <InputDate name="EndDate" caption="Planuojamas pabaigos laikas:"
+        style="width: 80px;" d:size="188" d:unit="px"
         d:rootStyle="&absolute; left: 0; top: 160px;" />
+      <InputTime name="EndTime" step="30"
+        style="&absolute; left: 280px; top: 160px; width: 40px;" />
 
       <FlowPanel name="Colors" style="&absolute; left: 360px; top: 162px; width: 380px;" />
 

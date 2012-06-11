@@ -28,6 +28,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.InputDate;
+import com.butent.bee.client.composite.InputTime;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -59,6 +61,7 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -107,6 +110,11 @@ class AppointmentBuilder extends AbstractFormCallback {
   private static final String NAME_RESOURCES = "Resources";
   private static final String NAME_ADD_RESOURCE = "AddResource";
   private static final String NAME_REMOVE_RESOURCE = "RemoveResource";
+
+  private static final String NAME_START_DATE = "StartDate";
+  private static final String NAME_START_TIME = "StartTime";
+  private static final String NAME_END_DATE = "EndDate";
+  private static final String NAME_END_TIME = "EndTime";
 
   private static final String NAME_HOURS = "Hours";
   private static final String NAME_MINUTES = "Minutes";
@@ -159,6 +167,11 @@ class AppointmentBuilder extends AbstractFormCallback {
   private String repairTypeWidgetId = null;
 
   private String resourceWidgetId = null;
+
+  private String startDateWidgetId = null;
+  private String startTimeWidgetId = null;
+  private String endDateWidgetId = null;
+  private String endTimeWidgetId = null;
 
   private String hourWidgetId = null;
   private String minuteWidgetId = null;
@@ -223,6 +236,16 @@ class AppointmentBuilder extends AbstractFormCallback {
         });
       }
 
+    } else if (BeeUtils.same(name, NAME_START_DATE)) {
+      setStartDateWidgetId(DomUtils.getId(widget));
+    } else if (BeeUtils.same(name, NAME_START_TIME)) {
+      setStartTimeWidgetId(DomUtils.getId(widget));
+
+    } else if (BeeUtils.same(name, NAME_END_DATE)) {
+      setEndDateWidgetId(DomUtils.getId(widget));
+    } else if (BeeUtils.same(name, NAME_END_TIME)) {
+      setEndTimeWidgetId(DomUtils.getId(widget));
+      
     } else if (BeeUtils.same(name, NAME_HOURS)) {
       setHourWidgetId(DomUtils.getId(widget));
     } else if (BeeUtils.same(name, NAME_MINUTES)) {
@@ -250,6 +273,22 @@ class AppointmentBuilder extends AbstractFormCallback {
     } else if (BeeUtils.same(name, NAME_BUILD_INFO)) {
       setBuildInfoWidgetId(DomUtils.getId(widget));
     }
+  }
+  
+  @Override
+  public void afterRefresh(FormView form, IsRow row) {
+    if (row == null) {
+      return;
+    }
+
+    DateTime start = Data.getDateTime(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME);
+    DateTime end = Data.getDateTime(VIEW_APPOINTMENTS, row, COL_END_DATE_TIME);
+    
+    getInputDate(getStartDateWidgetId()).setDate(start);
+    getInputTime(getStartTimeWidgetId()).setDateTime(start);
+    
+    getInputDate(getEndDateWidgetId()).setDate(end);
+    getInputTime(getEndTimeWidgetId()).setDateTime(end);
   }
 
   @Override
@@ -476,8 +515,42 @@ class AppointmentBuilder extends AbstractFormCallback {
     return result;
   }
 
+  private DateTime getEnd() {
+    HasDateValue datePart = getInputDate(getEndDateWidgetId()).getDate();
+    DateTime timePart = getInputTime(getEndTimeWidgetId()).getDateTime();
+
+    if (datePart == null) {
+      if (timePart != null && TimeUtils.minutesSinceDayStarted(timePart) > 0) {
+        datePart = getInputDate(getStartDateWidgetId()).getDate();
+      }
+      if (datePart == null) {
+        return null;
+      }
+    }
+    
+    return TimeUtils.combine(datePart, timePart);
+  }
+  
+  private String getEndDateWidgetId() {
+    return endDateWidgetId;
+  }
+
+  private String getEndTimeWidgetId() {
+    return endTimeWidgetId;
+  }
+
   private String getHourWidgetId() {
     return hourWidgetId;
+  }
+  
+  private InputDate getInputDate(String id) {
+    Widget widget = getWidget(id);
+    return (widget instanceof InputDate) ? (InputDate) widget : null;
+  }
+
+  private InputTime getInputTime(String id) {
+    Widget widget = getWidget(id);
+    return (widget instanceof InputTime) ? (InputTime) widget : null;
   }
 
   private BeeListBox getListBox(String id) {
@@ -515,6 +588,24 @@ class AppointmentBuilder extends AbstractFormCallback {
 
   private String getServiceTypeWidgetId() {
     return serviceTypeWidgetId;
+  }
+  
+  private DateTime getStart() {
+    HasDateValue datePart = getInputDate(getStartDateWidgetId()).getDate();
+    if (datePart == null) {
+      return null;
+    }
+    DateTime timePart = getInputTime(getStartTimeWidgetId()).getDateTime();
+    
+    return TimeUtils.combine(datePart, timePart);
+  }
+
+  private String getStartDateWidgetId() {
+    return startDateWidgetId;
+  }
+
+  private String getStartTimeWidgetId() {
+    return startTimeWidgetId;
   }
 
   private Widget getWidget(String id) {
@@ -628,7 +719,7 @@ class AppointmentBuilder extends AbstractFormCallback {
       }
     }
   }
-
+  
   private boolean isEmpty(IsRow row, String columnId) {
     return BeeUtils.isEmpty(Data.getString(VIEW_APPOINTMENTS, row, columnId));
   }
@@ -696,7 +787,7 @@ class AppointmentBuilder extends AbstractFormCallback {
       initReminderWidget(getWidget(getReminderWidgetId()), rowSet);
     }
   }
-  
+
   private void loadResourceProperties() {
     BeeRowSet rowSet = CalendarKeeper.getAttendeeProps();
     
@@ -787,7 +878,7 @@ class AppointmentBuilder extends AbstractFormCallback {
 
     DateTime start = Data.getDateTime(VIEW_APPOINTMENTS, createdRow, COL_START_DATE_TIME);
     DateTime end = Data.getDateTime(VIEW_APPOINTMENTS, createdRow, COL_END_DATE_TIME);
-
+    
     DateTimeFormat format = DateTimeFormat.getFormat("MMM d HH:mm");
     if (start != null) {
       info.append(format.format(start));
@@ -833,11 +924,16 @@ class AppointmentBuilder extends AbstractFormCallback {
 
     BeeRow row = DataUtils.cloneRow(getFormView().getActiveRow());
     final String viewName = VIEW_APPOINTMENTS;
+    
+    DateTime start = getStart();
+    Data.setValue(viewName, row, COL_START_DATE_TIME, start);
 
-    if (isEmpty(row, COL_END_DATE_TIME)) {
-      long millis = Data.getDateTime(viewName, row, COL_START_DATE_TIME).getTime()
-          + getDuration() * TimeUtils.MILLIS_PER_MINUTE;
+    DateTime end = getEnd();
+    if (end == null) {
+      long millis = start.getTime() + getDuration() * TimeUtils.MILLIS_PER_MINUTE;
       Data.setValue(viewName, row, COL_END_DATE_TIME, millis);
+    } else {
+      Data.setValue(viewName, row, COL_END_DATE_TIME, end);
     }
 
     if (!colors.isEmpty()) {
@@ -918,6 +1014,14 @@ class AppointmentBuilder extends AbstractFormCallback {
     this.buildInfoWidgetId = buildInfoWidgetId;
   }
 
+  private void setEndDateWidgetId(String endDateWidgetId) {
+    this.endDateWidgetId = endDateWidgetId;
+  }
+
+  private void setEndTimeWidgetId(String endTimeWidgetId) {
+    this.endTimeWidgetId = endTimeWidgetId;
+  }
+
   private void setHourWidgetId(String hourWidgetId) {
     this.hourWidgetId = hourWidgetId;
   }
@@ -946,8 +1050,33 @@ class AppointmentBuilder extends AbstractFormCallback {
     this.saving = saving;
   }
 
+  private void setSelectedIndex(final BeeListBox listBox, int index) {
+    if (listBox == null || listBox.isEmpty()) {
+      return;
+    }
+
+    if (index >= 0 && index < listBox.getItemCount()) {
+      listBox.setSelectedIndex(index);
+    } else {
+      Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+        @Override
+        public void execute() {
+          listBox.deselect();
+        }
+      });
+    }
+  }
+
   private void setServiceTypeWidgetId(String serviceTypeWidgetId) {
     this.serviceTypeWidgetId = serviceTypeWidgetId;
+  }
+
+  private void setStartDateWidgetId(String startDateWidgetId) {
+    this.startDateWidgetId = startDateWidgetId;
+  }
+
+  private void setStartTimeWidgetId(String startTimeWidgetId) {
+    this.startTimeWidgetId = startTimeWidgetId;
   }
 
   private void updateDuration(String propName) {
@@ -1014,41 +1143,25 @@ class AppointmentBuilder extends AbstractFormCallback {
       getFormView().notifySevere("Pasirinkite remonto tipą");
       return false;
     }
+    
+    DateTime start = getStart();
+    DateTime end = getEnd();
 
-    if (isEmpty(row, COL_START_DATE_TIME)) {
+    if (start == null) {
       getFormView().notifySevere("Įveskite planuojamą pradžios laiką");
       return false;
     }
 
-    DateTime end = Data.getDateTime(VIEW_APPOINTMENTS, row, COL_END_DATE_TIME);
     if (end == null) {
       if (getDuration() <= 0) {
         getFormView().notifySevere("Įveskite trukmę arba planuojamą pabaigos laiką");
         return false;
       }
-    } else if (TimeUtils.isLeq(end,
-        Data.getDateTime(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME))) {
+    } else if (TimeUtils.isLeq(end, start)) {
       getFormView().notifySevere("Pabaigos laikas turi būti didesnis už pradžios laiką");
       return false;
     }
 
     return true;
-  }
-
-  private void setSelectedIndex(final BeeListBox listBox, int index) {
-    if (listBox == null || listBox.isEmpty()) {
-      return;
-    }
-
-    if (index >= 0 && index < listBox.getItemCount()) {
-      listBox.setSelectedIndex(index);
-    } else {
-      Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
-        @Override
-        public void execute() {
-          listBox.deselect();
-        }
-      });
-    }
   }
 }

@@ -29,6 +29,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.InputDate;
+import com.butent.bee.client.composite.InputTime;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.composite.StringPicker;
@@ -192,6 +193,7 @@ public enum FormWidget {
   INPUT_SLIDER("InputSlider", EnumSet.of(Type.EDITABLE, Type.INPUT)),
   INPUT_SPINNER("InputSpinner", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INPUT_TEXT("InputText", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
+  INPUT_TIME("InputTime", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.INPUT)),
   INTEGER_LABEL("IntegerLabel", EnumSet.of(Type.DISPLAY)),
   LABEL("Label", EnumSet.of(Type.IS_LABEL)),
   LAYOUT_PANEL("LayoutPanel", EnumSet.of(Type.HAS_LAYERS)),
@@ -748,6 +750,11 @@ public enum FormWidget {
         widget = new InputText();
         break;
 
+      case INPUT_TIME:
+        format = attributes.get(UiConstants.ATTR_FORMAT);
+        widget = new InputTime(Format.getDateTimeFormat(format, Format.getDefaultTimeFormat()));
+        break;
+        
       case INTEGER_LABEL:
         format = attributes.get(UiConstants.ATTR_FORMAT);
         inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));

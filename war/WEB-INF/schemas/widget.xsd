@@ -653,6 +653,7 @@
 
   <xs:element name="InputDate" type="editableDate" substitutionGroup="widget" />
   <xs:element name="InputDateTime" type="editableDate" substitutionGroup="widget" />
+  <xs:element name="InputTime" type="editableDate" substitutionGroup="widget" />
 
   <xs:complexType name="spinnerBase">
     <xs:complexContent>

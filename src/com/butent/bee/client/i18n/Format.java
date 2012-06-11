@@ -138,6 +138,8 @@ public class Format {
       DateTimeFormat.getFormat(PredefinedFormat.DATE_SHORT);
   private static DateTimeFormat defaultDateTimeFormat =
       DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_SHORT);
+  private static DateTimeFormat defaultTimeFormat =
+      DateTimeFormat.getFormat(PredefinedFormat.TIME_SHORT);
   
   private static Character defaultTrueChar = BeeConst.CHECK_MARK;
   private static Character defaultFalseChar = null;
@@ -233,6 +235,10 @@ public class Format {
         format = null;
     }
     return format;
+  }
+
+  public static DateTimeFormat getDefaultTimeFormat() {
+    return defaultTimeFormat;
   }
 
   public static Character getDefaultTrueChar() {

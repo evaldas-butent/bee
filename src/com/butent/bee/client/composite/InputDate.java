@@ -44,9 +44,8 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class InputDate extends Composite implements Editor, HasDateTimeFormat, HasTextBox, HasIntStep {
-
-  public static final String DEFAULT_STYLENAME = "bee-DateBox";
+public class InputDate extends Composite implements Editor, HasDateTimeFormat, HasTextBox,
+    HasIntStep {
 
   private final InputText box;
   private final Popup popup;
@@ -56,7 +55,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   private DateTimeFormat format;
 
   private int stepValue = BeeConst.UNDEF;
-  
+
   private boolean editing = false;
 
   public InputDate(ValueType type) {
@@ -69,7 +68,6 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
         "input date: invalid type " + type.getTypeCode());
 
     this.box = new InputText();
-    this.datePicker = new DatePicker(new JustDate());
     this.popup = new Popup(true, false);
 
     this.format = format;
@@ -78,28 +76,9 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     popup.setStyleName("dateBoxPopup");
 
     initWidget(box);
-    setStyleName(DEFAULT_STYLENAME);
+    setStyleName(getDefaultStyleName());
 
-    datePicker.addValueChangeHandler(new ValueChangeHandler<JustDate>() {
-      public void onValueChange(ValueChangeEvent<JustDate> event) {
-        setDate(event.getValue());
-
-        hideDatePicker();
-        getBox().setFocus(true);
-
-        fireEvent(new EditStopEvent(State.CHANGED));
-      }
-    });
-    
-    datePicker.addKeyDownHandler(new KeyDownHandler() {
-      public void onKeyDown(KeyDownEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
-          event.stopPropagation();
-          hideDatePicker();
-          getBox().setFocus(true);
-        }
-      }
-    });
+    this.datePicker = createDatePicker();
 
     popup.addAutoHidePartner(getBox().getElement());
     popup.addCloseHandler(new CloseHandler<Popup>() {
@@ -112,7 +91,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
 
     sinkEvents(Event.ONCLICK + Event.ONKEYPRESS + Event.ONBLUR + Event.ONMOUSEWHEEL);
   }
-
+  
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return addDomHandler(handler, BlurEvent.getType());
   }
@@ -148,7 +127,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   public EditorAction getDefaultFocusAction() {
     return null;
   }
-  
+
   public String getId() {
     return DomUtils.getId(this);
   }
@@ -172,7 +151,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   public int getTabIndex() {
     return getBox().getTabIndex();
   }
-  
+
   public TextBoxBase getTextBox() {
     return getBox();
   }
@@ -185,7 +164,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   public FormWidget getWidgetType() {
     return isDateTime() ? FormWidget.INPUT_DATE_TIME : FormWidget.INPUT_DATE;
   }
-  
+
   public boolean handlesKey(int keyCode) {
     return false;
   }
@@ -201,7 +180,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   public boolean isNullable() {
     return getBox().isNullable();
   }
-  
+
   @Override
   public boolean isOrHasPartner(Node node) {
     return getBox().isOrHasPartner(node) || getPopup().getElement().isOrHasChild(node);
@@ -209,20 +188,20 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
 
   @Override
   public void onBrowserEvent(Event event) {
-    boolean dp = getPopup().isShowing();
+    boolean popupShowing = getPopup().isShowing();
     String type = event.getType();
 
-    if (dp && EventUtils.isBlur(type)) {
+    if (popupShowing && EventUtils.isBlur(type)) {
       return;
     }
     if (EventUtils.isClick(type)) {
       event.preventDefault();
-      if (dp) {
-        hideDatePicker();
+      if (popupShowing) {
+        hidePopup();
       } else if (EventUtils.hasModifierKey(event) && isDateTime() && getDate() != null) {
         pickTime();
       } else {
-        showDatePicker();
+        showPicker();
       }
       return;
 
@@ -248,10 +227,11 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   }
 
   public void setDate(HasDateValue date) {
-    Assert.notNull(date);
     HasDateValue newValue;
-
-    if (isDateTime()) {
+    
+    if (date == null) {
+      newValue = null;
+    } else if (isDateTime()) {
       HasDateValue oldValue = getDate();
 
       if (oldValue instanceof DateTime) {
@@ -357,25 +337,52 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     return msg;
   }
 
-  private InputText getBox() {
+  protected DatePicker createDatePicker() {
+    DatePicker dp = new DatePicker(new JustDate());
+    
+    dp.addValueChangeHandler(new ValueChangeHandler<JustDate>() {
+      public void onValueChange(ValueChangeEvent<JustDate> event) {
+        setDate(event.getValue());
+
+        hidePopup();
+        getBox().setFocus(true);
+
+        fireEvent(new EditStopEvent(State.CHANGED));
+      }
+    });
+
+    dp.addKeyDownHandler(new KeyDownHandler() {
+      public void onKeyDown(KeyDownEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+          event.stopPropagation();
+          hidePopup();
+          getBox().setFocus(true);
+        }
+      }
+    });
+    
+    return dp;
+  }
+
+  protected InputText getBox() {
     return box;
   }
-
-  private DatePicker getDatePicker() {
-    return datePicker;
-  }
-
-  private ValueType getDateType() {
+  
+  protected ValueType getDateType() {
     return dateType;
   }
 
-  private Popup getPopup() {
+  protected String getDefaultStyleName() {
+    return "bee-DateBox";
+  }
+
+  protected Popup getPopup() {
     return popup;
   }
 
-  private boolean handleChar(int charCode) {
+  protected boolean handleChar(int charCode) {
     if (charCode == '*' && !getPopup().isShowing()) {
-      showDatePicker();
+      showPicker();
       return true;
     }
 
@@ -566,10 +573,10 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
 
           } else if (oldDate instanceof DateTime) {
             if (getStepValue() > 0) {
-              newDate = new DateTime(oldDate.getDateTime().getTime() 
+              newDate = new DateTime(oldDate.getDateTime().getTime()
                   + TimeUtils.MILLIS_PER_MINUTE * incr);
             } else {
-              newDate = new DateTime(oldDate.getDateTime().getTime() 
+              newDate = new DateTime(oldDate.getDateTime().getTime()
                   + TimeUtils.MILLIS_PER_DAY * incr);
             }
           }
@@ -597,26 +604,18 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     }
     return true;
   }
-
-  private void hideDatePicker() {
-    getPopup().hide();
-  }
   
-  private boolean isDateTime() {
-    return ValueType.DATETIME.equals(getDateType());
-  }
-
-  private void pickTime() {
+  protected void pickTime() {
     final DateTime dateTime = getDate().getDateTime();
-    
+
     int step = getStepValue();
     if (step <= 0 || step > 60) {
       step = 30;
     }
-    
+
     int hour = dateTime.getHour();
     int minute = dateTime.getMinute();
-    
+
     int start = minute % step;
     final char sep = DateTime.TIME_FIELD_SEPARATOR;
 
@@ -631,7 +630,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
       @Override
       public void onValueChange(ValueChangeEvent<String> event) {
         String value = event.getValue();
-        
+
         dateTime.setHour(BeeUtils.toInt(BeeUtils.getPrefix(value, sep)));
         dateTime.setMinute(BeeUtils.toInt(BeeUtils.getSuffix(value, sep)));
         setValue(dateTime);
@@ -639,10 +638,10 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
         getPopup().hide();
       }
     });
-    
+
     getPopup().setWidget(widget);
     getPopup().showRelativeTo(getBox());
-    
+
     widget.setFocus(true);
 
     int index = widget.getItems().indexOf(TimeUtils.padTwo(hour) + sep + TimeUtils.padTwo(minute));
@@ -651,7 +650,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     }
   }
 
-  private void setValue(HasDateValue value) {
+  protected void setValue(HasDateValue value) {
     String text;
     if (value == null) {
       text = BeeConst.STRING_EMPTY;
@@ -662,17 +661,37 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     }
     getBox().setValue(text);
   }
-  
+
+  protected void showPicker() {
+    showDatePicker();
+  }
+
+  private DatePicker getDatePicker() {
+    return datePicker;
+  }
+
+  private void hidePopup() {
+    getPopup().hide();
+  }
+
+  private boolean isDateTime() {
+    return ValueType.DATETIME.equals(getDateType());
+  }
+
   private void showDatePicker() {
+    if (getDatePicker() == null) {
+      return;
+    }
+
     HasDateValue date = getDate();
     if (date == null) {
       date = new JustDate();
     }
     getDatePicker().setDate(date.getDate());
-    
+
     getPopup().setWidget(datePicker);
     getPopup().showRelativeTo(getBox());
-    
+
     getDatePicker().setFocus(true);
   }
 }
