@@ -303,7 +303,7 @@
   margin: 1ex 1em;
   font-size: large;
 }
-.bee-cal-morePopup .appointment {
+.bee-cal-morePopup .appointment, .bee-cal-morePopup .appointment-multiday {
   margin: 5px 8px;
   border: 1px solid #444;
   padding-left: 2px;

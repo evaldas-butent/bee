@@ -9,6 +9,7 @@
     <Text name="Description" />
 
     <Relation name="Theme" relation="Themes" />
+    <Relation name="Style" relation="AppointmentStyles" />
 
     <String name="AppointmentCreator" precision="30" />
     <String name="AppointmentEditor" precision="30" />

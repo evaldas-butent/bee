@@ -8,12 +8,12 @@
     <String name="Name" precision="30" notNull="true" unique="true" />
     <Text name="Description" />
 
-    <Relation name="HeaderColor" relation="Colors" />
-    <String name="HeaderClass" precision="100" />
-    <Text name="HeaderStyle" />
+    <Text name="Simple" />
+    <Text name="Multi" />
+    <Text name="Compact" />
 
-    <Relation name="BodyColor" relation="Colors" />
-    <String name="BodyClass" precision="100" />
-    <Text name="BodyStyle" />
+    <Text name="Header" />
+    <Text name="Body" />
+    <Text name="Footer" />
   </Fields>
 </Table>

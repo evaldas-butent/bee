@@ -8,25 +8,13 @@
     <SimpleColumn name="Name" />
     <SimpleColumn name="Description" />
 
-    <SimpleColumn name="HeaderColor" />
-    <SimpleJoin name="HeaderColor" joinType="LEFT">
-      <SimpleColumn alias="HeaderColorName" name="Name" />
-      <SimpleColumn alias="HeaderBackground" name="Background" />
-      <SimpleColumn alias="HeaderForeground" name="Foreground" />
-    </SimpleJoin>
+    <SimpleColumn name="Simple" />
+    <SimpleColumn name="Multi" />
+    <SimpleColumn name="Compact" />
 
-    <SimpleColumn name="HeaderClass" />
-    <SimpleColumn name="HeaderStyle" />
-
-    <SimpleColumn name="BodyColor" />
-    <SimpleJoin name="BodyColor" joinType="LEFT">
-      <SimpleColumn alias="BodyColorName" name="Name" />
-      <SimpleColumn alias="BodyBackground" name="Background" />
-      <SimpleColumn alias="BodyForeground" name="Foreground" />
-    </SimpleJoin>
-
-    <SimpleColumn name="BodyClass" />
-    <SimpleColumn name="BodyStyle" />
+    <SimpleColumn name="Header" />
+    <SimpleColumn name="Body" />
+    <SimpleColumn name="Footer" />
   </Columns>
   <Order>
     <OrderBy column="Name" />

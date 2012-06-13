@@ -28,7 +28,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers<Appointment>,
-    HasTimeBlockClickHandlers, HasUpdateHandlers, HasLayout, HasAppointments {
+    HasTimeBlockClickHandlers, HasUpdateHandlers {
 
   private boolean layoutSuspended = false;
   private boolean layoutPending = false;
@@ -182,7 +182,6 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
     doScroll();
   }
 
-  @Override
   public boolean removeAppointment(long id, boolean refresh) {
     boolean removed = appointmentManager.removeAppointment(id);
     if (removed && refresh) {

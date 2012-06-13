@@ -98,10 +98,12 @@ public class CalendarConstants {
 
   public static final String VIEW_APPOINTMENTS = "Appointments";
   public static final String VIEW_APPOINTMENT_TYPES = "AppointmentTypes";
+
   public static final String VIEW_APPOINTMENT_PROPS = "AppointmentProps";
   public static final String VIEW_APPOINTMENT_ATTENDEES = "AppointmentAttendees";
   public static final String VIEW_APPOINTMENT_REMINDERS = "AppointmentReminders";
 
+  public static final String VIEW_APPOINTMENT_STYLES = "AppointmentStyles";
   public static final String VIEW_THEMES = "Themes";
   public static final String VIEW_THEME_COLORS = "ThemeColors";
 
@@ -204,6 +206,16 @@ public class CalendarConstants {
   public static final String COL_APPOINTMENT_COMPACT = "AppointmentCompact";
   public static final String COL_APPOINTMENT_TITLE = "AppointmentTitle";
   
+  public static final String COL_STYLE = "Style";
+
+  public static final String COL_SIMPLE = "Simple";
+  public static final String COL_MULTI = "Multi";
+  public static final String COL_COMPACT = "Compact";
+
+  public static final String COL_HEADER = "Header";
+  public static final String COL_BODY = "Body";
+  public static final String COL_FOOTER = "Footer";
+
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";
 

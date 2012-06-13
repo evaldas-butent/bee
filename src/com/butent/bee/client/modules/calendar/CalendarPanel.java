@@ -258,6 +258,12 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     calendar.addAppointment(event.getAppointment(), true);
   }
 
+  @Override
+  public void onResize() {
+    super.onResize();
+    calendar.onResize();
+  }
+
   public void onViewUnload() {
   }
 

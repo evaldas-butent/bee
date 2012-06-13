@@ -112,6 +112,10 @@ public class Appointment implements Comparable<Appointment> {
     return Data.getDateTime(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME);
   }
 
+  public Long getStyle() {
+    return Data.getLong(VIEW_APPOINTMENTS, row, COL_STYLE);
+  }
+  
   public String getSummary() {
     return Data.getString(VIEW_APPOINTMENTS, row, COL_SUMMARY);
   }

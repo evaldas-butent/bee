@@ -2386,6 +2386,11 @@ public class StyleUtils {
     updateClasses(obj.getElement(), classes);
   }
 
+  public static void updateStyle(Element el, String styles) {
+    Assert.notNull(el);
+    updateStyle(el.getStyle(), styles);
+  }
+  
   public static void updateStyle(Style st, String styles) {
     List<Property> properties = parseStyles(styles);
     if (properties != null) {
@@ -2393,6 +2398,11 @@ public class StyleUtils {
         st.setProperty(camelize(property.getName()), property.getValue());
       }
     }
+  }
+
+  public static void updateStyle(UIObject obj, String styles) {
+    Assert.notNull(obj);
+    updateStyle(obj.getElement(), styles);
   }
 
   public static void zeroLeft(Element el) {

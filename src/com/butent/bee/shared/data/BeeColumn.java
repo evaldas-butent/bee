@@ -199,7 +199,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   }
   
   public boolean isText() {
-    return ValueType.TEXT.equals(getType()) && (getPrecision() <= 0 || getPrecision() > 100);
+    return ValueType.TEXT.equals(getType()) && getPrecision() <= 0;
   }
 
   public boolean isWritable() {

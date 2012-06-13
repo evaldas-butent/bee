@@ -14,7 +14,7 @@ import com.butent.bee.shared.time.JustDate;
 
 import java.util.List;
 
-public abstract class CalendarView implements HasSettings {
+public abstract class CalendarView {
 
   public enum Type {
     DAY, MONTH, RESOURCE

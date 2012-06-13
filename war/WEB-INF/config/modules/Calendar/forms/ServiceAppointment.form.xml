@@ -117,7 +117,11 @@
       <InputTime name="EndTime" step="30"
         style="&absolute; left: 280px; top: 160px; width: 40px;" />
 
-      <FlowPanel name="Colors" style="&absolute; left: 360px; top: 162px; width: 380px;" />
+      <FlowPanel name="Colors" style="&absolute; left: 360px; top: 162px; width: 192px;" />
+
+      <DataSelector source="Style" caption="Stilius:"
+        style="width: 120px;" d:size="60" d:unit="px"
+        d:rootStyle="&absolute; left: 560px; top: 160px;" />
 
       <ListBox name="Reminder" caption="Priminimas klientui:" style="width: 160px;"
         d:size="140" d:unit="px" d:rootStyle="&absolute; left: 0; top: 192px;" />

@@ -60,10 +60,14 @@ public class AppointmentWidget extends Flow implements HasAppointment {
     return appointment;
   }
 
+  public Widget getBodyPanel() {
+    return bodyPanel;
+  }
+  
   public int getColumnIndex() {
     return columnIndex;
   }
-  
+
   public Widget getCompactBar() {
     return footerPanel;
   }
@@ -80,6 +84,14 @@ public class AppointmentWidget extends Flow implements HasAppointment {
     return dropRowIndex;
   }
 
+  public Widget getFooterPanel() {
+    return footerPanel;
+  }
+
+  public Widget getHeaderPanel() {
+    return headerPanel;
+  }
+  
   public double getHeight() {
     return height;
   }
@@ -91,7 +103,7 @@ public class AppointmentWidget extends Flow implements HasAppointment {
   public Widget getMoveHandle() {
     return headerPanel;
   }
-  
+
   public Widget getResizeHandle() {
     return footerPanel;
   }
@@ -121,7 +133,7 @@ public class AppointmentWidget extends Flow implements HasAppointment {
       getCompactBar().getElement().getStyle().setBackgroundColor(background);
     }
 
-    CalendarKeeper.renderCompact(appointment, bodyPanel, this);
+    CalendarKeeper.renderCompact(this, bodyPanel, this);
   }
 
   public void setBodyHtml(String html) {

@@ -13,14 +13,15 @@
     <DataColumn name="Description" caption="Aprašymas">&nowrap;</DataColumn>
 
     <RelColumn name="ThemeName" caption="Spalvų tema" />
+    <RelColumn name="StyleName" caption="Vizitų stilius" />
 
-    <DataColumn name="SimpleHeader">&nowrap;</DataColumn>
-    <DataColumn name="SimpleBody">&nowrap;</DataColumn>
+    <DataColumn name="SimpleHeader" caption="Paprasto vizito viršus">&nowrap;</DataColumn>
+    <DataColumn name="SimpleBody" caption="Paprasto vizito vidurys">&nowrap;</DataColumn>
 
-    <DataColumn name="MultiHeader">&nowrap;</DataColumn>
-    <DataColumn name="MultiBody">&nowrap;</DataColumn>
+    <DataColumn name="MultiHeader" caption="Daugiadienio vizito viršus">&nowrap;</DataColumn>
+    <DataColumn name="MultiBody" caption="Daugiadienio vizito vidurys">&nowrap;</DataColumn>
    
-    <DataColumn name="AppointmentCompact">&nowrap;</DataColumn>
-    <DataColumn name="AppointmentTitle">&nowrap;</DataColumn>
+    <DataColumn name="AppointmentCompact" caption="Kompaktiška forma">&nowrap;</DataColumn>
+    <DataColumn name="AppointmentTitle" caption="Išplaukiantis tekstas">&nowrap;</DataColumn>
   </columns>
 </Grid>

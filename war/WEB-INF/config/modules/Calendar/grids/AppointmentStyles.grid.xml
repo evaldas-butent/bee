@@ -1,32 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Grid [
+  <!ENTITY nowrap "<style><bodyStyle><ui:inline>white-space: pre-wrap;</ui:inline></bodyStyle></style>">
+]>
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
   name="AppointmentStyles" viewName="AppointmentStyles"
   caption="Vizitų stiliai" newRowCaption="Naujas vizitų stilius"
   >
+  <body height="80" /> 
   <columns>
     <DataColumn name="Name" caption="Pavadinimas" />
     <DataColumn name="Description" caption="Aprašymas" />
 
-    <RelColumn name="HeaderColorName" caption="Viršus - spalva" >
-      <dynStyle>
-        <ui:inline>background: [row.HeaderBackground]; color: [row.HeaderForeground];</ui:inline>
-        <ui:expression>row.HeaderColor > 0</ui:expression>
-      </dynStyle>
-    </RelColumn>
-
-    <DataColumn name="HeaderClass" caption="Viršus - klasė" />
-    <DataColumn name="HeaderStyle" caption="Viršus - stilius" />
-
-    <RelColumn name="BodyColorName" caption="Vidurys - spalva">
-      <dynStyle>
-        <ui:inline>background: [row.BodyBackground]; color: [row.BodyForeground];</ui:inline>
-        <ui:expression>row.BodyColor > 0</ui:expression>
-      </dynStyle>
-    </RelColumn>
-
-    <DataColumn name="BodyClass" caption="Vidurys - klasė" />
-    <DataColumn name="BodyStyle" caption="Vidurys - stilius" />
+    <DataColumn name="Simple" caption="Paprastas vizitas">&nowrap;</DataColumn>
+    <DataColumn name="Multi" caption="Daugiadienis">&nowrap;</DataColumn>
+    <DataColumn name="Compact" caption="Kompaktiškas">&nowrap;</DataColumn>
+    
+    <DataColumn name="Header" caption="Vizito viršus">&nowrap;</DataColumn>
+    <DataColumn name="Body" caption="Vizito vidurys">&nowrap;</DataColumn>
+    <DataColumn name="Footer" caption="Vizito apačia">&nowrap;</DataColumn>
   </columns>
 </Grid>

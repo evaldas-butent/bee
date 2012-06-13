@@ -13,6 +13,11 @@
       <SimpleColumn alias="ThemeName" name="Name" />
     </SimpleJoin>
 
+    <SimpleColumn name="Style" />
+    <SimpleJoin name="Style" joinType="LEFT">
+      <SimpleColumn alias="StyleName" name="Name" />
+    </SimpleJoin>
+
     <SimpleColumn name="AppointmentCreator" />
     <SimpleColumn name="AppointmentEditor" />
 

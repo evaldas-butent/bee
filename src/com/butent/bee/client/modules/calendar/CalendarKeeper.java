@@ -55,7 +55,7 @@ public class CalendarKeeper {
   private static final List<String> CACHED_VIEWS =
       Lists.newArrayList(VIEW_CONFIGURATION, VIEW_APPOINTMENT_TYPES, VIEW_ATTENDEES,
           VIEW_EXTENDED_PROPERTIES, VIEW_REMINDER_TYPES, VIEW_THEMES, VIEW_THEME_COLORS,
-          VIEW_ATTENDEE_PROPS);
+          VIEW_ATTENDEE_PROPS, VIEW_APPOINTMENT_STYLES);
 
   private static final AppointmentRenderer APPOINTMENT_RENDERER = new AppointmentRenderer();
 
@@ -90,28 +90,6 @@ public class CalendarKeeper {
     SelectorEvent.register(new SelectorHandler());
 
     createCommands();
-  }
-
-  public static void renderCompact(Appointment appointment, Widget htmlWidget, Widget titleWidget) {
-    if (appointment == null || htmlWidget == null) {
-      return;
-    }
-
-    BeeRow row = getAppointmentTypeRow(appointment);
-
-    String compact;
-    String title;
-
-    if (row == null) {
-      compact = null;
-      title = null;
-    } else {
-      String viewName = VIEW_APPOINTMENT_TYPES;
-      compact = Data.getString(viewName, row, COL_APPOINTMENT_COMPACT);
-      title = Data.getString(viewName, row, COL_APPOINTMENT_TITLE);
-    }
-
-    APPOINTMENT_RENDERER.renderCompact(appointment, compact, htmlWidget, title, titleWidget);
   }
 
   static void createAppointment(boolean glass) {
@@ -157,7 +135,7 @@ public class CalendarKeeper {
       }
     });
   }
-  
+
   static BeeRow getAppointmentTypeRow(Appointment appointment) {
     Long type = appointment.getType();
     if (type == null) {
@@ -177,7 +155,7 @@ public class CalendarKeeper {
     }
     return row;
   }
-
+  
   static List<BeeColumn> getAppointmentViewColumns() {
     return CACHE.getAppointmentViewColumns();
   }
@@ -189,11 +167,11 @@ public class CalendarKeeper {
   static BeeRowSet getAttendeeProps() {
     return CACHE.getRowSet(VIEW_ATTENDEE_PROPS);
   }
-  
+
   static BeeRowSet getAttendees() {
     return CACHE.getRowSet(VIEW_ATTENDEES);
   }
-
+  
   static Long getDefaultAppointmentType() {
     BeeRowSet rowSet = CACHE.getRowSet(VIEW_CONFIGURATION);
     if (rowSet != null) {
@@ -226,7 +204,7 @@ public class CalendarKeeper {
   static void loadData(Collection<String> viewNames, CalendarCache.MultiCallback multiCallback) {
     CACHE.getData(viewNames, multiCallback);
   }
-  
+
   static void openAppointment(final Appointment appointment, final boolean glass) {
     Assert.notNull(appointment);
     final AppointmentBuilder builder = new AppointmentBuilder(false);
@@ -250,7 +228,7 @@ public class CalendarKeeper {
           }
         });
   }
-
+  
   static void renderAppoinment(AppointmentWidget appointmentWidget, boolean multi) {
     BeeRow row = getAppointmentTypeRow(appointmentWidget.getAppointment());
     if (row == null) {
@@ -267,6 +245,43 @@ public class CalendarKeeper {
       String title = Data.getString(viewName, row, COL_APPOINTMENT_TITLE);
       
       APPOINTMENT_RENDERER.render(appointmentWidget, header, body, title, multi);
+    }
+    
+    BeeRow styleRow = getAppointmentStyleRow(appointmentWidget.getAppointment(), row);
+    if (styleRow != null) {
+      String viewName = VIEW_APPOINTMENT_STYLES;
+      String panel = Data.getString(viewName, styleRow, multi ? COL_MULTI : COL_SIMPLE);
+      
+      String header = Data.getString(viewName, styleRow, COL_HEADER);
+      String body = Data.getString(viewName, styleRow, COL_BODY);
+      String footer = Data.getString(viewName, styleRow, COL_FOOTER);
+      
+      CalendarStyleManager.applyStyle(appointmentWidget, panel, header, body, footer);
+    }
+  }
+
+  static void renderCompact(AppointmentWidget panel, Widget htmlWidget, Widget titleWidget) {
+    BeeRow row = getAppointmentTypeRow(panel.getAppointment());
+
+    String compact;
+    String title;
+
+    if (row == null) {
+      compact = null;
+      title = null;
+    } else {
+      String viewName = VIEW_APPOINTMENT_TYPES;
+      compact = Data.getString(viewName, row, COL_APPOINTMENT_COMPACT);
+      title = Data.getString(viewName, row, COL_APPOINTMENT_TITLE);
+    }
+
+    APPOINTMENT_RENDERER.renderCompact(panel.getAppointment(), compact, htmlWidget, title,
+        titleWidget);
+    
+    BeeRow styleRow = getAppointmentStyleRow(panel.getAppointment(), row);
+    if (styleRow != null) {
+      String styles = Data.getString(VIEW_APPOINTMENT_STYLES, styleRow, COL_COMPACT);
+      CalendarStyleManager.applyStyle(panel, styles);
     }
   }
   
@@ -299,6 +314,19 @@ public class CalendarKeeper {
         });
   }
 
+  private static BeeRow getAppointmentStyleRow(Appointment appointment, BeeRow typeRow) {
+    Long style = appointment.getStyle();
+    if (style == null && typeRow != null) {
+      style = Data.getLong(VIEW_APPOINTMENT_TYPES, typeRow, COL_STYLE);
+    }
+    
+    if (style == null) {
+      return null;
+    } else {
+      return CACHE.getRow(VIEW_APPOINTMENT_STYLES, style);
+    }
+  }
+  
   private static FormView getSettingsForm() {
     return settingsForm;
   }

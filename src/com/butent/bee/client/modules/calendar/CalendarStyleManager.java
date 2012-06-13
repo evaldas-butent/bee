@@ -1,5 +1,10 @@
 package com.butent.bee.client.modules.calendar;
 
+import com.google.gwt.user.client.ui.Widget;
+
+import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.shared.utils.BeeUtils;
+
 public class CalendarStyleManager {
 
   public static final String DAY_VIEW = "bee-cal";
@@ -70,6 +75,29 @@ public class CalendarStyleManager {
 
   public static final String NOW_POINTER = "nowPointer";
   public static final String NOW_MARKER = "nowMarker";
+
+  static void applyStyle(Widget widget, String styles) {
+    if (!BeeUtils.isEmpty(styles)) {
+      StyleUtils.updateStyle(widget, styles);
+    }
+  }
+  
+  static void applyStyle(AppointmentWidget widget, String panelStyle,
+      String headerStyle, String bodyStyle, String footerStyle) {
+    if (!BeeUtils.isEmpty(panelStyle)) {
+      StyleUtils.updateStyle(widget, panelStyle);
+    }
+
+    if (!BeeUtils.isEmpty(headerStyle)) {
+      StyleUtils.updateStyle(widget.getHeaderPanel(), headerStyle);
+    }
+    if (!BeeUtils.isEmpty(bodyStyle)) {
+      StyleUtils.updateStyle(widget.getBodyPanel(), bodyStyle);
+    }
+    if (!BeeUtils.isEmpty(footerStyle)) {
+      StyleUtils.updateStyle(widget.getFooterPanel(), footerStyle);
+    }
+  }
   
   private CalendarStyleManager() {
   }
