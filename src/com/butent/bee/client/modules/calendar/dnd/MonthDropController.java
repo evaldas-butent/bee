@@ -47,12 +47,12 @@ public class MonthDropController extends AbsolutePositionDropController {
   }
 
   private int getColumn(DragContext context, Draggable draggable) {
-    int x = context.desiredDraggableX - dropTargetOffsetX + draggable.relativeX;
-    return x / (dropTargetClientWidth / columnCount);
+    int x = getX(context, draggable);
+    return BeeUtils.clamp(x / (dropTargetClientWidth / columnCount), 0, columnCount - 1);
   }
 
   private int getMinutes(DragContext context, Draggable draggable) {
-    int x = context.desiredDraggableX - dropTargetOffsetX + draggable.relativeX;
+    int x = getX(context, draggable);
     int colWidth = dropTargetClientWidth / columnCount;
     
     double minutes = BeeUtils.rescale(x % colWidth, 0, colWidth, 0, TimeUtils.MINUTES_PER_DAY); 
@@ -61,6 +61,12 @@ public class MonthDropController extends AbsolutePositionDropController {
 
   private int getRow(DragContext context, Draggable draggable) {
     int y = context.desiredDraggableY - dropTargetOffsetY + draggable.relativeY;
-    return y / ((dropTargetClientHeight - headerHeight) / rowCount);
+    int row = Math.max(y - headerHeight, 0) / ((dropTargetClientHeight - headerHeight) / rowCount);
+    return BeeUtils.clamp(row, 0, rowCount - 1);
+  }
+  
+  private int getX(DragContext context, Draggable draggable) {
+    return Math.max(context.desiredDraggableX - dropTargetOffsetX + draggable.relativeX 
+        + draggable.offsetWidth / 2, 0);
   }
 }

@@ -1,8 +1,7 @@
 body, select {
-  color: #7F7F7F;
+/*   color: #7F7F7F; */
   font-family: Arial, sans-serif;
   font-size: small;
-  background: #FFFFFF;
 }
 
 [draggable] {
@@ -442,7 +441,7 @@ body, select {
 
 .bee-InputInteger,.bee-InputLong,.bee-InputNumber {
   text-align: right;
-  border: 1px solid silver;
+/*   border: 1px solid silver; */
 }
 
 .bee-InputSpinner {
@@ -925,7 +924,7 @@ body, select {
 }
 
 .bee-DataSelector-embedded {
-  color: #7D7D7D;
+  color: #060;
   font-weight: bolder;
 }
 
@@ -1454,13 +1453,13 @@ body, select {
   background: transparent;
 }
 
+/*
 input, textarea, select
 {
   color: #7D7D7D;
   background: white;
   border: 1px solid silver;
   font-family: Arial;
-/*   -webkit-appearance: none; */
 }
 
 .bee-ListBox.caption-left-content {
@@ -1469,4 +1468,5 @@ input, textarea, select
   background-position-y: 50%;
   background-position-x: 100%;
 }
+*/
 

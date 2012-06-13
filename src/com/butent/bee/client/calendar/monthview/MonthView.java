@@ -94,7 +94,7 @@ public class MonthView extends CalendarView {
     addWidget(canvas);
 
     if (dragController == null) {
-      dragController = new MonthDragController(canvas);
+      dragController = new MonthDragController(canvas, true);
       dragController.addDefaultHandler(this);
     }
 
@@ -139,6 +139,10 @@ public class MonthView extends CalendarView {
   }
 
   @Override
+  public void doScroll() {
+  }
+  
+  @Override
   public void doSizing() {
   }
 
@@ -174,9 +178,6 @@ public class MonthView extends CalendarView {
       }
     }
     return false;
-  }
-
-  public void scrollToHour(int hour) {
   }
 
   private void buildCell(int row, int col, String text, boolean isToday, boolean currentMonth) {

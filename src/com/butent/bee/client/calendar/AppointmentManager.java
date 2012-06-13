@@ -13,8 +13,6 @@ public class AppointmentManager {
 
   private final List<Appointment> appointments = Lists.newArrayList();
 
-  private boolean sortPending = false;
-
   public AppointmentManager() {
     super();
   }
@@ -22,7 +20,6 @@ public class AppointmentManager {
   public void addAppointment(Appointment appt) {
     if (appt != null) {
       appointments.add(appt);
-      sortPending = true;
     }
   }
 
@@ -49,16 +46,11 @@ public class AppointmentManager {
     }  
 
     appointments.remove(index);
-    sortPending = true;
-
     return true;
   }
 
   public void sortAppointments() {
-    if (sortPending) {
-      Collections.sort(appointments);
-      sortPending = false;
-    }
+    Collections.sort(appointments);
   }
   
   private int getAppointmentIndex(long id) {

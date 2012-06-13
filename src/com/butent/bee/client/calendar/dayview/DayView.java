@@ -55,6 +55,7 @@ public class DayView extends CalendarView {
     createResizeController();
   }
 
+  @Override
   public void doLayout() {
     JustDate date = getDate();
     int days = getDisplayedDays();
@@ -105,6 +106,12 @@ public class DayView extends CalendarView {
     }
   }
 
+  @Override
+  public void doScroll() {
+    appointmentPanel.doScroll(getSettings());
+  }
+
+  @Override
   public void doSizing() {
     if (getCalendarWidget().getOffsetHeight() > 0) {
       StyleUtils.setHeight(appointmentPanel, getCalendarWidget().getOffsetHeight()
@@ -139,13 +146,6 @@ public class DayView extends CalendarView {
       return true;
     } else {
       return false;
-    }
-  }
-
-  @Override
-  public void scrollToHour(int hour) {
-    if (hour > 0) {
-      appointmentPanel.scrollToHour(hour, getSettings());
     }
   }
 

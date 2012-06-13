@@ -101,6 +101,12 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
     }
   }
 
+  public void doScroll() {
+    if (view != null) {
+      view.doScroll();
+    }
+  }
+
   public void doSizing() {
     if (view != null) {
       view.doSizing();
@@ -167,6 +173,7 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
 
     doLayout();
     doSizing();
+    doScroll();
   }
 
   @Override
@@ -182,12 +189,6 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
     layoutSuspended = false;
     if (layoutPending) {
       refresh();
-    }
-  }
-
-  public void scrollToHour(int hour) {
-    if (view != null) {
-      view.scrollToHour(hour);
     }
   }
 

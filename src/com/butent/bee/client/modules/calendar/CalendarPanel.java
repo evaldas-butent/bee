@@ -433,9 +433,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     }
 
     calendar.setAppointments(appointments);
-
     calendar.resumeLayout();
-    calendar.scrollToHour(calendar.getSettings().getScrollToHour());
 
     BeeKeeper.getLog().debug(calendarId, "loaded", appointments.size(), "appointments");
   }

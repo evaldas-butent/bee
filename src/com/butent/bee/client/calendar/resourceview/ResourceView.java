@@ -53,6 +53,7 @@ public class ResourceView extends CalendarView {
     createResizeController();
   }
 
+  @Override
   public void doLayout() {
     JustDate date = getDate();
     List<Long> attendees = getCalendarWidget().getAttendees();
@@ -105,7 +106,13 @@ public class ResourceView extends CalendarView {
       StyleUtils.clearHeight(viewMulti.getGrid());
     }
   }
+  
+  @Override
+  public void doScroll() {
+    viewBody.doScroll(getSettings());
+  }
 
+  @Override
   public void doSizing() {
     if (getCalendarWidget().getOffsetHeight() > 0) {
       StyleUtils.setHeight(viewBody, getCalendarWidget().getOffsetHeight()
@@ -140,13 +147,6 @@ public class ResourceView extends CalendarView {
       return true;
     } else {
       return false;
-    }
-  }
-
-  @Override
-  public void scrollToHour(int hour) {
-    if (hour > 0) {
-      viewBody.scrollToHour(hour, getSettings());
     }
   }
 

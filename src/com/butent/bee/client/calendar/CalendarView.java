@@ -34,6 +34,8 @@ public abstract class CalendarView implements HasSettings {
 
   public abstract void doLayout();
 
+  public abstract void doScroll();
+
   public abstract void doSizing();
 
   public CalendarSettings getSettings() {
@@ -52,12 +54,10 @@ public abstract class CalendarView implements HasSettings {
     }
   }
 
-  public abstract void scrollToHour(int hour);
-  
   public void updateAppointment(Appointment appointment, DateTime newStart, DateTime newEnd,
-      int oldColumnIndex, int newColumnIndex) {
+      int oldColumnIndex, int newColumnIndex, boolean refresh) {
     if (UpdateEvent.fire(getCalendarWidget(), appointment, newStart, newEnd, oldColumnIndex,
-        newColumnIndex)) {
+        newColumnIndex) || refresh) {
       getCalendarWidget().refresh();
     }
   }

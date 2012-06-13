@@ -4,6 +4,7 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 
 import com.butent.bee.client.dnd.DragContext;
 import com.butent.bee.client.dnd.drop.AbsolutePositionDropController;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
@@ -23,8 +24,8 @@ public class DayDropController extends AbsolutePositionDropController {
   public void onDrop(DragContext context) {
     super.onDrop(context);
 
-    int top = draggableList.get(0).desiredY;
     int left = draggableList.get(0).desiredX;
+    int top = draggableList.get(0).desiredY;
 
     AppointmentWidget widget = (AppointmentWidget) context.draggable;
     left = Math.max(0, Math.min(left, dropTarget.getOffsetWidth() - widget.getOffsetWidth()));
@@ -51,17 +52,27 @@ public class DayDropController extends AbsolutePositionDropController {
     for (Draggable draggable : draggableList) {
       int x = context.desiredDraggableX - dropTargetOffsetX + draggable.relativeX;
       int y = context.desiredDraggableY - dropTargetOffsetY + draggable.relativeY;
+      
+      int w = draggable.offsetWidth;
 
-      x = BeeUtils.clamp(x, 0, dropTargetClientWidth - draggable.offsetWidth);
+      x = BeeUtils.clamp(x, 0, dropTargetClientWidth - w);
       y = BeeUtils.clamp(y, 0, dropTargetClientHeight - draggable.offsetHeight);
       
-      x = Math.min(BeeUtils.snap(x, snapX), snapX * (columns - 1));
+      x = Math.min((x + w / 2) / snapX * snapX, snapX * (columns - 1));
       y = y / snapY * snapY;
 
       draggable.desiredX = x;
       draggable.desiredY = y;
-
-      dropTarget.add(draggable.positioner, x + 2, y + 1);
+      
+      x += 2;
+      y++;
+      
+      if (dropTarget.getWidgetIndex(draggable.positioner) >= 0) {
+        StyleUtils.setLeft(draggable.positioner, x);
+        StyleUtils.setTop(draggable.positioner, y);
+      } else {
+        dropTarget.add(draggable.positioner, x, y);
+      }
     }
 
     if (context.dragController.getBehaviorScrollIntoView()) {

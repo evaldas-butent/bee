@@ -39,6 +39,16 @@ public class AppointmentPanel extends Composite {
     getGrid().build(columnCount, settings);
   }
 
+  public void doScroll(CalendarSettings settings) {
+    int scrollTop = getScrollArea().getElement().getScrollTop();
+    int hour = settings.getScrollToHour();
+
+    if (scrollTop <= 0 && hour > 0) {
+      getScrollArea().getElement().setScrollTop(hour *
+          settings.getIntervalsPerHour() * settings.getPixelsPerInterval());
+    }
+  }
+  
   public int getColumnIndex(int x, int columnCount) {
     int left = getGrid().getAbsoluteLeft();
     int relativeX = x - left;
@@ -67,7 +77,7 @@ public class AppointmentPanel extends Composite {
     }
     return result;
   }
-  
+
   public AppointmentGrid getGrid() {
     return (AppointmentGrid) getLayoutPanel().getWidget(1);
   }
@@ -75,20 +85,13 @@ public class AppointmentPanel extends Composite {
   public Simple getScrollArea() {
     return (Simple) getWidget();
   }
-
+  
   public Timeline getTimeline() {
     return (Timeline) getLayoutPanel().getWidget(0);
   }
-  
+
   public boolean isGrid(Element element) {
     return getGrid().getElement().isOrHasChild(element);
-  }
-
-  public void scrollToHour(int hour, CalendarSettings settings) {
-    if (hour >= 0) {
-      getScrollArea().getElement().setScrollTop(hour *
-          settings.getIntervalsPerHour() * settings.getPixelsPerInterval());
-    }
   }
   
   private Flow getLayoutPanel() {

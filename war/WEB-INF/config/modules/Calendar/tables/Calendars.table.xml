@@ -16,9 +16,9 @@
 
     <Integer name="Transparency" />
 
-    <Integer name="DefaultDisplayedDays" defValue="4" />
+    <Integer name="DefaultDisplayedDays" defValue="3" />
 
-    <Integer name="PixelsPerInterval" defValue="30" />
+    <Integer name="PixelsPerInterval" defValue="24" />
     <Integer name="IntervalsPerHour" defValue="2" />
 
     <Integer name="WorkingHourStart" defValue="8" />

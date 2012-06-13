@@ -70,6 +70,6 @@ public class DayDragController extends PickupDragController {
     DateTime newEnd = new DateTime(startTime + duration);
     
     calendarView.updateAppointment(appointment, newStart, newEnd,
-        appointmentWidget.getColumnIndex(), newColumnIndex);
+        appointmentWidget.getColumnIndex(), newColumnIndex, true);
   }
 }

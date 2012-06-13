@@ -94,7 +94,7 @@ public class ResizeController extends AbstractDragController {
     newEnd.setMinute(appointmentWidget.getDropMinutes());
     
     calendarView.updateAppointment(appointment, appointment.getStart(), newEnd,
-        appointmentWidget.getColumnIndex(), appointmentWidget.getDropColumnIndex());
+        appointmentWidget.getColumnIndex(), appointmentWidget.getDropColumnIndex(), false);
   }
   
   private Widget getWidget() {
