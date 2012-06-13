@@ -21,6 +21,7 @@ import com.butent.bee.client.modules.calendar.layout.MultiDayPanel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 
 import java.util.List;
 
@@ -63,8 +64,12 @@ public class ResourceView extends CalendarView {
     viewHeader.setDate(date);
 
     viewMulti.setColumnCount(cc);
-
-    viewBody.build(cc, getSettings());
+    
+    if (TimeUtils.isToday(date)) {
+      viewBody.build(cc, getSettings(), 0, cc - 1);
+    } else {
+      viewBody.build(cc, getSettings());
+    }
 
     dragController.setDate(JustDate.copyOf(date));
 
@@ -150,6 +155,11 @@ public class ResourceView extends CalendarView {
     }
   }
 
+  @Override
+  public void onClock() {
+    viewBody.onClock(getSettings());
+  }
+  
   private void addAppointmentsToGrid(List<AppointmentAdapter> adapters, boolean multi,
       int columnIndex) {
 

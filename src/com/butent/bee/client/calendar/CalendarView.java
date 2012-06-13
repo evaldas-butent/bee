@@ -48,6 +48,8 @@ public abstract class CalendarView implements HasSettings {
 
   public abstract boolean onClick(Element element, Event event);
 
+  public abstract void onClock();
+  
   public void openAppointment(Appointment appointment) {
     if (getCalendarWidget() != null) {
       OpenEvent.fire(getCalendarWidget(), appointment);

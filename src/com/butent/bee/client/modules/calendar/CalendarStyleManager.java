@@ -67,6 +67,9 @@ public class CalendarStyleManager {
 
   public static final String FIRST_COLUMN = "firstColumn";
   public static final String LAST_COLUMN = "lastColumn";
+
+  public static final String NOW_POINTER = "nowPointer";
+  public static final String NOW_MARKER = "nowMarker";
   
   private CalendarStyleManager() {
   }

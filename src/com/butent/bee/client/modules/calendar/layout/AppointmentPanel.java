@@ -7,6 +7,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -35,8 +36,13 @@ public class AppointmentPanel extends Composite {
   }
 
   public void build(int columnCount, CalendarSettings settings) {
+    build(columnCount, settings, BeeConst.UNDEF, BeeConst.UNDEF);
+  }
+
+  public void build(int columnCount, CalendarSettings settings,
+      int todayStartColumn, int todayEndColumn) {
     getTimeline().build(settings);
-    getGrid().build(columnCount, settings);
+    getGrid().build(columnCount, settings, todayStartColumn, todayEndColumn);
   }
 
   public void doScroll(CalendarSettings settings) {
@@ -92,6 +98,11 @@ public class AppointmentPanel extends Composite {
 
   public boolean isGrid(Element element) {
     return getGrid().getElement().isOrHasChild(element);
+  }
+  
+  public void onClock(CalendarSettings settings) {
+    getTimeline().onClock(settings);
+    getGrid().onClock(settings);
   }
   
   private Flow getLayoutPanel() {

@@ -180,6 +180,10 @@ public class MonthView extends CalendarView {
     return false;
   }
 
+  @Override
+  public void onClock() {
+  }
+
   private void buildCell(int row, int col, String text, boolean isToday, boolean currentMonth) {
     BeeLabel label = new BeeLabel(text);
     label.addStyleName(CalendarStyleManager.MONTH_CELL_LABEL);

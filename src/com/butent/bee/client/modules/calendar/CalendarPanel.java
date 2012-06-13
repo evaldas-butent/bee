@@ -10,6 +10,7 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
@@ -87,6 +88,8 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   private final Calendar calendar;
   private final Html dateBox;
   private final TabBar viewTabs;
+  
+  private final Timer timer;
 
   private HandlerRegistration appointmentEventRegistration;
 
@@ -140,6 +143,14 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     });
 
     this.viewTabs = createViewWidget();
+    
+    this.timer = new Timer() {
+      @Override
+      public void run() {
+        calendar.onClock();
+      }
+    };
+    timer.scheduleRepeating(TimeUtils.MILLIS_PER_MINUTE);
 
     add(header);
 

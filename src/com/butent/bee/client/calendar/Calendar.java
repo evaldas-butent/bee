@@ -17,19 +17,10 @@ public class Calendar extends CalendarWidget implements RequiresResize, Provides
   
   private final Map<CalendarView.Type, CalendarView> viewCache = Maps.newHashMap();
 
-  private Timer resizeTimer = new Timer() {
-    private int height;
-
+  private final Timer resizeTimer = new Timer() {
     @Override
     public void run() {
-      int newHeight = getOffsetHeight();
-      if (newHeight != height) {
-        height = newHeight;
-        doSizing();
-        if (getView() instanceof MonthView) {
-          doLayout();
-        }
-      }
+      doLayout();
     }
   };
 

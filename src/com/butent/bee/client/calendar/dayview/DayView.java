@@ -64,8 +64,9 @@ public class DayView extends CalendarView {
     dayViewHeader.setYear(date);
 
     multiDayPanel.setColumnCount(days);
-
-    appointmentPanel.build(days, getSettings());
+    
+    int todayColumn = CalendarUtils.getTodayColumn(date, days);
+    appointmentPanel.build(days, getSettings(), todayColumn, todayColumn);
 
     dragController.setDate(JustDate.copyOf(date));
 
@@ -149,6 +150,11 @@ public class DayView extends CalendarView {
     }
   }
 
+  @Override
+  public void onClock() {
+    appointmentPanel.onClock(getSettings());
+  }
+  
   private void addAppointmentsToGrid(List<AppointmentAdapter> adapters, boolean multi,
       int columnIndex) {
 

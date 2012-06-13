@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dnd.DragContext;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -131,8 +132,20 @@ public class CalendarUtils {
     return null;
   }
   
+  public static int getNowY(CalendarSettings settings) {
+    DateTime now = new DateTime();
+    int hourHeight = settings.getHourHeight();
+    
+    return now.getHour() * hourHeight + now.getMinute() * hourHeight / TimeUtils.MINUTES_PER_HOUR;
+  }
+  
   public static Range<DateTime> getRange(Appointment appointment) {
     return Ranges.closedOpen(appointment.getStart(), appointment.getEnd());
+  }
+  
+  public static int getTodayColumn(JustDate date, int days) {
+    int diff = TimeUtils.dayDiff(date, TimeUtils.today());
+    return BeeUtils.betweenExclusive(diff, 0, days) ? diff : BeeConst.UNDEF;
   }
 
   public static boolean rangeContains(Appointment appointment, DateTime min, DateTime max) {

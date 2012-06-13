@@ -5,10 +5,15 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
+import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.Html;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 
 public class Timeline extends Flow {
+  
+  private int nowIndex = BeeConst.UNDEF; 
 
   public Timeline() {
     super();
@@ -36,5 +41,27 @@ public class Timeline extends Flow {
       hourWrapper.add(flowPanel);
       add(hourWrapper);
     }
+    
+    Html now = new Html();
+    now.addStyleName(CalendarStyleManager.NOW_POINTER);
+    add(now);
+    setNowIndex(getWidgetCount() - 1);
+    
+    onClock(settings);
+  }
+  
+  public void onClock(CalendarSettings settings) {
+    if (getNowIndex() >= 0) {
+      int y = CalendarUtils.getNowY(settings); 
+      StyleUtils.setTop(getWidget(getNowIndex()), y);
+    }
+  }
+
+  private int getNowIndex() {
+    return nowIndex;
+  }
+
+  private void setNowIndex(int nowIndex) {
+    this.nowIndex = nowIndex;
   }
 }

@@ -136,6 +136,12 @@ public class CalendarWidget extends InteractiveWidget implements HasOpenHandlers
   public CalendarView getView() {
     return view;
   }
+  
+  public void onClock() {
+    if (view != null) {
+      view.onClock();
+    }
+  }
 
   @Override
   public boolean onDoubleClick(Element element, Event event) {
