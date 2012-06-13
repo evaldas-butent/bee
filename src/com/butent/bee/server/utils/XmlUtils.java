@@ -111,7 +111,7 @@ public class XmlUtils {
 
   private static final String ALL_NS = "*";
   private static final String ALL_TAGS = "*";
-  
+
   private static Logger logger = Logger.getLogger(XmlUtils.class.getName());
 
   private static DocumentBuilder domBuilder;
@@ -281,10 +281,10 @@ public class XmlUtils {
 
   public static Calculation getCalculation(Element element) {
     Assert.notNull(element);
-    
+
     String expr = null;
     String func = null;
-    
+
     for (Element child : getChildrenElements(element)) {
       String tag = getLocalName(child);
       String text = child.getTextContent();
@@ -357,7 +357,7 @@ public class XmlUtils {
     }
     return result;
   }
-  
+
   public static List<Property> getCommentInfo(Comment comm) {
     Assert.notNull(comm);
     List<Property> lst = new ArrayList<Property>();
@@ -366,7 +366,7 @@ public class XmlUtils {
         "Data", comm.getData(), "To String", comm.toString());
     return lst;
   }
-  
+
   public static ConditionalStyleDeclaration getConditionalStyle(Element element) {
     Assert.notNull(element);
 
@@ -511,7 +511,7 @@ public class XmlUtils {
 
     List<Element> result = Lists.newArrayList();
     NodeList nodes;
-    
+
     if (isElement(parent)) {
       nodes = asElement(parent).getElementsByTagNameNS(ALL_NS, tagName);
     } else if (isDocument(parent)) {
@@ -520,7 +520,7 @@ public class XmlUtils {
       Assert.untouchable("node must be element or document");
       nodes = null;
     }
-    
+
     if (isEmpty(nodes)) {
       return result;
     }
@@ -574,7 +574,7 @@ public class XmlUtils {
     }
     return (Element) children.item(0);
   }
-  
+
   public static String getLocalName(Element el) {
     Assert.notNull(el);
     if (BeeUtils.isEmpty(el.getLocalName())) {
@@ -711,7 +711,7 @@ public class XmlUtils {
     }
     return new StyleDeclaration(className, inline, font);
   }
-  
+
   public static StyleDeclaration getStyle(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
@@ -721,7 +721,7 @@ public class XmlUtils {
       return null;
     }
     return getStyle(element);
-  }  
+  }
 
   public static String getText(String xml, String tag) {
     Assert.notEmpty(xml);
@@ -883,12 +883,12 @@ public class XmlUtils {
     }
     return lst;
   }
-  
+
   public static boolean isEmpty(NodeList nodes) {
     return nodes == null || nodes.getLength() <= 0;
   }
 
-  public static String marshal(Object obj, String schemaPath) {
+  public static synchronized String marshal(Object obj, String schemaPath) {
     Assert.notNull(obj);
     StringWriter result = new StringWriter();
 
@@ -935,9 +935,9 @@ public class XmlUtils {
     }
     return writer.getBuffer().toString();
   }
-  
+
   @SuppressWarnings("unchecked")
-  public static <T> T unmarshal(Class<T> clazz, String resource, String schemaPath) {
+  public static synchronized <T> T unmarshal(Class<T> clazz, String resource, String schemaPath) {
     T result = null;
 
     if (!BeeUtils.isEmpty(resource)) {
@@ -1038,7 +1038,7 @@ public class XmlUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
-  
+
   private static Document asDocument(Node nd) {
     if (isDocument(nd)) {
       return (Document) nd;
@@ -1054,7 +1054,7 @@ public class XmlUtils {
       return null;
     }
   }
-  
+
   private static boolean checkBuilder() {
     if (domBuilder == null) {
       LogUtils.severe(logger, "Document Builder not available");

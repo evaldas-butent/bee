@@ -1460,7 +1460,7 @@ input, textarea, select
   background: white;
   border: 1px solid silver;
   font-family: Arial;
-  -webkit-appearance: none;
+/*   -webkit-appearance: none; */
 }
 
 .bee-ListBox.caption-left-content {

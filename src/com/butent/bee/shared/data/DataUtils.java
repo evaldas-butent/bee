@@ -35,16 +35,17 @@ public class DataUtils {
   public static final String TABLE_NAMESPACE = "http://www.butent.com/table";
   public static final String VIEW_NAMESPACE = "http://www.butent.com/view";
   public static final String EXPRESSION_NAMESPACE = "http://www.butent.com/expression";
+  public static final String MENU_NAMESPACE = "http://www.butent.com/menu";
 
   public static final String ID_TAG = "ID";
   public static final String VERSION_TAG = "VERSION";
-  
+
   public static final int ID_INDEX = -2;
   public static final int VERSION_INDEX = -3;
 
   public static final ValueType ID_TYPE = ValueType.LONG;
   public static final ValueType VERSION_TYPE = ValueType.LONG;
-  
+
   public static final long NEW_ROW_ID = 0L;
   public static final long NEW_ROW_VERSION = 0L;
 
@@ -53,14 +54,14 @@ public class DataUtils {
     public boolean apply(Long input) {
       return isId(input);
     }
-  }; 
+  };
 
   private static final char ID_LIST_SEPARATOR = ',';
-  
-  private static final Joiner ID_JOINER = Joiner.on(ID_LIST_SEPARATOR).skipNulls(); 
+
+  private static final Joiner ID_JOINER = Joiner.on(ID_LIST_SEPARATOR).skipNulls();
   private static final Splitter ID_SPLITTER =
-      Splitter.on(ID_LIST_SEPARATOR).omitEmptyStrings().trimResults(); 
-  
+      Splitter.on(ID_LIST_SEPARATOR).omitEmptyStrings().trimResults();
+
   private static int defaultAsyncThreshold = 100;
   private static int defaultSearchThreshold = 2;
   private static int defaultPagingThreshold = 20;
@@ -74,7 +75,7 @@ public class DataUtils {
       return buildList(getRowIds(rowSet));
     }
   }
-  
+
   public static String buildList(Collection<Long> ids) {
     if (BeeUtils.isEmpty(ids)) {
       return null;
@@ -90,7 +91,7 @@ public class DataUtils {
       return buildList(Lists.newArrayList(ids));
     }
   }
-  
+
   public static BeeRow cloneRow(IsRow original) {
     Assert.notNull(original);
     String[] arr = new String[original.getNumberOfCells()];
@@ -114,11 +115,11 @@ public class DataUtils {
     }
     return result;
   }
-  
+
   public static boolean contains(List<? extends IsColumn> columns, String columnId) {
     return !BeeConst.isUndef(getColumnIndex(columnId, columns));
   }
-  
+
   public static BeeRow createEmptyRow(int columnCount) {
     return new BeeRow(NEW_ROW_ID, new String[Assert.isPositive(columnCount)]);
   }
@@ -159,11 +160,11 @@ public class DataUtils {
       return true;
     }
   }
-  
+
   public static List<BeeRow> filterRows(BeeRowSet rowSet, String columnId, String value) {
     List<BeeRow> result = Lists.newArrayList();
     int index = rowSet.getColumnIndex(columnId);
-    
+
     for (BeeRow row : rowSet.getRows()) {
       if (BeeUtils.equalsTrim(row.getString(index), value)) {
         result.add(row);
@@ -171,7 +172,7 @@ public class DataUtils {
     }
     return result;
   }
-  
+
   public static <T extends IsColumn> T getColumn(String columnId, List<T> columns) {
     int index = getColumnIndex(columnId, columns);
 
@@ -209,7 +210,7 @@ public class DataUtils {
     }
     return null;
   }
-  
+
   public static String getColumnName(String input, List<? extends IsColumn> columns,
       String idColumnName, String versionColumnName) {
     if (BeeUtils.isEmpty(input)) {
@@ -236,7 +237,7 @@ public class DataUtils {
   public static List<String> getColumnNames(List<? extends IsColumn> columns) {
     return getColumnNames(columns, null, null);
   }
-  
+
   public static List<String> getColumnNames(List<? extends IsColumn> columns,
       String idColumnName, String versionColumnName) {
     List<String> names = Lists.newArrayList();
@@ -255,12 +256,12 @@ public class DataUtils {
     }
     return names;
   }
-  
+
   public static List<BeeColumn> getColumns(List<BeeColumn> columns, int... indexes) {
     if (indexes == null) {
       return columns;
     }
-    
+
     List<BeeColumn> result = Lists.newArrayList();
     for (int index : indexes) {
       if (index >= 0 && index < columns.size()) {
@@ -274,7 +275,7 @@ public class DataUtils {
     if (colNames == null) {
       return columns;
     }
-    
+
     List<BeeColumn> result = Lists.newArrayList();
     for (String colName : colNames) {
       BeeColumn column = getColumn(colName, columns);
@@ -284,7 +285,7 @@ public class DataUtils {
     }
     return result;
   }
-  
+
   public static ValueType getColumnType(String columnId, List<? extends IsColumn> columns) {
     ValueType type = null;
     IsColumn column = getColumn(columnId, columns);
@@ -310,17 +311,17 @@ public class DataUtils {
   public static List<Long> getDistinct(BeeRowSet rowSet, String columnId) {
     return getDistinct(rowSet.getRows().getList(), rowSet.getColumnIndex(columnId));
   }
-  
+
   public static List<Long> getDistinct(Collection<? extends IsRow> rows, int index) {
     return getDistinct(rows, index, null);
   }
-  
+
   public static List<Long> getDistinct(Collection<? extends IsRow> rows, int index, Long exclude) {
     List<Long> result = Lists.newArrayList();
     if (BeeUtils.isEmpty(rows)) {
       return result;
     }
-    
+
     for (IsRow row : rows) {
       Long value = row.getLong(index);
       if (value != null && !value.equals(exclude) && !result.contains(value)) {
@@ -333,11 +334,11 @@ public class DataUtils {
   public static Long getLong(BeeRowSet rowSet, IsRow row, String columnId) {
     return row.getLong(getColumnIndex(columnId, rowSet.getColumns()));
   }
-  
+
   public static int getMaxInitialRowSetSize() {
     return maxInitialRowSetSize;
   }
-  
+
   public static List<Long> getRowIds(BeeRowSet rowSet) {
     List<Long> result = Lists.newArrayList();
     for (BeeRow row : rowSet.getRows()) {
@@ -345,7 +346,7 @@ public class DataUtils {
     }
     return result;
   }
-  
+
   public static String getString(BeeRowSet rowSet, IsRow row, String columnId) {
     return row.getString(getColumnIndex(columnId, rowSet.getColumns()));
   }
@@ -361,7 +362,7 @@ public class DataUtils {
       return row.getString(index);
     }
   }
-  
+
   public static BeeRowSet getUpdated(String viewName, List<BeeColumn> columns, IsRow oldRow,
       IsRow newRow) {
     String oldValue;
@@ -407,15 +408,15 @@ public class DataUtils {
       return row.getValue(index, type).toString();
     }
   }
-  
+
   public static boolean hasId(IsRow row) {
     return row != null && isId(row.getId());
   }
-  
+
   public static boolean isId(Long id) {
     return id != null && id > 0;
   }
-  
+
   public static boolean isNewRow(IsRow row) {
     return row != null && row.getId() == NEW_ROW_ID;
   }
@@ -450,7 +451,7 @@ public class DataUtils {
           idColumnName, versionColumnName);
     }
   }
-  
+
   public static Filter parseCondition(String cond, List<? extends IsColumn> columns,
       String idColumnName, String versionColumnName) {
     Filter flt = null;
@@ -559,22 +560,22 @@ public class DataUtils {
     }
     return flt;
   }
-  
+
   public static Filter parseFilter(String input, DataInfo.Provider provider, String viewName) {
     if (BeeUtils.isEmpty(input)) {
       return null;
     }
 
     DataInfo dataInfo = provider.getDataInfo(viewName, true);
-    return (dataInfo == null) ? null : dataInfo.parseFilter(input); 
+    return (dataInfo == null) ? null : dataInfo.parseFilter(input);
   }
-  
+
   public static List<Long> parseList(String input) {
     List<Long> result = Lists.newArrayList();
     if (BeeUtils.isEmpty(input)) {
       return result;
     }
-    
+
     for (String s : ID_SPLITTER.split(input)) {
       Long id = BeeUtils.toLongOrNull(s);
       if (isId(id)) {
@@ -590,9 +591,9 @@ public class DataUtils {
     }
 
     DataInfo dataInfo = provider.getDataInfo(viewName, true);
-    return (dataInfo == null) ? null : dataInfo.parseOrder(input); 
+    return (dataInfo == null) ? null : dataInfo.parseOrder(input);
   }
-  
+
   public static List<BeeRow> restoreRows(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -608,7 +609,7 @@ public class DataUtils {
     }
     return result;
   }
-  
+
   public static boolean sameId(IsRow r1, IsRow r2) {
     if (r1 == null) {
       return r2 == null;
@@ -628,50 +629,50 @@ public class DataUtils {
       return r1.getId() == r2.getId() && r1.getVersion() == r2.getVersion();
     }
   }
-  
+
   public static int setDefaults(IsRow row, Collection<String> colNames, List<BeeColumn> columns,
       Defaults defaults) {
     int result = 0;
-    if (row == null || BeeUtils.isEmpty(colNames) || BeeUtils.isEmpty(columns) 
+    if (row == null || BeeUtils.isEmpty(colNames) || BeeUtils.isEmpty(columns)
         || defaults == null) {
       return result;
     }
-    
+
     for (String colName : colNames) {
       int index = getColumnIndex(colName, columns);
       if (BeeConst.isUndef(index)) {
         continue;
       }
-      
+
       BeeColumn column = columns.get(index);
       if (!column.hasDefaults()) {
         continue;
       }
-      
+
       Object value = defaults.getValue(column.getDefaults().getA(), column.getDefaults().getB());
       if (value == null) {
         continue;
       }
-      
+
       row.setValue(index, Value.getValue(value));
       result++;
     }
     return result;
   }
-  
+
   public static void setValue(BeeRowSet rowSet, IsRow row, String columnId, String value) {
     row.setValue(getColumnIndex(columnId, rowSet.getColumns()), value);
   }
-  
+
   public static List<String> translate(List<String> input, List<? extends IsColumn> columns,
       IsRow row) {
     List<String> result = Lists.newArrayList();
-    
+
     if (BeeUtils.isEmpty(input) || BeeUtils.isEmpty(columns)) {
       BeeUtils.overwrite(result, input);
       return result;
     }
-    
+
     for (String expr : input) {
       int index = getColumnIndex(expr, columns);
 
@@ -685,14 +686,14 @@ public class DataUtils {
     }
     return result;
   }
-  
+
   public static void updateRow(IsRow target, IsRow source) {
     Assert.notNull(target);
     Assert.notNull(source);
-    
+
     target.setId(source.getId());
     target.setVersion(source.getVersion());
-    
+
     for (int i = 0; i < target.getNumberOfCells(); i++) {
       target.setValue(i, source.getString(i));
     }

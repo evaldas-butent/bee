@@ -1,9 +1,6 @@
 package com.butent.bee.shared.menu;
 
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
-
-import java.util.Comparator;
 
 /**
  * Contains list of constants for various types of menus and checks whether a given menu object fits
@@ -18,29 +15,12 @@ public class MenuConstants {
   public static enum BAR_TYPE {
     TABLE, FLOW, LIST, OLIST, ULIST, DLIST
   }
-  
+
   /**
    * Lists all possible menu item types
    */
   public static enum ITEM_TYPE {
     LABEL, BUTTON, RADIO, HTML, OPTION, LI, DT, DD, ROW
-  }
-  
-  /**
-   * Compares two menu entries.
-   */
-  private static class MenuComparator implements Comparator<MenuEntry> {
-    public int compare(MenuEntry m1, MenuEntry m2) {
-      int z = BeeUtils.compare(m1.getParent(), m2.getParent());
-
-      if (z == BeeConst.COMPARE_EQUAL) {
-        z = BeeUtils.compare(m1.getOrder(), m2.getOrder());
-        if (z == BeeConst.COMPARE_EQUAL) {
-          z = BeeUtils.compare(m1.getId(), m2.getId());
-        }
-      }
-      return z;
-    }
   }
 
   public static int MAX_MENU_DEPTH = 3;
@@ -74,8 +54,6 @@ public class MenuConstants {
 
   public static final int SEPARATOR_BEFORE = 1;
   public static final int SEPARATOR_AFTER = 2;
-
-  public static MenuComparator MENU_COMPARATOR = new MenuComparator();
 
   public static boolean isRootLevel(int idx) {
     return idx == ROOT_MENU_INDEX;

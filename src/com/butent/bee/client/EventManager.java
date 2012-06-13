@@ -125,7 +125,7 @@ public class EventManager implements Module {
   public HandlerRegistration registerBookmarkHandler(BookmarkEvent.Handler handler) {
     return BookmarkEvent.register(eventBus, handler);
   }
-  
+
   public HandlerRegistration registerCellUpdateHandler(CellUpdateEvent.Handler handler) {
     return CellUpdateEvent.register(eventBus, handler);
   }
@@ -164,7 +164,7 @@ public class EventManager implements Module {
   public HandlerRegistration registerRowActionHandler(RowActionEvent.Handler handler) {
     return RowActionEvent.register(eventBus, handler);
   }
-  
+
   public HandlerRegistration registerRowDeleteHandler(RowDeleteEvent.Handler handler) {
     return RowDeleteEvent.register(eventBus, handler);
   }
@@ -310,7 +310,7 @@ public class EventManager implements Module {
     } else if (svc.equals(Service.CANCEL_DIALOG)) {
       return Global.closeDialog(source);
     } else if (svc.equals(Service.REFRESH_MENU)) {
-      return BeeKeeper.getMenu().drawMenu();
+      return BeeKeeper.getMenu().loadMenu();
     } else {
       Global.showError("Unknown UI service", svc);
       return false;

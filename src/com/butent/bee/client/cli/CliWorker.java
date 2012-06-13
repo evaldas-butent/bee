@@ -223,7 +223,7 @@ public class CliWorker {
     } else if (z.equals("log")) {
       doLog(arr);
     } else if (z.equals("menu")) {
-      doMenu(arr);
+      doMenu();
     } else if (z.equals("meter")) {
       showMeter(arr);
     } else if (z.equals("md5")) {
@@ -488,14 +488,8 @@ public class CliWorker {
     BeeKeeper.getLog().addSeparator();
   }
 
-  private static void doMenu(String[] arr) {
-    if (BeeUtils.length(arr) > 1) {
-      ParameterList params = BeeKeeper.getRpc().createParameters(Service.LOAD_MENU);
-      params.addPositionalHeader(arr[1]);
-      BeeKeeper.getRpc().makeGetRequest(params);
-    } else {
-      BeeKeeper.getMenu().showMenu();
-    }
+  private static void doMenu() {
+    BeeKeeper.getMenu().showMenuInfo();
   }
 
   private static void doScreen(String[] arr) {

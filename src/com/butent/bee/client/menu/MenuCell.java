@@ -6,7 +6,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 
-import com.butent.bee.shared.menu.MenuEntry;
+import com.butent.bee.shared.menu.Menu;
+import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -14,7 +15,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * event.
  */
 
-public class MenuCell extends AbstractCell<MenuEntry> {
+public class MenuCell extends AbstractCell<Menu> {
   private static String[] events = new String[] {"mousedown"};
 
   public MenuCell() {
@@ -22,19 +23,19 @@ public class MenuCell extends AbstractCell<MenuEntry> {
   }
 
   @Override
-  public void onBrowserEvent(Context context, Element parent, MenuEntry value, NativeEvent event,
-      ValueUpdater<MenuEntry> valueUpdater) {
+  public void onBrowserEvent(Context context, Element parent, Menu value, NativeEvent event,
+      ValueUpdater<Menu> valueUpdater) {
     super.onBrowserEvent(context, parent, value, event, valueUpdater);
-    if (value != null && !BeeUtils.isEmpty(value.getService())
-        && isSelectionEvent(event.getType())) {
-      new MenuCommand(value.getService(), value.getParameters()).execute();
+    if (value != null && (value instanceof MenuItem) && isSelectionEvent(event.getType())) {
+      new MenuCommand(((MenuItem) value).getService(),
+          ((MenuItem) value).getParameters()).execute();
     }
   }
 
   @Override
-  public void render(Context context, MenuEntry value, SafeHtmlBuilder sb) {
+  public void render(Context context, Menu value, SafeHtmlBuilder sb) {
     if (value != null) {
-      sb.appendEscaped(value.getText());
+      sb.appendEscaped(value.getLabel());
     }
   }
 

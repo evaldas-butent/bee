@@ -2,9 +2,9 @@ package com.butent.bee.client.menu;
 
 import com.google.gwt.view.client.TreeViewModel;
 
+import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuEntry;
-
-import java.util.List;
+import com.butent.bee.shared.menu.MenuItem;
 
 /**
  * Enables to represent menu in a tree view.
@@ -12,19 +12,15 @@ import java.util.List;
 
 public class MenuTreeViewModel implements TreeViewModel {
   private MenuDataProvider rootProvider = null;
-  private MenuDataProvider itemProvider = null;
   private MenuCell cell = null;
 
-  public MenuTreeViewModel(MenuDataProvider rootProvider,
-      MenuDataProvider itemProvider) {
-    this(rootProvider, itemProvider, new MenuCell());
+  public MenuTreeViewModel(MenuDataProvider rootProvider) {
+    this(rootProvider, new MenuCell());
   }
 
-  public MenuTreeViewModel(MenuDataProvider rootProvider,
-      MenuDataProvider itemProvider, MenuCell cell) {
+  public MenuTreeViewModel(MenuDataProvider rootProvider, MenuCell cell) {
     super();
     this.rootProvider = rootProvider;
-    this.itemProvider = itemProvider;
     this.cell = cell;
   }
 
@@ -34,15 +30,13 @@ public class MenuTreeViewModel implements TreeViewModel {
 
   @Override
   public <T> NodeInfo<?> getNodeInfo(T value) {
-    List<MenuEntry> lst;
     MenuDataProvider provider;
 
     if (value == null) {
-      return new DefaultNodeInfo<MenuEntry>(rootProvider, cell);
+      return new DefaultNodeInfo<Menu>(rootProvider, cell);
     } else if (value instanceof MenuEntry) {
-      lst = itemProvider.getChildren(((MenuEntry) value).getId(), true);
-      provider = new MenuDataProvider(lst);
-      return new DefaultNodeInfo<MenuEntry>(provider, cell);
+      provider = new MenuDataProvider(((MenuEntry) value).getItems());
+      return new DefaultNodeInfo<Menu>(provider, cell);
     } else {
       return null;
     }
@@ -50,11 +44,7 @@ public class MenuTreeViewModel implements TreeViewModel {
 
   @Override
   public boolean isLeaf(Object value) {
-    if (value instanceof MenuEntry) {
-      return ((MenuEntry) value).isLeaf();
-    } else {
-      return false;
-    }
+    return (value instanceof MenuItem);
   }
 
   public void setCell(MenuCell cell) {

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="Transport" label="Transportas" order="60"
+>
+  <Item name="Orders" label="Užsakymai" service="grid" parameters="TransportationOrders" />
+  <Item name="Trips" label="Reisai" service="grid" parameters="Trips" />
+    
+  <Item name="VehicleTypes" label="Transporto tipai" service="grid" parameters="VehicleTypes" separator="true" />
+  <Item name="ServiceTypes" label="Serviso tipai" service="grid" parameters="ServiceTypes" />
+  <Item name="Fueltypes" label="Kuro rūšys" service="grid" parameters="FuelTypes" />
+  <Item name="Vehicles" label="Transporto priemonės" service="grid" parameters="Vehicles" />
+    
+  <Item name="Drivers" label="Vairuotojai" service="grid" parameters="Drivers" separator="true" />
+  <Item name="SpareParts" label="Keičiamos dalys" service="grid" parameters="SpareParts" separator="true" />
+</Entry>

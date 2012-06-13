@@ -1,19 +1,24 @@
 package com.butent.bee.server.ui;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.server.Config;
+import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.menu.Menu;
+import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.ui.UiLoader;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -22,6 +27,7 @@ import org.w3c.dom.Document;
 import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +49,7 @@ import javax.ejb.Singleton;
 public class UiHolderBean {
 
   public enum UiObject {
-    GRID("grids"), FORM("forms"), MENU("menus");
+    GRID("grids"), FORM("forms"), MENU("menu");
 
     private String path;
 
@@ -73,13 +79,15 @@ public class UiHolderBean {
   GridLoaderBean gridBean;
   @EJB
   UiLoaderBean loaderBean;
+  @EJB
+  UserServiceBean usr;
 
   UiLoader loader;
   Map<String, UiComponent> uiFormCache = new HashMap<String, UiComponent>();
 
-  Map<String, String> gridCache = new HashMap<String, String>();
-  Map<String, String> formCache = new HashMap<String, String>();
-  Map<String, String> menuCache = new HashMap<String, String>();
+  Map<String, String> gridCache = Maps.newHashMap();
+  Map<String, String> formCache = Maps.newHashMap();
+  Map<String, Menu> menuCache = Maps.newHashMap();
 
   public ResponseObject getForm(String formName) {
     Assert.state(isForm(formName), "Not a form: " + formName);
@@ -111,6 +119,19 @@ public class UiHolderBean {
     return null;
   }
 
+  public ResponseObject getMenu() {
+    Map<Integer, Menu> menus = Maps.newTreeMap();
+
+    for (Menu menu : menuCache.values()) {
+      Menu entry = getVisibleMenu(null, Menu.restore(Codec.beeSerialize(menu)));
+
+      if (entry != null) {
+        menus.put(entry.getOrder(), entry);
+      }
+    }
+    return ResponseObject.response(menus.values());
+  }
+
   public UiComponent getUiForm(String root, Object... params) {
     Assert.notEmpty(root);
 
@@ -135,6 +156,11 @@ public class UiHolderBean {
     initObjects(UiObject.GRID);
   }
 
+  @Lock(LockType.WRITE)
+  public void initMenu() {
+    initObjects(UiObject.MENU);
+  }
+
   public boolean isForm(String formName) {
     return !BeeUtils.isEmpty(formName) && (formCache.containsKey(key(formName)));
   }
@@ -143,8 +169,33 @@ public class UiHolderBean {
     return !BeeUtils.isEmpty(gridName) && (gridCache.containsKey(key(gridName)));
   }
 
+  public Menu loadXmlMenu(String resource) {
+    return XmlUtils.unmarshal(Menu.class, resource, UiObject.MENU.getSchemaPath());
+  }
+
   public void setUiLoader(UiLoader loader) {
     this.loader = loader;
+  }
+
+  private Menu getVisibleMenu(String parent, Menu entry) {
+    String ref = BeeUtils.concat(".", parent, entry.getName());
+
+    if (usr.hasMenuRight(ref, "Visible")) {
+      List<Menu> items = null;
+
+      if (entry instanceof MenuEntry) {
+        items = ((MenuEntry) entry).getItems();
+      }
+      if (!BeeUtils.isEmpty(items)) {
+        for (Iterator<Menu> iterator = items.iterator(); iterator.hasNext();) {
+          if (getVisibleMenu(ref, iterator.next()) == null) {
+            iterator.remove();
+          }
+        }
+      }
+      return entry;
+    }
+    return null;
   }
 
   @SuppressWarnings("unused")
@@ -154,6 +205,7 @@ public class UiHolderBean {
 
     initGrids();
     initForms();
+    initMenu();
   }
 
   private boolean initForm(String moduleName, String formName) {
@@ -184,6 +236,21 @@ public class UiHolderBean {
       register(resource, gridCache, gridName, moduleName);
     } else {
       unregister(gridName, gridCache);
+    }
+    return ok;
+  }
+
+  private boolean initMenu(String moduleName, String menuName) {
+    Assert.notEmpty(menuName);
+
+    Menu xmlMenu = loadXmlMenu(Config.getPath(moduleBean.getResourcePath(moduleName,
+        UiObject.MENU.getPath(), UiObject.MENU.getFileName(menuName))));
+
+    boolean ok = (xmlMenu != null);
+    if (ok) {
+      register(xmlMenu, menuCache, menuName, moduleName);
+    } else {
+      unregister(menuName, menuCache);
     }
     return ok;
   }
@@ -241,7 +308,7 @@ public class UiHolderBean {
               isOk = initForm(moduleName, objectName);
               break;
             case MENU:
-              // isOk = initMenu(moduleName, objectName);
+              isOk = initMenu(moduleName, objectName);
               break;
           }
           if (isOk) {

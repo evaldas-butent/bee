@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="References" label="Žinynai" order="10"
+>
+  <Item name="Goods" label="Prekės" service="items" parameters="g" />
+  <Item name="Services" label="Paslaugos" service="items" parameters="s" />
+
+  <Item name="Categories" label="Prekių kategorijos" service="form" parameters="CategoryTree" separator="true" />
+
+  <Item name="Units" label="Mato vienetai" service="grid" parameters="Units" separator="true" />
+
+  <Item name="Currencies" label="Valiutos" service="grid" parameters="Currencies" separator="true" />
+
+  <Item name="Cities" label="Miestai" service="grid" parameters="Cities" separator="true" />
+  <Item name="Countries" label="Šalys" service="grid" parameters="Countries" />
+</Entry>

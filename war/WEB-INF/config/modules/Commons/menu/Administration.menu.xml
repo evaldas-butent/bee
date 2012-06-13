@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="Administration" label="Administravimas" order="1000"
+>
+  <Item name="Users" label="Vartotojai" service="grid" parameters="Users" />
+
+  <Item name="Roles" label="Rolės" service="form" parameters="Roles" separator="true" />
+  <Item name="Objects" label="Objektai" service="form" parameters="Objects" />
+
+  <Item name="Parameters" label="Sistemos parametrai" service="system_parameters" parameters="Commons"  separator="true" />
+</Entry>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Entry xmlns="http://www.butent.com/menu"
+
+name="Calendar" label="Kalendorius" order="70"
+>
+  <Item name="Calendars" label="Kalendoriai" service="grid" parameters="Calendars" />
+    
+  <Item name="Appointments" label="Vizitai" service="grid" parameters="Appointments" separator="true" />
+    
+  <Item name="AppointmentTypes" label="Vizitų tipai" service="grid" parameters="AppointmentTypes" separator="true" />
+    
+  <Item name="Attendees" label="Resursai" service="grid" parameters="Attendees" separator="true" />
+  <Item name="AttendeeTypes" label="Resursų tipai" service="grid" parameters="AttendeeTypes" />
+
+  <Item name="AppointmentProperties" label="Vizitų parametrai" service="grid" parameters="ExtendedProperties" separator="true" />
+  <Item name="PropertyGroups" label="Vizitų parametrų grupės" service="grid" parameters="PropertyGroups" />
+    
+  <Item name="Colors" label="Spalvos" service="grid" parameters="Colors" separator="true" />
+  <Item name="Themes" label="Temos" service="grid" parameters="Themes" />
+  <Item name="AppointmentStyles" label="Vizitų stiliai" service="grid" parameters="AppointmentStyles" />
+
+  <Item name="ReminderTypes" label="Priminimų tipai" service="grid" parameters="ReminderTypes" separator="true" />
+  <Item name="TimeZones" label="Laiko juostos" service="grid" parameters="TimeZones" />
+
+  <Item name="Configuration" label="Nustatymai" service="grid" parameters="Configuration" separator="true" />
+</Entry>

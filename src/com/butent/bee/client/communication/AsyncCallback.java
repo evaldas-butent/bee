@@ -245,10 +245,7 @@ public class AsyncCallback implements RequestCallback {
   }
 
   private void dispatchResponse(String svc, int cc, JsArrayString arr) {
-    if (BeeUtils.same(svc, Service.LOAD_MENU)) {
-      BeeKeeper.getMenu().loadCallBack(arr);
-
-    } else if (cc > 0) {
+    if (cc > 0) {
       BeeColumn[] columns = new BeeColumn[cc];
       for (int i = 0; i < cc; i++) {
         columns[i] = BeeColumn.restore(arr.get(i));

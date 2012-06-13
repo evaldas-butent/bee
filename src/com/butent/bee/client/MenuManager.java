@@ -1,10 +1,11 @@
 package com.butent.bee.client;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.menu.MenuBar;
@@ -17,18 +18,18 @@ import com.butent.bee.client.tree.BeeCellBrowser;
 import com.butent.bee.client.tree.BeeCellTree;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
-import com.butent.bee.client.utils.BeeCommand;
-import com.butent.bee.client.utils.BeeDuration;
 import com.butent.bee.client.widget.BeeCellList;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
 import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
 import com.butent.bee.shared.menu.MenuEntry;
-import com.butent.bee.shared.menu.MenuUtils;
+import com.butent.bee.shared.menu.MenuItem;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.Codec;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,25 +40,14 @@ import java.util.Map;
  */
 
 public class MenuManager implements Module {
-  
+
   public interface MenuCallback {
     void onSelection(String parameters);
   }
 
-  private class DrawCommand extends BeeCommand {
-    @Override
-    public void execute() {
-      drawMenu();
-    }
-  }
-
   private final Map<String, MenuCallback> menuCallbacks = Maps.newHashMap();
-  
-  private List<MenuEntry> roots = null;
-  private List<MenuEntry> items = null;
 
-  private boolean loaded = false;
-  private BeeCommand onLoad = null;
+  private List<Menu> roots = null;
 
   private List<String> layouts = new ArrayList<String>();
   private boolean[] options = null;
@@ -67,13 +57,6 @@ public class MenuManager implements Module {
   }
 
   public boolean drawMenu() {
-    if (!isLoaded()) {
-      setOnLoad(new DrawCommand());
-      loadMenu();
-      return false;
-    }
-    Assert.state(validState());
-
     layouts.clear();
     options = new boolean[MenuConstants.MAX_MENU_DEPTH];
 
@@ -81,10 +64,9 @@ public class MenuManager implements Module {
       layouts.add(Global.getVarValue(MenuConstants.varMenuLayout(i)));
       options[i] = Global.getVarBoolean(MenuConstants.varMenuBarType(i));
     }
-
     Widget w = createMenu(0, getRoots(), null);
-
     boolean ok = (w != null);
+
     if (ok) {
       BeeKeeper.getScreen().updateMenu(w);
     } else {
@@ -96,10 +78,6 @@ public class MenuManager implements Module {
   public void end() {
   }
 
-  public List<MenuEntry> getItems() {
-    return items;
-  }
-
   public List<String> getLayouts() {
     return layouts;
   }
@@ -108,13 +86,9 @@ public class MenuManager implements Module {
     Assert.notEmpty(service);
     return menuCallbacks.get(BeeUtils.normalize(service));
   }
-  
+
   public String getName() {
     return getClass().getName();
-  }
-
-  public BeeCommand getOnLoad() {
-    return onLoad;
   }
 
   public int getPriority(int p) {
@@ -134,140 +108,70 @@ public class MenuManager implements Module {
     return getLayout(0);
   }
 
-  public List<MenuEntry> getRoots() {
+  public List<Menu> getRoots() {
     return roots;
   }
 
   public void init() {
   }
 
-  public boolean isLoaded() {
-    return loaded;
-  }
+  public boolean loadMenu() {
+    BeeKeeper.getRpc().makeGetRequest(Service.LOAD_MENU, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse()) {
+          roots = Lists.newArrayList();
+          String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
 
-  public void loadCallBack(JsArrayString arr) {
-    Assert.notNull(arr);
-    int n = arr.length();
-    Assert.isPositive(n);
-
-    BeeDuration dur = new BeeDuration("load menu");
-
-    clear();
-    MenuEntry entry;
-
-    int rc = 0;
-    int ic = 0;
-
-    for (int i = 0; i < n; i++) {
-      entry = new MenuEntry();
-      entry.deserialize(arr.get(i));
-
-      if (!entry.isValid()) {
-        BeeKeeper.getLog().severe("invalid menu entry", BeeUtils.bracket(i), arr.get(i));
-        break;
+          for (String s : arr) {
+            roots.add(Menu.restore(s));
+          }
+          drawMenu();
+        }
       }
-
-      if (entry.isRoot()) {
-        roots.add(entry);
-        rc++;
-      } else {
-        items.add(entry);
-        ic++;
-      }
-    }
-    BeeKeeper.getLog().finish(dur, NameUtils.addName("roots", rc), NameUtils.addName("items", ic));
-
-    setLoaded(true);
-    if (getOnLoad() != null) {
-      getOnLoad().execute();
-      setOnLoad(null);
-    }
-  }
-
-  public void loadMenu() {
-    BeeKeeper.getRpc().makeGetRequest(Service.LOAD_MENU);
+    });
+    return true;
   }
 
   public void registerMenuCallback(String service, MenuCallback callback) {
     Assert.notEmpty(service);
     menuCallbacks.put(BeeUtils.normalize(service), callback);
   }
-  
-  public void setItems(List<MenuEntry> items) {
-    this.items = items;
-  }
 
   public void setLayouts(List<String> layouts) {
     this.layouts = layouts;
   }
 
-  public void setLoaded(boolean loaded) {
-    this.loaded = loaded;
-  }
-
-  public void setOnLoad(BeeCommand onLoad) {
-    this.onLoad = onLoad;
-  }
-
-  public void setRoots(List<MenuEntry> roots) {
-    this.roots = roots;
-  }
-
-  public void showMenu() {
-    if (BeeUtils.allEmpty(getRoots(), getItems())) {
+  public void showMenuInfo() {
+    if (BeeUtils.isEmpty(getRoots())) {
       Global.showDialog("menu empty");
       return;
     }
+    Tree tree = new Tree();
 
-    String[] cols = new String[] {
-        "id", "parent", "order", "sep", "text", "service", "parameters",
-        "type", "style", "key", "visible"};
-
-    int rc = getRootCount();
-    int ic = getItemCount();
-
-    String[][] arr = new String[rc + ic][cols.length];
-    MenuEntry entry;
-    int j;
-
-    for (int i = 0; i < rc + ic; i++) {
-      if (i < rc) {
-        entry = getRoots().get(i);
-      } else {
-        entry = getItems().get(i - rc);
-      }
-      j = 0;
-
-      arr[i][j++] = entry.getId();
-      arr[i][j++] = entry.getParent();
-      arr[i][j++] = BeeUtils.transform(entry.getOrder());
-      arr[i][j++] = BeeUtils.transform(entry.getSeparators());
-      arr[i][j++] = entry.getText();
-      arr[i][j++] = entry.getService();
-      arr[i][j++] = entry.getParameters();
-      arr[i][j++] = entry.getType();
-      arr[i][j++] = entry.getStyle();
-      arr[i][j++] = entry.getKeyName();
-      arr[i][j++] = BeeUtils.toString(entry.isVisible());
+    for (Menu menu : getRoots()) {
+      TreeItem item = new TreeItem(menu.getLabel());
+      collectMenuInfo(item, menu);
+      tree.addItem(item);
     }
-    BeeKeeper.getScreen().showGrid(arr, cols);
+    BeeKeeper.getScreen().updateActivePanel(tree);
   }
 
   public void start() {
     clear();
   }
 
-  public boolean validState() {
-    return BeeUtils.allNotEmpty(getRoots(), getItems());
-  }
+  private void addEntry(Widget rw, int itemCnt, Menu item, Widget cw) {
+    String txt = item.getLabel();
+    String svc = null;
+    String opt = null;
 
-  private void addEntry(Widget rw, int itemCnt, MenuEntry item, Widget cw) {
-    String txt = item.getText();
-    String svc = item.getService();
-    String opt = item.getParameters();
-
-    boolean sepBefore = MenuConstants.isSeparatorBefore(item.getSeparators());
-    boolean sepAfter = MenuConstants.isSeparatorAfter(item.getSeparators());
+    if (item instanceof MenuItem) {
+      svc = ((MenuItem) item).getService();
+      opt = ((MenuItem) item).getParameters();
+    }
+    boolean sepBefore = item.hasSeparator();
+    boolean sepAfter = false;
 
     if (rw instanceof MenuBar) {
       MenuBar mb = (MenuBar) rw;
@@ -309,11 +213,38 @@ public class MenuManager implements Module {
   }
 
   private void clear() {
-    roots = new ArrayList<MenuEntry>();
-    items = new ArrayList<MenuEntry>();
+    roots = new ArrayList<Menu>();
   }
 
-  private Widget createMenu(int level, List<MenuEntry> entries, Widget parent) {
+  private void collectMenuInfo(TreeItem treeItem, Menu menu) {
+    treeItem.addItem("Name: " + menu.getName());
+
+    if (!BeeUtils.isEmpty(menu.getOrder())) {
+      treeItem.addItem("Order: " + menu.getOrder());
+    }
+    if (menu.hasSeparator()) {
+      treeItem.addItem("Separator: true");
+    }
+    if (menu instanceof MenuItem) {
+      MenuItem item = (MenuItem) menu;
+      treeItem.addItem("Service: " + item.getService());
+
+      if (!BeeUtils.isEmpty(item.getParameters())) {
+        treeItem.addItem("Parameters: " + item.getParameters());
+      }
+    } else if (menu instanceof MenuEntry) {
+      TreeItem cc = new TreeItem("Items");
+
+      for (Menu item : ((MenuEntry) menu).getItems()) {
+        TreeItem itm = new TreeItem(item.getLabel());
+        collectMenuInfo(itm, item);
+        cc.addItem(itm);
+      }
+      treeItem.addItem(cc);
+    }
+  }
+
+  private Widget createMenu(int level, List<Menu> entries, Widget parent) {
     Assert.betweenExclusive(level, MenuConstants.ROOT_MENU_INDEX, MenuConstants.MAX_MENU_DEPTH);
     Assert.notEmpty(entries);
 
@@ -330,23 +261,18 @@ public class MenuManager implements Module {
     Widget rw = createWidget(layout, opt, entries, level);
 
     boolean lastLevel = (level >= MenuConstants.MAX_MENU_DEPTH - 1);
-
-    List<MenuEntry> children = null;
-    Widget cw = null;
-
     int cnt = entries.size();
 
-    for (MenuEntry entry : entries) {
-      if (!lastLevel) {
-        children = MenuUtils.getChildren(getItems(), entry.getId(), true);
-      }
+    for (Menu entry : entries) {
+      List<Menu> children = null;
+      Widget cw = null;
 
-      if (BeeUtils.isEmpty(children)) {
-        cw = null;
-      } else {
+      if (!lastLevel && (entry instanceof MenuEntry)) {
+        children = ((MenuEntry) entry).getItems();
+      }
+      if (!BeeUtils.isEmpty(children)) {
         cw = createMenu(level + 1, children, rw);
       }
-
       addEntry(rw, cnt, entry, cw);
     }
 
@@ -354,7 +280,7 @@ public class MenuManager implements Module {
     return rw;
   }
 
-  private Widget createWidget(String layout, boolean opt, List<MenuEntry> entries, int level) {
+  private Widget createWidget(String layout, boolean opt, List<Menu> entries, int level) {
     Widget w = null;
 
     if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_HOR)) {
@@ -372,11 +298,9 @@ public class MenuManager implements Module {
       ((Tree) w).addSelectionHandler(new MenuSelectionHandler());
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_CELL_TREE)) {
-      w = new BeeCellTree(new MenuTreeViewModel(new MenuDataProvider(entries),
-          new MenuDataProvider(getItems())), null);
+      w = new BeeCellTree(new MenuTreeViewModel(new MenuDataProvider(entries)), null);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_CELL_BROWSER)) {
-      w = new BeeCellBrowser(new MenuTreeViewModel(new MenuDataProvider(entries),
-          new MenuDataProvider(getItems())), null);
+      w = new BeeCellBrowser(new MenuTreeViewModel(new MenuDataProvider(entries)), null);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_LIST)) {
       w = new MenuBar(level, true, BAR_TYPE.LIST, ITEM_TYPE.OPTION, opt);
@@ -408,10 +332,6 @@ public class MenuManager implements Module {
     return opt ? BAR_TYPE.TABLE : BAR_TYPE.FLOW;
   }
 
-  private int getItemCount() {
-    return (getItems() == null) ? 0 : getItems().size();
-  }
-
   private String getLayout(int idx) {
     Assert.isIndex(getLayouts(), idx);
     return getLayouts().get(idx);
@@ -422,19 +342,15 @@ public class MenuManager implements Module {
     return options[idx];
   }
 
-  private int getRootCount() {
-    return (getRoots() == null) ? 0 : getRoots().size();
-  }
-
   @SuppressWarnings("unchecked")
-  private void prepareWidget(Widget w, List<MenuEntry> entries) {
+  private void prepareWidget(Widget w, List<Menu> entries) {
     if (w instanceof MenuBar) {
       ((MenuBar) w).prepare();
     } else if (w instanceof BeeCellList) {
       int cnt = BeeUtils.length(entries);
       if (cnt > 0) {
-        ((BeeCellList<MenuEntry>) w).setRowData(0, entries);
-        ((BeeCellList<MenuEntry>) w).setRowCount(cnt);
+        ((BeeCellList<Menu>) w).setRowData(0, entries);
+        ((BeeCellList<Menu>) w).setRowCount(cnt);
       }
     }
   }
