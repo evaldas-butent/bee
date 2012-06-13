@@ -129,8 +129,7 @@
   position: absolute;
   overflow: hidden;
   border: 1px solid #444;
-  border-radius: 4px;
-  box-sizing: border-box;
+
   -webkit-user-select: none;
 }
 

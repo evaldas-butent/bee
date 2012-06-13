@@ -301,8 +301,13 @@ body, select {
 }
 
 .bee-MenuPopup .bee-MenuItem-label.bee-MenuItem-selected {
-  color: #636363;
-}   
+  color: black;
+}
+
+.bee-MenuPopup td:hover
+{
+  background: #f2f2f2
+}
 
 .bee-MenuItem-dt {
   padding-left: 0.5em;
@@ -441,9 +446,14 @@ body, select {
 }
 
 .bee-InputSpinner {
-  text-align: right;
-  border: 1px solid silver;
+  text-align: right;  
 }
+
+/* Disable buttons of spinners */
+/*.bee-InputSpinner::-webkit-inner-spin-button,
+.bee-InputSpinner::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+}*/
 
 .bee-configPanel {
   background-color: #ddd;
@@ -679,21 +689,20 @@ body, select {
 }
 
 .bee-CellGridBody:hover {
-  background-color: #f0efef;
+  background-color: #D5D5D5;
   cursor: pointer;
 }
 
 .bee-CellGridSelectedRow {
-  background-color: #d5d5d5 !important;
+  background-color: #c7e3f9 !important;
 }
 
 .bee-CellGridActiveRow {
-  background-color: #e1e1e1;
+  background-color: #c2f2ff;
 }
 
 .bee-CellGridActiveCell {
-  background-color: #d5d5d5 !important;
-  /* outline: #d5d5d5 solid 2px !important; */
+  background-color: #C7E3F9 !important;
   outline-offset: -1px;
   resize: both;
 }
@@ -737,7 +746,7 @@ body, select {
   position: absolute;
   background-color: #ffc;
   color: darkblue;
-  outline: #d5d5d5 solid 3px;
+  outline: #c7e3f9 solid 3px;
   outline-offset: -3px;
 }
 
@@ -916,7 +925,7 @@ body, select {
 }
 
 .bee-DataSelector-embedded {
-  color: #060;
+  color: #7D7D7D;
   font-weight: bolder;
 }
 
@@ -1243,24 +1252,23 @@ body, select {
 }
 
 .bee-TabbedPages-tabPanel {
-  border-bottom: 1px solid #BEBEBE;
+/*  border-bottom: 1px solid #BEBEBE;*/
 }
 
 .bee-TabbedPages-tab {
   display: inline-block;
   margin-top: 1px;
-  margin-right: -6px;
+/*  margin-right: -6px;*/
   height: 25px;
   color: #6D6D6D;
   font: 13px/25px Arial;
   background-color: #F2F2F2;
-  border-top-left-radius: 20px 50px;
-  border-top-right-radius: 20px 50px;
   border-style: solid;
   border-color: #E4E4E4;
   border-width: 1px 1px 0px;
   padding: 0 10px;
   cursor: pointer;
+  border-bottom: 1px solid #BEBEBE;
 }
 
 .bee-TabbedPages-tabSelected {
@@ -1269,11 +1277,13 @@ body, select {
   position: relative;
   z-index: 1;
   cursor: default;
+  border-bottom: none;
 }
 
 .bee-TabbedPages-content {
   overflow: auto;
 }
+
 
 .bee-StackHeader {
   cursor: pointer;
@@ -1444,42 +1454,19 @@ body, select {
   background: transparent;
 }
 
-.bee-InputText {
+input, textarea, select
+{
   color: #7D7D7D;
-  font: 12px Arial;
   background: white;
   border: 1px solid silver;
+  font-family: Arial;
+  -webkit-appearance: none;
 }
 
-.bee-DateBox, .bee-TimeBox {
-  color: #7D7D7D;
-  font: 12px Arial;
-  background: white;
-  border: 1px solid silver;
+.bee-ListBox.caption-left-content {
+  background-image: url(data:image/gif;base64,R0lGODlhDwAOAPcAAP////39/fz8/Pj4+PT09PPz8/Ly8vHx8e/v7+3t7ezs7Ovr6+fn5+Tk5OPj4+Li4uDg4N7e3sjIyMfHx8LCwsDAwLq5ua6urqysrKurq6ampqSkpJGRkZCQkIKCgoCAgHp6ev///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAADwAOAAAIQQABCBxIsKDBgwgTClzwoKFDhwoICnDw8KGAggcqNjRwkEFFBggHVByQMIHDBAoFNFgZQCGAAg8KuBSIcqZNlwEBADs=);
+  background-repeat: no-repeat;
+  background-position-y: 50%;
+  background-position-x: 100%;
 }
 
-.bee-InputArea {
-  color: #7D7D7D;
-  font: 12px Arial;
-  background: white;
-  border: 1px solid silver;
-}
-
-.bee-SearchBox {
-  color: #7D7D7D;
-  font: 12px Arial;
-  background: white;
-  border: 1px solid silver;
-}
-
-.bee-Header-caption {
-  font-weight: bold;
-}
-
-.bee-ListBox {
-	border: 1px solid silver;
-}
-
-.bee-InputSpinner {
-	border: 1px solid silver;
-}

@@ -81,7 +81,7 @@ public class Images {
     @Source("bookmark.png")
     ImageResource bookmark();
 
-    @Source("bookmark_add.png")
+    @Source("silver/bookmark_add_small.png")
     ImageResource bookmarkAdd();
 
     @Source("cancel.png")
@@ -99,7 +99,7 @@ public class Images {
     @Source("descending.gif")
     ImageResource descending();
 
-    @Source("edit.png")
+    @Source("silver/edit_small.png")
     ImageResource edit();
 
     @Source("silver/edit_add_small.png")
@@ -156,6 +156,9 @@ public class Images {
     @Source("previous.png")
     ImageResource previous();
 
+    @Source("silver/print_small.png")
+    ImageResource printSmall();
+
     @Source("red.gif")
     ImageResource red();
 
@@ -179,7 +182,7 @@ public class Images {
 
     @Source("silver/save_small.png")
     ImageResource saveSmall();
-
+    
     @Source("search.png")
     ImageResource search();
 
@@ -288,7 +291,9 @@ public class Images {
     map.put(key("noes"), resources.noes());
 
     map.put(key("ok"), resources.ok());
-
+    
+    map.put(key("print"), resources.printSmall());
+    
     map.put(key("play"), resources.play());
 
     map.put(key("previous"), resources.previous());
