@@ -1,4 +1,4 @@
-package com.butent.bee.client.calendar;
+package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
@@ -13,7 +13,7 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.calendar.InteractiveWidget;
 import com.butent.bee.client.modules.calendar.event.HasTimeBlockClickHandlers;
 import com.butent.bee.client.modules.calendar.event.HasUpdateHandlers;
 import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;

@@ -6,7 +6,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class CalendarConstants {
   
-  public static enum AppointmentStatus implements HasCaption {
+  public enum AppointmentStatus implements HasCaption {
     TENTATIVE("Planuojamas"),
     CONFIRMED("Patvirtintas"),
     DELAYED("Atidėtas"),
@@ -23,7 +23,7 @@ public class CalendarConstants {
     }
   }
 
-  public static enum ReminderMethod implements HasCaption {
+  public enum ReminderMethod implements HasCaption {
     EMAIL, SMS, POPUP;
 
     public String getCaption() {
@@ -31,7 +31,7 @@ public class CalendarConstants {
     } 
   }
 
-  public static enum ResponseStatus implements HasCaption {
+  public enum ResponseStatus implements HasCaption {
     NEEDS_ACTION, DECLINED, TENTATIVE, ACCEPTED;
 
     public String getCaption() {
@@ -39,7 +39,7 @@ public class CalendarConstants {
     }
   }
   
-  public static enum Transparency implements HasCaption {
+  public enum Transparency implements HasCaption {
     OPAQUE("Nepersidengiantis"), TRANSPARENT("Persidengiantis");
 
     private final String caption;
@@ -53,7 +53,7 @@ public class CalendarConstants {
     }
   }
 
-  public static enum Visibility implements HasCaption {
+  public enum Visibility implements HasCaption {
     DEFAULT, PUBLIC, PRIVATE, CONFIDENTIAL;
 
     public String getCaption() {
@@ -69,6 +69,39 @@ public class CalendarConstants {
     }
   }
   
+  public enum View implements HasCaption {
+    DAY("DayView", "Diena"),
+    DAYS("DaysView", "Dienos"),
+    WORK_WEEK("WorkWeekView", "Darbo savaitė"),
+    WEEK("WeekView", "Savaitė"),
+    MONTH("MonthView", "Mėnuo"),
+    RESOURCES("ResourceView", "Resursai");
+
+    private final String columnId;
+    private final String caption;
+
+    private View(String columnId, String caption) {
+      this.columnId = columnId;
+      this.caption = caption;
+    }
+
+    public String getCaption() {
+      return caption;
+    }
+
+    public String getCaption(int days) {
+      if (DAYS.equals(this)) {
+        return BeeUtils.toString(days) + ((days < 10) ? " dienos" : " dien.");
+      } else {
+        return caption;
+      }
+    }
+
+    public String getColumnId() {
+      return columnId;
+    }
+  }
+  
   public static final String CALENDAR_MODULE = "Calendar";
   public static final String CALENDAR_METHOD = CALENDAR_MODULE + "Method";
 
@@ -76,8 +109,11 @@ public class CalendarConstants {
   public static final String SVC_CREATE_APPOINTMENT = "create_appointment"; 
   public static final String SVC_UPDATE_APPOINTMENT = "update_appointment"; 
   public static final String SVC_GET_CALENDAR_APPOINTMENTS = "get_calendar_appointments"; 
+  public static final String SVC_SAVE_ACTIVE_VIEW = "save_active_view"; 
 
   public static final String PARAM_CALENDAR_ID = "calendar_id";
+  public static final String PARAM_USER_CALENDAR_ID = "user_calendar_id";
+  public static final String PARAM_ACTIVE_VIEW = "active_view"; 
   
   public static final String TBL_USER_CALENDARS = "UserCalendars";
   public static final String TBL_CONFIGURATION = "Configuration";
@@ -135,9 +171,7 @@ public class CalendarConstants {
   public static final String COL_WORKING_HOUR_START = "WorkingHourStart";
   public static final String COL_WORKING_HOUR_END = "WorkingHourEnd";
   public static final String COL_SCROLL_TO_HOUR = "ScrollToHour";
-  public static final String COL_OFFSET_HOUR_LABELS = "OffsetHourLabels";
 
-  public static final String COL_ENABLE_DRAG_DROP = "EnableDragDrop";
   public static final String COL_TIME_BLOCK_CLICK_NUMBER = "TimeBlockClickNumber";
   
   public static final String COL_FAVORITE = "Favorite";
@@ -215,6 +249,8 @@ public class CalendarConstants {
   public static final String COL_HEADER = "Header";
   public static final String COL_BODY = "Body";
   public static final String COL_FOOTER = "Footer";
+
+  public static final String COL_ACTIVE_VIEW = "ActiveView";
 
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";

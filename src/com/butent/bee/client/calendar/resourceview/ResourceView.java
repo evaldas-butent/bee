@@ -4,13 +4,13 @@ import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
 
-import com.butent.bee.client.calendar.CalendarView;
-import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
+import com.butent.bee.client.modules.calendar.CalendarView;
+import com.butent.bee.client.modules.calendar.CalendarWidget;
 import com.butent.bee.client.modules.calendar.dnd.DayDragController;
 import com.butent.bee.client.modules.calendar.dnd.DayDropController;
 import com.butent.bee.client.modules.calendar.dnd.ResizeController;
@@ -182,10 +182,8 @@ public class ResourceView extends CalendarView {
       } else {
         viewBody.getGrid().add(widget);
 
-        if (getSettings().isDragDropEnabled()) {
-          resizeController.makeDraggable(widget.getResizeHandle());
-          dragController.makeDraggable(widget, widget.getMoveHandle());
-        }
+        resizeController.makeDraggable(widget.getResizeHandle());
+        dragController.makeDraggable(widget, widget.getMoveHandle());
       }
     }
   }

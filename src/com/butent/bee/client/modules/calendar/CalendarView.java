@@ -1,11 +1,10 @@
-package com.butent.bee.client.calendar;
+package com.butent.bee.client.modules.calendar;
 
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.modules.calendar.event.UpdateEvent;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;

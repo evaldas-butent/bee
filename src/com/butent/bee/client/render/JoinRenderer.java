@@ -89,6 +89,10 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
     return result;
   }
 
+  public boolean isEmpty() {
+    return getItemCount() <= 0;
+  }
+  
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }

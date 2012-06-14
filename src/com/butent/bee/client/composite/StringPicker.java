@@ -211,6 +211,10 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     return editing;
   }
 
+  public boolean isEmpty() {
+    return getItemCount() <= 0;
+  }
+  
   public boolean isEnabled() {
     return enabled;
   }

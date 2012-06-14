@@ -24,11 +24,15 @@
     <Integer name="WorkingHourStart" defValue="8" />
     <Integer name="WorkingHourEnd" defValue="17" />
     <Integer name="ScrollToHour" defValue="8" />
-    <Boolean name="OffsetHourLabels" />
-
-    <Boolean name="EnableDragDrop" defValue="true" />
 
     <Integer name="TimeBlockClickNumber" defValue="1" />
+
+    <Boolean name="DayView" defValue="true" />
+    <Boolean name="DaysView" defValue="true" />
+    <Boolean name="WorkWeekView" defValue="true" />
+    <Boolean name="WeekView" defValue="true" />
+    <Boolean name="MonthView" defValue="true" />
+    <Boolean name="ResourceView" defValue="true" />
     
     <Relation name="Owner" relation="Users" defExpr="CURRENT_USER" />
   </Fields>

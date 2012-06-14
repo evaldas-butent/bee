@@ -10,7 +10,7 @@ import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class AppointmentWidget extends Flow implements HasAppointment {
+public class AppointmentWidget extends Flow {
 
   private final Appointment appointment;
   private final boolean multi;

@@ -1,23 +1,19 @@
 package com.butent.bee.shared.modules.calendar;
 
-import com.butent.bee.shared.Assert;
+import com.google.common.collect.Maps;
+
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.View;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.Codec;
 
+import java.util.EnumMap;
 import java.util.List;
 
-public class CalendarSettings implements BeeSerializable {
-
-  private enum Serial {
-    PIXELS_PER_INTERVAL, INTERVALS_PER_HOUR, WORKING_HOUR_START, WORKING_HOUR_END, SCROLL_TO_HOUR,
-    DEFAULT_DISPLAYED_DAYS, OFFSET_HOUR_LABELS, ENABLE_DRAG_DROP, TIME_BLOCK_CLICK_NUMBER
-  }
+public class CalendarSettings {
 
   public static CalendarSettings create(IsRow row, List<? extends IsColumn> columns) {
     CalendarSettings settings = new CalendarSettings();
@@ -26,17 +22,9 @@ public class CalendarSettings implements BeeSerializable {
     }
     return settings;
   }
-
-  public static CalendarSettings restore(String s) {
-    if (BeeUtils.isEmpty(s)) {
-      return null;
-    }
-
-    CalendarSettings settings = new CalendarSettings();
-    settings.deserialize(s);
-    return settings;
-  }
   
+  private long id;
+
   private int pixelsPerInterval;
   private int intervalsPerHour;
 
@@ -46,63 +34,34 @@ public class CalendarSettings implements BeeSerializable {
 
   private int defaultDisplayedDays;
 
-  private boolean offsetHourLabels;
-
-  private boolean enableDragDrop;
-
   private TimeBlockClick timeBlockClickNumber;
+  
+  private final EnumMap<View, Boolean> views;
+  
+  private View activeView;
 
   private CalendarSettings() {
+    this.views = Maps.newEnumMap(View.class);
+    
+    for (View view : View.values()) {
+      this.views.put(view, true);
+    }
   }
 
-  @Override
-  public void deserialize(String s) {
-    String[] arr = Codec.beeDeserializeCollection(s);
-    Serial[] members = Serial.values();
-    Assert.lengthEquals(arr, members.length);
-
-    for (int i = 0; i < members.length; i++) {
-      Serial member = members[i];
-      String value = arr[i];
-
-      switch (member) {
-        case DEFAULT_DISPLAYED_DAYS:
-          setDefaultDisplayedDays(BeeUtils.toInt(value));
-          break;
-        case ENABLE_DRAG_DROP:
-          setDragDropEnabled(Codec.unpack(value));
-          break;
-        case INTERVALS_PER_HOUR:
-          setIntervalsPerHour(BeeUtils.toInt(value));
-          break;
-        case OFFSET_HOUR_LABELS:
-          setOffsetHourLabels(Codec.unpack(value));
-          break;
-        case PIXELS_PER_INTERVAL:
-          setPixelsPerInterval(BeeUtils.toInt(value));
-          break;
-        case SCROLL_TO_HOUR:
-          setScrollToHour(BeeUtils.toInt(value));
-          break;
-        case TIME_BLOCK_CLICK_NUMBER:
-          setTimeBlockClickNumber(Codec.unpack(TimeBlockClick.class, value));
-          break;
-        case WORKING_HOUR_END:
-          setWorkingHourEnd(BeeUtils.toInt(value));
-          break;
-        case WORKING_HOUR_START:
-          setWorkingHourStart(BeeUtils.toInt(value));
-          break;
-      }
-    }  
+  public View getActiveView() {
+    return activeView;
   }
-
+  
   public int getDefaultDisplayedDays() {
     return defaultDisplayedDays;
   }
-  
+
   public int getHourHeight() {
     return getIntervalsPerHour() * getPixelsPerInterval(); 
+  }
+
+  public long getId() {
+    return id;
   }
 
   public int getIntervalsPerHour() {
@@ -124,24 +83,35 @@ public class CalendarSettings implements BeeSerializable {
   public int getWorkingHourEnd() {
     return workingHourEnd;
   }
-
+  
   public int getWorkingHourStart() {
     return workingHourStart;
+  }
+  
+  public boolean isAnyVisible() {
+    for (View view : View.values()) {
+      if (isVisible(view)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public boolean isDoubleClick() {
     return TimeBlockClick.DOUBLE.equals(getTimeBlockClickNumber());
-  }
-  
-  public boolean isDragDropEnabled() {
-    return enableDragDrop;
   }
 
   public boolean isSingleClick() {
     return TimeBlockClick.SINGLE.equals(getTimeBlockClickNumber());
   }
 
+  public boolean isVisible(View view) {
+    return BeeUtils.isTrue(views.get(view));
+  }
+
   public void loadFrom(IsRow row, List<? extends IsColumn> columns) {
+    setId(row.getId());
+
     setPixelsPerInterval(getInt(row, columns, CalendarConstants.COL_PIXELS_PER_INTERVAL));
     setIntervalsPerHour(getInt(row, columns, CalendarConstants.COL_INTERVALS_PER_HOUR));
 
@@ -151,115 +121,28 @@ public class CalendarSettings implements BeeSerializable {
 
     setDefaultDisplayedDays(getInt(row, columns, CalendarConstants.COL_DEFAULT_DISPLAYED_DAYS));
 
-    setDragDropEnabled(getBool(row, columns, CalendarConstants.COL_ENABLE_DRAG_DROP));
-
-    setOffsetHourLabels(getBool(row, columns, CalendarConstants.COL_OFFSET_HOUR_LABELS));
-
     int tbcn = getInt(row, columns, CalendarConstants.COL_TIME_BLOCK_CLICK_NUMBER);
-    if (BeeUtils.isOrdinal(TimeBlockClick.class, tbcn)) {
-      setTimeBlockClickNumber(TimeBlockClick.values()[tbcn]);
+    setTimeBlockClickNumber(BeeUtils.getConstant(TimeBlockClick.class, tbcn));
+    
+    for (View view : View.values()) {
+      views.put(view, getBool(row, columns, view.getColumnId()));
+    }
+    
+    int av;
+    if (DataUtils.contains(columns, CalendarConstants.COL_ACTIVE_VIEW)) {
+      av = getInt(row, columns, CalendarConstants.COL_ACTIVE_VIEW);
     } else {
-      setTimeBlockClickNumber(null);
+      av = BeeConst.UNDEF;
     }
+    setActiveView(BeeUtils.getConstant(View.class, av));
   }
 
-  public boolean offsetHourLabels() {
-    return offsetHourLabels;
-  }
-
-  public void saveTo(IsRow row, List<? extends IsColumn> columns) {
-    setInt(row, columns, CalendarConstants.COL_PIXELS_PER_INTERVAL, getPixelsPerInterval());
-    setInt(row, columns, CalendarConstants.COL_INTERVALS_PER_HOUR, getIntervalsPerHour());
-
-    setInt(row, columns, CalendarConstants.COL_WORKING_HOUR_START, getWorkingHourStart());
-    setInt(row, columns, CalendarConstants.COL_WORKING_HOUR_END, getWorkingHourEnd());
-    setInt(row, columns, CalendarConstants.COL_SCROLL_TO_HOUR, getScrollToHour());
-
-    setInt(row, columns, CalendarConstants.COL_DEFAULT_DISPLAYED_DAYS, getDefaultDisplayedDays());
-
-    setBool(row, columns, CalendarConstants.COL_ENABLE_DRAG_DROP, isDragDropEnabled());
-
-    setBool(row, columns, CalendarConstants.COL_OFFSET_HOUR_LABELS, offsetHourLabels());
-
-    int tbcn = (getTimeBlockClickNumber() == null)
-        ? BeeConst.UNDEF : getTimeBlockClickNumber().ordinal();
-    setInt(row, columns, CalendarConstants.COL_TIME_BLOCK_CLICK_NUMBER, tbcn);
-  }
-
-  @Override
-  public String serialize() {
-    Serial[] members = Serial.values();
-    Object[] arr = new Object[members.length];
-    int i = 0;
-
-    for (Serial member : members) {
-      switch (member) {
-        case DEFAULT_DISPLAYED_DAYS:
-          arr[i++] = getDefaultDisplayedDays();
-          break;
-        case ENABLE_DRAG_DROP:
-          arr[i++] = Codec.pack(isDragDropEnabled());
-          break;
-        case INTERVALS_PER_HOUR:
-          arr[i++] = getIntervalsPerHour();
-          break;
-        case OFFSET_HOUR_LABELS:
-          arr[i++] = Codec.pack(offsetHourLabels());
-          break;
-        case PIXELS_PER_INTERVAL:
-          arr[i++] = getPixelsPerInterval();
-          break;
-        case SCROLL_TO_HOUR:
-          arr[i++] = getScrollToHour();
-          break;
-        case TIME_BLOCK_CLICK_NUMBER:
-          arr[i++] = Codec.pack(getTimeBlockClickNumber());
-          break;
-        case WORKING_HOUR_END:
-          arr[i++] = getWorkingHourEnd();
-          break;
-        case WORKING_HOUR_START:
-          arr[i++] = getWorkingHourStart();
-          break;
-      }
-    }
-    return Codec.beeSerialize(arr);
+  public void setActiveView(View activeView) {
+    this.activeView = activeView;
   }
 
   public void setDefaultDisplayedDays(int defaultDisplayedDays) {
     this.defaultDisplayedDays = defaultDisplayedDays;
-  }
-
-  public void setDragDropEnabled(boolean enableDragDrop) {
-    this.enableDragDrop = enableDragDrop;
-  }
-
-  public void setIntervalsPerHour(int intervals) {
-    intervalsPerHour = intervals;
-  }
-
-  public void setOffsetHourLabels(boolean offsetHourLabels) {
-    this.offsetHourLabels = offsetHourLabels;
-  }
-
-  public void setPixelsPerInterval(int px) {
-    pixelsPerInterval = px;
-  }
-
-  public void setScrollToHour(int hour) {
-    scrollToHour = hour;
-  }
-
-  public void setTimeBlockClickNumber(TimeBlockClick timeBlockClickNumber) {
-    this.timeBlockClickNumber = timeBlockClickNumber;
-  }
-
-  public void setWorkingHourEnd(int end) {
-    workingHourEnd = end;
-  }
-
-  public void setWorkingHourStart(int start) {
-    workingHourStart = start;
   }
 
   private boolean getBool(IsRow row, List<? extends IsColumn> columns, String columnId) {
@@ -272,13 +155,31 @@ public class CalendarSettings implements BeeSerializable {
     return (value == null) ? BeeConst.UNDEF : value;
   }
 
-  private void setBool(IsRow row, List<? extends IsColumn> columns, String columnId, boolean b) {
-    Boolean value = b ? Boolean.TRUE : null;
-    row.setValue(DataUtils.getColumnIndex(columnId, columns), value);
+  private void setId(long id) {
+    this.id = id;
   }
 
-  private void setInt(IsRow row, List<? extends IsColumn> columns, String columnId, int i) {
-    Integer value = BeeConst.isUndef(i) ? null : Integer.valueOf(i);
-    row.setValue(DataUtils.getColumnIndex(columnId, columns), value);
+  private void setIntervalsPerHour(int intervals) {
+    intervalsPerHour = intervals;
+  }
+
+  private void setPixelsPerInterval(int px) {
+    pixelsPerInterval = px;
+  }
+
+  private void setScrollToHour(int hour) {
+    scrollToHour = hour;
+  }
+  
+  private void setTimeBlockClickNumber(TimeBlockClick timeBlockClickNumber) {
+    this.timeBlockClickNumber = timeBlockClickNumber;
+  }
+
+  private void setWorkingHourEnd(int end) {
+    workingHourEnd = end;
+  }
+
+  private void setWorkingHourStart(int start) {
+    workingHourStart = start;
   }
 }

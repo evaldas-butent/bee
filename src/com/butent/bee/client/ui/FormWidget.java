@@ -1576,8 +1576,8 @@ public enum FormWidget {
 
           Double width = XmlUtils.getAttributeDouble(child, HasDimensions.ATTR_WIDTH);
           if (BeeUtils.isPositive(width)) {
-            table.getColumnFormatter().setWidth(c, StyleUtils.toCssLength(width,
-                XmlUtils.getAttributeUnit(child, HasDimensions.ATTR_WIDTH_UNIT, Unit.PX)));
+            table.getColumnFormatter().setWidth(c, width,
+                XmlUtils.getAttributeUnit(child, HasDimensions.ATTR_WIDTH_UNIT, Unit.PX));
           }
           StyleUtils.updateAppearance(table.getColumnFormatter().getElement(c),
               child.getAttribute(UiConstants.ATTR_CLASS),

@@ -14,6 +14,7 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -73,6 +74,8 @@ public class CalendarModuleBean implements BeeModule {
       response = updateAppointment(reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_CALENDAR_APPOINTMENTS)) {
       response = getCalendarAppointments(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_SAVE_ACTIVE_VIEW)) {
+      response = saveActiveView(reqInfo);
 
     } else {
       String msg = BeeUtils.concat(1, "Calendar service not recognized:", svc);
@@ -286,13 +289,17 @@ public class CalendarModuleBean implements BeeModule {
         .addConstant(COL_WORKING_HOUR_START, settings.getWorkingHourStart())
         .addConstant(COL_WORKING_HOUR_END, settings.getWorkingHourEnd())
         .addConstant(COL_SCROLL_TO_HOUR, settings.getScrollToHour())
-        .addConstant(COL_DEFAULT_DISPLAYED_DAYS, settings.getDefaultDisplayedDays())
-        .addConstant(COL_ENABLE_DRAG_DROP, settings.isDragDropEnabled())
-        .addConstant(COL_OFFSET_HOUR_LABELS, settings.offsetHourLabels());
+        .addConstant(COL_DEFAULT_DISPLAYED_DAYS, settings.getDefaultDisplayedDays());
 
     if (settings.getTimeBlockClickNumber() != null) {
       sqlInsert.addConstant(COL_TIME_BLOCK_CLICK_NUMBER,
           settings.getTimeBlockClickNumber().ordinal());
+    }
+    
+    for (View view : View.values()) {
+      if (settings.isVisible(view)) {
+        sqlInsert.addConstant(view.getColumnId(), true);
+      }
     }
 
     ResponseObject response = qs.insertDataWithResponse(sqlInsert);
@@ -323,6 +330,24 @@ public class CalendarModuleBean implements BeeModule {
         .addConstant(COL_REMINDER_TYPE, rtId));
   }
 
+  private ResponseObject saveActiveView(RequestInfo reqInfo) {
+    Long rowId = BeeUtils.toLongOrNull(reqInfo.getParameter(PARAM_USER_CALENDAR_ID));
+    if (!DataUtils.isId(rowId)) {
+      return ResponseObject.error(SVC_SAVE_ACTIVE_VIEW, PARAM_USER_CALENDAR_ID,
+          "parameter not found");
+    }
+    
+    Integer activeView = BeeUtils.toIntOrNull(reqInfo.getParameter(PARAM_ACTIVE_VIEW));
+    if (!BeeUtils.isOrdinal(View.class, activeView)) {
+      return ResponseObject.error(SVC_SAVE_ACTIVE_VIEW, PARAM_ACTIVE_VIEW, "parameter not found");
+    }
+
+    SqlUpdate update = new SqlUpdate(TBL_USER_CALENDARS).addConstant(COL_ACTIVE_VIEW, activeView)
+        .setWhere(SqlUtils.equal(TBL_USER_CALENDARS, sys.getIdName(TBL_USER_CALENDARS), rowId));
+    
+    return qs.updateDataWithResponse(update);
+  }
+  
   private ResponseObject updateAppointment(RequestInfo reqInfo) {
     BeeRowSet newRowSet = BeeRowSet.restore(reqInfo.getContent());
     if (newRowSet.isEmpty()) {

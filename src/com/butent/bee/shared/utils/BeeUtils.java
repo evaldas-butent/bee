@@ -873,6 +873,19 @@ public class BeeUtils {
     }
   }
 
+  public static <E extends Enum<?>> E getConstant(Class<E> clazz, Integer ordinal) {
+    if (clazz == null || ordinal == null || ordinal < 0) {
+      return null;
+    }
+
+    E[] constants = clazz.getEnumConstants();
+    if (ordinal < constants.length) {
+      return constants[ordinal];
+    } else {
+      return null;
+    }
+  }
+  
   /**
    * If any {@code src} Collection element contains {@code ctxt} (case is ignored), than that
    * element is added to the new Collection and returned after all elements from {@code src}

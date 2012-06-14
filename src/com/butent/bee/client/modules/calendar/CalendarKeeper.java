@@ -285,6 +285,23 @@ public class CalendarKeeper {
     }
   }
   
+  static void saveActiveView(final CalendarSettings settings) {
+    if (settings != null && settings.getActiveView() != null) {
+      ParameterList params = createRequestParameters(SVC_SAVE_ACTIVE_VIEW);
+      params.addQueryItem(PARAM_USER_CALENDAR_ID, settings.getId());
+      params.addQueryItem(PARAM_ACTIVE_VIEW, settings.getActiveView().ordinal());
+
+      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+        public void onResponse(ResponseObject response) {
+          if (response.hasResponse(Integer.class)) {
+            BeeKeeper.getLog().debug(SVC_SAVE_ACTIVE_VIEW, settings.getActiveView().name(),
+                response.getResponse());
+          }
+        }
+      });
+    }
+  }
+  
   private static void createCommands() {
     BeeKeeper.getScreen().addCommandItem(new Html("Naujas vizitas",
         new Scheduler.ScheduledCommand() {
@@ -367,6 +384,11 @@ public class CalendarKeeper {
 
     final BeeRow oldRow = rowSet.getRow(0);
     final BeeRow newRow = DataUtils.cloneRow(oldRow);
+    
+    if (cp.getSettings().getActiveView() != null) {
+      Data.setValue(VIEW_USER_CALENDARS, newRow, COL_ACTIVE_VIEW,
+          cp.getSettings().getActiveView().ordinal());
+    }
 
     getSettingsForm().updateRow(newRow, false);
 

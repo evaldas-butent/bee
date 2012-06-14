@@ -14,11 +14,8 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
-
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.calendar.Calendar;
-import com.butent.bee.client.calendar.CalendarView.Type;
 import com.butent.bee.client.calendar.monthview.MonthView;
 import com.butent.bee.client.calendar.resourceview.ResourceView;
 import com.butent.bee.client.communication.ParameterList;
@@ -33,6 +30,7 @@ import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.modules.calendar.CalendarView.Type;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.modules.calendar.event.UpdateEvent;
@@ -50,6 +48,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -87,8 +86,10 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   private final Calendar calendar;
   private final Html dateBox;
-  private final TabBar viewTabs;
-  
+
+  private final TabBar viewTabs = new TabBar(STYLE_VIEW_PREFIX, false);
+  private final List<CalendarConstants.View> views = Lists.newArrayList();
+
   private final Timer timer;
 
   private HandlerRegistration appointmentEventRegistration;
@@ -126,7 +127,6 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     });
 
     calendar.suspendLayout();
-    calendar.setType(Type.DAY, calendar.getSettings().getDefaultDisplayedDays());
 
     HeaderView header = GWT.create(HeaderImpl.class);
     header.create(caption, false, true, EnumSet.of(UiOption.ROOT),
@@ -142,8 +142,18 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       }
     });
 
-    this.viewTabs = createViewWidget();
-    
+    int viewIndex = updateViews(settings);
+    activateView(views.get(viewIndex), false, true);
+
+    viewTabs.addSelectionHandler(new SelectionHandler<Integer>() {
+      public void onSelection(SelectionEvent<Integer> event) {
+        Integer index = event.getSelectedItem();
+        if (BeeUtils.isIndex(views, index)) {
+          activateView(views.get(index), true, false);
+        }
+      }
+    });
+
     this.timer = new Timer() {
       @Override
       public void run() {
@@ -279,86 +289,98 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   @Override
   protected void onUnload() {
-    super.onUnload();
-
-    if (!BeeKeeper.getScreen().isTemporaryDetach() && getAppointmentEventRegistration() != null) {
-      getAppointmentEventRegistration().removeHandler();
-      setAppointmentEventRegistration(null);
+    if (!BeeKeeper.getScreen().isTemporaryDetach()) {
+      if (getAppointmentEventRegistration() != null) {
+        getAppointmentEventRegistration().removeHandler();
+        setAppointmentEventRegistration(null);
+      }
+      
+      CalendarKeeper.saveActiveView(getSettings());
     }
+    super.onUnload();
+  }
+  
+  CalendarSettings getSettings() {
+    return calendar.getSettings();
   }
 
   void updateSettings(BeeRow row, List<BeeColumn> columns) {
-    int oldDays = calendar.getSettings().getDefaultDisplayedDays();
+    getSettings().loadFrom(row, columns);
 
-    calendar.suspendLayout();
-    calendar.getSettings().loadFrom(row, columns);
-
-    int newDays = calendar.getSettings().getDefaultDisplayedDays();
-
-    if (newDays != oldDays) {
-      viewTabs.getTabWidget(1).getElement().setInnerHTML(getDaysViewCaption(newDays));
-      if (viewTabs.getSelectedTab() == 1) {
-        calendar.setType(Type.DAY, newDays);
-      }
-    }
-
-    calendar.refresh();
-    calendar.resumeLayout();
+    int viewIndex = updateViews(getSettings());
+    activateView(views.get(viewIndex), true, true);
   }
 
-  private TabBar createViewWidget() {
-    TabBar tabBar = new TabBar(STYLE_VIEW_PREFIX, false);
+  private void activateView(CalendarConstants.View view, boolean refresh, boolean force) {
+    if (view == null) {
+      return;
+    }
+    if (!force && view.equals(calendar.getSettings().getActiveView())) {
+      return;
+    }
 
-    tabBar.addItem("Diena");
-    tabBar.addItem(getDaysViewCaption(calendar.getSettings().getDefaultDisplayedDays()));
-    tabBar.addItem("Darbo savaitė");
-    tabBar.addItem("Savaitė");
-    tabBar.addItem("Mėnuo");
-    tabBar.addItem("Resursai");
+    Type type = null;
 
-    tabBar.selectTab(1, false);
+    JustDate date = null;
+    int days = getSettings().getDefaultDisplayedDays();
 
-    tabBar.addSelectionHandler(new SelectionHandler<Integer>() {
-      public void onSelection(SelectionEvent<Integer> event) {
-        int tabIndex = event.getSelectedItem();
-        switch (tabIndex) {
-          case 0:
-            calendar.setType(Type.DAY, 1);
-            break;
-          case 1:
-            calendar.setType(Type.DAY, calendar.getSettings().getDefaultDisplayedDays());
-            break;
-          case 2:
-            setDate(TimeUtils.startOfWeek(calendar.getDate()));
-            calendar.setType(Type.DAY, 5);
-            break;
-          case 3:
-            calendar.setType(Type.DAY, 7);
-            break;
-          case 4:
-            calendar.setType(Type.MONTH);
-            break;
-          case 5:
-            calendar.setType(Type.RESOURCE);
-            break;
-        }
-        refreshDateBox();
-      }
-    });
-    return tabBar;
+    switch (view) {
+      case DAY:
+        type = Type.DAY;
+        days = 1;
+        break;
+
+      case DAYS:
+        type = Type.DAY;
+        break;
+
+      case WORK_WEEK:
+        date = TimeUtils.startOfWeek(calendar.getDate());
+        type = Type.DAY;
+        days = 5;
+        break;
+
+      case WEEK:
+        type = Type.DAY;
+        days = 7;
+        break;
+
+      case MONTH:
+        type = Type.MONTH;
+        break;
+
+      case RESOURCES:
+        type = Type.RESOURCE;
+        break;
+    }
+
+    if (refresh) {
+      calendar.suspendLayout();
+    }
+
+    if (date != null) {
+      calendar.setDate(date, days);
+    }
+    calendar.setType(type, days);
+
+    if (refresh) {
+      calendar.refresh();
+      calendar.resumeLayout();
+    }
+
+    refreshDateBox();
+
+    getSettings().setActiveView(view);
   }
 
   private HandlerRegistration getAppointmentEventRegistration() {
     return appointmentEventRegistration;
   }
 
-  private String getDaysViewCaption(int days) {
-    return BeeUtils.toString(days) + ((days < 10) ? " dienos" : " dien.");
-  }
-
   private void loadAppointments() {
-    ParameterList params = CalendarKeeper.createRequestParameters(SVC_GET_CALENDAR_APPOINTMENTS);
-    params.addQueryItem(PARAM_CALENDAR_ID, calendarId);
+    ParameterList params =
+        CalendarKeeper.createRequestParameters(CalendarConstants.SVC_GET_CALENDAR_APPOINTMENTS);
+    params.addQueryItem(CalendarConstants.PARAM_CALENDAR_ID, calendarId);
 
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
       public void onResponse(ResponseObject response) {
@@ -434,7 +456,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   private void setAppointments(BeeRowSet rowSet) {
     calendar.suspendLayout();
 
-    String property = rowSet.getTableProperty(VIEW_ATTENDEES);
+    String property = rowSet.getTableProperty(CalendarConstants.VIEW_ATTENDEES);
     if (!BeeUtils.isEmpty(property)) {
       calendar.setAttendees(DataUtils.parseList(property));
     }
@@ -442,9 +464,9 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     List<Appointment> appointments = Lists.newArrayList();
     for (BeeRow row : rowSet.getRows()) {
       Appointment app = new Appointment(row,
-          row.getProperty(VIEW_APPOINTMENT_ATTENDEES),
-          row.getProperty(VIEW_APPOINTMENT_PROPS),
-          row.getProperty(VIEW_APPOINTMENT_REMINDERS));
+          row.getProperty(CalendarConstants.VIEW_APPOINTMENT_ATTENDEES),
+          row.getProperty(CalendarConstants.VIEW_APPOINTMENT_PROPS),
+          row.getProperty(CalendarConstants.VIEW_APPOINTMENT_REMINDERS));
 
       appointments.add(app);
     }
@@ -483,18 +505,19 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         appointment.getAttendees().add(newAttendee);
       }
 
-      String viewName = VIEW_APPOINTMENT_ATTENDEES;
+      String viewName = CalendarConstants.VIEW_APPOINTMENT_ATTENDEES;
       long appId = appointment.getId();
 
-      Queries.delete(viewName,
-          Filter.and(ComparisonFilter.isEqual(COL_APPOINTMENT, new LongValue(appId)),
-              ComparisonFilter.isEqual(COL_ATTENDEE, new LongValue(oldAttendee))), null);
+      Queries.delete(viewName, Filter.and(
+          ComparisonFilter.isEqual(CalendarConstants.COL_APPOINTMENT, new LongValue(appId)),
+          ComparisonFilter.isEqual(CalendarConstants.COL_ATTENDEE, new LongValue(oldAttendee))),
+          null);
 
       if (add) {
-        List<BeeColumn> columns = Lists.newArrayList(Data.getColumn(viewName, COL_APPOINTMENT),
-            Data.getColumn(viewName, COL_ATTENDEE));
-        List<String> values = Lists.newArrayList(Long.toString(appId),
-            Long.toString(newAttendee));
+        List<BeeColumn> columns = Lists.newArrayList(
+            Data.getColumn(viewName, CalendarConstants.COL_APPOINTMENT),
+            Data.getColumn(viewName, CalendarConstants.COL_ATTENDEE));
+        List<String> values = Lists.newArrayList(Long.toString(appId), Long.toString(newAttendee));
 
         Queries.insert(viewName, columns, values, null);
       }
@@ -505,15 +528,18 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       return changed;
     }
 
-    String viewName = VIEW_APPOINTMENTS;
+    String viewName = CalendarConstants.VIEW_APPOINTMENTS;
     final BeeRow row = appointment.getRow();
 
-    List<BeeColumn> columns = Lists.newArrayList(Data.getColumn(viewName, COL_START_DATE_TIME),
-        Data.getColumn(viewName, COL_END_DATE_TIME));
+    List<BeeColumn> columns = Lists.newArrayList(
+        Data.getColumn(viewName, CalendarConstants.COL_START_DATE_TIME),
+        Data.getColumn(viewName, CalendarConstants.COL_END_DATE_TIME));
 
-    List<String> oldValues = Lists.newArrayList(Data.getString(viewName, row, COL_START_DATE_TIME),
-        Data.getString(viewName, row, COL_END_DATE_TIME));
-    List<String> newValues = Lists.newArrayList(BeeUtils.toString(newStart.getTime()),
+    List<String> oldValues = Lists.newArrayList(
+        Data.getString(viewName, row, CalendarConstants.COL_START_DATE_TIME),
+        Data.getString(viewName, row, CalendarConstants.COL_END_DATE_TIME));
+    List<String> newValues = Lists.newArrayList(
+        BeeUtils.toString(newStart.getTime()),
         BeeUtils.toString(newEnd.getTime()));
 
     Queries.update(viewName, row.getId(), row.getVersion(), columns, oldValues, newValues,
@@ -528,5 +554,38 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     appointment.setEnd(newEnd);
 
     return true;
+  }
+
+  private int updateViews(CalendarSettings settings) {
+    if (!views.isEmpty()) {
+      viewTabs.clear();
+      views.clear();
+    }
+
+    boolean anyVisible = settings.isAnyVisible();
+    String caption;
+
+    for (CalendarConstants.View view : CalendarConstants.View.values()) {
+      if (!anyVisible || settings.isVisible(view)) {
+        if (CalendarConstants.View.DAYS.equals(view)) {
+          caption = view.getCaption(settings.getDefaultDisplayedDays());
+        } else {
+          caption = view.getCaption();
+        }
+
+        viewTabs.addItem(caption);
+        views.add(view);
+      }
+    }
+
+    int index;
+    if (settings.getActiveView() != null && views.contains(settings.getActiveView())) {
+      index = views.indexOf(settings.getActiveView());
+    } else {
+      index = 0;
+    }
+
+    viewTabs.selectTab(index, false);
+    return index;
   }
 }

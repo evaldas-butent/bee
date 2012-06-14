@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.calendar.dnd;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.calendar.CalendarView;
 import com.butent.bee.client.dnd.AbstractDragController;
 import com.butent.bee.client.dnd.DragEndEvent;
 import com.butent.bee.client.dnd.DragHandler;
@@ -13,6 +12,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
+import com.butent.bee.client.modules.calendar.CalendarView;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;

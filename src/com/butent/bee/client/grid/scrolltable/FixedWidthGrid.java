@@ -27,13 +27,6 @@ public class FixedWidthGrid extends GridTable {
     }
   }
 
-  public class FixedWidthGridColumnFormatter extends ColumnFormatter {
-    @Override
-    public void setWidth(int column, String width) {
-      Assert.unsupported("setWidth is not supported");
-    }
-  }
-
   public class FixedWidthGridRowFormatter extends RowFormatter {
     @Override
     protected Element getRawElement(int row) {
@@ -61,7 +54,7 @@ public class FixedWidthGrid extends GridTable {
 
     setRowFormatter(new FixedWidthGridRowFormatter());
     setCellFormatter(new FixedWidthGridCellFormatter());
-    setColumnFormatter(new FixedWidthGridColumnFormatter());
+    setColumnFormatter(new ColumnFormatter());
 
     ghostRow = GridUtils.createGhostRow();
     DOM.insertChild(getBodyElement(), ghostRow, 0);

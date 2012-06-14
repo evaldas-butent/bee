@@ -2,38 +2,47 @@
 <FlexTable xmlns="http://www.butent.com/widget"
   cellSpacing="10">
   
-  <row>
-    <Label html="Dienos:" />
-    <InputSpinner source="DefaultDisplayedDays" minValue="2" maxValue="99" />
-  </row>
-
+  <col index="1" width="100" />
+  
   <row>
     <Label html="Intervalų skaičius valandoje:" />
     <InputSpinner source="IntervalsPerHour" minValue="1" maxValue="30" />
+    <Label html="Vaizdai:" />
   </row>
 
   <row>
     <Label html="Intervalo aukštis px:" />
     <InputSpinner source="PixelsPerInterval" minValue="1" maxValue="30" />
+    <CheckBox source="DayView" html="Diena" />
+  </row>
+
+  <row>
+    <Label html="Dienos:" />
+    <InputSpinner source="DefaultDisplayedDays" minValue="2" maxValue="99" />
+    <CheckBox source="DaysView" html="Dienos" />
   </row>
 
   <row>
     <Label html="Darbo dienos pradžia:" />
     <InputSpinner source="WorkingHourStart" minValue="0" maxValue="23" />
+    <CheckBox source="WorkWeekView" html="Darbo savaitė" />
   </row>
 
   <row>
     <Label html="Darbo dienos pabaiga:" />
     <InputSpinner source="WorkingHourEnd" minValue="0" maxValue="23" />
+    <CheckBox source="WeekView" html="Savaitė" />
   </row>
 
   <row>
     <Label html="Rodyti nuo valandos:" />
     <InputSpinner source="ScrollToHour" minValue="0" maxValue="23" />
+    <CheckBox source="MonthView" html="Mėnuo" />
   </row>
 
   <row>
     <Label html="Pelės spragtelėjimai" />
     <Radio source="TimeBlockClickNumber" itemKey="TimeBlockClick" />
+    <CheckBox source="ResourceView" html="Resursai" />
   </row>
 </FlexTable>

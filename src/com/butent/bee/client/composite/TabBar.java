@@ -318,6 +318,10 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   public void insertTab(Widget widget, int beforeIndex) {
     insertTabWidget(widget, beforeIndex);
   }
+
+  public boolean isEmpty() {
+    return getItemCount() <= 0;
+  }
   
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();

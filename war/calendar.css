@@ -344,7 +344,7 @@
   position: absolute;
   top: 0;
   left: 0;
-/*  border-radius: 3px; */
+  border-radius: 3px;
 }
 
 .bee-cal-Panel-navContainer {
@@ -364,7 +364,7 @@
   position: absolute;
   top: 0;
   left: 200px;
-/*  border-radius: 3px;*/
+  border-radius: 3px;
 }
 
 .bee-cal-Panel-view-panel {
@@ -385,7 +385,7 @@
 
 .bee-cal-Panel-view-item {
   margin-left: 3px;
-/*  border-radius: 3px;*/
+  border-radius: 3px;
 }  
 .bee-cal-Panel-view-item-selected {
   cursor: default;

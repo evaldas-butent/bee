@@ -1,8 +1,7 @@
-package com.butent.bee.client.calendar;
+package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.shared.BeeConst;
 
 import java.util.Collection;

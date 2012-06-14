@@ -85,6 +85,10 @@ public class ListRenderer extends AbstractCellRenderer implements HasItems, HasV
     return valueStartIndex;
   }
 
+  public boolean isEmpty() {
+    return getItemCount() <= 0;
+  }
+  
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }

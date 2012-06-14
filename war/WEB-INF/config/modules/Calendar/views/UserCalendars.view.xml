@@ -19,10 +19,17 @@
     <SimpleColumn name="WorkingHourStart" />
     <SimpleColumn name="WorkingHourEnd" />
     <SimpleColumn name="ScrollToHour" />
-    <SimpleColumn name="OffsetHourLabels" />
 
-    <SimpleColumn name="EnableDragDrop" />
     <SimpleColumn name="TimeBlockClickNumber" />
+
+    <SimpleColumn name="DayView" />
+    <SimpleColumn name="DaysView" />
+    <SimpleColumn name="WorkWeekView" />
+    <SimpleColumn name="WeekView" />
+    <SimpleColumn name="MonthView" />
+    <SimpleColumn name="ResourceView" />
+
+    <SimpleColumn name="ActiveView" />
   </Columns>
   <Order>
     <OrderBy column="CalendarName" />

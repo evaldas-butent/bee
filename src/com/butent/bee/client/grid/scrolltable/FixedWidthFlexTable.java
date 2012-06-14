@@ -58,13 +58,6 @@ public class FixedWidthFlexTable extends FlexTable {
     }
   }
 
-  public class FixedWidthFlexColumnFormatter extends ColumnFormatter {
-    @Override
-    public void setWidth(int column, String width) {
-      Assert.unsupported("setWidth is not supported");
-    }
-  }
-
   public class FixedWidthFlexRowFormatter extends RowFormatter {
     @Override
     protected Element getRawElement(int row) {
@@ -94,7 +87,7 @@ public class FixedWidthFlexTable extends FlexTable {
     StyleUtils.zeroWidth(tableElem);
 
     setCellFormatter(new FixedWidthFlexCellFormatter());
-    setColumnFormatter(new FixedWidthFlexColumnFormatter());
+    setColumnFormatter(new ColumnFormatter());
     setRowFormatter(new FixedWidthFlexRowFormatter());
 
     ghostRow = GridUtils.createGhostRow();

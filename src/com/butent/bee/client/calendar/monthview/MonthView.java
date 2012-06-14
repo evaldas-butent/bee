@@ -11,8 +11,6 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.calendar.CalendarFormat;
-import com.butent.bee.client.calendar.CalendarView;
-import com.butent.bee.client.calendar.CalendarWidget;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
@@ -23,6 +21,8 @@ import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
+import com.butent.bee.client.modules.calendar.CalendarView;
+import com.butent.bee.client.modules.calendar.CalendarWidget;
 import com.butent.bee.client.modules.calendar.dnd.MonthDropController;
 import com.butent.bee.client.modules.calendar.dnd.MonthDragController;
 import com.butent.bee.client.widget.BeeLabel;
@@ -305,7 +305,7 @@ public class MonthView extends CalendarView {
 
     placeItemInGrid(widget, appointment, multi, colStart, colEnd, row, cellPosition);
 
-    if (getSettings().isDragDropEnabled() && !multi) {
+    if (!multi) {
       dragController.makeDraggable(widget, widget.getCompactBar());
     }
 

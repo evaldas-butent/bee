@@ -209,8 +209,12 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
       UIObject.setStylePrimaryName(ensureColumn(column), styleName);
     }
 
-    public void setWidth(int column, String width) {
-      DOM.setElementProperty(ensureColumn(column), "width", width);
+    public void setWidth(int column, double width, Unit unit) {
+      StyleUtils.setWidth(ensureColumn(column), width, unit);
+    }
+
+    public void setWidth(int column, int width) {
+      StyleUtils.setWidth(ensureColumn(column), width);
     }
 
     private Element ensureColumn(int col) {
