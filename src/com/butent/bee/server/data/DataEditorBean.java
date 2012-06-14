@@ -403,10 +403,10 @@ public class DataEditorBean {
     } else {
       Map<Long, Boolean> bitMap = Maps.newHashMap();
 
-      for (long bit : usr.getUsers().keySet()) {
+      for (long bit : usr.getUsers()) {
         bitMap.put(-bit, Longs.contains(bits, -bit));
       }
-      for (long bit : usr.getRoles().keySet()) {
+      for (long bit : usr.getRoles()) {
         bitMap.put(bit, Longs.contains(bits, bit));
       }
       if (table.updateStateActive(state, Longs.toArray(bitMap.keySet()))) {

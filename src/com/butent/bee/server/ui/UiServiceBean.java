@@ -654,11 +654,11 @@ public class UiServiceBean {
 
     } else if (BeeUtils.same(cmd, "states")) {
       sys.initStates();
-      response.addInfo("Extensions OK");
+      response.addInfo("States OK");
 
     } else if (BeeUtils.same(cmd, "tables")) {
       sys.initTables();
-      response.addInfo("Extensions OK");
+      response.addInfo("Tables OK");
 
     } else if (BeeUtils.same(cmd, "views")) {
       sys.initViews();
@@ -667,6 +667,10 @@ public class UiServiceBean {
     } else if (BeeUtils.same(cmd, "grids")) {
       ui.initGrids();
       response.addInfo("Grids OK");
+
+    } else if (BeeUtils.same(cmd, "menu")) {
+      ui.initMenu();
+      response.addInfo("Menu OK");
 
     } else if (BeeUtils.startsSame(cmd, "check")) {
       String err = null;

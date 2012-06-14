@@ -1,5 +1,5 @@
 body, select {
-/*   color: #7F7F7F; */
+  color: #7F7F7F;
   font-family: Arial, sans-serif;
   font-size: small;
 }
@@ -176,7 +176,7 @@ body, select {
   background-color: #F2F2F2;
   padding: 0 10px;
   border: 1px solid #E4E4E4;
-  border-radius: 2px;
+ /* border-radius: 2px;*/
   cursor: pointer;
 }
 .bee-MainCommandPanelItem:hover {
@@ -441,7 +441,7 @@ body, select {
 
 .bee-InputInteger,.bee-InputLong,.bee-InputNumber {
   text-align: right;
-/*   border: 1px solid silver; */
+  border: 1px solid silver;
 }
 
 .bee-InputSpinner {
@@ -589,6 +589,15 @@ body, select {
   background: #F0EFEF;  
 }
 
+.bee-WindowFooter .bee-Label
+{
+  background-color: #C7E3F9;
+}
+
+.bee-Label {
+  font-size: 13px;
+}
+
 .bee-Header-message {
   margin-left: 1em;
 }
@@ -688,7 +697,7 @@ body, select {
 }
 
 .bee-CellGridBody:hover {
-  background-color: #D5D5D5;
+  background-color: #D5D5D5 !important;
   cursor: pointer;
 }
 
@@ -698,6 +707,12 @@ body, select {
 
 .bee-CellGridActiveRow {
   background-color: #c2f2ff;
+}
+
+.bee-CellGridSelectedRow.bee-CellGridActiveCell {
+  background-color: #c2f2ff !important;
+  outline-offset: -1px;
+  resize: both;
 }
 
 .bee-CellGridActiveCell {
@@ -1251,23 +1266,25 @@ body, select {
 }
 
 .bee-TabbedPages-tabPanel {
-/*  border-bottom: 1px solid #BEBEBE;*/
+  border-bottom: 1px solid #BEBEBE;
 }
 
 .bee-TabbedPages-tab {
   display: inline-block;
   margin-top: 1px;
-/*  margin-right: -6px;*/
   height: 25px;
   color: #6D6D6D;
   font: 13px/25px Arial;
   background-color: #F2F2F2;
   border-style: solid;
   border-color: #E4E4E4;
-  border-width: 1px 1px 0px;
+  border-width: 1px 1px 1px;
   padding: 0 10px;
   cursor: pointer;
-  border-bottom: 1px solid #BEBEBE;
+  margin-bottom: 5px;
+  margin-left: 5px; 
+  margin-right: 5px;
+/*  border-bottom: 1px solid #BEBEBE;*/
 }
 
 .bee-TabbedPages-tabSelected {
@@ -1277,6 +1294,8 @@ body, select {
   z-index: 1;
   cursor: default;
   border-bottom: none;
+  height: 35px;
+  margin-bottom: -1px;
 }
 
 .bee-TabbedPages-content {
@@ -1453,20 +1472,70 @@ body, select {
   background: transparent;
 }
 
-/*
-input, textarea, select
-{
+input, textarea, select {
   color: #7D7D7D;
   background: white;
   border: 1px solid silver;
   font-family: Arial;
+  -webkit-appearance: none;
+  background: white;
+  font-size: 13px;
 }
 
-.bee-ListBox.caption-left-content {
+.bee-ListBox[size="1"], .bee-ListBox.caption-left-content {
   background-image: url(data:image/gif;base64,R0lGODlhDwAOAPcAAP////39/fz8/Pj4+PT09PPz8/Ly8vHx8e/v7+3t7ezs7Ovr6+fn5+Tk5OPj4+Li4uDg4N7e3sjIyMfHx8LCwsDAwLq5ua6urqysrKurq6ampqSkpJGRkZCQkIKCgoCAgHp6ev///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAADwAOAAAIQQABCBxIsKDBgwgTClzwoKFDhwoICnDw8KGAggcqNjRwkEFFBggHVByQMIHDBAoFNFgZQCGAAg8KuBSIcqZNlwEBADs=);
   background-repeat: no-repeat;
   background-position-y: 50%;
   background-position-x: 100%;
 }
-*/
 
+input[type="checkbox"] {
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAtCAIAAAA7ojyxAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAdBJREFUSEvtVk2rglAQ1Rb2/xeV9gXtahe0a91OCCSEIAlskUaPrMhX2dc7MHK7aemtV/R4NIvLTeeee2acOZO8WCx2u91+vz+dTrIsSwIGt+PxmMlkaM1ms4qiSNPpdL1eB0EAOKyptt1uyYdtlsul53mS67qEImLwBHfyZKd835/NZvcBXb1stVpdAAnyAqOI58sYieRIKLQ3AyFl0WS/mRGu/3+MWK88O7TJZELd/Nuv5jgOoTCqcUS+6eNvU0IjXBGmZyBIVAKd1JDD7oeUYPcdM/7hVQd2AmINk4gYBPfrUQPKZrORoPlPsT8IhAiRHMwSFBRWEUMNw5mt8/kcif/MtXN5P2GuUeuigCP99IgeGYZRKpWGwyHfgEJAvAZYllUoFPL5PNZer8eEIQkIToPBAJXCMjIej4vFIlBgqqrats1ULAkIfpqmIQpsEAUqtlqtEgqs3+/zaboJhFovl8u5XI4u73a7tVqNoei6HlG7JEamaQIChwHH8oKfnU6HF2XilZLs0WhUqVQotUSn3W6zf4j01dKBcOBwOEDw6vU6YTWbTagXn5r75hrautVqNRoNqO0t8Q5DS5hrFAhGA+ASRkAI9Jlr8cH3qrn2Ay5d4T8JLI1+AAAAAElFTkSuQmCC);
+  background-repeat: no-repeat;
+  margin-bottom: -5px;
+  margin-top: 5px;
+  height: 21px;
+  width: 24px;
+  border: none;
+  cursor:pointer;
+}
+
+input[type="checkbox"]:checked { 
+  background-position-y: -24px;
+}
+
+input[type="checkbox"]:hover { 
+  border: 1px solid #dfdfdf;
+  border-radius: 2px;
+}
+
+input[type="radio"] {
+  -webkit-appearance: radio;
+}
+
+input[type="text"] {
+
+}
+
+input[type="search"] {
+  /*font-size:medium;*/
+}
+
+button[type="button"] {
+  background-color: #EEE;
+  color: #333;
+  border: 1px solid #CCC;
+  padding: 4px 8px 4px 8px;
+}
+
+button[type="button"]:active {
+  border-style: inset;
+}
+
+.bee-Header-caption {
+  font-weight: bold;
+}
+
+span[data-role="caption"] {
+  font-size: 13px;  
+}

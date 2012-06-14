@@ -7,7 +7,7 @@
   editForm="Task" editShowId="true" editSave="false" newRowForm="NewTask" newRowPopup="true"
   cacheData="false"
   >
-  <north size="40">
+  <north size="60">
     <w:FlowPanel class="flexBox-horizontal-center" style="background-color: #f8f8f8; font-family: Tahoma; font-size: 12px;">
       <w:FlowPanel>
         <w:CheckBox name="Scheduled" html="Suplanuotos" />

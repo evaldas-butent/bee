@@ -1,15 +1,9 @@
 package com.butent.bee.client;
 
-import com.google.common.collect.Maps;
-
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
-import com.butent.bee.shared.utils.BeeUtils;
-
-import java.util.Map;
 
 /**
  * gets user login status, session ID and stores them.
@@ -30,7 +24,7 @@ public class UserInfo implements Module {
     }
     return userData.getProperty("dsn");
   }
-  
+
   public Filter getFilter(String column) {
     if (isLoggedIn()) {
       return ComparisonFilter.isEqual(column, new LongValue(getUserId()));
@@ -46,7 +40,7 @@ public class UserInfo implements Module {
   public String getLastName() {
     return isLoggedIn() ? userData.getLastName() : null;
   }
-  
+
   public String getLogin() {
     if (!isLoggedIn()) {
       return null;
@@ -71,6 +65,13 @@ public class UserInfo implements Module {
     }
   }
 
+  public String getProperty(String property) {
+    if (!isLoggedIn()) {
+      return null;
+    }
+    return userData.getProperty(property);
+  }
+
   public String getSessionId() {
     return sessionId;
   }
@@ -89,33 +90,32 @@ public class UserInfo implements Module {
     return userData.getUserSign();
   }
 
-  public Map<String, String> getViews() {
+  public boolean hasEventRight(String object, String state) {
     if (!isLoggedIn()) {
-      return null;
+      return false;
     }
+    return userData.hasEventRight(object, state);
+  }
 
-    String views = userData.getProperty("views");
-    if (BeeUtils.isEmpty(views)) {
-      views = Settings.getProperty("views");
+  public boolean hasFormRight(String object, String state) {
+    if (!isLoggedIn()) {
+      return false;
     }
-    if (BeeUtils.isEmpty(views)) {
-      return null;
-    }
+    return userData.hasFormRight(object, state);
+  }
 
-    Map<String, String> result = Maps.newLinkedHashMap();
-    for (String view : BeeUtils.split(views, BeeConst.STRING_COMMA)) {
-      if (BeeUtils.isEmpty(view)) {
-        continue;
-      }
-
-      String name = BeeUtils.getPrefix(view, BeeConst.CHAR_COLON);
-      if (BeeUtils.isEmpty(name)) {
-        result.put(view, view);
-      } else {
-        result.put(name, BeeUtils.getSuffix(view, BeeConst.CHAR_COLON));
-      }
+  public boolean hasGridRight(String object, String state) {
+    if (!isLoggedIn()) {
+      return false;
     }
-    return result;
+    return userData.hasGridRight(object, state);
+  }
+
+  public boolean hasMenuRight(String object, String state) {
+    if (!isLoggedIn()) {
+      return false;
+    }
+    return userData.hasMenuRight(object, state);
   }
 
   public void init() {

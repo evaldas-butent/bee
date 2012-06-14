@@ -167,7 +167,6 @@ public class SystemBean {
       }
     }
     SqlSelect union = null;
-    Map<Long, String> roles = usr.getRoles();
 
     for (BeeTable table : tables) {
       String tbl = table.getName();
@@ -183,8 +182,8 @@ public class SystemBean {
       }
       String stateAlias = joinState(ss, tbl, null, state.getName());
 
-      for (long roleId : roles.keySet()) {
-        String colName = state.getName() + roleId + roles.get(roleId);
+      for (long roleId : usr.getRoles()) {
+        String colName = state.getName() + roleId + usr.getRoleName(roleId);
 
         if (BeeUtils.isEmpty(stateAlias)) {
           if (allMode && state.isChecked()) {

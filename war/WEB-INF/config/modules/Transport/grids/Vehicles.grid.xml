@@ -5,7 +5,7 @@
 
   name="Vehicles" viewName="Vehicles" editForm="Vehicle"
   >
-  <west size="150" splitterSize="2">
+  <west size="160" splitterSize="2">
     <w:DataTree name="VehicleModels" caption="Modeliai" source="VehicleModels" parentColumn="Parent">
       <w:calc>
         <ui:expression>row.Name</ui:expression>

@@ -1,10 +1,10 @@
 package com.butent.bee.server.data;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.SetMultimap;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.i18n.I18nUtils;
@@ -14,6 +14,7 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.UserData;
@@ -26,6 +27,7 @@ import com.butent.bee.shared.utils.LogUtils;
 import java.io.IOException;
 import java.io.StringReader;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -50,22 +52,27 @@ public class UserServiceBean {
 
   private class UserInfo {
     private UserData userData;
+    private Collection<Long> userRoles;
     private boolean online = false;
     private Locale locale = Localized.defaultLocale;
 
-    public UserInfo(UserData userData) {
+    private UserInfo(UserData userData) {
       this.userData = userData;
     }
 
-    public Locale getLocale() {
+    private Locale getLocale() {
       return locale;
     }
 
-    public UserData getUserData() {
+    private Collection<Long> getRoles() {
+      return userRoles;
+    }
+
+    private UserData getUserData() {
       return userData;
     }
 
-    public boolean isOnline() {
+    private boolean isOnline() {
       return online;
     }
 
@@ -112,6 +119,11 @@ public class UserServiceBean {
       userData.setProperties(props);
       return this;
     }
+
+    private UserInfo setRoles(Collection<Long> userRoles) {
+      this.userRoles = userRoles;
+      return this;
+    }
   }
 
   private static Logger logger = Logger.getLogger(UserServiceBean.class.getName());
@@ -146,9 +158,9 @@ public class UserServiceBean {
   QueryServiceBean qs;
 
   private final Map<Long, String> roleCache = Maps.newHashMap();
-  private final Map<Long, String> userCache = Maps.newHashMap();
+  private final BiMap<Long, String> userCache = HashBiMap.create();
   private Map<String, UserInfo> infoCache = Maps.newHashMap();
-  private Map<RightsObjectType, Map<String, SetMultimap<BeeState, Long>>> rightsCache = Maps
+  private Map<RightsObjectType, Map<String, Multimap<BeeState, Long>>> rightsCache = Maps
       .newHashMap();
 
   public String getCurrentUser() {
@@ -161,34 +173,31 @@ public class UserServiceBean {
     return getUserId(getCurrentUser());
   }
 
-  public Map<Long, String> getRoles() {
-    return ImmutableMap.copyOf(roleCache);
+  public String getRoleName(long roleId) {
+    Assert.contains(roleCache, roleId);
+    return roleCache.get(roleId);
   }
 
-  public String getUser(long userId) {
-    Map<Long, String> users = getUsers();
-    Assert.contains(users, userId);
-    return users.get(userId);
+  public Set<Long> getRoles() {
+    return roleCache.keySet();
   }
 
   public long getUserId(String user) {
-    Map<Long, String> users = getUsers();
+    Assert.contains(userCache.inverse(), key(user));
+    return userCache.inverse().get(key(user));
+  }
 
-    for (long userId : users.keySet()) {
-      if (BeeUtils.same(user, users.get(userId))) {
-        return userId;
-      }
-    }
-    Assert.untouchable();
-    return 0;
+  public String getUserName(long userId) {
+    Assert.contains(userCache, userId);
+    return userCache.get(userId);
   }
 
   public long[] getUserRoles(long userId) {
-    return Longs.toArray(getUserInfo(userId).getUserData().getRoles());
+    return Longs.toArray(getUserInfo(userId).getRoles());
   }
 
-  public Map<Long, String> getUsers() {
-    return ImmutableMap.copyOf(userCache);
+  public Set<Long> getUsers() {
+    return userCache.keySet();
   }
 
   public String getUserSign(long userId) {
@@ -196,50 +205,19 @@ public class UserServiceBean {
   }
 
   public boolean hasEventRight(String object, String state) {
-    return hasRight(RightsObjectType.EVENT, object, state);
+    return getCurrentUserInfo().getUserData().hasEventRight(object, state);
   }
 
   public boolean hasFormRight(String object, String state) {
-    return hasRight(RightsObjectType.FORM, object, state);
+    return getCurrentUserInfo().getUserData().hasFormRight(object, state);
   }
 
   public boolean hasGridRight(String object, String state) {
-    return hasRight(RightsObjectType.GRID, object, state);
+    return getCurrentUserInfo().getUserData().hasGridRight(object, state);
   }
 
   public boolean hasMenuRight(String object, String state) {
-    return hasRight(RightsObjectType.MENU, object, state);
-  }
-
-  public boolean hasRight(RightsObjectType type, String object, String stateName) {
-    Assert.notEmpty(object);
-
-    if (!sys.isState(stateName)) {
-      return false;
-    }
-    BeeState state = sys.getState(stateName);
-    boolean checked = state.isChecked();
-
-    Map<String, SetMultimap<BeeState, Long>> rightsObjects = rightsCache.get(type);
-
-    if (rightsObjects != null) {
-      SetMultimap<BeeState, Long> objectStates = rightsObjects.get(BeeUtils.normalize(object));
-
-      if (objectStates != null && objectStates.containsKey(state)) {
-        Set<Long> roles = objectStates.get(state);
-        boolean ok = checked;
-
-        for (long role : getUserRoles(getCurrentUserId())) {
-          ok = (checked != roles.contains(role));
-
-          if (ok) {
-            break;
-          }
-        }
-        checked = ok;
-      }
-    }
-    return checked;
+    return getCurrentUserInfo().getUserData().hasMenuRight(object, state);
   }
 
   @Lock(LockType.WRITE)
@@ -258,7 +236,7 @@ public class UserServiceBean {
           .setWhere(SqlUtils.equal(TBL_OBJECTS, FLD_OBJECT_TYPE, tp.ordinal())));
 
       if (res.getNumberOfRows() > 0) {
-        Map<String, SetMultimap<BeeState, Long>> rightsObjects = rightsCache.get(tp);
+        Map<String, Multimap<BeeState, Long>> rightsObjects = rightsCache.get(tp);
 
         if (rightsObjects == null) {
           rightsObjects = Maps.newHashMap();
@@ -269,7 +247,7 @@ public class UserServiceBean {
 
           if (sys.isState(stateName)) {
             String objectName = BeeUtils.normalize(res.getValue(i, FLD_OBJECT_NAME));
-            SetMultimap<BeeState, Long> objectStates = rightsObjects.get(objectName);
+            Multimap<BeeState, Long> objectStates = rightsObjects.get(objectName);
 
             if (objectStates == null) {
               objectStates = HashMultimap.create();
@@ -292,25 +270,25 @@ public class UserServiceBean {
     String userIdName = sys.getIdName(TBL_USERS);
     String roleIdName = sys.getIdName(TBL_ROLES);
 
-    SqlSelect ss = new SqlSelect()
-        .addFields("r", roleIdName, FLD_ROLE_NAME)
-        .addFrom(TBL_ROLES, "r");
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addFields(TBL_ROLES, roleIdName, FLD_ROLE_NAME)
+        .addFrom(TBL_ROLES));
 
-    for (Map<String, String> row : qs.getData(ss)) {
-      roleCache.put(BeeUtils.toLong(row.get(roleIdName)), row.get(FLD_ROLE_NAME));
+    for (int i = 0; i < rs.getNumberOfRows(); i++) {
+      roleCache.put(rs.getLong(i, roleIdName), rs.getValue(i, FLD_ROLE_NAME));
     }
 
-    ss = new SqlSelect()
-        .addFields("r", FLD_USER, FLD_ROLE)
-        .addFrom(TBL_USER_ROLES, "r");
+    rs = qs.getData(new SqlSelect()
+        .addFields(TBL_USER_ROLES, FLD_USER, FLD_ROLE)
+        .addFrom(TBL_USER_ROLES));
 
     Multimap<Long, Long> userRoles = HashMultimap.create();
 
-    for (Map<String, String> row : qs.getData(ss)) {
-      userRoles.put(BeeUtils.toLong(row.get(FLD_USER)), BeeUtils.toLong(row.get(FLD_ROLE)));
+    for (int i = 0; i < rs.getNumberOfRows(); i++) {
+      userRoles.put(rs.getLong(i, FLD_USER), rs.getLong(i, FLD_ROLE));
     }
 
-    ss = new SqlSelect()
+    SqlSelect ss = new SqlSelect()
         .addFields(TBL_USERS, userIdName, FLD_LOGIN, FLD_PROPERTIES)
         .addFields(TBL_PERSONS, UserData.FLD_FIRST_NAME, UserData.FLD_LAST_NAME)
         .addFrom(TBL_USERS)
@@ -323,13 +301,13 @@ public class UserServiceBean {
 
     for (Map<String, String> row : qs.getData(ss)) {
       long userId = BeeUtils.toLong(row.get(userIdName));
-      String login = row.get(FLD_LOGIN).toLowerCase();
+      String login = key(row.get(FLD_LOGIN));
 
       userCache.put(userId, login);
 
       UserInfo user = new UserInfo(new UserData(userId, login, row.get(UserData.FLD_FIRST_NAME),
-          row.get(UserData.FLD_LAST_NAME))
-          .setRoles(userRoles.get(userId)))
+          row.get(UserData.FLD_LAST_NAME)))
+          .setRoles(userRoles.get(userId))
           .setProperties(row.get(FLD_PROPERTIES));
 
       UserInfo oldInfo = expiredCache.get(login);
@@ -347,12 +325,7 @@ public class UserServiceBean {
   }
 
   public boolean isUser(String user) {
-    for (String usr : getUsers().values()) {
-      if (BeeUtils.same(user, usr)) {
-        return true;
-      }
-    }
-    return false;
+    return userCache.inverse().containsKey(key(user));
   }
 
   public boolean isUserTable(String tblName) {
@@ -381,12 +354,13 @@ public class UserServiceBean {
     String mode = "IN";
 
     if (isUser(user)) {
-      UserInfo info = getUserInfo(user);
+      UserInfo info = getUserInfo(getUserId(user));
       info.setOnline(true);
       info.setLocale(locale);
 
       UserData data = info.getUserData();
-      data.setProperty("dsn", SqlBuilderFactory.getDsn());
+      data.setProperty("dsn", SqlBuilderFactory.getDsn())
+          .setRights(getUserRights(getUserId(user)));
 
       si.addConstant("User", getUserId(user));
 
@@ -419,7 +393,7 @@ public class UserServiceBean {
     String mode = "OUT";
 
     if (isUser(user)) {
-      UserInfo info = getUserInfo(user);
+      UserInfo info = getUserInfo(getUserId(user));
       String sign = user + " " + BeeUtils.parenthesize(info.getUserData().getUserSign());
 
       si.addConstant("User", getUserId(user));
@@ -444,8 +418,8 @@ public class UserServiceBean {
   @PreDestroy
   @Lock(LockType.WRITE)
   private void destroy() {
-    for (String user : getUsers().values()) {
-      UserInfo info = getUserInfo(user);
+    for (long userId : getUsers()) {
+      UserInfo info = getUserInfo(userId);
 
       if (info.isOnline()) {
         logout(info.getUserData().getLogin());
@@ -458,10 +432,63 @@ public class UserServiceBean {
   }
 
   private UserInfo getUserInfo(long userId) {
-    return infoCache.get(getUser(userId));
+    return infoCache.get(getUserName(userId));
   }
 
-  private UserInfo getUserInfo(String user) {
-    return getUserInfo(getUserId(user));
+  private Map<String, Multimap<RightsObjectType, String>> getUserRights(long userId) {
+    Map<String, Multimap<RightsObjectType, String>> rights = Maps.newHashMap();
+
+    for (String stateName : sys.getStateNames()) {
+      Multimap<RightsObjectType, String> members = HashMultimap.create();
+      boolean checked = sys.getState(stateName).isChecked();
+
+      rights.put(stateName + (checked ? BeeConst.CHAR_PLUS : ""), members);
+
+      for (RightsObjectType type : rightsCache.keySet()) {
+        Set<String> objects = rightsCache.get(type).keySet();
+
+        for (String object : objects) {
+          if (hasRight(userId, type, object, stateName) != checked) {
+            members.put(type, object);
+          }
+        }
+      }
+    }
+    return rights;
+  }
+
+  private boolean hasRight(long userId, RightsObjectType type, String object, String stateName) {
+    Assert.notEmpty(object);
+
+    if (!sys.isState(stateName)) {
+      return false;
+    }
+    BeeState state = sys.getState(stateName);
+    boolean checked = state.isChecked();
+
+    Map<String, Multimap<BeeState, Long>> rightsObjects = rightsCache.get(type);
+
+    if (rightsObjects != null) {
+      Multimap<BeeState, Long> objectStates = rightsObjects.get(BeeUtils.normalize(object));
+
+      if (objectStates != null && objectStates.containsKey(state)) {
+        Collection<Long> roles = objectStates.get(state);
+        boolean ok = checked;
+
+        for (long role : getUserRoles(userId)) {
+          ok = (checked != roles.contains(role));
+
+          if (ok) {
+            break;
+          }
+        }
+        checked = ok;
+      }
+    }
+    return checked;
+  }
+
+  private String key(String value) {
+    return value.toLowerCase();
   }
 }
