@@ -4,6 +4,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -46,6 +48,49 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class InputDate extends Composite implements Editor, HasDateTimeFormat, HasTextBox,
     HasIntStep {
+  
+  private class TimePickerHandler implements KeyDownHandler, ClickHandler {
+    private TimePickerHandler() {
+      super();
+    }
+
+    @Override
+    public void onClick(ClickEvent event) {
+      select((BeeListBox) event.getSource());
+    }
+
+    @Override
+    public void onKeyDown(KeyDownEvent event) {
+      if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+        event.preventDefault();
+        select((BeeListBox) event.getSource());
+
+      } else if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+        event.preventDefault();
+        event.stopPropagation();
+        hidePopup();
+        getBox().setFocus(true);
+      }
+    }
+    
+    private void select(BeeListBox listBox) {
+      int index = listBox.getSelectedIndex();
+      if (index >= 0) {
+        int millis = TimeUtils.parseTime(listBox.getItemText(index)); 
+        
+        DateTime dateTime = getDate().getDateTime();
+        dateTime.setHour(millis / TimeUtils.MILLIS_PER_HOUR);
+        dateTime.setMinute(millis % TimeUtils.MILLIS_PER_HOUR / TimeUtils.MILLIS_PER_MINUTE);
+        setValue(dateTime);
+
+        hidePopup();
+        getBox().setFocus(true);
+      }
+    }
+  }
+  
+  private static final String STYLE_POPUP = "bee-DateBox-Popup"; 
+  private static final String STYLE_TIME_PICKER = "bee-TimePicker"; 
 
   private final InputText box;
   private final Popup popup;
@@ -55,9 +100,11 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   private DateTimeFormat format;
 
   private int stepValue = BeeConst.UNDEF;
-
+ 
   private boolean editing = false;
 
+  private TimePickerHandler timePickerHandler = null;
+  
   public InputDate(ValueType type) {
     this(type, null);
   }
@@ -68,12 +115,10 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
         "input date: invalid type " + type.getTypeCode());
 
     this.box = new InputText();
-    this.popup = new Popup(true, false);
+    this.popup = new Popup(true, false, STYLE_POPUP);
 
     this.format = format;
     this.dateType = type;
-
-    popup.setStyleName("dateBoxPopup");
 
     initWidget(box);
     setStyleName(getDefaultStyleName());
@@ -606,7 +651,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   }
   
   protected void pickTime() {
-    final DateTime dateTime = getDate().getDateTime();
+    DateTime dateTime = getDate().getDateTime();
 
     int step = getStepValue();
     if (step <= 0 || step > 60) {
@@ -617,27 +662,19 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     int minute = dateTime.getMinute();
 
     int start = minute % step;
-    final char sep = DateTime.TIME_FIELD_SEPARATOR;
+    char sep = DateTime.TIME_FIELD_SEPARATOR;
 
     BeeListBox widget = new BeeListBox();
+    widget.addStyleName(STYLE_TIME_PICKER);
+
     for (int i = start; i < TimeUtils.MINUTES_PER_DAY; i += step) {
       String item = TimeUtils.padTwo(i / 60) + sep + TimeUtils.padTwo(i % 60);
       widget.addItem(item);
     }
     widget.setVisibleItemCount(10);
 
-    widget.addValueChangeHandler(new ValueChangeHandler<String>() {
-      @Override
-      public void onValueChange(ValueChangeEvent<String> event) {
-        String value = event.getValue();
-
-        dateTime.setHour(BeeUtils.toInt(BeeUtils.getPrefix(value, sep)));
-        dateTime.setMinute(BeeUtils.toInt(BeeUtils.getSuffix(value, sep)));
-        setValue(dateTime);
-
-        getPopup().hide();
-      }
-    });
+    widget.addClickHandler(ensureTimePickerHandler());
+    widget.addKeyDownHandler(ensureTimePickerHandler());
 
     getPopup().setWidget(widget);
     getPopup().showRelativeTo(getBox());
@@ -664,6 +701,13 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
 
   protected void showPicker() {
     showDatePicker();
+  }
+
+  private TimePickerHandler ensureTimePickerHandler() {
+    if (timePickerHandler == null) {
+      timePickerHandler = new TimePickerHandler();
+    }
+    return timePickerHandler;
   }
 
   private DatePicker getDatePicker() {

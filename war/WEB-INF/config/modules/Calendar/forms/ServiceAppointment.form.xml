@@ -40,7 +40,8 @@
     </FlowPanel>
 
     <FlowPanel style="&relative; height: 90px;">
-      <DataSelector source="VehicleNumber" required="true" caption="Valst. Nr.:" style="width: 100px;"
+      <DataSelector source="VehicleNumber" required="true" caption="Valst. Nr.:"
+        style="width: 100px; text-transform: uppercase;"
         choiceColumns="Number ParentModelName ModelName OwnerName" d:size="80" d:unit="px"
         d:rootStyle="&absolute; left: 0; top: 0;" />
 

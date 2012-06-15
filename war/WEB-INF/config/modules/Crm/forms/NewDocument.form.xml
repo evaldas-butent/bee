@@ -3,7 +3,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="NewDocument" caption="Naujas dokumentas">
+  name="NewDocument">
 
   <FlowPanel class="flexBox-vertical">
     <xi:include href="widgets/DocumentFields.widget.xml" />

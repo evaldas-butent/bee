@@ -3,6 +3,7 @@ package com.butent.bee.shared.time;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
+import com.google.common.primitives.Ints;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -453,6 +454,21 @@ public class TimeUtils {
     return arr;
   }
 
+  public static int parseTime(String s) {
+    if (BeeUtils.isEmpty(s)) {
+      return 0;
+    }
+
+    int[] arr = parseFields(s);
+    if (Ints.max(arr) <= 0) {
+      return 0;
+    }
+
+    int millis = MILLIS_PER_HOUR * arr[0] + MILLIS_PER_MINUTE * arr[1] 
+        + MILLIS_PER_SECOND * arr[2] + arr[3];
+    return millis;
+  }
+  
   public static JustDate previousDay(HasDateValue ref) {
     return nextDay(ref, -1);
   }

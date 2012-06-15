@@ -740,9 +740,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     initNewRowDefaults(gridDescr.getNewRowDefaults(), dataCols);
-    setNewRowCaption(BeeUtils.notEmpty(gridDescr.getNewRowCaption(),
-        (getDataInfo() == null) ? null : getDataInfo().getNewRowCaption(),
-        DEFAULT_NEW_ROW_CAPTION));
+    setNewRowCaption(BeeUtils.ifString(gridDescr.getNewRowCaption(),
+        (getDataInfo() == null) ? null : getDataInfo().getNewRowCaption()));
 
     getGrid().estimateHeaderWidths(true);
 
@@ -1279,7 +1278,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       GridFormPresenter presenter = (GridFormPresenter) form.getViewPresenter();
 
       if (isSingleForm()) {
-        presenter.setCaption(BeeUtils.ifString(caption, getNewRowCaption()));
+        presenter.setCaption(BeeUtils.notEmpty(caption, getNewRowCaption(),
+            DEFAULT_NEW_ROW_CAPTION));
         presenter.setMessage(null);
         presenter.updateStyle(false);
 
@@ -1375,9 +1375,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     embraceNewRowForm(form);
   }
 
-  private String createFormContainer(FormView formView, boolean edit, String defaultCaption,
+  private String createFormContainer(FormView formView, boolean edit, String caption,
       boolean asPopup) {
-    String caption = BeeUtils.ifString(formView.getCaption(), defaultCaption);
+    String formCaption = BeeUtils.ifString(caption, formView.getCaption());
 
     EnumSet<Action> actions = EnumSet.of(Action.CLOSE);
     if (!edit) {
@@ -1391,7 +1391,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
     }
 
-    GridFormPresenter gfp = new GridFormPresenter(this, formView, caption, actions, edit,
+    GridFormPresenter gfp = new GridFormPresenter(this, formView, formCaption, actions, edit,
         hasEditSave());
     Widget container = gfp.getWidget();
 

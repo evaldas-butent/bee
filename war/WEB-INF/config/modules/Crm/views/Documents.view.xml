@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Documents"
-  source="Documents"
+  name="Documents" source="Documents" newRowCaption="Naujas dokumentas"
   >
   <Columns>
     <SimpleColumn name="DocumentDate" />

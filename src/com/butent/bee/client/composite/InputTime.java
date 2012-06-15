@@ -1,7 +1,5 @@
 package com.butent.bee.client.composite;
 
-import com.google.common.primitives.Ints;
-
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
@@ -13,22 +11,6 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class InputTime extends InputDate {
-
-  private static int parseTime(String s) {
-    if (BeeUtils.isEmpty(s)) {
-      return 0;
-    }
-
-    int[] arr = TimeUtils.parseFields(s);
-    if (Ints.max(arr) <= 0) {
-      return 0;
-    }
-
-    int millis = TimeUtils.MILLIS_PER_HOUR * arr[0]
-        + TimeUtils.MILLIS_PER_MINUTE * arr[1]
-        + TimeUtils.MILLIS_PER_SECOND * arr[2] + arr[3];
-    return millis;
-  }
 
   public InputTime() {
     this(Format.getDefaultTimeFormat());
@@ -44,9 +26,10 @@ public class InputTime extends InputDate {
   }
 
   public DateTime getDateTime() {
-    return new DateTime(TimeUtils.today().getDateTime().getTime() + parseTime(getBox().getValue()));
+    return new DateTime(TimeUtils.today().getDateTime().getTime()
+        + TimeUtils.parseTime(getBox().getValue()));
   }
-  
+
   @Override
   public String getIdPrefix() {
     return "time-box";
@@ -56,7 +39,7 @@ public class InputTime extends InputDate {
   public FormWidget getWidgetType() {
     return FormWidget.INPUT_TIME;
   }
-  
+
   public void setDateTime(DateTime dateTime) {
     setValue(dateTime);
   }
@@ -70,7 +53,7 @@ public class InputTime extends InputDate {
   protected String getDefaultStyleName() {
     return "bee-TimeBox";
   }
-  
+
   @Override
   protected boolean handleChar(int charCode) {
     if (charCode == '*' && !getPopup().isShowing()) {
@@ -78,13 +61,13 @@ public class InputTime extends InputDate {
       return true;
     }
 
-    if (Character.isDigit(BeeUtils.toChar(charCode)) || charCode == ':') {
+    if (Character.isDigit(BeeUtils.toChar(charCode)) || charCode == DateTime.TIME_FIELD_SEPARATOR) {
       return false;
     }
 
     DateTime oldDate = getDate().getDateTime();
     DateTime newDate = null;
-    
+
     long millis = oldDate.getDateTime().getTime();
     int incr;
 
@@ -125,7 +108,7 @@ public class InputTime extends InputDate {
     }
     return true;
   }
-  
+
   @Override
   protected void showPicker() {
     pickTime();

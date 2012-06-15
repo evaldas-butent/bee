@@ -93,6 +93,28 @@ class AppointmentBuilder extends AbstractFormCallback {
       updateDuration(event.getValue());
     }
   }
+  
+  private class ResourceWidgetHandler implements KeyDownHandler, DoubleClickHandler {
+    @Override
+    public void onDoubleClick(DoubleClickEvent event) {
+      event.preventDefault();
+      addResources();
+    }
+
+    @Override
+    public void onKeyDown(KeyDownEvent event) {
+      if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DELETE) {
+        event.preventDefault();
+        if (event.getSource() instanceof BeeListBox) {
+          int index = ((BeeListBox) event.getSource()).getSelectedIndex();
+          if (BeeUtils.isIndex(resources, index)) {
+            resources.remove(index);
+            refreshResourceWidget();
+          }
+        }
+      }
+    }
+  }
 
   private static final KeyDownHandler LIST_BOX_CLEANER = new KeyDownHandler() {
     @Override
@@ -146,7 +168,9 @@ class AppointmentBuilder extends AbstractFormCallback {
   private final boolean isNew;
 
   private ModalCallback modalCallback = null;
+
   private final PropWidgetHandler propWidgetHandler = new PropWidgetHandler();
+  private final ResourceWidgetHandler resourceWidgetHandler = new ResourceWidgetHandler();
 
   private final List<Long> serviceTypes = Lists.newArrayList();
   private Long defaultServiceType = null;
@@ -216,6 +240,10 @@ class AppointmentBuilder extends AbstractFormCallback {
 
     } else if (BeeUtils.same(name, NAME_RESOURCES)) {
       setResourceWidgetId(DomUtils.getId(widget));
+      if (widget instanceof BeeListBox) {
+        ((BeeListBox) widget).addDoubleClickHandler(resourceWidgetHandler);
+        ((BeeListBox) widget).addKeyDownHandler(resourceWidgetHandler);
+      }
 
     } else if (BeeUtils.same(name, NAME_ADD_RESOURCE)) {
       if (widget instanceof HasClickHandlers) {
