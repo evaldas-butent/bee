@@ -9,8 +9,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
-import com.butent.bee.client.data.Queries.RowCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.utils.BeeCommand;
@@ -47,11 +47,6 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
 
     public CommitCallback(boolean createMode) {
       this.createMode = createMode;
-    }
-
-    @Override
-    public void onFailure(String... reason) {
-      BeeKeeper.getScreen().notifySevere(reason);
     }
 
     @Override

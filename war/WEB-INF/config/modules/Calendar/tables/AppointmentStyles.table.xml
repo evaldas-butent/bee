@@ -5,7 +5,7 @@
   idName="AppointmentStyleID"
   >
   <Fields>
-    <String name="Name" precision="30" notNull="true" unique="true" />
+    <String name="Name" precision="30" notNull="true" unique="true" label="Pavadinimas" />
     <Text name="Description" />
 
     <Text name="Simple" />

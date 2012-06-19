@@ -1,6 +1,11 @@
 package com.butent.bee.client.data;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
@@ -9,17 +14,23 @@ import com.google.gwt.xml.client.XMLParser;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
-import com.butent.bee.client.dialog.InputBoxes;
-import com.butent.bee.client.dialog.InputWidgetCallback;
+import com.butent.bee.client.dialog.ModalForm;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.presenter.NewRowPresenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.ui.HasDimensions;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.view.edit.SelectorEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
@@ -27,20 +38,14 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
 public class RowFactory {
-  
-  public abstract static class NewRowCallback extends Queries.RowCallback {
-    public void onCancel() {
-    }
-
-    public void onTimeout() {
-    }
-  }
 
   public static final String DIALOG_STYLE = "bee-NewRow";
 
@@ -51,6 +56,12 @@ public class RowFactory {
   private static final String STYLE_NEW_ROW_LABEL = "bee-NewRow-label";
   private static final String STYLE_NEW_ROW_INPUT_CELL = "bee-NewRow-inputCell";
   private static final String STYLE_NEW_ROW_INPUT = "bee-NewRow-input";
+
+  private static final int GENERATED_FORM_WIDTH = 360;
+  private static final int GENERATED_HEADER_HEIGHT = 30;
+  private static final int GENERATED_ROW_HEIGHT = 32;
+  private static final int GENERATED_AREA_HEIGHT = 60;
+  private static final int GENERATED_HEIGHT_MARGIN = 20;
 
   public static BeeRow createEmptyRow(DataInfo dataInfo, boolean defaults) {
     BeeRow row = DataUtils.createEmptyRow(dataInfo.getColumnCount());
@@ -77,7 +88,7 @@ public class RowFactory {
         Data.setValue(dataInfo.getViewName(), row, column.getId(), value.trim());
       }
     }
-    
+
     SelectorEvent.fireNewRow(selector, row);
 
     if (BeeUtils.isEmpty(formName)) {
@@ -95,10 +106,10 @@ public class RowFactory {
         FormFactory.putFormDescription(formName, formDescription);
       }
     }
-    
+
     selector.setAdding(true);
 
-    createRow(formName, caption, dataInfo, row, selector, new NewRowCallback() {
+    createRow(formName, caption, dataInfo, row, selector, new RowCallback() {
       @Override
       public void onCancel() {
         selector.setAdding(false);
@@ -110,32 +121,27 @@ public class RowFactory {
         selector.setAdding(false);
         selector.setSelection(result);
       }
-
-      @Override
-      public void onTimeout() {
-        onCancel();
-      }
     });
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
-      UIObject target, FormCallback formCallback, NewRowCallback newRowCallback) {
+      UIObject target, FormCallback formCallback, RowCallback rowCallback) {
     Assert.notEmpty(formName);
 
     Assert.notNull(dataInfo);
     Assert.notNull(row);
 
-    getForm(formName, caption, formCallback, dataInfo, row, target, newRowCallback);
+    getForm(formName, caption, formCallback, dataInfo, row, target, rowCallback);
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
-      NewRowCallback newRowCallback) {
-    createRow(formName, caption, dataInfo, row, null, null, newRowCallback);
+      RowCallback rowCallback) {
+    createRow(formName, caption, dataInfo, row, null, null, rowCallback);
   }
 
   public static void createRow(String formName, String caption, DataInfo dataInfo, BeeRow row,
-      UIObject target, NewRowCallback newRowCallback) {
-    createRow(formName, caption, dataInfo, row, target, null, newRowCallback);
+      UIObject target, RowCallback rowCallback) {
+    createRow(formName, caption, dataInfo, row, target, null, rowCallback);
   }
 
   public static int setDefaults(BeeRow row, DataInfo dataInfo) {
@@ -174,10 +180,13 @@ public class RowFactory {
 
     form.setAttribute(UiConstants.ATTR_NAME, formName);
     form.setAttribute(UiConstants.ATTR_VIEW_NAME, dataInfo.getViewName());
+    
+    form.setAttribute(HasDimensions.ATTR_WIDTH, BeeUtils.toString(GENERATED_FORM_WIDTH));
 
     Element table = doc.createElement(FormWidget.FLEX_TABLE.getTagName());
     table.setAttribute(UiConstants.ATTR_CLASS, STYLE_NEW_ROW_TABLE);
-
+    
+    int height = GENERATED_HEADER_HEIGHT + GENERATED_HEIGHT_MARGIN;
     for (BeeColumn column : columns) {
       Element row = doc.createElement(UiConstants.TAG_ROW);
 
@@ -205,7 +214,7 @@ public class RowFactory {
       Element inputCell = doc.createElement(UiConstants.TAG_CELL);
       inputCell.setAttribute(UiConstants.ATTR_CLASS, STYLE_NEW_ROW_INPUT_CELL);
 
-      FormWidget widgetType = dataInfo.hasRelation(column.getId()) 
+      FormWidget widgetType = dataInfo.hasRelation(column.getId())
           ? FormWidget.DATA_SELECTOR : FormFactory.getWidgetType(column);
       Element input = doc.createElement(widgetType.getTagName());
       input.setAttribute(UiConstants.ATTR_SOURCE, column.getId());
@@ -215,8 +224,16 @@ public class RowFactory {
       row.appendChild(inputCell);
 
       table.appendChild(row);
+      
+      if (column.isText()) {
+        height += GENERATED_AREA_HEIGHT;
+      } else {
+        height += GENERATED_ROW_HEIGHT;
+      }
     }
 
+    form.setAttribute(HasDimensions.ATTR_HEIGHT, BeeUtils.toString(height));
+    
     form.appendChild(table);
     return new FormDescription(form);
   }
@@ -268,7 +285,7 @@ public class RowFactory {
 
   private static void getForm(String formName, final String caption, FormCallback formCallback,
       final DataInfo dataInfo, final BeeRow row, final UIObject target,
-      final NewRowCallback newRowCallback) {
+      final RowCallback rowCallback) {
 
     FormCallback fcb =
         (formCallback == null) ? FormFactory.getFormCallback(formName) : formCallback;
@@ -281,14 +298,14 @@ public class RowFactory {
               result.start(null);
               result.updateRow(row, false);
 
-              openForm(result, caption, dataInfo, target, newRowCallback);
+              openForm(result, caption, dataInfo, target, rowCallback);
             }
           }
         });
   }
 
-  private static void insert(final DataInfo dataInfo, IsRow row, final NewRowCallback callback) {
-    Queries.insert(dataInfo.getViewName(), dataInfo.getColumns(), row, new Queries.RowCallback() {
+  private static void insert(final DataInfo dataInfo, IsRow row, final RowCallback callback) {
+    Queries.insert(dataInfo.getViewName(), dataInfo.getColumns(), row, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         BeeKeeper.getBus().fireEvent(new RowInsertEvent(dataInfo.getViewName(), result));
@@ -300,44 +317,76 @@ public class RowFactory {
   }
 
   private static void openForm(final FormView formView, String caption, final DataInfo dataInfo,
-      UIObject target, final NewRowCallback callback) {
+      UIObject target, final RowCallback callback) {
 
     String cap = BeeUtils.notEmpty(caption, formView.getCaption(), DEFAULT_CAPTION);
-    Global.inputWidget(cap, formView.asWidget(), new InputWidgetCallback() {
+
+    NewRowPresenter presenter = new NewRowPresenter(formView, cap);
+
+    final ModalForm dialog = new ModalForm(presenter.getWidget(), formView);
+    final Holder<State> state = Holder.of(State.OPEN);
+
+    presenter.setActionDelegate(new HandlesActions() {
       @Override
-      public String getErrorMessage() {
-        if (!formView.validate()) {
-          return InputBoxes.SILENT_ERROR;
-        } else if (countValues(formView.getActiveRow(), dataInfo.getColumns()) <= 0) {
-          return "All columns cannot be empty";
-        } else {
-          return null;
+      public void handleAction(Action action) {
+        if (Action.CLOSE.equals(action)) {
+          state.set(State.CANCELED);
+          dialog.hide();
+
+        } else if (Action.SAVE.equals(action)) {
+          if (validate(formView, dataInfo)) {
+            state.set(State.CONFIRMED);
+            dialog.hide();
+          }
         }
       }
+    });
 
-      @Override
-      public void onCancel() {
-        if (callback == null) {
-          super.onCancel();
-        } else {
+    Binder.addKeyDownHandler(dialog, new KeyDownHandler() {
+      public void onKeyDown(KeyDownEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
+          event.preventDefault();
+          state.set(State.CANCELED);
+          dialog.hide();
+
+        } else if (UiHelper.isSave(event.getNativeEvent())) {
+          event.preventDefault();
+          if (validate(formView, dataInfo)) {
+            state.set(State.CONFIRMED);
+            dialog.hide();
+          }
+        }
+      }
+    });
+
+    dialog.addCloseHandler(new CloseHandler<Popup>() {
+      public void onClose(CloseEvent<Popup> event) {
+        if (State.CONFIRMED.equals(state.get())) {
+          insert(dataInfo, formView.getActiveRow(), callback);
+        } else if (callback != null) {
           callback.onCancel();
         }
       }
+    });
 
-      @Override
-      public void onSuccess() {
-        insert(dataInfo, formView.getActiveRow(), callback);
-      }
+    if (target == null) {
+      dialog.center();
+    } else {
+      dialog.showRelativeTo(target);
+    }
 
-      @Override
-      public void onTimeout() {
-        if (callback == null) {
-          super.onTimeout();
-        } else {
-          callback.onTimeout();
-        }
-      }
-    }, true, DIALOG_STYLE, target);
+    UiHelper.focus(formView.getRootWidget());
+  }
+
+  private static boolean validate(FormView formView, DataInfo dataInfo) {
+    if (!formView.validate()) {
+      return false;
+    } else if (countValues(formView.getActiveRow(), dataInfo.getColumns()) <= 0) {
+      formView.notifySevere("All columns cannot be empty");
+      return false;
+    } else {
+      return true;
+    }
   }
 
   private RowFactory() {

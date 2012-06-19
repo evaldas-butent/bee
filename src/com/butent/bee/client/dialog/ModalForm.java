@@ -102,7 +102,7 @@ public class ModalForm extends Popup {
       return false;
     }
   }
-
+  
   private void setDimensions(HasDimensions dimensions) {
     double v;
     Unit u;

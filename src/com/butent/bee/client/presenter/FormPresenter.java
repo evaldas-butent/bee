@@ -19,6 +19,7 @@ import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.data.LocalProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils;
@@ -113,7 +114,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   public NotificationListener getNotificationListener() {
     return getView().getContent();
   }
-  
+
   public Collection<SearchView> getSearchers() {
     Collection<SearchView> searchers;
 
@@ -143,7 +144,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   @Override
   public void handleAction(Action action) {
     Assert.notNull(action);
-    
+
     if (getFormCallback() != null && !getFormCallback().beforeAction(action, this)) {
       return;
     }
@@ -180,9 +181,9 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       case REQUERY:
         if (hasData()) {
           getDataProvider().requery(false);
-        }  
+        }
         break;
-        
+
       case ADD:
         if (hasData()) {
           getView().getContent().startNewRow();
@@ -192,7 +193,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       default:
         BeeKeeper.getLog().info(action, "not implemented");
     }
-    
+
     if (getFormCallback() != null) {
       getFormCallback().afterAction(action, this);
     }
@@ -201,7 +202,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   public void onReadyForInsert(ReadyForInsertEvent event) {
     setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
 
-    Queries.insert(getViewName(), event.getColumns(), event.getValues(), new Queries.RowCallback() {
+    Queries.insert(getViewName(), event.getColumns(), event.getValues(), new RowCallback() {
       @Override
       public void onFailure(String... reason) {
         setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
@@ -230,26 +231,25 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     final boolean rowMode = event.isRowMode();
 
-    Queries.update(rs, rowMode,
-        new Queries.RowCallback() {
-          @Override
-          public void onFailure(String... reason) {
-            getView().getContent().refreshCellContent(columnId);
-            showFailure("Update Cell", reason);
-          }
+    Queries.update(rs, rowMode, new RowCallback() {
+      @Override
+      public void onFailure(String... reason) {
+        getView().getContent().refreshCellContent(columnId);
+        showFailure("Update Cell", reason);
+      }
 
-          @Override
-          public void onSuccess(BeeRow row) {
-            BeeKeeper.getLog().info("cell updated:", getViewName(), rowId, columnId, newValue);
-            if (rowMode) {
-              BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
-            } else {
-              BeeKeeper.getBus().fireEvent(
-                  new CellUpdateEvent(getViewName(), rowId, row.getVersion(), columnId,
-                      getDataProvider().getColumnIndex(columnId), newValue));
-            }
-          }
-        });
+      @Override
+      public void onSuccess(BeeRow row) {
+        BeeKeeper.getLog().info("cell updated:", getViewName(), rowId, columnId, newValue);
+        if (rowMode) {
+          BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
+        } else {
+          BeeKeeper.getBus().fireEvent(
+              new CellUpdateEvent(getViewName(), rowId, row.getVersion(), columnId,
+                  getDataProvider().getColumnIndex(columnId), newValue));
+        }
+      }
+    });
   }
 
   public void onViewUnload() {
@@ -321,7 +321,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     view.create(formDescription, columns, rowCount, callback);
     return view;
   }
-  
+
   private void deleteRow(long rowId, long version) {
     Global.getMsgBoxen().confirm("Delete Record ?", new DeleteCallback(rowId, version),
         StyleUtils.NAME_SCARY);

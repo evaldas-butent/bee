@@ -10,7 +10,6 @@
   <inherits name='com.butent.bee.Screen'/>
 
   <inherits name='com.butent.bee.Dnd'/>
-  <inherits name='com.butent.bee.Calendar'/>
   
   <set-property name='gwt.logging.popupHandler' value='DISABLED'/>
   <set-property name='gwt.logging.consoleHandler' value='DISABLED'/>

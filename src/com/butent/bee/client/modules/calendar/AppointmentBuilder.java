@@ -33,6 +33,7 @@ import com.butent.bee.client.composite.InputTime;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputWidgetCallback;
@@ -506,7 +507,7 @@ class AppointmentBuilder extends AbstractFormCallback {
       return;
     }
 
-    save(new Queries.RowCallback() {
+    save(new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         reset(result);
@@ -944,7 +945,7 @@ class AppointmentBuilder extends AbstractFormCallback {
     getFormView().refresh(false);
   }
 
-  private boolean save(final Queries.RowCallback callback) {
+  private boolean save(final RowCallback callback) {
     if (isSaving()) {
       return false;
     }

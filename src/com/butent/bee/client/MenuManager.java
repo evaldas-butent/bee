@@ -10,12 +10,8 @@ import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
-import com.butent.bee.client.menu.MenuDataProvider;
 import com.butent.bee.client.menu.MenuSelectionHandler;
 import com.butent.bee.client.menu.MenuSeparator;
-import com.butent.bee.client.menu.MenuTreeViewModel;
-import com.butent.bee.client.tree.BeeCellBrowser;
-import com.butent.bee.client.tree.BeeCellTree;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.widget.BeeCellList;
@@ -255,7 +251,7 @@ public class MenuManager implements Module {
         layout = getLayout(lvl--);
       }
     }
-    Widget rw = createWidget(layout, opt, entries, level);
+    Widget rw = createWidget(layout, opt, level);
 
     boolean lastLevel = (level >= MenuConstants.MAX_MENU_DEPTH - 1);
     int cnt = entries.size();
@@ -277,7 +273,7 @@ public class MenuManager implements Module {
     return rw;
   }
 
-  private Widget createWidget(String layout, boolean opt, List<Menu> entries, int level) {
+  private Widget createWidget(String layout, boolean opt, int level) {
     Widget w = null;
 
     if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_HOR)) {
@@ -293,11 +289,6 @@ public class MenuManager implements Module {
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_TREE)) {
       w = new Tree();
       ((Tree) w).addSelectionHandler(new MenuSelectionHandler());
-
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_CELL_TREE)) {
-      w = new BeeCellTree(new MenuTreeViewModel(new MenuDataProvider(entries)), null);
-    } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_CELL_BROWSER)) {
-      w = new BeeCellBrowser(new MenuTreeViewModel(new MenuDataProvider(entries)), null);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_LIST)) {
       w = new MenuBar(level, true, BAR_TYPE.LIST, ITEM_TYPE.OPTION, opt);

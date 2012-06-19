@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.presenter.GridFormPresenter;
@@ -91,7 +92,7 @@ public class DocumentHandler {
         }
       }
 
-      Queries.insert(DOCUMENT_VIEW_NAME, columns, values, new Queries.RowCallback() {
+      Queries.insert(DOCUMENT_VIEW_NAME, columns, values, new RowCallback() {
         @Override
         public void onFailure(String... reason) {
           dataView.notifySevere(reason);
@@ -168,12 +169,7 @@ public class DocumentHandler {
         values[nameIndex] = BeeUtils.trim(info.getName());
         values[mimeIndex] = BeeUtils.trim(info.getType());
 
-        Queries.insert(FILE_VIEW_NAME, columns, Lists.newArrayList(values),
-            new Queries.RowCallback() {
-              @Override
-              public void onSuccess(BeeRow result) {
-              }
-            });
+        Queries.insert(FILE_VIEW_NAME, columns, Lists.newArrayList(values), null);
       }
     }
   }

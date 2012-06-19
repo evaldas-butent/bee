@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="AppointmentStyles"
-  source="AppointmentStyles"
+  name="AppointmentStyles" source="AppointmentStyles" newRowCaption="Naujas vizitų stilius"
   >
   <Columns>
     <SimpleColumn name="Name" />

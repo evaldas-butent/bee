@@ -1,7 +1,5 @@
 package com.butent.bee.shared.menu;
 
-import com.butent.bee.shared.utils.BeeUtils;
-
 /**
  * Contains list of constants for various types of menus and checks whether a given menu object fits
  * certain criteria (for example {@code isRootLevel} or {@code isValidLayout}.
@@ -36,8 +34,6 @@ public class MenuConstants {
   public static final String LAYOUT_TAB = "tab panel";
 
   public static final String LAYOUT_TREE = "simple tree";
-  public static final String LAYOUT_CELL_TREE = "cell tree";
-  public static final String LAYOUT_CELL_BROWSER = "cell browser";
 
   public static final String LAYOUT_LIST = "option list";
   public static final String LAYOUT_ORDERED_LIST = "ordered list";
@@ -65,16 +61,6 @@ public class MenuConstants {
 
   public static boolean isSeparatorBefore(int sep) {
     return (sep & SEPARATOR_BEFORE) != 0;
-  }
-
-  public static boolean isValidLayout(String layout) {
-    if (BeeUtils.isEmpty(layout)) {
-      return false;
-    }
-    return BeeUtils.inListSame(layout, LAYOUT_MENU_HOR, LAYOUT_MENU_VERT,
-        LAYOUT_STACK, LAYOUT_TREE, LAYOUT_CELL_TREE, LAYOUT_CELL_BROWSER,
-        LAYOUT_LIST, LAYOUT_TAB, LAYOUT_RADIO_HOR, LAYOUT_RADIO_VERT,
-        LAYOUT_BUTTONS_HOR, LAYOUT_BUTTONS_VERT);
   }
 
   private MenuConstants() {

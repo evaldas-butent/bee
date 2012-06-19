@@ -23,6 +23,7 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.i18n.DateTimeFormat;
@@ -543,7 +544,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         BeeUtils.toString(newEnd.getTime()));
 
     Queries.update(viewName, row.getId(), row.getVersion(), columns, oldValues, newValues,
-        new Queries.RowCallback() {
+        new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             row.setVersion(result.getVersion());

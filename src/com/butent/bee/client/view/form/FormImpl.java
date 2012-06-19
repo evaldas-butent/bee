@@ -467,6 +467,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return pageStart;
   }
 
+  public Widget getRootWidget() {
+    return rootWidget;
+  }
+
   public int getRowCount() {
     return rowCount;
   }
@@ -617,7 +621,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
     refreshDisplayWidgets();
   }
-
+  
   public void onEditEnd(EditEndEvent event, EditEndEvent.HasEditEndHandler source) {
     Assert.notNull(event);
 
@@ -659,7 +663,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
     navigate(keyCode, hasModifiers, widgetId);
   }
-  
+
   public void onMultiDelete(MultiDeleteEvent event) {
   }
 
@@ -1063,10 +1067,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private HandlerRegistration getPreviewReg() {
     return previewReg;
-  }
-
-  private Widget getRootWidget() {
-    return rootWidget;
   }
 
   private IsRow getRowBuffer() {

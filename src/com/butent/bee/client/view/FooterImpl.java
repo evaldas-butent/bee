@@ -1,10 +1,7 @@
 package com.butent.bee.client.view;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.resources.client.ClientBundle;
-import com.google.gwt.resources.client.CssResource;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
@@ -28,54 +25,19 @@ import java.util.Collection;
 
 public class FooterImpl extends Absolute implements FooterView, HasNavigation, HasSearch {
 
-  /**
-   * Specifies which styling resources to use for a data footer implementation.
-   */
-  public interface Resources extends ClientBundle {
-    @Source("FooterImpl.css")
-    Style footerStyle();
-  }
-
-  /**
-   * Specifies which styling aspects have to be implemented on data footer implementations.
-   */
-  public interface Style extends CssResource {
-    String container();
-
-    int horizontalMargin();
-
-    String search();
-
-    String selectionCounter();
-
-    int selectionCounterWidth();
-
-    String simplePager();
-
-    int spacing();
-
-    int top();
-  }
+  private static final String STYLE_CONTAINER = "bee-FooterContainer";
+  private static final String STYLE_PAGER = "bee-SimplePager";
+  private static final String STYLE_SEARCH = "bee-FooterSearch";
+  private static final String STYLE_SELECTION_COUNTER = "bee-SelectionCounter";
 
   private static final int HEIGHT = 32;
-  
-  private static Resources defaultResources = null;
-  private static Style defaultStyle = null;
 
-  private static Resources getDefaultResources() {
-    if (defaultResources == null) {
-      defaultResources = GWT.create(Resources.class);
-    }
-    return defaultResources;
-  }
+  private static final int TOP = 2;
+  private static final int SPACING = 15;
+  private static final int HORIZONTAL_MARGIN = 6;
 
-  private static Style getDefaultStyle() {
-    if (defaultStyle == null) {
-      defaultStyle = getDefaultResources().footerStyle();
-      defaultStyle.ensureInjected();
-    }
-    return defaultStyle;
-  }
+  private static final int PAGER_WIDTH = 256;
+  private static final int SELECTION_COUNTER_WIDTH = 32;
 
   private Presenter viewPresenter = null;
 
@@ -86,48 +48,37 @@ public class FooterImpl extends Absolute implements FooterView, HasNavigation, H
   private boolean adjusted = false;
 
   private boolean enabled = true;
-  
+
   public FooterImpl() {
     super();
     addStyleName(StyleUtils.WINDOW_FOOTER);
   }
 
   public void create(int rowCount, boolean addPaging, boolean showPageSize, boolean addSearch) {
-    Style style = getDefaultStyle();
-    addStyleName(style.container());
+    addStyleName(STYLE_CONTAINER);
 
-    int top = style.top();
-    int spacing = style.spacing();
-    int margin = style.horizontalMargin();
-
-    int pagerWidth = 256;
-    int selectionCounterWidth = style.selectionCounterWidth();
-
-    int left = margin;
+    int left = HORIZONTAL_MARGIN;
 
     if (addPaging) {
       SimplePager pager = new SimplePager(rowCount, showPageSize);
-      pager.addStyleName(style.simplePager());
-      add(pager, left, top);
-      left += pagerWidth + spacing;
+      pager.addStyleName(STYLE_PAGER);
+      add(pager, left, TOP);
+      left += PAGER_WIDTH + SPACING;
       pagerId = pager.getWidgetId();
     }
 
     if (addSearch) {
       SearchBox search = new SearchBox();
-      search.addStyleName(style.search());
-      add(search, left, top);
-      int right = (selectionCounterWidth > 0) ? spacing + selectionCounterWidth + margin : margin;
-      StyleUtils.setRight(search, right);
+      search.addStyleName(STYLE_SEARCH);
+      add(search, left, TOP);
+      StyleUtils.setRight(search, SPACING + SELECTION_COUNTER_WIDTH + HORIZONTAL_MARGIN);
       searchId = search.getWidgetId();
     }
-    
-    if (selectionCounterWidth > 0) {
-      BeeLabel selectionCounter = new BeeLabel();
-      selectionCounter.addStyleName(style.selectionCounter());
-      add(selectionCounter);
-      selectionCounterId = selectionCounter.getId();
-    }
+
+    BeeLabel selectionCounter = new BeeLabel();
+    selectionCounter.addStyleName(STYLE_SELECTION_COUNTER);
+    add(selectionCounter);
+    selectionCounterId = selectionCounter.getId();
   }
 
   public int getHeight() {
@@ -192,18 +143,14 @@ public class FooterImpl extends Absolute implements FooterView, HasNavigation, H
     if (BeeUtils.isEmpty(pagerId)) {
       return;
     }
+
     int pagerWidth = DomUtils.getChildOffsetWidth(this, pagerId);
     if (pagerWidth <= 0) {
       return;
     }
 
-    Style style = getDefaultStyle();
-    int spacing = style.spacing();
-    int margin = style.horizontalMargin();
-
-    int left = margin + pagerWidth + spacing;
-
     if (!BeeUtils.isEmpty(searchId)) {
+      int left = HORIZONTAL_MARGIN + pagerWidth + SPACING;
       StyleUtils.setLeft(DomUtils.getChild(this, searchId), left);
     }
   }

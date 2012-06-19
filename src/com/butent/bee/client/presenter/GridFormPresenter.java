@@ -140,7 +140,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView 
   }
   
   private HeaderView createHeader(String caption, Set<Action> actions, boolean edit) {
-    HeaderView formHeader = GWT.create(HeaderImpl.class);//new HeaderImpl();
+    HeaderView formHeader = GWT.create(HeaderImpl.class);
     formHeader.asWidget().addStyleName(STYLE_FORM_HEADER);
     formHeader.asWidget().addStyleName(getFormStyle(STYLE_FORM_HEADER, edit));
 

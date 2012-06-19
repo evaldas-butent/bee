@@ -47,18 +47,18 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     }
   }
   
-  private static final int HEIGHT = 35;
+  private static final int HEIGHT = 30;
 
   private static final int CAPTION_LEFT = 8;
   private static final int CAPTION_TOP = 1;
 
   private static final int CONTROL_WIDTH = 43;
-  private static final int CONTROL_TOP = 2;
+  private static final int CONTROL_TOP = 1;
 
   private static final int CONTROLS_RIGHT = 43;
 
   private static final int CLOSE_RIGHT = 2;
-  private static final int CLOSE_TOP = 2;
+  private static final int CLOSE_TOP = 1;
   
   private static final int LOADING_INDICATOR_TOP = 2;
   private static final int LOADING_INDICATOR_RIGHT_MARGIN = 48;

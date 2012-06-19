@@ -16,6 +16,7 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
 import com.butent.bee.client.grid.GridFactory;
@@ -417,7 +418,7 @@ public class TransportHandler {
                     BeeUtils.transform(updValue));
 
                 Queries.update(viewName, row.getId(), row.getVersion(), cols, oldValues, newValues,
-                    new Queries.RowCallback() {
+                    new RowCallback() {
                       @Override
                       public void onSuccess(BeeRow result) {
                         BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, result));

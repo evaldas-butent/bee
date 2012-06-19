@@ -463,7 +463,7 @@ public class ScreenImpl implements Screen {
     BeeImage exit = new BeeImage(Global.getImages().exit().getSafeUri(), new BeeCommand() {
       @Override
       public void execute() {
-        Global.confirm(BeeKeeper.getUser().getUserSign(), "Sign out",
+        Global.confirm(BeeKeeper.getUser().getUserSign(), "Atsijungti",
             new ServiceCommand(Service.LOGOUT));
       }
     });

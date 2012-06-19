@@ -41,13 +41,6 @@ public class Queries {
   public abstract static class IntCallback extends Callback<Integer> {
   }
 
-  /**
-   * Contains requirements for row callback managing classes.
-   */
-
-  public abstract static class RowCallback extends Callback<BeeRow> {
-  }
-
   public interface RowSetCallback {
     void onSuccess(BeeRowSet result);
   }

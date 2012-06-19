@@ -18,6 +18,7 @@ import com.butent.bee.client.data.HasDataProvider;
 import com.butent.bee.client.data.LocalProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.NotificationListener;
@@ -132,7 +133,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             public void onSuccess(Integer result) {
               BeeKeeper.getBus().fireEvent(new MultiDeleteEvent(getViewName(), rows));
               afterMulti(rowIds);
-              showInfo("Deleted " + result + " rows");
+              showInfo("Išmesta " + result + " eil.");
             }
           });
         }
@@ -215,7 +216,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       deleteCallback.execute();
     } else {
       String message = (getGridCallback() == null) ? null : getGridCallback().getDeleteRowMessage();
-      Global.getMsgBoxen().confirm(BeeUtils.ifString(message, "Delete Row ?"), deleteCallback,
+      Global.getMsgBoxen().confirm(BeeUtils.ifString(message, "Išmesti eilutę ?"), deleteCallback,
           StyleUtils.NAME_SCARY);
     }
   }
@@ -332,7 +333,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   public void onReadyForInsert(ReadyForInsertEvent event) {
     setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
 
-    Queries.insert(getViewName(), event.getColumns(), event.getValues(), new Queries.RowCallback() {
+    Queries.insert(getViewName(), event.getColumns(), event.getValues(), new RowCallback() {
       @Override
       public void onFailure(String... reason) {
         setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
@@ -367,7 +368,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     final boolean rowMode = event.isRowMode();
 
-    Queries.update(rs, rowMode, new Queries.RowCallback() {
+    Queries.update(rs, rowMode, new RowCallback() {
       @Override
       public void onFailure(String... reason) {
         getGridView().refreshCellContent(rowId, columnId);
@@ -392,7 +393,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     final long rowId = event.getRowId();
 
     Queries.update(getViewName(), rowId, event.getVersion(), event.getColumns(),
-        event.getOldValues(), event.getNewValues(), new Queries.RowCallback() {
+        event.getOldValues(), event.getNewValues(), new RowCallback() {
           @Override
           public void onFailure(String... reason) {
             showFailure("Save Changes", reason);
@@ -544,11 +545,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
 
     if (options.isEmpty()) {
-      options.add("Delete current row");
-      options.add(BeeUtils.concat(1, "Delete", size, "selected row" + (size > 1 ? "s" : "")));
+      options.add("Išmesti aktyvią eilutę");
+      options.add(BeeUtils.concat(1, "Išmesti", size, "pažymėtas eilutes"));
     }
 
-    Global.choice("Delete", null, options, new DialogCallback<Integer>() {
+    Global.choice("Išmesti", null, options, new DialogCallback<Integer>() {
       public void onSuccess(Integer value) {
         if (value == 0) {
           deleteRow(activeRow, false);
@@ -606,7 +607,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private void updateFilter() {
     Filter filter = ViewHelper.getFilter(this, getDataProvider());
     if (Objects.equal(filter, getLastFilter())) {
-      showInfo("filter not changed", BeeUtils.transform(filter));
+      showInfo("filtras nepasikeitė", BeeUtils.transform(filter));
     } else {
       setLastFilter(filter);
       getDataProvider().onFilterChange(filter);

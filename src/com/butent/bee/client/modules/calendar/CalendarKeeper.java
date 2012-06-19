@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
@@ -19,7 +18,6 @@ import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.view.edit.SelectorEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
@@ -30,7 +28,6 @@ import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.time.TimeUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -88,12 +85,6 @@ public class CalendarKeeper {
     BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler());
 
     SelectorEvent.register(new SelectorHandler());
-
-    createCommands();
-  }
-
-  static void createAppointment(boolean glass) {
-    createAppointment(TimeUtils.nextHour(0), null, glass);
   }
 
   static void createAppointment(final DateTime start, final Long attendeeId, final boolean glass) {
@@ -111,7 +102,7 @@ public class CalendarKeeper {
               }
               
               Global.inputWidget(getAppointmentViewInfo().getNewRowCaption(), result.asWidget(),
-                  builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE, null);
+                  builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE);
             }
           }
         });
@@ -223,7 +214,7 @@ public class CalendarKeeper {
               builder.setColor(appointment.getColor());
 
               Global.inputWidget(result.getCaption(), result.asWidget(),
-                  builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE, null);
+                  builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE);
             }
           }
         });
@@ -302,20 +293,6 @@ public class CalendarKeeper {
     }
   }
   
-  private static void createCommands() {
-    BeeKeeper.getScreen().addCommandItem(new Html("Naujas vizitas",
-        new Scheduler.ScheduledCommand() {
-          public void execute() {
-            loadData(CACHED_VIEWS, new CalendarCache.MultiCallback() {
-              @Override
-              public void onSuccess(Integer result) {
-                createAppointment(true);
-              }
-            });
-          }
-        }));
-  }
-
   private static void createSettingsForm(final BeeRowSet rowSet, final CalendarPanel cp) {
     FormFactory.createFormView(FORM_CALENDAR_SETTINGS, null, rowSet.getColumns(), false,
         new FormFactory.FormViewCallback() {

@@ -519,7 +519,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       setGlass(elem);
     }
   }
-
+  
   @Override
   public void setHeight(String height) {
     setDesiredHeight(height);

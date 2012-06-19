@@ -10,6 +10,7 @@ import com.butent.bee.client.data.HasDataProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RelationUtils;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.ui.UiHelper;
@@ -58,7 +59,7 @@ class SelectorHandler implements SelectorEvent.Handler {
     }
 
     RowFactory.createRow(TransportConstants.FORM_NEW_VEHICLE, "Nauja transporto priemonė",
-        dataInfo, row, new RowFactory.NewRowCallback() {
+        dataInfo, row, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_VEHICLE, dataView.getActiveRow(),
@@ -106,8 +107,8 @@ class SelectorHandler implements SelectorEvent.Handler {
     return Data.getColumnIndex(VIEW_APPOINTMENTS, COL_COMPANY_NAME);
   }
 
-  private void getCompanyRow(Long company, final Queries.RowCallback callback) {
-    Queries.getRow(CommonsConstants.VIEW_COMPANIES, company, new Queries.RowCallback() {
+  private void getCompanyRow(Long company, final RowCallback callback) {
+    Queries.getRow(CommonsConstants.VIEW_COMPANIES, company, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
         callback.onSuccess(result);
@@ -246,7 +247,7 @@ class SelectorHandler implements SelectorEvent.Handler {
           TransportConstants.COL_OWNER);
 
       if (DataUtils.isId(owner) && !owner.equals(company)) {
-        getCompanyRow(owner, new Queries.RowCallback() {
+        getCompanyRow(owner, new RowCallback() {
           @Override
           public void onSuccess(BeeRow result) {
             RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_COMPANY, row,
