@@ -76,12 +76,6 @@ body {
 .bee-SignIn-Password {
   top: 140px;
 }
-.bee-SignIn-Language {
-  font-size: 15px;
-  position: absolute;
-  left: 20px;
-  top: 220px;
-}
 .bee-SignIn-Button {
   font-size: 14px;
   font-weight: bold; 
@@ -135,29 +129,6 @@ if (request.getParameter("fail") != null) {
       onkeydown="return goPswd(event)" autofocus>
     <div class="bee-SignIn-Label bee-SignIn-Password">Slaptažodis</div>
     <input type="password" class="bee-SignIn-Input bee-SignIn-Password" name="j_password" id="pswd">
-    <span class="bee-RadioGroup bee-SignIn-Language">
-      <span class="bee-RadioButton bee-RadioButton-horizontal">
-        <input type="radio" name="lang" value="0" id="lt" checked="checked"><label for="lt">lt</label>
-      </span>
-      <span class="bee-RadioButton bee-RadioButton-horizontal">
-        <input type="radio" name="lang" value="1" id="lv"><label for="lv">lv</label>
-      </span>
-      <span class="bee-RadioButton bee-RadioButton-horizontal">
-        <input type="radio" name="lang" value="2" id="et"><label for="et">et</label>
-      </span>
-      <span class="bee-RadioButton bee-RadioButton-horizontal">
-        <input type="radio" name="lang" value="3" id="en"><label for="en">en</label>
-      </span>
-      <span class="bee-RadioButton bee-RadioButton-horizontal">
-        <input type="radio" name="lang" value="4" id="de"><label for="de">de</label>
-      </span>
-      <span class="bee-RadioButton bee-RadioButton-horizontal">
-        <input type="radio" name="lang" value="5" id="ru"><label for="ru">ru</label>
-      </span>
-      <span class="bee-RadioButton bee-RadioButton-horizontal">
-        <input type="radio" name="lang" value="6" id="pl"><label for="pl">pl</label>
-      </span>
-    </span>
     <input type="submit" class="bee-SignIn-Button" value="Prisijungti" />
     </form>
   </div>

@@ -17,7 +17,6 @@ import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
-import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Horizontal;
@@ -112,11 +111,6 @@ public class Mobile extends ScreenImpl {
     setScreenPanel(p);
 
     BeeKeeper.getLog().hide();
-  }
-
-  @Override
-  protected TextCellType getDefaultCellType() {
-    return TextCellType.TEXT;
   }
 
   @Override

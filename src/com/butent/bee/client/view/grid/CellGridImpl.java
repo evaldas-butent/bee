@@ -122,8 +122,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
   }
 
-  private static final String DEFAULT_NEW_ROW_CAPTION = "New Row";
-
   private static final String STYLE_NEW_ROW_CONTAINER = "bee-GridNewRow-container";
   private static final String STYLE_NEW_ROW_LABEL_CELL = "bee-GridNewRow-labelCell";
   private static final String STYLE_NEW_ROW_LABEL = "bee-GridNewRow-label";
@@ -1278,8 +1276,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       GridFormPresenter presenter = (GridFormPresenter) form.getViewPresenter();
 
       if (isSingleForm()) {
-        presenter.setCaption(BeeUtils.notEmpty(caption, getNewRowCaption(),
-            DEFAULT_NEW_ROW_CAPTION));
+        presenter.setCaption(BeeUtils.ifString(caption, getNewRowCaption()));
         presenter.setMessage(null);
         presenter.updateStyle(false);
 

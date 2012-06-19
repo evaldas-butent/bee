@@ -3,9 +3,7 @@ package com.butent.bee.client.grid;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.cell.client.Cell;
-import com.google.gwt.cell.client.EditTextCell;
 import com.google.gwt.cell.client.TextCell;
-import com.google.gwt.cell.client.TextInputCell;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.ui.Widget;
@@ -224,7 +222,7 @@ public class GridFactory {
 
   private static Widget loadingWidget = null;
 
-  public static Widget cellTable(Object data, TextCellType cellType, String... columnLabels) {
+  public static Widget cellTable(Object data, String... columnLabels) {
     Assert.notNull(data);
 
     IsTable<?, ?> table = createTable(data, columnLabels);
@@ -243,10 +241,7 @@ public class GridFactory {
 
     TextColumn column;
     for (int i = 0; i < c; i++) {
-      column = new TextColumn(createCell(cellType), i, table.getColumn(i));
-      if (cellType != null && cellType.isEditable()) {
-        column.setFieldUpdater(new CellUpdater(i));
-      }
+      column = new TextColumn(i, table.getColumn(i));
       grid.addColumn(column, table.getColumnLabel(i));
     }
 
@@ -611,26 +606,6 @@ public class GridFactory {
     grid.setRowData(table.getRows().getList(), true);
 
     return grid;
-  }
-
-  private static Cell<String> createCell(TextCellType type) {
-    Cell<String> cell;
-
-    if (type == null) {
-      cell = new TextCell();
-    } else {
-      switch (type) {
-        case TEXT_EDIT:
-          cell = new EditTextCell();
-          break;
-        case TEXT_INPUT:
-          cell = new TextInputCell();
-          break;
-        default:
-          cell = new TextCell();
-      }
-    }
-    return cell;
   }
 
   private static void createPresenter(GridDescription gridDescription, int rowCount,

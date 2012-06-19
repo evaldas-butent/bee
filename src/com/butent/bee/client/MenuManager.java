@@ -49,21 +49,22 @@ public class MenuManager implements Module {
 
   private List<Menu> roots = null;
 
-  private List<String> layouts = new ArrayList<String>();
-  private boolean[] options = null;
+  private final List<String> layouts = Lists.newArrayList();
+  private final List<Boolean> options = Lists.newArrayList();
 
   public MenuManager() {
     super();
+
+    layouts.add(MenuConstants.LAYOUT_MENU_HOR);
+    options.add(false);
+
+    for (int i = MenuConstants.ROOT_MENU_INDEX + 1; i < MenuConstants.MAX_MENU_DEPTH; i++) {
+      layouts.add(MenuConstants.LAYOUT_MENU_VERT);
+      options.add(true);
+    }
   }
 
   public boolean drawMenu() {
-    layouts.clear();
-    options = new boolean[MenuConstants.MAX_MENU_DEPTH];
-
-    for (int i = MenuConstants.ROOT_MENU_INDEX; i < MenuConstants.MAX_MENU_DEPTH; i++) {
-      layouts.add(Global.getVarValue(MenuConstants.varMenuLayout(i)));
-      options[i] = Global.getVarBoolean(MenuConstants.varMenuBarType(i));
-    }
     Widget w = createMenu(0, getRoots(), null);
     boolean ok = (w != null);
 
@@ -136,10 +137,6 @@ public class MenuManager implements Module {
   public void registerMenuCallback(String service, MenuCallback callback) {
     Assert.notEmpty(service);
     menuCallbacks.put(BeeUtils.normalize(service), callback);
-  }
-
-  public void setLayouts(List<String> layouts) {
-    this.layouts = layouts;
   }
 
   public void showMenuInfo() {
@@ -339,7 +336,7 @@ public class MenuManager implements Module {
 
   private boolean getOption(int idx) {
     Assert.isIndex(options, idx);
-    return options[idx];
+    return options.get(idx);
   }
 
   @SuppressWarnings("unchecked")

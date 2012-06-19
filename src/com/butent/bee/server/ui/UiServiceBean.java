@@ -25,8 +25,6 @@ import com.butent.bee.server.io.ExtensionFilter;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.sql.SqlDelete;
-import com.butent.bee.server.sql.SqlSelect;
-import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.ui.XmlSqlDesigner.DataType;
 import com.butent.bee.server.ui.XmlSqlDesigner.DataTypeGroup;
 import com.butent.bee.server.utils.XmlUtils;
@@ -35,7 +33,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
@@ -45,14 +42,12 @@ import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlRelation;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.DecoratorConstants;
-import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -114,15 +109,7 @@ public class UiServiceBean {
 
     String svc = reqInfo.getService();
 
-    if (BeeUtils.same(svc, Service.GET_X_FORM)) {
-      response = formInfo(reqInfo);
-    } else if (BeeUtils.same(svc, Service.GET_X_FORM_LIST)) {
-      response = formList();
-    } else if (BeeUtils.same(svc, Service.GET_MENU)) {
-      response = menuInfo(reqInfo);
-    } else if (BeeUtils.same(svc, Service.GET_X_GRID)) {
-      response = gridInfo(reqInfo);
-    } else if (BeeUtils.same(svc, Service.GET_GRID)) {
+    if (BeeUtils.same(svc, Service.GET_GRID)) {
       response = getGrid(reqInfo);
     } else if (BeeUtils.same(svc, Service.GET_FORM)) {
       response = getForm(reqInfo);
@@ -345,26 +332,6 @@ public class UiServiceBean {
     }
   }
 
-  private ResponseObject formInfo(RequestInfo reqInfo) {
-    String fName = reqInfo.getParameter("form_name");
-
-    UiComponent form = ui.getUiForm(fName);
-
-    if (BeeUtils.isEmpty(form)) {
-      String msg = "Form name not recognized: " + fName;
-      logger.warning(msg);
-      return ResponseObject.error(msg);
-    } else {
-      return ResponseObject.response(form);
-    }
-  }
-
-  private ResponseObject formList() {
-    SqlSelect ss = new SqlSelect()
-        .addFields("f", "form").addFrom("forms", "f").addOrder("f", "form");
-    return ResponseObject.response(qs.getColumn(ss));
-  }
-
   private ResponseObject generateData(RequestInfo reqInfo) {
     ResponseObject response;
 
@@ -555,49 +522,6 @@ public class UiServiceBean {
     return ResponseObject.response(sys.getViewSize(viewName, filter));
   }
 
-  private ResponseObject gridInfo(RequestInfo reqInfo) {
-    String gName = reqInfo.getParameter("grid_name");
-    String grid = gName;
-
-    SqlSelect ss = new SqlSelect();
-    ss.addFields("g", "properties").addFrom("grids", "g")
-        .setWhere(SqlUtils.equal("g", "table", gName));
-
-    String x = qs.getValue(ss);
-
-    if (!BeeUtils.isEmpty(x) && x.contains("parent_table")) {
-      grid = x.replaceFirst("^((?s).)*parent_table\\s*=\\s*[\\[\"'](.+)[\\]\"']((?s).)*$", "$2");
-    }
-
-    ss = new SqlSelect();
-    ss.addFields("c", "caption").addFrom("columns", "c").setWhere(
-        SqlUtils.equal("c", "table", grid)).addOrder("c", "order");
-
-    String[] data = qs.getColumn(ss);
-
-    if (!BeeUtils.isEmpty(data)) {
-      BeeRowSet rs = new BeeRowSet();
-
-      for (String row : data) {
-        String colName = row.replaceAll("['\"]", "");
-        rs.addColumn(new BeeColumn(ValueType.TEXT, colName, NameUtils.createUniqueName("col")));
-      }
-      for (int i = 0; i < 20; i++) {
-        int cnt = data.length;
-        String[] cells = new String[cnt];
-
-        for (int j = 0; j < cnt; j++) {
-          cells[j] = (j == 0 ? Integer.toString(i + 1) : BeeConst.STRING_EMPTY);
-        }
-        rs.addRow(i + 1, cells);
-      }
-      return ResponseObject.response(rs);
-    }
-    String msg = "Grid name not recognized: " + grid;
-    logger.warning(msg);
-    return ResponseObject.warning(msg);
-  }
-
   private ResponseObject insertRow(RequestInfo reqInfo) {
     return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), true);
   }
@@ -623,24 +547,6 @@ public class UiServiceBean {
       result.addRow((BeeRow) response.getResponse());
     }
     return ResponseObject.response(result);
-  }
-
-  private ResponseObject menuInfo(RequestInfo reqInfo) {
-    ResponseObject response = new ResponseObject();
-    String mName = reqInfo.getParameter("menu_name");
-    String lRoot = reqInfo.getParameter("root_layout");
-    String lItem = reqInfo.getParameter("item_layout");
-
-    UiComponent menu = ui.getUiMenu(mName, lRoot, lItem, Config.getPath("menu.xml"));
-
-    if (BeeUtils.isEmpty(menu)) {
-      String msg = "Error initializing menu: " + mName;
-      logger.warning(msg);
-      response.addError(msg);
-    } else {
-      response.setResponse(menu);
-    }
-    return response;
   }
 
   private ResponseObject rebuildData(RequestInfo reqInfo) {

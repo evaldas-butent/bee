@@ -1,44 +1,45 @@
 package com.butent.bee.client.widget;
 
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.HasLayoutCallback;
-import com.butent.bee.client.layout.LayoutCommand;
 import com.butent.bee.client.layout.LayoutData;
 import com.butent.bee.shared.HasId;
 
-/**
- * Implements a panel that arranges two parts of it and allows the user to interactively change the
- * proportion of the area dedicated to each of the two parts.
- */
+public abstract class Splitter extends Widget implements HasId {
 
-public abstract class Splitter extends Widget implements HasId, HasLayoutCallback {
+  private static final int SENSITIVITY_MILLIS = 1;
+  
+  private final Widget target;
+  private final Element targetContainer;
 
-  private Widget target;
-  private Element targetContainer;
+  private final boolean reverse;
+  private final int size;
 
-  private int offset;
-  private boolean mouseDown;
-  private LayoutCommand layoutCommand;
+  private int minSize;
 
-  private boolean reverse;
-  private int size;
-  private int minSize = 0;
+  private boolean mouseDown = false;
+  private int offset = 0;
 
+  private Timer timer = null;
+  
   public Splitter(Widget target, Element targetContainer, boolean reverse, int size) {
     this.target = target;
     this.targetContainer = targetContainer;
     this.reverse = reverse;
     this.size = size;
+    
+    this.minSize = size + 1;
 
     setElement(Document.get().createDivElement());
-    sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEUP | Event.ONMOUSEMOVE | Event.ONDBLCLICK);
     DomUtils.createId(this, getIdPrefix());
+
+    sinkEvents(Event.ONMOUSEDOWN | Event.ONMOUSEUP | Event.ONMOUSEMOVE);
   }
 
   public abstract int getAbsolutePosition();
@@ -51,37 +52,17 @@ public abstract class Splitter extends Widget implements HasId, HasLayoutCallbac
   
   public abstract String getIdPrefix();
 
-  public LayoutCommand getLayoutCommand() {
-    return layoutCommand;
-  }
-
   public int getMinSize() {
     return minSize;
-  }
-
-  public int getOffset() {
-    return offset;
   }
 
   public int getSize() {
     return size;
   }
 
-  public Widget getTarget() {
-    return target;
-  }
-
-  public Element getTargetContainer() {
-    return targetContainer;
-  }
-
   public abstract int getTargetPosition();
 
   public abstract int getTargetSize();
-
-  public boolean isMouseDown() {
-    return mouseDown;
-  }
 
   public boolean isReverse() {
     return reverse;
@@ -91,8 +72,8 @@ public abstract class Splitter extends Widget implements HasId, HasLayoutCallbac
   public void onBrowserEvent(Event event) {
     switch (event.getTypeInt()) {
       case Event.ONMOUSEDOWN:
-        mouseDown = true;
-        offset = getEventPosition(event) - getAbsolutePosition();
+        setMouseDown(true);
+        setOffset(getEventPosition(event) - getAbsolutePosition());
         Event.setCapture(getElement());
 
         event.preventDefault();
@@ -100,7 +81,7 @@ public abstract class Splitter extends Widget implements HasId, HasLayoutCallbac
         break;
 
       case Event.ONMOUSEUP:
-        mouseDown = false;
+        setMouseDown(false);
         Event.releaseCapture(getElement());
 
         event.preventDefault();
@@ -108,12 +89,12 @@ public abstract class Splitter extends Widget implements HasId, HasLayoutCallbac
         break;
 
       case Event.ONMOUSEMOVE:
-        if (mouseDown) {
+        if (isMouseDown()) {
           int z;
-          if (reverse) {
-            z = getTargetPosition() + getTargetSize() - getEventPosition(event) - offset;
+          if (isReverse()) {
+            z = getTargetPosition() + getTargetSize() - getEventPosition(event) - getOffset();
           } else {
-            z = getEventPosition(event) - getTargetPosition() - offset;
+            z = getEventPosition(event) - getTargetPosition() - getOffset();
           }
 
           setAssociatedWidgetSize(z);
@@ -124,60 +105,68 @@ public abstract class Splitter extends Widget implements HasId, HasLayoutCallbac
     }
   }
 
-  public void onLayout() {
-    layoutCommand = null;
-    Widget p = getParent();
-    if (p instanceof HasLayoutCallback) {
-      ((HasLayoutCallback) p).onLayout();
-    }
-  }
-
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
-  public void setLayoutCommand(LayoutCommand layoutCommand) {
-    this.layoutCommand = layoutCommand;
-  }
-
   public void setMinSize(int minSize) {
     this.minSize = minSize;
-    LayoutData layout = (LayoutData) target.getLayoutData();
+    LayoutData layout = (LayoutData) getTarget().getLayoutData();
     setAssociatedWidgetSize((int) layout.size);
   }
 
-  public void setMouseDown(boolean mouseDown) {
-    this.mouseDown = mouseDown;
+  protected Element getTargetContainer() {
+    return targetContainer;
   }
 
-  public void setOffset(int offset) {
-    this.offset = offset;
+  private void createTimer() {
+    this.timer = new Timer() {
+      @Override
+      public void run() {
+        Widget p = getParent();
+        if (p instanceof HasLayoutCallback) {
+          ((HasLayoutCallback) p).onLayout();
+        }
+      }
+    };
   }
 
-  public void setReverse(boolean reverse) {
-    this.reverse = reverse;
+  private int getOffset() {
+    return offset;
   }
 
-  public void setSize(int size) {
-    this.size = size;
+  private Widget getTarget() {
+    return target;
   }
 
-  public void setTarget(Widget target) {
-    this.target = target;
+  private Timer getTimer() {
+    return timer;
+  }
+
+  private boolean isMouseDown() {
+    return mouseDown;
   }
 
   private void setAssociatedWidgetSize(int size) {
     int z = Math.max(size, minSize);
 
-    LayoutData layout = (LayoutData) target.getLayoutData();
+    LayoutData layout = (LayoutData) getTarget().getLayoutData();
     if (z == layout.size) {
       return;
     }
     layout.size = z;
 
-    if (layoutCommand == null) {
-      layoutCommand = new LayoutCommand(this);
-      Scheduler.get().scheduleDeferred(layoutCommand);
+    if (getTimer() == null) {
+      createTimer();
     }
+    getTimer().schedule(SENSITIVITY_MILLIS);
+  }
+
+  private void setMouseDown(boolean mouseDown) {
+    this.mouseDown = mouseDown;
+  }
+  
+  private void setOffset(int offset) {
+    this.offset = offset;
   }
 }

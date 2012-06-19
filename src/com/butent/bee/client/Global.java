@@ -14,7 +14,6 @@ import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.ui.UiHelper;
@@ -31,7 +30,6 @@ import com.butent.bee.shared.data.Defaults;
 import com.butent.bee.shared.data.cache.CacheManager;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
-import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -102,8 +100,8 @@ public class Global implements Module {
     MSG_BOXEN.alert(obj);
   }
 
-  public static Widget cellTable(Object data, TextCellType cellType, String... columnLabels) {
-    return GridFactory.cellTable(data, cellType, columnLabels);
+  public static Widget cellTable(Object data, String... columnLabels) {
+    return GridFactory.cellTable(data, columnLabels);
   }
 
   public static void choice(String caption, List<String> options,
@@ -599,32 +597,5 @@ public class Global implements Module {
         BeeConst.JDBC_META_DATA, BeeConst.JDBC_ROW_COUNT, BeeConst.JDBC_COLUMNS);
 
     createVar(VAR_DEBUG, "Debug", BeeType.BOOLEAN, BeeUtils.toString(false));
-
-    for (int i = MenuConstants.ROOT_MENU_INDEX; i < MenuConstants.MAX_MENU_DEPTH; i++) {
-      if (MenuConstants.isRootLevel(i)) {
-        createVar(MenuConstants.varMenuLayout(i), "Root", BeeType.STRING,
-            MenuConstants.DEFAULT_ROOT_LAYOUT, BeeWidget.LIST,
-            MenuConstants.LAYOUT_MENU_HOR, MenuConstants.LAYOUT_MENU_VERT,
-            MenuConstants.LAYOUT_STACK, MenuConstants.LAYOUT_TAB,
-            MenuConstants.LAYOUT_TREE, MenuConstants.LAYOUT_CELL_TREE,
-            MenuConstants.LAYOUT_CELL_BROWSER, MenuConstants.LAYOUT_LIST,
-            MenuConstants.LAYOUT_ORDERED_LIST, MenuConstants.LAYOUT_UNORDERED_LIST,
-            MenuConstants.LAYOUT_DEFINITION_LIST, MenuConstants.LAYOUT_RADIO_HOR,
-            MenuConstants.LAYOUT_RADIO_VERT, MenuConstants.LAYOUT_BUTTONS_HOR,
-            MenuConstants.LAYOUT_BUTTONS_VERT);
-      } else {
-        createVar(MenuConstants.varMenuLayout(i), "Items " + i,
-            BeeType.STRING, MenuConstants.DEFAULT_ITEM_LAYOUT, BeeWidget.LIST,
-            MenuConstants.LAYOUT_MENU_HOR, MenuConstants.LAYOUT_MENU_VERT,
-            MenuConstants.LAYOUT_TREE, MenuConstants.LAYOUT_LIST,
-            MenuConstants.LAYOUT_ORDERED_LIST, MenuConstants.LAYOUT_UNORDERED_LIST,
-            MenuConstants.LAYOUT_DEFINITION_LIST, MenuConstants.LAYOUT_RADIO_HOR,
-            MenuConstants.LAYOUT_RADIO_VERT, MenuConstants.LAYOUT_BUTTONS_HOR,
-            MenuConstants.LAYOUT_BUTTONS_VERT);
-      }
-
-      createVar(MenuConstants.varMenuBarType(i), BeeConst.STRING_EMPTY,
-          BeeType.BOOLEAN, BeeUtils.toString(i > 0));
-    }
   }
 }

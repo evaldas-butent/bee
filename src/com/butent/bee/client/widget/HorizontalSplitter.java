@@ -1,6 +1,7 @@
 package com.butent.bee.client.widget;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -13,7 +14,7 @@ public class HorizontalSplitter extends Splitter {
 
   public HorizontalSplitter(Widget target, Element targetContainer, boolean reverse, int size) {
     super(target, targetContainer, reverse, size);
-    getElement().getStyle().setPropertyPx("width", size);
+    getElement().getStyle().setWidth(size, Unit.PX);
     setStyleName("bee-HSplitter");
   }
 

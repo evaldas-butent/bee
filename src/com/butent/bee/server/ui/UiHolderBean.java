@@ -15,8 +15,6 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.ui.UiComponent;
-import com.butent.bee.shared.ui.UiLoader;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
@@ -26,7 +24,6 @@ import org.w3c.dom.Document;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -78,12 +75,7 @@ public class UiHolderBean {
   @EJB
   GridLoaderBean gridBean;
   @EJB
-  UiLoaderBean loaderBean;
-  @EJB
   UserServiceBean usr;
-
-  UiLoader loader;
-  Map<String, UiComponent> uiFormCache = new HashMap<String, UiComponent>();
 
   Map<String, String> gridCache = Maps.newHashMap();
   Map<String, String> formCache = Maps.newHashMap();
@@ -132,20 +124,6 @@ public class UiHolderBean {
     return ResponseObject.response(menus.values());
   }
 
-  public UiComponent getUiForm(String root, Object... params) {
-    Assert.notEmpty(root);
-
-    if (!uiFormCache.containsKey(root)) {
-      loadUiForm(root, params);
-    }
-    return uiFormCache.get(root);
-  }
-
-  public UiComponent getUiMenu(String root, Object... params) {
-    Assert.notEmpty(root);
-    return loader.getMenu(root, params);
-  }
-
   @Lock(LockType.WRITE)
   public void initForms() {
     initObjects(UiObject.FORM);
@@ -173,10 +151,6 @@ public class UiHolderBean {
     return XmlUtils.unmarshal(Menu.class, resource, UiObject.MENU.getSchemaPath());
   }
 
-  public void setUiLoader(UiLoader loader) {
-    this.loader = loader;
-  }
-
   private Menu getVisibleMenu(String parent, Menu entry) {
     String ref = BeeUtils.concat(".", parent, entry.getName());
 
@@ -201,8 +175,6 @@ public class UiHolderBean {
   @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
-    setUiLoader(loaderBean);
-
     initGrids();
     initForms();
     initMenu();
@@ -326,11 +298,6 @@ public class UiHolderBean {
 
   private String key(String name) {
     return BeeUtils.normalize(name);
-  }
-
-  private void loadUiForm(String root, Object... params) {
-    UiComponent form = loader.getForm(root, params);
-    uiFormCache.put(root, form);
   }
 
   private <T> void register(T object, Map<String, T> cache, String objectName,

@@ -24,8 +24,6 @@ import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
-import com.butent.bee.client.grid.FlexTable;
-import com.butent.bee.client.grid.TextCellType;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.BlankTile;
 import com.butent.bee.client.layout.Complex;
@@ -38,9 +36,6 @@ import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.ui.DsnService;
-import com.butent.bee.client.ui.FormService;
-import com.butent.bee.client.ui.GwtUiCreator;
-import com.butent.bee.client.ui.MenuService;
 import com.butent.bee.client.ui.StateService;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.ServiceCommand;
@@ -50,14 +45,10 @@ import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.client.widget.BeeListBox;
-import com.butent.bee.client.widget.SimpleBoolean;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Stage;
-import com.butent.bee.shared.menu.MenuConstants;
-import com.butent.bee.shared.ui.UiComponent;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -105,7 +96,6 @@ public class ScreenImpl implements Screen {
   private Widget signature = null;
 
   private final String elGrid = "el-grid-type";
-  private final String elCell = "el-cell-type";
 
   private BeeCheckBox logToggle = null;
   private final String logVisible = "log-visible";
@@ -245,7 +235,7 @@ public class ScreenImpl implements Screen {
         scroll = ScrollBars.NONE;
         break;
       case 2:
-        grd = Global.cellTable(data, getDefaultCellType(), cols);
+        grd = Global.cellTable(data, cols);
         scroll = ScrollBars.BOTH;
         break;
       default:
@@ -262,7 +252,6 @@ public class ScreenImpl implements Screen {
   }
 
   public void start() {
-    UiComponent.setUiCreator(new GwtUiCreator());
     createUi();
   }
 
@@ -379,10 +368,6 @@ public class ScreenImpl implements Screen {
     if (getLogToggle() != null && !getLogToggle().getValue()) {
       BeeKeeper.getLog().hide();
     }
-  }
-
-  protected TextCellType getDefaultCellType() {
-    return TextCellType.get(RadioGroup.getValue(getElCell()));
   }
 
   protected int getDefaultGridType() {
@@ -525,44 +510,6 @@ public class ScreenImpl implements Screen {
 
     tp.add(Global.getFavorites(), new BeeImage(Global.getImages().bookmark()));
 
-    tp.add(new BeeLabel(), "Recent");
-
-    FlexTable fp = new FlexTable();
-    fp.setCellSpacing(3);
-
-    int r = MenuConstants.MAX_MENU_DEPTH;
-    String name;
-
-    for (int i = MenuConstants.ROOT_MENU_INDEX; i < r; i++) {
-      name = MenuConstants.varMenuLayout(i);
-      fp.setWidget(i, 0, new BeeListBox(Global.getVar(name)));
-
-      name = MenuConstants.varMenuBarType(i);
-      fp.setWidget(i, 1, new SimpleBoolean(Global.getVar(name)));
-    }
-
-    fp.setWidget(r, 0, new BeeButton(Global.CONSTANTS.refresh(), Service.REFRESH_MENU));
-    fp.setWidget(r, 1, new BeeButton("BEE", new MenuService().name(), "stage_dummy"));
-
-    BeeCheckBox log = new BeeCheckBox("Log");
-    log.setValue(BeeKeeper.getStorage().getBoolean(getLogVisible()));
-
-    log.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
-      public void onValueChange(ValueChangeEvent<Boolean> event) {
-        if (event.getValue()) {
-          BeeKeeper.getLog().show();
-        } else {
-          BeeKeeper.getLog().hide();
-        }
-        BeeKeeper.getStorage().setItem(getLogVisible(), event.getValue());
-      }
-    });
-    fp.setWidget(r + 1, 0, log);
-
-    setLogToggle(log);
-
-    tp.add(fp, "Options");
-
     Vertical adm = new Vertical();
     adm.setCellSpacing(5);
 
@@ -579,14 +526,26 @@ public class ScreenImpl implements Screen {
 
     adm.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
 
-    adm.add(new BeeButton("Būtent", new FormService().name(),
-        FormService.Stages.CHOOSE_FORM.name()));
-
     adm.add(new RadioGroup(getElGrid(), false, BeeKeeper.getStorage().checkInt(getElGrid(), 2),
         Lists.newArrayList("simple", "scroll", "cell")));
-    adm.add(new RadioGroup(getElCell(), false, BeeKeeper.getStorage().checkEnum(getElCell(),
-        TextCellType.TEXT_EDIT), TextCellType.class));
 
+    BeeCheckBox log = new BeeCheckBox("Log");
+    log.setValue(BeeKeeper.getStorage().getBoolean(getLogVisible()));
+
+    log.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+      public void onValueChange(ValueChangeEvent<Boolean> event) {
+        if (event.getValue()) {
+          BeeKeeper.getLog().show();
+        } else {
+          BeeKeeper.getLog().hide();
+        }
+        BeeKeeper.getStorage().setItem(getLogVisible(), event.getValue());
+      }
+    });
+    setLogToggle(log);
+    
+    adm.add(log);
+    
     Flow admPanel = new Flow();
     admPanel.addStyleName(StyleUtils.NAME_FLEX_BOX_VERTICAL);
 
@@ -602,7 +561,7 @@ public class ScreenImpl implements Screen {
     shellContainer.setWidget(shell);
     admPanel.add(shellContainer);
 
-    tp.add(admPanel, "Adm");
+    tp.add(admPanel, "Admin");
 
     return tp;
   }
@@ -669,10 +628,6 @@ public class ScreenImpl implements Screen {
     }
 
     setActivePanel(null);
-  }
-
-  private String getElCell() {
-    return elCell;
   }
 
   private String getElGrid() {

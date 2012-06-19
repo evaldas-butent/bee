@@ -77,14 +77,6 @@ public class MenuConstants {
         LAYOUT_BUTTONS_HOR, LAYOUT_BUTTONS_VERT);
   }
 
-  public static final String varMenuBarType(int idx) {
-    return "menu_bar_type_" + idx;
-  }
-
-  public static final String varMenuLayout(int idx) {
-    return "menu_layout_" + idx;
-  }
-
   private MenuConstants() {
   }
 }
