@@ -3,10 +3,8 @@ package com.butent.bee.server.modules.crm;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 
-import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
-import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
@@ -51,8 +49,6 @@ public class CrmModuleBean implements BeeModule {
 
   private static Logger logger = Logger.getLogger(CrmModuleBean.class.getName());
 
-  @EJB
-  SystemBean sys;
   @EJB
   DataEditorBean deb;
   @EJB
@@ -174,8 +170,7 @@ public class CrmModuleBean implements BeeModule {
                 }
               }
               if (!response.hasErrors()) {
-                BeeView view = sys.getView(rs.getViewName());
-                rs = sys.getViewData(view.getName(), ComparisonFilter.compareId(projectId));
+                rs = qs.getViewData(rs.getViewName(), ComparisonFilter.compareId(projectId));
 
                 if (rs.isEmpty()) {
                   String msg = "Optimistic lock exception";

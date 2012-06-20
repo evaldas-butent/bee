@@ -21,8 +21,10 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -273,6 +275,33 @@ public class QueryServiceBean {
     return getSingleRow(query).getValues(0);
   }
 
+  public BeeRowSet getViewData(String viewName) {
+    return getViewData(viewName, null, null);
+  }
+
+  public BeeRowSet getViewData(String viewName, Filter filter) {
+    return getViewData(viewName, filter, null);
+  }
+
+  public BeeRowSet getViewData(String viewName, Filter filter, Order order) {
+    return getViewData(viewName, filter, order, BeeConst.UNDEF, BeeConst.UNDEF, null);
+  }
+
+  public BeeRowSet getViewData(String viewName, Filter filter, Order order, int limit, int offset,
+      List<String> columns) {
+
+    BeeView view = sys.getView(viewName);
+    SqlSelect ss = view.getQuery(filter, order, columns);
+
+    if (limit > 0) {
+      ss.setLimit(limit);
+    }
+    if (offset > 0) {
+      ss.setOffset(offset);
+    }
+    return getViewData(ss, view);
+  }
+
   public BeeRowSet getViewData(final SqlSelect query, final BeeView view) {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
@@ -296,6 +325,10 @@ public class QueryServiceBean {
         throw new BeeRuntimeException("Query must return a ResultSet");
       }
     });
+  }
+
+  public int getViewSize(String viewName, Filter filter) {
+    return sqlCount(sys.getView(viewName).getQuery(filter));
   }
 
   public long insertData(SqlInsert si) {
@@ -419,7 +452,7 @@ public class QueryServiceBean {
 
     if (!BeeUtils.isEmpty(sources)) {
       for (String source : sources) {
-        if (sys.isTable(source)) {
+        if (sys.isTable(source) && !sys.getTable(source).isActive()) {
           sys.activateTable(source);
         }
       }

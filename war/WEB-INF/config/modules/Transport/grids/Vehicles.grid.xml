@@ -3,7 +3,7 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:w="http://www.butent.com/widget"
 
-  name="Vehicles" viewName="Vehicles" editForm="Vehicle"
+  name="Vehicles" viewName="Vehicles" editForm="NewVehicle"
   >
   <west size="160" splitterSize="2">
     <w:DataTree name="VehicleModels" caption="Modeliai" source="VehicleModels" parentColumn="Parent">

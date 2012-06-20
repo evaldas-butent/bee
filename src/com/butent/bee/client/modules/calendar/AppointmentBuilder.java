@@ -22,7 +22,31 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_APPOINTMENT_TYPE;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_ATTENDEE;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_BACKGROUND;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_COLOR;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_COMPANY;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_DEFAULT_COLOR;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_DEFAULT_PROPERTY;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_DESCRIPTION;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_END_DATE_TIME;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_FOREGROUND;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_GROUP_NAME;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_HOURS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_MINUTES;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_NAME;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_PROPERTY;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_REMINDER_TYPE;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_START_DATE_TIME;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_THEME;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_TYPE_NAME;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_VEHICLE;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.SVC_CREATE_APPOINTMENT;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.SVC_UPDATE_APPOINTMENT;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENTS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENT_TYPES;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_THEMES;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -94,7 +118,7 @@ class AppointmentBuilder extends AbstractFormCallback {
       updateDuration(event.getValue());
     }
   }
-  
+
   private class ResourceWidgetHandler implements KeyDownHandler, DoubleClickHandler {
     @Override
     public void onDoubleClick(DoubleClickEvent event) {
@@ -156,7 +180,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   static BeeRow createEmptyRow(DateTime start) {
     BeeRow row = RowFactory.createEmptyRow(CalendarKeeper.getAppointmentViewInfo(), true);
 
-    long type = CalendarKeeper.getDefaultAppointmentType();
+    Long type = CalendarKeeper.getDefaultAppointmentType();
     if (DataUtils.isId(type)) {
       Data.setValue(VIEW_APPOINTMENTS, row, COL_APPOINTMENT_TYPE, type);
     }
@@ -180,7 +204,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   private Long defaultRepairType = null;
 
   private final List<Long> colors = Lists.newArrayList();
-  
+
   private final SetMultimap<Long, Long> serviceResources = HashMultimap.create();
   private final SetMultimap<Long, Long> repairResources = HashMultimap.create();
 
@@ -274,7 +298,7 @@ class AppointmentBuilder extends AbstractFormCallback {
       setEndDateWidgetId(DomUtils.getId(widget));
     } else if (BeeUtils.same(name, NAME_END_TIME)) {
       setEndTimeWidgetId(DomUtils.getId(widget));
-      
+
     } else if (BeeUtils.same(name, NAME_HOURS)) {
       setHourWidgetId(DomUtils.getId(widget));
     } else if (BeeUtils.same(name, NAME_MINUTES)) {
@@ -303,7 +327,7 @@ class AppointmentBuilder extends AbstractFormCallback {
       setBuildInfoWidgetId(DomUtils.getId(widget));
     }
   }
-  
+
   @Override
   public void afterRefresh(FormView form, IsRow row) {
     if (row == null) {
@@ -312,10 +336,10 @@ class AppointmentBuilder extends AbstractFormCallback {
 
     DateTime start = Data.getDateTime(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME);
     DateTime end = Data.getDateTime(VIEW_APPOINTMENTS, row, COL_END_DATE_TIME);
-    
+
     getInputDate(getStartDateWidgetId()).setDate(start);
     getInputTime(getStartTimeWidgetId()).setDateTime(start);
-    
+
     getInputDate(getEndDateWidgetId()).setDate(end);
     getInputTime(getEndTimeWidgetId()).setDateTime(end);
   }
@@ -369,7 +393,7 @@ class AppointmentBuilder extends AbstractFormCallback {
     BeeUtils.overwrite(resources, attendees);
     refreshResourceWidget();
   }
-  
+
   void setColor(Long color) {
     if (color != null && colors.contains(color)) {
       colorWidget.selectTab(colors.indexOf(color));
@@ -433,7 +457,7 @@ class AppointmentBuilder extends AbstractFormCallback {
 
     Long serviceType = getSelectedId(getServiceTypeWidgetId(), serviceTypes);
     Long repairType = getSelectedId(getRepairTypeWidgetId(), repairTypes);
-    
+
     final List<Long> attIds = Lists.newArrayList();
     final BeeListBox widget = new BeeListBox(true);
 
@@ -443,7 +467,7 @@ class AppointmentBuilder extends AbstractFormCallback {
       if (resources.contains(id)) {
         continue;
       }
-      
+
       if (serviceType != null && serviceResources.containsKey(id)
           && !serviceResources.containsEntry(id, serviceType)) {
         continue;
@@ -471,7 +495,7 @@ class AppointmentBuilder extends AbstractFormCallback {
     }
 
     widget.addStyleName(STYLE_ADD_RESOURCES);
-    
+
     final InputWidgetCallback callback = new InputWidgetCallback() {
       @Override
       public void onSuccess() {
@@ -487,7 +511,7 @@ class AppointmentBuilder extends AbstractFormCallback {
         }
       }
     };
-    
+
     widget.addDoubleClickHandler(new DoubleClickHandler() {
       @Override
       public void onDoubleClick(DoubleClickEvent event) {
@@ -495,7 +519,7 @@ class AppointmentBuilder extends AbstractFormCallback {
         if (popup != null) {
           popup.hide();
           callback.onSuccess();
-        }  
+        }
       }
     });
 
@@ -556,10 +580,10 @@ class AppointmentBuilder extends AbstractFormCallback {
         return null;
       }
     }
-    
+
     return TimeUtils.combine(datePart, timePart);
   }
-  
+
   private String getEndDateWidgetId() {
     return endDateWidgetId;
   }
@@ -571,7 +595,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   private String getHourWidgetId() {
     return hourWidgetId;
   }
-  
+
   private InputDate getInputDate(String id) {
     Widget widget = getWidget(id);
     return (widget instanceof InputDate) ? (InputDate) widget : null;
@@ -618,14 +642,14 @@ class AppointmentBuilder extends AbstractFormCallback {
   private String getServiceTypeWidgetId() {
     return serviceTypeWidgetId;
   }
-  
+
   private DateTime getStart() {
     HasDateValue datePart = getInputDate(getStartDateWidgetId()).getDate();
     if (datePart == null) {
       return null;
     }
     DateTime timePart = getInputTime(getStartTimeWidgetId()).getDateTime();
-    
+
     return TimeUtils.combine(datePart, timePart);
   }
 
@@ -748,7 +772,7 @@ class AppointmentBuilder extends AbstractFormCallback {
       }
     }
   }
-  
+
   private boolean isEmpty(IsRow row, String columnId) {
     return BeeUtils.isEmpty(Data.getString(VIEW_APPOINTMENTS, row, columnId));
   }
@@ -791,7 +815,7 @@ class AppointmentBuilder extends AbstractFormCallback {
         }
       }
     }
-    
+
     loadResourceProperties();
 
     if (!BeeUtils.isEmpty(getServiceTypeWidgetId())) {
@@ -819,7 +843,7 @@ class AppointmentBuilder extends AbstractFormCallback {
 
   private void loadResourceProperties() {
     BeeRowSet rowSet = CalendarKeeper.getAttendeeProps();
-    
+
     if (!serviceResources.isEmpty()) {
       serviceResources.clear();
     }
@@ -829,12 +853,12 @@ class AppointmentBuilder extends AbstractFormCallback {
     if (rowSet == null || rowSet.isEmpty()) {
       return;
     }
-    
+
     String viewName = rowSet.getViewName();
     for (BeeRow row : rowSet.getRows()) {
       Long resource = Data.getLong(viewName, row, COL_ATTENDEE);
       Long property = Data.getLong(viewName, row, COL_PROPERTY);
-      
+
       if (serviceTypes.contains(property)) {
         serviceResources.put(resource, property);
       } else if (repairTypes.contains(property)) {
@@ -907,7 +931,7 @@ class AppointmentBuilder extends AbstractFormCallback {
 
     DateTime start = Data.getDateTime(VIEW_APPOINTMENTS, createdRow, COL_START_DATE_TIME);
     DateTime end = Data.getDateTime(VIEW_APPOINTMENTS, createdRow, COL_END_DATE_TIME);
-    
+
     DateTimeFormat format = DateTimeFormat.getFormat("MMM d HH:mm");
     if (start != null) {
       info.append(format.format(start));
@@ -953,7 +977,7 @@ class AppointmentBuilder extends AbstractFormCallback {
 
     BeeRow row = DataUtils.cloneRow(getFormView().getActiveRow());
     final String viewName = VIEW_APPOINTMENTS;
-    
+
     DateTime start = getStart();
     Data.setValue(viewName, row, COL_START_DATE_TIME, start);
 
@@ -974,7 +998,7 @@ class AppointmentBuilder extends AbstractFormCallback {
         Data.setValue(viewName, row, COL_COLOR, colors.get(index));
       }
     }
-    
+
     BeeRowSet rowSet;
     List<BeeColumn> columns = CalendarKeeper.getAppointmentViewColumns();
     if (isNew) {
@@ -996,11 +1020,11 @@ class AppointmentBuilder extends AbstractFormCallback {
     }
 
     Long reminderType = getSelectedId(getReminderWidgetId(), reminderTypes);
-    final String remindList = DataUtils.isId(reminderType) ? reminderType.toString() : null; 
+    final String remindList = DataUtils.isId(reminderType) ? reminderType.toString() : null;
     if (!BeeUtils.isEmpty(remindList)) {
       rowSet.setTableProperty(COL_REMINDER_TYPE, remindList);
     }
-    
+
     final String svc = isNew ? SVC_CREATE_APPOINTMENT : SVC_UPDATE_APPOINTMENT;
     ParameterList params = CalendarKeeper.createRequestParameters(svc);
 
@@ -1016,13 +1040,13 @@ class AppointmentBuilder extends AbstractFormCallback {
           if (result == null) {
             getFormView().notifySevere(svc, ": cannot restore row");
           } else {
-            
+
             if (isNew) {
               BeeKeeper.getBus().fireEvent(new RowInsertEvent(viewName, result));
             } else {
               BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, result));
             }
-            
+
             Appointment appointment = new Appointment(result, attList, propList, remindList);
             State state = isNew ? State.CREATED : State.CHANGED;
             AppointmentEvent.fire(appointment, state);
@@ -1172,7 +1196,7 @@ class AppointmentBuilder extends AbstractFormCallback {
       getFormView().notifySevere("Pasirinkite remonto tipą");
       return false;
     }
-    
+
     DateTime start = getStart();
     DateTime end = getEnd();
 

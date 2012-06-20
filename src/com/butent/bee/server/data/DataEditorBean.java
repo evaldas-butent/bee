@@ -195,7 +195,7 @@ public class DataEditorBean {
         if (RowInfo.class.equals(returnType)) {
           response.setResponse(new BeeRow(id, tblInfo.version));
         } else {
-          BeeRowSet newRs = sys.getViewData(view.getName(), ComparisonFilter.compareId(id));
+          BeeRowSet newRs = qs.getViewData(view.getName(), ComparisonFilter.compareId(id));
 
           if (newRs.isEmpty()) {
             response.addError("Optimistic lock exception");
@@ -410,7 +410,7 @@ public class DataEditorBean {
         bitMap.put(bit, Longs.contains(bits, bit));
       }
       if (table.updateStateActive(state, Longs.toArray(bitMap.keySet()))) {
-        sys.rebuildTable(table.getName(), true);
+        sys.rebuildTable(table.getName());
       }
       SqlUpdate su = table.updateState(id, state, bitMap);
 

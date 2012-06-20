@@ -72,7 +72,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
       this.precision = (xmlField.precision == null) ? BeeConst.UNDEF : xmlField.precision;
       this.scale = (xmlField.scale == null) ? BeeConst.UNDEF : xmlField.scale;
-      this.notNull = extended ? false : xmlField.notNull;
+      this.notNull = xmlField.notNull;
       this.unique = xmlField.unique;
       this.label = xmlField.label;
       this.extended = extended;
@@ -105,7 +105,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
           break;
       }
       if (isUnique()) {
-        addKey(true, getTable(), this.getName());
+        addKey(true, getStorageTable(), this.getName());
       }
     }
 
@@ -138,7 +138,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       return scale;
     }
 
-    public String getTable() {
+    public String getStorageTable() {
       return isExtended() ? getExtTable(this) : getOwner().getName();
     }
 
@@ -278,7 +278,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
       Assert.notEmpty(this.relation);
 
-      addForeignKey(getTable(), this.getName(), getRelation(), getCascade());
+      addForeignKey(getStorageTable(), this.getName(), getRelation(), getCascade());
     }
 
     public SqlKeyword getCascade() {
@@ -359,7 +359,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       SqlCreate sc = query;
 
       if (BeeUtils.isEmpty(query)) {
-        String tblName = field.getTable();
+        String tblName = field.getStorageTable();
 
         sc = new SqlCreate(tblName, false)
             .addLong(extIdName, true)
@@ -375,7 +375,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
     @Override
     public String getExtTable(BeeField field) {
-      Assert.state(hasField(field) && field.isExtended());
+      Assert.state(field.isExtended());
       return getName() + "_EXT";
     }
 
@@ -400,7 +400,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
       String tblName = getName();
       String alias = BeeUtils.ifString(tblAlias, tblName);
-      String extTable = field.getTable();
+      String extTable = field.getStorageTable();
 
       for (IsFrom from : query.getFrom()) {
         Object src = from.getSource();

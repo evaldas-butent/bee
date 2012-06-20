@@ -81,6 +81,8 @@ public class XmlView {
   public boolean readOnly;
 
   @XmlAttribute
+  public String editForm;
+  @XmlAttribute
   public String newRowForm;
   @XmlAttribute
   public String newRowColumns;

@@ -180,7 +180,7 @@ public class CommonsModuleBean implements BeeModule {
         }
         if (!response.hasErrors()) {
           BeeView view = sys.getView(rs.getViewName());
-          rs = sys.getViewData(view.getName(), ComparisonFilter.compareId(itemId));
+          rs = qs.getViewData(view.getName(), ComparisonFilter.compareId(itemId));
 
           if (rs.isEmpty()) {
             String msg = "Optimistic lock exception";

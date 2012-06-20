@@ -42,6 +42,7 @@
 
   <xs:simpleType name="registeredDecorator">
     <xs:restriction base="xs:string">
+      <xs:enumeration value="flex-left" />
       <xs:enumeration value="label" />
       <xs:enumeration value="caption-left" />
       <xs:enumeration value="caption-right" />

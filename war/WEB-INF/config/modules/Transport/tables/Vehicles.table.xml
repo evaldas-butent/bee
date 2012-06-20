@@ -22,4 +22,10 @@
     <Double name="Brutto" />
     <Text name="Notes" />
   </Fields>
+  <Extensions>
+    <Numeric name="Body" precision="1" />
+    <Numeric name="Chassis" precision="1" />
+    <Numeric name="Gearbox" precision="1" />
+    <Boolean name="Conditioner" />
+  </Extensions>
 </Table>

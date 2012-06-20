@@ -18,7 +18,6 @@ import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.sql.HasFrom;
-import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
@@ -28,11 +27,9 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SqlConstants;
@@ -43,9 +40,7 @@ import com.butent.bee.shared.data.XmlTable.XmlKey;
 import com.butent.bee.shared.data.XmlView;
 import com.butent.bee.shared.data.XmlView.XmlColumn;
 import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
-import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -67,6 +62,8 @@ import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 /**
  * Ensures core data management functionality containing: data structures for tables and views,
@@ -123,11 +120,13 @@ public class SystemBean {
   private Map<String, BeeView> viewCache = Maps.newHashMap();
   private EventBus viewEventBus = new EventBus();
 
+  // @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+  @Lock(LockType.WRITE)
   public void activateTable(String tblName) {
     BeeTable table = getTable(tblName);
 
     if (!table.isActive()) {
-      rebuildTable(table, true);
+      rebuildTable(table);
     }
   }
 
@@ -178,7 +177,7 @@ public class SystemBean {
             .addCount("TotalRows")
             .addFrom(tbl);
       } else {
-        ss = getViewQuery(tbl);
+        ss = getView(tbl).getQuery();
       }
       String stateAlias = joinState(ss, tbl, null, state.getName());
 
@@ -244,18 +243,17 @@ public class SystemBean {
     List<BeeColumn> columns = null;
     List<ViewColumn> viewColumns = null;
 
-    if (source.isActive()) {
-      columns = Lists.newArrayList();
+    columns = Lists.newArrayList();
 
-      for (String col : view.getColumnNames()) {
-        BeeColumn column = new BeeColumn();
-        view.initColumn(col, column);
-        columns.add(column);
-      }
-      viewColumns = view.getViewColumns();
+    for (String col : view.getColumnNames()) {
+      BeeColumn column = new BeeColumn();
+      view.initColumn(col, column);
+      columns.add(column);
     }
+    viewColumns = view.getViewColumns();
+
     return new DataInfo(viewName, source.getName(), source.getIdName(), source.getVersionName(),
-        view.getNewRowForm(), view.getNewRowColumns(), view.getNewRowCaption(),
+        view.getEditForm(), view.getNewRowForm(), view.getNewRowColumns(), view.getNewRowCaption(),
         columns, viewColumns);
   }
 
@@ -335,37 +333,6 @@ public class SystemBean {
     return view;
   }
 
-  public IsCondition getViewCondition(String viewName, Filter filter) {
-    return getView(viewName).getCondition(filter);
-  }
-
-  public BeeRowSet getViewData(String viewName) {
-    return getViewData(viewName, null, null);
-  }
-
-  public BeeRowSet getViewData(String viewName, Filter filter) {
-    return getViewData(viewName, filter, null);
-  }
-
-  public BeeRowSet getViewData(String viewName, Filter filter, Order order) {
-    return getViewData(viewName, filter, order, BeeConst.UNDEF, BeeConst.UNDEF, null);
-  }
-
-  public BeeRowSet getViewData(String viewName, Filter filter, Order order, int limit, int offset,
-      List<String> columns) {
-
-    BeeView view = getView(viewName);
-    SqlSelect ss = view.getQuery(filter, order, columns);
-
-    if (limit > 0) {
-      ss.setLimit(limit);
-    }
-    if (offset > 0) {
-      ss.setOffset(offset);
-    }
-    return qs.getViewData(ss, view);
-  }
-
   public Collection<String> getViewNames() {
     Collection<String> views = Lists.newArrayList();
 
@@ -373,14 +340,6 @@ public class SystemBean {
       views.add(view.getName());
     }
     return views;
-  }
-
-  public SqlSelect getViewQuery(String viewName) {
-    return getView(viewName).getQuery();
-  }
-
-  public int getViewSize(String viewName, Filter filter) {
-    return qs.sqlCount(getView(viewName).getQuery(filter));
   }
 
   public XmlState getXmlState(String moduleName, String stateName) {
@@ -586,20 +545,25 @@ public class SystemBean {
     viewEventBus.post(viewEvent);
   }
 
+  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+  @Lock(LockType.WRITE)
   public void rebuildActiveTables() {
     initTables();
 
     for (BeeTable table : getTables()) {
       if (table.isActive()) {
-        rebuildTable(table, true);
+        rebuildTable(table);
       }
     }
   }
 
-  public void rebuildTable(String tblName, boolean ref) {
-    rebuildTable(getTable(tblName), ref);
+  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+  @Lock(LockType.WRITE)
+  public void rebuildTable(String tblName) {
+    rebuildTable(getTable(tblName));
   }
 
+  @Lock(LockType.WRITE)
   public void registerViewEventHandler(ViewEventHandler eventHandler) {
     viewEventBus.register(eventHandler);
   }
@@ -662,7 +626,7 @@ public class SystemBean {
         .addLong(table.getVersionName(), true));
 
     for (BeeField field : table.getFields()) {
-      tblName = field.getTable();
+      tblName = field.getStorageTable();
 
       if (field.isExtended()) {
         SqlCreate sc = table.createExtTable(newTables.get(tblName), field);
@@ -960,7 +924,7 @@ public class SystemBean {
 
       for (BeeField field : table.getFields()) {
         if (field instanceof BeeRelation && ((BeeRelation) field).hasEditableRelation()) {
-          String tblName = field.getTable();
+          String tblName = field.getStorageTable();
           String relTable = ((BeeRelation) field).getRelation();
 
           List<String[]> entry = tr.get(tblName);
@@ -1113,7 +1077,7 @@ public class SystemBean {
             if (ok) {
               for (String fld : key.fields) {
                 if (table.hasField(fld)) {
-                  String keyTbl = table.getField(fld).getTable();
+                  String keyTbl = table.getField(fld).getStorageTable();
                   String keyFld = table.getField(fld).getName();
 
                   if (BeeUtils.isEmpty(firstTbl)) {
@@ -1139,7 +1103,6 @@ public class SystemBean {
             }
           }
         }
-        // TODO: xmlTable.triggers
         if (table.isEmpty()) {
           LogUtils.warning(logger, "Table has no fields defined:", tbl);
           table = null;
@@ -1195,8 +1158,7 @@ public class SystemBean {
     }
   }
 
-  @Lock(LockType.WRITE)
-  private void rebuildTable(BeeTable table, boolean ref) {
+  private void rebuildTable(BeeTable table) {
     table.setActive(false);
     String tblMain = table.getName();
     Map<String, String> rebuilds = createTable(table, null);
@@ -1221,13 +1183,11 @@ public class SystemBean {
           foreignKeys.add(fKey);
         }
       }
-      if (ref) {
-        for (BeeTable other : getTables()) {
-          if (!BeeUtils.same(other.getName(), tblMain) && other.isActive()) {
-            for (BeeForeignKey fKey : other.getForeignKeys()) {
-              if (BeeUtils.same(fKey.getRefTable(), tblMain)) {
-                foreignKeys.add(fKey);
-              }
+      for (BeeTable other : getTables()) {
+        if (!BeeUtils.same(other.getName(), tblMain) && other.isActive()) {
+          for (BeeForeignKey fKey : other.getForeignKeys()) {
+            if (BeeUtils.same(fKey.getRefTable(), tblMain)) {
+              foreignKeys.add(fKey);
             }
           }
         }
@@ -1252,8 +1212,8 @@ public class SystemBean {
         makeStructureChanges(SqlUtils.renameTable(tblBackup, tblMain));
       }
       createKeys(keys);
-      createForeignKeys(foreignKeys);
       createTriggers(triggers);
+      createForeignKeys(foreignKeys);
     }
 
     for (String tbl : rebuilds.keySet()) {
@@ -1290,8 +1250,8 @@ public class SystemBean {
           makeStructureChanges(SqlUtils.renameTable(tblBackup, tbl));
         }
         createKeys(keys);
-        createForeignKeys(foreignKeys);
         createTriggers(triggers);
+        createForeignKeys(foreignKeys);
       }
     }
     table.setActive(true);

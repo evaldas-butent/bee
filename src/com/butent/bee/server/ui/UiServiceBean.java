@@ -355,7 +355,7 @@ public class UiServiceBean {
       return ResponseObject.response(sys.getDataInfo());
     } else {
       DataInfo dataInfo = sys.getDataInfo(viewName);
-      dataInfo.setRowCount(sys.getViewSize(viewName, null));
+      dataInfo.setRowCount(qs.getViewSize(viewName, null));
       return ResponseObject.response(dataInfo);
     }
   }
@@ -482,10 +482,10 @@ public class UiServiceBean {
 
     int cnt = BeeConst.UNDEF;
     if (!BeeUtils.isEmpty(getSize)) {
-      cnt = sys.getViewSize(viewName, filter);
+      cnt = qs.getViewSize(viewName, filter);
     }
+    BeeRowSet res = qs.getViewData(viewName, filter, order, limit, offset, colNames);
 
-    BeeRowSet res = sys.getViewData(viewName, filter, order, limit, offset, colNames);
     if (cnt >= 0 && res != null) {
       res.setTableProperty(Service.VAR_VIEW_SIZE,
           BeeUtils.toString(Math.max(cnt, res.getNumberOfRows())));
@@ -519,7 +519,7 @@ public class UiServiceBean {
     if (!BeeUtils.isEmpty(where)) {
       filter = Filter.restore(where);
     }
-    return ResponseObject.response(sys.getViewSize(viewName, filter));
+    return ResponseObject.response(qs.getViewSize(viewName, filter));
   }
 
   private ResponseObject insertRow(RequestInfo reqInfo) {
@@ -635,9 +635,8 @@ public class UiServiceBean {
     } else if (!BeeUtils.isEmpty(cmd)) {
       String tbl = NameUtils.getWord(cmd, 0);
       if (sys.isTable(tbl)) {
-        String opt = NameUtils.getWord(cmd, 1);
-        sys.rebuildTable(tbl, !BeeConst.STRING_MINUS.equals(opt));
-        response.addInfo("Rebuild", tbl, opt, "OK");
+        sys.rebuildTable(tbl);
+        response.addInfo("Rebuild", tbl, "OK");
       } else {
         response.addError("Unknown table:", tbl);
       }

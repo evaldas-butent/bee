@@ -206,7 +206,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       String tblName = null;
 
       if (field != null) {
-        tblName = field.getTable();
+        tblName = field.getOwner().getName();
       }
       return tblName;
     }
@@ -332,6 +332,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   private final String sourceAlias;
   private final boolean readOnly;
 
+  private final String editForm;
   private final String newRowForm;
   private final String newRowColumns;
   private final String newRowCaption;
@@ -348,6 +349,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     this.name = xmlView.name;
     Assert.notEmpty(name);
 
+    this.editForm = xmlView.editForm;
     this.newRowForm = xmlView.newRowForm;
     this.newRowColumns = xmlView.newRowColumns;
     this.newRowCaption = xmlView.newRowCaption;
@@ -493,6 +495,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return null;
   }
 
+  public String getEditForm() {
+    return editForm;
+  }
+
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
 
@@ -500,8 +506,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         "Source", getSourceName(), "Source Alias", getSourceAlias(),
         "Source Id Name", getSourceIdName(), "Source Version Name", getSourceVersionName(),
         "Filter", BeeUtils.transform(getFilter()), "Read Only", isReadOnly(),
-        "NewRowForm", getNewRowForm(), "NewRowColumns", getNewRowColumns(),
-        "NewRowCaption", getNewRowCaption(),
+        "EditForm", getEditForm(), "NewRowForm", getNewRowForm(),
+        "NewRowColumns", getNewRowColumns(), "NewRowCaption", getNewRowCaption(),
         "Query", query.getQuery(), "Columns", columns.size());
 
     int i = 0;

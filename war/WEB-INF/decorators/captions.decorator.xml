@@ -20,6 +20,15 @@
       </created>
     </lifecycle>
   </abstract>
+  
+  <decorator id="flex-left" extends="caption">
+    <optionalParam p:size="0" p:unit="px" p:align="right" />
+    <const name="caption-style">display: inline-block; width: {size}{unit}; text-align: {align}; padding-right: 2px;</const>
+    <template>
+      <div class="flexBox-horizontal-center flexible"><span data-role="caption" style="{caption-style}">{caption}</span>
+      <div style="position:relative; min-height: 23px" class="flexible"><ins class="occupy">content</ins></div></div>
+    </template>
+  </decorator>
 
   <decorator id="label" extends="caption">
     <optionalParam p:size="0" p:unit="em" p:align="left" />

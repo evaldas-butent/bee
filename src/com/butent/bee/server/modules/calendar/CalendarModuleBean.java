@@ -3,7 +3,50 @@ package com.butent.bee.server.modules.calendar;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.CALENDAR_METHOD;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.CALENDAR_MODULE;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_ACTIVE_VIEW;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_APPOINTMENT;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_APPOINTMENT_TYPE;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_ATTENDEE;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_ATTENDEE_TYPE;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_CALENDAR;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_COMPANY_PERSON;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_DEFAULT_DISPLAYED_DAYS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_INTERVALS_PER_HOUR;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_ORGANIZER;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_PIXELS_PER_INTERVAL;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_PROPERTY;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_REMINDER_TYPE;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_SCROLL_TO_HOUR;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_STATUS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_TIME_BLOCK_CLICK_NUMBER;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_USER;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_WORKING_HOUR_END;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_WORKING_HOUR_START;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.PARAM_ACTIVE_VIEW;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.PARAM_CALENDAR_ID;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.PARAM_USER_CALENDAR_ID;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.SVC_CREATE_APPOINTMENT;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.SVC_GET_CALENDAR_APPOINTMENTS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.SVC_GET_USER_CALENDAR;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.SVC_SAVE_ACTIVE_VIEW;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.SVC_UPDATE_APPOINTMENT;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.TBL_APPOINTMENT_ATTENDEES;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.TBL_APPOINTMENT_PROPS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.TBL_APPOINTMENT_REMINDERS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.TBL_USER_CALENDARS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENTS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENT_ATTENDEES;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENT_PROPS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENT_REMINDERS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_ATTENDEES;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_CALENDARS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_CALENDAR_ATTENDEES;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_CALENDAR_PERSONS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_CAL_APPOINTMENT_TYPES;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_CAL_ATTENDEE_TYPES;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_USER_CALENDARS;
 
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -26,6 +69,8 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.View;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -154,11 +199,11 @@ public class CalendarModuleBean implements BeeModule {
 
     Filter calFilter = ComparisonFilter.isEqual(COL_CALENDAR, new LongValue(calendarId));
 
-    BeeRowSet calAttTypes = sys.getViewData(VIEW_CAL_ATTENDEE_TYPES, calFilter);
-    BeeRowSet calAttendees = sys.getViewData(VIEW_CALENDAR_ATTENDEES, calFilter);
+    BeeRowSet calAttTypes = qs.getViewData(VIEW_CAL_ATTENDEE_TYPES, calFilter);
+    BeeRowSet calAttendees = qs.getViewData(VIEW_CALENDAR_ATTENDEES, calFilter);
 
-    BeeRowSet calAppTypes = sys.getViewData(VIEW_CAL_APPOINTMENT_TYPES, calFilter);
-    BeeRowSet calPersons = sys.getViewData(VIEW_CALENDAR_PERSONS, calFilter);
+    BeeRowSet calAppTypes = qs.getViewData(VIEW_CAL_APPOINTMENT_TYPES, calFilter);
+    BeeRowSet calPersons = qs.getViewData(VIEW_CALENDAR_PERSONS, calFilter);
 
     CompoundFilter attFilter = Filter.or();
     if (!calAttTypes.isEmpty()) {
@@ -169,7 +214,7 @@ public class CalendarModuleBean implements BeeModule {
       attFilter.add(Filter.idIn(DataUtils.getDistinct(calAttendees, COL_ATTENDEE)));
     }
 
-    BeeRowSet attendees = sys.getViewData(VIEW_ATTENDEES, attFilter);
+    BeeRowSet attendees = qs.getViewData(VIEW_ATTENDEES, attFilter);
 
     CompoundFilter appFilter = Filter.and();
     appFilter.add(ComparisonFilter.isNotEqual(COL_STATUS,
@@ -184,11 +229,11 @@ public class CalendarModuleBean implements BeeModule {
           DataUtils.getDistinct(calPersons, COL_COMPANY_PERSON)));
     }
 
-    BeeRowSet appAtts = sys.getViewData(VIEW_APPOINTMENT_ATTENDEES);
-    BeeRowSet appProps = sys.getViewData(VIEW_APPOINTMENT_PROPS);
-    BeeRowSet appRemind = sys.getViewData(VIEW_APPOINTMENT_REMINDERS);
+    BeeRowSet appAtts = qs.getViewData(VIEW_APPOINTMENT_ATTENDEES);
+    BeeRowSet appProps = qs.getViewData(VIEW_APPOINTMENT_PROPS);
+    BeeRowSet appRemind = qs.getViewData(VIEW_APPOINTMENT_REMINDERS);
 
-    BeeRowSet appointments = sys.getViewData(VIEW_APPOINTMENTS, appFilter);
+    BeeRowSet appointments = qs.getViewData(VIEW_APPOINTMENTS, appFilter);
 
     Set<Long> attIds = Sets.newHashSet();
     boolean filterByAttendee = !attFilter.isEmpty();
@@ -267,12 +312,12 @@ public class CalendarModuleBean implements BeeModule {
     Filter filter = Filter.and(ComparisonFilter.isEqual(COL_CALENDAR, new LongValue(calendarId)),
         ComparisonFilter.isEqual(COL_USER, new LongValue(userId)));
 
-    BeeRowSet ucRowSet = sys.getViewData(VIEW_USER_CALENDARS, filter);
+    BeeRowSet ucRowSet = qs.getViewData(VIEW_USER_CALENDARS, filter);
     if (!ucRowSet.isEmpty()) {
       return ResponseObject.response(ucRowSet);
     }
 
-    BeeRowSet calRowSet = sys.getViewData(VIEW_CALENDARS, ComparisonFilter.compareId(calendarId));
+    BeeRowSet calRowSet = qs.getViewData(VIEW_CALENDARS, ComparisonFilter.compareId(calendarId));
     if (calRowSet.isEmpty()) {
       return ResponseObject.error(SVC_GET_USER_CALENDAR, PARAM_CALENDAR_ID, calendarId,
           "calendar not found");
@@ -295,7 +340,7 @@ public class CalendarModuleBean implements BeeModule {
       sqlInsert.addConstant(COL_TIME_BLOCK_CLICK_NUMBER,
           settings.getTimeBlockClickNumber().ordinal());
     }
-    
+
     for (View view : View.values()) {
       if (settings.isVisible(view)) {
         sqlInsert.addConstant(view.getColumnId(), true);
@@ -307,7 +352,7 @@ public class CalendarModuleBean implements BeeModule {
       return response;
     }
 
-    BeeRowSet result = sys.getViewData(VIEW_USER_CALENDARS, filter);
+    BeeRowSet result = qs.getViewData(VIEW_USER_CALENDARS, filter);
     if (result.isEmpty()) {
       return ResponseObject.error(SVC_GET_USER_CALENDAR, PARAM_CALENDAR_ID, calendarId,
           "user calendar not created");
@@ -336,7 +381,7 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.error(SVC_SAVE_ACTIVE_VIEW, PARAM_USER_CALENDAR_ID,
           "parameter not found");
     }
-    
+
     Integer activeView = BeeUtils.toIntOrNull(reqInfo.getParameter(PARAM_ACTIVE_VIEW));
     if (!BeeUtils.isOrdinal(View.class, activeView)) {
       return ResponseObject.error(SVC_SAVE_ACTIVE_VIEW, PARAM_ACTIVE_VIEW, "parameter not found");
@@ -344,10 +389,10 @@ public class CalendarModuleBean implements BeeModule {
 
     SqlUpdate update = new SqlUpdate(TBL_USER_CALENDARS).addConstant(COL_ACTIVE_VIEW, activeView)
         .setWhere(SqlUtils.equal(TBL_USER_CALENDARS, sys.getIdName(TBL_USER_CALENDARS), rowId));
-    
+
     return qs.updateDataWithResponse(update);
   }
-  
+
   private ResponseObject updateAppointment(RequestInfo reqInfo) {
     BeeRowSet newRowSet = BeeRowSet.restore(reqInfo.getContent());
     if (newRowSet.isEmpty()) {
@@ -362,19 +407,19 @@ public class CalendarModuleBean implements BeeModule {
     String propIds = newRowSet.getTableProperty(COL_PROPERTY);
     String attIds = newRowSet.getTableProperty(COL_ATTENDEE);
     String rtIds = newRowSet.getTableProperty(COL_REMINDER_TYPE);
-    
+
     String viewName = VIEW_APPOINTMENTS;
-    BeeRowSet oldRowSet = sys.getViewData(viewName, ComparisonFilter.compareId(appId));
+    BeeRowSet oldRowSet = qs.getViewData(viewName, ComparisonFilter.compareId(appId));
     if (oldRowSet == null || oldRowSet.isEmpty()) {
       return ResponseObject.error(SVC_UPDATE_APPOINTMENT, ": old row not found", appId);
     }
-    
+
     BeeRowSet updated = DataUtils.getUpdated(viewName, oldRowSet.getColumns(), oldRowSet.getRow(0),
         newRowSet.getRow(0));
-    
+
     ResponseObject response;
     if (updated == null) {
-      response = ResponseObject.response(oldRowSet.getRow(0)); 
+      response = ResponseObject.response(oldRowSet.getRow(0));
     } else {
       response = deb.commitRow(updated, true);
       if (response.hasErrors()) {
@@ -384,18 +429,18 @@ public class CalendarModuleBean implements BeeModule {
 
     Filter appFilter = ComparisonFilter.isEqual(COL_APPOINTMENT, new LongValue(appId));
 
-    List<Long> oldProperties = 
-        DataUtils.getDistinct(sys.getViewData(VIEW_APPOINTMENT_PROPS, appFilter), COL_PROPERTY);
-    List<Long> oldAttendees = 
-        DataUtils.getDistinct(sys.getViewData(VIEW_APPOINTMENT_ATTENDEES, appFilter), COL_ATTENDEE);
-    List<Long> oldReminders = 
-        DataUtils.getDistinct(sys.getViewData(VIEW_APPOINTMENT_REMINDERS, appFilter),
+    List<Long> oldProperties =
+        DataUtils.getDistinct(qs.getViewData(VIEW_APPOINTMENT_PROPS, appFilter), COL_PROPERTY);
+    List<Long> oldAttendees =
+        DataUtils.getDistinct(qs.getViewData(VIEW_APPOINTMENT_ATTENDEES, appFilter), COL_ATTENDEE);
+    List<Long> oldReminders =
+        DataUtils.getDistinct(qs.getViewData(VIEW_APPOINTMENT_REMINDERS, appFilter),
             COL_REMINDER_TYPE);
-    
+
     List<Long> newProperties = DataUtils.parseList(propIds);
     List<Long> newAttendees = DataUtils.parseList(attIds);
     List<Long> newReminders = DataUtils.parseList(rtIds);
-    
+
     updateChildren(TBL_APPOINTMENT_PROPS, COL_APPOINTMENT, appId,
         COL_PROPERTY, oldProperties, newProperties);
     updateChildren(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT, appId,
@@ -405,7 +450,7 @@ public class CalendarModuleBean implements BeeModule {
 
     return response;
   }
-  
+
   private void updateChildren(String tblName, String parentRelation, long parentId,
       String columnId, List<Long> oldValues, List<Long> newValues) {
     List<Long> insert = Lists.newArrayList(newValues);
@@ -413,7 +458,7 @@ public class CalendarModuleBean implements BeeModule {
 
     List<Long> delete = Lists.newArrayList(oldValues);
     delete.removeAll(newValues);
-    
+
     for (Long value : insert) {
       qs.insertData(new SqlInsert(tblName).addConstant(parentRelation, parentId)
           .addConstant(columnId, value));
