@@ -6,8 +6,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.Widget;
@@ -117,7 +117,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private class FilterUpdater implements ValueUpdater<String> {
     public void update(String value) {
       if (getFilterChangeHandler() != null) {
-        getFilterChangeHandler().onChange(null);
+        getFilterChangeHandler().onValueChange(null);
       }
     }
   }
@@ -133,7 +133,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private GridPresenter viewPresenter = null;
 
-  private ChangeHandler filterChangeHandler = null;
+  private ValueChangeHandler<String> filterChangeHandler = null;
   private final FilterUpdater filterUpdater = new FilterUpdater();
 
   private final CellGrid grid = new CellGrid();
@@ -203,15 +203,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
   }
 
-  public HandlerRegistration addChangeHandler(ChangeHandler handler) {
-    setFilterChangeHandler(handler);
-    return new HandlerRegistration() {
-      public void removeHandler() {
-        setFilterChangeHandler(null);
-      }
-    };
-  }
-
   public HandlerRegistration addEditFormHandler(EditFormEvent.Handler handler) {
     return addHandler(handler, EditFormEvent.getType());
   }
@@ -226,6 +217,15 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   public HandlerRegistration addSaveChangesHandler(SaveChangesEvent.Handler handler) {
     return addHandler(handler, SaveChangesEvent.getType());
+  }
+
+  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
+    setFilterChangeHandler(handler);
+    return new HandlerRegistration() {
+      public void removeHandler() {
+        setFilterChangeHandler(null);
+      }
+    };
   }
 
   public void applyOptions(String options) {
@@ -1512,7 +1512,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return editShowId;
   }
 
-  private ChangeHandler getFilterChangeHandler() {
+  private ValueChangeHandler<String> getFilterChangeHandler() {
     return filterChangeHandler;
   }
 
@@ -1793,7 +1793,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     this.editShowId = editShowId;
   }
 
-  private void setFilterChangeHandler(ChangeHandler filterChangeHandler) {
+  private void setFilterChangeHandler(ValueChangeHandler<String> filterChangeHandler) {
     this.filterChangeHandler = filterChangeHandler;
   }
 

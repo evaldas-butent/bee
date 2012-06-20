@@ -1,6 +1,13 @@
 package com.butent.bee.client.view.search;
 
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
+import com.google.gwt.user.client.Event;
+
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.data.DataUtils;
@@ -28,6 +35,13 @@ public class SearchBox extends InputText implements SearchView {
     if (!BeeUtils.isEmpty(placeholder)) {
       DomUtils.setPlaceholder(this, placeholder);
     }
+    
+    sinkEvents(Event.ONKEYDOWN);
+  }
+  
+  @Override
+  public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
+    return addHandler(handler, ValueChangeEvent.getType());
   }
   
   @Override
@@ -51,6 +65,16 @@ public class SearchBox extends InputText implements SearchView {
 
   public String getWidgetId() {
     return getId();
+  }
+
+  @Override
+  public void onBrowserEvent(Event event) {
+    if (EventUtils.isKeyDown(event.getType()) && event.getKeyCode() == KeyCodes.KEY_ENTER) {
+      event.preventDefault();
+      ValueChangeEvent.fire(this, getValue());
+    } else {
+      super.onBrowserEvent(event);
+    }
   }
 
   public void setViewPresenter(Presenter presenter) {

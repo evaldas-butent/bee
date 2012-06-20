@@ -3,8 +3,8 @@ package com.butent.bee.client.presenter;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.ui.Widget;
@@ -274,8 +274,9 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       Collection<SearchView> searchers = getSearchers();
       if (searchers != null) {
         for (SearchView search : searchers) {
-          filterChangeHandlers.add(search.addChangeHandler(new ChangeHandler() {
-            public void onChange(ChangeEvent event) {
+          filterChangeHandlers.add(search.addValueChangeHandler(new ValueChangeHandler<String>() {
+            @Override
+            public void onValueChange(ValueChangeEvent<String> event) {
               updateFilter();
             }
           }));

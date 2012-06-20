@@ -2,7 +2,6 @@ package com.butent.bee.client.modules.calendar.dnd;
 
 import com.google.gwt.user.client.ui.AbsolutePanel;
 
-import com.butent.bee.client.calendar.monthview.MonthView;
 import com.butent.bee.client.dnd.DragEndEvent;
 import com.butent.bee.client.dnd.DragHandler;
 import com.butent.bee.client.dnd.DragStartEvent;
@@ -11,6 +10,7 @@ import com.butent.bee.client.dnd.VetoDragException;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
+import com.butent.bee.client.modules.calendar.view.MonthView;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;

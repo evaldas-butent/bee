@@ -1,4 +1,4 @@
-package com.butent.bee.client.calendar.monthview;
+package com.butent.bee.client.modules.calendar.layout;
 
 import com.google.common.collect.Lists;
 

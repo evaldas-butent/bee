@@ -15,9 +15,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.calendar.Calendar;
-import com.butent.bee.client.calendar.monthview.MonthView;
-import com.butent.bee.client.calendar.resourceview.ResourceView;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.TabBar;
@@ -35,6 +32,8 @@ import com.butent.bee.client.modules.calendar.CalendarView.Type;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.modules.calendar.event.UpdateEvent;
+import com.butent.bee.client.modules.calendar.view.MonthView;
+import com.butent.bee.client.modules.calendar.view.ResourceView;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
@@ -85,7 +84,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   private final long calendarId;
 
-  private final Calendar calendar;
+  private final CalendarWidget calendar;
   private final Html dateBox;
 
   private final TabBar viewTabs = new TabBar(STYLE_VIEW_PREFIX, false);
@@ -103,7 +102,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     this.calendarId = calendarId;
 
-    this.calendar = new Calendar(settings);
+    this.calendar = new CalendarWidget(settings);
 
     calendar.addOpenHandler(new OpenHandler<Appointment>() {
       public void onOpen(OpenEvent<Appointment> event) {

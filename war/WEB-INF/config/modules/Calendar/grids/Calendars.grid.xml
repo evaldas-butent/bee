@@ -2,15 +2,13 @@
 <Grid xmlns="http://www.butent.com/grid"
 
   name="Calendars" viewName="Calendars" caption="Kalendoriai" newRowCaption="Naujas kalendorius"
-  newRowForm="Calendar" editForm="Calendar" favorite="Name"
+  newRowForm="Calendar" editForm="Calendar" favorite="Name" minColumnWidth="100"
   >
   <columns>
-    <DataColumn name="Name" caption="Pavadinimas" minWidth="100" />
+    <DataColumn name="Name" caption="Pavadinimas" />
     <ActionColumn name="Open" source="Name" caption="Atidaryti" element="link" sortable="false" />
 
     <DataColumn name="Description" caption="Aprašymas" sortable="false" />
-
-    <DataColumn name="Transparency" itemKey="Transparency" caption="Persidengiamumas" />
 
     <RelColumn name="Owner" caption="Savininkas" />
   </columns>

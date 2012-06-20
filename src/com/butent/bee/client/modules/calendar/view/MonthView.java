@@ -1,4 +1,4 @@
-package com.butent.bee.client.calendar.monthview;
+package com.butent.bee.client.modules.calendar.view;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -10,7 +10,6 @@ import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.calendar.CalendarFormat;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
@@ -18,6 +17,7 @@ import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.CalendarFormat;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.AppointmentWidget;
@@ -25,6 +25,11 @@ import com.butent.bee.client.modules.calendar.CalendarView;
 import com.butent.bee.client.modules.calendar.CalendarWidget;
 import com.butent.bee.client.modules.calendar.dnd.MonthDropController;
 import com.butent.bee.client.modules.calendar.dnd.MonthDragController;
+import com.butent.bee.client.modules.calendar.layout.AppointmentLayoutDescription;
+import com.butent.bee.client.modules.calendar.layout.AppointmentStackingManager;
+import com.butent.bee.client.modules.calendar.layout.DayLayoutDescription;
+import com.butent.bee.client.modules.calendar.layout.MonthLayoutDescription;
+import com.butent.bee.client.modules.calendar.layout.WeekLayoutDescription;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.DateTime;

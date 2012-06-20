@@ -1,13 +1,13 @@
-package com.butent.bee.client.calendar.dayview;
+package com.butent.bee.client.modules.calendar.view;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.HasWidgets;
 
-import com.butent.bee.client.calendar.CalendarFormat;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.modules.calendar.CalendarFormat;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;

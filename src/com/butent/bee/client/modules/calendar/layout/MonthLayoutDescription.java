@@ -1,11 +1,11 @@
-package com.butent.bee.client.calendar.monthview;
+package com.butent.bee.client.modules.calendar.layout;
 
 import com.google.common.collect.Range;
 import com.google.common.collect.Ranges;
 
-import com.butent.bee.client.calendar.monthview.WeekLayoutDescription.WidgetPart;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
+import com.butent.bee.client.modules.calendar.layout.WeekLayoutDescription.WidgetPart;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;

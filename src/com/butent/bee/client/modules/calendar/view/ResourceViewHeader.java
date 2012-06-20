@@ -1,4 +1,4 @@
-package com.butent.bee.client.calendar.resourceview;
+package com.butent.bee.client.modules.calendar.view;
 
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.HasWidgets;

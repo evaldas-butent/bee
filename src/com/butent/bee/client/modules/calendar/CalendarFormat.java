@@ -1,4 +1,4 @@
-package com.butent.bee.client.calendar;
+package com.butent.bee.client.modules.calendar;
 
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.shared.time.JustDate;
