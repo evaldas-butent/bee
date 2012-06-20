@@ -19,6 +19,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -484,6 +485,41 @@ public class Queries {
     update(rs, true, callback);
   }
 
+  public static void update(final String viewName, Filter filter, String column, Value value,
+      final IntCallback callback) {
+    Assert.notEmpty(viewName);
+    Assert.notNull(filter);
+    Assert.notEmpty(column);
+    Assert.notNull(value);
+
+    List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
+        Service.VAR_VIEW_WHERE, filter.serialize(), Service.VAR_COLUMN, column,
+        Service.VAR_VALUE, value.serialize());
+    ParameterList parameters = new ParameterList(Service.UPDATE, RpcParameter.SECTION.DATA, lst);
+
+    BeeKeeper.getRpc().makePostRequest(parameters, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        Assert.notNull(response);
+        String s = (String) response.getResponse();
+
+        if (BeeUtils.isDigit(s)) {
+          int responseCount = BeeUtils.toInt(s);
+          BeeKeeper.getLog().info(viewName, "updated", responseCount, "rows");
+          if (callback != null) {
+            callback.onSuccess(responseCount);
+          }
+
+        } else {
+          BeeKeeper.getLog().severe(viewName, "update response:", s);
+          if (callback != null) {
+            callback.onFailure(s);
+          }
+        }
+      }
+    });
+  }
+  
   public static int updateCell(String viewName, long rowId, long version, BeeColumn column,
       String oldValue, String newValue, RowCallback callback) {
     Assert.notEmpty(viewName);

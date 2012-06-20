@@ -200,7 +200,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     HeaderView header;
     if (UiOption.hasHeader(uiOptions)) {
-      header = GWT.create(HeaderImpl.class); //new HeaderImpl();
+      header = GWT.create(HeaderImpl.class);
 
       String caption = (gridCallback == null) ? null : gridCallback.getCaption();
       if (caption == null) {

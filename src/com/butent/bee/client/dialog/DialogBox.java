@@ -37,6 +37,7 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
 
   private static final String STYLE_DIALOG = "bee-DialogBox";
 
+  private static final String STYLE_LAYOUT = "bee-Dialog-layout";
   private static final String STYLE_CAPTION = "bee-Dialog-caption";
   private static final String STYLE_CONTENT = "bee-Dialog-content";
   private static final String STYLE_CLOSE = "bee-Dialog-close";
@@ -63,19 +64,22 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
     Assert.notNull(captionWidget);
     captionWidget.asWidget().addStyleName(STYLE_CAPTION);
     this.caption = captionWidget;
+    
+    this.layout.addStyleName(STYLE_LAYOUT);
 
     this.layout.add(captionWidget);
     this.container.add(layout);
 
-    BeeImage close = new BeeImage(Global.getImages().close(), new Scheduler.ScheduledCommand() {
-      @Override
-      public void execute() {
-        hide();
-      }
-    });
+    BeeImage close = new BeeImage(Global.getImages().silverClose(),
+        new Scheduler.ScheduledCommand() {
+          @Override
+          public void execute() {
+            hide();
+          }
+        });
     close.addStyleName(STYLE_CLOSE);
     this.container.add(close);
-    
+
     enableDragging();
   }
 
@@ -90,7 +94,7 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
   public DialogBox(String html) {
     this(html, STYLE_DIALOG);
   }
-  
+
   public void addChild(Widget widget) {
     this.container.add(widget);
   }
@@ -132,7 +136,7 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
 
     super.setWidget(container);
   }
-  
+
   @Override
   protected boolean isCaptionEvent(NativeEvent event) {
     EventTarget target = event.getEventTarget();

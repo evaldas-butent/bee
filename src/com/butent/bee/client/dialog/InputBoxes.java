@@ -407,29 +407,31 @@ public class InputBoxes {
         return callback.getErrorMessage();
       }
     };
-    
+
     addCommandGroup(dialog, panel, confirmHtml, cancelHtml, initializer, state, errorDisplay,
         errorSupplier);
 
     if (BeeUtils.isEmpty(confirmHtml)) {
-      BeeImage save = new BeeImage(Global.getImages().save(), new Scheduler.ScheduledCommand() {
-        @Override
-        public void execute() {
-          String message = errorSupplier.get();
-          if (BeeUtils.isEmpty(message)) {
-            state.set(State.CONFIRMED);
-            dialog.hide();
-          } else {
-            showError(errorDisplay.get(), message);
-          }
-        }
-      });
+      BeeImage save = new BeeImage(Global.getImages().silverSave(),
+          new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+              String message = errorSupplier.get();
+              if (BeeUtils.isEmpty(message)) {
+                state.set(State.CONFIRMED);
+                dialog.hide();
+              } else {
+                showError(errorDisplay.get(), message);
+              }
+            }
+          });
+    
       save.addStyleName(STYLE_INPUT_SAVE);
       UiHelper.initialize(save, initializer, DialogConstants.WIDGET_SAVE);
 
       dialog.addChild(save);
     }
-    
+
     Binder.addKeyDownHandler(dialog, new KeyDownHandler() {
       public void onKeyDown(KeyDownEvent event) {
         if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
@@ -479,9 +481,9 @@ public class InputBoxes {
     if (enableGlass) {
       dialog.enableGlass();
     }
-    
+
     dialog.setAnimationEnabled(true);
-    
+
     if (target == null) {
       dialog.center();
     } else {

@@ -68,6 +68,7 @@ public class Service {
   public static final String DELETE = DATA_SERVICE_PREFIX + "delete";
   public static final String UPDATE_CELL = DATA_SERVICE_PREFIX + "update_cell";
   public static final String UPDATE_ROW = DATA_SERVICE_PREFIX + "update_row";
+  public static final String UPDATE = DATA_SERVICE_PREFIX + "update";
   public static final String INSERT_ROW = DATA_SERVICE_PREFIX + "insert_row";
   public static final String INSERT_ROWS = DATA_SERVICE_PREFIX + "insert_rows";
 
@@ -142,6 +143,9 @@ public class Service {
   public static final String VAR_VIEW_SIZE = RPC_VAR_PREFIX + "view_size";
   public static final String VAR_VIEW_ROW_ID = RPC_VAR_PREFIX + "view_row_id";
 
+  public static final String VAR_COLUMN = RPC_VAR_PREFIX + "column";
+  public static final String VAR_VALUE = RPC_VAR_PREFIX + "value";
+  
   public static final String XML_TAG_DATA = RPC_VAR_PREFIX + "data";
 
   public static final String VIEW_COLUMN_SEPARATOR = " ";

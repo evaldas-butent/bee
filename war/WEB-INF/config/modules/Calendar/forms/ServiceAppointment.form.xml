@@ -86,10 +86,10 @@
 
       <Label html="Resursai:" style="&absolute; left: 0; top: 60px;" />
       <Image name="AddResource" resource="add" style="&absolute; left: 0px; top: 88px;" />
-      <Image name="RemoveResource" resource="delete" style="&absolute; left: 45px; top: 88px;" />
+      <Image name="RemoveResource" resource="delete" style="&absolute; left: 36px; top: 88px;" />
 
       <ListBox name="Resources" minSize="2" maxSize="3" 
-        style="&absolute; left: 100px; top: 60px; width: 220px; max-height: 60px;" />
+        style="&absolute; left: 80px; top: 60px; width: 240px; max-height: 60px;" />
 
       <InputText source="Summary" caption="Santrauka:" style="width: 300px;"
         d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 0;" />

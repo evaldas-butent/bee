@@ -24,7 +24,7 @@ public class Images {
     @Source("accept.png")
     ImageResource accept();
 
-    @Source("silver/edit_add_small.png")
+    @Source("add.png")
     ImageResource add();
 
     @Source("arrowDown.png")
@@ -81,36 +81,36 @@ public class Images {
     @Source("bookmark.png")
     ImageResource bookmark();
 
-    @Source("silver/bookmark_add_small.png")
+    @Source("bookmark_add.png")
     ImageResource bookmarkAdd();
-
+    
     @Source("cancel.png")
     ImageResource cancel();
 
-    @Source("silver/close_small.png")
+    @Source("close.png")
     ImageResource close();
 
-    @Source("silver/configure_small.png")
+    @Source("configure.png")
     ImageResource configure();
 
-    @Source("silver/delete_small.png")
+    @Source("delete.png")
     ImageResource delete();
 
     @Source("descending.gif")
     ImageResource descending();
-
-    @Source("silver/edit_small.png")
+    
+    @Source("edit.png")
     ImageResource edit();
 
-    @Source("silver/edit_add_small.png")
+    @Source("edit_add.png")
     ImageResource editAdd();
 
-    @Source("silver/edit_delete_small.png")
+    @Source("edit_delete.png")
     ImageResource editDelete();
 
     @Source("exit.gif")
     ImageResource exit();
-
+    
     @Source("first.png")
     ImageResource first();
 
@@ -122,9 +122,6 @@ public class Images {
 
     @Source("greenSmall.gif")
     ImageResource greenSmall();
-
-    @Source("silver/close_small.png")
-    ImageResource headerClose();
 
     @Source("html.png")
     ImageResource html();
@@ -156,9 +153,6 @@ public class Images {
     @Source("previous.png")
     ImageResource previous();
 
-    @Source("silver/print_small.png")
-    ImageResource printSmall();
-
     @Source("red.gif")
     ImageResource red();
 
@@ -171,18 +165,15 @@ public class Images {
     @Source("refresh.png")
     ImageResource refresh();
 
-    @Source("silver/reload_small.png")
+    @Source("reload.png")
     ImageResource reload();
 
     @Source("rewind.png")
     ImageResource rewind();
 
-    @Source("silver/save_small.png")
+    @Source("save.png")
     ImageResource save();
 
-    @Source("silver/save_small.png")
-    ImageResource saveSmall();
-    
     @Source("search.png")
     ImageResource search();
 
@@ -191,6 +182,33 @@ public class Images {
 
     @Source("settings.png")
     ImageResource settings();
+    
+    @Source("silver/edit_add_small.png")
+    ImageResource silverAdd();
+
+    @Source("silver/bookmark_add_small.png")
+    ImageResource silverBookmarkAdd();
+
+    @Source("silver/close_small.png")
+    ImageResource silverClose();
+
+    @Source("silver/configure_small.png")
+    ImageResource silverConfigure();
+    
+    @Source("silver/edit_delete_small.png")
+    ImageResource silverDelete();
+
+    @Source("silver/edit_small.png")
+    ImageResource silverEdit();
+
+    @Source("silver/print_small.png")
+    ImageResource silverPrint();
+
+    @Source("silver/reload_small.png")
+    ImageResource silverReload();
+
+    @Source("silver/save_small.png")
+    ImageResource silverSave();
 
     @Source("slider.gif")
     ImageResource slider();
@@ -260,8 +278,6 @@ public class Images {
     map.put(key("cancel"), resources.cancel());
     map.put(key("close"), resources.close());
 
-    map.put(key("closeHeader"), resources.headerClose());
-
     map.put(key("configure"), resources.configure());
 
     map.put(key("delete"), resources.delete());
@@ -292,8 +308,6 @@ public class Images {
 
     map.put(key("ok"), resources.ok());
     
-    map.put(key("print"), resources.printSmall());
-    
     map.put(key("play"), resources.play());
 
     map.put(key("previous"), resources.previous());
@@ -322,6 +336,16 @@ public class Images {
 
     map.put(key("yellow"), resources.yellow());
     map.put(key("yellowSmall"), resources.yellowSmall());
+
+    map.put(key("silverAdd"), resources.silverAdd());
+    map.put(key("silverBookmarkAdd"), resources.silverBookmarkAdd());
+    map.put(key("silverClose"), resources.silverClose());
+    map.put(key("silverConfigure"), resources.silverConfigure());
+    map.put(key("silverDelete"), resources.silverDelete());
+    map.put(key("silverEdit"), resources.silverEdit());
+    map.put(key("silverPrint"), resources.silverPrint());
+    map.put(key("silverReload"), resources.silverReload());
+    map.put(key("silverSave"), resources.silverSave());
   }
 
   private static String key(String name) {

@@ -327,14 +327,14 @@
 .bee-cal-Panel .bee-WindowHeader {
   position: absolute;
   top: 0;
-  height: 35px;
+  height: 32px;
   left: 0;
   right: 0;
 }
 
 .bee-cal-Panel-controls {
   position: absolute;
-  top: 40px;
+  top: 37px;
   height: 32px;
   left: 1em;
   right: 1em;

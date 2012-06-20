@@ -103,7 +103,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
     setHasSearch(hasData() && rowCount >= formDescription.getSearchThreshold());
 
-    HeaderView header = GWT.create(HeaderImpl.class);//new HeaderImpl();
+    HeaderView header = GWT.create(HeaderImpl.class);
     header.create(formDescription.getCaption(), hasData(), formDescription.isReadOnly(),
         EnumSet.of(UiOption.ROOT), formDescription.getEnabledActions(),
         formDescription.getDisabledActions());

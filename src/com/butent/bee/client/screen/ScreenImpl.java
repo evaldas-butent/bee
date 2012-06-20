@@ -485,14 +485,14 @@ public class ScreenImpl implements Screen {
     BeeLayoutPanel p = new BeeLayoutPanel();
 
     Horizontal hor = new Horizontal();
+    hor.addStyleName("bee-SplitControls");
+
     hor.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 
     hor.add(new BeeButton("N", new SplitCommand(Direction.NORTH)));
     hor.add(new BeeButton("S", new SplitCommand(Direction.SOUTH)));
     hor.add(new BeeButton("E", new SplitCommand(Direction.EAST)));
     hor.add(new BeeButton("W", new SplitCommand(Direction.WEST)));
-
-    hor.add(new BeeButton("+"));
 
     BeeImage close = new BeeImage(Global.getImages().close(), new SplitCommand(true));
     hor.add(close);

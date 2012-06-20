@@ -10,9 +10,9 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.DialogCallback;
+import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.Stack;
-import com.butent.bee.client.layout.Vertical;
-import com.butent.bee.client.ui.HasIndexedWidgets;
+import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.shared.BeeConst;
@@ -28,9 +28,11 @@ import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -41,7 +43,6 @@ import java.util.List;
 public class Favorites extends Stack implements HandlesDeleteEvents {
 
   public enum Group implements HasCaption, HasViewName {
-    APPOINTMENTS("Vizitai", "Appointments"),
     CALENDARS("Kalendoriai", "Calendars"),
     CUSTOMERS("Klientai", "Companies");
 
@@ -194,9 +195,20 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
 
   private static final String CONTAINER_STYLE = "bee-FavoritesContainer";
   private static final String HEADER_STYLE = "bee-FavoritesHeader";
-  private static final String GROUP_STYLE = "bee-FavoritesGroup";
-  private static final String ITEM_STYLE = "bee-FavoritesItem";
 
+  private static final String GROUP_STYLE = "bee-FavoritesGroup";
+  private static final String ITEM_COLUMN_STYLE = "bee-FavoritesItemColumn";
+  private static final String EDIT_COLUMN_STYLE = "bee-FavoritesEditColumn";
+  private static final String DELETE_COLUMN_STYLE = "bee-FavoritesDeleteColumn";
+
+  private static final String ITEM_STYLE = "bee-FavoritesItem";
+  private static final String EDIT_STYLE = "bee-FavoritesEdit";
+  private static final String DELETE_STYLE = "bee-FavoritesDelete";
+
+  private static final int ITEM_COLUMN = 0;
+  private static final int EDIT_COLUMN = 1;
+  private static final int DELETE_COLUMN = 2;
+  
   private static final String VIEW_NAME = "Favorites";
 
   private static final String COL_USER = "User";
@@ -221,8 +233,13 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
 
     int index = 0;
     for (Group group : Group.values()) {
-      Widget display = new Vertical();
+      FlexTable display = new FlexTable();
+      display.setCellPadding(5);
       display.addStyleName(GROUP_STYLE);
+      
+      display.getColumnFormatter().addStyleName(ITEM_COLUMN, ITEM_COLUMN_STYLE);
+      display.getColumnFormatter().addStyleName(EDIT_COLUMN, EDIT_COLUMN_STYLE);
+      display.getColumnFormatter().addStyleName(DELETE_COLUMN, DELETE_COLUMN_STYLE);
 
       Widget header = new Html(group.getCaption());
       header.addStyleName(HEADER_STYLE);
@@ -235,8 +252,9 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
   public void addItem(Group group, long id, String html) {
     int order = group.maxOrder() + 1;
     Item item = new Item(id, html, order);
+    
     group.add(item);
-    getDisplay(group).add(group.createItemWidget(item));
+    addDisplayRow(getDisplay(group), group, item);
 
     Queries.insert(VIEW_NAME,
         DataUtils.getColumns(columns, groupIndex, itemIndex, orderIndex, htmlIndex),
@@ -320,46 +338,49 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
     }
   }
 
-  public boolean removeItem(Group group, long id) {
-    Item item = group.find(id);
-    if (item == null) {
-      return false;
-    }
+  private void addDisplayRow(FlexTable display, final Group group, final Item item) {
+    int row = display.getRowCount();
+    
+    Widget widget = group.createItemWidget(item);
+    display.setWidget(row, ITEM_COLUMN, widget);
+    
+    BeeImage edit = new BeeImage(Global.getImages().edit());
+    edit.addStyleName(EDIT_STYLE);
+    edit.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        Global.inputString("Pekeisti pavadinimą", null, new DialogCallback<String>() {
+          @Override
+          public void onSuccess(String value) {
+            updateItem(group, item.getId(), value);
+          }
+        }, item.getHtml());
+      }
+    });
+   
+    display.setWidget(row, EDIT_COLUMN, edit);
 
-    HasIndexedWidgets display = getDisplay(group);
-    display.remove(display.getWidget(group.indexOf(item)));
+    BeeImage delete = new BeeImage(Global.getImages().delete());
+    delete.addStyleName(DELETE_STYLE);
+    delete.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        removeItem(group, item.getId());
+      }
+    });
 
-    Filter filter = Filter.and(
-        ComparisonFilter.isEqual(COL_GROUP, new IntegerValue(group.ordinal())),
-        ComparisonFilter.isEqual(COL_ITEM, new LongValue(id)));
-    Queries.delete(VIEW_NAME, filter, null);
-
-    return group.remove(item);
-  }
-
-  public boolean updateItem(Group group, long id, String html) {
-    Item item = group.find(id);
-    if (item == null || BeeUtils.equalsTrim(item.getHtml(), html)) {
-      return false;
-    }
-    item.setHtml(html);
-
-    refreshDisplay(group);
-
-    // Queries.updateCell(VIEW_NAME, id, BeeConst.UNDEF, columns.get(htmlIndex), oldValue, html,
-    // null);
-    return true;
+    display.setWidget(row, DELETE_COLUMN, delete);
   }
 
   private void clearData() {
     for (Group group : Group.values()) {
       if (!group.isEmpty()) {
         group.clear();
-        getDisplay(group).clear();
+        getDisplay(group).removeAllRows();
       }
     }
   }
-
+  
   private Item createItem(BeeRow row) {
     Long itm = row.getLong(itemIndex);
     if (itm == null) {
@@ -372,8 +393,8 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
     return new Item(itm, html.trim(), BeeUtils.unbox(ord));
   }
 
-  private HasIndexedWidgets getDisplay(Group group) {
-    return (HasIndexedWidgets) getWidget(group.getWidgetIndex());
+  private FlexTable getDisplay(Group group) {
+    return (FlexTable) getWidget(group.getWidgetIndex());
   }
 
   private Group getGroup(int index) {
@@ -402,17 +423,44 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
       Item item = createItem(row);
       if (item != null) {
         group.add(item);
-        getDisplay(group).add(group.createItemWidget(item));
+        addDisplayRow(getDisplay(group), group, item);
       }
     }
   }
 
-  private void refreshDisplay(Group group) {
-    HasIndexedWidgets display = getDisplay(group);
-    display.clear();
-
-    for (Item item : group.items) {
-      display.add(group.createItemWidget(item.getId(), item.getHtml()));
+  private boolean removeItem(Group group, long id) {
+    Item item = group.find(id);
+    if (item == null) {
+      return false;
     }
+
+    FlexTable display = getDisplay(group);
+    display.removeRow(group.indexOf(item));
+
+    Filter filter = Filter.and(
+        ComparisonFilter.isEqual(COL_GROUP, new IntegerValue(group.ordinal())),
+        ComparisonFilter.isEqual(COL_ITEM, new LongValue(id)));
+    Queries.delete(VIEW_NAME, filter, null);
+
+    return group.remove(item);
+  }
+
+  private boolean updateItem(Group group, long id, String html) {
+    Item item = group.find(id);
+    if (item == null || BeeUtils.equalsTrim(item.getHtml(), html)) {
+      return false;
+    }
+    item.setHtml(html);
+
+    FlexTable display = getDisplay(group);
+    display.getWidget(group.indexOf(item), ITEM_COLUMN).getElement().setInnerHTML(html.trim());
+
+    CompoundFilter filter = Filter.and();
+    filter.add(BeeKeeper.getUser().getFilter(COL_USER),
+        ComparisonFilter.isEqual(COL_GROUP, new IntegerValue(group.ordinal())),
+        ComparisonFilter.isEqual(COL_ITEM, new LongValue(id)));
+    
+    Queries.update(VIEW_NAME, filter, COL_HTML, new TextValue(html), null);
+    return true;
   }
 }

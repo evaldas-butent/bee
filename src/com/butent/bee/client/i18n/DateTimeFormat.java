@@ -876,7 +876,6 @@ public class DateTimeFormat {
     return true;
   }
 
-  @SuppressWarnings("fallthrough")
   private boolean subParse(String text, int[] pos, PatternPart part,
       int digitCount, DateRecord cal) {
 
@@ -902,55 +901,66 @@ public class DateTimeFormat {
         value = matchString(text, start, dateTimeFormatInfo.erasFull(), pos);
         cal.setEra(value);
         return true;
+
       case 'M':
         return subParseMonth(text, pos, cal, value, start);
+      
       case 'L':
         return subParseStandaloneMonth(text, pos, cal, value, start);
+      
       case 'E':
         return subParseDayOfWeek(text, pos, start, cal);
+      
       case 'c':
         return subParseStandaloneDay(text, pos, start, cal);
+      
       case 'a':
         value = matchString(text, start, dateTimeFormatInfo.ampms(), pos);
         cal.setAmpm(value);
         return true;
+      
       case 'y':
         return subParseYear(text, pos, start, value, part, cal);
+      
       case 'd':
         if (value <= 0) {
           return false;
         }
         cal.setDayOfMonth(value);
         return true;
+
       case 'S':
         if (value < 0) {
           return false;
         }
         return subParseFractionalSeconds(value, start, pos[0], cal);
+
       case 'h':
-        if (value == 12) {
-          value = 0;
-        }
-        // fall through
       case 'K':
       case 'H':
+        if (ch == 'h' && value == 12) {
+          value = 0;
+        }
         if (value < 0) {
           return false;
         }
         cal.setHours(value);
         return true;
+
       case 'k':
         if (value < 0) {
           return false;
         }
         cal.setHours(value);
         return true;
+
       case 'm':
         if (value < 0) {
           return false;
         }
         cal.setMinutes(value);
         return true;
+
       case 's':
         if (value < 0) {
           return false;
@@ -964,10 +974,12 @@ public class DateTimeFormat {
           cal.setTzOffset(0);
           return true;
         }
-        // $FALL-THROUGH$
+        return subParseTimeZoneInGMT(text, start, pos, cal);
+
       case 'z':
       case 'v':
         return subParseTimeZoneInGMT(text, start, pos, cal);
+
       default:
         return false;
     }

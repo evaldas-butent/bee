@@ -150,7 +150,7 @@ public class StateService extends CompositeService {
       } else {
         ft.setWidget(r, 0, new InputText(vars[NAME]));
         final int idx = r - 1;
-        ft.setWidget(r, 3, new BeeImage(Global.getImages().editDelete(), new BeeCommand() {
+        ft.setWidget(r, 3, new BeeImage(Global.getImages().silverDelete(), new BeeCommand() {
           @Override
           public void execute() {
             Global.getMsgBoxen().confirm("Delete State ?", new BeeCommand() {
@@ -166,7 +166,7 @@ public class StateService extends CompositeService {
     r++;
     ft.setWidget(r, 0, new BeeButton("SAVE", getStage(SVC_SAVE_STATES)));
     ft.alignLeft(r, 0);
-    ft.setWidget(r, 1, new BeeImage(Global.getImages().editAdd(), new BeeCommand() {
+    ft.setWidget(r, 1, new BeeImage(Global.getImages().silverAdd(), new BeeCommand() {
       @Override
       public void execute() {
         doStage(STG_NEW);

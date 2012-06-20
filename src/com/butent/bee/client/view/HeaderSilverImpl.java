@@ -119,38 +119,39 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     int w = CONTROL_WIDTH;
 
     if (hasAction(Action.CONFIGURE, false, enabledActions, disabledActions)) {
-      addRightTop(createControl(Global.getImages().configure(), Action.CONFIGURE, STYLE_CONTROL),
-          x, y);
+      addRightTop(createControl(Global.getImages().silverConfigure(), Action.CONFIGURE,
+          STYLE_CONTROL), x, y);
       x += w;
     }
 
     if (hasAction(Action.SAVE, false, enabledActions, disabledActions)) {
-      addRightTop(createControl(Global.getImages().save(), Action.SAVE, STYLE_CONTROL), x, y);
+      addRightTop(createControl(Global.getImages().silverSave(), Action.SAVE, STYLE_CONTROL), x, y);
       x += w;
     }
     if (hasAction(Action.EDIT, false, enabledActions, disabledActions)) {
-      addRightTop(createControl(Global.getImages().edit(), Action.EDIT, STYLE_CONTROL), x, y);
+      addRightTop(createControl(Global.getImages().silverEdit(), Action.EDIT, STYLE_CONTROL), x, y);
       x += w;
     }
 
     if (hasAction(Action.BOOKMARK, false, enabledActions, disabledActions)) {
-      addRightTop(createControl(Global.getImages().bookmarkAdd(), Action.BOOKMARK, STYLE_CONTROL),
-          x, y);
+      addRightTop(createControl(Global.getImages().silverBookmarkAdd(), Action.BOOKMARK,
+          STYLE_CONTROL), x, y);
       x += w;
     }
 
     if (hasAction(Action.DELETE, hasData && !readOnly, enabledActions, disabledActions)) {
-      addRightTop(createControl(Global.getImages().editDelete(), Action.DELETE, STYLE_CONTROL),
+      addRightTop(createControl(Global.getImages().silverDelete(), Action.DELETE, STYLE_CONTROL),
           x, y);
       x += w;
     }
     if (hasAction(Action.ADD, hasData && !readOnly, enabledActions, disabledActions)) {
-      addRightTop(createControl(Global.getImages().editAdd(), Action.ADD, STYLE_CONTROL), x, y);
+      addRightTop(createControl(Global.getImages().silverAdd(), Action.ADD, STYLE_CONTROL), x, y);
       x += w;
     }
 
     if (hasAction(Action.REFRESH, hasData, enabledActions, disabledActions)) {
-      addRightTop(createControl(Global.getImages().reload(), Action.REFRESH, STYLE_CONTROL), x, y);
+      addRightTop(createControl(Global.getImages().silverReload(), Action.REFRESH, STYLE_CONTROL),
+          x, y);
       x += w;
     }
     
@@ -162,7 +163,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     }
     
     if (hasClose) {
-      addRightTop(createControl(Global.getImages().headerClose(), Action.CLOSE, STYLE_CLOSE),
+      addRightTop(createControl(Global.getImages().silverClose(), Action.CLOSE, STYLE_CLOSE),
           CLOSE_RIGHT, CLOSE_TOP);
     }
   }

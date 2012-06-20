@@ -213,6 +213,16 @@
       <xs:enumeration value="undo" />
       <xs:enumeration value="yellow" />
       <xs:enumeration value="yellowSmall" />
+
+      <xs:enumeration value="silverAdd" />
+      <xs:enumeration value="silverBookmarkAdd" />
+      <xs:enumeration value="silverClose" />
+      <xs:enumeration value="silverConfigure" />
+      <xs:enumeration value="silverDelete" />
+      <xs:enumeration value="silverEdit" />
+      <xs:enumeration value="silverPrint" />
+      <xs:enumeration value="silverReload" />
+      <xs:enumeration value="silverSave" />
     </xs:restriction>
   </xs:simpleType>
   

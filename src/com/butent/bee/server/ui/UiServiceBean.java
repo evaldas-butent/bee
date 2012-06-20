@@ -25,6 +25,7 @@ import com.butent.bee.server.io.ExtensionFilter;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.sql.SqlDelete;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.ui.XmlSqlDesigner.DataType;
 import com.butent.bee.server.ui.XmlSqlDesigner.DataTypeGroup;
 import com.butent.bee.server.utils.XmlUtils;
@@ -42,6 +43,7 @@ import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlRelation;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -139,6 +141,8 @@ public class UiServiceBean {
       response = updateCell(reqInfo);
     } else if (BeeUtils.same(svc, Service.UPDATE_ROW)) {
       response = updateRow(reqInfo);
+    } else if (BeeUtils.same(svc, Service.UPDATE)) {
+      response = update(reqInfo);
     } else if (BeeUtils.same(svc, Service.INSERT_ROW)) {
       response = insertRow(reqInfo);
     } else if (BeeUtils.same(svc, Service.INSERT_ROWS)) {
@@ -816,6 +820,39 @@ public class UiServiceBean {
     return ResponseObject.error("DSN not specified");
   }
 
+  private ResponseObject update(RequestInfo reqInfo) {
+    String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
+    if (BeeUtils.isEmpty(viewName)) {
+      return ResponseObject.error("parameter not found:", Service.VAR_VIEW_NAME);
+    }
+
+    String where = reqInfo.getParameter(Service.VAR_VIEW_WHERE);
+    if (BeeUtils.isEmpty(where)) {
+      return ResponseObject.error("parameter not found:", Service.VAR_VIEW_WHERE);
+    }
+
+    String column = reqInfo.getParameter(Service.VAR_COLUMN);
+    if (BeeUtils.isEmpty(column)) {
+      return ResponseObject.error("parameter not found:", Service.VAR_COLUMN);
+    }
+
+    String value = reqInfo.getParameter(Service.VAR_VALUE);
+    if (BeeUtils.isEmpty(value)) {
+      return ResponseObject.error("parameter not found:", Service.VAR_VALUE);
+    }
+    
+    BeeView view = sys.getView(viewName);
+    if (view.isReadOnly()) {
+      return ResponseObject.error("View", BeeUtils.bracket(view.getName()), "is read only.");
+    }
+
+    String tblName = view.getSourceName();
+    Filter filter = Filter.restore(where);
+
+    return qs.updateDataWithResponse(new SqlUpdate(tblName).setWhere(view.getCondition(filter))
+        .addConstant(column, Value.restore(value)));
+  }
+  
   private ResponseObject updateCell(RequestInfo reqInfo) {
     return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), false);
   }

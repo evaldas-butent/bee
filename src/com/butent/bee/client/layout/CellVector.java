@@ -25,16 +25,19 @@ public abstract class CellVector extends ComplexPanel implements HasId, HasIndex
   private VerticalAlignmentConstant vertAlign = null;
 
   public CellVector() {
+    super();
+
     table = DOM.createTable();
     body = DOM.createTBody();
     DOM.appendChild(table, body);
 
-    setCellSpacing(0);
-    setCellPadding(0);
-
     setElement(table);
 
     DomUtils.createId(table, getIdPrefix());
+    
+    setCellSpacing(0);
+    setCellPadding(0);
+    table.setClassName("bee-CellVector");
   }
 
   public void addStyleToCell(Widget w, String styleName) {

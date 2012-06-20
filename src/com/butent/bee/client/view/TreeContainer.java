@@ -61,16 +61,16 @@ public class TreeContainer extends Flow implements TreeView, SelectionHandler<Tr
       Flow hdr = new Flow();
       hdr.addStyleName(STYLE_NAME + "-actions");
 
-      BeeImage img = new BeeImage(Global.getImages().editAdd(), new ActionListener(Action.ADD));
+      BeeImage img = new BeeImage(Global.getImages().silverAdd(), new ActionListener(Action.ADD));
       img.addStyleName(STYLE_NAME + "-add");
       hdr.add(img);
-      img = new BeeImage(Global.getImages().editDelete(), new ActionListener(Action.DELETE));
+      img = new BeeImage(Global.getImages().silverDelete(), new ActionListener(Action.DELETE));
       img.addStyleName(STYLE_NAME + "-delete");
       hdr.add(img);
-      img = new BeeImage(Global.getImages().edit(), new ActionListener(Action.EDIT));
+      img = new BeeImage(Global.getImages().silverEdit(), new ActionListener(Action.EDIT));
       img.addStyleName(STYLE_NAME + "-edit");
       hdr.add(img);
-      img = new BeeImage(Global.getImages().reload(), new ActionListener(Action.REQUERY));
+      img = new BeeImage(Global.getImages().silverReload(), new ActionListener(Action.REQUERY));
       img.addStyleName(STYLE_NAME + "-requery");
       hdr.add(img);
 
