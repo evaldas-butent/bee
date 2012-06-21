@@ -299,8 +299,8 @@
   background-color: #fff;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
-.bee-cal-morePopup .moreCaption {
-  margin: 1ex 1em;
+.bee-cal-morePopup .moreCaption, .bee-cal-morePopup .bee-Dialog-caption {
+  margin: 1ex 45px 1ex 1em;
   font-size: large;
 }
 .bee-cal-morePopup .appointment, .bee-cal-morePopup .appointment-multiday {

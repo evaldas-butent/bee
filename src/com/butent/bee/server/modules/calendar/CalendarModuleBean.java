@@ -3,50 +3,7 @@ package com.butent.bee.server.modules.calendar;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.CALENDAR_METHOD;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.CALENDAR_MODULE;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_ACTIVE_VIEW;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_APPOINTMENT;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_APPOINTMENT_TYPE;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_ATTENDEE;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_ATTENDEE_TYPE;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_CALENDAR;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_COMPANY_PERSON;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_DEFAULT_DISPLAYED_DAYS;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_INTERVALS_PER_HOUR;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_ORGANIZER;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_PIXELS_PER_INTERVAL;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_PROPERTY;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_REMINDER_TYPE;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_SCROLL_TO_HOUR;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_STATUS;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_TIME_BLOCK_CLICK_NUMBER;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_USER;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_WORKING_HOUR_END;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_WORKING_HOUR_START;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.PARAM_ACTIVE_VIEW;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.PARAM_CALENDAR_ID;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.PARAM_USER_CALENDAR_ID;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.SVC_CREATE_APPOINTMENT;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.SVC_GET_CALENDAR_APPOINTMENTS;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.SVC_GET_USER_CALENDAR;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.SVC_SAVE_ACTIVE_VIEW;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.SVC_UPDATE_APPOINTMENT;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.TBL_APPOINTMENT_ATTENDEES;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.TBL_APPOINTMENT_PROPS;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.TBL_APPOINTMENT_REMINDERS;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.TBL_USER_CALENDARS;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENTS;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENT_ATTENDEES;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENT_PROPS;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENT_REMINDERS;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_ATTENDEES;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_CALENDARS;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_CALENDAR_ATTENDEES;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_CALENDAR_PERSONS;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_CAL_APPOINTMENT_TYPES;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_CAL_ATTENDEE_TYPES;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_USER_CALENDARS;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -66,6 +23,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.BeeParameter;
@@ -121,6 +79,8 @@ public class CalendarModuleBean implements BeeModule {
       response = getCalendarAppointments(reqInfo);
     } else if (BeeUtils.same(svc, SVC_SAVE_ACTIVE_VIEW)) {
       response = saveActiveView(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_GET_OVERLAPPING_APPOINTMENTS)) {
+      response = getOverlappingAppointments(reqInfo);
 
     } else {
       String msg = BeeUtils.concat(1, "Calendar service not recognized:", svc);
@@ -294,6 +254,93 @@ public class CalendarModuleBean implements BeeModule {
     LogUtils.infoNow(logger, SVC_GET_CALENDAR_APPOINTMENTS, appointments.getNumberOfRows(),
         appointments.getViewName(), attendees.getNumberOfRows(), attendees.getViewName());
 
+    return ResponseObject.response(appointments);
+  }
+
+  private ResponseObject getOverlappingAppointments(RequestInfo reqInfo) {
+    String svc = SVC_GET_OVERLAPPING_APPOINTMENTS;
+
+    String appId = reqInfo.getParameter(PARAM_APPOINTMENT_ID);
+
+    String start = reqInfo.getParameter(PARAM_APPOINTMENT_START);
+    if (!BeeUtils.isLong(start)) {
+      return ResponseObject.error(svc, PARAM_APPOINTMENT_START, "parameter not found");
+    }
+    String end = reqInfo.getParameter(PARAM_APPOINTMENT_END);
+    if (!BeeUtils.isLong(end)) {
+      return ResponseObject.error(svc, PARAM_APPOINTMENT_END, "parameter not found");
+    }
+
+    String attIds = reqInfo.getParameter(PARAM_ATTENDEES);
+    if (BeeUtils.isEmpty(attIds)) {
+      return ResponseObject.error(svc, PARAM_ATTENDEES, "parameter not found");
+    }
+
+    CompoundFilter filter = Filter.and();
+    filter.add(ComparisonFilter.isNotEqual(COL_STATUS,
+        new IntegerValue(AppointmentStatus.CANCELED.ordinal())));
+
+    if (BeeUtils.isLong(appId)) {
+      filter.add(ComparisonFilter.compareId(Operator.NE, BeeUtils.toLong(appId)));
+    }
+
+    filter.add(ComparisonFilter.isMore(COL_END_DATE_TIME, new LongValue(BeeUtils.toLong(start))));
+    filter.add(ComparisonFilter.isLess(COL_START_DATE_TIME, new LongValue(BeeUtils.toLong(end))));
+
+    BeeRowSet appointments = qs.getViewData(VIEW_APPOINTMENTS, filter);
+    if (appointments.isEmpty()) {
+      return ResponseObject.response(appointments);
+    }
+    
+    Filter in = Filter.in(COL_APPOINTMENT, DataUtils.getRowIds(appointments));
+
+    BeeRowSet appAtts = qs.getViewData(VIEW_APPOINTMENT_ATTENDEES, in);
+    BeeRowSet appProps = qs.getViewData(VIEW_APPOINTMENT_PROPS, in);
+    BeeRowSet appRemind = qs.getViewData(VIEW_APPOINTMENT_REMINDERS, in);
+
+    List<Long> resources = DataUtils.parseList(attIds);
+
+    List<BeeRow> children;
+    int attIndex = appAtts.getColumnIndex(COL_ATTENDEE);
+    int propIndex = appProps.getColumnIndex(COL_PROPERTY);
+    int remindIndex = appRemind.getColumnIndex(COL_REMINDER_TYPE);
+
+    Iterator<BeeRow> iterator = appointments.getRows().iterator();
+    while (iterator.hasNext()) {
+      BeeRow row = iterator.next();
+      String id = BeeUtils.toString(row.getId());
+
+      children = DataUtils.filterRows(appAtts, COL_APPOINTMENT, id);
+
+      boolean ok = false;
+      for (BeeRow r : children) {
+        if (resources.contains(r.getLong(attIndex))) {
+          ok = true;
+          break;
+        }
+      }
+      if (!ok) {
+        iterator.remove();
+        continue;
+      }
+
+      row.setProperty(VIEW_APPOINTMENT_ATTENDEES,
+          DataUtils.buildList(DataUtils.getDistinct(children, attIndex)));
+
+      children = DataUtils.filterRows(appProps, COL_APPOINTMENT, id);
+      if (!children.isEmpty()) {
+        row.setProperty(VIEW_APPOINTMENT_PROPS,
+            DataUtils.buildList(DataUtils.getDistinct(children, propIndex)));
+      }
+
+      children = DataUtils.filterRows(appRemind, COL_APPOINTMENT, id);
+      if (!children.isEmpty()) {
+        row.setProperty(VIEW_APPOINTMENT_REMINDERS,
+            DataUtils.buildList(DataUtils.getDistinct(children, remindIndex)));
+      }
+    }
+
+    LogUtils.infoNow(logger, svc, appointments.getNumberOfRows(), appointments.getViewName());
     return ResponseObject.response(appointments);
   }
 

@@ -4,6 +4,9 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Style.Visibility;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
@@ -22,31 +25,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_APPOINTMENT_TYPE;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_ATTENDEE;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_BACKGROUND;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_COLOR;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_COMPANY;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_DEFAULT_COLOR;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_DEFAULT_PROPERTY;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_DESCRIPTION;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_END_DATE_TIME;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_FOREGROUND;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_GROUP_NAME;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_HOURS;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_MINUTES;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_NAME;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_PROPERTY;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_REMINDER_TYPE;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_START_DATE_TIME;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_THEME;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_TYPE_NAME;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.COL_VEHICLE;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.SVC_CREATE_APPOINTMENT;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.SVC_UPDATE_APPOINTMENT;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENTS;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENT_TYPES;
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_THEMES;
+import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -59,11 +38,13 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.i18n.DateTimeFormat;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
@@ -85,6 +66,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
@@ -95,6 +77,13 @@ import com.butent.bee.shared.utils.Codec;
 import java.util.List;
 
 class AppointmentBuilder extends AbstractFormCallback {
+
+  private class DateOrTimeWidgetHandler implements BlurHandler {
+    @Override
+    public void onBlur(BlurEvent event) {
+      checkOverlap(true);
+    }
+  }
 
   private class ModalCallback extends InputWidgetCallback {
     @Override
@@ -116,6 +105,9 @@ class AppointmentBuilder extends AbstractFormCallback {
     @Override
     public void onValueChange(ValueChangeEvent<String> event) {
       updateDuration(event.getValue());
+      if (getEnd() == null) {
+        checkOverlap();
+      }
     }
   }
 
@@ -135,6 +127,9 @@ class AppointmentBuilder extends AbstractFormCallback {
           if (BeeUtils.isIndex(resources, index)) {
             resources.remove(index);
             refreshResourceWidget();
+            if (isOverlapVisible()) {
+              checkOverlap();
+            }
           }
         }
       }
@@ -154,9 +149,11 @@ class AppointmentBuilder extends AbstractFormCallback {
   private static final String NAME_SERVICE_TYPE = "ServiceType";
   private static final String NAME_REPAIR_TYPE = "RepairType";
 
-  private static final String NAME_RESOURCES = "Resources";
   private static final String NAME_ADD_RESOURCE = "AddResource";
   private static final String NAME_REMOVE_RESOURCE = "RemoveResource";
+
+  private static final String NAME_RESOURCES = "Resources";
+  private static final String NAME_OVERLAP = "Overlap";
 
   private static final String NAME_START_DATE = "StartDate";
   private static final String NAME_START_TIME = "StartTime";
@@ -194,6 +191,7 @@ class AppointmentBuilder extends AbstractFormCallback {
 
   private ModalCallback modalCallback = null;
 
+  private final DateOrTimeWidgetHandler dateOrTimeWidgetHandler = new DateOrTimeWidgetHandler();
   private final PropWidgetHandler propWidgetHandler = new PropWidgetHandler();
   private final ResourceWidgetHandler resourceWidgetHandler = new ResourceWidgetHandler();
 
@@ -216,6 +214,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   private String repairTypeWidgetId = null;
 
   private String resourceWidgetId = null;
+  private String overlapWidgetId = null;
 
   private String startDateWidgetId = null;
   private String startTimeWidgetId = null;
@@ -232,6 +231,12 @@ class AppointmentBuilder extends AbstractFormCallback {
   private final TabBar colorWidget = new TabBar(STYLE_COLOR_BAR_PREFIX, false);
 
   private boolean saving = false;
+
+  private boolean overlapVisible = false;
+  private final List<Appointment> overlappingAppointments = Lists.newArrayList();
+  
+  private DateTime lastCheckStart = null;
+  private DateTime lastCheckEnd = null;
 
   AppointmentBuilder(boolean isNew) {
     super();
@@ -263,13 +268,6 @@ class AppointmentBuilder extends AbstractFormCallback {
         ((BeeListBox) widget).addKeyDownHandler(LIST_BOX_CLEANER);
       }
 
-    } else if (BeeUtils.same(name, NAME_RESOURCES)) {
-      setResourceWidgetId(DomUtils.getId(widget));
-      if (widget instanceof BeeListBox) {
-        ((BeeListBox) widget).addDoubleClickHandler(resourceWidgetHandler);
-        ((BeeListBox) widget).addKeyDownHandler(resourceWidgetHandler);
-      }
-
     } else if (BeeUtils.same(name, NAME_ADD_RESOURCE)) {
       if (widget instanceof HasClickHandlers) {
         ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
@@ -289,20 +287,58 @@ class AppointmentBuilder extends AbstractFormCallback {
         });
       }
 
+    } else if (BeeUtils.same(name, NAME_RESOURCES)) {
+      setResourceWidgetId(DomUtils.getId(widget));
+      if (widget instanceof BeeListBox) {
+        ((BeeListBox) widget).addDoubleClickHandler(resourceWidgetHandler);
+        ((BeeListBox) widget).addKeyDownHandler(resourceWidgetHandler);
+      }
+
+    } else if (BeeUtils.same(name, NAME_OVERLAP)) {
+      setOverlapWidgetId(DomUtils.getId(widget));
+      if (widget instanceof HasClickHandlers) {
+        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            showOverlappingAppointments();
+          }
+        });
+      }
+      widget.getElement().getStyle().setVisibility(Visibility.HIDDEN);
+      setOverlapVisible(false);
+
     } else if (BeeUtils.same(name, NAME_START_DATE)) {
       setStartDateWidgetId(DomUtils.getId(widget));
+      if (widget instanceof Editor) {
+        ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
+      }
     } else if (BeeUtils.same(name, NAME_START_TIME)) {
       setStartTimeWidgetId(DomUtils.getId(widget));
+      if (widget instanceof Editor) {
+        ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
+      }
 
     } else if (BeeUtils.same(name, NAME_END_DATE)) {
       setEndDateWidgetId(DomUtils.getId(widget));
+      if (widget instanceof Editor) {
+        ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
+      }
     } else if (BeeUtils.same(name, NAME_END_TIME)) {
       setEndTimeWidgetId(DomUtils.getId(widget));
+      if (widget instanceof Editor) {
+        ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
+      }
 
     } else if (BeeUtils.same(name, NAME_HOURS)) {
       setHourWidgetId(DomUtils.getId(widget));
+      if (widget instanceof Editor) {
+        ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
+      }
     } else if (BeeUtils.same(name, NAME_MINUTES)) {
       setMinuteWidgetId(DomUtils.getId(widget));
+      if (widget instanceof Editor) {
+        ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
+      }
 
     } else if (BeeUtils.same(name, NAME_COLORS) && widget instanceof HasWidgets) {
       ((HasWidgets) widget).add(colorWidget);
@@ -392,6 +428,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   void setAttenddes(List<Long> attendees) {
     BeeUtils.overwrite(resources, attendees);
     refreshResourceWidget();
+    checkOverlap();
   }
 
   void setColor(Long color) {
@@ -508,6 +545,9 @@ class AppointmentBuilder extends AbstractFormCallback {
         }
         if (cnt > 0) {
           refreshResourceWidget();
+          if (!isOverlapVisible()) {
+            checkOverlap();
+          }
         }
       }
     };
@@ -523,7 +563,8 @@ class AppointmentBuilder extends AbstractFormCallback {
       }
     });
 
-    Global.inputWidget("Pasirinkite resursus", widget, callback, false, RowFactory.DIALOG_STYLE);
+    Global.inputWidget("Pasirinkite resursus", widget, callback, false,
+        RowFactory.DIALOG_STYLE_NEW);
   }
 
   private void buildIncrementally() {
@@ -535,6 +576,74 @@ class AppointmentBuilder extends AbstractFormCallback {
       @Override
       public void onSuccess(BeeRow result) {
         reset(result);
+      }
+    });
+  }
+
+  private void checkOverlap() {
+    checkOverlap(false);
+  }
+  
+  private void checkOverlap(boolean whenPeriodChanged) {
+    if (resources.isEmpty()) {
+      hideOverlap();
+      return;
+    }
+
+    List<Long> opaqueResources = Lists.newArrayList();
+    for (Long id : resources) {
+      if (CalendarKeeper.isAttendeeOpaque(id)) {
+        opaqueResources.add(id);
+      }
+    }
+    if (opaqueResources.isEmpty()) {
+      hideOverlap();
+      return;
+    }
+
+    DateTime start = getStart();
+    DateTime end = getEnd();
+    if (end == null) {
+      int duration = getDuration();
+      if (duration > 0) {
+        end = new DateTime(start.getTime() + duration * TimeUtils.MILLIS_PER_MINUTE);
+      }
+    }
+    if (start == null || end == null || TimeUtils.isLeq(end, start)) {
+      hideOverlap();
+      return;
+    }
+    
+    if (whenPeriodChanged && start.equals(getLastCheckStart()) && end.equals(getLastCheckEnd())) {
+      return;
+    }
+    setLastCheckStart(start);
+    setLastCheckEnd(end);
+
+    ParameterList params = CalendarKeeper.createRequestParameters(SVC_GET_OVERLAPPING_APPOINTMENTS);
+    if (!isNew) {
+      params.addQueryItem(PARAM_APPOINTMENT_ID, getFormView().getActiveRow().getId());
+    }
+    params.addQueryItem(PARAM_APPOINTMENT_START, start.getTime());
+    params.addQueryItem(PARAM_APPOINTMENT_END, end.getTime());
+    params.addQueryItem(PARAM_ATTENDEES, DataUtils.buildList(opaqueResources));
+
+    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      public void onResponse(ResponseObject response) {
+        overlappingAppointments.clear();
+
+        if (response.hasResponse(BeeRowSet.class)) {
+          BeeRowSet rowSet = BeeRowSet.restore((String) response.getResponse());
+          for (BeeRow row : rowSet.getRows()) {
+            Appointment app = new Appointment(row,
+                row.getProperty(CalendarConstants.VIEW_APPOINTMENT_ATTENDEES),
+                row.getProperty(CalendarConstants.VIEW_APPOINTMENT_PROPS),
+                row.getProperty(CalendarConstants.VIEW_APPOINTMENT_REMINDERS));
+
+            overlappingAppointments.add(app);
+          }
+        }
+        showOverlap(!overlappingAppointments.isEmpty());
       }
     });
   }
@@ -606,6 +715,14 @@ class AppointmentBuilder extends AbstractFormCallback {
     return (widget instanceof InputTime) ? (InputTime) widget : null;
   }
 
+  private DateTime getLastCheckEnd() {
+    return lastCheckEnd;
+  }
+
+  private DateTime getLastCheckStart() {
+    return lastCheckStart;
+  }
+
   private BeeListBox getListBox(String id) {
     Widget widget = getWidget(id);
     return (widget instanceof BeeListBox) ? (BeeListBox) widget : null;
@@ -613,6 +730,10 @@ class AppointmentBuilder extends AbstractFormCallback {
 
   private String getMinuteWidgetId() {
     return minuteWidgetId;
+  }
+
+  private String getOverlapWidgetId() {
+    return overlapWidgetId;
   }
 
   private String getReminderWidgetId() {
@@ -662,7 +783,11 @@ class AppointmentBuilder extends AbstractFormCallback {
   }
 
   private Widget getWidget(String id) {
-    return DomUtils.getChildQuietly(getFormView().asWidget(), id);
+    Widget widget = DomUtils.getChildQuietly(getFormView().asWidget(), id);
+    if (widget == null) {
+      BeeKeeper.getLog().warning("widget not found: id", id);
+    }
+    return widget;
   }
 
   private boolean hasValue(String widgetId) {
@@ -673,6 +798,10 @@ class AppointmentBuilder extends AbstractFormCallback {
     } else {
       return false;
     }
+  }
+
+  private void hideOverlap() {
+    showOverlap(false);
   }
 
   private void initColorWidget() {
@@ -775,6 +904,10 @@ class AppointmentBuilder extends AbstractFormCallback {
 
   private boolean isEmpty(IsRow row, String columnId) {
     return BeeUtils.isEmpty(Data.getString(VIEW_APPOINTMENTS, row, columnId));
+  }
+
+  private boolean isOverlapVisible() {
+    return overlapVisible;
   }
 
   private boolean isSaving() {
@@ -901,6 +1034,9 @@ class AppointmentBuilder extends AbstractFormCallback {
 
       resources.remove(index);
       refreshResourceWidget();
+      if (isOverlapVisible()) {
+        checkOverlap();
+      }
 
     } else {
       getFormView().notifySevere("Resource widget not found");
@@ -927,6 +1063,7 @@ class AppointmentBuilder extends AbstractFormCallback {
       }
       resources.clear();
       refreshResourceWidget();
+      hideOverlap();
     }
 
     DateTime start = Data.getDateTime(VIEW_APPOINTMENTS, createdRow, COL_START_DATE_TIME);
@@ -1079,12 +1216,28 @@ class AppointmentBuilder extends AbstractFormCallback {
     this.hourWidgetId = hourWidgetId;
   }
 
+  private void setLastCheckEnd(DateTime lastCheckEnd) {
+    this.lastCheckEnd = lastCheckEnd;
+  }
+
+  private void setLastCheckStart(DateTime lastCheckStart) {
+    this.lastCheckStart = lastCheckStart;
+  }
+
   private void setMinuteWidgetId(String minuteWidgetId) {
     this.minuteWidgetId = minuteWidgetId;
   }
 
   private void setModalCallback(ModalCallback modalCallback) {
     this.modalCallback = modalCallback;
+  }
+
+  private void setOverlapVisible(boolean overlapVisible) {
+    this.overlapVisible = overlapVisible;
+  }
+
+  private void setOverlapWidgetId(String overlapWidgetId) {
+    this.overlapWidgetId = overlapWidgetId;
   }
 
   private void setReminderWidgetId(String reminderWidgetId) {
@@ -1130,6 +1283,37 @@ class AppointmentBuilder extends AbstractFormCallback {
 
   private void setStartTimeWidgetId(String startTimeWidgetId) {
     this.startTimeWidgetId = startTimeWidgetId;
+  }
+
+  private void showOverlap(boolean show) {
+    if (isOverlapVisible() != show) {
+      Widget widget = getWidget(getOverlapWidgetId());
+      if (widget != null) {
+        widget.getElement().getStyle().setVisibility(show ? Visibility.VISIBLE : Visibility.HIDDEN);
+        setOverlapVisible(show);
+      }
+    }
+  }
+
+  private void showOverlappingAppointments() {
+    if (BeeUtils.isEmpty(overlappingAppointments)) {
+      return;
+    }
+
+    Flow panel = new Flow();
+    panel.addStyleName(CalendarStyleManager.MORE_PANEL);
+
+    for (Appointment appointment : overlappingAppointments) {
+      boolean multi = appointment.isMultiDay();
+      AppointmentWidget widget = new AppointmentWidget(appointment, multi, BeeConst.UNDEF);
+      widget.render();
+
+      panel.add(widget);
+    }
+    
+    DialogBox dialog = new DialogBox("Persidengiantys vizitai", CalendarStyleManager.MORE_POPUP);
+    dialog.setWidget(panel);
+    dialog.showRelativeTo(getWidget(getOverlapWidgetId()));
   }
 
   private void updateDuration(String propName) {

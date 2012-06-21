@@ -4,8 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import static com.butent.bee.shared.modules.calendar.CalendarConstants.VIEW_APPOINTMENTS;
-
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
@@ -22,6 +20,7 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
@@ -112,7 +111,7 @@ class CalendarCache implements HandlesAllDataEvents {
 
   DataInfo getAppointmentViewInfo() {
     if (appointmentViewInfo == null) {
-      appointmentViewInfo = Data.getDataInfo(VIEW_APPOINTMENTS);
+      appointmentViewInfo = Data.getDataInfo(CalendarConstants.VIEW_APPOINTMENTS);
     }
     return appointmentViewInfo;
   }
@@ -173,6 +172,15 @@ class CalendarCache implements HandlesAllDataEvents {
     }
   }
 
+  Integer getInteger(String viewName, long rowId, String columnId) {
+    BeeRow row = getRow(viewName, rowId);
+    if (row == null) {
+      return null;
+    } else {
+      return Data.getInteger(viewName, row, columnId);
+    }
+  }
+  
   Long getLong(String viewName, long rowId, String columnId) {
     BeeRow row = getRow(viewName, rowId);
     if (row == null) {

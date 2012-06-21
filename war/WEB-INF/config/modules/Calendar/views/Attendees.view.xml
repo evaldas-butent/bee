@@ -8,6 +8,7 @@
     <SimpleColumn name="AttendeeType" />
     <SimpleJoin joinType="LEFT" name="AttendeeType">
       <SimpleColumn alias="TypeName" name="Name" />
+      <SimpleColumn alias="TypeTransparency" name="Transparency" />
     </SimpleJoin>
 
     <SimpleColumn name="Name" />

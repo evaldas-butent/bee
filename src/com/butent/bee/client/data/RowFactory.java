@@ -47,7 +47,8 @@ import java.util.List;
 
 public class RowFactory {
 
-  public static final String DIALOG_STYLE = "bee-NewRow";
+  public static final String DIALOG_STYLE_NEW = "bee-NewRow";
+  public static final String DIALOG_STYLE_EDIT = "bee-EditRow";
 
   private static final String DEFAULT_CAPTION = "Naujas";
 

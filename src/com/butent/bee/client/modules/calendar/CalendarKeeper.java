@@ -102,7 +102,7 @@ public class CalendarKeeper {
               }
               
               Global.inputWidget(getAppointmentViewInfo().getNewRowCaption(), result.asWidget(),
-                  builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE);
+                  builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE_NEW);
             }
           }
         });
@@ -191,6 +191,20 @@ public class CalendarKeeper {
   static BeeRowSet getThemes() {
     return CACHE.getRowSet(VIEW_THEMES);
   }
+  
+  static boolean isAttendeeOpaque(long id) {
+    BeeRow row = CACHE.getRow(VIEW_ATTENDEES, id);
+    if (row == null) {
+      return false;
+    }
+    
+    Integer value = Data.getInteger(VIEW_ATTENDEES, row, COL_TRANSPARENCY);
+    if (value != null) {
+      return Transparency.isOpaque(value);
+    } else {
+      return Transparency.isOpaque(Data.getInteger(VIEW_ATTENDEES, row, COL_TYPE_TRANSPARENCY));
+    }
+  }
 
   static void loadData(Collection<String> viewNames, CalendarCache.MultiCallback multiCallback) {
     CACHE.getData(viewNames, multiCallback);
@@ -214,7 +228,7 @@ public class CalendarKeeper {
               builder.setColor(appointment.getColor());
 
               Global.inputWidget(result.getCaption(), result.asWidget(),
-                  builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE);
+                  builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE_EDIT);
             }
           }
         });
