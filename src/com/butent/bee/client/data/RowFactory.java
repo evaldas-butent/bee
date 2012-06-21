@@ -83,10 +83,13 @@ public class RowFactory {
     BeeRow row = createEmptyRow(dataInfo, true);
 
     String value = selector.getDisplayValue();
-    if (!BeeUtils.isEmpty(value) || !selector.getChoiceColumns().isEmpty()) {
-      BeeColumn column = dataInfo.getColumn(selector.getChoiceColumns().get(0));
-      if (column != null && column.isWritable() && ValueType.isString(column.getType())) {
-        Data.setValue(dataInfo.getViewName(), row, column.getId(), value.trim());
+    if (!BeeUtils.isEmpty(value)) {
+      for (String colName : selector.getChoiceColumns()) {
+        BeeColumn column = dataInfo.getColumn(colName);
+        if (column != null && column.isWritable() && ValueType.isString(column.getType())) {
+          Data.setValue(dataInfo.getViewName(), row, column.getId(), value.trim());
+          break;
+        }
       }
     }
 

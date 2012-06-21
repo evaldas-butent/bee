@@ -560,8 +560,9 @@ public class ScreenImpl implements Screen {
 
     shellContainer.setWidget(shell);
     admPanel.add(shellContainer);
-
+    
     tp.add(admPanel, "Admin");
+    tp.addTabStyle(tp.getWidgetCount() - 1, "bee-AdminTab");
 
     return tp;
   }

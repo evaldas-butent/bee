@@ -50,7 +50,7 @@ public class TransportConstants {
   public static final String COL_MODEL_NAME = "ModelName";
   public static final String COL_NUMBER = "Number";
 
-  public static final String FORM_NEW_VEHICLE = "Vehicle";
+  public static final String FORM_NEW_VEHICLE = "NewVehicle";
   public static final String FORM_ORDER = "TransportationOrder";
   public static final String FORM_TRIP = "Trip";
   public static final String FORM_CARGO = "OrderCargo";

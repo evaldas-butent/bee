@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:d="http://www.butent.com/decorator"
+  
+  name="NewVehicleModel" viewName="VehicleModels" caption="Naujas modelis" width="300" height="120"
+  >
+  <FlexTable cellSpacing="10">
+    <row>
+      <Label html="Modelis" class="bee-required" />
+      <InputText source="Name" />
+    </row>
+    <row>
+      <Label html="Markė" />
+      <DataSelector source="Parent" newRowEnabled="false" />
+    </row>
+  </FlexTable>
+</f:Form>

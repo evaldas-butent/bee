@@ -963,7 +963,7 @@ body, select {
 }
 
 .bee-GridFormContainer-newRow .bee-hasDefaults:after {
-  content: " *";
+  content: "*";
   color: blue;
   font-size: 13px;
   font-weight: bold;
@@ -988,7 +988,7 @@ body, select {
 }
 
 .bee-required:after {
-  content: " *";
+  content: "*";
   color: red;
   font-size: 13px;
   font-weight: bold;
@@ -1423,4 +1423,11 @@ body, select {
 
 ::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+.bee-AdminTab {
+  display: none;
+}
+.bee-SplitControls {
+  display: none;
 }

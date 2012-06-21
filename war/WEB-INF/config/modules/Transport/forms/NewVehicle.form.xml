@@ -7,12 +7,12 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="NewVehicle" viewName="Vehicles" caption="Transporto priemonė" width="800"
+  name="NewVehicle" viewName="Vehicles" caption="Transporto priemonė" width="800" height="280"
   >
-  <FlowPanel class="flexBox-vertical">
+  <FlowPanel class="flexBox-vertical" style="margin: 1ex 1em;">
     <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
       <InputText source="Number" caption="Valst.Nr." d:size="70" d:unit="px" d:align="right" d:rootStyle="&MARGIN;" />
-      <DataSelector source="Model" caption="Modelis" class="flexible"
+      <DataSelector source="Model" caption="Modelis" class="flexible" newRowForm="NewVehicleModel"
         renderColumns="ParentModelName ModelName" decorator="flex-left" d:rootStyle="&MARGIN;" />
       <DataSelector source="Type" caption="Tipas" decorator="flex-left" />
     </FlowPanel>

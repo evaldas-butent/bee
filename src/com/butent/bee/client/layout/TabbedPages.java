@@ -155,6 +155,11 @@ public class TabbedPages extends Flow implements AnimatedLayout,
     return addHandler(handler, SelectionEvent.getType());
   }
 
+  public void addTabStyle(int index, String style) {
+    checkIndex(index);
+    tabs.get(index).addStyleName(style);
+  }
+  
   public void animate(int duration) {
     animate(duration, null);
   }

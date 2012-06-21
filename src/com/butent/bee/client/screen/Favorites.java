@@ -43,8 +43,7 @@ import java.util.List;
 public class Favorites extends Stack implements HandlesDeleteEvents {
 
   public enum Group implements HasCaption, HasViewName {
-    CALENDARS("Kalendoriai", "Calendars"),
-    CUSTOMERS("Klientai", "Companies");
+    CALENDARS("Kalendoriai", "Calendars");
 
     public static Group getByViewName(String viewName) {
       if (!BeeUtils.isEmpty(viewName)) {
