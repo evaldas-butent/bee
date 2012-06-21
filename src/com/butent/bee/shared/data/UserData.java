@@ -7,9 +7,9 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
+import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -28,7 +28,7 @@ public class UserData implements BeeSerializable {
    */
 
   private enum Serial {
-    LOGIN, USER_ID, FIRST_NAME, LAST_NAME, LOCALE, PROPERTIES, STATES, RIGHTS
+    LOGIN, USER_ID, FIRST_NAME, LAST_NAME, LOCALE, PROPERTIES, RIGHTS
   }
 
   public static final String FLD_FIRST_NAME = "FirstName";
@@ -47,8 +47,7 @@ public class UserData implements BeeSerializable {
   private String locale;
   private Map<String, String> properties;
 
-  private Map<String, Boolean> states;
-  private Map<String, Multimap<RightsObjectType, String>> rights;
+  private Map<RightsState, Multimap<RightsObjectType, String>> rights;
 
   public UserData(long userId, String login, String firstName, String lastName) {
     this.userId = userId;
@@ -97,17 +96,6 @@ public class UserData implements BeeSerializable {
             }
           }
           break;
-        case STATES:
-          entry = Codec.beeDeserializeCollection(value);
-
-          if (!BeeUtils.isEmpty(entry)) {
-            states = Maps.newHashMap();
-
-            for (int j = 0; j < entry.length; j += 2) {
-              states.put(entry[j], BeeUtils.toBoolean(entry[j + 1]));
-            }
-          }
-          break;
         case RIGHTS:
           entry = Codec.beeDeserializeCollection(value);
 
@@ -119,10 +107,10 @@ public class UserData implements BeeSerializable {
               String[] oArr = Codec.beeDeserializeCollection(entry[j + 1]);
 
               for (int k = 0; k < oArr.length; k += 2) {
-                RightsObjectType type = NameUtils.getConstant(RightsObjectType.class, oArr[k]);
+                RightsObjectType type = NameUtils.getEnumByName(RightsObjectType.class, oArr[k]);
                 x.putAll(type, Lists.newArrayList(Codec.beeDeserializeCollection(oArr[k + 1])));
               }
-              rights.put(entry[j], x);
+              rights.put(NameUtils.getEnumByName(RightsState.class, entry[j]), x);
             }
           }
           break;
@@ -165,20 +153,24 @@ public class UserData implements BeeSerializable {
     return BeeUtils.ifString(BeeUtils.concat(1, getFirstName(), getLastName()), getLogin());
   }
 
-  public boolean hasEventRight(String object, String state) {
+  public boolean hasEventRight(String object, RightsState state) {
     return hasRight(RightsObjectType.EVENT, object, state);
   }
 
-  public boolean hasFormRight(String object, String state) {
+  public boolean hasFormRight(String object, RightsState state) {
     return hasRight(RightsObjectType.FORM, object, state);
   }
 
-  public boolean hasGridRight(String object, String state) {
+  public boolean hasGridRight(String object, RightsState state) {
     return hasRight(RightsObjectType.GRID, object, state);
   }
 
-  public boolean hasMenuRight(String object, String state) {
+  public boolean hasMenuRight(String object, RightsState state) {
     return hasRight(RightsObjectType.MENU, object, state);
+  }
+
+  public boolean hasModuleRight(String object, RightsState state) {
+    return hasRight(RightsObjectType.MODULE, object, state);
   }
 
   @Override
@@ -207,16 +199,13 @@ public class UserData implements BeeSerializable {
         case PROPERTIES:
           arr[i++] = properties;
           break;
-        case STATES:
-          arr[i++] = states;
-          break;
         case RIGHTS:
-          Map<String, Map<RightsObjectType, Collection<String>>> x = null;
+          Map<RightsState, Map<RightsObjectType, Collection<String>>> x = null;
 
           if (!BeeUtils.isEmpty(rights)) {
             x = Maps.newHashMap();
 
-            for (String state : rights.keySet()) {
+            for (RightsState state : rights.keySet()) {
               x.put(state, rights.get(state).asMap());
             }
           }
@@ -244,25 +233,15 @@ public class UserData implements BeeSerializable {
     return this;
   }
 
-  public void setRights(Map<String, Multimap<RightsObjectType, String>> userRights) {
-    states = Maps.newHashMap();
-    rights = Maps.newHashMap();
-
-    for (String state : userRights.keySet()) {
-      boolean checked = BeeUtils.isSuffix(state, BeeConst.CHAR_PLUS);
-      String stt = (checked ? BeeUtils.removeSuffix(state, BeeConst.CHAR_PLUS) : state);
-      states.put(stt, checked);
-      rights.put(stt, userRights.get(state));
-    }
+  public void setRights(Map<RightsState, Multimap<RightsObjectType, String>> userRights) {
+    rights = userRights;
   }
 
-  private boolean hasRight(RightsObjectType type, String object, String state) {
-    Assert.notEmpty(object);
-
-    if (BeeUtils.isEmpty(states) || !states.containsKey(state)) {
-      return false;
+  private boolean hasRight(RightsObjectType type, String object, RightsState state) {
+    if (BeeUtils.isEmpty(object)) {
+      return true;
     }
-    boolean checked = states.get(state);
+    boolean checked = state.isChecked();
 
     if (!BeeUtils.isEmpty(rights)) {
       Multimap<RightsObjectType, String> stateObjects = rights.get(state);

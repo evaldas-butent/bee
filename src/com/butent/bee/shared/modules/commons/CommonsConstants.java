@@ -9,7 +9,8 @@ public class CommonsConstants {
     EVENT("Įvykis"),
     FORM("Forma"),
     GRID("Lentelė"),
-    MENU("Meniu");
+    MENU("Meniu"),
+    MODULE("Modulis");
 
     private final String caption;
 
@@ -19,6 +20,28 @@ public class CommonsConstants {
 
     public String getCaption() {
       return caption;
+    }
+  }
+
+  public static enum RightsState implements HasCaption {
+    VISIBLE("Matomas", true),
+    ENABLED("Leidžiamas", true),
+    MARKED("Pažymėtas", true);
+
+    private final String caption;
+    private final boolean checked;
+
+    private RightsState(String caption, boolean checked) {
+      this.caption = caption;
+      this.checked = checked;
+    }
+
+    public String getCaption() {
+      return caption;
+    }
+
+    public boolean isChecked() {
+      return checked;
     }
   }
 

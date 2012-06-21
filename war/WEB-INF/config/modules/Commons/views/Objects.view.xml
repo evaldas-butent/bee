@@ -3,7 +3,7 @@
 
   name="Objects"
   source="Objects"
-  newRowCaption="Naujas objektas"
+  newRowForm="Object" newRowCaption="Naujas objektas"
   >
   <Columns>
     <SimpleColumn name="Type" />

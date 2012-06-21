@@ -42,5 +42,6 @@
     <xs:attribute name="label" type="xs:string" use="required" />
     <xs:attribute name="separator" type="xs:boolean" />
     <xs:attribute name="order" type="xs:int" />
+    <xs:attribute name="parent" type="xs:string" />
   </xs:complexType>
 </xs:schema>

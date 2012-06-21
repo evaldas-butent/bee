@@ -10,7 +10,7 @@ public enum CachingPolicy {
   NONE(false, false), READ(true, false), WRITE(false, true), FULL(true, true);
   
   public static CachingPolicy get(String name) {
-    return NameUtils.getConstant(CachingPolicy.class, name);
+    return NameUtils.getEnumByName(CachingPolicy.class, name);
   }
 
   private boolean read;

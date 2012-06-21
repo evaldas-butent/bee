@@ -8,12 +8,13 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlTransient;
 
 @XmlSeeAlso({MenuEntry.class, MenuItem.class})
 public abstract class Menu implements BeeSerializable {
 
   private enum Serial {
-    NAME, LABEL, SEPARATOR, ORDER
+    NAME, LABEL, SEPARATOR, ORDER, MODULE
   }
 
   public static Menu restore(String s) {
@@ -47,6 +48,9 @@ public abstract class Menu implements BeeSerializable {
           case ORDER:
             menu.order = BeeUtils.toIntOrNull(value);
             break;
+          case MODULE:
+            menu.moduleName = value;
+            break;
         }
       }
       menu.deserialize(data);
@@ -77,9 +81,18 @@ public abstract class Menu implements BeeSerializable {
   private Boolean separator;
   @XmlAttribute
   private Integer order;
+  @XmlAttribute
+  private String parent;
+
+  @XmlTransient
+  private String moduleName;
 
   public String getLabel() {
     return label;
+  }
+
+  public String getModuleName() {
+    return moduleName;
   }
 
   public String getName() {
@@ -90,8 +103,16 @@ public abstract class Menu implements BeeSerializable {
     return order;
   }
 
+  public String getParent() {
+    return parent;
+  }
+
   public Boolean hasSeparator() {
     return !BeeUtils.isEmpty(separator);
+  }
+
+  public void setModuleName(String moduleName) {
+    this.moduleName = moduleName;
   }
 
   protected String serialize(Object obj) {
@@ -114,6 +135,9 @@ public abstract class Menu implements BeeSerializable {
           break;
         case ORDER:
           arr[i++] = order;
+          break;
+        case MODULE:
+          arr[i++] = moduleName;
           break;
       }
     }

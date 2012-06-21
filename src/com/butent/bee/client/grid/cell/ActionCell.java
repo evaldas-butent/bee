@@ -52,7 +52,7 @@ public class ActionCell extends AbstractCell<String> implements HasService, HasO
   private static final Type DEFAULT_TYPE = Type.LINK;
 
   public static ActionCell create(String viewName, ColumnDescription columnDescription) {
-    ActionCell cell = new ActionCell(NameUtils.getConstant(Type.class,
+    ActionCell cell = new ActionCell(NameUtils.getEnumByName(Type.class,
         columnDescription.getElementType()));
 
     cell.setViewName(viewName);

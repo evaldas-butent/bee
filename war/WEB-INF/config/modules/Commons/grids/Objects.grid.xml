@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
   
-  name="Objects" viewName="Objects" caption="Objektai"
+  name="Objects" viewName="Objects" caption="Objektai" newRowPopup="true"
   >
   <columns>
     <DataColumn name="Type" caption="Tipas" itemKey="RightsObjectType" />

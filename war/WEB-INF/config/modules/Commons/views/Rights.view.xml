@@ -12,7 +12,7 @@
       <SimpleColumn name="Name" alias="ObjectName" />
     </SimpleJoin>
     <SimpleColumn name="Role" />
-    <SimpleJoin name="Role" joinType="INNER">
+    <SimpleJoin name="Role" joinType="LEFT">
       <SimpleColumn name="Name" alias="RoleName" />
     </SimpleJoin>
     <SimpleColumn name="State" />

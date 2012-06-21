@@ -65,7 +65,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
     private BeeField(XmlField xmlField, boolean extended) {
       this.name = xmlField.name;
-      this.type = NameUtils.getConstant(SqlDataType.class, xmlField.type);
+      this.type = NameUtils.getEnumByName(SqlDataType.class, xmlField.type);
 
       Assert.notEmpty(this.name);
       Assert.notNull(this.type);
@@ -274,7 +274,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       super(xmlField, extended);
 
       this.relation = xmlField.relation;
-      this.cascade = NameUtils.getConstant(SqlKeyword.class, xmlField.cascade);
+      this.cascade = NameUtils.getEnumByName(SqlKeyword.class, xmlField.cascade);
 
       Assert.notEmpty(this.relation);
 

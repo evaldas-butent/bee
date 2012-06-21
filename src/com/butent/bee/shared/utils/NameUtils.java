@@ -18,16 +18,16 @@ public class NameUtils {
 
   public static final char QUALIFIED_NAME_SEPARATOR = ':';
 
-  public static final Splitter NAME_SPLITTER = 
+  public static final Splitter NAME_SPLITTER =
       Splitter.on(CharMatcher.anyOf(" ,;")).trimResults().omitEmptyStrings();
-  
+
   public static final Function<Enum<?>, String> GET_NAME = new Function<Enum<?>, String>() {
     @Override
     public String apply(Enum<?> input) {
       return input.name();
     }
-  };  
-  
+  };
+
   private static int nameCounter = 0;
 
   /**
@@ -71,7 +71,7 @@ public class NameUtils {
       return BeeConst.STRING_EMPTY;
     }
   }
-  
+
   /**
    * Creates a unique name.
    * 
@@ -96,7 +96,7 @@ public class NameUtils {
       return pfx.trim() + nameCounter;
     }
   }
-  
+
   public static String decamelize(String str, char sep) {
     if (BeeUtils.isEmpty(str)) {
       return str;
@@ -118,7 +118,7 @@ public class NameUtils {
     }
     return sb.toString();
   }
-  
+
   /**
    * @param cls the class to get a name from
    * @return only the String class name with packages excluded.
@@ -129,12 +129,24 @@ public class NameUtils {
     return name.substring(p + 1);
   }
 
-  public static <E extends Enum<?>> E getConstant(Class<E> clazz, String name) {
+  public static <E extends Enum<?>> E getEnumByIndex(Class<E> clazz, Integer idx) {
+    if (clazz == null || idx == null || idx < 0) {
+      return null;
+    }
+    E[] constants = clazz.getEnumConstants();
+
+    if (constants != null && idx < constants.length) {
+      return constants[idx];
+    } else {
+      return null;
+    }
+  }
+
+  public static <E extends Enum<?>> E getEnumByName(Class<E> clazz, String name) {
     Assert.notNull(clazz);
     if (BeeUtils.isEmpty(name)) {
       return null;
     }
-
     E result = null;
 
     for (int i = 0; i < 3; i++) {
@@ -172,7 +184,7 @@ public class NameUtils {
     }
     return result;
   }
-  
+
   public static String getLocalPart(String qName) {
     if (BeeUtils.contains(qName, QUALIFIED_NAME_SEPARATOR)) {
       return BeeUtils.getSuffix(qName, QUALIFIED_NAME_SEPARATOR);
@@ -184,24 +196,11 @@ public class NameUtils {
   public static String getName(Object obj) {
     return getClassName(Assert.notNull(obj).getClass());
   }
-  
-  public static <E extends Enum<?>> String getName(Class<E> clazz, Integer idx) {
-    if (clazz == null || idx == null || idx < 0) {
-      return null;
-    }
-
-    E[] constants = clazz.getEnumConstants();
-    if (constants != null && idx < constants.length) {
-      return constants[idx].name();
-    } else {
-      return null;
-    }
-  }
 
   public static String getNamespacePrefix(String qName) {
     return BeeUtils.getPrefix(qName, QUALIFIED_NAME_SEPARATOR);
   }
-  
+
   public static String getWord(String s, int idx) {
     if (BeeUtils.isEmpty(s) || idx < 0) {
       return null;
@@ -214,7 +213,7 @@ public class NameUtils {
     }
     return null;
   }
-  
+
   /**
    * Checks if a string is a correct identifier. Identifier cannot start with a number, and can only
    * contain "_", digits and letters.
@@ -241,21 +240,21 @@ public class NameUtils {
     }
     return ok;
   }
-  
+
   public static List<String> toList(String s) {
     if (s == null) {
       return null;
     }
     return Lists.newArrayList(NAME_SPLITTER.split(s));
   }
-  
+
   public static Set<String> toSet(String s) {
     if (s == null) {
       return null;
     }
     return Sets.newHashSet(NAME_SPLITTER.split(s));
   }
-  
+
   /**
    * Transforms an Object {@code obj} to a String representation. In general, this method returns a
    * string that "textually represents" a class(class name).
@@ -270,7 +269,7 @@ public class NameUtils {
       return obj.getClass().getName();
     }
   }
-  
+
   private NameUtils() {
   }
 }

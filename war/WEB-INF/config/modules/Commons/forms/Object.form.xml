@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:d="http://www.butent.com/decorator"
+  
+  name="Object" viewName="Objects" caption="Objektas" width="300" height="110"
+  >
+  <FlowPanel class="flexBox-vertical" style="margin: 10px">
+    <ListBox source="Type" caption="Tipas" itemKey="RightsObjectType" decorator="flex-left" d:size="60" />
+    <InputText source="Name" caption="Objektas" decorator="flex-left" d:size="60" d:rootStyle="margin-top: 10px" />
+  </FlowPanel>
+</f:Form>

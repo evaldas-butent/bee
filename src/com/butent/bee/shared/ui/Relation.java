@@ -313,16 +313,16 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
 
     String cache = getAttribute(ATTR_CACHING);
     if (!BeeUtils.isEmpty(cache)) {
-      setCaching(NameUtils.getConstant(Caching.class, cache));
+      setCaching(NameUtils.getEnumByName(Caching.class, cache));
     }
     String op = getAttribute(ATTR_OPERATOR);
     if (!BeeUtils.isEmpty(op)) {
-      setOperator(NameUtils.getConstant(Operator.class, op));
+      setOperator(NameUtils.getEnumByName(Operator.class, op));
     }
 
     String it = getAttribute(ATTR_ITEM_TYPE);
     if (!BeeUtils.isEmpty(it)) {
-      setItemType(NameUtils.getConstant(MenuConstants.ITEM_TYPE.class, it));
+      setItemType(NameUtils.getEnumByName(MenuConstants.ITEM_TYPE.class, it));
     }
     String lines = getAttribute(HasVisibleLines.ATTR_VISIBLE_LINES);
     if (BeeUtils.isPositiveInt(lines)) {

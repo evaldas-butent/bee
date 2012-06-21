@@ -14,15 +14,16 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
+import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -160,7 +161,7 @@ public class UserServiceBean {
   private final Map<Long, String> roleCache = Maps.newHashMap();
   private final BiMap<Long, String> userCache = HashBiMap.create();
   private Map<String, UserInfo> infoCache = Maps.newHashMap();
-  private Map<RightsObjectType, Map<String, Multimap<BeeState, Long>>> rightsCache = Maps
+  private Map<RightsObjectType, Map<String, Multimap<RightsState, Long>>> rightsCache = Maps
       .newHashMap();
 
   public String getCurrentUser() {
@@ -204,20 +205,24 @@ public class UserServiceBean {
     return getUserInfo(userId).getUserData().getUserSign();
   }
 
-  public boolean hasEventRight(String object, String state) {
+  public boolean hasEventRight(String object, RightsState state) {
     return getCurrentUserInfo().getUserData().hasEventRight(object, state);
   }
 
-  public boolean hasFormRight(String object, String state) {
+  public boolean hasFormRight(String object, RightsState state) {
     return getCurrentUserInfo().getUserData().hasFormRight(object, state);
   }
 
-  public boolean hasGridRight(String object, String state) {
+  public boolean hasGridRight(String object, RightsState state) {
     return getCurrentUserInfo().getUserData().hasGridRight(object, state);
   }
 
-  public boolean hasMenuRight(String object, String state) {
+  public boolean hasMenuRight(String object, RightsState state) {
     return getCurrentUserInfo().getUserData().hasMenuRight(object, state);
+  }
+
+  public boolean hasModuleRight(String object, RightsState state) {
+    return getCurrentUserInfo().getUserData().hasModuleRight(object, state);
   }
 
   @Lock(LockType.WRITE)
@@ -236,24 +241,24 @@ public class UserServiceBean {
           .setWhere(SqlUtils.equal(TBL_OBJECTS, FLD_OBJECT_TYPE, tp.ordinal())));
 
       if (res.getNumberOfRows() > 0) {
-        Map<String, Multimap<BeeState, Long>> rightsObjects = rightsCache.get(tp);
+        Map<String, Multimap<RightsState, Long>> rightsObjects = rightsCache.get(tp);
 
         if (rightsObjects == null) {
           rightsObjects = Maps.newHashMap();
           rightsCache.put(tp, rightsObjects);
         }
         for (int i = 0; i < res.getNumberOfRows(); i++) {
-          String stateName = res.getValue(i, FLD_STATE);
+          RightsState state = NameUtils.getEnumByIndex(RightsState.class, res.getInt(i, FLD_STATE));
 
-          if (sys.isState(stateName)) {
+          if (state != null) {
             String objectName = BeeUtils.normalize(res.getValue(i, FLD_OBJECT_NAME));
-            Multimap<BeeState, Long> objectStates = rightsObjects.get(objectName);
+            Multimap<RightsState, Long> objectStates = rightsObjects.get(objectName);
 
             if (objectStates == null) {
               objectStates = HashMultimap.create();
               rightsObjects.put(objectName, objectStates);
             }
-            objectStates.put(sys.getState(stateName), res.getLong(i, FLD_ROLE));
+            objectStates.put(state, res.getLong(i, FLD_ROLE));
           }
         }
       }
@@ -435,20 +440,18 @@ public class UserServiceBean {
     return infoCache.get(getUserName(userId));
   }
 
-  private Map<String, Multimap<RightsObjectType, String>> getUserRights(long userId) {
-    Map<String, Multimap<RightsObjectType, String>> rights = Maps.newHashMap();
+  private Map<RightsState, Multimap<RightsObjectType, String>> getUserRights(long userId) {
+    Map<RightsState, Multimap<RightsObjectType, String>> rights = Maps.newHashMap();
 
-    for (String stateName : sys.getStateNames()) {
+    for (RightsState state : RightsState.values()) {
       Multimap<RightsObjectType, String> members = HashMultimap.create();
-      boolean checked = sys.getState(stateName).isChecked();
-
-      rights.put(stateName + (checked ? BeeConst.CHAR_PLUS : ""), members);
+      rights.put(state, members);
 
       for (RightsObjectType type : rightsCache.keySet()) {
         Set<String> objects = rightsCache.get(type).keySet();
 
         for (String object : objects) {
-          if (hasRight(userId, type, object, stateName) != checked) {
+          if (hasRight(userId, type, object, state) != state.isChecked()) {
             members.put(type, object);
           }
         }
@@ -457,29 +460,32 @@ public class UserServiceBean {
     return rights;
   }
 
-  private boolean hasRight(long userId, RightsObjectType type, String object, String stateName) {
+  private boolean hasRight(long userId, RightsObjectType type, String object, RightsState state) {
     Assert.notEmpty(object);
 
-    if (!sys.isState(stateName)) {
+    if (state == null) {
       return false;
     }
-    BeeState state = sys.getState(stateName);
     boolean checked = state.isChecked();
 
-    Map<String, Multimap<BeeState, Long>> rightsObjects = rightsCache.get(type);
+    Map<String, Multimap<RightsState, Long>> rightsObjects = rightsCache.get(type);
 
     if (rightsObjects != null) {
-      Multimap<BeeState, Long> objectStates = rightsObjects.get(BeeUtils.normalize(object));
+      Multimap<RightsState, Long> objectStates = rightsObjects.get(BeeUtils.normalize(object));
 
       if (objectStates != null && objectStates.containsKey(state)) {
         Collection<Long> roles = objectStates.get(state);
         boolean ok = checked;
 
-        for (long role : getUserRoles(userId)) {
-          ok = (checked != roles.contains(role));
+        if (roles.contains(null)) {
+          ok = !checked;
+        } else {
+          for (long role : getUserRoles(userId)) {
+            ok = (checked != roles.contains(role));
 
-          if (ok) {
-            break;
+            if (ok) {
+              break;
+            }
           }
         }
         checked = ok;

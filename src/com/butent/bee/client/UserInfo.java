@@ -4,6 +4,7 @@ import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 
 /**
  * gets user login status, session ID and stores them.
@@ -90,32 +91,39 @@ public class UserInfo implements Module {
     return userData.getUserSign();
   }
 
-  public boolean hasEventRight(String object, String state) {
+  public boolean hasEventRight(String object, RightsState state) {
     if (!isLoggedIn()) {
       return false;
     }
     return userData.hasEventRight(object, state);
   }
 
-  public boolean hasFormRight(String object, String state) {
+  public boolean hasFormRight(String object, RightsState state) {
     if (!isLoggedIn()) {
       return false;
     }
     return userData.hasFormRight(object, state);
   }
 
-  public boolean hasGridRight(String object, String state) {
+  public boolean hasGridRight(String object, RightsState state) {
     if (!isLoggedIn()) {
       return false;
     }
     return userData.hasGridRight(object, state);
   }
 
-  public boolean hasMenuRight(String object, String state) {
+  public boolean hasMenuRight(String object, RightsState state) {
     if (!isLoggedIn()) {
       return false;
     }
     return userData.hasMenuRight(object, state);
+  }
+
+  public boolean hasModuleRight(String object, RightsState state) {
+    if (!isLoggedIn()) {
+      return false;
+    }
+    return userData.hasModuleRight(object, state);
   }
 
   public void init() {

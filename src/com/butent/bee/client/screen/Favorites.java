@@ -207,7 +207,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
   private static final int ITEM_COLUMN = 0;
   private static final int EDIT_COLUMN = 1;
   private static final int DELETE_COLUMN = 2;
-  
+
   private static final String VIEW_NAME = "Favorites";
 
   private static final String COL_USER = "User";
@@ -235,7 +235,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
       FlexTable display = new FlexTable();
       display.setCellPadding(5);
       display.addStyleName(GROUP_STYLE);
-      
+
       display.getColumnFormatter().addStyleName(ITEM_COLUMN, ITEM_COLUMN_STYLE);
       display.getColumnFormatter().addStyleName(EDIT_COLUMN, EDIT_COLUMN_STYLE);
       display.getColumnFormatter().addStyleName(DELETE_COLUMN, DELETE_COLUMN_STYLE);
@@ -251,7 +251,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
   public void addItem(Group group, long id, String html) {
     int order = group.maxOrder() + 1;
     Item item = new Item(id, html, order);
-    
+
     group.add(item);
     addDisplayRow(getDisplay(group), group, item);
 
@@ -339,16 +339,16 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
 
   private void addDisplayRow(FlexTable display, final Group group, final Item item) {
     int row = display.getRowCount();
-    
+
     Widget widget = group.createItemWidget(item);
     display.setWidget(row, ITEM_COLUMN, widget);
-    
+
     BeeImage edit = new BeeImage(Global.getImages().edit());
     edit.addStyleName(EDIT_STYLE);
     edit.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        Global.inputString("Pekeisti pavadinimą", null, new DialogCallback<String>() {
+        Global.inputString("Pakeisti pavadinimą", null, new DialogCallback<String>() {
           @Override
           public void onSuccess(String value) {
             updateItem(group, item.getId(), value);
@@ -356,7 +356,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
         }, item.getHtml());
       }
     });
-   
+
     display.setWidget(row, EDIT_COLUMN, edit);
 
     BeeImage delete = new BeeImage(Global.getImages().delete());
@@ -379,7 +379,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
       }
     }
   }
-  
+
   private Item createItem(BeeRow row) {
     Long itm = row.getLong(itemIndex);
     if (itm == null) {
@@ -458,7 +458,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
     filter.add(BeeKeeper.getUser().getFilter(COL_USER),
         ComparisonFilter.isEqual(COL_GROUP, new IntegerValue(group.ordinal())),
         ComparisonFilter.isEqual(COL_ITEM, new LongValue(id)));
-    
+
     Queries.update(VIEW_NAME, filter, COL_HTML, new TextValue(html), null);
     return true;
   }

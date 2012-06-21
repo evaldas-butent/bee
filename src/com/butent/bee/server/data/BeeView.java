@@ -213,7 +213,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
     public SqlDataType getType() {
       if (xmlExpression != null) {
-        return NameUtils.getConstant(SqlDataType.class, xmlExpression.type);
+        return NameUtils.getEnumByName(SqlDataType.class, xmlExpression.type);
       } else {
         return field.getType();
       }

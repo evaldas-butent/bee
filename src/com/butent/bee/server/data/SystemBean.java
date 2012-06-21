@@ -120,7 +120,6 @@ public class SystemBean {
   private Map<String, BeeView> viewCache = Maps.newHashMap();
   private EventBus viewEventBus = new EventBus();
 
-  // @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
   public void activateTable(String tblName) {
     BeeTable table = getTable(tblName);

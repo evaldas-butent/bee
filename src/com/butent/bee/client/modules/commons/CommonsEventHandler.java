@@ -51,6 +51,7 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
+import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -459,7 +460,9 @@ public class CommonsEventHandler {
     });
 
     SelectorEvent.register(new CommonsSelectorHandler());
+
     Global.registerCaptions(RightsObjectType.class);
+    Global.registerCaptions(RightsState.class);
   }
 
   static ParameterList createArgs(String name) {

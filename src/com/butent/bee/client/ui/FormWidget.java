@@ -1647,7 +1647,7 @@ public enum FormWidget {
       Widget w = createOneChild(child, viewName, columns, wdcb, widgetCallback);
       if (w != null && parent instanceof Split) {
         ScrollBars sb = XmlUtils.getAttributeScrollBars(child, ATTR_SCROLL_BARS, ScrollBars.NONE);
-        Direction direction = NameUtils.getConstant(Direction.class, childTag);
+        Direction direction = NameUtils.getEnumByName(Direction.class, childTag);
 
         if (direction == Direction.CENTER) {
           ((Split) parent).add(w, sb);

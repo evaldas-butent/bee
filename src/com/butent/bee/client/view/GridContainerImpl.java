@@ -580,7 +580,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
 
     String tagName = XmlUtils.getLocalName(root);
-    Direction direction = NameUtils.getConstant(Direction.class, tagName);
+    Direction direction = NameUtils.getEnumByName(Direction.class, tagName);
     if (!validDirection(direction, false)) {
       BeeKeeper.getLog().severe("ext widget: invalid root tag name", BeeUtils.quote(tagName));
       return null;
@@ -605,7 +605,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         ScrollBars.BOTH);
     Integer splSize = XmlUtils.getAttributeInteger(root, FormWidget.ATTR_SPLITTER_SIZE);
 
-    Component precedes = NameUtils.getConstant(Component.class, root.getAttribute(ATTR_PRECEDES));
+    Component precedes = NameUtils.getEnumByName(Component.class, root.getAttribute(ATTR_PRECEDES));
     boolean hidable = !BeeUtils.isFalse(XmlUtils.getAttributeBoolean(root, ATTR_HIDABLE));
 
     return new ExtWidget(widget, direction, size, scrollBars, splSize, precedes, hidable);

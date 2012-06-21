@@ -6,6 +6,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.server.Config;
+import com.butent.bee.server.data.BeeTable;
+import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -19,6 +21,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
@@ -28,12 +31,16 @@ import javax.naming.NamingException;
 @Singleton
 @Lock(LockType.READ)
 public class ModuleHolderBean {
+
   private static final Splitter SPLITTER = Splitter.on(",").omitEmptyStrings().trimResults();
   private static final String PROPERTY_MODULES = "Modules";
   private static final String MODULE_BEAN_PREFIX = "ModuleBean";
   private static Logger logger = Logger.getLogger(ModuleHolderBean.class.getName());
 
   private final Map<String, BeeModule> modules = Maps.newHashMap();
+
+  @EJB
+  SystemBean sys;
 
   public ResponseObject doModule(RequestInfo reqInfo) {
     Assert.notNull(reqInfo);
@@ -77,6 +84,12 @@ public class ModuleHolderBean {
 
   public void initModules() {
     for (String mod : getModules()) {
+      for (String tblName : sys.getTableNames()) {
+        BeeTable table = sys.getTable(tblName);
+        if (BeeUtils.same(table.getModuleName(), mod) && !table.isActive()) {
+          sys.activateTable(tblName);
+        }
+      }
       getModule(mod).init();
     }
   }

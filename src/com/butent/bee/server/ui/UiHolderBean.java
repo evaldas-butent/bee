@@ -1,5 +1,6 @@
 package com.butent.bee.server.ui;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -14,6 +15,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuEntry;
+import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -137,6 +139,52 @@ public class UiHolderBean {
   @Lock(LockType.WRITE)
   public void initMenu() {
     initObjects(UiObject.MENU);
+
+    for (String menuKey : Sets.newHashSet(menuCache.keySet())) {
+      Menu xmlMenu = menuCache.get(menuKey);
+      String parent = xmlMenu.getParent();
+
+      if (!BeeUtils.isEmpty(parent)) {
+        Menu menu = null;
+
+        for (String entry : Splitter.on('.').omitEmptyStrings().trimResults().split(parent)) {
+          if (menu == null) {
+            menu = menuCache.get(key(entry));
+
+          } else if (menu instanceof MenuEntry) {
+            boolean found = false;
+
+            for (Menu item : ((MenuEntry) menu).getItems()) {
+              found = BeeUtils.same(item.getName(), entry);
+
+              if (found) {
+                menu = item;
+                break;
+              }
+            }
+            if (!found) {
+              menu = null;
+              break;
+            }
+          } else {
+            break;
+          }
+        }
+        if (menu == null || !(menu instanceof MenuEntry)) {
+          LogUtils.severe(logger, "Menu parent is not valid:", "Module:", xmlMenu.getModuleName(),
+              "; Menu:", xmlMenu.getName(), "; Parent:", parent);
+        } else {
+          List<Menu> items = ((MenuEntry) menu).getItems();
+
+          if (BeeUtils.isIndex(items, xmlMenu.getOrder())) {
+            items.add(xmlMenu.getOrder(), xmlMenu);
+          } else {
+            items.add(xmlMenu);
+          }
+        }
+        unregister(menuKey, menuCache);
+      }
+    }
   }
 
   public boolean isForm(String formName) {
@@ -154,7 +202,8 @@ public class UiHolderBean {
   private Menu getVisibleMenu(String parent, Menu entry) {
     String ref = BeeUtils.concat(".", parent, entry.getName());
 
-    if (usr.hasMenuRight(ref, "Visible")) {
+    if (usr.hasModuleRight(entry.getModuleName(), RightsState.VISIBLE)
+        && usr.hasMenuRight(ref, RightsState.VISIBLE)) {
       List<Menu> items = null;
 
       if (entry instanceof MenuEntry) {
@@ -220,7 +269,8 @@ public class UiHolderBean {
 
     boolean ok = (xmlMenu != null);
     if (ok) {
-      register(xmlMenu, menuCache, menuName, moduleName);
+      xmlMenu.setModuleName(moduleName);
+      register(xmlMenu, menuCache, BeeUtils.concat(".", xmlMenu.getParent(), menuName), moduleName);
     } else {
       unregister(menuName, menuCache);
     }
@@ -300,8 +350,7 @@ public class UiHolderBean {
     return BeeUtils.normalize(name);
   }
 
-  private <T> void register(T object, Map<String, T> cache, String objectName,
-      String moduleName) {
+  private <T> void register(T object, Map<String, T> cache, String objectName, String moduleName) {
     if (!BeeUtils.isEmpty(object)) {
       String name = NameUtils.getClassName(object.getClass());
 

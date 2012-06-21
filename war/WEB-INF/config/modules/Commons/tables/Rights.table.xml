@@ -7,8 +7,8 @@
   >
   <Fields>
     <Relation name="Object" relation="Objects" notNull="true" cascade="DELETE" />
-    <Relation name="Role" relation="Roles" notNull="true" cascade="DELETE" />
-    <String name="State" precision="20" notNull="true" />
+    <Relation name="Role" relation="Roles" cascade="DELETE" />
+    <Integer name="State" notNull="true" />
   </Fields>
   <Keys>
     <Key unique="true">
