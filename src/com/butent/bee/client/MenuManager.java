@@ -239,8 +239,10 @@ public class MenuManager implements Module {
 
   private Widget createMenu(int level, List<Menu> entries, Widget parent) {
     Assert.betweenExclusive(level, MenuConstants.ROOT_MENU_INDEX, MenuConstants.MAX_MENU_DEPTH);
-    Assert.notEmpty(entries);
 
+    if (BeeUtils.isEmpty(entries)) {
+      return null;
+    }
     String layout = getLayout(level);
     boolean opt = getOption(level);
 

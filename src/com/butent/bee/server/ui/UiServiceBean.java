@@ -345,7 +345,7 @@ public class UiServiceBean {
 
     if (!sys.isTable(tableName)) {
       response = ResponseObject.error("Unknown table:", tableName);
-    } else if (rowCount <= 0 || rowCount > 10000) {
+    } else if (rowCount <= 0 || rowCount > 100000) {
       response = ResponseObject.error("Invalid row count:", rowCount);
     } else {
       response = deb.generateData(tableName, rowCount);
@@ -840,7 +840,7 @@ public class UiServiceBean {
     if (BeeUtils.isEmpty(value)) {
       return ResponseObject.error("parameter not found:", Service.VAR_VALUE);
     }
-    
+
     BeeView view = sys.getView(viewName);
     if (view.isReadOnly()) {
       return ResponseObject.error("View", BeeUtils.bracket(view.getName()), "is read only.");
@@ -852,7 +852,7 @@ public class UiServiceBean {
     return qs.updateDataWithResponse(new SqlUpdate(tblName).setWhere(view.getCondition(filter))
         .addConstant(column, Value.restore(value)));
   }
-  
+
   private ResponseObject updateCell(RequestInfo reqInfo) {
     return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), false);
   }

@@ -12,6 +12,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
@@ -238,6 +239,13 @@ public class UserData implements BeeSerializable {
   }
 
   private boolean hasRight(RightsObjectType type, String object, RightsState state) {
+    Assert.notNull(state);
+
+    if (!BeeUtils.contains(type.getRegisteredStates(), state)) {
+      LogUtils.severe(LogUtils.getDefaultLogger(), "State", BeeUtils.bracket(state),
+          "is not registered for type", BeeUtils.bracket(type));
+      return false;
+    }
     if (BeeUtils.isEmpty(object)) {
       return true;
     }

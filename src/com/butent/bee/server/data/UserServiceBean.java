@@ -9,6 +9,8 @@ import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.i18n.I18nUtils;
 import com.butent.bee.server.i18n.Localized;
+import com.butent.bee.server.sql.HasConditions;
+import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
@@ -237,8 +239,16 @@ public class UserServiceBean {
             SqlUtils.join(TBL_OBJECTS, sys.getIdName(TBL_OBJECTS), TBL_RIGHTS, FLD_OBJECT));
 
     for (RightsObjectType tp : RightsObjectType.values()) {
-      SimpleRowSet res = qs.getData(ss
-          .setWhere(SqlUtils.equal(TBL_OBJECTS, FLD_OBJECT_TYPE, tp.ordinal())));
+      if (BeeUtils.isEmpty(tp.getRegisteredStates())) {
+        continue;
+      }
+      HasConditions cl = SqlUtils.or();
+      IsCondition wh = SqlUtils.and(SqlUtils.equal(TBL_OBJECTS, FLD_OBJECT_TYPE, tp.ordinal()), cl);
+
+      for (RightsState state : tp.getRegisteredStates()) {
+        cl.add(SqlUtils.equal(TBL_RIGHTS, FLD_STATE, state.ordinal()));
+      }
+      SimpleRowSet res = qs.getData(ss.setWhere(wh));
 
       if (res.getNumberOfRows() > 0) {
         Map<String, Multimap<RightsState, Long>> rightsObjects = rightsCache.get(tp);
@@ -249,17 +259,14 @@ public class UserServiceBean {
         }
         for (int i = 0; i < res.getNumberOfRows(); i++) {
           RightsState state = NameUtils.getEnumByIndex(RightsState.class, res.getInt(i, FLD_STATE));
+          String objectName = BeeUtils.normalize(res.getValue(i, FLD_OBJECT_NAME));
+          Multimap<RightsState, Long> objectStates = rightsObjects.get(objectName);
 
-          if (state != null) {
-            String objectName = BeeUtils.normalize(res.getValue(i, FLD_OBJECT_NAME));
-            Multimap<RightsState, Long> objectStates = rightsObjects.get(objectName);
-
-            if (objectStates == null) {
-              objectStates = HashMultimap.create();
-              rightsObjects.put(objectName, objectStates);
-            }
-            objectStates.put(state, res.getLong(i, FLD_ROLE));
+          if (objectStates == null) {
+            objectStates = HashMultimap.create();
+            rightsObjects.put(objectName, objectStates);
           }
+          objectStates.put(state, res.getLong(i, FLD_ROLE));
         }
       }
     }
@@ -421,7 +428,6 @@ public class UserServiceBean {
 
   @SuppressWarnings("unused")
   @PreDestroy
-  @Lock(LockType.WRITE)
   private void destroy() {
     for (long userId : getUsers()) {
       UserInfo info = getUserInfo(userId);

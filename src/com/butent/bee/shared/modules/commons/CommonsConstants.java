@@ -3,23 +3,32 @@ package com.butent.bee.shared.modules.commons;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.ui.HasCaption;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 public class CommonsConstants {
 
   public static enum RightsObjectType implements HasCaption {
-    EVENT("Įvykis"),
-    FORM("Forma"),
-    GRID("Lentelė"),
-    MENU("Meniu"),
-    MODULE("Modulis");
+    EVENT("Įvykis", EnumSet.of(RightsState.ENABLED)),
+    FORM("Forma", EnumSet.of(RightsState.VISIBLE, RightsState.ENABLED)),
+    GRID("Lentelė", EnumSet.of(RightsState.VISIBLE, RightsState.ENABLED)),
+    MENU("Meniu", EnumSet.of(RightsState.VISIBLE)),
+    MODULE("Modulis", EnumSet.of(RightsState.VISIBLE));
 
     private final String caption;
+    private final Set<RightsState> registeredStates;
 
-    private RightsObjectType(String caption) {
+    private RightsObjectType(String caption, Set<RightsState> states) {
       this.caption = caption;
+      this.registeredStates = states;
     }
 
     public String getCaption() {
       return caption;
+    }
+
+    public Set<RightsState> getRegisteredStates() {
+      return registeredStates;
     }
   }
 

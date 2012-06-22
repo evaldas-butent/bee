@@ -290,7 +290,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
 
     public boolean hasEditableRelation() {
-      return BeeUtils.allNotEmpty(isUnique(), getRelation()) && BeeUtils.isEmpty(getCascade());
+      return isUnique() && BeeUtils.isEmpty(getCascade());
     }
 
     @Override

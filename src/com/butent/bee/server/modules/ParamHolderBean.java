@@ -140,7 +140,6 @@ public class ParamHolderBean {
     return response;
   }
 
-  @Lock(LockType.WRITE)
   private void refreshParameters(String module) {
     Map<String, BeeParameter> params = moduleBean.getModuleDefaultParameters(module);
 

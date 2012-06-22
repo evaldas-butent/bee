@@ -274,7 +274,7 @@ public class DataEditorBean {
 
   public ResponseObject generateData(String tbl, int rowCount) {
     Assert.isTrue(sys.isTable(tbl), "Not a base table: " + tbl);
-    Assert.isPositive(rowCount, "rowCount must be positive");
+    Assert.nonNegative(rowCount, "rowCount must be positive");
     String tblName = sys.getTable(tbl).getName();
 
     Collection<BeeField> fields = sys.getTableFields(tblName);
@@ -294,81 +294,91 @@ public class DataEditorBean {
     chars.append(chars.toString().toUpperCase()).append(" ąčęėįšųūžĄČĘĖĮŠŲŪŽ");
 
     Random random = new Random();
-    Object v = null;
 
-    for (int row = 0; row < rowCount; row++) {
+    for (int row = 0; row < Math.max(rowCount, 1); row++) {
       for (BeeField field : fields) {
-        if (field instanceof BeeRelation) {
-          String relation = ((BeeRelation) field).getRelation();
-          String[] rs = relations.get(relation);
+        Object v = null;
 
-          if (!relations.containsKey(relation)) {
-            rs = qs.getColumn(new SqlSelect()
-                .addFields(relation, sys.getIdName(relation))
-                .addFrom(relation));
+        if (field.isNotNull() || random.nextInt(7) != 0) {
+          if (field instanceof BeeRelation) {
+            String relation = ((BeeRelation) field).getRelation();
 
-            if (BeeUtils.isEmpty(rs) && field.isNotNull()) {
-              return ResponseObject
-                  .error(field.getName(), ": Relation table", relation, "is empty");
-            }
-            relations.put(relation, rs);
-          }
-          if (BeeUtils.isEmpty(rs)) {
-            v = null;
-          } else {
-            v = BeeUtils.toInt(rs[random.nextInt(rs.length)]);
-          }
-        } else {
-          switch (field.getType()) {
-            case BOOLEAN:
-              v = random.nextBoolean();
-              break;
-            case CHAR:
-              v = BeeUtils.randomString(1, field.getPrecision(), BeeConst.CHAR_SPACE, '\u007e');
-              break;
-            case DATE:
-              v = new JustDate(BeeUtils.randomInt(minDay, maxDay));
-              break;
-            case DATETIME:
-              v = new DateTime(BeeUtils.randomLong(minTime, maxTime));
-              break;
-            case DOUBLE:
-              v = (random.nextBoolean() ? -1 : 1)
-                  * Math.random() * Math.pow(10, BeeUtils.randomInt(-7, 20));
-              break;
-            case INTEGER:
-              v = random.nextInt();
-              break;
-            case LONG:
-              v = random.nextLong() / random.nextInt();
-              break;
-            case DECIMAL:
-              if (field.getPrecision() <= 1) {
-                v = random.nextInt(10);
-              } else {
-                double x = (random.nextBoolean() ? -1 : 1)
-                    * Math.random() * Math.pow(10, BeeUtils.randomInt(0, field.getPrecision()));
-                if (field.getScale() <= 0) {
-                  v = Math.round(x);
-                } else {
-                  v = Math.round(x) / Math.pow(10, field.getScale());
+            if (((BeeRelation) field).hasEditableRelation()) {
+              ResponseObject resp = generateData(relation, 0);
+              v = resp.getResponse(-1L, logger);
+
+              if ((Long) v < 0) {
+                return resp;
+              }
+            } else {
+              String[] rs = relations.get(relation);
+
+              if (!relations.containsKey(relation)) {
+                rs = qs.getColumn(new SqlSelect()
+                    .addFields(relation, sys.getIdName(relation))
+                    .addFrom(relation));
+
+                if (BeeUtils.isEmpty(rs) && field.isNotNull()) {
+                  return ResponseObject
+                      .error(field.getName(), ": Relation table", relation, "is empty");
                 }
+                relations.put(relation, rs);
               }
-              break;
-            case STRING:
-              int len = field.getPrecision();
-              if (len > 3) {
-                len = BeeUtils.randomInt(1, len + 1);
+              if (!BeeUtils.isEmpty(rs)) {
+                v = BeeUtils.toInt(rs[random.nextInt(rs.length)]);
               }
-              v = BeeUtils.randomString(len, chars);
-              break;
-            case TEXT:
-              v = BeeUtils.randomString(BeeUtils.randomInt(1, 2000), chars);
-              break;
+            }
+          } else {
+            switch (field.getType()) {
+              case BOOLEAN:
+                v = random.nextBoolean();
+                break;
+              case CHAR:
+                v = BeeUtils.randomString(1, field.getPrecision(), BeeConst.CHAR_SPACE, '\u007e');
+                break;
+              case DATE:
+                v = new JustDate(BeeUtils.randomInt(minDay, maxDay));
+                break;
+              case DATETIME:
+                v = new DateTime(BeeUtils.randomLong(minTime, maxTime));
+                break;
+              case DOUBLE:
+                v = (random.nextBoolean() ? -1 : 1)
+                    * Math.random() * Math.pow(10, BeeUtils.randomInt(-7, 20));
+                break;
+              case INTEGER:
+                v = random.nextInt();
+                break;
+              case LONG:
+                v = random.nextLong() / random.nextInt();
+                break;
+              case DECIMAL:
+                if (field.getPrecision() <= 1) {
+                  v = random.nextInt(10);
+                } else {
+                  double x = (random.nextBoolean() ? -1 : 1)
+                      * Math.random() * Math.pow(10, BeeUtils.randomInt(0, field.getPrecision()));
+                  if (field.getScale() <= 0) {
+                    v = Math.round(x);
+                  } else {
+                    v = Math.round(x) / Math.pow(10, field.getScale());
+                  }
+                }
+                break;
+              case STRING:
+                int len = field.getPrecision();
+
+                if (len > 3) {
+                  int minLen = field.isUnique() ? Math.min(10, len) : 1;
+                  len = BeeUtils.randomInt(minLen, len + 1);
+                }
+                v = BeeUtils.randomString(len, chars);
+                break;
+              case TEXT:
+                v = BeeUtils.randomString(BeeUtils.randomInt(1, 2000), chars);
+                break;
+            }
           }
-        }
-        if (!field.isNotNull() && random.nextInt(7) == 0) {
-          v = null;
         }
         if (field.isExtended()) {
           if (v != null) {
@@ -387,6 +397,9 @@ public class DataEditorBean {
         if (resp.hasErrors()) {
           return resp;
         }
+      }
+      if (rowCount == 0) {
+        return ResponseObject.response(id);
       }
       si.reset();
       extUpdate.clear();
