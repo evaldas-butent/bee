@@ -44,10 +44,11 @@ import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class InputDate extends Composite implements Editor, HasDateTimeFormat, HasTextBox,
-    HasIntStep {
+    HasIntStep, HasMaxLength {
   
   private class TimePickerHandler implements KeyDownHandler, ClickHandler {
     private TimePickerHandler() {
@@ -181,6 +182,10 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     return "date-box";
   }
 
+  public int getMaxLength() {
+    return getBox().getMaxLength();
+  }
+
   public String getNormalizedValue() {
     HasDateValue date = getDate();
     if (date == null) {
@@ -309,6 +314,10 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
 
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+
+  public void setMaxLength(int maxLength) {
+    getBox().setMaxLength(maxLength);
   }
 
   public void setNullable(boolean nullable) {

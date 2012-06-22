@@ -68,6 +68,7 @@ import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
 import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.HasCapsLock;
 import com.butent.bee.shared.ui.HasVisibleLines;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.SelectorColumn;
@@ -84,7 +85,7 @@ import java.util.Map;
  */
 
 public class DataSelector extends Composite implements Editor, HasVisibleLines, HasTextBox,
-    HasRelatedRow {
+    HasRelatedRow, HasCapsLock {
 
   public class SimpleHandler implements FocusHandler, BlurHandler, EditStopEvent.Handler {
 
@@ -904,6 +905,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     getInput().setTabIndex(index);
   }
 
+  public void setUpperCase(boolean upperCase) {
+    getInput().setUpperCase(upperCase);
+  }
+  
   public void setValue(String newValue) {
     setEditorValue(newValue);
   }

@@ -23,6 +23,8 @@ import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.ui.EditorAction;
+import com.butent.bee.shared.ui.HasCapsLock;
+import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -30,7 +32,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class InputText extends TextBoxBase implements Editor, HasCharacterFilter, HasInputHandlers,
-    HasTextBox {
+    HasTextBox, HasCapsLock, HasMaxLength {
 
   private HasStringValue source = null;
 
@@ -41,6 +43,8 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
   private boolean editing = false;
 
   private String oldValue = null;
+  
+  private boolean upperCase = false;
 
   public InputText() {
     super(Document.get().createTextInputElement());
@@ -149,11 +153,24 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     return getElement().equals(node);
   }
   
+  public boolean isUpperCase() {
+    return upperCase;
+  }
+
   @Override
   public void onBrowserEvent(Event event) {
-    if (EventUtils.isKeyPress(event.getType()) && !acceptChar((char) event.getCharCode())) {
-      event.preventDefault();
-      return;
+    if (EventUtils.isKeyPress(event.getType())) {
+      char charCode = (char) event.getCharCode();
+
+      if (!acceptChar(charCode)) {
+        event.preventDefault();
+      } else if (isUpperCase()) {
+        char upper = Character.toUpperCase(charCode);
+        if (upper != charCode) {
+          event.preventDefault();
+          UiHelper.pressKey(this, upper);
+        }
+      }
     }
 
     super.onBrowserEvent(event);
@@ -178,8 +195,8 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     DomUtils.setId(this, id);
   }
 
-  public void setMaxLength(int length) {
-    getInputElement().setMaxLength(length);
+  public void setMaxLength(int maxLength) {
+    getInputElement().setMaxLength(maxLength);
   }
 
   public void setNullable(boolean nullable) {
@@ -190,10 +207,15 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     this.source = source;
   }
 
+  public void setUpperCase(boolean upperCase) {
+    this.upperCase = upperCase;
+  }
+
   @Override
   public void setValue(String value, boolean fireEvents) {
-    super.setValue(value, fireEvents);
-    setOldValue(value);
+    String v = (isUpperCase() && !BeeUtils.isEmpty(value)) ? value.toUpperCase() : value;
+    super.setValue(v, fireEvents);
+    setOldValue(v);
   }
 
   public void setVisibleLength(int length) {

@@ -11,7 +11,7 @@
   >
   <FlowPanel class="flexBox-vertical" style="margin: 1ex 1em;">
     <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-      <InputText source="Number" caption="Valst.Nr." d:size="70" d:unit="px" d:align="right" d:rootStyle="&MARGIN;" />
+      <InputText source="Number" caption="Valst.Nr." upperCase="true" d:size="70" d:unit="px" d:align="right" d:rootStyle="&MARGIN;" />
       <DataSelector source="Model" caption="Modelis" class="flexible" newRowForm="NewVehicleModel"
         renderColumns="ParentModelName ModelName" decorator="flex-left" d:rootStyle="&MARGIN;"
         filter="parent" />

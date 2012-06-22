@@ -25,7 +25,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
    */
 
   private enum Serial {
-    TYPE, VALUE_START_INDEX, STEP_VALUE, CHARACTER_WIDTH, VISIBLE_LINES, FORMAT,
+    TYPE, VALUE_START_INDEX, STEP_VALUE, CHARACTER_WIDTH, VISIBLE_LINES, FORMAT, UPPER_CASE,
     WIDTH, HEIGHT, MIN_WIDTH, MIN_HEIGHT, ON_ENTRY, OPTIONS, ITEMS
   }
 
@@ -57,6 +57,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
   private Integer visibleLines = null;
 
   private String format = null;
+  private Boolean upperCase = null;
 
   private Integer width = null;
   private Integer height = null;
@@ -107,6 +108,9 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
           break;
         case FORMAT:
           setFormat(value.trim());
+          break;
+        case UPPER_CASE:
+          setUpperCase(BeeUtils.toBooleanOrNull(value));
           break;
         case WIDTH:
           setWidth(BeeUtils.toIntOrNull(value));
@@ -159,6 +163,7 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
         "Character Width", getCharacterWidth(),
         "Visible Lines", getVisibleLines(),
         "Format", getFormat(),
+        "Upper Case", getUpperCase(),
         "Width", getWidth(),
         "Height", getHeight(),
         "Min Width", getMinWidth(),
@@ -220,6 +225,10 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
     return width;
   }
 
+  public boolean isUpperCase() {
+    return Boolean.TRUE.equals(getUpperCase());
+  }
+  
   public String serialize() {
     Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
@@ -243,6 +252,9 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
           break;
         case FORMAT:
           arr[i] = getFormat();
+          break;
+        case UPPER_CASE:
+          arr[i] = getUpperCase();
           break;
         case WIDTH:
           arr[i] = getWidth();
@@ -292,6 +304,8 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
         setVisibleLines(BeeUtils.toIntOrNull(value));
       } else if (BeeUtils.same(key, UiConstants.ATTR_FORMAT)) {
         setFormat(value.trim());
+      } else if (BeeUtils.same(key, HasCapsLock.ATTR_UPPER_CASE)) {
+        setUpperCase(BeeUtils.toBooleanOrNull(value.trim()));
       } else if (BeeUtils.same(key, ATTR_WIDTH)) {
         setWidth(BeeUtils.toIntOrNull(value));
       } else if (BeeUtils.same(key, ATTR_HEIGHT)) {
@@ -314,6 +328,10 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
 
   public void setOptions(String options) {
     this.options = options;
+  }
+
+  private Boolean getUpperCase() {
+    return upperCase;
   }
 
   private boolean isEmpty() {
@@ -350,6 +368,10 @@ public class EditorDescription implements BeeSerializable, HasInfo, HasOptions {
 
   private void setType(EditorType type) {
     this.type = type;
+  }
+
+  private void setUpperCase(Boolean upperCase) {
+    this.upperCase = upperCase;
   }
 
   private void setValueStartIndex(Integer valueStartIndex) {

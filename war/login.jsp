@@ -8,29 +8,17 @@
 <style type="text/css">
 body {
   font-family: Arial, sans-serif;
-  font-size: small;
-}
-.bee-SignIn-Popup {
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  bottom:0;
-  display: box;
-  display: -moz-box;
-  display: -webkit-box;
-  box-pack: center;
-  box-align: center;
-  -moz-box-pack: center;
-  -moz-box-align: center;
-  -webkit-box-pack: center;
-  -webkit-box-align: center;
 }
 .bee-SignIn-Panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 400px;
+  height: 320px;
+  margin-top: -160px;
+  margin-left: -200px;
   background-color: whitesmoke;
   border: 1px solid #e5e5e5;
-  width: 400px;
-  height: 320px;    
 }
 .bee-Error-Caption {
   font-size: 16px;
@@ -83,6 +71,7 @@ body {
   bottom: 20px;
 }
 </style>
+
 <script type="text/javascript">
 function goPswd(ev) {
   if (ev.keyCode && ev.keyCode == 13) {
@@ -96,12 +85,12 @@ function goPswd(ev) {
 }
 </script>
 </head>
+
 <body>
-<div style="position: absolute; left: 20px; top: 20px;">
-  <img src="images/logo.gif" style="width: 55px; height: 76px;" border="0" />
-</div>
-<div class="bee-SignIn-Popup">
-  <div class="bee-SignIn-Panel" style="overflow-x: hidden; overflow-y: hidden; position:relative;">
+  <div style="position: absolute; left: 20px; top: 20px;">
+    <img src="images/logo.gif" style="width: 55px; height: 76px;" border="0" />
+  </div>
+  <div class="bee-SignIn-Panel">
     <form method="post" action="j_security_check" accept-charset="UTF-8">
     <div class="bee-SignIn-Caption">Būtent CRM</div>
 <%
@@ -119,6 +108,5 @@ if (request.getParameter("fail") != null) {
     <input type="submit" class="bee-SignIn-Button" value="Prisijungti" />
     </form>
   </div>
-</div>
 </body>
 </html>

@@ -257,6 +257,11 @@ public class DataUtils {
     return names;
   }
 
+  public static int getColumnPrecision(String columnId, List<? extends IsColumn> columns) {
+    IsColumn column = getColumn(columnId, columns);
+    return (column == null) ? BeeConst.UNDEF : column.getPrecision();
+  }
+  
   public static List<BeeColumn> getColumns(List<BeeColumn> columns, int... indexes) {
     if (indexes == null) {
       return columns;

@@ -593,11 +593,20 @@
         <xs:attribute name="defaultDecorator" type="d:registeredDecorator" default="caption-left" />
         <xs:attribute name="onFocus" type="ui:focusAction" />
         <xs:attribute name="placeholder" type="xs:normalizedString" />
+        <xs:attribute name="maxLength" type="xs:positiveInteger" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:element name="InputText" type="inputWidget" substitutionGroup="widget" />
+  <xs:element name="InputText" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="inputWidget">
+          <xs:attribute name="upperCase" type="xs:boolean" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
 
   <xs:element name="InputArea" substitutionGroup="widget">
     <xs:complexType>
@@ -715,6 +724,7 @@
           <xs:attributeGroup ref="ui:relation" />
           <xs:attribute name="itemKey" type="xs:normalizedString" />
           <xs:attribute name="renderColumns" type="type:nameList" />
+          <xs:attribute name="upperCase" type="xs:boolean" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

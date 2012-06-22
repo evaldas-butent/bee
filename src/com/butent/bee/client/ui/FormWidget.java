@@ -126,6 +126,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
+import com.butent.bee.shared.ui.HasCapsLock;
+import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.ui.HasVisibleLines;
@@ -376,6 +378,7 @@ public enum FormWidget {
   private static final String ATTR_DEFAULT_DECORATOR = "defaultDecorator";
 
   private static final String ATTR_PLACEHOLDER = "placeholder";
+  private static final String ATTR_MAX_LENGTH = "maxLength";
 
   private static final String TAG_CSS = "css";
   private static final String TAG_HANDLER = "handler";
@@ -534,6 +537,9 @@ public enum FormWidget {
         relation = createRelation(viewName, attributes, children);
         if (relation != null) {
           widget = new DataSelector(relation, true);
+          if (BeeConst.isTrue(attributes.get(HasCapsLock.ATTR_UPPER_CASE))) {
+            ((DataSelector) widget).setUpperCase(true);
+          }
         }
         break;
 
@@ -748,13 +754,16 @@ public enum FormWidget {
 
       case INPUT_TEXT:
         widget = new InputText();
+        if (BeeConst.isTrue(attributes.get(HasCapsLock.ATTR_UPPER_CASE))) {
+          ((InputText) widget).setUpperCase(true);
+        }
         break;
 
       case INPUT_TIME:
         format = attributes.get(UiConstants.ATTR_FORMAT);
         widget = new InputTime(Format.getDateTimeFormat(format, Format.getDefaultTimeFormat()));
         break;
-        
+
       case INTEGER_LABEL:
         format = attributes.get(UiConstants.ATTR_FORMAT);
         inline = BeeUtils.toBoolean(attributes.get(ATTR_INLINE));
@@ -789,9 +798,11 @@ public enum FormWidget {
         String isNum = attributes.get(ATTR_VALUE_NUMERIC);
         if (BeeUtils.isBoolean(isNum)) {
           ((BeeListBox) widget).setValueNumeric(BeeUtils.toBoolean(isNum));
-        } else if (ValueType.isNumeric(DataUtils
-            .getColumnType(attributes.get(UiConstants.ATTR_SOURCE), columns))) {
-          ((BeeListBox) widget).setValueNumeric(true);
+        } else {
+          BeeColumn column = getColumn(columns, attributes);
+          if (column != null && ValueType.isNumeric(column.getType())) {
+            ((BeeListBox) widget).setValueNumeric(true);
+          }
         }
         break;
 
@@ -829,7 +840,7 @@ public enum FormWidget {
           }
         }
         break;
-        
+
       case ORDERED_LIST:
         widget = new HtmlList(true);
         break;
@@ -1053,7 +1064,7 @@ public enum FormWidget {
 
     String id = (widget instanceof HasId) ? ((HasId) widget).getId() : DomUtils.getId(widget);
     WidgetDescription widgetDescription = new WidgetDescription(this, id, name);
-    
+
     if (relation != null) {
       widgetDescription.setRelation(relation);
     }
@@ -1070,6 +1081,13 @@ public enum FormWidget {
       }
       if (disablable && BeeConst.isFalse(attributes.get(ATTR_DISABLABLE))) {
         disablable = false;
+      }
+      
+      if (widget instanceof HasMaxLength && !attributes.containsKey(ATTR_MAX_LENGTH)) {
+        int maxLength = UiHelper.getMaxLength(getColumn(columns, attributes));
+        if (maxLength > 0) {
+          ((HasMaxLength) widget).setMaxLength(maxLength);
+        }
       }
     }
 
@@ -1284,7 +1302,7 @@ public enum FormWidget {
     return fw.create(element, viewName, columns, widgetDescriptionCallback, widgetCallback);
   }
 
-  private Widget createIfWidgetOrHtmlOrText(Element element, String viewName, 
+  private Widget createIfWidgetOrHtmlOrText(Element element, String viewName,
       List<BeeColumn> columns, WidgetDescriptionCallback wdcb, WidgetCallback widgetCallback) {
     if (element == null) {
       return null;
@@ -1321,7 +1339,7 @@ public enum FormWidget {
     }
     return null;
   }
-  
+
   private Relation createRelation(String viewName, Map<String, String> attributes,
       List<Element> children) {
     boolean debug = Global.isDebug();
@@ -1329,7 +1347,7 @@ public enum FormWidget {
     Relation relation = XmlUtils.getRelation(attributes, children);
 
     String source = attributes.get(UiConstants.ATTR_SOURCE);
-    List<String> renderColumns = 
+    List<String> renderColumns =
         NameUtils.toList(attributes.get(RendererDescription.ATTR_RENDER_COLUMNS));
 
     if (debug) {
@@ -1340,10 +1358,10 @@ public enum FormWidget {
         BeeKeeper.getLog().debug(RendererDescription.ATTR_RENDER_COLUMNS, renderColumns);
       }
     }
-    
+
     Holder<String> sourceHolder = Holder.of(source);
     Holder<List<String>> listHolder = Holder.of(renderColumns);
-    
+
     relation.initialize(Data.getDataInfoProvider(), viewName, sourceHolder, listHolder);
     if (relation.getViewName() == null) {
       BeeKeeper.getLog().severe("Cannot create relation");
@@ -1357,14 +1375,14 @@ public enum FormWidget {
 
       return null;
     }
-    
+
     if (debug) {
       BeeKeeper.getLog().debugCollection(relation.getInfo());
     }
 
     source = sourceHolder.get();
     renderColumns = listHolder.get();
-    
+
     if (!BeeUtils.isEmpty(source)) {
       attributes.put(UiConstants.ATTR_SOURCE, source);
       if (debug) {
@@ -1413,6 +1431,18 @@ public enum FormWidget {
       }
     }
     return ok;
+  }
+  
+  private BeeColumn getColumn(List<BeeColumn> columns, Map<String, String> attributes) {
+    if (columns == null && attributes == null) {
+      return null;
+    }
+    
+    String source = attributes.get(UiConstants.ATTR_SOURCE);
+    if (BeeUtils.isEmpty(source)) {
+      return null;
+    }
+    return DataUtils.getColumn(source, columns);
   }
 
   private Edges getEdges(Element element) {
@@ -1847,6 +1877,11 @@ public enum FormWidget {
           ((HasTextDimensions) widget).setCharacterWidth(BeeUtils.toInt(value));
         }
 
+      } else if (BeeUtils.same(name, ATTR_MAX_LENGTH)) {
+        if (widget instanceof HasMaxLength && BeeUtils.isPositiveInt(value)) {
+          ((HasMaxLength) widget).setMaxLength(BeeUtils.toInt(value));
+        }
+        
       } else if (BeeUtils.same(name, HasItems.ATTR_ITEM_KEY)) {
         if (widget instanceof AcceptsCaptions) {
           ((AcceptsCaptions) widget).addCaptions(value);

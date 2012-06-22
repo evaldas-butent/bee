@@ -130,6 +130,7 @@
     <xs:attribute name="stepValue" type="xs:positiveInteger" />
     <xs:attributeGroup ref="textArea" />
     <xs:attribute name="format" type="xs:normalizedString" />
+    <xs:attribute name="upperCase" type="xs:boolean" />
     <xs:attribute name="width" type="xs:positiveInteger" />
     <xs:attribute name="height" type="xs:positiveInteger" />
     <xs:attribute name="minWidth" type="xs:positiveInteger" />

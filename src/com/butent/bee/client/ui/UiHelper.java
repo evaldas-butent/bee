@@ -35,9 +35,11 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasNumberBounds;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -177,7 +179,7 @@ public class UiHelper {
       return BeeUtils.proper(constant.name(), BeeConst.CHAR_UNDER);
     }
   }
-  
+
   public static List<String> getCaptions(Class<? extends Enum<?>> clazz) {
     Assert.notNull(clazz);
     List<String> result = Lists.newArrayList();
@@ -191,7 +193,7 @@ public class UiHelper {
     }
     return result;
   }
-  
+
   public static DataView getDataView(Widget widget) {
     if (widget == null) {
       return null;
@@ -210,7 +212,7 @@ public class UiHelper {
     }
     return null;
   }
-  
+
   public static HorizontalAlignmentConstant getDefaultHorizontalAlignment(ValueType type) {
     if (type == null) {
       return null;
@@ -265,7 +267,57 @@ public class UiHelper {
       return null;
     }
   }
-  
+
+  public static int getMaxLength(IsColumn column) {
+    if (column == null) {
+      return BeeConst.UNDEF;
+    }
+
+    ValueType type = column.getType();
+    int precision = column.getPrecision();
+    int scale = Math.max(column.getScale(), 0);
+
+    if (precision <= 0) {
+      switch (type) {
+        case BOOLEAN:
+          precision = 1;
+          break;
+
+        case DATE:
+          precision = 10;
+          break;
+
+        case DATETIME:
+          precision = 23;
+          break;
+
+        case INTEGER:
+          precision = Integer.toString(Integer.MAX_VALUE).length();
+          break;
+
+        case LONG:
+          precision = Long.toString(Long.MAX_VALUE).length();
+          break;
+
+        case NUMBER:
+          precision = 20;
+          break;
+
+        case DECIMAL:
+        case TEXT:
+        case TIMEOFDAY:
+      }
+    }
+    
+    if (precision <= 0) {
+      return BeeConst.UNDEF;
+    } else if (ValueType.isNumeric(type)) {
+      return precision + (precision - scale) / 3 + ((scale > 0) ? 2 : 1);
+    } else {
+      return precision;
+    }
+  }
+
   public static String getValue(Widget widget) {
     if (widget instanceof Editor) {
       return ((Editor) widget).getValue();
@@ -287,7 +339,7 @@ public class UiHelper {
     }
     return initializer.initialize(widget, name);
   }
-  
+
   public static boolean isSave(NativeEvent event) {
     if (event == null) {
       return false;
@@ -303,7 +355,7 @@ public class UiHelper {
       return moveFocus(parent, currentObject.getElement(), forward);
     }
   }
-  
+
   public static boolean moveFocus(Widget parent, Element currentElement, boolean forward) {
     if (parent == null || currentElement == null) {
       return false;
@@ -339,7 +391,7 @@ public class UiHelper {
       return false;
     }
   }
-  
+
   public static HorizontalAlignmentConstant parseHorizontalAlignment(String text) {
     if (BeeUtils.isEmpty(text)) {
       return null;
@@ -387,18 +439,44 @@ public class UiHelper {
     return align;
   }
 
+  public static void pressKey(ValueBoxBase<?> widget, char key) {
+    Assert.notNull(widget);
+
+    String oldText = BeeUtils.nvl(widget.getText(), BeeConst.STRING_EMPTY);
+
+    int pos = widget.getCursorPos();
+    int len = widget.getSelectionLength();
+    
+    if (len <= 0 && widget instanceof HasMaxLength) {
+      int maxLength = ((HasMaxLength) widget).getMaxLength();
+      if (maxLength > 0 && BeeUtils.hasLength(oldText, maxLength)) {
+        return;
+      }
+    }
+
+    String newText;
+    if (len > 0) {
+      newText = BeeUtils.replace(oldText, pos, pos + len, key);
+    } else {
+      newText = BeeUtils.insert(oldText, pos, key);
+    }
+
+    widget.setText(newText);
+    widget.setCursorPos(pos + 1);
+  }
+
   public static void registerSave(UIObject obj) {
     Assert.notNull(obj);
     obj.sinkEvents(Event.ONKEYDOWN);
   }
-  
+
   public static void selectDeferred(final ValueBoxBase<?> widget) {
     Assert.notNull(widget);
     final String text = widget.getText();
     if (BeeUtils.isEmpty(text)) {
       return;
     }
-    
+
     Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {

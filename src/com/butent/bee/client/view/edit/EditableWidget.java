@@ -114,7 +114,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     if (widget instanceof Editor) {
       setEditor((Editor) widget);
       getEditor().setNullable(isNullable());
-
+      
       if (formView != null) {
         getEditor().addFocusHandler(this);
         getEditor().addBlurHandler(this);

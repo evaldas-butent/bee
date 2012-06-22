@@ -9,6 +9,7 @@ import com.butent.bee.client.composite.StringPicker;
 import com.butent.bee.client.composite.TextEditor;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.ui.AcceptsCaptions;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputArea;
@@ -30,6 +31,8 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
+import com.butent.bee.shared.ui.HasCapsLock;
+import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.ui.HasVisibleLines;
@@ -95,9 +98,6 @@ public class EditorFactory {
       return new InputText();
     }
 
-    int precision = column.getPrecision();
-    int scale = column.getScale();
-
     Editor editor = null;
 
     switch (type) {
@@ -128,35 +128,33 @@ public class EditorFactory {
           editor = new InputArea();
         } else {
           editor = new InputText();
-          if (precision > 0) {
-            ((InputText) editor).setMaxLength(precision);
-          }
         }
         break;
 
       case TIMEOFDAY:
         editor = new InputText();
-        if (precision > 0) {
-          ((InputText) editor).setMaxLength(precision);
-        }
         break;
     }
 
     if (editor instanceof HasPrecision) {
-      ((HasPrecision) editor).setPrecision(precision);
+      ((HasPrecision) editor).setPrecision(column.getPrecision());
     }
     if (editor instanceof HasScale) {
-      ((HasScale) editor).setScale(scale);
+      ((HasScale) editor).setScale(column.getScale());
     }
-    if (editor instanceof InputNumber && precision > 0 && precision > scale) {
-      ((InputNumber) editor).setMaxLength(precision + (precision - scale) / 3
-          + ((scale > 0) ? 2 : 1));
+
+    if (editor instanceof HasMaxLength) {
+      int maxLength = UiHelper.getMaxLength(column);
+      if (maxLength > 0) {
+        ((HasMaxLength) editor).setMaxLength(maxLength);
+      }
     }
 
     return editor;
   }
 
-  public static Editor getEditor(EditorDescription description, String itemKey, ValueType valueType,
+  public static Editor getEditor(EditorDescription description, String itemKey,
+      ValueType valueType,
       Relation relation) {
     Assert.notNull(description);
     EditorType editorType = description.getType();
@@ -227,7 +225,7 @@ public class EditorFactory {
         editor = new Toggle();
         break;
     }
-    
+
     Assert.notNull(editor, "cannot create editor");
 
     if (editor instanceof HasValueStartIndex && description.getValueStartIndex() != null) {
@@ -247,9 +245,17 @@ public class EditorFactory {
     if (editor instanceof HasVisibleLines && BeeUtils.isPositive(description.getVisibleLines())) {
       ((HasVisibleLines) editor).setVisibleLines(description.getVisibleLines());
     }
-    if (editor instanceof HasTextDimensions 
-        && BeeUtils.isPositive(description.getCharacterWidth())) {
-      ((HasTextDimensions) editor).setCharacterWidth(description.getCharacterWidth());
+
+    if (BeeUtils.isPositive(description.getCharacterWidth())) {
+      if (editor instanceof HasTextDimensions) {
+        ((HasTextDimensions) editor).setCharacterWidth(description.getCharacterWidth());
+      } else if (editor instanceof HasMaxLength) {
+        ((HasMaxLength) editor).setMaxLength(description.getCharacterWidth());
+      }
+    }
+
+    if (editor instanceof HasCapsLock && description.isUpperCase()) {
+      ((HasCapsLock) editor).setUpperCase(true);
     }
 
     return editor;
