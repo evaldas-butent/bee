@@ -342,13 +342,15 @@ public class UiServiceBean {
     String[] arr = BeeUtils.split(reqInfo.getContent(), BeeConst.STRING_SPACE);
     String tableName = ArrayUtils.getQuietly(arr, 0);
     int rowCount = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 1));
+    int refCount = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 2));
+    int childCount = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 3));
 
     if (!sys.isTable(tableName)) {
       response = ResponseObject.error("Unknown table:", tableName);
     } else if (rowCount <= 0 || rowCount > 100000) {
       response = ResponseObject.error("Invalid row count:", rowCount);
     } else {
-      response = deb.generateData(tableName, rowCount);
+      response = deb.generateData(tableName, rowCount, refCount, childCount, null);
     }
     return response;
   }

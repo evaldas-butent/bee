@@ -195,7 +195,8 @@ public class CliWorker {
     } else if (z.equals("fs")) {
       getFs();
     } else if (z.equals("gen") && BeeUtils.isDigit(ArrayUtils.getQuietly(arr, 2))) {
-      BeeKeeper.getRpc().sendText(Service.GENERATE, BeeUtils.concat(1, arr[1], arr[2]));
+      BeeKeeper.getRpc().sendText(Service.GENERATE, BeeUtils.concat(1, arr[1], arr[2],
+          ArrayUtils.getQuietly(arr, 3), ArrayUtils.getQuietly(arr, 4)));
     } else if (z.equals("geo")) {
       showGeo();
     } else if (z.equals("grid") && arr.length == 2) {
@@ -811,7 +812,8 @@ public class CliWorker {
 
     for ( var i = 0; i < 6; i++) {
       for ( var j = 0; j < 6; j++) {
-        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j) + ', 0)';
+        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', '
+            + Math.floor(255 - 42.5 * j) + ', 0)';
         ctx.fillRect(j * 25, i * 25, 25, 25);
       }
     }
