@@ -146,6 +146,8 @@ public class GridLoaderBean {
   private static final String ATTR_MIN_NUMBER_OF_ROWS = "minNumberOfRows";
   private static final String ATTR_MAX_NUMBER_OF_ROWS = "maxNumberOfRows";
 
+  private static final String ATTR_RENDER_MODE = "renderMode";
+
   private static Logger logger = Logger.getLogger(GridLoaderBean.class.getName());
 
   @EJB
@@ -768,6 +770,11 @@ public class GridLoaderBean {
     Integer maxNumberOfRows = XmlUtils.getAttributeInteger(src, ATTR_MAX_NUMBER_OF_ROWS);
     if (maxNumberOfRows != null) {
       dst.setMaxNumberOfRows(maxNumberOfRows);
+    }
+
+    String renderMode = src.getAttribute(ATTR_RENDER_MODE);
+    if (!BeeUtils.isEmpty(renderMode)) {
+      dst.setRenderMode(renderMode.trim());
     }
     
     String newRowForm = src.getAttribute(UiConstants.ATTR_NEW_ROW_FORM);

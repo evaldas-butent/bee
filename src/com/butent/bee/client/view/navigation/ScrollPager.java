@@ -10,6 +10,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.widget.Html;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.event.ScopeChangeEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -33,10 +34,8 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
 
   public static int maxHeight = 10000;
 
-  private static final int UNKNOWN = -1;
-
-  private int lastPos = UNKNOWN;
-  private long lastHeight = UNKNOWN;
+  private int lastPos = BeeConst.UNDEF;
+  private long lastHeight = BeeConst.UNDEF;
 
   private boolean isScrolling = false;
   private boolean isUpdating = false;
@@ -107,7 +106,7 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
 
   private long calculateHeight(int pageSize, int rowCount, int widgetHeight) {
     if (pageSize <= 0 || rowCount < pageSize || widgetHeight <= 0) {
-      return UNKNOWN;
+      return BeeConst.UNDEF;
     }
     return (long) widgetHeight * rowCount / pageSize;
   }
@@ -139,7 +138,7 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
   private int getPosition() {
     Scroll outer = getOuterWidget();
     if (outer == null) {
-      return UNKNOWN;
+      return BeeConst.UNDEF;
     }
     return outer.getVerticalScrollPosition();
   }

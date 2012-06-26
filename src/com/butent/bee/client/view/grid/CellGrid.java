@@ -75,6 +75,7 @@ import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.GridComponentDescription;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -88,38 +89,6 @@ import java.util.Set;
 
 public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStartHandlers,
     HasEnabled, HasActiveRow {
-
-  /**
-   * Contains a list of possible resizing modes (horizontal, vertical).
-   */
-
-  public enum ResizerMode {
-    HORIZONTAL(10, 4), VERTICAL(10, 4);
-
-    int handlePx;
-    int barPx;
-
-    private ResizerMode(int handlePx, int barPx) {
-      this.handlePx = handlePx;
-      this.barPx = barPx;
-    }
-
-    public int getBarPx() {
-      return barPx;
-    }
-
-    public int getHandlePx() {
-      return handlePx;
-    }
-
-    public void setBarPx(int barPx) {
-      this.barPx = barPx;
-    }
-
-    public void setHandlePx(int handlePx) {
-      this.handlePx = handlePx;
-    }
-  }
 
   /**
    * Contains templates which facilitates compile-time binding of HTML templates to generate
@@ -234,7 +203,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     private int headerWidth = BeeConst.UNDEF;
     private int bodyWidth = BeeConst.UNDEF;
     private int footerWidth = BeeConst.UNDEF;
-    
+
     private int autoFitRows = BeeConst.UNDEF;
 
     private StyleDescriptor headerStyle = null;
@@ -697,6 +666,30 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
+  private enum RenderMode {
+    FULL, CONTENT
+  }
+
+  private enum ResizerMode {
+    HORIZONTAL(10, 4), VERTICAL(10, 4);
+
+    private final int handlePx;
+    private final int barPx;
+
+    private ResizerMode(int handlePx, int barPx) {
+      this.handlePx = handlePx;
+      this.barPx = barPx;
+    }
+
+    private int getBarPx() {
+      return barPx;
+    }
+
+    private int getHandlePx() {
+      return handlePx;
+    }
+  }
+
   private class ResizerMoveTimer extends Timer {
     private boolean pending = false;
     private int pendingMove = 0;
@@ -955,8 +948,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private boolean readOnly = false;
   private boolean editing = false;
   private boolean enabled = true;
-  
+
   private boolean isColumnWidthsEstimated = false;
+
+  private final List<Long> renderedRows = Lists.newArrayList();
+  private RenderMode renderMode = null;
 
   public CellGrid() {
     setElement(Document.get().createDivElement());
@@ -1059,9 +1055,9 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     estimateColumnWidths(getRowData(), 0, getDataSize());
   }
 
-  public <T extends IsRow> void estimateColumnWidths(List<T> values, int start, int end) {
+  public <T extends IsRow> void estimateColumnWidths(List<T> rows, int start, int end) {
     for (int i = 0; i < getColumnCount(); i++) {
-      estimateColumnWidth(i, values, start, end, true);
+      estimateColumnWidth(i, rows, start, end, true);
     }
     isColumnWidthsEstimated = true;
   }
@@ -1332,6 +1328,31 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
+  public void initRenderMode(String mode) {
+    RenderMode rm = null;
+
+    if (!BeeUtils.isEmpty(mode)) {
+      rm = NameUtils.getEnumByName(RenderMode.class, mode);
+      if (rm != null) {
+        setRenderMode(rm);
+        return;
+      }
+    }
+
+    if (getRowStyles() != null) {
+      rm = RenderMode.FULL;
+    } else {
+      for (ColumnInfo columnInfo : columns) {
+        if (columnInfo.getDynStyles() != null || columnInfo.getAutoFitRows() > 0) {
+          rm = RenderMode.FULL;
+          break;
+        }
+      }
+    }
+
+    setRenderMode(rm);
+  }
+
   public void insertRow(IsRow rowValue) {
     Assert.notNull(rowValue);
 
@@ -1538,7 +1559,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
           } else {
             startEditing(rowValue, col, target, EditorFactory.START_MOUSE_CLICK);
           }
-        
+
         } else {
           activateCell(row, col);
           if (columnInfo.isActionColumn()) {
@@ -1741,9 +1762,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   public void reset() {
+    getRenderedRows().clear();
+
     getResizedRows().clear();
     getResizedCells().clear();
-    
+
     if (!getSelectedRows().isEmpty()) {
       getSelectedRows().clear();
       fireSelectionCountChange();
@@ -1845,7 +1868,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     if (columnDescription.getMaxWidth() != null) {
       columnInfo.setMaxWidth(columnDescription.getMaxWidth());
     }
-    
+
     String af = BeeUtils.ifString(columnDescription.getAutoFit(), gridDescription.getAutoFit());
     if (BeeUtils.isInt(af)) {
       columnInfo.setAutoFitRows(BeeUtils.toInt(af));
@@ -2026,11 +2049,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
-  public void setRowData(List<? extends IsRow> values, boolean refresh) {
+  public void setRowData(List<? extends IsRow> rows, boolean refresh) {
     getRowData().clear();
-    if (!BeeUtils.isEmpty(values)) {
-      getRowData().addAll(values);
-      
+    if (!BeeUtils.isEmpty(rows)) {
+      getRowData().addAll(rows);
+
       if (!isColumnWidthsEstimated) {
         estimateColumnWidths();
       }
@@ -2045,15 +2068,15 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     this.rowStyles = rowStyles;
   }
 
-  public void updateActiveRow(List<? extends IsRow> values) {
-    Assert.notNull(values);
+  public void updateActiveRow(List<? extends IsRow> rows) {
+    Assert.notNull(rows);
     int oldRow = getActiveRowIndex();
 
     if (oldRow >= 0 && oldRow < getDataSize()) {
       int newRow = 0;
       long id = getRowData().get(oldRow).getId();
-      for (int i = 0; i < values.size(); i++) {
-        if (values.get(i).getId() == id) {
+      for (int i = 0; i < rows.size(); i++) {
+        if (rows.get(i).getId() == id) {
           newRow = i;
           break;
         }
@@ -2066,6 +2089,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     checkColumnBounds(col);
     if (getColumn(col).isSortable() && getRowCount() > 1) {
       updateOrder(getColumnId(col), EventUtils.hasModifierKey(event));
+      getRenderedRows().clear();
       SortEvent.fire(this, getSortOrder());
     }
   }
@@ -2175,7 +2199,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       setPageStart(newPageStart, true, true);
     }
   }
-  
+
   private void bringToFront(int row, int col) {
     Element cellElement = getCellElement(row, col);
     Assert.notNull(cellElement);
@@ -2356,14 +2380,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return estimateColumnWidth(col, getRowData(), ensure);
   }
 
-  private <T extends IsRow> int estimateColumnWidth(int col, List<T> values, boolean ensure) {
-    Assert.notNull(values);
-    return estimateColumnWidth(col, values, 0, values.size(), ensure);
+  private <T extends IsRow> int estimateColumnWidth(int col, List<T> rows, boolean ensure) {
+    Assert.notNull(rows);
+    return estimateColumnWidth(col, rows, 0, rows.size(), ensure);
   }
 
-  private <T extends IsRow> int estimateColumnWidth(int col, List<T> values,
+  private <T extends IsRow> int estimateColumnWidth(int col, List<T> rows,
       int start, int end, boolean ensure) {
-    Assert.notNull(values);
+    Assert.notNull(rows);
 
     ColumnInfo columnInfo = getColumnInfo(col);
     AbstractColumn<?> column = columnInfo.getColumn();
@@ -2371,7 +2395,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     int width = 0;
     for (int i = start; i < end; i++) {
-      IsRow rowValue = values.get(i);
+      IsRow rowValue = rows.get(i);
       if (rowValue == null) {
         continue;
       }
@@ -2428,7 +2452,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private int getActiveRowIndex() {
     return activeRowIndex;
   }
-  
+
   private Edges getBodyBorderWidth() {
     return getBodyComponent().getBorderWidth();
   }
@@ -2478,11 +2502,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return Selectors.attributeEquals(DomUtils.ATTRIBUTE_DATA_ROW, rowIndex);
   }
 
-  private Edges[][] getBorders(List<IsRow> values, Edges defaultBorders, Edges margin) {
-    if (values == null || defaultBorders == null || defaultBorders.isEmpty()) {
+  private Edges[][] getBorders(List<IsRow> rows, Edges defaultBorders, Edges margin) {
+    if (rows == null || defaultBorders == null || defaultBorders.isEmpty()) {
       return null;
     }
-    int rc = values.size();
+    int rc = rows.size();
     int cc = getColumnCount();
     if (rc <= 0 || cc <= 0) {
       return null;
@@ -2594,7 +2618,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     if (!getResizedCells().isEmpty()) {
       for (int i = 0; i < rc; i++) {
-        long rowId = values.get(i).getId();
+        long rowId = rows.get(i).getId();
         if (!getResizedCells().containsRow(rowId)) {
           continue;
         }
@@ -2707,6 +2731,43 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   private IsRow getDataItem(int rowIndex) {
     checkRowBounds(rowIndex);
     return getRowData().get(rowIndex);
+  }
+
+  private RenderMode getEffectiveRenderMode() {
+    if (getRowData().isEmpty() || getRowData().size() != getRenderedRows().size()) {
+      return RenderMode.FULL;
+
+    } else if (getRenderMode() != null) {
+      return getRenderMode();
+
+    } else {
+      if (!getResizedRows().isEmpty()) {
+        for (Long rowId : getRenderedRows()) {
+          if (getResizedRows().containsKey(rowId)) {
+            return RenderMode.FULL;
+          }
+        }
+        for (IsRow row : getRowData()) {
+          if (getResizedRows().containsKey(row.getId())) {
+            return RenderMode.FULL;
+          }
+        }
+      }
+
+      if (!getResizedCells().isEmpty()) {
+        for (Long rowId : getRenderedRows()) {
+          if (getResizedCells().containsRow(rowId)) {
+            return RenderMode.FULL;
+          }
+        }
+        for (IsRow row : getRowData()) {
+          if (getResizedCells().containsRow(row.getId())) {
+            return RenderMode.FULL;
+          }
+        }
+      }
+      return RenderMode.CONTENT;
+    }
   }
 
   private Edges getFooterBorderWidth() {
@@ -2848,6 +2909,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       return minWidth;
     }
     return getMinCellWidth();
+  }
+
+  private List<Long> getRenderedRows() {
+    return renderedRows;
+  }
+
+  private RenderMode getRenderMode() {
+    return renderMode;
   }
 
   private Table<Long, String, CellInfo> getResizedCells() {
@@ -3116,7 +3185,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
     return false;
   }
-  
+
   private boolean hasCalculatedColumns() {
     for (ColumnInfo columnInfo : columns) {
       if (columnInfo.isCalculated()) {
@@ -3438,7 +3507,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     if (getRowData().isEmpty()) {
       return;
     }
-    
+
     for (int i = 0; i < columns.size(); i++) {
       ColumnInfo columnInfo = columns.get(i);
       int rc = Math.min(getRowData().size(), columnInfo.getAutoFitRows());
@@ -3547,18 +3616,29 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private void render() {
-    fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.PARTIALLY_LOADED);
+    long millis = System.currentTimeMillis();
 
-    SafeHtmlBuilder sb = new SafeHtmlBuilder();
-    if (getRowData().isEmpty()) {
-      if (isEnabled()) {
-        sb.append(template.emptiness(STYLE_EMPTY, BeeConst.STRING_EMPTY));
-      }
+    RenderMode mode = getEffectiveRenderMode();
+
+    if (RenderMode.CONTENT.equals(mode)) {
+      replaceContent(getRowData());
     } else {
-      renderData(sb, getRowData());
-      renderResizer(sb);
+      SafeHtmlBuilder sb = new SafeHtmlBuilder();
+      if (getRowData().isEmpty()) {
+        if (isEnabled()) {
+          sb.append(template.emptiness(STYLE_EMPTY, BeeConst.STRING_EMPTY));
+        }
+      } else {
+        renderData(sb, getRowData());
+        renderResizer(sb);
+      }
+      replaceAllChildren(sb.toSafeHtml());
     }
-    replaceAllChildren(sb.toSafeHtml());
+
+    getRenderedRows().clear();
+    for (IsRow row : getRowData()) {
+      getRenderedRows().add(row.getId());
+    }
 
     fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
 
@@ -3577,9 +3657,13 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         }
       });
     }
+
+    if (!getRenderedRows().isEmpty()) {
+      BeeKeeper.getLog().debug(mode.name(), System.currentTimeMillis() - millis);
+    }
   }
 
-  private List<RenderInfo> renderBody(List<IsRow> rowValues, Collection<Integer> rowIndexes,
+  private List<RenderInfo> renderBody(List<IsRow> rows, Collection<Integer> rowIndexes,
       Collection<Integer> colIndexes) {
     int size = getDataSize();
     int start = getPageStart();
@@ -3596,7 +3680,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     SafeStyles defaultPaddingStyle = StyleUtils.buildPadding(getCssValue(padding));
     SafeStyles defaultBorderWidthStyle = StyleUtils.buildBorderWidth(getCssValue(borderWidth));
 
-    Edges[][] cellBorders = getBorders(rowValues, borderWidth, margin);
+    Edges[][] cellBorders = getBorders(rows, borderWidth, margin);
     boolean collapseBorders = (cellBorders != null);
 
     SafeStylesBuilder stylesBuilder = new SafeStylesBuilder();
@@ -3620,7 +3704,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     List<RenderInfo> result = Lists.newArrayList();
 
     for (int i = 0; i < size; i++) {
-      IsRow rowValue = rowValues.get(i);
+      IsRow rowValue = rows.get(i);
       Assert.notNull(rowValue);
 
       long valueId = rowValue.getId();
@@ -3778,14 +3862,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return new RenderInfo(rowIdx, col, classes, stylesBuilder.toSafeStyles(), focusable, content);
   }
 
-  private void renderData(SafeHtmlBuilder sb, List<IsRow> values) {
+  private void renderData(SafeHtmlBuilder sb, List<IsRow> rows) {
     renderHeaders(sb, true);
 
-    List<RenderInfo> body = renderBody(values, null, null);
-    if (body != null) {
-      for (RenderInfo cell : body) {
-        sb.append(cell.render());
-      }
+    List<RenderInfo> body = renderBody(rows, null, null);
+    for (RenderInfo cell : body) {
+      sb.append(cell.render());
     }
 
     renderHeaders(sb, false);
@@ -3903,6 +3985,60 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   private void replaceAllChildren(SafeHtml html) {
     getElement().setInnerHTML(html.asString());
+  }
+
+  private void replaceContent(List<IsRow> rows) {
+    boolean checkSelection = false;
+    if (!getSelectedRows().isEmpty()) {
+      for (Long rowId : getRenderedRows()) {
+        if (isRowSelected(rowId)) {
+          checkSelection = true;
+          break;
+        }
+      }
+
+      if (!checkSelection) {
+        for (IsRow row : rows) {
+          if (isRowSelected(row)) {
+            checkSelection = true;
+            break;
+          }
+        }
+      }
+    }
+
+    NodeList<Element> children = DomUtils.getChildren(getElement());
+    for (int i = 0; i < children.getLength(); i++) {
+      Element cell = children.getItem(i);
+
+      String rx = DomUtils.getDataRow(cell);
+      if (!isBodyRow(rx)) {
+        continue;
+      }
+      int r = BeeUtils.toInt(rx);
+      int c = BeeUtils.toInt(DomUtils.getDataColumn(cell));
+
+      IsRow rowValue = rows.get(r);
+
+      SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
+      CellContext context = new CellContext(r, c, rowValue, this);
+      getColumn(c).render(context, rowValue, cellBuilder);
+
+      cell.setInnerHTML(cellBuilder.toSafeHtml().asString());
+
+      if (checkSelection) {
+        boolean was = isRowSelected(getRenderedRows().get(r));
+        boolean is = isRowSelected(rowValue);
+
+        if (was != is) {
+          if (was) {
+            cell.removeClassName(STYLE_SELECTED_ROW);
+          } else {
+            cell.addClassName(STYLE_SELECTED_ROW);
+          }
+        }
+      }
+    }
   }
 
   private boolean resizeCell(int keyCode, boolean hasModifiers, int row, int col, Element cell) {
@@ -4173,9 +4309,9 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     if (isRowSelected(rowId)) {
       for (int i = 0; i < getDataSize(); i++) {
-        IsRow value = getDataItem(i);
-        if (isRowSelected(value)) {
-          selectRow(i, value);
+        IsRow row = getDataItem(i);
+        if (isRowSelected(row)) {
+          selectRow(i, row);
         }
       }
       getSelectedRows().clear();
@@ -4202,16 +4338,16 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         selectRow(rowIndex, rowValue);
       } else if (lastSelectedRow < rowIndex) {
         for (int i = lastSelectedRow + 1; i <= rowIndex; i++) {
-          IsRow value = getDataItem(i);
-          if (!isRowSelected(value)) {
-            selectRow(i, value);
+          IsRow row = getDataItem(i);
+          if (!isRowSelected(row)) {
+            selectRow(i, row);
           }
         }
       } else {
         for (int i = rowIndex; i < lastSelectedRow; i++) {
-          IsRow value = getDataItem(i);
-          if (!isRowSelected(value)) {
-            selectRow(i, value);
+          IsRow row = getDataItem(i);
+          if (!isRowSelected(row)) {
+            selectRow(i, row);
           }
         }
       }
@@ -4276,6 +4412,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   private void setColumnWidth(String columnId, double width, Unit unit, int containerSize) {
     setColumnWidth(columnId, Rulers.getIntPixels(width, unit, containerSize));
+  }
+
+  private void setRenderMode(RenderMode renderMode) {
+    this.renderMode = renderMode;
   }
 
   private void setResizerBounds(int min, int max) {

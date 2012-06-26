@@ -22,8 +22,8 @@ import com.google.gwt.dom.client.ScriptElement;
 import com.google.gwt.dom.client.SpanElement;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.dom.client.TableRowElement;
 import com.google.gwt.user.client.DOM;
@@ -1036,14 +1036,14 @@ public class DomUtils {
   }
 
   public static int getScrollBarHeight() {
-    if (scrollBarHeight <= 0) {
+    if (scrollBarHeight < 0) {
       calculateScrollBarSize();
     }
     return scrollBarHeight;
   }
 
   public static int getScrollBarWidth() {
-    if (scrollBarWidth <= 0) {
+    if (scrollBarWidth < 0) {
       calculateScrollBarSize();
     }
     return scrollBarWidth;
@@ -1883,11 +1883,12 @@ public class DomUtils {
 
   private static void calculateScrollBarSize() {
     Element elem = DOM.createDiv();
-    elem.getStyle().setVisibility(Visibility.HIDDEN);
+
+    elem.getStyle().setPosition(Position.ABSOLUTE);
+    elem.getStyle().setLeft(-1000, Unit.PX);
+    elem.getStyle().setTop(-1000, Unit.PX);
     elem.getStyle().setWidth(100, Unit.PX);
     elem.getStyle().setHeight(100, Unit.PX);
-    elem.getStyle().setBorderWidth(0, Unit.PX);
-    elem.getStyle().setMargin(0, Unit.PX);
     elem.getStyle().setOverflow(Overflow.SCROLL);
 
     Element body = Document.get().getBody();
@@ -1901,8 +1902,8 @@ public class DomUtils {
 
     body.removeChild(elem);
 
-    scrollBarWidth = (w1 > w2) ? w1 - w2 : StyleUtils.DEFAULT_SCROLL_BAR_WIDTH;
-    scrollBarHeight = (h1 > h2) ? h1 - h2 : StyleUtils.DEFAULT_SCROLL_BAR_HEIGHT;
+    scrollBarWidth = w1 - w2;
+    scrollBarHeight = h1 - h2;
   }
 
   private static void calculateTextBoxSize() {

@@ -70,6 +70,7 @@
     <xs:attribute name="favorite" type="xs:normalizedString" />
     <xs:attribute name="minNumberOfRows" type="xs:positiveInteger" />
     <xs:attribute name="maxNumberOfRows" type="xs:positiveInteger" />
+    <xs:attribute name="renderMode" type="renderMode" />
   </xs:complexType>
 
   <xs:complexType name="extWidget">
@@ -106,5 +107,12 @@
     <xs:attribute name="borderWidth" type="ui:edges" />
     <xs:attribute name="margin" type="ui:edges" />
   </xs:complexType>
+
+  <xs:simpleType name="renderMode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="full" />
+      <xs:enumeration value="content" />
+    </xs:restriction>
+  </xs:simpleType>
 
 </xs:schema>

@@ -41,7 +41,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION,
     SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
     COLUMNS, WIDGETS, FOOTER_EVENTS, AUTO_FIT, FAVORITE, CACHE_DATA, CACHE_DESCRIPTION,
-    MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS
+    MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE
   }
 
   public static GridDescription restore(String s) {
@@ -121,6 +121,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   private Integer minNumberOfRows = null;
   private Integer maxNumberOfRows = null;
   
+  private String renderMode = null;
+
   private List<String> widgets = Lists.newArrayList();
 
   public GridDescription(String name) {
@@ -371,6 +373,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case MAX_NUMBER_OF_ROWS:
           setMaxNumberOfRows(BeeUtils.toIntOrNull(value));
           break;
+        case RENDER_MODE:
+          setRenderMode(value);
+          break;
       }
     }
   }
@@ -493,7 +498,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Auto Fit", getAutoFit(),
         "Favorite", getFavorite(),
         "Min Number Of Rows", getMinNumberOfRows(),
-        "Max Number Of Rows", getMaxNumberOfRows());
+        "Max Number Of Rows", getMaxNumberOfRows(),
+        "Render Mode", getRenderMode());
 
     if (getStyleSheets() != null && !getStyleSheets().isEmpty()) {
       int cnt = getStyleSheets().size();
@@ -643,6 +649,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public String getParent() {
     return parent;
+  }
+
+  public String getRenderMode() {
+    return renderMode;
   }
 
   public Calculation getRowEditable() {
@@ -879,6 +889,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case MAX_NUMBER_OF_ROWS:
           arr[i++] = getMaxNumberOfRows();
           break;
+        case RENDER_MODE:
+          arr[i++] = getRenderMode();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -1010,11 +1023,11 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setNewRowCaption(String newRowCaption) {
     this.newRowCaption = newRowCaption;
   }
-
+  
   public void setNewRowColumns(String newRowColumns) {
     this.newRowColumns = newRowColumns;
   }
-  
+
   public void setNewRowDefaults(String newRowDefaults) {
     this.newRowDefaults = newRowDefaults;
   }
@@ -1026,11 +1039,11 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setNewRowPopup(Boolean newRowPopup) {
     this.newRowPopup = newRowPopup;
   }
-
+  
   public void setOrder(Order order) {
     this.order = order;
   }
-  
+
   public void setPagingThreshold(Integer pagingThreshold) {
     this.pagingThreshold = pagingThreshold;
   }
@@ -1041,6 +1054,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setReadOnly(Boolean readOnly) {
     this.readOnly = readOnly;
+  }
+
+  public void setRenderMode(String renderMode) {
+    this.renderMode = renderMode;
   }
 
   public void setRowEditable(Calculation rowEditable) {

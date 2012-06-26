@@ -30,6 +30,7 @@ import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.edit.EditFormEvent;
+import com.butent.bee.client.view.edit.HasEditState;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.CellGridImpl;
 import com.butent.bee.client.view.grid.GridCallback;
@@ -61,7 +62,7 @@ import java.util.Set;
 
 public class GridContainerImpl extends Split implements GridContainerView, HasNavigation,
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler,
-    EditFormEvent.Handler {
+    EditFormEvent.Handler, HasEditState {
 
   private enum Component {
     HEADER, FOOTER, SCROLLER, CONTENT
@@ -143,15 +144,15 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   private Evaluator rowMessage = null;
 
-  private boolean adding = false;
+  private boolean editing = false;
   private boolean enabled = true;
 
   private final List<ExtWidget> extWidgets = Lists.newArrayList();
   private WidgetCreationCallback extCreation = null;
-  
+
   private IsRow lastRow = null;
   private boolean lastEnabled = false;
-  
+
   private List<String> favorite = Lists.newArrayList();
 
   public GridContainerImpl() {
@@ -209,10 +210,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (caption == null) {
         caption = gridDescription.getCaption();
       }
-      
+
       Set<Action> enabledActions = Sets.newHashSet(gridDescription.getEnabledActions());
       Set<Action> disabledActions = Sets.newHashSet(gridDescription.getDisabledActions());
-      
+
       boolean fav = !BeeUtils.isEmpty(gridDescription.getFavorite());
       if (fav) {
         setFavorite(NameUtils.toList(gridDescription.getFavorite()));
@@ -234,7 +235,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       if (max > 0 && rowCount >= max) {
         disabledActions.add(Action.ADD);
       }
-      
+
       header.create(caption, !BeeUtils.isEmpty(gridDescription.getViewName()), readOnly, uiOptions,
           enabledActions, disabledActions);
     } else {
@@ -299,7 +300,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (gridDescription.getRowMessage() != null) {
       setRowMessage(Evaluator.create(gridDescription.getRowMessage(), null, dataColumns));
     }
-    
+
     if (getExtCreation() != null) {
       getExtCreation().addBinding(name, getId(), gridDescription.getParent());
       getExtCreation().bind(this, getId());
@@ -359,6 +360,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return getId();
   }
 
+  public boolean isEditing() {
+    return editing;
+  }
+
   public boolean isEnabled() {
     return enabled;
   }
@@ -374,7 +379,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       rowEnabled = !gridView.isReadOnly() && isEnabled() && gridView.isEnabled()
           && gridView.isRowEditable(rowValue, false);
     }
-    
+
     if (DataUtils.sameIdAndVersion(rowValue, getLastRow()) && rowEnabled == wasLastEnabled()) {
       return;
     }
@@ -387,11 +392,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         getHeader().setMessage(message);
       }
     }
-    
+
     String eventSource = BeeUtils.ifString(getViewPresenter().getEventSource(), getId());
     BeeKeeper.getBus().fireEventFromSource(new ParentRowEvent(gridView.getViewName(), rowValue,
         rowEnabled), eventSource);
-    
+
     setLastRow(rowValue);
     setLastEnabled(rowEnabled);
   }
@@ -400,11 +405,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (!event.isPopup()) {
       showChildren(true);
     }
-    setAdding(false);
+    setEditing(false);
   }
 
   public void onAddStart(AddStartEvent event) {
-    setAdding(true);
+    setEditing(true);
     if (!event.isPopup()) {
       showChildren(false);
     }
@@ -413,7 +418,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   @Override
   public void onBrowserEvent(Event event) {
     super.onBrowserEvent(event);
-    if (isAdding() || !isEnabled()) {
+    if (isEditing() || !isEnabled()) {
       return;
     }
 
@@ -460,10 +465,17 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public void onEditForm(EditFormEvent event) {
-    if (event.isOpening() && !event.isPopup()) {
-      showChildren(false);
-    } else if (event.isClosing() && !event.isPopup()) {
-      showChildren(true);
+    if (event.isOpening()) {
+      setEditing(true);
+      if (!event.isPopup()) {
+        showChildren(false);
+      }
+
+    } else if (event.isClosing()) {
+      if (!event.isPopup()) {
+        showChildren(true);
+      }
+      setEditing(false);
     }
   }
 
@@ -473,6 +485,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       super.onResize();
       getGridView().getGrid().updatePageSize();
     }
+  }
+
+  public void setEditing(boolean editing) {
+    this.editing = editing;
   }
 
   public void setEnabled(boolean enabled) {
@@ -591,7 +607,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
       BeeKeeper.getLog().severe("ext widget size must be positive integer");
       return null;
     }
-    
+
     if (getExtCreation() == null) {
       setExtCreation(new WidgetCreationCallback());
     }
@@ -734,14 +750,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     return hasSearch;
   }
 
-  private boolean isAdding() {
-    return adding;
-  }
-
-  private void setAdding(boolean adding) {
-    this.adding = adding;
-  }
-
   private void setExtCreation(WidgetCreationCallback extCreation) {
     this.extCreation = extCreation;
   }
@@ -807,12 +815,12 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         setWidgetSize(extWidget.getWidget(), show ? extWidget.getSize() : 0);
       }
     }
-    
+
     if (show) {
       setProvidesResize(true);
     }
   }
-  
+
   private boolean wasLastEnabled() {
     return lastEnabled;
   }

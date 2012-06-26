@@ -41,7 +41,7 @@ public interface HasDataTable extends HasLoadingState, HasSortHandlers,
 
   void setRowCount(int count, boolean fireScopeChange);
   
-  void setRowData(List<? extends IsRow> values, boolean refresh);
+  void setRowData(List<? extends IsRow> rows, boolean refresh);
   
-  void updateActiveRow(List<? extends IsRow> values);
+  void updateActiveRow(List<? extends IsRow> rows);
 }

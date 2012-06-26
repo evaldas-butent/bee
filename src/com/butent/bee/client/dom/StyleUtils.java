@@ -365,9 +365,6 @@ public class StyleUtils {
   public static final SafeStyles PREFAB_POSITION_ABSOLUTE =
       buildStyle(STYLE_POSITION, POSITION_ABSOLUTE);
 
-  public static int DEFAULT_SCROLL_BAR_WIDTH = 9;
-  public static int DEFAULT_SCROLL_BAR_HEIGHT = 9;
-  
   private static final char CLASS_NAME_SEPARATOR = ' ';
   private static final Splitter CLASS_NAME_SPLITTER =
       Splitter.on(CLASS_NAME_SEPARATOR).omitEmptyStrings().trimResults();

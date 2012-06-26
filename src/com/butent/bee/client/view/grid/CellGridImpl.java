@@ -736,6 +736,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (callback != null) {
       callback.afterCreateColumns(this);
     }
+    
+    getGrid().initRenderMode(gridDescr.getRenderMode());
 
     initNewRowDefaults(gridDescr.getNewRowDefaults(), dataCols);
     setNewRowCaption(BeeUtils.ifString(gridDescr.getNewRowCaption(),
