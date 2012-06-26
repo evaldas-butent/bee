@@ -2,6 +2,7 @@ package com.butent.bee.client.view.navigation;
 
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -18,6 +19,18 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class ScrollPager extends AbstractPager implements RequiresResize {
 
+  private class ScrollTimer extends Timer {
+    private int start;
+
+    @Override
+    public void run() {
+      if (start != getPageStart()) {
+        isScrolling = true;
+        setPageStart(start);
+      }
+    }
+  }
+
   public static int maxHeight = 10000;
 
   private static final int UNKNOWN = -1;
@@ -27,6 +40,8 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
 
   private boolean isScrolling = false;
   private boolean isUpdating = false;
+
+  private final ScrollTimer scrollTimer = new ScrollTimer();
 
   public ScrollPager() {
     Widget widget = new Html();
@@ -65,10 +80,9 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
         int start = pos * (rowCount - pageSize) / (maxPos - height);
         start = BeeUtils.clamp(start, 0, rowCount - pageSize);
 
-        if (start != getPageStart()) {
-          isScrolling = true;
-          setPageStart(start);
-        }
+        scrollTimer.start = start;
+        scrollTimer.schedule(500);
+
         lastPos = pos;
       }
     });
@@ -105,7 +119,7 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
     }
     return outer.getWidget();
   }
-  
+
   private int getMaxPosition() {
     if (lastHeight < maxHeight) {
       return (int) lastHeight;
@@ -133,7 +147,7 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
   private int getWidgetHeight() {
     return getElement().getClientHeight();
   }
-  
+
   private void setPosition(int position) {
     Scroll outer = getOuterWidget();
     if (outer != null && position >= 0) {
@@ -157,9 +171,9 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
 
     int maxPos = getMaxPosition();
     int height = getWidgetHeight();
-    
+
     int pos = 0;
-    if (rowCount > 0 && pageSize > 0 && rowCount > pageSize) {    
+    if (rowCount > 0 && pageSize > 0 && rowCount > pageSize) {
       pos = pageStart * (maxPos - height) / (rowCount - pageSize);
     }
 

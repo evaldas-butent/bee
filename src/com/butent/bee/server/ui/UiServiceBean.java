@@ -345,7 +345,9 @@ public class UiServiceBean {
     int refCount = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 2));
     int childCount = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 3));
 
-    if (!sys.isTable(tableName)) {
+    if (BeeUtils.isEmpty(tableName)) {
+      return ResponseObject.error("Syntax: gen <table> <rowCount> [refCount] [childCount]");
+    } else if (!sys.isTable(tableName)) {
       response = ResponseObject.error("Unknown table:", tableName);
     } else if (rowCount <= 0 || rowCount > 100000) {
       response = ResponseObject.error("Invalid row count:", rowCount);

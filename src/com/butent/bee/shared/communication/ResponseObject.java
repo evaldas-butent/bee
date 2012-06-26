@@ -78,6 +78,13 @@ public class ResponseObject implements BeeSerializable {
     return this;
   }
 
+  public ResponseObject addMessages(Collection<ResponseMessage> msgs) {
+    if (!BeeUtils.isEmpty(msgs)) {
+      messages.addAll(msgs);
+    }
+    return this;
+  }
+
   public ResponseObject addWarning(Object... obj) {
     messages.add(new ResponseMessage(Level.WARNING, BeeUtils.concat(1, obj)));
     return this;

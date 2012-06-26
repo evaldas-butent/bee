@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 
 import com.butent.bee.server.data.BeeTable.BeeField;
+import com.butent.bee.server.data.BeeTable.BeeForeignKey;
 import com.butent.bee.server.data.BeeTable.BeeKey;
 import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.ViewEvent.ViewDeleteEvent;
@@ -280,12 +281,14 @@ public class DataEditorBean {
       Set<String> cache) {
     Assert.isTrue(sys.isTable(tbl), "Not a base table: " + tbl);
     Assert.isPositive(rowCount, "rowCount must be positive");
-    String tblName = sys.getTable(tbl).getName();
+    BeeTable table = sys.getTable(tbl);
+    String tblName = table.getName();
+    ResponseObject response = new ResponseObject();
 
     if (cache == null) {
       cache = Sets.newHashSet();
     } else if (cache.contains(BeeUtils.normalize(tblName))) {
-      return ResponseObject.warning(tblName, "already generated");
+      return response.addWarning(tblName, "already generated");
     }
     cache.add(BeeUtils.normalize(tblName));
 
@@ -293,18 +296,22 @@ public class DataEditorBean {
     SqlInsert si = new SqlInsert(tblName);
     Map<String, String[]> relations = Maps.newHashMap();
     Map<List<String>, List<String[]>> uniques = Maps.newHashMap();
-    Map<BeeField, Object> updates = Maps.newHashMap();
+    Map<String, Object> updates = Maps.newHashMap();
     List<FieldInfo> extUpdate = Lists.newArrayList();
 
     Map<String, List<String>> uniqueKeys = Maps.newHashMap();
 
-    for (BeeKey key : sys.getTable(tblName).getKeys()) {
+    for (BeeKey key : table.getKeys()) {
       if (key.isUnique()) {
         List<String> keyFields = Lists.newArrayList();
 
         for (String keyField : key.getKeyFields()) {
-          if (sys.getTable(tblName).getField(keyField) instanceof BeeRelation) {
+          if (!BeeUtils.same(keyField, sys.getIdName(tblName))
+              && table.getField(keyField) instanceof BeeRelation) {
             keyFields.add(keyField);
+          } else {
+            keyFields.clear();
+            break;
           }
         }
         for (String keyField : keyFields) {
@@ -316,17 +323,22 @@ public class DataEditorBean {
     int maxDay = new JustDate().getDays() + 200;
     long minTime = new DateTime().getTime() - 1000L * TimeUtils.MILLIS_PER_DAY;
     long maxTime = new DateTime().getTime() + 200L * TimeUtils.MILLIS_PER_DAY;
-    long id = 0;
-
     StringBuilder chars = new StringBuilder();
     for (char c = 'a'; c <= 'z'; c++) {
       chars.append(c);
     }
     chars.append(chars.toString().toUpperCase()).append(" ąčęėįšųūžĄČĘĖĮŠŲŪŽ");
 
+    long id = 0;
+    boolean stop = false;
+    int cnt = 0;
     Random random = new Random();
 
     for (int row = 0; row < rowCount; row++) {
+      si.reset();
+      updates.clear();
+      extUpdate.clear();
+
       for (BeeField field : fields) {
         String fldName = field.getName();
         Object v = null;
@@ -341,10 +353,12 @@ public class DataEditorBean {
             if (((BeeRelation) field).hasEditableRelation()) {
               cache.remove(BeeUtils.normalize(relation));
               ResponseObject resp = generateData(relation, 1, refCount, childCount, cache);
+              response.addMessages(resp.getMessages());
+
               v = resp.getResponse(-1L, logger);
 
               if ((Long) v < 0) {
-                return resp;
+                return response;
               }
             } else {
               String[] rs = relations.get(relation);
@@ -354,21 +368,17 @@ public class DataEditorBean {
                     .addFields(relation, sys.getIdName(relation))
                     .addFrom(relation));
 
-                if (BeeUtils.isEmpty(rs)) {
-                  if (BeeUtils.isPositive(refCount)) {
-                    ResponseObject resp = generateData(relation, random.nextInt(refCount) + 1,
-                        refCount, childCount, cache);
+                if (BeeUtils.isEmpty(rs) && BeeUtils.isPositive(refCount)) {
+                  ResponseObject resp = generateData(relation, random.nextInt(refCount) + 1,
+                      refCount, childCount, cache);
+                  response.addMessages(resp.getMessages());
 
-                    if (resp.hasErrors()) {
-                      return resp;
-                    } else {
-                      rs = qs.getColumn(new SqlSelect()
-                          .addFields(relation, sys.getIdName(relation))
-                          .addFrom(relation));
-                    }
-                  } else if (field.isNotNull()) {
-                    return ResponseObject
-                        .error(fldName, ": Relation table", relation, "is empty");
+                  if (resp.hasErrors()) {
+                    return response;
+                  } else {
+                    rs = qs.getColumn(new SqlSelect()
+                        .addFields(relation, sys.getIdName(relation))
+                        .addFrom(relation));
                   }
                 }
                 relations.put(relation, rs);
@@ -377,17 +387,40 @@ public class DataEditorBean {
                 if (uniqueKeys.containsKey(fldName)) {
                   List<String> key = uniqueKeys.get(fldName);
                   List<String[]> unq;
+                  boolean lastKey = true;
 
+                  for (String keyFld : key) {
+                    if (!BeeUtils.same(keyFld, fldName) && !updates.containsKey(keyFld)) {
+                      lastKey = false;
+                      break;
+                    }
+                  }
+                  if (!lastKey) {
+                    updates.put(fldName, null);
+                    continue;
+                  }
                   if (uniques.containsKey(key)) {
                     unq = uniques.get(key);
-                  } else { // TODO
-                    String idName = sys.getIdName(relation);
+                  } else {
+                    HasConditions join = SqlUtils.and();
+                    SqlSelect ss = new SqlSelect();
+
+                    for (int i = 0; i < key.size(); i++) {
+                      BeeRelation rel = (BeeRelation) table.getField(key.get(i));
+                      String relTbl = rel.getRelation();
+                      String idName = sys.getIdName(relTbl);
+
+                      ss.addFields(relTbl, idName)
+                          .addFrom(relTbl);
+
+                      join.add(SqlUtils.join(tblName, rel.getName(), "subq", idName));
+                    }
                     unq = qs.getData(new SqlSelect()
-                        .addFields(relation, idName)
-                        .addFrom(relation)
-                        .addFromLeft(tblName,
-                            SqlUtils.join(relation, idName, tblName, fldName))
-                        .setWhere(SqlUtils.isNull(tblName, fldName)))
+                        .addAllFields("subq")
+                        .addFrom(ss, "subq")
+                        .addFromLeft(tblName, join)
+                        .setWhere(SqlUtils.isNull(tblName, sys.getIdName(tblName)))
+                        .setLimit(rowCount))
                         .getRows();
 
                     uniques.put(key, unq);
@@ -401,11 +434,9 @@ public class DataEditorBean {
                       if (BeeUtils.same(key.get(i), fldName)) {
                         v = vals[i];
                       } else {
-                        updates.put(sys.getTable(tblName).getField(key.get(i)), vals[i]);
+                        updates.put(key.get(i), vals[i]);
                       }
                     }
-                  } else if (field.isNotNull()) {
-                    continue;
                   }
                 } else {
                   v = BeeUtils.toInt(rs[random.nextInt(rs.length)]);
@@ -427,21 +458,17 @@ public class DataEditorBean {
                 v = new DateTime(BeeUtils.randomLong(minTime, maxTime));
                 break;
               case DOUBLE:
-                v = (random.nextBoolean() ? -1 : 1)
-                    * Math.random() * Math.pow(10, BeeUtils.randomInt(-7, 20));
+                v = Math.random() * Math.pow(10, random.nextInt(8));
                 break;
               case INTEGER:
-                v = random.nextInt();
-                break;
               case LONG:
-                v = random.nextLong() / random.nextInt();
+                v = random.nextInt(10000000);
                 break;
               case DECIMAL:
                 if (field.getPrecision() <= 1) {
                   v = random.nextInt(10);
                 } else {
-                  double x = (random.nextBoolean() ? -1 : 1)
-                      * Math.random() * Math.pow(10, BeeUtils.randomInt(0, field.getPrecision()));
+                  double x = Math.random() * Math.pow(10, random.nextInt(field.getPrecision()));
                   if (field.getScale() <= 0) {
                     v = Math.round(x);
                   } else {
@@ -464,13 +491,19 @@ public class DataEditorBean {
             }
           }
         }
-        updates.put(field, v);
+        if (field.isNotNull() && v == null) {
+          stop = true;
+          break;
+        }
+        updates.put(fldName, v);
       }
-      for (BeeField field : updates.keySet()) {
-        Object v = updates.get(field);
-        String fldName = field.getName();
+      if (stop) {
+        break;
+      }
+      for (String fldName : updates.keySet()) {
+        Object v = updates.get(fldName);
 
-        if (field.isExtended()) {
+        if (table.getField(fldName).isExtended()) {
           if (v != null) {
             extUpdate.add(new FieldInfo(null, null, fldName, null, v, null));
           }
@@ -481,45 +514,44 @@ public class DataEditorBean {
       id = qs.insertData(si);
 
       if (id < 0) {
-        return ResponseObject.error(tblName, si.getQuery(), "Error inserting data");
+        return response.addError("Error inserting data:", si.getQuery());
       } else {
         ResponseObject resp = commitExtensions(tblName, id, extUpdate, null);
         if (resp.hasErrors()) {
-          return resp;
+          return response.addMessages(resp.getMessages());
         }
+        cnt++;
       }
-      si.reset();
-      updates.clear();
-      extUpdate.clear();
+    }
+    if (cnt < rowCount) {
+      response.addWarning(tblName, ": generated", cnt, "of", rowCount, "rows");
+    } else {
+      if (rowCount == 1) {
+        return response.setResponse(id);
+      }
+      response.addInfo(tblName, ": generated", cnt, "rows");
     }
     if (BeeUtils.isPositive(childCount)) {
-      for (String table : sys.getTableNames()) {
-        if (!BeeUtils.same(table, tblName)) {
-          for (BeeField field : sys.getTableFields(table)) {
-            if (field instanceof BeeRelation) {
-              BeeRelation relField = (BeeRelation) field;
+      for (String child : sys.getTableNames()) {
+        if (!BeeUtils.same(child, tblName)) {
+          for (BeeForeignKey fKey : sys.getTable(child).getForeignKeys()) {
+            if (BeeUtils.same(fKey.getRefTable(), tblName)
+                && fKey.getCascade() == SqlKeyword.DELETE) {
 
-              if (BeeUtils.same(relField.getRelation(), tblName)
-                  && relField.getCascade() == SqlKeyword.DELETE) {
+              ResponseObject resp = generateData(child,
+                  BeeUtils.randomInt(rowCount, rowCount * childCount), refCount, childCount,
+                  cache);
+              response.addMessages(resp.getMessages());
 
-                ResponseObject resp = generateData(table,
-                    rowCount * (random.nextInt(childCount) + 1), refCount, childCount, cache);
-
-                if (resp.hasErrors()) {
-                  return resp;
-                }
+              if (resp.hasErrors()) {
+                return response;
               }
             }
           }
         }
       }
     }
-    ResponseObject resp = ResponseObject.info(tblName, "generated", rowCount, "rows");
-
-    if (rowCount == 1) {
-      return resp.setResponse(id);
-    }
-    return resp;
+    return response;
   }
 
   public void setState(String tblName, long id, String stateName, long... bits) {

@@ -2,7 +2,6 @@ package com.butent.bee.shared.data;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -324,7 +323,7 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   }
 
   public List<String[]> getRows() {
-    return ImmutableList.copyOf(rows);
+    return rows;
   }
 
   public String getValue(int rowIndex, int colIndex) {
@@ -379,20 +378,20 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
 
   private int getIndex(String indexName, String indexValue) {
     int colIndex = getColumnIndex(indexName);
-  
+
     if (indexes == null) {
       indexes = Maps.newHashMap();
     }
     if (!indexes.containsKey(colIndex)) {
       Map<String, Integer> index = Maps.newHashMapWithExpectedSize(getNumberOfRows());
-  
+
       for (int i = 0; i < getNumberOfRows(); i++) {
         index.put(getValue(i, colIndex), i);
       }
       indexes.put(colIndex, index);
     }
     Integer idx = indexes.get(colIndex).get(indexValue);
-  
+
     if (idx == null) {
       idx = BeeConst.UNDEF;
     }
