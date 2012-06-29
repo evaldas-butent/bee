@@ -5,46 +5,13 @@
 ]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
+  xmlns:xi="http://www.w3.org/2001/XInclude"
   xmlns:d="http://www.butent.com/decorator"
   
   name="NewVehicle" viewName="Vehicles" caption="Transporto priemonė" width="800" height="280"
   >
   <FlowPanel class="flexBox-vertical" style="margin: 1ex 1em;">
-    <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-      <InputText source="Number" caption="Valst.Nr." upperCase="true" d:size="70" d:unit="px" d:align="right" d:rootStyle="&MARGIN;" />
-      <DataSelector source="Model" caption="Modelis" class="flexible" newRowForm="NewVehicleModel"
-        renderColumns="ParentModelName ModelName" decorator="flex-left" d:rootStyle="&MARGIN;"
-        filter="parent" />
-      <DataSelector source="Type" caption="Tipas" decorator="flex-left" />
-    </FlowPanel>
-    
-    <FlowPanel class="flexBox-horizontal">
-      <FlowPanel class="flexBox-vertical flexible">
-        <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-          <DataSelector source="Owner" caption="Savininkas" decorator="flex-left" d:size="70" d:rootStyle="&MARGIN;" />
-          <InputDate source="ProductionDate" caption="Pagaminimo data" style="width: 7em" />
-        </FlowPanel>
-        
-        <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-          <InputText source="BodyNumber" caption="Kėbulo Nr." decorator="flex-left" d:size="70" d:rootStyle="&MARGIN;" />
-          <InputInteger source="Netto" caption="Svoris Neto" style="width: 5em" d:rootStyle="&MARGIN;" />
-          <InputInteger source="Brutto" caption="Svoris Bruto" style="width: 5em" />
-        </FlowPanel>
-        
-        <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
-          <InputInteger source="EngineNumber" caption="Variklio Nr." decorator="flex-left" d:size="70" d:rootStyle="&MARGIN;" />
-          <InputText source="Power" caption="Galia kW" style="width: 2em" d:rootStyle="&MARGIN;" />
-          <InputInteger source="EngineVolume" caption="Darbinis tūris cm&#x00b3;" style="width: 4em" />
-        </FlowPanel>
-      </FlowPanel>
-      
-      <FlowPanel class="flexBox-vertical flexible" style="&ROW_STYLE; margin-left: 1em;">
-        <Label html="Pastabos" />
-        <SimplePanel style="position: relative; min-width: 5em;" class="flexible">
-          <InputArea source="Notes" class="occupy" />
-        </SimplePanel>
-      </FlowPanel>
-    </FlowPanel>
+    <xi:include href="widgets/VehicleDescription.widget.xml" />
 
     <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
       <DataSelector source="Fuel" caption="Kuro rūšis" d:size="70" d:unit="px" d:align="right" d:rootStyle="&MARGIN;" />

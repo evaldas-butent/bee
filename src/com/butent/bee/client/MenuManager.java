@@ -168,7 +168,7 @@ public class MenuManager implements Module {
 
     if (rw instanceof MenuBar) {
       MenuBar mb = (MenuBar) rw;
-      if (sepBefore) {
+      if (sepBefore && mb.getItemCount() > 0) {
         mb.addSeparator(new MenuSeparator());
       }
 
