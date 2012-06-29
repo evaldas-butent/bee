@@ -110,7 +110,6 @@ public class TransportModuleBean implements BeeModule {
   @Override
   public void init() {
     sys.registerViewEventHandler(new ViewEventHandler() {
-      @SuppressWarnings("unused")
       @Subscribe
       public void fillFuelConsumptions(ViewQueryEvent event) {
         if (BeeUtils.same(event.getViewName(), TransportConstants.VIEW_TRIP_ROUTES)) {
@@ -134,7 +133,6 @@ public class TransportModuleBean implements BeeModule {
     });
 
     sys.registerViewEventHandler(new ViewEventHandler() {
-      @SuppressWarnings("unused")
       @Subscribe
       public void fillCargoIncomes(ViewQueryEvent event) {
         if (BeeUtils.same(event.getViewName(), TransportConstants.VIEW_CARGO)) {
@@ -158,7 +156,6 @@ public class TransportModuleBean implements BeeModule {
     });
 
     sys.registerViewEventHandler(new ViewEventHandler() {
-      @SuppressWarnings("unused")
       @Subscribe
       public void fillTripCargoIncomes(ViewQueryEvent event) {
         if (BeeUtils.same(event.getViewName(), TransportConstants.VIEW_TRIP_CARGO)) {

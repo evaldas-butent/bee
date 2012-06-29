@@ -19,7 +19,6 @@ import java.text.BreakIterator;
 import java.text.Collator;
 import java.text.DateFormat;
 import java.text.DateFormatSymbols;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -93,9 +92,6 @@ public class I18nUtils {
     }
     for (Locale lc : DateFormatSymbols.getAvailableLocales()) {
       locales.put(lc, BeeUtils.concat(sep, locales.get(lc), "DtFSymb"));
-    }
-    for (Locale lc : DecimalFormat.getAvailableLocales()) {
-      locales.put(lc, BeeUtils.concat(sep, locales.get(lc), "DecF"));
     }
     for (Locale lc : NumberFormat.getAvailableLocales()) {
       locales.put(lc, BeeUtils.concat(sep, locales.get(lc), "NumF"));

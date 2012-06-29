@@ -707,29 +707,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     assertEquals(false, BeeUtils.isZero(b));
   }
 
-  @SuppressWarnings("unchecked")
-  @Test
-  public void testJoin() {
-    List<CharSequence> testc1 = new ArrayList<CharSequence>();
-    List<CharSequence> testc2 = new ArrayList<CharSequence>();
-    List<CharSequence> rez1 = new ArrayList<CharSequence>();
-    testc1.add("A");
-    testc1.add("simple text");
-    testc1.add("TEXT2");
-
-    testc2.add(" the");
-    testc2.add(" end");
-
-    rez1.add("A");
-    rez1.add("simple text");
-    rez1.add("TEXT2");
-
-    rez1.add(" the");
-    rez1.add(" end");
-
-    assertEquals(rez1, beeUtils.join(testc1, testc2));
-  }
-
   @Test
   public void testLeft() {
     assertEquals("This is a", beeUtils.left("This is a string", 9));
@@ -772,18 +749,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   }
 
   @Test
-  public void testMax() {
-    assertEquals("bac", beeUtils.max("abc", "bac"));
-    assertEquals(7.0, beeUtils.max(4.0, 7.0, 6.0));
-  }
-
-  @Test
-  public void testMin() {
-    assertEquals("abc", beeUtils.min("abc", "bac"));
-    assertEquals(5.0, beeUtils.min(8.0, 5.0, 6.0));
-  }
-
-  @Test
   public final void testNormalize() {
     assertEquals("", BeeUtils.normalize(null));
     assertEquals("abracadabra", BeeUtils.normalize("abracadabra"));
@@ -818,9 +783,9 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testNvl() {
-    assertEquals("string", beeUtils.nvl(null, null, "string", null));
-    assertEquals(null, beeUtils.nvl(null, null, null, null));
-    assertEquals("stringas", beeUtils.nvl(null, "stringas", "stringas2", null));
+    assertEquals("string", beeUtils.nvl(null, "string"));
+    assertEquals(null, beeUtils.nvl(null, null));
+    assertEquals("stringas", beeUtils.nvl("stringas", null));
   }
 
   @Test

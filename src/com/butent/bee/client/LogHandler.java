@@ -7,7 +7,7 @@ import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.LogArea;
 import com.butent.bee.client.logging.LogFormatter;
 import com.butent.bee.client.logging.LogWidgetHandler;
-import com.butent.bee.client.utils.BeeDuration;
+import com.butent.bee.client.utils.Duration;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.LogUtils;
@@ -71,7 +71,7 @@ public class LogHandler implements Module {
   public void end() {
   }
 
-  public void finish(BeeDuration dur, Object... obj) {
+  public void finish(Duration dur, Object... obj) {
     Assert.notNull(dur);
 
     dur.finish();

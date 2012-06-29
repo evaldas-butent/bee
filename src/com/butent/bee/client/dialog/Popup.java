@@ -173,17 +173,15 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
     @Override
     protected void onUpdate(double progress) {
-      if (!show) {
-        progress = 1.0 - progress;
-      }
+      double p = show ? progress : (1.0 - progress);
 
       int top = 0;
       int left = 0;
       int right = 0;
       int bottom = 0;
 
-      int height = (int) (progress * offsetHeight);
-      int width = (int) (progress * offsetWidth);
+      int height = (int) (p * offsetHeight);
+      int width = (int) (p * offsetWidth);
 
       switch (curPanel.getAnimationType()) {
         case ROLL_DOWN:

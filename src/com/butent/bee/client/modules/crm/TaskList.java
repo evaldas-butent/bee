@@ -226,7 +226,7 @@ public class TaskList {
       if (getUserId() != null && getType() != null) {
         Value user = new LongValue(getUserId());
         CompoundFilter filter = Filter.and();
-        filter.add(CompoundFilter.or(Filter.isEmpty("ProjectStage"),
+        filter.add(Filter.or(Filter.isEmpty("ProjectStage"),
             ComparisonFilter.isEqual("ProjectEvent",
                 new IntegerValue(ProjectEvent.ACTIVATED.ordinal()))));
 

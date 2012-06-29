@@ -1,6 +1,7 @@
 package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Ints;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -59,7 +60,7 @@ public class StateService extends CompositeService {
               if (response.hasResponse()) {
                 for (String xml : Codec.beeDeserializeCollection((String) response.getResponse())) {
                   XmlState state = XmlState.restore(xml);
-                  Variable[] vars = new Variable[BeeUtils.max(NAME, USER, ROLE, CHECKED)];
+                  Variable[] vars = new Variable[Ints.max(NAME, USER, ROLE, CHECKED)];
                   vars[NAME] = new Variable(BeeType.STRING, state.name);
                   vars[USER] = new Variable("USER", BeeType.BOOLEAN,
                       BeeUtils.toString(state.userMode));
@@ -83,7 +84,7 @@ public class StateService extends CompositeService {
       return ok;
 
     } else if (stg.equals(STG_NEW)) {
-      Variable[] vars = new Variable[BeeUtils.max(NAME, USER, ROLE, CHECKED)];
+      Variable[] vars = new Variable[Ints.max(NAME, USER, ROLE, CHECKED)];
       vars[NAME] = new Variable(BeeType.STRING);
       vars[USER] = new Variable("USER", BeeType.BOOLEAN);
       vars[ROLE] = new Variable("ROLE", BeeType.BOOLEAN);

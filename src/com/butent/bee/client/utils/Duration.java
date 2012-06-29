@@ -7,7 +7,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Enables system to measure time consumption of specific processes.
  */
 
-public class BeeDuration {
+public class Duration {
 
   private double start = BeeConst.UNDEF;
   private double end = BeeConst.UNDEF;
@@ -17,16 +17,16 @@ public class BeeDuration {
 
   private String message = null;
 
-  public BeeDuration() {
+  public Duration() {
     start = JsUtils.currentTimeMillis();
   }
 
-  public BeeDuration(int timeout) {
+  public Duration(int timeout) {
     this();
     this.timeout = timeout;
   }
 
-  public BeeDuration(String message) {
+  public Duration(String message) {
     this();
     this.message = message;
   }

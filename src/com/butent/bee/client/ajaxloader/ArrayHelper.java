@@ -9,6 +9,8 @@ import com.google.gwt.core.client.JsArrayString;
 
 import com.butent.bee.shared.Assert;
 
+import java.util.List;
+
 /**
  * Converts data into javascript arrays.
  */
@@ -23,11 +25,11 @@ public class ArrayHelper {
     return ret;
   }
 
-  public static <J extends JavaScriptObject> JsArray<J> toJsArray(J... objects) {
+  public static <J extends JavaScriptObject> JsArray<J> toJsArray(List<J> objects) {
     Assert.notNull(objects);
-    JsArray<J> result = JsArray.createArray().cast();
-    for (int i = 0; i < objects.length; i++) {
-      result.set(i, objects[i]);
+    JsArray<J> result = JavaScriptObject.createArray().cast();
+    for (int i = 0; i < objects.size(); i++) {
+      result.set(i, objects.get(i));
     }
     nativePatchConstructorForSafari(result);
     return result;
@@ -35,7 +37,7 @@ public class ArrayHelper {
 
   public static JsArrayBoolean toJsArrayBoolean(boolean... bits) {
     Assert.notNull(bits);
-    JsArrayBoolean result = JsArrayBoolean.createArray().cast();
+    JsArrayBoolean result = JavaScriptObject.createArray().cast();
     for (int i = 0; i < bits.length; i++) {
       result.set(i, bits[i]);
     }
@@ -45,7 +47,7 @@ public class ArrayHelper {
 
   public static JsArrayInteger toJsArrayInteger(int... integers) {
     Assert.notNull(integers);
-    JsArrayInteger result = JsArrayInteger.createArray().cast();
+    JsArrayInteger result = JavaScriptObject.createArray().cast();
     for (int i = 0; i < integers.length; i++) {
       result.set(i, integers[i]);
     }
@@ -55,7 +57,7 @@ public class ArrayHelper {
 
   public static JsArrayNumber toJsArrayNumber(double... numbers) {
     Assert.notNull(numbers);
-    JsArrayNumber result = JsArrayNumber.createArray().cast();
+    JsArrayNumber result = JavaScriptObject.createArray().cast();
     for (int i = 0; i < numbers.length; i++) {
       result.set(i, numbers[i]);
     }
@@ -65,7 +67,7 @@ public class ArrayHelper {
 
   public static JsArrayString toJsArrayString(String... strings) {
     Assert.notNull(strings);
-    JsArrayString result = JsArrayString.createArray().cast();
+    JsArrayString result = JavaScriptObject.createArray().cast();
     for (int i = 0; i < strings.length; i++) {
       result.set(i, strings[i]);
     }

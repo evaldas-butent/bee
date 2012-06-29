@@ -221,7 +221,6 @@ public class UiHolderBean {
     return null;
   }
 
-  @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
     initGrids();

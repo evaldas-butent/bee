@@ -51,6 +51,10 @@ public class Format {
       return DEFAULT_NUMBER_CONSTANTS.exponentialSymbol();
     }
 
+    public String globalCurrencyPattern() {
+      return DEFAULT_NUMBER_CONSTANTS.globalCurrencyPattern();
+    }
+
     public String groupingSeparator() {
       if (defaultGroupingSeparator == null) {
         return DEFAULT_NUMBER_CONSTANTS.groupingSeparator();
@@ -97,6 +101,11 @@ public class Format {
 
     public String scientificPattern() {
       return DEFAULT_NUMBER_CONSTANTS.scientificPattern();
+    }
+
+    @Override
+    public String simpleCurrencyPattern() {
+      return DEFAULT_NUMBER_CONSTANTS.simpleCurrencyPattern();
     }
 
     public String zeroDigit() {

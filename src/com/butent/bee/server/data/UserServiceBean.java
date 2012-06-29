@@ -426,7 +426,6 @@ public class UserServiceBean {
     qs.insertData(si.addConstant("Mode", mode));
   }
 
-  @SuppressWarnings("unused")
   @PreDestroy
   private void destroy() {
     for (long userId : getUsers()) {

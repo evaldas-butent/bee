@@ -384,10 +384,10 @@ public class CommonsEventHandler {
     public boolean onLoad(GridDescription gridDescription) {
       gridDescription.setCaption(null);
 
-      Filter filter = ComparisonFilter.isEmpty(CommonsConstants.COL_SERVICE);
+      Filter filter = Filter.isEmpty(CommonsConstants.COL_SERVICE);
 
       if (showServices()) {
-        filter = ComparisonFilter.isNot(filter);
+        filter = Filter.isNot(filter);
       }
       gridDescription.setFilter(filter);
       return true;

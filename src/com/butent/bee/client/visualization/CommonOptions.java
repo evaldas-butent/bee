@@ -6,6 +6,8 @@ import com.google.gwt.core.client.JsArrayString;
 
 import com.butent.bee.client.ajaxloader.ArrayHelper;
 
+import java.util.List;
+
 /**
  * Sets generic option values for background, title, legend, tooltip etc.
  */
@@ -46,7 +48,7 @@ public class CommonOptions extends AbstractDrawOptions {
     setColors(ArrayHelper.toJsArrayString(colors));
   }
 
-  public final void setColors(Color3D... colors) {
+  public final void setColors(List<Color3D> colors) {
     setColors(ArrayHelper.toJsArray(colors));
   }
 

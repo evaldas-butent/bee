@@ -9,13 +9,15 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.StringMatrix;
 import com.butent.bee.shared.data.StringRow;
 
+import java.util.List;
+
 /**
  * Enables operations with columns in data tables seen in user interface.
  */
 
 public class JsData<ColType extends IsColumn> extends StringMatrix<ColType> {
 
-  public JsData(JsArrayString data, ColType... columns) {
+  public JsData(JsArrayString data, List<ColType> columns) {
     this(data, 0, columns);
   }
 
@@ -23,10 +25,10 @@ public class JsData<ColType extends IsColumn> extends StringMatrix<ColType> {
     this(data, 0, columnLabels);
   }
 
-  public JsData(JsArrayString data, int start, ColType... columns) {
+  public JsData(JsArrayString data, int start, List<ColType> columns) {
     super(columns);
     Assert.notNull(columns);
-    initData(data, start, columns.length);
+    initData(data, start, columns.size());
   }
 
   public JsData(JsArrayString data, int start, String... columnLabels) {

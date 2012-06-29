@@ -131,7 +131,7 @@ public class TransportHandler {
     @Override
     public boolean beforeAddRow(final GridPresenter presenter) {
       CompoundFilter filter = Filter.and();
-      filter.add(ComparisonFilter.isEmpty("DateTo"));
+      filter.add(Filter.isEmpty("DateTo"));
       int index = presenter.getDataProvider().getColumnIndex("Trip");
 
       for (IsRow row : presenter.getGridView().getGrid().getRowData()) {

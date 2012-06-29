@@ -2,6 +2,7 @@ package com.butent.bee.client.grid.scrolltable;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
@@ -812,7 +813,7 @@ public class ScrollTable extends ComplexPanel implements
         }
         break;
       case Event.ONMOUSEDOWN:
-        if (DOM.eventGetButton(event) != Event.BUTTON_LEFT) {
+        if (DOM.eventGetButton(event) != NativeEvent.BUTTON_LEFT) {
           return;
         }
         if (resizeWorker.getCurrentCell() != null) {
@@ -822,7 +823,7 @@ public class ScrollTable extends ComplexPanel implements
         }
         break;
       case Event.ONMOUSEUP:
-        if (DOM.eventGetButton(event) != Event.BUTTON_LEFT) {
+        if (DOM.eventGetButton(event) != NativeEvent.BUTTON_LEFT) {
           return;
         }
         if (resizeWorker.isResizing()) {

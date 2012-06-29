@@ -410,7 +410,7 @@ public class Codec {
     int chunk = base64chunk * 4;
 
     for (int offset = 0; offset < len; offset += chunk) {
-      sb.append(fromBytes(fromBase64(s.substring(offset, BeeUtils.min(offset + chunk, len)))));
+      sb.append(fromBytes(fromBase64(s.substring(offset, Math.min(offset + chunk, len)))));
     }
     return sb.toString();
   }
@@ -500,7 +500,7 @@ public class Codec {
     int chunk = base64chunk * 3;
 
     for (int offset = 0; offset < len; offset += chunk) {
-      sb.append(toBase64(toBytes(s.substring(offset, BeeUtils.min(offset + chunk, len)))));
+      sb.append(toBase64(toBytes(s.substring(offset, Math.min(offset + chunk, len)))));
     }
     return sb.toString();
   }

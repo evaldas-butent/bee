@@ -825,7 +825,7 @@ public class BeeUtils {
    * @return the new starting position
    */
   public static int fitStart(int start, int len, int end, int min) {
-    return max(fitStart(start, len, end), min);
+    return Math.max(fitStart(start, len, end), min);
   }
 
   /**
@@ -1852,27 +1852,6 @@ public class BeeUtils {
   }
 
   /**
-   * Joins specified lists to a one list and returns it.
-   * 
-   * @param src all lists to be joined
-   * @return a new list containing all elements from the {@code src} lists.
-   */
-  public static <T> List<T> join(List<? extends T>... src) {
-    Assert.notNull(src);
-    int n = src.length;
-    Assert.parameterCount(n, 2);
-
-    List<T> dst = new ArrayList<T>();
-
-    for (List<? extends T> lst : src) {
-      if (lst != null) {
-        dst.addAll(lst);
-      }
-    }
-    return dst;
-  }
-
-  /**
    * Cuts the string from the beginning to a specified index.
    * 
    * @param s string to cut
@@ -1918,46 +1897,6 @@ public class BeeUtils {
       len = 0;
     }
     return len;
-  }
-
-  /**
-   * Gets an Object with the greatest value.
-   * 
-   * @param x the objects
-   * @return the greatest value of all of the Objects.
-   */
-  public static <T extends Comparable<T>> T max(T... x) {
-    Assert.notNull(x);
-    int n = x.length;
-    Assert.parameterCount(n, 2);
-    T z = x[0];
-
-    for (int i = 1; i < n; i++) {
-      if (x[i].compareTo(z) > 0) {
-        z = x[i];
-      }
-    }
-    return z;
-  }
-
-  /**
-   * Gets an Object with the smallest value.
-   * 
-   * @param x the objects
-   * @return the smallest value of all of the Objects.
-   */
-  public static <T extends Comparable<T>> T min(T... x) {
-    Assert.notNull(x);
-    int n = x.length;
-    Assert.parameterCount(n, 2);
-    T z = x[0];
-
-    for (int i = 1; i < n; i++) {
-      if (x[i].compareTo(z) < 0) {
-        z = x[i];
-      }
-    }
-    return z;
   }
 
   public static String nextString(String value) {
@@ -2065,24 +2004,12 @@ public class BeeUtils {
   }
 
   /**
-   * Gets the first object which is not {@code null}. At least 2 Objects must be specified.
+   * Gets the first object which is not {@code null}.
    * 
-   * @param obj objects to check
-   * @return the first not null object in specified objects. Returns null if no such object is
-   *         found.
+   * @return the first not null object in specified objects.
    */
-  public static <T> T nvl(T... obj) {
-    Assert.notNull(obj);
-    Assert.parameterCount(obj.length, 2);
-    T z = null;
-
-    for (T x : obj) {
-      if (x != null) {
-        z = x;
-        break;
-      }
-    }
-    return z;
+  public static <T> T nvl(T o1, T o2) {
+    return (o1 == null) ? o2 : o1;
   }
 
   public static <T> void overwrite(final Collection<T> target, Collection<T> source) {

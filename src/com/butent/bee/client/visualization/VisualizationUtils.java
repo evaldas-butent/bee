@@ -1,5 +1,6 @@
 package com.butent.bee.client.visualization;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 
 import com.butent.bee.client.ajaxloader.AjaxLoader;
@@ -49,7 +50,7 @@ public class VisualizationUtils {
       return;
     }
 
-    JsArrayString arr = JsArrayString.createArray().cast();
+    JsArrayString arr = JavaScriptObject.createArray().cast();
     for (int i = 0; i < lst.size(); i++) {
       arr.set(i, lst.get(i));
     }

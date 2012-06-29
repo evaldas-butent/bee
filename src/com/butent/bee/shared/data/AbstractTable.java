@@ -87,7 +87,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   public AbstractTable() {
   }
 
-  protected AbstractTable(ColType... columns) {
+  protected AbstractTable(List<ColType> columns) {
     Assert.notNull(columns);
     for (ColType column : columns) {
       addColumn(column);

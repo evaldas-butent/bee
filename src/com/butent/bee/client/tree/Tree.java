@@ -2,6 +2,7 @@ package com.butent.bee.client.tree;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DataTransfer;
+import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -468,7 +469,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
 
       case Event.ONMOUSEDOWN: {
         if ((DOM.eventGetCurrentTarget(event) == getElement())
-            && (event.getButton() == Event.BUTTON_LEFT)) {
+            && (event.getButton() == NativeEvent.BUTTON_LEFT)) {
           elementClicked(DOM.eventGetTarget(event));
         }
         break;

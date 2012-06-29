@@ -1,5 +1,6 @@
 package com.butent.bee.client.composite;
 
+import com.google.common.primitives.Ints;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.resources.client.ImageResource;
@@ -10,7 +11,6 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Absolute;
-import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ValueUtils;
 
 /**
@@ -188,7 +188,7 @@ public class VolumeSlider extends Absolute implements RequiresResize {
       int rightWidth = spinner.getIncrementArrow().getWidth();
       int rightHeight = spinner.getIncrementArrow().getHeight();
 
-      int h = BeeUtils.max(panelHeight, barHeight, leftHeight, rightHeight,
+      int h = Ints.max(panelHeight, barHeight, leftHeight, rightHeight,
           DomUtils.getTextBoxClientHeight());
       if (panelHeight < h) {
         StyleUtils.setHeight(this, h);

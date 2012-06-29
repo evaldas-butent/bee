@@ -5,7 +5,7 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.utils.BeeDuration;
+import com.butent.bee.client.utils.Duration;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
@@ -74,7 +74,7 @@ public class RpcInfo {
   private RequestBuilder.Method method = RequestBuilder.GET;
 
   private final Set<State> states = EnumSet.noneOf(State.class);
-  private final BeeDuration duration;
+  private final Duration duration;
 
   private RequestBuilder reqBuilder = null;
   private Request request = null;
@@ -108,7 +108,7 @@ public class RpcInfo {
   public RpcInfo(RequestBuilder.Method method, String service,
       ParameterList params, ContentType ctp, String data, ResponseCallback callback) {
     this.id = ++COUNTER;
-    this.duration = new BeeDuration();
+    this.duration = new Duration();
 
     this.method = method;
     this.service = service;

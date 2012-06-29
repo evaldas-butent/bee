@@ -911,7 +911,6 @@ public class SystemBean {
     return ImmutableList.copyOf(tableCache.values());
   }
 
-  @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
     initStates();

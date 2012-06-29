@@ -97,7 +97,6 @@ public class DataSourceBean {
     return z;
   }
 
-  @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
     String dsn = Config.getProperty(PROPERTY_DSN);

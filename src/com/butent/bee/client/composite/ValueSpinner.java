@@ -126,7 +126,7 @@ public class ValueSpinner extends Absolute implements RequiresResize {
       if (sel > 0) {
         newText = BeeUtils.replace(oldText, pos, pos + sel, charCode);
       } else if (maxLen > 0 && maxLen <= len) {
-        int z = BeeUtils.min(pos, len - 1);
+        int z = Math.min(pos, len - 1);
         newText = BeeUtils.replace(oldText, z, z + 1, charCode);
       } else {
         newText = BeeUtils.insert(oldText, pos, charCode);
@@ -285,12 +285,12 @@ public class ValueSpinner extends Absolute implements RequiresResize {
     int decrWidth = spinner.getDecrementArrow().getWidth();
     int decrHeight = spinner.getDecrementArrow().getHeight();
 
-    int w = BeeUtils.max(incrWidth, decrWidth);
+    int w = Math.max(incrWidth, decrWidth);
     if (panelWidth < w * 2) {
-      panelWidth = BeeUtils.max(w * 2, 60);
+      panelWidth = Math.max(w * 2, 60);
       StyleUtils.setWidth(this, panelWidth);
     }
-    int h = BeeUtils.max(boxHeight, incrHeight + decrHeight + 2);
+    int h = Math.max(boxHeight, incrHeight + decrHeight + 2);
     if (panelHeight != h) {
       StyleUtils.setHeight(this, h);
     }

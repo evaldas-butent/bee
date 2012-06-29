@@ -41,7 +41,7 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
     this.rows = new StringRowArray(new StringRow[0]);
   }
 
-  protected StringMatrix(ColType... columns) {
+  protected StringMatrix(List<ColType> columns) {
     super(columns);
   }
 

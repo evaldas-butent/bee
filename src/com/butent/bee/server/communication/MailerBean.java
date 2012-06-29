@@ -67,7 +67,6 @@ public class MailerBean {
     return response;
   }
 
-  @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
     String mailer = Config.getProperty(PROPERTY_MAILER);

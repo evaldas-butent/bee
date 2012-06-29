@@ -18,7 +18,7 @@ import java.util.List;
 
 class CachedQuery extends SimpleCache<Integer, Long> {
   static int defaultMaxSize = 0xffff;
-  static ReplacementPolicy defaultReplacementPolicy = ReplacementPolicy.LEAST_FREQUENTLY_USED;
+  static ReplacementPolicy defaultReplacementPolicy = ReplacementPolicy.FIRST_IN_FIRST_OUT;
 
   private final String strFilter;
   private final String strOrder;

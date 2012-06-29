@@ -14,7 +14,7 @@ import java.util.List;
 
 class CachedData extends SimpleCache<Long, BeeRow> {
   static int defaultMaxSize = 0xffff;
-  static ReplacementPolicy defaultReplacementPolicy = ReplacementPolicy.LEAST_FREQUENTLY_USED;
+  static ReplacementPolicy defaultReplacementPolicy = ReplacementPolicy.FIRST_IN_FIRST_OUT;
 
   CachedData() {
     this(defaultMaxSize, defaultReplacementPolicy);

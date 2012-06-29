@@ -103,7 +103,6 @@ public class CommonsModuleBean implements BeeModule {
   }
 
   @Override
-  @SuppressWarnings("unused")
   public void init() {
     sys.registerViewEventHandler(new ViewEventHandler() {
       @Subscribe

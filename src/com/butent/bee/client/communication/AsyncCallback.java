@@ -12,7 +12,7 @@ import com.google.gwt.user.client.Window;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.ResponseData;
-import com.butent.bee.client.utils.BeeDuration;
+import com.butent.bee.client.utils.Duration;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeResource;
@@ -28,6 +28,7 @@ import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Manages responses to RPC calls on the client side.
@@ -164,7 +165,7 @@ public class AsyncCallback implements RequestCallback {
       info.end(ctp, txt, len, cnt, cc, mc, messages, pc, partSizes);
     }
 
-    BeeDuration duration = new BeeDuration();
+    Duration duration = new Duration();
 
     if (!BeeUtils.isEmpty(resp.getHeader(Service.RPC_VAR_RESP))) {
       ResponseObject response = ResponseObject.restore(txt);
@@ -246,9 +247,9 @@ public class AsyncCallback implements RequestCallback {
 
   private void dispatchResponse(String svc, int cc, JsArrayString arr) {
     if (cc > 0) {
-      BeeColumn[] columns = new BeeColumn[cc];
+      List<BeeColumn> columns = Lists.newArrayList();
       for (int i = 0; i < cc; i++) {
-        columns[i] = BeeColumn.restore(arr.get(i));
+        columns.add(BeeColumn.restore(arr.get(i)));
       }
 
       ResponseData table = new ResponseData(arr, columns);

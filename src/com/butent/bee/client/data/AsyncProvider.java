@@ -29,6 +29,8 @@ public class AsyncProvider extends Provider {
     private final int offset;
     private final int limit;
     private final boolean updateActiveRow;
+    
+    private final long startMillis;
 
     private Integer rpcId = null;
 
@@ -36,14 +38,17 @@ public class AsyncProvider extends Provider {
       this.offset = offset;
       this.limit = limit;
       this.updateActiveRow = updateActiveRow;
+      
+      this.startMillis = System.currentTimeMillis();
     }
 
     public void onSuccess(BeeRowSet rowSet) {
+      long millis = System.currentTimeMillis();
+
       Integer id = getRpcId();
       if (id != null) {
         if (getPendingRequests().contains(id)) {
           getPendingRequests().remove(id);
-          BeeKeeper.getLog().info("response", id, "range", getOffset(), getLimit());
         } else {
           BeeKeeper.getLog().info("response", id, "ignored");
           return;
@@ -51,11 +56,14 @@ public class AsyncProvider extends Provider {
       }
 
       if (getPageStart() != getOffset() || getPageSize() != getLimit()) {
-        BeeKeeper.getLog().warning("range changed");
+        BeeKeeper.getLog().warning("range changed:", getOffset(), getLimit(),
+            getPageStart(), getPageSize());
         return;
       }
 
       updateDisplay(rowSet, getLimit(), updateActiveRow());
+      BeeKeeper.getLog().debug(id, getOffset(), getLimit(), millis - startMillis,
+          System.currentTimeMillis() - millis);
     }
 
     private int getLimit() {

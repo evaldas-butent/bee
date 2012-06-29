@@ -261,7 +261,7 @@ public class CachedProvider extends Provider {
     } else if (length <= 0 || length >= rowCount) {
       rowValues = getRowList();
     } else {
-      rowValues = getRowList().subList(start, BeeUtils.min(start + length, rowCount));
+      rowValues = getRowList().subList(start, Math.min(start + length, rowCount));
     }
 
     if (updateActiveRow) {

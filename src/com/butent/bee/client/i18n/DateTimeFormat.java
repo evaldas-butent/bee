@@ -999,9 +999,11 @@ public class DateTimeFormat {
 
   private boolean subParseFractionalSeconds(int value, int start, int end, DateRecord cal) {
     int i = end - start;
+    int v = value;
+
     if (i < 3) {
       while (i < 3) {
-        value *= 10;
+        v *= 10;
         i++;
       }
     } else {
@@ -1010,25 +1012,26 @@ public class DateTimeFormat {
         a *= 10;
         i--;
       }
-      value = (value + (a >> 1)) / a;
+      v = (v + (a >> 1)) / a;
     }
-    cal.setMilliseconds(value);
+    cal.setMilliseconds(v);
     return true;
   }
 
   private boolean subParseMonth(String text, int[] pos, DateRecord cal, int value, int start) {
-    if (value < 0) {
-      value = matchString(text, start, dateTimeFormatInfo.monthsFull(), pos);
-      if (value < 0) {
-        value = matchString(text, start, dateTimeFormatInfo.monthsShort(), pos);
+    int v = value;
+    if (v < 0) {
+      v = matchString(text, start, dateTimeFormatInfo.monthsFull(), pos);
+      if (v < 0) {
+        v = matchString(text, start, dateTimeFormatInfo.monthsShort(), pos);
       }
-      if (value < 0) {
+      if (v < 0) {
         return false;
       }
-      cal.setMonth(value + 1);
+      cal.setMonth(v + 1);
       return true;
-    } else if (value > 0) {
-      cal.setMonth(value);
+    } else if (v > 0) {
+      cal.setMonth(v);
       return true;
     }
     return false;
@@ -1048,18 +1051,19 @@ public class DateTimeFormat {
 
   private boolean subParseStandaloneMonth(String text, int[] pos,
       DateRecord cal, int value, int start) {
-    if (value < 0) {
-      value = matchString(text, start, dateTimeFormatInfo.monthsFullStandalone(), pos);
-      if (value < 0) {
-        value = matchString(text, start, dateTimeFormatInfo.monthsShortStandalone(), pos);
+    int v = value;
+    if (v < 0) {
+      v = matchString(text, start, dateTimeFormatInfo.monthsFullStandalone(), pos);
+      if (v < 0) {
+        v = matchString(text, start, dateTimeFormatInfo.monthsShortStandalone(), pos);
       }
-      if (value < 0) {
+      if (v < 0) {
         return false;
       }
-      cal.setMonth(value + 1);
+      cal.setMonth(v + 1);
       return true;
-    } else if (value > 0) {
-      cal.setMonth(value);
+    } else if (v > 0) {
+      cal.setMonth(v);
       return true;
     }
     return false;
@@ -1081,7 +1085,8 @@ public class DateTimeFormat {
   private boolean subParseYear(String text, int[] pos, int start, int value,
       PatternPart part, DateRecord cal) {
     char ch = ' ';
-    if (value < 0) {
+    int v = value;
+    if (v < 0) {
       if (pos[0] >= text.length()) {
         return false;
       }
@@ -1090,21 +1095,21 @@ public class DateTimeFormat {
         return false;
       }
       ++(pos[0]);
-      value = parseInt(text, pos);
-      if (value < 0) {
+      v = parseInt(text, pos);
+      if (v < 0) {
         return false;
       }
       if (ch == '-') {
-        value = -value;
+        v = -v;
       }
     }
 
     if (ch == ' ' && (pos[0] - start) == 2 && part.count == 2) {
       int defaultCenturyStartYear = TimeUtils.today().getYear() - 80;
       int ambiguousTwoDigitYear = defaultCenturyStartYear % 100;
-      value += (defaultCenturyStartYear / 100) * 100 + (value < ambiguousTwoDigitYear ? 100 : 0);
+      v += (defaultCenturyStartYear / 100) * 100 + (v < ambiguousTwoDigitYear ? 100 : 0);
     }
-    cal.setYear(value);
+    cal.setYear(v);
     return true;
   }
 

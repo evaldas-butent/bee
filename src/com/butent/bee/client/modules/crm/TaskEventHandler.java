@@ -63,7 +63,6 @@ import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
-import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
@@ -116,7 +115,7 @@ public class TaskEventHandler {
 
       final long task = presenter.getGridView().getRelId();
 
-      Queries.getRowSet("Users", null, CompoundFilter.and(filters), null, new RowSetCallback() {
+      Queries.getRowSet("Users", null, Filter.and(filters), null, new RowSetCallback() {
         public void onSuccess(final BeeRowSet result) {
           if (result.isEmpty()) {
             presenter.getGridView().notifyWarning("Everybody is watching you");
@@ -457,7 +456,7 @@ public class TaskEventHandler {
         filters.add(excludeUser(row.getId()));
       }
 
-      Queries.getRowSet("Users", null, CompoundFilter.and(filters), null, new RowSetCallback() {
+      Queries.getRowSet("Users", null, Filter.and(filters), null, new RowSetCallback() {
         public void onSuccess(BeeRowSet result) {
           if (result.isEmpty()) {
             Global.showError("No more heroes any more");
@@ -1133,7 +1132,7 @@ public class TaskEventHandler {
         IsRow data = form.getActiveRow();
         Long oldTerm = data.getLong(form.getDataIndex("FinishTime"));
         if (BeeUtils.equals(newTerm, oldTerm)
-            || newTerm < BeeUtils.max(data.getLong(form.getDataIndex("StartTime")),
+            || newTerm < Math.max(data.getLong(form.getDataIndex("StartTime")),
                 System.currentTimeMillis())) {
           Global.showError("Neteisingas terminas");
           return;

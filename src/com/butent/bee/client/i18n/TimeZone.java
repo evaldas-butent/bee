@@ -66,43 +66,50 @@ public class TimeZone {
 
   private static String composeGMTString(int offset) {
     char data[] = {'G', 'M', 'T', '-', '0', '0', ':', '0', '0'};
-    if (offset <= 0) {
+    int x = offset;
+
+    if (x <= 0) {
       data[3] = '+';
-      offset = -offset;
+      x = -x;
     }
-    data[4] += (offset / 60) / 10;
-    data[5] += (offset / 60) % 10;
-    data[7] += (offset % 60) / 10;
-    data[8] += offset % 10;
+    data[4] += (x / 60) / 10;
+    data[5] += (x / 60) % 10;
+    data[7] += (x % 60) / 10;
+    data[8] += x % 10;
+    
     return new String(data);
   }
 
   private static String composePOSIXTimeZoneID(int offset) {
-    if (offset == 0) {
+    int x = offset;
+    if (x == 0) {
       return "Etc/GMT";
     }
+
     String str;
-    if (offset < 0) {
-      offset = -offset;
+    if (x < 0) {
+      x = -x;
       str = "Etc/GMT-";
     } else {
       str = "Etc/GMT+";
     }
-    return str + offsetDisplay(offset);
+    return str + offsetDisplay(x);
   }
 
   private static String composeUTCString(int offset) {
-    if (offset == 0) {
+    int x = offset;
+    if (x == 0) {
       return "UTC";
     }
+
     String str;
-    if (offset < 0) {
-      offset = -offset;
+    if (x < 0) {
+      x = -x;
       str = "UTC+";
     } else {
       str = "UTC-";
     }
-    return str + offsetDisplay(offset);
+    return str + offsetDisplay(x);
   }
 
   private static String offsetDisplay(int offset) {

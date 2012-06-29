@@ -953,7 +953,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   private final List<Long> renderedRows = Lists.newArrayList();
   private RenderMode renderMode = null;
-
+  
   public CellGrid() {
     setElement(Document.get().createDivElement());
 
@@ -3616,8 +3616,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private void render() {
-    long millis = System.currentTimeMillis();
-
     RenderMode mode = getEffectiveRenderMode();
 
     if (RenderMode.CONTENT.equals(mode)) {
@@ -3656,10 +3654,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
           }
         }
       });
-    }
-
-    if (!getRenderedRows().isEmpty()) {
-      BeeKeeper.getLog().debug(mode.name(), System.currentTimeMillis() - millis);
     }
   }
 

@@ -136,7 +136,7 @@ public class SimpleCache<K, V> implements HasInfo {
   }
 
   public boolean isEmpty() {
-    return getSize() <= 0;
+    return keys.isEmpty();
   }
 
   public boolean isFull() {

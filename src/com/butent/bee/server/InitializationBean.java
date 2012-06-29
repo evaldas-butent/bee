@@ -23,7 +23,6 @@ public class InitializationBean {
   @EJB
   ModuleHolderBean moduleBean;
 
-  @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
     setLogLevel();

@@ -2,6 +2,7 @@ package com.butent.bee.client.cli;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
@@ -160,7 +161,9 @@ public class CliWorker {
       clear(args);
     } else if (z.startsWith("client")) {
       showClientLocation();
-    } else if (z.startsWith("col")) {
+    } else if (z.startsWith("collect")) {
+      doCollections(arr);
+    } else if (z.startsWith("column")) {
       BeeKeeper.getScreen().showGrid(Data.getColumnMapper().getExtendedInfo());
     } else if (z.startsWith("data")) {
       showDataInfo(args);
@@ -407,6 +410,180 @@ public class CliWorker {
     BeeKeeper.getScreen().showGrid(lst, "Location", "Api Key");
   }
 
+  private static void doCollections(String[] arr) {
+    int size = 2000;
+    int query = 20;
+    
+    for (int i = 1; i < arr.length; i++) {
+      if (BeeUtils.isPositiveInt(arr[i])) {
+        if (i == 1) {
+          size = BeeUtils.toInt(arr[i]);
+        } else {
+          query = BeeUtils.toInt(arr[i]);
+        }
+      }
+    }
+    
+    List<Integer> lia = Lists.newArrayList();
+    List<Long> lla = Lists.newArrayList();
+    List<Double> lda = Lists.newArrayList();
+    List<String> lsa = Lists.newArrayList();
+
+    List<Integer> lil = Lists.newLinkedList();
+    List<Long> lll = Lists.newLinkedList();
+    List<Double> ldl = Lists.newLinkedList();
+    List<String> lsl = Lists.newLinkedList();
+    
+    Map<Integer, String> mih = Maps.newHashMap();
+    Map<Long, String> mlh = Maps.newHashMap();
+    Map<Double, String> mdh = Maps.newHashMap();
+    Map<String, String> msh = Maps.newHashMap();
+
+    Map<Integer, String> mil = Maps.newLinkedHashMap();
+    Map<Long, String> mll = Maps.newLinkedHashMap();
+    Map<Double, String> mdl = Maps.newLinkedHashMap();
+    Map<String, String> msl = Maps.newLinkedHashMap();
+    
+    for (int i = 0; i < size; i++) {
+      String s = Integer.toString(i);
+
+      lia.add(i);
+      lla.add((long) i);
+      lda.add((double) i);
+      lsa.add(s);
+
+      lil.add(i);
+      lll.add((long) i);
+      ldl.add((double) i);
+      lsl.add(s);
+
+      mih.put(i, s);
+      mlh.put((long) i, s);
+      mdh.put((double) i, s);
+      msh.put(s, s);
+
+      mil.put(i, s);
+      mll.put((long) i, s);
+      mdl.put((double) i, s);
+      msl.put(s, s);
+    }
+    
+    BeeKeeper.getLog().debug(size, query);
+  
+    double x = 0;
+    long start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += lia.indexOf((int) (Math.random() * size));
+    }
+    BeeKeeper.getLog().debug("lia", System.currentTimeMillis() - start, x);
+
+    x = 0;
+    start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += lla.indexOf((long) (Math.random() * size));
+    }
+    BeeKeeper.getLog().debug("lla", System.currentTimeMillis() - start, x);
+
+    x = 0;
+    start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += lda.indexOf(Math.floor(Math.random() * size));
+    }
+    BeeKeeper.getLog().debug("lda", System.currentTimeMillis() - start, x);
+    
+    x = 0;
+    start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += lsa.indexOf(Integer.toString((int) (Math.random() * size)));
+    }
+    BeeKeeper.getLog().debug("lsa", System.currentTimeMillis() - start, x);
+    
+    x = 0;
+    start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += lil.indexOf((int) (Math.random() * size));
+    }
+    BeeKeeper.getLog().debug("lil", System.currentTimeMillis() - start, x);
+
+    x = 0;
+    start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += lll.indexOf((long) (Math.random() * size));
+    }
+    BeeKeeper.getLog().debug("lll", System.currentTimeMillis() - start, x);
+
+    x = 0;
+    start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += ldl.indexOf(Math.floor(Math.random() * size));
+    }
+    BeeKeeper.getLog().debug("ldl", System.currentTimeMillis() - start, x);
+    
+    x = 0;
+    start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += lsl.indexOf(Integer.toString((int) (Math.random() * size)));
+    }
+    BeeKeeper.getLog().debug("lsl", System.currentTimeMillis() - start, x);
+
+    x = 0;
+    start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += (mih.get((int) (Math.random() * size)) == null) ? 0 : 1; 
+    }
+    BeeKeeper.getLog().debug("mih", System.currentTimeMillis() - start, x);
+
+    x = 0;
+    start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += (mlh.get((long) (Math.random() * size)) == null) ? 0 : 1; 
+    }
+    BeeKeeper.getLog().debug("mlh", System.currentTimeMillis() - start, x);
+
+    x = 0;
+    start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += (mdh.get(Math.floor(Math.random() * size)) == null) ? 0 : 1; 
+    }
+    BeeKeeper.getLog().debug("mdh", System.currentTimeMillis() - start, x);
+
+    x = 0;
+    start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += (msh.get(Integer.toString((int) (Math.random() * size))) == null) ? 0 : 1; 
+    }
+    BeeKeeper.getLog().debug("msh", System.currentTimeMillis() - start, x);
+
+    x = 0;
+    start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += (mil.get((int) (Math.random() * size)) == null) ? 0 : 1; 
+    }
+    BeeKeeper.getLog().debug("mil", System.currentTimeMillis() - start, x);
+
+    x = 0;
+    start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += (mll.get((long) (Math.random() * size)) == null) ? 0 : 1; 
+    }
+    BeeKeeper.getLog().debug("mll", System.currentTimeMillis() - start, x);
+
+    x = 0;
+    start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += (mdl.get(Math.floor(Math.random() * size)) == null) ? 0 : 1; 
+    }
+    BeeKeeper.getLog().debug("mdl", System.currentTimeMillis() - start, x);
+
+    x = 0;
+    start = System.currentTimeMillis();
+    for (int i = 0; i < query; i++) {
+      x += (msl.get(Integer.toString((int) (Math.random() * size))) == null) ? 0 : 1; 
+    }
+    BeeKeeper.getLog().debug("msl", System.currentTimeMillis() - start, x);
+    BeeKeeper.getLog().addSeparator();
+  }
+  
   private static void doLike(String[] arr) {
     int len = ArrayUtils.length(arr);
     if (len < 3) {

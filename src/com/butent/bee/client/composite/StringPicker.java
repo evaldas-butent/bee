@@ -413,14 +413,6 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     return blurRegistration;
   }
 
-  private Element getChildElement(int index) {
-    if (index >= 0 && index < getChildContainer().getChildCount()) {
-      return Element.as(getChildContainer().getChild(index));
-    } else {
-      return null;
-    }
-  }
-
   private String getItemData(String item) {
     return BeeUtils.ifString(BeeUtils.getPrefix(item, displaySeparator), item);
   }

@@ -99,7 +99,6 @@ public class ModuleHolderBean {
     return modules.get(moduleName);
   }
 
-  @SuppressWarnings("unused")
   @PostConstruct
   private void init() {
     Collection<String> mods = Sets.newHashSet(CommonsConstants.COMMONS_MODULE);
