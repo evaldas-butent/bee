@@ -3,6 +3,7 @@ package com.butent.bee.shared.data.cache;
 import com.google.common.collect.Multimap;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -13,26 +14,33 @@ import java.util.List;
  */
 
 public enum ReplacementPolicy {
-  LEAST_FREQUENTLY_USED(true, false),
-  LEAST_RECENTLY_USED(true, false),
-  LEAST_RECENTLY_USED_2(true, false),
-  TWO_QUEUES(true, false),
-  ADAPTIVE_REPLACEMENT_CACHE(true, false),
-  MOST_RECENTLY_USED(false, true),
-  FIRST_IN_FIRST_OUT(false, false),
-  SECOND_CHANCE(true, false),
-  CLOCK(true, false),
-  SIMPLE_TIME_BASED(true, false),
-  EXTENDED_TIME_BASED(true, false),
-  SLIDING_TIME_BASED(true, false),
-  RANDOM(false, false);
+  LEAST_FREQUENTLY_USED(true, false, false, CacheImpl.LIST),
+  LEAST_RECENTLY_USED(true, false, true, CacheImpl.MAP),
+  LEAST_RECENTLY_USED_2(true, false, true, CacheImpl.MAP),
+  TWO_QUEUES(true, false, false, CacheImpl.MAP),
+  ADAPTIVE_REPLACEMENT_CACHE(true, false, false, CacheImpl.MAP),
+  MOST_RECENTLY_USED(false, true, false, CacheImpl.LIST),
+  FIRST_IN_FIRST_OUT(false, false, false, CacheImpl.MAP),
+  SECOND_CHANCE(true, false, false, CacheImpl.MAP),
+  CLOCK(true, false, false, CacheImpl.MAP),
+  SIMPLE_TIME_BASED(true, false, false, CacheImpl.MAP),
+  EXTENDED_TIME_BASED(true, false, false, CacheImpl.MAP),
+  SLIDING_TIME_BASED(true, false, false, CacheImpl.MAP),
+  RANDOM(false, false, false, CacheImpl.LIST);
 
   private final boolean requiresHistory;
   private final boolean addFirst;
-
-  private ReplacementPolicy(boolean requiresHistory, boolean addFirst) {
+  private final boolean accessOrder;
+  
+  private final CacheImpl defaultImpl;
+  
+  private ReplacementPolicy(boolean requiresHistory, boolean addFirst, boolean accessOrder,
+      CacheImpl defaultImpl) {
     this.requiresHistory = requiresHistory;
     this.addFirst = addFirst;
+    this.accessOrder = accessOrder;
+    
+    this.defaultImpl = defaultImpl;
   }
 
   public boolean addFirst() {
@@ -43,7 +51,59 @@ public enum ReplacementPolicy {
     return !addFirst;
   }
 
-  public <K> int getEvictionIndex(final List<K> keys, final Multimap<K, Long> history) {
+  public CacheImpl getDefaultImpl() {
+    return defaultImpl;
+  }
+
+  public <K> K getEvictee(Collection<K> keys, Multimap<K, Long> history) {
+    Assert.notEmpty(keys);
+    K result = BeeUtils.peek(keys);
+
+    int size = keys.size();
+    if (size <= 1 || history == null || history.isEmpty()) {
+      return result;
+    }
+
+    switch (this) {
+      case LEAST_FREQUENTLY_USED:
+        Collection<Long> hits = history.get(result);
+        if (hits == null) {
+          return result;
+        }
+        int minCnt = hits.size();
+        if (minCnt <= 0) {
+          return result;
+        }
+
+        int cnt;
+        for (K key : keys) {
+          if (result == key) {
+            break;
+          }
+          hits = history.get(key);
+          if (hits == null) {
+            result = key;
+            break;
+          }
+
+          cnt = hits.size();
+          if (cnt <= 0) {
+            result = key;
+            break;
+          }
+          if (cnt < minCnt) {
+            result = key;
+            minCnt = cnt;
+          }
+        }
+        break;
+
+      default:
+    }
+    return result;
+  }
+
+  public <K> int getEvictionIndex(List<K> keys, Multimap<K, Long> history) {
     Assert.notEmpty(keys);
     int size = keys.size();
     if (size <= 1 || history == null || history.isEmpty()) {
@@ -52,6 +112,14 @@ public enum ReplacementPolicy {
 
     int idx;
     switch (this) {
+      case MOST_RECENTLY_USED:
+        idx = size - 1;
+        break;
+
+      case RANDOM:
+        idx = BeeUtils.randomInt(0, size);
+        break;
+        
       case LEAST_FREQUENTLY_USED:
         int minIdx = 0;
         Collection<Long> hits = history.get(keys.get(minIdx));
@@ -89,6 +157,10 @@ public enum ReplacementPolicy {
         idx = 0;
     }
     return idx;
+  }
+
+  public boolean isAccessOrder() {
+    return accessOrder;
   }
 
   public boolean isHistoryRequired() {

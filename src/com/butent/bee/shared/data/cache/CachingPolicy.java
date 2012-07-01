@@ -8,6 +8,16 @@ import com.butent.bee.shared.utils.NameUtils;
 
 public enum CachingPolicy {
   NONE(false, false), READ(true, false), WRITE(false, true), FULL(true, true);
+
+  public static CachingPolicy disableRead(CachingPolicy policy) {
+    if (FULL.equals(policy)) {
+      return WRITE;
+    } else if (READ.equals(policy)) {
+      return NONE;
+    } else {
+      return policy;
+    }
+  }
   
   public static CachingPolicy get(String name) {
     return NameUtils.getEnumByName(CachingPolicy.class, name);
