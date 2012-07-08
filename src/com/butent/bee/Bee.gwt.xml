@@ -20,7 +20,7 @@
 
   <set-property name='user.agent' value='safari'/>
 
-<!--   <extend-property name='locale' values='lt'/> -->
+  <extend-property name='locale' values='lt'/>
 <!--   <extend-property name='locale' values='lv'/> -->
 <!--   <extend-property name='locale' values='et'/> -->
 <!--   <extend-property name='locale' values='en'/> -->
@@ -28,7 +28,7 @@
 <!--   <extend-property name='locale' values='ru'/> -->
 <!--   <extend-property name='locale' values='pl'/> -->
 
-<!--   <set-property-fallback name='locale' value='en'/> -->
+  <set-property name='locale' value='lt'/>
 
   <entry-point class='com.butent.bee.client.Bee'/>
   <entry-point class="com.butent.bee.client.dnd.util.DragEntryPoint" />

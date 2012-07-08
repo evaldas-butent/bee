@@ -1055,12 +1055,18 @@ class AppointmentBuilder extends AbstractFormCallback {
       }
       listBox.deselect();
     }
+    
+    boolean wasOpaque = false;
 
     if (!resources.isEmpty()) {
       BeeRowSet attendees = CalendarKeeper.getAttendees();
       for (long attId : resources) {
         info.append(attendees.getStringByRowId(attId, COL_NAME)).append(separator);
+        if (!wasOpaque && CalendarKeeper.isAttendeeOpaque(attId)) {
+          wasOpaque = true;
+        }
       }
+      
       resources.clear();
       refreshResourceWidget();
       hideOverlap();
@@ -1096,13 +1102,18 @@ class AppointmentBuilder extends AbstractFormCallback {
       ((Editor) widget).setValue(BeeConst.STRING_ZERO);
     }
 
-    Data.clearCell(VIEW_APPOINTMENTS, getFormView().getActiveRow(), COL_DESCRIPTION);
-
     widget = getWidget(getBuildInfoWidgetId());
     if (widget instanceof HasItems) {
       ((HasItems) widget).addItem(info.toString());
     }
 
+    IsRow row = getFormView().getActiveRow();
+    
+    if (wasOpaque && end != null) {
+      Data.setValue(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME, end);
+    }
+    Data.clearCell(VIEW_APPOINTMENTS, row, COL_DESCRIPTION);
+    
     getFormView().refresh(false);
   }
 
@@ -1378,6 +1389,11 @@ class AppointmentBuilder extends AbstractFormCallback {
     }
     if (!hasValue(getRepairTypeWidgetId())) {
       getFormView().notifySevere("Pasirinkite remonto tipą");
+      return false;
+    }
+    
+    if (resources.isEmpty()) {
+      getFormView().notifySevere("Nurodykite resursus");
       return false;
     }
 

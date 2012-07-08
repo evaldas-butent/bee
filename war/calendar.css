@@ -35,6 +35,8 @@
   padding-top: 2px;
   text-align: center;
   font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .bee-cal .calendar-header .day-cell-today {
   font-weight: bold;
