@@ -17,6 +17,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.ParentRowEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -151,8 +152,8 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
       Map<String, Filter> initialFilters, Order order) {
 
     GridPresenter gp = new GridPresenter(getGridDescription(), rowSet.getNumberOfRows(), rowSet,
-        Provider.Type.ASYNC, EnumSet.of(UiOption.CHILD), getGridCallback(), immutableFilter,
-        initialFilters, order, getGridOptions());
+        Provider.Type.ASYNC, getCachingPolicy(), EnumSet.of(UiOption.CHILD), getGridCallback(),
+        immutableFilter, initialFilters, order, getGridOptions());
 
     gp.getGridView().setRelColumn(getRelSource());
     gp.getGridView().getGrid().setPageSize(BeeConst.UNDEF, false, false);
@@ -172,6 +173,10 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     }
   }
 
+  private CachingPolicy getCachingPolicy() {
+    return getGridDescription().getCachingPolicy(false);
+  }
+  
   private Filter getFilter(IsRow row) {
     return ComparisonFilter.isEqual(getRelSource(), new LongValue(getParentValue(row)));
   }
@@ -205,7 +210,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
         GridFactory.getInitialQueryFilter(immutableFilter, initialFilters));
 
     Queries.getRowSet(getGridDescription().getViewName(), null, queryFilter, order,
-        getGridDescription().getCachingPolicy(), new Queries.RowSetCallback() {
+        getCachingPolicy(), new Queries.RowSetCallback() {
           public void onSuccess(BeeRowSet rowSet) {
             createPresenter(row, rowSet, immutableFilter, initialFilters, order);
           }
@@ -249,7 +254,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
   private void register() {
     unregister();
     if (!BeeUtils.isEmpty(getParentId())) {
-      setParentRowReg(BeeKeeper.getBus().registerParentRowHandler(getParentId(), this));
+      setParentRowReg(BeeKeeper.getBus().registerParentRowHandler(getParentId(), this, false));
     }
   }
 
@@ -276,7 +281,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
       updateFilter(getPendingRow());
 
       if (hasParentValue(getPendingRow())) {
-        getPresenter().requery(false);
+        getPresenter().refresh(false);
       } else {
         setEnabled(false);
         setPendingEnabled(null);

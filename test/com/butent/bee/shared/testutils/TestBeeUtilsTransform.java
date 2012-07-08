@@ -646,65 +646,12 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   }
 
   @Test
-  public void testIsZero() {
-    java.lang.Object a = new Integer(0);
-    java.lang.Object b = new String("hdjsh");
-    java.lang.Object c = new Integer(5);
-
-    assertEquals(true, BeeUtils.isZero(a));
-    assertEquals(false, BeeUtils.isZero(b));
-    assertEquals(false, BeeUtils.isZero(c));
-  }
-
-  @Test
-  public void testIsZeroBigDecimal() {
-    BigDecimal a = new BigDecimal(121654651);
-    assertEquals(false, BeeUtils.isZero(a));
-    a = BigDecimal.valueOf(0);
-    assertEquals(true, BeeUtils.isZero(a));
-  }
-
-  @Test
-  public void testIsZeroBigInteger() {
-    BigInteger a = BigInteger.valueOf(2000000000);
-    assertEquals(false, BeeUtils.isZero(a));
-    a = BigInteger.valueOf(0);
-    assertEquals(true, BeeUtils.isZero(a));
-  }
-
-  @Test
-  public void testIsZeroByte() {
-    byte a = 12;
-    assertEquals(false, BeeUtils.isZero(a));
-    a = 0;
-    assertEquals(true, BeeUtils.isZero(a));
-  }
-
-  @Test
   public void testIsZeroDouble() {
     double a = -0.00001;
 
     assertEquals(false, BeeUtils.isZero(a));
     a = 0.0;
     assertEquals(true, BeeUtils.isZero(a));
-
-    float b = 0;
-    float c = 5;
-    assertEquals(true, beeUtils.isZero(b));
-    assertEquals(false, beeUtils.isZero(5));
-    assertEquals(false, beeUtils.isZero((long) 5));
-    assertEquals(false, beeUtils.isZero(c));
-    assertEquals(true, beeUtils.isZero(0));
-    assertEquals(true, beeUtils.isZero((long) 0));
-  }
-
-  @Test
-  public void testIsZeroShort() {
-    short a = 0;
-    short b = 5;
-
-    assertEquals(true, BeeUtils.isZero(a));
-    assertEquals(false, BeeUtils.isZero(b));
   }
 
   @Test

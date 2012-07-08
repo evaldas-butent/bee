@@ -15,6 +15,8 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CachingPolicy;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.filter.Filter;
@@ -36,7 +38,7 @@ public class AsyncProvider extends Provider {
 
     private Range<Integer> displayRange;
     private boolean updateActiveRow;
-    
+
     private Integer rpcId = null;
 
     private Callback(Range<Integer> queryRange, Range<Integer> displayRange,
@@ -62,7 +64,7 @@ public class AsyncProvider extends Provider {
             getPageStart(), getPageSize());
         return;
       }
-      
+
       updateDisplay(rowSet, getQueryOffset(), updateActiveRow());
     }
 
@@ -107,29 +109,20 @@ public class AsyncProvider extends Provider {
     }
   }
 
-  private CachingPolicy cachingPolicy = CachingPolicy.FULL;
+  private final CachingPolicy cachingPolicy;
 
   private final Map<Integer, Callback> pendingRequests = Maps.newLinkedHashMap();
-  
+
   private int lastOffset = BeeConst.UNDEF;
-  
+
   private final boolean debug = false;
 
   public AsyncProvider(HasDataTable display, NotificationListener notificationListener,
-      String viewName, List<BeeColumn> columns) {
-    this(display, notificationListener, viewName, columns, null, null, null);
-  }
-
-  public AsyncProvider(HasDataTable display, NotificationListener notificationListener,
-      String viewName, List<BeeColumn> columns, Filter immutableFilter) {
-    this(display, notificationListener, viewName, columns, null, null, immutableFilter);
-  }
-
-  public AsyncProvider(HasDataTable display, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
-      Filter immutableFilter) {
+      Filter immutableFilter, CachingPolicy cachingPolicy) {
     super(display, notificationListener, viewName, columns, idColumnName, versionColumnName,
         immutableFilter);
+    this.cachingPolicy = cachingPolicy;
   }
 
   @Override
@@ -142,26 +135,44 @@ public class AsyncProvider extends Provider {
     return cachingPolicy;
   }
 
-  public void onFilterChange(final Filter newFilter) {
-    if (newFilter == null) {
-      acceptFilter(newFilter);
-      refresh(true);
+  public void onFilterChange(final Filter newFilter, final boolean updateActiveRow) {
+    resetRequests();
+    Filter flt = getQueryFilter(newFilter);
 
-    } else {
-      resetRequests();
-      Filter flt = getQueryFilter(newFilter);
-      Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
-        @Override
-        public void onSuccess(Integer result) {
-          if (BeeUtils.isPositive(result)) {
-            acceptFilter(newFilter);
-            getDisplay().setRowCount(result, true);
-            onRequest(true);
-          } else {
-            rejectFilter(newFilter);
-          }
+    Queries.getRowCount(getViewName(), flt, new Queries.IntCallback() {
+      @Override
+      public void onSuccess(Integer result) {
+        if (newFilter == null || BeeUtils.isPositive(result)) {
+          acceptFilter(newFilter);
+          onRowCount(result, updateActiveRow);
+        } else {
+          rejectFilter(newFilter);
         }
-      });
+      }
+    });
+  }
+
+  @Override
+  public void onMultiDelete(MultiDeleteEvent event) {
+    if (BeeUtils.same(event.getViewName(), getViewName())) {
+      getDisplay().onMultiDelete(event);
+
+      int rowCount = Math.max(getRowCount() - event.getSize(), 0);
+      getDisplay().setRowCount(rowCount, true);
+
+      onRequest(false);
+    }
+  }
+
+  @Override
+  public void onRowDelete(RowDeleteEvent event) {
+    if (BeeUtils.same(event.getViewName(), getViewName())) {
+      getDisplay().onRowDelete(event);
+
+      int rowCount = Math.max(getRowCount() - 1, 0);
+      getDisplay().setRowCount(rowCount, true);
+
+      onRequest(false);
     }
   }
 
@@ -180,15 +191,14 @@ public class AsyncProvider extends Provider {
   @Override
   public void refresh(final boolean updateActiveRow) {
     resetRequests();
-    Global.getCache().removeQuietly(getViewName());
+    Global.getCache().remove(getViewName());
 
     if (hasPaging()) {
       startLoading();
       Queries.getRowCount(getViewName(), getFilter(), new Queries.IntCallback() {
         @Override
         public void onSuccess(Integer result) {
-          getDisplay().setRowCount(result, true);
-          onRequest(updateActiveRow);
+          onRowCount(result, updateActiveRow);
         }
       });
 
@@ -198,31 +208,15 @@ public class AsyncProvider extends Provider {
   }
 
   @Override
-  public void requery(boolean updateActiveRow) {
-    onRequest(updateActiveRow);
-  }
-
-  public void setCachingPolicy(CachingPolicy cachingPolicy) {
-    this.cachingPolicy = cachingPolicy;
-  }
-
-  @Override
-  protected void onDelete() {
-    if (getDisplay().getRowCount() > 0) {
-      refresh(false);
-    }
-  }
-
-  @Override
   protected void onRequest(boolean updateActiveRow) {
     int offset = getPageStart();
     int limit = getPageSize();
-    
+
     Boolean forward = getDirection(offset);
     setLastOffset(offset);
-    
+
     Range<Integer> displayRange = createRange(offset, limit);
-    
+
     if (limit > 0 && !pendingRequests.isEmpty()) {
       Integer requestId = null;
 
@@ -231,7 +225,7 @@ public class AsyncProvider extends Provider {
           entry.getValue().setDisplayRange(displayRange);
           entry.getValue().setUpdateActiveRow(updateActiveRow);
 
-          if (pendingRequests.size() > 1) { 
+          if (pendingRequests.size() > 1) {
             requestId = entry.getKey();
             break;
           } else {
@@ -242,7 +236,7 @@ public class AsyncProvider extends Provider {
           }
         }
       }
-      
+
       if (requestId != null) {
         List<Integer> rpcIds = ImmutableList.copyOf(pendingRequests.keySet());
         for (Integer id : rpcIds) {
@@ -263,8 +257,7 @@ public class AsyncProvider extends Provider {
     Filter flt = getFilter();
     Order ord = getOrder();
 
-    CachingPolicy caching = isCacheEnabled() ? getCachingPolicy() : CachingPolicy.NONE;
-    
+    CachingPolicy caching = getCachingPolicy();
     if (caching != null && caching.doRead()) {
       BeeRowSet rowSet = Global.getCache().getRowSet(getViewName(), flt, ord, offset, limit);
       if (rowSet != null) {
@@ -276,7 +269,7 @@ public class AsyncProvider extends Provider {
       }
       caching = CachingPolicy.disableRead(getCachingPolicy());
     }
-    
+
     int queryOffset = offset;
     int queryLimit = limit;
 
@@ -335,23 +328,33 @@ public class AsyncProvider extends Provider {
   private int getLastOffset() {
     return lastOffset;
   }
-  
+
   private int getRowCount() {
     return getDisplay().getRowCount();
   }
   
+  private void onRowCount(Integer rowCount, boolean updateActiveRow) {
+    if (BeeUtils.isPositive(rowCount)) {
+      getDisplay().setRowCount(rowCount, true);
+      onRequest(updateActiveRow);
+    } else {
+      getDisplay().setRowCount(0, true);
+      getDisplay().setRowData(null, true);
+    }
+  }
+
   private void resetRequests() {
     cancelPendingRequests();
     setLastOffset(BeeConst.UNDEF);
   }
-  
+
   private void setLastOffset(int lastOffset) {
     this.lastOffset = lastOffset;
   }
-  
+
   private void updateDisplay(BeeRowSet data, int queryOffset, boolean updateActiveRow) {
     int rowCount = data.getNumberOfRows();
-    
+
     int displayOffset = getPageStart();
     int displayLimit = getPageSize();
 
@@ -361,7 +364,7 @@ public class AsyncProvider extends Provider {
 
     } else if (displayLimit <= 0) {
       rows = data.getRows().getList();
-    
+
     } else if (queryOffset >= displayOffset) {
       if (displayLimit < rowCount) {
         rows = data.getRows().getList().subList(0, displayLimit);
@@ -378,7 +381,7 @@ public class AsyncProvider extends Provider {
         rows = Lists.newArrayList();
       }
     }
-    
+
     if (debug) {
       BeeKeeper.getLog().debug(queryOffset, displayOffset, displayLimit, rowCount, rows.size());
     }

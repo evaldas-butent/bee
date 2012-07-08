@@ -39,6 +39,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -90,11 +91,14 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   private Filter lastFilter = null;
 
   public FormPresenter(FormDescription formDescription, String viewName, int rowCount,
-      BeeRowSet rowSet, Provider.Type providerType, FormCallback callback) {
+      BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
+      FormCallback callback) {
+
     List<BeeColumn> columns = (rowSet == null) ? null : rowSet.getColumns();
 
     this.formContainer = createView(formDescription, columns, rowCount, callback);
-    this.dataProvider = createProvider(formContainer, viewName, columns, rowSet, providerType);
+    this.dataProvider = createProvider(formContainer, viewName, columns, rowSet, providerType,
+        cachingPolicy);
 
     bind();
   }
@@ -175,12 +179,6 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       case REFRESH:
         if (hasData()) {
           getDataProvider().refresh(true);
-        }
-        break;
-
-      case REQUERY:
-        if (hasData()) {
-          getDataProvider().requery(false);
         }
         break;
 
@@ -289,7 +287,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private Provider createProvider(FormContainerView view, String viewName, List<BeeColumn> columns,
-      BeeRowSet rowSet, Provider.Type providerType) {
+      BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy) {
     if (BeeUtils.isEmpty(viewName) || providerType == null) {
       return null;
     }
@@ -300,7 +298,8 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     switch (providerType) {
       case ASYNC:
-        provider = new AsyncProvider(display, notificationListener, viewName, columns);
+        provider = new AsyncProvider(display, notificationListener, viewName, columns,
+            null, null, null, cachingPolicy);
         break;
       case CACHED:
         provider = new CachedProvider(display, notificationListener, viewName, columns, rowSet);
@@ -356,7 +355,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
       BeeKeeper.getLog().info("filter not changed", filter);
     } else {
       lastFilter = filter;
-      getDataProvider().onFilterChange(filter);
+      getDataProvider().onFilterChange(filter, true);
     }
   }
 }

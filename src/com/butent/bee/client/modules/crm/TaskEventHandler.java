@@ -188,11 +188,6 @@ public class TaskEventHandler {
 
     @Override
     public void beforeRefresh(GridPresenter presenter) {
-      beforeRequery(presenter);
-    }
-
-    @Override
-    public void beforeRequery(GridPresenter presenter) {
       for (Map.Entry<String, Filter> entry : getFilters().entrySet()) {
         presenter.getDataProvider().setParentFilter(entry.getKey(), entry.getValue());
       }
@@ -391,7 +386,7 @@ public class TaskEventHandler {
 
           } else if (response.hasResponse(Integer.class)) {
             dataView.notifyInfo("New tasks created", (String) response.getResponse());
-            dataView.getViewPresenter().handleAction(Action.REQUERY);
+            dataView.getViewPresenter().handleAction(Action.REFRESH);
             dataView.finishNewRow(null);
             resetUsers();
 
@@ -850,7 +845,7 @@ public class TaskEventHandler {
   }
 
   private static void createRequest(ParameterList args, final TaskDialog dialog,
-      final FormView form, final Set<Action> actions) {
+      final FormView form, final Set<Action> actions, final boolean refreshChildren) {
     if (dialog != null) {
       DomUtils.enableChildren(dialog, false);
     }
@@ -872,11 +867,8 @@ public class TaskEventHandler {
             if (BeeUtils.contains(actions, Action.CLOSE)) {
               form.fireEvent(new ActionEvent(actions));
 
-            } else if (BeeUtils.contains(actions, Action.REQUERY)) {
-              form.updateRow(row, true);
-
             } else if (BeeUtils.contains(actions, Action.REFRESH)) {
-              form.updateRow(row, false);
+              form.updateRow(row, refreshChildren);
 
             } else {
               form.setActiveRow(row);
@@ -896,12 +888,8 @@ public class TaskEventHandler {
 
             } else {
               form.getActiveRow().setValue(dataIndex, newValue);
-
-              if (BeeUtils.contains(actions, Action.REQUERY)) {
-                form.refresh(true);
-
-              } else if (BeeUtils.contains(actions, Action.REFRESH)) {
-                form.refresh(false);
+              if (BeeUtils.contains(actions, Action.REFRESH)) {
+                form.refresh(refreshChildren);
               }
             }
           } else {
@@ -934,7 +922,7 @@ public class TaskEventHandler {
         if (!BeeUtils.isEmpty(comment)) {
           args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
         }
-        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REQUERY));
+        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REFRESH), true);
       }
     });
     dialog.display();
@@ -964,7 +952,7 @@ public class TaskEventHandler {
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
-        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REQUERY));
+        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REFRESH), true);
       }
     });
     dialog.display();
@@ -1002,7 +990,7 @@ public class TaskEventHandler {
           args.addDataItem(CrmConstants.VAR_TASK_DURATION_TIME, BeeUtils.transform(minutes));
           args.addDataItem(CrmConstants.VAR_TASK_DURATION_TYPE, BeeUtils.transform(type));
         }
-        createRequest(args, dialog, form, EnumSet.of(Action.REQUERY));
+        createRequest(args, dialog, form, EnumSet.of(Action.REFRESH), true);
       }
     });
     dialog.display();
@@ -1056,7 +1044,7 @@ public class TaskEventHandler {
           args.addDataItem(CrmConstants.VAR_TASK_DURATION_TYPE, BeeUtils.transform(type));
         }
 
-        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REQUERY));
+        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REFRESH), true);
       }
     });
     dialog.display();
@@ -1150,7 +1138,7 @@ public class TaskEventHandler {
         if (!BeeUtils.isEmpty(comment)) {
           args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
         }
-        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REQUERY));
+        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REFRESH), true);
       }
     });
     dialog.display();
@@ -1199,7 +1187,7 @@ public class TaskEventHandler {
         if (!BeeUtils.equals(owner, oldUser) && dialog.getAnswer()) {
           args.addDataItem(CrmConstants.VAR_TASK_OBSERVE, true);
         }
-        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REQUERY));
+        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REFRESH), true);
       }
     });
     dialog.display();
@@ -1227,7 +1215,7 @@ public class TaskEventHandler {
         if (!BeeUtils.isEmpty(comment)) {
           args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
         }
-        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REQUERY));
+        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REFRESH), true);
       }
     });
     dialog.display();
@@ -1257,7 +1245,7 @@ public class TaskEventHandler {
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
-        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REQUERY));
+        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REFRESH), true);
       }
     });
     dialog.display();
@@ -1321,7 +1309,7 @@ public class TaskEventHandler {
           ParameterList args = createParams(TaskEvent.UPDATED.name());
           args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
 
-          createRequest(args, dialog, form, EnumSet.of(Action.REQUERY));
+          createRequest(args, dialog, form, EnumSet.of(Action.REFRESH), true);
         }
       }
     });
@@ -1332,7 +1320,7 @@ public class TaskEventHandler {
     ParameterList args = createParams(TaskEvent.VISITED.name());
     args.addDataItem(CrmConstants.VAR_TASK_ID, form.getActiveRow().getId());
 
-    createRequest(args, null, form, null);
+    createRequest(args, null, form, null, false);
   }
 
   private static Filter excludeUser(long userId) {

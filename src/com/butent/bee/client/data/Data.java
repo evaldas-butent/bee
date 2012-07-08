@@ -81,9 +81,9 @@ public class Data {
   public static void init() {
     DATA_INFO_PROVIDER.load();
 
-    BeeKeeper.getBus().registerRowDeleteHandler(DATA_INFO_PROVIDER);
-    BeeKeeper.getBus().registerMultiDeleteHandler(DATA_INFO_PROVIDER);
-    BeeKeeper.getBus().registerRowInsertHandler(DATA_INFO_PROVIDER);
+    BeeKeeper.getBus().registerRowDeleteHandler(DATA_INFO_PROVIDER, false);
+    BeeKeeper.getBus().registerMultiDeleteHandler(DATA_INFO_PROVIDER, false);
+    BeeKeeper.getBus().registerRowInsertHandler(DATA_INFO_PROVIDER, false);
   }
 
   public static boolean isNull(String viewName, IsRow row, String colName) {

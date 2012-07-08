@@ -253,7 +253,7 @@ public class Queries {
         cachingPolicy, callback);
   }
 
-  public static int getRowSet(String viewName, List<String> columns, final Filter filter,
+  public static int getRowSet(final String viewName, List<String> columns, final Filter filter,
       final Order order, final int offset, final int limit, final CachingPolicy cachingPolicy,
       Collection<Property> options, final RowSetCallback callback) {
     Assert.notEmpty(viewName);
@@ -309,7 +309,7 @@ public class Queries {
 
               if (cachingPolicy != null && cachingPolicy.doWrite()
                   && BeeUtils.isEmpty(columnNames)) {
-                Global.getCache().add(rs, filter, order, offset, limit);
+                Global.getCache().add(Data.getDataInfo(viewName), rs, filter, order, offset, limit);
               }
             } else {
               BeeKeeper.getLog().severe("get RowSet invalid response:", response.getType());

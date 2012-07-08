@@ -62,8 +62,6 @@ public interface GridCallback extends WidgetCallback, ParentRowEvent.Handler {
 
   void beforeRefresh(GridPresenter presenter);
 
-  void beforeRequery(GridPresenter presenter);
-
   String getCaption();
   
   String getDeleteRowMessage();

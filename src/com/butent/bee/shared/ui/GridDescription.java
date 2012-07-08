@@ -400,8 +400,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     return cacheDescription;
   }
 
-  public CachingPolicy getCachingPolicy() {
-    return BeeUtils.isTrue(getCacheData()) ? CachingPolicy.FULL : CachingPolicy.NONE;
+  public CachingPolicy getCachingPolicy(boolean def) {
+    return BeeUtils.nvl(getCacheData(), def) ? CachingPolicy.FULL : CachingPolicy.NONE;
   }
 
   public String getCaption() {

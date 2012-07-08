@@ -142,7 +142,7 @@ public class ProjectList {
           public void onClick(ClickEvent event) {
             if (getGridPresenter() != null) {
               updateFilter(getGridPresenter());
-              getGridPresenter().requery(true);
+              getGridPresenter().refresh(true);
             }
           }
         });
@@ -180,11 +180,6 @@ public class ProjectList {
 
     @Override
     public void beforeRefresh(GridPresenter presenter) {
-      updateFilter(presenter);
-    }
-
-    @Override
-    public void beforeRequery(GridPresenter presenter) {
       updateFilter(presenter);
     }
 

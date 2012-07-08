@@ -81,8 +81,8 @@ public class CalendarKeeper {
 
     GridFactory.registerGridCallback(GRID_APPOINTMENTS, new AppointmentGridHandler());
 
-    BeeKeeper.getBus().registerDataHandler(CACHE);
-    BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler());
+    BeeKeeper.getBus().registerDataHandler(CACHE, true);
+    BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler(), false);
 
     SelectorEvent.register(new SelectorHandler());
   }

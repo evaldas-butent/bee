@@ -253,7 +253,7 @@ public class SystemBean {
 
     return new DataInfo(viewName, source.getName(), source.getIdName(), source.getVersionName(),
         view.getEditForm(), view.getNewRowForm(), view.getNewRowColumns(), view.getNewRowCaption(),
-        columns, viewColumns);
+        view.getCacheMaximumSize(), view.getCacheEviction(), columns, viewColumns);
   }
 
   public String getDbName() {

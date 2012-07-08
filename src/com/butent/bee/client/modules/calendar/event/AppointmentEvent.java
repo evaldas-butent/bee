@@ -25,7 +25,7 @@ public class AppointmentEvent extends Event<AppointmentEvent.Handler> {
   }
 
   public static HandlerRegistration register(Handler handler) {
-    return BeeKeeper.getBus().addHandler(getType(), handler);
+    return BeeKeeper.getBus().addHandler(getType(), handler, false);
   }
 
   private final Appointment appointment;

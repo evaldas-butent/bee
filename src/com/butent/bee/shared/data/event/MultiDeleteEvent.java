@@ -49,6 +49,10 @@ public class MultiDeleteEvent extends Event<MultiDeleteEvent.Handler> implements
   public Set<RowInfo> getRows() {
     return rows;
   }
+  
+  public int getSize() {
+    return rows.size();
+  }
 
   public String getViewName() {
     return viewName;

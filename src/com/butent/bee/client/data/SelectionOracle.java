@@ -221,7 +221,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
     this.caching = (relation.getCaching() == null) ? DEFAULT_CACHING : relation.getCaching();
 
-    this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this));
+    this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
   }
 
   public void addRowCountChangeHandler(Procedure<Integer> handler) {

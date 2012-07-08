@@ -1465,7 +1465,7 @@ public class BeeUtils {
       ok = ((CharSequence) x).length() == 0
           || ((CharSequence) x).toString().trim().isEmpty();
     } else if (x instanceof Number) {
-      ok = isZero(x);
+      ok = isZero(((Number) x).doubleValue());
     } else if (x instanceof Boolean) {
       ok = !(Boolean) x;
     } else if (x instanceof Collection) {
@@ -1758,53 +1758,13 @@ public class BeeUtils {
   }
 
   /**
-   * Checks if a BigDecimal value is zero.
-   * 
-   * @param x value to check
-   * @return true if {@code x == 0}, otherwise false.
-   */
-  public static boolean isZero(BigDecimal x) {
-    return x == BigDecimal.ZERO;
-  }
-
-  /**
-   * Checks if a BigInteger value is zero.
-   * 
-   * @param x value to check
-   * @return true if it is 0, otherwise false.
-   */
-  public static boolean isZero(BigInteger x) {
-    return x == BigInteger.ZERO;
-  }
-
-  /**
-   * Checks if Byte value is zero.
-   * 
-   * @param x value to check
-   * @return true if {@code x ==0} , false otherwise.
-   */
-  public static boolean isZero(byte x) {
-    return x == 0;
-  }
-
-  /**
    * Checks if a Double value is zero.
    * 
    * @param x value to check
    * @return true if x == 0.0, otherwise false.
    */
-  public static boolean isZero(double x) {
-    return x == Double.valueOf(BeeConst.DOUBLE_ZERO);
-  }
-
-  /**
-   * Checks if a Float value is zero.
-   * 
-   * @param x value to check
-   * @return true if {@code x == 0.0}, otherwise false
-   */
-  public static boolean isZero(float x) {
-    return x == Float.valueOf(BeeConst.FLOAT_ZERO);
+  public static boolean isZero(Double x) {
+    return x != null && x.equals(BeeConst.DOUBLE_ZERO);
   }
 
   /**
@@ -1813,42 +1773,8 @@ public class BeeUtils {
    * @param x value to check
    * @return true if {@code x==0}, otherwise false.
    */
-  public static boolean isZero(int x) {
-    return x == 0;
-  }
-
-  /**
-   * Checks if a Long value is zero.
-   * 
-   * @param x value to check
-   * @return true if {@code x == 0L}, otherwise false.
-   */
-  public static boolean isZero(long x) {
-    return x == 0L;
-  }
-
-  /**
-   * Checks if an Object is zero.
-   * 
-   * @param x value to check
-   * @return true if and Object is zero, otherwise false.
-   */
-  public static boolean isZero(Object x) {
-    if (x instanceof Number) {
-      return ((Number) x).doubleValue() == Double.valueOf(BeeConst.DOUBLE_ZERO);
-    } else {
-      return false;
-    }
-  }
-
-  /**
-   * Checks if a Short value is zero.
-   * 
-   * @param x value to check
-   * @return true if x is zero, otherwise false.
-   */
-  public static boolean isZero(short x) {
-    return x == 0;
+  public static boolean isZero(Integer x) {
+    return x != null && x == 0;
   }
 
   /**

@@ -140,7 +140,7 @@ public class TaskList {
           public void onClick(ClickEvent event) {
             if (getGridPresenter() != null) {
               updateFilter(getGridPresenter());
-              getGridPresenter().requery(true);
+              getGridPresenter().refresh(true);
             }
           }
         });
@@ -187,11 +187,6 @@ public class TaskList {
 
     @Override
     public void beforeRefresh(GridPresenter presenter) {
-      updateFilter(presenter);
-    }
-
-    @Override
-    public void beforeRequery(GridPresenter presenter) {
       updateFilter(presenter);
     }
 

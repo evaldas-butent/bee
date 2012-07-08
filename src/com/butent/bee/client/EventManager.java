@@ -7,6 +7,7 @@ import com.google.gwt.user.client.Window.ClosingHandler;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.Event.Type;
+import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.google.web.bindery.event.shared.SimpleEventBus;
 
@@ -35,29 +36,35 @@ import java.util.List;
 
 public class EventManager implements Module {
 
-  private final SimpleEventBus eventBus;
+  private final EventBus priorBus;
+  private final EventBus eventBus;
 
   private HandlerRegistration exitRegistry = null;
 
   public EventManager() {
+    this.priorBus = new SimpleEventBus();
     this.eventBus = new SimpleEventBus();
   }
 
-  public <H> HandlerRegistration addHandler(Type<H> type, H handler) {
+  public <H> HandlerRegistration addHandler(Type<H> type, H handler, boolean prior) {
     Assert.notNull(type);
     Assert.notNull(handler);
-    return eventBus.addHandler(type, handler);
+
+    return getBus(prior).addHandler(type, handler);
   }
 
-  public <H> HandlerRegistration addHandlerToSource(Type<H> type, Object source, H handler) {
+  public <H> HandlerRegistration addHandlerToSource(Type<H> type, Object source, H handler,
+      boolean prior) {
     Assert.notNull(type);
     Assert.notNull(source);
     Assert.notNull(handler);
-    return eventBus.addHandlerToSource(type, source, handler);
+
+    return getBus(prior).addHandlerToSource(type, source, handler);
   }
 
   public boolean dispatchService(Stage stage, Widget source) {
     Assert.notNull(stage);
+
     return dispatchService(stage.getService(), stage.getStage(), source);
   }
 
@@ -89,12 +96,16 @@ public class EventManager implements Module {
 
   public void fireEvent(Event<?> event) {
     Assert.notNull(event);
+
+    priorBus.fireEvent(event);
     eventBus.fireEvent(event);
   }
 
   public void fireEventFromSource(Event<?> event, Object source) {
     Assert.notNull(event);
     Assert.notNull(source);
+
+    priorBus.fireEventFromSource(event, source);
     eventBus.fireEventFromSource(event, source);
   }
 
@@ -122,29 +133,32 @@ public class EventManager implements Module {
   public void initEvents() {
   }
 
-  public HandlerRegistration registerBookmarkHandler(BookmarkEvent.Handler handler) {
-    return BookmarkEvent.register(eventBus, handler);
+  public HandlerRegistration registerBookmarkHandler(BookmarkEvent.Handler handler, boolean prior) {
+    return BookmarkEvent.register(getBus(prior), handler);
   }
 
-  public HandlerRegistration registerCellUpdateHandler(CellUpdateEvent.Handler handler) {
-    return CellUpdateEvent.register(eventBus, handler);
+  public HandlerRegistration registerCellUpdateHandler(CellUpdateEvent.Handler handler,
+      boolean prior) {
+    return CellUpdateEvent.register(getBus(prior), handler);
   }
 
-  public Collection<HandlerRegistration> registerDataHandler(HandlesAllDataEvents handler) {
+  public Collection<HandlerRegistration> registerDataHandler(HandlesAllDataEvents handler,
+      boolean prior) {
     Assert.notNull(handler);
 
     List<HandlerRegistration> registry = Lists.newArrayList();
-    registry.add(registerCellUpdateHandler(handler));
-    registry.add(registerMultiDeleteHandler(handler));
-    registry.add(registerRowDeleteHandler(handler));
-    registry.add(registerRowInsertHandler(handler));
-    registry.add(registerRowUpdateHandler(handler));
+    registry.add(registerCellUpdateHandler(handler, prior));
+    registry.add(registerMultiDeleteHandler(handler, prior));
+    registry.add(registerRowDeleteHandler(handler, prior));
+    registry.add(registerRowInsertHandler(handler, prior));
+    registry.add(registerRowUpdateHandler(handler, prior));
 
     return registry;
   }
 
   public void registerExitHandler(final String message) {
     Assert.notNull(message);
+
     removeExitHandler();
     this.exitRegistry = Window.addWindowClosingHandler(new ClosingHandler() {
       public void onWindowClosing(ClosingEvent event) {
@@ -153,28 +167,34 @@ public class EventManager implements Module {
     });
   }
 
-  public HandlerRegistration registerMultiDeleteHandler(MultiDeleteEvent.Handler handler) {
-    return MultiDeleteEvent.register(eventBus, handler);
+  public HandlerRegistration registerMultiDeleteHandler(MultiDeleteEvent.Handler handler,
+      boolean prior) {
+    return MultiDeleteEvent.register(getBus(prior), handler);
   }
 
-  public HandlerRegistration registerParentRowHandler(Object source, ParentRowEvent.Handler handler) {
-    return ParentRowEvent.register(eventBus, source, handler);
+  public HandlerRegistration registerParentRowHandler(Object source, ParentRowEvent.Handler handler,
+      boolean prior) {
+    return ParentRowEvent.register(getBus(prior), source, handler);
   }
 
-  public HandlerRegistration registerRowActionHandler(RowActionEvent.Handler handler) {
-    return RowActionEvent.register(eventBus, handler);
+  public HandlerRegistration registerRowActionHandler(RowActionEvent.Handler handler,
+      boolean prior) {
+    return RowActionEvent.register(getBus(prior), handler);
   }
 
-  public HandlerRegistration registerRowDeleteHandler(RowDeleteEvent.Handler handler) {
-    return RowDeleteEvent.register(eventBus, handler);
+  public HandlerRegistration registerRowDeleteHandler(RowDeleteEvent.Handler handler,
+      boolean prior) {
+    return RowDeleteEvent.register(getBus(prior), handler);
   }
 
-  public HandlerRegistration registerRowInsertHandler(RowInsertEvent.Handler handler) {
-    return RowInsertEvent.register(eventBus, handler);
+  public HandlerRegistration registerRowInsertHandler(RowInsertEvent.Handler handler,
+      boolean prior) {
+    return RowInsertEvent.register(getBus(prior), handler);
   }
 
-  public HandlerRegistration registerRowUpdateHandler(RowUpdateEvent.Handler handler) {
-    return RowUpdateEvent.register(eventBus, handler);
+  public HandlerRegistration registerRowUpdateHandler(RowUpdateEvent.Handler handler,
+      boolean prior) {
+    return RowUpdateEvent.register(getBus(prior), handler);
   }
 
   public void removeExitHandler() {
@@ -315,5 +335,9 @@ public class EventManager implements Module {
       Global.showError("Unknown UI service", svc);
       return false;
     }
+  }
+  
+  private EventBus getBus(boolean prior) {
+    return prior ? priorBus : eventBus;
   }
 }

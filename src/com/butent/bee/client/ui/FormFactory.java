@@ -318,7 +318,7 @@ public class FormFactory {
       BeeRowSet rowSet = formCallback.getRowSet();
       if (rowSet != null) {
         showForm(formDescription, viewName, rowSet.getNumberOfRows(), rowSet,
-            Provider.Type.LOCAL, formCallback);
+            Provider.Type.LOCAL, CachingPolicy.NONE, formCallback);
         return;
       }
     }
@@ -404,38 +404,49 @@ public class FormFactory {
 
   private static void getInitialRowSet(final String viewName, final int rowCount,
       final FormDescription formDescription, final FormCallback callback) {
+
     int limit = formDescription.getAsyncThreshold();
 
     final Provider.Type providerType;
+    final CachingPolicy cachingPolicy;
+    
     if (rowCount >= limit) {
       providerType = Provider.Type.ASYNC;
+      cachingPolicy = CachingPolicy.FULL;
+
       if (rowCount <= DataUtils.getMaxInitialRowSetSize()) {
         limit = BeeConst.UNDEF;
       } else {
         limit = DataUtils.getMaxInitialRowSetSize();
       }
+
     } else {
       providerType = Provider.Type.CACHED;
+      cachingPolicy = CachingPolicy.NONE;
       limit = BeeConst.UNDEF;
     }
 
-    Queries.getRowSet(viewName, null, null, null, 0, limit, CachingPolicy.FULL,
+    Queries.getRowSet(viewName, null, null, null, 0, limit, cachingPolicy,
         new Queries.RowSetCallback() {
           public void onSuccess(final BeeRowSet rowSet) {
             int rc = Math.max(rowCount, rowSet.getNumberOfRows());
-            showForm(formDescription, viewName, rc, rowSet, providerType, callback);
+            showForm(formDescription, viewName, rc, rowSet, providerType, cachingPolicy, callback);
           }
         });
   }
 
   private static void showForm(FormDescription formDescription, FormCallback callback) {
-    showForm(formDescription, null, BeeConst.UNDEF, null, Provider.Type.CACHED, callback);
+    showForm(formDescription, null, BeeConst.UNDEF, null, Provider.Type.CACHED,
+        CachingPolicy.NONE, callback);
   }
 
   private static void showForm(FormDescription formDescription, String viewName, int rowCount,
-      BeeRowSet rowSet, Provider.Type providerType, FormCallback callback) {
+      BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
+      FormCallback callback) {
+
     FormPresenter presenter = new FormPresenter(formDescription, viewName, rowCount, rowSet,
-        providerType, callback);
+        providerType, cachingPolicy, callback);
+    
     if (callback != null) {
       callback.onShow(presenter);
     }

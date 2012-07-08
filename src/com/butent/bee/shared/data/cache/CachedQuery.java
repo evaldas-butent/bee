@@ -12,35 +12,17 @@ import com.butent.bee.shared.utils.Property;
 
 import java.util.List;
 
-/**
- * Enables storing frequently used queries and their results into memory.
- */
-
 class CachedQuery extends SimpleCache<Integer, Long> {
-  static int defaultMaxSize = 0xffff;
-  static ReplacementPolicy defaultReplacementPolicy = ReplacementPolicy.FIRST_IN_FIRST_OUT;
 
   private final String strFilter;
   private final String strOrder;
 
   private int rowCount = BeeConst.UNDEF;
 
-  CachedQuery(Filter filter, Order order) {
-    this(filter, order, defaultMaxSize, defaultReplacementPolicy);
-  }
-
-  CachedQuery(Filter filter, Order order, int maxSize) {
-    this(filter, order, maxSize, defaultReplacementPolicy);
-  }
-
   CachedQuery(Filter filter, Order order, int maxSize, ReplacementPolicy replacementPolicy) {
     super(maxSize, replacementPolicy);
     this.strFilter = transformFilter(filter);
     this.strOrder = transformOrder(order);
-  }
-
-  CachedQuery(Filter filter, Order order, ReplacementPolicy replacementPolicy) {
-    this(filter, order, defaultMaxSize, replacementPolicy);
   }
 
   @Override

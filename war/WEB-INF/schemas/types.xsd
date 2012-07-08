@@ -128,4 +128,22 @@
   <xs:simpleType name="nameList">
     <xs:list itemType="nameType" />
   </xs:simpleType>
+  
+  <xs:simpleType name="replacementPolicy">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="LEAST_FREQUENTLY_USED" />
+      <xs:enumeration value="LEAST_RECENTLY_USED" />
+      <xs:enumeration value="LEAST_RECENTLY_USED_2" />
+      <xs:enumeration value="TWO_QUEUES" />
+      <xs:enumeration value="ADAPTIVE_REPLACEMENT_CACHE" />
+      <xs:enumeration value="MOST_RECENTLY_USED" />
+      <xs:enumeration value="FIRST_IN_FIRST_OUT" />
+      <xs:enumeration value="SECOND_CHANCE" />
+      <xs:enumeration value="CLOCK" />
+      <xs:enumeration value="SIMPLE_TIME_BASED" />
+      <xs:enumeration value="EXTENDED_TIME_BASED" />
+      <xs:enumeration value="SLIDING_TIME_BASED" />
+      <xs:enumeration value="RANDOM" />
+    </xs:restriction>
+  </xs:simpleType>
 </xs:schema>

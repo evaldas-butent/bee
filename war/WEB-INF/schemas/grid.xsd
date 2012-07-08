@@ -46,7 +46,7 @@
     <xs:attribute name="hasHeaders" type="xs:boolean" default="true" />
     <xs:attribute name="hasFooters" type="xs:boolean" default="true" />
     <xs:attribute name="footerEvents" type="ui:eventList" />
-    <xs:attribute name="cacheData" type="xs:boolean" default="true" />
+    <xs:attribute name="cacheData" type="xs:boolean" />
     <xs:attribute name="cacheDescription" type="xs:boolean" default="true" />
     <xs:attribute name="asyncThreshold" type="xs:int" default="100" />
     <xs:attribute name="pagingThreshold" type="xs:nonNegativeInteger" default="20" />

@@ -518,12 +518,12 @@ public class Global implements Module {
   }-*/;
 
   private void initCache() {
-    BeeKeeper.getBus().registerDataHandler(getCache());
+    BeeKeeper.getBus().registerDataHandler(getCache(), true);
   }
 
   private void initFavorites() {
-    BeeKeeper.getBus().registerRowDeleteHandler(getFavorites());
-    BeeKeeper.getBus().registerMultiDeleteHandler(getFavorites());
+    BeeKeeper.getBus().registerRowDeleteHandler(getFavorites(), false);
+    BeeKeeper.getBus().registerMultiDeleteHandler(getFavorites(), false);
   }
   
   private void initImages() {

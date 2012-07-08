@@ -135,7 +135,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         }
         break;
 
-      case REQUERY:
+      case REFRESH:
         requery();
         break;
 

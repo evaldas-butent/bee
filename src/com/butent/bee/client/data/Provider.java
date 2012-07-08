@@ -47,8 +47,6 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
 
-  private boolean cacheEnabled = true;
-
   private final Filter immutableFilter;
   private final Map<String, Filter> parentFilters = Maps.newHashMap();
   private Filter userFilter = null;
@@ -76,7 +74,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     }));
 
     this.handlerRegistry.add(display.addSortHandler(this));
-    this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this));
+    this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
   }
 
   public void clear() {
@@ -84,14 +82,6 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     getDisplay().setPageStart(0, false, false);
     getDisplay().setRowCount(0, true);
     getDisplay().setRowData(null, true);
-  }
-
-  public void disableCache() {
-    setCacheEnabled(false);
-  }
-
-  public void enableCache() {
-    setCacheEnabled(true);
   }
 
   public int getColumnIndex(String columnId) {
@@ -146,35 +136,17 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     return viewName;
   }
 
-  public boolean isCacheEnabled() {
-    return cacheEnabled;
-  }
-
   public void onCellUpdate(CellUpdateEvent event) {
     if (BeeUtils.same(getViewName(), event.getViewName())) {
       getDisplay().onCellUpdate(event);
     }
   }
 
-  public abstract void onFilterChange(Filter newFilter);
+  public abstract void onFilterChange(Filter newFilter, boolean updateActiveRow);
 
-  public void onMultiDelete(MultiDeleteEvent event) {
-    if (BeeUtils.same(getViewName(), event.getViewName())) {
-      disableCache();
-      getDisplay().onMultiDelete(event);
-      onDelete();
-      enableCache();
-    }
-  }
+  public abstract void onMultiDelete(MultiDeleteEvent event);
 
-  public void onRowDelete(RowDeleteEvent event) {
-    if (BeeUtils.same(getViewName(), event.getViewName())) {
-      disableCache();
-      getDisplay().onRowDelete(event);
-      onDelete();
-      enableCache();
-    }
-  }
+  public abstract void onRowDelete(RowDeleteEvent event);
 
   public abstract void onRowInsert(RowInsertEvent event);
 
@@ -195,12 +167,6 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   }
 
   public abstract void refresh(boolean updateActiveRow);
-
-  public abstract void requery(boolean updateActiveRow);
-
-  public void setCacheEnabled(boolean cacheEnabled) {
-    this.cacheEnabled = cacheEnabled;
-  }
 
   public void setOrder(Order order) {
     this.order = order;
@@ -244,8 +210,6 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   protected boolean hasPaging() {
     return getPageSize() > 0;
   }
-
-  protected abstract void onDelete();
 
   protected abstract void onRequest(boolean updateActiveRow);
 

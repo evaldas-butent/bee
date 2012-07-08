@@ -89,6 +89,11 @@ public class XmlView {
   @XmlAttribute
   public String newRowCaption;
 
+  @XmlAttribute
+  public Integer cacheMaximumSize;
+  @XmlAttribute
+  public String cacheEviction;
+  
   @XmlElementWrapper(name = "Columns", namespace = DataUtils.VIEW_NAMESPACE)
   @XmlElementRef
   public Collection<XmlColumn> columns;

@@ -32,11 +32,11 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
   }
 
   public static HandlerRegistration register(DataSelector selector, Handler handler) {
-    return BeeKeeper.getBus().addHandlerToSource(getType(), selector, handler);
+    return BeeKeeper.getBus().addHandlerToSource(getType(), selector, handler, false);
   }
   
   public static HandlerRegistration register(Handler handler) {
-    return BeeKeeper.getBus().addHandler(getType(), handler);
+    return BeeKeeper.getBus().addHandler(getType(), handler, false);
   }
 
   private final State state;

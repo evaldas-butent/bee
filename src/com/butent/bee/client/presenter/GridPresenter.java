@@ -155,21 +155,16 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private Filter lastFilter = null;
 
   public GridPresenter(GridDescription gridDescription, int rowCount, BeeRowSet rowSet,
-      Provider.Type providerType, Collection<UiOption> uiOptions) {
-    this(gridDescription, rowCount, rowSet, providerType, uiOptions, null, null, null, null);
+      Provider.Type providerType, CachingPolicy cachingPolicy, Collection<UiOption> uiOptions) {
+    this(gridDescription, rowCount, rowSet, providerType, cachingPolicy, uiOptions,
+        null, null, null, null, null);
   }
 
   public GridPresenter(GridDescription gridDescription, int rowCount, BeeRowSet rowSet,
-      Provider.Type providerType, Collection<UiOption> uiOptions, GridCallback gridCallback,
-      Filter immutableFilter, Map<String, Filter> initialFilters, Order order) {
-    this(gridDescription, rowCount, rowSet, providerType, uiOptions, gridCallback,
-        immutableFilter, initialFilters, order, null);
-  }
+      Provider.Type providerType, CachingPolicy cachingPolicy, Collection<UiOption> uiOptions,
+      GridCallback gridCallback, Filter immutableFilter, Map<String, Filter> initialFilters,
+      Order order, GridFactory.GridOptions gridOptions) {
 
-  public GridPresenter(GridDescription gridDescription, int rowCount, BeeRowSet rowSet,
-      Provider.Type providerType, Collection<UiOption> uiOptions, GridCallback gridCallback,
-      Filter immutableFilter, Map<String, Filter> initialFilters, Order order,
-      GridFactory.GridOptions gridOptions) {
     if (gridCallback != null) {
       gridCallback.setGridPresenter(this);
     }
@@ -179,8 +174,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     this.dataProvider = createProvider(gridContainer, gridDescription.getViewName(),
         rowSet.getColumns(), gridDescription.getIdName(), gridDescription.getVersionName(),
-        immutableFilter, initialFilters, order, rowSet, providerType,
-        gridDescription.getCachingPolicy());
+        immutableFilter, initialFilters, order, rowSet, providerType, cachingPolicy);
 
     bind();
   }
@@ -310,11 +304,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case REFRESH:
-        refresh();
-        break;
-
-      case REQUERY:
-        requery(true);
+        refresh(true);
         break;
 
       case BOOKMARK:
@@ -418,7 +408,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     getDataProvider().onUnload();
   }
 
-  public void refresh() {
+  public void refresh(boolean updateActiveRow) {
     if (getGridCallback() != null) {
       getGridCallback().beforeRefresh(this);
     }
@@ -426,19 +416,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     Filter filter = ViewHelper.getFilter(this, getDataProvider());
     if (filter != null && getGridView().getGrid().getRowCount() <= 0) {
       setLastFilter(null);
-      getDataProvider().onFilterChange(null);
+      getDataProvider().onFilterChange(null, updateActiveRow);
     } else if (Objects.equal(filter, getLastFilter())) {
-      getDataProvider().refresh(true);
+      getDataProvider().refresh(updateActiveRow);
     } else {
-      getDataProvider().onFilterChange(filter);
+      getDataProvider().onFilterChange(filter, updateActiveRow);
     }
-  }
-
-  public void requery(boolean updateActiveRow) {
-    if (getGridCallback() != null) {
-      getGridCallback().beforeRequery(this);
-    }
-    getDataProvider().requery(updateActiveRow);
   }
 
   private void afterDelete(long rowId) {
@@ -486,10 +469,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     switch (providerType) {
       case ASYNC:
         provider = new AsyncProvider(display, notificationListener, viewName, columns,
-            idColumnName, versionColumnName, immutableFilter);
-        if (cachingPolicy != null) {
-          ((AsyncProvider) provider).setCachingPolicy(cachingPolicy);
-        }
+            idColumnName, versionColumnName, immutableFilter, cachingPolicy);
         break;
 
       case CACHED:
@@ -612,7 +592,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       showInfo("filtras nepasikeitė", BeeUtils.transform(filter));
     } else {
       setLastFilter(filter);
-      getDataProvider().onFilterChange(filter);
+      getDataProvider().onFilterChange(filter, true);
     }
   }
 }

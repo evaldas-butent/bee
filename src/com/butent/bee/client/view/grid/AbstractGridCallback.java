@@ -87,9 +87,6 @@ public class AbstractGridCallback implements GridCallback {
   public void beforeRefresh(GridPresenter presenter) {
   }
 
-  public void beforeRequery(GridPresenter presenter) {
-  }
-
   public Widget createCustomWidget(String name, Element description) {
     return null;
   }

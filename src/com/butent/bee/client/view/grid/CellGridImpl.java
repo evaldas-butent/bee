@@ -1043,10 +1043,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   public void onAction(ActionEvent event) {
     Assert.notNull(event);
-    if (event.contains(Action.REQUERY)) {
-      getViewPresenter().requery(true);
-    } else if (event.contains(Action.REFRESH)) {
-      getViewPresenter().refresh();
+    if (event.contains(Action.REFRESH)) {
+      getViewPresenter().refresh(true);
     }
 
     if (!BeeUtils.isEmpty(getActiveFormContainerId())) {

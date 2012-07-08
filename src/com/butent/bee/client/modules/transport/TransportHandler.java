@@ -243,7 +243,7 @@ public class TransportHandler {
           type = getSelectedType().getId();
         }
         getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(type));
-        getGridPresenter().requery(true);
+        getGridPresenter().refresh(true);
       }
     }
 
@@ -493,7 +493,7 @@ public class TransportHandler {
           model = getSelectedModel().getId();
         }
         getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(model));
-        getGridPresenter().requery(true);
+        getGridPresenter().refresh(true);
       }
     }
 

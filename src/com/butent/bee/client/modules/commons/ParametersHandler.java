@@ -80,7 +80,6 @@ public class ParametersHandler extends AbstractGridCallback {
 
     switch (action) {
       case REFRESH:
-      case REQUERY:
         requery();
         ok = false;
         break;

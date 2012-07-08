@@ -3,7 +3,6 @@ package com.butent.bee.shared.data.value;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
 
@@ -39,7 +38,7 @@ public class DecimalValue extends Value {
     if (isNull()) {
       return null;
     }
-    return !BeeUtils.isZero(value);
+    return !BigDecimal.ZERO.equals(value);
   }
 
   @Override

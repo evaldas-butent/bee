@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.client.BeeKeeper;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -107,11 +106,11 @@ public class CachedProvider extends Provider {
   }
 
   @Override
-  public void onFilterChange(Filter newFilter) {
+  public void onFilterChange(Filter newFilter, boolean updateActiveRow) {
     if (applyFilter(newFilter)) {
       getDisplay().setRowCount(getRowCount(), true);
       acceptFilter(newFilter);
-      updateDisplay(true);
+      updateDisplay(updateActiveRow);
     } else {
       rejectFilter(newFilter);
     }
@@ -123,7 +122,10 @@ public class CachedProvider extends Provider {
       for (RowInfo rowInfo : event.getRows()) {
         deleteRow(rowInfo.getId());
       }
-      super.onMultiDelete(event);
+      getDisplay().onMultiDelete(event);
+      getDisplay().setRowCount(getRowCount(), true);
+
+      onRequest(false);
     }
   }
 
@@ -131,7 +133,10 @@ public class CachedProvider extends Provider {
   public void onRowDelete(RowDeleteEvent event) {
     if (BeeUtils.same(event.getViewName(), getViewName())) {
       deleteRow(event.getRowId());
-      super.onRowDelete(event);
+      getDisplay().onRowDelete(event);
+      getDisplay().setRowCount(getRowCount(), true);
+
+      onRequest(false);
     }
   }
 
@@ -211,7 +216,6 @@ public class CachedProvider extends Provider {
     }
 
     startLoading();
-    Global.getCache().removeQuietly(name);
 
     final int oldPageSize = getPageSize();
     final int oldTableSize = getTable().getNumberOfRows();
@@ -232,17 +236,6 @@ public class CachedProvider extends Provider {
         updateDisplay(updateActiveRow);
       }
     });
-  }
-
-  @Override
-  public void requery(boolean updateActiveRow) {
-    refresh(updateActiveRow);
-  }
-
-  @Override
-  protected void onDelete() {
-    getDisplay().setRowCount(getRowCount(), true);
-    onRequest(false);
   }
 
   @Override

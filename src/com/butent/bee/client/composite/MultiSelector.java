@@ -18,6 +18,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
@@ -50,7 +51,9 @@ public class MultiSelector extends DialogBox {
     this.selectionCallback = selectionCallback;
     
     GridPresenter gp = new GridPresenter(createGridDescription(rowSet, columnNames),
-        rowSet.getNumberOfRows(), rowSet, Provider.Type.CACHED, EnumSet.of(UiOption.SELECTOR));
+        rowSet.getNumberOfRows(), rowSet, Provider.Type.CACHED, CachingPolicy.NONE,
+        EnumSet.of(UiOption.SELECTOR));
+
     setPresenter(gp);
     gp.setEventSource(getId());
     

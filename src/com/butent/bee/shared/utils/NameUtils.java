@@ -149,16 +149,24 @@ public class NameUtils {
     }
     E result = null;
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 4; i++) {
+      String input = (i == 1) ? normalizeEnumName(name) : name.trim();
+
       for (E constant : clazz.getEnumConstants()) {
         if (i == 0) {
-          if (BeeUtils.same(constant.name(), name)) {
+          if (BeeUtils.same(constant.name(), input)) {
             result = constant;
             break;
           }
 
         } else if (i == 1) {
-          if (BeeUtils.startsSame(constant.name(), name)) {
+          if (!input.isEmpty() && input.equals(normalizeEnumName(constant.name()))) {
+            result = constant;
+            break;
+          }
+
+        } else if (i == 2) {
+          if (BeeUtils.startsSame(constant.name(), input)) {
             if (result == null) {
               result = constant;
             } else {
@@ -168,7 +176,7 @@ public class NameUtils {
           }
 
         } else {
-          if (BeeUtils.context(name, constant.name())) {
+          if (BeeUtils.context(input, constant.name())) {
             if (result == null) {
               result = constant;
             } else {
@@ -268,6 +276,10 @@ public class NameUtils {
     } else {
       return obj.getClass().getName();
     }
+  }
+
+  private static String normalizeEnumName(String input) {
+    return CharMatcher.JAVA_LETTER_OR_DIGIT.retainFrom(input).toLowerCase();
   }
 
   private NameUtils() {

@@ -60,6 +60,7 @@ import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.PropertiesData;
 import com.butent.bee.shared.data.StringMatrix;
 import com.butent.bee.shared.data.TableColumn;
+import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
@@ -609,12 +610,15 @@ public class GridFactory {
   }
 
   private static void createPresenter(GridDescription gridDescription, int rowCount,
-      BeeRowSet rowSet, Provider.Type providerType, Collection<UiOption> uiOptions,
-      GridCallback gridCallback, Filter immutableFilter, Map<String, Filter> initialFilters,
+      BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
+      Collection<UiOption> uiOptions, GridCallback gridCallback,
+      Filter immutableFilter, Map<String, Filter> initialFilters,
       Order order, GridOptions gridOptions, PresenterCallback presenterCallback) {
 
     GridPresenter presenter = new GridPresenter(gridDescription, rowCount, rowSet, providerType,
-        uiOptions, gridCallback, immutableFilter, initialFilters, order, gridOptions);
+        cachingPolicy, uiOptions, gridCallback, immutableFilter, initialFilters, order,
+        gridOptions);
+
     if (gridCallback != null) {
       gridCallback.onShow(presenter);
     }
@@ -628,7 +632,7 @@ public class GridFactory {
     }
     return loadingWidget;
   }
-  
+
   private static void getInitialRowSet(final GridDescription gridDescription,
       final GridCallback gridCallback, final PresenterCallback presenterCallback,
       final Collection<UiOption> uiOptions, final GridOptions gridOptions) {
@@ -650,8 +654,8 @@ public class GridFactory {
         BeeKeeper.getLog().severe("grid", gridDescription.getName(), "has no initial data");
       } else {
         createPresenter(gridDescription, brs.getNumberOfRows(), brs, Provider.Type.LOCAL,
-            uiOptions, gridCallback, immutableFilter, initialFilters, order, gridOptions,
-            presenterCallback);
+            CachingPolicy.NONE, uiOptions, gridCallback, immutableFilter, initialFilters, order,
+            gridOptions, presenterCallback);
       }
       return;
     }
@@ -668,12 +672,16 @@ public class GridFactory {
     }
 
     final Provider.Type providerType;
+    final CachingPolicy cachingPolicy;
+
     if (threshold <= 0 || approximateRowCount > threshold) {
       providerType = Provider.Type.ASYNC;
+      cachingPolicy = gridDescription.getCachingPolicy(true);
     } else {
       providerType = Provider.Type.CACHED;
+      cachingPolicy = CachingPolicy.NONE;
     }
-    
+
     int limit;
     if (Provider.Type.CACHED.equals(providerType)) {
       limit = BeeConst.UNDEF;
@@ -694,8 +702,8 @@ public class GridFactory {
       queryOptions = null;
     }
 
-    Queries.getRowSet(viewName, null, queryFilter, order, 0, limit,
-        gridDescription.getCachingPolicy(), queryOptions, new Queries.RowSetCallback() {
+    Queries.getRowSet(viewName, null, queryFilter, order, 0, limit, cachingPolicy, queryOptions,
+        new Queries.RowSetCallback() {
           public void onSuccess(BeeRowSet rowSet) {
             Assert.notNull(rowSet);
 
@@ -704,8 +712,9 @@ public class GridFactory {
               rc = Math.max(rc, BeeUtils.toInt(rowSet.getTableProperty(Service.VAR_VIEW_SIZE)));
             }
 
-            createPresenter(gridDescription, rc, rowSet, providerType, uiOptions, gridCallback,
-                immutableFilter, initialFilters, order, gridOptions, presenterCallback);
+            createPresenter(gridDescription, rc, rowSet, providerType, cachingPolicy, uiOptions,
+                gridCallback, immutableFilter, initialFilters, order, gridOptions,
+                presenterCallback);
           }
         });
   }

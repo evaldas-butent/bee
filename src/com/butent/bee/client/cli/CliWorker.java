@@ -312,7 +312,7 @@ public class CliWorker {
       FormFactory.clearDescriptionCache();
       BeeKeeper.getLog().debugWithSeparator("form cache cleared");
     } else if (BeeUtils.startsSame(args, "cache")) {
-      Global.getCache().removeAll();
+      Global.getCache().clear();
       BeeKeeper.getLog().debugWithSeparator("cache cleared");
     } else if (BeeUtils.startsSame(args, "rpc")) {
       BeeKeeper.getRpc().getRpcList().clear();

@@ -203,7 +203,7 @@ public class DocumentHandler {
           category = getSelectedCategory().getId();
         }
         getGridPresenter().getDataProvider().setParentFilter(FILTER_KEY, getFilter(category));
-        getGridPresenter().requery(true);
+        getGridPresenter().refresh(true);
       }
     }
 

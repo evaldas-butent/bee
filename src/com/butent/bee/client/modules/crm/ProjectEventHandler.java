@@ -603,7 +603,7 @@ public class ProjectEventHandler {
   }
 
   private static void createRequest(ParameterList args, final ProjectDialog dialog,
-      final FormView form, final Set<Action> actions) {
+      final FormView form, final Set<Action> actions, final boolean refreshChildren) {
     if (dialog != null) {
       DomUtils.enableChildren(dialog, false);
     }
@@ -625,11 +625,8 @@ public class ProjectEventHandler {
             if (BeeUtils.contains(actions, Action.CLOSE)) {
               form.fireEvent(new ActionEvent(actions));
 
-            } else if (BeeUtils.contains(actions, Action.REQUERY)) {
-              form.updateRow(row, true);
-
             } else if (BeeUtils.contains(actions, Action.REFRESH)) {
-              form.updateRow(row, false);
+              form.updateRow(row, refreshChildren);
 
             } else {
               form.setActiveRow(row);
@@ -648,12 +645,8 @@ public class ProjectEventHandler {
 
             } else {
               form.getActiveRow().setValue(dataIndex, newValue);
-
-              if (BeeUtils.contains(actions, Action.REQUERY)) {
-                form.refresh(true);
-
-              } else if (BeeUtils.contains(actions, Action.REFRESH)) {
-                form.refresh(false);
+              if (BeeUtils.contains(actions, Action.REFRESH)) {
+                form.refresh(refreshChildren);
               }
             }
           } else {
@@ -729,7 +722,7 @@ public class ProjectEventHandler {
         }
         addEventArgs(form, args, event);
         args.addDataItem(CrmConstants.VAR_PROJECT_COMMENT, comment);
-        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REQUERY));
+        createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REFRESH), true);
       }
     });
     dialog.display();
@@ -741,7 +734,7 @@ public class ProjectEventHandler {
       public void execute() {
         ParameterList args = createArgs(ProjectEvent.ACTIVATED.name());
         addEventArgs(form, args, ProjectEvent.ACTIVATED);
-        createRequest(args, null, form, EnumSet.of(Action.CLOSE, Action.REQUERY));
+        createRequest(args, null, form, EnumSet.of(Action.CLOSE, Action.REFRESH), true);
       }
     });
   }
@@ -761,7 +754,7 @@ public class ProjectEventHandler {
         ParameterList args = createArgs(ProjectEvent.COMMENTED.name());
         args.addDataItem(CrmConstants.VAR_PROJECT_ID, form.getActiveRow().getId());
         args.addDataItem(CrmConstants.VAR_PROJECT_COMMENT, comment);
-        createRequest(args, dialog, form, EnumSet.of(Action.REQUERY));
+        createRequest(args, dialog, form, EnumSet.of(Action.REFRESH), true);
       }
     });
     dialog.display();
@@ -770,7 +763,7 @@ public class ProjectEventHandler {
   private static void doVisit(FormView form) {
     ParameterList args = createArgs(ProjectEvent.VISITED.name());
     args.addDataItem(CrmConstants.VAR_PROJECT_ID, form.getActiveRow().getId());
-    createRequest(args, null, form, null);
+    createRequest(args, null, form, null, false);
   }
 
   private ProjectEventHandler() {

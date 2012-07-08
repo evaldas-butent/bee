@@ -2043,7 +2043,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
 
     if (start != getPageStart()) {
-      setPageStart(start, true, true);
+      setPageStart(start, true, false);
     } else if (fireScopeChange) {
       fireScopeChange();
     }
@@ -2353,6 +2353,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private void deleteRow(long rowId) {
+    if (getRenderedRows().contains(rowId)) {
+      getRenderedRows().clear();
+    }
+
     if (isRowSelected(rowId)) {
       getSelectedRows().remove(rowId);
       fireSelectionCountChange();

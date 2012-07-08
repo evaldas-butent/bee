@@ -802,7 +802,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     this.rowCount = count;
 
     if (getPageStart() >= count) {
-      setPageStart(Math.max(count - 1, 0), true, true);
+      setPageStart(Math.max(count - 1, 0), true, false);
     } else if (fireScopeChange) {
       fireScopeChange();
     }
