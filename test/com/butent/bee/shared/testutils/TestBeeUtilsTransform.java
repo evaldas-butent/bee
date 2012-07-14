@@ -412,14 +412,12 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testIfString() {
-    assertEquals("test", beeUtils.ifString("test", "not"));
-    assertEquals("not", beeUtils.ifString(10, "not"));
-    assertEquals("not", beeUtils.ifString(null, "not"));
-    assertEquals("test", beeUtils.ifString("test", null));
-    assertEquals(null, beeUtils.ifString(10, null));
-    assertEquals("not", beeUtils.ifString("", "not"));
-    assertEquals(null, beeUtils.ifString("", null));
-    assertEquals("", beeUtils.ifString("", ""));
+    assertEquals("test", beeUtils.notEmpty("test", "not"));
+    assertEquals("not", beeUtils.notEmpty(null, "not"));
+    assertEquals("test", beeUtils.notEmpty("test", null));
+    assertEquals("not", beeUtils.notEmpty("", "not"));
+    assertEquals(null, beeUtils.notEmpty("", null));
+    assertEquals("", beeUtils.notEmpty("", ""));
   }
 
   @Test

@@ -72,7 +72,7 @@ public class ResourceEditor extends Composite implements HasId {
     double top = 0;
     double bottom = 0;
 
-    String caption = BeeUtils.ifString(resource.getName(), resource.getUri());
+    String caption = BeeUtils.notEmpty(resource.getName(), resource.getUri());
 
     if (!BeeUtils.isEmpty(caption)) {
       BeeLabel label = new BeeLabel(caption);

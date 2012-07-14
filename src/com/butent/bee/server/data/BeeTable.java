@@ -399,14 +399,14 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       String extAlias = null;
 
       String tblName = getName();
-      String alias = BeeUtils.ifString(tblAlias, tblName);
+      String alias = BeeUtils.notEmpty(tblAlias, tblName);
       String extTable = field.getStorageTable();
 
       for (IsFrom from : query.getFrom()) {
         Object src = from.getSource();
 
         if (src instanceof String && BeeUtils.same((String) src, extTable)) {
-          String tmpAlias = BeeUtils.ifString(from.getAlias(), extTable);
+          String tmpAlias = BeeUtils.notEmpty(from.getAlias(), extTable);
           SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
           if (from.getSqlString(builder)
@@ -555,14 +555,14 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
       if (isStateActive(state)) {
         String tblName = getName();
-        String alias = BeeUtils.ifString(tblAlias, tblName);
+        String alias = BeeUtils.notEmpty(tblAlias, tblName);
         String stateTable = getStateTable(state);
 
         for (IsFrom from : query.getFrom()) {
           Object src = from.getSource();
 
           if (src instanceof String && BeeUtils.same((String) src, stateTable)) {
-            String tmpAlias = BeeUtils.ifString(from.getAlias(), stateTable);
+            String tmpAlias = BeeUtils.notEmpty(from.getAlias(), stateTable);
             SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
             if (from.getSqlString(builder)
@@ -764,14 +764,14 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       String tranAlias = null;
 
       String tblName = getName();
-      String alias = BeeUtils.ifString(tblAlias, tblName);
+      String alias = BeeUtils.notEmpty(tblAlias, tblName);
       String tranTable = getTranslationTable(field);
 
       for (IsFrom from : query.getFrom()) {
         Object src = from.getSource();
 
         if (src instanceof String && BeeUtils.same((String) src, tranTable)) {
-          String tmpAlias = BeeUtils.ifString(from.getAlias(), tranTable);
+          String tmpAlias = BeeUtils.notEmpty(from.getAlias(), tranTable);
           SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
           if (from.getSqlString(builder)

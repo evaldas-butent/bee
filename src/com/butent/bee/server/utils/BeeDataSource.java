@@ -244,7 +244,7 @@ public class BeeDataSource implements Transformable {
 
       v = BeeUtils.concat(null, NameUtils.addName("Max", rs.getInt("MAX_LEN")),
           NameUtils.addName("Default", rs.getString("DEFAULT_VALUE")), rs.getString("DESCRIPTION"));
-      PropertyUtils.addExtended(lst, "Client Property", k, BeeUtils.ifString(v, "(empty)"));
+      PropertyUtils.addExtended(lst, "Client Property", k, BeeUtils.notEmpty(v, "(empty)"));
     }
     rs.close();
 
@@ -270,7 +270,7 @@ public class BeeDataSource implements Transformable {
 
         v = BeeUtils.concat(null, NameUtils.addName("Cat", rs.getString("FUNCTION_CAT")),
             NameUtils.addName("Schem", rs.getString("FUNCTION_SCHEM")));
-        PropertyUtils.addExtended(lst, "Function", k, BeeUtils.ifString(v, k));
+        PropertyUtils.addExtended(lst, "Function", k, BeeUtils.notEmpty(v, k));
       }
       rs.close();
     }
@@ -296,7 +296,7 @@ public class BeeDataSource implements Transformable {
 
         v = BeeUtils.concat(null, NameUtils.addName("Cat", rs.getString("PROCEDURE_CAT")),
             NameUtils.addName("Schem", rs.getString("PROCEDURE_SCHEM")));
-        PropertyUtils.addExtended(lst, "Procedure", k, BeeUtils.ifString(v, k));
+        PropertyUtils.addExtended(lst, "Procedure", k, BeeUtils.notEmpty(v, k));
       }
       rs.close();
     }

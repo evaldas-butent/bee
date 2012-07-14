@@ -225,7 +225,7 @@ public class Toggle extends CustomButton implements Editor {
 
   private void init(String styleName) {
     DomUtils.createId(this, getIdPrefix());
-    setStyleName(BeeUtils.ifString(styleName, "bee-Toggle"));
+    setStyleName(BeeUtils.notEmpty(styleName, "bee-Toggle"));
   }
 
   private void initSource(HasBooleanValue src) {

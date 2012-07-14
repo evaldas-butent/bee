@@ -151,7 +151,7 @@ public class UserData implements BeeSerializable {
   }
 
   public String getUserSign() {
-    return BeeUtils.ifString(BeeUtils.concat(1, getFirstName(), getLastName()), getLogin());
+    return BeeUtils.notEmpty(BeeUtils.concat(1, getFirstName(), getLastName()), getLogin());
   }
 
   public boolean hasEventRight(String object, RightsState state) {

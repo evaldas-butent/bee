@@ -2,8 +2,9 @@ package com.butent.bee.client.logging;
 
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.user.client.ui.HasWidgets;
 
+import com.butent.bee.client.Settings;
+import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -18,6 +19,7 @@ import java.util.logging.LogRecord;
  */
 
 public class LogWidgetHandler extends Handler {
+
   private static final String STYLENAME_DEFAULT = "bee-LogRecord";
   private static final String STYLENAME_SEPARATOR = "bee-LogSeparator";
 
@@ -29,30 +31,22 @@ public class LogWidgetHandler extends Handler {
     return Level.ALL;
   }
 
-  private HasWidgets container;
+  private final HasIndexedWidgets container;
+  
+  private final int capacity;
 
   private int counter = 0;
 
-  public LogWidgetHandler() {
-    super();
+  public LogWidgetHandler(HasIndexedWidgets container) {
+    this(container, getDefaultFormatter(), getDefaultLevel());
   }
 
-  public LogWidgetHandler(HasWidgets cont) {
-    this(cont, getDefaultFormatter(), getDefaultLevel());
-  }
+  public LogWidgetHandler(HasIndexedWidgets container, Formatter formatter, Level level) {
+    this.container = container;
+    this.capacity = Settings.getLogCapacity(); 
 
-  public LogWidgetHandler(HasWidgets cont, Formatter format) {
-    this(cont, format, getDefaultLevel());
-  }
-
-  public LogWidgetHandler(HasWidgets cont, Formatter format, Level lvl) {
-    this.container = cont;
-    setFormatter(format);
-    setLevel(lvl);
-  }
-
-  public LogWidgetHandler(HasWidgets cont, Level lvl) {
-    this(cont, getDefaultFormatter(), lvl);
+    setFormatter(formatter);
+    setLevel(level);
   }
 
   public void clear() {
@@ -76,6 +70,10 @@ public class LogWidgetHandler extends Handler {
     Formatter frmt = getFormatter();
     if (frmt == null) {
       return;
+    }
+    
+    if (capacity > 0 && container.getWidgetCount() >= capacity) {
+      container.remove(0);
     }
 
     if (frmt instanceof LogFormatter && ((LogFormatter) frmt).isSeparator(record)) {

@@ -30,7 +30,7 @@ import java.util.Map;
  * Enables to manage ranges of data shown in user interface tables.
  */
 
-public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvents, HasViewName {
+public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvents, HasViewName, DataRequestEvent.Handler {
 
   public enum Type {
     ASYNC, CACHED, LOCAL
@@ -67,11 +67,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     
     this.immutableFilter = immutableFilter;
 
-    this.handlerRegistry.add(display.addDataRequestHandler(new DataRequestEvent.Handler() {
-      public void onDataRequest(DataRequestEvent event) {
-        onRequest(false);
-      }
-    }));
+    this.handlerRegistry.add(display.addDataRequestHandler(this));
 
     this.handlerRegistry.add(display.addSortHandler(this));
     this.handlerRegistry.addAll(BeeKeeper.getBus().registerDataHandler(this, false));
@@ -142,6 +138,10 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     }
   }
 
+  public void onDataRequest(DataRequestEvent event) {
+    onRequest(false);
+  }
+  
   public abstract void onFilterChange(Filter newFilter, boolean updateActiveRow);
 
   public abstract void onMultiDelete(MultiDeleteEvent event);

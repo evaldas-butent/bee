@@ -182,12 +182,12 @@ public class BeeServlet extends HttpServlet {
 
       resp.setHeader(Service.RPC_VAR_CTP, ctp.transform());
 
-      String mt = BeeUtils.ifString(buff.getMediaType(), CommUtils.getMediaType(ctp));
+      String mt = BeeUtils.notEmpty(buff.getMediaType(), CommUtils.getMediaType(ctp));
       if (!BeeUtils.isEmpty(mt)) {
         resp.setContentType(mt);
       }
 
-      String ce = BeeUtils.ifString(buff.getCharacterEncoding(),
+      String ce = BeeUtils.notEmpty(buff.getCharacterEncoding(),
           CommUtils.getCharacterEncoding(ctp));
       if (!BeeUtils.isEmpty(ce)) {
         resp.setCharacterEncoding(ce);

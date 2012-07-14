@@ -5,9 +5,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.Ranges;
+import com.google.gwt.user.client.Timer;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -64,7 +66,6 @@ public class AsyncProvider extends Provider {
             getPageStart(), getPageSize());
         return;
       }
-
       updateDisplay(rowSet, getQueryOffset(), updateActiveRow());
     }
 
@@ -108,14 +109,90 @@ public class AsyncProvider extends Provider {
       return updateActiveRow;
     }
   }
+  
+  private class RequestScheduler extends Timer {
+    private Filter queryFilter;
+    private Order queryOrder;
+    
+    private int queryOffset;
+    private int queryLimit;
+    
+    private CachingPolicy caching;
+    
+    private Callback callback; 
+    
+    private boolean active = false;
+    private long lastTime = 0;
+    
+    @Override
+    public void cancel() {
+      if (isActive()) {
+        super.cancel();
+        setActive(false);
+      }
+    }
+
+    @Override
+    public void run() {
+      int rpcId = Queries.getRowSet(getViewName(), null, queryFilter, queryOrder,
+          queryOffset, queryLimit, caching, callback);
+
+      if (!Queries.isResponseFromCache(rpcId)) {
+        startLoading();
+        callback.setRpcId(rpcId);
+        pendingRequests.put(rpcId, callback);
+      }
+    }
+
+    private long getLastTime() {
+      return lastTime;
+    }
+
+    private boolean isActive() {
+      return active;
+    }
+
+    private void scheduleQuery(Filter flt, Order ord, int offset, int limit, CachingPolicy cp,
+        Callback cb) {
+      cancel();
+
+      this.queryFilter = flt;
+      this.queryOrder = ord;
+      this.queryOffset = offset;
+      this.queryLimit = limit;
+      this.caching = cp;
+      this.callback = cb;
+      
+      long now = System.currentTimeMillis();
+      long last = getLastTime();
+      setLastTime(now);
+
+      if (now - last < sensitivityMillis) {
+        schedule(sensitivityMillis);
+        setActive(true);
+      } else {
+        run();
+      }
+    }
+
+    private void setActive(boolean active) {
+      this.active = active;
+    }
+
+    private void setLastTime(long lastTime) {
+      this.lastTime = lastTime;
+    }
+  }
+  
+  private static final int DEFAULT_SENSITIVITY_MILLIS = 300;
+  private static int sensitivityMillis = 0;
 
   private final CachingPolicy cachingPolicy;
 
   private final Map<Integer, Callback> pendingRequests = Maps.newLinkedHashMap();
+  private final RequestScheduler requestScheduler = new RequestScheduler();
 
   private int lastOffset = BeeConst.UNDEF;
-
-  private final boolean debug = false;
 
   public AsyncProvider(HasDataTable display, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
@@ -123,6 +200,11 @@ public class AsyncProvider extends Provider {
     super(display, notificationListener, viewName, columns, idColumnName, versionColumnName,
         immutableFilter);
     this.cachingPolicy = cachingPolicy;
+    
+    if (sensitivityMillis <= 0) {
+      sensitivityMillis = BeeUtils.positive(Settings.getProviderSensitivityMillis(),
+          DEFAULT_SENSITIVITY_MILLIS);
+    }
   }
 
   @Override
@@ -189,6 +271,12 @@ public class AsyncProvider extends Provider {
   }
 
   @Override
+  public void onUnload() {
+    resetRequests();
+    super.onUnload();
+  }
+
+  @Override
   public void refresh(final boolean updateActiveRow) {
     resetRequests();
     Global.getCache().remove(getViewName());
@@ -218,6 +306,7 @@ public class AsyncProvider extends Provider {
     Range<Integer> displayRange = createRange(offset, limit);
 
     if (limit > 0 && !pendingRequests.isEmpty()) {
+      requestScheduler.cancel();
       Integer requestId = null;
 
       for (Map.Entry<Integer, Callback> entry : pendingRequests.entrySet()) {
@@ -229,9 +318,6 @@ public class AsyncProvider extends Provider {
             requestId = entry.getKey();
             break;
           } else {
-            if (debug) {
-              BeeKeeper.getLog().debug("updated", entry.getKey(), offset, limit);
-            }
             return;
           }
         }
@@ -243,9 +329,6 @@ public class AsyncProvider extends Provider {
           if (!requestId.equals(id)) {
             BeeKeeper.getRpc().cancelRequest(id);
             pendingRequests.remove(id);
-            if (debug) {
-              BeeKeeper.getLog().debug("canceled", id);
-            }
           }
         }
         return;
@@ -261,9 +344,7 @@ public class AsyncProvider extends Provider {
     if (caching != null && caching.doRead()) {
       BeeRowSet rowSet = Global.getCache().getRowSet(getViewName(), flt, ord, offset, limit);
       if (rowSet != null) {
-        if (debug) {
-          BeeKeeper.getLog().debug("cache", offset, limit);
-        }
+        requestScheduler.cancel();
         updateDisplay(rowSet, offset, updateActiveRow);
         return;
       }
@@ -286,18 +367,8 @@ public class AsyncProvider extends Provider {
 
     Range<Integer> queryRange = createRange(queryOffset, queryLimit);
     Callback callback = new Callback(queryRange, displayRange, updateActiveRow);
-
-    int rpcId = Queries.getRowSet(getViewName(), null, flt, ord,
-        queryOffset, queryLimit, caching, callback);
-
-    if (!Queries.isResponseFromCache(rpcId)) {
-      startLoading();
-      callback.setRpcId(rpcId);
-      pendingRequests.put(rpcId, callback);
-      if (debug) {
-        BeeKeeper.getLog().debug("pending", rpcId, offset, limit);
-      }
-    }
+    
+    requestScheduler.scheduleQuery(flt, ord, queryOffset, queryLimit, caching, callback);
   }
 
   private void cancelPendingRequests() {
@@ -332,7 +403,7 @@ public class AsyncProvider extends Provider {
   private int getRowCount() {
     return getDisplay().getRowCount();
   }
-  
+
   private void onRowCount(Integer rowCount, boolean updateActiveRow) {
     if (BeeUtils.isPositive(rowCount)) {
       getDisplay().setRowCount(rowCount, true);
@@ -344,7 +415,9 @@ public class AsyncProvider extends Provider {
   }
 
   private void resetRequests() {
+    requestScheduler.cancel();
     cancelPendingRequests();
+
     setLastOffset(BeeConst.UNDEF);
   }
 
@@ -380,10 +453,6 @@ public class AsyncProvider extends Provider {
       } else {
         rows = Lists.newArrayList();
       }
-    }
-
-    if (debug) {
-      BeeKeeper.getLog().debug(queryOffset, displayOffset, displayLimit, rowCount, rows.size());
     }
 
     if (!hasPaging()) {

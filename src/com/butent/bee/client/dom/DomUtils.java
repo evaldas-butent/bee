@@ -359,7 +359,7 @@ public class DomUtils {
 
     String id = elem.getId();
     if (BeeUtils.isEmpty(id)) {
-      id = createId(elem, BeeUtils.ifString(prefix, DEFAULT_ID_PREFIX));
+      id = createId(elem, BeeUtils.notEmpty(prefix, DEFAULT_ID_PREFIX));
     }
     return id;
   }

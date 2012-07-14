@@ -594,7 +594,7 @@ public class JdbcUtils {
     try {
       col.setIndex(idx);
       String label = rsmd.getColumnLabel(idx);
-      col.setId(BeeUtils.ifString(label, rsmd.getColumnName(idx)));
+      col.setId(BeeUtils.notEmpty(label, rsmd.getColumnName(idx)));
       col.setLabel(label);
 
       col.setType(sqlTypeToValueType(rsmd.getColumnType(idx)));

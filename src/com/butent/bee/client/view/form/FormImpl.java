@@ -323,7 +323,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       boolean addStyle, FormCallback callback) {
     Assert.notNull(formDescription);
     
-    setViewName(BeeUtils.ifString(view, formDescription.getViewName()));
+    setViewName(BeeUtils.notEmpty(view, formDescription.getViewName()));
     setDataColumns(dataCols);
     setHasData(!BeeUtils.isEmpty(dataCols));
 

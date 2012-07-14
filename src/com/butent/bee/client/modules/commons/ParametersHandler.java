@@ -167,10 +167,10 @@ public class ParametersHandler extends AbstractGridCallback {
       data.put(cols.get(i).getId(), newValues.get(i));
     }
     update(gridView, id, new BeeParameter(module,
-        BeeUtils.ifString(data.get(NAME), prm.getName()),
-        BeeUtils.ifString(data.get(TYPE), prm.getType()),
-        BeeUtils.ifString(data.get(VALUE), prm.getValue()),
-        BeeUtils.ifString(data.get(DESCRIPTION), prm.getDescription())));
+        BeeUtils.notEmpty(data.get(NAME), prm.getName()),
+        BeeUtils.notEmpty(data.get(TYPE), prm.getType()),
+        BeeUtils.notEmpty(data.get(VALUE), prm.getValue()),
+        BeeUtils.notEmpty(data.get(DESCRIPTION), prm.getDescription())));
     return false;
   }
 

@@ -199,7 +199,7 @@ public class RowFactory {
 
       Element label = doc.createElement(FormWidget.LABEL.getTagName());
       label.setAttribute(UiConstants.ATTR_HTML,
-          BeeUtils.ifString(column.getLabel(), column.getId()));
+          BeeUtils.notEmpty(column.getLabel(), column.getId()));
 
       String labelClass;
       if (column.hasDefaults()) {

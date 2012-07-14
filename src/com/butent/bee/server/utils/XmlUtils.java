@@ -1136,7 +1136,7 @@ public class XmlUtils {
     }
 
     int c = nodes.getLength();
-    PropertyUtils.addProperty(lst, BeeUtils.ifString(msg, "Named Nodes"), BeeUtils.bracket(c));
+    PropertyUtils.addProperty(lst, BeeUtils.notEmpty(msg, "Named Nodes"), BeeUtils.bracket(c));
     if (c > 0) {
       for (int i = 0; i < c; i++) {
         PropertyUtils.addProperty(lst, "Node " + BeeUtils.progress(i + 1, c),

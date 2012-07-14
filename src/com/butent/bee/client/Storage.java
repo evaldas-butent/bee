@@ -18,11 +18,11 @@ import java.util.Map;
 
 public class Storage implements Module {
   
-  private Map<String, String> items = new HashMap<String, String>();
-  private boolean localStorage;
+  private final Map<String, String> items = new HashMap<String, String>();
+  private final boolean localStorage;
 
   public Storage() {
-    localStorage = Features.supportsLocalStorage();
+    this.localStorage = Features.supportsLocalStorage();
   }
 
   public Enum<?> checkEnum(String key, Enum<?> def) {
@@ -79,13 +79,7 @@ public class Storage implements Module {
   }
 
   public int getInt(String key) {
-    String s = getItem(key);
-
-    if (BeeUtils.isEmpty(s)) {
-      return 0;
-    } else {
-      return Integer.parseInt(s);
-    }
+    return BeeUtils.toInt(getItem(key));
   }
 
   public String getItem(String key) {
@@ -163,12 +157,15 @@ public class Storage implements Module {
     }
   }
 
-  public void setItem(String key, Object value) {
+  public void setItem(String key, String value) {
     Assert.notEmpty(key);
-    if (localStorage) {
+
+    if (BeeUtils.isEmpty(value)) {
+      removeItem(key);
+    } else if (localStorage) {
       lsSetItem(key, value);
     } else {
-      items.put(key, BeeUtils.transform(value));
+      items.put(key, value);
     }
   }
 
@@ -195,7 +192,7 @@ public class Storage implements Module {
     $wnd.localStorage.removeItem(key);
   }-*/;
 
-  private native void lsSetItem(String key, Object value) /*-{
+  private native void lsSetItem(String key, String value) /*-{
     $wnd.localStorage.setItem(key, value);
   }-*/;
 

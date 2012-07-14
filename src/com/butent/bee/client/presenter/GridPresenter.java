@@ -211,7 +211,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       deleteCallback.execute();
     } else {
       String message = (getGridCallback() == null) ? null : getGridCallback().getDeleteRowMessage();
-      Global.getMsgBoxen().confirm(BeeUtils.ifString(message, "Išmesti eilutę ?"), deleteCallback,
+      Global.getMsgBoxen().confirm(BeeUtils.notEmpty(message, "Išmesti eilutę ?"), deleteCallback,
           StyleUtils.NAME_SCARY);
     }
   }

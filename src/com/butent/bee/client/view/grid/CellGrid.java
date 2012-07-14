@@ -1161,7 +1161,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     if (info == null) {
       return columnId;
     }
-    return BeeUtils.ifString(info.getCaption(), columnId);
+    return BeeUtils.notEmpty(info.getCaption(), columnId);
   }
 
   public int getColumnCount() {
@@ -1869,7 +1869,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       columnInfo.setMaxWidth(columnDescription.getMaxWidth());
     }
 
-    String af = BeeUtils.ifString(columnDescription.getAutoFit(), gridDescription.getAutoFit());
+    String af = BeeUtils.notEmpty(columnDescription.getAutoFit(), gridDescription.getAutoFit());
     if (BeeUtils.isInt(af)) {
       columnInfo.setAutoFitRows(BeeUtils.toInt(af));
     } else if (BeeConst.isTrue(af)) {

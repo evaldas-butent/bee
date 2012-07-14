@@ -128,7 +128,7 @@ public class HeaderCell extends AbstractCell<String> {
   }
 
   public void renderHeader(CellContext context, String columnId, SafeHtmlBuilder sb) {
-    String label = BeeUtils.ifString(caption, columnId);
+    String label = BeeUtils.notEmpty(caption, columnId);
     if (!BeeUtils.isEmpty(label)) {
       sb.append(template.caption(captionId, SafeHtmlUtils.fromString(label)));
     }

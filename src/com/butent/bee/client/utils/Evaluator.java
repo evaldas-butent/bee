@@ -375,7 +375,7 @@ public class Evaluator extends Calculation {
       List<? extends IsColumn> columns = getParameters().getDataColumns();
       for (int i = 0; i < columns.size(); i++) {
         IsColumn column = columns.get(i);
-        value = BeeUtils.ifString(row.getString(i), BeeConst.NULL);
+        value = BeeUtils.notEmpty(row.getString(i), BeeConst.NULL);
         result = BeeUtils.replace(result,
             pfx + ROW_OBJECT + PROPERTY_SEPARATOR + column.getId() + sfx, value);
       }
@@ -386,16 +386,16 @@ public class Evaluator extends Calculation {
     result = BeeUtils.replace(result, pfx + VAR_COL_INDEX + sfx,
         BeeUtils.toString(getParameters().getColIndex()));
 
-    value = BeeUtils.ifString(getParameters().getColName(), BeeConst.NULL);
+    value = BeeUtils.notEmpty(getParameters().getColName(), BeeConst.NULL);
     result = BeeUtils.replace(result, pfx + VAR_COL_ID + sfx, value);
 
-    value = BeeUtils.ifString(getParameters().getLastCellValue(), BeeConst.NULL);
+    value = BeeUtils.notEmpty(getParameters().getLastCellValue(), BeeConst.NULL);
     result = BeeUtils.replace(result,
         pfx + CELL_OBJECT + PROPERTY_SEPARATOR + PROPERTY_VALUE + sfx, value);
-    value = BeeUtils.ifString(getParameters().getLastOldValue(), BeeConst.NULL);
+    value = BeeUtils.notEmpty(getParameters().getLastOldValue(), BeeConst.NULL);
     result = BeeUtils.replace(result,
         pfx + CELL_OBJECT + PROPERTY_SEPARATOR + PROPERTY_OLD_VALUE + sfx, value);
-    value = BeeUtils.ifString(getParameters().getLastNewValue(), BeeConst.NULL);
+    value = BeeUtils.notEmpty(getParameters().getLastNewValue(), BeeConst.NULL);
     result = BeeUtils.replace(result,
         pfx + CELL_OBJECT + PROPERTY_SEPARATOR + PROPERTY_NEW_VALUE + sfx, value);
 

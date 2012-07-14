@@ -57,7 +57,7 @@ public class HttpUtils {
         continue;
       }
 
-      v = BeeUtils.ifString(BeeUtils.transformEnumeration(req.getHeaders(nm)), req.getHeader(nm));
+      v = BeeUtils.notEmpty(BeeUtils.transformEnumeration(req.getHeaders(nm)), req.getHeader(nm));
       if (BeeUtils.isEmpty(v)) {
         continue;
       }

@@ -159,7 +159,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   }
 
   public String getCaption() {
-    return BeeUtils.ifString(getWidgetDescription().getCaption(), getDataColumn().getLabel());
+    return BeeUtils.notEmpty(getWidgetDescription().getCaption(), getDataColumn().getLabel());
   }
 
   public String getCarryValue(IsRow row) {

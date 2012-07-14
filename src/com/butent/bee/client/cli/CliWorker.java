@@ -824,7 +824,7 @@ public class CliWorker {
       return;
     }
 
-    final String src = BeeUtils.ifString(args,
+    final String src = BeeUtils.notEmpty(args,
         "http://people.opera.com/shwetankd/webm/sunflower.webm");
 
     final Video widget = Video.createIfSupported();

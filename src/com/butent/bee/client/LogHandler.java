@@ -1,6 +1,5 @@
 package com.butent.bee.client;
 
-import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Split;
@@ -21,16 +20,19 @@ import java.util.logging.Logger;
  * Manages appearance and content of the logger object.
  */
 public class LogHandler implements Module {
-  private Logger logger = null;
-  private LogArea area = null;
+  
+  private final Logger logger;
+  private final LogArea area;
+
   private int hiddenSize = BeeConst.UNDEF;
 
   public LogHandler() {
     super();
-    setLogger(Logger.getLogger(BeeConst.STRING_EMPTY));
+    
+    this.logger = Logger.getLogger(BeeConst.STRING_EMPTY);
+    this.area = new LogArea();
 
-    setArea(new LogArea());
-    addArea(getArea());
+    this.logger.addHandler(new LogWidgetHandler(this.area));
 
     setLevel(Level.FINEST);
   }
@@ -153,16 +155,8 @@ public class LogHandler implements Module {
     }
   }
 
-  public void setArea(LogArea area) {
-    this.area = area;
-  }
-
   public void setLevel(Level lvl) {
     getLogger().setLevel(lvl);
-  }
-
-  public void setLogger(Logger logger) {
-    this.logger = logger;
   }
 
   public void severe(Object... obj) {
@@ -186,11 +180,5 @@ public class LogHandler implements Module {
 
   public void warning(Object... obj) {
     LogUtils.warning(getLogger(), obj);
-  }
-
-  private void addArea(HasWidgets p) {
-    if (p != null) {
-      getLogger().addHandler(new LogWidgetHandler(p));
-    }
   }
 }

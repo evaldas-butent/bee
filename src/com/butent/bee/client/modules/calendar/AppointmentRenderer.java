@@ -101,17 +101,17 @@ class AppointmentRenderer {
     Map<String, String> substitutes = getSubstitutes(appointmentWidget.getAppointment());
     String separator = multi ? MULTI_HTML_SEPARATOR : SIMPLE_HTML_SEPARATOR;
 
-    String template = BeeUtils.ifString(headerTemplate,
+    String template = BeeUtils.notEmpty(headerTemplate,
         multi ? DEFAULT_MULTI_HEADER_TEMPLATE : DEFAULT_SIMPLE_HEADER_TEMPLATE);
     String header = parseTemplate(template, substitutes, separator);
     appointmentWidget.setHeaderHtml(header);
 
-    template = BeeUtils.ifString(bodyTemplate,
+    template = BeeUtils.notEmpty(bodyTemplate,
         multi ? DEFAULT_MULTI_BODY_TEMPLATE : DEFAULT_SIMPLE_BODY_TEMPLATE);
     String body = parseTemplate(template, substitutes, separator);
     appointmentWidget.setBodyHtml(body);
 
-    template = BeeUtils.ifString(titleTemplate, DEFAULT_TITLE_TEMPLATE);
+    template = BeeUtils.notEmpty(titleTemplate, DEFAULT_TITLE_TEMPLATE);
     String title = parseTemplate(template, substitutes, TEXT_LINE_SEPARATOR);
     appointmentWidget.setTitleText(title);
   }
@@ -121,13 +121,13 @@ class AppointmentRenderer {
 
     Map<String, String> substitutes = getSubstitutes(appointment);
 
-    String template = BeeUtils.ifString(compactTemplate, DEFAULT_COMPACT_TEMPLATE);
+    String template = BeeUtils.notEmpty(compactTemplate, DEFAULT_COMPACT_TEMPLATE);
     String html = parseTemplate(template, substitutes, COMPACT_HTML_SEPARATOR);
     if (!BeeUtils.isEmpty(html) && htmlWidget != null) {
       htmlWidget.getElement().setInnerHTML(BeeUtils.trim(html));
     }
 
-    template = BeeUtils.ifString(titleTemplate, DEFAULT_TITLE_TEMPLATE);
+    template = BeeUtils.notEmpty(titleTemplate, DEFAULT_TITLE_TEMPLATE);
     String title = parseTemplate(template, substitutes, TEXT_LINE_SEPARATOR);
     if (!BeeUtils.isEmpty(title) && titleWidget != null) {
       titleWidget.setTitle(BeeUtils.trim(title));

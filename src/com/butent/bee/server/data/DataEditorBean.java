@@ -860,7 +860,7 @@ public class DataEditorBean {
       String fld = view.getColumnField(srcName);
       ok = registerField(srcName, new FieldInfo(als, null, fld, null, null, null),
           updates, view, response);
-      relation = BeeUtils.concat(".", BeeUtils.ifString(view.getColumnOwner(srcName), als), fld);
+      relation = BeeUtils.concat(".", BeeUtils.notEmpty(view.getColumnOwner(srcName), als), fld);
     }
     if (ok) {
       if (!updates.containsKey(tblAlias)) {

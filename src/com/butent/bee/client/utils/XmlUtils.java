@@ -552,7 +552,7 @@ public class XmlUtils {
     if (nd.hasChildNodes()) {
       NodeList children = nd.getChildNodes();
       int c = (children == null) ? 0 : children.getLength();
-      PropertyUtils.addExtended(lst, BeeUtils.ifString(root, getNodeName(tp)), "Children",
+      PropertyUtils.addExtended(lst, BeeUtils.notEmpty(root, getNodeName(tp)), "Children",
           BeeUtils.bracket(c));
       for (int i = 0; i < c; i++) {
         lst.addAll(getTreeInfo(children.item(i), BeeUtils.concat(".", root, i), detailed));

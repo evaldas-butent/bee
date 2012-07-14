@@ -374,7 +374,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
 
     for (int i = start; i < end; i++) {
       String item = values.get(i - start);
-      String displayValue = BeeUtils.ifString(BeeUtils.getSuffix(item, displaySeparator), item);
+      String displayValue = BeeUtils.notEmpty(BeeUtils.getSuffix(item, displaySeparator), item);
 
       SafeHtmlBuilder cellBuilder = new SafeHtmlBuilder();
       Context context = new Context(i, 0, getValueKey(item));
@@ -414,7 +414,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
   }
 
   private String getItemData(String item) {
-    return BeeUtils.ifString(BeeUtils.getPrefix(item, displaySeparator), item);
+    return BeeUtils.notEmpty(BeeUtils.getPrefix(item, displaySeparator), item);
   }
 
   private int getItemIndex(String item) {

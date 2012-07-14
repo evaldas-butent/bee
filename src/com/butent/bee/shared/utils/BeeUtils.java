@@ -1048,20 +1048,6 @@ public class BeeUtils {
   }
 
   /**
-   * @param x Object to check
-   * @param def Objects {@code x} default value to set
-   * @return the String from the Object if the Object is an instance of String, else returns a
-   *         default String value {@code def}.
-   */
-  public static String ifString(Object x, String def) {
-    if (x instanceof String && !isEmpty(x)) {
-      return (String) x;
-    } else {
-      return def;
-    }
-  }
-
-  /**
    * Extended if sentence. Basic syntax : if {@code obj[i] == true} the method jumps to
    * {@code obj[i+1]} else jumps to {@code obj[i+2]}
    * 
@@ -1105,7 +1091,7 @@ public class BeeUtils {
   public static String increment(String s) {
     return Integer.toString(toInt(s) + 1);
   }
-
+  
   public static int indexOf(List<String> lst, String s) {
     if (isEmpty(lst)) {
       return BeeConst.UNDEF;
@@ -1283,7 +1269,7 @@ public class BeeUtils {
       return (x instanceof String || x instanceof StringBuilder || x instanceof StringBuffer);
     }
   }
-  
+
   public static <C extends Comparable<C>> boolean intersects(Range<C> r1, Range<C> r2) {
     if (r1 == null || r2 == null) {
       return false;
@@ -1319,7 +1305,7 @@ public class BeeUtils {
   public static boolean isBoolean(int x) {
     return x == BeeConst.INT_TRUE || x == BeeConst.INT_FALSE;
   }
-
+  
   /**
    * Checks if {@code s} is a Boolean value.
    * 
@@ -1917,16 +1903,13 @@ public class BeeUtils {
 
     return sep;
   }
-  
-  public static String notEmpty(String... strings) {
-    if (strings != null) {
-      for (String s : strings) {
-        if (!isEmpty(s)) {
-          return s;
-        }
-      }
-    }
-    return null;
+
+  public static String notEmpty(String s, String def) {
+    return isEmpty(s) ? def : s;
+  }
+
+  public static String notEmpty(String s1, String s2, String def) {
+    return isEmpty(s1) ? (isEmpty(s2) ? def : s2) : s1;
   }
 
   /**
@@ -1937,7 +1920,7 @@ public class BeeUtils {
   public static <T> T nvl(T o1, T o2) {
     return (o1 == null) ? o2 : o1;
   }
-
+  
   public static <T> void overwrite(final Collection<T> target, Collection<T> source) {
     Assert.notNull(target);
     if (!target.isEmpty()) {
@@ -1994,6 +1977,10 @@ public class BeeUtils {
       return element;
     }
     return null;
+  }
+
+  public static int positive(int x, int def) {
+    return (x > 0) ? x : def;
   }
 
   /**

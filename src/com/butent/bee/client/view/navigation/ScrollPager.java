@@ -2,7 +2,6 @@ package com.butent.bee.client.view.navigation;
 
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -20,18 +19,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class ScrollPager extends AbstractPager implements RequiresResize {
 
-  private class ScrollTimer extends Timer {
-    private int start;
-
-    @Override
-    public void run() {
-      if (start != getPageStart()) {
-        isScrolling = true;
-        setPageStart(start);
-      }
-    }
-  }
-
   public static int maxHeight = 10000;
 
   private int lastPos = BeeConst.UNDEF;
@@ -39,8 +26,6 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
 
   private boolean isScrolling = false;
   private boolean isUpdating = false;
-
-  private final ScrollTimer scrollTimer = new ScrollTimer();
 
   public ScrollPager() {
     Widget widget = new Html();
@@ -79,9 +64,10 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
         int start = pos * (rowCount - pageSize) / (maxPos - height);
         start = BeeUtils.clamp(start, 0, rowCount - pageSize);
 
-        scrollTimer.start = start;
-        scrollTimer.schedule(500);
-
+        if (start != getPageStart()) {
+          isScrolling = true;
+          setPageStart(start);
+        }
         lastPos = pos;
       }
     });

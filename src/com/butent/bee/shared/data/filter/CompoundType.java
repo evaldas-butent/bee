@@ -24,7 +24,7 @@ public enum CompoundType {
   }
 
   public String toSqlString() {
-    return BeeUtils.ifString(sqlString, textString);
+    return BeeUtils.notEmpty(sqlString, textString);
   }
 
   public String toTextString() {

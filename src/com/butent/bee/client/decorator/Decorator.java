@@ -511,7 +511,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
         continue;
       }
 
-      String role = BeeUtils.ifString(handler.getTarget(), eventTarget);
+      String role = BeeUtils.notEmpty(handler.getTarget(), eventTarget);
 
       if (BeeUtils.isEmpty(role) || BeeUtils.same(role, DecoratorConstants.ROLE_ROOT)) {
         EventUtils.addDomHandler(decorated, type, body);

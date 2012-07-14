@@ -29,7 +29,7 @@ public class MapRenderer extends AbstractCellRenderer implements HasItems {
   public MapRenderer(int dataIndex, IsColumn dataColumn, String sep) {
     super(dataIndex, dataColumn);
     
-    this.separator = BeeUtils.ifString(sep, DEFAULT_SEPARATOR).trim();
+    this.separator = BeeUtils.notEmpty(sep, DEFAULT_SEPARATOR).trim();
     this.splitter = Splitter.on(this.separator).omitEmptyStrings().trimResults().limit(2);
   }
 

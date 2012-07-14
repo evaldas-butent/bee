@@ -539,7 +539,7 @@ public class ScreenImpl implements Screen {
         } else {
           BeeKeeper.getLog().hide();
         }
-        BeeKeeper.getStorage().setItem(getLogVisible(), event.getValue());
+        BeeKeeper.getStorage().setItem(getLogVisible(), BeeUtils.toString(event.getValue()));
       }
     });
     setLogToggle(log);

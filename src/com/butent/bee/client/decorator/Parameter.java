@@ -59,7 +59,7 @@ class Parameter {
     if (options == null || !options.containsKey(name)) {
       return defaultValue;
     }
-    return BeeUtils.ifString(options.get(name), defaultValue);
+    return BeeUtils.notEmpty(options.get(name), defaultValue);
   }
 
   boolean isRequired() {

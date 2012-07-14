@@ -495,7 +495,7 @@ public enum FormWidget {
         break;
 
       case CHILD_GRID:
-        String gridName = BeeUtils.ifString(attributes.get(ATTR_GRID_NAME), name);
+        String gridName = BeeUtils.notEmpty(attributes.get(ATTR_GRID_NAME), name);
 
         String relColumn = attributes.get(ATTR_REL_COLUMN);
         String source = attributes.get(UiConstants.ATTR_SOURCE);
@@ -617,7 +617,7 @@ public enum FormWidget {
         break;
 
       case GRID_PANEL:
-        String gName = BeeUtils.ifString(attributes.get(ATTR_GRID_NAME), name);
+        String gName = BeeUtils.notEmpty(attributes.get(ATTR_GRID_NAME), name);
         if (!BeeUtils.isEmpty(gName)) {
           widget = new GridPanel(gName, GridFactory.getGridOptions(attributes));
         }
@@ -656,7 +656,7 @@ public enum FormWidget {
 
       case HYPERLINK:
         url = attributes.get(ATTR_HISTORY_TOKEN);
-        widget = new InternalLink(BeeUtils.ifString(html, url), url);
+        widget = new InternalLink(BeeUtils.notEmpty(html, url), url);
         break;
 
       case IMAGE:
@@ -675,7 +675,7 @@ public enum FormWidget {
 
       case INLINE_HYPERLINK:
         url = attributes.get(ATTR_HISTORY_TOKEN);
-        widget = new InlineInternalLink(BeeUtils.ifString(html, url), url);
+        widget = new InlineInternalLink(BeeUtils.notEmpty(html, url), url);
         break;
 
       case INLINE_LABEL:

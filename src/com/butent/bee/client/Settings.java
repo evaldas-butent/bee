@@ -23,6 +23,10 @@ public class Settings {
     return getPropertyInt("gridType");
   }
 
+  public static int getLogCapacity() {
+    return getPropertyInt("logCapacity");
+  }
+  
   public static String getProperty(String name) {
     Assert.notEmpty(name);
     if (checkSettings()) {
@@ -50,6 +54,10 @@ public class Settings {
     }
   }
 
+  public static int getProviderSensitivityMillis() {
+    return getPropertyInt("providerSensitivityMillis");
+  }
+  
   public static Map<String, String> getSettings() {
     Map<String, String> result = Maps.newHashMap();
     if (checkSettings()) {

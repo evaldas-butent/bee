@@ -59,7 +59,7 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
   }
 
   public DialogBox(boolean autoHide, boolean modal, Caption captionWidget, String styleName) {
-    super(autoHide, modal, BeeUtils.ifString(styleName, STYLE_DIALOG));
+    super(autoHide, modal, BeeUtils.notEmpty(styleName, STYLE_DIALOG));
 
     Assert.notNull(captionWidget);
     captionWidget.asWidget().addStyleName(STYLE_CAPTION);

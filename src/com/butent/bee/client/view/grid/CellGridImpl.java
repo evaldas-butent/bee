@@ -740,7 +740,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     getGrid().initRenderMode(gridDescr.getRenderMode());
 
     initNewRowDefaults(gridDescr.getNewRowDefaults(), dataCols);
-    setNewRowCaption(BeeUtils.ifString(gridDescr.getNewRowCaption(),
+    setNewRowCaption(BeeUtils.notEmpty(gridDescr.getNewRowCaption(),
         (getDataInfo() == null) ? null : getDataInfo().getNewRowCaption()));
 
     getGrid().estimateHeaderWidths(true);
@@ -761,7 +761,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     setEditSave(BeeUtils.unbox(gridDescr.getEditSave()));
 
     String editFormName = gridDescr.getEditForm();
-    final String newRowFormName = BeeUtils.ifString(gridDescr.getNewRowForm(),
+    final String newRowFormName = BeeUtils.notEmpty(gridDescr.getNewRowForm(),
         (getDataInfo() == null) ? null : getDataInfo().getNewRowForm());
 
     setShowEditPopup(BeeUtils.unbox(gridDescr.getEditPopup()));
@@ -1114,7 +1114,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
       String caption = getRowCaption(rowValue, true);
       if (isSingleForm()) {
-        presenter.setCaption(BeeUtils.ifString(caption, getEditForm().getCaption()));
+        presenter.setCaption(BeeUtils.notEmpty(caption, getEditForm().getCaption()));
         presenter.updateStyle(true);
       } else if (!BeeUtils.isEmpty(caption)) {
         presenter.setCaption(caption);
@@ -1276,7 +1276,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       GridFormPresenter presenter = (GridFormPresenter) form.getViewPresenter();
 
       if (isSingleForm()) {
-        presenter.setCaption(BeeUtils.ifString(caption, getNewRowCaption()));
+        presenter.setCaption(BeeUtils.notEmpty(caption, getNewRowCaption()));
         presenter.setMessage(null);
         presenter.updateStyle(false);
 
@@ -1317,7 +1317,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   private void createDefaultNewRowForm(GridDescription gridDescription) {
-    String newRowColumns = BeeUtils.ifString(gridDescription.getNewRowColumns(),
+    String newRowColumns = BeeUtils.notEmpty(gridDescription.getNewRowColumns(),
         (getDataInfo() == null) ? null : getDataInfo().getNewRowColumns());
     final List<String> columnNames = getNewRowColumnNames(newRowColumns);
 
@@ -1374,7 +1374,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private String createFormContainer(FormView formView, boolean edit, String caption,
       boolean asPopup) {
-    String formCaption = BeeUtils.ifString(caption, formView.getCaption());
+    String formCaption = BeeUtils.notEmpty(caption, formView.getCaption());
 
     EnumSet<Action> actions = EnumSet.of(Action.CLOSE);
     if (!edit) {

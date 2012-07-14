@@ -469,7 +469,7 @@ public class SystemBean {
       }
     }
     initDbTriggers();
-    initDatabase(BeeUtils.ifString(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));
+    initDatabase(BeeUtils.notEmpty(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));
     initViews();
   }
 

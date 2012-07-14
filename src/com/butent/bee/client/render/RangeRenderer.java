@@ -37,7 +37,7 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
   public RangeRenderer(int dataIndex, IsColumn dataColumn, String sep, String opt) {
     super(dataIndex, dataColumn);
     
-    this.separator = BeeUtils.ifString(sep, DEFAULT_SEPARATOR).trim();
+    this.separator = BeeUtils.notEmpty(sep, DEFAULT_SEPARATOR).trim();
     this.splitter = Splitter.on(this.separator).trimResults().limit(3);
     
     this.rangeOptions = new RangeOptions(RangeOptions.hasLowerOpen(opt, DEFAULT_LOWER_OPEN),

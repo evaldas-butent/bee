@@ -695,7 +695,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     ColumnInfo info = getColumnInfo(colName);
 
     column.setId(info.getName());
-    column.setLabel(BeeUtils.ifString(info.getLabel(), info.getName()));
+    column.setLabel(BeeUtils.notEmpty(info.getLabel(), info.getName()));
     column.setType(info.getType().toValueType());
     column.setPrecision(info.getPrecision());
     column.setScale(info.getScale());
@@ -857,7 +857,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       } else if (column instanceof XmlSimpleColumn) {
         XmlSimpleColumn col = (XmlSimpleColumn) column;
 
-        String colName = BeeUtils.ifString(col.alias, col.name);
+        String colName = BeeUtils.notEmpty(col.alias, col.name);
         String aggregate = null;
         boolean hidden = (col instanceof XmlHiddenColumn);
 
