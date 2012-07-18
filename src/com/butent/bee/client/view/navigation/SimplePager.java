@@ -16,6 +16,7 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.event.ScopeChangeEvent;
+import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -226,6 +227,11 @@ public class SimplePager extends AbstractPager {
         DomUtils.clearTitle(widgetForw);
       }
     }
+  }
+
+  @Override
+  protected NavigationOrigin getNavigationOrigin() {
+    return NavigationOrigin.PAGER;
   }
 
   private String createText(int start, int end, int rowCount) {

@@ -21,6 +21,7 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -75,7 +76,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
   public void clear() {
     getDisplay().reset();
-    getDisplay().setPageStart(0, false, false);
+    getDisplay().setPageStart(0, false, false, NavigationOrigin.SYSTEM);
     getDisplay().setRowCount(0, true);
     getDisplay().setRowData(null, true);
   }
@@ -183,7 +184,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   
   protected void acceptFilter(Filter newFilter) {
     setUserFilter(newFilter);
-    getDisplay().setPageStart(0, true, false);
+    getDisplay().setPageStart(0, true, false, NavigationOrigin.SYSTEM);
   }
 
   protected HasDataTable getDisplay() {
@@ -203,7 +204,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   }
 
   protected void goTop() {
-    getDisplay().setPageStart(0, true, false);
+    getDisplay().setPageStart(0, true, false, NavigationOrigin.SYSTEM);
     onRequest(true);
   }
   

@@ -107,6 +107,32 @@ public class CacheManager implements HandlesAllDataEvents {
       }
     }
 
+    private boolean containsRange(Filter filter, Order order, int offset, int limit) {
+      if (dataRows.isEmpty() || offset < 0 || limit <= 0) {
+        return false;
+      }
+
+      CachedQuery query = getQuery(filter, order);
+      if (query == null) {
+        return false;
+
+      } else if (!dataRows.isFull()) {
+        return query.containsRange(offset, limit);
+
+      } else {
+        for (int i = 0; i < limit; i++) {
+          Long rowId = query.get(offset + i);
+          if (rowId == null) {
+            return false;
+          }
+          if (!dataRows.containsKey(rowId)) {
+            return false;
+          }
+        }
+        return true;
+      }
+    }
+
     private boolean deleteRow(long id) {
       long millis = System.currentTimeMillis();
 
@@ -297,6 +323,17 @@ public class CacheManager implements HandlesAllDataEvents {
     entries.clear();
   }
 
+  public boolean containsRange(String viewName, Filter filter, Order order, int offset, int limit) {
+    if (BeeUtils.isEmpty(viewName)) {
+      return false;
+    }
+    Entry entry = get(viewName);
+    if (entry == null) {
+      return false;
+    }
+    return entry.containsRange(filter, order, offset, limit);
+  }
+  
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
     info.add(new ExtendedProperty("Cache", "Entries", BeeUtils.toString(entries.size())));

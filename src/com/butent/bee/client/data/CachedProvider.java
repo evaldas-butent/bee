@@ -230,7 +230,7 @@ public class CachedProvider extends Provider {
 
         int newTableSize = rowSet.getNumberOfRows();
         if (newTableSize != oldTableSize && oldPageSize > 0 && oldPageSize >= oldTableSize) {
-          getDisplay().setPageSize(newTableSize, true, false);
+          getDisplay().setPageSize(newTableSize, true);
         }
 
         updateDisplay(updateActiveRow);

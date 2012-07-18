@@ -9,6 +9,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.event.ScopeChangeEvent;
+import com.butent.bee.shared.ui.NavigationOrigin;
 
 /**
  * Is an abstract class with default pager implementation behavior.
@@ -80,6 +81,8 @@ public abstract class AbstractPager extends Composite implements PagerView {
       setDisplay(displ);
     }
   }
+  
+  protected abstract NavigationOrigin getNavigationOrigin();
 
   protected int getPage() {
     int pageSize = getPageSize();
@@ -130,7 +133,7 @@ public abstract class AbstractPager extends Composite implements PagerView {
       }
 
       if (start != getPageStart()) {
-        getDisplay().setPageStart(Math.max(0, start), true, true);
+        getDisplay().setPageStart(Math.max(0, start), true, true, getNavigationOrigin());
       }
     }
   }

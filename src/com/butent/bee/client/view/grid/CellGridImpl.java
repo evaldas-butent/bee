@@ -81,6 +81,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.DataRequestEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
@@ -90,6 +91,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.ColumnDescription;
+import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.GridDescription;
@@ -414,17 +416,13 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         }
 
       } else if (cmd.startsWith("ps")) {
-        if (xp[0] > 0) {
-          getGrid().setPageSize(xp[0], true, true);
-          msg = "updatePageSize " + xp[0];
-        } else {
-          int oldPageSize = getGrid().getPageSize();
-          int newPageSize = getGrid().estimatePageSize();
-          if (newPageSize > 0) {
-            getGrid().setPageSize(newPageSize, true, true);
-          }
-          msg = "page size: old " + oldPageSize + " new " + newPageSize;
+        int oldPageSize = getGrid().getPageSize();
+        int newPageSize = BeeUtils.positive(xp[0], getGrid().estimatePageSize());
+        if (newPageSize > 0 && newPageSize != oldPageSize) {
+          getGrid().setPageSize(newPageSize, true);
+          DataRequestEvent.fire(getGrid(), NavigationOrigin.SYSTEM);
         }
+        msg = "page size: old " + oldPageSize + " new " + newPageSize;
       }
 
       if (msg == null) {

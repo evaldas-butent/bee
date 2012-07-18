@@ -156,7 +156,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
         immutableFilter, initialFilters, order, getGridOptions());
 
     gp.getGridView().setRelColumn(getRelSource());
-    gp.getGridView().getGrid().setPageSize(BeeConst.UNDEF, false, false);
+    gp.getGridView().getGrid().setPageSize(BeeConst.UNDEF, false);
     gp.setEventSource(getId());
 
     setWidget(gp.getWidget());

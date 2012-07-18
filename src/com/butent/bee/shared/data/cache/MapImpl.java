@@ -20,7 +20,7 @@ class MapImpl<K, V> extends AbstractCache<K, V> {
 
     @Override
     protected boolean removeEldestEntry(Entry<L, U> eldest) {
-      return this.size() > MapImpl.this.getSize();
+      return this.size() > MapImpl.this.getMaxSize();
     }
   }
 

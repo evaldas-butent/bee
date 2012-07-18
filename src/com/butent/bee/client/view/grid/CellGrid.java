@@ -74,6 +74,7 @@ import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.GridComponentDescription;
+import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -1379,14 +1380,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     } else {
       if (getDataSize() >= ps) {
         getRowData().remove(0);
-        setPageStart(getPageStart() + 1, false, false);
+        setPageStart(getPageStart() + 1, false, false, NavigationOrigin.SYSTEM);
       }
       getRowData().add(rowValue);
       nr = getDataSize() - 1;
     }
 
     if (ps > 0 && ps == rc) {
-      setPageSize(ps + 1, false, false);
+      setPageSize(ps + 1, false);
     }
     setRowCount(rc + 1, true);
 
@@ -1984,7 +1985,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     this.minCellWidth = minCellWidth;
   }
 
-  public void setPageSize(int size, boolean fireScopeChange, boolean fireDataRequest) {
+  public void setPageSize(int size, boolean fireScopeChange) {
     if (size == getPageSize()) {
       return;
     }
@@ -1994,12 +1995,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     if (fireScopeChange) {
       fireScopeChange();
     }
-    if (fireDataRequest) {
-      fireDataRequest();
-    }
   }
 
-  public void setPageStart(int start, boolean fireScopeChange, boolean fireDataRequest) {
+  public void setPageStart(int start, boolean fireScopeChange, boolean fireDataRequest,
+      NavigationOrigin origin) {
     Assert.nonNegative(start);
     if (start == getPageStart()) {
       return;
@@ -2011,7 +2010,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       fireScopeChange();
     }
     if (fireDataRequest) {
-      fireDataRequest();
+      fireDataRequest(origin);
     }
   }
 
@@ -2043,7 +2042,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
 
     if (start != getPageStart()) {
-      setPageStart(start, true, false);
+      setPageStart(start, true, false, NavigationOrigin.SYSTEM);
     } else if (fireScopeChange) {
       fireScopeChange();
     }
@@ -2106,12 +2105,15 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         if (getPageStart() + newPageSize > rc) {
           int start = Math.max(rc - newPageSize, 0);
           if (start != getPageStart()) {
-            setPageStart(start, false, false);
+            setPageStart(start, false, false, NavigationOrigin.SYSTEM);
             fire = (rc > 0);
           }
         }
 
-        setPageSize(newPageSize, true, fire);
+        setPageSize(newPageSize, true);
+        if (fire) {
+          fireDataRequest(NavigationOrigin.SYSTEM);
+        }
         return true;
       }
     }
@@ -2148,11 +2150,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     onActivateCell(true);
   }
 
-  private void activateRow(int index) {
-    activateRow(index, BeeConst.UNDEF);
+  private void activateRow(int index, NavigationOrigin origin) {
+    activateRow(index, BeeConst.UNDEF, origin);
   }
 
-  private void activateRow(int index, int start) {
+  private void activateRow(int index, int start, NavigationOrigin origin) {
     int rc = getRowCount();
     if (rc <= 0) {
       return;
@@ -2175,7 +2177,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
     if (size == 1) {
       setActiveRowIndex(0);
-      setPageStart(absIndex, true, true);
+      setPageStart(absIndex, true, true, origin);
       return;
     }
 
@@ -2196,7 +2198,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     setActiveRowIndex(absIndex - newPageStart);
 
     if (newPageStart != oldPageStart) {
-      setPageStart(newPageStart, true, true);
+      setPageStart(newPageStart, true, true, origin);
     }
   }
 
@@ -2416,8 +2418,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return width;
   }
 
-  private void fireDataRequest() {
-    fireEvent(new DataRequestEvent());
+  private void fireDataRequest(NavigationOrigin origin) {
+    fireEvent(new DataRequestEvent(origin));
   }
 
   private <C> void fireEventToCell(int row, int col, Event event, String eventType,
@@ -3408,11 +3410,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private void keyboardEnd() {
-    activateRow(getRowCount() - 1);
+    activateRow(getRowCount() - 1, NavigationOrigin.KEYBOARD);
   }
 
   private void keyboardHome() {
-    activateRow(0);
+    activateRow(0, NavigationOrigin.KEYBOARD);
   }
 
   private void keyboardLeft() {
@@ -3428,13 +3430,13 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   private void keyboardNext() {
-    activateRow(getPageStart() + getActiveRowIndex() + 1);
+    activateRow(getPageStart() + getActiveRowIndex() + 1, NavigationOrigin.KEYBOARD);
   }
 
   private void keyboardNextPage() {
     if (getRowCount() <= 1 || getPageSize() <= 0 || getPageSize() >= getRowCount()
         || getPageStart() >= getRowCount() - getPageSize()) {
-      activateRow(getRowCount() - 1);
+      activateRow(getRowCount() - 1, NavigationOrigin.KEYBOARD);
       return;
     }
 
@@ -3447,24 +3449,25 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         absIndex = start;
       }
     }
-    activateRow(absIndex, start);
+    activateRow(absIndex, start, NavigationOrigin.KEYBOARD);
   }
 
   private void keyboardPrev() {
-    activateRow(getPageStart() + getActiveRowIndex() - 1);
+    activateRow(getPageStart() + getActiveRowIndex() - 1, NavigationOrigin.KEYBOARD);
   }
 
   private void keyboardPrevPage() {
     if (getRowCount() <= 1 || getPageSize() <= 0 || getPageSize() >= getRowCount()
         || getPageStart() <= 0) {
-      activateRow(0);
+      activateRow(0, NavigationOrigin.KEYBOARD);
       return;
     }
 
     int absIndex = getPageStart() - 1;
     int start = Math.max(0, getPageStart() - getPageSize());
     absIndex = Math.max(absIndex, start + getPageSize() - 1);
-    activateRow(absIndex, start);
+
+    activateRow(absIndex, start, NavigationOrigin.KEYBOARD);
   }
 
   private void keyboardRight() {

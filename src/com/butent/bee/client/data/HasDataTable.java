@@ -12,6 +12,7 @@ import com.butent.bee.shared.data.event.HasActiveRowChangeHandlers;
 import com.butent.bee.shared.data.event.HasSelectionCountChangeHandlers;
 import com.butent.bee.shared.data.event.HasSortHandlers;
 import com.butent.bee.shared.data.event.ScopeChangeEvent;
+import com.butent.bee.shared.ui.NavigationOrigin;
 
 import java.util.List;
 
@@ -35,9 +36,10 @@ public interface HasDataTable extends HasLoadingState, HasSortHandlers,
 
   void reset();
   
-  void setPageSize(int pageSize, boolean fireScopeChange, boolean fireDataRequest);
+  void setPageSize(int pageSize, boolean fireScopeChange);
 
-  void setPageStart(int pageStart, boolean fireScopeChange, boolean fireDataRequest);
+  void setPageStart(int pageStart, boolean fireScopeChange, boolean fireDataRequest,
+      NavigationOrigin origin);
 
   void setRowCount(int count, boolean fireScopeChange);
   

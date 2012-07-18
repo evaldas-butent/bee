@@ -11,6 +11,7 @@ import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.event.ScopeChangeEvent;
+import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -88,6 +89,11 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
 
     updateHeight();
     updatePosition();
+  }
+
+  @Override
+  protected NavigationOrigin getNavigationOrigin() {
+    return NavigationOrigin.SCROLLER;
   }
 
   private long calculateHeight(int pageSize, int rowCount, int widgetHeight) {

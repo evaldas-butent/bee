@@ -67,6 +67,7 @@ import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Calculation;
+import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -384,7 +385,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
     if (rowValue != null) {
       int rc = getRowCount();
-      setPageStart(rc, false, false);
+      setPageStart(rc, false, false, NavigationOrigin.SYSTEM);
       setRowCount(rc + 1, false);
       fireScopeChange();
     }
@@ -774,10 +775,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     getRootWidget().setStyleName(STYLE_DISABLED, !enabled);
   }
 
-  public void setPageSize(int size, boolean fireScopeChange, boolean fireDataRequest) {
+  public void setPageSize(int size, boolean fireScopeChange) {
   }
 
-  public void setPageStart(int start, boolean fireScopeChange, boolean fireDataRequest) {
+  public void setPageStart(int start, boolean fireScopeChange, boolean fireDataRequest,
+      NavigationOrigin origin) {
     Assert.nonNegative(start);
     if (start == getPageStart()) {
       return;
@@ -789,7 +791,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       fireScopeChange();
     }
     if (fireDataRequest) {
-      fireDataRequest();
+      fireDataRequest(origin);
     }
   }
 
@@ -802,7 +804,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     this.rowCount = count;
 
     if (getPageStart() >= count) {
-      setPageStart(Math.max(count - 1, 0), true, false);
+      setPageStart(Math.max(count - 1, 0), true, false, NavigationOrigin.SYSTEM);
     } else if (fireScopeChange) {
       fireScopeChange();
     }
@@ -849,7 +851,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       if (count != null) {
         setRowCount(count, true);
         if (count > 0) {
-          fireDataRequest();
+          fireDataRequest(NavigationOrigin.SYSTEM);
         } else {
           setActiveRow(null);
           fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
@@ -971,8 +973,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
-  private void fireDataRequest() {
-    fireEvent(new DataRequestEvent());
+  private void fireDataRequest(NavigationOrigin origin) {
+    fireEvent(new DataRequestEvent(origin));
   }
 
   private void fireScopeChange() {

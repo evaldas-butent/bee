@@ -122,6 +122,10 @@ public class SimpleCache<K, V> implements HasInfo {
     return impl.isEmpty();
   }
 
+  public boolean isFull() {
+    return impl.isFull();
+  }
+
   public boolean recordStats() {
     return recordStats;
   }
@@ -152,6 +156,10 @@ public class SimpleCache<K, V> implements HasInfo {
     }
   }
 
+  protected synchronized boolean containsKey(K key) {
+    return impl.containsKey(key);
+  }
+  
   protected synchronized boolean deleteKey(K key) {
     if (impl.deleteKey(key)) {
       if (history != null) {

@@ -93,6 +93,19 @@ class CachedQuery extends SimpleCache<Integer, Long> {
     return BeeUtils.context(columnId, strFilter) || BeeUtils.context(columnId, strOrder);
   }
 
+  boolean containsRange(int start, int length) {
+    if (start < 0 || length <= 0) {
+      return false;
+    }
+
+    for (int i = 0; i < length; i++) {
+      if (!containsKey(start + i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  
   int getRowCount() {
     return rowCount;
   }

@@ -49,6 +49,7 @@ import com.butent.bee.shared.data.event.ParentRowEvent;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -458,7 +459,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         }
 
         if (p >= 0) {
-          display.setPageStart(p, true, true);
+          display.setPageStart(p, true, true, NavigationOrigin.MOUSE);
         }
       }
     }
@@ -531,14 +532,14 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
         }
 
         int ps = estimatePageSize();
-        grid.setPageSize(ps, true, false);
+        grid.setPageSize(ps, true);
 
         int ds = grid.getDataSize();
         if (ps > 0 && ps < ds) {
           grid.getRowData().subList(ps, ds).clear();
           grid.refresh();
         } else if (ps > 0 && ps > ds && ds < grid.getRowCount()) {
-          DataRequestEvent.fire(grid);
+          DataRequestEvent.fire(grid, NavigationOrigin.SYSTEM);
         } else {
           grid.refresh();
         }

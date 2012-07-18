@@ -17,6 +17,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.cache.CachingPolicy;
+import com.butent.bee.shared.data.event.DataRequestEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -42,6 +43,7 @@ public class AsyncProvider extends Provider {
     private boolean updateActiveRow;
 
     private Integer rpcId = null;
+    private long startTime;
 
     private Callback(Range<Integer> queryRange, Range<Integer> displayRange,
         boolean updateActiveRow) {
@@ -53,6 +55,7 @@ public class AsyncProvider extends Provider {
     public void onSuccess(BeeRowSet rowSet) {
       Integer id = getRpcId();
       if (id != null) {
+        onResponse(getStartTime());
         if (pendingRequests.containsKey(id)) {
           pendingRequests.remove(id);
         } else {
@@ -93,12 +96,20 @@ public class AsyncProvider extends Provider {
       return rpcId;
     }
 
+    private long getStartTime() {
+      return startTime;
+    }
+
     private void setDisplayRange(Range<Integer> displayRange) {
       this.displayRange = displayRange;
     }
 
     private void setRpcId(Integer rpcId) {
       this.rpcId = rpcId;
+    }
+
+    private void setStartTime(long startTime) {
+      this.startTime = startTime;
     }
 
     private void setUpdateActiveRow(boolean updateActiveRow) {
@@ -138,9 +149,11 @@ public class AsyncProvider extends Provider {
           queryOffset, queryLimit, caching, callback);
 
       if (!Queries.isResponseFromCache(rpcId)) {
-        startLoading();
+        callback.setStartTime(System.currentTimeMillis());
         callback.setRpcId(rpcId);
+
         pendingRequests.put(rpcId, callback);
+        startLoading();
       }
     }
 
@@ -193,6 +206,13 @@ public class AsyncProvider extends Provider {
   private final RequestScheduler requestScheduler = new RequestScheduler();
 
   private int lastOffset = BeeConst.UNDEF;
+  
+  private int rpcCount = 0;
+  private long rpcMillis = 0;
+  
+  private int repeatStep = 0;
+  private int repeatCount = 0;
+  private long repeatStart = 0;
 
   public AsyncProvider(HasDataTable display, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
@@ -215,6 +235,36 @@ public class AsyncProvider extends Provider {
 
   public CachingPolicy getCachingPolicy() {
     return cachingPolicy;
+  }
+
+  @Override
+  public void onDataRequest(DataRequestEvent event) {
+    switch (event.getOrigin()) {
+      case SCROLLER:
+        requestScheduler.setLastTime(System.currentTimeMillis());
+        resetRepeat();
+        break;
+      
+      case KEYBOARD:
+        int offset = getPageStart();
+        if (getLastOffset() >= 0 && offset != getLastOffset()) {
+          int step = offset - getLastOffset();
+          if (step == getRepeatStep()) {
+            setRepeatCount(getRepeatCount() + 1);
+          } else {
+            setRepeatStart(System.currentTimeMillis());
+            setRepeatCount(1);
+            setRepeatStep(step);
+          }
+//          BeeKeeper.getLog().debug(repeatStep, repeatCount, System.currentTimeMillis() - repeatStart);
+        }
+        break;
+
+      default:
+        resetRepeat();
+    }
+
+    super.onDataRequest(event);
   }
 
   public void onFilterChange(final Filter newFilter, final boolean updateActiveRow) {
@@ -400,8 +450,36 @@ public class AsyncProvider extends Provider {
     return lastOffset;
   }
 
+  private int getRepeatCount() {
+    return repeatCount;
+  }
+  
+  private long getRepeatStart() {
+    return repeatStart;
+  }
+
+  private int getRepeatStep() {
+    return repeatStep;
+  }
+
   private int getRowCount() {
     return getDisplay().getRowCount();
+  }
+
+  private int getRpcCount() {
+    return rpcCount;
+  }
+
+  private long getRpcMillis() {
+    return rpcMillis;
+  }
+
+  private void onResponse(long startTime) {
+    long millis = System.currentTimeMillis() - startTime;
+    if (startTime > 0 && millis > 0) {
+      setRpcCount(getRpcCount() + 1);
+      setRpcMillis(getRpcMillis() + millis);
+    }
   }
 
   private void onRowCount(Integer rowCount, boolean updateActiveRow) {
@@ -414,15 +492,42 @@ public class AsyncProvider extends Provider {
     }
   }
 
+  private void resetRepeat() {
+    setRepeatStep(0);
+    setRepeatCount(0);
+    setRepeatStart(0);
+  }
+
   private void resetRequests() {
     requestScheduler.cancel();
     cancelPendingRequests();
 
     setLastOffset(BeeConst.UNDEF);
+    resetRepeat();
   }
-
+  
   private void setLastOffset(int lastOffset) {
     this.lastOffset = lastOffset;
+  }
+
+  private void setRepeatCount(int repeatCount) {
+    this.repeatCount = repeatCount;
+  }
+
+  private void setRepeatStart(long repeatStart) {
+    this.repeatStart = repeatStart;
+  }
+
+  private void setRepeatStep(int repeatStep) {
+    this.repeatStep = repeatStep;
+  }
+
+  private void setRpcCount(int rpcCount) {
+    this.rpcCount = rpcCount;
+  }
+
+  private void setRpcMillis(long rpcMillis) {
+    this.rpcMillis = rpcMillis;
   }
 
   private void updateDisplay(BeeRowSet data, int queryOffset, boolean updateActiveRow) {
