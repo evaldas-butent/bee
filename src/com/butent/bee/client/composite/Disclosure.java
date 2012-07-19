@@ -245,6 +245,7 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
     return header.getWidget();
   }
 
+  @Override
   public String getIdPrefix() {
     return "disclosure";
   }

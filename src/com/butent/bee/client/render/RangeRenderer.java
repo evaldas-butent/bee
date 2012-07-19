@@ -129,6 +129,7 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
     return index >= 0 && index < getItemCount();
   }
   
+  @Override
   public String render(IsRow row) {
     Value v = getValue(row);
     if (v == null) {

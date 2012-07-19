@@ -92,6 +92,7 @@ public class CalendarKeeper {
 
     FormFactory.createFormView(FORM_NEW_APPOINTMENT, VIEW_APPOINTMENTS,
         getAppointmentViewColumns(), false, builder, new FormFactory.FormViewCallback() {
+          @Override
           public void onSuccess(FormDescription formDescription, FormView result) {
             if (result != null) {
               result.start(null);
@@ -216,6 +217,7 @@ public class CalendarKeeper {
 
     FormFactory.createFormView(FORM_EDIT_APPOINTMENT, VIEW_APPOINTMENTS,
         getAppointmentViewColumns(), false, builder, new FormFactory.FormViewCallback() {
+          @Override
           public void onSuccess(FormDescription formDescription, FormView result) {
             if (result != null) {
               result.start(null);
@@ -310,6 +312,7 @@ public class CalendarKeeper {
   private static void createSettingsForm(final BeeRowSet rowSet, final CalendarPanel cp) {
     FormFactory.createFormView(FORM_CALENDAR_SETTINGS, null, rowSet.getColumns(), false,
         new FormFactory.FormViewCallback() {
+          @Override
           public void onSuccess(FormDescription formDescription, FormView result) {
             if (result != null && getSettingsForm() == null) {
               setSettingsForm(result);
@@ -386,6 +389,7 @@ public class CalendarKeeper {
     String caption = getSettingsForm().getCaption();
 
     Global.inputWidget(caption, getSettingsForm().asWidget(), new InputWidgetCallback() {
+      @Override
       public void onSuccess() {
         int updCount = Queries.update(VIEW_USER_CALENDARS, rowSet.getColumns(), oldRow, newRow,
             null);

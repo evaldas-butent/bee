@@ -36,6 +36,7 @@ public abstract class AbstractSequence<T> implements Sequence<T> {
     insert(getLength(), value);
   }
   
+  @Override
   public abstract AbstractSequence<T> clone();
 
   /**

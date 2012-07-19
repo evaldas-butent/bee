@@ -32,6 +32,7 @@ public abstract class ArraySequence<T> extends AbstractSequence<T> {
     this.length = 0;
   }
 
+  @Override
   public abstract ArraySequence<T> clone();
 
   /**

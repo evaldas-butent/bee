@@ -104,6 +104,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
               showFailure("Error deleting row", reason);
             }
 
+            @Override
             public void onSuccess(Integer result) {
               BeeKeeper.getBus().fireEvent(new RowDeleteEvent(getViewName(), rowId));
               afterDelete(rowId);
@@ -256,6 +257,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     return getDataProvider().getViewName();
   }
 
+  @Override
   public Widget getWidget() {
     return getView().asWidget();
   }
@@ -390,6 +392,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             showFailure("Save Changes", reason);
           }
 
+          @Override
           public void onSuccess(BeeRow row) {
             BeeKeeper.getLog().info("changes saved", getViewName(), rowId);
             BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
@@ -397,6 +400,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         });
   }
 
+  @Override
   public void onViewUnload() {
     getView().setViewPresenter(null);
 
@@ -532,6 +536,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
 
     Global.choice("Išmesti", null, options, new DialogCallback<Integer>() {
+      @Override
       public void onSuccess(Integer value) {
         if (value == 0) {
           deleteRow(activeRow, false);

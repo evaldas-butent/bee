@@ -68,6 +68,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView 
     return container;
   }
 
+  @Override
   public void handleAction(Action action) {
     if (action == null) {
       return;

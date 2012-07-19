@@ -117,6 +117,7 @@ public class TabbedPages extends Flow implements AnimatedLayout,
     DomUtils.createId(this, getIdPrefix());
   }
 
+  @Override
   public void add(Widget w) {
     Assert.untouchable(getClass().getName() + ": cannot add widget without tab");
   }
@@ -168,6 +169,7 @@ public class TabbedPages extends Flow implements AnimatedLayout,
     deckPanel.animate(duration, callback);
   }
 
+  @Override
   public void clear() {
     Iterator<Widget> it = iterator();
     while (it.hasNext()) {
@@ -184,6 +186,7 @@ public class TabbedPages extends Flow implements AnimatedLayout,
     return deckPanel.getAnimationDuration();
   }
 
+  @Override
   public String getIdPrefix() {
     return "tabbed";
   }
@@ -202,14 +205,17 @@ public class TabbedPages extends Flow implements AnimatedLayout,
     return getTabWidget(getWidgetIndex(child));
   }
 
+  @Override
   public Widget getWidget(int index) {
     return deckPanel.getWidget(index);
   }
 
+  @Override
   public int getWidgetCount() {
     return deckPanel.getWidgetCount();
   }
 
+  @Override
   public int getWidgetIndex(Widget child) {
     return deckPanel.getWidgetIndex(child);
   }
@@ -240,10 +246,12 @@ public class TabbedPages extends Flow implements AnimatedLayout,
     return deckPanel.isAnimationVertical();
   }
   
+  @Override
   public Iterator<Widget> iterator() {
     return deckPanel.iterator();
   }
 
+  @Override
   public boolean remove(int index) {
     if ((index < 0) || (index >= getWidgetCount())) {
       return false;
@@ -269,6 +277,7 @@ public class TabbedPages extends Flow implements AnimatedLayout,
     return true;
   }
 
+  @Override
   public boolean remove(Widget w) {
     int index = getWidgetIndex(w);
     if (BeeConst.isUndef(index)) {

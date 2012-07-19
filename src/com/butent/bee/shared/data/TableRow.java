@@ -18,6 +18,7 @@ public class TableRow extends AbstractRow {
     super(id);
   }
 
+  @Override
   public void addCell(IsCell cell) {
     cells.add(cell);
   }

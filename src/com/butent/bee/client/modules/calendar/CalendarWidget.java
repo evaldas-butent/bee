@@ -214,6 +214,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     }
   }
 
+  @Override
   public void onLoad() {
     Scheduler.get().scheduleDeferred(new ScheduledCommand() {
       public void execute() {

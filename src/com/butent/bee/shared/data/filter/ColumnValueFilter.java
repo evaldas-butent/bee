@@ -25,6 +25,7 @@ public class ColumnValueFilter extends ComparisonFilter {
         value);
   }
 
+  @Override
   public Value getValue() {
     return (Value) super.getValue();
   }

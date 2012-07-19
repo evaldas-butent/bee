@@ -94,6 +94,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
 
   public void launch() {
     GridFactory.getGrid(gridName, new Callback<GridDescription>() {
+      @Override
       public void onSuccess(GridDescription result) {
         if (getGridCallback() != null && !getGridCallback().onLoad(result)) {
           return;

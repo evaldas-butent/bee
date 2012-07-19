@@ -34,6 +34,7 @@ public class NewRowPresenter extends AbstractPresenter {
     return container;
   }
 
+  @Override
   public void handleAction(Action action) {
     if (getActionDelegate() != null) {
       getActionDelegate().handleAction(action);

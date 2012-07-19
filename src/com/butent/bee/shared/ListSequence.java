@@ -31,6 +31,7 @@ public class ListSequence<T> extends AbstractSequence<T> {
     values.clear();
   }
 
+  @Override
   public ListSequence<T> clone() {
     List<T> list = Lists.newArrayList(getList());
     return new ListSequence<T>(list);

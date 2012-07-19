@@ -773,6 +773,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       }
     }
 
+    @Override
     public void run() {
       pending = false;
 

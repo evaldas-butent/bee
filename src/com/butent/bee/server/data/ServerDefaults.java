@@ -21,6 +21,7 @@ public class ServerDefaults extends Defaults {
   @EJB
   QueryServiceBean qs;
 
+  @Override
   public Object getValue(DefaultExpression defExpr, Object defValue) {
     return getValue(null, null, defExpr, defValue);
   }

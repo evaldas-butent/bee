@@ -40,6 +40,7 @@ public class Mobile extends ScreenImpl {
     super();
   }
 
+  @Override
   public void start() {
     Element loading = DomUtils.getElement("loading");
     if (loading != null) {

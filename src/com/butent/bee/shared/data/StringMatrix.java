@@ -93,6 +93,7 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
     return getRows().get(rowIndex);
   }
 
+  @Override
   public StringRowArray getRows() {
     return rows;
   }

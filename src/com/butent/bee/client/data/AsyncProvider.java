@@ -267,6 +267,7 @@ public class AsyncProvider extends Provider {
     super.onDataRequest(event);
   }
 
+  @Override
   public void onFilterChange(final Filter newFilter, final boolean updateActiveRow) {
     resetRequests();
     Filter flt = getQueryFilter(newFilter);

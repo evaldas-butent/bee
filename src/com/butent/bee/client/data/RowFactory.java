@@ -296,6 +296,7 @@ public class RowFactory {
 
     FormFactory.createFormView(formName, dataInfo.getViewName(), dataInfo.getColumns(), false, fcb,
         new FormFactory.FormViewCallback() {
+          @Override
           public void onSuccess(FormDescription formDescription, FormView result) {
             if (result != null) {
               result.setEditing(true);

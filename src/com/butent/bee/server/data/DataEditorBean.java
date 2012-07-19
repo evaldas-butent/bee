@@ -90,6 +90,7 @@ public class DataEditorBean {
       this.relation = relation;
     }
 
+    @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
       sb.append(".\ntableAlias: " + tableAlias)

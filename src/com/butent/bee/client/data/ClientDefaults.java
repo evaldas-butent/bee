@@ -5,6 +5,7 @@ import com.butent.bee.shared.data.Defaults;
 
 public class ClientDefaults extends Defaults {
 
+  @Override
   public Object getValue(DefaultExpression defExpr, Object defValue) {
     Object value = null;
 

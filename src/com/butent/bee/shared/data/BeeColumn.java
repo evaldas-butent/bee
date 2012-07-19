@@ -71,6 +71,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     super(type, label, id);
   }
 
+  @Override
   public BeeColumn clone() {
     BeeColumn result = new BeeColumn();
 
@@ -162,6 +163,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     return index;
   }
 
+  @Override
   public List<Property> getInfo() {
     return PropertyUtils.createProperties("Id", getId(),
         "Label", getLabel(),

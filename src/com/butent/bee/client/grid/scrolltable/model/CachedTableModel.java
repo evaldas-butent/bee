@@ -82,6 +82,7 @@ public class CachedTableModel extends TableModel {
       it = new CacheIterator(firstRow, lastRow);
     }
 
+    @Override
     public Iterator<IsRow> getRowValues() {
       return it;
     }

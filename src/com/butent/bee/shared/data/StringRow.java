@@ -95,10 +95,12 @@ public class StringRow extends AbstractRow {
     return BeeUtils.toDoubleOrNull(getString(col));
   }
 
+  @Override
   public Integer getInteger(int col) {
     return BeeUtils.toIntOrNull(getString(col));
   }
 
+  @Override
   public Long getLong(int col) {
     return BeeUtils.toLongOrNull(getString(col));
   }
@@ -108,6 +110,7 @@ public class StringRow extends AbstractRow {
     return values.getLength();
   }
 
+  @Override
   public String getString(int index) {
     assertIndex(index);
     return values.get(index);
@@ -160,14 +163,17 @@ public class StringRow extends AbstractRow {
     }
   }
 
+  @Override
   public void setValue(int index, BigDecimal value) {
     setValue(index, BeeUtils.toString(value));
   }
 
+  @Override
   public void setValue(int index, Boolean value) {
     setValue(index, BooleanValue.pack(value));
   }
 
+  @Override
   public void setValue(int index, DateTime value) {
     if (value == null) {
       clearCell(index);
@@ -176,6 +182,7 @@ public class StringRow extends AbstractRow {
     }
   }
 
+  @Override
   public void setValue(int index, Double value) {
     if (value == null) {
       clearCell(index);
@@ -184,6 +191,7 @@ public class StringRow extends AbstractRow {
     }
   }
 
+  @Override
   public void setValue(int index, Integer value) {
     if (value == null) {
       clearCell(index);
@@ -192,6 +200,7 @@ public class StringRow extends AbstractRow {
     }
   }
 
+  @Override
   public void setValue(int index, JustDate value) {
     if (value == null) {
       clearCell(index);
@@ -200,6 +209,7 @@ public class StringRow extends AbstractRow {
     }
   }
 
+  @Override
   public void setValue(int index, Long value) {
     if (value == null) {
       clearCell(index);
@@ -208,11 +218,13 @@ public class StringRow extends AbstractRow {
     }
   }
 
+  @Override
   public void setValue(int index, String value) {
     assertIndex(index);
     values.set(index, value);
   }
 
+  @Override
   public void setValue(int index, Value value) {
     if (value == null) {
       clearCell(index);

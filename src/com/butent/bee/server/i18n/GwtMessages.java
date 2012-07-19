@@ -26,6 +26,7 @@ public class GwtMessages extends GwtLocalizable {
     super(properties);
   }
 
+  @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     Assert.isTrue(String.class.equals(method.getReturnType()));
 

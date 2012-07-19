@@ -97,6 +97,7 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
     return index >= 0 && index < getItemCount();
   }
   
+  @Override
   public String render(IsRow row) {
     if (row == null) {
       return null;

@@ -88,6 +88,7 @@ public class MapRenderer extends AbstractCellRenderer implements HasItems {
     return index >= 0 && index < getItemCount();
   }
   
+  @Override
   public String render(IsRow row) {
     String key = getString(row);
     if (key == null) {

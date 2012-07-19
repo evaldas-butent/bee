@@ -40,6 +40,7 @@ public class TableColumn implements HasInfo, IsColumn {
     this.pattern = null;
   }
 
+  @Override
   public TableColumn clone() {
     TableColumn result = new TableColumn(type, label, id);
     result.setPattern(pattern);

@@ -96,6 +96,7 @@ public class TextValue extends Value {
     return value;
   }
 
+  @Override
   public String getString() {
     return value;
   }

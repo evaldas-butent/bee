@@ -20,6 +20,7 @@ public class ColumnColumnFilter extends ComparisonFilter {
     super(leftColumn, operator.isStringOperator() ? Operator.EQ : operator, rightColumn);
   }
 
+  @Override
   public String getValue() {
     return (String) super.getValue();
   }

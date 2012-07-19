@@ -58,6 +58,7 @@ public class TestBeeUtilscontaintAny extends TestCase {
     this.value2 = value2;
   }
 
+  @Override
   @SuppressWarnings("static-access")
   @Before
   public void setUp() throws Exception {
@@ -74,6 +75,7 @@ public class TestBeeUtilscontaintAny extends TestCase {
     testc6.add(a.UNKNOWN);
   }
 
+  @Override
   @After
   public void tearDown() throws Exception {
   }

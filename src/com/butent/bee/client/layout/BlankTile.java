@@ -54,6 +54,7 @@ public class BlankTile extends Composite implements HasId, RequiresResize {
     DomUtils.setId(this, id);
   }
   
+  @Override
   protected void onLoad() {
     super.onLoad();
     Scheduler.get().scheduleDeferred(new UpdateCommand());

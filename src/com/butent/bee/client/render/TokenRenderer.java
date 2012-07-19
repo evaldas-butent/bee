@@ -43,6 +43,7 @@ public class TokenRenderer extends AbstractCellRenderer {
     return tokens;
   }
 
+  @Override
   public String render(IsRow row) {
     if (row == null) {
       return null;

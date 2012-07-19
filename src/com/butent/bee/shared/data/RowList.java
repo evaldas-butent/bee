@@ -42,6 +42,7 @@ public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> e
     return getRows().get(rowIndex);
   }
 
+  @Override
   public ListSequence<RowType> getRows() {
     return rows;
   }

@@ -40,22 +40,6 @@ public class Appointment implements Comparable<Appointment> {
     }
   }
   
-  public Appointment clone() {
-    Appointment clone = new Appointment(DataUtils.cloneRow(row));
-
-    if (!getAttendees().isEmpty()) {
-      clone.getAttendees().addAll(getAttendees());
-    }
-    if (!getProperties().isEmpty()) {
-      clone.getProperties().addAll(getProperties());
-    }
-    if (!getReminders().isEmpty()) {
-      clone.getReminders().addAll(getReminders());
-    }
-
-    return clone;
-  }
-
   public int compareTo(Appointment appointment) {
     int compare = BeeUtils.compare(getStart(), appointment.getStart());
     if (compare == BeeConst.COMPARE_EQUAL) {

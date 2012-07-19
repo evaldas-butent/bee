@@ -63,6 +63,7 @@ public class EditorFactory {
       this.state = state;
     }
 
+    @Override
     public void execute() {
       if (editor != null) {
         editor.fireEvent(new EditStopEvent(state));

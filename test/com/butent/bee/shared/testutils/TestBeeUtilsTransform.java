@@ -39,12 +39,14 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     }
   }
 
+  @Override
   @Before
   public void setUp() throws Exception {
     log("Starting test TestBeeUtilsTransform \n \r");
     obj = new TransObject();
   }
 
+  @Override
   @After
   public void tearDown() throws Exception {
   }

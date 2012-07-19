@@ -301,6 +301,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     DomUtils.createId(this, getIdPrefix());
   }
 
+  @Override
   public void add(Widget widget) {
     addItem(widget);
   }
@@ -378,6 +379,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     return addHandler(handler, SelectionEvent.getType());
   }
 
+  @Override
   public void clear() {
     int size = root.getChildCount();
     for (int i = size - 1; i >= 0; i--) {
@@ -500,6 +502,7 @@ public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation
     super.onBrowserEvent(event);
   }
 
+  @Override
   public boolean remove(Widget w) {
     TreeItem item = childWidgets.get(w);
     if (item == null) {

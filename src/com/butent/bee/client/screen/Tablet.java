@@ -32,6 +32,7 @@ public class Tablet extends Mobile {
       this.type = type;
     }
 
+    @Override
     public void execute() {
       String opt = BeeUtils.concat(1, "t" + type,
         "c" + minCount.getValue() + "-" + maxCount.getValue(),
@@ -55,6 +56,7 @@ public class Tablet extends Mobile {
     super();
   }
 
+  @Override
   protected int addLogToggle(BeeLayoutPanel panel) {
     final Toggle toggle = new Toggle("Hide Log", "Show Log", "toggleLog");
     StyleUtils.setFontSize(toggle, FontSize.SMALL);

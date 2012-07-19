@@ -770,6 +770,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (!BeeUtils.isEmpty(editFormName)) {
       FormFactory.createFormView(editFormName, viewName, dataCols, true,
           new FormFactory.FormViewCallback() {
+            @Override
             public void onSuccess(FormDescription formDescription, FormView result) {
               if (result != null) {
                 String containerId = createFormContainer(result, true, null, showEditPopup());
@@ -802,6 +803,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (!BeeUtils.isEmpty(newRowFormName) && !isSingleForm()) {
       FormFactory.createFormView(newRowFormName, viewName, dataCols, true,
           new FormFactory.FormViewCallback() {
+            @Override
             public void onSuccess(FormDescription formDescription, FormView result) {
               embraceNewRowForm(result);
             }

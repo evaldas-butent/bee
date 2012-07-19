@@ -39,6 +39,7 @@ public class Ball extends SpringObject {
     context.fill();
   }
 
+  @Override
   public void update() {
     super.update();
 

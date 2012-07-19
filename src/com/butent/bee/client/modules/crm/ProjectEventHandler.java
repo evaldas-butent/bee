@@ -238,6 +238,7 @@ public class ProjectEventHandler {
       return null;
     }
 
+    @Override
     public String getText() {
       if (dialogWidgets.containsKey(TEXT)) {
         return ((InputText) dialogWidgets.get(TEXT)).getValue();

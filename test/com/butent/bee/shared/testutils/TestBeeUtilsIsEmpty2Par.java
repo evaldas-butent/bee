@@ -51,6 +51,7 @@ public class TestBeeUtilsIsEmpty2Par extends TestCase {
     this.value2 = value2;
   }
 
+  @Override
   @SuppressWarnings("static-access")
   @Before
   public void setUp() throws Exception {
@@ -61,6 +62,7 @@ public class TestBeeUtilsIsEmpty2Par extends TestCase {
     a2.add(b.BOOLEAN);
   }
 
+  @Override
   @After
   public void tearDown() throws Exception {
   }

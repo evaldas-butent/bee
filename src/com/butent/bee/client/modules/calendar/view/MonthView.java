@@ -92,6 +92,7 @@ public class MonthView extends CalendarView {
     canvas.addStyleName(CalendarStyleManager.MONTH_CANVAS);
   }
 
+  @Override
   public void attach(CalendarWidget widget) {
     super.attach(widget);
 
@@ -155,6 +156,7 @@ public class MonthView extends CalendarView {
     return firstDate;
   }
 
+  @Override
   public String getStyleName() {
     return CalendarStyleManager.MONTH_VIEW;
   }

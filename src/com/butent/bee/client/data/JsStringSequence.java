@@ -34,6 +34,7 @@ public class JsStringSequence extends AbstractSequence<String> {
     values.setLength(0);
   }
 
+  @Override
   public JsStringSequence clone() {
     JsArrayString arr = JavaScriptObject.createArray().cast();
     for (int i = 0; i < getLength(); i++) {

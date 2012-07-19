@@ -141,6 +141,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     return getDataProvider().getViewName();
   }
 
+  @Override
   public Widget getWidget() {
     return getView().asWidget();
   }
@@ -250,6 +251,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     });
   }
 
+  @Override
   public void onViewUnload() {
     getView().setViewPresenter(null);
 
