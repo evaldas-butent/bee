@@ -196,7 +196,7 @@ public class AsyncCallback implements RequestCallback {
       dispatchResource(txt);
 
     } else if (txt.indexOf(sep) < 0) {
-      BeeKeeper.getLog().info("response", id, "text", txt);
+      BeeKeeper.getLog().info("<", id, "text", txt);
 
     } else {
       JsArrayString arr = splitResponse(txt, sep, cnt);
@@ -204,7 +204,7 @@ public class AsyncCallback implements RequestCallback {
     }
     duration.finish();
 
-    BeeKeeper.getLog().info("response", id, len,
+    BeeKeeper.getLog().info("<", id, len,
         (info == null) ? BeeConst.STRING_EMPTY : BeeUtils.bracket(info.getCompletedTime()),
         BeeUtils.bracket(duration.getCompletedTime()));
     finalizeResponse();

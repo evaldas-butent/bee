@@ -7,7 +7,6 @@ import com.butent.bee.client.Settings;
 import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -34,8 +33,6 @@ public class LogWidgetHandler extends Handler {
   private final HasIndexedWidgets container;
   
   private final int capacity;
-
-  private int counter = 0;
 
   public LogWidgetHandler(HasIndexedWidgets container) {
     this(container, getDefaultFormatter(), getDefaultLevel());
@@ -86,16 +83,14 @@ public class LogWidgetHandler extends Handler {
     }
 
     String msg = frmt.format(record);
-    if (!BeeUtils.isEmpty(msg)) {
-      counter++;
-    }
 
     Element elem = Document.get().createDivElement().cast();
-    elem.setInnerText(BeeUtils.concat(1, counter, msg));
-    container.add(new Html(elem));
+    elem.setInnerText(msg);
     elem.setClassName(STYLENAME_DEFAULT);
     elem.addClassName(STYLENAME_DEFAULT + BeeConst.STRING_MINUS
         + record.getLevel().getName().toLowerCase());
+
+    container.add(new Html(elem));
   }
 
   public void setDefaultFormatter() {

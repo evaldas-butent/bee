@@ -180,8 +180,8 @@ public class AsyncProvider extends Provider {
       long last = getLastTime();
       setLastTime(now);
 
-      if (now - last < sensitivityMillis) {
-        schedule(sensitivityMillis);
+      if (now - last < AsyncProvider.sensitivityMillis) {
+        schedule(AsyncProvider.sensitivityMillis);
         setActive(true);
       } else {
         run();
@@ -198,32 +198,56 @@ public class AsyncProvider extends Provider {
   }
   
   private static final int DEFAULT_SENSITIVITY_MILLIS = 300;
+  private static final int DEFAULT_MAX_REPEAT_MILLIS = 100;
+
+  private static final int DEFAULT_RPC_DURATION = 500;
+  private static final int PREFETCH_SIZE_COEFFICIENT = 2;
+
+  private static final int DEFAULT_MIN_PREFETCH_STEPS = 1;
+  private static final int DEFAULT_MAX_PREFETCH_STEPS = 100;
+
   private static int sensitivityMillis = 0;
+  private static int maxRepeatMillis = 0;
+
+  private static int minPrefetchSteps = 0;
+  private static int maxPrefetchSteps = 0;
 
   private final CachingPolicy cachingPolicy;
+  private final boolean enablePrefetch;
 
   private final Map<Integer, Callback> pendingRequests = Maps.newLinkedHashMap();
   private final RequestScheduler requestScheduler = new RequestScheduler();
 
-  private int lastOffset = BeeConst.UNDEF;
+  private int lastOffset = 0;
   
   private int rpcCount = 0;
   private long rpcMillis = 0;
   
   private int repeatStep = 0;
-  private int repeatCount = 0;
-  private long repeatStart = 0;
+  private long lastRepeatTime = 0;
+  
+  private boolean prefetchPending = false;
 
   public AsyncProvider(HasDataTable display, NotificationListener notificationListener,
       String viewName, List<BeeColumn> columns, String idColumnName, String versionColumnName,
       Filter immutableFilter, CachingPolicy cachingPolicy) {
+
     super(display, notificationListener, viewName, columns, idColumnName, versionColumnName,
         immutableFilter);
+
     this.cachingPolicy = cachingPolicy;
+    this.enablePrefetch = CachingPolicy.FULL.equals(cachingPolicy);
     
-    if (sensitivityMillis <= 0) {
-      sensitivityMillis = BeeUtils.positive(Settings.getProviderSensitivityMillis(),
-          DEFAULT_SENSITIVITY_MILLIS);
+    if (AsyncProvider.sensitivityMillis <= 0) {
+      AsyncProvider.sensitivityMillis = BeeUtils.positive(Settings.getProviderSensitivityMillis(),
+          AsyncProvider.DEFAULT_SENSITIVITY_MILLIS);
+      AsyncProvider.maxRepeatMillis = BeeUtils.positive(Settings.getProviderRepeatMillis(),
+          AsyncProvider.DEFAULT_MAX_REPEAT_MILLIS);
+
+      AsyncProvider.minPrefetchSteps = BeeUtils.positive(Settings.getProviderMinPrefetchSteps(),
+          AsyncProvider.DEFAULT_MIN_PREFETCH_STEPS);
+      AsyncProvider.maxPrefetchSteps = BeeUtils.positive(Settings.getProviderMaxPrefetchSteps(),
+          AsyncProvider.DEFAULT_MAX_PREFETCH_STEPS);
     }
   }
 
@@ -246,17 +270,20 @@ public class AsyncProvider extends Provider {
         break;
       
       case KEYBOARD:
-        int offset = getPageStart();
-        if (getLastOffset() >= 0 && offset != getLastOffset()) {
-          int step = offset - getLastOffset();
+        if (enablePrefetch && getPageStart() != getLastOffset()) {
+          int step = getPageStart() - getLastOffset();
+
+          long now = System.currentTimeMillis();
+          long duration = now - getLastRepeatTime();
+          setLastRepeatTime(now);
+
           if (step == getRepeatStep()) {
-            setRepeatCount(getRepeatCount() + 1);
+            if (!isPrefetchPending() && duration <= AsyncProvider.maxRepeatMillis) {
+              prefetch(step, (int) duration);
+            }
           } else {
-            setRepeatStart(System.currentTimeMillis());
-            setRepeatCount(1);
             setRepeatStep(step);
           }
-//          BeeKeeper.getLog().debug(repeatStep, repeatCount, System.currentTimeMillis() - repeatStart);
         }
         break;
 
@@ -422,6 +449,10 @@ public class AsyncProvider extends Provider {
     requestScheduler.scheduleQuery(flt, ord, queryOffset, queryLimit, caching, callback);
   }
 
+  private int averageRpcDuration() {
+    return (getRpcCount() > 0) ? (int) (getRpcMillis() / getRpcCount()) : 0;
+  }
+
   private void cancelPendingRequests() {
     if (!pendingRequests.isEmpty()) {
       for (int rpcId : pendingRequests.keySet()) {
@@ -440,7 +471,7 @@ public class AsyncProvider extends Provider {
   }
 
   private Boolean getDirection(int offset) {
-    if (BeeConst.isUndef(getLastOffset()) || offset == getLastOffset()) {
+    if (offset == getLastOffset()) {
       return null;
     } else {
       return offset > getLastOffset();
@@ -450,13 +481,9 @@ public class AsyncProvider extends Provider {
   private int getLastOffset() {
     return lastOffset;
   }
-
-  private int getRepeatCount() {
-    return repeatCount;
-  }
   
-  private long getRepeatStart() {
-    return repeatStart;
+  private long getLastRepeatTime() {
+    return lastRepeatTime;
   }
 
   private int getRepeatStep() {
@@ -466,13 +493,17 @@ public class AsyncProvider extends Provider {
   private int getRowCount() {
     return getDisplay().getRowCount();
   }
-
+  
   private int getRpcCount() {
     return rpcCount;
   }
 
   private long getRpcMillis() {
     return rpcMillis;
+  }
+
+  private boolean isPrefetchPending() {
+    return prefetchPending;
   }
 
   private void onResponse(long startTime) {
@@ -492,31 +523,97 @@ public class AsyncProvider extends Provider {
       getDisplay().setRowData(null, true);
     }
   }
+  
+  private void prefetch(int step, int duration) {
+    int offset = getPageStart();
+    int limit = getPageSize();
+    int rowCount = getRowCount();
+    if (limit <= 0 || limit * AsyncProvider.PREFETCH_SIZE_COEFFICIENT * 2 >= rowCount) {
+      return;
+    }
+
+    int rpcDuration = BeeUtils.positive(averageRpcDuration(), AsyncProvider.DEFAULT_RPC_DURATION);
+    int numberOfSteps = BeeUtils.clamp(rpcDuration / duration + 1,
+        AsyncProvider.minPrefetchSteps, AsyncProvider.maxPrefetchSteps);
+    
+    int queryLimit = limit * AsyncProvider.PREFETCH_SIZE_COEFFICIENT;
+
+    int startOffset;
+    if (step > 0) {
+      startOffset = Math.min(offset + numberOfSteps * step, rowCount - limit);
+      if (startOffset <= offset) {
+        return;
+      }
+      queryLimit = Math.min(queryLimit, rowCount - startOffset);
+      
+    } else {
+      startOffset = Math.max(offset + numberOfSteps * step, limit);
+      if (startOffset >= offset) {
+        return;
+      }
+      queryLimit = Math.min(queryLimit, startOffset);
+    }
+      
+    Filter flt = getFilter();
+    Order ord = getOrder();
+    
+    int from = Global.getCache().firstNotCached(getViewName(), flt, ord, startOffset, queryLimit,
+        step > 0);
+    if (BeeConst.isUndef(from)) {
+      return;
+    }
+    
+    int queryOffset;
+    if (step > 0) {
+      queryOffset = from;
+      if (queryOffset > startOffset) {
+        queryLimit = Math.min(queryLimit, rowCount - queryOffset);
+      }
+      
+    } else {
+      queryOffset = from - queryLimit + 1;
+      if (queryOffset < 0) {
+        queryOffset = 0;
+        queryLimit = from + 1;
+      }
+    }
+    
+    setPrefetchPending(true);
+    final long startTime = System.currentTimeMillis();
+
+    Queries.getRowSet(getViewName(), null, flt, ord, queryOffset, queryLimit, CachingPolicy.WRITE,
+        new Queries.RowSetCallback() {
+          @Override
+          public void onSuccess(BeeRowSet result) {
+            onResponse(startTime);
+            setPrefetchPending(false);
+          }
+        });
+  }
 
   private void resetRepeat() {
     setRepeatStep(0);
-    setRepeatCount(0);
-    setRepeatStart(0);
   }
 
   private void resetRequests() {
     requestScheduler.cancel();
     cancelPendingRequests();
 
-    setLastOffset(BeeConst.UNDEF);
+    setLastOffset(0);
     resetRepeat();
+    setPrefetchPending(false);
   }
-  
+
   private void setLastOffset(int lastOffset) {
     this.lastOffset = lastOffset;
   }
 
-  private void setRepeatCount(int repeatCount) {
-    this.repeatCount = repeatCount;
+  private void setLastRepeatTime(long lastRepeatTime) {
+    this.lastRepeatTime = lastRepeatTime;
   }
-
-  private void setRepeatStart(long repeatStart) {
-    this.repeatStart = repeatStart;
+  
+  private void setPrefetchPending(boolean prefetchPending) {
+    this.prefetchPending = prefetchPending;
   }
 
   private void setRepeatStep(int repeatStep) {

@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -149,6 +150,39 @@ public class CacheManager implements HandlesAllDataEvents {
             System.currentTimeMillis() - millis);
       }
       return ok;
+    }
+
+    private int firstNotCached(Filter filter, Order order, int offset, int limit, boolean forward) {
+      if (dataRows.isEmpty() || offset < 0 || limit <= 0) {
+        return offset;
+      }
+
+      CachedQuery query = getQuery(filter, order);
+      if (query == null) {
+        return offset;
+
+      } else if (!dataRows.isFull()) {
+        for (int i = 0; i < limit; i++) {
+          int k = forward ? offset + i : offset - i;
+          if (!query.containsKey(k)) {
+            return k;
+          }
+        }
+        return BeeConst.UNDEF;
+
+      } else {
+        for (int i = 0; i < limit; i++) {
+          int k = forward ? offset + i : offset - i;
+          Long rowId = query.get(k);
+          if (rowId == null) {
+            return k;
+          }
+          if (!dataRows.containsKey(rowId)) {
+            return k;
+          }
+        }
+        return BeeConst.UNDEF;
+      }
     }
 
     private CachedQuery getQuery(Filter filter, Order order) {
@@ -331,7 +365,21 @@ public class CacheManager implements HandlesAllDataEvents {
     if (entry == null) {
       return false;
     }
+
     return entry.containsRange(filter, order, offset, limit);
+  }
+
+  public int firstNotCached(String viewName, Filter filter, Order order, int offset, int limit,
+      boolean forward) {
+    if (BeeUtils.isEmpty(viewName)) {
+      return offset;
+    }
+    Entry entry = get(viewName);
+    if (entry == null) {
+      return offset;
+    }
+
+    return entry.firstNotCached(filter, order, offset, limit, forward);
   }
   
   public List<ExtendedProperty> getExtendedInfo() {

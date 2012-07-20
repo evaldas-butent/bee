@@ -54,6 +54,18 @@ public class Settings {
     }
   }
 
+  public static int getProviderMaxPrefetchSteps() {
+    return getPropertyInt("providerMaxPrefetchSteps");
+  }
+  
+  public static int getProviderMinPrefetchSteps() {
+    return getPropertyInt("providerMinPrefetchSteps");
+  }
+
+  public static int getProviderRepeatMillis() {
+    return getPropertyInt("providerRepeatMillis");
+  }
+
   public static int getProviderSensitivityMillis() {
     return getPropertyInt("providerSensitivityMillis");
   }

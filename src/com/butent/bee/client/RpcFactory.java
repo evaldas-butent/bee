@@ -58,9 +58,9 @@ public class RpcFactory implements Module {
       BeeKeeper.getLog().info("request", id, "canceled");
       BeeKeeper.getLog().addSeparator();
     } else {
-      BeeKeeper.getLog().info("request", id, "is not pendind");
+      BeeKeeper.getLog().warning("request", id, "is not pendind");
       if (states != null) {
-        BeeKeeper.getLog().info("States:", states);
+        BeeKeeper.getLog().debug("States:", states);
       }
     }
 
@@ -329,7 +329,7 @@ public class RpcFactory implements Module {
     if (debug) {
       BeeKeeper.getLog().info("request", id, meth.toString(), url);
     } else {
-      BeeKeeper.getLog().info("request", id, svc);
+      BeeKeeper.getLog().info(">", id, svc);
     }
 
     String content = null;
