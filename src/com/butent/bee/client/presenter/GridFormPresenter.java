@@ -4,6 +4,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Complex;
+import com.butent.bee.client.utils.Printer;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -93,6 +94,10 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView 
         }
         break;
 
+      case PRINT:
+        Printer.print(getWidget());
+        break;
+        
       default:  
     }
   }

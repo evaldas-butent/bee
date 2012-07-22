@@ -63,6 +63,11 @@ public abstract class CellVector extends ComplexPanel implements HasId, HasIndex
     return vertAlign;
   }
 
+  @Override
+  public boolean isEmpty() {
+    return getWidgetCount() <= 0;
+  }
+
   public void setBorderWidth(int width) {
     table.getStyle().setBorderWidth(width, Unit.PX);
   }

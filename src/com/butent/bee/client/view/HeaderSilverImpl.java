@@ -139,6 +139,12 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
       x += w;
     }
 
+    if (hasAction(Action.PRINT, true, enabledActions, disabledActions)) {
+      addRightTop(createControl(Global.getImages().silverPrint(), Action.PRINT, STYLE_CONTROL),
+          x, y);
+      x += w;
+    }
+    
     if (hasAction(Action.DELETE, hasData && !readOnly, enabledActions, disabledActions)) {
       addRightTop(createControl(Global.getImages().silverDelete(), Action.DELETE, STYLE_CONTROL),
           x, y);

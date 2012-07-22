@@ -78,6 +78,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Browser;
 import com.butent.bee.client.utils.JsUtils;
+import com.butent.bee.client.utils.Printer;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeButton;
@@ -238,6 +239,8 @@ public class CliWorker {
       showNotes(args);
     } else if (BeeUtils.inList(z, "p", "prop")) {
       showProperties(v, arr);
+    } else if (z.startsWith("print")) {
+      print(args);
     } else if (z.equals("progress")) {
       showProgress(arr);
     } else if (z.equals("rebuild")) {
@@ -841,6 +844,39 @@ public class CliWorker {
     BeeKeeper.getScreen().updateActivePanel(widget, ScrollBars.BOTH);
   }
 
+  private static void print(String args) {
+    Widget widget = null;
+    Element element = null;
+    
+    if (BeeUtils.same(args, "log")) {
+      widget = BeeKeeper.getLog().getArea();
+      if (widget == null || BeeKeeper.getLog().isEmpty()) {
+        Global.showError("log is empty");
+        return;
+      }
+      
+    } else if (!BeeUtils.isEmpty(args)) {
+      element = DomUtils.getElementQuietly(args);
+      if (element == null) {
+        Global.showError(args, "element not found");
+        return;
+      }
+
+    } else {
+      widget = BeeKeeper.getScreen().getActiveWidget();
+      if (widget == null) {
+        Global.showError("active widget not available");
+        return;
+      }
+    }
+    
+    if (widget != null) {
+      Printer.print(widget);
+    } else if (element != null) {
+      Printer.print(element);
+    }
+  }
+  
   private static void querySelector(String command, String selectors) {
     int p = command.indexOf('#');
     Element root = null;
@@ -2364,34 +2400,19 @@ public class CliWorker {
 
   private static void style(String v, String[] arr) {
     if (BeeUtils.length(arr) < 2) {
-      NodeList<Element> nodes = Document.get().getElementsByTagName("style");
-      if (nodes == null || nodes.getLength() <= 0) {
-        Global.showDialog("styles not available");
-        return;
-      }
-      int stCnt = nodes.getLength();
+      int sheetCnt = JsUtils.evalToInt("$doc.styleSheets.length");
 
       List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
-      PropertyUtils.addExtended(lst, "Styles", "count", stCnt);
+      PropertyUtils.addExtended(lst, "sheets", "count", sheetCnt);
 
-      for (int i = 0; i < stCnt; i++) {
-        String ref = "$doc.getElementsByTagName('style').item(" + i + ").sheet.rules";
+      for (int i = 0; i < sheetCnt; i++) {
+        String ref = "$doc.styleSheets[" + i + "].rules";
         int len = JsUtils.evalToInt(ref + ".length");
-        PropertyUtils.addExtended(lst, "Style " + BeeUtils.progress(i + 1, stCnt), "rules", len);
+        PropertyUtils.addExtended(lst, "sheet " + BeeUtils.progress(i + 1, sheetCnt), "rules", len);
 
         for (int j = 0; j < len; j++) {
-          JavaScriptObject obj = JsUtils.eval(ref + "[" + j + "]");
-          if (obj == null) {
-            PropertyUtils.addExtended(lst, "Rule", BeeUtils.progress(j + 1, len), "not available");
-            break;
-          }
-
-          JsArrayString prp = JsUtils.getProperties(obj, null);
-          for (int k = 0; k < prp.length() - 2; k += 3) {
-            PropertyUtils.addExtended(lst,
-                BeeUtils.concat(1, "Rule", BeeUtils.progress(j + 1, len), prp.get(k * 3)),
-                prp.get(k * 3 + 1), prp.get(k * 3 + 2));
-          }
+          String text = JsUtils.evalToString(ref + "[" + j + "].cssText");
+          PropertyUtils.addExtended(lst, "rule", BeeUtils.progress(j + 1, len), text);
         }
       }
 

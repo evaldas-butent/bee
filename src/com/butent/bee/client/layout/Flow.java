@@ -67,7 +67,12 @@ public class Flow extends FlowPanel implements HasId, HasAllDragAndDropHandlers,
   public String getIdPrefix() {
     return "flow";
   }
-  
+
+  @Override
+  public boolean isEmpty() {
+    return getWidgetCount() <= 0;
+  }
+
   @Override
   public void onAttach() {
     super.onAttach();

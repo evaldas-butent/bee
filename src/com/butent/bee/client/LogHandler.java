@@ -110,17 +110,8 @@ public class LogHandler implements Module {
   }
 
   public int getSize() {
-    int z = BeeConst.UNDEF;
-    if (getArea() == null) {
-      return z;
-    }
-
     Widget parent = getArea().getParent();
-    if (parent instanceof Split) {
-      z = ((Split) parent).getWidgetSize(getArea());
-    }
-
-    return z;
+    return (parent instanceof Split) ? ((Split) parent).getWidgetSize(getArea()) :  BeeConst.UNDEF;
   }
 
   public void hide() {
@@ -132,6 +123,10 @@ public class LogHandler implements Module {
   }
 
   public void init() {
+  }
+  
+  public boolean isEmpty() {
+    return getArea().isEmpty(); 
   }
 
   public void log(Level level, Object... obj) {

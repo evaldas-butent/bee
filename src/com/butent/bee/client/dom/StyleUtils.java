@@ -1047,6 +1047,27 @@ public class StyleUtils {
     Assert.notNull(obj);
     return getRectangle(obj.getElement());
   }
+  
+  public static String getRules() {
+    int sheetCount = JsUtils.evalToInt("$doc.styleSheets.length");
+    if (sheetCount <= 0) {
+      return BeeConst.STRING_EMPTY;
+    }
+    
+    StringBuilder rules = new StringBuilder();
+    for (int i = 0; i < sheetCount; i++) {
+      String ref = "$doc.styleSheets[" + i + "].rules";
+      int len = JsUtils.evalToInt(ref + ".length");
+
+      for (int j = 0; j < len; j++) {
+        String text = JsUtils.evalToString(ref + "[" + j + "].cssText");
+        if (!BeeUtils.isEmpty(text)) {
+          rules.append(text);
+        }
+      }
+    }
+    return rules.toString();
+  }
 
   public static ScrollBars getScroll(Element el) {
     Assert.notNull(el);

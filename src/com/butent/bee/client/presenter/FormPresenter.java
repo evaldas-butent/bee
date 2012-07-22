@@ -26,6 +26,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Printer;
 import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
 import com.butent.bee.client.view.HasSearch;
@@ -189,6 +190,10 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         }
         break;
 
+      case PRINT:
+        Printer.print(getWidget());
+        break;
+        
       default:
         BeeKeeper.getLog().info(action, "not implemented");
     }

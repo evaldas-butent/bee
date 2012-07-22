@@ -29,6 +29,8 @@ public interface Screen extends Module, NotificationListener {
 
   int getActivePanelWidth();
 
+  Widget getActiveWidget();
+  
   HasWidgets getCommandPanel();
   
   Split getScreenPanel();

@@ -36,6 +36,7 @@ import com.butent.bee.client.modules.calendar.view.MonthView;
 import com.butent.bee.client.modules.calendar.view.ResourceView;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.UiOption;
+import com.butent.bee.client.utils.Printer;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
@@ -249,6 +250,10 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
       case CLOSE:
         BeeKeeper.getScreen().closeView(this);
+        break;
+
+      case PRINT:
+        Printer.print(calendar);
         break;
 
       default:

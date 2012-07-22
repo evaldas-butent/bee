@@ -27,6 +27,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Printer;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasGridView;
@@ -312,6 +313,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       case BOOKMARK:
         Global.getFavorites().bookmark(getViewName(), getActiveRow(), getDataColumns(),
             getView().getFavorite());
+        break;
+        
+      case PRINT:
+        if (getGridView().getGrid().getRowCount() > 0) {
+          Printer.print(getWidget());
+        }
         break;
 
       default:

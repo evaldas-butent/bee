@@ -170,6 +170,18 @@ public class ScreenImpl implements Screen {
     return p.getOffsetWidth();
   }
 
+  @Override
+  public Widget getActiveWidget() {
+    TilePanel p = getActivePanel();
+    if (p != null) {
+      Widget w = p.getCenter();
+      if (w != null && !(w instanceof BlankTile)) {
+        return w;
+      }
+    }
+    return null;
+  }
+
   public HasWidgets getCommandPanel() {
     return commandPanel;
   }
