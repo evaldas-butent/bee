@@ -1,7 +1,9 @@
 package com.butent.bee.server.modules.commons;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.eventbus.Subscribe;
 
 import com.butent.bee.server.data.BeeView;
@@ -102,6 +104,20 @@ public class CommonsModuleBean implements BeeModule {
     return getName();
   }
 
+  @Override
+  public Multimap<String, String> getSearchableColumns() {
+    Multimap<String, String> result = ArrayListMultimap.create();
+    
+    result.put(CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_NAME);
+    result.put(CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_CODE);
+    result.put(CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_EMAIL);
+    result.put(CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_ADDRESS);
+    result.put(CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_CITY_NAME);
+    result.put(CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_COUNTRY_NAME);
+    
+    return result;
+  }
+  
   @Override
   public void init() {
     sys.registerViewEventHandler(new ViewEventHandler() {

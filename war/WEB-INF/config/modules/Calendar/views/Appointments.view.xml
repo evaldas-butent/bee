@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Appointments" source="Appointments" newRowCaption="Naujas vizitas"
+  name="Appointments" source="Appointments" caption="Vizitai" newRowCaption="Naujas vizitas"
   >
   <Columns>
     <SimpleColumn name="AppointmentType" />

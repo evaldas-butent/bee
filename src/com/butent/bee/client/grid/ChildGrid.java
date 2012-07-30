@@ -112,7 +112,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
 
     setPendingRow(event.getRow());
     setPendingEnabled(event.isEnabled());
-    
+
     resolveState();
   }
 

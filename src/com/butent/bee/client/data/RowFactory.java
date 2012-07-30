@@ -47,8 +47,7 @@ import java.util.List;
 
 public class RowFactory {
 
-  public static final String DIALOG_STYLE_NEW = "bee-NewRow";
-  public static final String DIALOG_STYLE_EDIT = "bee-EditRow";
+  public static final String DIALOG_STYLE = "bee-NewRow";
 
   private static final String DEFAULT_CAPTION = "Naujas";
 
@@ -328,7 +327,7 @@ public class RowFactory {
 
     NewRowPresenter presenter = new NewRowPresenter(formView, cap);
 
-    final ModalForm dialog = new ModalForm(presenter.getWidget(), formView);
+    final ModalForm dialog = new ModalForm(presenter.getWidget(), formView, false, true);
     final Holder<State> state = Holder.of(State.OPEN);
 
     presenter.setActionDelegate(new HandlesActions() {

@@ -1,6 +1,7 @@
 package com.butent.bee.client.view.navigation;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
@@ -182,6 +183,11 @@ public class SimplePager extends AbstractPager {
       layout.add(widgetForw);
     }
     layout.add(widgetLast);
+  }
+
+  @Override
+  public boolean onPrint(Element source, Element target) {
+    return !DomUtils.isImageElement(source);
   }
 
   @Override

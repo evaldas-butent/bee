@@ -332,6 +332,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   private final String sourceAlias;
   private final boolean readOnly;
 
+  private final String caption;
+
   private final String editForm;
   private final String newRowForm;
   private final String newRowColumns;
@@ -351,6 +353,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     this.moduleName = moduleName;
     this.name = xmlView.name;
     Assert.notEmpty(name);
+
+    this.caption = xmlView.caption;
 
     this.editForm = xmlView.editForm;
     this.newRowForm = xmlView.newRowForm;
@@ -390,6 +394,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public Integer getCacheMaximumSize() {
     return cacheMaximumSize;
+  }
+
+  public String getCaption() {
+    return caption;
   }
 
   public SqlFunction getColumnAggregate(String colName) {
@@ -520,7 +528,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
         "Source", getSourceName(), "Source Alias", getSourceAlias(),
         "Source Id Name", getSourceIdName(), "Source Version Name", getSourceVersionName(),
         "Filter", BeeUtils.transform(getFilter()), "Read Only", isReadOnly(),
-        "Edit Form", getEditForm(), "New Row Form", getNewRowForm(),
+        "Caption", getCaption(), "Edit Form", getEditForm(), "New Row Form", getNewRowForm(),
         "New Row Columns", getNewRowColumns(), "New Row Caption", getNewRowCaption(),
         "Cache Maximum Size", getCacheMaximumSize(), "Cache Eviction", getCacheEviction(),
         "Query", query.getQuery(), "Columns", columns.size());

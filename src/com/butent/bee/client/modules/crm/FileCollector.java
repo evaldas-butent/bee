@@ -231,7 +231,7 @@ public class FileCollector extends AbstractGridCallback implements DragOverHandl
   }
 
   private void hideDropArea() {
-    if (StyleUtils.containsClassName(getDropArea(), StyleUtils.DROP_AREA)) {
+    if (StyleUtils.hasClassName(getDropArea(), StyleUtils.DROP_AREA)) {
       getDropArea().removeClassName(StyleUtils.DROP_AREA);
     }
   }
@@ -253,7 +253,7 @@ public class FileCollector extends AbstractGridCallback implements DragOverHandl
   }
 
   private void showDropArea() {
-    if (!StyleUtils.containsClassName(getDropArea(), StyleUtils.DROP_AREA)) {
+    if (!StyleUtils.hasClassName(getDropArea(), StyleUtils.DROP_AREA)) {
       getDropArea().addClassName(StyleUtils.DROP_AREA);
     }
   }

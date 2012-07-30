@@ -1,7 +1,9 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.OpenEvent;
@@ -23,6 +25,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
@@ -34,9 +37,10 @@ import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.modules.calendar.event.UpdateEvent;
 import com.butent.bee.client.modules.calendar.view.MonthView;
 import com.butent.bee.client.modules.calendar.view.ResourceView;
+import com.butent.bee.client.output.Printable;
+import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.utils.Printer;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.View;
@@ -60,7 +64,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.EnumSet;
 import java.util.List;
 
-public class CalendarPanel extends Complex implements AppointmentEvent.Handler, Presenter, View {
+public class CalendarPanel extends Complex implements AppointmentEvent.Handler, Presenter, View,
+    Printable {
 
   private static final String STYLE_PANEL = "bee-cal-Panel";
   private static final String STYLE_CONTROLS = "bee-cal-Panel-controls";
@@ -84,6 +89,8 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.YEAR_MONTH);
 
   private final long calendarId;
+  
+  private final HeaderView header;
 
   private final CalendarWidget calendar;
   private final Html dateBox;
@@ -129,7 +136,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     calendar.suspendLayout();
 
-    HeaderView header = GWT.create(HeaderImpl.class);
+    this.header = GWT.create(HeaderImpl.class);
     header.create(caption, false, true, EnumSet.of(UiOption.ROOT),
         EnumSet.of(Action.REFRESH, Action.CONFIGURE), null);
     header.setViewPresenter(this);
@@ -226,6 +233,11 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     return null;
   }
 
+  @Override
+  public Element getPrintElement() {
+    return getElement();
+  }
+
   public Presenter getViewPresenter() {
     return this;
   }
@@ -249,11 +261,11 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         break;
 
       case CLOSE:
-        BeeKeeper.getScreen().closeView(this);
+        BeeKeeper.getScreen().closeWidget(this);
         break;
 
       case PRINT:
-        Printer.print(calendar);
+        Printer.print(this);
         break;
 
       default:
@@ -271,6 +283,40 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       calendar.removeAppointment(event.getAppointment().getId(), false);
     }
     calendar.addAppointment(event.getAppointment(), true);
+  }
+
+  @Override
+  public boolean onPrint(Element source, Element target) {
+    boolean ok;
+    String id = source.getId();
+
+    if (getId().equals(id)) {
+      StyleUtils.setSize(target, source.getClientWidth(), source.getClientHeight());
+      ok = true;
+
+    } else if (calendar.getElement().isOrHasChild(source)) {
+      if (source.getScrollTop() > 0) {
+        target.setScrollTop(source.getScrollTop());
+      }
+      ok = true;
+
+    } else if (dateBox.getId().equals(id)) {
+      ok = Type.MONTH.equals(calendar.getType());      
+      
+    } else if (viewTabs.getId().equals(id)) {
+      ok = false;
+      
+    } else if (StyleUtils.hasAnyClass(source, Sets.newHashSet(STYLE_TODAY, STYLE_NAV_ITEM))) {
+      ok = false;
+      
+    } else if (header.asWidget().getElement().isOrHasChild(source)) {
+      ok = header.onPrint(source, target);
+    
+    } else {
+      ok = true;
+    }
+
+    return ok;
   }
 
   @Override
@@ -299,12 +345,12 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         getAppointmentEventRegistration().removeHandler();
         setAppointmentEventRegistration(null);
       }
-      
+
       CalendarKeeper.saveActiveView(getSettings());
     }
     super.onUnload();
   }
-  
+
   CalendarSettings getSettings() {
     return calendar.getSettings();
   }

@@ -1,6 +1,7 @@
 package com.butent.bee.client.screen;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -25,7 +26,6 @@ import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.BeeLayoutPanel;
-import com.butent.bee.client.layout.BlankTile;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
@@ -39,12 +39,11 @@ import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.StateService;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.ServiceCommand;
-import com.butent.bee.client.view.View;
-import com.butent.bee.client.view.search.SearchBox;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.Service;
@@ -57,6 +56,18 @@ import com.butent.bee.shared.utils.NameUtils;
  */
 
 public class ScreenImpl implements Screen {
+  
+  private class BlankTile extends CustomWidget {
+    private BlankTile() {
+      super(Document.get().createDivElement());
+      setStyleName("bee-BlankTile");
+    }
+
+    @Override
+    public String getIdPrefix() {
+      return "blank";
+    }
+  }
 
   private class SplitCommand extends BeeCommand {
     Direction direction = null;
@@ -82,6 +93,9 @@ public class ScreenImpl implements Screen {
     }
   }
 
+  private static final String ACTIVE_BLANK = "bee-activeBlank";
+  private static final String ACTIVE_CONTENT = "bee-activeContent";
+  
   private LayoutPanel rootPanel;
 
   private int minTileSize = 20;
@@ -119,9 +133,9 @@ public class ScreenImpl implements Screen {
       Widget w = np.getCenter();
 
       if (w instanceof BlankTile) {
-        w.addStyleName(StyleUtils.ACTIVE_BLANK);
+        w.addStyleName(ACTIVE_BLANK);
       } else if (w != null) {
-        np.getWidgetContainerElement(w).addClassName(StyleUtils.ACTIVE_CONTENT);
+        np.getWidgetContainerElement(w).addClassName(ACTIVE_CONTENT);
       }
     }
 
@@ -134,14 +148,12 @@ public class ScreenImpl implements Screen {
     getCommandPanel().add(widget);
   }
 
-  public void closeView(View view) {
-    Assert.notNull(view, "closeView: view is null");
-    Widget widget = view.asWidget();
-    Assert.notNull(widget, "closeView: view widget is null");
+  public void closeWidget(Widget widget) {
+    Assert.notNull(widget, "closeWidget: view widget is null");
 
     TilePanel panel = getPanel(widget);
     if (panel == null) {
-      notifyWarning("closeView: panel not found");
+      notifyWarning("closeWidget: panel not found");
       return;
     }
 
@@ -429,28 +441,7 @@ public class ScreenImpl implements Screen {
 
     panel.add(img);
 
-    Flow searchContainer = new Flow();
-    searchContainer.addStyleName("bee-MainSearchContainer");
-
-    SearchBox box = new SearchBox("Search");
-    box.addStyleName("bee-MainSearchBox");
-    searchContainer.add(box);
-    
-    Simple optionsContainer = new Simple();
-    optionsContainer.addStyleName("bee-MainSearchOptionsContainer");
-    BeeImage options = new BeeImage(Global.getImages().searchOptions().getSafeUri());
-    options.addStyleName("bee-MainSearchOptions");
-    optionsContainer.setWidget(options);
-    searchContainer.add(optionsContainer);
-
-    Simple submitContainer = new Simple();
-    submitContainer.addStyleName("bee-MainSearchSubmitContainer");
-    BeeImage submit = new BeeImage(Global.getImages().search().getSafeUri());
-    submit.addStyleName("bee-MainSearchSubmit");
-    submitContainer.setWidget(submit);
-    searchContainer.add(submitContainer);
-
-    panel.add(searchContainer);
+    panel.add(Global.getSearchWidget());
     
     Flow commandContainer = new Flow();
     commandContainer.addStyleName("bee-MainCommandPanel");
@@ -634,9 +625,9 @@ public class ScreenImpl implements Screen {
       Widget w = op.getCenter();
 
       if (w instanceof BlankTile) {
-        w.removeStyleName(StyleUtils.ACTIVE_BLANK);
+        w.removeStyleName(ACTIVE_BLANK);
       } else if (w != null) {
-        op.getWidgetContainerElement(w).removeClassName(StyleUtils.ACTIVE_CONTENT);
+        op.getWidgetContainerElement(w).removeClassName(ACTIVE_CONTENT);
       }
     }
 

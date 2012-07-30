@@ -564,7 +564,7 @@ class AppointmentBuilder extends AbstractFormCallback {
     });
 
     Global.inputWidget("Pasirinkite resursus", widget, callback, false,
-        RowFactory.DIALOG_STYLE_NEW);
+        RowFactory.DIALOG_STYLE, false);
   }
 
   private void buildIncrementally() {

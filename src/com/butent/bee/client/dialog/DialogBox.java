@@ -15,12 +15,13 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Vertical;
+import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
+public class DialogBox extends Popup implements HasHTML, HasSafeHtml, Printable {
 
   public interface Caption extends HasHTML, HasSafeHtml, IsWidget {
   }
@@ -54,10 +55,6 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
     this(autoHide, true, STYLE_DIALOG);
   }
 
-  public DialogBox(boolean autoHide, boolean modal, String styleName) {
-    this(autoHide, modal, new CaptionImpl(), styleName);
-  }
-
   public DialogBox(boolean autoHide, boolean modal, Caption captionWidget, String styleName) {
     super(autoHide, modal, BeeUtils.notEmpty(styleName, STYLE_DIALOG));
 
@@ -83,16 +80,20 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
     enableDragging();
   }
 
+  public DialogBox(boolean autoHide, boolean modal, String styleName) {
+    this(autoHide, modal, new CaptionImpl(), styleName);
+  }
+
   public DialogBox(Caption captionWidget, String styleName) {
     this(false, true, captionWidget, styleName);
   }
 
-  public DialogBox(String html, String styleName) {
-    this(new CaptionImpl(html), styleName);
-  }
-
   public DialogBox(String html) {
     this(html, STYLE_DIALOG);
+  }
+
+  public DialogBox(String html, String styleName) {
+    this(new CaptionImpl(html), styleName);
   }
 
   public void addChild(Widget widget) {
@@ -112,8 +113,18 @@ public class DialogBox extends Popup implements HasHTML, HasSafeHtml {
     return "dialog";
   }
 
+  @Override
+  public Element getPrintElement() {
+    return layout.getElement();
+  }
+
   public String getText() {
     return caption.getText();
+  }
+
+  @Override
+  public boolean onPrint(Element source, Element target) {
+    return true;
   }
 
   public void setHTML(SafeHtml html) {

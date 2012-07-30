@@ -32,6 +32,7 @@ import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.widget.BeeButton;
@@ -145,6 +146,7 @@ public class InputBoxes {
   private static final String STYLE_INPUT_CONFIRM = "bee-InputConfirm";
   private static final String STYLE_INPUT_CANCEL = "bee-InputCancel";
 
+  private static final String STYLE_INPUT_PRINT = "bee-InputPrint";
   private static final String STYLE_INPUT_SAVE = "bee-InputSave";
 
   public void inputString(String caption, String prompt, final DialogCallback<String> callback,
@@ -372,7 +374,7 @@ public class InputBoxes {
   }
 
   public void inputWidget(String caption, Widget widget, final InputWidgetCallback callback,
-      boolean enableGlass, String dialogStyle, UIObject target,
+      boolean enableGlass, String dialogStyle, UIObject target, boolean enablePrint,
       String confirmHtml, String cancelHtml, final int timeout, WidgetInitializer initializer) {
 
     Assert.notNull(widget);
@@ -411,6 +413,21 @@ public class InputBoxes {
     addCommandGroup(dialog, panel, confirmHtml, cancelHtml, initializer, state, errorDisplay,
         errorSupplier);
 
+    if (enablePrint) {
+      BeeImage print = new BeeImage(Global.getImages().silverPrint(),
+          new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+              Printer.print(dialog);
+            }
+          });
+
+      print.addStyleName(STYLE_INPUT_PRINT);
+      UiHelper.initialize(print, initializer, DialogConstants.WIDGET_PRINT);
+
+      dialog.addChild(print);
+    }
+
     if (BeeUtils.isEmpty(confirmHtml)) {
       BeeImage save = new BeeImage(Global.getImages().silverSave(),
           new Scheduler.ScheduledCommand() {
@@ -425,7 +442,7 @@ public class InputBoxes {
               }
             }
           });
-    
+
       save.addStyleName(STYLE_INPUT_SAVE);
       UiHelper.initialize(save, initializer, DialogConstants.WIDGET_SAVE);
 

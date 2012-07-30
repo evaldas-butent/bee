@@ -1,6 +1,8 @@
 package com.butent.bee.server.modules.calendar;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
@@ -105,6 +107,32 @@ public class CalendarModuleBean implements BeeModule {
     return getName();
   }
 
+  @Override
+  public Multimap<String, String> getSearchableColumns() {
+    Multimap<String, String> result = ArrayListMultimap.create();
+    
+    result.put(VIEW_APPOINTMENTS, COL_SUMMARY);
+    result.put(VIEW_APPOINTMENTS, COL_DESCRIPTION);
+
+    result.put(VIEW_APPOINTMENTS, COL_ORGANIZER_FIRST_NAME);
+    result.put(VIEW_APPOINTMENTS, COL_ORGANIZER_LAST_NAME);
+
+    result.put(VIEW_APPOINTMENTS, COL_COMPANY_NAME);
+    result.put(VIEW_APPOINTMENTS, COL_COMPANY_EMAIL);
+
+    result.put(VIEW_APPOINTMENTS, COL_VEHICLE_NUMBER);
+    result.put(VIEW_APPOINTMENTS, COL_VEHICLE_PARENT_MODEL);
+    result.put(VIEW_APPOINTMENTS, COL_VEHICLE_MODEL);
+
+    result.put(VIEW_CALENDARS, COL_NAME);
+    result.put(VIEW_CALENDARS, COL_DESCRIPTION);
+
+    result.put(VIEW_CALENDARS, COL_OWNER_FIRST_NAME);
+    result.put(VIEW_CALENDARS, COL_OWNER_LAST_NAME);
+    
+    return result;
+  }
+  
   @Override
   public void init() {
   }

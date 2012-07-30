@@ -187,6 +187,8 @@ public class CalendarConstants {
 
   public static final String COL_COMPANY = "Company";
   public static final String COL_COMPANY_NAME = "CompanyName";
+  public static final String COL_COMPANY_PHONE = "CompanyPhone";
+  public static final String COL_COMPANY_EMAIL = "CompanyEmail";
 
   public static final String COL_APPOINTMENT = "Appointment";
   public static final String COL_APPOINTMENT_TYPE = "AppointmentType";
@@ -239,6 +241,9 @@ public class CalendarConstants {
   public static final String COL_ORGANIZER_FIRST_NAME = "OrganizerFirstName";
   public static final String COL_ORGANIZER_LAST_NAME = "OrganizerLastName";
 
+  public static final String COL_OWNER_FIRST_NAME = "OwnerFirstName";
+  public static final String COL_OWNER_LAST_NAME = "OwnerLastName";
+  
   public static final String COL_COMPANY_PERSON = "CompanyPerson";
 
   public static final String COL_SIMPLE_HEADER = "SimpleHeader";

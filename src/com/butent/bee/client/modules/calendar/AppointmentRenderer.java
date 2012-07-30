@@ -31,6 +31,8 @@ class AppointmentRenderer {
   private static final String DEFAULT_COMPACT_TEMPLATE;
   private static final String DEFAULT_TITLE_TEMPLATE;
 
+  private static final String STRING_TEMPLATE;
+
   private static final Splitter TEMPLATE_SPLITTER =
       Splitter.on(CharMatcher.inRange('\u0000', '\u001f'));
 
@@ -41,6 +43,7 @@ class AppointmentRenderer {
   private static final String MULTI_HTML_SEPARATOR = " ";
   private static final String COMPACT_HTML_SEPARATOR = " ";
 
+  private static final String STRING_SEPARATOR = ", ";
   private static final String CHILD_SEPARATOR = ", ";
   private static final String PERIOD_SEPARATOR = " - ";
 
@@ -85,6 +88,14 @@ class AppointmentRenderer {
         wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), BeeConst.STRING_EMPTY, wrap(COL_DESCRIPTION),
         BeeConst.STRING_EMPTY, BeeUtils.concat(1, wrap(COL_ORGANIZER_FIRST_NAME),
             wrap(COL_ORGANIZER_LAST_NAME)), wrap(KEY_REMINDERS));
+
+    STRING_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
+        wrap(COL_COMPANY_NAME),
+        BeeUtils.concat(1, wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL),
+            wrap(COL_VEHICLE_NUMBER)), wrap(COL_SUMMARY),
+        wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), wrap(COL_DESCRIPTION),
+        BeeUtils.concat(1, wrap(COL_ORGANIZER_FIRST_NAME), wrap(COL_ORGANIZER_LAST_NAME)),
+        wrap(KEY_REMINDERS));
   }
 
   private static String wrap(String s) {
@@ -161,6 +172,10 @@ class AppointmentRenderer {
   void renderSimple(AppointmentWidget appointmentWidget) {
     render(appointmentWidget, DEFAULT_SIMPLE_HEADER_TEMPLATE, DEFAULT_SIMPLE_BODY_TEMPLATE,
         DEFAULT_TITLE_TEMPLATE, false);
+  }
+  
+  String renderString(Appointment appointment) {
+    return parseTemplate(STRING_TEMPLATE, getSubstitutes(appointment), STRING_SEPARATOR);
   }
 
   private Map<String, String> getSubstitutes(Appointment appointment) {

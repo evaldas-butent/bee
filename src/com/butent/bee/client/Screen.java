@@ -8,7 +8,6 @@ import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TilePanel;
-import com.butent.bee.client.view.View;
 import com.butent.bee.shared.BeeResource;
 
 /**
@@ -21,7 +20,7 @@ public interface Screen extends Module, NotificationListener {
 
   void addCommandItem(Widget widget);  
   
-  void closeView(View view);
+  void closeWidget(Widget widget);
 
   TilePanel getActivePanel();
 

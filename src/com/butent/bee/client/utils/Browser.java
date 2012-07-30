@@ -126,6 +126,10 @@ public class Browser {
         "Scroll Left", Window.getScrollLeft(),
         "Scroll Top", Window.getScrollTop());
   }
+  
+  public static boolean isChrome() {
+    return BeeUtils.context("chrome", Window.Navigator.getUserAgent());
+  }
 
   private Browser() {
   }

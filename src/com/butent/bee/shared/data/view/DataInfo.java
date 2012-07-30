@@ -47,6 +47,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   private String idColumn;
   private String versionColumn;
 
+  private String caption;
+
   private String editForm;
   private String newRowForm;
   private String newRowColumns;
@@ -61,7 +63,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   private int rowCount = BeeConst.UNDEF;
 
   public DataInfo(String viewName, String tableName, String idColumn, String versionColumn,
-      String editForm, String newRowForm, String newRowColumns, String newRowCaption,
+      String caption, String editForm,
+      String newRowForm, String newRowColumns, String newRowCaption,
       Integer cacheMaximumSize, String cacheEviction,
       List<BeeColumn> columns, List<ViewColumn> viewColumns) {
 
@@ -70,6 +73,8 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
     setIdColumn(idColumn);
     setVersionColumn(versionColumn);
+    
+    setCaption(caption);
 
     setEditForm(editForm);
     setNewRowForm(newRowForm);
@@ -128,13 +133,15 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
-    Assert.lengthEquals(arr, 13);
+    Assert.lengthEquals(arr, 14);
     int index = 0;
 
     setViewName(arr[index++]);
     setTableName(arr[index++]);
     setIdColumn(arr[index++]);
     setVersionColumn(arr[index++]);
+
+    setCaption(arr[index++]);
 
     setEditForm(arr[index++]);
     setNewRowForm(arr[index++]);
@@ -180,6 +187,10 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
   public ReplacementPolicy getCacheReplacementPolicy() {
     return NameUtils.getEnumByName(ReplacementPolicy.class, getCacheEviction());
+  }
+
+  public String getCaption() {
+    return caption;
   }
 
   public BeeColumn getColumn(String columnId) {
@@ -301,6 +312,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
         "Table Name", getTableName(),
         "Id Column", getIdColumn(),
         "Version Column", getVersionColumn(),
+        "Caption", getCaption(),
         "Edit Form", getEditForm(),
         "New Row Form", getNewRowForm(),
         "New Row Columns", getNewRowColumns(),
@@ -492,7 +504,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   public String serialize() {
     return Codec.beeSerialize(
         new Object[] {getViewName(), getTableName(), getIdColumn(), getVersionColumn(),
-            getEditForm(), getNewRowForm(), getNewRowColumns(), getNewRowCaption(),
+            getCaption(), getEditForm(), getNewRowForm(), getNewRowColumns(), getNewRowCaption(),
             getCacheMaximumSize(), getCacheEviction(),
             getColumns(), getViewColumns(), getRowCount()});
   }
@@ -511,6 +523,10 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
   private void setCacheMaximumSize(Integer cacheMaximumSize) {
     this.cacheMaximumSize = cacheMaximumSize;
+  }
+
+  private void setCaption(String caption) {
+    this.caption = caption;
   }
 
   private void setEditForm(String editForm) {
@@ -532,7 +548,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   private void setNewRowForm(String newRowForm) {
     this.newRowForm = newRowForm;
   }
-
+  
   private void setTableName(String tableName) {
     this.tableName = tableName;
   }
@@ -540,7 +556,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
   private void setVersionColumn(String versionColumn) {
     this.versionColumn = versionColumn;
   }
-  
+
   private void setViewName(String viewName) {
     this.viewName = viewName;
   }

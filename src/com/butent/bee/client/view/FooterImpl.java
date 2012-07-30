@@ -2,6 +2,7 @@ package com.butent.bee.client.view;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
@@ -64,7 +65,7 @@ public class FooterImpl extends Absolute implements FooterView, HasNavigation, H
       pager.addStyleName(STYLE_PAGER);
       add(pager, left, TOP);
       left += PAGER_WIDTH + SPACING;
-      pagerId = pager.getWidgetId();
+      setPagerId(pager.getWidgetId());
     }
 
     if (addSearch) {
@@ -72,7 +73,7 @@ public class FooterImpl extends Absolute implements FooterView, HasNavigation, H
       search.addStyleName(STYLE_SEARCH);
       add(search, left, TOP);
       StyleUtils.setRight(search, SPACING + SELECTION_COUNTER_WIDTH + HORIZONTAL_MARGIN);
-      searchId = search.getWidgetId();
+      setSearchId(search.getWidgetId());
     }
 
     BeeLabel selectionCounter = new BeeLabel();
@@ -89,6 +90,11 @@ public class FooterImpl extends Absolute implements FooterView, HasNavigation, H
     return ViewHelper.getPagers(this);
   }
 
+  @Override
+  public Element getPrintElement() {
+    return getElement();
+  }
+
   public Collection<SearchView> getSearchers() {
     return ViewHelper.getSearchers(this);
   }
@@ -103,6 +109,22 @@ public class FooterImpl extends Absolute implements FooterView, HasNavigation, H
 
   public boolean isEnabled() {
     return enabled;
+  }
+
+  @Override
+  public boolean onPrint(Element source, Element target) {
+    if (!BeeUtils.isEmpty(getPagerId())) {
+      for (PagerView pager : getPagers()) {
+        if (pager.asWidget().getElement().isOrHasChild(source)) {
+          return pager.onPrint(source, target);
+        }
+      }
+    }
+    
+    if (!BeeUtils.isEmpty(getSearchId()) && getSearchId().equals(source.getId())) {
+      return !BeeUtils.isEmpty(DomUtils.getValue(source));
+    }
+    return true;
   }
 
   public void onSelectionCountChange(SelectionCountChangeEvent event) {
@@ -140,18 +162,34 @@ public class FooterImpl extends Absolute implements FooterView, HasNavigation, H
   }
 
   private void adjust() {
-    if (BeeUtils.isEmpty(pagerId)) {
+    if (BeeUtils.isEmpty(getPagerId())) {
       return;
     }
 
-    int pagerWidth = DomUtils.getChildOffsetWidth(this, pagerId);
+    int pagerWidth = DomUtils.getChildOffsetWidth(this, getPagerId());
     if (pagerWidth <= 0) {
       return;
     }
 
-    if (!BeeUtils.isEmpty(searchId)) {
+    if (!BeeUtils.isEmpty(getSearchId())) {
       int left = HORIZONTAL_MARGIN + pagerWidth + SPACING;
-      StyleUtils.setLeft(DomUtils.getChild(this, searchId), left);
+      StyleUtils.setLeft(DomUtils.getChild(this, getSearchId()), left);
     }
+  }
+
+  private String getPagerId() {
+    return pagerId;
+  }
+
+  private String getSearchId() {
+    return searchId;
+  }
+
+  private void setPagerId(String pagerId) {
+    this.pagerId = pagerId;
+  }
+
+  private void setSearchId(String searchId) {
+    this.searchId = searchId;
   }
 }

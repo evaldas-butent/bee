@@ -1,6 +1,7 @@
 package com.butent.bee.client.view;
 
 import com.google.common.collect.Maps;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.ui.HasEnabled;
@@ -182,6 +183,11 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     return HEIGHT;
   }
 
+  @Override
+  public Element getPrintElement() {
+    return getElement();
+  }
+
   public Presenter getViewPresenter() {
     return viewPresenter;
   }
@@ -189,7 +195,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   public String getWidgetId() {
     return getId();
   }
-
+      
   public boolean hasAction(Action action) {
     if (action == null) {
       return false;
@@ -197,7 +203,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
       return getActionControls().containsKey(action);
     }
   }
-      
+
   public boolean isEnabled() {
     return enabled;
   }
@@ -214,6 +220,12 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     } else {
       StyleUtils.unhideDisplay(getLoadingIndicatorId());
     }
+  }
+
+  @Override
+  public boolean onPrint(Element source, Element target) {
+    String id = source.getId();
+    return BeeUtils.isEmpty(id) ? true : !actionControls.containsValue(id);
   }
 
   public void removeCaptionStyle(String style) {
@@ -250,7 +262,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   public void setMessage(String message) {
     messageWidget.setText(BeeUtils.trim(message));
   }
-
+  
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
@@ -271,7 +283,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
       StyleUtils.hideDisplay(widgetId);
     }
   }
-  
+
   private Widget createControl(ImageResource image, Action action, String styleName) {
     BeeImage control = new BeeImage(image, new ActionListener(action));
     if (!BeeUtils.isEmpty(styleName)) {
@@ -283,7 +295,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     }
     return control;
   }
-
+  
   private Map<Action, String> getActionControls() {
     return actionControls;
   }

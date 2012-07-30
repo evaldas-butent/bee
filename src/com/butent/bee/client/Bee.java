@@ -45,6 +45,8 @@ public class Bee implements EntryPoint {
         TuningFactory.getTools();
 
         BeeKeeper.getBus().registerExitHandler("Don't leave me this way");
+        
+        Global.getSearch().focus();
       }
     });
   }

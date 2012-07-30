@@ -24,6 +24,7 @@ import com.butent.bee.shared.data.event.ParentRowEvent;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
+import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -192,6 +193,11 @@ public class EventManager implements Module {
     return RowInsertEvent.register(getBus(prior), handler);
   }
 
+  public HandlerRegistration registerRowTransformHandler(RowTransformEvent.Handler handler,
+      boolean prior) {
+    return RowTransformEvent.register(getBus(prior), handler);
+  }
+  
   public HandlerRegistration registerRowUpdateHandler(RowUpdateEvent.Handler handler,
       boolean prior) {
     return RowUpdateEvent.register(getBus(prior), handler);

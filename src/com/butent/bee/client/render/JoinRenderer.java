@@ -29,7 +29,7 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
     }
     
     private String getValue(IsRow row) {
-      return DataUtils.getValue(row, index, type);
+      return DataUtils.transform(row, index, type);
     }
   }
   

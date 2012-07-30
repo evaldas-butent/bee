@@ -1,10 +1,13 @@
 package com.butent.bee.client.presenter;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Complex;
-import com.butent.bee.client.utils.Printer;
+import com.butent.bee.client.output.Printable;
+import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -15,8 +18,8 @@ import com.butent.bee.shared.ui.Action;
 
 import java.util.Set;
 
-public class GridFormPresenter extends AbstractPresenter implements HasGridView {
-  
+public class GridFormPresenter extends AbstractPresenter implements HasGridView, Printable {
+
   public static final String STYLE_FORM_CONTAINER = "bee-GridFormContainer";
   public static final String STYLE_FORM_HEADER = "bee-GridFormHeader";
   public static final String STYLE_FORM_CAPTION = "bee-GridFormCaption";
@@ -27,12 +30,12 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView 
   public static String getFormStyle(String base, boolean edit) {
     return base + (edit ? SUFFIX_EDIT : SUFFIX_NEW_ROW);
   }
-  
+
   private final GridView gridView;
-  
+
   private final HeaderView header;
   private final Complex container;
-  
+
   private final boolean editSave;
 
   public GridFormPresenter(GridView gridView, FormView formView, String caption,
@@ -43,10 +46,10 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView 
     this.container = createContainer(this.header, formView, edit);
 
     this.header.setViewPresenter(this);
-    
+
     this.editSave = editSave;
   }
-  
+
   public FormView getForm() {
     for (Widget child : container) {
       if (child instanceof FormView) {
@@ -55,7 +58,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView 
     }
     return null;
   }
-  
+
   public GridCallback getGridCallback() {
     return gridView.getGridCallback();
   }
@@ -63,7 +66,12 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView 
   public GridView getGridView() {
     return gridView;
   }
-  
+
+  @Override
+  public Element getPrintElement() {
+    return getWidget().getElement();
+  }
+
   @Override
   public Widget getWidget() {
     return container;
@@ -74,7 +82,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView 
     if (action == null) {
       return;
     }
-    
+
     switch (action) {
       case CLOSE:
         gridView.formCancel();
@@ -95,21 +103,37 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView 
         break;
 
       case PRINT:
-        Printer.print(getWidget());
+        Printer.print(this);
         break;
-        
-      default:  
+
+      default:
     }
   }
-  
+
   public boolean hasAction(Action action) {
     return header.hasAction(action);
   }
-  
+
   public void hideAction(Action action) {
     header.showAction(action, false);
   }
-  
+
+  @Override
+  public boolean onPrint(Element source, Element target) {
+    boolean ok;
+
+    if (container.getId().equals(source.getId())) {
+      StyleUtils.setSize(target, source.getClientWidth(), source.getClientHeight());
+      ok = true;
+    } else if (header.asWidget().getElement().isOrHasChild(source)) {
+      ok = header.onPrint(source, target);
+    } else {
+      ok = true;
+    }
+
+    return ok;
+  }
+
   public void setCaption(String caption) {
     header.setCaption(caption);
   }
@@ -117,7 +141,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView 
   public void setMessage(String message) {
     header.setMessage(message);
   }
-  
+
   public void showAction(Action action) {
     header.showAction(action, true);
   }
@@ -125,7 +149,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView 
   public void showAction(Action action, boolean visible) {
     header.showAction(action, visible);
   }
-  
+
   public void updateStyle(boolean edit) {
     container.removeStyleName(getFormStyle(STYLE_FORM_CONTAINER, !edit));
     container.addStyleName(getFormStyle(STYLE_FORM_CONTAINER, edit));
@@ -133,7 +157,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView 
     header.removeCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, !edit));
     header.addCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, edit));
   }
-  
+
   private Complex createContainer(HeaderView headerView, FormView formView, boolean edit) {
     Complex formContainer = new Complex();
     formContainer.addStyleName(STYLE_FORM_CONTAINER);
@@ -141,10 +165,10 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView 
 
     formContainer.addTopHeightFillHorizontal(headerView.asWidget(), 0, headerView.getHeight());
     formContainer.addTopBottomFillHorizontal(formView.asWidget(), headerView.getHeight(), 0);
-    
+
     return formContainer;
   }
-  
+
   private HeaderView createHeader(String caption, Set<Action> actions, boolean edit) {
     HeaderView formHeader = GWT.create(HeaderImpl.class);
     formHeader.asWidget().addStyleName(STYLE_FORM_HEADER);
@@ -153,7 +177,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView 
     formHeader.create(caption, false, false, null, actions, null);
     formHeader.addCaptionStyle(STYLE_FORM_CAPTION);
     formHeader.addCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, edit));
-    
-    return formHeader; 
+
+    return formHeader;
   }
 }

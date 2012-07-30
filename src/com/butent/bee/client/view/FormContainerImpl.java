@@ -1,6 +1,7 @@
 package com.butent.bee.client.view;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -226,6 +227,11 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     }
   }
 
+  @Override
+  public Element getPrintElement() {
+    return getElement();
+  }
+
   public Collection<SearchView> getSearchers() {
     if (hasSearch()) {
       return ViewHelper.getSearchers(this);
@@ -301,6 +307,35 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     }
 
     showNewRowCommands(true);
+  }
+
+  @Override
+  public boolean onPrint(Element source, Element target) {
+    boolean ok;
+
+    if (getId().equals(source.getId())) {
+      int width = source.getClientWidth();
+      int height = source.getClientHeight();
+      
+      Element content = getContent().asWidget().getElement();
+      int delta = content.getScrollHeight() - content.getClientHeight();
+      if (delta > 0) {
+        height += delta;
+      }
+
+      StyleUtils.setSize(target, width, height);
+      ok = true;
+
+    } else if (hasHeader() && getHeader().asWidget().getElement().isOrHasChild(source)) {
+      ok = getHeader().onPrint(source, target);
+    
+    } else if (hasFooter() && getFooter().asWidget().getElement().isOrHasChild(source)) {
+      ok = getFooter().onPrint(source, target);
+    
+    } else {
+      ok = true;
+    }
+    return ok;
   }
 
   public void setCommandHeight(int commandHeight) {

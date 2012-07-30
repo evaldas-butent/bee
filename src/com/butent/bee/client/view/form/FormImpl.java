@@ -745,6 +745,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public void refreshCellContent(String columnSource) {
   }
 
+  public void refreshChildWidgets(IsRow rowValue) {
+    BeeKeeper.getBus().fireEventFromSource(new ParentRowEvent(getViewName(), rowValue,
+        isRowEnabled(rowValue)), getId());
+  }
+
   public void reset() {
   }
 
@@ -1182,11 +1187,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
 
     focus(idx, forward, cycle);
-  }
-
-  private void refreshChildWidgets(IsRow rowValue) {
-    BeeKeeper.getBus().fireEventFromSource(new ParentRowEvent(getViewName(), rowValue,
-        isRowEnabled(rowValue)), getId());
   }
 
   private void refreshData(boolean refreshChildren, boolean focus) {

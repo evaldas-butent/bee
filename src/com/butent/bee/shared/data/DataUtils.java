@@ -6,6 +6,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
+import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -404,16 +405,6 @@ public class DataUtils {
     return rs;
   }
 
-  public static String getValue(IsRow row, int index, ValueType type) {
-    if (row.isNull(index)) {
-      return null;
-    } else if (type == null || ValueType.isString(type)) {
-      return row.getString(index);
-    } else {
-      return row.getValue(index, type).toString();
-    }
-  }
-
   public static boolean hasId(IsRow row) {
     return row != null && isId(row.getId());
   }
@@ -424,6 +415,53 @@ public class DataUtils {
 
   public static boolean isNewRow(IsRow row) {
     return row != null && row.getId() == NEW_ROW_ID;
+  }
+
+  public static String join(String viewName, IsRow row, List<String> colNames, Object separator) {
+    Assert.notEmpty(viewName);
+    DataInfo dataInfo = Data.getDataInfo(viewName);
+    if (dataInfo == null) {
+      return null;
+    }
+
+    Assert.notNull(row);
+    Assert.notEmpty(colNames);
+    
+    String sep = BeeUtils.normSep(separator);
+    StringBuilder sb = new StringBuilder();
+    
+    for (String colName : colNames) {
+      int i = dataInfo.getColumnIndex(colName);
+      Assert.nonNegative(i, "column not found: " + colName);
+
+      String value = transform(row, i, dataInfo.getColumns().get(i).getType());
+      if (!BeeUtils.isEmpty(value)) {
+        if (sb.length() > 0) {
+          sb.append(sep);
+        }
+        sb.append(value.trim());
+      }
+    }
+    return sb.toString();
+  }
+
+  public static String join(IsRow row, List<? extends IsColumn> columns, Object separator) {
+    Assert.notNull(row);
+    Assert.notEmpty(columns);
+    
+    String sep = BeeUtils.normSep(separator);
+    StringBuilder sb = new StringBuilder();
+    
+    for (int i = 0; i < columns.size(); i++) {
+      String value = transform(row, i, columns.get(i).getType());
+      if (!BeeUtils.isEmpty(value)) {
+        if (sb.length() > 0) {
+          sb.append(sep);
+        }
+        sb.append(value.trim());
+      }
+    }
+    return sb.toString();
   }
 
   public static List<String> parseColumns(List<String> input, List<? extends IsColumn> columns,
@@ -446,7 +484,7 @@ public class DataUtils {
     }
     return result;
   }
-
+  
   public static List<String> parseColumns(String input, List<? extends IsColumn> columns,
       String idColumnName, String versionColumnName) {
     if (BeeUtils.isEmpty(input)) {
@@ -667,6 +705,16 @@ public class DataUtils {
 
   public static void setValue(BeeRowSet rowSet, IsRow row, String columnId, String value) {
     row.setValue(getColumnIndex(columnId, rowSet.getColumns()), value);
+  }
+  
+  public static String transform(IsRow row, int index, ValueType type) {
+    if (row.isNull(index)) {
+      return null;
+    } else if (type == null || ValueType.isString(type)) {
+      return row.getString(index);
+    } else {
+      return row.getValue(index, type).toString();
+    }
   }
 
   public static List<String> translate(List<String> input, List<? extends IsColumn> columns,

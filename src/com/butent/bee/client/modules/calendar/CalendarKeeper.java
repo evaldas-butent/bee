@@ -11,6 +11,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.grid.GridFactory;
@@ -25,6 +26,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowActionEvent;
+import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
@@ -37,16 +39,41 @@ public class CalendarKeeper {
   private static class RowActionHandler implements RowActionEvent.Handler {
     public void onRowAction(final RowActionEvent event) {
       if (event.hasView(VIEW_CALENDARS)) {
+        event.consume();
         Long calId = event.getRowId();
         if (DataUtils.isId(calId)) {
           String calName = event.hasRow() ?
               Data.getString(VIEW_CALENDARS, event.getRow(), COL_NAME) : event.getOptions();
           openCalendar(calId, calName);
         }
+
+      } else if (event.hasView(VIEW_APPOINTMENTS)) {
+        event.consume();
+        if (event.getRow() instanceof BeeRow) {
+          loadData(CACHED_VIEWS, new CalendarCache.MultiCallback() {
+            @Override
+            public void onSuccess(Integer cnt) {
+              openAppointment(new Appointment((BeeRow) event.getRow()), false);
+            }
+          });
+        }
       }
     }
   }
 
+  private static class RowTransformHandler implements RowTransformEvent.Handler {
+    public void onRowTransform(RowTransformEvent event) {
+      if (event.hasView(VIEW_CALENDARS)) {
+        event.setResult(DataUtils.join(VIEW_CALENDARS, event.getRow(),
+            Lists.newArrayList(COL_NAME, COL_DESCRIPTION, COL_OWNER_FIRST_NAME,
+                COL_OWNER_LAST_NAME), 1));
+
+      } else if (event.hasView(VIEW_APPOINTMENTS)) {
+        event.setResult(APPOINTMENT_RENDERER.renderString(new Appointment(event.getRow())));
+      }
+    }
+  }
+  
   static final CalendarCache CACHE = new CalendarCache();
   
   private static final List<String> CACHED_VIEWS =
@@ -83,6 +110,7 @@ public class CalendarKeeper {
 
     BeeKeeper.getBus().registerDataHandler(CACHE, true);
     BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler(), false);
+    BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
 
     SelectorEvent.register(new SelectorHandler());
   }
@@ -103,7 +131,7 @@ public class CalendarKeeper {
               }
               
               Global.inputWidget(getAppointmentViewInfo().getNewRowCaption(), result.asWidget(),
-                  builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE_NEW);
+                  builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE, true);
             }
           }
         });
@@ -230,7 +258,7 @@ public class CalendarKeeper {
               builder.setColor(appointment.getColor());
 
               Global.inputWidget(result.getCaption(), result.asWidget(),
-                  builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE_EDIT);
+                  builder.getModalCallback(), glass, RowEditor.DIALOG_STYLE, true);
             }
           }
         });

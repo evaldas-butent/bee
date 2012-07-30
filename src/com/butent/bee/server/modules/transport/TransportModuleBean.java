@@ -1,5 +1,7 @@
 package com.butent.bee.server.modules.transport;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.eventbus.Subscribe;
 
 import com.butent.bee.server.data.DataEditorBean;
@@ -107,6 +109,18 @@ public class TransportModuleBean implements BeeModule {
     return getName();
   }
 
+  @Override
+  public Multimap<String, String> getSearchableColumns() {
+    Multimap<String, String> result = ArrayListMultimap.create();
+    
+    result.put(TransportConstants.VIEW_VEHICLES, TransportConstants.COL_NUMBER);
+    result.put(TransportConstants.VIEW_VEHICLES, TransportConstants.COL_PARENT_MODEL_NAME);
+    result.put(TransportConstants.VIEW_VEHICLES, TransportConstants.COL_MODEL_NAME);
+    result.put(TransportConstants.VIEW_VEHICLES, TransportConstants.COL_OWNER_NAME);
+    
+    return result;
+  }
+  
   @Override
   public void init() {
     sys.registerViewEventHandler(new ViewEventHandler() {

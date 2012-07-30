@@ -21,19 +21,13 @@ public class ModalForm extends Popup {
   private boolean wasAttached = false;
   private boolean pendingUnload = false;
 
-  public ModalForm(Widget widget) {
-    this(widget, null);
-  }
-
-  public ModalForm(Widget widget, HasDimensions dimensions) {
-    this(widget, dimensions, false);
-  }
-  
-  public ModalForm(Widget widget, HasDimensions dimensions, boolean requiresUnload) {
+  public ModalForm(Widget widget, HasDimensions dimensions, boolean requiresUnload, boolean glass) {
     super(false, true, STYLE_NAME);
     this.requiresUnload = requiresUnload;
-
-    enableGlass();
+    
+    if (glass) {
+      enableGlass();
+    }
     setAnimationEnabled(true);
 
     widget.addStyleName(STYLE_NAME + "-content");

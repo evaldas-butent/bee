@@ -67,6 +67,8 @@ public class Global implements Module {
   private static final Favorites FAVORITES = new Favorites();
   
   private static final Defaults DEFAULTS = new ClientDefaults();
+
+  private static final Search SEARCH = new Search();
   
   public static void addStyleSheet(String name, String text) {
     if (BeeUtils.isEmpty(name)) {
@@ -239,6 +241,14 @@ public class Global implements Module {
     return CAPTIONS.keySet();
   }
   
+  public static Search getSearch() {
+    return SEARCH;
+  }
+
+  public static Widget getSearchWidget() {
+    return SEARCH.ensureWidget();
+  }
+  
   public static Map<String, String> getStylesheets() {
     return STYLE_SHEETS;
   }
@@ -336,24 +346,24 @@ public class Global implements Module {
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback) {
-    inputWidget(caption, input, callback, false, null);
+    inputWidget(caption, input, callback, false, null, false);
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,
-      boolean enableGlass, String dialogStyle) {
-    inputWidget(caption, input, callback, enableGlass, dialogStyle, null);
+      boolean enableGlass, String dialogStyle, boolean enablePrint) {
+    inputWidget(caption, input, callback, enableGlass, dialogStyle, null, enablePrint);
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,
-      boolean enableGlass, String dialogStyle, UIObject target) {
-    INP_BOXEN.inputWidget(caption, input, callback, enableGlass, dialogStyle, target,
+      boolean enableGlass, String dialogStyle, UIObject target, boolean enablePrint) {
+    INP_BOXEN.inputWidget(caption, input, callback, enableGlass, dialogStyle, target, enablePrint,
         null, null, BeeConst.UNDEF, null);
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,
-      boolean enableGlass, String dialogStyle, UIObject target,
+      boolean enableGlass, String dialogStyle, UIObject target, boolean enablePrint,
       String confirmHtml, String cancelHtml, int timeout, WidgetInitializer initializer) {
-    INP_BOXEN.inputWidget(caption, input, callback, enableGlass, dialogStyle, target,
+    INP_BOXEN.inputWidget(caption, input, callback, enableGlass, dialogStyle, target, enablePrint,
         confirmHtml, cancelHtml, timeout, initializer);
   }
 

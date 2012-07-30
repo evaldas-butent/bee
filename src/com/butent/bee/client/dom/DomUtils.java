@@ -90,6 +90,7 @@ public class DomUtils {
   public static final String TAG_CANVAS = "canvas";
   public static final String TAG_DIV = "div";
   public static final String TAG_HEAD = "head";
+  public static final String TAG_IMG = "img";
   public static final String TAG_INPUT = "input";
   public static final String TAG_LABEL = "label";
   public static final String TAG_METER = "meter";
@@ -1157,6 +1158,11 @@ public class DomUtils {
 
     return lst;
   }
+
+  public static String getValue(Element elem) {
+    Assert.notNull(elem);
+    return elem.getPropertyString(ATTRIBUTE_VALUE);
+  }
   
   public static int getValueInt(Element elem) {
     Assert.notNull(elem);
@@ -1314,6 +1320,13 @@ public class DomUtils {
     return false;
   }
 
+  public static boolean isImageElement(Element el) {
+    if (el == null) {
+      return false;
+    }
+    return el.getTagName().equalsIgnoreCase(TAG_IMG);
+  }
+
   public static boolean isInputElement(Element el) {
     if (el == null) {
       return false;
@@ -1340,6 +1353,13 @@ public class DomUtils {
     }
   }
 
+  public static boolean isSelectElement(Element el) {
+    if (el == null) {
+      return false;
+    }
+    return el.getTagName().equalsIgnoreCase(TAG_SELECT);
+  }
+  
   public static boolean isTableCellElement(Element el) {
     return isTdElement(el) || isThElement(el);
   }

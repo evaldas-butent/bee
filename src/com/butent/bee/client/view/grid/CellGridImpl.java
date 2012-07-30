@@ -758,7 +758,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     setEditMode(BeeUtils.unbox(gridDescr.getEditMode()));
     setEditSave(BeeUtils.unbox(gridDescr.getEditSave()));
 
-    String editFormName = gridDescr.getEditForm();
+    String editFormName = BeeUtils.notEmpty(gridDescr.getEditForm(),
+        (getDataInfo() == null) ? null : getDataInfo().getEditForm());
     final String newRowFormName = BeeUtils.notEmpty(gridDescr.getNewRowForm(),
         (getDataInfo() == null) ? null : getDataInfo().getNewRowForm());
 
@@ -1394,9 +1395,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     if (asPopup) {
       if (edit) {
-        setEditPopup(new ModalForm(container, formView, true));
+        setEditPopup(new ModalForm(container, formView, true, false));
       } else {
-        setNewRowPopup(new ModalForm(container, formView, true));
+        setNewRowPopup(new ModalForm(container, formView, true, true));
       }
 
     } else {

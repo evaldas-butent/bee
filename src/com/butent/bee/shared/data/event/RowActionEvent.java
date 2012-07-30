@@ -32,10 +32,8 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
 
   private String service;
   private String options;
-
-  public RowActionEvent(String viewName, IsRow row) {
-    this(viewName, row, null, null);
-  }
+  
+  private boolean consumed = false;
 
   public RowActionEvent(String viewName, IsRow row, String service) {
     this(viewName, row, service, null);
@@ -45,10 +43,6 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
     this(viewName, row, (row == null) ? BeeConst.UNDEF : row.getId(), service, options);
   }
 
-  public RowActionEvent(String viewName, long rowId) {
-    this(viewName, rowId, null, null);
-  }
-  
   public RowActionEvent(String viewName, long rowId, String service) {
     this(viewName, rowId, service, null);
   }
@@ -63,6 +57,10 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
     this.rowId = rowId;
     this.service = service;
     this.options = options;
+  }
+  
+  public void consume() {
+    setConsumed(true);
   }
 
   @Override
@@ -100,6 +98,14 @@ public class RowActionEvent extends Event<RowActionEvent.Handler> implements Dat
   
   public boolean hasView(String view) {
     return BeeUtils.same(view, getViewName());
+  }
+
+  public boolean isConsumed() {
+    return consumed;
+  }
+
+  public void setConsumed(boolean consumed) {
+    this.consumed = consumed;
   }
 
   public void setOptions(String options) {

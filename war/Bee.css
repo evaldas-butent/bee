@@ -111,17 +111,16 @@ body, select {
 }
 
 .bee-MainSearchContainer {
-  left: 105px;
-  top: 28px;
-  width: 200px;
-  display: none;
+  left: 125px;
+  top: 20px;
+  width: 300px;
 }
 
 .bee-MainSearchBox {
-  width: 125px;
+  width: 225px;
   height: 27px;
-  color: #7F7F7F;
-  font: 11px Verdana;
+  color: #444;
+  font: 12px Verdana;
   border: 1px solid #BAB9B9;
   padding: 6px;
   outline-style: none;
@@ -161,7 +160,7 @@ body, select {
 }  
 
 .bee-MainCommandPanel {
-  left: 310px;
+  left: 440px;
   top: 28px;
   right: 225px;
 }
@@ -183,7 +182,7 @@ body, select {
 
 .bee-MainMenu {
   left: 150px;
-  top: 50px;
+  top: 60px;
 }
 
 .bee-UserContainer {
@@ -937,7 +936,7 @@ body, select {
   padding-right: 1em;
 }
 
-.bee-GridFormContainer, .bee-NewRowContainer {
+.bee-GridFormContainer, .bee-NewRowContainer, .bee-RowContainer {
   position: absolute;
   left: 0;
   right: 0;
@@ -949,7 +948,7 @@ body, select {
   background-color: #fafffa;
 }
 
-.bee-GridFormContainer-edit, .bee-EditRow .bee-Dialog-content {
+.bee-GridFormContainer-edit, .bee-RowContainer, .bee-EditRow .bee-Dialog-content {
   background-color: #fafafa;
 }
 
@@ -958,7 +957,7 @@ body, select {
   color: green;
 }
 
-.bee-GridFormCaption-edit, .bee-EditRow .bee-Dialog-caption {
+.bee-GridFormCaption-edit, .bee-RowCaption, .bee-EditRow .bee-Dialog-caption {
   font-size: medium;
 }
 
@@ -1041,6 +1040,13 @@ body, select {
   position: absolute;
   top: 2px;
   right: 45px;
+  z-index: 1;
+}
+
+.bee-InputPrint {
+  position: absolute;
+  top: 2px;
+  right: 88px;
   z-index: 1;
 }
 
@@ -1201,6 +1207,10 @@ body, select {
 .bee-ModalForm-glass, .bee-NewRow-glass, .bee-EditRow-glass {
   background-color: white;
   opacity: 0.7;
+}
+
+.bee-ModalForm-content > .bee-WindowHeader {
+  cursor: move;
 }
 
 .bee-TabbedPages-tabPanel {
@@ -1369,6 +1379,50 @@ body, select {
   right: 6px;
   background-color: #aff;
   text-align: center;
+}
+
+.bee-SearchResultHeader {
+  height: 32px;
+  background-color: #eee;
+  position: relative; 
+}
+.bee-SearchResultCaption {
+  font-size: medium;
+  margin-left: 1em;
+}
+.bee-SearchResultMessage {
+  margin-left: 1em;
+}
+.bee-SearchResultClose {
+  position: absolute;
+  right: 2px;
+  top: 2px;
+}
+
+.bee-SearchResultContent {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 36px;
+  bottom: 0px;
+  overflow: auto;
+}
+.bee-SearchResultView {
+  color: #a50336;
+  font-weight: bolder;
+  margin-top: 4px;
+}
+.bee-SearchResultRow {
+  color: #666;
+  margin-left: 1em;
+}
+.bee-SearchResultRow:hover {
+  text-decoration: underline;
+  color: #00e;
+  cursor: pointer;
+}
+.bee-SearchResultMatch {
+  background-color: #ff8;
 }
 
 ::-webkit-scrollbar {

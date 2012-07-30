@@ -181,7 +181,6 @@
       <xs:enumeration value="ascending" />
       <xs:enumeration value="bookmark" />
       <xs:enumeration value="bookmark_add" />
-      <xs:enumeration value="butent" />
       <xs:enumeration value="cancel" />
       <xs:enumeration value="close" />
       <xs:enumeration value="configure" />

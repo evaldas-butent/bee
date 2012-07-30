@@ -72,13 +72,14 @@ import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TilePanel;
+import com.butent.bee.client.output.Printable;
+import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Browser;
 import com.butent.bee.client.utils.JsUtils;
-import com.butent.bee.client.utils.Printer;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeButton;
@@ -92,6 +93,7 @@ import com.butent.bee.client.widget.Svg;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeResource;
+import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ContentType;
@@ -117,6 +119,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+
+import elemental.js.JsBrowser;
+import elemental.js.css.JsCSSRuleList;
+import elemental.js.css.JsCSSStyleSheet;
+import elemental.js.stylesheets.JsStyleSheetList;
 
 /**
  * Contains the engine for processing client side command line interface commands.
@@ -871,9 +878,42 @@ public class CliWorker {
     }
     
     if (widget != null) {
-      Printer.print(widget);
+      if (widget instanceof Printable) {
+        Printer.print((Printable) widget);
+
+      } else if (widget instanceof HasId) {
+        final Element root = widget.getElement();
+        final String id = root.getId();
+
+        Printer.print(new Printable() {
+          @Override
+          public Element getPrintElement() {
+            return root;
+          }
+
+          @Override
+          public boolean onPrint(Element source, Element target) {
+            if (id.equals(source.getId())) {
+              int width = Math.max(source.getScrollWidth(), DomUtils.getClientWidth() / 2);
+              if (width > target.getClientWidth()) {
+                StyleUtils.setWidth(target, width);
+              }
+              
+              int height = source.getScrollHeight();
+              if (height > target.getClientHeight()) {
+                StyleUtils.setHeight(target, height);
+              }
+            }
+            return true;
+          }
+        });
+
+      } else {
+        Printer.print(widget.getElement(), null);
+      }
+
     } else if (element != null) {
-      Printer.print(element);
+      Printer.print(element, null);
     }
   }
   
@@ -2400,19 +2440,26 @@ public class CliWorker {
 
   private static void style(String v, String[] arr) {
     if (BeeUtils.length(arr) < 2) {
-      int sheetCnt = JsUtils.evalToInt("$doc.styleSheets.length");
+      JsStyleSheetList sheets = JsBrowser.getDocument().getStyleSheets();
+      int sheetCnt = (sheets == null) ? 0 : sheets.getLength();
 
-      List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
+      List<ExtendedProperty> lst = Lists.newArrayList();
       PropertyUtils.addExtended(lst, "sheets", "count", sheetCnt);
 
       for (int i = 0; i < sheetCnt; i++) {
-        String ref = "$doc.styleSheets[" + i + "].rules";
-        int len = JsUtils.evalToInt(ref + ".length");
+        JsCSSStyleSheet sheet = (JsCSSStyleSheet) sheets.item(i);
+        if (sheet == null) {
+          continue;
+        }
+        
+        JsCSSRuleList rules = sheet.getRules();
+        
+        int len = (rules == null) ? 0 : rules.length();
         PropertyUtils.addExtended(lst, "sheet " + BeeUtils.progress(i + 1, sheetCnt), "rules", len);
 
         for (int j = 0; j < len; j++) {
-          String text = JsUtils.evalToString(ref + "[" + j + "].cssText");
-          PropertyUtils.addExtended(lst, "rule", BeeUtils.progress(j + 1, len), text);
+          PropertyUtils.addExtended(lst, "rule", BeeUtils.progress(j + 1, len),
+              rules.item(j).getCssText());
         }
       }
 

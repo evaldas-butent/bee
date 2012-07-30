@@ -5,34 +5,33 @@ import com.google.common.collect.Sets;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Node;
+import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.xml.client.Document;
-import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
-import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.utils.Evaluator;
-import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.view.add.AddEndEvent;
 import com.butent.bee.client.view.add.AddStartEvent;
 import com.butent.bee.client.view.edit.EditFormEvent;
 import com.butent.bee.client.view.edit.HasEditState;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.CellGridImpl;
+import com.butent.bee.client.view.grid.ExtWidget;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.navigation.PagerView;
@@ -64,73 +63,6 @@ import java.util.Set;
 public class GridContainerImpl extends Split implements GridContainerView, HasNavigation,
     HasSearch, ActiveRowChangeEvent.Handler, AddStartEvent.Handler, AddEndEvent.Handler,
     EditFormEvent.Handler, HasEditState {
-
-  private enum Component {
-    HEADER, FOOTER, SCROLLER, CONTENT
-  }
-
-  private class ExtWidget {
-    private final Widget widget;
-
-    private final Direction direction;
-    private final int size;
-    private final ScrollBars scrollBars;
-    private final Integer splSize;
-
-    private final Component precedes;
-    private final boolean hidable;
-
-    private ExtWidget(Widget widget, Direction direction, int size, ScrollBars scrollBars,
-        Integer splSize, Component precedes, boolean hidable) {
-      super();
-      this.widget = widget;
-      this.direction = direction;
-      this.size = size;
-      this.scrollBars = scrollBars;
-      this.splSize = splSize;
-      this.precedes = precedes;
-      this.hidable = hidable;
-    }
-
-    private Direction getDirection() {
-      return direction;
-    }
-
-    private ScrollBars getScrollBars() {
-      return scrollBars;
-    }
-
-    private int getSize() {
-      return size;
-    }
-
-    private Integer getSplSize() {
-      return splSize;
-    }
-
-    private int getTotalSize() {
-      return getSize() + BeeUtils.toNonNegativeInt(getSplSize());
-    }
-
-    private Widget getWidget() {
-      return widget;
-    }
-
-    private boolean isHidable() {
-      return hidable;
-    }
-
-    private boolean precedesFooter() {
-      return Component.FOOTER.equals(precedes);
-    }
-
-    private boolean precedesHeader() {
-      return Component.HEADER.equals(precedes);
-    }
-  }
-
-  private static final String ATTR_PRECEDES = "precedes";
-  private static final String ATTR_HIDABLE = "hidable";
 
   private Presenter viewPresenter = null;
 
@@ -267,22 +199,26 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     getExtWidgets().clear();
     if (gridDescription.hasWidgets()) {
+      if (getExtCreation() == null) {
+        setExtCreation(new WidgetCreationCallback());
+      }
+
       for (String xml : gridDescription.getWidgets()) {
-        ExtWidget extWidget = createExtWidget(xml, gridDescription.getViewName(), dataColumns,
-            gridCallback);
+        ExtWidget extWidget = ExtWidget.create(xml, gridDescription.getViewName(), dataColumns,
+            getExtCreation(), gridCallback);
         if (extWidget != null) {
           getExtWidgets().add(extWidget);
         }
       }
     }
 
-    addExtWidgets(Component.HEADER);
+    addExtWidgets(ExtWidget.Component.HEADER);
     if (header != null) {
       addNorth(header.asWidget(), header.getHeight());
       setHeaderId(header.getWidgetId());
     }
 
-    addExtWidgets(Component.FOOTER);
+    addExtWidgets(ExtWidget.Component.FOOTER);
     if (footer != null) {
       addSouth(footer.asWidget(), footer.getHeight());
       setFooterId(footer.getWidgetId());
@@ -343,6 +279,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     } else {
       return null;
     }
+  }
+
+  @Override
+  public Element getPrintElement() {
+    return getElement();
   }
 
   public Collection<SearchView> getSearchers() {
@@ -481,6 +422,75 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   @Override
+  public boolean onPrint(Element source, Element target) {
+    boolean ok;
+    
+    if (getGridView().getGrid().getId().equals(source.getId())) {
+      NodeList<Element> children = DomUtils.getChildren(target);
+      List<Element> hide = Lists.newArrayList();
+
+      for (int i = 0; i < children.getLength(); i++) {
+        Element cell = children.getItem(i);
+        
+        if (getGridView().getGrid().isFooterCell(cell)) {
+          boolean show = false;
+
+          String col = DomUtils.getDataColumn(cell);
+          if (BeeUtils.isDigit(col)) {
+            ColumnFooter columnFooter = getGridView().getGrid().getFooter(BeeUtils.toInt(col));
+            if (columnFooter != null && !BeeUtils.isEmpty(columnFooter.getValue())) {
+              show = true;
+            }
+          }
+          
+          if (!show) {
+            StyleUtils.setHeight(cell, 0);
+            StyleUtils.hideScroll(cell);
+          }
+        }
+      }
+      
+      for (Element child : hide) {
+        StyleUtils.hideDisplay(child);
+      }
+      ok = true;
+    
+    } else if (getGridView().getGrid().getElement().isOrHasChild(source)) {
+      ok = true;
+
+    } else if (getId().equals(source.getId())) {
+      int width = source.getClientWidth();
+      int height = source.getClientHeight();
+      
+      Element content = getGridView().getGrid().getElement();
+      int delta = content.getScrollWidth() - content.getClientWidth();
+      if (delta > 0) {
+        width += delta;
+      }
+      delta = content.getScrollHeight() - content.getClientHeight();
+      if (delta > 0) {
+        height += delta;
+      }
+
+      StyleUtils.setSize(target, width, height);
+      ok = true;
+
+    } else if (hasHeader() && getHeader().asWidget().getElement().isOrHasChild(source)) {
+      ok = getHeader().onPrint(source, target);
+    
+    } else if (hasFooter() && getFooter().asWidget().getElement().isOrHasChild(source)) {
+      ok = getFooter().onPrint(source, target);
+
+    } else if (hasScroller() && getScroller().asWidget().getElement().isOrHasChild(source)) {
+      ok = getScroller().onPrint(source, target);
+      
+    } else {
+      ok = true;
+    }
+    return ok;
+  }
+
+  @Override
   public void onResize() {
     if (isAttached() && providesResize()) {
       super.onResize();
@@ -555,13 +565,13 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     super.onUnload();
   }
 
-  private void addExtWidgets(Component before) {
+  private void addExtWidgets(ExtWidget.Component before) {
     if (getExtWidgets().isEmpty()) {
       return;
     }
 
-    boolean head = Component.HEADER.equals(before);
-    boolean foot = Component.FOOTER.equals(before);
+    boolean head = ExtWidget.Component.HEADER.equals(before);
+    boolean foot = ExtWidget.Component.FOOTER.equals(before);
 
     boolean ok;
     for (ExtWidget extWidget : getExtWidgets()) {
@@ -578,54 +588,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
             extWidget.getScrollBars(), extWidget.getSplSize());
       }
     }
-  }
-
-  private ExtWidget createExtWidget(String xml, String viewName, List<BeeColumn> dataColumns,
-      GridCallback gridCallback) {
-    Document doc = XmlUtils.parse(xml);
-    if (doc == null) {
-      return null;
-    }
-
-    Element root = doc.getDocumentElement();
-    if (root == null) {
-      BeeKeeper.getLog().severe("ext widget: document element not found", xml);
-      return null;
-    }
-    if (gridCallback != null && !gridCallback.onLoadExtWidget(root)) {
-      return null;
-    }
-
-    String tagName = XmlUtils.getLocalName(root);
-    Direction direction = NameUtils.getEnumByName(Direction.class, tagName);
-    if (!validDirection(direction, false)) {
-      BeeKeeper.getLog().severe("ext widget: invalid root tag name", BeeUtils.quote(tagName));
-      return null;
-    }
-
-    int size = BeeUtils.unbox(XmlUtils.getAttributeInteger(root, FormWidget.ATTR_SIZE));
-    if (size <= 0) {
-      BeeKeeper.getLog().severe("ext widget size must be positive integer");
-      return null;
-    }
-
-    if (getExtCreation() == null) {
-      setExtCreation(new WidgetCreationCallback());
-    }
-    Widget widget = FormFactory.createWidget(root, viewName, dataColumns, getExtCreation(),
-        gridCallback, "create ext widget:");
-    if (widget == null) {
-      return null;
-    }
-
-    ScrollBars scrollBars = XmlUtils.getAttributeScrollBars(root, FormWidget.ATTR_SCROLL_BARS,
-        ScrollBars.BOTH);
-    Integer splSize = XmlUtils.getAttributeInteger(root, FormWidget.ATTR_SPLITTER_SIZE);
-
-    Component precedes = NameUtils.getEnumByName(Component.class, root.getAttribute(ATTR_PRECEDES));
-    boolean hidable = !BeeUtils.isFalse(XmlUtils.getAttributeBoolean(root, ATTR_HIDABLE));
-
-    return new ExtWidget(widget, direction, size, scrollBars, splSize, precedes, hidable);
   }
 
   private int estimatePageSize() {

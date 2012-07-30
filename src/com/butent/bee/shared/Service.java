@@ -44,6 +44,7 @@ public class Service {
   public static final String CANCEL_DIALOG = UI_SERVICE_PREFIX + "cancel_dialog";
   public static final String REFRESH_MENU = UI_SERVICE_PREFIX + "refresh_menu";
   public static final String OPEN_FAVORITE = UI_SERVICE_PREFIX + "open_favorite";
+  public static final String EDIT_ROW = UI_SERVICE_PREFIX + "edit_row";
 
   public static final String GET_CLASS = COMPOSITE_SERVICE_PREFIX + "get_class";
   public static final String GET_XML = COMPOSITE_SERVICE_PREFIX + "get_xml";
@@ -71,6 +72,7 @@ public class Service {
   public static final String UPDATE = DATA_SERVICE_PREFIX + "update";
   public static final String INSERT_ROW = DATA_SERVICE_PREFIX + "insert_row";
   public static final String INSERT_ROWS = DATA_SERVICE_PREFIX + "insert_rows";
+  public static final String SEARCH = DATA_SERVICE_PREFIX + "search";
 
   public static final String RPC_VAR_PREFIX = "bee_";
   public static final String RPC_VAR_SYS_PREFIX = RPC_VAR_PREFIX + "sys_";

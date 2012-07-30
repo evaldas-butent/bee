@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.crm;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -96,6 +97,11 @@ public class CrmModuleBean implements BeeModule {
   @Override
   public String getResourcePath() {
     return getName();
+  }
+
+  @Override
+  public Multimap<String, String> getSearchableColumns() {
+    return null;
   }
 
   @Override

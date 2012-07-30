@@ -1200,6 +1200,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return getRowData().size();
   }
 
+  public ColumnFooter getFooter(int col) {
+    return isColumnWithinBounds(col) ? getColumnInfo(col).getFooter() : null;
+  }
+  
   public List<ColumnFooter> getFooters() {
     List<ColumnFooter> lst = Lists.newArrayList();
     for (ColumnInfo info : columns) {
@@ -1417,6 +1421,13 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   public boolean isEnabled() {
     return enabled;
+  }
+  
+  public boolean isFooterCell(Element element) {
+    if (element == null) {
+      return false;
+    }
+    return isFooterRow(DomUtils.getDataRow(element));
   }
 
   public boolean isReadOnly() {

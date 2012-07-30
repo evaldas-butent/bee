@@ -1,6 +1,7 @@
 package com.butent.bee.client.view.navigation;
 
 import com.google.common.base.Objects;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Composite;
 
@@ -35,6 +36,11 @@ public abstract class AbstractPager extends Composite implements PagerView {
 
   public int getPageStart() {
     return (getDisplay() == null) ? BeeConst.UNDEF : getDisplay().getPageStart();
+  }
+
+  @Override
+  public Element getPrintElement() {
+    return getWidget().getElement();
   }
 
   public int getRowCount() {

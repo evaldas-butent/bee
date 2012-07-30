@@ -23,8 +23,8 @@ import java.util.Set;
 public class FooterCell extends AbstractCell<String> {
 
   public interface Template extends SafeHtmlTemplates {
-    @Template("<input type=\"search\" value=\"{0}\" tabindex=\"-1\" class=\"bee-FooterCell\"></input>")
-    SafeHtml input(String value);
+    @Template("<input type=\"search\" id=\"{0}\" value=\"{1}\" tabindex=\"-1\" class=\"bee-FooterCell\"></input>")
+    SafeHtml input(String id, String value);
   }
 
   private static final Collection<String> requiredEvents = 
@@ -104,7 +104,7 @@ public class FooterCell extends AbstractCell<String> {
 
   @Override
   public void render(Context context, String value, SafeHtmlBuilder sb) {
-    sb.append(template.input(BeeUtils.trim(getNewValue())));
+    sb.append(template.input(DomUtils.createUniqueId("fc-inp"), BeeUtils.trim(getNewValue())));
   }
 
   private String getInputValue(InputElement input) {

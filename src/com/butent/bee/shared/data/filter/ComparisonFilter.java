@@ -2,6 +2,7 @@ package com.butent.bee.shared.data.filter;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsColumn;
+import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.DateTime;
@@ -97,6 +98,11 @@ public abstract class ComparisonFilter extends Filter {
       return null;
     }
     return compareWithValue(column.getId(), op, Value.parseValue(column.getType(), value, true));
+  }
+
+  public static Filter contains(String column, String value) {
+    Assert.notEmpty(value);
+    return new ColumnValueFilter(column, Operator.CONTAINS, new TextValue(value));
   }
 
   public static Filter isEqual(String column, Value value) {

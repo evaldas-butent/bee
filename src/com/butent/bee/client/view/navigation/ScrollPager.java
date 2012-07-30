@@ -1,5 +1,6 @@
 package com.butent.bee.client.view.navigation;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ScrollEvent;
 import com.google.gwt.event.dom.client.ScrollHandler;
 import com.google.gwt.user.client.ui.RequiresResize;
@@ -72,6 +73,11 @@ public class ScrollPager extends AbstractPager implements RequiresResize {
         lastPos = pos;
       }
     });
+  }
+
+  @Override
+  public boolean onPrint(Element source, Element target) {
+    return false;
   }
 
   @Override

@@ -86,6 +86,14 @@ public class CommonsConstants {
   public static final String COL_CATEGORY = "Category";
   public static final String COL_SERVICE = "IsService";
 
+  public static final String COL_CODE = "Code";
+  public static final String COL_PHONE = "Phone";
+  public static final String COL_EMAIL = "Email";
+  public static final String COL_ADDRESS = "Address";
+
+  public static final String COL_CITY_NAME = "CityName";
+  public static final String COL_COUNTRY_NAME = "CountryName";
+
   public static final String FORM_NEW_COMPANY = "Company";
 
   private CommonsConstants() {

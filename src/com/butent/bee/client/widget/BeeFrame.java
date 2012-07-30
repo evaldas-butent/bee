@@ -1,8 +1,10 @@
 package com.butent.bee.client.widget;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Frame;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
 
 import elemental.js.dom.JsDocument;
@@ -24,15 +26,16 @@ public class BeeFrame extends Frame implements HasId {
   
   public void clear() {
     if (!isEmpty()) {
-      JsElement body = getContentDocument().getBody();
-      while (body.getFirstChild() != null) {
-        body.removeChild(body.getFirstChild());
-      }
+      setBodyHtml(BeeConst.STRING_EMPTY);
     }
   }
 
   public void focus() {
     getContentWindow().focus();
+  }
+  
+  public Element getBody() {
+    return getContentDocument().getBody().cast();
   }
 
   public String getId() {
@@ -56,7 +59,7 @@ public class BeeFrame extends Frame implements HasId {
     getContentWindow().print();
   }
   
-  public void setBody(String html) {
+  public void setBodyHtml(String html) {
     getContentDocument().getBody().setInnerHTML(html);
   }
 

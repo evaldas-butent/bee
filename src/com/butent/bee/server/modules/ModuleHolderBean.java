@@ -1,8 +1,10 @@
 package com.butent.bee.server.modules;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.server.Config;
@@ -77,6 +79,19 @@ public class ModuleHolderBean {
     return resource;
   }
 
+  public Multimap<String, String> getSearchableColumns() {
+    Multimap<String, String> result = ArrayListMultimap.create();
+
+    for (BeeModule module : modules.values()) {
+      Multimap<String, String> columns = module.getSearchableColumns();
+      if (columns != null && !columns.isEmpty()) {
+        result.putAll(columns);
+      }
+    }
+
+    return result;
+  }
+  
   public boolean hasModule(String moduleName) {
     Assert.notEmpty(moduleName);
     return modules.containsKey(moduleName);

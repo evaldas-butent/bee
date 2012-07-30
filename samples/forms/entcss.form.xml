@@ -28,7 +28,7 @@
     <Label html="label" class="width-&width;" style="&left; font-size: large;" />
     <Button html="button" style="&left;" />
     &separator;
-    <Image resource="butent" style="&left;" />
+    <Image resource="cancel" style="&left;" />
   </FlowPanel>
 
 </f:Form>

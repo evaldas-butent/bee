@@ -24,10 +24,10 @@ import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.BeeCommand;
-import com.butent.bee.client.utils.Printer;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasGridView;
@@ -192,7 +192,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (getGridCallback() != null && !getGridCallback().onClose(this)) {
       return;
     }
-    BeeKeeper.getScreen().closeView(getView());
+    BeeKeeper.getScreen().closeWidget(getView().asWidget());
   }
 
   public void deleteRow(IsRow row, boolean confirm) {
@@ -317,7 +317,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         
       case PRINT:
         if (getGridView().getGrid().getRowCount() > 0) {
-          Printer.print(getWidget());
+          Printer.print(getView());
         }
         break;
 

@@ -17,6 +17,7 @@ import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SearchBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.SystemBean.SysObject;
 import com.butent.bee.server.data.UserServiceBean;
@@ -105,6 +106,8 @@ public class UiServiceBean {
   ModuleHolderBean mod;
   @EJB
   MailerBean mail;
+  @EJB
+  SearchBean search;
 
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response = null;
@@ -162,6 +165,9 @@ public class UiServiceBean {
     } else if (BeeUtils.same(svc, StateService.SVC_SAVE_STATES)) {
       response = saveStates(reqInfo.getContent());
 
+    } else if (BeeUtils.same(svc, Service.SEARCH)) {
+      response = search.processQuery(reqInfo.getParameter(0));
+      
     } else {
       String msg = BeeUtils.concat(1, "data service not recognized:", svc);
       logger.warning(msg);

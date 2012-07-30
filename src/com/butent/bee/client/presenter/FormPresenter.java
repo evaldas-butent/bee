@@ -23,10 +23,10 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.utils.BeeCommand;
-import com.butent.bee.client.utils.Printer;
 import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
 import com.butent.bee.client.view.HasSearch;
@@ -157,7 +157,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     switch (action) {
       case CLOSE:
-        BeeKeeper.getScreen().closeView(getView());
+        BeeKeeper.getScreen().closeWidget(getView().asWidget());
         break;
 
       case CONFIGURE:
@@ -191,7 +191,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case PRINT:
-        Printer.print(getWidget());
+        Printer.print(getView());
         break;
         
       default:

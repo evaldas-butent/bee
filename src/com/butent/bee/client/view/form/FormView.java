@@ -61,6 +61,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void refreshCellContent(String columnSource);
 
+  void refreshChildWidgets(IsRow row);
+  
   void setActiveRow(IsRow activeRow);
 
   void start(Integer rowCount);

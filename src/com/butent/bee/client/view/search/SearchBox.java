@@ -26,7 +26,7 @@ public class SearchBox extends InputText implements SearchView {
   private Presenter presenter = null;
 
   public SearchBox() {
-    this("filter...");
+    this("paieška...");
   }
 
   public SearchBox(String placeholder) {

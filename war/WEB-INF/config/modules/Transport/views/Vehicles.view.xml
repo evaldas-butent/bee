@@ -2,8 +2,8 @@
 <View xmlns="http://www.butent.com/view"
   xmlns:xpr="http://www.butent.com/expression"
 
-  name="Vehicles" source="Vehicles"
-  newRowForm="NewVehicle" newRowCaption="Nauja transporto priemonė"
+  name="Vehicles" source="Vehicles" caption="Transporto priemonės"
+  editForm="Vehicle" newRowForm="NewVehicle" newRowCaption="Nauja transporto priemonė"
   >
   <Columns>
     <SimpleColumn name="Type" />
