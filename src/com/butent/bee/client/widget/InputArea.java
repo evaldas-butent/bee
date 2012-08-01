@@ -15,7 +15,6 @@ import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HandlesAfterSave;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasTextBox;
@@ -24,6 +23,7 @@ import com.butent.bee.shared.State;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 /**
  * Implements a text area that allows multiple lines of text to be entered.
@@ -62,30 +62,36 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     init();
   }
 
+  @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addInputHandler(InputHandler handler) {
     return Binder.addInputHandler(this, handler);
   }
 
+  @Override
   public EditorAction getDefaultFocusAction() {
     return null;
   }
-  
+
   public String getDigest() {
     return digest;
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "area";
   }
 
+  @Override
   public String getNormalizedValue() {
     String v = getValue();
     if (BeeUtils.isEmpty(v) && isNullable()) {
@@ -99,23 +105,27 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     return resource;
   }
 
+  @Override
   public TextBoxBase getTextBox() {
     return this;
   }
-  
+
   @Override
   public FormWidget getWidgetType() {
     return FormWidget.INPUT_AREA;
   }
 
+  @Override
   public boolean handlesKey(int keyCode) {
     return !BeeUtils.inList(keyCode, KeyCodes.KEY_ESCAPE, KeyCodes.KEY_TAB);
   }
-  
+
+  @Override
   public boolean isEditing() {
     return editing;
   }
 
+  @Override
   public boolean isNullable() {
     return nullable;
   }
@@ -124,7 +134,7 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
   public boolean isOrHasPartner(Node node) {
     return getElement().equals(node);
   }
-  
+
   public boolean isValueChanged() {
     String v = getValue();
     String d = getDigest();
@@ -134,10 +144,11 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     } else if (BeeUtils.isEmpty(d)) {
       return true;
     } else {
-      return !d.equals(JsUtils.md5(v));
+      return !d.equals(Codec.md5(v));
     }
   }
 
+  @Override
   public void onAfterSave(String opt) {
     if (BeeUtils.isEmpty(opt)) {
       updateDigest();
@@ -160,14 +171,17 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     this.digest = digest;
   }
 
+  @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
+  @Override
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
   }
@@ -182,6 +196,7 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     updateDigest(getValue());
   }
 
+  @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
     if (!isEditorInitialized()) {
@@ -201,11 +216,12 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     if (BeeUtils.isEmpty(value)) {
       setDigest(null);
     } else {
-      setDigest(JsUtils.md5(value));
+      setDigest(Codec.md5(value));
     }
     return getDigest();
   }
 
+  @Override
   public String validate() {
     return null;
   }

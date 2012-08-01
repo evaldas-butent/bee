@@ -120,21 +120,21 @@ public class AsyncProvider extends Provider {
       return updateActiveRow;
     }
   }
-  
+
   private class RequestScheduler extends Timer {
     private Filter queryFilter;
     private Order queryOrder;
-    
+
     private int queryOffset;
     private int queryLimit;
-    
+
     private CachingPolicy caching;
-    
-    private Callback callback; 
-    
+
+    private Callback callback;
+
     private boolean active = false;
     private long lastTime = 0;
-    
+
     @Override
     public void cancel() {
       if (isActive()) {
@@ -175,7 +175,7 @@ public class AsyncProvider extends Provider {
       this.queryLimit = limit;
       this.caching = cp;
       this.callback = cb;
-      
+
       long now = System.currentTimeMillis();
       long last = getLastTime();
       setLastTime(now);
@@ -196,7 +196,7 @@ public class AsyncProvider extends Provider {
       this.lastTime = lastTime;
     }
   }
-  
+
   private static final int DEFAULT_SENSITIVITY_MILLIS = 300;
   private static final int DEFAULT_MAX_REPEAT_MILLIS = 100;
 
@@ -219,13 +219,13 @@ public class AsyncProvider extends Provider {
   private final RequestScheduler requestScheduler = new RequestScheduler();
 
   private int lastOffset = 0;
-  
+
   private int rpcCount = 0;
   private long rpcMillis = 0;
-  
+
   private int repeatStep = 0;
   private long lastRepeatTime = 0;
-  
+
   private boolean prefetchPending = false;
 
   public AsyncProvider(HasDataTable display, NotificationListener notificationListener,
@@ -237,7 +237,7 @@ public class AsyncProvider extends Provider {
 
     this.cachingPolicy = cachingPolicy;
     this.enablePrefetch = CachingPolicy.FULL.equals(cachingPolicy);
-    
+
     if (AsyncProvider.sensitivityMillis <= 0) {
       AsyncProvider.sensitivityMillis = BeeUtils.positive(Settings.getProviderSensitivityMillis(),
           AsyncProvider.DEFAULT_SENSITIVITY_MILLIS);
@@ -268,8 +268,9 @@ public class AsyncProvider extends Provider {
         requestScheduler.setLastTime(System.currentTimeMillis());
         resetRepeat();
         break;
-      
+
       case KEYBOARD:
+      case MOUSE:
         if (enablePrefetch && getPageStart() != getLastOffset()) {
           int step = getPageStart() - getLastOffset();
 
@@ -445,7 +446,7 @@ public class AsyncProvider extends Provider {
 
     Range<Integer> queryRange = createRange(queryOffset, queryLimit);
     Callback callback = new Callback(queryRange, displayRange, updateActiveRow);
-    
+
     requestScheduler.scheduleQuery(flt, ord, queryOffset, queryLimit, caching, callback);
   }
 
@@ -481,7 +482,7 @@ public class AsyncProvider extends Provider {
   private int getLastOffset() {
     return lastOffset;
   }
-  
+
   private long getLastRepeatTime() {
     return lastRepeatTime;
   }
@@ -493,7 +494,7 @@ public class AsyncProvider extends Provider {
   private int getRowCount() {
     return getDisplay().getRowCount();
   }
-  
+
   private int getRpcCount() {
     return rpcCount;
   }
@@ -523,7 +524,7 @@ public class AsyncProvider extends Provider {
       getDisplay().setRowData(null, true);
     }
   }
-  
+
   private void prefetch(int step, int duration) {
     int offset = getPageStart();
     int limit = getPageSize();
@@ -535,7 +536,7 @@ public class AsyncProvider extends Provider {
     int rpcDuration = BeeUtils.positive(averageRpcDuration(), AsyncProvider.DEFAULT_RPC_DURATION);
     int numberOfSteps = BeeUtils.clamp(rpcDuration / duration + 1,
         AsyncProvider.minPrefetchSteps, AsyncProvider.maxPrefetchSteps);
-    
+
     int queryLimit = limit * AsyncProvider.PREFETCH_SIZE_COEFFICIENT;
 
     int startOffset;
@@ -545,7 +546,7 @@ public class AsyncProvider extends Provider {
         return;
       }
       queryLimit = Math.min(queryLimit, rowCount - startOffset);
-      
+
     } else {
       startOffset = Math.max(offset + numberOfSteps * step, limit);
       if (startOffset >= offset) {
@@ -553,23 +554,23 @@ public class AsyncProvider extends Provider {
       }
       queryLimit = Math.min(queryLimit, startOffset);
     }
-      
+
     Filter flt = getFilter();
     Order ord = getOrder();
-    
+
     int from = Global.getCache().firstNotCached(getViewName(), flt, ord, startOffset, queryLimit,
         step > 0);
     if (BeeConst.isUndef(from)) {
       return;
     }
-    
+
     int queryOffset;
     if (step > 0) {
       queryOffset = from;
       if (queryOffset > startOffset) {
         queryLimit = Math.min(queryLimit, rowCount - queryOffset);
       }
-      
+
     } else {
       queryOffset = from - queryLimit + 1;
       if (queryOffset < 0) {
@@ -577,7 +578,7 @@ public class AsyncProvider extends Provider {
         queryLimit = from + 1;
       }
     }
-    
+
     setPrefetchPending(true);
     final long startTime = System.currentTimeMillis();
 
@@ -611,7 +612,7 @@ public class AsyncProvider extends Provider {
   private void setLastRepeatTime(long lastRepeatTime) {
     this.lastRepeatTime = lastRepeatTime;
   }
-  
+
   private void setPrefetchPending(boolean prefetchPending) {
     this.prefetchPending = prefetchPending;
   }

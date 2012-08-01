@@ -28,14 +28,13 @@ public class Codec {
   private static int mdChunk = 0;
 
   private static final char[] base64Chars = new char[] {
-      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N',
-      'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b',
-      'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
-      'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3',
-      '4', '5', '6', '7', '8', '9', '$', '_'};
+      'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+      'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+      'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
   private static final byte[] base64Values = new byte[128];
   private static final char base64Pad = '=';
-  private static int base64chunk = 1024;
 
   private static final int[] crc16Table = {
       0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241, 0xC601,
@@ -401,18 +400,7 @@ public class Codec {
     Assert.notNull(s);
     int len = s.length();
     Assert.isPositive(len);
-
-    if (base64chunk <= 0 || len <= base64chunk * 4) {
-      return fromBytes(fromBase64(s));
-    }
-
-    StringBuilder sb = new StringBuilder();
-    int chunk = base64chunk * 4;
-
-    for (int offset = 0; offset < len; offset += chunk) {
-      sb.append(fromBytes(fromBase64(s.substring(offset, Math.min(offset + chunk, len)))));
-    }
-    return sb.toString();
+    return fromBytes(fromBase64(s));
   }
 
   /**
@@ -491,18 +479,7 @@ public class Codec {
     Assert.notNull(s);
     int len = s.length();
     Assert.isPositive(len);
-
-    if (base64chunk <= 0 || len <= base64chunk * 3) {
-      return toBase64(toBytes(s));
-    }
-
-    StringBuilder sb = new StringBuilder();
-    int chunk = base64chunk * 3;
-
-    for (int offset = 0; offset < len; offset += chunk) {
-      sb.append(toBase64(toBytes(s.substring(offset, Math.min(offset + chunk, len)))));
-    }
-    return sb.toString();
+    return toBase64(toBytes(s));
   }
 
   /**
@@ -671,7 +648,7 @@ public class Codec {
   public static String pack(Enum<?> value) {
     return (value == null) ? null : BeeUtils.toString(value.ordinal());
   }
-  
+
   /**
    * Serializes an Object using a default serialization separator.
    * 
@@ -917,7 +894,7 @@ public class Codec {
       return null;
     }
   }
-  
+
   private Codec() {
   }
 }

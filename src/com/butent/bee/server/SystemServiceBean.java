@@ -4,9 +4,9 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
+import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.Filter;
-import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.utils.ClassUtils;
 import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.XmlUtils;
@@ -113,11 +113,11 @@ public class SystemServiceBean {
 
   private void getDigest(RequestInfo reqInfo, ResponseBuffer buff) {
     String src = reqInfo.getContent();
+
     if (BeeUtils.length(src) <= 0) {
       buff.addSevere("Source not found");
       return;
     }
-
     if (src.length() < 100) {
       buff.addMessage(BeeConst.SERVER, src);
     }
@@ -148,7 +148,7 @@ public class SystemServiceBean {
     if (FileUtils.isFile(search)) {
       resFile = new File(search);
     } else {
-      
+
       List<File> roots = null;
       if (BeeUtils.same(mode, "src")) {
         roots = Lists.newArrayList(Config.SOURCE_DIR);
@@ -162,7 +162,7 @@ public class SystemServiceBean {
       } else {
         filters.add(FileUtils.INPUT_FILTER);
       }
-      
+
       String defaultExtension = null;
       if (BeeUtils.same(mode, "src")) {
         defaultExtension = FileUtils.EXT_JAVA;
@@ -230,7 +230,7 @@ public class SystemServiceBean {
 
         if (s == null || s.length() == 0) {
           buff.addWarning(resPath, "no content found");
-          
+
         } else if (BeeUtils.same(mode, "xml")) {
           return ResponseObject.response(s);
 
@@ -314,11 +314,11 @@ public class SystemServiceBean {
       buff.addSevere("Parameter", Service.VAR_XML_SOURCE, "not found");
       return;
     }
-    
+
     List<Filter> filters = Lists.newArrayList(FileUtils.INPUT_FILTER);
-    
-    List<File> sources = 
-      FileUtils.findFiles(pSrc, null, filters, XmlUtils.DEFAULT_XML_EXTENSION, true, false);
+
+    List<File> sources =
+        FileUtils.findFiles(pSrc, null, filters, XmlUtils.DEFAULT_XML_EXTENSION, true, false);
     if (sources == null || sources.isEmpty()) {
       buff.addSevere(pSrc, "file not found");
       return;
@@ -334,7 +334,7 @@ public class SystemServiceBean {
       }
       return;
     }
-    
+
     String src = sources.get(0).getAbsolutePath();
     if (!FileUtils.isInputFile(src)) {
       buff.addSevere(src, "is not a valid input file");
@@ -363,8 +363,8 @@ public class SystemServiceBean {
       return;
     }
 
-    List<File> transforms = 
-      FileUtils.findFiles(pXsl, null, filters, XmlUtils.DEFAULT_XSL_EXTENSION, true, false);
+    List<File> transforms =
+        FileUtils.findFiles(pXsl, null, filters, XmlUtils.DEFAULT_XSL_EXTENSION, true, false);
     if (transforms == null || transforms.isEmpty()) {
       buff.addSevere(pXsl, "file not found");
       return;
@@ -380,7 +380,7 @@ public class SystemServiceBean {
       }
       return;
     }
-    
+
     String xsl = transforms.get(0).getAbsolutePath();
     if (!FileUtils.isInputFile(xsl)) {
       buff.addSevere(xsl, "is not a valid input file");

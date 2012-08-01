@@ -23,6 +23,7 @@ public class CommonsConstants {
       this.registeredStates = states;
     }
 
+    @Override
     public String getCaption() {
       return caption;
     }
@@ -45,6 +46,7 @@ public class CommonsConstants {
       this.checked = checked;
     }
 
+    @Override
     public String getCaption() {
       return caption;
     }
@@ -60,10 +62,12 @@ public class CommonsConstants {
   public static final String COMMONS_PARAMETERS_PREFIX = "parameters_";
 
   public static final String SVC_GET_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "get";
-  public static final String SVC_SAVE_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "save";
+  public static final String SVC_CREATE_PARAMETER = COMMONS_PARAMETERS_PREFIX + "save";
   public static final String SVC_REMOVE_PARAMETERS = COMMONS_PARAMETERS_PREFIX + "remove";
-  public static final String VAR_PARAMETERS_MODULE = Service.RPC_VAR_PREFIX + "parameters_module";
+  public static final String SVC_SET_PARAMETER = COMMONS_PARAMETERS_PREFIX + "set";
+  public static final String VAR_PARAMETERS_MODULE = Service.RPC_VAR_PREFIX + "module";
   public static final String VAR_PARAMETERS = Service.RPC_VAR_PREFIX + "parameters";
+  public static final String VAR_PARAMETER_VALUE = Service.RPC_VAR_PREFIX + "value";
 
   public static final String COMMONS_ITEM_PREFIX = "item_";
 

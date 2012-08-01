@@ -18,6 +18,8 @@
           <option>Date</option>
         </Radio>
       </FlowPanel>
+      <InputText source="Value" caption="Reikšmė" />
+      <CheckBox source="UserMode" html="Pagal vartotojus" />
     </FlowPanel>
     <FlowPanel class="flexBox-vertical flexible">
       <Label html="Aprašymas" />

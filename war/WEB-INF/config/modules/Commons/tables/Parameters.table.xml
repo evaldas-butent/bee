@@ -6,11 +6,12 @@
   x="0" y="0"
   >
   <Fields>
-    <String name="Module" precision="20" notNull="true"/>
+    <String name="Module" precision="20" notNull="true" />
     <String name="Name" precision="30" notNull="true" />
     <String name="Type" precision="20" notNull="true" />
-    <Text name="Value" />
     <Text name="Description" />
+    <Boolean name="UserMode" />
+    <Text name="Value" />
   </Fields>
   <Keys>
     <Key unique="true">

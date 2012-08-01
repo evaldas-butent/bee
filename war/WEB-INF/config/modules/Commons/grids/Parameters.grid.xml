@@ -7,7 +7,7 @@
   >
   <columns>
     <DataColumn name="Name" source="Name" caption="Parametras" />
-    <DataColumn name="Value" source="Value" caption="Reikšmė" />
+    <DataColumn name="Value" source="UserValue" caption="Reikšmė" />
     <DataColumn name="Description" source="Description" caption="Aprašymas"/>
   </columns>
 </Grid>

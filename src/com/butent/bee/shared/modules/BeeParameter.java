@@ -1,8 +1,13 @@
 package com.butent.bee.shared.modules;
 
+import com.google.common.collect.Maps;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+
+import java.util.Map;
 
 public class BeeParameter implements BeeSerializable {
 
@@ -15,22 +20,25 @@ public class BeeParameter implements BeeSerializable {
   private String module;
   private String name;
   private String type;
-  private String value;
   private String description;
+  private String value;
+  private Map<Long, String> userValues = null;
 
   private enum Serial {
-    MODULE, NAME, TYPE, VALUE, DESCRIPTION;
+    MODULE, NAME, TYPE, DESCRIPTION, VALUE, USER_VALUES;
   }
 
-  public BeeParameter(String module, String name, String type, String value, String description) {
+  public BeeParameter(String module, String name, String type, String description,
+      boolean userMode, String defValue) {
     Assert.notEmpty(module);
     Assert.notEmpty(name);
 
     this.module = module;
     this.name = name;
     setType(type);
-    setValue(value);
     setDescription(description);
+    setUserMode(userMode);
+    setValue(defValue);
   }
 
   private BeeParameter() {
@@ -56,11 +64,22 @@ public class BeeParameter implements BeeSerializable {
         case TYPE:
           type = val;
           break;
+        case DESCRIPTION:
+          description = val;
+          break;
         case VALUE:
           value = val;
           break;
-        case DESCRIPTION:
-          description = val;
+        case USER_VALUES:
+          String[] pairs = Codec.beeDeserializeCollection(val);
+
+          if (pairs != null) {
+            userValues = Maps.newHashMapWithExpectedSize(pairs.length / 2);
+
+            for (int j = 0; j < pairs.length; j += 2) {
+              userValues.put(BeeUtils.toLong(pairs[j]), pairs[j + 1]);
+            }
+          }
           break;
       }
     }
@@ -80,6 +99,18 @@ public class BeeParameter implements BeeSerializable {
 
   public String getType() {
     return type;
+  }
+
+  public String getUserValue(Long userId) {
+    Assert.state(supportsUsers(), "Parameter does not support user values: "
+        + BeeUtils.concat(".", getModule(), getName()));
+    Assert.notEmpty(userId);
+
+    if (userValues.containsKey(userId)) {
+      return userValues.get(userId);
+    } else {
+      return getValue();
+    }
   }
 
   public String getValue() {
@@ -103,11 +134,14 @@ public class BeeParameter implements BeeSerializable {
         case TYPE:
           arr[i++] = type;
           break;
+        case DESCRIPTION:
+          arr[i++] = description;
+          break;
         case VALUE:
           arr[i++] = value;
           break;
-        case DESCRIPTION:
-          arr[i++] = description;
+        case USER_VALUES:
+          arr[i++] = userValues;
           break;
       }
     }
@@ -122,7 +156,31 @@ public class BeeParameter implements BeeSerializable {
     this.type = type;
   }
 
+  public void setUserMode(boolean userMode) {
+    if (userMode) {
+      this.userValues = Maps.newHashMap();
+    } else {
+      this.userValues = null;
+    }
+  }
+
+  public void setUserValue(Long userId, String value) {
+    Assert.state(supportsUsers(), "Parameter does not support user values: "
+        + BeeUtils.concat(".", getModule(), getName()));
+    Assert.notEmpty(userId);
+
+    if (value == null) {
+      userValues.remove(userId);
+    } else {
+      userValues.put(userId, value);
+    }
+  }
+
   public void setValue(String value) {
     this.value = value;
+  }
+
+  public boolean supportsUsers() {
+    return (userValues != null);
   }
 }

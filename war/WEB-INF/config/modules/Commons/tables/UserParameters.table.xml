@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+  
+  name="UserParameters"
+  idName="ParameterID"
+  x="0" y="0"
+  >
+  <Fields>
+    <Relation name="Parameter" relation="Parameters" notNull="true" cascade="DELETE" />
+    <Relation name="User" relation="Users" notNull="true" cascade="DELETE" />
+    <Text name="Value" />
+  </Fields>
+  <Keys>
+    <Key unique="true">
+      <KeyField>Parameter</KeyField>
+      <KeyField>User</KeyField>
+    </Key>
+  </Keys>
+</Table>

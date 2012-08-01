@@ -32,6 +32,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.annotation.Resource;
@@ -89,9 +90,10 @@ public class CommonsModuleBean implements BeeModule {
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
     return Lists.newArrayList(
-        new BeeParameter(CommonsConstants.COMMONS_MODULE, "ProgramTitle", "String", "BEE", null),
-        new BeeParameter(CommonsConstants.COMMONS_MODULE, "Precission", "Number", "5",
-            "Precission of calculations"));
+        new BeeParameter(CommonsConstants.COMMONS_MODULE,
+            "ProgramTitle", "String", null, false, "BEE"),
+        new BeeParameter(CommonsConstants.COMMONS_MODULE,
+            "Precission", "Number", "Precission of calculations", true, "5"));
   }
 
   @Override
@@ -222,16 +224,36 @@ public class CommonsModuleBean implements BeeModule {
     ResponseObject response = null;
 
     if (BeeUtils.same(svc, CommonsConstants.SVC_GET_PARAMETERS)) {
-      response = ResponseObject.response(
-          prm.getParameters(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS_MODULE)).values());
+      List<BeeParameter> params = Lists.newArrayList();
 
-    } else if (BeeUtils.same(svc, CommonsConstants.SVC_SAVE_PARAMETERS)) {
-      response = prm.saveParameter(
-          BeeParameter.restore(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS)));
+      for (BeeParameter p : prm
+          .getParameters(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS_MODULE)).values()) {
+        BeeParameter param = new BeeParameter(p.getModule(), p.getName(), p.getType(),
+            p.getDescription(), p.supportsUsers(), p.getValue());
+
+        if (param.supportsUsers()) {
+          param.setUserValue(usr.getCurrentUserId(), p.getUserValue(usr.getCurrentUserId()));
+        }
+        params.add(param);
+      }
+      response = ResponseObject.response(params);
+
+    } else if (BeeUtils.same(svc, CommonsConstants.SVC_CREATE_PARAMETER)) {
+      prm.createParameter(BeeParameter.restore(
+          reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS)));
+      response = ResponseObject.response(true);
+
+    } else if (BeeUtils.same(svc, CommonsConstants.SVC_SET_PARAMETER)) {
+      prm.setParameter(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS_MODULE),
+          reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS),
+          reqInfo.getParameter(CommonsConstants.VAR_PARAMETER_VALUE));
+      response = ResponseObject.response(true);
 
     } else if (BeeUtils.same(svc, CommonsConstants.SVC_REMOVE_PARAMETERS)) {
-      response = prm.removeParameters(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS_MODULE),
+      prm.removeParameters(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS_MODULE),
           Codec.beeDeserializeCollection(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS)));
+
+      response = ResponseObject.response(true);
     }
     if (response == null) {
       String msg = BeeUtils.concat(1, "Parameters service not recognized:", svc);

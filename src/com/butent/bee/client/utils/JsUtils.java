@@ -16,7 +16,7 @@ import java.util.List;
  */
 
 public class JsUtils {
-  
+
   public static native void clearProperty(JavaScriptObject obj, String p) /*-{
     if (typeof (obj) != "object") {
       return;
@@ -109,7 +109,8 @@ public class JsUtils {
       if (tp != "function") {
         continue;
       }
-      if (pattern != null && pattern.length > 0 && p.search(new RegExp(pattern, "i")) < 0) {
+      if (pattern != null && pattern.length > 0
+          && p.search(new RegExp(pattern, "i")) < 0) {
         continue;
       }
 
@@ -163,7 +164,8 @@ public class JsUtils {
         continue;
       }
 
-      if (pattern != null && pattern.length > 0 && p.search(new RegExp(pattern, "i")) < 0) {
+      if (pattern != null && pattern.length > 0
+          && p.search(new RegExp(pattern, "i")) < 0) {
         continue;
       }
 
@@ -187,7 +189,7 @@ public class JsUtils {
   public static native int getPropertyInt(JavaScriptObject obj, String p) /*-{
     return obj[p] || 0;
   }-*/;
-  
+
   public static native boolean hasProperty(JavaScriptObject obj, String p) /*-{
     var ok;
 
@@ -238,14 +240,6 @@ public class JsUtils {
 
   public static native boolean isIn(String p, JavaScriptObject obj) /*-{
     return p in obj;
-  }-*/;
-
-  public static native String md5(String src) /*-{
-    return $wnd.rstr2hex($wnd.rstr_md5($wnd.str2rstr_utf16be(src)));
-  }-*/;
-
-  public static native String md5fast(String src) /*-{
-    return $wnd.md5(src);
   }-*/;
 
   public static native String randomName(String pfx) /*-{
@@ -319,7 +313,8 @@ public class JsUtils {
   public static native String toTime(double millis) /*-{
     if (millis > 0) {
       var d = new Date(millis);
-      return d.toLocaleTimeString() + "." + (d.getMilliseconds() + 1000).toString().substr(1);
+      return d.toLocaleTimeString() + "."
+          + (d.getMilliseconds() + 1000).toString().substr(1);
     }
     return "";
   }-*/;

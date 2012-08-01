@@ -49,18 +49,8 @@ public class ModuleHolderBean {
     return getModule(reqInfo.getService()).doService(reqInfo);
   }
 
-  public Map<String, BeeParameter> getModuleDefaultParameters(String moduleName) {
-    Map<String, BeeParameter> paramMap = null;
-    Collection<BeeParameter> params = getModule(moduleName).getDefaultParameters();
-
-    if (!BeeUtils.isEmpty(params)) {
-      paramMap = Maps.newHashMap();
-
-      for (BeeParameter parameter : params) {
-        paramMap.put(parameter.getName(), parameter);
-      }
-    }
-    return paramMap;
+  public Collection<BeeParameter> getModuleDefaultParameters(String moduleName) {
+    return getModule(moduleName).getDefaultParameters();
   }
 
   public Collection<String> getModules() {

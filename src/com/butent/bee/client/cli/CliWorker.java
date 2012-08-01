@@ -346,6 +346,7 @@ public class CliWorker {
     Scheduler.get().scheduleFixedDelay(new RepeatingCommand() {
       private int counter = 0;
 
+      @Override
       public boolean execute() {
         cornifyAdd();
         return (++counter < cnt);
@@ -388,12 +389,8 @@ public class CliWorker {
     } else {
       BeeKeeper.getLog().info(Codec.escapeUnicode(src));
     }
-
-    BeeKeeper.getLog().info("js", JsUtils.md5(src));
-    BeeKeeper.getLog().info("js fast", JsUtils.md5fast(src));
     BeeKeeper.getLog().info(BeeConst.CLIENT, Codec.md5(src));
-
-    BeeKeeper.getRpc().makePostRequest(Service.GET_DIGEST, ContentType.TEXT, src);
+    BeeKeeper.getRpc().makePostRequest(Service.GET_DIGEST, ContentType.HTML, src);
   }
 
   private static void doAjaxKeys(String[] arr) {
@@ -423,7 +420,7 @@ public class CliWorker {
   private static void doCollections(String[] arr) {
     int size = 2000;
     int query = 20;
-    
+
     for (int i = 1; i < arr.length; i++) {
       if (BeeUtils.isPositiveInt(arr[i])) {
         if (i == 1) {
@@ -433,7 +430,7 @@ public class CliWorker {
         }
       }
     }
-    
+
     List<Integer> lia = Lists.newArrayList();
     List<Long> lla = Lists.newArrayList();
     List<Double> lda = Lists.newArrayList();
@@ -443,7 +440,7 @@ public class CliWorker {
     List<Long> lll = Lists.newLinkedList();
     List<Double> ldl = Lists.newLinkedList();
     List<String> lsl = Lists.newLinkedList();
-    
+
     Map<Integer, String> mih = Maps.newHashMap();
     Map<Long, String> mlh = Maps.newHashMap();
     Map<Double, String> mdh = Maps.newHashMap();
@@ -453,7 +450,7 @@ public class CliWorker {
     Map<Long, String> mll = Maps.newLinkedHashMap();
     Map<Double, String> mdl = Maps.newLinkedHashMap();
     Map<String, String> msl = Maps.newLinkedHashMap();
-    
+
     for (int i = 0; i < size; i++) {
       String s = Integer.toString(i);
 
@@ -477,9 +474,9 @@ public class CliWorker {
       mdl.put((double) i, s);
       msl.put(s, s);
     }
-    
+
     BeeKeeper.getLog().debug(size, query);
-  
+
     double x = 0;
     long start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
@@ -500,14 +497,14 @@ public class CliWorker {
       x += lda.indexOf(Math.floor(Math.random() * size));
     }
     BeeKeeper.getLog().debug("lda", System.currentTimeMillis() - start, x);
-    
+
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += lsa.indexOf(Integer.toString((int) (Math.random() * size)));
     }
     BeeKeeper.getLog().debug("lsa", System.currentTimeMillis() - start, x);
-    
+
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
@@ -528,7 +525,7 @@ public class CliWorker {
       x += ldl.indexOf(Math.floor(Math.random() * size));
     }
     BeeKeeper.getLog().debug("ldl", System.currentTimeMillis() - start, x);
-    
+
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
@@ -539,61 +536,61 @@ public class CliWorker {
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
-      x += (mih.get((int) (Math.random() * size)) == null) ? 0 : 1; 
+      x += (mih.get((int) (Math.random() * size)) == null) ? 0 : 1;
     }
     BeeKeeper.getLog().debug("mih", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
-      x += (mlh.get((long) (Math.random() * size)) == null) ? 0 : 1; 
+      x += (mlh.get((long) (Math.random() * size)) == null) ? 0 : 1;
     }
     BeeKeeper.getLog().debug("mlh", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
-      x += (mdh.get(Math.floor(Math.random() * size)) == null) ? 0 : 1; 
+      x += (mdh.get(Math.floor(Math.random() * size)) == null) ? 0 : 1;
     }
     BeeKeeper.getLog().debug("mdh", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
-      x += (msh.get(Integer.toString((int) (Math.random() * size))) == null) ? 0 : 1; 
+      x += (msh.get(Integer.toString((int) (Math.random() * size))) == null) ? 0 : 1;
     }
     BeeKeeper.getLog().debug("msh", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
-      x += (mil.get((int) (Math.random() * size)) == null) ? 0 : 1; 
+      x += (mil.get((int) (Math.random() * size)) == null) ? 0 : 1;
     }
     BeeKeeper.getLog().debug("mil", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
-      x += (mll.get((long) (Math.random() * size)) == null) ? 0 : 1; 
+      x += (mll.get((long) (Math.random() * size)) == null) ? 0 : 1;
     }
     BeeKeeper.getLog().debug("mll", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
-      x += (mdl.get(Math.floor(Math.random() * size)) == null) ? 0 : 1; 
+      x += (mdl.get(Math.floor(Math.random() * size)) == null) ? 0 : 1;
     }
     BeeKeeper.getLog().debug("mdl", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
-      x += (msl.get(Integer.toString((int) (Math.random() * size))) == null) ? 0 : 1; 
+      x += (msl.get(Integer.toString((int) (Math.random() * size))) == null) ? 0 : 1;
     }
     BeeKeeper.getLog().debug("msl", System.currentTimeMillis() - start, x);
     BeeKeeper.getLog().addSeparator();
   }
-  
+
   private static void doLike(String[] arr) {
     int len = ArrayUtils.length(arr);
     if (len < 3) {
@@ -820,6 +817,7 @@ public class CliWorker {
     widget.getAudioElement().setControls(true);
 
     widget.addDomHandler(new ErrorHandler() {
+      @Override
       public void onError(ErrorEvent event) {
         BeeKeeper.getScreen().notifyWarning(src, EventUtils.transformMediaError(widget.getError()));
       }
@@ -843,6 +841,7 @@ public class CliWorker {
     widget.getVideoElement().setControls(true);
 
     widget.addDomHandler(new ErrorHandler() {
+      @Override
       public void onError(ErrorEvent event) {
         BeeKeeper.getScreen().notifyWarning(src, EventUtils.transformMediaError(widget.getError()));
       }
@@ -854,14 +853,14 @@ public class CliWorker {
   private static void print(String args) {
     Widget widget = null;
     Element element = null;
-    
+
     if (BeeUtils.same(args, "log")) {
       widget = BeeKeeper.getLog().getArea();
       if (widget == null || BeeKeeper.getLog().isEmpty()) {
         Global.showError("log is empty");
         return;
       }
-      
+
     } else if (!BeeUtils.isEmpty(args)) {
       element = DomUtils.getElementQuietly(args);
       if (element == null) {
@@ -876,7 +875,7 @@ public class CliWorker {
         return;
       }
     }
-    
+
     if (widget != null) {
       if (widget instanceof Printable) {
         Printer.print((Printable) widget);
@@ -898,7 +897,7 @@ public class CliWorker {
               if (width > target.getClientWidth()) {
                 StyleUtils.setWidth(target, width);
               }
-              
+
               int height = source.getScrollHeight();
               if (height > target.getClientHeight()) {
                 StyleUtils.setHeight(target, height);
@@ -916,7 +915,7 @@ public class CliWorker {
       Printer.print(element, null);
     }
   }
-  
+
   private static void querySelector(String command, String selectors) {
     int p = command.indexOf('#');
     Element root = null;
@@ -1065,7 +1064,8 @@ public class CliWorker {
 
     for ( var i = 0; i < 6; i++) {
       for ( var j = 0; j < 6; j++) {
-        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j) + ', 0)';
+        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', '
+            + Math.floor(255 - 42.5 * j) + ', 0)';
         ctx.fillRect(j * 25, i * 25, 25, 25);
       }
     }
@@ -1212,6 +1212,7 @@ public class CliWorker {
 
         }, defaultValue, timeout, cancelHtml,
         new WidgetInitializer() {
+          @Override
           public Widget initialize(Widget widget, String name) {
             if (BeeUtils.context(widgetName.get(), name)) {
               StyleUtils.updateAppearance(widget, null, widgetStyle.get());
@@ -1224,6 +1225,7 @@ public class CliWorker {
 
   private static void showClientLocation() {
     AjaxLoader.load(new Runnable() {
+      @Override
       public void run() {
         ClientLocation location = AjaxLoader.getClientLocation();
 
@@ -1631,6 +1633,7 @@ public class CliWorker {
           }
         }, defaultValue, maxLength, width, widthUnit, timeout, confirmHtml, cancelHtml,
         new WidgetInitializer() {
+          @Override
           public Widget initialize(Widget widget, String name) {
             if (BeeUtils.context(widgetName.get(), name)) {
               StyleUtils.updateAppearance(widget, null, widgetStyle.get());
@@ -2251,6 +2254,7 @@ public class CliWorker {
       params.addPositionalHeader(args.trim());
     }
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
       public void onResponse(ResponseObject response) {
         BeeKeeper.getScreen().showGrid(
             PropertyUtils.restoreExtended((String) response.getResponse()));
@@ -2352,6 +2356,7 @@ public class CliWorker {
       params.addPositionalHeader(args.trim());
     }
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
       public void onResponse(ResponseObject response) {
         BeeKeeper.getScreen().showGrid(
             PropertyUtils.restoreExtended((String) response.getResponse()));
@@ -2390,6 +2395,7 @@ public class CliWorker {
     params.addPositionalHeader(opt);
 
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
       public void onResponse(ResponseObject response) {
         BeeKeeper.getScreen().showGrid(XmlUtils.getInfo((String) response.getResponse(), detailed));
       }
@@ -2451,9 +2457,9 @@ public class CliWorker {
         if (sheet == null) {
           continue;
         }
-        
+
         JsCSSRuleList rules = sheet.getRules();
-        
+
         int len = (rules == null) ? 0 : rules.length();
         PropertyUtils.addExtended(lst, "sheet " + BeeUtils.progress(i + 1, sheetCnt), "rules", len);
 

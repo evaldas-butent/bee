@@ -10,7 +10,6 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.utils.BeeCommand;
-import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.InputArea;
@@ -19,6 +18,7 @@ import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 
 /**
  * Implements a text area editor user interface component.
@@ -51,7 +51,7 @@ public class ResourceEditor extends Composite implements HasId {
         return;
       }
 
-      String digest = JsUtils.md5(v);
+      String digest = Codec.md5(v);
 
       ParameterList params = new ParameterList(Service.SAVE_RESOURCE);
       params.addHeaderItem(Service.RPC_VAR_URI, path);
@@ -107,10 +107,12 @@ public class ResourceEditor extends Composite implements HasId {
     DomUtils.createId(this, getIdPrefix());
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "resource-editor";
   }
@@ -123,6 +125,7 @@ public class ResourceEditor extends Composite implements HasId {
     return uri;
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

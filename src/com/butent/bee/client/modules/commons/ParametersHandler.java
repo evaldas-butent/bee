@@ -12,13 +12,11 @@ import com.butent.bee.client.data.LocalProvider;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
-import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -26,6 +24,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
@@ -52,22 +51,26 @@ public class ParametersHandler extends AbstractGridCallback {
   private static final String MODULE = "Module";
   private static final String NAME = "Name";
   private static final String TYPE = "Type";
-  private static final String VALUE = "Value";
   private static final String DESCRIPTION = "Description";
+  private static final String USER_MODE = "UserMode";
+  private static final String VALUE = "Value";
+  private static final String USER_VALUE = "UserValue";
 
   private static final List<BeeColumn> columns = Lists.newArrayList(
       new BeeColumn(ValueType.TEXT, MODULE, false),
       new BeeColumn(ValueType.TEXT, NAME, false),
       new BeeColumn(ValueType.TEXT, TYPE, false),
+      new BeeColumn(ValueType.TEXT, DESCRIPTION, true),
+      new BeeColumn(ValueType.TEXT, USER_MODE, true),
       new BeeColumn(ValueType.TEXT, VALUE, true),
-      new BeeColumn(ValueType.TEXT, DESCRIPTION, true));
+      new BeeColumn(ValueType.TEXT, USER_VALUE, true));
 
   private final String module;
   private LocalProvider provider = null;
-  private Map<String, BeeParameter> params = Maps.newLinkedHashMap();
+  private final Map<String, BeeParameter> params = Maps.newLinkedHashMap();
 
   private Long cnt = 0L;
-  private Map<Long, String> ref = Maps.newHashMap();
+  private final Map<Long, String> ref = Maps.newHashMap();
 
   public ParametersHandler(String module) {
     Assert.notEmpty(module);
@@ -91,17 +94,9 @@ public class ParametersHandler extends AbstractGridCallback {
   }
 
   @Override
-  public int beforeDeleteRow(GridPresenter presenter, final IsRow row, boolean confirm) {
-    if (confirm) {
-      Global.confirm(ref.get(row.getId()), "Remove parameter?", new BeeCommand() {
-        @Override
-        public void execute() {
-          delete(row.getId());
-        }
-      });
-    } else {
-      delete(row.getId());
-    }
+  public int beforeDeleteRow(GridPresenter presenter, IsRow row, boolean confirm) {
+    delete(row.getId());
+
     return GridCallback.DELETE_CANCEL;
   }
 
@@ -119,12 +114,6 @@ public class ParametersHandler extends AbstractGridCallback {
     delete(ids);
 
     return GridCallback.DELETE_CANCEL;
-  }
-
-  @Override
-  public Pair<String, String> getDeleteRowsMessage(int selectedRows) {
-    return Pair.of("Remove current parameter", BeeUtils.concat(1, "Remove", selectedRows,
-        "selected parameters"));
   }
 
   @Override
@@ -149,8 +138,8 @@ public class ParametersHandler extends AbstractGridCallback {
     if (params.containsKey(data.get(NAME))) {
       gridView.notifySevere("Dublicate parameter name:", data.get(NAME));
     } else {
-      update(gridView, 0, new BeeParameter(module,
-          data.get(NAME), data.get(TYPE), data.get(VALUE), data.get(DESCRIPTION)));
+      update(gridView, 0, new BeeParameter(module, data.get(NAME), data.get(TYPE),
+          data.get(DESCRIPTION), BeeUtils.toBoolean(data.get(USER_MODE)), data.get(VALUE)));
     }
     return false;
   }
@@ -159,18 +148,31 @@ public class ParametersHandler extends AbstractGridCallback {
   public boolean onPrepareForUpdate(GridView gridView, long id, long version,
       List<? extends IsColumn> cols, List<String> oldValues, List<String> newValues) {
 
-    BeeParameter prm = params.get(gridView.getActiveRow().getString(id(NAME)));
+    String prmName = gridView.getActiveRow().getString(id(NAME));
+
+    if (cols.size() == 1 && BeeUtils.same(cols.get(0).getId(), USER_VALUE)) {
+      return change(gridView, id, prmName, newValues.get(0));
+    }
+    BeeParameter prm = params.get(prmName);
 
     Map<String, String> data = Maps.newHashMap();
 
     for (int i = 0; i < cols.size(); i++) {
       data.put(cols.get(i).getId(), newValues.get(i));
     }
-    update(gridView, id, new BeeParameter(module,
-        BeeUtils.notEmpty(data.get(NAME), prm.getName()),
-        BeeUtils.notEmpty(data.get(TYPE), prm.getType()),
-        BeeUtils.notEmpty(data.get(VALUE), prm.getValue()),
-        BeeUtils.notEmpty(data.get(DESCRIPTION), prm.getDescription())));
+    if (data.containsKey(TYPE)) {
+      prm.setType(data.get(TYPE));
+    }
+    if (data.containsKey(DESCRIPTION)) {
+      prm.setDescription(data.get(DESCRIPTION));
+    }
+    if (data.containsKey(USER_MODE)) {
+      prm.setUserMode(BeeUtils.toBoolean(data.get(USER_MODE)));
+    }
+    if (data.containsKey(VALUE)) {
+      prm.setValue(data.get(VALUE));
+    }
+    update(gridView, id, prm);
     return false;
   }
 
@@ -187,6 +189,41 @@ public class ParametersHandler extends AbstractGridCallback {
     newRow.setValue(id(MODULE), module);
     newRow.setValue(id(TYPE), oldRow != null ? oldRow.getString(id(TYPE)) : null);
     return true;
+  }
+
+  private boolean change(final GridView gridView, final long id, final String name,
+      final String value) {
+    ParameterList args = CommonsEventHandler.createArgs(CommonsConstants.SVC_SET_PARAMETER);
+    args.addDataItem(CommonsConstants.VAR_PARAMETERS_MODULE, module);
+    args.addDataItem(CommonsConstants.VAR_PARAMETERS, name);
+    args.addDataItem(CommonsConstants.VAR_PARAMETER_VALUE, value);
+
+    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        Assert.notNull(response);
+
+        if (response.hasErrors()) {
+          Global.showError((Object[]) response.getErrors());
+
+        } else if (response.hasResponse(Boolean.class)) {
+          BeeParameter prm = params.get(name);
+
+          if (prm.supportsUsers()) {
+            prm.setUserValue(BeeKeeper.getUser().getUserId(), value);
+          } else {
+            prm.setValue(value);
+            gridView.getGrid().getRowById(id).setValue(id(VALUE), value);
+          }
+          gridView.getGrid().onCellUpdate(new CellUpdateEvent(null, id, 0, USER_VALUE,
+              id(USER_VALUE), value));
+
+        } else {
+          Global.showError("Unknown response");
+        }
+      }
+    });
+    return false;
   }
 
   private void delete(Long... ids) {
@@ -208,16 +245,8 @@ public class ParametersHandler extends AbstractGridCallback {
         if (response.hasErrors()) {
           Global.showError((Object[]) response.getErrors());
 
-        } else if (response.hasResponse()) {
-          for (String s : Codec.beeDeserializeCollection((String) response.getResponse())) {
-            BeeParameter def = BeeParameter.restore(s);
-            params.put(def.getName(), def);
-            prm.remove(def.getName());
-          }
-          for (String p : prm) {
-            params.remove(p);
-          }
-          refresh();
+        } else if (response.hasResponse(Boolean.class)) {
+          requery();
 
         } else {
           Global.showError("Unknown response");
@@ -247,8 +276,11 @@ public class ParametersHandler extends AbstractGridCallback {
       values[id(MODULE)] = prm.getModule();
       values[id(NAME)] = prm.getName();
       values[id(TYPE)] = prm.getType();
-      values[id(VALUE)] = prm.getValue();
       values[id(DESCRIPTION)] = prm.getDescription();
+      values[id(USER_MODE)] = BeeUtils.toString(prm.supportsUsers());
+      values[id(VALUE)] = prm.getValue();
+      values[id(USER_VALUE)] = prm.supportsUsers()
+          ? prm.getUserValue(BeeKeeper.getUser().getUserId()) : prm.getValue();
 
       ref.put(++cnt, prm.getName());
       BeeRow row = new BeeRow(cnt, values);
@@ -285,8 +317,8 @@ public class ParametersHandler extends AbstractGridCallback {
     });
   }
 
-  private void update(final GridView gridView, final long id, BeeParameter parameter) {
-    ParameterList args = CommonsEventHandler.createArgs(CommonsConstants.SVC_SAVE_PARAMETERS);
+  private void update(final GridView gridView, final long id, final BeeParameter parameter) {
+    ParameterList args = CommonsEventHandler.createArgs(CommonsConstants.SVC_CREATE_PARAMETER);
     args.addDataItem(CommonsConstants.VAR_PARAMETERS, Codec.beeSerialize(parameter));
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
@@ -297,21 +329,23 @@ public class ParametersHandler extends AbstractGridCallback {
         if (response.hasErrors()) {
           Global.showError((Object[]) response.getErrors());
 
-        } else if (response.hasResponse(BeeParameter.class)) {
-          BeeParameter prm = BeeParameter.restore((String) response.getResponse());
+        } else if (response.hasResponse(Boolean.class)) {
           boolean newMode = BeeUtils.isEmpty(id);
 
           String[] values = new String[columns.size()];
-          values[id(MODULE)] = prm.getModule();
-          values[id(NAME)] = prm.getName();
-          values[id(TYPE)] = prm.getType();
-          values[id(VALUE)] = prm.getValue();
-          values[id(DESCRIPTION)] = prm.getDescription();
+          values[id(MODULE)] = parameter.getModule();
+          values[id(NAME)] = parameter.getName();
+          values[id(TYPE)] = parameter.getType();
+          values[id(DESCRIPTION)] = parameter.getDescription();
+          values[id(USER_MODE)] = BeeUtils.toString(parameter.supportsUsers());
+          values[id(VALUE)] = parameter.getValue();
+          values[id(USER_VALUE)] = parameter.supportsUsers()
+              ? parameter.getUserValue(BeeKeeper.getUser().getUserId()) : parameter.getValue();
 
-          params.put(prm.getName(), prm);
+          params.put(parameter.getName(), parameter);
 
           if (newMode) {
-            ref.put(++cnt, prm.getName());
+            ref.put(++cnt, parameter.getName());
             BeeRow newRow = new BeeRow(cnt, values);
             provider.addRow(newRow);
             gridView.finishNewRow(newRow);
