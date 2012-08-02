@@ -71,28 +71,34 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     HasGridView {
 
   private class DeleteCallback extends BeeCommand {
+    private final IsRow activeRow;
     private final Collection<RowInfo> rows;
 
-    private DeleteCallback(Collection<RowInfo> rows) {
+    private DeleteCallback(IsRow activeRow, Collection<RowInfo> rows) {
+      this.activeRow = activeRow;
       this.rows = rows;
-    }
-
-    private DeleteCallback(long rowId, long version) {
-      this(Lists.newArrayList(new RowInfo(rowId, version)));
     }
 
     @Override
     public void execute() {
-      Assert.notNull(rows);
-      int count = rows.size();
-      Assert.isPositive(count);
+      Assert.state(!BeeUtils.allEmpty(activeRow, rows));
 
+      int count = (rows == null) ? 0 : rows.size();
+      GridCallback gcb = getGridCallback();
+
+      if (gcb != null) {
+        if ((count == 0
+            ? gcb.beforeDeleteRow(GridPresenter.this, activeRow)
+            : gcb.beforeDeleteRows(GridPresenter.this, activeRow, rows))
+          == GridCallback.DELETE_CANCEL) {
+          return;
+        }
+      }
       setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
 
-      if (count == 1) {
-        RowInfo rowInfo = BeeUtils.peek(rows);
-        final long rowId = rowInfo.getId();
-        long version = rowInfo.getVersion();
+      if (count == 0) {
+        final long rowId = activeRow.getId();
+        long version = activeRow.getVersion();
 
         if (BeeUtils.isEmpty(getViewName())) {
           getDataProvider().onRowDelete(new RowDeleteEvent(getViewName(), rowId));
@@ -112,15 +118,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
             }
           });
         }
-
-      } else if (count > 1) {
+      } else {
         final long[] rowIds = new long[count];
         int i = 0;
         for (RowInfo rowInfo : rows) {
           rowIds[i] = rowInfo.getId();
           i++;
         }
-
         if (BeeUtils.isEmpty(getViewName())) {
           getDataProvider().onMultiDelete(new MultiDeleteEvent(getViewName(), rows));
           afterMulti(rowIds);
@@ -197,27 +201,23 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   public void deleteRow(IsRow row, boolean confirm) {
     Assert.notNull(row);
-    int mode;
-    if (getGridCallback() != null) {
-      mode = getGridCallback().beforeDeleteRow(this, row, confirm);
-    } else {
-      mode = GridCallback.DELETE_DEFAULT;
-    }
 
-    if (mode == GridCallback.DELETE_CANCEL) {
-      return;
+    String message = (getGridCallback() == null) ? null : getGridCallback().getDeleteRowMessage();
+    if (message == null) {
+      message = "Išmesti eilutę ?";
     }
+    int mode = BeeUtils.isEmpty(message) ? GridCallback.DELETE_SILENT : GridCallback.DELETE_DEFAULT;
 
-    DeleteCallback deleteCallback = new DeleteCallback(row.getId(), row.getVersion());
+    DeleteCallback deleteCallback = new DeleteCallback(row, null);
+
     if (mode == GridCallback.DELETE_SILENT || mode == GridCallback.DELETE_DEFAULT && !confirm) {
       deleteCallback.execute();
     } else {
-      String message = (getGridCallback() == null) ? null : getGridCallback().getDeleteRowMessage();
-      Global.getMsgBoxen().confirm(BeeUtils.notEmpty(message, "Išmesti eilutę ?"), deleteCallback,
-          StyleUtils.NAME_SCARY);
+      Global.getMsgBoxen().confirm(message, deleteCallback, StyleUtils.NAME_SCARY);
     }
   }
 
+  @Override
   public IsRow getActiveRow() {
     return getGridView().getActiveRow();
   }
@@ -226,6 +226,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     return getDataProvider().getColumns();
   }
 
+  @Override
   public Provider getDataProvider() {
     return dataProvider;
   }
@@ -239,6 +240,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     return lastFilter;
   }
 
+  @Override
   public Collection<SearchView> getSearchers() {
     Collection<SearchView> searchers;
 
@@ -314,7 +316,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         Global.getFavorites().bookmark(getViewName(), getActiveRow(), getDataColumns(),
             getView().getFavorite());
         break;
-        
+
       case PRINT:
         if (getGridView().getGrid().getRowCount() > 0) {
           Printer.print(getView());
@@ -330,6 +332,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
   }
 
+  @Override
   public void onReadyForInsert(ReadyForInsertEvent event) {
     setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
 
@@ -349,6 +352,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     });
   }
 
+  @Override
   public void onReadyForUpdate(ReadyForUpdateEvent event) {
     final long rowId = event.getRowValue().getId();
     final long version = event.getRowValue().getVersion();
@@ -389,6 +393,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     });
   }
 
+  @Override
   public void onSaveChanges(SaveChangesEvent event) {
     final long rowId = event.getRowId();
 
@@ -527,49 +532,42 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private void deleteRows(final IsRow activeRow, final Collection<RowInfo> selectedRows) {
     int size = selectedRows.size();
-
     List<String> options = Lists.newArrayList();
-    if (getGridCallback() != null) {
-      Pair<String, String> message = getGridCallback().getDeleteRowsMessage(size);
-      if (message != null) {
-        options.add(message.getA());
-        options.add(message.getB());
-      }
-    }
+    Pair<String, String> message =
+        (getGridCallback() != null) ? getGridCallback().getDeleteRowsMessage(size) : null;
 
+    if (message == null || !BeeUtils.allEmpty(message.getA(), message.getB())) {
+      options.add(BeeUtils.notEmpty(message != null ? message.getA() : null,
+          "Išmesti aktyvią eilutę"));
+      options.add(BeeUtils.notEmpty(message != null ? message.getA() : null,
+          BeeUtils.concat(1, "Išmesti", size, "pažymėtas eilutes")));
+    }
     if (options.isEmpty()) {
-      options.add("Išmesti aktyvią eilutę");
-      options.add(BeeUtils.concat(1, "Išmesti", size, "pažymėtas eilutes"));
+      DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
+      deleteCallback.execute();
+
+    } else {
+      Global.choice("Išmesti", null, options, new DialogCallback<Integer>() {
+        @Override
+        public void onSuccess(Integer value) {
+          if (value == 0) {
+            deleteRow(activeRow, false);
+
+          } else if (value == 1) {
+            DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
+            deleteCallback.execute();
+          }
+        }
+      }, 2, BeeConst.UNDEF, DialogConstants.CANCEL, new WidgetInitializer() {
+        @Override
+        public Widget initialize(Widget widget, String name) {
+          if (BeeUtils.same(name, DialogConstants.WIDGET_DIALOG)) {
+            widget.addStyleName(StyleUtils.NAME_SUPER_SCARY);
+          }
+          return widget;
+        }
+      });
     }
-
-    Global.choice("Išmesti", null, options, new DialogCallback<Integer>() {
-      @Override
-      public void onSuccess(Integer value) {
-        if (value == 0) {
-          deleteRow(activeRow, false);
-        } else if (value == 1) {
-          int mode;
-          if (getGridCallback() == null) {
-            mode = GridCallback.DELETE_DEFAULT;
-          } else {
-            mode = getGridCallback().beforeDeleteRows(GridPresenter.this, activeRow, selectedRows);
-          }
-          if (mode == GridCallback.DELETE_CANCEL) {
-            return;
-          }
-
-          DeleteCallback deleteCallback = new DeleteCallback(selectedRows);
-          deleteCallback.execute();
-        }
-      }
-    }, 2, BeeConst.UNDEF, DialogConstants.CANCEL, new WidgetInitializer() {
-      public Widget initialize(Widget widget, String name) {
-        if (BeeUtils.same(name, DialogConstants.WIDGET_DIALOG)) {
-          widget.addStyleName(StyleUtils.NAME_SUPER_SCARY);
-        }
-        return widget;
-      }
-    });
   }
 
   private GridCallback getGridCallback() {

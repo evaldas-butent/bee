@@ -29,113 +29,141 @@ public class AbstractGridCallback implements GridCallback {
 
   private GridPresenter gridPresenter = null;
 
+  @Override
   public void afterAction(Action action, GridPresenter presenter) {
   }
 
+  @Override
   public void afterCreate(GridView gridView) {
   }
 
+  @Override
   public boolean afterCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
       AbstractColumn<?> column, ColumnHeader header, ColumnFooter footer,
       EditableColumn editableColumn) {
     return true;
   }
 
+  @Override
   public void afterCreateColumns(GridView gridView) {
   }
 
+  @Override
   public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
   }
 
+  @Override
   public void afterDeleteRow(long rowId) {
   }
 
+  @Override
   public boolean beforeAction(Action action, GridPresenter presenter) {
     return true;
   }
 
+  @Override
   public boolean beforeAddRow(GridPresenter presenter) {
     return true;
   }
 
+  @Override
   public void beforeCreate(List<? extends IsColumn> dataColumns, int rowCount,
       GridDescription gridDescription, boolean hasSearch) {
   }
 
+  @Override
   public boolean beforeCreateColumn(String columnName, List<? extends IsColumn> dataColumns,
       ColumnDescription columnDescription) {
     return true;
   }
 
+  @Override
   public void beforeCreateColumns(List<? extends IsColumn> dataColumns,
       List<ColumnDescription> columnDescriptions) {
   }
 
+  @Override
   public boolean beforeCreateWidget(String name, Element description) {
     return true;
   }
 
-  public int beforeDeleteRow(GridPresenter presenter, IsRow row, boolean confirm) {
+  @Override
+  public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
     return DELETE_DEFAULT;
   }
 
+  @Override
   public int beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
       Collection<RowInfo> selectedRows) {
     return DELETE_DEFAULT;
   }
 
+  @Override
   public void beforeRefresh(GridPresenter presenter) {
   }
 
+  @Override
   public Widget createCustomWidget(String name, Element description) {
     return null;
   }
 
+  @Override
   public String getCaption() {
     return null;
   }
 
+  @Override
   public String getDeleteRowMessage() {
     return null;
   }
 
+  @Override
   public Pair<String, String> getDeleteRowsMessage(int selectedRows) {
     return null;
   }
 
+  @Override
   public GridPresenter getGridPresenter() {
     return gridPresenter;
   }
 
+  @Override
   public Map<String, Filter> getInitialFilters() {
     return null;
   }
 
+  @Override
   public BeeRowSet getInitialRowSet() {
     return null;
   }
 
+  @Override
   public GridCallback getInstance() {
     return null;
   }
 
+  @Override
   public AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
       ColumnDescription columnDescription) {
     return null;
   }
 
+  @Override
   public String getRowCaption(IsRow row, boolean edit) {
     return null;
   }
 
+  @Override
   public boolean onClose(GridPresenter presenter) {
     return true;
   }
 
+  @Override
   public boolean onLoad(GridDescription gridDescription) {
     return true;
   }
 
+  @Override
   public boolean onLoadExtWidget(Element root) {
     return true;
   }
@@ -156,13 +184,16 @@ public class AbstractGridCallback implements GridCallback {
     return true;
   }
 
+  @Override
   public void onShow(GridPresenter presenter) {
   }
 
+  @Override
   public boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow) {
     return true;
   }
 
+  @Override
   public void setGridPresenter(GridPresenter gridPresenter) {
     this.gridPresenter = gridPresenter;
   }

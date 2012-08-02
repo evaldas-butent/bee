@@ -59,7 +59,7 @@ public class TaskList {
     private final Long userId;
 
     private final Map<String, Editor> filterWidgets = Maps.newHashMap();
-    
+
     private GridHandler(Type type) {
       this.type = type;
       this.userId = BeeKeeper.getUser().getUserId();
@@ -73,10 +73,10 @@ public class TaskList {
         ((HasCellRenderer) column).setRenderer(new AbstractCellRenderer() {
           private Widget modeNew = null;
           private Widget modeUpd = null;
-          
+
           private int laIndex;
           private int lpIndex;
-          
+
           {
             setOptions(column.getOptions());
             laIndex = DataUtils.getColumnIndex(CrmConstants.COL_LAST_ACCESS, dataColumns);
@@ -137,6 +137,7 @@ public class TaskList {
     public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
       if (widget instanceof HasClickHandlers && BeeUtils.same(name, "Filter")) {
         ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+          @Override
           public void onClick(ClickEvent event) {
             if (getGridPresenter() != null) {
               updateFilter(getGridPresenter());
@@ -164,7 +165,7 @@ public class TaskList {
     }
 
     @Override
-    public int beforeDeleteRow(GridPresenter presenter, IsRow row, boolean confirm) {
+    public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
       Provider provider = presenter.getDataProvider();
 
       if (!TaskEventHandler.availableEvent(TaskEvent.DELETED,

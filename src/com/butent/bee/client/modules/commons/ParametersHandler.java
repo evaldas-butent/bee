@@ -94,9 +94,8 @@ public class ParametersHandler extends AbstractGridCallback {
   }
 
   @Override
-  public int beforeDeleteRow(GridPresenter presenter, IsRow row, boolean confirm) {
+  public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
     delete(row.getId());
-
     return GridCallback.DELETE_CANCEL;
   }
 

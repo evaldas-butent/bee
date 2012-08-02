@@ -116,6 +116,7 @@ public class TaskEventHandler {
       final long task = presenter.getGridView().getRelId();
 
       Queries.getRowSet("Users", null, Filter.and(filters), null, new RowSetCallback() {
+        @Override
         public void onSuccess(final BeeRowSet result) {
           if (result.isEmpty()) {
             presenter.getGridView().notifyWarning("Everybody is watching you");
@@ -125,6 +126,7 @@ public class TaskEventHandler {
           MultiSelector selector = new MultiSelector("Stebėtojai", result,
               Lists.newArrayList(CrmConstants.COL_FIRST_NAME, CrmConstants.COL_LAST_NAME),
               new MultiSelector.SelectionCallback() {
+                @Override
                 public void onSelection(List<IsRow> rows) {
                   addObservers(presenter, task, rows);
                 }
@@ -155,7 +157,7 @@ public class TaskEventHandler {
     }
 
     @Override
-    public int beforeDeleteRow(GridPresenter presenter, IsRow row, boolean confirm) {
+    public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
       int result;
       if (row == null) {
         result = GridCallback.DELETE_CANCEL;
@@ -214,6 +216,7 @@ public class TaskEventHandler {
       }
 
       Queries.insertRowSet(rowSet, new RowSetCallback() {
+        @Override
         public void onSuccess(BeeRowSet result) {
           for (BeeRow row : result.getRows()) {
             BeeKeeper.getBus().fireEvent(new RowInsertEvent(result.getViewName(), row));
@@ -278,6 +281,7 @@ public class TaskEventHandler {
         this.lastNameIndex = DataUtils.getColumnIndex(CrmConstants.COL_LAST_NAME, columns);
       }
 
+      @Override
       public void onSelection(List<IsRow> rows) {
         if (!BeeUtils.isEmpty(rows)) {
           for (IsRow row : rows) {
@@ -302,6 +306,7 @@ public class TaskEventHandler {
       if (BeeUtils.same(name, "ExecutorList") && widget instanceof BeeListBox) {
         executorWidget = (BeeListBox) widget;
         executorWidget.addKeyDownHandler(new KeyDownHandler() {
+          @Override
           public void onKeyDown(KeyDownEvent event) {
             if (event.getNativeKeyCode() == KeyCodes.KEY_DELETE) {
               removeUsers(executors, executorWidget,
@@ -313,6 +318,7 @@ public class TaskEventHandler {
       } else if (BeeUtils.same(name, "ObserverList") && widget instanceof BeeListBox) {
         observerWidget = (BeeListBox) widget;
         observerWidget.addKeyDownHandler(new KeyDownHandler() {
+          @Override
           public void onKeyDown(KeyDownEvent event) {
             if (event.getNativeKeyCode() == KeyCodes.KEY_DELETE) {
               removeUsers(observers, observerWidget,
@@ -323,6 +329,7 @@ public class TaskEventHandler {
 
       } else if (BeeUtils.same(name, "ExecutorAdd") && widget instanceof HasClickHandlers) {
         ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+          @Override
           public void onClick(ClickEvent event) {
             selectUsers(true);
           }
@@ -330,6 +337,7 @@ public class TaskEventHandler {
 
       } else if (BeeUtils.same(name, "ObserverAdd") && widget instanceof HasClickHandlers) {
         ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
+          @Override
           public void onClick(ClickEvent event) {
             selectUsers(false);
           }
@@ -452,6 +460,7 @@ public class TaskEventHandler {
       }
 
       Queries.getRowSet("Users", null, Filter.and(filters), null, new RowSetCallback() {
+        @Override
         public void onSuccess(BeeRowSet result) {
           if (result.isEmpty()) {
             Global.showError("No more heroes any more");
@@ -475,7 +484,7 @@ public class TaskEventHandler {
     private static final String MINUTES = "minutes";
     private static final String SELECTOR = "selector";
     private static final String PRIORITY = "priority";
-    private Map<String, Widget> dialogWidgets = Maps.newHashMap();
+    private final Map<String, Widget> dialogWidgets = Maps.newHashMap();
     private FlexTable container = null;
 
     public TaskDialog(String caption) {
@@ -529,7 +538,8 @@ public class TaskEventHandler {
         addMinutes(flex, "Sugaišta minučių", 0, 0, 1440, 5);
         addSelector(SELECTOR, flex, "Darbo tipas", "DurationTypes",
             Lists.newArrayList(CrmConstants.COL_NAME), false);
-        addDate(flex, "Atlikimo data", ValueType.DATE, false, new Long(TimeUtils.today(0).getDays()));
+        addDate(flex, "Atlikimo data", ValueType.DATE, false,
+            new Long(TimeUtils.today(0).getDays()));
       }
     }
 
@@ -613,7 +623,7 @@ public class TaskEventHandler {
         lbl.setStyleName(StyleUtils.NAME_REQUIRED);
       }
       parent.setWidget(row, 0, lbl);
-      
+
       DataSelector selector = new DataSelector(Relation.create(relView, relColumns), true);
       selector.addSimpleHandler(RendererFactory.createRenderer(relView, relColumns));
 
@@ -1150,7 +1160,7 @@ public class TaskEventHandler {
     final Long oldUser = data.getLong(form.getDataIndex(CrmConstants.COL_EXECUTOR));
 
     final TaskDialog dialog = new TaskDialog("Užduoties persiuntimas");
-    dialog.addSelector("Vykdytojas", "Users", 
+    dialog.addSelector("Vykdytojas", "Users",
         Lists.newArrayList(CrmConstants.COL_FIRST_NAME, CrmConstants.COL_LAST_NAME), true);
 
     if (!BeeUtils.equals(owner, oldUser)) {
@@ -1263,7 +1273,7 @@ public class TaskEventHandler {
     dialog.addPriority("Prioritetas", oldPriority);
     dialog.addMinutes("Numatoma trukmė min.", oldTerm, 0, 43200, 30);
     dialog.addSelector("Įmonė", "Companies", Lists.newArrayList(CrmConstants.COL_NAME), false);
-    dialog.addSelector("PERSON", "Asmuo", "CompanyPersons", 
+    dialog.addSelector("PERSON", "Asmuo", "CompanyPersons",
         Lists.newArrayList(CrmConstants.COL_FIRST_NAME, CrmConstants.COL_LAST_NAME), false);
     dialog.addAction("Išsaugoti", new ClickHandler() {
       @Override

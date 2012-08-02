@@ -82,7 +82,7 @@ public class SystemBean {
   public enum SysObject {
     STATE("states"), TABLE("tables"), VIEW("views");
 
-    private String path;
+    private final String path;
 
     private SysObject(String path) {
       this.path = path;
@@ -115,10 +115,10 @@ public class SystemBean {
 
   private String dbName;
   private String dbSchema;
-  private Map<String, BeeState> stateCache = Maps.newHashMap();
-  private Map<String, BeeTable> tableCache = Maps.newHashMap();
-  private Map<String, BeeView> viewCache = Maps.newHashMap();
-  private EventBus viewEventBus = new EventBus();
+  private final Map<String, BeeState> stateCache = Maps.newHashMap();
+  private final Map<String, BeeTable> tableCache = Maps.newHashMap();
+  private final Map<String, BeeView> viewCache = Maps.newHashMap();
+  private final EventBus viewEventBus = new EventBus();
 
   @Lock(LockType.WRITE)
   public void activateTable(String tblName) {

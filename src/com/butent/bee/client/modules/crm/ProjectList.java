@@ -78,13 +78,13 @@ public class ProjectList {
 
           private int laIndex;
           private int lpIndex;
-          
+
           {
             setOptions(column.getOptions());
             laIndex = DataUtils.getColumnIndex(CrmConstants.COL_LAST_ACCESS, dataColumns);
             lpIndex = DataUtils.getColumnIndex(CrmConstants.COL_LAST_PUBLISH, dataColumns);
           }
-          
+
           @Override
           public String render(IsRow row) {
             if (row == null) {
@@ -158,7 +158,7 @@ public class ProjectList {
     }
 
     @Override
-    public int beforeDeleteRow(GridPresenter presenter, IsRow row, boolean confirm) {
+    public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
       Provider provider = presenter.getDataProvider();
 
       if (!ProjectEventHandler.availableEvent(ProjectEvent.DELETED,

@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface GridCallback extends WidgetCallback, ParentRowEvent.Handler {
-  
+
   int DELETE_CANCEL = -1;
   int DELETE_DEFAULT = 0;
   int DELETE_SILENT = 1;
@@ -56,14 +56,14 @@ public interface GridCallback extends WidgetCallback, ParentRowEvent.Handler {
   void beforeCreateColumns(List<? extends IsColumn> dataColumns,
       List<ColumnDescription> columnDescriptions);
 
-  int beforeDeleteRow(GridPresenter presenter, IsRow row, boolean confirm);
+  int beforeDeleteRow(GridPresenter presenter, IsRow row);
 
   int beforeDeleteRows(GridPresenter presenter, IsRow activeRow, Collection<RowInfo> selectedRows);
 
   void beforeRefresh(GridPresenter presenter);
 
   String getCaption();
-  
+
   String getDeleteRowMessage();
 
   Pair<String, String> getDeleteRowsMessage(int selectedRows);
@@ -78,7 +78,7 @@ public interface GridCallback extends WidgetCallback, ParentRowEvent.Handler {
 
   AbstractCellRenderer getRenderer(String columnName, List<? extends IsColumn> dataColumns,
       ColumnDescription columnDescription);
-  
+
   String getRowCaption(IsRow row, boolean edit);
 
   boolean onClose(GridPresenter presenter);
