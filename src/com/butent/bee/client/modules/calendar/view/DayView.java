@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.calendar.view;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
@@ -109,7 +110,7 @@ public class DayView extends CalendarView {
 
   @Override
   public void doScroll() {
-    appointmentPanel.doScroll(getSettings());
+    appointmentPanel.doScroll(getSettings(), appointmentWidgets);
   }
 
   @Override
@@ -120,6 +121,16 @@ public class DayView extends CalendarView {
     }
   }
 
+  @Override
+  public List<AppointmentWidget> getAppointmentWidgets() {
+    return appointmentWidgets;
+  }
+  
+  @Override
+  public Widget getScrollArea() {
+    return appointmentPanel.getScrollArea();
+  }
+  
   @Override
   public String getStyleName() {
     return CalendarStyleManager.DAY_VIEW;

@@ -64,6 +64,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
 
   private boolean layoutSuspended = false;
   private boolean layoutPending = false;
+  private boolean scrollPending = false;
 
   public CalendarWidget(CalendarSettings settings) {
     this(TimeUtils.today(), settings);
@@ -85,14 +86,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     Assert.notNull(appointment, "Added appointment cannot be null.");
     appointmentManager.addAppointment(appointment);
     if (refresh) {
-      refresh();
-    }
-  }
-
-  public void addAppointments(Collection<Appointment> appointments, boolean refresh) {
-    appointmentManager.addAppointments(appointments);
-    if (refresh) {
-      refresh();
+      refresh(false);
     }
   }
 
@@ -118,7 +112,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
 
   public void clearAppointments() {
     appointmentManager.clearAppointments();
-    refresh();
+    refresh(true);
   }
 
   public void doLayout() {
@@ -235,9 +229,10 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     resizeTimer.schedule(500);
   }
 
-  public void refresh() {
+  public void refresh(boolean scroll) {
     if (layoutSuspended) {
       layoutPending = true;
+      scrollPending = scroll;
       return;
     }
 
@@ -245,13 +240,16 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
 
     doLayout();
     doSizing();
-    doScroll();
+
+    if (scroll) {
+      doScroll();
+    }
   }
 
   public boolean removeAppointment(long id, boolean refresh) {
     boolean removed = appointmentManager.removeAppointment(id);
     if (removed && refresh) {
-      refresh();
+      refresh(false);
     }
     return removed;
   }
@@ -259,20 +257,20 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
   public void resumeLayout() {
     layoutSuspended = false;
     if (layoutPending) {
-      refresh();
+      refresh(scrollPending);
     }
   }
 
   public void setAppointments(Collection<Appointment> appointments) {
     appointmentManager.clearAppointments();
     appointmentManager.addAppointments(appointments);
-    refresh();
+    refresh(true);
   }
 
   public void setAttendees(Collection<Long> attendees) {
     this.attendees.clear();
     this.attendees.addAll(attendees);
-    refresh();
+    refresh(true);
   }
 
   public void setDate(JustDate newDate) {
@@ -289,7 +287,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     date.setDate(newDate);
     setDisplayedDays(days);
 
-    refresh();
+    refresh(true);
   }
 
   public void setDays(int days) {
@@ -297,7 +295,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
 
     if (getDisplayedDays() != days) {
       setDisplayedDays(days);
-      refresh();
+      refresh(true);
     }
   }
   
@@ -358,7 +356,7 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
     this.view.attach(this);
 
     setStyleName(this.view.getStyleName());
-    refresh();
+    refresh(true);
   }
   
   public void suspendLayout() {

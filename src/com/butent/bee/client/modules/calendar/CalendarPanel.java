@@ -89,7 +89,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
       DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.YEAR_MONTH);
 
   private final long calendarId;
-  
+
   private final HeaderView header;
 
   private final CalendarWidget calendar;
@@ -291,27 +291,35 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     String id = source.getId();
 
     if (getId().equals(id)) {
-      StyleUtils.setSize(target, source.getClientWidth(), source.getClientHeight());
+      int height = source.getClientHeight() + getPrintHeightAdjustment();
+      StyleUtils.setSize(target, source.getClientWidth(), height);
       ok = true;
 
     } else if (calendar.getElement().isOrHasChild(source)) {
-      if (source.getScrollTop() > 0) {
-        target.setScrollTop(source.getScrollTop());
+      if (StyleUtils.hasClassName(source, CalendarStyleManager.SCROLL_AREA)) {
+        int height = source.getClientHeight() + getPrintHeightAdjustment();
+        StyleUtils.setHeight(target, height);
+
+        int start = CalendarUtils.getStartPixels(getSettings(),
+            calendar.getView().getAppointmentWidgets());
+        if (start > 0) {
+          target.setScrollTop(start);
+        }
       }
       ok = true;
 
     } else if (dateBox.getId().equals(id)) {
-      ok = Type.MONTH.equals(calendar.getType());      
-      
+      ok = Type.MONTH.equals(calendar.getType());
+
     } else if (viewTabs.getId().equals(id)) {
       ok = false;
-      
+
     } else if (StyleUtils.hasAnyClass(source, Sets.newHashSet(STYLE_TODAY, STYLE_NAV_ITEM))) {
       ok = false;
-      
+
     } else if (header.asWidget().getElement().isOrHasChild(source)) {
       ok = header.onPrint(source, target);
-    
+
     } else {
       ok = true;
     }
@@ -415,7 +423,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     calendar.setType(type, days);
 
     if (refresh) {
-      calendar.refresh();
+      calendar.refresh(true);
       calendar.resumeLayout();
     }
 
@@ -426,6 +434,28 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   private HandlerRegistration getAppointmentEventRegistration() {
     return appointmentEventRegistration;
+  }
+
+  private int getPrintHeightAdjustment() {
+    Widget scrollArea = calendar.getView().getScrollArea();
+    if (scrollArea == null) {
+      return 0;
+    }
+
+    int start = CalendarUtils.getStartPixels(getSettings(),
+        calendar.getView().getAppointmentWidgets());
+    int end = CalendarUtils.getEndPixels(getSettings(), calendar.getView().getAppointmentWidgets());
+
+    int height;
+    if (end > start) {
+      height = end - start + 2;
+    } else if (start > 0) {
+      height = scrollArea.getElement().getScrollHeight() - start;
+    } else {
+      height = scrollArea.getElement().getScrollHeight();
+    }
+
+    return height - scrollArea.getElement().getClientHeight();
   }
 
   private void loadAppointments() {

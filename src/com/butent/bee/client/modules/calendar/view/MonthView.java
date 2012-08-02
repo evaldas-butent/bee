@@ -152,8 +152,18 @@ public class MonthView extends CalendarView {
   public void doSizing() {
   }
 
+  @Override
+  public List<AppointmentWidget> getAppointmentWidgets() {
+    return appointmentWidgets;
+  }
+
   public JustDate getFirstDate() {
     return firstDate;
+  }
+
+  @Override
+  public Widget getScrollArea() {
+    return null;
   }
 
   @Override

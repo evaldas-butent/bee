@@ -7,6 +7,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dnd.DragContext;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
@@ -132,6 +133,48 @@ public class CalendarUtils {
     return null;
   }
   
+  public static int getEndHour(Collection<AppointmentWidget> widgets) {
+    int result = BeeConst.UNDEF;
+    if (widgets == null) {
+      return result;
+    }
+
+    for (AppointmentWidget widget : widgets) {
+      if (!widget.isMulti()) {
+        DateTime end = widget.getAppointment().getEnd();
+        int hour = end.getHour();
+        if (end.getMinute() > 0) {
+          hour++;
+        } else if (hour == 0) {
+          hour = TimeUtils.HOURS_PER_DAY;
+        }
+
+        if (BeeConst.isUndef(result)) {
+          result = hour;
+        } else {
+          result = Math.max(result, hour);
+        }
+      }
+    }
+    return result;
+  }
+
+  public static int getEndPixels(CalendarSettings settings,
+      Collection<AppointmentWidget> widgets) {
+    Assert.notNull(settings);
+
+    int hour = settings.getWorkingHourEnd();
+    int maxHour = getEndHour(widgets);
+
+    if (hour > 0 || maxHour > 0) {
+      hour = Math.max(hour, maxHour);
+    } else {
+      hour = TimeUtils.HOURS_PER_DAY;
+    }
+
+    return hour * settings.getIntervalsPerHour() * settings.getPixelsPerInterval();
+  }
+  
   public static int getNowY(CalendarSettings settings) {
     DateTime now = new DateTime();
     int hourHeight = settings.getHourHeight();
@@ -141,6 +184,42 @@ public class CalendarUtils {
   
   public static Range<DateTime> getRange(Appointment appointment) {
     return Ranges.closedOpen(appointment.getStart(), appointment.getEnd());
+  }
+
+  public static int getStartHour(Collection<AppointmentWidget> widgets) {
+    int result = BeeConst.UNDEF;
+    if (widgets == null) {
+      return result;
+    }
+
+    for (AppointmentWidget widget : widgets) {
+      if (!widget.isMulti()) {
+        int hour = widget.getAppointment().getStart().getHour();
+        if (BeeConst.isUndef(result)) {
+          result = hour;
+        } else {
+          result = Math.min(result, hour);
+        }
+      }
+    }
+    return result;
+  }
+  
+  public static int getStartPixels(CalendarSettings settings,
+      Collection<AppointmentWidget> widgets) {
+    Assert.notNull(settings);
+
+    int hour = settings.getScrollToHour();
+    if (hour <= 0) {
+      hour = Math.max(settings.getWorkingHourStart(), 0);
+    }
+    
+    int minHour = getStartHour(widgets);
+    if (minHour >= 0) {
+      hour = Math.min(hour, minHour);
+    }
+
+    return hour * settings.getIntervalsPerHour() * settings.getPixelsPerInterval();
   }
   
   public static int getTodayColumn(JustDate date, int days) {

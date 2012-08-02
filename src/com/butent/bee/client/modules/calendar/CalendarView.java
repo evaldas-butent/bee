@@ -36,6 +36,10 @@ public abstract class CalendarView {
   public abstract void doScroll();
 
   public abstract void doSizing();
+  
+  public abstract List<AppointmentWidget> getAppointmentWidgets();
+  
+  public abstract Widget getScrollArea();
 
   public CalendarSettings getSettings() {
     return getCalendarWidget().getSettings();
@@ -59,7 +63,7 @@ public abstract class CalendarView {
       int oldColumnIndex, int newColumnIndex, boolean refresh) {
     if (UpdateEvent.fire(getCalendarWidget(), appointment, newStart, newEnd, oldColumnIndex,
         newColumnIndex) || refresh) {
-      getCalendarWidget().refresh();
+      getCalendarWidget().refresh(false);
     }
   }
 

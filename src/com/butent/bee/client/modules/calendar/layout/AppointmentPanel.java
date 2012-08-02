@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.Composite;
 
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.modules.calendar.AppointmentWidget;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.shared.BeeConst;
@@ -12,6 +13,8 @@ import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.Collection;
 
 public class AppointmentPanel extends Composite {
 
@@ -45,13 +48,12 @@ public class AppointmentPanel extends Composite {
     getGrid().build(columnCount, settings, todayStartColumn, todayEndColumn);
   }
 
-  public void doScroll(CalendarSettings settings) {
-    int scrollTop = getScrollArea().getElement().getScrollTop();
-    int hour = settings.getScrollToHour();
+  public void doScroll(CalendarSettings settings, Collection<AppointmentWidget> widgets) {
+    int oldPos = getScrollArea().getElement().getScrollTop();
+    int newPos = CalendarUtils.getStartPixels(settings, widgets);
 
-    if (scrollTop <= 0 && hour > 0) {
-      getScrollArea().getElement().setScrollTop(hour *
-          settings.getIntervalsPerHour() * settings.getPixelsPerInterval());
+    if (oldPos != newPos) {
+      getScrollArea().getElement().setScrollTop(newPos);
     }
   }
   

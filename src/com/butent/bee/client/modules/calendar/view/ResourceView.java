@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.calendar.view;
 import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
@@ -114,7 +115,7 @@ public class ResourceView extends CalendarView {
   
   @Override
   public void doScroll() {
-    viewBody.doScroll(getSettings());
+    viewBody.doScroll(getSettings(), appointmentWidgets);
   }
 
   @Override
@@ -125,6 +126,16 @@ public class ResourceView extends CalendarView {
     }
   }
 
+  @Override
+  public List<AppointmentWidget> getAppointmentWidgets() {
+    return appointmentWidgets;
+  }
+  
+  @Override
+  public Widget getScrollArea() {
+    return viewBody.getScrollArea();
+  }
+  
   @Override
   public String getStyleName() {
     return CalendarStyleManager.RESOURCE_VIEW;
