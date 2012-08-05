@@ -366,11 +366,19 @@ public class TimeUtils {
     }
   }
 
-  public static int minutesSinceDayStarted(DateTime dt) {
-    Assert.notNull(dt);
-    return dt.getHour() * 60 + dt.getMinute();
+  public static int minuteDiff(DateTime start, DateTime end) {
+    Assert.notNull(start);
+    Assert.notNull(end);
+    
+    long minutes = end.getTime() / MILLIS_PER_MINUTE - start.getTime() / MILLIS_PER_MINUTE;
+    return (int) minutes;
   }
 
+  public static int minutesSinceDayStarted(DateTime dt) {
+    Assert.notNull(dt);
+    return dt.getHour() * MINUTES_PER_HOUR + dt.getMinute();
+  }
+  
   public static String monthToString(int month) {
     return padTwo(month);
   }

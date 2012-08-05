@@ -513,6 +513,8 @@ public class ScreenImpl implements Screen {
 
     tp.add(Global.getFavorites(), new BeeImage(Global.getImages().bookmark()));
 
+    tp.add(Global.getReports(), "Ataskaitos");
+
     Vertical adm = new Vertical();
     adm.setCellSpacing(5);
 

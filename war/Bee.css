@@ -1436,6 +1436,20 @@ body, select {
   bottom: 0;
 }
 
+.bee-ReportsItem {
+  color: #666;
+  margin-left: 1em;
+  margin-top: 1.5ex;
+}
+.bee-ReportsItem:first-child {
+  margin-top: 3ex;
+}
+.bee-ReportsItem:hover {
+  text-decoration: underline;
+  color: #00e;
+  cursor: pointer;
+}
+
 ::-webkit-scrollbar {
   height: 9px;
   width: 9px;

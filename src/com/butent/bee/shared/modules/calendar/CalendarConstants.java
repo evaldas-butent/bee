@@ -10,7 +10,9 @@ public class CalendarConstants {
     TENTATIVE("Planuojamas"),
     CONFIRMED("Patvirtintas"),
     DELAYED("Atidėtas"),
-    CANCELED("Atšauktas");
+    CANCELED("Atšauktas"),
+    RUNNING("Vykdomas"),
+    COMPLETED("Baigtas");
     
     private final String caption;
     
@@ -31,6 +33,23 @@ public class CalendarConstants {
     } 
   }
 
+  public enum Report implements HasCaption {
+    BUSY_MONTHS("Užimtumas mėnesiais"),
+    BUSY_HOURS("Užimtumas valandomis"),
+    CANCEL_MONTHS("Atšaukimas mėnesiais"),
+    CANCEL_HOURS("Atšaukimas valandomis");
+    
+    private final String caption;
+    
+    private Report(String caption) {
+      this.caption = caption;
+    }
+
+    public String getCaption() {
+      return caption;
+    }
+  }
+  
   public enum ResponseStatus implements HasCaption {
     NEEDS_ACTION, DECLINED, TENTATIVE, ACCEPTED;
 
@@ -115,6 +134,7 @@ public class CalendarConstants {
   public static final String SVC_GET_CALENDAR_APPOINTMENTS = "get_calendar_appointments"; 
   public static final String SVC_SAVE_ACTIVE_VIEW = "save_active_view"; 
   public static final String SVC_GET_OVERLAPPING_APPOINTMENTS = "get_overlapping_appointments"; 
+  public static final String SVC_DO_REPORT = "do_report"; 
 
   public static final String PARAM_CALENDAR_ID = "calendar_id";
   public static final String PARAM_USER_CALENDAR_ID = "user_calendar_id";
@@ -123,10 +143,12 @@ public class CalendarConstants {
   public static final String PARAM_APPOINTMENT_START = "appointment_start";
   public static final String PARAM_APPOINTMENT_END = "appointment_end";
   public static final String PARAM_ATTENDEES = "attendees";
+  public static final String PARAM_REPORT = "report";
   
   public static final String TBL_USER_CALENDARS = "UserCalendars";
   public static final String TBL_CONFIGURATION = "Configuration";
 
+  public static final String TBL_APPOINTMENTS = "Appointments";
   public static final String TBL_APPOINTMENT_PROPS = "AppointmentProps";
   public static final String TBL_APPOINTMENT_ATTENDEES = "AppointmentAttendees";
   public static final String TBL_APPOINTMENT_REMINDERS = "AppointmentReminders";

@@ -15,6 +15,7 @@ import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.images.Images;
+import com.butent.bee.client.output.Reports;
 import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
@@ -69,6 +70,12 @@ public class Global implements Module {
   private static final Defaults DEFAULTS = new ClientDefaults();
 
   private static final Search SEARCH = new Search();
+
+  private static final Reports REPORTS = new Reports();
+  
+  public static void addReport(String caption, BeeCommand command) {
+    REPORTS.addReport(caption, command);
+  }
   
   public static void addStyleSheet(String name, String text) {
     if (BeeUtils.isEmpty(name)) {
@@ -241,6 +248,10 @@ public class Global implements Module {
     return CAPTIONS.keySet();
   }
   
+  public static Reports getReports() {
+    return REPORTS;
+  }
+
   public static Search getSearch() {
     return SEARCH;
   }

@@ -1,7 +1,10 @@
 package com.butent.bee.server.modules.calendar;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
@@ -14,31 +17,42 @@ import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
+import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.View;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -83,13 +97,6 @@ public class CalendarModuleBean implements BeeModule {
         results.add(new SearchResult(VIEW_APPOINTMENTS, row));
       }
     }
-
-    List<SearchResult> calendars = qs.getSearchResults(VIEW_CALENDARS,
-        DataUtils.anyColumnContains(Sets.newHashSet(COL_NAME, COL_DESCRIPTION,
-            COL_OWNER_FIRST_NAME, COL_OWNER_LAST_NAME), query));
-    if (!BeeUtils.isEmpty(calendars)) {
-      results.addAll(calendars);
-    }
     return results;
   }
 
@@ -110,6 +117,8 @@ public class CalendarModuleBean implements BeeModule {
       response = saveActiveView(reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_OVERLAPPING_APPOINTMENTS)) {
       response = getOverlappingAppointments(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_DO_REPORT)) {
+      response = doReport(reqInfo);
 
     } else {
       String msg = BeeUtils.concat(1, "Calendar service not recognized:", svc);
@@ -180,6 +189,45 @@ public class CalendarModuleBean implements BeeModule {
     return response;
   }
 
+  private ResponseObject doReport(RequestInfo reqInfo) {
+    Integer paramRep = BeeUtils.toIntOrNull(reqInfo.getParameter(PARAM_REPORT));
+    if (!BeeUtils.isOrdinal(Report.class, paramRep)) {
+      return ResponseObject.error(SVC_DO_REPORT, PARAM_REPORT, "parameter not found");
+    }
+
+    Report report = Report.values()[paramRep];
+    BeeRowSet result;
+
+    switch (report) {
+      case BUSY_HOURS:
+        result = getAttendeesByHour(false);
+        break;
+      case BUSY_MONTHS:
+        result = getAttendeesByMonth(false);
+        break;
+      case CANCEL_HOURS:
+        result = getAttendeesByHour(true);
+        break;
+      case CANCEL_MONTHS:
+        result = getAttendeesByMonth(true);
+        break;
+      default:
+        Assert.untouchable();
+        result = null;
+    }
+
+    if (result == null) {
+      return ResponseObject.response(BeeConst.STRING_EMPTY);
+    } else {
+      return ResponseObject.response(result);
+    }
+  }
+  
+  private String formatMinutes(int minutes) {
+    return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_HOUR) + DateTime.TIME_FIELD_SEPARATOR
+        + TimeUtils.padTwo(minutes % TimeUtils.MINUTES_PER_HOUR);
+  }
+
   private BeeRowSet getAppointments(Filter filter, Order order, Set<Long> attendees) {
     BeeRowSet appointments = qs.getViewData(VIEW_APPOINTMENTS, filter, order);
     if (appointments == null || appointments.isEmpty()) {
@@ -238,6 +286,158 @@ public class CalendarModuleBean implements BeeModule {
     }
 
     return appointments;
+  }
+  
+  private SimpleRowSet getAttendeePeriods(boolean canceled) {
+    int statusCanceled = AppointmentStatus.CANCELED.ordinal();
+    IsCondition statusCondition = canceled
+        ? SqlUtils.equal(TBL_APPOINTMENTS, COL_STATUS, statusCanceled)
+        : SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS, statusCanceled);
+
+    SqlSelect ss = new SqlSelect()
+        .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME, COL_END_DATE_TIME)
+        .addFields(TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE)
+        .addFrom(TBL_APPOINTMENTS)
+        .addFromInner(TBL_APPOINTMENT_ATTENDEES,
+            SqlUtils.join(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT,
+                TBL_APPOINTMENTS, sys.getIdName(TBL_APPOINTMENTS)))
+        .setWhere(statusCondition);
+
+    return qs.getData(ss);
+  }
+
+  private BeeRowSet getAttendeesByHour(boolean canceled) {
+    SimpleRowSet data = getAttendeePeriods(canceled);
+    if (data == null || data.getNumberOfRows() <= 0) {
+      return null;
+    }
+
+    int startIndex = data.getColumnIndex(COL_START_DATE_TIME);
+    int endIndex = data.getColumnIndex(COL_END_DATE_TIME);
+    int attIndex = data.getColumnIndex(COL_ATTENDEE);
+
+    Table<Long, Integer, Integer> table = HashBasedTable.create();
+
+    for (int r = 0; r < data.getNumberOfRows(); r++) {
+      DateTime start = data.getDateTime(r, startIndex);
+      DateTime end = data.getDateTime(r, endIndex);
+
+      Long attendee = data.getLong(r, attIndex);
+
+      for (Map.Entry<Integer, Integer> entry : splitByHour(start, end).entrySet()) {
+        int hour = entry.getKey();
+        int minutes = entry.getValue();
+
+        Integer value = table.get(attendee, hour);
+        if (value == null) {
+          table.put(attendee, hour, minutes);
+        } else {
+          table.put(attendee, hour, value + minutes);
+        }
+      }
+    }
+    if (table.isEmpty()) {
+      return null;
+    }
+
+    List<Integer> hours = Lists.newArrayList(table.columnKeySet());
+    Collections.sort(hours);
+
+    BeeRowSet attendees = qs.getViewData(VIEW_ATTENDEES);
+    if (attendees.isEmpty()) {
+      return null;
+    }
+
+    BeeRowSet result = new BeeRowSet(new BeeColumn(ValueType.TEXT, COL_TYPE_NAME),
+        new BeeColumn(ValueType.TEXT, COL_NAME));
+    for (Integer hour : hours) {
+      result.addColumn(ValueType.TEXT, hour.toString());
+    }
+
+    for (BeeRow attRow : attendees.getRows()) {
+      Map<Integer, Integer> tableRow = table.row(attRow.getId());
+      if (tableRow == null || tableRow.isEmpty()) {
+        continue;
+      }
+
+      String[] values = new String[result.getNumberOfColumns()];
+      values[0] = DataUtils.getString(attendees, attRow, COL_TYPE_NAME);
+      values[1] = DataUtils.getString(attendees, attRow, COL_NAME);
+
+      for (int c = 0; c < hours.size(); c++) {
+        Integer minutes = tableRow.get(hours.get(c));
+        values[c + 2] = (minutes == null) ? null : formatMinutes(minutes);
+      }
+      result.addRow(attRow.getId(), values);
+    }
+    return result;
+  }
+
+  private BeeRowSet getAttendeesByMonth(boolean canceled) {
+    SimpleRowSet data = getAttendeePeriods(canceled);
+    if (data == null || data.getNumberOfRows() <= 0) {
+      return null;
+    }
+
+    int startIndex = data.getColumnIndex(COL_START_DATE_TIME);
+    int endIndex = data.getColumnIndex(COL_END_DATE_TIME);
+    int attIndex = data.getColumnIndex(COL_ATTENDEE);
+
+    Table<Long, YearMonth, Integer> table = HashBasedTable.create();
+
+    for (int r = 0; r < data.getNumberOfRows(); r++) {
+      DateTime start = data.getDateTime(r, startIndex);
+      DateTime end = data.getDateTime(r, endIndex);
+
+      Long attendee = data.getLong(r, attIndex);
+
+      for (Map.Entry<YearMonth, Integer> entry : splitByYearMonth(start, end).entrySet()) {
+        YearMonth ym = entry.getKey();
+        int minutes = entry.getValue();
+
+        Integer value = table.get(attendee, ym);
+        if (value == null) {
+          table.put(attendee, ym, minutes);
+        } else {
+          table.put(attendee, ym, value + minutes);
+        }
+      }
+    }
+    if (table.isEmpty()) {
+      return null;
+    }
+
+    List<YearMonth> months = Lists.newArrayList(table.columnKeySet());
+    Collections.sort(months);
+
+    BeeRowSet attendees = qs.getViewData(VIEW_ATTENDEES);
+    if (attendees.isEmpty()) {
+      return null;
+    }
+
+    BeeRowSet result = new BeeRowSet(new BeeColumn(ValueType.TEXT, COL_TYPE_NAME),
+        new BeeColumn(ValueType.TEXT, COL_NAME));
+    for (YearMonth ym : months) {
+      result.addColumn(ValueType.TEXT, ym.toString());
+    }
+
+    for (BeeRow attRow : attendees.getRows()) {
+      Map<YearMonth, Integer> tableRow = table.row(attRow.getId());
+      if (tableRow == null || tableRow.isEmpty()) {
+        continue;
+      }
+
+      String[] values = new String[result.getNumberOfColumns()];
+      values[0] = DataUtils.getString(attendees, attRow, COL_TYPE_NAME);
+      values[1] = DataUtils.getString(attendees, attRow, COL_NAME);
+
+      for (int c = 0; c < months.size(); c++) {
+        Integer minutes = tableRow.get(months.get(c));
+        values[c + 2] = (minutes == null) ? null : formatMinutes(minutes);
+      }
+      result.addRow(attRow.getId(), values);
+    }
+    return result;
   }
 
   private ResponseObject getCalendarAppointments(RequestInfo reqInfo) {
@@ -478,6 +678,57 @@ public class CalendarModuleBean implements BeeModule {
         .setWhere(SqlUtils.equal(TBL_USER_CALENDARS, sys.getIdName(TBL_USER_CALENDARS), rowId));
 
     return qs.updateDataWithResponse(update);
+  }
+
+  private Map<Integer, Integer> splitByHour(DateTime start, DateTime end) {
+    Map<Integer, Integer> result = Maps.newHashMap();
+    if (start == null || end == null) {
+      return result;
+    }
+
+    DateTime dt = DateTime.copyOf(start);
+    while (TimeUtils.isLess(dt, end)) {
+      int hour = dt.getHour();
+      DateTime next = TimeUtils.nextHour(dt, 0);
+      
+      int value = BeeUtils.unbox(result.get(hour));
+
+      if (TimeUtils.isLess(next, end)) {
+        result.put(hour, TimeUtils.minuteDiff(dt, next) + value);
+        dt.setTime(next.getTime());
+      } else {
+        result.put(hour, TimeUtils.minuteDiff(dt, end) + value);
+        break;
+      }
+    }
+    return result;
+  }
+  
+  private Map<YearMonth, Integer> splitByYearMonth(DateTime start, DateTime end) {
+    Map<YearMonth, Integer> result = Maps.newHashMap();
+    if (start == null || end == null) {
+      return result;
+    }
+
+    if (TimeUtils.sameMonth(start, end)) {
+      result.put(new YearMonth(start), TimeUtils.minuteDiff(start, end));
+      return result;
+    }
+
+    DateTime dt = DateTime.copyOf(start);
+    while (TimeUtils.isLess(dt, end)) {
+      YearMonth ym = new YearMonth(dt);
+      DateTime next = TimeUtils.startOfNextMonth(dt).getDateTime();
+
+      if (TimeUtils.isLess(next, end)) {
+        result.put(ym, TimeUtils.minuteDiff(dt, next));
+        dt.setTime(next.getTime());
+      } else {
+        result.put(ym, TimeUtils.minuteDiff(dt, end));
+        break;
+      }
+    }
+    return result;
   }
 
   private ResponseObject updateAppointment(RequestInfo reqInfo) {

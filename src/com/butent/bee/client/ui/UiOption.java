@@ -8,7 +8,8 @@ public enum UiOption {
   ROOT(EnumSet.of(Type.PAGING, Type.SEARCH, Type.WINDOW, Type.HEADER)),
   CHILD(EnumSet.of(Type.HEADER)),
   EMBEDDED(EnumSet.of(Type.PAGING, Type.SEARCH, Type.HEADER)),
-  SELECTOR(EnumSet.of(Type.SEARCH));
+  SELECTOR(EnumSet.of(Type.SEARCH)),
+  REPORT(EnumSet.of(Type.HEADER, Type.WINDOW));
   
   private enum Type {
     PAGING, SEARCH, WINDOW, HEADER

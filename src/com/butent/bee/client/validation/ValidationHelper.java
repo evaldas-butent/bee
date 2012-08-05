@@ -75,7 +75,7 @@ public class ValidationHelper {
     }
 
     if (errorMessage == null && !cv.isNullable() && BeeUtils.isEmpty(cv.getNewValue())) {
-      errorMessage = "Value required";
+      errorMessage = "įveskite reikšmę";
     }
 
     if (errorMessage == null && cv.getNewValue() != null
@@ -84,11 +84,11 @@ public class ValidationHelper {
 
       if (!BeeUtils.isEmpty(cv.getMinValue())
           && value.compareTo(Value.parseValue(cv.getType(), cv.getMinValue(), true)) < 0) {
-        errorMessage = BeeUtils.concat(1, errorMessage, "Min value:", cv.getMinValue());
+        errorMessage = BeeUtils.concat(1, errorMessage, "Min reikšmė:", cv.getMinValue());
       }
       if (!BeeUtils.isEmpty(cv.getMaxValue())
           && value.compareTo(Value.parseValue(cv.getType(), cv.getMaxValue(), true)) > 0) {
-        errorMessage = BeeUtils.concat(1, errorMessage, "Max value:", cv.getMaxValue());
+        errorMessage = BeeUtils.concat(1, errorMessage, "Max reikšmė:", cv.getMaxValue());
       }
     }
 

@@ -73,8 +73,12 @@ public class CommonsModuleBean implements BeeModule {
   public List<SearchResult> doSearch(String query) {
     return qs.getSearchResults(CommonsConstants.VIEW_COMPANIES,
         DataUtils.anyColumnContains(Sets.newHashSet(CommonsConstants.COL_NAME,
-            CommonsConstants.COL_CODE, CommonsConstants.COL_EMAIL, CommonsConstants.COL_ADDRESS,
-            CommonsConstants.COL_CITY_NAME, CommonsConstants.COL_COUNTRY_NAME), query));
+            CommonsConstants.COL_CODE,
+            CommonsConstants.COL_PHONE,
+            CommonsConstants.COL_EMAIL,
+            CommonsConstants.COL_ADDRESS,
+            CommonsConstants.COL_CITY_NAME,
+            CommonsConstants.COL_COUNTRY_NAME), query));
   }
 
   @Override
