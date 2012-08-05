@@ -49,28 +49,18 @@ public class TestArrayUtils {
 
   @Test
   public void testContainsIntIntArray() {
-    assertEquals(true, ArrayUtils.contains("this", strMas3));
-    assertEquals(false, ArrayUtils.contains(-666, strMas3));
-    assertEquals(false, ArrayUtils.contains("a", null));
-    assertEquals(true, ArrayUtils.contains("a", strMas3));
+    assertEquals(true, ArrayUtils.contains(strMas3 ,"this"));
+    assertEquals(false, ArrayUtils.contains(strMas3, -666));
+    assertEquals(false, ArrayUtils.contains(null, "a"));
+    assertEquals(true, ArrayUtils.contains(strMas3, "a"));
   }
 
   @Test
   public void testContainsTTArray() {
-    assertEquals(true, ArrayUtils.contains("this", strMas1));
-    assertEquals(false, ArrayUtils.contains("nothing", strMas1));
-    assertEquals(false, ArrayUtils.contains("infinity", strMas2));
-    assertEquals(false, ArrayUtils.contains("", null));
-  }
-
-  @Test
-  public void testContext() {
-    assertEquals(false, ArrayUtils.context("is is", strMas1));
-    assertEquals(true, ArrayUtils.context("this", strMas1));
-    assertEquals(false, ArrayUtils.context("nothing", strMas1));
-    assertEquals(false, ArrayUtils.context("", strMas1));
-    assertEquals(false, ArrayUtils.context(null, strMas1));
-    assertEquals(false, ArrayUtils.context(null, strMas3));
+    assertEquals(true, ArrayUtils.contains(strMas1, "this"));
+    assertEquals(false, ArrayUtils.contains(strMas1, "nothing"));
+    assertEquals(false, ArrayUtils.contains(strMas2, "infinity"));
+    assertEquals(false, ArrayUtils.contains(null, ""));
   }
 
   @Test
@@ -126,26 +116,26 @@ public class TestArrayUtils {
 
   @Test
   public void testIndexOfIntIntArray() {
-    assertEquals(-1, ArrayUtils.indexOf(Long.valueOf(5), strMas3));
-    assertEquals(0, ArrayUtils.indexOf("this", strMas3));
-    assertEquals(-1, ArrayUtils.indexOf(-1, null));
-    assertEquals(-1, ArrayUtils.indexOf(-1000, strMas3));
-    assertEquals(2, ArrayUtils.indexOf("a", strMas3));
+    assertEquals(-1, ArrayUtils.indexOf(strMas3, Long.valueOf(5)));
+    assertEquals(0, ArrayUtils.indexOf(strMas3, "this"));
+    assertEquals(-1, ArrayUtils.indexOf(null, -1));
+    assertEquals(-1, ArrayUtils.indexOf(strMas3, -1000));
+    assertEquals(2, ArrayUtils.indexOf(strMas3, "a"));
   }
 
   @Test
   public void testIndexOfTTArray() {
-    assertEquals(-1, ArrayUtils.indexOf("This", strMas1));
-    assertEquals(0, ArrayUtils.indexOf("this", strMas1));
-    assertEquals(2, ArrayUtils.indexOf("a", strMas1));
-    assertEquals(-1, ArrayUtils.indexOf(-1, null));
-    assertEquals(-1, ArrayUtils.indexOf("text", strMas1));
-    assertEquals(-1, ArrayUtils.indexOf("tester", strMas2));
-    assertEquals(-1, ArrayUtils.indexOf("This", crseMas1));
-    assertEquals(0, ArrayUtils.indexOf("this", crseMas1));
-    assertEquals(2, ArrayUtils.indexOf("a", crseMas1));
-    assertEquals(-1, ArrayUtils.indexOf(-1, null));
-    assertEquals(-1, ArrayUtils.indexOf("test", crseMas1));
+    assertEquals(-1, ArrayUtils.indexOf(strMas1, "This"));
+    assertEquals(0, ArrayUtils.indexOf(strMas1, "this"));
+    assertEquals(2, ArrayUtils.indexOf(strMas1, "a"));
+    assertEquals(-1, ArrayUtils.indexOf(null, -1));
+    assertEquals(-1, ArrayUtils.indexOf(strMas1, "text"));
+    assertEquals(-1, ArrayUtils.indexOf(strMas2, "tester"));
+    assertEquals(-1, ArrayUtils.indexOf(crseMas1, "This"));
+    assertEquals(0, ArrayUtils.indexOf(crseMas1, "this"));
+    assertEquals(2, ArrayUtils.indexOf(crseMas1, "a"));
+    assertEquals(-1, ArrayUtils.indexOf(null, -1));
+    assertEquals(-1, ArrayUtils.indexOf(crseMas1, "test"));
   }
 
   @Test

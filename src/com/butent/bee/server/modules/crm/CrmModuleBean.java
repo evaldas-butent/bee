@@ -2,7 +2,6 @@ package com.butent.bee.server.modules.crm;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -22,6 +21,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -32,6 +32,7 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -62,6 +63,11 @@ public class CrmModuleBean implements BeeModule {
   @Override
   public String dependsOn() {
     return CommonsConstants.COMMONS_MODULE;
+  }
+
+  @Override
+  public List<SearchResult> doSearch(String query) {
+    return null;
   }
 
   @Override
@@ -97,11 +103,6 @@ public class CrmModuleBean implements BeeModule {
   @Override
   public String getResourcePath() {
     return getName();
-  }
-
-  @Override
-  public Multimap<String, String> getSearchableColumns() {
-    return null;
   }
 
   @Override

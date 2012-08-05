@@ -196,6 +196,11 @@ public class Order implements BeeSerializable, Transformable {
     super();
   }
 
+  public Order(String name, boolean ascending) {
+    this();
+    add(name, ascending);
+  }
+  
   public void add(String name, boolean ascending) {
     add(name, Lists.newArrayList(name), ascending);
   }

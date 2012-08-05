@@ -118,7 +118,7 @@ public class InternalLink extends Widget implements HasId, HasHTML, HasClickHand
     String html;
     String token;
 
-    if (BeeUtils.context(sep, value)) {
+    if (BeeUtils.containsSame(value, sep)) {
       html = BeeUtils.getPrefix(value, sep);
       token = BeeUtils.getSuffix(value, sep);
     } else {

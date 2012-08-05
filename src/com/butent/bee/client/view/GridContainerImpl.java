@@ -89,19 +89,8 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   private List<String> favorite = Lists.newArrayList();
 
   public GridContainerImpl() {
-    this(-1);
-  }
-
-  public GridContainerImpl(int splitterSize) {
-    super(splitterSize);
-  }
-
-  public GridContainerImpl(String style) {
-    this(style, -1);
-  }
-
-  public GridContainerImpl(String style, int splitterSize) {
-    super(style, splitterSize);
+    super(-1);
+    addStyleName("bee-GridContainer");
   }
 
   public void bind() {

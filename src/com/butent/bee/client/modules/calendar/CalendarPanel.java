@@ -544,11 +544,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     List<Appointment> appointments = Lists.newArrayList();
     for (BeeRow row : rowSet.getRows()) {
-      Appointment app = new Appointment(row,
-          row.getProperty(CalendarConstants.VIEW_APPOINTMENT_ATTENDEES),
-          row.getProperty(CalendarConstants.VIEW_APPOINTMENT_PROPS),
-          row.getProperty(CalendarConstants.VIEW_APPOINTMENT_REMINDERS));
-
+      Appointment app = new Appointment(row);
       appointments.add(app);
     }
 

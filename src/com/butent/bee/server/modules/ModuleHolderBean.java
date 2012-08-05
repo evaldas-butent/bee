@@ -1,10 +1,9 @@
 package com.butent.bee.server.modules;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.server.Config;
@@ -13,12 +12,14 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -49,6 +50,19 @@ public class ModuleHolderBean {
     return getModule(reqInfo.getService()).doService(reqInfo);
   }
 
+  public List<SearchResult> doSearch(String query) {
+    Assert.notEmpty(query);
+    List<SearchResult> results = Lists.newArrayList();
+
+    for (BeeModule module : modules.values()) {
+      List<SearchResult> found = module.doSearch(query);
+      if (found != null && !found.isEmpty()) {
+        results.addAll(found);
+      }
+    }
+    return results;
+  }
+
   public Collection<BeeParameter> getModuleDefaultParameters(String moduleName) {
     return getModule(moduleName).getDefaultParameters();
   }
@@ -67,19 +81,6 @@ public class ModuleHolderBean {
           BeeUtils.normalize(PROPERTY_MODULES), getModule(moduleName).getResourcePath(), resource);
     }
     return resource;
-  }
-
-  public Multimap<String, String> getSearchableColumns() {
-    Multimap<String, String> result = ArrayListMultimap.create();
-
-    for (BeeModule module : modules.values()) {
-      Multimap<String, String> columns = module.getSearchableColumns();
-      if (columns != null && !columns.isEmpty()) {
-        result.putAll(columns);
-      }
-    }
-
-    return result;
   }
   
   public boolean hasModule(String moduleName) {

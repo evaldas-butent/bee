@@ -1,9 +1,8 @@
 package com.butent.bee.server.modules.commons;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import com.butent.bee.server.data.BeeView;
@@ -25,6 +24,8 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -69,6 +70,14 @@ public class CommonsModuleBean implements BeeModule {
   }
 
   @Override
+  public List<SearchResult> doSearch(String query) {
+    return qs.getSearchResults(CommonsConstants.VIEW_COMPANIES,
+        DataUtils.anyColumnContains(Sets.newHashSet(CommonsConstants.COL_NAME,
+            CommonsConstants.COL_CODE, CommonsConstants.COL_EMAIL, CommonsConstants.COL_ADDRESS,
+            CommonsConstants.COL_CITY_NAME, CommonsConstants.COL_COUNTRY_NAME), query));
+  }
+
+  @Override
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response = null;
     String svc = reqInfo.getParameter(CommonsConstants.COMMONS_METHOD);
@@ -106,20 +115,6 @@ public class CommonsModuleBean implements BeeModule {
     return getName();
   }
 
-  @Override
-  public Multimap<String, String> getSearchableColumns() {
-    Multimap<String, String> result = ArrayListMultimap.create();
-    
-    result.put(CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_NAME);
-    result.put(CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_CODE);
-    result.put(CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_EMAIL);
-    result.put(CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_ADDRESS);
-    result.put(CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_CITY_NAME);
-    result.put(CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_COUNTRY_NAME);
-    
-    return result;
-  }
-  
   @Override
   public void init() {
     sys.registerViewEventHandler(new ViewEventHandler() {

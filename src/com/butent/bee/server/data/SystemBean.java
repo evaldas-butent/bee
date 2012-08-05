@@ -679,7 +679,7 @@ public class SystemBean {
 
         for (BeeKey key : table.getKeys()) {
           if (BeeUtils.same(key.getTable(), tblName)) {
-            if (ArrayUtils.contains(key.getName(), keys)) {
+            if (ArrayUtils.contains(keys, key.getName())) {
               c++;
             } else {
               String msg = BeeUtils.concat(1, "INDEX", key.getName(),
@@ -718,7 +718,7 @@ public class SystemBean {
               && (BeeUtils.same(fKey.getRefTable(), table.getName())
               || getTable(fKey.getRefTable()).isActive())) {
 
-            if (ArrayUtils.contains(fKey.getName(), fKeys)) {
+            if (ArrayUtils.contains(fKeys, fKey.getName())) {
               c++;
             } else {
               String msg = BeeUtils.concat(1, "FOREIGN KEY", fKey.getName(),
@@ -755,7 +755,7 @@ public class SystemBean {
 
         for (BeeTrigger trigger : table.getTriggers()) {
           if (BeeUtils.same(trigger.getTable(), tblName)) {
-            if (ArrayUtils.contains(trigger.getName(), triggers)) {
+            if (ArrayUtils.contains(triggers, trigger.getName())) {
               c++;
             } else {
               String msg = BeeUtils.concat(1, "TRIGGER", trigger.getName(), "NOT IN",

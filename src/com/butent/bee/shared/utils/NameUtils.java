@@ -176,7 +176,7 @@ public class NameUtils {
           }
 
         } else {
-          if (BeeUtils.context(input, constant.name())) {
+          if (BeeUtils.containsSame(constant.name(), input)) {
             if (result == null) {
               result = constant;
             } else {

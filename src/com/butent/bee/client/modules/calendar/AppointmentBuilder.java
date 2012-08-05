@@ -66,7 +66,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
@@ -635,11 +634,7 @@ class AppointmentBuilder extends AbstractFormCallback {
         if (response.hasResponse(BeeRowSet.class)) {
           BeeRowSet rowSet = BeeRowSet.restore((String) response.getResponse());
           for (BeeRow row : rowSet.getRows()) {
-            Appointment app = new Appointment(row,
-                row.getProperty(CalendarConstants.VIEW_APPOINTMENT_ATTENDEES),
-                row.getProperty(CalendarConstants.VIEW_APPOINTMENT_PROPS),
-                row.getProperty(CalendarConstants.VIEW_APPOINTMENT_REMINDERS));
-
+            Appointment app = new Appointment(row);
             overlappingAppointments.add(app);
           }
         }
@@ -935,13 +930,13 @@ class AppointmentBuilder extends AbstractFormCallback {
       String groupName = Data.getString(viewName, row, COL_GROUP_NAME);
       boolean isDef = BeeUtils.equals(Data.getLong(viewName, row, COL_DEFAULT_PROPERTY), id);
 
-      if (BeeUtils.context("serv", groupName)) {
+      if (BeeUtils.containsSame(groupName, "serv")) {
         serviceTypes.add(id);
         if (isDef) {
           defaultServiceType = id;
         }
 
-      } else if (BeeUtils.context("rem", groupName)) {
+      } else if (BeeUtils.containsSame(groupName, "rem")) {
         repairTypes.add(id);
         if (isDef) {
           defaultRepairType = id;
@@ -1181,8 +1176,10 @@ class AppointmentBuilder extends AbstractFormCallback {
       public void onResponse(ResponseObject response) {
         if (response.hasErrors()) {
           getFormView().notifySevere(response.getErrors());
+
         } else if (!response.hasResponse(BeeRow.class)) {
           getFormView().notifySevere(svc, ": response not a BeeRow");
+        
         } else {
           BeeRow result = BeeRow.restore((String) response.getResponse());
           if (result == null) {
@@ -1195,7 +1192,17 @@ class AppointmentBuilder extends AbstractFormCallback {
               BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, result));
             }
 
-            Appointment appointment = new Appointment(result, attList, propList, remindList);
+            if (!BeeUtils.isEmpty(attList)) {
+              result.setProperty(VIEW_APPOINTMENT_ATTENDEES, attList);
+            }
+            if (!BeeUtils.isEmpty(propList)) {
+              result.setProperty(VIEW_APPOINTMENT_PROPS, propList);
+            }
+            if (!BeeUtils.isEmpty(remindList)) {
+              result.setProperty(VIEW_APPOINTMENT_REMINDERS, remindList);
+            }
+            
+            Appointment appointment = new Appointment(result);
             State state = isNew ? State.CREATED : State.CHANGED;
             AppointmentEvent.fire(appointment, state);
 

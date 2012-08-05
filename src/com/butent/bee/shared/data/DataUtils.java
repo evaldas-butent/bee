@@ -14,10 +14,12 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.CompoundType;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
+import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
@@ -68,6 +70,41 @@ public class DataUtils {
   private static int defaultPagingThreshold = 20;
 
   private static int maxInitialRowSetSize = 50;
+  
+  public static Filter anyColumnContains(Collection<String> columns, String value) {
+    Assert.notEmpty(columns);
+    Assert.notEmpty(value);
+    
+    CompoundFilter filter = Filter.or();
+    for (String column : columns) {
+      filter.add(ComparisonFilter.contains(column, value));
+    }
+    return filter;
+  }
+  
+  public static Filter anyItemContains(String column, Class<? extends Enum<?>> clazz,
+      String value) {
+    Assert.notEmpty(column);
+    Assert.notNull(clazz);
+    Assert.notEmpty(value);
+
+    List<Filter> filters = Lists.newArrayList();
+
+    String item; 
+    for (Enum<?> constant : clazz.getEnumConstants()) {
+      if (constant instanceof HasCaption) {
+        item = ((HasCaption) constant).getCaption();
+      } else {
+        item = constant.name();
+      }
+      
+      if (BeeUtils.containsSame(item, value)) {
+        filters.add(ComparisonFilter.isEqual(column, new IntegerValue(constant.ordinal())));
+      }
+    }
+
+    return Filter.or(filters);
+  }
 
   public static String buildList(BeeRowSet rowSet) {
     if (rowSet == null) {
@@ -445,15 +482,20 @@ public class DataUtils {
     return sb.toString();
   }
 
-  public static String join(IsRow row, List<? extends IsColumn> columns, Object separator) {
+  public static String join(DataInfo dataInfo, IsRow row, Object separator) {
+    Assert.notNull(dataInfo);
     Assert.notNull(row);
-    Assert.notEmpty(columns);
     
     String sep = BeeUtils.normSep(separator);
     StringBuilder sb = new StringBuilder();
     
-    for (int i = 0; i < columns.size(); i++) {
-      String value = transform(row, i, columns.get(i).getType());
+    for (int i = 0; i < dataInfo.getColumnCount(); i++) {
+      BeeColumn column = dataInfo.getColumns().get(i);
+      if (dataInfo.hasRelation(column.getId())) {
+        continue;
+      }
+
+      String value = transform(row, i, column.getType());
       if (!BeeUtils.isEmpty(value)) {
         if (sb.length() > 0) {
           sb.append(sep);

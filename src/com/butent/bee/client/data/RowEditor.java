@@ -3,6 +3,7 @@ package com.butent.bee.client.data;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.logical.shared.AttachEvent;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.ui.UIObject;
@@ -80,7 +81,7 @@ public class RowEditor {
   private static void getForm(String formName, final DataInfo dataInfo, final BeeRow row,
       final UIObject target, final RowCallback rowCallback) {
 
-    FormFactory.createFormView(formName, dataInfo.getViewName(), dataInfo.getColumns(), false,
+    FormFactory.createFormView(formName, dataInfo.getViewName(), dataInfo.getColumns(), true,
         new FormFactory.FormViewCallback() {
           @Override
           public void onSuccess(FormDescription formDescription, FormView result) {
@@ -99,7 +100,7 @@ public class RowEditor {
 
     final RowPresenter presenter = new RowPresenter(formView);
 
-    final ModalForm dialog = new ModalForm(presenter.getWidget(), formView, false, false);
+    final ModalForm dialog = new ModalForm(presenter.getWidget(), formView, false, true);
     final Holder<State> state = Holder.of(State.OPEN);
 
     presenter.setActionDelegate(new HandlesActions() {
@@ -148,7 +149,12 @@ public class RowEditor {
       }
     });
     
-    formView.updateRow(DataUtils.cloneRow(oldRow), true);
+    dialog.addAttachHandler(new AttachEvent.Handler() {
+      @Override
+      public void onAttachOrDetach(AttachEvent event) {
+        formView.updateRow(DataUtils.cloneRow(oldRow), true);
+      }
+    });
 
     if (target == null) {
       dialog.center();

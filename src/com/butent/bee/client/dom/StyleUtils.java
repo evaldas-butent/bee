@@ -2552,7 +2552,7 @@ public class StyleUtils {
   }
 
   private static int indexOfClassName(String className, String classes) {
-    if (className == null || !BeeUtils.context(className.trim(), classes)) {
+    if (className == null || !BeeUtils.containsSame(classes, className)) {
       return BeeConst.UNDEF;
     }
 

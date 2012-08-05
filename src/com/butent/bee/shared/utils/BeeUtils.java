@@ -1,6 +1,7 @@
 package com.butent.bee.shared.utils;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 
@@ -574,69 +575,6 @@ public class BeeUtils {
   }
 
   /**
-   * Checks if {@code src} contains {@code ctxt}. Both values are compared after transforming to
-   * lower case.
-   * 
-   * @param ctxt value to check for
-   * @param src source value to check in
-   * @return true if {@code src} contains {@code ctxt}, otherwise false.
-   */
-  public static boolean context(CharSequence ctxt, CharSequence src) {
-    if (ctxt == null || src == null || ctxt.length() == 0 || src.length() == 0) {
-      return false;
-    } else {
-      return src.toString().toLowerCase().contains(ctxt.toString().toLowerCase());
-    }
-  }
-
-  /**
-   * Checks if {@code ctxt} contains any of the elements from {@code src}. Compared values are
-   * transformed to lower case.
-   * 
-   * @param ctxt value to check for
-   * @param src list of elements to compare to
-   * @return true if any of {@code src} elements contain {@code ctxt}, otherwise false.
-   */
-  public static boolean context(CharSequence ctxt, Collection<? extends CharSequence> src) {
-    boolean ok = false;
-    if (isEmpty(ctxt)) {
-      return ok;
-    }
-
-    for (CharSequence el : src) {
-      if (context(ctxt, el)) {
-        ok = true;
-        break;
-      }
-    }
-    return ok;
-  }
-
-  /**
-   * Checks if {@code src} contains any of the elements from {@code ctxt}. Compared values are
-   * transformed to lower case.
-   * 
-   * @param ctxt list of elements to be compared
-   * @param src source value to check in
-   * @return true if {@code src} contains any of the elements from {@code ctxt}, false if
-   *         {@code src} is empty or if it doesn't contain any of the elements.
-   */
-  public static boolean context(Collection<? extends CharSequence> ctxt, CharSequence src) {
-    boolean ok = false;
-    if (isEmpty(src)) {
-      return ok;
-    }
-
-    for (CharSequence el : ctxt) {
-      if (context(el, src)) {
-        ok = true;
-        break;
-      }
-    }
-    return ok;
-  }
-
-  /**
    * Counts the appearances of the specified character {@code ch} in a CharSequence.
    * 
    * @param src source to count in
@@ -758,6 +696,29 @@ public class BeeUtils {
     Double x = Math.pow(10, z);
     Assert.isTrue(x < Integer.MAX_VALUE);
     return x.intValue();
+  }
+
+  /**
+   * If any {@code src} Collection element contains {@code ctxt} (case is ignored), than that
+   * element is added to the new Collection and returned after all elements from {@code src}
+   * Collection are covered.
+   * 
+   * @param src collection to search from
+   * @param ctxt context to search for
+   * @return a new list with elements that contain {@code ctxt} in {@code src} collection.
+   */
+  public static List<String> filterContext(Collection<String> src, String ctxt) {
+    List<String> result = Lists.newArrayList();
+    if (src == null) {
+      return result;
+    }
+
+    for (String el : src) {
+      if (containsSame(el, ctxt)) {
+        result.add(el);
+      }
+    }
+    return result;
   }
 
   /**
@@ -886,29 +847,6 @@ public class BeeUtils {
     }
   }
   
-  /**
-   * If any {@code src} Collection element contains {@code ctxt} (case is ignored), than that
-   * element is added to the new Collection and returned after all elements from {@code src}
-   * Collection are covered.
-   * 
-   * @param ctxt context to search for
-   * @param src source list to search from
-   * @return a new list with elements that contain {@code ctxt} in {@code src} collection.
-   */
-  public static <T extends CharSequence> List<T> getContext(T ctxt, Collection<T> src) {
-    List<T> lst = new ArrayList<T>();
-    if (isEmpty(ctxt)) {
-      return lst;
-    }
-
-    for (T el : src) {
-      if (context(ctxt, el)) {
-        lst.add(el);
-      }
-    }
-    return lst;
-  }
-
   /**
    * Gets the key of the value from the specified Map when the Mmap contains the value.
    * 

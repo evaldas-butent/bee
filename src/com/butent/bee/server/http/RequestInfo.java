@@ -299,7 +299,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
   }
 
   public boolean isDebug() {
-    return BeeUtils.context(CommUtils.OPTION_DEBUG, options);
+    return BeeUtils.containsSame(options, CommUtils.OPTION_DEBUG);
   }
 
   public boolean isXml() {

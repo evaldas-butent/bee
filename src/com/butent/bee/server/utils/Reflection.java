@@ -39,8 +39,8 @@ public class Reflection {
 
   private static void doMethod(Object obj, Method method, RequestInfo req, ResponseBuffer resp) {
     Class<?>[] parameterTypes = method.getParameterTypes();
-    boolean hasReq = ArrayUtils.contains(RequestInfo.class, parameterTypes);
-    boolean hasResp = ArrayUtils.contains(ResponseBuffer.class, parameterTypes);
+    boolean hasReq = ArrayUtils.contains(parameterTypes, RequestInfo.class);
+    boolean hasResp = ArrayUtils.contains(parameterTypes, ResponseBuffer.class);
 
     try {
       if (hasReq && hasResp) {
@@ -72,7 +72,7 @@ public class Reflection {
         break;
       }
 
-      if (BeeUtils.context(name, method.getName())) {
+      if (BeeUtils.containsSame(method.getName(), name)) {
         if (found == null) {
           found = method;
         } else {

@@ -18,7 +18,9 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.filter.Filter;
@@ -265,6 +267,18 @@ public class QueryServiceBean {
 
   public Map<String, String> getRow(IsQuery query) {
     return getSingleRow(query).getRow(0);
+  }
+
+  public List<SearchResult> getSearchResults(String viewName, Filter filter) {
+    List<SearchResult> results = Lists.newArrayList();
+
+    BeeRowSet rowSet = getViewData(viewName, filter);
+    if (rowSet != null) {
+      for (BeeRow row : rowSet.getRows()) {
+        results.add(new SearchResult(viewName, row));
+      }
+    }
+    return results;
   }
 
   public String getValue(IsQuery query) {

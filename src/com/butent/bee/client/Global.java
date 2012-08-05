@@ -457,7 +457,7 @@ public class Global implements Module {
       Set<String> names = VARS.keySet();
       Set<String> keys = new LinkedHashSet<String>();
       for (String z : context) {
-        keys.addAll(BeeUtils.getContext(z, names));
+        keys.addAll(BeeUtils.filterContext(names, z));
       }
       if (!keys.isEmpty()) {
         arr = new Variable[keys.size()];

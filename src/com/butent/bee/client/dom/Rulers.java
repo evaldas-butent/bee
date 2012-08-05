@@ -278,7 +278,7 @@ public class Rulers {
     if (unit == null || units == null) {
       return false;
     }
-    return ArrayUtils.contains(unit, units);
+    return ArrayUtils.contains(units, unit);
   }
 
   private static boolean isUnitContainerDependent(Unit unit) {

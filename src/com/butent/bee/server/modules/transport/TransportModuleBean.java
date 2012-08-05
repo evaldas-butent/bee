@@ -1,7 +1,6 @@
 package com.butent.bee.server.modules.transport;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
 import com.butent.bee.server.data.DataEditorBean;
@@ -20,6 +19,8 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -27,6 +28,7 @@ import com.butent.bee.shared.modules.transport.TransportConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -50,6 +52,14 @@ public class TransportModuleBean implements BeeModule {
   @Override
   public String dependsOn() {
     return CommonsConstants.COMMONS_MODULE;
+  }
+
+  @Override
+  public List<SearchResult> doSearch(String query) {
+    return qs.getSearchResults(TransportConstants.VIEW_VEHICLES,
+        DataUtils.anyColumnContains(Sets.newHashSet(TransportConstants.COL_NUMBER,
+            TransportConstants.COL_PARENT_MODEL_NAME, TransportConstants.COL_MODEL_NAME,
+            TransportConstants.COL_OWNER_NAME), query));
   }
 
   @Override
@@ -109,18 +119,6 @@ public class TransportModuleBean implements BeeModule {
     return getName();
   }
 
-  @Override
-  public Multimap<String, String> getSearchableColumns() {
-    Multimap<String, String> result = ArrayListMultimap.create();
-    
-    result.put(TransportConstants.VIEW_VEHICLES, TransportConstants.COL_NUMBER);
-    result.put(TransportConstants.VIEW_VEHICLES, TransportConstants.COL_PARENT_MODEL_NAME);
-    result.put(TransportConstants.VIEW_VEHICLES, TransportConstants.COL_MODEL_NAME);
-    result.put(TransportConstants.VIEW_VEHICLES, TransportConstants.COL_OWNER_NAME);
-    
-    return result;
-  }
-  
   @Override
   public void init() {
     sys.registerViewEventHandler(new ViewEventHandler() {

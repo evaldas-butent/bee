@@ -513,7 +513,7 @@ public class Wildcards {
     }
     if (!pattern.hasWildcards()) {
       String cStr = pattern.getExpr();
-      return sensitive ? input.contains(cStr) : BeeUtils.context(cStr, input);
+      return sensitive ? input.contains(cStr) : BeeUtils.containsSame(input, cStr);
     }
 
     String[] tokens = pattern.getTokens();

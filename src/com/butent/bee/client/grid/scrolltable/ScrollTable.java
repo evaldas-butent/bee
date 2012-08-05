@@ -190,8 +190,8 @@ public class ScrollTable extends ComplexPanel implements
     public void onDragEnd(DragEndEvent event) {
       EventUtils.getEventTargetElement(event).removeClassName(StyleUtils.DND_SOURCE);
 
-      if (BeeUtils.context(columnIdSeparator, sourceId)
-          && BeeUtils.context(columnIdSeparator, targetId)) {
+      if (BeeUtils.containsSame(sourceId, columnIdSeparator)
+          && BeeUtils.containsSame(targetId, columnIdSeparator)) {
         int srcId = BeeUtils.toInt(BeeUtils.getSuffix(sourceId, columnIdSeparator));
         int dstId = BeeUtils.toInt(BeeUtils.getSuffix(targetId, columnIdSeparator));
 
@@ -253,7 +253,7 @@ public class ScrollTable extends ComplexPanel implements
       }
 
       String id = elem.getId();
-      if (!BeeUtils.context(columnIdSeparator, id) || BeeUtils.same(id, sourceId)) {
+      if (!BeeUtils.containsSame(id, columnIdSeparator) || BeeUtils.same(id, sourceId)) {
         return false;
       }
 

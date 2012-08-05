@@ -94,7 +94,7 @@ public class Link extends Anchor implements HasId {
     String html;
     String href;
 
-    if (BeeUtils.context(sep, value)) {
+    if (BeeUtils.containsSame(value, sep)) {
       html = BeeUtils.getPrefix(value, sep);
       href = BeeUtils.getSuffix(value, sep);
     } else {

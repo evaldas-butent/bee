@@ -101,7 +101,7 @@ public class JvmUtils {
         if (z.equalsIgnoreCase(nm)) {
           exact = cls;
           break;
-        } else if (BeeUtils.context(nm, z)) {
+        } else if (BeeUtils.containsSame(z, nm)) {
           found.add(cls);
         } else if (rx && p.matcher(z).matches()) {
           found.add(cls);

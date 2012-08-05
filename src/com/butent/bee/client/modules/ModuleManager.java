@@ -16,6 +16,7 @@ import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.PasswordService;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class ModuleManager {
@@ -39,6 +40,10 @@ public class ModuleManager {
     public FormCallback getInstance() {
       return this;
     }
+  }
+  
+  public static void maybeInitialize(final BeeCommand command) {
+    CalendarKeeper.ensureData(command);
   }
 
   public static void onLoad() {

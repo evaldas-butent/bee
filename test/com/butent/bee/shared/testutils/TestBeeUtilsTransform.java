@@ -194,46 +194,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   }
 
   @Test
-  public void testContext() {
-    assertEquals(false, beeUtils.context((CharSequence) null, ""));
-    assertEquals(false, beeUtils.context("", (CharSequence) null));
-    assertEquals(false, beeUtils.context((CharSequence) null, (CharSequence) null));
-    assertEquals(false, beeUtils.context("", ""));
-    assertEquals(true, beeUtils.context("is", "THIS IS A STRING"));
-    assertEquals(false, beeUtils.context("isa", "THIS IS A STRING"));
-  }
-
-  @Test
-  public void testContextCollection() {
-    List<CharSequence> testc1 = new ArrayList<CharSequence>();
-    List<CharSequence> testc2 = new ArrayList<CharSequence>();
-    testc1.add("A");
-    testc1.add("simple text");
-    testc1.add("TEXT2");
-
-    assertEquals(true, beeUtils.context("text", testc1));
-    assertEquals(true, beeUtils.context("text2", testc1));
-    assertEquals(false, beeUtils.context("texx", testc1));
-    assertEquals(false, beeUtils.context("", testc1));
-    assertEquals(false, beeUtils.context("text", testc2));
-  }
-
-  @Test
-  public void testContextCollectionString() {
-    List<CharSequence> testc1 = new ArrayList<CharSequence>();
-    List<CharSequence> testc2 = new ArrayList<CharSequence>();
-    testc1.add("A");
-    testc1.add("text");
-    testc1.add("TEXT2");
-
-    assertEquals(true, beeUtils.context(testc1, "text"));
-    assertEquals(true, beeUtils.context(testc1, "text2"));
-    assertEquals(false, beeUtils.context(testc1, "texx"));
-    assertEquals(false, beeUtils.context(testc1, ""));
-    assertEquals(false, beeUtils.context(testc2, "text"));
-  }
-
-  @Test
   public final void testCount() {
     assertEquals(0, BeeUtils.count(null, 'a'));
     assertEquals(0, BeeUtils.count("", 'a'));
@@ -294,6 +254,30 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   }
 
   @Test
+  public void testFilterContext() {
+    List<String> testc1 = new ArrayList<String>();
+    List<String> testc2 = new ArrayList<String>();
+    testc1.add("A");
+    testc1.add("simple text");
+    testc1.add("TEXT2");
+
+    List<String> rez1 = new ArrayList<String>();
+    rez1.add("simple text");
+    rez1.add("TEXT2");
+
+    List<String> rez2 = new ArrayList<String>();
+    rez2.add("TEXT2");
+
+    List<String> rez3 = new ArrayList<String>();
+
+    assertEquals(rez1, beeUtils.filterContext(testc1, "text"));
+    assertEquals(rez2, beeUtils.filterContext(testc1, "text2"));
+    assertEquals(rez3, beeUtils.filterContext(testc1, "texx"));
+    assertEquals(rez3, beeUtils.filterContext(testc1, ""));
+    assertEquals(testc2, beeUtils.filterContext(testc2, "text"));
+  }
+
+  @Test
   public void testFitStart() {
     assertEquals(0, beeUtils.fitStart(0, 5, 10));
     assertEquals(-5, beeUtils.fitStart(0, 15, 10));
@@ -323,30 +307,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   public final void testGetClassName() {
     assertEquals("TestBeeUtilsTransform", NameUtils.getClassName(this.getClass()));
     assertEquals("BeeUtils", NameUtils.getClassName(BeeUtils.class));
-  }
-
-  @Test
-  public void testGetContext() {
-    List<CharSequence> testc1 = new ArrayList<CharSequence>();
-    List<CharSequence> testc2 = new ArrayList<CharSequence>();
-    testc1.add("A");
-    testc1.add("simple text");
-    testc1.add("TEXT2");
-
-    List<CharSequence> rez1 = new ArrayList<CharSequence>();
-    rez1.add("simple text");
-    rez1.add("TEXT2");
-
-    List<CharSequence> rez2 = new ArrayList<CharSequence>();
-    rez2.add("TEXT2");
-
-    List<CharSequence> rez3 = new ArrayList<CharSequence>();
-
-    assertEquals(rez1, beeUtils.getContext("text", testc1));
-    assertEquals(rez2, beeUtils.getContext("text2", testc1));
-    assertEquals(rez3, beeUtils.getContext("texx", testc1));
-    assertEquals(rez3, beeUtils.getContext("", testc1));
-    assertEquals(testc2, beeUtils.getContext("text", testc2));
   }
 
   @Test

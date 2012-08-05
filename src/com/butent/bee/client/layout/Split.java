@@ -110,6 +110,7 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     this.splitterSize = splitterSize;
 
     DomUtils.createId(this, getIdPrefix());
+    StyleUtils.makeAbsolute(this);
     setStyleName(style);
   }
 

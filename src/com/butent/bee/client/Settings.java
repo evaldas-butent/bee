@@ -19,6 +19,10 @@ public class Settings {
   private static Dictionary settings = null;
   private static boolean initialized = false;
 
+  public static int getActionSensitivityMillis() {
+    return getPropertyInt("actionSensitivityMillis");
+  }
+
   public static int getGridType() {
     return getPropertyInt("gridType");
   }

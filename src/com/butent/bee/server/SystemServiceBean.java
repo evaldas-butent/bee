@@ -344,7 +344,7 @@ public class SystemServiceBean {
     buff.addMessage(src);
 
     if (BeeUtils.isEmpty(pXsl)) {
-      if (BeeUtils.context("xml", ret)) {
+      if (BeeUtils.containsSame(ret, "xml")) {
         String z = FileUtils.fileToString(src);
         if (BeeUtils.isEmpty(z)) {
           buff.addSevere("cannot read file");
@@ -404,7 +404,7 @@ public class SystemServiceBean {
     boolean ok = false;
 
     if (dst == null) {
-      if (BeeUtils.context("prop", ret)) {
+      if (BeeUtils.containsSame(ret, "prop")) {
         List<ExtendedProperty> lst = XmlUtils.xsltToInfo(src, xsl);
         if (BeeUtils.isEmpty(lst)) {
           buff.addSevere("xslt error");
@@ -422,7 +422,7 @@ public class SystemServiceBean {
 
       ok = XmlUtils.xsltToFile(src, xsl, dst);
       if (ok) {
-        if (BeeUtils.context("prop", ret)) {
+        if (BeeUtils.containsSame(ret, "prop")) {
           List<ExtendedProperty> lst = XmlUtils.getFileInfo(dst);
           if (BeeUtils.isEmpty(lst)) {
             buff.addSevere("cannot get target info");
@@ -445,7 +445,7 @@ public class SystemServiceBean {
     String source = null;
     String transf = null;
 
-    if (BeeUtils.context("all", ret) || BeeUtils.context("source", ret)) {
+    if (BeeUtils.containsSame(ret, "all") || BeeUtils.containsSame(ret, "source")) {
       source = FileUtils.fileToString(src);
       if (BeeUtils.isEmpty(source)) {
         buff.addSevere("cannot read source");
@@ -453,7 +453,7 @@ public class SystemServiceBean {
       }
     }
 
-    if (BeeUtils.context("all", ret) || BeeUtils.context("xsl", ret)) {
+    if (BeeUtils.containsSame(ret, "all") || BeeUtils.containsSame(ret, "xsl")) {
       transf = FileUtils.fileToString(xsl);
       if (BeeUtils.isEmpty(transf)) {
         buff.addSevere("cannot read xsl");

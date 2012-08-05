@@ -607,14 +607,14 @@ public class CliWorker {
     String defCase = null;
     boolean match;
 
-    if (BeeUtils.context("s", mode)) {
+    if (BeeUtils.containsSame(mode, "s")) {
       if (sens || insens) {
         match = Wildcards.isSqlLike(input, expr, sens);
       } else {
         defCase = BeeUtils.concat(1, "sql", BooleanValue.pack(Wildcards.isSqlCaseSensitive()));
         match = Wildcards.isSqlLike(input, expr);
       }
-    } else if (BeeUtils.context("f", mode)) {
+    } else if (BeeUtils.containsSame(mode, "f")) {
       if (sens || insens) {
         match = Wildcards.isFsLike(input, expr, sens);
       } else {
@@ -1214,7 +1214,7 @@ public class CliWorker {
         new WidgetInitializer() {
           @Override
           public Widget initialize(Widget widget, String name) {
-            if (BeeUtils.context(widgetName.get(), name)) {
+            if (BeeUtils.containsSame(name, widgetName.get())) {
               StyleUtils.updateAppearance(widget, null, widgetStyle.get());
               BeeKeeper.getLog().info(name, StyleUtils.getCssText(widget));
             }
@@ -1635,7 +1635,7 @@ public class CliWorker {
         new WidgetInitializer() {
           @Override
           public Widget initialize(Widget widget, String name) {
-            if (BeeUtils.context(widgetName.get(), name)) {
+            if (BeeUtils.containsSame(name, widgetName.get())) {
               StyleUtils.updateAppearance(widget, null, widgetStyle.get());
               BeeKeeper.getLog().info(name, StyleUtils.getCssText(widget));
             }

@@ -24,17 +24,18 @@ public class Appointment implements Comparable<Appointment> {
   
   public Appointment(BeeRow row) {
     this.row = row;
-  }
-  
-  public Appointment(BeeRow row, String attList, String propList, String remindList) {
-    this(row);
     
+    String attList = row.getProperty(VIEW_APPOINTMENT_ATTENDEES);
     if (!BeeUtils.isEmpty(attList)) {
       attendees.addAll(DataUtils.parseList(attList));
     }
+    
+    String propList = row.getProperty(VIEW_APPOINTMENT_PROPS);
     if (!BeeUtils.isEmpty(propList)) {
       properties.addAll(DataUtils.parseList(propList));
     }
+    
+    String remindList = row.getProperty(VIEW_APPOINTMENT_REMINDERS);
     if (!BeeUtils.isEmpty(remindList)) {
       reminders.addAll(DataUtils.parseList(remindList));
     }

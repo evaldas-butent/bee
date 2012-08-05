@@ -17,6 +17,7 @@ import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.edit.SelectorEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
@@ -31,7 +32,6 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 
-import java.util.Collection;
 import java.util.List;
 
 public class CalendarKeeper {
@@ -50,9 +50,9 @@ public class CalendarKeeper {
       } else if (event.hasView(VIEW_APPOINTMENTS)) {
         event.consume();
         if (event.getRow() instanceof BeeRow) {
-          loadData(CACHED_VIEWS, new CalendarCache.MultiCallback() {
+          ensureData(new BeeCommand() {
             @Override
-            public void onSuccess(Integer cnt) {
+            public void execute() {
               openAppointment(new Appointment((BeeRow) event.getRow()), false);
             }
           });
@@ -84,6 +84,22 @@ public class CalendarKeeper {
   private static final AppointmentRenderer APPOINTMENT_RENDERER = new AppointmentRenderer();
 
   private static FormView settingsForm = null;
+  
+  private static boolean dataLoaded = false;
+
+  public static void ensureData(final BeeCommand command) {
+    if (isDataLoaded()) {
+      command.execute();
+    } else {
+      CACHE.getData(CACHED_VIEWS, new CalendarCache.MultiCallback() {
+        @Override
+        public void onSuccess(Integer result) {
+          setDataLoaded(true);
+          command.execute();
+        }
+      });
+    }
+  }
 
   public static String getAttendeeName(long id) {
     return CACHE.getString(VIEW_ATTENDEES, id, COL_NAME);
@@ -92,11 +108,15 @@ public class CalendarKeeper {
   public static String getPropertyName(long id) {
     return CACHE.getString(VIEW_EXTENDED_PROPERTIES, id, COL_NAME);
   }
-
+  
   public static String getReminderTypeName(long id) {
     return CACHE.getString(VIEW_REMINDER_TYPES, id, COL_NAME);
   }
-  
+
+  public static boolean isDataLoaded() {
+    return dataLoaded;
+  }
+
   public static void register() {
     Global.registerCaptions(AppointmentStatus.class);
     Global.registerCaptions(ReminderMethod.class);
@@ -113,6 +133,10 @@ public class CalendarKeeper {
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
 
     SelectorEvent.register(new SelectorHandler());
+  }
+
+  public static void setDataLoaded(boolean dataLoaded) {
+    CalendarKeeper.dataLoaded = dataLoaded;
   }
 
   static void createAppointment(final DateTime start, final Long attendeeId, final boolean glass) {
@@ -136,7 +160,7 @@ public class CalendarKeeper {
           }
         });
   }
-
+  
   static ParameterList createRequestParameters(String service) {
     ParameterList params = BeeKeeper.getRpc().createParameters(CALENDAR_MODULE);
     params.addQueryItem(CALENDAR_METHOD, service);
@@ -175,11 +199,11 @@ public class CalendarKeeper {
     }
     return row;
   }
-  
+
   static List<BeeColumn> getAppointmentViewColumns() {
     return CACHE.getAppointmentViewColumns();
   }
-
+  
   static DataInfo getAppointmentViewInfo() {
     return CACHE.getAppointmentViewInfo();
   }
@@ -191,7 +215,7 @@ public class CalendarKeeper {
   static BeeRowSet getAttendees() {
     return CACHE.getRowSet(VIEW_ATTENDEES);
   }
-  
+
   static Long getDefaultAppointmentType() {
     BeeRowSet rowSet = CACHE.getRowSet(VIEW_CONFIGURATION);
     if (rowSet != null) {
@@ -208,7 +232,7 @@ public class CalendarKeeper {
   static BeeRowSet getExtendedProperties() {
     return CACHE.getRowSet(VIEW_EXTENDED_PROPERTIES);
   }
-
+  
   static BeeRowSet getReminderTypes() {
     return CACHE.getRowSet(VIEW_REMINDER_TYPES);
   }
@@ -233,10 +257,6 @@ public class CalendarKeeper {
     } else {
       return Transparency.isOpaque(Data.getInteger(VIEW_ATTENDEES, row, COL_TYPE_TRANSPARENCY));
     }
-  }
-
-  static void loadData(Collection<String> viewNames, CalendarCache.MultiCallback multiCallback) {
-    CACHE.getData(viewNames, multiCallback);
   }
 
   static void openAppointment(final Appointment appointment, final boolean glass) {
@@ -294,7 +314,7 @@ public class CalendarKeeper {
       CalendarStyleManager.applyStyle(appointmentWidget, panel, header, body, footer);
     }
   }
-
+  
   static void renderCompact(AppointmentWidget panel, Widget htmlWidget, Widget titleWidget) {
     BeeRow row = getAppointmentTypeRow(panel.getAppointment());
 
@@ -319,7 +339,7 @@ public class CalendarKeeper {
       CalendarStyleManager.applyStyle(panel, styles);
     }
   }
-  
+
   static void saveActiveView(final CalendarSettings settings) {
     if (settings != null && settings.getActiveView() != null) {
       ParameterList params = createRequestParameters(SVC_SAVE_ACTIVE_VIEW);
@@ -365,7 +385,7 @@ public class CalendarKeeper {
       return CACHE.getRow(VIEW_APPOINTMENT_STYLES, style);
     }
   }
-  
+
   private static FormView getSettingsForm() {
     return settingsForm;
   }
@@ -384,9 +404,9 @@ public class CalendarKeeper {
   }
 
   private static void openCalendar(final long id, final String name) {
-    loadData(CACHED_VIEWS, new CalendarCache.MultiCallback() {
+    ensureData(new BeeCommand() {
       @Override
-      public void onSuccess(Integer cnt) {
+      public void execute() {
         getUserCalendar(id, new Queries.RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {

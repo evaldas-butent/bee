@@ -19,7 +19,7 @@
       style="position: absolute; left: 20px; width: 280px; top: 100px; height: 180px;" />
     <ChildGrid name="PropsB" gridName="AttendeeProps" relColumn="Attendee" caption="Remonto tipas"
       filter="GroupName rem"
-      style="position: absolute; left: 360px; width: 260px; top: 100px; height: 180px;" />
+      style="position: absolute; left: 360px; width: 280px; top: 100px; height: 180px;" />
 
     <DataSelector source="CompanyPerson" caption="Atsakingas:" style="width: 180px;"
         d:size="100" d:unit="px" d:rootStyle="position: absolute; left: 20px; top: 300px;">

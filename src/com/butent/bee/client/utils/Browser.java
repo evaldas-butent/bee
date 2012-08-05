@@ -128,7 +128,7 @@ public class Browser {
   }
   
   public static boolean isChrome() {
-    return BeeUtils.context("chrome", Window.Navigator.getUserAgent());
+    return BeeUtils.containsSame(Window.Navigator.getUserAgent(), "chrome");
   }
 
   private Browser() {

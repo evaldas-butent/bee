@@ -10,46 +10,12 @@ public class ArrayUtils {
   /**
    * Searches the specified collection for a value.
    * 
-   * @param value the value to be searched for
    * @param arr the array to search
+   * @param value the value to be searched for
    * @return true if the value is found, false elsewise
    */
-  public static boolean contains(Object value, Object[] arr) {
-    return indexOf(value, arr) >= 0;
-  }
-
-  /**
-   * Searches for a specified CharSeqeuence in the array. Each array element is checked if it
-   * contains the specified CharSequence
-   * 
-   * @param ctxt CharSequence to be searched for
-   * @param arr the array to search
-   * @return true if the CharSequence is found, elsewise false
-   */
-  public static boolean context(CharSequence ctxt, String[] arr) {
-    boolean ok = false;
-    if (BeeUtils.isEmpty(ctxt) || BeeUtils.isEmpty(arr)) {
-      return ok;
-    }
-
-    for (String el : arr) {
-      if (BeeUtils.context(ctxt, el)) {
-        ok = true;
-        break;
-      }
-    }
-    return ok;
-  }
-  
-  public static String[] copyOf(String[] original) {
-    if (original == null) {
-      return null;
-    }
-    String[] copy = new String[original.length];
-    for (int i = 0; i < original.length; i++) {
-      copy[i] = original[i];
-    }
-    return copy;
+  public static <T> boolean contains(T[] arr, T value) {
+    return indexOf(arr, value) >= 0;
   }
 
   /**
@@ -63,6 +29,17 @@ public class ArrayUtils {
     Object[] copy = create(newLength);
     if (newLength > 0) {
       System.arraycopy(original, 0, copy, 0, Math.min(original.length, newLength));
+    }
+    return copy;
+  }
+  
+  public static String[] copyOf(String[] original) {
+    if (original == null) {
+      return null;
+    }
+    String[] copy = new String[original.length];
+    for (int i = 0; i < original.length; i++) {
+      copy[i] = original[i];
     }
     return copy;
   }
@@ -146,11 +123,11 @@ public class ArrayUtils {
   /**
    * Checks if the value is found within the array.
    * 
-   * @param value value to search for
    * @param arr array to be searched from
+   * @param value value to search for
    * @return -1 if the value is not found, or the index of the found value.
    */
-  public static int indexOf(Object value, Object[] arr) {
+  public static <T> int indexOf(T[] arr, T value) {
     int idx = -1;
     int len = length(arr);
     if (len <= 0) {

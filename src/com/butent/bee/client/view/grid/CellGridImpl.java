@@ -1395,7 +1395,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     if (asPopup) {
       if (edit) {
-        setEditPopup(new ModalForm(container, formView, true, false));
+        setEditPopup(new ModalForm(container, formView, true, true));
       } else {
         setNewRowPopup(new ModalForm(container, formView, true, true));
       }

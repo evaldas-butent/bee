@@ -1,6 +1,8 @@
 package com.butent.bee.client.grid;
 
 import com.google.gwt.user.client.ui.HasEnabled;
+import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
@@ -8,7 +10,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.layout.ResizePanel;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.HasFosterParent;
 import com.butent.bee.client.ui.UiOption;
@@ -34,8 +36,8 @@ import java.util.Map;
  * Enables using data grids with data related to another source.
  */
 
-public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, HasFosterParent,
-    ParentRowEvent.Handler {
+public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFosterParent,
+    ParentRowEvent.Handler, RequiresResize, ProvidesResize {
 
   private final String gridName;
 
@@ -65,7 +67,7 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
 
     this.gridCallback = GridFactory.getGridCallback(gridName);
 
-    addStyleName("bee-child-grid");
+    addStyleName("bee-ChildGrid");
   }
 
   public GridFactory.GridOptions getGridOptions() {
@@ -114,6 +116,13 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
     setPendingEnabled(event.isEnabled());
 
     resolveState();
+  }
+
+  @Override
+  public void onResize() {
+    if (getWidget() instanceof RequiresResize) {
+      ((RequiresResize) getWidget()).onResize();
+    }
   }
 
   public void setEnabled(boolean enabled) {
@@ -173,11 +182,11 @@ public class ChildGrid extends ResizePanel implements HasEnabled, Launchable, Ha
       resolveState();
     }
   }
-
+  
   private CachingPolicy getCachingPolicy() {
     return getGridDescription().getCachingPolicy(false);
   }
-  
+
   private Filter getFilter(IsRow row) {
     return ComparisonFilter.isEqual(getRelSource(), new LongValue(getParentValue(row)));
   }

@@ -24,13 +24,19 @@ public class Printer {
 
   private static final String ID_PREFIX = "p-";
 
-  private static final String CSS_RULE = " div, span, img {-webkit-print-color-adjust: exact;}";
+  private static final String CSS_RULE = " body {-webkit-print-color-adjust: exact;}";
 
   private static BeeFrame frame = null;
 
   public static void print(Element element, Printable widget) {
     Assert.notNull(element);
-    print(element.getString(), widget);
+    
+    String html = element.getString();
+    if (BeeUtils.isEmpty(html)) {
+      html = DomUtils.getOuterHtml(element);
+    }
+    
+    print(html, widget);
   }
 
   public static void print(Printable widget) {
@@ -42,7 +48,7 @@ public class Printer {
   }
 
   public static void print(String html, Printable widget) {
-    Assert.notEmpty(html);
+    Assert.notEmpty(html, "print: html is empty");
     output(html, widget);
   }
 

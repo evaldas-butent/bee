@@ -90,7 +90,7 @@ class CachedQuery extends SimpleCache<Integer, Long> {
     if (BeeUtils.isEmpty(columnId)) {
       return false;
     }
-    return BeeUtils.context(columnId, strFilter) || BeeUtils.context(columnId, strOrder);
+    return BeeUtils.containsSame(strFilter, columnId) || BeeUtils.containsSame(strOrder, columnId);
   }
 
   boolean containsRange(int start, int length) {

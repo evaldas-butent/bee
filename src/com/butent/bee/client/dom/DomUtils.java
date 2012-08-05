@@ -854,19 +854,23 @@ public class DomUtils {
   }
 
   public static native String getOuterHtml(Element elem) /*-{
-    if (elem == undefined || elem == null) {
+    if (elem == null) {
       return "";
     }
     if (elem.outerHTML) {
       return elem.outerHTML;
     }
-
-    var attributes = elem.attributes;
-    var attrs = "";
-    for (var i = 0; i < attributes.length; i++) {
-      attrs += " " + attributes[i].name + "=\"" + attributes[i].value + "\"";
+    
+    if (elem.innerHTML) {
+      var attributes = elem.attributes;
+      var attrs = "";
+      for (var i = 0; i < attributes.length; i++) {
+        attrs += " " + attributes[i].name + "=\"" + attributes[i].value + "\"";
+      }
+      return "<" + elem.tagName + attrs + ">" + elem.innerHTML + "</" + elem.tagName + ">";
     }
-    return "<" + elem.tagName + attrs + ">" + elem.innerHTML + "</" + elem.tagName + ">";
+    
+    return new XMLSerializer().serializeToString(elem);
   }-*/;
 
   public static Element getParentCell(Element child, boolean incl) {

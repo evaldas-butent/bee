@@ -130,7 +130,6 @@
   </Columns>
 
   <Order>
-    <OrderBy column="StartDate" />
     <OrderBy column="StartDateTime" />
   </Order>
 </View>

@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
@@ -34,6 +35,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
 
   private class ActionListener extends BeeCommand {
     private final Action action;
+    private long lastTime = 0L;
 
     private ActionListener(Action action) {
       super();
@@ -43,8 +45,22 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     @Override
     public void execute() {
       if (getViewPresenter() != null) {
-        getViewPresenter().handleAction(action);
+        long now = System.currentTimeMillis();
+        long last = getLastTime();
+        setLastTime(now);
+
+        if (now - last >= HeaderSilverImpl.ACTION_SENSITIVITY_MILLIS) {
+          getViewPresenter().handleAction(action);
+        }
       }
+    }
+
+    private long getLastTime() {
+      return lastTime;
+    }
+
+    private void setLastTime(long lastTime) {
+      this.lastTime = lastTime;
     }
   }
   
@@ -72,6 +88,9 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   private static final String STYLE_LOADING_INDICATOR = "bee-Header-loadingIndicator";
   private static final String STYLE_CONTROL = "bee-Header-control";
   private static final String STYLE_CLOSE = "bee-Header-close";
+
+  private static final int ACTION_SENSITIVITY_MILLIS = 
+      BeeUtils.positive(Settings.getActionSensitivityMillis(), 300);
   
   private Presenter viewPresenter = null;
 

@@ -112,7 +112,7 @@ public class Invocation {
       }
       buff.addProperties(lst);
 
-    } else if (BeeUtils.context("x", mode)) {
+    } else if (BeeUtils.containsSame(mode, "x")) {
       buff.addExtendedProperties(I18nUtils.getExtendedInfo());
 
     } else {

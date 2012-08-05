@@ -164,17 +164,17 @@ public class ProgressBar extends Widget implements HasId, RequiresResize {
     String textClassName = textElement.getClassName();
 
     if (percent < 50) {
-      if (!BeeUtils.context(styleNameFirstHalf, textClassName)) {
+      if (!BeeUtils.containsSame(textClassName, styleNameFirstHalf)) {
         StyleUtils.addStyleDependentName(textElement, styleNameFirstHalf);
       }
-      if (BeeUtils.context(styleNameSecondHalf, textClassName)) {
+      if (BeeUtils.containsSame(textClassName, styleNameSecondHalf)) {
         StyleUtils.removeStyleDependentName(textElement, styleNameSecondHalf);
       }
     } else {
-      if (BeeUtils.context(styleNameFirstHalf, textClassName)) {
+      if (BeeUtils.containsSame(textClassName, styleNameFirstHalf)) {
         StyleUtils.removeStyleDependentName(textElement, styleNameFirstHalf);
       }
-      if (!BeeUtils.context(styleNameSecondHalf, textClassName)) {
+      if (!BeeUtils.containsSame(textClassName, styleNameSecondHalf)) {
         StyleUtils.addStyleDependentName(textElement, styleNameSecondHalf);
       }
     }
