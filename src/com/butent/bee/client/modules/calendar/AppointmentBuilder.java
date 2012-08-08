@@ -171,7 +171,6 @@ class AppointmentBuilder extends AbstractFormCallback {
   private static final String NAME_BUILD_INFO = "BuildInfo";
 
   private static final String STYLE_COLOR_BAR_PREFIX = "bee-cal-ColorBar-";
-  private static final String STYLE_ADD_RESOURCES = "bee-cal-AddResources";
 
   static BeeRow createEmptyRow(DateTime start) {
     BeeRow row = RowFactory.createEmptyRow(CalendarKeeper.getAppointmentViewInfo(), true);
@@ -530,7 +529,7 @@ class AppointmentBuilder extends AbstractFormCallback {
       widget.setVisibleItemCount(20);
     }
 
-    widget.addStyleName(STYLE_ADD_RESOURCES);
+    widget.addStyleName(CalendarStyleManager.ADD_RESOURCES);
 
     final InputWidgetCallback callback = new InputWidgetCallback() {
       @Override

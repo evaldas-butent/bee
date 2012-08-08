@@ -13,6 +13,7 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.cache.ReplacementPolicy;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -244,10 +245,20 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     }
   }
 
+  public Integer getColumnPrecision(String columnId) {
+    BeeColumn column = getColumn(columnId);
+    return (column == null) ? null : column.getPrecision();
+  }
+  
   public List<BeeColumn> getColumns() {
     return columns;
   }
 
+  public ValueType getColumnType(String columnId) {
+    BeeColumn column = getColumn(columnId);
+    return (column == null) ? null : column.getType();
+  }
+  
   public Collection<ViewColumn> getDescendants(String colName, boolean includeHidden) {
     Set<ViewColumn> result = Sets.newHashSet();
 

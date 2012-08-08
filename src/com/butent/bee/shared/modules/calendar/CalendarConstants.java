@@ -134,6 +134,7 @@ public class CalendarConstants {
   public static final String SVC_GET_CALENDAR_APPOINTMENTS = "get_calendar_appointments"; 
   public static final String SVC_SAVE_ACTIVE_VIEW = "save_active_view"; 
   public static final String SVC_GET_OVERLAPPING_APPOINTMENTS = "get_overlapping_appointments"; 
+  public static final String SVC_GET_REPORT_OPTIONS = "get_report_options"; 
   public static final String SVC_DO_REPORT = "do_report"; 
 
   public static final String PARAM_CALENDAR_ID = "calendar_id";
@@ -152,6 +153,10 @@ public class CalendarConstants {
   public static final String TBL_APPOINTMENT_PROPS = "AppointmentProps";
   public static final String TBL_APPOINTMENT_ATTENDEES = "AppointmentAttendees";
   public static final String TBL_APPOINTMENT_REMINDERS = "AppointmentReminders";
+
+  public static final String TBL_ATTENDEES = "Attendees";
+  
+  public static final String TBL_REPORT_OPTIONS = "ReportOptions";
   
   public static final String VIEW_CALENDARS = "Calendars";
   public static final String VIEW_USER_CALENDARS = "UserCalendars";
@@ -162,6 +167,7 @@ public class CalendarConstants {
 
   public static final String VIEW_ATTENDEES = "Attendees";
   public static final String VIEW_ATTENDEE_PROPS = "AttendeeProps";
+  public static final String VIEW_ATTENDEE_TYPES = "AttendeeTypes";
 
   public static final String VIEW_APPOINTMENTS = "Appointments";
   public static final String VIEW_APPOINTMENT_TYPES = "AppointmentTypes";
@@ -180,6 +186,8 @@ public class CalendarConstants {
   public static final String VIEW_CAL_ATTENDEE_TYPES = "CalAttendeeTypes";
   public static final String VIEW_CALENDAR_ATTENDEES = "CalendarAttendees";
   public static final String VIEW_CALENDAR_PERSONS = "CalendarPersons";
+
+  public static final String VIEW_REPORT_OPTIONS = "ReportOptions";
 
   public static final String GRID_CALENDARS = "Calendars";
   public static final String GRID_APPOINTMENTS = "Appointments";
@@ -290,6 +298,15 @@ public class CalendarConstants {
 
   public static final String COL_TRANSPARENCY = "Transparency";
   public static final String COL_TYPE_TRANSPARENCY = "TypeTransparency";
+
+  public static final String COL_REPORT = "Report";
+  public static final String COL_CAPTION = "Caption";
+  public static final String COL_LOWER_DATE = "LowerDate";
+  public static final String COL_UPPER_DATE = "UpperDate";
+  public static final String COL_LOWER_HOUR = "LowerHour";
+  public static final String COL_UPPER_HOUR = "UpperHour";
+  public static final String COL_ATTENDEE_TYPES = "AttendeeTypes";
+  public static final String COL_ATTENDEES = "Attendees";
 
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";

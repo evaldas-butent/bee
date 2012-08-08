@@ -76,6 +76,8 @@ public class CalendarStyleManager {
   public static final String NOW_POINTER = "nowPointer";
   public static final String NOW_MARKER = "nowMarker";
 
+  public static final String ADD_RESOURCES = "bee-cal-AddResources";
+  
   static void applyStyle(Widget widget, String styles) {
     if (!BeeUtils.isEmpty(styles)) {
       StyleUtils.updateStyle(widget, styles);

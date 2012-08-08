@@ -46,17 +46,13 @@ public class MenuManager implements Module {
   private List<Menu> roots = null;
 
   private final List<String> layouts = Lists.newArrayList();
-  private final List<Boolean> options = Lists.newArrayList();
 
   public MenuManager() {
     super();
 
     layouts.add(MenuConstants.LAYOUT_MENU_HOR);
-    options.add(false);
-
     for (int i = MenuConstants.ROOT_MENU_INDEX + 1; i < MenuConstants.MAX_MENU_DEPTH; i++) {
       layouts.add(MenuConstants.LAYOUT_MENU_VERT);
-      options.add(true);
     }
   }
 
@@ -244,7 +240,6 @@ public class MenuManager implements Module {
       return null;
     }
     String layout = getLayout(level);
-    boolean opt = getOption(level);
 
     if (parent instanceof MenuBar) {
       int lvl = level - 1;
@@ -253,7 +248,7 @@ public class MenuManager implements Module {
         layout = getLayout(lvl--);
       }
     }
-    Widget rw = createWidget(layout, opt, level);
+    Widget rw = createWidget(layout, level);
 
     boolean lastLevel = (level >= MenuConstants.MAX_MENU_DEPTH - 1);
     int cnt = entries.size();
@@ -275,13 +270,13 @@ public class MenuManager implements Module {
     return rw;
   }
 
-  private Widget createWidget(String layout, boolean opt, int level) {
+  private Widget createWidget(String layout, int level) {
     Widget w = null;
 
     if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_HOR)) {
-      w = new MenuBar(level, false, getBarType(false), ITEM_TYPE.LABEL, opt);
+      w = new MenuBar(level, false, getBarType(false), ITEM_TYPE.LABEL);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_VERT)) {
-      w = new MenuBar(level, true, getBarType(opt), ITEM_TYPE.LABEL, opt);
+      w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.LABEL);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_STACK)) {
       w = new Stack(Unit.PX);
@@ -293,23 +288,23 @@ public class MenuManager implements Module {
       ((Tree) w).addSelectionHandler(new MenuSelectionHandler());
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_LIST)) {
-      w = new MenuBar(level, true, BAR_TYPE.LIST, ITEM_TYPE.OPTION, opt);
+      w = new MenuBar(level, true, BAR_TYPE.LIST, ITEM_TYPE.OPTION);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_ORDERED_LIST)) {
-      w = new MenuBar(level, true, BAR_TYPE.OLIST, ITEM_TYPE.LI, opt);
+      w = new MenuBar(level, true, BAR_TYPE.OLIST, ITEM_TYPE.LI);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_UNORDERED_LIST)) {
-      w = new MenuBar(level, true, BAR_TYPE.ULIST, ITEM_TYPE.LI, opt);
+      w = new MenuBar(level, true, BAR_TYPE.ULIST, ITEM_TYPE.LI);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_DEFINITION_LIST)) {
-      w = new MenuBar(level, true, BAR_TYPE.DLIST, ITEM_TYPE.DT, opt);
+      w = new MenuBar(level, true, BAR_TYPE.DLIST, ITEM_TYPE.DT);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_RADIO_HOR)) {
-      w = new MenuBar(level, false, getBarType(opt), ITEM_TYPE.RADIO, opt);
+      w = new MenuBar(level, false, getBarType(true), ITEM_TYPE.RADIO);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_RADIO_VERT)) {
-      w = new MenuBar(level, true, getBarType(opt), ITEM_TYPE.RADIO, opt);
+      w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.RADIO);
 
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_BUTTONS_HOR)) {
-      w = new MenuBar(level, false, getBarType(opt), ITEM_TYPE.BUTTON, opt);
+      w = new MenuBar(level, false, getBarType(true), ITEM_TYPE.BUTTON);
     } else if (BeeUtils.same(layout, MenuConstants.LAYOUT_BUTTONS_VERT)) {
-      w = new MenuBar(level, true, getBarType(opt), ITEM_TYPE.BUTTON, opt);
+      w = new MenuBar(level, true, getBarType(true), ITEM_TYPE.BUTTON);
 
     } else {
       Assert.untouchable();
@@ -318,18 +313,13 @@ public class MenuManager implements Module {
     return w;
   }
 
-  private BAR_TYPE getBarType(boolean opt) {
-    return opt ? BAR_TYPE.TABLE : BAR_TYPE.FLOW;
+  private BAR_TYPE getBarType(boolean table) {
+    return table ? BAR_TYPE.TABLE : BAR_TYPE.FLOW;
   }
 
   private String getLayout(int idx) {
     Assert.isIndex(getLayouts(), idx);
     return getLayouts().get(idx);
-  }
-
-  private boolean getOption(int idx) {
-    Assert.isIndex(options, idx);
-    return options.get(idx);
   }
 
   @SuppressWarnings("unchecked")

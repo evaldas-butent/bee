@@ -19,6 +19,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -339,6 +340,10 @@ public class DataUtils {
     return type;
   }
 
+  public static JustDate getDate(BeeRowSet rowSet, IsRow row, String columnId) {
+    return row.getDate(getColumnIndex(columnId, rowSet.getColumns()));
+  }
+  
   public static int getDefaultAsyncThreshold() {
     return defaultAsyncThreshold;
   }
@@ -372,6 +377,10 @@ public class DataUtils {
       }
     }
     return result;
+  }
+
+  public static Integer getInteger(BeeRowSet rowSet, IsRow row, String columnId) {
+    return row.getInteger(getColumnIndex(columnId, rowSet.getColumns()));
   }
 
   public static Long getLong(BeeRowSet rowSet, IsRow row, String columnId) {

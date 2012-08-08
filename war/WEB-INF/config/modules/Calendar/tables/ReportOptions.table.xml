@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="ReportOptions"
+  idName="ReportOptionID"
+  >
+  <Fields>
+    <Relation name="User" notNull="true" relation="Users" cascade="DELETE" />
+    <Integer name="Report" notNull="true" />
+
+    <String name="Caption" precision="200" />
+    
+    <Date name="LowerDate" />
+    <Date name="UpperDate" />
+
+    <Integer name="LowerHour" />
+    <Integer name="UpperHour" />
+    
+    <Text name="AttendeeTypes"/>
+    <Text name="Attendees"/>
+  </Fields>
+  <Keys>
+    <Key unique="true">
+      <KeyField>User</KeyField>
+      <KeyField>Report</KeyField>
+    </Key>
+  </Keys>
+</Table>

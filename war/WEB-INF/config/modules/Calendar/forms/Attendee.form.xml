@@ -6,8 +6,10 @@
   name="Attendee" viewName="Attendees" caption="Resursas">
 
   <FlowPanel>
-    <InputText source="Name" caption="Pavadinimas:" style="width: 500px;" d:size="100" d:unit="px"
+    <InputText source="Name" caption="Pavadinimas:" style="width: 340px;" d:size="100" d:unit="px"
        d:rootStyle="position: absolute; left: 20px; top: 20px;" />
+    <InputInteger source="Ordinal" caption="Eil. Nr.:" style="width: 60px;" d:size="60" d:unit="px"
+       d:rootStyle="position: absolute; left: 500px; top: 20px;" />
 
     <DataSelector source="TypeName" caption="Tipas:" style="width: 180px;" d:size="100" d:unit="px"
        d:rootStyle="position: absolute; left: 20px; top: 60px;" />

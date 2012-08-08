@@ -1199,12 +1199,12 @@ body, select {
   color: #999;
 }
 
-.bee-ModalForm, .bee-NewRow, .bee-EditRow {
+.bee-ModalForm, .bee-NewRow, .bee-EditRow, .bee-ReportOptions {
   border: 1px solid activeborder;
   border-radius: 2px;
 }
 
-.bee-ModalForm-glass, .bee-NewRow-glass, .bee-EditRow-glass {
+.bee-ModalForm-glass, .bee-NewRow-glass, .bee-EditRow-glass, .bee-ReportOptions-glass {
   background-color: white;
   opacity: 0.7;
 }
@@ -1450,6 +1450,17 @@ body, select {
   cursor: pointer;
 }
 
+.bee-ReportOptions .bee-Dialog-caption {
+  background-color: #eee;
+  padding: 1px 45px 1px 8px;
+  border-bottom: 1px solid #ddd;
+  font-size: medium;
+}
+.bee-ReportOptions .bee-Dialog-content {
+  background-color: #cfc;
+  padding: 2ex 1em 1ex 1em;
+}
+
 ::-webkit-scrollbar {
   height: 9px;
   width: 9px;
@@ -1509,4 +1520,7 @@ body, select {
 }
 .bee-SplitControls {
 /*   display: none; */
+}
+.bee-MainSearchOptionsContainer {
+  display: none;
 }

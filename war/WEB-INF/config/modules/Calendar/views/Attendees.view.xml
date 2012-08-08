@@ -28,8 +28,10 @@
     </SimpleJoin>
 
     <SimpleColumn name="Transparency" />
+    <SimpleColumn name="Ordinal" />
   </Columns>
   <Order>
+    <OrderBy column="Ordinal" />
     <OrderBy column="TypeName" />
     <OrderBy column="Name" />
   </Order>

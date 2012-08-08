@@ -2,9 +2,11 @@
 <Grid xmlns="http://www.butent.com/grid"
 
   name="Attendees" viewName="Attendees" caption="Resursai" newRowCaption="Naujas resursas"
-  editForm="Attendee" newRowForm="Attendee" 
+  editForm="Attendee" newRowForm="Attendee" editInPlace="Ordinal"
   >
   <columns>
+    <DataColumn name="Ordinal" caption="Eil. Nr." />
+
     <DataColumn name="TypeName" caption="Tipas" minWidth="100" />
 
     <DataColumn name="Name" caption="Pavadinimas" minWidth="100" />

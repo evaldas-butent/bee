@@ -3,6 +3,8 @@ package com.butent.bee.server.modules.calendar;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Range;
+import com.google.common.collect.Ranges;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 
@@ -14,6 +16,7 @@ import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
@@ -43,6 +46,7 @@ import com.butent.bee.shared.modules.calendar.CalendarConstants.View;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -117,6 +121,8 @@ public class CalendarModuleBean implements BeeModule {
       response = saveActiveView(reqInfo);
     } else if (BeeUtils.same(svc, SVC_GET_OVERLAPPING_APPOINTMENTS)) {
       response = getOverlappingAppointments(reqInfo);
+    } else if (BeeUtils.same(svc, SVC_GET_REPORT_OPTIONS)) {
+      response = getReportOptions(reqInfo);
     } else if (BeeUtils.same(svc, SVC_DO_REPORT)) {
       response = doReport(reqInfo);
 
@@ -195,21 +201,59 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.error(SVC_DO_REPORT, PARAM_REPORT, "parameter not found");
     }
 
+    BeeRowSet rowSet = BeeRowSet.restore(reqInfo.getContent());
+    if (rowSet.isEmpty()) {
+      return ResponseObject.error(SVC_DO_REPORT, ": options rowSet is empty");
+    }
+
+    BeeRow row = rowSet.getRow(0);
+
+    JustDate lowerDate = DataUtils.getDate(rowSet, row, COL_LOWER_DATE);
+    JustDate upperDate = DataUtils.getDate(rowSet, row, COL_UPPER_DATE);
+
+    Integer lowerHour = DataUtils.getInteger(rowSet, row, COL_LOWER_HOUR);
+    Integer upperHour = DataUtils.getInteger(rowSet, row, COL_UPPER_HOUR);
+    
+    String atpList = DataUtils.getString(rowSet, row, COL_ATTENDEE_TYPES);
+    String attList = DataUtils.getString(rowSet, row, COL_ATTENDEES);
+
+    SqlUpdate update = new SqlUpdate(TBL_REPORT_OPTIONS)
+        .addConstant(sys.getVersionName(TBL_REPORT_OPTIONS), System.currentTimeMillis())
+        .addConstant(COL_CAPTION, DataUtils.getString(rowSet, row, COL_CAPTION))
+        .addConstant(COL_LOWER_DATE, lowerDate)
+        .addConstant(COL_UPPER_DATE, upperDate)
+        .addConstant(COL_LOWER_HOUR, lowerHour)
+        .addConstant(COL_UPPER_HOUR, upperHour)
+        .addConstant(COL_ATTENDEE_TYPES, atpList)
+        .addConstant(COL_ATTENDEES, attList)
+        .setWhere(SqlUtils.equal(TBL_REPORT_OPTIONS, sys.getIdName(TBL_REPORT_OPTIONS),
+            row.getId()));
+
+    ResponseObject response = qs.updateDataWithResponse(update);
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    List<Long> attendeeTypes = DataUtils.parseList(atpList);
+    List<Long> attendees = DataUtils.parseList(attList);
+    
     Report report = Report.values()[paramRep];
     BeeRowSet result;
 
     switch (report) {
       case BUSY_HOURS:
-        result = getAttendeesByHour(false);
+        result = getAttendeesByHour(lowerDate, upperDate, lowerHour, upperHour,
+            attendeeTypes, attendees, false);
         break;
       case BUSY_MONTHS:
-        result = getAttendeesByMonth(false);
+        result = getAttendeesByMonth(lowerDate, upperDate, attendeeTypes, attendees, false);
         break;
       case CANCEL_HOURS:
-        result = getAttendeesByHour(true);
+        result = getAttendeesByHour(lowerDate, upperDate, lowerHour, upperHour,
+            attendeeTypes, attendees, true);
         break;
       case CANCEL_MONTHS:
-        result = getAttendeesByMonth(true);
+        result = getAttendeesByMonth(lowerDate, upperDate, attendeeTypes, attendees, true);
         break;
       default:
         Assert.untouchable();
@@ -222,10 +266,21 @@ public class CalendarModuleBean implements BeeModule {
       return ResponseObject.response(result);
     }
   }
-  
+
   private String formatMinutes(int minutes) {
     return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_HOUR) + DateTime.TIME_FIELD_SEPARATOR
         + TimeUtils.padTwo(minutes % TimeUtils.MINUTES_PER_HOUR);
+  }
+  
+  private void formatTimeColumns(BeeRowSet rowSet, int colFrom, int colTo) {
+    for (BeeRow row : rowSet.getRows()) {
+      for (int c = colFrom; c <= colTo; c++) {
+        Integer value = row.getInteger(c);
+        if (value != null) {
+          row.setValue(c, formatMinutes(value));
+        }
+      }
+    }
   }
 
   private BeeRowSet getAppointments(Filter filter, Order order, Set<Long> attendees) {
@@ -287,12 +342,22 @@ public class CalendarModuleBean implements BeeModule {
 
     return appointments;
   }
+
+  private Filter getAttendeeFilter(List<Long> attendeeTypes, List<Long> attendees) {
+    if (!BeeUtils.isEmpty(attendeeTypes) || !BeeUtils.isEmpty(attendees)) {
+      return Filter.or(Filter.in(COL_ATTENDEE_TYPE, attendeeTypes),
+          Filter.idIn(attendees));
+    } else if (!BeeUtils.isEmpty(attendeeTypes)) {
+      return Filter.in(COL_ATTENDEE_TYPE, attendeeTypes);
+    } else if (!BeeUtils.isEmpty(attendees)) {
+      return Filter.idIn(attendees);
+    } else {
+      return null;
+    }
+  }
   
-  private SimpleRowSet getAttendeePeriods(boolean canceled) {
-    int statusCanceled = AppointmentStatus.CANCELED.ordinal();
-    IsCondition statusCondition = canceled
-        ? SqlUtils.equal(TBL_APPOINTMENTS, COL_STATUS, statusCanceled)
-        : SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS, statusCanceled);
+  private SimpleRowSet getAttendeePeriods(JustDate lowerDate, JustDate upperDate,
+      List<Long> attendeeTypes, List<Long> attendees, boolean canceled) {
 
     SqlSelect ss = new SqlSelect()
         .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME, COL_END_DATE_TIME)
@@ -300,14 +365,55 @@ public class CalendarModuleBean implements BeeModule {
         .addFrom(TBL_APPOINTMENTS)
         .addFromInner(TBL_APPOINTMENT_ATTENDEES,
             SqlUtils.join(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT,
-                TBL_APPOINTMENTS, sys.getIdName(TBL_APPOINTMENTS)))
-        .setWhere(statusCondition);
+                TBL_APPOINTMENTS, sys.getIdName(TBL_APPOINTMENTS)));
+
+    int statusCanceled = AppointmentStatus.CANCELED.ordinal();
+    IsCondition statusCondition = canceled
+        ? SqlUtils.equal(TBL_APPOINTMENTS, COL_STATUS, statusCanceled)
+        : SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS, statusCanceled);
+
+    HasConditions where = SqlUtils.and(statusCondition);
+
+    if (!BeeUtils.isEmpty(attendeeTypes) || !BeeUtils.isEmpty(attendees)) {
+      HasConditions attCondition = SqlUtils.or();
+
+      if (!BeeUtils.isEmpty(attendeeTypes)) {
+        ss.addFromInner(TBL_ATTENDEES,
+            SqlUtils.join(TBL_ATTENDEES, sys.getIdName(TBL_ATTENDEES),
+                TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE));
+
+        for (Long atpId : attendeeTypes) {
+          attCondition.add(SqlUtils.equal(TBL_ATTENDEES, COL_ATTENDEE_TYPE, atpId));
+        }
+      }
+
+      if (!BeeUtils.isEmpty(attendees)) {
+        for (Long attId : attendees) {
+          attCondition.add(SqlUtils.equal(TBL_APPOINTMENT_ATTENDEES, COL_ATTENDEE, attId));
+        }
+      }
+
+      where.add(attCondition);
+    }
+
+    if (lowerDate != null) {
+      where.add(SqlUtils.more(TBL_APPOINTMENTS, COL_END_DATE_TIME, lowerDate));
+    }
+    if (upperDate != null) {
+      where.add(SqlUtils.less(TBL_APPOINTMENTS, COL_START_DATE_TIME, upperDate));
+    }
+
+    ss.setWhere(where);
 
     return qs.getData(ss);
   }
 
-  private BeeRowSet getAttendeesByHour(boolean canceled) {
-    SimpleRowSet data = getAttendeePeriods(canceled);
+  private BeeRowSet getAttendeesByHour(JustDate lowerDate, JustDate upperDate,
+      Integer lowerHour, Integer upperHour, List<Long> attendeeTypes, List<Long> attendees,
+      boolean canceled) {
+
+    SimpleRowSet data =
+        getAttendeePeriods(lowerDate, upperDate, attendeeTypes, attendees, canceled);
     if (data == null || data.getNumberOfRows() <= 0) {
       return null;
     }
@@ -317,14 +423,18 @@ public class CalendarModuleBean implements BeeModule {
     int attIndex = data.getColumnIndex(COL_ATTENDEE);
 
     Table<Long, Integer, Integer> table = HashBasedTable.create();
+    
+    Range<DateTime> dateRange = getDateRange(lowerDate, upperDate);
+    Range<Integer> hourRange = getHourRange(lowerHour, upperHour);
 
     for (int r = 0; r < data.getNumberOfRows(); r++) {
       DateTime start = data.getDateTime(r, startIndex);
       DateTime end = data.getDateTime(r, endIndex);
 
       Long attendee = data.getLong(r, attIndex);
+      Map<Integer, Integer> map = splitByHour(start, end, dateRange, hourRange);
 
-      for (Map.Entry<Integer, Integer> entry : splitByHour(start, end).entrySet()) {
+      for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
         int hour = entry.getKey();
         int minutes = entry.getValue();
 
@@ -343,8 +453,9 @@ public class CalendarModuleBean implements BeeModule {
     List<Integer> hours = Lists.newArrayList(table.columnKeySet());
     Collections.sort(hours);
 
-    BeeRowSet attendees = qs.getViewData(VIEW_ATTENDEES);
-    if (attendees.isEmpty()) {
+    BeeRowSet attRowSet = qs.getViewData(VIEW_ATTENDEES,
+        getAttendeeFilter(attendeeTypes, attendees));
+    if (attRowSet.isEmpty()) {
       return null;
     }
 
@@ -354,27 +465,44 @@ public class CalendarModuleBean implements BeeModule {
       result.addColumn(ValueType.TEXT, hour.toString());
     }
 
-    for (BeeRow attRow : attendees.getRows()) {
+    if (hours.size() > 1) {
+      result.addColumn(ValueType.TEXT, "Viso");
+    }
+    int columnCount = result.getNumberOfColumns();
+    
+    for (BeeRow attRow : attRowSet.getRows()) {
       Map<Integer, Integer> tableRow = table.row(attRow.getId());
       if (tableRow == null || tableRow.isEmpty()) {
         continue;
       }
 
       String[] values = new String[result.getNumberOfColumns()];
-      values[0] = DataUtils.getString(attendees, attRow, COL_TYPE_NAME);
-      values[1] = DataUtils.getString(attendees, attRow, COL_NAME);
+      values[0] = DataUtils.getString(attRowSet, attRow, COL_TYPE_NAME);
+      values[1] = DataUtils.getString(attRowSet, attRow, COL_NAME);
 
       for (int c = 0; c < hours.size(); c++) {
         Integer minutes = tableRow.get(hours.get(c));
-        values[c + 2] = (minutes == null) ? null : formatMinutes(minutes);
+        values[c + 2] = (minutes == null) ? null : minutes.toString();
       }
       result.addRow(attRow.getId(), values);
     }
+
+    if (hours.size() > 1) {
+      totalColumns(result, 2, columnCount - 2, columnCount - 1);
+    }
+    if (result.getNumberOfRows() > 1) {
+      totalRows(result, 2, columnCount - 1, 0, "Iš viso:", 0);
+    }
+    formatTimeColumns(result, 2, columnCount - 1);
+    
     return result;
   }
 
-  private BeeRowSet getAttendeesByMonth(boolean canceled) {
-    SimpleRowSet data = getAttendeePeriods(canceled);
+  private BeeRowSet getAttendeesByMonth(JustDate lowerDate, JustDate upperDate,
+      List<Long> attendeeTypes, List<Long> attendees, boolean canceled) {
+
+    SimpleRowSet data = 
+        getAttendeePeriods(lowerDate, upperDate, attendeeTypes, attendees, canceled);
     if (data == null || data.getNumberOfRows() <= 0) {
       return null;
     }
@@ -385,13 +513,15 @@ public class CalendarModuleBean implements BeeModule {
 
     Table<Long, YearMonth, Integer> table = HashBasedTable.create();
 
+    Range<DateTime> range = getDateRange(lowerDate, upperDate);
+    
     for (int r = 0; r < data.getNumberOfRows(); r++) {
       DateTime start = data.getDateTime(r, startIndex);
       DateTime end = data.getDateTime(r, endIndex);
 
       Long attendee = data.getLong(r, attIndex);
 
-      for (Map.Entry<YearMonth, Integer> entry : splitByYearMonth(start, end).entrySet()) {
+      for (Map.Entry<YearMonth, Integer> entry : splitByYearMonth(start, end, range).entrySet()) {
         YearMonth ym = entry.getKey();
         int minutes = entry.getValue();
 
@@ -410,8 +540,9 @@ public class CalendarModuleBean implements BeeModule {
     List<YearMonth> months = Lists.newArrayList(table.columnKeySet());
     Collections.sort(months);
 
-    BeeRowSet attendees = qs.getViewData(VIEW_ATTENDEES);
-    if (attendees.isEmpty()) {
+    BeeRowSet attRowSet = qs.getViewData(VIEW_ATTENDEES,
+        getAttendeeFilter(attendeeTypes, attendees));
+    if (attRowSet.isEmpty()) {
       return null;
     }
 
@@ -420,23 +551,37 @@ public class CalendarModuleBean implements BeeModule {
     for (YearMonth ym : months) {
       result.addColumn(ValueType.TEXT, ym.toString());
     }
+    
+    if (months.size() > 1) {
+      result.addColumn(ValueType.TEXT, "Viso");
+    }
+    int columnCount = result.getNumberOfColumns();
 
-    for (BeeRow attRow : attendees.getRows()) {
+    for (BeeRow attRow : attRowSet.getRows()) {
       Map<YearMonth, Integer> tableRow = table.row(attRow.getId());
       if (tableRow == null || tableRow.isEmpty()) {
         continue;
       }
 
-      String[] values = new String[result.getNumberOfColumns()];
-      values[0] = DataUtils.getString(attendees, attRow, COL_TYPE_NAME);
-      values[1] = DataUtils.getString(attendees, attRow, COL_NAME);
+      String[] values = new String[columnCount];
+      values[0] = DataUtils.getString(attRowSet, attRow, COL_TYPE_NAME);
+      values[1] = DataUtils.getString(attRowSet, attRow, COL_NAME);
 
       for (int c = 0; c < months.size(); c++) {
         Integer minutes = tableRow.get(months.get(c));
-        values[c + 2] = (minutes == null) ? null : formatMinutes(minutes);
+        values[c + 2] = (minutes == null) ? null : minutes.toString();
       }
       result.addRow(attRow.getId(), values);
     }
+    
+    if (months.size() > 1) {
+      totalColumns(result, 2, columnCount - 2, columnCount - 1);
+    }
+    if (result.getNumberOfRows() > 1) {
+      totalRows(result, 2, columnCount - 1, 0, "Iš viso:", 0);
+    }
+    formatTimeColumns(result, 2, columnCount - 1);
+    
     return result;
   }
 
@@ -496,7 +641,31 @@ public class CalendarModuleBean implements BeeModule {
 
     return ResponseObject.response(appointments);
   }
+  
+  private Range<DateTime> getDateRange(JustDate lower, JustDate upper) {
+    if (lower != null && upper != null) {
+      return Ranges.closedOpen(lower.getDateTime(), upper.getDateTime());
+    } else if (lower != null) {
+      return Ranges.atLeast(lower.getDateTime());
+    } else if (upper != null) {
+      return Ranges.lessThan(upper.getDateTime());
+    } else {
+      return Ranges.all();
+    }
+  }
 
+  private Range<Integer> getHourRange(Integer lower, Integer upper) {
+    if (BeeUtils.isPositive(lower) && BeeUtils.isPositive(upper)) {
+      return Ranges.closedOpen(lower, upper);
+    } else if (BeeUtils.isPositive(lower)) {
+      return Ranges.atLeast(lower);
+    } else if (BeeUtils.isPositive(upper)) {
+      return Ranges.lessThan(upper);
+    } else {
+      return Ranges.all();
+    }
+  }
+  
   private ResponseObject getOverlappingAppointments(RequestInfo reqInfo) {
     String svc = SVC_GET_OVERLAPPING_APPOINTMENTS;
 
@@ -582,6 +751,38 @@ public class CalendarModuleBean implements BeeModule {
 
     LogUtils.infoNow(logger, svc, appointments.getNumberOfRows(), appointments.getViewName());
     return ResponseObject.response(appointments);
+  }
+
+  private ResponseObject getReportOptions(RequestInfo reqInfo) {
+    Integer report = BeeUtils.toIntOrNull(reqInfo.getParameter(PARAM_REPORT));
+    if (!BeeUtils.isOrdinal(Report.class, report)) {
+      return ResponseObject.error(SVC_GET_REPORT_OPTIONS, PARAM_REPORT, "parameter not found");
+    }
+
+    long userId = usr.getCurrentUserId();
+
+    Filter filter = Filter.and(ComparisonFilter.isEqual(COL_USER, new LongValue(userId)),
+        ComparisonFilter.isEqual(COL_REPORT, new IntegerValue(report)));
+
+    BeeRowSet rowSet = qs.getViewData(VIEW_REPORT_OPTIONS, filter);
+    if (rowSet.getNumberOfRows() == 1) {
+      return ResponseObject.response(rowSet.getRow(0));
+    }
+
+    SqlInsert sqlInsert = new SqlInsert(TBL_REPORT_OPTIONS).addConstant(COL_USER, userId)
+        .addConstant(COL_REPORT, report);
+
+    ResponseObject response = qs.insertDataWithResponse(sqlInsert);
+    if (response.hasErrors()) {
+      return response;
+    }
+
+    BeeRowSet result = qs.getViewData(VIEW_REPORT_OPTIONS, filter);
+    if (result.getNumberOfRows() != 1) {
+      return ResponseObject.error(SVC_GET_REPORT_OPTIONS, COL_USER, userId, COL_REPORT, report,
+          "report options not created");
+    }
+    return ResponseObject.response(result.getRow(0));
   }
 
   private ResponseObject getUserCalendar(RequestInfo reqInfo) {
@@ -680,7 +881,8 @@ public class CalendarModuleBean implements BeeModule {
     return qs.updateDataWithResponse(update);
   }
 
-  private Map<Integer, Integer> splitByHour(DateTime start, DateTime end) {
+  private Map<Integer, Integer> splitByHour(DateTime start, DateTime end,
+      Range<DateTime> dateRange, Range<Integer> hourRange) {
     Map<Integer, Integer> result = Maps.newHashMap();
     if (start == null || end == null) {
       return result;
@@ -690,27 +892,33 @@ public class CalendarModuleBean implements BeeModule {
     while (TimeUtils.isLess(dt, end)) {
       int hour = dt.getHour();
       DateTime next = TimeUtils.nextHour(dt, 0);
-      
+
       int value = BeeUtils.unbox(result.get(hour));
 
       if (TimeUtils.isLess(next, end)) {
-        result.put(hour, TimeUtils.minuteDiff(dt, next) + value);
+        if (dateRange.contains(dt) && hourRange.contains(hour)) {
+          result.put(hour, TimeUtils.minuteDiff(dt, next) + value);
+        }
         dt.setTime(next.getTime());
+
       } else {
-        result.put(hour, TimeUtils.minuteDiff(dt, end) + value);
+        if (dateRange.contains(dt) && hourRange.contains(hour)) {
+          result.put(hour, TimeUtils.minuteDiff(dt, end) + value);
+        }
         break;
       }
     }
     return result;
   }
-  
-  private Map<YearMonth, Integer> splitByYearMonth(DateTime start, DateTime end) {
+
+  private Map<YearMonth, Integer> splitByYearMonth(DateTime start, DateTime end,
+      Range<DateTime> range) {
     Map<YearMonth, Integer> result = Maps.newHashMap();
     if (start == null || end == null) {
       return result;
     }
 
-    if (TimeUtils.sameMonth(start, end)) {
+    if (TimeUtils.sameMonth(start, end) && range.contains(start) && range.contains(end)) {
       result.put(new YearMonth(start), TimeUtils.minuteDiff(start, end));
       return result;
     }
@@ -718,19 +926,66 @@ public class CalendarModuleBean implements BeeModule {
     DateTime dt = DateTime.copyOf(start);
     while (TimeUtils.isLess(dt, end)) {
       YearMonth ym = new YearMonth(dt);
-      DateTime next = TimeUtils.startOfNextMonth(dt).getDateTime();
+      DateTime next = TimeUtils.nextDay(dt).getDateTime();
 
+      int value = BeeUtils.unbox(result.get(ym));
+      
       if (TimeUtils.isLess(next, end)) {
-        result.put(ym, TimeUtils.minuteDiff(dt, next));
+        if (range.contains(dt)) {
+          result.put(ym, TimeUtils.minuteDiff(dt, next) + value);
+        }
         dt.setTime(next.getTime());
       } else {
-        result.put(ym, TimeUtils.minuteDiff(dt, end));
+        if (range.contains(dt)) {
+          result.put(ym, TimeUtils.minuteDiff(dt, end) + value);
+        }
         break;
       }
     }
     return result;
   }
 
+  private void totalColumns(BeeRowSet rowSet, int colFrom, int colTo, int colTotal) {
+    for (BeeRow row : rowSet.getRows()) {
+      int sum = 0;
+      for (int c = colFrom; c <= colTo; c++) {
+        Integer value = row.getInteger(c);
+        if (value != null) {
+          sum += value;
+        }
+      }
+      row.setValue(colTotal, sum);
+    }
+  }
+
+  private void totalRows(BeeRowSet rowSet, int colFrom, int colTo, long rowId,
+      String caption, int colCaption) {
+    
+    Integer[] totals = new Integer[colTo - colFrom + 1];
+    for (int i = 0; i < totals.length; i++) {
+      totals[i] = 0; 
+    }
+
+    for (BeeRow row : rowSet.getRows()) {
+      for (int c = colFrom; c <= colTo; c++) {
+        Integer value = row.getInteger(c);
+        if (value != null) {
+          totals[c - colFrom] += value;
+        }
+      }
+    }
+    
+    String[] arr = new String[rowSet.getNumberOfColumns()];
+    if (!BeeUtils.isEmpty(caption)) {
+      arr[colCaption] = caption;
+    }
+    for (int c = colFrom; c <= colTo; c++) {
+      arr[c] = BeeUtils.toString(totals[c - colFrom]);
+    }
+    
+    rowSet.addRow(rowId, arr);
+  }
+  
   private ResponseObject updateAppointment(RequestInfo reqInfo) {
     BeeRowSet newRowSet = BeeRowSet.restore(reqInfo.getContent());
     if (newRowSet.isEmpty()) {

@@ -4,12 +4,14 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.ColumnMapper;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class Data {
 
@@ -42,6 +44,18 @@ public class Data {
     return COLUMN_MAPPER;
   }
 
+  public static Integer getColumnPrecision(String viewName, String colName) {
+    return getDataInfo(viewName).getColumnPrecision(colName);
+  }
+
+  public static List<BeeColumn> getColumns(String viewName) {
+    return getDataInfo(viewName).getColumns();
+  }
+  
+  public static ValueType getColumnType(String viewName, String colName) {
+    return getDataInfo(viewName).getColumnType(colName);
+  }
+  
   public static DataInfo getDataInfo(String viewName) {
     return DATA_INFO_PROVIDER.getDataInfo(viewName, true);
   }

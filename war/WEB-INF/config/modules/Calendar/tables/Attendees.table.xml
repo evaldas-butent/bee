@@ -14,5 +14,6 @@
     <Relation name="CompanyPerson" relation="CompanyPersons" />
 
     <Integer name="Transparency" />
+    <Integer name="Ordinal" />
   </Fields>
 </Table>

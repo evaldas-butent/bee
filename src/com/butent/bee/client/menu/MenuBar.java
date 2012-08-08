@@ -74,8 +74,6 @@ public class MenuBar extends Widget implements HasId, CloseHandler<Popup> {
   private final ITEM_TYPE itemType;
   private final String name = NameUtils.createUniqueName("mb-");
 
-  private boolean hoverEnabled = true;
-
   public MenuBar() {
     this(0);
   }
@@ -93,21 +91,17 @@ public class MenuBar extends Widget implements HasId, CloseHandler<Popup> {
   }
 
   public MenuBar(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it) {
-    this(level, vert, bt, it, false, false);
+    this(level, vert, bt, it, false);
   }
-
-  public MenuBar(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it, boolean hover) {
-    this(level, vert, bt, it, hover, false);
-  }
-  
-  public MenuBar(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it, boolean hover, boolean wheel) {
+ 
+  public MenuBar(int level, boolean vert, BAR_TYPE bt, ITEM_TYPE it, boolean wheel) {
     this.level = level;
     this.vertical = vert;
 
     this.barType = (bt == null) ? BAR_TYPE.TABLE : bt;  
     this.itemType = (it == null) ? MenuItem.defaultType : it;
 
-    init(hover, wheel);
+    init(wheel);
     DomUtils.createId(this, getIdPrefix());
   }
 
@@ -276,18 +270,12 @@ public class MenuBar extends Widget implements HasId, CloseHandler<Popup> {
       return;
     }
 
-    if (EventUtils.isKeyEvent(type)) {
-      hoverEnabled = false;
-    } else if (type == Event.ONCLICK || type == Event.ONMOUSEWHEEL) {
-      hoverEnabled = true;
-    }
-
     MenuItem item = findItem(target);
     if (item == null && !EventUtils.isKeyEvent(type) && type != Event.ONMOUSEWHEEL) {
       super.onBrowserEvent(event);
       return;
     }
-
+    
     switch (type) {
       case Event.ONCLICK:
         if (!DomUtils.isLabelElement(target)) {
@@ -297,18 +285,6 @@ public class MenuBar extends Widget implements HasId, CloseHandler<Popup> {
             selectItem(item);
             openSubMenu(item);
           }
-        }
-        break;
-
-      case Event.ONMOUSEOVER:
-        if (hoverEnabled) {
-          itemOver(item);
-        }
-        break;
-
-      case Event.ONMOUSEOUT:
-        if (hoverEnabled) {
-          itemOver(null);
         }
         break;
 
@@ -437,9 +413,7 @@ public class MenuBar extends Widget implements HasId, CloseHandler<Popup> {
       closeChildMenu();
     }
 
-    if (item == null) {
-      hoverEnabled = true;
-    } else {
+    if (item != null) {
       DOM.scrollIntoView(item.getElement());
       item.setSelected(true);
     }
@@ -577,7 +551,8 @@ public class MenuBar extends Widget implements HasId, CloseHandler<Popup> {
 
   private MenuItem findItem(Element elem) {
     for (MenuItem item : items) {
-      if (DOM.isOrHasChild(item.getElement(), elem)) {
+      if (DOM.isOrHasChild(item.getElement(), elem) 
+          || DomUtils.isTdElement(elem) && elem.equals(item.getElement().getParentElement())) {
         return item;
       }
     }
@@ -612,7 +587,7 @@ public class MenuBar extends Widget implements HasId, CloseHandler<Popup> {
     }
   }
 
-  private void init(boolean hover, boolean wheel) {
+  private void init(boolean wheel) {
 
     Element elem;
     switch (barType) {
@@ -658,9 +633,6 @@ public class MenuBar extends Widget implements HasId, CloseHandler<Popup> {
     setElement(outer);
 
     sinkEvents(Event.ONCLICK | Event.ONKEYDOWN | Event.ONKEYPRESS | Event.ONBLUR);
-    if (hover) {
-      sinkEvents(Event.ONMOUSEOVER | Event.ONMOUSEOUT);
-    }
     if (wheel) {
       sinkEvents(Event.ONMOUSEWHEEL);
     }
@@ -705,23 +677,7 @@ public class MenuBar extends Widget implements HasId, CloseHandler<Popup> {
 
     return separator;
   }
-
-  private void itemOver(MenuItem item) {
-    if (item == null && childMenu != null) {
-      return;
-    }
-
-    if (item != null) {
-      focus();
-    }
-
-    selectItem(item);
-
-    if (hasSubMenu(item)) {
-      openSubMenu(item);
-    }
-  }
-
+  
   private boolean moveTo(int code) {
     boolean ok = false;
     if (code <= BeeConst.CHAR_SPACE) {

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ReportOptions"
+  source="ReportOptions"
+  >
+  <Columns>
+    <SimpleColumn name="User" />
+    <SimpleColumn name="Report" />
+
+    <SimpleColumn name="Caption" />
+
+    <SimpleColumn name="LowerDate" />
+    <SimpleColumn name="UpperDate" />
+
+    <SimpleColumn name="LowerHour" />
+    <SimpleColumn name="UpperHour" />
+
+    <SimpleColumn name="AttendeeTypes" />
+    <SimpleColumn name="Attendees" />
+  </Columns>
+</View>

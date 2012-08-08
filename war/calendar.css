@@ -403,3 +403,121 @@
   left: 1px;
   right: 1px;
 }
+
+.bee-cal-ReportOptions-container {
+  width: 480px;
+  height: 340px;
+  position: relative;
+}
+
+.bee-cal-ReportOptions-capLabel {
+  position: absolute;
+  left: 0;
+  top: 2px;
+}
+.bee-cal-ReportOptions-caption {
+  position: absolute;
+  left: 100px;
+  top: 0;
+  right: 0;
+}
+
+.bee-cal-ReportOptions-ldLabel {
+  position: absolute;
+  left: 0;
+  top: 42px;
+}
+.bee-cal-ReportOptions-lowerDate {
+  position: absolute;
+  left: 100px;
+  top: 40px;
+  width: 80px;
+}
+.bee-cal-ReportOptions-udLabel {
+  position: absolute;
+  left: 260px;
+  top: 42px;
+}
+.bee-cal-ReportOptions-upperDate {
+  position: absolute;
+  left: 360px;
+  top: 40px;
+  width: 80px;
+}
+
+.bee-cal-ReportOptions-lhLabel {
+  position: absolute;
+  left: 0;
+  top: 82px;
+}
+.bee-cal-ReportOptions-lowerHour {
+  position: absolute;
+  left: 100px;
+  top: 80px;
+  width: 50px;
+}
+.bee-cal-ReportOptions-uhLabel {
+  position: absolute;
+  left: 260px;
+  top: 82px;
+}
+.bee-cal-ReportOptions-upperHour {
+  position: absolute;
+  left: 360px;
+  top: 80px;
+  width: 50px;
+}
+
+.bee-cal-ReportOptions-atpLabel {
+  position: absolute;
+  left: 0;
+  top: 120px;
+}
+.bee-cal-ReportOptions-attendeeTypes {
+  position: absolute;
+  left: 0;
+  top: 140px;
+  width: 200px;
+  height: 100px;
+}
+.bee-cal-ReportOptions-atpAdd {
+  position: absolute;
+  left: 80px;
+  top: 250px;
+}
+.bee-cal-ReportOptions-atpDel {
+  position: absolute;
+  left: 120px;
+  top: 250px;
+}
+
+.bee-cal-ReportOptions-attLabel {
+  position: absolute;
+  left: 260px;
+  top: 120px;
+}
+.bee-cal-ReportOptions-attendees {
+  position: absolute;
+  left: 260px;
+  top: 140px;
+  width: 200px;
+  height: 100px;
+}
+.bee-cal-ReportOptions-attAdd {
+  position: absolute;
+  left: 340px;
+  top: 250px;
+}
+.bee-cal-ReportOptions-attDel {
+  position: absolute;
+  left: 380px;
+  top: 250px;
+}
+
+.bee-cal-ReportOptions-tableCommand {
+  position: absolute;
+  left: 200px;
+  bottom: 0;
+  width: 100px;
+  font-size: medium;
+}

@@ -19,6 +19,8 @@ public class DialogConstants {
   public static final String WIDGET_PRINT = "print";
   public static final String WIDGET_SAVE = "save";
 
+  public static final String STYLE_REPORT_OPTIONS = "bee-ReportOptions";
+  
   private DialogConstants() {
   }
 }

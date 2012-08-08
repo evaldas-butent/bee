@@ -378,7 +378,6 @@ public class InputBoxes {
       String confirmHtml, String cancelHtml, final int timeout, WidgetInitializer initializer) {
 
     Assert.notNull(widget);
-    Assert.notNull(callback);
 
     final Holder<State> state = Holder.of(State.OPEN);
 
@@ -406,7 +405,7 @@ public class InputBoxes {
 
     final Supplier<String> errorSupplier = new Supplier<String>() {
       public String get() {
-        return callback.getErrorMessage();
+        return (callback == null) ? null : callback.getErrorMessage();
       }
     };
 
@@ -428,7 +427,7 @@ public class InputBoxes {
       dialog.addChild(print);
     }
 
-    if (BeeUtils.isEmpty(confirmHtml)) {
+    if (BeeUtils.isEmpty(confirmHtml) && callback != null) {
       BeeImage save = new BeeImage(Global.getImages().silverSave(),
           new Scheduler.ScheduledCommand() {
             @Override
@@ -480,15 +479,17 @@ public class InputBoxes {
           timer.cancel();
         }
 
-        switch (state.get()) {
-          case CONFIRMED:
-            callback.onSuccess();
-            break;
-          case EXPIRED:
-            callback.onTimeout();
-            break;
-          default:
-            callback.onCancel();
+        if (callback != null) {
+          switch (state.get()) {
+            case CONFIRMED:
+              callback.onSuccess();
+              break;
+            case EXPIRED:
+              callback.onTimeout();
+              break;
+            default:
+              callback.onCancel();
+          }
         }
       }
     });

@@ -1,7 +1,6 @@
 package com.butent.bee.client.modules.calendar;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
@@ -11,16 +10,13 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.grid.GridFactory;
-import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.view.edit.SelectorEvent;
 import com.butent.bee.client.view.form.FormView;
@@ -30,17 +26,13 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.ui.ColumnDescription;
-import com.butent.bee.shared.ui.GridDescription;
-import com.butent.bee.shared.ui.ColumnDescription.ColType;
 
-import java.util.EnumSet;
+import java.util.Collection;
 import java.util.List;
 
 public class CalendarKeeper {
@@ -91,6 +83,8 @@ public class CalendarKeeper {
           VIEW_ATTENDEE_PROPS, VIEW_APPOINTMENT_STYLES);
 
   private static final AppointmentRenderer APPOINTMENT_RENDERER = new AppointmentRenderer();
+
+  private static final ReportManager REPORT_MANAGER = new ReportManager();
 
   private static FormView settingsForm = null;
 
@@ -143,14 +137,7 @@ public class CalendarKeeper {
 
     SelectorEvent.register(new SelectorHandler());
 
-    for (final Report report : Report.values()) {
-      Global.addReport(report.getCaption(), new BeeCommand() {
-        @Override
-        public void execute() {
-          doReport(report);
-        }
-      });
-    }
+    REPORT_MANAGER.register();
   }
 
   public static void setDataLoaded(boolean dataLoaded) {
@@ -232,6 +219,19 @@ public class CalendarKeeper {
 
   static BeeRowSet getAttendees() {
     return CACHE.getRowSet(VIEW_ATTENDEES);
+  }
+
+  static BeeRowSet getAttendeeTypes() {
+    return CACHE.getRowSet(VIEW_ATTENDEE_TYPES);
+  }
+
+  static void getData(Collection<String> viewNames, final BeeCommand command) {
+    CACHE.getData(viewNames, new CalendarCache.MultiCallback() {
+      @Override
+      public void onSuccess(Integer result) {
+        command.execute();
+      }
+    });
   }
 
   static Long getDefaultAppointmentType() {
@@ -375,26 +375,6 @@ public class CalendarKeeper {
     }
   }
 
-  private static void doReport(final Report report) {
-    ParameterList params = createRequestParameters(SVC_DO_REPORT);
-    params.addQueryItem(PARAM_REPORT, report.ordinal());
-
-    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
-      public void onResponse(ResponseObject response) {
-        BeeRowSet rs = null;
-        if (response.hasResponse(BeeRowSet.class)) {
-          rs = BeeRowSet.restore((String) response.getResponse());
-        }
-  
-        if (rs == null || rs.isEmpty()) {
-          BeeKeeper.getScreen().notifyWarning(report.getCaption(), "nėra duomenų");
-        } else {
-          showReport(report, rs);
-        }
-      }
-    });
-  }
-
   private static void createSettingsForm(final BeeRowSet rowSet, final CalendarPanel cp) {
     FormFactory.createFormView(FORM_CALENDAR_SETTINGS, null, rowSet.getColumns(), false,
         new FormFactory.FormViewCallback() {
@@ -489,45 +469,6 @@ public class CalendarKeeper {
 
   private static void setSettingsForm(FormView settingsForm) {
     CalendarKeeper.settingsForm = settingsForm;
-  }
-  
-  private static void showReport(Report report, BeeRowSet rowSet) {
-    String gridName = "CalendarReport" + report.name();
-    GridDescription gridDescription = new GridDescription(gridName);
-
-    gridDescription.setCaption(report.getCaption());
-    gridDescription.setReadOnly(true);
-
-    gridDescription.setHasHeaders(true);
-    gridDescription.setHasFooters(false);
-    
-    for (int i = 0; i < rowSet.getNumberOfColumns(); i++) {
-      String colName = rowSet.getColumn(i).getId();
-      ColumnDescription columnDescription = new ColumnDescription(ColType.DATA, colName);
-      
-      switch (i) {
-        case 0:
-          columnDescription.setCaption("Tipas");
-          break;
-        case 1:
-          columnDescription.setCaption("Resursas");
-          break;
-        default:
-          columnDescription.setHorAlign(HasHorizontalAlignment.ALIGN_RIGHT.getTextAlignString());
-          break;
-      }
-
-      columnDescription.setSource(colName);
-      columnDescription.setSortable(true);
-
-      gridDescription.addColumn(columnDescription);
-    }
-    
-    GridPresenter presenter = new GridPresenter(gridDescription,
-        rowSet.getNumberOfRows(), rowSet, Provider.Type.LOCAL, CachingPolicy.NONE,
-        EnumSet.of(UiOption.REPORT));
-    
-    BeeKeeper.getScreen().updateActivePanel(presenter.getWidget());
   }
 
   private CalendarKeeper() {
