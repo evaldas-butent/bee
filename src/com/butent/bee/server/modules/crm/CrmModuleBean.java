@@ -1,6 +1,7 @@
 package com.butent.bee.server.modules.crm;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.data.DataEditorBean;
@@ -61,8 +62,8 @@ public class CrmModuleBean implements BeeModule {
   EJBContext ctx;
 
   @Override
-  public String dependsOn() {
-    return CommonsConstants.COMMONS_MODULE;
+  public Collection<String> dependsOn() {
+    return Lists.newArrayList(CommonsConstants.COMMONS_MODULE);
   }
 
   @Override

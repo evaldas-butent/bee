@@ -15,5 +15,6 @@
 
     <Text name="Message" />
     <DateTime name="Sent" />
+    <Text name="Error" />
   </Fields>
 </Table>

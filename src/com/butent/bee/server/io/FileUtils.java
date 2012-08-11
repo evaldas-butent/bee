@@ -26,7 +26,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -515,13 +514,7 @@ public class FileUtils {
 
   public static File toFile(URL url) {
     Assert.notNull(url);
-    File file;
-    try {
-      file = new File(url.toURI());
-    } catch (URISyntaxException ex) {
-      file = new File(url.getPath());
-    }
-    return file;
+    return new File(url.getPath());
   }
 
   private FileUtils() {

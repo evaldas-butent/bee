@@ -7,6 +7,7 @@ import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
@@ -15,6 +16,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.modules.commons.ParametersHandler;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.utils.BeeCommand;
@@ -29,6 +31,12 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ReminderMethod;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ResponseStatus;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.Transparency;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.Visibility;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 
@@ -38,6 +46,7 @@ import java.util.List;
 public class CalendarKeeper {
 
   private static class RowActionHandler implements RowActionEvent.Handler {
+    @Override
     public void onRowAction(final RowActionEvent event) {
       if (event.hasView(VIEW_CALENDARS)) {
         event.consume();
@@ -63,6 +72,7 @@ public class CalendarKeeper {
   }
 
   private static class RowTransformHandler implements RowTransformEvent.Handler {
+    @Override
     public void onRowTransform(RowTransformEvent event) {
       if (event.hasView(VIEW_CALENDARS)) {
         event.setResult(DataUtils.join(VIEW_CALENDARS, event.getRow(),
@@ -128,6 +138,13 @@ public class CalendarKeeper {
     Global.registerCaptions("Calendar_Visibility", Visibility.class);
 
     Global.registerCaptions(TimeBlockClick.class);
+
+    BeeKeeper.getMenu().registerMenuCallback("calendar_parameters", new MenuManager.MenuCallback() {
+      @Override
+      public void onSelection(String parameters) {
+        GridFactory.openGrid("Parameters", new ParametersHandler(parameters));
+      }
+    });
 
     GridFactory.registerGridCallback(GRID_APPOINTMENTS, new AppointmentGridHandler());
 
@@ -365,6 +382,7 @@ public class CalendarKeeper {
       params.addQueryItem(PARAM_ACTIVE_VIEW, settings.getActiveView().ordinal());
 
       BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+        @Override
         public void onResponse(ResponseObject response) {
           if (response.hasResponse(Integer.class)) {
             BeeKeeper.getLog().debug(SVC_SAVE_ACTIVE_VIEW, settings.getActiveView().name(),
@@ -413,6 +431,7 @@ public class CalendarKeeper {
     params.addQueryItem(PARAM_CALENDAR_ID, id);
 
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+      @Override
       public void onResponse(ResponseObject response) {
         if (response.hasResponse(BeeRowSet.class)) {
           callback.onSuccess(BeeRowSet.restore((String) response.getResponse()));

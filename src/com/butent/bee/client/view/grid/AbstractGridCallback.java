@@ -20,6 +20,7 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -114,12 +115,13 @@ public class AbstractGridCallback implements GridCallback {
 
   @Override
   public String getDeleteRowMessage() {
-    return null;
+    return "Išmesti eilutę ?";
   }
 
   @Override
   public Pair<String, String> getDeleteRowsMessage(int selectedRows) {
-    return null;
+    return Pair.of("Išmesti aktyvią eilutę",
+        BeeUtils.concat(1, "Išmesti", selectedRows, "pažymėtas eilutes"));
   }
 
   @Override

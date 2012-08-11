@@ -82,6 +82,8 @@ public class CommonsConstants {
   public static final String TBL_ITEMS = "Items";
   public static final String TBL_CATEGORIES = "CategoryTree";
   public static final String TBL_ITEM_CATEGORIES = "ItemCategories";
+  public static final String TBL_CONTACTS = "Contacts";
+  public static final String TBL_COMPANY_PERSONS = "CompanyPersons";
 
   public static final String VIEW_COMPANIES = "Companies";
 
@@ -91,6 +93,8 @@ public class CommonsConstants {
   public static final String COL_SERVICE = "IsService";
 
   public static final String COL_CODE = "Code";
+
+  public static final String COL_CONTACT = "Contact";
   public static final String COL_PHONE = "Phone";
   public static final String COL_EMAIL = "Email";
   public static final String COL_ADDRESS = "Address";

@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.transport;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
@@ -50,8 +51,8 @@ public class TransportModuleBean implements BeeModule {
   QueryServiceBean qs;
 
   @Override
-  public String dependsOn() {
-    return CommonsConstants.COMMONS_MODULE;
+  public Collection<String> dependsOn() {
+    return Lists.newArrayList(CommonsConstants.COMMONS_MODULE);
   }
 
   @Override

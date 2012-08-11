@@ -174,9 +174,10 @@ public class DataEditorBean {
         }
       }
     }
-    if (!response.hasErrors()) {
-      TableInfo tblInfo = null;
+    TableInfo tblInfo = null;
+    Long id = null;
 
+    if (!response.hasErrors()) {
       for (TableInfo info : updates.values()) {
         if (BeeUtils.isEmpty(info.relation)) {
           tblInfo = info;
@@ -184,7 +185,7 @@ public class DataEditorBean {
         }
       }
       Assert.notNull(tblInfo);
-      Long id = row.getId();
+      id = row.getId();
 
       if (!BeeUtils.isEmpty(id)) {
         tblInfo.id = id;
@@ -216,7 +217,10 @@ public class DataEditorBean {
     if (response.hasErrors()) {
       ctx.setRollbackOnly();
     } else {
+      row.setVersion(tblInfo.version);
+
       if (BeeUtils.isEmpty(row.getId())) {
+        row.setId(id);
         sys.postViewEvent(new ViewInsertEvent(rs.getViewName(), rs.getColumns(), row));
       } else {
         sys.postViewEvent(new ViewUpdateEvent(rs.getViewName(), rs.getColumns(), row));

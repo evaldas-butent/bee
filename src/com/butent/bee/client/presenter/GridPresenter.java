@@ -36,6 +36,7 @@ import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
+import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.view.grid.GridView;
@@ -202,10 +203,10 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   public void deleteRow(IsRow row, boolean confirm) {
     Assert.notNull(row);
 
-    String message = (getGridCallback() == null) ? null : getGridCallback().getDeleteRowMessage();
-    if (message == null) {
-      message = "Išmesti eilutę ?";
-    }
+    String message = (getGridCallback() != null)
+        ? getGridCallback().getDeleteRowMessage()
+        : new AbstractGridCallback().getDeleteRowMessage();
+
     int mode = BeeUtils.isEmpty(message) ? GridCallback.DELETE_SILENT : GridCallback.DELETE_DEFAULT;
 
     DeleteCallback deleteCallback = new DeleteCallback(row, null);
@@ -533,14 +534,13 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private void deleteRows(final IsRow activeRow, final Collection<RowInfo> selectedRows) {
     int size = selectedRows.size();
     List<String> options = Lists.newArrayList();
+    Pair<String, String> defMsg = new AbstractGridCallback().getDeleteRowsMessage(size);
     Pair<String, String> message =
-        (getGridCallback() != null) ? getGridCallback().getDeleteRowsMessage(size) : null;
+        (getGridCallback() != null) ? getGridCallback().getDeleteRowsMessage(size) : defMsg;
 
-    if (message == null || !BeeUtils.allEmpty(message.getA(), message.getB())) {
-      options.add(BeeUtils.notEmpty(message != null ? message.getA() : null,
-          "Išmesti aktyvią eilutę"));
-      options.add(BeeUtils.notEmpty(message != null ? message.getA() : null,
-          BeeUtils.concat(1, "Išmesti", size, "pažymėtas eilutes")));
+    if (message != null) {
+      options.add(BeeUtils.notEmpty(message.getA(), defMsg.getA()));
+      options.add(BeeUtils.notEmpty(message.getB(), defMsg.getB()));
     }
     if (options.isEmpty()) {
       DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);

@@ -11,9 +11,9 @@
   <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
     <InputText source="Number" caption="Valst.Nr." upperCase="true" d:size="70" d:unit="px" d:align="right" d:rootStyle="&MARGIN;" />
     <DataSelector source="Model" caption="Modelis" class="flexible" newRowForm="NewVehicleModel"
-      renderColumns="ParentModelName ModelName" decorator="flex-left" d:rootStyle="&MARGIN;"
+      renderColumns="ParentModelName ModelName" decorator="flex-left" d:size="50" d:rootStyle="&MARGIN;"
       filter="parent" />
-    <DataSelector source="Type" caption="Tipas" decorator="flex-left" />
+    <DataSelector source="Type" caption="Tipas" decorator="flex-left" d:size="40" />
   </FlowPanel>
     
   <FlowPanel class="flexBox-horizontal">

@@ -15,10 +15,10 @@
       <SimpleJoin name="Person" joinType="LEFT">
         <SimpleColumn name="FirstName" />
         <SimpleColumn name="LastName" />
-        <SimpleJoin name="Contact" joinType="LEFT">
-          <SimpleColumn name="Mobile" />
-          <SimpleColumn name="Email" />
-        </SimpleJoin>
+      </SimpleJoin>
+      <SimpleJoin name="Contact" joinType="LEFT">
+        <SimpleColumn name="Mobile" />
+        <SimpleColumn name="Email" />
       </SimpleJoin>
     </SimpleJoin>
     
@@ -38,6 +38,7 @@
     </SimpleJoin>
 
     <SimpleColumn name="Sent" />
+    <SimpleColumn name="Error" />
   </Columns>
   <Order>
     <OrderBy column="Method" />

@@ -1,21 +1,37 @@
 package com.butent.bee.server.modules.calendar;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Ranges;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_CONTACT;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_EMAIL;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_PHONE;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_COMPANY_PERSONS;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_CONTACTS;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.VIEW_COMPANIES;
 
+import com.butent.bee.server.communication.MailerBean;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.data.ViewEvent.ViewDeleteEvent;
+import com.butent.bee.server.data.ViewEvent.ViewInsertEvent;
+import com.butent.bee.server.data.ViewEvent.ViewModifyEvent;
+import com.butent.bee.server.data.ViewEvent.ViewUpdateEvent;
+import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
@@ -25,6 +41,7 @@ import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -42,6 +59,8 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ReminderMethod;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.View;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -51,21 +70,31 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+import javax.ejb.NoSuchObjectLocalException;
+import javax.ejb.Singleton;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
 
-@Stateless
-@LocalBean
+@Singleton
+@Lock(LockType.READ)
 public class CalendarModuleBean implements BeeModule {
 
   private static Logger logger = Logger.getLogger(CalendarModuleBean.class.getName());
@@ -78,10 +107,109 @@ public class CalendarModuleBean implements BeeModule {
   QueryServiceBean qs;
   @EJB
   DataEditorBean deb;
+  @EJB
+  MailerBean mail;
+  @EJB
+  ParamHolderBean prm;
+  @Resource
+  TimerService timerService;
+
+  private final Multimap<Long, Timer> notificationTimers = HashMultimap.create();
+
+  @Lock(LockType.WRITE)
+  public void createNotificationTimers(Pair<String, Long> idInfo) {
+    IsCondition wh = null;
+    String reminderIdName = sys.getIdName(TBL_APPOINTMENT_REMINDERS);
+
+    Collection<Timer> timers = null;
+
+    if (idInfo == null) {
+      timers = Lists.newArrayList(notificationTimers.values());
+      notificationTimers.clear();
+
+    } else {
+      String idName = idInfo.getA();
+      Long id = idInfo.getB();
+
+      if (BeeUtils.same(idName, TBL_APPOINTMENTS)) {
+        timers = notificationTimers.removeAll(id);
+        wh = SqlUtils.equal(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, id);
+
+      } else if (BeeUtils.same(idName, TBL_APPOINTMENT_REMINDERS)) {
+        Long appointmentId = null;
+        Timer timer = null;
+
+        for (Entry<Long, Timer> entry : notificationTimers.entries()) {
+          timer = entry.getValue();
+
+          try {
+            if (BeeUtils.equals(timer.getInfo(), id)) {
+              appointmentId = entry.getKey();
+              break;
+            }
+          } catch (NoSuchObjectLocalException e) {
+          }
+        }
+        if (appointmentId != null) {
+          timers = Lists.newArrayList(timer);
+          notificationTimers.remove(appointmentId, timer);
+        }
+        wh = SqlUtils.equal(TBL_APPOINTMENT_REMINDERS, reminderIdName, id);
+      }
+    }
+    if (!BeeUtils.isEmpty(timers)) {
+      for (Timer timer : timers) {
+        try {
+          LogUtils.warning(logger, "Canceled timer:", timer.getInfo());
+          timer.cancel();
+        } catch (NoSuchObjectLocalException e) {
+        }
+      }
+    }
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
+        .addFields(TBL_APPOINTMENT_REMINDERS, reminderIdName, COL_APPOINTMENT,
+            COL_HOURS, COL_MINUTES, COL_SCHEDULED)
+        .addField(TBL_REMINDER_TYPES, COL_HOURS, "defHours")
+        .addField(TBL_REMINDER_TYPES, COL_MINUTES, "defMinutes")
+        .addFrom(TBL_APPOINTMENTS)
+        .addFromInner(TBL_APPOINTMENT_REMINDERS,
+            sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
+        .addFromInner(TBL_REMINDER_TYPES,
+            sys.joinTables(TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS, COL_REMINDER_TYPE))
+        .setWhere(SqlUtils.and(wh,
+            SqlUtils.more(TBL_APPOINTMENTS, COL_START_DATE_TIME, System.currentTimeMillis()),
+            SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS,
+                AppointmentStatus.CANCELED.ordinal()))));
+
+    for (Map<String, String> row : data) {
+      Long start = BeeUtils.toLongOrNull(row.get(COL_SCHEDULED));
+
+      if (start == null) {
+        long offset = BeeUtils.toInt(row.get(COL_HOURS)) * TimeUtils.MILLIS_PER_HOUR
+            + BeeUtils.toInt(row.get(COL_MINUTES)) * TimeUtils.MILLIS_PER_MINUTE;
+
+        if (BeeUtils.isEmpty(offset)) {
+          offset = BeeUtils.toInt(row.get("defHours")) * TimeUtils.MILLIS_PER_HOUR
+              + BeeUtils.toInt(row.get("defMinutes")) * TimeUtils.MILLIS_PER_MINUTE;
+        }
+        if (!BeeUtils.isEmpty(offset)) {
+          start = BeeUtils.toLong(row.get(COL_START_DATE_TIME)) - offset;
+        }
+      }
+      if (start != null && start > System.currentTimeMillis()) {
+        notificationTimers.put(BeeUtils.toLong(row.get(COL_APPOINTMENT)),
+            timerService.createSingleActionTimer(new Date(start),
+                new TimerConfig(BeeUtils.toLong(row.get(reminderIdName)), false)));
+
+        LogUtils.info(logger, "Created timer:", new Date(start), row.get(reminderIdName));
+      }
+    }
+  }
 
   @Override
-  public String dependsOn() {
-    return CommonsConstants.COMMONS_MODULE;
+  public Collection<String> dependsOn() {
+    return Lists.newArrayList(CommonsConstants.COMMONS_MODULE);
   }
 
   @Override
@@ -136,7 +264,8 @@ public class CalendarModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return null;
+    return Lists.newArrayList(new BeeParameter(CALENDAR_MODULE, PRM_REMINDER_SUBJECT, "String",
+        "Kalendoriaus priminimų pranešimo antraštė", false, "Priminimas"));
   }
 
   @Override
@@ -151,6 +280,57 @@ public class CalendarModuleBean implements BeeModule {
 
   @Override
   public void init() {
+    createNotificationTimers(null);
+
+    sys.registerViewEventHandler(new ViewEventHandler() {
+      @Subscribe
+      public void updateTimers(ViewModifyEvent event) {
+        if (event.isAfter()) {
+          if (BeeUtils.same(event.getViewName(), TBL_REMINDER_TYPES)) {
+            if (event instanceof ViewDeleteEvent
+                || event instanceof ViewUpdateEvent
+                && (DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_HOURS)
+                || DataUtils.contains(((ViewUpdateEvent) event).getColumns(), COL_MINUTES))) {
+
+              createNotificationTimers(null);
+            }
+          } else if (BeeUtils.same(event.getViewName(), TBL_APPOINTMENTS)) {
+            if (event instanceof ViewDeleteEvent) {
+              for (long id : ((ViewDeleteEvent) event).getIds()) {
+                createNotificationTimers(Pair.of(TBL_APPOINTMENTS, id));
+              }
+            } else if (event instanceof ViewUpdateEvent) {
+              ViewUpdateEvent ev = ((ViewUpdateEvent) event);
+
+              if (DataUtils.contains(ev.getColumns(), COL_STATUS)
+                  || DataUtils.contains(ev.getColumns(), COL_START_DATE_TIME)) {
+
+                createNotificationTimers(Pair.of(TBL_APPOINTMENTS, ev.getRow().getId()));
+              }
+            }
+          } else if (BeeUtils.same(event.getViewName(), TBL_APPOINTMENT_REMINDERS)) {
+            if (event instanceof ViewDeleteEvent) {
+              for (long id : ((ViewDeleteEvent) event).getIds()) {
+                createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS, id));
+              }
+            } else if (event instanceof ViewUpdateEvent) {
+              ViewUpdateEvent ev = ((ViewUpdateEvent) event);
+
+              if (DataUtils.contains(ev.getColumns(), COL_REMINDER_TYPE)
+                  || DataUtils.contains(ev.getColumns(), COL_HOURS)
+                  || DataUtils.contains(ev.getColumns(), COL_MINUTES)
+                  || DataUtils.contains(ev.getColumns(), COL_SCHEDULED)) {
+
+                createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS, ev.getRow().getId()));
+              }
+            } else if (event instanceof ViewInsertEvent) {
+              createNotificationTimers(Pair.of(TBL_APPOINTMENT_REMINDERS,
+                  ((ViewInsertEvent) event).getRow().getId()));
+            }
+          }
+        }
+      }
+    });
   }
 
   private boolean checkTable(String name) {
@@ -213,7 +393,7 @@ public class CalendarModuleBean implements BeeModule {
 
     Integer lowerHour = DataUtils.getInteger(rowSet, row, COL_LOWER_HOUR);
     Integer upperHour = DataUtils.getInteger(rowSet, row, COL_UPPER_HOUR);
-    
+
     String atpList = DataUtils.getString(rowSet, row, COL_ATTENDEE_TYPES);
     String attList = DataUtils.getString(rowSet, row, COL_ATTENDEES);
 
@@ -236,7 +416,7 @@ public class CalendarModuleBean implements BeeModule {
 
     List<Long> attendeeTypes = DataUtils.parseList(atpList);
     List<Long> attendees = DataUtils.parseList(attList);
-    
+
     Report report = Report.values()[paramRep];
     BeeRowSet result;
 
@@ -271,7 +451,7 @@ public class CalendarModuleBean implements BeeModule {
     return BeeUtils.toString(minutes / TimeUtils.MINUTES_PER_HOUR) + DateTime.TIME_FIELD_SEPARATOR
         + TimeUtils.padTwo(minutes % TimeUtils.MINUTES_PER_HOUR);
   }
-  
+
   private void formatTimeColumns(BeeRowSet rowSet, int colFrom, int colTo) {
     for (BeeRow row : rowSet.getRows()) {
       for (int c = colFrom; c <= colTo; c++) {
@@ -355,7 +535,7 @@ public class CalendarModuleBean implements BeeModule {
       return null;
     }
   }
-  
+
   private SimpleRowSet getAttendeePeriods(JustDate lowerDate, JustDate upperDate,
       List<Long> attendeeTypes, List<Long> attendees, boolean canceled) {
 
@@ -423,7 +603,7 @@ public class CalendarModuleBean implements BeeModule {
     int attIndex = data.getColumnIndex(COL_ATTENDEE);
 
     Table<Long, Integer, Integer> table = HashBasedTable.create();
-    
+
     Range<DateTime> dateRange = getDateRange(lowerDate, upperDate);
     Range<Integer> hourRange = getHourRange(lowerHour, upperHour);
 
@@ -469,7 +649,7 @@ public class CalendarModuleBean implements BeeModule {
       result.addColumn(ValueType.TEXT, "Viso");
     }
     int columnCount = result.getNumberOfColumns();
-    
+
     for (BeeRow attRow : attRowSet.getRows()) {
       Map<Integer, Integer> tableRow = table.row(attRow.getId());
       if (tableRow == null || tableRow.isEmpty()) {
@@ -494,14 +674,14 @@ public class CalendarModuleBean implements BeeModule {
       totalRows(result, 2, columnCount - 1, 0, "Iš viso:", 0);
     }
     formatTimeColumns(result, 2, columnCount - 1);
-    
+
     return result;
   }
 
   private BeeRowSet getAttendeesByMonth(JustDate lowerDate, JustDate upperDate,
       List<Long> attendeeTypes, List<Long> attendees, boolean canceled) {
 
-    SimpleRowSet data = 
+    SimpleRowSet data =
         getAttendeePeriods(lowerDate, upperDate, attendeeTypes, attendees, canceled);
     if (data == null || data.getNumberOfRows() <= 0) {
       return null;
@@ -514,7 +694,7 @@ public class CalendarModuleBean implements BeeModule {
     Table<Long, YearMonth, Integer> table = HashBasedTable.create();
 
     Range<DateTime> range = getDateRange(lowerDate, upperDate);
-    
+
     for (int r = 0; r < data.getNumberOfRows(); r++) {
       DateTime start = data.getDateTime(r, startIndex);
       DateTime end = data.getDateTime(r, endIndex);
@@ -551,7 +731,7 @@ public class CalendarModuleBean implements BeeModule {
     for (YearMonth ym : months) {
       result.addColumn(ValueType.TEXT, ym.toString());
     }
-    
+
     if (months.size() > 1) {
       result.addColumn(ValueType.TEXT, "Viso");
     }
@@ -573,7 +753,7 @@ public class CalendarModuleBean implements BeeModule {
       }
       result.addRow(attRow.getId(), values);
     }
-    
+
     if (months.size() > 1) {
       totalColumns(result, 2, columnCount - 2, columnCount - 1);
     }
@@ -581,7 +761,7 @@ public class CalendarModuleBean implements BeeModule {
       totalRows(result, 2, columnCount - 1, 0, "Iš viso:", 0);
     }
     formatTimeColumns(result, 2, columnCount - 1);
-    
+
     return result;
   }
 
@@ -641,7 +821,7 @@ public class CalendarModuleBean implements BeeModule {
 
     return ResponseObject.response(appointments);
   }
-  
+
   private Range<DateTime> getDateRange(JustDate lower, JustDate upper) {
     if (lower != null && upper != null) {
       return Ranges.closedOpen(lower.getDateTime(), upper.getDateTime());
@@ -665,7 +845,7 @@ public class CalendarModuleBean implements BeeModule {
       return Ranges.all();
     }
   }
-  
+
   private ResponseObject getOverlappingAppointments(RequestInfo reqInfo) {
     String svc = SVC_GET_OVERLAPPING_APPOINTMENTS;
 
@@ -863,6 +1043,85 @@ public class CalendarModuleBean implements BeeModule {
         .addConstant(COL_REMINDER_TYPE, rtId));
   }
 
+  @Timeout
+  private void notifyEvent(Timer timer) {
+    long reminderId = (Long) timer.getInfo();
+    LogUtils.warning(logger, "Fired timer:", reminderId);
+
+    IsCondition wh = SqlUtils.equal(TBL_APPOINTMENT_REMINDERS,
+        sys.getIdName(TBL_APPOINTMENT_REMINDERS), reminderId);
+
+    String personContacts = SqlUtils.uniqueName();
+    String personEmail = SqlUtils.uniqueName();
+    String personPhone = SqlUtils.uniqueName();
+
+    Map<String, String> data = qs.getRow(new SqlSelect()
+        .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
+        .addFields(TBL_CONTACTS, COL_PHONE, COL_EMAIL)
+        .addFields(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, COL_MESSAGE)
+        .addFields(TBL_REMINDER_TYPES, COL_REMINDER_METHOD, COL_TEMPLATE)
+        .addField(personContacts, COL_EMAIL, personEmail)
+        .addField(personContacts, COL_PHONE, personPhone)
+        .addFrom(TBL_APPOINTMENTS)
+        .addFromInner(TBL_APPOINTMENT_REMINDERS,
+            sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
+        .addFromInner(TBL_REMINDER_TYPES,
+            sys.joinTables(TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS, COL_REMINDER_TYPE))
+        .addFromLeft(VIEW_COMPANIES, sys.joinTables(VIEW_COMPANIES, TBL_APPOINTMENTS, COL_COMPANY))
+        .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, VIEW_COMPANIES, COL_CONTACT))
+        .addFromLeft(TBL_COMPANY_PERSONS,
+            sys.joinTables(TBL_COMPANY_PERSONS, TBL_APPOINTMENT_REMINDERS, COL_RECIPIENT))
+        .addFromLeft(TBL_CONTACTS, personContacts,
+            SqlUtils.join(personContacts, sys.getIdName(TBL_CONTACTS),
+                TBL_COMPANY_PERSONS, COL_CONTACT))
+        .setWhere(SqlUtils.and(wh,
+            SqlUtils.more(TBL_APPOINTMENTS, COL_START_DATE_TIME,
+                System.currentTimeMillis() - TimeUtils.MILLIS_PER_MINUTE),
+            SqlUtils.notEqual(TBL_APPOINTMENTS, COL_STATUS,
+                AppointmentStatus.CANCELED.ordinal()))));
+
+    if (!BeeUtils.isEmpty(data)) {
+      notificationTimers.remove(BeeUtils.toLongOrNull(data.get(COL_APPOINTMENT)), timer);
+      String error = null;
+      String subject = prm.getParameter(CALENDAR_MODULE, PRM_REMINDER_SUBJECT);
+      String template = BeeUtils.notEmpty(data.get(COL_MESSAGE), data.get(COL_TEMPLATE));
+
+      if (BeeUtils.isEmpty(template)) {
+        error = "No reminder message specified";
+      }
+      if (BeeUtils.isEmpty(error)) {
+        ReminderMethod method = NameUtils.getEnumByIndex(ReminderMethod.class,
+            BeeUtils.toIntOrNull(data.get(COL_REMINDER_METHOD)));
+
+        if (method == ReminderMethod.EMAIL) {
+          String email = BeeUtils.notEmpty(data.get(personEmail), data.get(COL_EMAIL));
+
+          if (BeeUtils.isEmpty(email)) {
+            error = "No recipient email address specified";
+          }
+          if (BeeUtils.isEmpty(error)) {
+            ResponseObject resp = mail.sendMail(email, subject,
+                template.replace("{time}",
+                    TimeUtils.toDateTimeOrNull(data.get(COL_START_DATE_TIME)).toString()));
+
+            if (resp.hasErrors()) {
+              error = BeeUtils.concat("\n", resp.getErrors());
+            }
+          }
+        } else {
+          error = "Unsupported reminder method: " + method;
+        }
+      }
+      if (BeeUtils.isEmpty(error)) {
+        LogUtils.severe(logger, error);
+      }
+      qs.updateData(new SqlUpdate(TBL_APPOINTMENT_REMINDERS)
+          .addConstant(COL_SENT, System.currentTimeMillis())
+          .addConstant(COL_ERROR, error)
+          .setWhere(wh));
+    }
+  }
+
   private ResponseObject saveActiveView(RequestInfo reqInfo) {
     Long rowId = BeeUtils.toLongOrNull(reqInfo.getParameter(PARAM_USER_CALENDAR_ID));
     if (!DataUtils.isId(rowId)) {
@@ -929,7 +1188,7 @@ public class CalendarModuleBean implements BeeModule {
       DateTime next = TimeUtils.nextDay(dt).getDateTime();
 
       int value = BeeUtils.unbox(result.get(ym));
-      
+
       if (TimeUtils.isLess(next, end)) {
         if (range.contains(dt)) {
           result.put(ym, TimeUtils.minuteDiff(dt, next) + value);
@@ -960,10 +1219,10 @@ public class CalendarModuleBean implements BeeModule {
 
   private void totalRows(BeeRowSet rowSet, int colFrom, int colTo, long rowId,
       String caption, int colCaption) {
-    
+
     Integer[] totals = new Integer[colTo - colFrom + 1];
     for (int i = 0; i < totals.length; i++) {
-      totals[i] = 0; 
+      totals[i] = 0;
     }
 
     for (BeeRow row : rowSet.getRows()) {
@@ -974,7 +1233,7 @@ public class CalendarModuleBean implements BeeModule {
         }
       }
     }
-    
+
     String[] arr = new String[rowSet.getNumberOfColumns()];
     if (!BeeUtils.isEmpty(caption)) {
       arr[colCaption] = caption;
@@ -982,10 +1241,10 @@ public class CalendarModuleBean implements BeeModule {
     for (int c = colFrom; c <= colTo; c++) {
       arr[c] = BeeUtils.toString(totals[c - colFrom]);
     }
-    
+
     rowSet.addRow(rowId, arr);
   }
-  
+
   private ResponseObject updateAppointment(RequestInfo reqInfo) {
     BeeRowSet newRowSet = BeeRowSet.restore(reqInfo.getContent());
     if (newRowSet.isEmpty()) {
@@ -1038,9 +1297,13 @@ public class CalendarModuleBean implements BeeModule {
         COL_PROPERTY, oldProperties, newProperties);
     updateChildren(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT, appId,
         COL_ATTENDEE, oldAttendees, newAttendees);
-    updateChildren(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, appId,
-        COL_REMINDER_TYPE, oldReminders, newReminders);
 
+    if (!BeeUtils.allEmpty(oldReminders, newReminders)) {
+      updateChildren(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, appId,
+          COL_REMINDER_TYPE, oldReminders, newReminders);
+
+      createNotificationTimers(Pair.of(TBL_APPOINTMENTS, appId));
+    }
     return response;
   }
 

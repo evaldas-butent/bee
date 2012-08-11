@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
   
-  name="Parameters" caption="Sistemos parametrai" enabledActions="refresh add delete"
+  name="Parameters" caption="Parametrai" enabledActions="refresh add delete"
   editForm="Parameter" editPopup="true" editInPlace="Value"
   newRowForm="Parameter" newRowCaption="Naujas parametras" newRowPopup="true"
   >

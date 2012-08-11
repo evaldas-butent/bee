@@ -5,7 +5,7 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class CalendarConstants {
-  
+
   public enum AppointmentStatus implements HasCaption {
     TENTATIVE("Planuojamas"),
     CONFIRMED("Patvirtintas"),
@@ -13,24 +13,26 @@ public class CalendarConstants {
     CANCELED("Atšauktas"),
     RUNNING("Vykdomas"),
     COMPLETED("Baigtas");
-    
+
     private final String caption;
-    
+
     private AppointmentStatus(String caption) {
       this.caption = caption;
     }
 
+    @Override
     public String getCaption() {
       return caption;
     }
   }
 
   public enum ReminderMethod implements HasCaption {
-    EMAIL, SMS, POPUP;
+    EMAIL, SMS;
 
+    @Override
     public String getCaption() {
       return this.name().toLowerCase();
-    } 
+    }
   }
 
   public enum Report implements HasCaption {
@@ -38,39 +40,42 @@ public class CalendarConstants {
     BUSY_HOURS("Užimtumas valandomis"),
     CANCEL_MONTHS("Atšaukimas mėnesiais"),
     CANCEL_HOURS("Atšaukimas valandomis");
-    
+
     private final String caption;
-    
+
     private Report(String caption) {
       this.caption = caption;
     }
 
+    @Override
     public String getCaption() {
       return caption;
     }
   }
-  
+
   public enum ResponseStatus implements HasCaption {
     NEEDS_ACTION, DECLINED, TENTATIVE, ACCEPTED;
 
+    @Override
     public String getCaption() {
       return BeeUtils.proper(this.name(), BeeConst.CHAR_UNDER);
     }
   }
-  
+
   public enum Transparency implements HasCaption {
     OPAQUE("Nepersidengiantis"), TRANSPARENT("Persidengiantis");
-    
+
     public static boolean isOpaque(Integer value) {
       return (value == null) ? false : value == OPAQUE.ordinal();
     }
 
     private final String caption;
-    
+
     private Transparency(String caption) {
       this.caption = caption;
     }
 
+    @Override
     public String getCaption() {
       return caption;
     }
@@ -79,6 +84,7 @@ public class CalendarConstants {
   public enum Visibility implements HasCaption {
     DEFAULT, PUBLIC, PRIVATE, CONFIDENTIAL;
 
+    @Override
     public String getCaption() {
       return this.name().toLowerCase();
     }
@@ -87,11 +93,12 @@ public class CalendarConstants {
   public enum TimeBlockClick implements HasCaption {
     SINGLE, DOUBLE;
 
+    @Override
     public String getCaption() {
       return Integer.toString(this.ordinal() + 1);
     }
   }
-  
+
   public enum View implements HasCaption {
     DAY("DayView", "Diena"),
     DAYS("DaysView", "Dienos"),
@@ -108,6 +115,7 @@ public class CalendarConstants {
       this.caption = caption;
     }
 
+    @Override
     public String getCaption() {
       return caption;
     }
@@ -124,28 +132,28 @@ public class CalendarConstants {
       return columnId;
     }
   }
-  
+
   public static final String CALENDAR_MODULE = "Calendar";
   public static final String CALENDAR_METHOD = CALENDAR_MODULE + "Method";
 
-  public static final String SVC_GET_USER_CALENDAR = "get_user_calendar"; 
-  public static final String SVC_CREATE_APPOINTMENT = "create_appointment"; 
-  public static final String SVC_UPDATE_APPOINTMENT = "update_appointment"; 
-  public static final String SVC_GET_CALENDAR_APPOINTMENTS = "get_calendar_appointments"; 
-  public static final String SVC_SAVE_ACTIVE_VIEW = "save_active_view"; 
-  public static final String SVC_GET_OVERLAPPING_APPOINTMENTS = "get_overlapping_appointments"; 
-  public static final String SVC_GET_REPORT_OPTIONS = "get_report_options"; 
-  public static final String SVC_DO_REPORT = "do_report"; 
+  public static final String SVC_GET_USER_CALENDAR = "get_user_calendar";
+  public static final String SVC_CREATE_APPOINTMENT = "create_appointment";
+  public static final String SVC_UPDATE_APPOINTMENT = "update_appointment";
+  public static final String SVC_GET_CALENDAR_APPOINTMENTS = "get_calendar_appointments";
+  public static final String SVC_SAVE_ACTIVE_VIEW = "save_active_view";
+  public static final String SVC_GET_OVERLAPPING_APPOINTMENTS = "get_overlapping_appointments";
+  public static final String SVC_GET_REPORT_OPTIONS = "get_report_options";
+  public static final String SVC_DO_REPORT = "do_report";
 
   public static final String PARAM_CALENDAR_ID = "calendar_id";
   public static final String PARAM_USER_CALENDAR_ID = "user_calendar_id";
-  public static final String PARAM_ACTIVE_VIEW = "active_view"; 
+  public static final String PARAM_ACTIVE_VIEW = "active_view";
   public static final String PARAM_APPOINTMENT_ID = "appointment_id";
   public static final String PARAM_APPOINTMENT_START = "appointment_start";
   public static final String PARAM_APPOINTMENT_END = "appointment_end";
   public static final String PARAM_ATTENDEES = "attendees";
   public static final String PARAM_REPORT = "report";
-  
+
   public static final String TBL_USER_CALENDARS = "UserCalendars";
   public static final String TBL_CONFIGURATION = "Configuration";
 
@@ -155,9 +163,10 @@ public class CalendarConstants {
   public static final String TBL_APPOINTMENT_REMINDERS = "AppointmentReminders";
 
   public static final String TBL_ATTENDEES = "Attendees";
-  
+  public static final String TBL_REMINDER_TYPES = "ReminderTypes";
+
   public static final String TBL_REPORT_OPTIONS = "ReportOptions";
-  
+
   public static final String VIEW_CALENDARS = "Calendars";
   public static final String VIEW_USER_CALENDARS = "UserCalendars";
   public static final String VIEW_CONFIGURATION = "Configuration";
@@ -196,12 +205,12 @@ public class CalendarConstants {
 
   public static final String FORM_NEW_APPOINTMENT = "ServiceAppointment";
   public static final String FORM_EDIT_APPOINTMENT = "ServiceAppointment";
-  
+
   public static final String COL_USER = "User";
   public static final String COL_CALENDAR = "Calendar";
   public static final String COL_CALENDAR_NAME = "CalendarName";
   public static final String COL_NAME = "Name";
-  
+
   public static final String COL_DEFAULT_DISPLAYED_DAYS = "DefaultDisplayedDays";
 
   public static final String COL_PIXELS_PER_INTERVAL = "PixelsPerInterval";
@@ -212,7 +221,7 @@ public class CalendarConstants {
   public static final String COL_SCROLL_TO_HOUR = "ScrollToHour";
 
   public static final String COL_TIME_BLOCK_CLICK_NUMBER = "TimeBlockClickNumber";
-  
+
   public static final String COL_FAVORITE = "Favorite";
 
   public static final String COL_COMPANY = "Company";
@@ -239,13 +248,21 @@ public class CalendarConstants {
 
   public static final String COL_HOURS = "Hours";
   public static final String COL_MINUTES = "Minutes";
-  
+  public static final String COL_SCHEDULED = "Scheduled";
+
+  public static final String COL_REMINDER_METHOD = "Method";
+  public static final String COL_MESSAGE = "Message";
+  public static final String COL_TEMPLATE = "Template";
+  public static final String COL_SENT = "Sent";
+  public static final String COL_ERROR = "Error";
+  public static final String COL_RECIPIENT = "Recipient";
+
   public static final String COL_START_DATE = "StartDate";
   public static final String COL_START_DATE_TIME = "StartDateTime";
 
   public static final String COL_END_DATE = "EndDate";
   public static final String COL_END_DATE_TIME = "EndDateTime";
-  
+
   public static final String COL_EFFECTIVE_START = "EffectiveStart";
   public static final String COL_EFFECTIVE_END = "EffectiveEnd";
 
@@ -273,17 +290,17 @@ public class CalendarConstants {
 
   public static final String COL_OWNER_FIRST_NAME = "OwnerFirstName";
   public static final String COL_OWNER_LAST_NAME = "OwnerLastName";
-  
+
   public static final String COL_COMPANY_PERSON = "CompanyPerson";
 
   public static final String COL_SIMPLE_HEADER = "SimpleHeader";
   public static final String COL_SIMPLE_BODY = "SimpleBody";
   public static final String COL_MULTI_HEADER = "MultiHeader";
   public static final String COL_MULTI_BODY = "MultiBody";
-  
+
   public static final String COL_APPOINTMENT_COMPACT = "AppointmentCompact";
   public static final String COL_APPOINTMENT_TITLE = "AppointmentTitle";
-  
+
   public static final String COL_STYLE = "Style";
 
   public static final String COL_SIMPLE = "Simple";
@@ -310,6 +327,8 @@ public class CalendarConstants {
 
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";
+
+  public static final String PRM_REMINDER_SUBJECT = "ReminderSubject";
 
   private CalendarConstants() {
   }

@@ -82,7 +82,7 @@ public class ModuleHolderBean {
     }
     return resource;
   }
-  
+
   public boolean hasModule(String moduleName) {
     Assert.notEmpty(moduleName);
     return modules.containsKey(moduleName);
@@ -144,10 +144,10 @@ public class ModuleHolderBean {
       dependencyError = false;
 
       for (String mod : getModules()) {
-        moduleList = getModule(mod).dependsOn();
+        Collection<String> dependencies = getModule(mod).dependsOn();
 
-        if (!BeeUtils.isEmpty(moduleList)) {
-          for (String depends : SPLITTER.split(moduleList)) {
+        if (!BeeUtils.isEmpty(dependencies)) {
+          for (String depends : dependencies) {
             if (!hasModule(depends)) {
               LogUtils.severe(logger, "Module dependency error:", "Module", BeeUtils.bracket(mod),
                   "depends on nonexistent module", BeeUtils.bracket(depends));

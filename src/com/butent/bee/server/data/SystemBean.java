@@ -18,6 +18,7 @@ import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.sql.HasFrom;
+import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
@@ -518,6 +519,10 @@ public class SystemBean {
       return null;
     }
     return table.joinState(query, tblAlias, state);
+  }
+
+  public IsCondition joinTables(String dst, String src, String fld) {
+    return SqlUtils.join(dst, getIdName(dst), src, fld);
   }
 
   public String joinTranslationField(HasFrom<?> query, String tblName, String tblAlias,

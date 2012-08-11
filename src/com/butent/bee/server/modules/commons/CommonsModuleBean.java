@@ -65,7 +65,7 @@ public class CommonsModuleBean implements BeeModule {
   EJBContext ctx;
 
   @Override
-  public String dependsOn() {
+  public Collection<String> dependsOn() {
     return null;
   }
 

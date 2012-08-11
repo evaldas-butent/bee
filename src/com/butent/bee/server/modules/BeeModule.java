@@ -10,17 +10,17 @@ import java.util.List;
 
 public interface BeeModule {
 
-  String dependsOn();
+  Collection<String> dependsOn();
 
   List<SearchResult> doSearch(String query);
-  
+
   ResponseObject doService(RequestInfo reqInfo);
 
   Collection<BeeParameter> getDefaultParameters();
-  
+
   String getName();
 
   String getResourcePath();
-  
+
   void init();
 }
