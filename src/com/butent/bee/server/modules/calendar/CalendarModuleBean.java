@@ -58,6 +58,7 @@ import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.ReminderMethod;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
@@ -74,7 +75,6 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -197,12 +197,26 @@ public class CalendarModuleBean implements BeeModule {
           start = BeeUtils.toLong(row.get(COL_START_DATE_TIME)) - offset;
         }
       }
-      if (start != null && start > System.currentTimeMillis()) {
-        notificationTimers.put(BeeUtils.toLong(row.get(COL_APPOINTMENT)),
-            timerService.createSingleActionTimer(new Date(start),
-                new TimerConfig(BeeUtils.toLong(row.get(reminderIdName)), false)));
+      if (start != null) {
+        DateTime time = TimeUtils.toDateTimeOrNull(start);
+        int from = prm.getTime(CALENDAR_MODULE, PRM_REMINDER_TIME_FROM);
+        int until = prm.getTime(CALENDAR_MODULE, PRM_REMINDER_TIME_UNTIL);
 
-        LogUtils.info(logger, "Created timer:", new Date(start), row.get(reminderIdName));
+        if (from < until) {
+          int current = TimeUtils.minutesSinceDayStarted(time) * TimeUtils.MILLIS_PER_MINUTE;
+
+          if (!BeeUtils.betweenInclusive(current, from, until)) {
+            time = new DateTime(((current < from) ? TimeUtils.previousDay(time) : time.getDate()));
+            time.setTime(time.getTime() + until);
+          }
+        }
+        if (time.getTime() > System.currentTimeMillis()) {
+          notificationTimers.put(BeeUtils.toLong(row.get(COL_APPOINTMENT)),
+              timerService.createSingleActionTimer(time.getJava(),
+                  new TimerConfig(BeeUtils.toLong(row.get(reminderIdName)), false)));
+
+          LogUtils.info(logger, "Created timer:", time, row.get(reminderIdName));
+        }
       }
     }
   }
@@ -217,7 +231,7 @@ public class CalendarModuleBean implements BeeModule {
     List<SearchResult> results = Lists.newArrayList();
 
     Filter filter = Filter.or(
-        DataUtils.anyColumnContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
+        Filter.anyContains(Sets.newHashSet(COL_SUMMARY, COL_DESCRIPTION,
             COL_ORGANIZER_FIRST_NAME, COL_ORGANIZER_LAST_NAME,
             COL_COMPANY_NAME, COL_COMPANY_EMAIL,
             COL_VEHICLE_NUMBER, COL_VEHICLE_PARENT_MODEL, COL_VEHICLE_MODEL), query),
@@ -264,8 +278,11 @@ public class CalendarModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return Lists.newArrayList(new BeeParameter(CALENDAR_MODULE, PRM_REMINDER_SUBJECT, "String",
-        "Kalendoriaus priminimų pranešimo antraštė", false, "Priminimas"));
+    return Lists.newArrayList(
+        new BeeParameter(CALENDAR_MODULE, PRM_REMINDER_TIME_FROM, ParameterType.TIME,
+            "Kalendoriaus anksčiausias priminimų laikas", false, "8:00"),
+        new BeeParameter(CALENDAR_MODULE, PRM_REMINDER_TIME_UNTIL, ParameterType.TIME,
+            "Kalendoriaus vėliausias priminimų laikas", false, "18:00"));
   }
 
   @Override
@@ -1059,7 +1076,7 @@ public class CalendarModuleBean implements BeeModule {
         .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
         .addFields(TBL_CONTACTS, COL_PHONE, COL_EMAIL)
         .addFields(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, COL_MESSAGE)
-        .addFields(TBL_REMINDER_TYPES, COL_REMINDER_METHOD, COL_TEMPLATE)
+        .addFields(TBL_REMINDER_TYPES, COL_REMINDER_METHOD, COL_TEMPLATE_CAPTION, COL_TEMPLATE)
         .addField(personContacts, COL_EMAIL, personEmail)
         .addField(personContacts, COL_PHONE, personPhone)
         .addFrom(TBL_APPOINTMENTS)
@@ -1083,10 +1100,13 @@ public class CalendarModuleBean implements BeeModule {
     if (!BeeUtils.isEmpty(data)) {
       notificationTimers.remove(BeeUtils.toLongOrNull(data.get(COL_APPOINTMENT)), timer);
       String error = null;
-      String subject = prm.getParameter(CALENDAR_MODULE, PRM_REMINDER_SUBJECT);
+      String subject = data.get(COL_TEMPLATE_CAPTION);
       String template = BeeUtils.notEmpty(data.get(COL_MESSAGE), data.get(COL_TEMPLATE));
 
-      if (BeeUtils.isEmpty(template)) {
+      if (BeeUtils.isEmpty(subject)) {
+        error = "No reminder caption specified";
+      }
+      if (BeeUtils.isEmpty(error) && BeeUtils.isEmpty(template)) {
         error = "No reminder message specified";
       }
       if (BeeUtils.isEmpty(error)) {
@@ -1112,7 +1132,7 @@ public class CalendarModuleBean implements BeeModule {
           error = "Unsupported reminder method: " + method;
         }
       }
-      if (BeeUtils.isEmpty(error)) {
+      if (!BeeUtils.isEmpty(error)) {
         LogUtils.severe(logger, error);
       }
       qs.updateData(new SqlUpdate(TBL_APPOINTMENT_REMINDERS)

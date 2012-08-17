@@ -53,13 +53,24 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
       }
     }
   }
-  
+
+  public static Filter anyContains(Collection<String> columns, String value) {
+    Assert.notEmpty(columns);
+    Assert.notEmpty(value);
+
+    CompoundFilter filter = Filter.or();
+    for (String column : columns) {
+      filter.add(ComparisonFilter.contains(column, value));
+    }
+    return filter;
+  }
+
   public static Filter idIn(Collection<Long> values) {
     Assert.notNull(values);
     if (values.isEmpty()) {
       return null;
     }
-    
+
     CompoundFilter filter = or();
     for (Long value : values) {
       filter.add(ComparisonFilter.compareId(value));
@@ -70,11 +81,11 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
   public static Filter in(String column, Collection<Long> values) {
     Assert.notEmpty(column);
     Assert.notNull(values);
-    
+
     if (values.isEmpty()) {
       return null;
     }
-    
+
     CompoundFilter filter = or();
     for (Long value : values) {
       filter.add(ComparisonFilter.isEqual(column, new LongValue(value)));
@@ -199,8 +210,10 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
 
   public abstract boolean involvesColumn(String colName);
 
+  @Override
   public abstract boolean isMatch(List<? extends IsColumn> columns, IsRow row);
 
+  @Override
   public String transform() {
     return toString();
   }

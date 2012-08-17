@@ -15,7 +15,7 @@ public class BeeRuntimeException extends RuntimeException {
 
   public BeeRuntimeException(String message) {
     super(message);
-    LogUtils.error(this, message);
+    LogUtils.error(this);
   }
 
   public BeeRuntimeException(String message, Throwable cause) {

@@ -71,18 +71,7 @@ public class DataUtils {
   private static int defaultPagingThreshold = 20;
 
   private static int maxInitialRowSetSize = 50;
-  
-  public static Filter anyColumnContains(Collection<String> columns, String value) {
-    Assert.notEmpty(columns);
-    Assert.notEmpty(value);
-    
-    CompoundFilter filter = Filter.or();
-    for (String column : columns) {
-      filter.add(ComparisonFilter.contains(column, value));
-    }
-    return filter;
-  }
-  
+
   public static Filter anyItemContains(String column, Class<? extends Enum<?>> clazz,
       String value) {
     Assert.notEmpty(column);
@@ -91,14 +80,14 @@ public class DataUtils {
 
     List<Filter> filters = Lists.newArrayList();
 
-    String item; 
+    String item;
     for (Enum<?> constant : clazz.getEnumConstants()) {
       if (constant instanceof HasCaption) {
         item = ((HasCaption) constant).getCaption();
       } else {
         item = constant.name();
       }
-      
+
       if (BeeUtils.containsSame(item, value)) {
         filters.add(ComparisonFilter.isEqual(column, new IntegerValue(constant.ordinal())));
       }
@@ -300,7 +289,7 @@ public class DataUtils {
     IsColumn column = getColumn(columnId, columns);
     return (column == null) ? BeeConst.UNDEF : column.getPrecision();
   }
-  
+
   public static List<BeeColumn> getColumns(List<BeeColumn> columns, int... indexes) {
     if (indexes == null) {
       return columns;
@@ -343,7 +332,7 @@ public class DataUtils {
   public static JustDate getDate(BeeRowSet rowSet, IsRow row, String columnId) {
     return row.getDate(getColumnIndex(columnId, rowSet.getColumns()));
   }
-  
+
   public static int getDefaultAsyncThreshold() {
     return defaultAsyncThreshold;
   }
@@ -472,10 +461,10 @@ public class DataUtils {
 
     Assert.notNull(row);
     Assert.notEmpty(colNames);
-    
+
     String sep = BeeUtils.normSep(separator);
     StringBuilder sb = new StringBuilder();
-    
+
     for (String colName : colNames) {
       int i = dataInfo.getColumnIndex(colName);
       Assert.nonNegative(i, "column not found: " + colName);
@@ -494,10 +483,10 @@ public class DataUtils {
   public static String join(DataInfo dataInfo, IsRow row, Object separator) {
     Assert.notNull(dataInfo);
     Assert.notNull(row);
-    
+
     String sep = BeeUtils.normSep(separator);
     StringBuilder sb = new StringBuilder();
-    
+
     for (int i = 0; i < dataInfo.getColumnCount(); i++) {
       BeeColumn column = dataInfo.getColumns().get(i);
       if (dataInfo.hasRelation(column.getId())) {
@@ -535,7 +524,7 @@ public class DataUtils {
     }
     return result;
   }
-  
+
   public static List<String> parseColumns(String input, List<? extends IsColumn> columns,
       String idColumnName, String versionColumnName) {
     if (BeeUtils.isEmpty(input)) {
@@ -757,7 +746,7 @@ public class DataUtils {
   public static void setValue(BeeRowSet rowSet, IsRow row, String columnId, String value) {
     row.setValue(getColumnIndex(columnId, rowSet.getColumns()), value);
   }
-  
+
   public static String transform(IsRow row, int index, ValueType type) {
     if (row.isNull(index)) {
       return null;

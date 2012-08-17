@@ -104,6 +104,8 @@ public class CommonsConstants {
 
   public static final String FORM_NEW_COMPANY = "Company";
 
+  public static final String PRM_SQL_MESSAGES = "SQLMessages";
+
   private CommonsConstants() {
   }
 }

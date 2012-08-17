@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.server.sql.SqlCreate.SqlField;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
@@ -26,27 +27,7 @@ import java.util.Map;
 
 public abstract class SqlBuilder {
 
-  final String getQuery(IsQuery query) {
-    if (query instanceof SqlCreate) {
-      return getCreate((SqlCreate) query);
-
-    } else if (query instanceof SqlDelete) {
-      return getDelete((SqlDelete) query);
-
-    } else if (query instanceof SqlInsert) {
-      return getInsert((SqlInsert) query);
-
-    } else if (query instanceof SqlSelect) {
-      return getSelect((SqlSelect) query);
-
-    } else if (query instanceof SqlUpdate) {
-      return getUpdate((SqlUpdate) query);
-
-    } else {
-      Assert.unsupported("Unsupported class name: " + NameUtils.getClassName(query.getClass()));
-    }
-    return null;
-  }
+  public abstract SqlEngine getEngine();
 
   /**
    * Generates an SQL CREATE query from the specified argument {@code sc}. There are two ways to
@@ -164,6 +145,28 @@ public abstract class SqlBuilder {
       }
     }
     return query.toString();
+  }
+
+  protected final String getQuery(IsQuery query) {
+    if (query instanceof SqlCreate) {
+      return getCreate((SqlCreate) query);
+  
+    } else if (query instanceof SqlDelete) {
+      return getDelete((SqlDelete) query);
+  
+    } else if (query instanceof SqlInsert) {
+      return getInsert((SqlInsert) query);
+  
+    } else if (query instanceof SqlSelect) {
+      return getSelect((SqlSelect) query);
+  
+    } else if (query instanceof SqlUpdate) {
+      return getUpdate((SqlUpdate) query);
+  
+    } else {
+      Assert.unsupported("Unsupported class name: " + NameUtils.getClassName(query.getClass()));
+    }
+    return null;
   }
 
   /**

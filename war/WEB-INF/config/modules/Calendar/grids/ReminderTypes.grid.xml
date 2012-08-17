@@ -13,6 +13,7 @@
     <DataColumn name="Hours" caption="Valandos" />
     <DataColumn name="Minutes" caption="Minutės" />
 
+    <DataColumn name="Caption" caption="Antraštė" />
     <DataColumn name="Template" caption="Šablonas" minWidth="200">
       <style>
         <bodyStyle>

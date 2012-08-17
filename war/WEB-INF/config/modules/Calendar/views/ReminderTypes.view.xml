@@ -9,6 +9,7 @@
     <SimpleColumn name="Method" />
     <SimpleColumn name="Hours" />
     <SimpleColumn name="Minutes" />
+    <SimpleColumn name="Caption" />
     <SimpleColumn name="Template" />
     <SimpleColumn name="Description" />
   </Columns>

@@ -49,6 +49,7 @@ import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
@@ -393,6 +394,7 @@ public class CommonsEventHandler {
       return true;
     }
 
+    @Override
     public void onSelection(SelectionEvent<IsRow> event) {
       if (event == null) {
         return;
@@ -446,6 +448,7 @@ public class CommonsEventHandler {
     FormFactory.registerFormCallback("Item", new ItemFormHandler());
 
     BeeKeeper.getMenu().registerMenuCallback("items", new MenuManager.MenuCallback() {
+      @Override
       public void onSelection(String parameters) {
         GridFactory.openGrid("Items", new ItemGridHandler(BeeUtils.startsSame(parameters, "s")));
       }
@@ -454,6 +457,7 @@ public class CommonsEventHandler {
     FormFactory.registerFormCallback("Parameter", new ParameterFormHandler());
 
     BeeKeeper.getMenu().registerMenuCallback("system_parameters", new MenuManager.MenuCallback() {
+      @Override
       public void onSelection(String parameters) {
         GridFactory.openGrid("Parameters", new ParametersHandler(parameters));
       }
@@ -463,6 +467,7 @@ public class CommonsEventHandler {
 
     Global.registerCaptions(RightsObjectType.class);
     Global.registerCaptions(RightsState.class);
+    Global.registerCaptions(ParameterType.class);
   }
 
   static ParameterList createArgs(String name) {

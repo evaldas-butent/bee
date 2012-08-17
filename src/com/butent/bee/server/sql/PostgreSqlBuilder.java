@@ -1,6 +1,7 @@
 package com.butent.bee.server.sql;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
@@ -17,6 +18,11 @@ import java.util.Map;
  */
 
 class PostgreSqlBuilder extends SqlBuilder {
+
+  @Override
+  public SqlEngine getEngine() {
+    return SqlEngine.POSTGRESQL;
+  }
 
   @Override
   protected String getSelect(SqlSelect ss) {

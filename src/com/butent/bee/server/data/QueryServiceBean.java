@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.data.ViewEvent.ViewQueryEvent;
 import com.butent.bee.server.jdbc.JdbcUtils;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsQuery;
 import com.butent.bee.server.sql.SqlBuilderFactory;
@@ -28,6 +29,7 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -63,13 +65,35 @@ public class QueryServiceBean {
    * Is a private interface for SQL processing.
    */
 
-  private interface SqlHandler<T> {
+  private abstract class SqlHandler<T> {
 
-    T processError(SQLException ex);
+    public T processError(SQLException ex) {
+      String error = null;
 
-    T processResultSet(ResultSet rs) throws SQLException;
+      Map<String, String> params = prm.getMap(CommonsConstants.COMMONS_MODULE,
+          BeeUtils.concat(0, CommonsConstants.PRM_SQL_MESSAGES,
+              SqlBuilderFactory.getBuilder().getEngine()));
 
-    T processUpdateCount(int updateCount);
+      if (!BeeUtils.isEmpty(params)) {
+        String msg = ex.getMessage();
+
+        for (String key : params.keySet()) {
+          if (msg.matches("(?s)" + key)) {
+            error = msg.replaceAll("(?s)" + key, params.get(key));
+            break;
+          }
+        }
+      }
+      if (error != null) {
+        throw new BeeRuntimeException(error);
+      } else {
+        throw new BeeRuntimeException(ex);
+      }
+    }
+
+    public abstract T processResultSet(ResultSet rs) throws SQLException;
+
+    public abstract T processUpdateCount(int updateCount);
   }
 
   private static Logger logger = Logger.getLogger(QueryServiceBean.class.getName());
@@ -80,6 +104,8 @@ public class QueryServiceBean {
   IdGeneratorBean ig;
   @EJB
   SystemBean sys;
+  @EJB
+  ParamHolderBean prm;
 
   public SqlEngine dbEngine(String dsn) {
     SqlEngine sqlEngine = null;
@@ -201,11 +227,6 @@ public class QueryServiceBean {
 
     return processSql(query.getQuery(), new SqlHandler<SimpleRowSet>() {
       @Override
-      public SimpleRowSet processError(SQLException ex) {
-        throw new BeeRuntimeException(ex);
-      }
-
-      @Override
       public SimpleRowSet processResultSet(ResultSet rs) throws SQLException {
         return rsToSimpleRowSet(rs);
       }
@@ -323,11 +344,6 @@ public class QueryServiceBean {
 
     return processSql(query.getQuery(), new SqlHandler<BeeRowSet>() {
       @Override
-      public BeeRowSet processError(SQLException ex) {
-        throw new BeeRuntimeException(ex);
-      }
-
-      @Override
       public BeeRowSet processResultSet(ResultSet rs) throws SQLException {
         BeeRowSet rowset = rsToBeeRowSet(rs, view);
         sys.postViewEvent(new ViewQueryEvent(view.getName(), query, rowset));
@@ -439,11 +455,6 @@ public class QueryServiceBean {
     activateTables(query);
 
     ResponseObject res = processSql(query.getQuery(), new SqlHandler<ResponseObject>() {
-      @Override
-      public ResponseObject processError(SQLException ex) {
-        throw new BeeRuntimeException(ex);
-      }
-
       @Override
       public ResponseObject processResultSet(ResultSet rs) throws SQLException {
         throw new BeeRuntimeException("Data modification query must not return a ResultSet");

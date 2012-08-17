@@ -12,11 +12,7 @@
       </FlowPanel>
       <FlowPanel class="flexBox-horizontal-center">
         <InlineLabel html="Tipas" class="bee-required" />
-        <Radio source="Type" vertical="true">
-          <option>String</option>
-          <option>Number</option>
-          <option>Date</option>
-        </Radio>
+        <ListBox source="Type" itemKey="ParameterType" />
       </FlowPanel>
       <InputText source="Value" caption="Reikšmė" />
       <CheckBox source="UserMode" html="Pagal vartotojus" />

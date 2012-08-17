@@ -44,6 +44,8 @@ public class Search {
   private static final String STYLE_PANEL = "bee-MainSearchContainer";
   private static final String STYLE_INPUT = "bee-MainSearchBox";
 
+  private static final String STYLE_OPTIONS_CONTAINER = "bee-MainSearchOptionsContainer";
+  private static final String STYLE_OPTIONS = "bee-MainSearchOptions";
   private static final String STYLE_SUBMIT_CONTAINER = "bee-MainSearchSubmitContainer";
   private static final String STYLE_SUBMIT = "bee-MainSearchSubmit";
 
@@ -98,15 +100,16 @@ public class Search {
     });
 
     getPanel().add(getInput());
-    /*
-     * Simple optionsContainer = new Simple();
-     * optionsContainer.addStyleName(STYLE_OPTIONS_CONTAINER);
-     * 
-     * BeeImage options = new BeeImage(Global.getImages().searchOptions().getSafeUri());
-     * options.addStyleName(STYLE_OPTIONS);
-     * 
-     * optionsContainer.setWidget(options); getPanel().add(optionsContainer);
-     */
+
+    Simple optionsContainer = new Simple();
+    optionsContainer.addStyleName(STYLE_OPTIONS_CONTAINER);
+
+    BeeImage options = new BeeImage(Global.getImages().searchOptions().getSafeUri());
+    options.addStyleName(STYLE_OPTIONS);
+
+    optionsContainer.setWidget(options);
+    getPanel().add(optionsContainer);
+
     Simple submitContainer = new Simple();
     submitContainer.addStyleName(STYLE_SUBMIT_CONTAINER);
 

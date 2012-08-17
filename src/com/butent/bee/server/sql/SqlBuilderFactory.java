@@ -1,6 +1,10 @@
 package com.butent.bee.server.sql;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.BeeConst.SqlEngine;
+
+import java.util.Collection;
 
 /**
  * Invokes SQL statement builders for MySQL, Microsoft SQL Server, Oracle, PostgreSQL servers, sets
@@ -8,6 +12,13 @@ import com.butent.bee.shared.BeeConst.SqlEngine;
  */
 
 public class SqlBuilderFactory {
+
+  private static Collection<SqlBuilder> builders = Lists.newArrayList(
+      new GenericSqlBuilder(),
+      new MySqlBuilder(),
+      new MsSqlBuilder(),
+      new OracleSqlBuilder(),
+      new PostgreSqlBuilder());
 
   private static String defaultDsn;
   private static SqlBuilder defaultBuilder = getBuilder(SqlEngine.GENERIC);
@@ -29,22 +40,11 @@ public class SqlBuilderFactory {
     SqlBuilder builder = null;
 
     if (engine != null) {
-      switch (engine) {
-        case MYSQL:
-          builder = new MySqlBuilder();
+      for (SqlBuilder sqlBuilder : builders) {
+        if (sqlBuilder.getEngine() == engine) {
+          builder = sqlBuilder;
           break;
-        case MSSQL:
-          builder = new MsSqlBuilder();
-          break;
-        case ORACLE:
-          builder = new OracleSqlBuilder();
-          break;
-        case POSTGRESQL:
-          builder = new PostgreSqlBuilder();
-          break;
-        case GENERIC:
-          builder = new GenericSqlBuilder();
-          break;
+        }
       }
     }
     return builder;

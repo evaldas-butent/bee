@@ -87,19 +87,17 @@ public class Queries {
       @Override
       public void onResponse(ResponseObject response) {
         Assert.notNull(response);
-        String s = (String) response.getResponse();
 
-        if (BeeUtils.isDigit(s)) {
-          int responseCount = BeeUtils.toInt(s);
+        if (response.hasErrors()) {
+          BeeKeeper.getLog().severe(viewName, "delete response:", response.getErrors());
+          if (callback != null) {
+            callback.onFailure(response.getErrors());
+          }
+        } else {
+          int responseCount = BeeUtils.toInt((String) response.getResponse());
           BeeKeeper.getLog().info(viewName, "deleted", responseCount, "rows");
           if (callback != null) {
             callback.onSuccess(responseCount);
-          }
-
-        } else {
-          BeeKeeper.getLog().severe(viewName, "delete response:", s);
-          if (callback != null) {
-            callback.onFailure(s);
           }
         }
       }
@@ -135,10 +133,15 @@ public class Queries {
           @Override
           public void onResponse(ResponseObject response) {
             Assert.notNull(response);
-            String s = (String) response.getResponse();
 
-            if (BeeUtils.isInt(s)) {
-              int responseCount = BeeUtils.toInt(s);
+            if (response.hasErrors()) {
+              BeeKeeper.getLog().severe(viewName, "delete", requestCount, "rows");
+              BeeKeeper.getLog().severe("response:", response.getErrors());
+              if (callback != null) {
+                callback.onFailure(response.getErrors());
+              }
+            } else {
+              int responseCount = BeeUtils.toInt((String) response.getResponse());
               String message;
               if (responseCount == requestCount) {
                 message = BeeUtils.concat(1, viewName, "deleted", responseCount, "rows");
@@ -148,20 +151,12 @@ public class Queries {
                     requestCount, "requested");
                 BeeKeeper.getLog().warning(message);
               }
-
               if (callback != null) {
                 if (responseCount > 0) {
                   callback.onSuccess(responseCount);
                 } else {
                   callback.onFailure(message);
                 }
-              }
-
-            } else {
-              BeeKeeper.getLog().severe(viewName, "delete", requestCount, "rows");
-              BeeKeeper.getLog().severe("response:", s);
-              if (callback != null) {
-                callback.onFailure(s);
               }
             }
           }
@@ -379,6 +374,7 @@ public class Queries {
     checkRowSet(rowSet);
     BeeKeeper.getRpc().sendText(Service.INSERT_ROW, Codec.beeSerialize(rowSet),
         new ResponseCallback() {
+          @Override
           public void onResponse(ResponseObject response) {
             if (callback != null) {
               if (response.hasErrors()) {
@@ -402,6 +398,7 @@ public class Queries {
     checkRowSet(rowSet);
     BeeKeeper.getRpc().sendText(Service.INSERT_ROWS, Codec.beeSerialize(rowSet),
         new ResponseCallback() {
+          @Override
           public void onResponse(ResponseObject response) {
             if (response.hasResponse(BeeRowSet.class)) {
               BeeRowSet result = BeeRowSet.restore((String) response.getResponse());
@@ -519,7 +516,7 @@ public class Queries {
       }
     });
   }
-  
+
   public static int updateCell(String viewName, long rowId, long version, BeeColumn column,
       String oldValue, String newValue, RowCallback callback) {
     Assert.notEmpty(viewName);

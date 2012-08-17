@@ -10,6 +10,7 @@
 
     <Integer name="Hours" />
     <Integer name="Minutes" />
+    <String name="Caption" precision="15" />
     <Text name="Template" />
 
     <Text name="Description" />

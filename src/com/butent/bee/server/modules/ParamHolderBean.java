@@ -15,19 +15,28 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.ParameterType;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
 @Singleton
 @Lock(LockType.READ)
+@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class ParamHolderBean {
   private static final String TBL_PARAMS = "Parameters";
   private static final String TBL_USER_PARAMS = "UserParameters";
@@ -64,7 +73,7 @@ public class ParamHolderBean {
 
       if (!BeeUtils.equals(param.getType(), orig.getType())) {
         orig.setType(param.getType());
-        su.addConstant(FLD_TYPE, param.getType());
+        su.addConstant(FLD_TYPE, param.getType().name());
       }
       if (!BeeUtils.equals(param.getDescription(), orig.getDescription())) {
         orig.setDescription(param.getDescription());
@@ -87,16 +96,40 @@ public class ParamHolderBean {
     }
   }
 
-  public String getParameter(String module, String name) {
-    String value = null;
+  public Boolean getBoolean(String module, String name) {
     BeeParameter parameter = getModuleParameter(module, name);
+    return parameter.supportsUsers()
+        ? parameter.getBoolean(usr.getCurrentUserId()) : parameter.getBoolean();
+  }
 
-    if (parameter.supportsUsers()) {
-      value = parameter.getUserValue(usr.getCurrentUserId());
-    } else {
-      value = parameter.getValue();
-    }
-    return value;
+  public JustDate getDate(String module, String name) {
+    BeeParameter parameter = getModuleParameter(module, name);
+    return parameter.supportsUsers()
+        ? parameter.getDate(usr.getCurrentUserId()) : parameter.getDate();
+  }
+
+  public DateTime getDateTime(String module, String name) {
+    BeeParameter parameter = getModuleParameter(module, name);
+    return parameter.supportsUsers()
+        ? parameter.getDateTime(usr.getCurrentUserId()) : parameter.getDateTime();
+  }
+
+  public List<String> getList(String module, String name) {
+    BeeParameter parameter = getModuleParameter(module, name);
+    return parameter.supportsUsers()
+        ? parameter.getList(usr.getCurrentUserId()) : parameter.getList();
+  }
+
+  public Map<String, String> getMap(String module, String name) {
+    BeeParameter parameter = getModuleParameter(module, name);
+    return parameter.supportsUsers()
+        ? parameter.getMap(usr.getCurrentUserId()) : parameter.getMap();
+  }
+
+  public Number getNumber(String module, String name) {
+    BeeParameter parameter = getModuleParameter(module, name);
+    return parameter.supportsUsers()
+        ? parameter.getNumber(usr.getCurrentUserId()) : parameter.getNumber();
   }
 
   public Map<String, BeeParameter> getParameters(String module) {
@@ -106,6 +139,24 @@ public class ParamHolderBean {
       refreshParameters(module);
     }
     return modules.get(module);
+  }
+
+  public Set<String> getSet(String module, String name) {
+    BeeParameter parameter = getModuleParameter(module, name);
+    return parameter.supportsUsers()
+        ? parameter.getSet(usr.getCurrentUserId()) : parameter.getSet();
+  }
+
+  public String getText(String module, String name) {
+    BeeParameter parameter = getModuleParameter(module, name);
+    return parameter.supportsUsers()
+        ? parameter.getText(usr.getCurrentUserId()) : parameter.getText();
+  }
+
+  public Integer getTime(String module, String name) {
+    BeeParameter parameter = getModuleParameter(module, name);
+    return parameter.supportsUsers()
+        ? parameter.getTime(usr.getCurrentUserId()) : parameter.getTime();
   }
 
   @Lock(LockType.WRITE)
@@ -189,7 +240,7 @@ public class ParamHolderBean {
   }
 
   private void refreshParameters(String module) {
-    modules.put(module, new HashMap<String, BeeParameter>());
+    modules.put(module, new TreeMap<String, BeeParameter>());
     Collection<BeeParameter> defaults = moduleBean.getModuleDefaultParameters(module);
 
     if (!BeeUtils.isEmpty(defaults)) {
@@ -205,7 +256,8 @@ public class ParamHolderBean {
     boolean hasUserParameters = false;
 
     for (Map<String, String> row : data) {
-      BeeParameter parameter = new BeeParameter(module, row.get(FLD_NAME), row.get(FLD_TYPE),
+      BeeParameter parameter = new BeeParameter(module, row.get(FLD_NAME),
+          NameUtils.getEnumByName(ParameterType.class, row.get(FLD_TYPE)),
           row.get(FLD_DESCRIPTION), BeeUtils.toBoolean(row.get(FLD_USER_MODE)), row.get(FLD_VALUE));
       putModuleParameter(parameter);
 
@@ -237,7 +289,7 @@ public class ParamHolderBean {
     return qs.insertData(new SqlInsert(TBL_PARAMS)
         .addConstant(FLD_MODULE, parameter.getModule())
         .addConstant(FLD_NAME, parameter.getName())
-        .addConstant(FLD_TYPE, parameter.getType())
+        .addConstant(FLD_TYPE, parameter.getType().name())
         .addConstant(FLD_DESCRIPTION, parameter.getDescription())
         .addConstant(FLD_USER_MODE, parameter.supportsUsers())
         .addConstant(FLD_VALUE, parameter.getValue()));

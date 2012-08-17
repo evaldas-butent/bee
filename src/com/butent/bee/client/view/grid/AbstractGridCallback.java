@@ -28,6 +28,13 @@ import java.util.Map;
 
 public class AbstractGridCallback implements GridCallback {
 
+  public static final String DELETE_ROW_MESSAGE = "Išmesti eilutę ?";
+
+  public static Pair<String, String> deleteRowsMessage(int selectedRows) {
+    return Pair.of("Išmesti aktyvią eilutę",
+        BeeUtils.concat(1, "Išmesti", selectedRows, "pažymėtas eilutes"));
+  }
+
   private GridPresenter gridPresenter = null;
 
   @Override
@@ -115,13 +122,12 @@ public class AbstractGridCallback implements GridCallback {
 
   @Override
   public String getDeleteRowMessage() {
-    return "Išmesti eilutę ?";
+    return DELETE_ROW_MESSAGE;
   }
 
   @Override
   public Pair<String, String> getDeleteRowsMessage(int selectedRows) {
-    return Pair.of("Išmesti aktyvią eilutę",
-        BeeUtils.concat(1, "Išmesti", selectedRows, "pažymėtas eilutes"));
+    return deleteRowsMessage(selectedRows);
   }
 
   @Override

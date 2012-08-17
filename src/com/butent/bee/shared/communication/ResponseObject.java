@@ -53,7 +53,7 @@ public class ResponseObject implements BeeSerializable {
     return new ResponseObject().addWarning(obj);
   }
 
-  private Collection<ResponseMessage> messages = Lists.newArrayList();
+  private final Collection<ResponseMessage> messages = Lists.newArrayList();
   private Object response = null;
   private String type = null;
   private boolean isArrayType = false;
@@ -69,7 +69,7 @@ public class ResponseObject implements BeeSerializable {
     while (cause.getCause() != null) {
       cause = cause.getCause();
     }
-    addError(cause.toString());
+    addError(cause.getMessage());
     return this;
   }
 

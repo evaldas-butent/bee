@@ -252,6 +252,7 @@ public class CalendarConstants {
 
   public static final String COL_REMINDER_METHOD = "Method";
   public static final String COL_MESSAGE = "Message";
+  public static final String COL_TEMPLATE_CAPTION = "Caption";
   public static final String COL_TEMPLATE = "Template";
   public static final String COL_SENT = "Sent";
   public static final String COL_ERROR = "Error";
@@ -328,7 +329,8 @@ public class CalendarConstants {
   public static final String NAME_START = "Start";
   public static final String NAME_END = "End";
 
-  public static final String PRM_REMINDER_SUBJECT = "ReminderSubject";
+  public static final String PRM_REMINDER_TIME_FROM = "ReminderTimeFrom";
+  public static final String PRM_REMINDER_TIME_UNTIL = "ReminderTimeUntil";
 
   private CalendarConstants() {
   }

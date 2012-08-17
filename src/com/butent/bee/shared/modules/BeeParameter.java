@@ -1,13 +1,21 @@
 package com.butent.bee.shared.modules;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class BeeParameter implements BeeSerializable {
 
@@ -19,7 +27,7 @@ public class BeeParameter implements BeeSerializable {
 
   private String module;
   private String name;
-  private String type;
+  private ParameterType type;
   private String description;
   private String value;
   private Map<Long, String> userValues = null;
@@ -28,7 +36,7 @@ public class BeeParameter implements BeeSerializable {
     MODULE, NAME, TYPE, DESCRIPTION, VALUE, USER_VALUES;
   }
 
-  public BeeParameter(String module, String name, String type, String description,
+  public BeeParameter(String module, String name, ParameterType type, String description,
       boolean userMode, String defValue) {
     Assert.notEmpty(module);
     Assert.notEmpty(name);
@@ -62,22 +70,22 @@ public class BeeParameter implements BeeSerializable {
           name = val;
           break;
         case TYPE:
-          type = val;
+          setType(NameUtils.getEnumByName(ParameterType.class, val));
           break;
         case DESCRIPTION:
-          description = val;
+          setDescription(val);
           break;
         case VALUE:
-          value = val;
+          setValue(val);
           break;
         case USER_VALUES:
           String[] pairs = Codec.beeDeserializeCollection(val);
 
           if (pairs != null) {
-            userValues = Maps.newHashMapWithExpectedSize(pairs.length / 2);
+            setUserMode(true);
 
             for (int j = 0; j < pairs.length; j += 2) {
-              userValues.put(BeeUtils.toLong(pairs[j]), pairs[j + 1]);
+              setUserValue(BeeUtils.toLong(pairs[j]), pairs[j + 1]);
             }
           }
           break;
@@ -85,8 +93,52 @@ public class BeeParameter implements BeeSerializable {
     }
   }
 
+  public Boolean getBoolean() {
+    return (Boolean) getTypedValue(ParameterType.BOOLEAN, getValue());
+  }
+
+  public Boolean getBoolean(Long userId) {
+    return (Boolean) getTypedValue(ParameterType.BOOLEAN, getUserValue(userId));
+  }
+
+  public JustDate getDate() {
+    return (JustDate) getTypedValue(ParameterType.DATE, getValue());
+  }
+
+  public JustDate getDate(Long userId) {
+    return (JustDate) getTypedValue(ParameterType.DATE, getUserValue(userId));
+  }
+
+  public DateTime getDateTime() {
+    return (DateTime) getTypedValue(ParameterType.DATETIME, getValue());
+  }
+
+  public DateTime getDateTime(Long userId) {
+    return (DateTime) getTypedValue(ParameterType.DATETIME, getUserValue(userId));
+  }
+
   public String getDescription() {
     return description;
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<String> getList() {
+    return (List<String>) getTypedValue(ParameterType.LIST, getValue());
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<String> getList(Long userId) {
+    return (List<String>) getTypedValue(ParameterType.LIST, getUserValue(userId));
+  }
+
+  @SuppressWarnings("unchecked")
+  public Map<String, String> getMap() {
+    return (Map<String, String>) getTypedValue(ParameterType.MAP, getValue());
+  }
+
+  @SuppressWarnings("unchecked")
+  public Map<String, String> getMap(Long userId) {
+    return (Map<String, String>) getTypedValue(ParameterType.MAP, getUserValue(userId));
   }
 
   public String getModule() {
@@ -97,7 +149,41 @@ public class BeeParameter implements BeeSerializable {
     return name;
   }
 
-  public String getType() {
+  public Number getNumber() {
+    return (Number) getTypedValue(ParameterType.NUMBER, getValue());
+  }
+
+  public Number getNumber(Long userId) {
+    return (Number) getTypedValue(ParameterType.NUMBER, getUserValue(userId));
+  }
+
+  @SuppressWarnings("unchecked")
+  public Set<String> getSet() {
+    return (Set<String>) getTypedValue(ParameterType.SET, getValue());
+  }
+
+  @SuppressWarnings("unchecked")
+  public Set<String> getSet(Long userId) {
+    return (Set<String>) getTypedValue(ParameterType.SET, getUserValue(userId));
+  }
+
+  public String getText() {
+    return (String) getTypedValue(ParameterType.TEXT, getValue());
+  }
+
+  public String getText(Long userId) {
+    return (String) getTypedValue(ParameterType.TEXT, getUserValue(userId));
+  }
+
+  public Integer getTime() {
+    return (Integer) getTypedValue(ParameterType.TIME, getValue());
+  }
+
+  public Integer getTime(Long userId) {
+    return (Integer) getTypedValue(ParameterType.TIME, getUserValue(userId));
+  }
+
+  public ParameterType getType() {
     return type;
   }
 
@@ -126,19 +212,19 @@ public class BeeParameter implements BeeSerializable {
     for (Serial member : Serial.values()) {
       switch (member) {
         case MODULE:
-          arr[i++] = module;
+          arr[i++] = getModule();
           break;
         case NAME:
-          arr[i++] = name;
+          arr[i++] = getName();
           break;
         case TYPE:
-          arr[i++] = type;
+          arr[i++] = getType();
           break;
         case DESCRIPTION:
-          arr[i++] = description;
+          arr[i++] = getDescription();
           break;
         case VALUE:
-          arr[i++] = value;
+          arr[i++] = getValue();
           break;
         case USER_VALUES:
           arr[i++] = userValues;
@@ -152,8 +238,13 @@ public class BeeParameter implements BeeSerializable {
     this.description = description;
   }
 
-  public void setType(String type) {
-    this.type = type;
+  public void setType(ParameterType type) {
+    Assert.notNull(type);
+
+    if (type != this.type) {
+      this.type = type;
+      this.value = null;
+    }
   }
 
   public void setUserMode(boolean userMode) {
@@ -182,5 +273,77 @@ public class BeeParameter implements BeeSerializable {
 
   public boolean supportsUsers() {
     return (userValues != null);
+  }
+
+  private Object getTypedValue(ParameterType tp, String expr) {
+    Assert.state(getType() == tp,
+        BeeUtils.concat(1, "Parameter type mismach:", getType(), "!=", tp));
+    Object val = null;
+
+    switch (tp) {
+      case BOOLEAN:
+        val = BeeUtils.toBooleanOrNull(expr);
+        break;
+
+      case DATE:
+        val = TimeUtils.toDateOrNull(expr);
+        break;
+
+      case DATETIME:
+        val = TimeUtils.toDateTimeOrNull(expr);
+        break;
+
+      case LIST:
+        String[] entries = Codec.beeDeserializeCollection(expr);
+
+        if (entries != null) {
+          List<String> lst = Lists.newArrayListWithCapacity(entries.length);
+
+          for (String entry : entries) {
+            lst.add(entry);
+          }
+          val = lst;
+        }
+        break;
+
+      case MAP:
+        entries = Codec.beeDeserializeCollection(expr);
+
+        if (entries != null) {
+          Map<String, String> map = Maps.newHashMapWithExpectedSize(entries.length / 2);
+
+          for (int i = 0; i < entries.length; i += 2) {
+            map.put(entries[i], entries[i + 1]);
+          }
+          val = map;
+        }
+        break;
+
+      case NUMBER:
+        val = BeeUtils.toDoubleOrNull(expr);
+        break;
+
+      case SET:
+        entries = Codec.beeDeserializeCollection(expr);
+
+        if (entries != null) {
+          Set<String> set = Sets.newHashSetWithExpectedSize(entries.length);
+
+          for (String entry : entries) {
+            set.add(entry);
+          }
+          val = set;
+        }
+        break;
+
+      case TEXT:
+        val = expr;
+        break;
+
+      case TIME:
+        val = TimeUtils.parseTime(expr); // TODO: need to store as int
+        break;
+    }
+    return val;
   }
 }

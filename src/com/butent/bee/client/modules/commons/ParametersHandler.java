@@ -29,10 +29,12 @@ import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -137,7 +139,8 @@ public class ParametersHandler extends AbstractGridCallback {
     if (params.containsKey(data.get(NAME))) {
       gridView.notifySevere("Dublicate parameter name:", data.get(NAME));
     } else {
-      update(gridView, 0, new BeeParameter(module, data.get(NAME), data.get(TYPE),
+      update(gridView, 0, new BeeParameter(module, data.get(NAME),
+          NameUtils.getEnumByName(ParameterType.class, data.get(TYPE)),
           data.get(DESCRIPTION), BeeUtils.toBoolean(data.get(USER_MODE)), data.get(VALUE)));
     }
     return false;
@@ -160,7 +163,7 @@ public class ParametersHandler extends AbstractGridCallback {
       data.put(cols.get(i).getId(), newValues.get(i));
     }
     if (data.containsKey(TYPE)) {
-      prm.setType(data.get(TYPE));
+      prm.setType(NameUtils.getEnumByName(ParameterType.class, data.get(TYPE)));
     }
     if (data.containsKey(DESCRIPTION)) {
       prm.setDescription(data.get(DESCRIPTION));
@@ -274,7 +277,7 @@ public class ParametersHandler extends AbstractGridCallback {
       String[] values = new String[columns.size()];
       values[id(MODULE)] = prm.getModule();
       values[id(NAME)] = prm.getName();
-      values[id(TYPE)] = prm.getType();
+      values[id(TYPE)] = prm.getType().name();
       values[id(DESCRIPTION)] = prm.getDescription();
       values[id(USER_MODE)] = BeeUtils.toString(prm.supportsUsers());
       values[id(VALUE)] = prm.getValue();
@@ -334,7 +337,7 @@ public class ParametersHandler extends AbstractGridCallback {
           String[] values = new String[columns.size()];
           values[id(MODULE)] = parameter.getModule();
           values[id(NAME)] = parameter.getName();
-          values[id(TYPE)] = parameter.getType();
+          values[id(TYPE)] = parameter.getType().name();
           values[id(DESCRIPTION)] = parameter.getDescription();
           values[id(USER_MODE)] = BeeUtils.toString(parameter.supportsUsers());
           values[id(VALUE)] = parameter.getValue();

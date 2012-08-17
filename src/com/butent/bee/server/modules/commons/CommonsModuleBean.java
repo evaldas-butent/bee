@@ -1,9 +1,12 @@
 package com.butent.bee.server.modules.commons;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
+
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
 import com.butent.bee.server.data.BeeView;
 import com.butent.bee.server.data.DataEditorBean;
@@ -21,14 +24,15 @@ import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -71,25 +75,20 @@ public class CommonsModuleBean implements BeeModule {
 
   @Override
   public List<SearchResult> doSearch(String query) {
-    return qs.getSearchResults(CommonsConstants.VIEW_COMPANIES,
-        DataUtils.anyColumnContains(Sets.newHashSet(CommonsConstants.COL_NAME,
-            CommonsConstants.COL_CODE,
-            CommonsConstants.COL_PHONE,
-            CommonsConstants.COL_EMAIL,
-            CommonsConstants.COL_ADDRESS,
-            CommonsConstants.COL_CITY_NAME,
-            CommonsConstants.COL_COUNTRY_NAME), query));
+    return qs.getSearchResults(VIEW_COMPANIES,
+        Filter.anyContains(Sets.newHashSet(COL_NAME, COL_CODE, COL_PHONE, COL_EMAIL,
+            COL_ADDRESS, COL_CITY_NAME, COL_COUNTRY_NAME), query));
   }
 
   @Override
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(CommonsConstants.COMMONS_METHOD);
+    String svc = reqInfo.getParameter(COMMONS_METHOD);
 
-    if (BeeUtils.isPrefix(svc, CommonsConstants.COMMONS_ITEM_PREFIX)) {
+    if (BeeUtils.isPrefix(svc, COMMONS_ITEM_PREFIX)) {
       response = doItemEvent(svc, reqInfo);
 
-    } else if (BeeUtils.isPrefix(svc, CommonsConstants.COMMONS_PARAMETERS_PREFIX)) {
+    } else if (BeeUtils.isPrefix(svc, COMMONS_PARAMETERS_PREFIX)) {
       response = doParameterEvent(svc, reqInfo);
 
     } else {
@@ -102,16 +101,19 @@ public class CommonsModuleBean implements BeeModule {
 
   @Override
   public Collection<BeeParameter> getDefaultParameters() {
-    return Lists.newArrayList(
-        new BeeParameter(CommonsConstants.COMMONS_MODULE,
-            "ProgramTitle", "String", null, false, "BEE"),
-        new BeeParameter(CommonsConstants.COMMONS_MODULE,
-            "Precission", "Number", "Precission of calculations", true, "5"));
+    List<BeeParameter> params = Lists.newArrayList(
+        new BeeParameter(COMMONS_MODULE,
+            "ProgramTitle", ParameterType.TEXT, null, false, "BEE"),
+        new BeeParameter(COMMONS_MODULE,
+            "Precission", ParameterType.NUMBER, "Precission of calculations", true, "5"));
+
+    params.addAll(getSqlEngineParameters());
+    return params;
   }
 
   @Override
   public String getName() {
-    return CommonsConstants.COMMONS_MODULE;
+    return COMMONS_MODULE;
   }
 
   @Override
@@ -142,15 +144,15 @@ public class CommonsModuleBean implements BeeModule {
   private ResponseObject doItemEvent(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
 
-    if (BeeUtils.same(svc, CommonsConstants.SVC_ADD_CATEGORIES)) {
+    if (BeeUtils.same(svc, SVC_ADD_CATEGORIES)) {
       int cnt = 0;
-      long itemId = BeeUtils.toLong(reqInfo.getParameter(CommonsConstants.VAR_ITEM_ID));
-      String categories = reqInfo.getParameter(CommonsConstants.VAR_ITEM_CATEGORIES);
+      long itemId = BeeUtils.toLong(reqInfo.getParameter(VAR_ITEM_ID));
+      String categories = reqInfo.getParameter(VAR_ITEM_CATEGORIES);
 
       for (String catId : ID_SPLITTER.split(categories)) {
-        response = qs.insertDataWithResponse(new SqlInsert(CommonsConstants.TBL_ITEM_CATEGORIES)
-            .addConstant(CommonsConstants.COL_ITEM, itemId)
-            .addConstant(CommonsConstants.COL_CATEGORY, BeeUtils.toLong(catId)));
+        response = qs.insertDataWithResponse(new SqlInsert(TBL_ITEM_CATEGORIES)
+            .addConstant(COL_ITEM, itemId)
+            .addConstant(COL_CATEGORY, BeeUtils.toLong(catId)));
 
         if (response.hasErrors()) {
           break;
@@ -160,23 +162,23 @@ public class CommonsModuleBean implements BeeModule {
       if (!response.hasErrors()) {
         response = ResponseObject.response(cnt);
       }
-    } else if (BeeUtils.same(svc, CommonsConstants.SVC_REMOVE_CATEGORIES)) {
-      long itemId = BeeUtils.toLong(reqInfo.getParameter(CommonsConstants.VAR_ITEM_ID));
-      String categories = reqInfo.getParameter(CommonsConstants.VAR_ITEM_CATEGORIES);
+    } else if (BeeUtils.same(svc, SVC_REMOVE_CATEGORIES)) {
+      long itemId = BeeUtils.toLong(reqInfo.getParameter(VAR_ITEM_ID));
+      String categories = reqInfo.getParameter(VAR_ITEM_CATEGORIES);
 
-      String tbl = CommonsConstants.TBL_ITEM_CATEGORIES;
+      String tbl = TBL_ITEM_CATEGORIES;
       HasConditions catClause = SqlUtils.or();
-      IsCondition cond = SqlUtils.and(SqlUtils.equal(tbl, CommonsConstants.COL_ITEM, itemId),
+      IsCondition cond = SqlUtils.and(SqlUtils.equal(tbl, COL_ITEM, itemId),
           catClause);
 
       for (String catId : ID_SPLITTER.split(categories)) {
-        catClause.add(SqlUtils.equal(tbl, CommonsConstants.COL_CATEGORY, BeeUtils.toLong(catId)));
+        catClause.add(SqlUtils.equal(tbl, COL_CATEGORY, BeeUtils.toLong(catId)));
       }
       response = qs.updateDataWithResponse(new SqlDelete(tbl).setWhere(cond));
 
-    } else if (BeeUtils.same(svc, CommonsConstants.SVC_ITEM_CREATE)) {
-      BeeRowSet rs = BeeRowSet.restore(reqInfo.getParameter(CommonsConstants.VAR_ITEM_DATA));
-      String categories = reqInfo.getParameter(CommonsConstants.VAR_ITEM_CATEGORIES);
+    } else if (BeeUtils.same(svc, SVC_ITEM_CREATE)) {
+      BeeRowSet rs = BeeRowSet.restore(reqInfo.getParameter(VAR_ITEM_DATA));
+      String categories = reqInfo.getParameter(VAR_ITEM_CATEGORIES);
       response = deb.commitRow(rs, false);
 
       if (!response.hasErrors()) {
@@ -185,9 +187,9 @@ public class CommonsModuleBean implements BeeModule {
         if (!BeeUtils.isEmpty(categories)) {
           for (String catId : ID_SPLITTER.split(categories)) {
             response =
-                qs.insertDataWithResponse(new SqlInsert(CommonsConstants.TBL_ITEM_CATEGORIES)
-                    .addConstant(CommonsConstants.COL_ITEM, itemId)
-                    .addConstant(CommonsConstants.COL_CATEGORY, BeeUtils.toLong(catId)));
+                qs.insertDataWithResponse(new SqlInsert(TBL_ITEM_CATEGORIES)
+                    .addConstant(COL_ITEM, itemId)
+                    .addConstant(COL_CATEGORY, BeeUtils.toLong(catId)));
 
             if (response.hasErrors()) {
               break;
@@ -222,11 +224,11 @@ public class CommonsModuleBean implements BeeModule {
   private ResponseObject doParameterEvent(String svc, RequestInfo reqInfo) {
     ResponseObject response = null;
 
-    if (BeeUtils.same(svc, CommonsConstants.SVC_GET_PARAMETERS)) {
+    if (BeeUtils.same(svc, SVC_GET_PARAMETERS)) {
       List<BeeParameter> params = Lists.newArrayList();
 
       for (BeeParameter p : prm
-          .getParameters(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS_MODULE)).values()) {
+          .getParameters(reqInfo.getParameter(VAR_PARAMETERS_MODULE)).values()) {
         BeeParameter param = new BeeParameter(p.getModule(), p.getName(), p.getType(),
             p.getDescription(), p.supportsUsers(), p.getValue());
 
@@ -237,20 +239,20 @@ public class CommonsModuleBean implements BeeModule {
       }
       response = ResponseObject.response(params);
 
-    } else if (BeeUtils.same(svc, CommonsConstants.SVC_CREATE_PARAMETER)) {
+    } else if (BeeUtils.same(svc, SVC_CREATE_PARAMETER)) {
       prm.createParameter(BeeParameter.restore(
-          reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS)));
+          reqInfo.getParameter(VAR_PARAMETERS)));
       response = ResponseObject.response(true);
 
-    } else if (BeeUtils.same(svc, CommonsConstants.SVC_SET_PARAMETER)) {
-      prm.setParameter(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS_MODULE),
-          reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS),
-          reqInfo.getParameter(CommonsConstants.VAR_PARAMETER_VALUE));
+    } else if (BeeUtils.same(svc, SVC_SET_PARAMETER)) {
+      prm.setParameter(reqInfo.getParameter(VAR_PARAMETERS_MODULE),
+          reqInfo.getParameter(VAR_PARAMETERS),
+          reqInfo.getParameter(VAR_PARAMETER_VALUE));
       response = ResponseObject.response(true);
 
-    } else if (BeeUtils.same(svc, CommonsConstants.SVC_REMOVE_PARAMETERS)) {
-      prm.removeParameters(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS_MODULE),
-          Codec.beeDeserializeCollection(reqInfo.getParameter(CommonsConstants.VAR_PARAMETERS)));
+    } else if (BeeUtils.same(svc, SVC_REMOVE_PARAMETERS)) {
+      prm.removeParameters(reqInfo.getParameter(VAR_PARAMETERS_MODULE),
+          Codec.beeDeserializeCollection(reqInfo.getParameter(VAR_PARAMETERS)));
 
       response = ResponseObject.response(true);
     }
@@ -263,5 +265,32 @@ public class CommonsModuleBean implements BeeModule {
       ctx.setRollbackOnly();
     }
     return response;
+  }
+
+  private Collection<? extends BeeParameter> getSqlEngineParameters() {
+    List<BeeParameter> params = Lists.newArrayList();
+
+    for (SqlEngine engine : SqlEngine.values()) {
+      BeeParameter param = new BeeParameter(COMMONS_MODULE,
+          BeeUtils.concat(0, PRM_SQL_MESSAGES, engine), ParameterType.MAP,
+          BeeUtils.concat(1, "Duomenų bazės", engine, "klaidų pranešimai"), false, null);
+
+      switch (engine) {
+        case GENERIC:
+        case MYSQL:
+        case MSSQL:
+        case ORACLE:
+          break;
+        case POSTGRESQL:
+          param.setValue(Codec.beeSerialize(ImmutableMap
+              .of(".+duplicate key value violates unique constraint.+(\\(.+=.+\\)).+",
+                  "Tokia reikšmė jau egzistuoja: $1",
+                  ".+violates foreign key constraint.+from table \"(.+)\"\\.",
+                  "Įrašas naudojamas lentelėje \"$1\"")));
+          break;
+      }
+      params.add(param);
+    }
+    return params;
   }
 }

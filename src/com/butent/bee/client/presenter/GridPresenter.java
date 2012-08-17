@@ -205,7 +205,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     String message = (getGridCallback() != null)
         ? getGridCallback().getDeleteRowMessage()
-        : new AbstractGridCallback().getDeleteRowMessage();
+        : AbstractGridCallback.DELETE_ROW_MESSAGE;
 
     int mode = BeeUtils.isEmpty(message) ? GridCallback.DELETE_SILENT : GridCallback.DELETE_DEFAULT;
 
@@ -534,7 +534,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private void deleteRows(final IsRow activeRow, final Collection<RowInfo> selectedRows) {
     int size = selectedRows.size();
     List<String> options = Lists.newArrayList();
-    Pair<String, String> defMsg = new AbstractGridCallback().getDeleteRowsMessage(size);
+    Pair<String, String> defMsg = AbstractGridCallback.deleteRowsMessage(size);
     Pair<String, String> message =
         (getGridCallback() != null) ? getGridCallback().getDeleteRowsMessage(size) : defMsg;
 

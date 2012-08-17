@@ -20,9 +20,9 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
-import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
@@ -58,7 +58,7 @@ public class TransportModuleBean implements BeeModule {
   @Override
   public List<SearchResult> doSearch(String query) {
     return qs.getSearchResults(TransportConstants.VIEW_VEHICLES,
-        DataUtils.anyColumnContains(Sets.newHashSet(TransportConstants.COL_NUMBER,
+        Filter.anyContains(Sets.newHashSet(TransportConstants.COL_NUMBER,
             TransportConstants.COL_PARENT_MODEL_NAME, TransportConstants.COL_MODEL_NAME,
             TransportConstants.COL_OWNER_NAME), query));
   }

@@ -32,7 +32,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * Separator for field of milliseconds separate.
    */
   public static final char MILLIS_SEPARATOR = '.';
-  
+
   public static DateTime copyOf(DateTime original) {
     if (original == null) {
       return null;
@@ -40,7 +40,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
       return new DateTime(original.getTime());
     }
   }
-  
+
   public static long deserializeTime(String s) {
     return BeeUtils.toLong(s);
   }
@@ -54,7 +54,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
       return dt.getDateTime();
     }
   }
-  
+
   /**
    * Parsing {@code String s} to date format. If the {@code s} a number expression is converted to a
    * milliseconds. Otherwise parses of string an year, month, day, hours, minutes and seconds
@@ -76,7 +76,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     return new DateTime(TimeUtils.normalizeYear(arr[0]), arr[1], arr[2],
         arr[3], arr[4], arr[5], arr[6]);
   }
-  
+
   public static DateTime restore(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -181,6 +181,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * @return 0 the {@code DateTime} values of object are equals, more than 0 the {@code other}
    *         values are greater, less than 0 the (@code other} values are lower.
    */
+  @Override
   public int compareTo(DateTime other) {
     if (other == null) {
       return BeeConst.COMPARE_MORE;
@@ -226,6 +227,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * 
    * @return the number day of month representing this object.
    */
+  @Override
   public int getDom() {
     ensureFields();
     return fields[Grego.IDX_DOM];
@@ -237,6 +239,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * 
    * @return the number day of week.
    */
+  @Override
   public int getDow() {
     ensureFields();
     return fields[Grego.IDX_DOW];
@@ -247,6 +250,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * 
    * @return the number day of year representing this object.
    */
+  @Override
   public int getDoy() {
     ensureFields();
     return fields[Grego.IDX_DOY];
@@ -295,6 +299,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * 
    * @return the number of month.
    */
+  @Override
   public int getMonth() {
     ensureFields();
     return fields[Grego.IDX_MONTH];
@@ -319,6 +324,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * @return the number of milliseconds since January 1, 1970, 00:00:00 GMT represented by this
    *         date.
    */
+  @Override
   public long getTime() {
     return time;
   }
@@ -436,6 +442,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
    * 
    * @return the year representing this date
    */
+  @Override
   public int getYear() {
     ensureFields();
     return fields[Grego.IDX_YEAR];
@@ -459,18 +466,19 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     return Long.toString(time);
   }
 
+  @Override
   public void setDom(int dom) {
     if (getDom() != dom) {
       fields[Grego.IDX_DOM] = dom;
       updateTime();
-    }  
+    }
   }
 
   public void setHour(int hour) {
     if (getHour() != hour) {
       fields[Grego.IDX_HOUR] = hour;
       updateTime();
-    }  
+    }
   }
 
   public void setLocalDate(int year, int month, int dom) {
@@ -498,30 +506,31 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     if (getMillis() != millis) {
       fields[Grego.IDX_MILLIS] = millis;
       updateTime();
-    }  
+    }
   }
-  
+
   public void setMinute(int minute) {
     if (getMinute() != minute) {
       fields[Grego.IDX_MINUTE] = minute;
       updateTime();
-    }  
+    }
   }
 
+  @Override
   public void setMonth(int month) {
     if (getMonth() != month) {
       fields[Grego.IDX_MONTH] = month;
       updateTime();
-    }  
+    }
   }
 
   public void setSecond(int second) {
     if (getSecond() != second) {
       fields[Grego.IDX_SECOND] = second;
       updateTime();
-    }  
+    }
   }
-  
+
   /**
    * Setting the time of milliseconds.
    * 
@@ -532,13 +541,15 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     resetComputedFields();
   }
 
+  @Override
   public void setYear(int year) {
     if (getYear() != year) {
       fields[Grego.IDX_YEAR] = year;
       updateTime();
-    }  
+    }
   }
 
+  @Override
   public boolean supportsTimezoneOffset() {
     return true;
   }
@@ -630,7 +641,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
   private void computeUtcFields() {
     utcFields = Grego.timeToFields(time);
   }
-  
+
   private void ensureFields() {
     if (fields == null) {
       computeFields();
@@ -651,7 +662,7 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     fields = null;
     utcFields = null;
   }
-  
+
   private void updateTime() {
     setLocalDate(getYear(), getMonth(), getDom(), getHour(), getMinute(), getSecond(), getMillis());
   }
