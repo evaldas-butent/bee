@@ -31,12 +31,6 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.ReminderMethod;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.ResponseStatus;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.TimeBlockClick;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.Transparency;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.Visibility;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 

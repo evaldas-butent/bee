@@ -90,6 +90,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   public GridContainerImpl() {
     super(-1);
+    
     addStyleName("bee-GridContainer");
   }
 

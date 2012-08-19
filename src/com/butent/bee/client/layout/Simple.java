@@ -1,5 +1,7 @@
 package com.butent.bee.client.layout;
 
+import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.SimplePanel;
 
 import com.butent.bee.client.dom.DomUtils;
@@ -9,7 +11,7 @@ import com.butent.bee.shared.HasId;
  * Contains a class for panels that contain only one widget.
  */
 
-public class Simple extends SimplePanel implements HasId {
+public class Simple extends SimplePanel implements HasId, RequiresResize, ProvidesResize {
 
   public Simple() {
     super();
@@ -22,6 +24,13 @@ public class Simple extends SimplePanel implements HasId {
 
   public String getIdPrefix() {
     return "simple";
+  }
+
+  @Override
+  public void onResize() {
+    if (getWidget() instanceof RequiresResize) {
+      ((RequiresResize) getWidget()).onResize();
+    }
   }
 
   public void setId(String id) {

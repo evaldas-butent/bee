@@ -25,7 +25,9 @@ import java.util.Map;
 public class TilePanel extends Split {
   
   public TilePanel() {
-    super("bee-tile", 5);
+    super(5);
+
+    addStyleName("bee-tile");
     sinkEvents(Event.ONMOUSEDOWN);
   }
 

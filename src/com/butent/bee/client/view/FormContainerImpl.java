@@ -64,19 +64,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
   private boolean started = false;
 
   public FormContainerImpl() {
-    this(-1);
-  }
-
-  public FormContainerImpl(int splitterSize) {
-    super(splitterSize);
-  }
-
-  public FormContainerImpl(String style) {
-    this(style, -1);
-  }
-
-  public FormContainerImpl(String style, int splitterSize) {
-    super(style, splitterSize);
+    super(-1);
   }
 
   public void bind() {

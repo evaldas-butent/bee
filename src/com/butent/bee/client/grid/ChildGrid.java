@@ -1,8 +1,7 @@
 package com.butent.bee.client.grid;
 
 import com.google.gwt.user.client.ui.HasEnabled;
-import com.google.gwt.user.client.ui.ProvidesResize;
-import com.google.gwt.user.client.ui.RequiresResize;
+import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
@@ -10,6 +9,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.HasFosterParent;
@@ -37,7 +37,7 @@ import java.util.Map;
  */
 
 public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFosterParent,
-    ParentRowEvent.Handler, RequiresResize, ProvidesResize {
+    ParentRowEvent.Handler {
 
   private final String gridName;
 
@@ -118,13 +118,6 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     resolveState();
   }
 
-  @Override
-  public void onResize() {
-    if (getWidget() instanceof RequiresResize) {
-      ((RequiresResize) getWidget()).onResize();
-    }
-  }
-
   public void setEnabled(boolean enabled) {
     if (getPresenter() != null) {
       getPresenter().getView().setEnabled(enabled);
@@ -144,6 +137,14 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     if (isAttached()) {
       register();
     }
+  }
+
+  @Override
+  public void setWidget(Widget w) {
+    if (w != null) {
+      StyleUtils.makeAbsolute(w);
+    }
+    super.setWidget(w);
   }
 
   @Override

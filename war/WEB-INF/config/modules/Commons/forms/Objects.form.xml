@@ -4,7 +4,7 @@
   
   name="Objects"
   >
-  <FlowPanel class="flexBox-horizontal flexible">
+  <FlowPanel class="flexBox-horizontal">
     <GridPanel name="RightsObjects" gridName="Objects" class="flexible" />
     <ChildGrid gridName="ObjectRights" class="flexible" relColumn="Object" parent="RightsObjects" />
   </FlowPanel>

@@ -1,15 +1,17 @@
 package com.butent.bee.client.grid;
 
 import com.google.gwt.user.client.ui.HasEnabled;
+import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.layout.ResizePanel;
+import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.GridCallback;
 
 import java.util.EnumSet;
 
-public class GridPanel extends ResizePanel implements HasEnabled {
+public class GridPanel extends Simple implements HasEnabled {
 
   private final String gridName;
   private GridFactory.GridOptions gridOptions;
@@ -22,8 +24,7 @@ public class GridPanel extends ResizePanel implements HasEnabled {
     this.gridName = gridName;
     this.gridOptions = gridOptions;
 
-    addStyleName("bee-grid-panel");
-    setDummyWidget();
+    addStyleName("bee-GridPanel");
   }
 
   public GridFactory.GridOptions getGridOptions() {
@@ -46,6 +47,10 @@ public class GridPanel extends ResizePanel implements HasEnabled {
     return getPresenter().getView().isEnabled();
   }
 
+  @Override
+  public void onResize() {
+  }
+
   public void setEnabled(boolean enabled) {
     if (getPresenter() != null) {
       getPresenter().getView().setEnabled(enabled);
@@ -60,6 +65,14 @@ public class GridPanel extends ResizePanel implements HasEnabled {
     this.gridOptions = gridOptions;
   }
 
+  @Override
+  public void setWidget(Widget w) {
+    if (w != null) {
+      StyleUtils.makeAbsolute(w);
+    }
+    super.setWidget(w);
+  }
+  
   @Override
   protected void onLoad() {
     super.onLoad();

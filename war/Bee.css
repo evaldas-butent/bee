@@ -229,7 +229,6 @@ body, select {
   background-color: #e2dfdf;
   cursor: col-resize;
 }
-
 .bee-VSplitter {
   background-color: #e2dfdf;
   cursor: row-resize;
@@ -738,6 +737,7 @@ body, select {
 }
 
 .bee-DialogBox {
+  background-color: WhiteSmoke;
   border: 1px solid activeborder;
   border-radius: 2px;
 }
@@ -748,11 +748,10 @@ body, select {
 }
 
 .bee-DialogBox .bee-Dialog-caption {
-  background-color: #ddd;
+  background-color: #e8e8e8;
   padding: 1px 45px 1px 8px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #eee;
   font-size: medium;
-  font-weight: bolder;
 }
 
 .bee-Dialog-close {
@@ -763,7 +762,6 @@ body, select {
 }
 
 .bee-DialogBox .bee-Dialog-content {
-  background-color: #e8e8e8;
   padding: 1ex 1em 4px;
 }
 
@@ -1425,15 +1423,18 @@ body, select {
   background-color: #ff8;
 }
 
-.bee-ChildGrid {
+.bee-ChildGrid, .bee-GridPanel {
   position: relative;
 }
-.bee-ChildGrid > .bee-GridContainer {
-  position: absolute;
+
+.bee-ChildGrid > .bee-GridContainer, .bee-GridPanel > .bee-GridContainer {
   left: 0;
   right: 0;
   top: 0;
   bottom: 0;
+}
+.flexible > .bee-GridContainer {
+  height: 100%;
 }
 
 .bee-ReportsItem {

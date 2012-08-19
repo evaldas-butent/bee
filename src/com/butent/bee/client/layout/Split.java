@@ -67,7 +67,6 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     }
   }
 
-  private static String defaultStyleName = "bee-split";
   private static int defaultSplitterSize = 8;
 
   public static boolean validDirection(Direction direction, boolean allowCenter) {
@@ -91,18 +90,10 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
   private boolean providesResize = true;
 
   public Split() {
-    this(defaultStyleName, defaultSplitterSize);
+    this(defaultSplitterSize);
   }
 
   public Split(int splitterSize) {
-    this(defaultStyleName, splitterSize);
-  }
-
-  public Split(String style) {
-    this(style, defaultSplitterSize);
-  }
-
-  public Split(String style, int splitterSize) {
     setElement(Document.get().createDivElement());
     layout = new Layout(getElement());
     layoutCmd = new DockAnimateCommand(layout);
@@ -110,8 +101,7 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     this.splitterSize = splitterSize;
 
     DomUtils.createId(this, getIdPrefix());
-    StyleUtils.makeAbsolute(this);
-    setStyleName(style);
+    setStyleName("bee-Split");
   }
 
   @Override
