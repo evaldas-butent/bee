@@ -1328,7 +1328,8 @@ class AppointmentBuilder extends AbstractFormCallback {
       panel.add(widget);
     }
     
-    DialogBox dialog = new DialogBox("Persidengiantys vizitai", CalendarStyleManager.MORE_POPUP);
+    DialogBox dialog = new DialogBox(Global.CONSTANTS.overlappingAppointments(),
+        CalendarStyleManager.MORE_POPUP);
     dialog.setWidget(panel);
     dialog.showRelativeTo(getWidget(getOverlapWidgetId()));
   }

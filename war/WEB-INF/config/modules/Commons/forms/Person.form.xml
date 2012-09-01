@@ -6,15 +6,17 @@
   name="Person" viewName="Persons" caption="Asmuo"
   >
   <FlowPanel class="flexBox-vertical">
-    <FlexTable cellSpacing="10" style="width:100%">
+    <FlexTable cellSpacing="10">
       <row>
         <Label html="Vardas" />
-        <InputText style="width:100%" source="FirstName" />
-        <Label html="Pavardė" horizontalAlignment="right" />
-        <InputText style="width:100%" source="LastName" />
+        <InputText style="width: 200px" source="FirstName" />
+        <Label html="Pavardė" class="bee-required" />
+        <InputText style="width: 200px" source="LastName" />
+        <Label html="Gimimo data" style="width: 100px" horizontalAlignment="right" />
+        <InputDate source="DateOfBirth" style="width: 80px" />
       </row>
       <row>
-        <cell colSpan="4">
+        <cell colSpan="6">
           <xi:include href="widgets/ContactInfo.widget.xml" />
         </cell>
       </row>

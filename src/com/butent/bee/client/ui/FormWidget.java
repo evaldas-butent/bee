@@ -9,7 +9,6 @@ import com.google.gwt.media.client.MediaBase;
 import com.google.gwt.media.client.Video;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.ui.CellPanel;
 import com.google.gwt.user.client.ui.CustomButton;
 import com.google.gwt.user.client.ui.CustomButton.Face;
 import com.google.gwt.user.client.ui.Focusable;
@@ -51,15 +50,18 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.BeeLayoutPanel;
+import com.butent.bee.client.layout.CellVector;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.HeaderContentFooter;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.HtmlPanel;
+import com.butent.bee.client.layout.IsHtmlTable;
 import com.butent.bee.client.layout.ResizePanel;
 import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.layout.Simple;
@@ -1258,7 +1260,7 @@ public enum FormWidget {
       String childTag = XmlUtils.getLocalName(child);
 
       if (BeeUtils.same(childTag, TAG_TEXT)) {
-        String text = XmlUtils.getText(child);
+        String text = LocaleUtils.maybeLocalize(XmlUtils.getText(child));
         if (!BeeUtils.isEmpty(text)) {
           headerTag = TAG_TEXT;
           headerString = text;
@@ -1311,7 +1313,7 @@ public enum FormWidget {
     String tag = XmlUtils.getLocalName(element);
 
     if (BeeUtils.same(tag, TAG_TEXT)) {
-      String text = XmlUtils.getText(element);
+      String text = LocaleUtils.maybeLocalize(XmlUtils.getText(element));
       if (!BeeUtils.isEmpty(text)) {
         widget = new InlineHTML(text);
       }
@@ -1410,7 +1412,7 @@ public enum FormWidget {
     String tag = XmlUtils.getLocalName(element);
 
     if (BeeUtils.same(tag, TAG_TEXT)) {
-      String text = XmlUtils.getText(element);
+      String text = LocaleUtils.maybeLocalize(XmlUtils.getText(element));
       ok = !BeeUtils.isEmpty(text);
       if (ok) {
         table.setText(row, col, text);
@@ -1656,8 +1658,8 @@ public enum FormWidget {
 
       if (w != null) {
         ((HasWidgets) parent).add(w);
-        if (parent instanceof CellPanel && BeeUtils.same(childTag, UiConstants.TAG_CELL)) {
-          setVectorCellAttributes((CellPanel) parent, child, w);
+        if (parent instanceof CellVector && BeeUtils.same(childTag, UiConstants.TAG_CELL)) {
+          setVectorCellAttributes((CellVector) parent, child, w);
         }
       }
 
@@ -1750,7 +1752,7 @@ public enum FormWidget {
     } else if (this == TAB_BAR && parent instanceof TabBar && BeeUtils.same(childTag, TAG_TAB)) {
       for (Element tabContent : XmlUtils.getChildrenElements(child)) {
         if (XmlUtils.tagIs(tabContent, TAG_TEXT)) {
-          String text = XmlUtils.getText(tabContent);
+          String text = LocaleUtils.maybeLocalize(XmlUtils.getText(tabContent));
           if (!BeeUtils.isEmpty(text)) {
             ((TabBar) parent).addItem(text);
             break;
@@ -1822,21 +1824,17 @@ public enum FormWidget {
         }
 
       } else if (BeeUtils.same(name, ATTR_BORDER_WIDTH) && BeeUtils.isDigit(value)) {
-        if (widget instanceof HtmlTable) {
-          ((HtmlTable) widget).setBorderWidth(BeeUtils.toInt(value));
-        } else if (widget instanceof CellPanel) {
-          ((CellPanel) widget).setBorderWidth(BeeUtils.toInt(value));
+        if (widget instanceof IsHtmlTable) {
+          ((IsHtmlTable) widget).setBorderWidth(BeeUtils.toInt(value));
         }
 
       } else if (BeeUtils.same(name, ATTR_CELL_PADDING)) {
-        if (widget instanceof HtmlTable && BeeUtils.isDigit(value)) {
-          ((HtmlTable) widget).setCellPadding(BeeUtils.toInt(value));
+        if (widget instanceof IsHtmlTable && BeeUtils.isDigit(value)) {
+          ((IsHtmlTable) widget).setCellPadding(BeeUtils.toInt(value));
         }
       } else if (BeeUtils.same(name, ATTR_CELL_SPACING) && BeeUtils.isDigit(value)) {
-        if (widget instanceof HtmlTable) {
-          ((HtmlTable) widget).setCellSpacing(BeeUtils.toInt(value));
-        } else if (widget instanceof CellPanel) {
-          ((CellPanel) widget).setSpacing(BeeUtils.toInt(value));
+        if (widget instanceof IsHtmlTable) {
+          ((IsHtmlTable) widget).setCellSpacing(BeeUtils.toInt(value));
         }
 
       } else if (BeeUtils.same(name, HasService.ATTR_SERVICE)) {
@@ -1995,7 +1993,7 @@ public enum FormWidget {
     }
   }
 
-  private void setVectorCellAttributes(CellPanel parent, Element element, Widget cellContent) {
+  private void setVectorCellAttributes(CellVector parent, Element element, Widget cellContent) {
     String z = element.getAttribute(UiConstants.ATTR_HORIZONTAL_ALIGNMENT);
     if (!BeeUtils.isEmpty(z)) {
       HorizontalAlignmentConstant horAlign = UiHelper.parseHorizontalAlignment(z);
@@ -2013,13 +2011,13 @@ public enum FormWidget {
     }
 
     Dimensions dimensions = XmlUtils.getDimensions(element);
-    z = dimensions.getCssWidth();
-    if (!BeeUtils.isEmpty(z)) {
-      parent.setCellWidth(cellContent, z);
+    if (dimensions.hasWidth()) {
+      parent.setCellWidth(cellContent, dimensions.getWidthValue(),
+          Dimensions.normalizeUnit(dimensions.getWidthUnit()));
     }
-    z = dimensions.getCssHeight();
-    if (!BeeUtils.isEmpty(z)) {
-      parent.setCellHeight(cellContent, z);
+    if (dimensions.hasHeight()) {
+      parent.setCellHeight(cellContent, dimensions.getHeightValue(),
+          Dimensions.normalizeUnit(dimensions.getHeightUnit()));
     }
 
     if (XmlUtils.tagIs(element, UiConstants.TAG_CELL)) {

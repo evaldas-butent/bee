@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.menu.MenuBar;
@@ -151,7 +152,7 @@ public class MenuManager implements Module {
   }
 
   private void addEntry(Widget rw, int itemCnt, Menu item, Widget cw) {
-    String txt = item.getLabel();
+    String txt = LocaleUtils.maybeLocalize(item.getLabel());
     String svc = null;
     String opt = null;
 

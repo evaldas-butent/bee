@@ -41,7 +41,6 @@ import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputArea;
-import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.ListSequence;
@@ -170,7 +169,6 @@ public class ProjectEventHandler {
   }
 
   private static class ProjectDialog extends DialogBox {
-    private static final String TEXT = "text";
     private static final String COMMENT = "comment";
     private Map<String, Widget> dialogWidgets = Maps.newHashMap();
     private FlexTable container = null;
@@ -234,14 +232,6 @@ public class ProjectEventHandler {
     public String getComment() {
       if (dialogWidgets.containsKey(COMMENT)) {
         return ((InputArea) dialogWidgets.get(COMMENT)).getValue();
-      }
-      return null;
-    }
-
-    @Override
-    public String getText() {
-      if (dialogWidgets.containsKey(TEXT)) {
-        return ((InputText) dialogWidgets.get(TEXT)).getValue();
       }
       return null;
     }

@@ -17,6 +17,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -235,8 +236,9 @@ public class Search {
       if (!result.getViewName().equals(viewName)) {
         viewName = result.getViewName();
         dataInfo = Data.getDataInfo(viewName);
-
-        BeeLabel label = new BeeLabel(BeeUtils.notEmpty(dataInfo.getCaption(), viewName));
+        
+        String viewCaption = LocaleUtils.maybeLocalize(dataInfo.getCaption());
+        BeeLabel label = new BeeLabel(BeeUtils.notEmpty(viewCaption, viewName));
         label.addStyleName(STYLE_RESULT_VIEW);
         content.add(label);
       }

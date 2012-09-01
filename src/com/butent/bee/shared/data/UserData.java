@@ -8,28 +8,32 @@ import com.google.common.collect.Multimap;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Contains core user data like login, first and last names, user id etc.
  */
 
-public class UserData implements BeeSerializable {
+public class UserData implements BeeSerializable, HasInfo {
 
   /**
    * Contains serializable members of user data (login, first and last names, position etc).
    */
 
   private enum Serial {
-    LOGIN, USER_ID, FIRST_NAME, LAST_NAME, LOCALE, PROPERTIES, RIGHTS
+    LOGIN, USER_ID, FIRST_NAME, LAST_NAME, LOCALE, PROPERTIES, RIGHTS, CONSTANTS
   }
 
   public static final String FLD_FIRST_NAME = "FirstName";
@@ -50,6 +54,8 @@ public class UserData implements BeeSerializable {
 
   private Map<RightsState, Multimap<RightsObjectType, String>> rights;
 
+  private Map<String, String> constants;
+  
   public UserData(long userId, String login, String firstName, String lastName) {
     this.userId = userId;
     this.login = login;
@@ -115,12 +121,58 @@ public class UserData implements BeeSerializable {
             }
           }
           break;
+        case CONSTANTS:
+          entry = Codec.beeDeserializeCollection(value);
+
+          if (!BeeUtils.isEmpty(entry)) {
+            constants = Maps.newHashMap();
+            for (int j = 0; j < entry.length; j += 2) {
+              constants.put(entry[j], entry[j + 1]);
+            }
+          }
+          break;
       }
     }
   }
 
+  public String getConstant(String name) {
+    return (constants == null) ? null : constants.get(name);
+  }
+
+  public Map<String, String> getConstants() {
+    return constants;
+  }
+  
   public String getFirstName() {
     return firstName;
+  }
+
+  @Override
+  public List<Property> getInfo() {
+    List<Property> info = PropertyUtils.createProperties("Login", getLogin(),
+        "User Id", getUserId(),
+        "First Name", getFirstName(),
+        "Last Name", getLastName(),
+        "Locale", getLocale());
+    
+    if (!BeeUtils.isEmpty(properties)) {
+      info.add(new Property("Properties", BeeUtils.bracket(properties.size())));
+      info.addAll(PropertyUtils.createProperties(properties));
+    }
+
+    if (!BeeUtils.isEmpty(rights)) {
+      info.add(new Property("Rights", BeeUtils.bracket(rights.size())));
+      for (Map.Entry<RightsState, Multimap<RightsObjectType, String>> entry : rights.entrySet()) {
+        info.add(new Property(entry.getKey().toString(), entry.getValue().toString()));
+      }
+    }
+    
+    if (!BeeUtils.isEmpty(constants)) {
+      info.add(new Property("Constants", BeeUtils.bracket(constants.size())));
+      info.addAll(PropertyUtils.createProperties(constants));
+    }
+    
+    return info;
   }
 
   public String getLastName() {
@@ -212,9 +264,16 @@ public class UserData implements BeeSerializable {
           }
           arr[i++] = x;
           break;
+        case CONSTANTS:
+          arr[i++] = constants;
+          break;
       }
     }
     return Codec.beeSerialize(arr);
+  }
+
+  public void setConstants(Map<String, String> constants) {
+    this.constants = constants;
   }
 
   public UserData setLocale(String locale) {

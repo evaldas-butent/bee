@@ -14,9 +14,9 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasValue;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -381,7 +381,7 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
   }
 
   private void setup() {
-    VerticalPanel panel = new VerticalPanel();
+    Vertical panel = new Vertical();
     initWidget(panel);
 
     setStyleName(panel.getElement(), getCssClasses().datePicker());

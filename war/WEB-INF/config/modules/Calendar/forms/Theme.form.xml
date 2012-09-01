@@ -3,7 +3,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="Theme" viewName="Themes" caption="Spalvų Tema">
+  name="Theme" viewName="Themes" caption="Spalvų tema">
 
   <FlowPanel class="flexBox-vertical">
     <HorizontalPanel cellSpacing="32">

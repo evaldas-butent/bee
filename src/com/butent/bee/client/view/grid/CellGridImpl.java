@@ -34,6 +34,7 @@ import com.butent.bee.client.grid.column.RowIdColumn;
 import com.butent.bee.client.grid.column.RowVersionColumn;
 import com.butent.bee.client.grid.column.SelectionColumn;
 import com.butent.bee.client.i18n.Format;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
@@ -586,15 +587,18 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         }
       }
 
-      String caption = columnDescr.getCaption();
+      String caption = LocaleUtils.maybeLocalize(columnDescr.getCaption());
       if (BeeUtils.isEmpty(caption)) {
         if (!BeeUtils.isEmpty(originalSource) && !originalSource.equals(source)) {
           caption = DataUtils.getColumnLabel(originalSource, dataCols);
         } else if (!BeeConst.isUndef(dataIndex)) {
           caption = dataCols.get(dataIndex).getLabel();
         }
+
         if (BeeUtils.isEmpty(caption)) {
           caption = columnName;
+        } else {
+          caption = LocaleUtils.maybeLocalize(caption);
         }
       }
 

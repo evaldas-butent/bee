@@ -542,9 +542,7 @@ body, select {
 }
 
 .bee-WindowCaption {
-  color: #00e;
   font-size: medium;
-  font-weight: bolder;
 }
 
 .bee-Header-message {
@@ -628,7 +626,7 @@ body, select {
   overflow: hidden;
   text-overflow: ellipsis;
   color: #6D6D6D;
-  -webkit-transition: background 200ms;
+/*   -webkit-transition: background 200ms; */
 }
 
 .bee-CellGridFooter {
@@ -943,11 +941,11 @@ body, select {
 }
 
 .bee-GridFormContainer-newRow, .bee-NewRowContainer, .bee-NewRow .bee-Dialog-content {
-  background-color: #fafffa;
+  background-color: WhiteSmoke;
 }
 
 .bee-GridFormContainer-edit, .bee-RowContainer, .bee-EditRow .bee-Dialog-content {
-  background-color: #fafafa;
+  background-color: WhiteSmoke;
 }
 
 .bee-GridFormCaption-newRow, .bee-NewRowCaption, .bee-NewRow .bee-Dialog-caption {
@@ -1176,7 +1174,7 @@ body, select {
   margin-left: 4px;
   padding: 4px 8px 4px 8px;
   cursor: pointer;
-  background-color: whiteSmoke;
+  background-color: WhiteSmoke;
   color: #444;
   font-weight: normal;
   text-align: center;

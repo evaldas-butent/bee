@@ -6,7 +6,7 @@
   >
   <columns>
     <RelColumn name="Company" caption="Įmonė" minWidth="100" />
-    <RelColumn name="AppointmentType" caption="Vizitų tipas" />
+    <RelColumn name="AppointmentType" caption="=appointmentType" />
     <RelColumn name="TimeZone" caption="Laiko juosta" />
   </columns>
 </Grid>

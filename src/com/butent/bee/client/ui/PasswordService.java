@@ -39,15 +39,19 @@ public class PasswordService extends CompositeService {
         oldPass = formView.getActiveRow().getString(formView.getDataIndex(PASSWORD));
 
         if (!BeeUtils.isEmpty(oldPass)) {
-          varOld = new Variable("Old password", BeeType.STRING, "", BeeWidget.PASSWORD);
+          varOld = new Variable(Global.CONSTANTS.oldPassword(), BeeType.STRING, "",
+              BeeWidget.PASSWORD);
           vars.add(varOld);
         }
-        varNew = new Variable("New password", BeeType.STRING, "", BeeWidget.PASSWORD);
+        varNew = new Variable(Global.CONSTANTS.newPassword(), BeeType.STRING, "",
+            BeeWidget.PASSWORD);
         vars.add(varNew);
-        varNew2 = new Variable("Repeat new password", BeeType.STRING, "", BeeWidget.PASSWORD);
+        varNew2 = new Variable(Global.CONSTANTS.repeatNewPassword(), BeeType.STRING, "",
+            BeeWidget.PASSWORD);
         vars.add(varNew2);
 
-        Global.inputVars(getStage(STG_SAVE_PASS), "Change password", vars.toArray(new Variable[0]));
+        Global.inputVars(getStage(STG_SAVE_PASS), Global.CONSTANTS.changePassword(),
+            vars.toArray(new Variable[0]));
         return ok;
       }
 
@@ -61,11 +65,11 @@ public class PasswordService extends CompositeService {
 
         if (BeeUtils.isEmpty(oPass)) {
           ok = false;
-          Global.showError("Old password is required");
+          Global.showError(Global.CONSTANTS.oldPasswordIsRequired());
 
         } else if (!BeeUtils.equals(Codec.md5(oPass), oldPass)) {
           ok = false;
-          Global.showError("Old password is invalid");
+          Global.showError(Global.CONSTANTS.oldPasswordIsInvalid());
         }
       }
       if (ok) {
@@ -73,11 +77,11 @@ public class PasswordService extends CompositeService {
 
         if (BeeUtils.isEmpty(nPass)) {
           ok = false;
-          Global.showError("New password is required");
+          Global.showError(Global.CONSTANTS.newPasswordIsRequired());
 
         } else if (!BeeUtils.equals(nPass, varNew2.getValue())) {
           ok = false;
-          Global.showError("New passwords doesn't match");
+          Global.showError(Global.CONSTANTS.newPasswordsDoesNotMatch());
 
         } else {
           formView.updateCell(PASSWORD, Codec.md5(nPass));

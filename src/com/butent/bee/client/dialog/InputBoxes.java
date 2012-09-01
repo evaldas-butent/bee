@@ -356,11 +356,7 @@ public class InputBoxes {
     ft.getCellFormatter().setHorizontalAlignment(r, 0, HasHorizontalAlignment.ALIGN_LEFT);
     ft.getCellFormatter().setHorizontalAlignment(r, 1, HasHorizontalAlignment.ALIGN_RIGHT);
 
-    DialogBox dialog = new DialogBox();
-
-    if (!BeeUtils.isEmpty(cap)) {
-      dialog.setText(cap);
-    }
+    DialogBox dialog = new DialogBox(cap);
 
     dialog.setAnimationEnabled(true);
     dialog.addDomHandler(new KeyboardHandler(dialog, bst), KeyDownEvent.getType());

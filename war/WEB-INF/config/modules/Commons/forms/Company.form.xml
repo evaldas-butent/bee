@@ -9,25 +9,17 @@
     <FlexTable cellSpacing="10">
       <row>
         <cell>
-          <Label html="Įmonė" />
+          <Label html="Įmonė" class="bee-required" />
         </cell>
         <cell colSpan="3">
           <InputText source="Name" style="width:100%" />
         </cell>
       </row>
       <row>
-        <cell>
-          <Label html="Įm. kodas" />
-        </cell>
-        <cell>
-          <InputText source="Code" />
-        </cell>
-        <cell>
-          <Label html="PVM kodas" horizontalAlignment="right" />
-        </cell>
-        <cell>
-          <InputText source="VATCode" />
-        </cell>
+        <Label html="Įm. kodas" />
+        <InputText source="Code" />
+        <Label html="PVM kodas" horizontalAlignment="right" />
+        <InputText source="VATCode" />
       </row>
       <row>
         <cell colSpan="4">

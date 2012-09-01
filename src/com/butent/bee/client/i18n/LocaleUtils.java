@@ -6,6 +6,7 @@ import com.google.gwt.i18n.client.LocalizedNames;
 import com.google.gwt.i18n.client.constants.NumberConstants;
 import com.google.gwt.i18n.shared.DateTimeFormatInfo;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -23,6 +24,8 @@ import java.util.List;
 public class LocaleUtils {
 
   public static final String LOCALE_SEPARATOR = "_";
+
+  private static final char L10N_PREFIX = '=';
   
   public static boolean copyDateTimeFormat(Object src, Object dst) {
     if (src instanceof HasDateTimeFormat && dst instanceof HasDateTimeFormat && src != dst) {
@@ -175,6 +178,21 @@ public class LocaleUtils {
       return name.substring(0, p);
     } else {
       return name;
+    }
+  }
+  
+  public static String maybeLocalize(String text) {
+    if (text == null || text.length() < 3 || text.charAt(0) != L10N_PREFIX) {
+      return text;
+    }
+
+    String localized = BeeKeeper.getUser().getConstant(text.substring(1));
+    
+    if (localized == null) {
+      BeeKeeper.getLog().warning("cannot localize:", text);
+      return text;
+    } else {
+      return localized;
     }
   }
 

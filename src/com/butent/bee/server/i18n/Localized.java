@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
@@ -70,6 +71,26 @@ public class Localized {
     return ensureConstants(locale);
   }
 
+  public static Map<String, String> getDictionary(Locale locale) {
+    if (availableConstants == null) {
+      init(LocalizableType.CONSTANTS);
+    }
+
+    Locale z = normalize(locale, availableConstants);
+    if (z == null) {
+      LogUtils.severe(logger, LocalizableType.CONSTANTS, transform(locale), "not available");
+      return null;
+    }
+
+    Properties properties = FileUtils.readProperties(availableConstants.get(z));
+    
+    Map<String, String> dictionary = Maps.newHashMap();
+    for (String name : properties.stringPropertyNames()) {
+      dictionary.put(name, properties.getProperty(name));
+    }
+    return dictionary;
+  }
+  
   public static LocalizableMessages getMessages() {
     return getMessages(defaultLocale);
   }

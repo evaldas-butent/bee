@@ -26,6 +26,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.layout.IsHtmlTable;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
@@ -33,13 +34,8 @@ import com.butent.bee.shared.HasId;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-/**
- * Is an abstract class for for HTML table type grids, enables grid attribute management in document
- * object model.
- */
-
 public abstract class HtmlTable extends Panel implements HasClickHandlers,
-    HasDoubleClickHandlers, HasId {
+    HasDoubleClickHandlers, HasId, IsHtmlTable {
 
   public class Cell {
     private final int rowIndex;
@@ -520,7 +516,7 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
   }
 
   public void setBorderWidth(int width) {
-    DOM.setElementProperty(tableElem, "border", "" + width);
+    tableElem.getStyle().setBorderWidth(width, Unit.PX);
   }
 
   public void setCellPadding(int padding) {

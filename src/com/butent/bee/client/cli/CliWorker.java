@@ -290,6 +290,8 @@ public class CliWorker {
       unicode(arr);
     } else if (z.startsWith("unit")) {
       showUnits(arr);
+    } else if (z.startsWith("user")) {
+      BeeKeeper.getScreen().showGrid(BeeKeeper.getUser().getInfo());
     } else if (z.equals("vars")) {
       showVars(arr);
     } else if (z.equals("video")) {

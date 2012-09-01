@@ -3,7 +3,7 @@
   xmlns:f="http://www.butent.com/form"
   
   name="User" viewName="Users" caption="Vartotojas"
-  width="70" widthUnit="%" height="5" heightUnit="cm"
+  width="800" height="240"
   >
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="10">

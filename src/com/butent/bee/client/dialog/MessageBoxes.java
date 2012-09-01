@@ -264,12 +264,7 @@ public class MessageBoxes {
     content.add(buttons);
 
     if (!BeeUtils.isEmpty(dialogStyleName)) {
-      if (panel instanceof DialogBox) {
-        ((DialogBox) panel).getCaption().asWidget().addStyleName(dialogStyleName);
-        content.addStyleName(dialogStyleName);
-      } else {
-        panel.addStyleName(dialogStyleName);
-      }
+      panel.addStyleName(dialogStyleName);
     }
 
     panel.setWidget(content);

@@ -7,6 +7,7 @@
   <Columns>
     <SimpleColumn name="FirstName" />
     <SimpleColumn name="LastName" />
+    <SimpleColumn name="DateOfBirth" />
     <SimpleJoin name="Contact" joinType="LEFT">
       <SimpleColumn name="Phone" />
       <SimpleColumn name="Email" />

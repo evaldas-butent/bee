@@ -1,6 +1,5 @@
 package com.butent.bee.client.dialog;
 
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickHandler;
 
 import com.butent.bee.client.widget.BeeButton;
@@ -11,14 +10,6 @@ import com.butent.bee.shared.Stage;
  * Implements a button with "close" function.
  */
 public class CloseButton extends BeeButton {
-
-  public CloseButton() {
-    super(DialogConstants.CLOSE, Service.CLOSE_DIALOG);
-  }
-
-  public CloseButton(Element element) {
-    super(element);
-  }
 
   public CloseButton(String html) {
     super(html, Service.CLOSE_DIALOG);

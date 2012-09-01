@@ -11,7 +11,7 @@
   xmlns:ui="http://www.butent.com/ui"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="ServiceAppointment" viewName="Appointments" caption="Vizitas"
+  name="ServiceAppointment" viewName="Appointments" caption="=appointment"
   disabledActions="add delete" enabledActions="save">
 
   <FlowPanel style="&relative; margin: 2ex 1em; min-width: 760px;">

@@ -5,7 +5,7 @@
 <Grid xmlns="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
 
   name="AppointmentTypes" viewName="AppointmentTypes"
-  caption="Vizitų tipai" newRowCaption="Naujas vizitų tipas"
+  caption="=appointmentTypes" newRowCaption="=newAppointmentType"
   >
   <body height="100" /> 
   <columns>
@@ -13,13 +13,13 @@
     <DataColumn name="Description" caption="Aprašymas">&nowrap;</DataColumn>
 
     <RelColumn name="ThemeName" caption="Spalvų tema" />
-    <RelColumn name="StyleName" caption="Vizitų stilius" />
+    <RelColumn name="StyleName" caption="=appointmentStyle" />
 
-    <DataColumn name="SimpleHeader" caption="Paprasto vizito viršus">&nowrap;</DataColumn>
-    <DataColumn name="SimpleBody" caption="Paprasto vizito vidurys">&nowrap;</DataColumn>
+    <DataColumn name="SimpleHeader" caption="=appointmentRenderSimpleHeader">&nowrap;</DataColumn>
+    <DataColumn name="SimpleBody" caption="=appointmentRenderSimpleBody">&nowrap;</DataColumn>
 
-    <DataColumn name="MultiHeader" caption="Daugiadienio vizito viršus">&nowrap;</DataColumn>
-    <DataColumn name="MultiBody" caption="Daugiadienio vizito vidurys">&nowrap;</DataColumn>
+    <DataColumn name="MultiHeader" caption="=appointmentRenderMultiHeader">&nowrap;</DataColumn>
+    <DataColumn name="MultiBody" caption="=appointmentRenderMultiBody">&nowrap;</DataColumn>
    
     <DataColumn name="AppointmentCompact" caption="Kompaktiška forma">&nowrap;</DataColumn>
     <DataColumn name="AppointmentTitle" caption="Išplaukiantis tekstas">&nowrap;</DataColumn>

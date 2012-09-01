@@ -28,7 +28,7 @@
         <ChildGrid name="CalendarPersons" relColumn="Calendar" />
       </page>
       <page>
-        <text>Vizitų tipai</text>
+        <text>=appointmentTypes</text>
         <ChildGrid name="CalAppointmentTypes" relColumn="Calendar" />
       </page>
       

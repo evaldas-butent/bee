@@ -11,6 +11,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
@@ -19,6 +20,7 @@ import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -63,7 +65,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
       this.lastTime = lastTime;
     }
   }
-  
+
   private static final int HEIGHT = 30;
 
   private static final int CAPTION_LEFT = 8;
@@ -76,10 +78,10 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
 
   private static final int CLOSE_RIGHT = 2;
   private static final int CLOSE_TOP = 1;
-  
+
   private static final int LOADING_INDICATOR_TOP = 2;
   private static final int LOADING_INDICATOR_RIGHT_MARGIN = 48;
-  
+
   private static final String STYLE_CONTAINER = "bee-Header-container";
 
   private static final String STYLE_CAPTION = "bee-Header-caption";
@@ -89,9 +91,9 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   private static final String STYLE_CONTROL = "bee-Header-control";
   private static final String STYLE_CLOSE = "bee-Header-close";
 
-  private static final int ACTION_SENSITIVITY_MILLIS = 
+  private static final int ACTION_SENSITIVITY_MILLIS =
       BeeUtils.positive(Settings.getActionSensitivityMillis(), 300);
-  
+
   private Presenter viewPresenter = null;
 
   private String loadingIndicatorId = null;
@@ -106,7 +108,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   public HeaderSilverImpl() {
     super();
   }
-  
+
   public void addCaptionStyle(String style) {
     Assert.notEmpty(style);
     captionWidget.addStyleName(style);
@@ -116,24 +118,24 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
       Collection<UiOption> options, Set<Action> enabledActions, Set<Action> disabledActions) {
     addStyleName(StyleUtils.WINDOW_HEADER);
     addStyleName(STYLE_CONTAINER);
-    
+
     boolean isWindow = UiOption.isWindow(options);
-    
-    captionWidget.setText(BeeUtils.trim(caption));
+
+    setCaption(caption);
     captionWidget.addStyleName(STYLE_CAPTION);
     if (isWindow) {
       captionWidget.addStyleName(StyleUtils.WINDOW_CAPTION);
     }
 
     messageWidget.addStyleName(STYLE_MESSAGE);
-    
+
     Flow panel = new Flow();
     panel.add(captionWidget);
     panel.add(messageWidget);
     addLeftTop(panel, CAPTION_LEFT, CAPTION_TOP);
-    
+
     boolean hasClose = hasAction(Action.CLOSE, isWindow, enabledActions, disabledActions);
-        
+
     int x = hasClose ? CONTROLS_RIGHT : CLOSE_RIGHT;
     int y = CONTROL_TOP;
     int w = CONTROL_WIDTH;
@@ -164,7 +166,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
           x, y);
       x += w;
     }
-    
+
     if (hasAction(Action.DELETE, hasData && !readOnly, enabledActions, disabledActions)) {
       addRightTop(createControl(Global.getImages().silverDelete(), Action.DELETE, STYLE_CONTROL),
           x, y);
@@ -180,20 +182,20 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
           x, y);
       x += w;
     }
-    
+
     if (hasData) {
       BeeImage loadingIndicator = new BeeImage(Global.getImages().loading());
       setLoadingIndicatorId(loadingIndicator.getId());
       loadingIndicator.addStyleName(STYLE_LOADING_INDICATOR);
       addRightTop(loadingIndicator, x + LOADING_INDICATOR_RIGHT_MARGIN, LOADING_INDICATOR_TOP);
     }
-    
+
     if (hasClose) {
       addRightTop(createControl(Global.getImages().silverClose(), Action.CLOSE, STYLE_CLOSE),
           CLOSE_RIGHT, CLOSE_TOP);
     }
   }
-  
+
   public String getCaption() {
     return captionWidget.getText();
   }
@@ -214,7 +216,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   public String getWidgetId() {
     return getId();
   }
-      
+
   public boolean hasAction(Action action) {
     if (action == null) {
       return false;
@@ -253,7 +255,9 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   }
 
   public void setCaption(String caption) {
-    captionWidget.setText(BeeUtils.trim(caption));
+    String text =
+        BeeUtils.isEmpty(caption) ? BeeConst.STRING_EMPTY : LocaleUtils.maybeLocalize(caption);
+    captionWidget.setText(text);
   }
 
   public void setEnabled(boolean enabled) {
@@ -281,7 +285,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   public void setMessage(String message) {
     messageWidget.setText(BeeUtils.trim(message));
   }
-  
+
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
@@ -295,7 +299,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
       }
       return;
     }
-    
+
     if (visible) {
       StyleUtils.unhideDisplay(widgetId);
     } else {
@@ -314,7 +318,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     }
     return control;
   }
-  
+
   private Map<Action, String> getActionControls() {
     return actionControls;
   }
@@ -322,7 +326,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   private String getLoadingIndicatorId() {
     return loadingIndicatorId;
   }
-  
+
   private boolean hasAction(Action action, boolean def,
       Set<Action> enabledActions, Set<Action> disabledActions) {
     if (def) {

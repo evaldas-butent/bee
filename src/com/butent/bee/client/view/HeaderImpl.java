@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
@@ -18,6 +19,7 @@ import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -99,7 +101,7 @@ public class HeaderImpl extends Complex implements HeaderView {
     
     boolean isWindow = UiOption.isWindow(options);
     
-    captionWidget.setText(BeeUtils.trim(caption));
+    setCaption(caption);
     captionWidget.addStyleName(STYLE_CAPTION);
     if (isWindow) {
       captionWidget.addStyleName(StyleUtils.WINDOW_CAPTION);
@@ -226,7 +228,9 @@ public class HeaderImpl extends Complex implements HeaderView {
   }
 
   public void setCaption(String caption) {
-    captionWidget.setText(BeeUtils.trim(caption));
+    String text =
+        BeeUtils.isEmpty(caption) ? BeeConst.STRING_EMPTY : LocaleUtils.maybeLocalize(caption);
+    captionWidget.setText(text);
   }
 
   public void setEnabled(boolean enabled) {

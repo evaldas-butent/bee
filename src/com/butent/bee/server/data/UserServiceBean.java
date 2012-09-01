@@ -94,6 +94,9 @@ public class UserServiceBean {
         loc = Localized.defaultLocale;
       }
       data.setLocale(loc.toString());
+      
+      data.setConstants(Localized.getDictionary(loc));
+      
       this.locale = loc;
       return this;
     }

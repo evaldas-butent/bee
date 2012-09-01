@@ -1,22 +1,31 @@
 package com.butent.bee.client;
 
+import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.PropertyUtils;
+
+import java.util.List;
 
 /**
  * gets user login status, session ID and stores them.
  * 
  */
 
-public class UserInfo implements Module {
+public class UserInfo implements Module, HasInfo {
 
   private String sessionId = null;
   private UserData userData = null;
 
   public void end() {
+  }
+  
+  public String getConstant(String name) {
+    return (userData == null) ? null : userData.getConstant(name);
   }
 
   public String getDsn() {
@@ -36,6 +45,19 @@ public class UserInfo implements Module {
 
   public String getFirstName() {
     return isLoggedIn() ? userData.getFirstName() : null;
+  }
+
+  @Override
+  public List<Property> getInfo() {
+    List<Property> info = PropertyUtils.createProperties("Is Logged In", isLoggedIn(),
+        "Session Id", getSessionId(),
+        "Signature", getUserSign(),
+        "Dsn", getDsn());
+    
+    if (userData != null) {
+      info.addAll(userData.getInfo());
+    }
+    return info;
   }
 
   public String getLastName() {

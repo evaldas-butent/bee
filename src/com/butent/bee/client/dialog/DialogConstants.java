@@ -1,10 +1,11 @@
 package com.butent.bee.client.dialog;
 
+import com.butent.bee.client.Global;
+
 public class DialogConstants {
 
-  public static final String OK = "OK";
-  public static final String CANCEL = "Cancel";
-  public static final String CLOSE = "Close";
+  public static final String OK = Global.CONSTANTS.ok();
+  public static final String CANCEL = Global.CONSTANTS.cancel();
 
   public static final String WIDGET_DIALOG = "dialog";
   public static final String WIDGET_PANEL = "panel";

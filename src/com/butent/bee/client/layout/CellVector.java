@@ -16,7 +16,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.HasId;
 
 public abstract class CellVector extends ComplexPanel implements HasId, HasIndexedWidgets,
-    HasAlignment, InsertPanel {
+    HasAlignment, InsertPanel, IsHtmlTable {
 
   private final Element table;
   private final Element body;

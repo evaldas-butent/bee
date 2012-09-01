@@ -10,6 +10,7 @@ import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
@@ -457,7 +458,7 @@ public class MonthView extends CalendarView {
     final Flow panel = new Flow();
     panel.addStyleName(CalendarStyleManager.MORE_PANEL);
     
-    BeeLabel caption = new BeeLabel("Pasirinkite vizitą");
+    BeeLabel caption = new BeeLabel(Global.CONSTANTS.selectAppointment());
     caption.addStyleName(CalendarStyleManager.MORE_CAPTION);
     panel.add(caption);
 

@@ -5,19 +5,19 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="AppointmentStyles" viewName="AppointmentStyles" caption="Vizitų stiliai"
+  name="AppointmentStyles" viewName="AppointmentStyles" caption="=appointmentStyles"
   >
   <body height="80" /> 
   <columns>
     <DataColumn name="Name" caption="Pavadinimas" />
     <DataColumn name="Description" caption="Aprašymas" />
 
-    <DataColumn name="Simple" caption="Paprastas vizitas">&nowrap;</DataColumn>
+    <DataColumn name="Simple" caption="=appointmentStyleSimple">&nowrap;</DataColumn>
     <DataColumn name="Multi" caption="Daugiadienis">&nowrap;</DataColumn>
     <DataColumn name="Compact" caption="Kompaktiškas">&nowrap;</DataColumn>
     
-    <DataColumn name="Header" caption="Vizito viršus">&nowrap;</DataColumn>
-    <DataColumn name="Body" caption="Vizito vidurys">&nowrap;</DataColumn>
-    <DataColumn name="Footer" caption="Vizito apačia">&nowrap;</DataColumn>
+    <DataColumn name="Header" caption="=appointmentStyleHeader">&nowrap;</DataColumn>
+    <DataColumn name="Body" caption="=appointmentStyleBody">&nowrap;</DataColumn>
+    <DataColumn name="Footer" caption="=appointmentStyleFooter">&nowrap;</DataColumn>
   </columns>
 </Grid>
