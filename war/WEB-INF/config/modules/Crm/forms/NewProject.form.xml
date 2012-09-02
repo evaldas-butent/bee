@@ -47,8 +47,8 @@
       <ListBox name="Observers" multiSelect="true" minSize="2" maxSize="10" style="width: 100%;" />
       <cell colSpan="2" >
         <VerticalPanel>
-          <cell><Button name="AddObservers" html="+" /></cell>
-          <cell><Button name="RemoveObservers" html="-" /></cell>
+          <Image name="AddObservers" resource="add" />
+          <Image name="RemoveObservers" resource="delete" />
         </VerticalPanel>
       </cell>
     </row>

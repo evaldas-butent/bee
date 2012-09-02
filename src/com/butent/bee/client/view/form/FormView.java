@@ -30,6 +30,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   void applyOptions(String options);
 
+  boolean checkForUpdate(boolean reset);
+  
   void create(FormDescription formDescription, String viewName, List<BeeColumn> dataColumns,
       boolean addStyle, FormCallback callback);
 

@@ -64,11 +64,6 @@ public class InputInteger extends InputNumber {
   }
 
   @Override
-  public Number getNumber() {
-    return BeeUtils.toIntOrNull(BeeUtils.trim(getValue()));
-  }
-
-  @Override
   public FormWidget getWidgetType() {
     return FormWidget.INPUT_INTEGER;
   }
@@ -120,10 +115,5 @@ public class InputInteger extends InputNumber {
     if (step != 0) {
       setStepValue(step);
     }
-  }
-  
-  @Override
-  protected String normalize(String v) {
-    return BeeUtils.toString(BeeUtils.toInt(v));
   }
 }

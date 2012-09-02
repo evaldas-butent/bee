@@ -3,7 +3,7 @@
 
   cellSpacing="10">
   <row>
-    <Label html="Dokumento data:" />
+    <Label html="Dokumento data:" class="bee-required" />
     <InputDateTime source="DocumentDate" />
     <Label html="Galioja iki:" horizontalAlignment="right" />
     <InputDateTime source="Expires" />
@@ -24,14 +24,14 @@
   </row>
 
   <row>
-    <Label html="Tipas:" />
+    <Label html="Tipas:" class="bee-required" />
     <DataSelector source="Type" />
     <Label html="Įmonė:" horizontalAlignment="right" />
     <DataSelector source="Company" />
   </row>
 
   <row>
-    <Label html="Grupė:" />
+    <Label html="Grupė:" class="bee-required" />
     <DataSelector source="Group" />
     <Label html="Asmuo:" horizontalAlignment="right" />
     <DataSelector source="CompanyPerson" />

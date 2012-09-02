@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -1377,7 +1378,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     embraceNewRowForm(form);
   }
 
-  private String createFormContainer(FormView formView, boolean edit, String caption,
+  private String createFormContainer(final FormView formView, boolean edit, String caption,
       boolean asPopup) {
     String formCaption = BeeUtils.notEmpty(caption, formView.getCaption());
 
@@ -1393,15 +1394,25 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
     }
 
-    GridFormPresenter gfp = new GridFormPresenter(this, formView, formCaption, actions, edit,
+    final GridFormPresenter gfp = new GridFormPresenter(this, formView, formCaption, actions, edit,
         hasEditSave());
     Widget container = gfp.getWidget();
 
     if (asPopup) {
+      ModalForm popup = new ModalForm(container, formView, true, true);
+      popup.setOnSave(new Scheduler.ScheduledCommand() {
+        @Override
+        public void execute() {
+          if (gfp.isActionEnabled(Action.SAVE) && formView.checkForUpdate(false)) {
+            gfp.handleAction(Action.SAVE);
+          }
+        }
+      });
+      
       if (edit) {
-        setEditPopup(new ModalForm(container, formView, true, true));
+        setEditPopup(popup);
       } else {
-        setNewRowPopup(new ModalForm(container, formView, true, true));
+        setNewRowPopup(popup);
       }
 
     } else {

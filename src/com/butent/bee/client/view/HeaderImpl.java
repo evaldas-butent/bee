@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Complex;
@@ -198,6 +199,24 @@ public class HeaderImpl extends Complex implements HeaderView {
     }
   }
 
+  @Override
+  public boolean isActionEnabled(Action action) {
+    if (action == null || !isEnabled()) {
+      return false;
+    }
+    String id = getActionControls().get(action);
+    if (BeeUtils.isEmpty(id)) {
+      return false;
+    }
+    
+    Widget child = DomUtils.getChildQuietly(this, id);
+    if (child instanceof HasEnabled) {
+      return child.isVisible() && ((HasEnabled) child).isEnabled();
+    } else {
+      return false;
+    }
+  }
+  
   public boolean isEnabled() {
     return enabled;
   }
@@ -287,6 +306,7 @@ public class HeaderImpl extends Complex implements HeaderView {
     }
 
     if (action != null) {
+      control.setTitle(action.getCaption());
       getActionControls().put(action, control.getId());
     }
     return control;

@@ -30,11 +30,6 @@ public class InputLong extends InputNumber {
   }
 
   @Override
-  public Number getNumber() {
-    return BeeUtils.toLongOrNull(BeeUtils.trim(getValue()));
-  }
-
-  @Override
   public FormWidget getWidgetType() {
     return FormWidget.INPUT_LONG;
   }
@@ -47,10 +42,5 @@ public class InputLong extends InputNumber {
   @Override
   protected String getDefaultStyleName() {
     return "bee-InputLong";
-  }
-
-  @Override
-  protected String normalize(String v) {
-    return BeeUtils.toString(BeeUtils.toLong(v));
   }
 }

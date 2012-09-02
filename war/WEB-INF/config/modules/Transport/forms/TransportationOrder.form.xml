@@ -7,20 +7,20 @@
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="10">
       <row>
-        <Label html="Data" horizontalAlignment="right" />
+        <Label html="Data:" horizontalAlignment="right" class="bee-hasDefaults" />
         <InputDateTime source="Date" />
-        <Label html="Būsena" horizontalAlignment="right" />
+        <Label html="Būsena:" horizontalAlignment="right" />
         <TextLabel source="Status" itemKey="OrderStatus" class="bee-display" />
       </row>
       <row>
-        <Label html="Užsakymo Nr." horizontalAlignment="right" />
+        <Label html="Užsakymo Nr.:" horizontalAlignment="right" class="bee-hasDefaults" />
         <InputText source="OrderNo" />
         <Button name="profit" html="Pelnas" />
       </row>
       <row>
-        <Label html="Užsakovas" horizontalAlignment="right" />
+        <Label html="Užsakovas:" horizontalAlignment="right" class="bee-required" />
         <DataSelector source="Customer" />
-        <Label html="Mokėtojas" horizontalAlignment="right" />
+        <Label html="Mokėtojas:" horizontalAlignment="right" />
         <cell colSpan="3">
           <DataSelector source="Payer" />
         </cell>

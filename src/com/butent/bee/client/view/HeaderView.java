@@ -27,6 +27,8 @@ public interface HeaderView extends View, LoadingStateChangeEvent.Handler, Index
   
   boolean hasAction(Action action);
 
+  boolean isActionEnabled(Action action);
+  
   void removeCaptionStyle(String style);
   
   void setCaption(String caption);

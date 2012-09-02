@@ -6,6 +6,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class ValidationHelper {
@@ -80,14 +81,15 @@ public class ValidationHelper {
 
     if (errorMessage == null && cv.getNewValue() != null
         && (!BeeUtils.isEmpty(cv.getMinValue()) || !BeeUtils.isEmpty(cv.getMaxValue()))) {
-      Value value = Value.parseValue(cv.getType(), cv.getNewValue(), false);
+      ValueType type = ValueType.isNumeric(cv.getType()) ? ValueType.NUMBER : cv.getType();
+      Value value = Value.parseValue(type, cv.getNewValue(), false);
 
       if (!BeeUtils.isEmpty(cv.getMinValue())
-          && value.compareTo(Value.parseValue(cv.getType(), cv.getMinValue(), true)) < 0) {
+          && value.compareTo(Value.parseValue(type, cv.getMinValue(), true)) < 0) {
         errorMessage = BeeUtils.concat(1, errorMessage, "Min reikšmė:", cv.getMinValue());
       }
       if (!BeeUtils.isEmpty(cv.getMaxValue())
-          && value.compareTo(Value.parseValue(cv.getType(), cv.getMaxValue(), true)) > 0) {
+          && value.compareTo(Value.parseValue(type, cv.getMaxValue(), true)) > 0) {
         errorMessage = BeeUtils.concat(1, errorMessage, "Max reikšmė:", cv.getMaxValue());
       }
     }

@@ -3,7 +3,7 @@
   
   open="true"
   >
-  <HtmlLabel html="KONTAKTINĖ INFORMACIJA" style="color:green" />
+  <HtmlLabel html="KONTAKTINĖ INFORMACIJA" />
 
   <FlexTable cellSpacing="10">
     <row>

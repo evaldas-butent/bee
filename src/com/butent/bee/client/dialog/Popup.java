@@ -2,6 +2,7 @@ package com.butent.bee.client.dialog;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.animation.client.Animation;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
@@ -46,6 +47,7 @@ import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.PreviewHandler;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
@@ -323,6 +325,8 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   
   private List<PreviewHandler> previewHandlers = null;
   private boolean hideOnEscape = false;
+  private boolean hideOnSave = false;
+  private Scheduler.ScheduledCommand onSave = null;
 
   private boolean isAnimationEnabled = false;
   private final ResizeAnimation resizeAnimation = new ResizeAnimation(this);
@@ -422,6 +426,10 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     return "popup";
   }
 
+  public Scheduler.ScheduledCommand getOnSave() {
+    return onSave;
+  }
+
   public int getPopupLeft() {
     return DOM.getAbsoluteLeft(getElement());
   }
@@ -448,6 +456,10 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     return hideOnEscape;
   }
 
+  public boolean hideOnSave() {
+    return hideOnSave;
+  }
+  
   public boolean isAnimationEnabled() {
     return isAnimationEnabled;
   }
@@ -502,7 +514,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   public void setAutoHideOnHistoryEventsEnabled(boolean enabled) {
     this.autoHideOnHistoryEvents = enabled;
   }
-
+  
   public void setGlassEnabled(boolean enabled) {
     this.isGlassEnabled = enabled;
 
@@ -517,7 +529,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       setGlass(elem);
     }
   }
-  
+
   @Override
   public void setHeight(String height) {
     setDesiredHeight(height);
@@ -531,12 +543,20 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     this.hideOnEscape = hideOnEscape;
   }
 
+  public void setHideOnSave(boolean hideOnSave) {
+    this.hideOnSave = hideOnSave;
+  }
+
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
   public void setModal(boolean modal) {
     this.modal = modal;
+  }
+
+  public void setOnSave(Scheduler.ScheduledCommand onSave) {
+    this.onSave = onSave;
   }
 
   public void setPopupPosition(int left, int top) {
@@ -816,8 +836,17 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
         break;
       
       case Event.ONKEYDOWN:
-        if (hideOnEscape() && event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ESCAPE) {
-          hide(true);
+        if (nativeEvent.getKeyCode() == KeyCodes.KEY_ESCAPE)  {
+          if (hideOnEscape()) {
+            hide(true);
+          }
+        } else if (UiHelper.isSave(nativeEvent)) {
+          if (hideOnSave()) {
+            hide(true);
+          }
+          if (getOnSave() != null) {
+            getOnSave().execute();
+          }
         }
         break;
     }

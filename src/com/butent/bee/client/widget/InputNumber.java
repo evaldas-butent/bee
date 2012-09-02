@@ -172,7 +172,7 @@ public class InputNumber extends InputText implements HasNumberBounds, HasIntSte
       if (isNullable()) {
         return null;
       } else {
-        return "Value must not be null";
+        return "Įveskite reikšmę";
       }
     }
 
@@ -184,18 +184,18 @@ public class InputNumber extends InputText implements HasNumberBounds, HasIntSte
       v = normalize(BeeUtils.toString(d));
     }
     if (!checkType(v)) {
-      return "Not a number";
+      return "Neteisingas skaičius";
     }
 
     if (!checkBounds()) {
-      StringBuilder sb = new StringBuilder("Value out of bounds:");
+      StringBuilder sb = new StringBuilder();
       if (getMinValue() != null) {
-        sb.append(" min ").append(BeeUtils.toString(getMinValue().doubleValue()));
+        sb.append(" min reikšmė: ").append(BeeUtils.toString(getMinValue().doubleValue()));
       }
       if (getMaxValue() != null) {
-        sb.append(" max ").append(BeeUtils.toString(getMaxValue().doubleValue()));
+        sb.append(" max reikšmė: ").append(BeeUtils.toString(getMaxValue().doubleValue()));
       }
-      return sb.toString();
+      return sb.toString().trim();
     }
     return null;
   }

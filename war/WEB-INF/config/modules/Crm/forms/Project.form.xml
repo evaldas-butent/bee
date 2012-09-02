@@ -107,8 +107,8 @@
 
           <FlowPanel style="&ROW_STYLE; &MARGIN_LEFT;">
             <ListBox name="Observers" multiSelect="true" minSize="2" style="width: 250px" />
-            <Button name="AddObservers" html="+" style="width: 2em; &MARGIN_LEFT;" />
-            <Button name="RemoveObservers" html="-" style="width: 2em; &MARGIN_LEFT;" />
+            <Image name="AddObservers" resource="add" style="&MARGIN_LEFT;" />
+            <Image name="RemoveObservers" resource="delete" style="&MARGIN_LEFT;" />
           </FlowPanel>
         </FlowPanel>
       </page>

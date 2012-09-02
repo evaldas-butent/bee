@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -366,10 +367,10 @@ public class ScreenImpl implements Screen {
       p.addNorth(w, 100);
     }
 
-    w = initSouth();
-    if (w != null) {
-      p.addSouth(w, 32);
-    }
+//    w = initSouth();
+//    if (w != null) {
+//      p.addSouth(w, 32);
+//    }
 
     w = initWest();
     if (w != null) {
@@ -392,6 +393,8 @@ public class ScreenImpl implements Screen {
     if (getLogToggle() != null && !getLogToggle().getValue()) {
       BeeKeeper.getLog().hide();
     }
+    
+    RootPanel.get().add(createLogo());
   }
 
   protected int getDefaultGridType() {
@@ -425,22 +428,7 @@ public class ScreenImpl implements Screen {
   protected Widget initNorth() {
     Complex panel = new Complex();
     panel.addStyleName("bee-NorthContainer");
-
-    BeeImage img = new BeeImage(Global.getImages().logo2());
-    img.addStyleName("bee-Logo");
-
-    String ver = Settings.getVersion();
-    if (!BeeUtils.isEmpty(ver)) {
-      img.setTitle(ver);
-    }
-    img.addClickHandler(new ClickHandler() {
-      public void onClick(ClickEvent event) {
-        Window.open("http://www.butent.com", "", "");
-      }
-    });
-
-    panel.add(img);
-
+    
     panel.add(Global.getSearchWidget());
     
     Flow commandContainer = new Flow();
@@ -466,8 +454,7 @@ public class ScreenImpl implements Screen {
     BeeImage exit = new BeeImage(Global.getImages().exit().getSafeUri(), new BeeCommand() {
       @Override
       public void execute() {
-        Global.confirm(BeeKeeper.getUser().getUserSign(), "Atsijungti",
-            new ServiceCommand(Service.LOGOUT));
+        Global.confirm(Global.CONSTANTS.logout(), new ServiceCommand(Service.LOGOUT));
       }
     });
     exit.addStyleName("bee-UserExit");
@@ -512,6 +499,7 @@ public class ScreenImpl implements Screen {
     TabbedPages tp = new TabbedPages();
 
     tp.add(Global.getFavorites(), new BeeImage(Global.getImages().bookmark()));
+    tp.addTabStyle(tp.getWidgetCount() - 1, "bee-FavoriteTab");
 
     tp.add(Global.getReports(), "Ataskaitos");
 
@@ -582,6 +570,27 @@ public class ScreenImpl implements Screen {
 
   protected void setSignature(Widget signature) {
     this.signature = signature;
+  }
+  
+  private Widget createLogo() {
+    BeeImage logo = new BeeImage(Global.getImages().logo2().getSafeUri());
+    logo.addStyleName("bee-Logo");
+
+    String ver = Settings.getVersion();
+    if (!BeeUtils.isEmpty(ver)) {
+      logo.setTitle(ver);
+    }
+    logo.addClickHandler(new ClickHandler() {
+      public void onClick(ClickEvent event) {
+        Window.open("http://www.butent.com", "", "");
+      }
+    });
+
+    Simple container = new Simple();
+    container.addStyleName("bee-LogoContainer");
+    
+    container.setWidget(logo);
+    return container;
   }
 
   private void createPanel(Direction direction) {

@@ -118,6 +118,10 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     header.showAction(action, false);
   }
 
+  public boolean isActionEnabled(Action action) {
+    return header.isActionEnabled(action);
+  }
+  
   @Override
   public boolean onPrint(Element source, Element target) {
     boolean ok;

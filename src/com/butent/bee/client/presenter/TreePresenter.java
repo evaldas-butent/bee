@@ -12,6 +12,7 @@ import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.InputWidgetCallback;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.Evaluator;
@@ -348,7 +349,8 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     final IsRow data = getView().getSelectedItem();
 
     if (data != null) {
-      Global.confirm("Remove item?", new BeeCommand() {
+      String message = BeeUtils.concat(1, "Išmesti", evaluate(data), "?");
+      Global.getMsgBoxen().confirm(message, new BeeCommand() {
         @Override
         public void execute() {
           Queries.deleteRow(source, data.getId(), data.getVersion(),
@@ -360,7 +362,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
                 }
               });
         }
-      });
+      }, StyleUtils.NAME_SCARY);
     }
   }
 }

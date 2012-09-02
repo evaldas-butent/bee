@@ -2,15 +2,24 @@ package com.butent.bee.shared.modules.transport;
 
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.ui.HasCaption;
-import com.butent.bee.shared.utils.BeeUtils;
 
 public class TransportConstants {
 
   public static enum OrderStatus implements HasCaption {
-    CREATED, ACTIVATED, CONFIRMED, CANCELED, COMPLETED;
+    CREATED("Naujas"),
+    ACTIVATED("Aktyvus"),
+    CONFIRMED("Patvirtintas"),
+    CANCELED("Atšauktas"),
+    COMPLETED("Baigtas");
+
+    private final String caption;
+    
+    private OrderStatus(String caption) {
+      this.caption = caption;
+    }
 
     public String getCaption() {
-      return BeeUtils.proper(this.name(), null);
+      return caption;
     }
   }
 

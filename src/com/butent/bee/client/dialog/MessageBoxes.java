@@ -118,7 +118,7 @@ public class MessageBoxes {
         cancelIndex.set(group.getItemCount() - 1);
       }
     }
-    
+
     Flow container = new Flow();
     container.addStyleName(STYLE_CHOICE_CONTAINER);
     container.addStyleName(STYLE_CHOICE_CONTAINER + BeeConst.STRING_MINUS
@@ -203,7 +203,7 @@ public class MessageBoxes {
     confirm(caption, messages, command, null, null);
   }
 
-  public void confirm(String caption, List<String> messages, final BeeCommand command,
+  public void confirm(String caption, List<String> messages, BeeCommand command,
       String dialogStyleName) {
     confirm(caption, messages, command, dialogStyleName, null);
   }
@@ -266,10 +266,17 @@ public class MessageBoxes {
     if (!BeeUtils.isEmpty(dialogStyleName)) {
       panel.addStyleName(dialogStyleName);
     }
-
+    
     panel.setWidget(content);
     panel.setAnimationEnabled(true);
     panel.center();
+    
+    panel.setHideOnEscape(true);
+    panel.setHideOnSave(true);
+    panel.setOnSave(command);
+    
+    DomUtils.makeFocusable(panel);
+    DomUtils.setFocus(panel, true);
   }
 
   public void confirm(String caption, String message, BeeCommand command) {

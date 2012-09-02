@@ -320,6 +320,20 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public void applyOptions(String options) {
   }
 
+  @Override
+  public boolean checkForUpdate(boolean reset) {
+    if (BeeConst.isUndef(getActiveEditableIndex())) {
+      return true;
+    }  
+
+    EditableWidget editableWidget = getEditableWidgets().get(getActiveEditableIndex());
+    if (editableWidget == null) {
+      return true;
+    } else {
+      return editableWidget.checkForUpdate(reset);
+    }
+  }
+
   public void create(FormDescription formDescription, String view, List<BeeColumn> dataCols,
       boolean addStyle, FormCallback callback) {
     Assert.notNull(formDescription);

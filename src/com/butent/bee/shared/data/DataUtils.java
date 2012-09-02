@@ -379,7 +379,85 @@ public class DataUtils {
   public static int getMaxInitialRowSetSize() {
     return maxInitialRowSetSize;
   }
+  
+  public static String getMaxValue(IsColumn column) {
+    if (column == null) {
+      return null;
+    }
+    
+    ValueType type = column.getType();
+    if (type == null) {
+      return null;
+    }
+    
+    String value;
+    switch (type) {
+      case INTEGER:
+        value = BeeUtils.toString(Integer.MAX_VALUE);
+        break;
 
+      case LONG:
+        value = BeeUtils.toString(Long.MAX_VALUE);
+        break;
+
+      case DECIMAL:
+        int precision = column.getPrecision();
+        int scale = column.getScale();
+        
+        if (precision > 0 && scale <= 0) {
+          value = BeeUtils.toString(Math.pow(10, precision) - 1);
+        } else if (precision > 0 && scale < precision) {
+          value = BeeUtils.toString(Math.pow(10, precision - scale) - Math.pow(10, -scale));
+        } else {
+          value = null;
+        }
+        break;
+
+      default:
+        value = null;
+    }
+    return value;
+  }
+
+  public static String getMinValue(IsColumn column) {
+    if (column == null) {
+      return null;
+    }
+    
+    ValueType type = column.getType();
+    if (type == null) {
+      return null;
+    }
+    
+    String value;
+    switch (type) {
+      case INTEGER:
+        value = BeeUtils.toString(Integer.MIN_VALUE);
+        break;
+
+      case LONG:
+        value = BeeUtils.toString(Long.MIN_VALUE);
+        break;
+
+      case DECIMAL:
+        int precision = column.getPrecision();
+        int scale = column.getScale();
+        
+        if (precision > 0 && scale <= 0) {
+          value = BeeUtils.toString(-Math.pow(10, precision) + 1);
+        } else if (precision > 0 && scale < precision) {
+          value = BeeUtils.toString(-Math.pow(10, precision - scale) + Math.pow(10, -scale));
+        } else {
+          value = null;
+        }
+        break;
+
+      default:
+        value = null;
+    }
+    return value;
+  }
+  
   public static List<Long> getRowIds(BeeRowSet rowSet) {
     List<Long> result = Lists.newArrayList();
     for (BeeRow row : rowSet.getRows()) {

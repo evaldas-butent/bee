@@ -13,8 +13,16 @@ import java.util.Set;
  * Lists possible actions with a user interface component (like refresh, save, close etc).
  */
 
-public enum Action implements BeeSerializable {
-  ADD, BOOKMARK, CLOSE, CONFIGURE, DELETE, EDIT, PRINT, REFRESH, SAVE;
+public enum Action implements BeeSerializable, HasCaption {
+  ADD("naujas"),
+  BOOKMARK("bookmark"),
+  CLOSE("uždaryti"),
+  CONFIGURE("nustatymai"),
+  DELETE("išmesti"),
+  EDIT("koreguoti"),
+  PRINT("spausdinti"),
+  REFRESH("atnaujinti"),
+  SAVE("išsaugoti");
   
   public static Set<Action> parse(String s) {
     Set<Action> result = Sets.newHashSet();
@@ -40,8 +48,18 @@ public enum Action implements BeeSerializable {
     return null;
   }
   
+  private final String caption;
+
+  private Action(String caption) {
+    this.caption = caption;
+  }
+
   public void deserialize(String s) {
     Assert.untouchable();
+  }
+
+  public String getCaption() {
+    return caption;
   }
 
   public String serialize() {

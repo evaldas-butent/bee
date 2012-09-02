@@ -35,8 +35,8 @@
         <ListBox name="Categories" multiSelect="true" minSize="2" maxSize="10" style="width: 100%;" />
       </cell>
       <VerticalPanel>
-        <Button name="AddCategories" html="+" />
-        <Button name="RemoveCategories" html="-" />
+        <Image name="AddCategories" resource="add" />
+        <Image name="RemoveCategories" resource="delete" />
       </VerticalPanel>
     </row>
   </FlexTable>

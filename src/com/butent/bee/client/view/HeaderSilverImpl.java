@@ -10,6 +10,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Complex;
@@ -69,7 +70,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   private static final int HEIGHT = 30;
 
   private static final int CAPTION_LEFT = 8;
-  private static final int CAPTION_TOP = 1;
+  private static final int CAPTION_TOP = 5;
 
   private static final int CONTROL_WIDTH = 43;
   private static final int CONTROL_TOP = 1;
@@ -109,11 +110,13 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     super();
   }
 
+  @Override
   public void addCaptionStyle(String style) {
     Assert.notEmpty(style);
     captionWidget.addStyleName(style);
   }
 
+  @Override
   public void create(String caption, boolean hasData, boolean readOnly,
       Collection<UiOption> options, Set<Action> enabledActions, Set<Action> disabledActions) {
     addStyleName(StyleUtils.WINDOW_HEADER);
@@ -196,10 +199,12 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     }
   }
 
+  @Override
   public String getCaption() {
     return captionWidget.getText();
   }
 
+  @Override
   public int getHeight() {
     return HEIGHT;
   }
@@ -209,14 +214,17 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     return getElement();
   }
 
+  @Override
   public Presenter getViewPresenter() {
     return viewPresenter;
   }
 
+  @Override
   public String getWidgetId() {
     return getId();
   }
 
+  @Override
   public boolean hasAction(Action action) {
     if (action == null) {
       return false;
@@ -225,6 +233,25 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     }
   }
 
+  @Override
+  public boolean isActionEnabled(Action action) {
+    if (action == null || !isEnabled()) {
+      return false;
+    }
+    String id = getActionControls().get(action);
+    if (BeeUtils.isEmpty(id)) {
+      return false;
+    }
+    
+    Widget child = DomUtils.getChildQuietly(this, id);
+    if (child instanceof HasEnabled) {
+      return child.isVisible() && ((HasEnabled) child).isEnabled();
+    } else {
+      return false;
+    }
+  }
+
+  @Override
   public boolean isEnabled() {
     return enabled;
   }
@@ -249,17 +276,20 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     return BeeUtils.isEmpty(id) ? true : !actionControls.containsValue(id);
   }
 
+  @Override
   public void removeCaptionStyle(String style) {
     Assert.notEmpty(style);
     captionWidget.removeStyleName(style);
   }
 
+  @Override
   public void setCaption(String caption) {
     String text =
         BeeUtils.isEmpty(caption) ? BeeConst.STRING_EMPTY : LocaleUtils.maybeLocalize(caption);
     captionWidget.setText(text);
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     if (enabled == isEnabled()) {
       return;
@@ -282,14 +312,17 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     }
   }
 
+  @Override
   public void setMessage(String message) {
     messageWidget.setText(BeeUtils.trim(message));
   }
 
+  @Override
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
 
+  @Override
   public void showAction(Action action, boolean visible) {
     Assert.notNull(action);
     String widgetId = getActionControls().get(action);
@@ -314,6 +347,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     }
 
     if (action != null) {
+      control.setTitle(action.getCaption());
       getActionControls().put(action, control.getId());
     }
     return control;

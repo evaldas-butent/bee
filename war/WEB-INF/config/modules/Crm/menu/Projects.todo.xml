@@ -3,7 +3,7 @@
 
 name="Projects" label="Projektai" order="40"
 >
-  <Item name="Controled" label="Valdomi" service="project_list" parameters="c" />
+  <Item name="Controlled" label="Valdomi" service="project_list" parameters="c" />
   <Item name="Observed" label="Stebimi" service="project_list" parameters="o" />
 
   <Item name="ProjectTypes" label="Projektų tipai" service="grid" parameters="ProjectTypes" separator="true" />

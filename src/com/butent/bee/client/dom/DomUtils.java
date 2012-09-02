@@ -170,7 +170,7 @@ public class DomUtils {
 
   public static void allowSelection(UIObject obj) {
     Assert.notNull(obj);
-    DomUtils.preventSelection(obj.getElement());
+    preventSelection(obj.getElement());
   }
   
   public static void clear(Node nd) {
@@ -1533,7 +1533,7 @@ public class DomUtils {
       }
       child = Element.as(children.getItem(i));
       if (tagCnt <= 0 || BeeUtils.inListSame(child.getTagName(), tags)) {
-        DomUtils.preventSelection(child);
+        preventSelection(child);
       }
 
       if (recurse) {
@@ -1549,7 +1549,7 @@ public class DomUtils {
 
   public static void preventSelection(UIObject obj) {
     Assert.notNull(obj);
-    DomUtils.preventSelection(obj.getElement());
+    preventSelection(obj.getElement());
   }
 
   public static void removeAttribute(UIObject obj, String name) {

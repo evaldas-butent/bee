@@ -33,6 +33,7 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.ActiveWidgetChangeEvent;
 import com.butent.bee.shared.data.value.BooleanValue;
@@ -90,8 +91,18 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     this.validation = Evaluator.create(widgetDescription.getValidation(), source, dataColumns);
     this.carry = Evaluator.create(widgetDescription.getCarry(), source, dataColumns);
 
-    this.minValue = widgetDescription.getMinValue();
-    this.maxValue = widgetDescription.getMaxValue();
+    String value = widgetDescription.getMinValue();
+    if (BeeUtils.isEmpty(value) && widgetDescription.getRelation() == null) {
+      value = DataUtils.getMinValue(this.dataColumn);
+    }
+    this.minValue = value;
+
+    value = widgetDescription.getMaxValue();
+    if (BeeUtils.isEmpty(value) && widgetDescription.getRelation() == null) {
+      value = DataUtils.getMaxValue(this.dataColumn);
+    }
+    this.maxValue = value;
+
     this.required = BeeUtils.isTrue(widgetDescription.getRequired());
     this.readOnly = BeeUtils.isTrue(widgetDescription.getReadOnly());
   }

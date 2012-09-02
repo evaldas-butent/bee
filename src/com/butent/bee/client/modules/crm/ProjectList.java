@@ -210,7 +210,7 @@ public class ProjectList {
         Filter filter = null;
 
         switch (getType()) {
-          case CONTROLED:
+          case CONTROLLED:
             filter = ComparisonFilter.isEqual(CrmConstants.COL_OWNER, user);
             break;
           case OBSERVED:
@@ -283,7 +283,7 @@ public class ProjectList {
   }
 
   private enum Type {
-    CONTROLED("Valdomi projektai"),
+    CONTROLLED("Valdomi projektai"),
     OBSERVED("Stebimi projektai");
 
     private final String caption;

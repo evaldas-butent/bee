@@ -38,6 +38,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasNumberBounds;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -113,9 +114,19 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     this.editable = Evaluator.create(columnDescr.getEditable(), source, dataColumns);
     this.validation = Evaluator.create(columnDescr.getValidation(), source, dataColumns);
     this.carry = Evaluator.create(columnDescr.getCarry(), source, dataColumns);
+    
+    String value = columnDescr.getMinValue();
+    if (BeeUtils.isEmpty(value) && columnDescr.getRelation() == null) {
+      value = DataUtils.getMinValue(this.dataColumn);
+    }
+    this.minValue = value;
 
-    this.minValue = columnDescr.getMinValue();
-    this.maxValue = columnDescr.getMaxValue();
+    value = columnDescr.getMaxValue();
+    if (BeeUtils.isEmpty(value) && columnDescr.getRelation() == null) {
+      value = DataUtils.getMaxValue(this.dataColumn);
+    }
+    this.maxValue = value;
+
     this.required = columnDescr.isRequired();
 
     this.editorDescription = columnDescr.getEditor();

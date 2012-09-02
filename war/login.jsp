@@ -87,7 +87,7 @@ function goPswd(ev) {
 </head>
 
 <body>
-  <div style="position: absolute; left: 20px; top: 20px;">
+  <div style="position: absolute; left: 1%; top: 1%;">
     <img src="images/logo.gif" style="width: 55px; height: 76px;" border="0" />
   </div>
   <div class="bee-SignIn-Panel">
