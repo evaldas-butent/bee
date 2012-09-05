@@ -34,6 +34,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 
 class SelectorHandler implements SelectorEvent.Handler {
+  
+  private boolean companyHandlerEnabled = false;
+  private boolean vehicleHandlerEnabled = false;
 
   SelectorHandler() {
     super();
@@ -43,30 +46,33 @@ class SelectorHandler implements SelectorEvent.Handler {
   public void onDataSelector(SelectorEvent event) {
     if (BeeUtils.same(event.getRelatedViewName(), VIEW_EXTENDED_PROPERTIES)) {
       handleExtendedProperties(event);
+
     } else if (BeeUtils.same(event.getRelatedViewName(), CommonsConstants.VIEW_COMPANIES)) {
-      handleCompany(event);
+      if (isCompanyHandlerEnabled()) {
+        handleCompany(event);
+      }
+
     } else if (BeeUtils.same(event.getRelatedViewName(), TransportConstants.VIEW_VEHICLES)) {
-      handleVehicle(event);
+      if (isVehicleHandlerEnabled()) {
+        handleVehicle(event);
+      }
     }
   }
 
-  private void createVehicle(IsRow owner, final DataView dataView) {
-    DataInfo dataInfo = Data.getDataInfo(TransportConstants.VIEW_VEHICLES);
-    BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
-    if (owner != null) {
-      RelationUtils.updateRow(TransportConstants.VIEW_VEHICLES, TransportConstants.COL_OWNER, row,
-          CommonsConstants.VIEW_COMPANIES, owner, true);
-    }
+  boolean isCompanyHandlerEnabled() {
+    return companyHandlerEnabled;
+  }
 
-    RowFactory.createRow(TransportConstants.FORM_NEW_VEHICLE, "Nauja transporto priemonė",
-        dataInfo, row, new RowCallback() {
-          @Override
-          public void onSuccess(BeeRow result) {
-            RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_VEHICLE, dataView.getActiveRow(),
-                TransportConstants.VIEW_VEHICLES, result, true);
-            dataView.refresh(false);
-          }
-        });
+  boolean isVehicleHandlerEnabled() {
+    return vehicleHandlerEnabled;
+  }
+  
+  void setCompanyHandlerEnabled(boolean companyHandlerEnabled) {
+    this.companyHandlerEnabled = companyHandlerEnabled;
+  }
+
+  void setVehicleHandlerEnabled(boolean vehicleHandlerEnabled) {
+    this.vehicleHandlerEnabled = vehicleHandlerEnabled;
   }
 
   private void chooseVehicle(final DataView dataView, final BeeRowSet rowSet, String companyName,
@@ -95,6 +101,25 @@ class SelectorHandler implements SelectorEvent.Handler {
             } else {
               createVehicle(owner, dataView);
             }
+          }
+        });
+  }
+
+  private void createVehicle(IsRow owner, final DataView dataView) {
+    DataInfo dataInfo = Data.getDataInfo(TransportConstants.VIEW_VEHICLES);
+    BeeRow row = RowFactory.createEmptyRow(dataInfo, true);
+    if (owner != null) {
+      RelationUtils.updateRow(TransportConstants.VIEW_VEHICLES, TransportConstants.COL_OWNER, row,
+          CommonsConstants.VIEW_COMPANIES, owner, true);
+    }
+
+    RowFactory.createRow(TransportConstants.FORM_NEW_VEHICLE, "Nauja transporto priemonė",
+        dataInfo, row, new RowCallback() {
+          @Override
+          public void onSuccess(BeeRow result) {
+            RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_VEHICLE, dataView.getActiveRow(),
+                TransportConstants.VIEW_VEHICLES, result, true);
+            dataView.refresh(false);
           }
         });
   }

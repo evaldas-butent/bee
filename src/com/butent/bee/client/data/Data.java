@@ -9,6 +9,7 @@ import com.butent.bee.shared.data.view.ColumnMapper;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -23,11 +24,15 @@ public class Data {
     COLUMN_MAPPER.clearCell(viewName, row, colName);
   }
 
+  public static boolean equals(String viewName, IsRow row, String colName, Long value) {
+    return BeeUtils.equals(getLong(viewName, row, colName), value);
+  }
+
   public static int getApproximateRowCount(String viewName) {
     DataInfo dataInfo = getDataInfo(viewName);
     return (dataInfo == null) ? BeeConst.UNDEF : dataInfo.getRowCount(); 
   }
-  
+
   public static Boolean getBoolean(String viewName, IsRow row, String colName) {
     return COLUMN_MAPPER.getBoolean(viewName, row, colName);
   }

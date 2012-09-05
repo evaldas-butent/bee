@@ -33,6 +33,7 @@ import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -84,11 +85,13 @@ public class CalendarKeeper {
   private static final List<String> CACHED_VIEWS =
       Lists.newArrayList(VIEW_CONFIGURATION, VIEW_APPOINTMENT_TYPES, VIEW_ATTENDEES,
           VIEW_EXTENDED_PROPERTIES, VIEW_REMINDER_TYPES, VIEW_THEMES, VIEW_THEME_COLORS,
-          VIEW_ATTENDEE_PROPS, VIEW_APPOINTMENT_STYLES);
+          VIEW_ATTENDEE_PROPS, VIEW_APPOINTMENT_STYLES, VIEW_CAL_APPOINTMENT_TYPES);
 
   private static final AppointmentRenderer APPOINTMENT_RENDERER = new AppointmentRenderer();
 
   private static final ReportManager REPORT_MANAGER = new ReportManager();
+
+  private static final SelectorHandler SELECTOR_HANDLER = new SelectorHandler();
 
   private static FormView settingsForm = null;
 
@@ -146,7 +149,7 @@ public class CalendarKeeper {
     BeeKeeper.getBus().registerRowActionHandler(new RowActionHandler(), false);
     BeeKeeper.getBus().registerRowTransformHandler(new RowTransformHandler(), false);
 
-    SelectorEvent.register(new SelectorHandler());
+    SelectorEvent.register(SELECTOR_HANDLER);
 
     REPORT_MANAGER.register();
   }
@@ -155,20 +158,53 @@ public class CalendarKeeper {
     CalendarKeeper.dataLoaded = dataLoaded;
   }
 
-  static void createAppointment(final DateTime start, final Long attendeeId, final boolean glass) {
+  static void createAppointment(Long calendarId, final DateTime start, final Long attendeeId,
+      final boolean glass) {
+    
+    Long type = null;
+    if (calendarId != null) {
+      BeeRowSet rowSet = CACHE.getRowSet(VIEW_CAL_APPOINTMENT_TYPES);
+      if (rowSet != null) {
+        for (BeeRow row : rowSet.getRows()) {
+          if (Data.equals(VIEW_CAL_APPOINTMENT_TYPES, row, COL_CALENDAR, calendarId)) {
+            type = Data.getLong(VIEW_CAL_APPOINTMENT_TYPES, row, COL_APPOINTMENT_TYPE);
+            break;
+          }
+        }
+      }
+    }
+
+    if (type == null) {
+      type = getDefaultAppointmentType();
+    }
+    final BeeRow typeRow = (type == null) ? null : CACHE.getRow(VIEW_APPOINTMENT_TYPES, type);
+    
+    String formName = (typeRow == null) ? null : Data.getString(VIEW_APPOINTMENT_TYPES, typeRow,
+        COL_APPOINTMENT_CREATOR);
+    if (BeeUtils.isEmpty(formName)) {
+      formName = DEFAULT_NEW_APPOINTMENT_FORM;
+    }
+    
     final AppointmentBuilder builder = new AppointmentBuilder(true);
 
-    FormFactory.createFormView(FORM_NEW_APPOINTMENT, VIEW_APPOINTMENTS,
+    FormFactory.createFormView(formName, VIEW_APPOINTMENTS,
         getAppointmentViewColumns(), false, builder, new FormFactory.FormViewCallback() {
           @Override
           public void onSuccess(FormDescription formDescription, FormView result) {
             if (result != null) {
               result.start(null);
-              result.updateRow(AppointmentBuilder.createEmptyRow(start), false);
-
+              result.updateRow(AppointmentBuilder.createEmptyRow(typeRow, start), false);
+              
               if (DataUtils.isId(attendeeId)) {
                 builder.setAttenddes(Lists.newArrayList(attendeeId));
               }
+              
+              builder.setRequiredFields(formDescription.getOptions());
+
+              boolean companyAndVehicle = builder.isRequired(COL_COMPANY) 
+                  && builder.isRequired(COL_VEHICLE);
+              SELECTOR_HANDLER.setCompanyHandlerEnabled(companyAndVehicle);
+              SELECTOR_HANDLER.setVehicleHandlerEnabled(companyAndVehicle);
 
               Global.inputWidget(getAppointmentViewInfo().getNewRowCaption(), result.asWidget(),
                   builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE, true);
@@ -290,9 +326,17 @@ public class CalendarKeeper {
 
   static void openAppointment(final Appointment appointment, final boolean glass) {
     Assert.notNull(appointment);
-    final AppointmentBuilder builder = new AppointmentBuilder(false);
+    
+    BeeRow typeRow = getAppointmentTypeRow(appointment);
+    String formName = (typeRow == null) ? null : Data.getString(VIEW_APPOINTMENT_TYPES, typeRow,
+        COL_APPOINTMENT_EDITOR);
+    if (BeeUtils.isEmpty(formName)) {
+      formName = DEFAULT_EDIT_APPOINTMENT_FORM;
+    }
 
-    FormFactory.createFormView(FORM_EDIT_APPOINTMENT, VIEW_APPOINTMENTS,
+    final AppointmentBuilder builder = new AppointmentBuilder(false);
+    
+    FormFactory.createFormView(formName, VIEW_APPOINTMENTS,
         getAppointmentViewColumns(), false, builder, new FormFactory.FormViewCallback() {
           @Override
           public void onSuccess(FormDescription formDescription, FormView result) {
@@ -306,6 +350,13 @@ public class CalendarKeeper {
 
               builder.setColor(appointment.getColor());
 
+              builder.setRequiredFields(formDescription.getOptions());
+              
+              boolean companyAndVehicle = builder.isRequired(COL_COMPANY) 
+                  && builder.isRequired(COL_VEHICLE);
+              SELECTOR_HANDLER.setCompanyHandlerEnabled(companyAndVehicle);
+              SELECTOR_HANDLER.setVehicleHandlerEnabled(companyAndVehicle);
+              
               Global.inputWidget(result.getCaption(), result.asWidget(),
                   builder.getModalCallback(), glass, RowEditor.DIALOG_STYLE, true);
             }

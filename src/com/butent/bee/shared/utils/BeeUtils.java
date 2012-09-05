@@ -649,7 +649,7 @@ public class BeeUtils {
    * @param y second Object to compare
    * @return true if Objects are equal, false if Objects differ.
    */
-  public static boolean equals(Object x, Object y) {
+  public static <T> boolean equals(T x, T y) {
     if (x == null) {
       return y == null;
     } else {

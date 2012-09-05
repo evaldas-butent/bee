@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.calendar;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Visibility;
 import com.google.gwt.event.dom.client.BlurEvent;
@@ -36,6 +37,7 @@ import com.butent.bee.client.composite.InputTime;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RelationUtils;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
@@ -72,8 +74,10 @@ import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.List;
+import java.util.Set;
 
 class AppointmentBuilder extends AbstractFormCallback {
 
@@ -172,12 +176,12 @@ class AppointmentBuilder extends AbstractFormCallback {
 
   private static final String STYLE_COLOR_BAR_PREFIX = "bee-cal-ColorBar-";
 
-  static BeeRow createEmptyRow(DateTime start) {
+  static BeeRow createEmptyRow(BeeRow typeRow, DateTime start) {
     BeeRow row = RowFactory.createEmptyRow(CalendarKeeper.getAppointmentViewInfo(), true);
 
-    Long type = CalendarKeeper.getDefaultAppointmentType();
-    if (DataUtils.isId(type)) {
-      Data.setValue(VIEW_APPOINTMENTS, row, COL_APPOINTMENT_TYPE, type);
+    if (typeRow != null) {
+      RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_APPOINTMENT_TYPE, row,
+          VIEW_APPOINTMENT_TYPES, typeRow, true);
     }
     if (start != null) {
       Data.setValue(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME, start);
@@ -236,6 +240,8 @@ class AppointmentBuilder extends AbstractFormCallback {
   private DateTime lastCheckStart = null;
   private DateTime lastCheckEnd = null;
 
+  private final Set<String> requiredFields = Sets.newHashSet();
+  
   AppointmentBuilder(boolean isNew) {
     super();
     this.isNew = isNew;
@@ -370,12 +376,20 @@ class AppointmentBuilder extends AbstractFormCallback {
 
     DateTime start = Data.getDateTime(VIEW_APPOINTMENTS, row, COL_START_DATE_TIME);
     DateTime end = Data.getDateTime(VIEW_APPOINTMENTS, row, COL_END_DATE_TIME);
+    
+    if (!BeeUtils.isEmpty(getStartDateWidgetId())) {
+      getInputDate(getStartDateWidgetId()).setDate(start);
+    }
+    if (!BeeUtils.isEmpty(getStartTimeWidgetId())) {
+      getInputTime(getStartTimeWidgetId()).setDateTime(start);
+    }
 
-    getInputDate(getStartDateWidgetId()).setDate(start);
-    getInputTime(getStartTimeWidgetId()).setDateTime(start);
-
-    getInputDate(getEndDateWidgetId()).setDate(end);
-    getInputTime(getEndTimeWidgetId()).setDateTime(end);
+    if (!BeeUtils.isEmpty(getEndDateWidgetId())) {
+      getInputDate(getEndDateWidgetId()).setDate(end);
+    }
+    if (!BeeUtils.isEmpty(getEndTimeWidgetId())) {
+      getInputTime(getEndTimeWidgetId()).setDateTime(end);
+    }
   }
 
   @Override
@@ -423,6 +437,10 @@ class AppointmentBuilder extends AbstractFormCallback {
     return modalCallback;
   }
 
+  boolean isRequired(String name) {
+    return requiredFields.contains(name);
+  }
+
   void setAttenddes(List<Long> attendees) {
     BeeUtils.overwrite(resources, attendees);
     refreshResourceWidget();
@@ -461,6 +479,10 @@ class AppointmentBuilder extends AbstractFormCallback {
     }
 
     setSelectedIndex(getListBox(getReminderWidgetId()), reminderIndex);
+  }
+  
+  void setRequiredFields(String fieldNames) {
+    BeeUtils.overwrite(requiredFields, NameUtils.toSet(fieldNames));
   }
 
   private void addColorHandlers() {
@@ -672,11 +694,14 @@ class AppointmentBuilder extends AbstractFormCallback {
   }
 
   private DateTime getEnd() {
-    HasDateValue datePart = getInputDate(getEndDateWidgetId()).getDate();
-    DateTime timePart = getInputTime(getEndTimeWidgetId()).getDateTime();
+    HasDateValue datePart = BeeUtils.isEmpty(getEndDateWidgetId()) 
+        ? null : getInputDate(getEndDateWidgetId()).getDate();
+    DateTime timePart = BeeUtils.isEmpty(getEndTimeWidgetId()) 
+        ? null : getInputTime(getEndTimeWidgetId()).getDateTime();
 
     if (datePart == null) {
-      if (timePart != null && TimeUtils.minutesSinceDayStarted(timePart) > 0) {
+      if (timePart != null && TimeUtils.minutesSinceDayStarted(timePart) > 0
+          && !BeeUtils.isEmpty(getStartDateWidgetId())) {
         datePart = getInputDate(getStartDateWidgetId()).getDate();
       }
       if (datePart == null) {
@@ -718,6 +743,9 @@ class AppointmentBuilder extends AbstractFormCallback {
   }
 
   private BeeListBox getListBox(String id) {
+    if (BeeUtils.isEmpty(id)) {
+      return null;
+    }
     Widget widget = getWidget(id);
     return (widget instanceof BeeListBox) ? (BeeListBox) widget : null;
   }
@@ -759,11 +787,13 @@ class AppointmentBuilder extends AbstractFormCallback {
   }
 
   private DateTime getStart() {
-    HasDateValue datePart = getInputDate(getStartDateWidgetId()).getDate();
+    HasDateValue datePart = BeeUtils.isEmpty(getStartDateWidgetId())
+        ? null : getInputDate(getStartDateWidgetId()).getDate();
     if (datePart == null) {
       return null;
     }
-    DateTime timePart = getInputTime(getStartTimeWidgetId()).getDateTime();
+    DateTime timePart = BeeUtils.isEmpty(getStartTimeWidgetId())
+        ? null : getInputTime(getStartTimeWidgetId()).getDateTime();
 
     return TimeUtils.combine(datePart, timePart);
   }
@@ -903,7 +933,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   private boolean isOverlapVisible() {
     return overlapVisible;
   }
-
+  
   private boolean isSaving() {
     return saving;
   }
@@ -1087,16 +1117,16 @@ class AppointmentBuilder extends AbstractFormCallback {
       listBox.deselect();
     }
 
-    Widget widget = getWidget(getHourWidgetId());
+    Widget widget = BeeUtils.isEmpty(getHourWidgetId()) ? null : getWidget(getHourWidgetId());
     if (widget instanceof Editor) {
       ((Editor) widget).setValue(BeeConst.STRING_ZERO);
     }
-    widget = getWidget(getMinuteWidgetId());
+    widget = BeeUtils.isEmpty(getMinuteWidgetId()) ? null : getWidget(getMinuteWidgetId());
     if (widget instanceof Editor) {
       ((Editor) widget).setValue(BeeConst.STRING_ZERO);
     }
 
-    widget = getWidget(getBuildInfoWidgetId());
+    widget = BeeUtils.isEmpty(getBuildInfoWidgetId()) ? null : getWidget(getBuildInfoWidgetId());
     if (widget instanceof HasItems) {
       ((HasItems) widget).addItem(info.toString());
     }
@@ -1303,7 +1333,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   }
 
   private void showOverlap(boolean show) {
-    if (isOverlapVisible() != show) {
+    if (isOverlapVisible() != show && !BeeUtils.isEmpty(getOverlapWidgetId())) {
       Widget widget = getWidget(getOverlapWidgetId());
       if (widget != null) {
         widget.getElement().getStyle().setVisibility(show ? Visibility.VISIBLE : Visibility.HIDDEN);
@@ -1331,7 +1361,12 @@ class AppointmentBuilder extends AbstractFormCallback {
     DialogBox dialog = new DialogBox(Global.CONSTANTS.overlappingAppointments(),
         CalendarStyleManager.MORE_POPUP);
     dialog.setWidget(panel);
-    dialog.showRelativeTo(getWidget(getOverlapWidgetId()));
+    
+    if (BeeUtils.isEmpty(getOverlapWidgetId())) {
+      dialog.center();
+    } else {
+      dialog.showRelativeTo(getWidget(getOverlapWidgetId()));
+    }
   }
 
   private void updateDuration(String propName) {
@@ -1381,25 +1416,27 @@ class AppointmentBuilder extends AbstractFormCallback {
       return false;
     }
 
-    if (isEmpty(row, COL_COMPANY)) {
+    if (isRequired(COL_COMPANY) && isEmpty(row, COL_COMPANY)) {
       getFormView().notifySevere("Įveskite klientą");
       return false;
     }
-    if (isEmpty(row, COL_VEHICLE)) {
+    if (isRequired(COL_VEHICLE) && isEmpty(row, COL_VEHICLE)) {
       getFormView().notifySevere("Įveskite automobilį");
       return false;
     }
 
-    if (!hasValue(getServiceTypeWidgetId())) {
+    if (!BeeUtils.isEmpty(getServiceTypeWidgetId()) && isRequired(NAME_SERVICE_TYPE) 
+        && !hasValue(getServiceTypeWidgetId())) {
       getFormView().notifySevere("Pasirinkite serviso tipą");
       return false;
     }
-    if (!hasValue(getRepairTypeWidgetId())) {
+    if (!BeeUtils.isEmpty(getRepairTypeWidgetId()) && isRequired(NAME_REPAIR_TYPE) 
+        && !hasValue(getRepairTypeWidgetId())) {
       getFormView().notifySevere("Pasirinkite remonto tipą");
       return false;
     }
     
-    if (resources.isEmpty()) {
+    if (isRequired(NAME_RESOURCES) && resources.isEmpty()) {
       getFormView().notifySevere("Nurodykite resursus");
       return false;
     }

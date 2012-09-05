@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.HasDataTable;
+import com.butent.bee.shared.HasState;
 import com.butent.bee.shared.data.event.ActiveWidgetChangeEvent;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
@@ -26,7 +27,7 @@ import java.util.List;
 
 public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,  
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
-    ActionEvent.HasActionHandlers, HasDimensions  {
+    ActionEvent.HasActionHandlers, HasDimensions, HasState  {
 
   void applyOptions(String options);
 

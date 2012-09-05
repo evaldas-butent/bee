@@ -23,5 +23,8 @@
    
     <DataColumn name="AppointmentCompact" caption="Kompaktiška forma">&nowrap;</DataColumn>
     <DataColumn name="AppointmentTitle" caption="Išplaukiantis tekstas">&nowrap;</DataColumn>
+
+    <DataColumn name="AppointmentCreator" caption="=appointmentCreator" />
+    <DataColumn name="AppointmentEditor" caption="=appointmentEditor" />
   </columns>
 </Grid>

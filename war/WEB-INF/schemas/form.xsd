@@ -27,6 +27,7 @@
     <xs:attribute name="disabledActions" type="ui:viewActions" />
     <xs:attribute name="cacheDescription" type="xs:boolean" default="true" />
     <xs:attributeGroup ref="ui:dimension" />
+    <xs:attribute name="options" type="xs:normalizedString" />
   </xs:complexType>
 
   <xs:element name="Form" type="form">

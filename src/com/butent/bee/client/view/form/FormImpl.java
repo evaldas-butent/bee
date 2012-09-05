@@ -49,6 +49,7 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
@@ -253,6 +254,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private int activeEditableIndex = BeeConst.UNDEF;
 
   private Dimensions dimensions = null;
+  
+  private State state = null;
 
   public FormImpl(String formName) {
     this(formName, Position.RELATIVE);
@@ -263,22 +266,27 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     this.formName = formName;
   }
 
+  @Override
   public HandlerRegistration addActionHandler(ActionEvent.Handler handler) {
     return addHandler(handler, ActionEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addActiveRowChangeHandler(ActiveRowChangeEvent.Handler handler) {
     return addHandler(handler, ActiveRowChangeEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addAddEndHandler(AddEndEvent.Handler handler) {
     return addHandler(handler, AddEndEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addAddStartHandler(AddStartEvent.Handler handler) {
     return addHandler(handler, AddStartEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addCellValidationHandler(String columnId, Handler handler) {
     EditableWidget editableWidget = getEditableWidgetByColumn(columnId, true);
     if (editableWidget == null) {
@@ -288,35 +296,43 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  @Override
   public HandlerRegistration addDataRequestHandler(DataRequestEvent.Handler handler) {
     return addHandler(handler, DataRequestEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addLoadingStateChangeHandler(LoadingStateChangeEvent.Handler handler) {
     return addHandler(handler, LoadingStateChangeEvent.TYPE);
   }
 
+  @Override
   public HandlerRegistration addReadyForInsertHandler(ReadyForInsertEvent.Handler handler) {
     return addHandler(handler, ReadyForInsertEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addReadyForUpdateHandler(ReadyForUpdateEvent.Handler handler) {
     return addHandler(handler, ReadyForUpdateEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addScopeChangeHandler(ScopeChangeEvent.Handler handler) {
     return addHandler(handler, ScopeChangeEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addSelectionCountChangeHandler(
       SelectionCountChangeEvent.Handler handler) {
     return null;
   }
 
+  @Override
   public HandlerRegistration addSortHandler(SortEvent.Handler handler) {
     return null;
   }
 
+  @Override
   public void applyOptions(String options) {
   }
 
@@ -334,6 +350,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  @Override
   public void create(FormDescription formDescription, String view, List<BeeColumn> dataCols,
       boolean addStyle, FormCallback callback) {
     Assert.notNull(formDescription);
@@ -386,6 +403,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  @Override
   public void finishNewRow(IsRow rowValue) {
     fireEvent(new AddEndEvent(false));
 
@@ -407,12 +425,14 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     setAdding(false);
   }
 
+  @Override
   public void fireLoadingStateChange(LoadingStateChangeEvent.LoadingState loadingState) {
     if (loadingState != null) {
       fireEvent(new LoadingStateChangeEvent(loadingState));
     }
   }
 
+  @Override
   public boolean focus(String source) {
     if (BeeUtils.isEmpty(source)) {
       return false;
@@ -427,10 +447,12 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
   
+  @Override
   public IsRow getActiveRow() {
     return activeRow;
   }
 
+  @Override
   public RowInfo getActiveRowInfo() {
     if (getActiveRow() == null) {
       return null;
@@ -438,58 +460,67 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return new RowInfo(getActiveRow());
   }
 
+  @Override
   public String getCaption() {
     return caption;
   }
 
+  @Override
   public List<BeeColumn> getDataColumns() {
     return dataColumns;
   }
 
+  @Override
   public int getDataIndex(String source) {
     return DataUtils.getColumnIndex(source, getDataColumns());
   }
 
+  @Override
   public HasDataTable getDisplay() {
     return this;
   }
 
-  public List<EditableWidget> getEditableWidgets() {
-    return editableWidgets;
-  }
-
+  @Override
   public FormCallback getFormCallback() {
     return formCallback;
   }
 
+  @Override
   public String getFormName() {
     return formName;
   }
 
+  @Override
   public Unit getHeightUnit() {
     return (getDimensions() == null) ? null : getDimensions().getHeightUnit();
   }
 
+  @Override
   public Double getHeightValue() {
     return (getDimensions() == null) ? null : getDimensions().getHeightValue();
   }
 
+  @Override
   public int getPageSize() {
     return 1;
   }
 
+  @Override
   public int getPageStart() {
     return pageStart;
   }
 
+  @Override
   public Widget getRootWidget() {
     return rootWidget;
   }
 
+  @Override
   public int getRowCount() {
     return rowCount;
   }
 
+  @Override
   public List<? extends IsRow> getRowData() {
     List<IsRow> data = Lists.newArrayList();
     if (getActiveRow() != null) {
@@ -498,6 +529,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return data;
   }
 
+  @Override
   public JavaScriptObject getRowJso() {
     if (!hasData() || getActiveRow() == null) {
       return null;
@@ -511,18 +543,27 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return rowJso;
   }
 
+  @Override
   public Order getSortOrder() {
     return null;
   }
 
+  @Override
+  public State getState() {
+    return state;
+  }
+
+  @Override
   public String getViewName() {
     return viewName;
   }
 
+  @Override
   public Presenter getViewPresenter() {
     return viewPresenter;
   }
 
+  @Override
   public Widget getWidgetBySource(String source) {
     Assert.notEmpty(source);
     EditableWidget editableWidget = getEditableWidgetByColumn(source, false);
@@ -533,26 +574,32 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  @Override
   public String getWidgetId() {
     return getId();
   }
 
+  @Override
   public Unit getWidthUnit() {
     return (getDimensions() == null) ? null : getDimensions().getWidthUnit();
   }
 
+  @Override
   public Double getWidthValue() {
     return (getDimensions() == null) ? null : getDimensions().getWidthValue();
   }
 
+  @Override
   public boolean isEditing() {
     return editing;
   }
 
+  @Override
   public boolean isEnabled() {
     return enabled;
   }
 
+  @Override
   public boolean isRowEditable(boolean warn) {
     if (getActiveRow() == null || isReadOnly() || !isEnabled()) {
       return false;
@@ -560,18 +607,22 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return isRowEditable(getActiveRow(), warn);
   }
 
+  @Override
   public void notifyInfo(String... messages) {
     showNote(Level.INFO, messages);
   }
 
+  @Override
   public void notifySevere(String... messages) {
     showNote(Level.SEVERE, messages);
   }
 
+  @Override
   public void notifyWarning(String... messages) {
     showNote(Level.WARNING, messages);
   }
 
+  @Override
   public void onActiveWidgetChange(ActiveWidgetChangeEvent event) {
     if (event.isActive()) {
       for (int i = 0; i < getEditableWidgets().size(); i++) {
@@ -585,6 +636,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  @Override
   public void onCellUpdate(CellUpdateEvent event) {
     Assert.notNull(event);
 
@@ -637,6 +689,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     refreshDisplayWidgets();
   }
   
+  @Override
   public void onEditEnd(EditEndEvent event, EditEndEvent.HasEditEndHandler source) {
     Assert.notNull(event);
 
@@ -679,9 +732,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     navigate(keyCode, hasModifiers, widgetId);
   }
 
+  @Override
   public void onMultiDelete(MultiDeleteEvent event) {
   }
 
+  @Override
   public void onPreviewNativeEvent(NativePreviewEvent event) {
     String type = event.getNativeEvent().getType();
 
@@ -706,9 +761,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  @Override
   public void onRowDelete(RowDeleteEvent event) {
   }
 
+  @Override
   public void onRowUpdate(RowUpdateEvent event) {
     Assert.notNull(event);
     IsRow newRow = event.getRow();
@@ -719,6 +776,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  @Override
   public void prepareForInsert() {
     if (getFormCallback() != null 
         && !getFormCallback().onPrepareForInsert(this, this, getActiveRow())) {
@@ -752,21 +810,26 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     fireEvent(new ReadyForInsertEvent(columns, values));
   }
 
+  @Override
   public void refresh(boolean refreshChildren) {
     refreshData(refreshChildren, getActiveRow() != null);
   }
 
+  @Override
   public void refreshCellContent(String columnSource) {
   }
 
+  @Override
   public void refreshChildWidgets(IsRow rowValue) {
     BeeKeeper.getBus().fireEventFromSource(new ParentRowEvent(getViewName(), rowValue,
         isRowEnabled(rowValue)), getId());
   }
 
+  @Override
   public void reset() {
   }
 
+  @Override
   public void setActiveRow(IsRow activeRow) {
     if (getFormCallback() != null) {
       getFormCallback().onSetActiveRow(activeRow);
@@ -774,10 +837,12 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     this.activeRow = activeRow;
   }
 
+  @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     if (this.enabled == enabled) {
       return;
@@ -794,9 +859,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     getRootWidget().setStyleName(STYLE_DISABLED, !enabled);
   }
 
+  @Override
   public void setPageSize(int size, boolean fireScopeChange) {
   }
 
+  @Override
   public void setPageStart(int start, boolean fireScopeChange, boolean fireDataRequest,
       NavigationOrigin origin) {
     Assert.nonNegative(start);
@@ -814,6 +881,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  @Override
   public void setRowCount(int count, boolean fireScopeChange) {
     Assert.nonNegative(count);
     if (count == getRowCount()) {
@@ -829,6 +897,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  @Override
   public void setRowData(List<? extends IsRow> values, boolean refresh) {
     if (BeeUtils.isEmpty(values)) {
       setActiveRow(null);
@@ -841,10 +910,17 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  @Override
+  public void setState(State state) {
+    this.state = state;
+  }
+
+  @Override
   public void setViewPresenter(Presenter presenter) {
     this.viewPresenter = presenter;
   }
 
+  @Override
   public void start(Integer count) {
     if (hasData()) {
       if (!getTabOrder().isEmpty()) {
@@ -883,6 +959,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  @Override
   public void startNewRow() {
     setAdding(true);
     fireEvent(new AddStartEvent(NEW_ROW_CAPTION, false));
@@ -913,9 +990,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     refreshData(true, true);
   }
 
+  @Override
   public void updateActiveRow(List<? extends IsRow> values) {
   }
 
+  @Override
   public void updateCell(String columnId, String newValue) {
     Assert.notEmpty(columnId);
 
@@ -946,11 +1025,13 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  @Override
   public void updateRow(IsRow rowValue, boolean refreshChildren) {
     setActiveRow(rowValue);
     render(refreshChildren);
   }
 
+  @Override
   public boolean validate() {
     boolean ok = true;
 
@@ -1078,6 +1159,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     return null;
   }
 
+  private List<EditableWidget> getEditableWidgets() {
+    return editableWidgets;
+  }
+
   private Notification getNotification() {
     return notification;
   }
@@ -1143,7 +1228,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   private void navigate(Integer keyCode, boolean hasModifiers, String widgetId) {
-    if (keyCode != null && !BeeUtils.isEmpty(widgetId) && getTabOrder().size() > 1) {
+    if (keyCode != null && !BeeUtils.isEmpty(widgetId) && getTabOrder().size() > 1
+        && !State.CLOSED.equals(getState())) {
       switch (BeeUtils.unbox(keyCode)) {
         case KeyCodes.KEY_ENTER:
         case KeyCodes.KEY_DOWN:

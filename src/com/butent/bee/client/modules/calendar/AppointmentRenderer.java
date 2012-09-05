@@ -120,6 +120,9 @@ class AppointmentRenderer {
     template = BeeUtils.notEmpty(bodyTemplate,
         multi ? DEFAULT_MULTI_BODY_TEMPLATE : DEFAULT_SIMPLE_BODY_TEMPLATE);
     String body = parseTemplate(template, substitutes, separator);
+    if (BeeUtils.allEmpty(header, body)) {
+      body = renderEmpty(appointmentWidget.getAppointment());
+    }
     appointmentWidget.setBodyHtml(body);
 
     template = BeeUtils.notEmpty(titleTemplate, DEFAULT_TITLE_TEMPLATE);
@@ -134,6 +137,9 @@ class AppointmentRenderer {
 
     String template = BeeUtils.notEmpty(compactTemplate, DEFAULT_COMPACT_TEMPLATE);
     String html = parseTemplate(template, substitutes, COMPACT_HTML_SEPARATOR);
+    if (BeeUtils.isEmpty(html)) {
+      html = renderEmpty(appointment);
+    }
     if (!BeeUtils.isEmpty(html) && htmlWidget != null) {
       htmlWidget.getElement().setInnerHTML(BeeUtils.trim(html));
     }
@@ -274,5 +280,9 @@ class AppointmentRenderer {
         return DATE_FORMAT.format(dateTime);
       }
     }
+  }
+  
+  private String renderEmpty(Appointment appointment) {
+    return renderPeriod(appointment.getStart(), appointment.getEnd());
   }
 }

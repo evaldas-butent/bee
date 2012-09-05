@@ -120,7 +120,8 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     calendar.addTimeBlockClickHandler(new TimeBlockClickEvent.Handler() {
       public void onTimeBlockClick(TimeBlockClickEvent event) {
-        CalendarKeeper.createAppointment(event.getStart(), event.getAttendeeId(), false);
+        CalendarKeeper.createAppointment(getCalendarId(), event.getStart(), event.getAttendeeId(),
+            false);
       }
     });
 
@@ -229,6 +230,10 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     loadAppointments();
   }
 
+  public long getCalendarId() {
+    return calendarId;
+  }
+
   public String getEventSource() {
     return null;
   }
@@ -257,7 +262,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         break;
 
       case CONFIGURE:
-        CalendarKeeper.editSettings(calendarId, this);
+        CalendarKeeper.editSettings(getCalendarId(), this);
         break;
 
       case CLOSE:
@@ -461,7 +466,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   private void loadAppointments() {
     ParameterList params =
         CalendarKeeper.createRequestParameters(CalendarConstants.SVC_GET_CALENDAR_APPOINTMENTS);
-    params.addQueryItem(CalendarConstants.PARAM_CALENDAR_ID, calendarId);
+    params.addQueryItem(CalendarConstants.PARAM_CALENDAR_ID, getCalendarId());
 
     BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
       public void onResponse(ResponseObject response) {
@@ -551,7 +556,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     calendar.setAppointments(appointments);
     calendar.resumeLayout();
 
-    BeeKeeper.getLog().debug(calendarId, "loaded", appointments.size(), "appointments");
+    BeeKeeper.getLog().debug(getCalendarId(), "loaded", appointments.size(), "appointments");
   }
 
   private void setDate(JustDate date) {

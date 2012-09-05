@@ -5,6 +5,7 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.ui.Action;
@@ -86,6 +87,10 @@ public class FormDescription implements HasViewName {
     return getFormElement().getAttribute(UiConstants.ATTR_NAME);
   }
   
+  public String getOptions() {
+    return getFormElement().getAttribute(HasOptions.ATTR_OPTIONS);
+  }
+
   public Calculation getRowEditable() {
     return XmlUtils.getCalculation(getFormElement(), TAG_ROW_EDITABLE);
   }

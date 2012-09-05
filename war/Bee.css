@@ -1536,7 +1536,7 @@ body, select {
 }
 
 .bee-AdminTab {
-  display: none;
+/*   display: none; */
 }
 .bee-SplitControls {
 /*   display: none; */

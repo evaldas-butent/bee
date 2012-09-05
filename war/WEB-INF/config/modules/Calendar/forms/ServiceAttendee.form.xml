@@ -3,7 +3,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:d="http://www.butent.com/decorator"
   
-  name="Attendee" viewName="Attendees" caption="Resursas">
+  name="ServiceAttendee" viewName="Attendees" caption="Resursas">
 
   <FlowPanel>
     <InputText source="Name" caption="Pavadinimas:" style="width: 340px;" d:size="100" d:unit="px"
@@ -16,18 +16,25 @@
     <InputText source="Location" caption="Vieta:" style="width: 180px;" d:size="80" d:unit="px"
        d:rootStyle="position: absolute; left: 360px; top: 60px;" />
 
+    <ChildGrid name="PropsA" gridName="AttendeeProps" relColumn="Attendee" caption="Serviso tipas"
+      filter="GroupName serv"
+      style="position: absolute; left: 20px; width: 280px; top: 100px; height: 180px;" />
+    <ChildGrid name="PropsB" gridName="AttendeeProps" relColumn="Attendee" caption="Remonto tipas"
+      filter="GroupName rem"
+      style="position: absolute; left: 360px; width: 280px; top: 100px; height: 180px;" />
+
     <DataSelector source="CompanyPerson" caption="Atsakingas:" style="width: 180px;"
-        d:size="100" d:unit="px" d:rootStyle="position: absolute; left: 20px; top: 100px;">
+        d:size="100" d:unit="px" d:rootStyle="position: absolute; left: 20px; top: 300px;">
       <renderToken source="FirstName" />
       <renderToken source="LastName" />
       <renderToken source="CompanyName" prefix=", " />
     </DataSelector>   
 
     <Radio source="Transparency" itemKey="Transparency" vertical="false"
-       style="position: absolute; left: 360px; top: 100px" />
+       style="position: absolute; left: 360px; top: 300px" />
 
-    <Label html="Aprašymas:" style="position: absolute; left: 20px; top: 140px;" />
+    <Label html="Aprašymas:" style="position: absolute; left: 20px; top: 360px;" />
     <InputArea source="Description" visibleLines="3"
-       style="width: 500px; position: absolute; left: 120px; top: 140px;" />
+       style="width: 500px; position: absolute; left: 120px; top: 360px;" />
   </FlowPanel>
 </f:Form>  

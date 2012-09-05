@@ -1898,6 +1898,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
       setActiveFormContainerId(null);
     }
+    
+    getForm(edit).setState(show ? State.OPEN : State.CLOSED);
   }
 
   private void showGrid(boolean show) {

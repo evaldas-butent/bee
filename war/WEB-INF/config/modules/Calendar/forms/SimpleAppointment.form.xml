@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY absolute "position: absolute;">
+  <!ENTITY relative "position: relative;">
+]>
+<f:Form xmlns="http://www.butent.com/widget" xmlns:f="http://www.butent.com/form" xmlns:ui="http://www.butent.com/ui"
+  xmlns:d="http://www.butent.com/decorator" name="SimpleAppointment" viewName="Appointments"
+  caption="=appointment" disabledActions="add delete" enabledActions="save">
+
+  <FlowPanel style="&relative; margin: 2ex 1em; width: 760px; height: 360px;">
+    <InputText source="Summary" caption="Santrauka:" style="width: 660px;" d:size="80"
+      d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
+
+    <Label html="Resursai:" style="&absolute; left: 0; top: 40px;" />
+    <Image name="AddResource" resource="add" style="&absolute; left: 0px; top: 68px;" />
+    <Image name="RemoveResource" resource="delete" style="&absolute; left: 36px; top: 68px;" />
+
+    <Image name="Overlap" resource="yellow" style="&absolute; left: 14px; top: 100px;" />
+
+    <ListBox name="Resources" minSize="5" maxSize="5"
+      style="&absolute; left: 80px; top: 40px; width: 240px; max-height: 100px;" />
+
+    <InputArea source="Description" placeholder="Aprašymas" visibleLines="5"
+      style="&absolute; left: 360px; top: 40px; width: 380px;" />
+
+    <InputDate name="StartDate" required="true" caption="Planuojamas pradžios laikas:"
+      style="width: 80px;" d:size="188" d:unit="px" d:rootStyle="&absolute; left: 0; top: 160px;" />
+    <InputTime name="StartTime" step="30" style="&absolute; left: 280px; top: 160px; width: 40px;" />
+
+    <InputSpinner name="Hours" caption="Trukmė:" min="0" max="99" style="width: 40px;"
+      d:size="60" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 160px;" />
+    <InputSpinner name="Minutes" min="0" max="60" step="5"
+      style="&absolute; left: 480px; top: 160px; width: 40px;" />
+
+    <InputDate name="EndDate" caption="Planuojamas pabaigos laikas:" style="width: 80px;"
+      d:size="188" d:unit="px" d:rootStyle="&absolute; left: 0; top: 192px;" />
+    <InputTime name="EndTime" step="30" style="&absolute; left: 280px; top: 192px; width: 40px;" />
+
+    <FlowPanel name="Colors" style="&absolute; left: 360px; top: 194px; width: 380px;" />
+
+    <ListBox source="Status" itemKey="AppointmentStatus" caption="Būsena:" style="width: 160px;"
+      d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 240px;" />
+    <ListBox name="Reminder" caption="Priminimas:" style="width: 160px;"
+      d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 280px;" />
+
+    <DataSelector source="CompanyName" caption="Klientas:" style="width: 300px;"
+       d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 240px;"
+       choiceColumns="Name Phone Email" />
+
+    <DataSelector source="Organizer" caption="Atsakingas:" style="width: 300px;"
+      d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 280px;">
+      <renderToken source="OrganizerFirstName" />
+      <renderToken source="OrganizerLastName" />
+      <renderToken source="OrganizerCompanyName" prefix=", " />
+    </DataSelector>
+
+    <DataSelector source="AppointmentType" required="true" caption="Tipas:" style="width: 300px;"
+      d:size="80" d:unit="px" d:rootStyle="&absolute; left: 360px; top: 320px;" />
+
+  </FlowPanel>
+</f:Form>  
