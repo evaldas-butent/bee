@@ -1,6 +1,5 @@
 package com.butent.bee.client.screen;
 
-import com.google.common.collect.Lists;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -21,7 +20,6 @@ import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.composite.ButtonGroup;
-import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.StyleUtils;
@@ -109,8 +107,6 @@ public class ScreenImpl implements Screen {
   private HasWidgets menuPanel = null;
 
   private Widget signature = null;
-
-  private final String elGrid = "el-grid-type";
 
   private BeeCheckBox logToggle = null;
   private final String logVisible = "log-visible";
@@ -250,25 +246,7 @@ public class ScreenImpl implements Screen {
   }
 
   public void showGrid(Object data, String... cols) {
-    Assert.notNull(data);
-    Widget grd = null;
-    ScrollBars scroll;
-
-    switch (getDefaultGridType()) {
-      case 1:
-        grd = Global.scrollGrid(getActivePanelWidth(), data, cols);
-        scroll = ScrollBars.NONE;
-        break;
-      case 2:
-        grd = Global.cellTable(data, cols);
-        scroll = ScrollBars.BOTH;
-        break;
-      default:
-        grd = Global.simpleGrid(data, cols);
-        scroll = ScrollBars.BOTH;
-    }
-
-    updateActiveQuietly(grd, scroll);
+    updateActiveQuietly(Global.simpleGrid(data, cols), ScrollBars.BOTH);
   }
 
   public void showResource(BeeResource resource) {
@@ -397,10 +375,6 @@ public class ScreenImpl implements Screen {
     RootPanel.get().add(createLogo());
   }
 
-  protected int getDefaultGridType() {
-    return RadioGroup.getValue(getElGrid());
-  }
-
   protected Notification getNotification() {
     return notification;
   }
@@ -518,9 +492,6 @@ public class ScreenImpl implements Screen {
     adm.add(new BeeButton("Jdbc", Service.GET_DATA, Stage.STAGE_GET_PARAMETERS));
 
     adm.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
-
-    adm.add(new RadioGroup(getElGrid(), false, BeeKeeper.getStorage().checkInt(getElGrid(), 2),
-        Lists.newArrayList("simple", "scroll", "cell")));
 
     BeeCheckBox log = new BeeCheckBox("Log");
     log.setValue(BeeKeeper.getStorage().getBoolean(getLogVisible()));
@@ -643,10 +614,6 @@ public class ScreenImpl implements Screen {
     }
 
     setActivePanel(null);
-  }
-
-  private String getElGrid() {
-    return elGrid;
   }
 
   private BeeCheckBox getLogToggle() {

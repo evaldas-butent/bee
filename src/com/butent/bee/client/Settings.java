@@ -23,10 +23,6 @@ public class Settings {
     return getPropertyInt("actionSensitivityMillis");
   }
 
-  public static int getGridType() {
-    return getPropertyInt("gridType");
-  }
-
   public static int getLogCapacity() {
     return getPropertyInt("logCapacity");
   }

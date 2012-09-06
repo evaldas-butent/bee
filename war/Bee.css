@@ -378,64 +378,12 @@ body, select {
   color: green;
 }
 
-.bee-ScrollTable {
-  border-color: #aaa;
-  border-style: solid;
-  border-width: 1px 0px 1px 1px;
-}
-
-.bee-ScrollTable .headerWrapper {
-  background-color: #381C1B;
-}
-
-.bee-ScrollTable .footerWrapper {
-  border-top: 1px solid #aaa;
-  background-color: #2C1514;
-}
-
-.bee-ScrollTable .dataTable td,.bee-ScrollTable .headerTable td,.bee-ScrollTable .footerTable td {
-  border-color: #aaa;
-  border-style: solid;
-  border-width: 0px 1px 1px 0px;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.bee-ScrollTable .headerTable td,.bee-ScrollTable .footerTable td {
-  color: white;
-}
-
-.bee-ScrollTable .dataTable tr:nth-child(odd) {
-  background-color: #ffffdd;
-}
-
-.bee-ScrollTable .dataTable tr:nth-child(even) {
-  background-color: #eeeeee;
-}
-
-.bee-ScrollTable .dataTable tr:hover {
-  background-color: #c3d9ff;
-}
-
-.bee-ScrollTable .dataTable td:hover {
-  background-color: #ffffaa;
-}
-
-.bee-ScrollTable .dataTable tr.selected td {
-  background-color: #7aa5d6;
-}
-
 .bee-InputInteger,.bee-InputLong,.bee-InputNumber {
   text-align: right;
 }
 
 .bee-InputSpinner {
   text-align: right;  
-}
-
-.bee-configPanel {
-  background-color: #ddd;
-  border: 1px solid LightGrey;
 }
 
 .bee-dndSource {

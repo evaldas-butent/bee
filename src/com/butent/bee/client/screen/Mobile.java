@@ -114,11 +114,6 @@ public class Mobile extends ScreenImpl {
     BeeKeeper.getLog().hide();
   }
 
-  @Override
-  protected int getDefaultGridType() {
-    return Settings.getGridType();
-  }
-
   protected int getWestWidth() {
     return BeeUtils.clamp(DomUtils.getClientWidth() / 5, 100, 200);
   }

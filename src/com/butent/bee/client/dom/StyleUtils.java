@@ -202,8 +202,6 @@ public class StyleUtils {
     }
   }
 
-  public static final String CONFIG_PANEL = "bee-configPanel";
-
   public static final String DND_SOURCE = "bee-dndSource";
   public static final String DND_OVER = "bee-dndOver";
   public static final String DROP_AREA = "bee-dropArea";

@@ -109,10 +109,6 @@ public class Global implements Module {
     MSG_BOXEN.alert(obj);
   }
 
-  public static Widget cellTable(Object data, String... columnLabels) {
-    return GridFactory.cellTable(data, columnLabels);
-  }
-
   public static void choice(String caption, List<String> options,
       DialogCallback<Integer> callback) {
     choice(caption, null, options, callback, BeeConst.UNDEF, BeeConst.UNDEF, null, null);
@@ -407,14 +403,6 @@ public class Global implements Module {
   
   public static void sayHuh(Object... obj) {
     MSG_BOXEN.showInfo("Huh ?", obj);
-  }
-
-  public static Widget scrollGrid(int width, Object data, String... columnLabels) {
-    return GridFactory.scrollGrid(width, data, columnLabels);
-  }
-
-  public static Widget scrollGrid(Object data, String... columns) {
-    return scrollGrid(-1, data, columns);
   }
 
   public static void setVar(String name, Variable var) {
