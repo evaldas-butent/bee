@@ -40,15 +40,9 @@ public class Service {
   public static final String WHERE_AM_I = RPC_SERVICE_PREFIX + "where_am_i";
 
   public static final String CLOSE_DIALOG = UI_SERVICE_PREFIX + "close_dialog";
-  public static final String CONFIRM_DIALOG = UI_SERVICE_PREFIX + "confirm_dialog";
-  public static final String CANCEL_DIALOG = UI_SERVICE_PREFIX + "cancel_dialog";
   public static final String REFRESH_MENU = UI_SERVICE_PREFIX + "refresh_menu";
   public static final String OPEN_FAVORITE = UI_SERVICE_PREFIX + "open_favorite";
   public static final String EDIT_ROW = UI_SERVICE_PREFIX + "edit_row";
-
-  public static final String GET_CLASS = COMPOSITE_SERVICE_PREFIX + "get_class";
-  public static final String GET_XML = COMPOSITE_SERVICE_PREFIX + "get_xml";
-  public static final String GET_DATA = COMPOSITE_SERVICE_PREFIX + "get_data";
 
   public static final String DATA_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "data_";
 
@@ -155,17 +149,6 @@ public class Service {
   public static final String UPLOAD_URL = "upload";
 
   public static final String NAME_SERVICE = "service";
-
-  /**
-   * Returns true if {@code svc} value starts with {@link #COMPOSITE_SERVICE_PREFIX}.
-   * 
-   * @param svc name of service
-   * @return true if name of service starts with {@link #COMPOSITE_SERVICE_PREFIX}
-   */
-  public static boolean isCompositeService(String svc) {
-    Assert.notEmpty(svc);
-    return svc.startsWith(COMPOSITE_SERVICE_PREFIX);
-  }
 
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.

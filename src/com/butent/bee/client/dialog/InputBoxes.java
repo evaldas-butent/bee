@@ -49,11 +49,11 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Holder;
-import com.butent.bee.shared.Service;
-import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import java.util.List;
 
 /**
  * Implements a user interface component, which enables to produce a input box for information input
@@ -67,19 +67,23 @@ public class InputBoxes {
   private class KeyboardHandler implements KeyDownHandler {
 
     private final DialogBox dialog;
-    private final Stage stage;
+    private final ConfirmationCallback callback;
 
-    private KeyboardHandler(DialogBox dialog, Stage stage) {
+    private KeyboardHandler(DialogBox dialog, ConfirmationCallback callback) {
       super();
       this.dialog = dialog;
-      this.stage = stage;
+      this.callback = callback;
     }
 
     public void onKeyDown(KeyDownEvent event) {
       switch (event.getNativeKeyCode()) {
         case KeyCodes.KEY_ESCAPE:
           event.preventDefault();
-          getDialog().hide();
+          if (callback == null) {
+            dialog.hide();
+          } else {
+            callback.onCancel(dialog);
+          }
           break;
 
         case KeyCodes.KEY_ENTER:
@@ -91,16 +95,14 @@ public class InputBoxes {
           if (EventUtils.hasModifierKey(event.getNativeEvent())) {
             event.preventDefault();
             EventUtils.getEventTargetElement(event).blur();
-            if (getStage() != null) {
-              BeeKeeper.getBus().dispatchService(getStage(), dialog);
-            } else {
-              getDialog().hide();
+            if (callback == null || callback.onConfirm(dialog)) {
+              dialog.hide();
             }
             break;
           }
 
           if (widget instanceof InputText || widget instanceof ListBox) {
-            if (UiHelper.moveFocus(getDialog(), EventUtils.getEventTargetElement(event), true)) {
+            if (UiHelper.moveFocus(dialog, EventUtils.getEventTargetElement(event), true)) {
               event.preventDefault();
             }
           } else if (widget instanceof BeeRadioButton) {
@@ -114,7 +116,7 @@ public class InputBoxes {
         case KeyCodes.KEY_DOWN:
         case KeyCodes.KEY_UP:
           if (!(getWidget(event) instanceof ListBox)) {
-            if (UiHelper.moveFocus(getDialog(), EventUtils.getEventTargetElement(event),
+            if (UiHelper.moveFocus(dialog, EventUtils.getEventTargetElement(event),
                 event.getNativeKeyCode() == KeyCodes.KEY_DOWN)) {
               event.preventDefault();
             }
@@ -123,16 +125,8 @@ public class InputBoxes {
       }
     }
 
-    private DialogBox getDialog() {
-      return dialog;
-    }
-
-    private Stage getStage() {
-      return stage;
-    }
-
     private Widget getWidget(HasNativeEvent event) {
-      return DomUtils.getChildByElement(getDialog(), EventUtils.getEventTargetElement(event));
+      return DomUtils.getChildByElement(dialog, EventUtils.getEventTargetElement(event));
     }
   }
 
@@ -263,9 +257,8 @@ public class InputBoxes {
     }
   }
 
-  public void inputVars(Stage bst, String cap, Variable... vars) {
-    Assert.notNull(vars);
-    Assert.parameterCount(vars.length + 1, 2);
+  public void inputVars(String caption, List<Variable> vars, ConfirmationCallback callback) {
+    Assert.notEmpty(vars);
 
     FlexTable ft = new FlexTable();
 
@@ -342,13 +335,12 @@ public class InputBoxes {
       r++;
     }
 
-    BeeButton confirm;
-    if (bst == null) {
-      confirm = new BeeButton(DialogConstants.OK, Service.CONFIRM_DIALOG);
-    } else {
-      confirm = new BeeButton(DialogConstants.OK, bst);
-    }
-    BeeButton cancel = new BeeButton(DialogConstants.CANCEL, Service.CANCEL_DIALOG);
+    DialogBox dialog = new DialogBox(caption);
+
+    BeeButton confirm = new BeeButton(DialogConstants.OK,
+        ConfirmationCallback.getConfirmCommand(dialog, callback));
+    BeeButton cancel = new BeeButton(DialogConstants.CANCEL,
+        ConfirmationCallback.getCancelCommand(dialog, callback));
 
     ft.setWidget(r, 0, confirm);
     ft.setWidget(r, 1, cancel);
@@ -356,10 +348,8 @@ public class InputBoxes {
     ft.getCellFormatter().setHorizontalAlignment(r, 0, HasHorizontalAlignment.ALIGN_LEFT);
     ft.getCellFormatter().setHorizontalAlignment(r, 1, HasHorizontalAlignment.ALIGN_RIGHT);
 
-    DialogBox dialog = new DialogBox(cap);
-
     dialog.setAnimationEnabled(true);
-    dialog.addDomHandler(new KeyboardHandler(dialog, bst), KeyDownEvent.getType());
+    dialog.addDomHandler(new KeyboardHandler(dialog, callback), KeyDownEvent.getType());
 
     dialog.setWidget(ft);
     dialog.center();

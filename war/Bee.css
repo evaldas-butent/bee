@@ -103,11 +103,12 @@ body, select {
 }
 .bee-LogoContainer {
   position: absolute;
-  width: 0;
-  height: 0;
-  z-index: 1;
-  -webkit-animation: movingLogo 1s ease 500ms;
-  -webkit-animation-fill-mode: forwards;
+  left: 1%;
+  top: 1%;
+  width: 55px;
+  height: 76px;
+/*   -webkit-animation: movingLogo 1s ease 500ms; */
+/*   -webkit-animation-fill-mode: forwards; */
 }
 .bee-Logo {
   width: 100%;
@@ -120,7 +121,7 @@ body, select {
 }
 .bee-Screen {
   background-color: white;  
-  -webkit-animation: reveal 1s ease-in;
+/*   -webkit-animation: reveal 1s ease-in; */
 }
 
 .bee-NorthContainer > div {
@@ -1486,6 +1487,23 @@ body, select {
 .bee-AdminTab {
 /*   display: none; */
 }
+.bee-LogToggle {
+  position: absolute;
+  left: 5px;
+  top: 10px;
+}
+.bee-DebugToggle {
+  position: absolute;
+  right: 5px;
+  top: 10px;
+}
+.bee-AdminShell {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  top: 40px;
+  bottom: 1px;
+}
 .bee-SplitControls {
 /*   display: none; */
 }
@@ -1493,5 +1511,5 @@ body, select {
   display: none;
 }
 .bee-FooterSearch {
-  display: none;
+/*   display: none; */
 }

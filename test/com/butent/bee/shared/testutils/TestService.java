@@ -25,46 +25,6 @@ public class TestService {
   }
 
   @Test
-  public final void testIsCompositeService() {
-    try {
-      Service.isCompositeService("");
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      Service.isCompositeService("\t \r \r");
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      Service.isCompositeService(null);
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    assertTrue(Service.isCompositeService("comp_"));
-    assertTrue(Service.isCompositeService("comp_complex"));
-    assertTrue(Service.isCompositeService("comp_win"));
-
-    assertFalse(Service.isCompositeService("\t\t\t\r comp_"));
-    assertFalse(Service.isCompositeService("co"));
-    assertFalse(Service.isCompositeService("company"));
-    assertFalse(Service.isCompositeService("acomp_"));
-    assertFalse(Service.isCompositeService("a comp_"));
-  }
-
-  @Test
   public final void testIsDataService() {
     try {
       Service.isDataService("");

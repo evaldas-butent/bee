@@ -19,10 +19,8 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.Shell;
-import com.butent.bee.client.composite.ButtonGroup;
 import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.dialog.Notification;
-import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Complex;
@@ -33,9 +31,6 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.TilePanel;
-import com.butent.bee.client.layout.Vertical;
-import com.butent.bee.client.ui.DsnService;
-import com.butent.bee.client.ui.StateService;
 import com.butent.bee.client.utils.BeeCommand;
 import com.butent.bee.client.utils.ServiceCommand;
 import com.butent.bee.client.widget.BeeButton;
@@ -46,7 +41,6 @@ import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -345,10 +339,10 @@ public class ScreenImpl implements Screen {
       p.addNorth(w, 100);
     }
 
-//    w = initSouth();
-//    if (w != null) {
-//      p.addSouth(w, 32);
-//    }
+    w = initSouth();
+    if (w != null) {
+      p.addSouth(w, 32);
+    }
 
     w = initWest();
     if (w != null) {
@@ -476,24 +470,13 @@ public class ScreenImpl implements Screen {
     tp.addTabStyle(tp.getWidgetCount() - 1, "bee-FavoriteTab");
 
     tp.add(Global.getReports(), "Ataskaitos");
+    tp.addTabStyle(tp.getWidgetCount() - 1, "bee-ReportTab");
 
-    Vertical adm = new Vertical();
-    adm.setCellSpacing(5);
-
-    adm.add(new BeeButton("DSN", new DsnService().name(), DsnService.SVC_GET_DSNS));
-    adm.add(new BeeButton("States", new StateService().name(), StateService.SVC_GET_STATES));
-
-    adm.add(new ButtonGroup("Ping", Service.DB_PING,
-        "Info", Service.DB_INFO,
-        Global.CONSTANTS.tables(), Service.DB_TABLES));
-
-    adm.add(new BeeButton(Global.CONSTANTS.clazz(), Service.GET_CLASS, Stage.STAGE_GET_PARAMETERS));
-    adm.add(new BeeButton("Xml", Service.GET_XML, Stage.STAGE_GET_PARAMETERS));
-    adm.add(new BeeButton("Jdbc", Service.GET_DATA, Stage.STAGE_GET_PARAMETERS));
-
-    adm.add(new BeeCheckBox(Global.getVar(Global.VAR_DEBUG)));
+    Flow admPanel = new Flow();
+    admPanel.addStyleName("bee-AdminPanel");
 
     BeeCheckBox log = new BeeCheckBox("Log");
+    log.addStyleName("bee-LogToggle");
     log.setValue(BeeKeeper.getStorage().getBoolean(getLogVisible()));
 
     log.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
@@ -508,22 +491,15 @@ public class ScreenImpl implements Screen {
     });
     setLogToggle(log);
     
-    adm.add(log);
+    admPanel.add(log);
+
+    BeeCheckBox debug = new BeeCheckBox(Global.getVar(Global.VAR_DEBUG));
+    debug.addStyleName("bee-DebugToggle");
+    admPanel.add(debug);
     
-    Flow admPanel = new Flow();
-    admPanel.addStyleName(StyleUtils.NAME_FLEX_BOX_VERTICAL);
-
-    admPanel.add(adm);
-
-    Simple shellContainer = new Simple();
-    StyleUtils.makeFlexible(shellContainer);
-    StyleUtils.makeRelative(shellContainer);
-
     Shell shell = new Shell();
-    shell.addStyleName(StyleUtils.NAME_OCCUPY);
-
-    shellContainer.setWidget(shell);
-    admPanel.add(shellContainer);
+    shell.addStyleName("bee-AdminShell");
+    admPanel.add(shell);
     
     tp.add(admPanel, "Admin");
     tp.addTabStyle(tp.getWidgetCount() - 1, "bee-AdminTab");

@@ -1,5 +1,6 @@
 package com.butent.bee.client;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -8,6 +9,7 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.ClientDefaults;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputBoxes;
@@ -25,7 +27,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.data.Defaults;
 import com.butent.bee.shared.data.cache.CacheManager;
@@ -35,7 +36,6 @@ import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -236,6 +236,10 @@ public class Global implements Module {
     return IMAGES;
   }
 
+  public static InputBoxes getInpBoxen() {
+    return INP_BOXEN;
+  }
+
   public static MessageBoxes getMsgBoxen() {
     return MSG_BOXEN;
   }
@@ -337,19 +341,17 @@ public class Global implements Module {
         timeout, confirmHtml, cancelHtml, initializer);
   }
 
-  public static void inputVars(Stage bst, String cap, String... names) {
-    Assert.notNull(names);
-    List<Variable> lst = new ArrayList<Variable>();
+  public static void inputVars(String caption, List<String> names, ConfirmationCallback callback) {
+    Assert.notEmpty(names);
+
+    List<Variable> lst = Lists.newArrayList();
     for (String name : names) {
       if (VARS.containsKey(name)) {
         lst.add(VARS.get(name));
       }
     }
-    inputVars(bst, cap, lst.toArray(new Variable[0]));
-  }
 
-  public static void inputVars(Stage bst, String cap, Variable... variables) {
-    INP_BOXEN.inputVars(bst, cap, variables);
+    INP_BOXEN.inputVars(caption, lst, callback);
   }
 
   public static void inputWidget(String caption, Widget input, InputWidgetCallback callback) {
@@ -450,29 +452,23 @@ public class Global implements Module {
 
   public static void showVars(String... context) {
     int n = (context == null) ? 0 : context.length;
-    Variable[] arr = null;
+    List<String> names = Lists.newArrayList(); 
 
     if (n > 0) {
-      Set<String> names = VARS.keySet();
       Set<String> keys = new LinkedHashSet<String>();
       for (String z : context) {
-        keys.addAll(BeeUtils.filterContext(names, z));
+        keys.addAll(BeeUtils.filterContext(VARS.keySet(), z));
       }
-      if (!keys.isEmpty()) {
-        arr = new Variable[keys.size()];
-        int idx = 0;
-        for (String key : keys) {
-          arr[idx++] = VARS.get(key);
-        }
-      }
+      
+      names.addAll(keys);
     } else {
-      arr = VARS.values().toArray(new Variable[0]);
+      names.addAll(VARS.keySet());
     }
 
-    if (BeeUtils.isEmpty(arr)) {
+    if (names.isEmpty()) {
       showError("no variables found", context);
     } else {
-      inputVars(null, "Variables", arr);
+      inputVars("Variables", names, null);
     }
   }
 
@@ -540,9 +536,6 @@ public class Global implements Module {
   }
 
   private void initVars() {
-    createVar(Service.VAR_CLASS_NAME, "Class name");
-    createVar(Service.VAR_PACKAGE_LIST, "Default Packages");
-
     createVar(Service.VAR_XML_SOURCE, "source");
     createVar(Service.VAR_XML_TRANSFORM, "transform");
     createVar(Service.VAR_XML_TARGET, "target");

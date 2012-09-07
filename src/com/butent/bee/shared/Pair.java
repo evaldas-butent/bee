@@ -1,6 +1,8 @@
 package com.butent.bee.shared;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Objects;
+import com.google.common.base.Splitter;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -12,6 +14,9 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 public class Pair<A, B> implements Transformable {
 
+  public static final Splitter SPLITTER =
+      Splitter.on(CharMatcher.anyOf(" ,;=")).trimResults().omitEmptyStrings().limit(2);
+  
   /**
    * Creates the new {@code Pair} object passing the pair of objects.
    * 
@@ -20,6 +25,24 @@ public class Pair<A, B> implements Transformable {
    */
   public static <A, B> Pair<A, B> of(A a, B b) {
     return new Pair<A, B>(a, b);
+  }
+  
+  public static Pair<String, String> split(String input) {
+    if (BeeUtils.isEmpty(input)) {
+      return null;
+    }
+    
+    String a = null;
+    String b = null;
+    
+    for (String s : SPLITTER.split(input)) {
+      if (a == null) {
+        a = s;
+      } else {
+        b = s;
+      }
+    }
+    return Pair.of(a, b);
   }
 
   private A a;

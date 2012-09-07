@@ -13,7 +13,6 @@ import com.google.web.bindery.event.shared.SimpleEventBus;
 
 import com.butent.bee.client.screen.BookmarkEvent;
 import com.butent.bee.client.ui.CompositeService;
-import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Stage;
@@ -26,7 +25,6 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -84,8 +82,6 @@ public class EventManager implements Module {
       return true;
     } else if (Service.isUiService(svc)) {
       return dispatchUiService(svc, source);
-    } else if (Service.isCompositeService(svc)) {
-      return dispatchCompositeService(svc, stg, source);
     } else {
       Global.showError("Unknown service type", svc);
       return false;
@@ -213,127 +209,8 @@ public class EventManager implements Module {
   public void start() {
   }
 
-  private boolean dispatchCompositeService(String svc, String stg, Widget source) {
-    Assert.notEmpty(svc);
-    Assert.notEmpty(stg);
-
-    boolean ok = false;
-
-    if (svc.equals(Service.GET_CLASS)) {
-      if (stg.equals(Stage.STAGE_GET_PARAMETERS)) {
-        Global.inputVars(new Stage(Service.GET_CLASS, Stage.STAGE_CONFIRM),
-            "Class Info", Service.VAR_CLASS_NAME, Service.VAR_PACKAGE_LIST);
-        ok = true;
-      } else if (stg.equals(Stage.STAGE_CONFIRM)) {
-        String cls = BeeUtils.trim(Global.getVarValue(Service.VAR_CLASS_NAME));
-        String pck = BeeUtils.trim(Global.getVarValue(Service.VAR_PACKAGE_LIST));
-
-        if (BeeUtils.isEmpty(cls)) {
-          Global.showError("Class name not specified");
-        } else if (cls.length() < 2) {
-          Global.showError("Class name", cls, "too short");
-        } else {
-          Global.closeDialog(source);
-          BeeKeeper.getRpc().makePostRequest(Service.GET_CLASS_INFO,
-              XmlUtils.createString(Service.XML_TAG_DATA,
-                  Service.VAR_CLASS_NAME, cls, Service.VAR_PACKAGE_LIST, pck));
-          ok = true;
-        }
-      } else {
-        Global.showError("Unknown composite service stage", svc, stg);
-      }
-
-    } else if (svc.equals(Service.GET_XML)) {
-      if (stg.equals(Stage.STAGE_GET_PARAMETERS)) {
-        Global.inputVars(new Stage(Service.GET_XML, Stage.STAGE_CONFIRM),
-            "Xml Info", Service.VAR_XML_SOURCE, Service.VAR_XML_TRANSFORM,
-            Service.VAR_XML_TARGET, Service.VAR_XML_RETURN);
-        ok = true;
-      } else if (stg.equals(Stage.STAGE_CONFIRM)) {
-        String src = Global.getVarValue(Service.VAR_XML_SOURCE);
-        if (BeeUtils.isEmpty(src)) {
-          Global.showError("Source not specified");
-        } else {
-          Global.closeDialog(source);
-          BeeKeeper.getRpc().makePostRequest(Service.GET_XML_INFO,
-              XmlUtils.fromVars(Service.XML_TAG_DATA,
-                  Service.VAR_XML_SOURCE, Service.VAR_XML_TRANSFORM,
-                  Service.VAR_XML_TARGET, Service.VAR_XML_RETURN));
-          ok = true;
-        }
-      } else {
-        Global.showError("Unknown composite service stage", svc, stg);
-      }
-
-    } else if (svc.equals(Service.GET_DATA)) {
-      if (stg.equals(Stage.STAGE_GET_PARAMETERS)) {
-        Global.inputVars(new Stage(Service.GET_DATA, Stage.STAGE_CONFIRM),
-            "Jdbc Test", Service.VAR_JDBC_QUERY,
-            Service.VAR_CONNECTION_AUTO_COMMIT,
-            Service.VAR_CONNECTION_HOLDABILITY,
-            Service.VAR_CONNECTION_READ_ONLY,
-            Service.VAR_CONNECTION_TRANSACTION_ISOLATION,
-            Service.VAR_STATEMENT_CURSOR_NAME,
-            Service.VAR_STATEMENT_ESCAPE_PROCESSING,
-            Service.VAR_STATEMENT_FETCH_DIRECTION,
-            Service.VAR_STATEMENT_FETCH_SIZE,
-            Service.VAR_STATEMENT_MAX_FIELD_SIZE,
-            Service.VAR_STATEMENT_MAX_ROWS,
-            Service.VAR_STATEMENT_POOLABLE,
-            Service.VAR_STATEMENT_QUERY_TIMEOUT,
-            Service.VAR_STATEMENT_RS_TYPE,
-            Service.VAR_STATEMENT_RS_CONCURRENCY,
-            Service.VAR_STATEMENT_RS_HOLDABILITY,
-            Service.VAR_RESULT_SET_FETCH_DIRECTION,
-            Service.VAR_RESULT_SET_FETCH_SIZE,
-            Service.VAR_JDBC_RETURN);
-        ok = true;
-      } else if (stg.equals(Stage.STAGE_CONFIRM)) {
-        String sql = Global.getVarValue(Service.VAR_JDBC_QUERY);
-        if (BeeUtils.isEmpty(sql)) {
-          Global.showError("Query not specified");
-        } else {
-          Global.closeDialog(source);
-          BeeKeeper.getRpc().makePostRequest(Service.DB_JDBC,
-              XmlUtils.fromVars(Service.XML_TAG_DATA,
-                  Service.VAR_JDBC_QUERY,
-                  Service.VAR_CONNECTION_AUTO_COMMIT,
-                  Service.VAR_CONNECTION_HOLDABILITY,
-                  Service.VAR_CONNECTION_READ_ONLY,
-                  Service.VAR_CONNECTION_TRANSACTION_ISOLATION,
-                  Service.VAR_STATEMENT_CURSOR_NAME,
-                  Service.VAR_STATEMENT_ESCAPE_PROCESSING,
-                  Service.VAR_STATEMENT_FETCH_DIRECTION,
-                  Service.VAR_STATEMENT_FETCH_SIZE,
-                  Service.VAR_STATEMENT_MAX_FIELD_SIZE,
-                  Service.VAR_STATEMENT_MAX_ROWS,
-                  Service.VAR_STATEMENT_POOLABLE,
-                  Service.VAR_STATEMENT_QUERY_TIMEOUT,
-                  Service.VAR_STATEMENT_RS_TYPE,
-                  Service.VAR_STATEMENT_RS_CONCURRENCY,
-                  Service.VAR_STATEMENT_RS_HOLDABILITY,
-                  Service.VAR_RESULT_SET_FETCH_DIRECTION,
-                  Service.VAR_RESULT_SET_FETCH_SIZE,
-                  Service.VAR_JDBC_RETURN));
-          ok = true;
-        }
-      } else {
-        Global.showError("Unknown composite service stage", svc, stg);
-      }
-
-    } else {
-      Global.showError("Unknown composite service", svc, stg);
-    }
-
-    return ok;
-  }
-
   private boolean dispatchUiService(String svc, Widget source) {
     if (svc.equals(Service.CLOSE_DIALOG)) {
-      return Global.closeDialog(source);
-    } else if (svc.equals(Service.CONFIRM_DIALOG)) {
-      return Global.closeDialog(source);
-    } else if (svc.equals(Service.CANCEL_DIALOG)) {
       return Global.closeDialog(source);
     } else if (svc.equals(Service.REFRESH_MENU)) {
       return BeeKeeper.getMenu().loadMenu();

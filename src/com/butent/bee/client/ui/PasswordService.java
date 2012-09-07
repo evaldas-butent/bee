@@ -1,9 +1,10 @@
 package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeType;
@@ -50,15 +51,19 @@ public class PasswordService extends CompositeService {
             BeeWidget.PASSWORD);
         vars.add(varNew2);
 
-        Global.inputVars(getStage(STG_SAVE_PASS), Global.CONSTANTS.changePassword(),
-            vars.toArray(new Variable[0]));
+        Global.getInpBoxen().inputVars(Global.CONSTANTS.changePassword(), vars,
+            new ConfirmationCallback() {
+              @Override
+              public boolean onConfirm(Popup popup) {
+                return doStage(STG_SAVE_PASS);
+              }
+            });
         return ok;
       }
 
     } else if (stg.equals(STG_SAVE_PASS)) {
       ok = true;
       Assert.notNull(formView);
-      Global.closeDialog((Widget) params[0]);
 
       if (!BeeUtils.isEmpty(oldPass)) {
         String oPass = varOld.getValue();

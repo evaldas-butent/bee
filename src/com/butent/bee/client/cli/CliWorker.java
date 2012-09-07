@@ -44,8 +44,10 @@ import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.decorator.TuningFactory;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.DialogConstants;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.ComputedStyles;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
@@ -76,7 +78,10 @@ import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
+import com.butent.bee.client.ui.CompositeService;
+import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.StateService;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Browser;
 import com.butent.bee.client.utils.JsUtils;
@@ -95,6 +100,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -165,6 +171,8 @@ public class CliWorker {
       getCharsets();
     } else if (z.startsWith("cho")) {
       showChoice(arr);
+    } else if (z.equals("class")) {
+      getClassInfo(args);
     } else if (z.equals("clear")) {
       clear(args);
     } else if (z.startsWith("client")) {
@@ -181,6 +189,8 @@ public class CliWorker {
       BeeKeeper.getRpc().invoke("connectionInfo");
     } else if (z.equals("cornify")) {
       cornify(arr);
+    } else if (z.startsWith("dbinf")) {
+      BeeKeeper.getRpc().makeGetRequest(Service.DB_INFO);
     } else if (z.startsWith("decor")) {
       if (BeeUtils.isEmpty(args)) {
         BeeKeeper.getScreen().showGrid(TuningFactory.getExtendedInfo());
@@ -191,6 +201,8 @@ public class CliWorker {
       showDateFormat(args);
     } else if (z.startsWith("dim")) {
       showDimensions();
+    } else if (z.equals("dsn")) {
+      CompositeService.doService(new DsnService().name(), DsnService.SVC_GET_DSNS);
     } else if (z.startsWith("dt")) {
       showDate(z, args);
     } else if (BeeUtils.inList(z, "dir", "file", "get", "download", "src")) {
@@ -224,6 +236,8 @@ public class CliWorker {
       showInputTypes();
     } else if (z.startsWith("inp") && z.contains("box") || z.equals("prompt")) {
       showInputBox(arr);
+    } else if (z.equals("jdbc")) {
+      doJdbc();
     } else if (BeeUtils.inList(z, "keys", "pk")) {
       getKeys(arr);
     } else if (z.startsWith("like") && arr.length >= 3) {
@@ -246,6 +260,8 @@ public class CliWorker {
       showNotes(args);
     } else if (BeeUtils.inList(z, "p", "prop")) {
       showProperties(v, arr);
+    } else if (z.startsWith("ping")) {
+      BeeKeeper.getRpc().makeGetRequest(Service.DB_PING);
     } else if (z.startsWith("print")) {
       print(args);
     } else if (z.equals("progress")) {
@@ -272,6 +288,8 @@ public class CliWorker {
       showStack();
     } else if (z.equals("stacking") || z.startsWith("zind") || z.startsWith("z-ind")) {
       BeeKeeper.getScreen().showGrid(Stacking.getInfo());
+    } else if (z.equals("states")) {
+      CompositeService.doService(new StateService().name(), StateService.SVC_GET_STATES);
     } else if (z.startsWith("stor")) {
       storage(arr);
     } else if (z.equals("style")) {
@@ -304,7 +322,7 @@ public class CliWorker {
       BeeKeeper.getRpc().invoke("vmInfo");
     } else if (z.equals("widget") && arr.length >= 2) {
       showWidgetInfo(arr);
-    } else if (z.startsWith("xml") && arr.length >= 2) {
+    } else if (z.startsWith("xml")) {
       showXmlInfo(arr);
     } else if (z.equals("mail")) {
       BeeKeeper.getRpc().sendText(Service.MAIL, args);
@@ -593,6 +611,43 @@ public class CliWorker {
     BeeKeeper.getLog().addSeparator();
   }
 
+  private static void doJdbc() {
+    final List<String> varNames = Lists.newArrayList(Service.VAR_JDBC_QUERY,
+        Service.VAR_CONNECTION_AUTO_COMMIT,
+        Service.VAR_CONNECTION_HOLDABILITY,
+        Service.VAR_CONNECTION_READ_ONLY,
+        Service.VAR_CONNECTION_TRANSACTION_ISOLATION,
+        Service.VAR_STATEMENT_CURSOR_NAME,
+        Service.VAR_STATEMENT_ESCAPE_PROCESSING,
+        Service.VAR_STATEMENT_FETCH_DIRECTION,
+        Service.VAR_STATEMENT_FETCH_SIZE,
+        Service.VAR_STATEMENT_MAX_FIELD_SIZE,
+        Service.VAR_STATEMENT_MAX_ROWS,
+        Service.VAR_STATEMENT_POOLABLE,
+        Service.VAR_STATEMENT_QUERY_TIMEOUT,
+        Service.VAR_STATEMENT_RS_TYPE,
+        Service.VAR_STATEMENT_RS_CONCURRENCY,
+        Service.VAR_STATEMENT_RS_HOLDABILITY,
+        Service.VAR_RESULT_SET_FETCH_DIRECTION,
+        Service.VAR_RESULT_SET_FETCH_SIZE,
+        Service.VAR_JDBC_RETURN);
+
+    Global.inputVars("Jdbc Test", varNames, new ConfirmationCallback() {
+      @Override
+      public boolean onConfirm(Popup popup) {
+        String sql = Global.getVarValue(Service.VAR_JDBC_QUERY);
+        if (BeeUtils.isEmpty(sql)) {
+          Global.showError("Query not specified");
+          return false;
+        } else {
+          BeeKeeper.getRpc().makePostRequest(Service.DB_JDBC,
+              XmlUtils.fromVars(Service.XML_TAG_DATA, varNames));
+          return true;
+        }
+      }
+    });
+  }
+
   private static void doLike(String[] arr) {
     int len = ArrayUtils.length(arr);
     if (len < 3) {
@@ -746,6 +801,23 @@ public class CliWorker {
     params.addPositionalHeader("cs");
 
     BeeKeeper.getRpc().makeGetRequest(params);
+  }
+
+  private static void getClassInfo(String args) {
+    Pair<String, String> params = Pair.split(args);
+
+    String cls = (params == null) ? null : params.getA();
+    String pck = (params == null) ? null : params.getB();
+
+    if (BeeUtils.isEmpty(cls)) {
+      Global.showError("Class name not specified");
+    } else if (cls.length() < 2) {
+      Global.showError("Class name", cls, "too short");
+    } else {
+      BeeKeeper.getRpc().makePostRequest(Service.GET_CLASS_INFO,
+          XmlUtils.createString(Service.XML_TAG_DATA,
+              Service.VAR_CLASS_NAME, cls, Service.VAR_PACKAGE_LIST, pck));
+    }
   }
 
   private static void getFs() {
@@ -1066,8 +1138,7 @@ public class CliWorker {
 
     for ( var i = 0; i < 6; i++) {
       for ( var j = 0; j < 6; j++) {
-        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', '
-            + Math.floor(255 - 42.5 * j) + ', 0)';
+        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j) + ', 0)';
         ctx.fillRect(j * 25, i * 25, 25, 25);
       }
     }
@@ -2387,21 +2458,43 @@ public class CliWorker {
   }
 
   private static void showXmlInfo(String[] arr) {
-    String[] opt = ArrayUtils.copyOf(arr);
-    final boolean detailed = !BeeUtils.same(opt[0], "xml");
-    if (detailed) {
-      opt[0] = "xml";
-    }
-
-    ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
-    params.addPositionalHeader(opt);
-
-    BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        BeeKeeper.getScreen().showGrid(XmlUtils.getInfo((String) response.getResponse(), detailed));
+    if (arr.length >= 2) {
+      String[] opt = ArrayUtils.copyOf(arr);
+      final boolean detailed = !BeeUtils.same(opt[0], "xml");
+      if (detailed) {
+        opt[0] = "xml";
       }
-    });
+
+      ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_RESOURCE);
+      params.addPositionalHeader(opt);
+
+      BeeKeeper.getRpc().makeGetRequest(params, new ResponseCallback() {
+        @Override
+        public void onResponse(ResponseObject response) {
+          BeeKeeper.getScreen().showGrid(
+              XmlUtils.getInfo((String) response.getResponse(), detailed));
+        }
+      });
+
+    } else {
+      final List<String> varNames = Lists.newArrayList(Service.VAR_XML_SOURCE,
+          Service.VAR_XML_TRANSFORM, Service.VAR_XML_TARGET, Service.VAR_XML_RETURN);
+
+      Global.inputVars("Xml Info", varNames, new ConfirmationCallback() {
+        @Override
+        public boolean onConfirm(Popup popup) {
+          String src = Global.getVarValue(Service.VAR_XML_SOURCE);
+          if (BeeUtils.isEmpty(src)) {
+            Global.showError("Source not specified");
+            return false;
+          } else {
+            BeeKeeper.getRpc().makePostRequest(Service.GET_XML_INFO,
+                XmlUtils.fromVars(Service.XML_TAG_DATA, varNames));
+            return true;
+          }
+        }
+      });
+    }
   }
 
   private static void storage(String[] arr) {

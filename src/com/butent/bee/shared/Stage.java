@@ -5,8 +5,6 @@ package com.butent.bee.shared;
  */
 
 public class Stage implements HasService, HasStage {
-  public static final String STAGE_GET_PARAMETERS = "stage_get";
-  public static final String STAGE_CONFIRM = "stage_confirm";
 
   private String service;
   private String stage;

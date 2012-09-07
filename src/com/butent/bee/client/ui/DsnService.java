@@ -1,11 +1,13 @@
 package com.butent.bee.client.ui;
 
-import com.google.gwt.user.client.ui.Widget;
+import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeType;
 import com.butent.bee.shared.BeeWidget;
@@ -42,7 +44,13 @@ public class DsnService extends CompositeService {
                 dsn = new Variable("Choose DSN", BeeType.STRING, BeeKeeper.getUser().getDsn(),
                     BeeWidget.LIST, dsns);
 
-                Global.inputVars(getStage(SVC_SWITCH_DSN), "Available DSN's", dsn);
+                Global.getInpBoxen().inputVars("Available DSN's", Lists.newArrayList(dsn),
+                    new ConfirmationCallback() {
+                      @Override
+                      public boolean onConfirm(Popup popup) {
+                        return doStage(SVC_SWITCH_DSN);
+                      }
+                    });
               } else {
                 Global.showError("No DSN's available");
                 destroy();
@@ -52,7 +60,6 @@ public class DsnService extends CompositeService {
       return ok;
 
     } else if (stg.equals(SVC_SWITCH_DSN)) {
-      Global.closeDialog((Widget) params[0]);
       String dsnName = dsn.getValue();
 
       if (!BeeUtils.isEmpty(dsnName)) {

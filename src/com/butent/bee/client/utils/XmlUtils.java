@@ -74,15 +74,14 @@ public class XmlUtils {
     return transformDocument(createDoc(rootName, nodes));
   }
 
-  public static String fromVars(String rootName, String... names) {
+  public static String fromVars(String rootName, List<String> names) {
     Assert.notEmpty(rootName);
-    Assert.notNull(names);
-    Assert.parameterCount(names.length + 1, 2);
+    Assert.notEmpty(names);
 
-    Object[] nodes = new Object[names.length * 2];
-    for (int i = 0; i < names.length; i++) {
-      nodes[i * 2] = names[i];
-      nodes[i * 2 + 1] = BeeUtils.trim(Global.getVarValue(names[i]));
+    Object[] nodes = new Object[names.size() * 2];
+    for (int i = 0; i < names.size(); i++) {
+      nodes[i * 2] = names.get(i);
+      nodes[i * 2 + 1] = BeeUtils.trim(Global.getVarValue(names.get(i)));
     }
 
     return transformDocument(createDoc(rootName, nodes));

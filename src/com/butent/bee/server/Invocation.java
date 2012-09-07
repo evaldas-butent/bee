@@ -67,8 +67,7 @@ public class Invocation {
 
       List<Property> lst = PropertyUtils.createProperties(
           BeeUtils.concat(1, "Locale", mode), Localized.transform(lc),
-          "refresh", Localized.getConstants(lc).refresh(),
-          "class", Localized.getConstants(lc).clazz(),
+          "no", Localized.getConstants(lc).no(),
           "keyNotFound", Localized.getMessages(lc).keyNotFound("test"));
 
       Map<Locale, File> avail = Localized.getAvailableConstants();
