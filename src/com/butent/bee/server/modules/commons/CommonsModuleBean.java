@@ -105,7 +105,7 @@ public class CommonsModuleBean implements BeeModule {
         new BeeParameter(COMMONS_MODULE,
             "ProgramTitle", ParameterType.TEXT, null, false, "BEE"),
         new BeeParameter(COMMONS_MODULE,
-            "Precission", ParameterType.NUMBER, "Precission of calculations", true, "5"));
+            "Precission", ParameterType.NUMBER, "Precission of calculations", true, 5));
 
     params.addAll(getSqlEngineParameters());
     return params;
@@ -282,11 +282,11 @@ public class CommonsModuleBean implements BeeModule {
         case ORACLE:
           break;
         case POSTGRESQL:
-          param.setValue(Codec.beeSerialize(ImmutableMap
+          param.setValue(ImmutableMap
               .of(".+duplicate key value violates unique constraint.+(\\(.+=.+\\)).+",
                   "Tokia reikšmė jau egzistuoja: $1",
                   ".+violates foreign key constraint.+from table \"(.+)\"\\.",
-                  "Įrašas naudojamas lentelėje \"$1\"")));
+                  "Įrašas naudojamas lentelėje \"$1\""));
           break;
       }
       params.add(param);

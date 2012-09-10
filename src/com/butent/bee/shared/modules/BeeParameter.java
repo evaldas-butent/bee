@@ -13,6 +13,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +38,7 @@ public class BeeParameter implements BeeSerializable {
   }
 
   public BeeParameter(String module, String name, ParameterType type, String description,
-      boolean userMode, String defValue) {
+      boolean userMode, Object defValue) {
     Assert.notEmpty(module);
     Assert.notEmpty(name);
 
@@ -255,7 +256,7 @@ public class BeeParameter implements BeeSerializable {
     }
   }
 
-  public void setUserValue(Long userId, String value) {
+  public void setUserValue(Long userId, Object value) {
     Assert.state(supportsUsers(), "Parameter does not support user values: "
         + BeeUtils.concat(".", getModule(), getName()));
     Assert.notEmpty(userId);
@@ -263,12 +264,12 @@ public class BeeParameter implements BeeSerializable {
     if (value == null) {
       userValues.remove(userId);
     } else {
-      userValues.put(userId, value);
+      userValues.put(userId, transform(value));
     }
   }
 
-  public void setValue(String value) {
-    this.value = value;
+  public void setValue(Object value) {
+    this.value = transform(value);
   }
 
   public boolean supportsUsers() {
@@ -286,11 +287,11 @@ public class BeeParameter implements BeeSerializable {
         break;
 
       case DATE:
-        val = TimeUtils.toDateOrNull(expr);
+        val = JustDate.parse(expr);
         break;
 
       case DATETIME:
-        val = TimeUtils.toDateTimeOrNull(expr);
+        val = DateTime.parse(expr);
         break;
 
       case LIST:
@@ -341,9 +342,22 @@ public class BeeParameter implements BeeSerializable {
         break;
 
       case TIME:
-        val = TimeUtils.parseTime(expr); // TODO: need to store as int
+        val = TimeUtils.parseTime(expr);
         break;
     }
     return val;
+  }
+
+  private String transform(Object val) {
+    String expr = null;
+
+    if (val != null) {
+      if (val instanceof Map || val instanceof Collection) {
+        expr = Codec.beeSerialize(val);
+      } else {
+        expr = BeeUtils.transformNoTrim(val);
+      }
+    }
+    return expr;
   }
 }
