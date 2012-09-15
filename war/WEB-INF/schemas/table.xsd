@@ -17,13 +17,6 @@
     <xs:sequence>
       <xs:element name="Fields" type="fields" minOccurs="0" maxOccurs="1" />
       <xs:element name="Extensions" type="fields" minOccurs="0" maxOccurs="1" />
-      <xs:element name="States" minOccurs="0" maxOccurs="1">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:element name="State" type="type:stateNameType" maxOccurs="unbounded" />
-          </xs:sequence>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="Keys" minOccurs="0" maxOccurs="1">
         <xs:complexType>
           <xs:sequence>
@@ -31,10 +24,18 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
+      <xs:element name="Triggers" minOccurs="0" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Trigger" type="triggerType" maxOccurs="unbounded" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
     </xs:sequence>
     <xs:attribute name="name" type="type:tableNameType" use="required" />
     <xs:attribute name="idName" type="type:fieldNameType" default="ID" />
     <xs:attribute name="versionName" type="type:fieldNameType" default="VERSION" />
+    <xs:attribute name="audit" type="xs:boolean" default="true" />
     <xs:attribute name="x" type="xs:int" />
     <xs:attribute name="y" type="xs:int" />
   </xs:complexType>
@@ -168,6 +169,43 @@
     </xs:sequence>
     <xs:attribute name="unique" type="xs:boolean" />
   </xs:complexType>
+
+  <xs:complexType name="triggerType">
+    <xs:sequence>
+      <xs:element name="PostgreSql" type="xs:string" />
+      <xs:element name="MsSql" type="xs:string" />
+      <xs:element name="Oracle" type="xs:string" />
+    </xs:sequence>
+    <xs:attribute name="timing" type="triggerTimingType" use="required" />
+    <xs:attribute name="events" use="required">
+      <xs:simpleType>
+        <xs:list itemType="triggerEventType"/>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="scope" type="triggerScopeType" use="required" />
+  </xs:complexType>
+
+  <xs:simpleType name="triggerTimingType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="BEFORE" />
+      <xs:enumeration value="AFTER" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="triggerEventType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="INSERT" />
+      <xs:enumeration value="UPDATE" />
+      <xs:enumeration value="DELETE" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="triggerScopeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ROW" />
+      <xs:enumeration value="STATEMENT" />
+    </xs:restriction>
+  </xs:simpleType>
 
   <xs:simpleType name="cascadeType">
     <xs:restriction base="xs:string">

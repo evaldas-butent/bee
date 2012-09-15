@@ -8,8 +8,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class BeeConst {
 
   public enum SqlEngine {
-    MYSQL("MySQL"), MSSQL("Microsoft SQL Server"), ORACLE("Oracle"), POSTGRESQL("PostgreSQL"),
-    GENERIC(null);
+    POSTGRESQL("PostgreSQL"), MSSQL("Microsoft SQL Server"), ORACLE("Oracle"), GENERIC(null);
 
     public static SqlEngine detectEngine(String expr) {
       if (!BeeUtils.isEmpty(expr)) {

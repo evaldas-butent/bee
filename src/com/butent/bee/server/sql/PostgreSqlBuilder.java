@@ -1,15 +1,27 @@
 package com.butent.bee.server.sql;
 
+import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_FIELD;
+import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_ID;
+import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_MODE;
+import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_TIME;
+import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_TX;
+import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_USER;
+import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_VALUE;
+import static com.butent.bee.server.data.SystemBean.AUDIT_USER;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerEvent;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +34,62 @@ class PostgreSqlBuilder extends SqlBuilder {
   @Override
   public SqlEngine getEngine() {
     return SqlEngine.POSTGRESQL;
+  }
+
+  @Override
+  protected String getAuditTrigger(String auditTable, String idName, Collection<String> fields) {
+    StringBuilder body = new StringBuilder();
+    String insert = "INSERT INTO " + auditTable
+        + " (" + BeeUtils.concat(",", sqlQuote(AUDIT_FLD_TIME), sqlQuote(AUDIT_FLD_USER),
+            sqlQuote(AUDIT_FLD_TX), sqlQuote(AUDIT_FLD_MODE), sqlQuote(AUDIT_FLD_ID),
+            sqlQuote(AUDIT_FLD_FIELD), sqlQuote(AUDIT_FLD_VALUE))
+        + ") VALUES (_time,_user,TXID_CURRENT(),SUBSTRING(TG_OP,1,1),";
+
+    body.append("DECLARE _time BIGINT=")
+        .append("(floor(extract(epoch from current_timestamp))")
+        .append("-floor(extract(second from current_timestamp)))*1000")
+        .append("+floor(extract(milliseconds from current_timestamp));")
+        .append("_user BIGINT;")
+        .append("BEGIN ")
+        .append("BEGIN _user:=CAST(CURRENT_SETTING('").append(AUDIT_USER).append("') AS BIGINT);")
+        .append("EXCEPTION WHEN OTHERS THEN _user:=NULL;END;")
+        .append("IF (TG_OP='DELETE') THEN ")
+        .append(insert).append("OLD." + idName + ",NULL,NULL);")
+        .append("ELSE ");
+
+    insert = insert + "NEW." + idName + ",";
+
+    for (String field : fields) {
+      String fld = sqlQuote(field);
+
+      body.append("IF ((TG_OP='INSERT' AND NEW.").append(fld)
+          .append(" IS NOT NULL) OR (TG_OP='UPDATE' AND OLD.").append(fld)
+          .append(" IS DISTINCT FROM NEW.").append(fld).append(")) THEN ")
+          .append(insert).append("'").append(field).append("',NEW.").append(fld).append(");")
+          .append("END IF;");
+    }
+    body.append("END IF;")
+        .append("RETURN NULL; END;");
+
+    return body.toString();
+  }
+
+  @Override
+  protected String getRelationTrigger(List<Map<String, String>> fields) {
+    StringBuilder body = new StringBuilder("BEGIN ");
+
+    for (Map<String, String> entry : fields) {
+      String fldName = entry.get("field");
+      String relTable = entry.get("relTable");
+      String relField = entry.get("relField");
+      String var = "OLD." + sqlQuote(fldName);
+
+      body.append(BeeUtils.concat(1, "IF", var, "IS NOT NULL THEN",
+          new SqlDelete(relTable).setWhere(SqlUtils.equal(relTable, relField, 69))
+              .getQuery().replace("69", var),
+          ";END IF;"));
+    }
+    return body.append("RETURN NULL;END;").toString();
   }
 
   @Override
@@ -98,37 +166,25 @@ class PostgreSqlBuilder extends SqlBuilder {
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
-      case CREATE_TRIGGER_FUNCTION:
-        @SuppressWarnings("unchecked")
-        List<String[]> content = (List<String[]>) params.get("content");
-        String text = null;
-
-        for (String[] entry : content) {
-          String fldName = entry[0];
-          String relTable = entry[1];
-          String relField = entry[2];
-          String var = "OLD." + sqlQuote(fldName);
-
-          text = BeeUtils.concat(1, text, "IF", var, "IS NOT NULL THEN",
-              new SqlDelete(relTable).setWhere(SqlUtils.equal(relTable, relField, 69))
-                  .getQuery().replace("69", var),
-              "; END IF;");
-        }
-        String name = "trigger_" + Codec.crc32((String) params.get("name"));
-
-        return BeeUtils.concat(1,
-            "CREATE OR REPLACE FUNCTION", name + "()", "RETURNS TRIGGER AS",
-            "$" + name + "$", "BEGIN", text, "RETURN NULL; END;", "$" + name + "$",
-            "LANGUAGE plpgsql;");
+      case SET_PARAMETER:
+        return BeeUtils.concat(0,
+            "SELECT SET_CONFIG('", params.get("prmName"), "','", params.get("prmValue"), "',true)");
 
       case CREATE_TRIGGER:
+        String procName = "trigger_" + Codec.crc32((String) params.get("name"));
+
         return BeeUtils.concat(1,
-            "CREATE TRIGGER", params.get("name"), params.get("timing"), params.get("event"),
-            "ON", params.get("table"), params.get("scope"),
-            "EXECUTE PROCEDURE", "trigger_" + Codec.crc32((String) params.get("name")) + "();");
+            "CREATE OR REPLACE FUNCTION", procName, "() RETURNS TRIGGER AS",
+            "$" + procName + "$", getTriggerBody(params),
+            "$" + procName + "$", "LANGUAGE plpgsql;",
+            "CREATE TRIGGER", params.get("name"), params.get("timing"),
+            BeeUtils.concat(" OR ", ((EnumSet<SqlTriggerEvent>) params.get("events")).toArray()),
+            "ON", params.get("table"), "FOR EACH", params.get("scope"),
+            "EXECUTE PROCEDURE", procName, "();");
 
       case DB_NAME:
         return "SELECT current_database() as " + sqlQuote("dbName");
@@ -186,6 +242,9 @@ class PostgreSqlBuilder extends SqlBuilder {
 
   @Override
   protected String sqlQuote(String value) {
+    if (BeeUtils.isEmpty(value)) {
+      return null;
+    }
     return "\"" + value + "\"";
   }
 

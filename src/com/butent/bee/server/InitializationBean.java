@@ -24,13 +24,13 @@ public class InitializationBean {
   ModuleHolderBean moduleBean;
 
   @PostConstruct
-  private void init() {
+  public void init() {
     setLogLevel();
+
+    moduleBean.initModules();
 
     usr.initUsers();
     usr.initRights();
-
-    moduleBean.initModules();
   }
 
   private void setLogLevel() {

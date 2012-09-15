@@ -5,8 +5,12 @@ import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerEvent;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerScope;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +23,30 @@ class OracleSqlBuilder extends SqlBuilder {
   @Override
   public SqlEngine getEngine() {
     return SqlEngine.ORACLE;
+  }
+
+  @Override
+  protected String getAuditTrigger(String auditTable, String idName, Collection<String> fields) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  protected String getRelationTrigger(List<Map<String, String>> fields) {
+    StringBuilder body = new StringBuilder();
+
+    for (Map<String, String> entry : fields) {
+      String fldName = entry.get("field");
+      String relTable = entry.get("relTable");
+      String relField = entry.get("relField");
+      String var = ":OLD." + sqlQuote(fldName);
+
+      body.append(BeeUtils.concat(1, "IF", var, "IS NOT NULL THEN",
+          new SqlDelete(relTable).setWhere(SqlUtils.equal(relTable, relField, 69))
+              .getQuery().replace("69", var),
+          ";END IF;"));
+    }
+    return body.toString();
   }
 
   @Override
@@ -86,29 +114,17 @@ class OracleSqlBuilder extends SqlBuilder {
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
       case CREATE_TRIGGER:
-        @SuppressWarnings("unchecked")
-        List<String[]> content = (List<String[]>) params.get("content");
-        String text = null;
-
-        for (String[] entry : content) {
-          String fldName = entry[0];
-          String relTable = entry[1];
-          String relField = entry[2];
-          String var = ":OLD." + sqlQuote(fldName);
-
-          text = BeeUtils.concat(1, text, "IF", var, "IS NOT NULL THEN",
-              new SqlDelete(relTable).setWhere(SqlUtils.equal(relTable, relField, 69))
-                  .getQuery().replace("69", var),
-              "; END IF;");
-        }
         return BeeUtils.concat(1,
-            "CREATE TRIGGER", params.get("name"), params.get("timing"), params.get("event"),
-            "ON", params.get("table"), params.get("scope"),
-            "BEGIN", text, "END;");
+            "CREATE TRIGGER", params.get("name"), params.get("timing"),
+            BeeUtils.concat(" OR ", ((EnumSet<SqlTriggerEvent>) params.get("events")).toArray()),
+            "ON", params.get("table"),
+            ((SqlTriggerScope) params.get("scope") == SqlTriggerScope.ROW) ? "FOR EACH ROW" : "",
+            "BEGIN", getTriggerBody(params), "END;");
 
       case DB_SCHEMA:
         return "SELECT sys_context('USERENV', 'CURRENT_SCHEMA') AS " + sqlQuote("dbSchema")
@@ -275,6 +291,9 @@ class OracleSqlBuilder extends SqlBuilder {
 
   @Override
   protected String sqlQuote(String value) {
+    if (BeeUtils.isEmpty(value)) {
+      return null;
+    }
     return "\"" + value + "\"";
   }
 

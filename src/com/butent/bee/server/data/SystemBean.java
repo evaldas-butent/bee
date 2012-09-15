@@ -1,6 +1,8 @@
 package com.butent.bee.server.data;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -34,10 +36,14 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.SqlConstants;
-import com.butent.bee.shared.data.XmlState;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerEvent;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerScope;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerTiming;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerType;
 import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlKey;
+import com.butent.bee.shared.data.XmlTable.XmlTrigger;
 import com.butent.bee.shared.data.XmlView;
 import com.butent.bee.shared.data.XmlView.XmlColumn;
 import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
@@ -45,6 +51,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -53,6 +60,7 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,8 +71,6 @@ import javax.ejb.EJB;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 /**
  * Ensures core data management functionality containing: data structures for tables and views,
@@ -81,7 +87,7 @@ public class SystemBean {
    */
 
   public enum SysObject {
-    STATE("states"), TABLE("tables"), VIEW("views");
+    TABLE("tables"), VIEW("views");
 
     private final String path;
 
@@ -103,6 +109,16 @@ public class SystemBean {
     }
   }
 
+  public static final String AUDIT_PREFIX = "AUDIT";
+  public static final String AUDIT_USER = "bee.user";
+  public static final String AUDIT_FLD_TIME = "Time";
+  public static final String AUDIT_FLD_USER = "UserId";
+  public static final String AUDIT_FLD_TX = "TransactionId";
+  public static final String AUDIT_FLD_MODE = "Mode";
+  public static final String AUDIT_FLD_ID = "RecordId";
+  public static final String AUDIT_FLD_FIELD = "Field";
+  public static final String AUDIT_FLD_VALUE = "Value";
+
   private static Logger logger = Logger.getLogger(SystemBean.class.getName());
 
   @EJB
@@ -116,7 +132,7 @@ public class SystemBean {
 
   private String dbName;
   private String dbSchema;
-  private final Map<String, BeeState> stateCache = Maps.newHashMap();
+  private String dbAuditSchema;
   private final Map<String, BeeTable> tableCache = Maps.newHashMap();
   private final Map<String, BeeView> viewCache = Maps.newHashMap();
   private final EventBus viewEventBus = new EventBus();
@@ -147,9 +163,6 @@ public class SystemBean {
   }
 
   public ResponseObject editStateRoles(String tblName, String stateName) {
-    if (!isState(stateName)) {
-      return ResponseObject.error("Unknown state:", stateName);
-    }
     BeeState state = getState(stateName);
 
     if (!state.supportsRoles()) {
@@ -270,18 +283,9 @@ public class SystemBean {
     return getTable(tblName).getIdName();
   }
 
+  @SuppressWarnings("unused")
   public BeeState getState(String stateName) {
-    Assert.state(isState(stateName), "Not a state: " + stateName);
-    return stateCache.get(BeeUtils.normalize(stateName));
-  }
-
-  public Collection<String> getStateNames() {
-    Collection<String> states = Lists.newArrayList();
-
-    for (BeeState state : getStates()) {
-      states.add(state.getName());
-    }
-    return states;
+    return null; // TODO
   }
 
   public BeeTable getTable(String tblName) {
@@ -343,33 +347,6 @@ public class SystemBean {
     return views;
   }
 
-  public XmlState getXmlState(String moduleName, String stateName) {
-    Assert.notEmpty(stateName);
-
-    XmlState xmlState = getXmlState(moduleName, stateName, false);
-    XmlState userState = getXmlState(moduleName, stateName, true);
-
-    if (xmlState == null) {
-      xmlState = userState;
-    } else {
-      xmlState.protect().merge(userState);
-    }
-    return xmlState;
-  }
-
-  public XmlState getXmlState(String moduleName, String stateName, boolean userMode) {
-    Assert.notEmpty(stateName);
-    String resource = moduleBean.getResourcePath(moduleName,
-        SysObject.STATE.getPath(), SysObject.STATE.getFileName(stateName));
-
-    if (userMode) {
-      resource = Config.getUserPath(resource);
-    } else {
-      resource = Config.getConfigPath(resource);
-    }
-    return loadXmlState(resource);
-  }
-
   public XmlTable getXmlTable(String moduleName, String tableName) {
     Assert.notEmpty(tableName);
 
@@ -426,41 +403,15 @@ public class SystemBean {
     return getTable(tblName).hasField(fldName);
   }
 
-  @Lock(LockType.WRITE)
-  public void initDatabase(String dsn) {
-    String[] dbTables = new String[0];
-
-    if (SqlBuilderFactory.setDefaultBuilder(qs.dbEngine(dsn), dsn)) {
-      dbName = qs.dbName();
-      dbSchema = qs.dbSchema();
-      dbTables = qs.dbTables(dbName, dbSchema, null).getColumn(SqlConstants.TBL_NAME);
-    }
-    for (BeeTable table : getTables()) {
-      String tblName = table.getName();
-      table.setActive(BeeUtils.inListSame(tblName, dbTables));
-
-      Map<String, String[]> tableFields = Maps.newHashMap();
-
-      for (BeeState state : table.getStates()) {
-        tblName = table.getStateTable(state);
-
-        if (BeeUtils.inListSame(tblName, dbTables) && !tableFields.containsKey(tblName)) {
-          tableFields.put(tblName,
-              qs.dbFields(getDbName(), getDbSchema(), tblName).getColumn(SqlConstants.FLD_NAME));
-        }
-        table.setStateActive(state, tableFields.get(tblName));
-      }
-    }
-  }
-
-  @Lock(LockType.WRITE)
-  public void initStates() {
-    initObjects(SysObject.STATE);
-    initTables();
-  }
-
+  @PostConstruct
   @Lock(LockType.WRITE)
   public void initTables() {
+    initTables(BeeUtils.notEmpty(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));
+  }
+
+  @Lock(LockType.WRITE)
+  public void initTables(String dsn) {
+    Assert.state(SqlBuilderFactory.setDefaultBuilder(qs.dbEngine(dsn), dsn));
     initObjects(SysObject.TABLE);
 
     for (BeeTable table : getTables()) {
@@ -470,8 +421,8 @@ public class SystemBean {
             "relation:", BeeUtils.bracket(fKey.getRefTable())));
       }
     }
+    initDatabase();
     initDbTriggers();
-    initDatabase(BeeUtils.notEmpty(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));
     initViews();
   }
 
@@ -482,10 +433,6 @@ public class SystemBean {
 
   public boolean isExtField(String tblName, String fldName) {
     return getTable(tblName).getField(fldName).isExtended();
-  }
-
-  public boolean isState(String stateName) {
-    return !BeeUtils.isEmpty(stateName) && stateCache.containsKey(BeeUtils.normalize(stateName));
   }
 
   public boolean isTable(String tblName) {
@@ -534,10 +481,6 @@ public class SystemBean {
     return table.joinTranslationField(query, tblAlias, field, locale);
   }
 
-  public XmlState loadXmlState(String resource) {
-    return XmlUtils.unmarshal(XmlState.class, resource, SysObject.STATE.getSchemaPath());
-  }
-
   public XmlTable loadXmlTable(String resource) {
     return XmlUtils.unmarshal(XmlTable.class, resource, SysObject.TABLE.getSchemaPath());
   }
@@ -550,7 +493,6 @@ public class SystemBean {
     viewEventBus.post(viewEvent);
   }
 
-  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
   public void rebuildActiveTables() {
     initTables();
@@ -562,7 +504,6 @@ public class SystemBean {
     }
   }
 
-  @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
   @Lock(LockType.WRITE)
   public void rebuildTable(String tblName) {
     rebuildTable(getTable(tblName));
@@ -597,11 +538,46 @@ public class SystemBean {
     return query;
   }
 
+  private void createAuditTables(BeeTable table) {
+    if (!table.isAuditable()) {
+      return;
+    }
+    if (!qs.dbSchemaExists(dbName, dbAuditSchema)) {
+      makeStructureChanges(SqlUtils.createSchema(dbAuditSchema));
+    }
+    String auditName = BeeUtils.concat("_", table.getName(), AUDIT_PREFIX);
+    String auditPath = BeeUtils.concat(".", dbAuditSchema, auditName);
+
+    if (!qs.dbTableExists(dbName, dbAuditSchema, auditName)) {
+      makeStructureChanges(
+          new SqlCreate(auditPath, false)
+              .addDateTime(AUDIT_FLD_TIME, true)
+              .addLong(AUDIT_FLD_USER, false)
+              .addLong(AUDIT_FLD_TX, false)
+              .addString(AUDIT_FLD_MODE, 1, true)
+              .addLong(AUDIT_FLD_ID, true)
+              .addString(AUDIT_FLD_FIELD, 30, false)
+              .addText(AUDIT_FLD_VALUE, false),
+          SqlUtils.createIndex(false,
+              auditPath, "IK_" + Codec.crc32(auditName + AUDIT_FLD_ID), AUDIT_FLD_ID));
+    }
+  }
+
   private void createForeignKeys(Collection<BeeForeignKey> fKeys) {
+    HashMultimap<String, String> flds = HashMultimap.create();
+
+    for (Map<String, String> row : qs.dbFields(getDbName(), getDbSchema(), null)) {
+      flds.put(row.get(SqlConstants.TBL_NAME), row.get(SqlConstants.FLD_NAME));
+    }
     for (BeeForeignKey fKey : fKeys) {
+      String tblName = fKey.getTable();
+      String fldName = fKey.getKeyField();
       String refTblName = fKey.getRefTable();
-      makeStructureChanges(SqlUtils.createForeignKey(fKey.getTable(), fKey.getName(),
-          fKey.getKeyField(), refTblName, getIdName(refTblName), fKey.getCascade()));
+
+      if (flds.containsEntry(tblName, fldName)) {
+        makeStructureChanges(SqlUtils.createForeignKey(tblName, fKey.getName(),
+            fldName, refTblName, getIdName(refTblName), fKey.getCascade()));
+      }
     }
   }
 
@@ -666,7 +642,7 @@ public class SystemBean {
     for (SqlCreate sc : newTables.values()) {
       tblName = sc.getTarget();
       String tblBackup = null;
-      boolean update = !qs.dbExists(getDbName(), getDbSchema(), tblName);
+      boolean update = !qs.dbTableExists(getDbName(), getDbSchema(), tblName);
 
       if (update) {
         if (diff != null) {
@@ -755,16 +731,16 @@ public class SystemBean {
       if (!update) {
         LogUtils.info(logger, "Checking triggers...");
         int c = 0;
-        String[] triggers = qs.dbTriggers(getDbName(), getDbSchema(), tblName)
-            .getColumn(SqlConstants.TRIGGER_NAME);
+        Set<String> triggers = Sets.newHashSet(qs.dbTriggers(getDbName(), getDbSchema(), tblName)
+            .getColumn(SqlConstants.TRIGGER_NAME));
 
         for (BeeTrigger trigger : table.getTriggers()) {
           if (BeeUtils.same(trigger.getTable(), tblName)) {
-            if (ArrayUtils.contains(triggers, trigger.getName())) {
+            if (triggers.contains(trigger.getName())) {
               c++;
             } else {
               String msg = BeeUtils.concat(1, "TRIGGER", trigger.getName(), "NOT IN",
-                  BeeUtils.parenthesize(ArrayUtils.transform(triggers)));
+                  BeeUtils.parenthesize(BeeUtils.transformCollection(triggers)));
               LogUtils.warning(logger, msg);
 
               if (diff != null) {
@@ -776,7 +752,7 @@ public class SystemBean {
             }
           }
         }
-        if (!update && triggers.length > c) {
+        if (!update && triggers.size() > c) {
           String msg = "TOO MANY TRIGGERS";
           LogUtils.warning(logger, msg);
 
@@ -787,8 +763,24 @@ public class SystemBean {
           }
         }
       }
+      if (!update && table.isAuditable() && isTable(tblName)) {
+        LogUtils.info(logger, "Checking audit tables...");
+        String auditName = BeeUtils.concat("_", tblName, AUDIT_PREFIX);
+
+        if (!qs.dbTableExists(dbName, dbAuditSchema, auditName)) {
+          String msg = BeeUtils.concat(1, "AUDIT TABLE",
+              BeeUtils.concat(".", dbAuditSchema, auditName), "DOES NOT EXIST");
+          LogUtils.warning(logger, msg);
+
+          if (diff != null) {
+            PropertyUtils.addProperty(diff, tblName, msg);
+          } else {
+            update = true;
+          }
+        }
+      }
       if (!BeeUtils.isEmpty(tblBackup)) {
-        if (qs.dbExists(getDbName(), getDbSchema(), tblBackup)) {
+        if (qs.dbTableExists(getDbName(), getDbSchema(), tblBackup)) {
           makeStructureChanges(SqlUtils.dropTable(tblBackup));
         }
         makeStructureChanges(sc.setTarget(tblBackup));
@@ -888,8 +880,9 @@ public class SystemBean {
 
   private void createTriggers(Collection<BeeTrigger> triggers) {
     for (BeeTrigger trigger : triggers) {
-      makeStructureChanges(SqlUtils.createTrigger(trigger.getTable(), trigger.getName(),
-          trigger.getContent(), trigger.getTiming(), trigger.getEvent(), trigger.getScope()));
+      makeStructureChanges(SqlUtils.createTrigger(trigger.getName(), trigger.getTable(),
+          trigger.getType(), trigger.getParameters(), trigger.getTiming(), trigger.getEvents(),
+          trigger.getScope()));
     }
   }
 
@@ -909,45 +902,75 @@ public class SystemBean {
     return new BeeView(getTable(tblName).getModuleName(), xmlView, tableCache);
   }
 
-  private Collection<BeeState> getStates() {
-    return ImmutableList.copyOf(stateCache.values());
-  }
-
   private Collection<BeeTable> getTables() {
     return ImmutableList.copyOf(tableCache.values());
   }
 
-  @PostConstruct
-  private void init() {
-    initStates();
+  private void initDatabase() {
+    dbName = qs.dbName();
+    dbSchema = qs.dbSchema();
+    dbAuditSchema = BeeUtils.concat("_", dbSchema, AUDIT_PREFIX);
+    String[] dbTables = qs.dbTables(dbName, dbSchema, null).getColumn(SqlConstants.TBL_NAME);
+
+    for (BeeTable table : getTables()) {
+      String tblName = table.getName();
+      table.setActive(BeeUtils.inListSame(tblName, dbTables));
+
+      Map<String, String[]> tableFields = Maps.newHashMap();
+
+      for (BeeState state : table.getStates()) {
+        tblName = table.getStateTable(state);
+
+        if (BeeUtils.inListSame(tblName, dbTables) && !tableFields.containsKey(tblName)) {
+          tableFields.put(tblName,
+              qs.dbFields(getDbName(), getDbSchema(), tblName).getColumn(SqlConstants.FLD_NAME));
+        }
+        table.setStateActive(state, tableFields.get(tblName));
+      }
+    }
   }
 
   private void initDbTriggers() {
     for (BeeTable table : getTables()) {
-      Map<String, List<String[]>> tr = Maps.newHashMap();
+      Map<String, List<Map<String, String>>> tr = Maps.newHashMap();
 
       for (BeeField field : table.getFields()) {
         if (field instanceof BeeRelation && ((BeeRelation) field).hasEditableRelation()) {
           String tblName = field.getStorageTable();
           String relTable = ((BeeRelation) field).getRelation();
 
-          List<String[]> entry = tr.get(tblName);
+          List<Map<String, String>> entry = tr.get(tblName);
 
           if (BeeUtils.isEmpty(entry)) {
             entry = Lists.newArrayList();
             tr.put(tblName, entry);
           }
-          entry.add(new String[] {field.getName(), relTable, getIdName(relTable)});
-          /*
-           * <declare name="aa" value="<OLD/>.<name value="fldName"/>" /> <if> <condition> <var
-           * value="aa"/> IS NOT NULL </condition> <ifTrue> <delete target="relTable"> <where>
-           * <equal source="relTable" field="relField" value="" /> </where> </delete> </ifTrue>
-           * </if>
-           */
+          entry.add(ImmutableMap.of("field", field.getName(),
+              "relTable", relTable, "relField", getIdName(relTable)));
         }
       }
       for (String tblName : tr.keySet()) {
-        table.addTrigger(tblName, tr.get(tblName), "AFTER", "DELETE", "FOR EACH ROW");
+        table.addTrigger(tblName, SqlTriggerType.RELATION,
+            ImmutableMap.of("fields", tr.get(tblName)),
+            SqlTriggerTiming.AFTER, EnumSet.of(SqlTriggerEvent.DELETE), SqlTriggerScope.ROW);
+      }
+
+      if (table.isAuditable()) {
+        HashMultimap<String, String> fields = HashMultimap.create();
+
+        for (BeeField field : table.getFields()) {
+          fields.put(field.getStorageTable(), field.getName());
+        }
+        for (String tblName : fields.keySet()) {
+          table.addTrigger(tblName, SqlTriggerType.AUDIT,
+              ImmutableMap.of("auditSchema", dbAuditSchema,
+                  "auditTable", BeeUtils.concat("_", table.getName(), AUDIT_PREFIX),
+                  "idName", table.getIdName(),
+                  "fields", fields.get(tblName)),
+              SqlTriggerTiming.AFTER,
+              EnumSet.of(SqlTriggerEvent.INSERT, SqlTriggerEvent.UPDATE, SqlTriggerEvent.DELETE),
+              SqlTriggerScope.ROW);
+        }
       }
     }
   }
@@ -956,9 +979,6 @@ public class SystemBean {
     Assert.notEmpty(obj);
 
     switch (obj) {
-      case STATE:
-        stateCache.clear();
-        break;
       case TABLE:
         tableCache.clear();
         break;
@@ -997,9 +1017,6 @@ public class SystemBean {
           boolean isOk = false;
 
           switch (obj) {
-            case STATE:
-              isOk = initState(moduleName, objectName);
-              break;
             case TABLE:
               isOk = initTable(moduleName, objectName);
               break;
@@ -1020,27 +1037,6 @@ public class SystemBean {
     }
   }
 
-  private boolean initState(String moduleName, String stateName) {
-    Assert.notEmpty(stateName);
-    BeeState state = null;
-    XmlState xmlState = getXmlState(moduleName, stateName);
-
-    if (xmlState != null) {
-      if (!BeeUtils.same(xmlState.name, stateName)) {
-        LogUtils.warning(logger, "State name doesn't match resource name:", xmlState.name);
-      } else {
-        state = new BeeState(moduleName, xmlState.name, xmlState.userMode, xmlState.roleMode,
-            xmlState.checked);
-      }
-    }
-    if (state != null) {
-      register(state, stateCache);
-    } else {
-      unregister(stateName, stateCache);
-    }
-    return state != null;
-  }
-
   private boolean initTable(String moduleName, String tableName) {
     Assert.notEmpty(tableName);
     BeeTable table = null;
@@ -1050,7 +1046,8 @@ public class SystemBean {
       if (!BeeUtils.same(xmlTable.name, tableName)) {
         LogUtils.warning(logger, "Table name doesn't match resource name:", xmlTable.name);
       } else {
-        table = new BeeTable(moduleName, xmlTable.name, xmlTable.idName, xmlTable.versionName);
+        table = new BeeTable(moduleName,
+            xmlTable.name, xmlTable.idName, xmlTable.versionName, xmlTable.audit);
         String tbl = table.getName();
 
         for (int i = 0; i < 2; i++) {
@@ -1060,15 +1057,6 @@ public class SystemBean {
           if (!BeeUtils.isEmpty(fields)) {
             for (XmlField field : fields) {
               table.addField(field, extMode);
-            }
-          }
-        }
-        if (!BeeUtils.isEmpty(xmlTable.states)) {
-          for (String state : xmlTable.states) {
-            if (!isState(state)) {
-              LogUtils.warning(logger, "Unrecognized state:", tbl, state);
-            } else {
-              table.addState(getState(state));
             }
           }
         }
@@ -1104,6 +1092,37 @@ public class SystemBean {
             }
             if (ok) {
               table.addKey(key.unique, firstTbl, key.fields.toArray(new String[0]));
+            }
+          }
+        }
+        if (!BeeUtils.isEmpty(xmlTable.triggers)) {
+          for (XmlTrigger trigger : xmlTable.triggers) {
+            String body = null;
+            List<SqlTriggerEvent> events = Lists.newArrayList();
+
+            for (String event : trigger.events) {
+              events.add(NameUtils.getEnumByName(SqlTriggerEvent.class, event));
+            }
+            switch (SqlBuilderFactory.getBuilder().getEngine()) {
+              case POSTGRESQL:
+                body = trigger.postgreSql;
+                break;
+              case MSSQL:
+                body = trigger.msSql;
+                break;
+              case ORACLE:
+                body = trigger.oracle;
+                break;
+              case GENERIC:
+                body = null;
+                break;
+            }
+            if (!BeeUtils.isEmpty(body)) {
+              table.addTrigger(tableName, SqlTriggerType.CUSTOM,
+                  ImmutableMap.of("body", body),
+                  NameUtils.getEnumByName(SqlTriggerTiming.class, trigger.timing),
+                  EnumSet.copyOf(events),
+                  NameUtils.getEnumByName(SqlTriggerScope.class, trigger.scope));
             }
           }
         }
@@ -1250,14 +1269,15 @@ public class SystemBean {
         String tblBackup = rebuilds.get(tbl);
 
         if (!BeeUtils.isEmpty(tblBackup)) {
-          makeStructureChanges(SqlUtils.dropTable(tbl));
-          makeStructureChanges(SqlUtils.renameTable(tblBackup, tbl));
+          makeStructureChanges(SqlUtils.dropTable(tbl), SqlUtils.renameTable(tblBackup, tbl));
         }
         createKeys(keys);
         createTriggers(triggers);
         createForeignKeys(foreignKeys);
       }
     }
+    createAuditTables(table);
+
     table.setActive(true);
   }
 

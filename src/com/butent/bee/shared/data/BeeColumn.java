@@ -92,6 +92,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     return result;
   }
 
+  @Override
   public void deserialize(String s) {
     String[] arr = Codec.beeDeserializeCollection(s);
     Serial[] members = Serial.values();
@@ -142,6 +143,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     return defaults;
   }
 
+  @Override
   public List<ExtendedProperty> getExtendedInfo() {
     List<Property> lst = getInfo();
 
@@ -199,7 +201,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
   public boolean isReadOnly() {
     return readOnly;
   }
-  
+
   public boolean isText() {
     return ValueType.TEXT.equals(getType()) && getPrecision() <= 0;
   }
@@ -208,6 +210,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     return !isReadOnly() && !isForeign();
   }
 
+  @Override
   public String serialize() {
     Assert.state(validState());
 
@@ -279,6 +282,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
     }
   }
 
+  @Override
   public String transform() {
     return toString();
   }

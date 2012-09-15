@@ -3,6 +3,7 @@
 
   name="Sequences"
   idName="SequenceID"
+  audit="false"
   x="24" y="1325"
   >
   <Fields>

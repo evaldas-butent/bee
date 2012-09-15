@@ -8,12 +8,17 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerEvent;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerScope;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerTiming;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerType;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -94,25 +99,25 @@ public class SqlUtils {
         getConstraintMap(SqlKeyword.PRIMARY_KEY, table, name, fields));
   }
 
-  public static IsQuery[] createTrigger(String table, String name, Object content, String timing,
-      String event, String scope) {
+  public static IsQuery createSchema(String schema) {
+    return new SqlCommand(SqlKeyword.CREATE_SCHEMA,
+        ImmutableMap.of("schema", (Object) name(schema)));
+  }
+
+  public static IsQuery createTrigger(String name, String table,
+      SqlTriggerType type, Map<String, ?> parameters,
+      SqlTriggerTiming timing, EnumSet<SqlTriggerEvent> events, SqlTriggerScope scope) {
 
     Map<String, Object> params = Maps.newHashMap();
-    params.put("table", name(table));
     params.put("name", name(name));
-    params.put("content", content);
+    params.put("table", name(table));
+    params.put("type", type);
+    params.put("parameters", parameters);
     params.put("timing", timing);
-    params.put("event", event);
+    params.put("events", events);
     params.put("scope", scope);
 
-    IsQuery function = new SqlCommand(SqlKeyword.CREATE_TRIGGER_FUNCTION, params);
-    IsQuery trigger = new SqlCommand(SqlKeyword.CREATE_TRIGGER, params);
-
-    if (BeeUtils.isEmpty(function.getQuery())) {
-      return new IsQuery[] {trigger};
-    } else {
-      return new IsQuery[] {function, trigger};
-    }
+    return new SqlCommand(SqlKeyword.CREATE_TRIGGER, params);
   }
 
   public static IsQuery dbFields(String dbName, String dbSchema, String table) {
@@ -159,6 +164,14 @@ public class SqlUtils {
 
   public static IsQuery dbSchema() {
     return new SqlCommand(SqlKeyword.DB_SCHEMA, null);
+  }
+
+  public static IsQuery dbSchemas(String dbName, String schema) {
+    Map<String, Object> params = Maps.newHashMap();
+    params.put("dbName", dbName);
+    params.put("schema", schema);
+
+    return new SqlCommand(SqlKeyword.DB_SCHEMAS, params);
   }
 
   public static IsQuery dbTables(String dbName, String dbSchema, String table) {
@@ -521,6 +534,14 @@ public class SqlUtils {
 
   public static IsExpression round(String source, String field, int precision) {
     return round(field(source, field), precision);
+  }
+
+  public static IsQuery setSqlParameter(String prmName, Object value) {
+    Map<String, Object> params = Maps.newHashMap();
+    params.put("prmName", prmName);
+    params.put("prmValue", value);
+
+    return new SqlCommand(SqlKeyword.SET_PARAMETER, params);
   }
 
   public static IsExpression sqlCase(IsExpression expr, Object... pairs) {

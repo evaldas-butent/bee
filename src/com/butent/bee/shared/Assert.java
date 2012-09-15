@@ -276,6 +276,14 @@ public class Assert {
     return obj;
   }
 
+  public static void notImplemented() {
+    notImplemented("Not implemented");
+  }
+
+  public static void notImplemented(String message) {
+    throw new BeeRuntimeException(message);
+  }
+
   public static <T> T notNull(T object) {
     return notNull(object, ASSERTION_FAILED + "this argument is required; it must not be null");
   }

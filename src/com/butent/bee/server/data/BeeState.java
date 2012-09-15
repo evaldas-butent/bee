@@ -5,6 +5,7 @@ import com.butent.bee.shared.Assert;
 /**
  * Enables usage of user, role, checked or unchecked related states.
  */
+// TODO CHANGE TO RightsState enum
 public class BeeState implements BeeObject {
   private final String moduleName;
   private final String name;

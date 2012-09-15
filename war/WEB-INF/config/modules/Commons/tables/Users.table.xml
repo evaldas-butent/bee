@@ -10,6 +10,7 @@
     <String name="Password" precision="64" />
     <Text name="Properties" />
     <Relation name="CompanyPerson" relation="CompanyPersons" notNull="true" />
+    <Text name="Host" />
   </Fields>
   <Keys>
     <Key unique="true">

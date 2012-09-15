@@ -333,97 +333,6 @@ public class TestIsExpression {
         "SELECT Table1.field1, CAST(Table1.field2 AS VARCHAR(-5)) AS TB1 FROM Table1",
         s.getQuery());
 
-    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
-    s = new SqlSelect();
-    s.addFields("Table1", "field1");
-    s.addFrom("Table1");
-    s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
-        SqlDataType.DOUBLE, 5, 10), "TB1");
-
-    assertEquals(
-        "SELECT `Table1`.`field1`, CAST(`Table1`.`field2` AS DECIMAL(65, 30)) AS `TB1` FROM `Table1`",
-        s.getQuery());
-
-    s = new SqlSelect();
-    s.addFields("Table1", "field1");
-    s.addFrom("Table1");
-    s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
-        SqlDataType.CHAR, 5, 10), "TB1");
-
-    assertEquals(
-        "SELECT `Table1`.`field1`, CAST(`Table1`.`field2` AS CHAR(5)) AS `TB1` FROM `Table1`",
-        s.getQuery());
-
-    s = new SqlSelect();
-    s.addFields("Table1", "field1");
-    s.addFrom("Table1");
-    s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
-        SqlDataType.DECIMAL, 5, 10), "TB1");
-
-    assertEquals(
-        "SELECT `Table1`.`field1`, CAST(`Table1`.`field2` AS DECIMAL(5, 10)) AS `TB1` FROM `Table1`",
-        s.getQuery());
-
-    s = new SqlSelect();
-    s.addFields("Table1", "field1");
-    s.addFrom("Table1");
-    s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
-        SqlDataType.BOOLEAN, 5, 10), "TB1");
-
-    assertEquals(
-        "SELECT `Table1`.`field1`, CAST(`Table1`.`field2` AS DECIMAL(1)) AS `TB1` FROM `Table1`",
-        s.getQuery());
-
-    s = new SqlSelect();
-    s.addFields("Table1", "field1");
-    s.addFrom("Table1");
-    s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
-        SqlDataType.INTEGER, 5, 10), "TB1");
-
-    assertEquals(
-        "SELECT `Table1`.`field1`, CAST(`Table1`.`field2` AS DECIMAL(10)) AS `TB1` FROM `Table1`",
-        s.getQuery());
-
-    s = new SqlSelect();
-    s.addFields("Table1", "field1");
-    s.addFrom("Table1");
-    s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
-        SqlDataType.DATE, 5, 10), "TB1");
-
-    assertEquals(
-        "SELECT `Table1`.`field1`, CAST(`Table1`.`field2` AS DECIMAL(10)) AS `TB1` FROM `Table1`",
-        s.getQuery());
-
-    s = new SqlSelect();
-    s.addFields("Table1", "field1");
-    s.addFrom("Table1");
-    s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
-        SqlDataType.LONG, 5, 10), "TB1");
-
-    assertEquals(
-        "SELECT `Table1`.`field1`, CAST(`Table1`.`field2` AS DECIMAL(19)) AS `TB1` FROM `Table1`",
-        s.getQuery());
-
-    s = new SqlSelect();
-    s.addFields("Table1", "field1");
-    s.addFrom("Table1");
-    s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
-        SqlDataType.DATETIME, 5, 10), "TB1");
-
-    assertEquals(
-        "SELECT `Table1`.`field1`, CAST(`Table1`.`field2` AS DECIMAL(19)) AS `TB1` FROM `Table1`",
-        s.getQuery());
-
-    s = new SqlSelect();
-    s.addFields("Table1", "field1");
-    s.addFrom("Table1");
-    s.addExpr(SqlUtils.cast(SqlUtils.field("Table1", "field2"),
-        SqlDataType.STRING, -5, 10), "TB1");
-
-    assertEquals(
-        "SELECT `Table1`.`field1`, CAST(`Table1`.`field2` AS CHAR(-5)) AS `TB1` FROM `Table1`",
-        s.getQuery());
-
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.MSSQL);
     s = new SqlSelect();
     s.addFields("Table1", "field1");
@@ -781,46 +690,6 @@ public class TestIsExpression {
   }
 
   @Test
-  public void testComplexExpressionMYSQL() {
-    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
-    IsExpression ce = SqlUtils.expression(1, "string", 5.0);
-    assertEquals("1string5.0",
-        ce.getSqlString(SqlBuilderFactory.getBuilder()));
-
-    SqlSelect select = new SqlSelect();
-    select.addField("users", "username", "vardas");
-    select.addFrom("users");
-
-    IsExpression ce2 = SqlUtils.expression(select);
-    assertEquals("SELECT `users`.`username` AS `vardas` FROM `users`",
-        ce2.getSqlString(SqlBuilderFactory.getBuilder()));
-
-    SqlSelect select2 = new SqlSelect();
-    select2.addField("phones", "phone_names", "tel_vardai");
-    select2.addFrom("phones");
-    IsExpression ce3 = SqlUtils.expression(select2);
-    assertEquals(
-        "SELECT `phones`.`phone_names` AS `tel_vardai` FROM `phones`",
-        ce3.getSqlString(SqlBuilderFactory.getBuilder()));
-
-    select.addFrom(select2, "alias2");
-
-    IsExpression ce4 = SqlUtils.expression(select);
-    assertEquals(
-        "SELECT `users`.`username` AS `vardas` FROM `users`, (SELECT `phones`.`phone_names` AS `tel_vardai` FROM `phones`) `alias2`",
-        ce4.getSqlString(SqlBuilderFactory.getBuilder()));
-
-    select2 = select2.reset();
-    select2.addField("JUnit", "method_names", "klases");
-    select2.setDistinctMode(true);
-    select2.addFrom("JUnit");
-    IsExpression ce5 = SqlUtils.expression(select2);
-    assertEquals(
-        "SELECT DISTINCT `JUnit`.`method_names` AS `klases` FROM `phones`, `JUnit`",
-        ce5.getSqlString(SqlBuilderFactory.getBuilder()));
-  }
-
-  @Test
   public void testComplexExpressionOracle() {
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.ORACLE);
     IsExpression ce = SqlUtils.expression(1, "string", 5.0);
@@ -950,16 +819,6 @@ public class TestIsExpression {
         ce7.getSqlString(SqlBuilderFactory.getBuilder()));
   }
 
-  @Test
-  public void testConstantExpressionMySql() {
-    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
-    IsExpression ce7 = SqlUtils.constant(" \\abc ");
-    assertEquals("com.butent.bee.server.sql.MySqlBuilder",
-        SqlBuilderFactory.getBuilder().getClass().getCanonicalName());
-    assertEquals("' \\\\abc '",
-        ce7.getSqlString(SqlBuilderFactory.getBuilder()));
-  }
-
   @SuppressWarnings("unused")
   @Test
   public void testConstantExpressionOracle() {
@@ -1009,24 +868,6 @@ public class TestIsExpression {
     IsExpression ie3 = SqlUtils.name("select.*.from.name");
     assertEquals("select.*.from.name",
         ie3.getSqlString(SqlBuilderFactory.getBuilder()));
-
-    IsExpression iemysql = SqlUtils.name("A longer name");
-    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
-    assertEquals("`A longer name`",
-        iemysql.getSqlString(SqlBuilderFactory.getBuilder()));
-
-    IsExpression ie2mysql = SqlUtils.name("A.longer.name");
-    assertEquals("`A`.`longer`.`name`",
-        ie2mysql.getSqlString(SqlBuilderFactory.getBuilder()));
-    IsExpression ie3mysql = SqlUtils.name("select.*.from.name");
-    assertEquals("`select`.*.`from`.`name`",
-        ie3mysql.getSqlString(SqlBuilderFactory.getBuilder()));
-
-    IsExpression ie4mysql = SqlUtils
-        .name("Select * from table where name=\"tester\" or table1.type=table.*.concret.type");
-    assertEquals(
-        "`Select * from table where name=\"tester\" or table1`.`type=table`.*.`concret`.`type`",
-        ie4mysql.getSqlString(SqlBuilderFactory.getBuilder()));
 
     IsExpression iemssql = SqlUtils.name("A longer name");
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.MSSQL);

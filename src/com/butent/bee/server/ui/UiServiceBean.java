@@ -7,9 +7,9 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.client.ui.DsnService;
-import com.butent.bee.client.ui.StateService;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
+import com.butent.bee.server.InitializationBean;
 import com.butent.bee.server.communication.MailerBean;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeRelation;
@@ -38,7 +38,6 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
-import com.butent.bee.shared.data.XmlState;
 import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlRelation;
@@ -49,7 +48,6 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -108,6 +106,8 @@ public class UiServiceBean {
   MailerBean mail;
   @EJB
   SearchBean search;
+  @EJB
+  InitializationBean ib;
 
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response = null;
@@ -160,14 +160,9 @@ public class UiServiceBean {
     } else if (BeeUtils.same(svc, DsnService.SVC_SWITCH_DSN)) {
       response = switchDsn(reqInfo.getParameter(DsnService.VAR_DSN));
 
-    } else if (BeeUtils.same(svc, StateService.SVC_GET_STATES)) {
-      response = getStates();
-    } else if (BeeUtils.same(svc, StateService.SVC_SAVE_STATES)) {
-      response = saveStates(reqInfo.getContent());
-
     } else if (BeeUtils.same(svc, Service.SEARCH)) {
       response = search.processQuery(reqInfo.getParameter(0));
-      
+
     } else {
       String msg = BeeUtils.concat(1, "data service not recognized:", svc);
       logger.warning(msg);
@@ -441,19 +436,6 @@ public class UiServiceBean {
     return ResponseObject.error("Grid", gridName, "not found");
   }
 
-  private ResponseObject getStates() {
-    List<XmlState> states = Lists.newArrayList();
-
-    for (String stateName : sys.getStateNames()) {
-      XmlState xmlState = sys.getXmlState(sys.getState(stateName).getModuleName(), stateName);
-
-      if (xmlState != null) {
-        states.add(xmlState);
-      }
-    }
-    return ResponseObject.response(states);
-  }
-
   private ResponseObject getTableInfo(RequestInfo reqInfo) {
     String tableName = reqInfo.getParameter(0);
     List<ExtendedProperty> info = Lists.newArrayList();
@@ -571,10 +553,6 @@ public class UiServiceBean {
     if (BeeUtils.same(cmd, "all")) {
       sys.rebuildActiveTables();
       response.addInfo("Recreate structure OK");
-
-    } else if (BeeUtils.same(cmd, "states")) {
-      sys.initStates();
-      response.addInfo("States OK");
 
     } else if (BeeUtils.same(cmd, "tables")) {
       sys.initTables();
@@ -738,93 +716,11 @@ public class UiServiceBean {
     return response;
   }
 
-  private ResponseObject saveStates(String data) {
-    String schemaPath = SysObject.STATE.getSchemaPath();
-    ResponseObject response = new ResponseObject();
-    Map<String, XmlState> updates = Maps.newHashMap();
-    String[] arr = Codec.beeDeserializeCollection(data);
-
-    if (!BeeUtils.isEmpty(arr)) {
-      for (String state : arr) {
-        XmlState xmlState = XmlState.restore(state);
-        String stateName = xmlState.name;
-
-        if (updates.containsKey(BeeUtils.normalize(stateName))) {
-          response.addError("Dublicate state name:", BeeUtils.bracket(stateName));
-        } else {
-          try {
-            XmlState userState = sys.loadXmlState(XmlUtils.marshal(xmlState, schemaPath));
-            XmlState configState = !sys.isState(stateName) ? null
-                : sys.getXmlState(sys.getState(stateName).getModuleName(), stateName, false);
-            XmlState diffState = null;
-
-            if (configState == null) {
-              diffState = userState;
-            } else {
-              diffState = configState.protect().getChanges(userState);
-            }
-            updates.put(BeeUtils.normalize(stateName), diffState);
-
-          } catch (BeeRuntimeException e) {
-            response.addError(BeeUtils.bracket(stateName), e);
-          }
-        }
-      }
-    }
-    if (!response.hasErrors()) {
-      for (String tbl : sys.getTableNames()) {
-        for (String tblState : sys.getTableStates(tbl)) {
-          if (!updates.containsKey(BeeUtils.normalize(tblState))) {
-            response.addError("State", BeeUtils.bracket(tblState),
-                "is used in table", BeeUtils.bracket(tbl));
-          }
-        }
-      }
-    }
-    if (!response.hasErrors()) {
-      for (String state : sys.getStateNames()) {
-        String stateName = BeeUtils.normalize(state);
-
-        if (!updates.containsKey(stateName)) {
-          updates.put(stateName, null);
-        }
-      }
-      for (String stateName : updates.keySet()) {
-        String path =
-            new File(Config.USER_DIR, mod.getResourcePath(CommonsConstants.COMMONS_MODULE,
-                SysObject.STATE.getPath(),
-                SysObject.STATE.getFileName(stateName))).getPath();
-        XmlState diffState = updates.get(stateName);
-
-        if (diffState == null) {
-          if (!FileUtils.deleteFile(path)) {
-            response.addError("Can't delete file:", path);
-          }
-        } else {
-          boolean ok = false;
-          try {
-            ok = FileUtils.saveToFile(XmlUtils.marshal(diffState, schemaPath), path);
-          } catch (BeeRuntimeException e) {
-            response.addError(BeeUtils.bracket(stateName), e);
-          }
-          if (!ok) {
-            response.addError("Can't save file:", path);
-          }
-        }
-      }
-      sys.initStates();
-      usr.initRights();
-      response.addInfo("States OK");
-    }
-    return response;
-  }
-
   private ResponseObject switchDsn(String dsn) {
     if (!BeeUtils.isEmpty(dsn)) {
       ig.destroy();
-      sys.initDatabase(dsn);
-      usr.initUsers();
-      usr.initRights();
+      sys.initTables(dsn);
+      ib.init();
       return ResponseObject.response(dsn);
     }
     return ResponseObject.error("DSN not specified");

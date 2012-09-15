@@ -277,7 +277,6 @@ public class CommonsModuleBean implements BeeModule {
 
       switch (engine) {
         case GENERIC:
-        case MYSQL:
         case MSSQL:
         case ORACLE:
           break;

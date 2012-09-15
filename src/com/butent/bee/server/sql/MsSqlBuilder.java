@@ -6,8 +6,12 @@ import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerEvent;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerTiming;
 import com.butent.bee.shared.utils.BeeUtils;
 
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +27,12 @@ class MsSqlBuilder extends SqlBuilder {
   }
 
   @Override
+  protected String getAuditTrigger(String auditTable, String idName, Collection<String> fields) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
   protected String getCreate(SqlCreate sc) {
     Assert.notNull(sc);
     Assert.state(!sc.isEmpty());
@@ -32,6 +42,24 @@ class MsSqlBuilder extends SqlBuilder {
     }
     return sc.getDataSource().getSqlString(this).replaceFirst(" FROM ",
         " INTO " + SqlUtils.name(sc.getTarget()).getSqlString(this) + " FROM ");
+  }
+
+  @Override
+  protected String getRelationTrigger(List<Map<String, String>> fields) {
+    StringBuilder body = new StringBuilder("SET NOCOUNT ON;");
+
+    for (Map<String, String> entry : fields) {
+      String fldName = entry.get("field");
+      String relTable = entry.get("relTable");
+      String relField = entry.get("relField");
+
+      body.append(
+          new SqlDelete(relTable)
+              .setWhere(SqlUtils.in(relTable, relField, "deleted", fldName, null))
+              .getQuery())
+          .append(";");
+    }
+    return body.toString();
   }
 
   @Override
@@ -173,6 +201,7 @@ class MsSqlBuilder extends SqlBuilder {
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
@@ -186,25 +215,11 @@ class MsSqlBuilder extends SqlBuilder {
         return text;
 
       case CREATE_TRIGGER:
-        @SuppressWarnings("unchecked")
-        List<String[]> content = (List<String[]>) params.get("content");
-        text = "SET NOCOUNT ON;";
-
-        for (String[] entry : content) {
-          String fldName = entry[0];
-          String relTable = entry[1];
-          String relField = entry[2];
-
-          text = BeeUtils.concat(1, text,
-              new SqlDelete(relTable)
-                  .setWhere(SqlUtils.in(relTable, relField, "deleted", fldName, null))
-                  .getQuery(),
-              ";");
-        }
         return BeeUtils.concat(1,
-            "CREATE TRIGGER", params.get("name"),
-            "ON", params.get("table"), params.get("timing"), params.get("event"),
-            "AS BEGIN", text, "END;");
+            "CREATE TRIGGER", params.get("name"), "ON", params.get("table"),
+            ((SqlTriggerTiming) params.get("timing") == SqlTriggerTiming.BEFORE) ? "FOR" : "AFTER",
+            BeeUtils.concat(",", ((EnumSet<SqlTriggerEvent>) params.get("events")).toArray()),
+            "AS BEGIN", getTriggerBody(params), "END;");
 
       case DB_NAME:
         return "SELECT db_name() AS " + sqlQuote("dbName");
@@ -293,6 +308,9 @@ class MsSqlBuilder extends SqlBuilder {
 
   @Override
   protected String sqlQuote(String value) {
+    if (BeeUtils.isEmpty(value)) {
+      return null;
+    }
     return "[" + value + "]";
   }
 

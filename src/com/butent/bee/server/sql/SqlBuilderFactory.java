@@ -15,7 +15,6 @@ public class SqlBuilderFactory {
 
   private static Collection<SqlBuilder> builders = Lists.newArrayList(
       new GenericSqlBuilder(),
-      new MySqlBuilder(),
       new MsSqlBuilder(),
       new OracleSqlBuilder(),
       new PostgreSqlBuilder());

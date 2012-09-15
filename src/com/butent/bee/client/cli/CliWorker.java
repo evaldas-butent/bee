@@ -81,7 +81,6 @@ import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.ui.StateService;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Browser;
 import com.butent.bee.client.utils.JsUtils;
@@ -288,8 +287,6 @@ public class CliWorker {
       showStack();
     } else if (z.equals("stacking") || z.startsWith("zind") || z.startsWith("z-ind")) {
       BeeKeeper.getScreen().showGrid(Stacking.getInfo());
-    } else if (z.equals("states")) {
-      CompositeService.doService(new StateService().name(), StateService.SVC_GET_STATES);
     } else if (z.startsWith("stor")) {
       storage(arr);
     } else if (z.equals("style")) {
@@ -1138,7 +1135,8 @@ public class CliWorker {
 
     for ( var i = 0; i < 6; i++) {
       for ( var j = 0; j < 6; j++) {
-        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j) + ', 0)';
+        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', '
+            + Math.floor(255 - 42.5 * j) + ', 0)';
         ctx.fillRect(j * 25, i * 25, 25, 25);
       }
     }

@@ -12,8 +12,8 @@ import com.butent.bee.server.i18n.Localized;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlBuilderFactory;
-import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -54,7 +54,7 @@ import javax.ejb.Singleton;
 public class UserServiceBean {
 
   private class UserInfo {
-    private UserData userData;
+    private final UserData userData;
     private Collection<Long> userRoles;
     private boolean online = false;
     private Locale locale = Localized.defaultLocale;
@@ -94,9 +94,9 @@ public class UserServiceBean {
         loc = Localized.defaultLocale;
       }
       data.setLocale(loc.toString());
-      
+
       data.setConstants(Localized.getDictionary(loc));
-      
+
       this.locale = loc;
       return this;
     }
@@ -139,13 +139,13 @@ public class UserServiceBean {
   public static final String TBL_USER_ROLES = "UserRoles";
   public static final String TBL_COMPANY_PERSONS = "CompanyPersons";
   public static final String TBL_PERSONS = "Persons";
-  public static final String TBL_USER_HISTORY = "UserHistory";
   public static final String TBL_OBJECTS = "Objects";
   public static final String TBL_RIGHTS = "Rights";
 
   public static final String FLD_LOGIN = "Login";
   public static final String FLD_PASSWORD = "Password";
   public static final String FLD_PROPERTIES = "Properties";
+  public static final String FLD_HOST = "Host";
   public static final String FLD_ROLE_NAME = "Name";
   public static final String FLD_USER = "User";
   public static final String FLD_ROLE = "Role";
@@ -166,7 +166,7 @@ public class UserServiceBean {
   private final Map<Long, String> roleCache = Maps.newHashMap();
   private final BiMap<Long, String> userCache = HashBiMap.create();
   private Map<String, UserInfo> infoCache = Maps.newHashMap();
-  private Map<RightsObjectType, Map<String, Multimap<RightsState, Long>>> rightsCache = Maps
+  private final Map<RightsObjectType, Map<String, Multimap<RightsState, Long>>> rightsCache = Maps
       .newHashMap();
 
   public String getCurrentUser() {
@@ -189,7 +189,9 @@ public class UserServiceBean {
   }
 
   public long getUserId(String user) {
-    Assert.contains(userCache.inverse(), key(user));
+    if (!userCache.inverse().containsKey(key(user))) {
+      return 0;
+    }
     return userCache.inverse().get(key(user));
   }
 
@@ -360,14 +362,6 @@ public class UserServiceBean {
     ResponseObject response = new ResponseObject();
     String user = getCurrentUser();
 
-    SqlInsert si = new SqlInsert(TBL_USER_HISTORY)
-        .addConstant("Time", System.currentTimeMillis())
-        .addConstant("Name", user)
-        .addConstant("Host", host)
-        .addConstant("Notes", agent);
-
-    String mode = "IN";
-
     if (isUser(user)) {
       UserInfo info = getUserInfo(getUserId(user));
       info.setOnline(true);
@@ -377,7 +371,9 @@ public class UserServiceBean {
       data.setProperty("dsn", SqlBuilderFactory.getDsn())
           .setRights(getUserRights(getUserId(user)));
 
-      si.addConstant("User", getUserId(user));
+      qs.updateData(new SqlUpdate(TBL_USERS)
+          .addConstant(FLD_HOST, BeeUtils.concat(1, host, agent))
+          .setWhere(SqlUtils.equal(TBL_USERS, sys.getIdName(TBL_USERS), getUserId(user))));
 
       response.setResponse(data).addInfo("User logged in:",
           user + " " + BeeUtils.parenthesize(data.getUserSign()));
@@ -391,27 +387,21 @@ public class UserServiceBean {
       LogUtils.warning(logger, (Object[]) response.getWarnings());
 
     } else {
-      mode = "FAIL";
       response.addError("Login attempt by an unauthorized user:", user);
       LogUtils.severe(logger, (Object[]) response.getErrors());
     }
-    qs.insertData(si.addConstant("Mode", mode));
     return response;
   }
 
   @Lock(LockType.WRITE)
   public void logout(String user) {
-    SqlInsert si = new SqlInsert(TBL_USER_HISTORY)
-        .addConstant("Time", System.currentTimeMillis())
-        .addConstant("Name", user);
-
-    String mode = "OUT";
-
     if (isUser(user)) {
       UserInfo info = getUserInfo(getUserId(user));
       String sign = user + " " + BeeUtils.parenthesize(info.getUserData().getUserSign());
 
-      si.addConstant("User", getUserId(user));
+      qs.updateData(new SqlUpdate(TBL_USERS)
+          .addConstant(FLD_HOST, null)
+          .setWhere(SqlUtils.equal(TBL_USERS, sys.getIdName(TBL_USERS), getUserId(user))));
 
       if (info.isOnline()) {
         info.setOnline(false);
@@ -423,10 +413,8 @@ public class UserServiceBean {
       LogUtils.warning(logger, "Anonymous user logged out:", user);
 
     } else {
-      mode = "FAIL";
       LogUtils.severe(logger, "Logout attempt by an unauthorized user:", user);
     }
-    qs.insertData(si.addConstant("Mode", mode));
   }
 
   @PreDestroy

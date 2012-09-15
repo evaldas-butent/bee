@@ -440,25 +440,8 @@ public class TestSqlSelect {
 
   @Test
   public final void testSqlLimitOffset() {
-    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
-    SqlBuilder builder = SqlBuilderFactory.getBuilder();
-
-    SqlSelect select = new SqlSelect();
-    select.addFrom("table1");
-    select.addFields("table1", "field1");
-
-    select.setOffset(10);
-    assertEquals(
-        "SELECT `table1`.`field1` FROM `table1` LIMIT 1000000000 OFFSET 10",
-        select.getSqlString(builder));
-
-    select.setLimit(10);
-    assertEquals(
-        "SELECT `table1`.`field1` FROM `table1` LIMIT 10 OFFSET 10",
-        select.getSqlString(builder));
-
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.POSTGRESQL);
-    builder = SqlBuilderFactory.getBuilder();
+    SqlBuilder builder = SqlBuilderFactory.getBuilder();
 
     SqlSelect select2 = new SqlSelect();
     select2.addFrom("table1");

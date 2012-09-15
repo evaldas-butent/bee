@@ -105,6 +105,8 @@ public class QueryServiceBean {
   @EJB
   SystemBean sys;
   @EJB
+  UserServiceBean usr;
+  @EJB
   ParamHolderBean prm;
 
   public SqlEngine dbEngine(String dsn) {
@@ -134,11 +136,6 @@ public class QueryServiceBean {
       }
     }
     return sqlEngine;
-  }
-
-  public boolean dbExists(String dbName, String dbSchema, String table) {
-    Assert.notEmpty(table);
-    return dbTables(dbName, dbSchema, table).getNumberOfRows() > 0;
   }
 
   public SimpleRowSet dbFields(String dbName, String dbSchema, String table) {
@@ -174,6 +171,20 @@ public class QueryServiceBean {
       return getValue(query);
     }
     return "";
+  }
+
+  public boolean dbSchemaExists(String dbName, String schema) {
+    Assert.notEmpty(schema);
+    return !BeeUtils.isEmpty(dbSchemas(dbName, schema));
+  }
+
+  public String[] dbSchemas(String dbName, String schema) {
+    return getColumn(SqlUtils.dbSchemas(dbName, schema));
+  }
+
+  public boolean dbTableExists(String dbName, String dbSchema, String table) {
+    Assert.notEmpty(table);
+    return dbTables(dbName, dbSchema, table).getNumberOfRows() > 0;
   }
 
   public SimpleRowSet dbTables(String dbName, String dbSchema, String table) {
@@ -451,6 +462,8 @@ public class QueryServiceBean {
   public ResponseObject updateDataWithResponse(IsQuery query) {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
+
+    doSql(SqlUtils.setSqlParameter(SystemBean.AUDIT_USER, usr.getCurrentUserId()).getQuery());
 
     activateTables(query);
 

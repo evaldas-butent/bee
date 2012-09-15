@@ -184,12 +184,30 @@ public class XmlTable {
     }
   }
 
+  @XmlRootElement(name = "Trigger", namespace = DataUtils.TABLE_NAMESPACE)
+  public static class XmlTrigger {
+    @XmlAttribute
+    public String timing;
+    @XmlAttribute
+    public List<String> events;
+    @XmlAttribute
+    public String scope;
+    @XmlElement(name = "PostgreSql", namespace = DataUtils.TABLE_NAMESPACE)
+    public String postgreSql;
+    @XmlElement(name = "MsSql", namespace = DataUtils.TABLE_NAMESPACE)
+    public String msSql;
+    @XmlElement(name = "Oracle", namespace = DataUtils.TABLE_NAMESPACE)
+    public String oracle;
+  }
+
   @XmlAttribute
   public String name;
   @XmlAttribute
   public String idName;
   @XmlAttribute
   public String versionName;
+  @XmlAttribute
+  public boolean audit;
   @XmlAttribute
   public int x;
   @XmlAttribute
@@ -203,13 +221,13 @@ public class XmlTable {
   @XmlElementRef
   public List<XmlField> extFields;
 
-  @XmlElementWrapper(name = "States", namespace = DataUtils.TABLE_NAMESPACE)
-  @XmlElement(name = "State", namespace = DataUtils.TABLE_NAMESPACE)
-  public Set<String> states;
-
   @XmlElementWrapper(name = "Keys", namespace = DataUtils.TABLE_NAMESPACE)
   @XmlElementRef
   public Set<XmlKey> keys;
+
+  @XmlElementWrapper(name = "Triggers", namespace = DataUtils.TABLE_NAMESPACE)
+  @XmlElement(name = "Trigger", namespace = DataUtils.TABLE_NAMESPACE)
+  public Set<XmlTrigger> triggers;
 
   private boolean safe = false;
 
@@ -248,18 +266,6 @@ public class XmlTable {
 
             } else if (diff.findField(field) == null) {
               diff.extFields.add(field);
-            }
-            upd = true;
-          }
-        }
-      }
-      if (!BeeUtils.isEmpty(otherTable.states)) {
-        for (String state : otherTable.states) {
-          if (states == null || !states.contains(state)) {
-            if (diff.states == null) {
-              diff.states = Sets.newHashSet(state);
-            } else {
-              diff.states.add(state);
             }
             upd = true;
           }
@@ -321,12 +327,6 @@ public class XmlTable {
           removeField(field);
           extFields.add(field);
         }
-      }
-      if (!BeeUtils.isEmpty(diff.states)) {
-        if (states == null) {
-          states = Sets.newHashSet();
-        }
-        states.addAll(diff.states);
       }
       if (!BeeUtils.isEmpty(diff.keys)) {
         if (keys == null) {

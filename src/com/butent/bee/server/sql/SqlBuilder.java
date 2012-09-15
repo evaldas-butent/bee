@@ -9,6 +9,7 @@ import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerType;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.time.DateTime;
@@ -16,6 +17,7 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,9 @@ import java.util.Map;
 public abstract class SqlBuilder {
 
   public abstract SqlEngine getEngine();
+
+  protected abstract String getAuditTrigger(String auditTable, String idName,
+      Collection<String> fields);
 
   /**
    * Generates an SQL CREATE query from the specified argument {@code sc}. There are two ways to
@@ -150,24 +155,26 @@ public abstract class SqlBuilder {
   protected final String getQuery(IsQuery query) {
     if (query instanceof SqlCreate) {
       return getCreate((SqlCreate) query);
-  
+
     } else if (query instanceof SqlDelete) {
       return getDelete((SqlDelete) query);
-  
+
     } else if (query instanceof SqlInsert) {
       return getInsert((SqlInsert) query);
-  
+
     } else if (query instanceof SqlSelect) {
       return getSelect((SqlSelect) query);
-  
+
     } else if (query instanceof SqlUpdate) {
       return getUpdate((SqlUpdate) query);
-  
+
     } else {
       Assert.unsupported("Unsupported class name: " + NameUtils.getClassName(query.getClass()));
     }
     return null;
   }
+
+  protected abstract String getRelationTrigger(List<Map<String, String>> fields);
 
   /**
    * Generates an SQL SELECT query from the specified argument {@code ss}. From value must be
@@ -265,6 +272,31 @@ public abstract class SqlBuilder {
       }
     }
     return query.toString();
+  }
+
+  @SuppressWarnings("unchecked")
+  protected String getTriggerBody(Map<String, Object> params) {
+    String body = null;
+    Map<String, ?> triggerParams = (Map<String, ?>) params.get("parameters");
+
+    switch ((SqlTriggerType) params.get("type")) {
+      case AUDIT:
+        body = getAuditTrigger(BeeUtils.concat(".",
+            sqlQuote((String) triggerParams.get("auditSchema")),
+            sqlQuote((String) triggerParams.get("auditTable"))),
+            sqlQuote((String) triggerParams.get("idName")),
+            (Collection<String>) triggerParams.get("fields"));
+        break;
+
+      case RELATION:
+        body = getRelationTrigger((List<Map<String, String>>) triggerParams.get("fields"));
+        break;
+
+      case CUSTOM:
+        body = (String) triggerParams.get("body");
+        break;
+    }
+    return body;
   }
 
   /**
@@ -501,6 +533,9 @@ public abstract class SqlBuilder {
 
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
+      case CREATE_SCHEMA:
+        return BeeUtils.concat(1, "CREATE SCHEMA", params.get("schema"));
+
       case CREATE_INDEX:
         return BeeUtils.concat(1,
             "CREATE", BeeUtils.isEmpty(params.get("isUnique")) ? "" : "UNIQUE",
@@ -528,29 +563,9 @@ public abstract class SqlBuilder {
         }
         return foreign;
 
-      case CREATE_TRIGGER_FUNCTION:
-        return "";
-
       case CREATE_TRIGGER:
-        @SuppressWarnings("unchecked")
-        List<String[]> content = (List<String[]>) params.get("content");
-        String text = null;
-
-        for (String[] entry : content) {
-          String fldName = entry[0];
-          String relTable = entry[1];
-          String relField = entry[2];
-          String var = "OLD." + sqlQuote(fldName);
-
-          text = BeeUtils.concat(1, text, "IF", var, "IS NOT NULL THEN",
-              new SqlDelete(relTable).setWhere(SqlUtils.equal(relTable, relField, 69))
-                  .getQuery().replace("69", var),
-              "; END IF;");
-        }
-        return BeeUtils.concat(1,
-            "CREATE TRIGGER", params.get("name"), params.get("timing"), params.get("event"),
-            "ON", params.get("table"), params.get("scope"),
-            "BEGIN", text, "END;");
+        Assert.notImplemented();
+        return null;
 
       case DB_NAME:
         return "";
@@ -558,10 +573,27 @@ public abstract class SqlBuilder {
       case DB_SCHEMA:
         return "";
 
-      case DB_TABLES:
+      case DB_SCHEMAS:
         IsCondition wh = null;
 
         Object prm = params.get("dbName");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.equal("t", "catalog_name", prm);
+        }
+        prm = params.get("schema");
+        if (!BeeUtils.isEmpty(prm)) {
+          wh = SqlUtils.and(wh, SqlUtils.equal("t", "schema_name", prm));
+        }
+        return new SqlSelect()
+            .addFields("t", "schema_name")
+            .addFrom("information_schema.schemata", "t")
+            .setWhere(wh)
+            .getSqlString(this);
+
+      case DB_TABLES:
+        wh = null;
+
+        prm = params.get("dbName");
         if (!BeeUtils.isEmpty(prm)) {
           wh = SqlUtils.equal("t", "table_catalog", prm);
         }
@@ -694,7 +726,8 @@ public abstract class SqlBuilder {
             .getSqlString(this);
 
       case DB_INDEXES:
-        return "";
+        Assert.notImplemented();
+        return null;
 
       case DB_TRIGGERS:
         wh = null;
@@ -733,6 +766,10 @@ public abstract class SqlBuilder {
       case RENAME_TABLE:
         return BeeUtils.concat(1,
             "ALTER TABLE", params.get("nameFrom"), "RENAME TO", params.get("nameTo"));
+
+      case SET_PARAMETER:
+        Assert.notImplemented();
+        return null;
 
       case TEMPORARY:
         return "TEMPORARY ";

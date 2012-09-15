@@ -8,9 +8,6 @@
     <String name="Name" precision="60" notNull="true" />
     <Relation name="Parent" relation="CategoryTree" />
   </Fields>
-  <States>
-    <State>Marked</State>
-  </States>
   <Keys>
     <Key unique="true">
       <KeyField>Parent</KeyField>

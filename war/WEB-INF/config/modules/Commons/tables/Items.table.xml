@@ -13,9 +13,6 @@
     <Relation name="Currency" relation="Currencies" />
     <Boolean name="IsService" />
   </Fields>
-  <States>
-    <State>Marked</State>
-  </States>
   <Keys>
     <Key>
       <KeyField>IsService</KeyField>

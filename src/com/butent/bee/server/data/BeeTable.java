@@ -25,6 +25,10 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerEvent;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerScope;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerTiming;
+import com.butent.bee.shared.data.SqlConstants.SqlTriggerType;
 import com.butent.bee.shared.data.XmlTable.XmlField;
 import com.butent.bee.shared.data.XmlTable.XmlRelation;
 import com.butent.bee.shared.time.DateTime;
@@ -37,6 +41,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -301,30 +306,29 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
   public class BeeTrigger {
     private final String tblName;
+    private final SqlTriggerType type;
+    private final Map<String, ?> parameters;
+    private final SqlTriggerTiming timing;
+    private final EnumSet<SqlTriggerEvent> events;
+    private final SqlTriggerScope scope;
     private final String name;
-    private final Object content;
-    private final String timing;
-    private final String event;
-    private final String scope;
 
-    private BeeTrigger(String tblName, Object content, String timing, String event, String scope) {
+    private BeeTrigger(String tblName, SqlTriggerType type, Map<String, ?> parameters,
+        SqlTriggerTiming timing, EnumSet<SqlTriggerEvent> events, SqlTriggerScope scope) {
+
       this.tblName = tblName;
-      this.name =
-          TRIGGER_PREFIX
-              + Codec.crc32(tblName + BeeUtils.transformCollection((Collection<?>) content)
-                  + timing + event + scope);
-      this.content = content;
+      this.type = type;
+      this.parameters = parameters;
       this.timing = timing;
-      this.event = event;
+      this.events = events;
       this.scope = scope;
+
+      this.name = TRIGGER_PREFIX + Codec.crc32(BeeUtils.concat(1, tblName, type,
+          BeeUtils.transformMap(parameters), timing, events, scope));
     }
 
-    public Object getContent() {
-      return content;
-    }
-
-    public String getEvent() {
-      return event;
+    public EnumSet<SqlTriggerEvent> getEvents() {
+      return events;
     }
 
     public String getName() {
@@ -335,7 +339,11 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       return BeeTable.this;
     }
 
-    public String getScope() {
+    public Map<String, ?> getParameters() {
+      return parameters;
+    }
+
+    public SqlTriggerScope getScope() {
       return scope;
     }
 
@@ -343,8 +351,12 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       return tblName;
     }
 
-    public String getTiming() {
+    public SqlTriggerTiming getTiming() {
       return timing;
+    }
+
+    public SqlTriggerType getType() {
+      return type;
     }
   }
 
@@ -830,6 +842,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   private final String name;
   private final String idName;
   private final String versionName;
+  private final boolean auditable;
 
   private final Map<String, BeeField> fields = Maps.newLinkedHashMap();
   private final Map<String, BeeForeignKey> foreignKeys = Maps.newLinkedHashMap();
@@ -843,7 +856,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
   private boolean active = false;
 
-  BeeTable(String moduleName, String name, String idName, String versionName) {
+  BeeTable(String moduleName, String name, String idName, String versionName, boolean auditable) {
     Assert.notEmpty(name);
     Assert.notEmpty(idName);
     Assert.notEmpty(versionName);
@@ -853,6 +866,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     this.name = name;
     this.idName = idName;
     this.versionName = versionName;
+    this.auditable = auditable;
 
     this.extSource = new ExtSingleTable();
     this.stateSource = new StateSingleTable<Long>(Long.SIZE);
@@ -898,6 +912,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     return defaults;
   }
 
+  @Override
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
     PropertyUtils.addProperties(info, false, "Module Name", getModuleName(), "Name", getName(),
@@ -966,8 +981,8 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       BeeTrigger trigger = entry.getValue();
 
       PropertyUtils.addChildren(info, key, "Table", trigger.getTable(), "Name", trigger.getName(),
-          "Timing", trigger.getTiming(), "Event", trigger.getEvent(), "Scope", trigger.getScope(),
-          "Content", BeeUtils.transformCollection((Collection<?>) trigger.getContent()));
+          "Timing", trigger.getTiming(), "Event", trigger.getEvents(), "Scope", trigger.getScope(),
+          "Content", BeeUtils.transformMap(trigger.getParameters()));
     }
 
     return info;
@@ -1086,6 +1101,10 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     return active;
   }
 
+  public boolean isAuditable() {
+    return auditable;
+  }
+
   public boolean isEmpty() {
     return BeeUtils.isEmpty(getFieldCount());
   }
@@ -1166,8 +1185,10 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     states.add(state);
   }
 
-  void addTrigger(String tblName, Object content, String timing, String event, String scope) {
-    BeeTrigger trigger = new BeeTrigger(tblName, content, timing, event, scope);
+  void addTrigger(String tblName, SqlTriggerType type, Map<String, ?> parameters,
+      SqlTriggerTiming timing, EnumSet<SqlTriggerEvent> events, SqlTriggerScope scope) {
+
+    BeeTrigger trigger = new BeeTrigger(tblName, type, parameters, timing, events, scope);
     triggers.put(BeeUtils.normalize(trigger.getName()), trigger);
   }
 

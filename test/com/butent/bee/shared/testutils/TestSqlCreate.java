@@ -78,18 +78,6 @@ public class TestSqlCreate {
     assertEquals("CREATE TABLE [Target] ([arIvykdyta] BIT NOT NULL, [field2] INTEGER)", create
         .getSqlString(builder));
 
-    SqlBuilderFactory.setDefaultBuilder(SqlEngine.MYSQL);
-    builder = SqlBuilderFactory.getBuilder();
-
-    create = new SqlCreate("Target", true);
-
-    create.addBoolean("arIvykdyta", true);
-    create.addField("field2", SqlDataType.INTEGER, 5, 6, false);
-    create.getSqlString(builder);
-    assertEquals(
-        "CREATE TEMPORARY TABLE `Target` (`arIvykdyta` BIT NOT NULL, `field2` INTEGER) ENGINE=InnoDB",
-        create.getSqlString(builder));
-
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
     SqlBuilder builder2 = SqlBuilderFactory.getBuilder();
 

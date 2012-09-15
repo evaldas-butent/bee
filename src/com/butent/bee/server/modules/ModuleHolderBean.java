@@ -17,6 +17,7 @@ import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -38,6 +39,11 @@ public class ModuleHolderBean {
   private static final Splitter SPLITTER = Splitter.on(",").omitEmptyStrings().trimResults();
   private static final String PROPERTY_MODULES = "Modules";
   private static final String MODULE_BEAN_PREFIX = "ModuleBean";
+
+  private static enum TABLE_ACTIVATION_MODE {
+    DELAYED, FORCED
+  };
+
   private static Logger logger = Logger.getLogger(ModuleHolderBean.class.getName());
 
   private final Map<String, BeeModule> modules = Maps.newHashMap();
@@ -89,11 +95,21 @@ public class ModuleHolderBean {
   }
 
   public void initModules() {
+    TABLE_ACTIVATION_MODE mode = NameUtils.getEnumByName(TABLE_ACTIVATION_MODE.class,
+        Config.getProperty("TableActivationMode"));
+
     for (String mod : getModules()) {
-      for (String tblName : sys.getTableNames()) {
-        BeeTable table = sys.getTable(tblName);
-        if (BeeUtils.same(table.getModuleName(), mod) && !table.isActive()) {
-          sys.activateTable(tblName);
+      if (mode != TABLE_ACTIVATION_MODE.DELAYED) {
+        for (String tblName : sys.getTableNames()) {
+          BeeTable table = sys.getTable(tblName);
+
+          if (BeeUtils.same(table.getModuleName(), mod)) {
+            if (mode == TABLE_ACTIVATION_MODE.FORCED) {
+              sys.rebuildTable(tblName);
+            } else {
+              sys.activateTable(tblName);
+            }
+          }
         }
       }
       getModule(mod).init();
