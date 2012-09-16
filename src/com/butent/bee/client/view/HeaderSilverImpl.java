@@ -17,7 +17,7 @@ import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
@@ -36,7 +36,7 @@ import java.util.Set;
 
 public class HeaderSilverImpl extends Complex implements HeaderView {
 
-  private class ActionListener extends BeeCommand {
+  private class ActionListener extends Command {
     private final Action action;
     private long lastTime = 0L;
 

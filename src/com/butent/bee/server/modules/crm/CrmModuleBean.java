@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.crm;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -419,7 +420,7 @@ public class CrmModuleBean implements BeeModule {
 
     if (!response.hasErrors()) {
       response = registerProjectVisit(projectId, currentUser, time,
-          BeeUtils.equals(event, ProjectEvent.CREATED));
+          Objects.equal(event, ProjectEvent.CREATED));
     }
     return response;
   }
@@ -475,7 +476,7 @@ public class CrmModuleBean implements BeeModule {
     }
     if (!response.hasErrors()) {
       response =
-          registerTaskVisit(taskId, currentUser, time, BeeUtils.equals(event, TaskEvent.ACTIVATED));
+          registerTaskVisit(taskId, currentUser, time, Objects.equal(event, TaskEvent.ACTIVATED));
     }
     return response;
   }

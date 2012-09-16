@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.data.QueryServiceBean;
@@ -71,19 +72,19 @@ public class ParamHolderBean {
           .setWhere(SqlUtils.and(SqlUtils.equal(TBL_PARAMS, FLD_MODULE, param.getModule()),
               SqlUtils.equal(TBL_PARAMS, FLD_NAME, param.getName())));
 
-      if (!BeeUtils.equals(param.getType(), orig.getType())) {
+      if (!Objects.equal(param.getType(), orig.getType())) {
         orig.setType(param.getType());
         su.addConstant(FLD_TYPE, param.getType().name());
       }
-      if (!BeeUtils.equals(param.getDescription(), orig.getDescription())) {
+      if (!Objects.equal(param.getDescription(), orig.getDescription())) {
         orig.setDescription(param.getDescription());
         su.addConstant(FLD_DESCRIPTION, param.getDescription());
       }
-      if (!BeeUtils.equals(param.supportsUsers(), orig.supportsUsers())) {
+      if (!Objects.equal(param.supportsUsers(), orig.supportsUsers())) {
         orig.setUserMode(param.supportsUsers());
         su.addConstant(FLD_USER_MODE, param.supportsUsers());
       }
-      if (!BeeUtils.equals(param.getValue(), orig.getValue())) {
+      if (!Objects.equal(param.getValue(), orig.getValue())) {
         orig.setValue(param.getValue());
         su.addConstant(FLD_VALUE, param.getValue());
       }

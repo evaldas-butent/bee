@@ -119,7 +119,6 @@ import com.butent.bee.shared.HasNumberBounds;
 import com.butent.bee.shared.HasIntStep;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.HasService;
-import com.butent.bee.shared.HasStage;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Launchable;
 import com.butent.bee.shared.Pair;
@@ -305,7 +304,6 @@ public enum FormWidget {
 
   private static final String ATTR_URL = "url";
   private static final String ATTR_HISTORY_TOKEN = "historyToken";
-  private static final String ATTR_STAGE = "stage";
   private static final String ATTR_UNIT = "unit";
   private static final String ATTR_TAB_INDEX = "tabIndex";
 
@@ -1840,10 +1838,6 @@ public enum FormWidget {
       } else if (BeeUtils.same(name, HasService.ATTR_SERVICE)) {
         if (widget instanceof HasService) {
           ((HasService) widget).setService(value);
-        }
-      } else if (BeeUtils.same(name, ATTR_STAGE)) {
-        if (widget instanceof HasStage) {
-          ((HasStage) widget).setStage(value);
         }
 
       } else if (BeeUtils.same(name, ATTR_MIN)) {

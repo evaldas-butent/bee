@@ -27,5 +27,4 @@ public class BeeRuntimeException extends RuntimeException {
     super(cause);
     LogUtils.error(cause);
   }
-
 }

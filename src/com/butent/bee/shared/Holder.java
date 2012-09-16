@@ -1,5 +1,7 @@
 package com.butent.bee.shared;
 
+import com.google.common.base.Objects;
+
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class Holder<T> {
@@ -19,7 +21,7 @@ public class Holder<T> {
   }
   
   public boolean contains(T object) {
-    return BeeUtils.equals(get(), object);
+    return Objects.equal(get(), object);
   }
 
   public T get() {

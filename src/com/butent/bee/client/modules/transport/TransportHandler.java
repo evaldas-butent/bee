@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.transport;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -382,12 +383,12 @@ public class TransportHandler {
               Double updValue;
               double newVal = BeeUtils.toDouble(cv.getNewValue());
 
-              if (BeeUtils.equals(columnId, "Kilometers")) {
+              if (Objects.equal(columnId, "Kilometers")) {
                 updValue = row.getDouble(speedFromIndex);
                 updColumn = speedToColumn;
                 updIndex = speedToIndex;
               } else {
-                if (BeeUtils.equals(columnId, "SpeedometerFrom")) {
+                if (Objects.equal(columnId, "SpeedometerFrom")) {
                   newVal = 0 - newVal;
                   updValue = row.getDouble(speedToIndex);
                 } else {

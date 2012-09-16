@@ -331,7 +331,6 @@
       <xs:complexContent>
         <xs:extension base="focusableDisplay">
           <xs:attribute name="service" type="xs:token" />
-          <xs:attribute name="stage" type="xs:token" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

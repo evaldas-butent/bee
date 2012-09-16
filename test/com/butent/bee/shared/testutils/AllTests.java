@@ -19,7 +19,7 @@ import org.junit.runners.Suite.SuiteClasses;
     TestDateTime.class, TestJustDate.class, TestPair.class, TestBeeConst.class,
     TestBeeResource.class, TestIntValue.class,
     TestLongValue.class, TestListSequence.class, TestValueType.class,
-    TestService.class, TestStage.class, TestStringArray.class,
+    TestService.class, TestStringArray.class,
     TestVariable.class, TestBooleanValue.class, TestDateTimeValue.class,
     TestDateValue.class, TestNumberValue.class, TestTextValue.class,
     TestTimeOfDayValue.class})

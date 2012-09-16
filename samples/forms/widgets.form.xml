@@ -8,7 +8,7 @@
         <layer left="1" leftUnit="em">
           <HorizontalPanel cellSpacing="5">
             <cell>
-              <Button html="Login" service="comp_get_login" stage="stage_get" style="background: Aquamarine;" />
+              <Button html="Login" style="background: Aquamarine;" />
             </cell>
             <cell>
               <Button html="Logout" service="rpc_logout" class="-" />

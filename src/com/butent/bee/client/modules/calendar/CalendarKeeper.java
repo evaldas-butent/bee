@@ -19,7 +19,7 @@ import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.commons.ParametersHandler;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.edit.SelectorEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
@@ -55,7 +55,7 @@ public class CalendarKeeper {
       } else if (event.hasView(VIEW_APPOINTMENTS)) {
         event.consume();
         if (event.getRow() instanceof BeeRow) {
-          ensureData(new BeeCommand() {
+          ensureData(new Command() {
             @Override
             public void execute() {
               openAppointment(new Appointment((BeeRow) event.getRow()), false);
@@ -97,7 +97,7 @@ public class CalendarKeeper {
 
   private static boolean dataLoaded = false;
 
-  public static void ensureData(final BeeCommand command) {
+  public static void ensureData(final Command command) {
     if (isDataLoaded()) {
       command.execute();
     } else {
@@ -272,7 +272,7 @@ public class CalendarKeeper {
     return CACHE.getRowSet(VIEW_ATTENDEE_TYPES);
   }
 
-  static void getData(Collection<String> viewNames, final BeeCommand command) {
+  static void getData(Collection<String> viewNames, final Command command) {
     CACHE.getData(viewNames, new CalendarCache.MultiCallback() {
       @Override
       public void onSuccess(Integer result) {
@@ -486,7 +486,7 @@ public class CalendarKeeper {
   }
 
   private static void openCalendar(final long id, final String name) {
-    ensureData(new BeeCommand() {
+    ensureData(new Command() {
       @Override
       public void execute() {
         getUserCalendar(id, new Queries.RowSetCallback() {

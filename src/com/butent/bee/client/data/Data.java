@@ -1,5 +1,7 @@
 package com.butent.bee.client.data;
 
+import com.google.common.base.Objects;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
@@ -9,7 +11,6 @@ import com.butent.bee.shared.data.view.ColumnMapper;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -25,7 +26,7 @@ public class Data {
   }
 
   public static boolean equals(String viewName, IsRow row, String colName, Long value) {
-    return BeeUtils.equals(getLong(viewName, row, colName), value);
+    return Objects.equal(getLong(viewName, row, colName), value);
   }
 
   public static int getApproximateRowCount(String viewName) {

@@ -1,5 +1,7 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.base.Objects;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 
@@ -135,7 +137,7 @@ public class ArrayUtils {
     }
 
     for (int i = 0; i < len; i++) {
-      if (BeeUtils.equals(value, arr[i])) {
+      if (Objects.equal(value, arr[i])) {
         idx = i;
         break;
       }

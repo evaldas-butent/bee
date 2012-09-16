@@ -1,5 +1,6 @@
 package com.butent.bee.client.datepicker;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.event.dom.client.KeyDownHandler;
@@ -353,7 +354,7 @@ public class DatePicker extends Composite implements HasHighlightHandlers<JustDa
   }
 
   public void setValue(JustDate newValue, boolean fireEvents) {
-    if (!BeeUtils.equals(value, newValue)) {
+    if (!Objects.equal(value, newValue)) {
       JustDate oldValue = value;
       if (oldValue != null) {
         removeStyleFromDate(getCssClasses().dayIsValue(), oldValue);

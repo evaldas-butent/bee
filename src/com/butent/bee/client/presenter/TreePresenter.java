@@ -1,5 +1,6 @@
 package com.butent.bee.client.presenter;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.user.client.ui.Widget;
@@ -14,7 +15,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.InputWidgetCallback;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.CatchEvent;
 import com.butent.bee.client.view.TreeView;
@@ -245,7 +246,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
               values.add(row.getString(i));
             }
           } else {
-            if (!BeeUtils.equals(item.getString(i), row.getString(i))) {
+            if (!Objects.equal(item.getString(i), row.getString(i))) {
               columns.add(getDataColumns().get(i));
               oldValues.add(item.getString(i));
               values.add(row.getString(i));
@@ -318,7 +319,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         }
         int parentIndex = result.getColumnIndex(parentName);
 
-        if (BeeUtils.equals(parentIndex, BeeConst.UNDEF)) {
+        if (Objects.equal(parentIndex, BeeConst.UNDEF)) {
           BeeKeeper.getScreen().notifySevere("Parent column not found", parentName);
           return;
         }
@@ -350,7 +351,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
 
     if (data != null) {
       String message = BeeUtils.concat(1, "Išmesti", evaluate(data), "?");
-      Global.getMsgBoxen().confirm(message, new BeeCommand() {
+      Global.getMsgBoxen().confirm(message, new Command() {
         @Override
         public void execute() {
           Queries.deleteRow(source, data.getId(), data.getVersion(),

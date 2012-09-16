@@ -28,7 +28,7 @@ import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.SelectorEvent;
@@ -166,7 +166,7 @@ public class CommonsEventHandler {
       if (!indexes.isEmpty()) {
         if (!BeeUtils.isEmpty(itemId)) {
           Global.confirm(BeeUtils.concat(1, "Pašalinti", indexes.size(), "kategorijas?"),
-              new BeeCommand() {
+              new Command() {
                 @Override
                 public void execute() {
                   List<Long> categoryList = Lists.newArrayList();

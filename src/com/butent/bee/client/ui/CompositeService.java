@@ -4,7 +4,6 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Map;
@@ -79,9 +78,4 @@ public abstract class CompositeService {
   }
 
   protected abstract CompositeService getInstance();
-
-  protected Stage getStage(String stg) {
-    Assert.notEmpty(stg);
-    return new Stage(getId(), stg);
-  }
 }

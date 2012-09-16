@@ -32,7 +32,6 @@ public class RpcInfo {
 
   public static final String COL_ID = "Id";
   public static final String COL_SERVICE = "Service";
-  public static final String COL_STAGE = "Stage";
   public static final String COL_METHOD = "Method";
 
   public static final String COL_STATE = "State";
@@ -70,7 +69,6 @@ public class RpcInfo {
 
   private int id;
   private String service = null;
-  private String stage = null;
   private RequestBuilder.Method method = RequestBuilder.GET;
 
   private final Set<State> states = EnumSet.noneOf(State.class);
@@ -346,10 +344,6 @@ public class RpcInfo {
     }
   }
 
-  public String getStage() {
-    return stage;
-  }
-
   public String getStartTime() {
     return duration.getStartTime();
   }
@@ -483,10 +477,6 @@ public class RpcInfo {
 
   public void setService(String service) {
     this.service = service;
-  }
-
-  public void setStage(String stage) {
-    this.stage = stage;
   }
 
   public void setState(State state) {

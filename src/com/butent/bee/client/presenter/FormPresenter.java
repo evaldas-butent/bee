@@ -26,7 +26,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
 import com.butent.bee.client.view.HasSearch;
@@ -57,7 +57,7 @@ import java.util.Set;
 public class FormPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, HasViewName, HasSearch, HasDataProvider, HasActiveRow {
 
-  private class DeleteCallback extends BeeCommand {
+  private class DeleteCallback extends Command {
     private final long rowId;
     private final long version;
 

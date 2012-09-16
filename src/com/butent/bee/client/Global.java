@@ -21,7 +21,7 @@ import com.butent.bee.client.output.Reports;
 import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeType;
@@ -73,7 +73,7 @@ public class Global implements Module {
 
   private static final Reports REPORTS = new Reports();
   
-  public static void addReport(String caption, BeeCommand command) {
+  public static void addReport(String caption, Command command) {
     REPORTS.addReport(caption, command);
   }
   
@@ -154,19 +154,19 @@ public class Global implements Module {
     }
   }
 
-  public static void confirm(List<String> messages, BeeCommand command) {
+  public static void confirm(List<String> messages, Command command) {
     MSG_BOXEN.confirm(null, messages, command);
   }
 
-  public static void confirm(String message, BeeCommand command) {
+  public static void confirm(String message, Command command) {
     MSG_BOXEN.confirm(message, command);
   }
 
-  public static void confirm(String caption, List<String> messages, BeeCommand command) {
+  public static void confirm(String caption, List<String> messages, Command command) {
     MSG_BOXEN.confirm(caption, messages, command);
   }
 
-  public static void confirm(String caption, String message, BeeCommand command) {
+  public static void confirm(String caption, String message, Command command) {
     MSG_BOXEN.confirm(caption, message, command);
   }
 

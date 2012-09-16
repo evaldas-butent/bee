@@ -12,7 +12,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.FontSize;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.BeeLayoutPanel;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.Toggle;
@@ -24,7 +24,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class Tablet extends Mobile {
 
-  private class SvgCommand extends BeeCommand {
+  private class SvgCommand extends Command {
     private int type;
 
     private SvgCommand(int type) {
@@ -150,7 +150,7 @@ public class Tablet extends Mobile {
     grid.getFlexCellFormatter().setColSpan(r, 0, c);
     r++;
     
-    BeeButton canvas = new BeeButton("Canvas Demo", new BeeCommand() {
+    BeeButton canvas = new BeeButton("Canvas Demo", new Command() {
       @Override
       public void execute() {
         new CanvasDemo().start();
@@ -161,7 +161,7 @@ public class Tablet extends Mobile {
     grid.getFlexCellFormatter().setColSpan(r, 0, c);
     r++;
 
-    BeeButton visual = new BeeButton("Visualization", new BeeCommand() {
+    BeeButton visual = new BeeButton("Visualization", new Command() {
       @Override
       public void execute() {
         Showcase.open();
@@ -172,7 +172,7 @@ public class Tablet extends Mobile {
     grid.getFlexCellFormatter().setColSpan(r, 0, c);
     r++;
 
-    BeeButton cornify = new BeeButton("Cornify", new BeeCommand() {
+    BeeButton cornify = new BeeButton("Cornify", new Command() {
       @Override
       public void execute() {
         CliWorker.execute("cornify 5 1000");

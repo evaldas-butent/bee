@@ -5,14 +5,14 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager.MenuCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.ui.FormFactory;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Extends {@code BeeCommand} class for command execution with it's service name and parameters.
  */
 
-public class MenuCommand extends BeeCommand {
+public class MenuCommand extends Command {
 
   public MenuCommand() {
     super();

@@ -225,18 +225,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   }
 
   @Test
-  public void testEquals() {
-    assertEquals(true, beeUtils.equals(5, 5));
-    assertEquals(false, beeUtils.equals(5, 7));
-    assertEquals(true, beeUtils.equals(5.0, 5.0));
-    assertEquals(false, beeUtils.equals(5.0, 7.0));
-    assertEquals(true, beeUtils.equals("win", "win"));
-    assertEquals(true, beeUtils.equals(null, null));
-    assertEquals(false, beeUtils.equals(null, "55"));
-    assertEquals(false, beeUtils.equals(5, null));
-  }
-
-  @Test
   public void testEqualsTrim() {
     assertEquals(true, beeUtils.equalsTrim("", ""));
     assertEquals(true, beeUtils.equalsTrim("   ", "   "));

@@ -1,5 +1,6 @@
 package com.butent.bee.server.data;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -598,7 +599,7 @@ public class DataEditorBean {
 
       IsQuery query = queryMap.get(extensionKey);
 
-      if (aliases != null && BeeUtils.equals(aliases.get(fldInfo.tableAlias).id, id)) {
+      if (aliases != null && Objects.equal(aliases.get(fldInfo.tableAlias).id, id)) {
         query = table.updateExtField((SqlUpdate) query, id, field, value);
       } else {
         query = table.insertExtField((SqlInsert) query, id, field, value);
@@ -774,7 +775,7 @@ public class DataEditorBean {
 
       IsQuery query = queryMap.get(translationKey);
 
-      if (aliases != null && BeeUtils.equals(aliases.get(fldInfo.tableAlias).id, id)) {
+      if (aliases != null && Objects.equal(aliases.get(fldInfo.tableAlias).id, id)) {
         query = table.updateTranslationField((SqlUpdate) query, id, field, locale, value);
       } else {
         query = table.insertTranslationField((SqlInsert) query, id, field, locale, value);
@@ -834,7 +835,7 @@ public class DataEditorBean {
         if (!BeeUtils.isEmpty(fldInfo.fieldAlias)) {
           String value = res.get(fldInfo.fieldAlias);
 
-          if (!BeeUtils.equals(value, fldInfo.oldValue)) {
+          if (!Objects.equal(value, fldInfo.oldValue)) {
             return false;
           }
         }

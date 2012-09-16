@@ -1,5 +1,6 @@
 package com.butent.bee.server.data;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -806,7 +807,7 @@ public class SystemBean {
             if (oldFieldInfo != null) {
               for (String info : oldFieldInfo.keySet()) {
                 if (!BeeUtils.same(info, SqlConstants.TBL_NAME)
-                    && !BeeUtils.equals(oldFieldInfo.get(info), newFieldInfo.get(info))) {
+                    && !Objects.equal(oldFieldInfo.get(info), newFieldInfo.get(info))) {
 
                   String msg = BeeUtils.concat(1, "FIELD", fldName + ":",
                       info, oldFieldInfo.get(info), "!=", newFieldInfo.get(info));

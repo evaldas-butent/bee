@@ -25,7 +25,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.widget.BeeImage;
@@ -237,7 +237,7 @@ public class RichTextToolbar extends Vertical implements HasEnabled {
   private BeeListBox fonts;
   private BeeListBox fontSizes;
 
-  private final BeeCommand accept;
+  private final Command accept;
 
   public RichTextToolbar(Editor editor, RichTextArea richText) {
     this.area = richText;

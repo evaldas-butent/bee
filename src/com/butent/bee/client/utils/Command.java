@@ -2,24 +2,27 @@ package com.butent.bee.client.utils;
 
 import com.google.gwt.core.client.Scheduler;
 
+import com.butent.bee.shared.HasService;
+
 /**
  * Contains action instructions for later execution, manages it's called service and parameters.
  */
 
-public abstract class BeeCommand implements Scheduler.ScheduledCommand {
+public abstract class Command implements Scheduler.ScheduledCommand, HasService {
+
   private String service = null;
   private String parameters = null;
 
-  public BeeCommand() {
+  public Command() {
     super();
   }
 
-  public BeeCommand(String service) {
+  public Command(String service) {
     this();
     this.service = service;
   }
 
-  public BeeCommand(String service, String parameters) {
+  public Command(String service, String parameters) {
     this();
     this.service = service;
     this.parameters = parameters;

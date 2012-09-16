@@ -1,5 +1,6 @@
 package com.butent.bee.client.grid;
 
+import com.google.common.base.Objects;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
@@ -173,7 +174,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     setWidget(gp.getWidget());
     setPresenter(gp);
 
-    if (BeeUtils.equals(row, getPendingRow())) {
+    if (Objects.equal(row, getPendingRow())) {
       updateFilter(row);
       resetState();
       if (row == null) {

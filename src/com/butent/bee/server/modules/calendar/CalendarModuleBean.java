@@ -1,5 +1,6 @@
 package com.butent.bee.server.modules.calendar;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -93,6 +94,9 @@ import javax.ejb.TimerService;
 @Lock(LockType.READ)
 public class CalendarModuleBean implements BeeModule {
 
+  private static final Filter VALID_APPOINTMENT = Filter.and(Filter.notEmpty(COL_START_DATE_TIME),
+      ComparisonFilter.compareWithColumn(COL_START_DATE_TIME, Operator.LT, COL_END_DATE_TIME));
+  
   private static Logger logger = Logger.getLogger(CalendarModuleBean.class.getName());
 
   @EJB
@@ -139,7 +143,7 @@ public class CalendarModuleBean implements BeeModule {
           timer = entry.getValue();
 
           try {
-            if (BeeUtils.equals(timer.getInfo(), id)) {
+            if (Objects.equal(timer.getInfo(), id)) {
               appointmentId = entry.getKey();
               break;
             }
@@ -804,6 +808,7 @@ public class CalendarModuleBean implements BeeModule {
     BeeRowSet attendees = qs.getViewData(VIEW_ATTENDEES, attFilter);
 
     CompoundFilter appFilter = Filter.and();
+    appFilter.add(VALID_APPOINTMENT);
     appFilter.add(ComparisonFilter.isNotEqual(COL_STATUS,
         new IntegerValue(AppointmentStatus.CANCELED.ordinal())));
 

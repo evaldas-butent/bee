@@ -1,5 +1,6 @@
 package com.butent.bee.shared.data;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -239,10 +240,10 @@ public class XmlTable {
       diff = new XmlTable();
       diff.name = name;
 
-      upd = upd || !BeeUtils.equals(x, otherTable.x);
+      upd = upd || !Objects.equal(x, otherTable.x);
       diff.x = otherTable.x;
 
-      upd = upd || !BeeUtils.equals(y, otherTable.y);
+      upd = upd || !Objects.equal(y, otherTable.y);
       diff.y = otherTable.y;
 
       if (!BeeUtils.isEmpty(otherTable.fields)) {
@@ -355,14 +356,14 @@ public class XmlTable {
   private XmlField findField(XmlField field) {
     if (!BeeUtils.isEmpty(fields)) {
       for (XmlField fld : fields) {
-        if (BeeUtils.equals(field, fld)) {
+        if (Objects.equal(field, fld)) {
           return fld;
         }
       }
     }
     if (!BeeUtils.isEmpty(extFields)) {
       for (XmlField fld : extFields) {
-        if (BeeUtils.equals(field, fld)) {
+        if (Objects.equal(field, fld)) {
           return fld;
         }
       }

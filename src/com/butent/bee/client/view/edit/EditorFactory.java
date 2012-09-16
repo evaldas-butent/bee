@@ -10,7 +10,7 @@ import com.butent.bee.client.composite.TextEditor;
 import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputInteger;
@@ -53,7 +53,7 @@ public class EditorFactory {
    * Executes edit stop event.
    */
 
-  private static class StopCommand extends BeeCommand {
+  private static class StopCommand extends Command {
     private final HasHandlers editor;
     private final State state;
 

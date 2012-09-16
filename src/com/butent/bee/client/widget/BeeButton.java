@@ -12,15 +12,13 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.utils.HasCommand;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasService;
-import com.butent.bee.shared.HasStage;
-import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Implements a push button user interface component.
  */
 
-public class BeeButton extends Button implements HasId, HasService, HasStage, HasCommand {
+public class BeeButton extends Button implements HasId, HasService, HasCommand {
 
   private Scheduler.ScheduledCommand command = null;
 
@@ -44,10 +42,6 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     setCommand(cmnd);
   }
 
-  public BeeButton(String html, Stage bst) {
-    this(html, bst.getService(), bst.getStage());
-  }
-
   public BeeButton(String html, ClickHandler handler) {
     super(html, handler);
     init();
@@ -57,13 +51,6 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     this(html);
     if (!BeeUtils.isEmpty(svc)) {
       setService(svc);
-    }
-  }
-
-  public BeeButton(String html, String svc, String stg) {
-    this(html, svc);
-    if (!BeeUtils.isEmpty(stg)) {
-      setStage(stg);
     }
   }
 
@@ -83,10 +70,6 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     return DomUtils.getService(this);
   }
 
-  public String getStage() {
-    return DomUtils.getStage(this);
-  }
-
   @Override
   public void onBrowserEvent(Event event) {
     if (EventUtils.isClick(event)) {
@@ -94,7 +77,7 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
         getCommand().execute();
       }
       if (!BeeUtils.isEmpty(getService())) {
-        BeeKeeper.getBus().dispatchService(getService(), getStage(), this);
+        BeeKeeper.getBus().dispatchService(getService(), this);
       }
     }
 
@@ -119,10 +102,6 @@ public class BeeButton extends Button implements HasId, HasService, HasStage, Ha
     }
   }
 
-  public void setStage(String stg) {
-    DomUtils.setStage(this, stg);
-  }
-  
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-Button");

@@ -85,8 +85,6 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
           s = BeeUtils.transform(el.getId());
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_SERVICE)) {
           s = el.getService();
-        } else if (BeeUtils.same(cols[i], RpcInfo.COL_STAGE)) {
-          s = el.getStage();
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_METHOD)) {
           s = el.getMethodString();
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_STATE)) {

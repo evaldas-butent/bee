@@ -1,7 +1,6 @@
 package com.butent.bee.shared;
 
 import com.butent.bee.shared.exceptions.ArgumentCountException;
-import com.butent.bee.shared.exceptions.ArgumentTypeException;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.exceptions.KeyNotFoundException;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -187,14 +186,6 @@ public class Assert {
       throw new BeeRuntimeException(msg);
     }
     return x;
-  }
-
-  public static String isString(Object obj) {
-    notNull(obj);
-    if (!(obj instanceof String)) {
-      throw new ArgumentTypeException(obj.getClass().getName(), String.class.getName());
-    }
-    return (String) obj;
   }
 
   public static void isTrue(boolean expression) {

@@ -12,7 +12,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
@@ -46,7 +46,7 @@ public class SimplePager extends AbstractPager {
     String pageInfo();
   }
 
-  private class GoCommand extends BeeCommand {
+  private class GoCommand extends Command {
     private Navigation goTo;
 
     private GoCommand(Navigation goTo) {

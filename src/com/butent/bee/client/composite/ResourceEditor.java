@@ -9,7 +9,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.BeeLayoutPanel;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.InputArea;
@@ -25,7 +25,7 @@ import com.butent.bee.shared.utils.Codec;
  */
 public class ResourceEditor extends Composite implements HasId {
 
-  protected class SaveCommand extends BeeCommand {
+  protected class SaveCommand extends Command {
     @Override
     public void execute() {
       InputArea area = getTextArea();

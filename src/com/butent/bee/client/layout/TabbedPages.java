@@ -19,7 +19,7 @@ import com.google.gwt.user.client.ui.DeckLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
@@ -39,7 +39,7 @@ public class TabbedPages extends Flow implements AnimatedLayout,
       if (BeeUtils.isEmpty(id)) {
         return;
       }
-      BeeCommand onPage = pageCommands.get(id);
+      Command onPage = pageCommands.get(id);
       if (onPage != null) {
         onPage.execute();
       }
@@ -95,7 +95,7 @@ public class TabbedPages extends Flow implements AnimatedLayout,
   private final List<Tab> tabs = Lists.newArrayList();
   private int selectedIndex = BeeConst.UNDEF;
 
-  private final Map<String, BeeCommand> pageCommands = Maps.newHashMap();
+  private final Map<String, Command> pageCommands = Maps.newHashMap();
 
   private final String stylePrefix;
   
@@ -130,7 +130,7 @@ public class TabbedPages extends Flow implements AnimatedLayout,
     insert(child, text, getWidgetCount());
   }
 
-  public void add(Widget child, String text, BeeCommand onPage) {
+  public void add(Widget child, String text, Command onPage) {
     add(child, text);
     addCommand(child, onPage);
   }
@@ -143,7 +143,7 @@ public class TabbedPages extends Flow implements AnimatedLayout,
     insert(child, tab, getWidgetCount());
   }
 
-  public void add(Widget child, Widget tab, BeeCommand onPage) {
+  public void add(Widget child, Widget tab, Command onPage) {
     add(child, tab);
     addCommand(child, onPage);
   }
@@ -360,7 +360,7 @@ public class TabbedPages extends Flow implements AnimatedLayout,
     tabBar.onDetach();
   }
 
-  private void addCommand(Widget child, BeeCommand onPage) {
+  private void addCommand(Widget child, Command onPage) {
     if (onPage == null) {
       return;
     }

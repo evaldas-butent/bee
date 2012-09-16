@@ -24,7 +24,7 @@ import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
@@ -191,24 +191,24 @@ public class MessageBoxes {
     return ok;
   }
 
-  public void confirm(String message, BeeCommand command) {
+  public void confirm(String message, Command command) {
     confirm(null, message, command);
   }
 
-  public void confirm(String message, BeeCommand command, String dialogStyleName) {
+  public void confirm(String message, Command command, String dialogStyleName) {
     confirm(null, message, command, dialogStyleName);
   }
 
-  public void confirm(String caption, List<String> messages, BeeCommand command) {
+  public void confirm(String caption, List<String> messages, Command command) {
     confirm(caption, messages, command, null, null);
   }
 
-  public void confirm(String caption, List<String> messages, BeeCommand command,
+  public void confirm(String caption, List<String> messages, Command command,
       String dialogStyleName) {
     confirm(caption, messages, command, dialogStyleName, null);
   }
 
-  public void confirm(String caption, List<String> messages, final BeeCommand command,
+  public void confirm(String caption, List<String> messages, final Command command,
       String dialogStyleName, String messageStyleName) {
     Assert.notNull(messages);
     int count = messages.size();
@@ -238,7 +238,7 @@ public class MessageBoxes {
 
     Horizontal buttons = new Horizontal();
 
-    BeeImage ok = new BeeImage(Global.getImages().ok(), new BeeCommand() {
+    BeeImage ok = new BeeImage(Global.getImages().ok(), new Command() {
       @Override
       public void execute() {
         panel.hide();
@@ -252,7 +252,7 @@ public class MessageBoxes {
     spacer.setWidth(StyleUtils.toCssLength(6, Unit.EM));
     buttons.add(spacer);
 
-    BeeImage cancel = new BeeImage(Global.getImages().cancel(), new BeeCommand() {
+    BeeImage cancel = new BeeImage(Global.getImages().cancel(), new Command() {
       @Override
       public void execute() {
         panel.hide();
@@ -279,11 +279,11 @@ public class MessageBoxes {
     DomUtils.setFocus(panel, true);
   }
 
-  public void confirm(String caption, String message, BeeCommand command) {
+  public void confirm(String caption, String message, Command command) {
     confirm(caption, message, command, null);
   }
 
-  public void confirm(String caption, String message, BeeCommand command, String dialogStyleName) {
+  public void confirm(String caption, String message, Command command, String dialogStyleName) {
     Assert.notEmpty(message);
     confirm(caption, Lists.newArrayList(message), command, dialogStyleName);
   }

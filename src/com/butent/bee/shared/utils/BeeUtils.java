@@ -1,5 +1,6 @@
 package com.butent.bee.shared.utils;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
@@ -643,21 +644,6 @@ public class BeeUtils {
   }
 
   /**
-   * Checks if Object {@code x} and Object {@code y} are equal.
-   * 
-   * @param x fist Object to compare
-   * @param y second Object to compare
-   * @return true if Objects are equal, false if Objects differ.
-   */
-  public static <T> boolean equals(T x, T y) {
-    if (x == null) {
-      return y == null;
-    } else {
-      return x.equals(y);
-    }
-  }
-
-  /**
    * Trims both Strings and then compares them.
    * 
    * @param s1 the String to compare
@@ -857,7 +843,7 @@ public class BeeUtils {
   public static <K, V> K getKey(Map<K, V> map, V value) {
     K key = null;
     for (Map.Entry<K, V> entry : map.entrySet()) {
-      if (equals(entry.getValue(), value)) {
+      if (Objects.equal(entry.getValue(), value)) {
         key = entry.getKey();
         break;
       }
@@ -2225,7 +2211,7 @@ public class BeeUtils {
     }
 
     for (Iterator<V> it = map.values().iterator(); it.hasNext();) {
-      if (equals(it.next(), value)) {
+      if (Objects.equal(it.next(), value)) {
         it.remove();
         c++;
       }

@@ -63,7 +63,7 @@ public class Wildcards {
       }
 
       Pattern other = (Pattern) obj;
-      return BeeUtils.equals(expr, other.expr)
+      return Objects.equal(expr, other.expr)
           && wildcardAny == other.wildcardAny && wildcardOne == other.wildcardOne
           && sensitive == other.sensitive && exact == other.exact;
     }

@@ -27,7 +27,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.UiOption;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
@@ -116,11 +116,11 @@ class ReportManager {
 
   void register() {
     for (final Report report : Report.values()) {
-      Global.addReport(report.getCaption(), new BeeCommand() {
+      Global.addReport(report.getCaption(), new Command() {
         @Override
         public void execute() {
           CalendarKeeper.getData(Lists.newArrayList(VIEW_ATTENDEE_TYPES, VIEW_ATTENDEES),
-              new BeeCommand() {
+              new Command() {
                 @Override
                 public void execute() {
                   onSelectReport(report);
@@ -414,7 +414,7 @@ class ReportManager {
     atpList.addKeyDownHandler(attendeeTypeWidgetHandler);
     container.add(atpList);
 
-    BeeImage atpAdd = new BeeImage(Global.getImages().add(), new BeeCommand() {
+    BeeImage atpAdd = new BeeImage(Global.getImages().add(), new Command() {
       @Override
       public void execute() {
         addAttendeeTypes(atpList);
@@ -423,7 +423,7 @@ class ReportManager {
     addStyle(atpAdd, "atpAdd");
     container.add(atpAdd);
 
-    BeeImage atpDel = new BeeImage(Global.getImages().delete(), new BeeCommand() {
+    BeeImage atpDel = new BeeImage(Global.getImages().delete(), new Command() {
       @Override
       public void execute() {
         removeAttendeeType(atpList);
@@ -444,7 +444,7 @@ class ReportManager {
     attList.addKeyDownHandler(attendeeWidgetHandler);
     container.add(attList);
 
-    BeeImage attAdd = new BeeImage(Global.getImages().add(), new BeeCommand() {
+    BeeImage attAdd = new BeeImage(Global.getImages().add(), new Command() {
       @Override
       public void execute() {
         addAttendees(attList);
@@ -453,7 +453,7 @@ class ReportManager {
     addStyle(attAdd, "attAdd");
     container.add(attAdd);
 
-    BeeImage attDel = new BeeImage(Global.getImages().delete(), new BeeCommand() {
+    BeeImage attDel = new BeeImage(Global.getImages().delete(), new Command() {
       @Override
       public void execute() {
         removeAttendee(attList);
@@ -462,7 +462,7 @@ class ReportManager {
     addStyle(attDel, "attDel");
     container.add(attDel);
 
-    final BeeButton tableCommand = new BeeButton("Lentelė", new BeeCommand() {
+    final BeeButton tableCommand = new BeeButton("Lentelė", new Command() {
       @Override
       public void execute() {
         String vCap = caption.getValue();

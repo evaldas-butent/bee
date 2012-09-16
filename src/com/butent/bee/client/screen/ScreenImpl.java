@@ -31,7 +31,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.TilePanel;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.utils.ServiceCommand;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
@@ -62,7 +62,7 @@ public class ScreenImpl implements Screen {
     }
   }
 
-  private class SplitCommand extends BeeCommand {
+  private class SplitCommand extends Command {
     Direction direction = null;
     boolean close = false;
 
@@ -419,7 +419,7 @@ public class ScreenImpl implements Screen {
 
     Simple exitContainer = new Simple();
     exitContainer.addStyleName("bee-UserExitContainer");
-    BeeImage exit = new BeeImage(Global.getImages().exit().getSafeUri(), new BeeCommand() {
+    BeeImage exit = new BeeImage(Global.getImages().exit().getSafeUri(), new Command() {
       @Override
       public void execute() {
         Global.confirm(Global.CONSTANTS.logout(), new ServiceCommand(Service.LOGOUT));

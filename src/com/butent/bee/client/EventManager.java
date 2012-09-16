@@ -12,10 +12,8 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.google.web.bindery.event.shared.SimpleEventBus;
 
 import com.butent.bee.client.screen.BookmarkEvent;
-import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.Stage;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
@@ -61,23 +59,14 @@ public class EventManager implements Module {
     return getBus(prior).addHandlerToSource(type, source, handler);
   }
 
-  public boolean dispatchService(Stage stage, Widget source) {
-    Assert.notNull(stage);
-
-    return dispatchService(stage.getService(), stage.getStage(), source);
-  }
-
   public boolean dispatchService(String svc) {
-    return dispatchService(svc, null, null);
+    return dispatchService(svc, null);
   }
 
-  public boolean dispatchService(String svc, String stg, Widget source) {
+  public boolean dispatchService(String svc, Widget source) {
     Assert.notEmpty(svc);
 
-    if (CompositeService.isRegistered(svc)) {
-      return CompositeService.doService(svc, stg, source);
-
-    } else if (Service.isRpcService(svc)) {
+    if (Service.isRpcService(svc)) {
       BeeKeeper.getRpc().makeGetRequest(svc);
       return true;
     } else if (Service.isUiService(svc)) {

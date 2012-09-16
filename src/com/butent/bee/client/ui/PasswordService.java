@@ -1,5 +1,6 @@
 package com.butent.bee.client.ui;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.Global;
@@ -72,7 +73,7 @@ public class PasswordService extends CompositeService {
           ok = false;
           Global.showError(Global.CONSTANTS.oldPasswordIsRequired());
 
-        } else if (!BeeUtils.equals(Codec.md5(oPass), oldPass)) {
+        } else if (!Objects.equal(Codec.md5(oPass), oldPass)) {
           ok = false;
           Global.showError(Global.CONSTANTS.oldPasswordIsInvalid());
         }
@@ -84,7 +85,7 @@ public class PasswordService extends CompositeService {
           ok = false;
           Global.showError(Global.CONSTANTS.newPasswordIsRequired());
 
-        } else if (!BeeUtils.equals(nPass, varNew2.getValue())) {
+        } else if (!Objects.equal(nPass, varNew2.getValue())) {
           ok = false;
           Global.showError(Global.CONSTANTS.newPasswordsDoesNotMatch());
 

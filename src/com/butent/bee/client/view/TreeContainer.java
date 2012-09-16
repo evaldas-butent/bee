@@ -14,7 +14,7 @@ import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.CatchEvent.CatchHandler;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.Assert;
@@ -27,7 +27,7 @@ import java.util.Map;
 public class TreeContainer extends Flow implements TreeView, SelectionHandler<TreeItem>,
     CatchEvent.CatchHandler<TreeItem> {
 
-  private class ActionListener extends BeeCommand {
+  private class ActionListener extends Command {
     private final Action action;
 
     private ActionListener(Action action) {

@@ -1,5 +1,6 @@
 package com.butent.bee.client.modules.calendar;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
@@ -957,7 +958,7 @@ class AppointmentBuilder extends AbstractFormCallback {
       long id = row.getId();
 
       String groupName = Data.getString(viewName, row, COL_GROUP_NAME);
-      boolean isDef = BeeUtils.equals(Data.getLong(viewName, row, COL_DEFAULT_PROPERTY), id);
+      boolean isDef = Objects.equal(Data.getLong(viewName, row, COL_DEFAULT_PROPERTY), id);
 
       if (BeeUtils.containsSame(groupName, "serv")) {
         serviceTypes.add(id);

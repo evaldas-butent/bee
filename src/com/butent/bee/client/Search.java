@@ -22,7 +22,7 @@ import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.modules.ModuleManager;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.CustomWidget;
@@ -277,7 +277,7 @@ public class Search {
           if (results.isEmpty()) {
             BeeKeeper.getScreen().notifyWarning(value, "nieko nerasta");
           } else {
-            ModuleManager.maybeInitialize(new BeeCommand() {
+            ModuleManager.maybeInitialize(new Command() {
               @Override
               public void execute() {
                 processResults(value, results);

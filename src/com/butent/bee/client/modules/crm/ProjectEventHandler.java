@@ -32,7 +32,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.ActionEvent;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.TreeView;
@@ -460,7 +460,7 @@ public class ProjectEventHandler {
       if (!indexes.isEmpty()) {
         if (!BeeUtils.isEmpty(projectId)) {
           Global.confirm(BeeUtils.concat(1, "Pašalinti", indexes.size(), "stebėtojus?"),
-              new BeeCommand() {
+              new Command() {
                 @Override
                 public void execute() {
                   List<Long> usrList = Lists.newArrayList();
@@ -720,7 +720,7 @@ public class ProjectEventHandler {
   }
 
   private static void doActivate(final FormView form) {
-    Global.confirm("Perduoti projektą vykdymui?", new BeeCommand() {
+    Global.confirm("Perduoti projektą vykdymui?", new Command() {
       @Override
       public void execute() {
         ParameterList args = createArgs(ProjectEvent.ACTIVATED.name());

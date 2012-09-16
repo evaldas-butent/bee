@@ -22,7 +22,7 @@ import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.layout.Split;
-import com.butent.bee.client.utils.BeeCommand;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
@@ -138,7 +138,7 @@ public class Mobile extends ScreenImpl {
     final CliWidget cli = new CliWidget();
     p.addLeftWidthTop(cli, 3, Unit.PX, pct, Unit.PCT, 3, Unit.PX);
 
-    BeeImage play = new BeeImage(Global.getImages().play(), new BeeCommand() {
+    BeeImage play = new BeeImage(Global.getImages().play(), new Command() {
       @Override
       public void execute() {
         CliWorker.execute(cli.getValue());

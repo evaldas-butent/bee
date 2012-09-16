@@ -42,7 +42,7 @@ public class ModuleHolderBean {
 
   private static enum TABLE_ACTIVATION_MODE {
     DELAYED, FORCED
-  };
+  }
 
   private static Logger logger = Logger.getLogger(ModuleHolderBean.class.getName());
 

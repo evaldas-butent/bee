@@ -129,7 +129,6 @@ public class DomUtils {
   public static final String ATTRIBUTE_DATA_COLUMN = "data-col";
   public static final String ATTRIBUTE_DATA_ROW = "data-row";
   public static final String ATTRIBUTE_SERVICE = "data-svc";
-  public static final String ATTRIBUTE_STAGE = "data-stg";
   public static final String ATTRIBUTE_ROLE = "data-role";
 
   public static final String TYPE_SEARCH = "search";
@@ -1073,10 +1072,6 @@ public class DomUtils {
     return sib;
   }
   
-  public static String getStage(Widget w) {
-    return getAttribute(w, ATTRIBUTE_STAGE);
-  }
-
   public static int getTabIndex(Element el) {
     Assert.notNull(el);
     return el.getTabIndex();
@@ -1802,14 +1797,6 @@ public class DomUtils {
       removeAttribute(w, ATTRIBUTE_SERVICE);
     } else {
       setAttribute(w, ATTRIBUTE_SERVICE, svc);
-    }
-  }
-
-  public static void setStage(Widget w, String stg) {
-    if (BeeUtils.isEmpty(stg)) {
-      removeAttribute(w, ATTRIBUTE_STAGE);
-    } else {
-      setAttribute(w, ATTRIBUTE_STAGE, stg);
     }
   }
 

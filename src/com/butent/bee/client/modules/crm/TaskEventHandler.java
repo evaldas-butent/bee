@@ -1026,7 +1026,7 @@ public class TaskEventHandler {
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
 
-        if (BeeUtils.equals(data.getLong(form.getDataIndex(CrmConstants.COL_OWNER)),
+        if (Objects.equal(data.getLong(form.getDataIndex(CrmConstants.COL_OWNER)),
             BeeKeeper.getUser().getUserId())) {
           ev = TaskEvent.APPROVED;
         }
@@ -1129,7 +1129,7 @@ public class TaskEventHandler {
         }
         IsRow data = form.getActiveRow();
         Long oldTerm = data.getLong(form.getDataIndex("FinishTime"));
-        if (BeeUtils.equals(newTerm, oldTerm)
+        if (Objects.equal(newTerm, oldTerm)
             || newTerm < Math.max(data.getLong(form.getDataIndex("StartTime")),
                 System.currentTimeMillis())) {
           Global.showError("Neteisingas terminas");
@@ -1163,7 +1163,7 @@ public class TaskEventHandler {
     dialog.addSelector("Vykdytojas", "Users",
         Lists.newArrayList(CrmConstants.COL_FIRST_NAME, CrmConstants.COL_LAST_NAME), true);
 
-    if (!BeeUtils.equals(owner, oldUser)) {
+    if (!Objects.equal(owner, oldUser)) {
       dialog.addQuestion("Pašalinti siuntėją iš stebėtojų", false);
     }
     dialog.addComment("Komentaras", true, false);
@@ -1175,7 +1175,7 @@ public class TaskEventHandler {
           Global.showError("Įveskite vykdytoją");
           return;
         }
-        if (BeeUtils.equals(newUser, oldUser)) {
+        if (Objects.equal(newUser, oldUser)) {
           Global.showError("Nurodėte tą patį vykdytoją");
           return;
         }
@@ -1194,7 +1194,7 @@ public class TaskEventHandler {
         args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
-        if (!BeeUtils.equals(owner, oldUser) && dialog.getAnswer()) {
+        if (!Objects.equal(owner, oldUser) && dialog.getAnswer()) {
           args.addDataItem(CrmConstants.VAR_TASK_OBSERVE, true);
         }
         createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REFRESH), true);
@@ -1283,25 +1283,25 @@ public class TaskEventHandler {
         List<String> vals = Lists.newArrayList();
 
         int priority = dialog.getPriority();
-        if (!BeeUtils.equals(oldPriority, priority)) {
+        if (!Objects.equal(oldPriority, priority)) {
           cols.add(new BeeColumn(ValueType.INTEGER, CrmConstants.COL_PRIORITY));
           old.add(BeeUtils.toString(oldPriority));
           vals.add(BeeUtils.toString(priority));
         }
         int term = dialog.getMinutes();
-        if (!BeeUtils.equals(oldTerm, term)) {
+        if (!Objects.equal(oldTerm, term)) {
           cols.add(new BeeColumn(ValueType.DATETIME, "ExpectedDuration"));
           old.add(BeeUtils.toString(oldTerm));
           vals.add(BeeUtils.toString(term));
         }
         Long company = dialog.getSelector();
-        if (!BeeUtils.isEmpty(company) && !BeeUtils.equals(oldCompany, company)) {
+        if (!BeeUtils.isEmpty(company) && !Objects.equal(oldCompany, company)) {
           cols.add(new BeeColumn(ValueType.LONG, "Company"));
           old.add(BeeUtils.toString(oldCompany));
           vals.add(BeeUtils.toString(company));
         }
         Long person = dialog.getSelector("PERSON");
-        if (!BeeUtils.isEmpty(person) && !BeeUtils.equals(oldPerson, person)) {
+        if (!BeeUtils.isEmpty(person) && !Objects.equal(oldPerson, person)) {
           cols.add(new BeeColumn(ValueType.LONG, "CompanyPerson"));
           old.add(BeeUtils.toString(oldPerson));
           vals.add(BeeUtils.toString(person));

@@ -1,5 +1,6 @@
 package com.butent.bee.shared.communication;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.Assert;
@@ -259,7 +260,7 @@ public class ResponseObject implements BeeSerializable {
     List<String> msgs = Lists.newArrayList();
 
     for (ResponseMessage message : messages) {
-      if (BeeUtils.equals(message.getLevel(), lvl)) {
+      if (Objects.equal(message.getLevel(), lvl)) {
         msgs.add(message.getMessage());
       }
     }
@@ -268,7 +269,7 @@ public class ResponseObject implements BeeSerializable {
 
   private boolean hasMessages(Level lvl) {
     for (ResponseMessage message : messages) {
-      if (lvl == null || BeeUtils.equals(message.getLevel(), lvl)) {
+      if (lvl == null || Objects.equal(message.getLevel(), lvl)) {
         return true;
       }
     }
