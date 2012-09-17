@@ -1,5 +1,13 @@
 package com.butent.bee.server.sql;
 
+import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_FIELD;
+import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_ID;
+import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_MODE;
+import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_TIME;
+import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_TX;
+import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_USER;
+import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_VALUE;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.data.SqlConstants;
@@ -28,8 +36,45 @@ class MsSqlBuilder extends SqlBuilder {
 
   @Override
   protected String getAuditTrigger(String auditTable, String idName, Collection<String> fields) {
-    // TODO Auto-generated method stub
-    return null;
+    StringBuilder body = new StringBuilder();
+    String insert = "INSERT INTO " + auditTable
+        + " (" + BeeUtils.concat(",", sqlQuote(AUDIT_FLD_TIME), sqlQuote(AUDIT_FLD_USER),
+            sqlQuote(AUDIT_FLD_TX), sqlQuote(AUDIT_FLD_MODE), sqlQuote(AUDIT_FLD_ID),
+            sqlQuote(AUDIT_FLD_FIELD), sqlQuote(AUDIT_FLD_VALUE))
+        + ") SELECT @_time,@_user,@_transaction,@_mode,";
+
+    body.append("BEGIN ")
+        .append("SET NOCOUNT ON;")
+        .append("DECLARE @_time BIGINT, @_user BIGINT, @_mode CHAR(1), @_transaction BIGINT;")
+        .append("SET @_time=CAST(DATEDIFF(s,'19700101',GETUTCDATE()) AS BIGINT)*1000")
+        .append("+DATEPART(ms,GETUTCDATE());")
+        .append("SET @_user=CAST(CONTEXT_INFO() AS BIGINT);")
+        .append("SELECT @_transaction=transaction_id FROM sys.dm_tran_current_transaction;")
+        .append("IF NOT EXISTS(SELECT * FROM inserted)")
+        .append("  BEGIN")
+        .append("  SET @_mode='D';")
+        .append(insert).append("deleted." + idName + ",NULL,NULL FROM deleted;")
+        .append("  END;")
+        .append("ELSE")
+        .append("  BEGIN")
+        .append("  IF EXISTS(SELECT * FROM deleted)")
+        .append("    SET @_mode='U';")
+        .append("  ELSE")
+        .append("    SET @_mode='I';");
+
+    insert = insert + "inserted." + idName + ",";
+
+    for (String field : fields) {
+      String fld = sqlQuote(field);
+
+      body.append("IF UPDATE(").append(fld).append(") ")
+          .append(insert).append("'").append(field).append("',inserted.").append(fld)
+          .append(" FROM inserted WHERE @_mode='U' OR inserted.").append(fld)
+          .append(" IS NOT NULL;");
+    }
+    body.append("END;END;");
+
+    return body.toString();
   }
 
   @Override
@@ -46,20 +91,18 @@ class MsSqlBuilder extends SqlBuilder {
 
   @Override
   protected String getRelationTrigger(List<Map<String, String>> fields) {
-    StringBuilder body = new StringBuilder("SET NOCOUNT ON;");
+    StringBuilder body = new StringBuilder("BEGIN SET NOCOUNT ON;");
 
     for (Map<String, String> entry : fields) {
       String fldName = entry.get("field");
       String relTable = entry.get("relTable");
       String relField = entry.get("relField");
 
-      body.append(
-          new SqlDelete(relTable)
-              .setWhere(SqlUtils.in(relTable, relField, "deleted", fldName, null))
-              .getQuery())
-          .append(";");
+      body.append(new SqlDelete(relTable)
+          .setWhere(SqlUtils.in(relTable, relField, "deleted", fldName, null))
+          .getQuery());
     }
-    return body.toString();
+    return body.append(";END;").toString();
   }
 
   @Override
@@ -205,6 +248,12 @@ class MsSqlBuilder extends SqlBuilder {
   @Override
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
+      case SET_PARAMETER:
+        String cmd = BeeUtils.concat(0,
+            "DECLARE @tmpVar BINARY(128); SET @tmpVar=",
+            sqlTransform(params.get("prmValue")), "; SET CONTEXT_INFO @tmpVar");
+        return "EXEC(" + sqlTransform(cmd) + ")";
+
       case CREATE_INDEX:
         String text = super.sqlKeyword(option, params);
         String field = (String) params.get("fields");
@@ -219,7 +268,7 @@ class MsSqlBuilder extends SqlBuilder {
             "CREATE TRIGGER", params.get("name"), "ON", params.get("table"),
             ((SqlTriggerTiming) params.get("timing") == SqlTriggerTiming.BEFORE) ? "FOR" : "AFTER",
             BeeUtils.concat(",", ((EnumSet<SqlTriggerEvent>) params.get("events")).toArray()),
-            "AS BEGIN", getTriggerBody(params), "END;");
+            "AS ", getTriggerBody(params));
 
       case DB_NAME:
         return "SELECT db_name() AS " + sqlQuote("dbName");

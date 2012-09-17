@@ -212,8 +212,6 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
 
   @Override
   public String serialize() {
-    Assert.state(validState());
-
     Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];
     int i = 0;
@@ -275,20 +273,12 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
 
   @Override
   public String toString() {
-    if (validState()) {
-      return BeeUtils.transformCollection(getInfo(), BeeConst.DEFAULT_LIST_SEPARATOR);
-    } else {
-      return BeeConst.STRING_EMPTY;
-    }
+    return BeeUtils.transformCollection(getInfo(), BeeConst.DEFAULT_LIST_SEPARATOR);
   }
 
   @Override
   public String transform() {
     return toString();
-  }
-
-  private boolean validState() {
-    return !BeeUtils.isEmpty(getId());
   }
 
   private String valueAsString(int v) {

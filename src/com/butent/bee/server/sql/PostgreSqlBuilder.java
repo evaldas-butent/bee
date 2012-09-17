@@ -45,10 +45,7 @@ class PostgreSqlBuilder extends SqlBuilder {
             sqlQuote(AUDIT_FLD_FIELD), sqlQuote(AUDIT_FLD_VALUE))
         + ") VALUES (_time,_user,TXID_CURRENT(),SUBSTRING(TG_OP,1,1),";
 
-    body.append("DECLARE _time BIGINT=")
-        .append("(floor(extract(epoch from current_timestamp))")
-        .append("-floor(extract(second from current_timestamp)))*1000")
-        .append("+floor(extract(milliseconds from current_timestamp));")
+    body.append("DECLARE _time BIGINT=floor(extract(epoch from current_timestamp)*1000);")
         .append("_user BIGINT;")
         .append("BEGIN ")
         .append("BEGIN _user:=CAST(CURRENT_SETTING('").append(AUDIT_USER).append("') AS BIGINT);")
