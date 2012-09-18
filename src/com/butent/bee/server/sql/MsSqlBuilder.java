@@ -250,8 +250,8 @@ class MsSqlBuilder extends SqlBuilder {
     switch (option) {
       case SET_PARAMETER:
         String cmd = BeeUtils.concat(0,
-            "DECLARE @tmpVar BINARY(128); SET @tmpVar=",
-            sqlTransform(params.get("prmValue")), "; SET CONTEXT_INFO @tmpVar");
+            "DECLARE @tmpVar BINARY(128);SET @tmpVar=",
+            sqlTransform(params.get("prmValue")), ";SET CONTEXT_INFO @tmpVar");
         return "EXEC(" + sqlTransform(cmd) + ")";
 
       case CREATE_INDEX:

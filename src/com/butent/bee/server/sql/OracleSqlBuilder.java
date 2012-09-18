@@ -27,7 +27,7 @@ class OracleSqlBuilder extends SqlBuilder {
 
   @Override
   protected String getAuditTrigger(String auditTable, String idName, Collection<String> fields) {
-    // TODO Auto-generated method stub
+    // TODO implementation required
     return null;
   }
 
@@ -118,6 +118,11 @@ class OracleSqlBuilder extends SqlBuilder {
   @Override
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
+      case SET_PARAMETER:
+        return BeeUtils.concat(0,
+            "BEGIN DBMS_SESSION.SET_CONTEXT('CLIENTCONTEXT','", params.get("prmName"), "','",
+            params.get("prmValue"), "');END;");
+
       case CREATE_TRIGGER:
         return BeeUtils.concat(1,
             "CREATE TRIGGER", params.get("name"), params.get("timing"),

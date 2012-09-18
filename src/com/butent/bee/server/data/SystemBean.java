@@ -404,7 +404,6 @@ public class SystemBean {
     return getTable(tblName).hasField(fldName);
   }
 
-  @PostConstruct
   @Lock(LockType.WRITE)
   public void initTables() {
     initTables(BeeUtils.notEmpty(SqlBuilderFactory.getDsn(), dsb.getDefaultDsn()));
@@ -905,6 +904,11 @@ public class SystemBean {
 
   private Collection<BeeTable> getTables() {
     return ImmutableList.copyOf(tableCache.values());
+  }
+
+  @PostConstruct
+  private void init() {
+    initTables();
   }
 
   private void initDatabase() {
