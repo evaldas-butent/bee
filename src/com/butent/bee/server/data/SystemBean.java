@@ -348,6 +348,10 @@ public class SystemBean {
     return views;
   }
 
+  public String getViewSource(String viewName) {
+    return getView(viewName).getSourceName();
+  }
+
   public XmlTable getXmlTable(String moduleName, String tableName) {
     Assert.notEmpty(tableName);
 

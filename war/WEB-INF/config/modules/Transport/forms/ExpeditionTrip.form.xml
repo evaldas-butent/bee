@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY ROW_STYLE "margin-bottom: 1ex;">
+]>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form" 
+  xmlns:d="http://www.butent.com/decorator" 
+  
+  name="ExpeditionTrip" viewName="ExpeditionTrips" caption="Ekspedijavimo reisas"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <FlowPanel class="flexBox-horizontal">
+      <FlowPanel class="flexBox-vertical flexible" style="margin-left: 1em">
+        <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+          <InputDateTime source="Date" style="width: 10em;" caption="Data" />
+          <Button name="profit" html="Pelnas" />
+          <InputText source="TripNo" caption="Reiso.Nr." />
+        </FlowPanel>
+        <FlowPanel class="flexBox-horizontal" style="&ROW_STYLE;">
+          <FlowPanel class="flexBox-vertical" style="margin-left: 1em">
+            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+              <Label html="Išvykimas" style="font-weight: bold;" />
+              <Label html="Sugrįžimas" style="font-weight: bold;" />
+            </FlowPanel>
+            
+            <FlowPanel class="flexBox-horizontal-center" style="&ROW_STYLE;">
+              <SimplePanel>
+                <InputDate source="DateFrom" style="width: 7em;" />
+              </SimplePanel>
+              <Label html="Data" />
+              <SimplePanel>
+                <InputDate source="DateTo" style="width: 7em;" />
+              </SimplePanel>
+            </FlowPanel>
+
+            <DataSelector source="Expedition" caption="Ekspedicijos rūšis" required="true" decorator="flex-left" d:size="115" />
+          </FlowPanel>
+
+          <FlowPanel class="flexBox-vertical flexible">
+            <DataSelector source="Forwarder" caption="Vežėjas" decorator="flex-left" d:size="115" />
+            <InputText source="ForwarderVehicle" caption="Vežėjo transportas" decorator="flex-left" d:size="115" />
+          </FlowPanel>
+        </FlowPanel>
+      </FlowPanel>
+
+      <FlowPanel class="flexBox-vertical flexible" style="&ROW_STYLE; margin-left: 1em;">
+        <Label html="Pastabos" />
+        <SimplePanel style="position: relative; min-width: 5em;" class="flexible">
+          <InputArea source="Notes" class="occupy" />
+        </SimplePanel>
+      </FlowPanel>
+    </FlowPanel>
+
+
+    <TabbedPages class="flexible" style="margin-top: 1ex;">
+      <page>
+        <text>Kroviniai</text>
+        <ChildGrid name="TripCargo" relColumn="Trip" />
+      </page>
+      <page>
+        <text>Išlaidos</text>
+        <ChildGrid name="TripCosts" relColumn="Trip" />
+      </page>
+    </TabbedPages>
+  </FlowPanel>
+</f:Form>

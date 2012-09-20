@@ -5,6 +5,9 @@ name="Transport" label="Transportas" order="60"
 >
   <Item name="Orders" label="Užsakymai" service="grid" parameters="TransportationOrders" />
   <Item name="Trips" label="Reisai" service="grid" parameters="Trips" />
+
+  <Item name="ExpeditionTypes" label="Ekspedijavimo rūšys" service="grid" parameters="ExpeditionTypes" separator="true" />
+  <Item name="ExpeditionTrips" label="Ekspedijavimo reisai" service="grid" parameters="ExpeditionTrips" />
     
   <Item name="VehicleTypes" label="Transporto tipai" service="grid" parameters="VehicleTypes" separator="true" />
   <Item name="ServiceTypes" label="Serviso tipai" service="grid" parameters="ServiceTypes" />

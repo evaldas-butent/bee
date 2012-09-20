@@ -13,5 +13,8 @@
     <Numeric name="Price" precision="15" scale="5" />
     <Relation name="Currency" relation="Currencies" />
     <Numeric name="CostPrice" precision="15" scale="5" />
+    <String name="Number" precision="20" />
+    <Relation name="Supplier" relation="Companies" />
+    <String name="Note" precision="50" />
   </Fields>
 </Table>

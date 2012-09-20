@@ -158,10 +158,13 @@ public class TransportModuleBean implements BeeModule {
                 .addField(TransportConstants.VIEW_CARGO,
                     sys.getIdName(TransportConstants.VIEW_CARGO), "Cargo")));
             int idIndex = rs.getColumnIndex("Cargo");
-            int incomeIndex = rs.getColumnIndex("CargoIncome");
+            int cargoIndex = rs.getColumnIndex("CargoIncome");
+            int servicesIndex = rs.getColumnIndex("ServicesIncome");
 
             for (int i = 0; i < rs.getNumberOfRows(); i++) {
-              rowset.updateCell(rs.getLong(i, idIndex), colIndex, rs.getValue(i, incomeIndex));
+              rowset.updateCell(rs.getLong(i, idIndex), colIndex,
+                  BeeUtils.transform(BeeUtils.unbox(rs.getDouble(i, cargoIndex))
+                      + BeeUtils.unbox(rs.getDouble(i, servicesIndex))));
             }
           }
         }
@@ -199,29 +202,31 @@ public class TransportModuleBean implements BeeModule {
    * Return SqlSelect query, calculating cargo incomes from CargoServices table.
    * 
    * @param flt - query filter with <b>unique</b> "Cargo" values.
-   * @return query with two columns: "Cargo" and "CargoIncome"
+   * @return query with columns: "Cargo", "CargoIncome", "ServicesIncome"
    */
   private SqlSelect getCargoIncomeQuery(SqlSelect flt) {
-    String orders = TransportConstants.VIEW_ORDERS;
-    String cargo = TransportConstants.VIEW_CARGO;
-    String services = TransportConstants.VIEW_CARGO_SERVICES;
+    String orders = sys.getViewSource(TransportConstants.VIEW_ORDERS);
+    String cargo = sys.getViewSource(TransportConstants.VIEW_CARGO);
+    String services = sys.getViewSource(TransportConstants.VIEW_CARGO_SERVICES);
     String cargoId = "Cargo";
 
     SqlSelect ss = new SqlSelect()
-        .addFields(services, cargoId)
-        .addFrom(services)
+        .addField(cargo, sys.getIdName(cargo), cargoId)
+        .addFrom(cargo)
         .addFromInner(new SqlSelect()
             .setDistinctMode(true)
             .addFields("subId", cargoId)
-            .addFrom(flt, "subId"), "sub", SqlUtils.joinUsing(services, "sub", cargoId))
-        .addFromInner(cargo, SqlUtils.join(services, cargoId, cargo, sys.getIdName(cargo)))
-        .addFromInner(orders, SqlUtils.join(cargo, "Order", orders, sys.getIdName(orders)))
-        .addGroup(services, cargoId);
+            .addFrom(flt, "subId"), "sub", sys.joinTables(cargo, "sub", cargoId))
+        .addFromInner(orders, sys.joinTables(orders, cargo, "Order"))
+        .addFromLeft(services, sys.joinTables(cargo, services, cargoId))
+        .addGroup(cargo, sys.getIdName(cargo));
 
-    ss.addSum(SqlUtils.multiply(SqlUtils.field(services, "Quantity"),
-        ExchangeUtils.exchangeField(ss, SqlUtils.field(services, "Price"),
-            SqlUtils.field(services, "Currency"), SqlUtils.field(orders, "Date"))),
-        "CargoIncome");
+    ss.addMax(ExchangeUtils.exchangeField(ss, SqlUtils.field(cargo, "Price"),
+        SqlUtils.field(cargo, "Currency"), SqlUtils.field(orders, "Date")), "CargoIncome")
+        .addSum(SqlUtils.multiply(SqlUtils.field(services, "Quantity"),
+            ExchangeUtils.exchangeField(ss, SqlUtils.field(services, "Price"),
+                SqlUtils.field(services, "Currency"), SqlUtils.field(orders, "Date"))),
+            "ServicesIncome");
 
     return ss;
   }
@@ -234,7 +239,7 @@ public class TransportModuleBean implements BeeModule {
 
     SqlSelect ss = getCargoIncomeQuery(flt)
         .addSum(SqlUtils.multiply((Object[]) SqlUtils.fields(services, "Quantity", "CostPrice")),
-            "CargoCost")
+            "ServicesCost")
         .addEmptyDouble("TripCost");
 
     String crsTotals = qs.sqlCreateTemp(ss);
@@ -299,8 +304,9 @@ public class TransportModuleBean implements BeeModule {
 
     ss = new SqlSelect()
         .addSum(crsTotals, "CargoIncome")
-        .addSum(crsTotals, "CargoCost")
         .addSum(crsTotals, "TripCost")
+        .addSum(crsTotals, "ServicesIncome")
+        .addSum(crsTotals, "ServicesCost")
         .addFrom(crsTotals);
 
     Map<String, String> res = qs.getRow(ss);
@@ -653,8 +659,7 @@ public class TransportModuleBean implements BeeModule {
    *         "TripIncome" - total trip income <br>
    */
   private String getTripIncome(SqlSelect flt) {
-    String services = TransportConstants.VIEW_CARGO_SERVICES;
-    String cargoTrips = TransportConstants.VIEW_CARGO_TRIPS;
+    String cargoTrips = sys.getViewSource(TransportConstants.VIEW_CARGO_TRIPS);
     String tripId = "Trip";
     String cargoId = "Cargo";
 
@@ -666,8 +671,7 @@ public class TransportModuleBean implements BeeModule {
             .addFromInner(new SqlSelect()
                 .setDistinctMode(true)
                 .addFields("subId", tripId)
-                .addFrom(flt, "subId"), "sub", SqlUtils.joinUsing(cargoTrips, "sub", tripId)))
-        .setWhere(SqlUtils.isNull(services, "CostPrice")));
+                .addFrom(flt, "subId"), "sub", SqlUtils.joinUsing(cargoTrips, "sub", tripId))));
 
     qs.sqlIndex(tmp, cargoId);
 

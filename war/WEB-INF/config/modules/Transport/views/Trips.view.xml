@@ -3,15 +3,12 @@
 
   name="Trips"
   source="Trips"
+  filter="!(Expedition)"
   >
   <Columns>
+    <HiddenColumn name="Expedition" />
     <SimpleColumn name="Date" />
     <SimpleColumn name="TripNo" />
-    <SimpleColumn name="Forwarder" />
-    <SimpleJoin joinType="LEFT" name="Forwarder">
-      <SimpleColumn name="Name" alias="ForwarderName" />
-    </SimpleJoin>
-    <SimpleColumn name="ForwarderVehicle" />
     <SimpleColumn name="Vehicle" />
     <SimpleJoin name="Vehicle" joinType="LEFT">
       <SimpleColumn name="Number" alias="VehicleNumber" />

@@ -15,7 +15,7 @@
 
   <columns>
     <DataColumn name="OrderNo" caption="Užsakymo Nr." />
-    <DataColumn name="Content" caption="Krovinys" />
+    <DataColumn name="Description" caption="Krovinys" />
     <DataColumn name="Weight" caption="Svoris" />
     <DataColumn name="Volume" caption="Tūris" />
     <DataColumn name="Quantity" caption="Kiekis" />

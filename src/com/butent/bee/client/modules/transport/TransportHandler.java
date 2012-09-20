@@ -146,8 +146,7 @@ public class TransportHandler {
             return;
           }
           MultiSelector selector = new MultiSelector("Galimi reisai", result,
-              Lists.newArrayList("TripNo", "ForwarderName", "ForwarderVehicle", "VehicleNumber",
-                  "DateFrom", "DateTo"),
+              Lists.newArrayList("TripNo", "VehicleNumber", "DateFrom"),
               new MultiSelector.SelectionCallback() {
                 @Override
                 public void onSelection(List<IsRow> rows) {
@@ -164,6 +163,7 @@ public class TransportHandler {
                   }
 
                   Queries.insertRowSet(rowSet, new RowSetCallback() {
+                    @Override
                     public void onSuccess(BeeRowSet res) {
                       for (BeeRow row : res.getRows()) {
                         BeeKeeper.getBus().fireEvent(new RowInsertEvent(res.getViewName(), row));
@@ -232,6 +232,7 @@ public class TransportHandler {
       return new SparePartsGridHandler();
     }
 
+    @Override
     public void onSelection(SelectionEvent<IsRow> event) {
       if (event == null) {
         return;
@@ -482,6 +483,7 @@ public class TransportHandler {
       return new VehiclesGridHandler();
     }
 
+    @Override
     public void onSelection(SelectionEvent<IsRow> event) {
       if (event == null) {
         return;

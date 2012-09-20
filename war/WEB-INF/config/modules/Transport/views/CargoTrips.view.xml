@@ -9,6 +9,9 @@
     <SimpleColumn name="Trip"/>
     <SimpleJoin joinType="LEFT" name="Trip">
       <SimpleColumn name="TripNo" />
+      <SimpleJoin joinType="LEFT" name="Expedition">
+        <SimpleColumn name="Name" alias="ExpeditionType" />
+      </SimpleJoin>
       <SimpleJoin joinType="LEFT" name="Forwarder">
         <SimpleColumn name="Name" alias="ForwarderName" />
       </SimpleJoin>

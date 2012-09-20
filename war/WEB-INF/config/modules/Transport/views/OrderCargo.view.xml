@@ -25,13 +25,23 @@
       <SimpleColumn name="Place" alias="UnloadingPlace" />
       <SimpleColumn name="Terminal" alias="UnloadingTerminal" />
     </SimpleJoin>
-    <SimpleColumn name="Cargo" />
+    <SimpleColumn name="Description" />
     <SimpleColumn name="Weight" />
     <SimpleColumn name="Volume" />
+    <SimpleColumn name="Length" />
+    <SimpleColumn name="Width" />
+    <SimpleColumn name="Height" />
     <SimpleColumn name="Quantity" />
+    <SimpleColumn name="Value" />
+
     <SimpleColumn name="Number" />
     <SimpleColumn name="Cmr" />
     <SimpleColumn name="Notes" />
+    <SimpleColumn name="Price" />
+    <SimpleColumn name="Currency" />
+    <SimpleJoin joinType="LEFT" name="Currency">
+      <SimpleColumn name="Name" alias="CurrencyName" />
+    </SimpleJoin>
     <SimpleColumn name="Income">
       <xpr:number>0</xpr:number>
     </SimpleColumn>

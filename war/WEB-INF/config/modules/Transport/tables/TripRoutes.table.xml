@@ -20,18 +20,4 @@
     <Double name="Consumption" />
     <Relation name="Item" relation="Items" />
   </Fields>
-  <Triggers>
-    <Trigger timing="AFTER" events="INSERT DELETE" scope="ROW">
-       <PostgreSql>
-         <![CDATA[
-         BEGIN
-           RAISE EXCEPTION 'Message from beyond...(<b>%?</b> NO WAY)', TG_OP;
-           RETURN NULL;
-         END;
-         ]]>
-       </PostgreSql>
-       <MsSql/>
-       <Oracle/>
-    </Trigger>
-  </Triggers>
 </Table>

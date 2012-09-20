@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="ExpeditionTrips"
+  source="Trips"
+  filter="Expedition" 
+  >
+  <Columns>
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="TripNo" />
+    <SimpleColumn name="Expedition" />
+    <SimpleJoin joinType="LEFT" name="Expedition">
+      <SimpleColumn name="Name" alias="ExpeditionType" />
+    </SimpleJoin>
+    <SimpleColumn name="Forwarder" />
+    <SimpleJoin joinType="LEFT" name="Forwarder">
+      <SimpleColumn name="Name" alias="ForwarderName" />
+    </SimpleJoin>
+    <SimpleColumn name="ForwarderVehicle" />
+    <SimpleColumn name="DateFrom" />
+    <SimpleColumn name="DateTo" />
+    <SimpleColumn name="Notes" />
+  </Columns>
+  <Order>
+    <OrderBy column="Date" />
+  </Order>
+</View>

@@ -7,14 +7,20 @@
   >
   <Fields>
     <Relation name="Order" relation="TransportationOrders" notNull="true" cascade="DELETE" />
-    <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" />
-    <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" />
-    <String name="Cargo" precision="100" notNull="true" />
+    <String name="Description" precision="100" notNull="true" />
     <Numeric name="Weight" precision="7" scale="3" />
     <Numeric name="Volume" precision="7" scale="3" />
+    <Numeric name="Length" precision="6" scale="2" />
+    <Numeric name="Width" precision="6" scale="2" />
+    <Numeric name="Height" precision="6" scale="2" />
     <Integer name="Quantity" />
+    <Integer name="Value" />
     <String name="Number" precision="20" />
     <String name="Cmr" precision="20" />
+    <Numeric name="Price" precision="15" scale="5" />
+    <Relation name="Currency" relation="Currencies" />
+    <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" />
+    <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" />
     <Text name="Notes" />
   </Fields>
 </Table>

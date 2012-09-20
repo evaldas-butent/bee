@@ -16,20 +16,14 @@
   <columns>
     <DataColumn name="Date" source="Date" caption="Data" />
     <DataColumn name="TripNo" source="TripNo" caption="Reiso Nr." />
-    <DataColumn name="ForwarderName" source="ForwarderName" caption="Vežėjas" />
     <CalcColumn name="Vehicle" type="string" caption="Transportas">
       <render>
         <ui:function>
-          var vehicle = row.ForwarderVehicle;
-          
-          if (!vehicle) {
-            if (row.VehicleNumber) {
-              vehicle = row.VehicleNumber;
-            }
-            if (row.TrailerNumber) {
-              vehicle = (vehicle ? vehicle + ' / ' : '')  + row.TrailerNumber;
-            }
-          }          
+          var vehicle = row.VehicleNumber;
+
+          if (row.TrailerNumber) {
+            vehicle = vehicle + ' / ' + row.TrailerNumber;
+          }
           return vehicle;
         </ui:function>
       </render>

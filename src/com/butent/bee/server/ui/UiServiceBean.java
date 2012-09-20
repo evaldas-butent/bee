@@ -3,7 +3,6 @@ package com.butent.bee.server.ui;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.client.ui.DsnService;
@@ -19,7 +18,6 @@ import com.butent.bee.server.data.IdGeneratorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SearchBean;
 import com.butent.bee.server.data.SystemBean;
-import com.butent.bee.server.data.SystemBean.SysObject;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.ExtensionFilter;
@@ -47,7 +45,6 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -65,7 +62,6 @@ import org.w3c.dom.Element;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -635,83 +631,6 @@ public class UiServiceBean {
 
     } else {
       response.addError("Rebuild what?");
-    }
-    return response;
-  }
-
-  private ResponseObject saveDbSchema(String dbSchema) {
-    String schemaPath = SysObject.TABLE.getSchemaPath();
-    StringBuilder xmlResponse = new StringBuilder();
-    XmlSqlDesigner designer = null;
-    ResponseObject response = new ResponseObject();
-    Map<String, XmlTable> updates = Maps.newHashMap();
-
-    try {
-      designer = XmlUtils.unmarshal(XmlSqlDesigner.class, dbSchema, null);
-    } catch (BeeRuntimeException e) {
-      response.addError(e);
-    }
-    if (designer == null || BeeUtils.isEmpty(designer.tables)) {
-      response.addError("No tables defined");
-    } else {
-      for (XmlTable xmlTable : designer.tables) {
-        String tblName = xmlTable.name;
-
-        if (BeeUtils.isEmpty(xmlTable.idName)) {
-          response.addError(BeeUtils.bracket(tblName), "Primary key is missing/invalid");
-        } else {
-          try {
-            String xml = XmlUtils.marshal(xmlTable, schemaPath);
-            xmlResponse.append(xml).append("\n");
-            XmlTable userTable = sys.loadXmlTable(xml);
-            XmlTable configTable =
-                sys.getXmlTable(sys.getTable(tblName).getModuleName(), tblName, false);
-            XmlTable diffTable = null;
-
-            if (configTable == null) {
-              diffTable = userTable;
-            } else {
-              diffTable = configTable.protect().getChanges(userTable);
-            }
-            updates.put(BeeUtils.normalize(tblName), diffTable);
-
-          } catch (BeeRuntimeException e) {
-            response.addError(BeeUtils.bracket(tblName), e);
-          }
-        }
-      }
-    }
-    if (!response.hasErrors()) {
-      for (String tbl : sys.getTableNames()) {
-        String tblName = BeeUtils.normalize(tbl);
-
-        if (!updates.containsKey(tblName)) {
-          updates.put(tblName, null);
-        }
-      }
-      for (String tblName : updates.keySet()) {
-        String path = new File(Config.USER_DIR, SysObject.TABLE.getPath() + "/"
-            + SysObject.TABLE.getFileName(tblName)).getPath();
-        XmlTable diffTable = updates.get(tblName);
-
-        if (diffTable == null) {
-          if (!FileUtils.deleteFile(path)) {
-            response.addError("Can't delete file:", path);
-          }
-        } else {
-          boolean ok = false;
-          try {
-            ok = FileUtils.saveToFile(XmlUtils.marshal(diffTable, schemaPath), path);
-          } catch (BeeRuntimeException e) {
-            response.addError(BeeUtils.bracket(tblName), e);
-          }
-          if (!ok) {
-            response.addError("Can't save file:", path);
-          }
-        }
-      }
-      sys.initTables();
-      response.setResponse(new BeeResource(null, xmlResponse.toString()));
     }
     return response;
   }

@@ -12,7 +12,7 @@
       <SimpleJoin name="Order" joinType="LEFT">
         <SimpleColumn name="OrderNo" />
       </SimpleJoin>
-      <SimpleColumn name="Cargo" alias="Content" />
+      <SimpleColumn name="Description" />
       <SimpleColumn name="Weight" />
       <SimpleColumn name="Volume" />
       <SimpleColumn name="Quantity" />

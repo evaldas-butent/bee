@@ -69,7 +69,8 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   private final TreeView treeView;
   private final String source;
   private final String parentName;
-  private final String orderName;
+  @SuppressWarnings("unused")
+  private final String orderName; // TODO implement order column
   private final String relationName;
   private Long relationId = null;
   private final Calculation calculation;

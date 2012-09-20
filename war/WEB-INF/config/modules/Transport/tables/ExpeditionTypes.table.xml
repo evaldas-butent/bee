@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="ExpeditionTypes"
+  idName="TypeID"
+  x="0" y="0"
+  >
+  <Fields>
+    <String name="Name" precision="30" notNull="true" unique="true" label="Rūšis" />
+  </Fields>
+</Table>

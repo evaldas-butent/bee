@@ -15,15 +15,15 @@
   <footer borderWidth="0" />
 
   <columns>
-    <DataColumn name="Cargo" source="Cargo" caption="Krovinys" />
-    <DataColumn name="Weight" source="Weight" caption="Svoris" />
-    <DataColumn name="Volume" source="Volume" caption="Tūris" />
-    <DataColumn name="Quantity" source="Quantity" caption="Kiekis" />
+    <DataColumn name="Description" caption="Krovinys" />
+    <DataColumn name="Weight" caption="Svoris" />
+    <DataColumn name="Volume" caption="Tūris" />
+    <DataColumn name="Quantity" caption="Kiekis" />
     <CalcColumn name="Loading" type="string" cell="html" caption="Pakrovimas" />
     <CalcColumn name="Unloading" type="string" cell="html" caption="Iškrovimas" />
-    <DataColumn name="Number" source="Number" caption="Numeris" />
-    <DataColumn name="Cmr" source="Cmr" caption="CMR" />
-    <DataColumn name="Notes" source="Notes" caption="Pastabos">
+    <DataColumn name="Number" caption="Numeris" />
+    <DataColumn name="Cmr" caption="CMR" />
+    <DataColumn name="Notes" caption="Pastabos">
       <style>
         <bodyStyle>
           <ui:inline>white-space: pre-wrap;</ui:inline>
@@ -32,7 +32,6 @@
     </DataColumn>
     <DataColumn name="Income" caption="Pajamos" format="#.00">
       <style>
-        <headerStyle><ui:font>bold</ui:font></headerStyle>
         <bodyStyle><ui:font>bold</ui:font></bodyStyle>
       </style>
     </DataColumn>

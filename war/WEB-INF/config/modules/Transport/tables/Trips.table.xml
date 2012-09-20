@@ -17,6 +17,7 @@
     <Double name="SpeedometerAfter" />
     <Numeric name="FuelBefore" precision="7" scale="2" />
     <Numeric name="FuelAfter" precision="7" scale="2" />
+    <Relation name="Expedition" relation="ExpeditionTypes" />
     <Relation name="Forwarder" relation="Companies" />
     <String name="ForwarderVehicle" precision="50" />
     <Text name="Notes" />

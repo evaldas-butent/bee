@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+ 
+  name="ExpeditionTypes" viewName="ExpeditionTypes" caption="Ekspedijavimo rūšys"
+  >
+  <columns>
+    <DataColumn name="Name" />
+  </columns>
+</Grid>

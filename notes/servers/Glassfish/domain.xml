@@ -1,8 +1,5 @@
 <domain>
   <resources>
-    <jdbc-connection-pool driver-classname="com.mysql.jdbc.Driver" datasource-classname="" res-type="java.sql.Driver" name="MySQL">
-      <property name="URL" value="jdbc:mysql://192.168.0.245:3306/pypas?user=root&amp;password=root&amp;characterEncoding=utf8"></property>
-    </jdbc-connection-pool>
     <jdbc-connection-pool driver-classname="org.postgresql.Driver" datasource-classname="" res-type="java.sql.Driver" description="" name="PostgreSQL">
       <property name="URL" value="jdbc:postgresql://192.168.0.245:5444/javaDB?user=javaUser&amp;password=javaUser"></property>
     </jdbc-connection-pool>
@@ -13,15 +10,12 @@
       <property name="URL" value="jdbc:oracle:thin:PYP/USER@//192.168.0.245:1521/XE"></property>
     </jdbc-connection-pool>
     <jdbc-resource pool-name="OracleSQL" description="" jndi-name="jdbc/OracleXE"></jdbc-resource>
-    <jdbc-resource pool-name="MySQL" description="" jndi-name="jdbc/my"></jdbc-resource>
     <jdbc-resource pool-name="MsSQL" description="" jndi-name="jdbc/ms"></jdbc-resource>
     <jdbc-resource pool-name="PostgreSQL" description="" jndi-name="jdbc/pg"></jdbc-resource>
   </resources>
   <servers>
     <server name="server" config-ref="server-config">
-      <application-ref ref="__admingui" virtual-servers="__asadmin"></application-ref>
       <resource-ref ref="jdbc/OracleXE"></resource-ref>
-      <resource-ref ref="jdbc/my"></resource-ref>
       <resource-ref ref="jdbc/ms"></resource-ref>
       <resource-ref ref="jdbc/pg"></resource-ref>
     </server>

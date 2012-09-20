@@ -21,5 +21,11 @@
       <SimpleColumn name="Name" alias="CurrencyName" />
     </SimpleJoin>
     <SimpleColumn name="CostPrice" />
+    <SimpleColumn name="Number" />
+    <SimpleColumn name="Supplier" />
+    <SimpleJoin name="Supplier" joinType="LEFT">
+      <SimpleColumn name="Name" alias="SupplierName" />
+    </SimpleJoin>
+    <SimpleColumn name="Note" />
   </Columns>
 </View>

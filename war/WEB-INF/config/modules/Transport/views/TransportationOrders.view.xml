@@ -33,10 +33,9 @@
       </SimpleJoin>
     </SimpleJoin>
     <ExternalJoin source="OrderCargo" name="Order" joinType="LEFT">
-      <HiddenColumn name="Cargo" />
-      <AggregateColumn aggregate="MIN" name="Cargo" alias="MinCargo" />
-      <AggregateColumn aggregate="MAX" name="Cargo" alias="MaxCargo" />
-      <AggregateColumn aggregate="COUNT_DISTINCT" name="Cargo" alias="CntCargo" />
+      <AggregateColumn aggregate="MIN" name="Description" alias="MinCargo" />
+      <AggregateColumn aggregate="MAX" name="Description" alias="MaxCargo" />
+      <AggregateColumn aggregate="COUNT_DISTINCT" name="Description" alias="CntCargo" />
       <AggregateColumn aggregate="SUM" name="Weight" />
       <AggregateColumn aggregate="SUM" name="Volume" />
       <AggregateColumn aggregate="SUM" name="Quantity" />

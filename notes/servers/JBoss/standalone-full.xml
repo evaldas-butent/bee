@@ -10,14 +10,6 @@
                         <password>admin</password>
                     </security>
                 </datasource>
-                <datasource jta="true" jndi-name="java:/jdbc/my" pool-name="my_Pool" enabled="true" use-java-context="true" use-ccm="true">
-                    <connection-url>jdbc:mysql://192.168.0.245:3306/pypas?characterEncoding=utf8</connection-url>
-                    <driver>mysql-connector-java-5.1.17-bin.jar</driver>
-                    <security>
-                        <user-name>root</user-name>
-                        <password>root</password>
-                    </security>
-                </datasource>
                 <datasource jta="true" jndi-name="java:/jdbc/ms" pool-name="ms_Pool" enabled="true" use-java-context="true" use-ccm="true">
                     <connection-url>jdbc:sqlserver://192.168.0.211\SQLEXPRESS;databaseName=pypas</connection-url>
                     <driver>sqljdbc4.jar</driver>

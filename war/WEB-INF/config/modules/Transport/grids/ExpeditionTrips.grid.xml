@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="ExpeditionTrips" viewName="ExpeditionTrips" caption="Ekspedijavimo reisai"
+  newRowForm="ExpeditionTrip" editForm="ExpeditionTrip" newRowPopup="true"
+  newRowCaption="Naujas ekspedijavimo reisas"
+  >
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <ui:font>Verdana 12 px</ui:font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <DataColumn name="Date" caption="Data" />
+    <DataColumn name="ExpeditionType" caption="Ekspedijavimo rūšis" />
+    <DataColumn name="TripNo" caption="Reiso Nr." />
+    <DataColumn name="ForwarderName" caption="Vežėjas" />
+    <DataColumn name="ForwarderVehicle" caption="Transportas" />
+    <DataColumn name="DateFrom" source="DateFrom" caption="Išvyko" />
+    <DataColumn name="DateTo" source="DateTo" caption="Sugrįžo" />
+  </columns>
+</Grid>

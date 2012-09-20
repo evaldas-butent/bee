@@ -26,5 +26,8 @@
       <render><ui:expression>row.Quantity * row.Price</ui:expression></render>
     </CalcColumn>
     <DataColumn name="CostPrice" caption="Savikaina" format="#.00" />
+    <DataColumn name="Number" caption="Numeris" />
+    <RelColumn name="Supplier" caption="Tiekėjas" />
+    <DataColumn name="Note" caption="Pastaba" />
   </columns>
 </Grid>
