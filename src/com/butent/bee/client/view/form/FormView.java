@@ -18,6 +18,7 @@ import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.ui.HasCaption;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ import java.util.List;
 
 public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,  
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
-    ActionEvent.HasActionHandlers, HasDimensions, HasState  {
+    ActionEvent.HasActionHandlers, HasDimensions, HasState, HasCaption  {
 
   void applyOptions(String options);
 
@@ -39,8 +40,6 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   boolean focus(String source);
   
   RowInfo getActiveRowInfo();
-
-  String getCaption();
 
   List<BeeColumn> getDataColumns();
 

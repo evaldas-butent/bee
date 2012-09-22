@@ -13,6 +13,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
@@ -234,6 +235,11 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     }
   }
 
+  @Override
+  public String getCaption() {
+    return hasHeader() ? getHeader().getCaption() : null;
+  }
+  
   public List<String> getFavorite() {
     return favorite;
   }
@@ -549,7 +555,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
   @Override
   protected void onUnload() {
-    if (!BeeKeeper.getScreen().isTemporaryDetach() && getViewPresenter() != null) {
+    if (!Global.isTemporaryDetach() && getViewPresenter() != null) {
       getViewPresenter().onViewUnload();
     }
     super.onUnload();

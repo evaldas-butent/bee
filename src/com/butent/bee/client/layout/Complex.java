@@ -5,6 +5,7 @@ import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.ComplexPanel;
+import com.google.gwt.user.client.ui.InsertPanel;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
@@ -19,16 +20,17 @@ import com.butent.bee.shared.HasId;
  * at the specific areas of the layout.
  */
 
-public class Complex extends ComplexPanel implements HasId, ProvidesResize, RequiresResize {
+public class Complex extends ComplexPanel implements HasId, ProvidesResize, RequiresResize,
+    InsertPanel {
 
   public Complex() {
     this(Position.ABSOLUTE);
   }
-  
+
   public Complex(Position position) {
     super();
     setElement(DOM.createDiv());
-    
+
     if (position != null) {
       getElement().getStyle().setPosition(position);
     }
@@ -51,7 +53,7 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
     }
     add(child);
   }
-  
+
   public void addLeftBottom(Widget child, double left, Unit leftUnit, double bottom,
       Unit bottomUnit) {
     Assert.notNull(child);
@@ -74,7 +76,7 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
     setChildTop(child, top, topUnit);
     add(child);
   }
-  
+
   public void addLeftRightTop(Widget child, int left, int right, int top) {
     addLeftRightTop(child, left, Unit.PX, right, Unit.PX, top, Unit.PX);
   }
@@ -89,7 +91,7 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
     setChildBottom(child, bottom, bottomUnit);
     add(child);
   }
-  
+
   public void addLeftRightTopBottom(Widget child, int left, int right, int top, int bottom) {
     addLeftRightTopBottom(child, left, Unit.PX, right, Unit.PX, top, Unit.PX, bottom, Unit.PX);
   }
@@ -104,11 +106,11 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
     setChildHeight(child, height, heightUnit);
     add(child);
   }
-  
+
   public void addLeftRightTopHeight(Widget child, int left, int right, int top, int height) {
     addLeftRightTopHeight(child, left, Unit.PX, right, Unit.PX, top, Unit.PX, height, Unit.PX);
   }
-  
+
   public void addLeftTop(Widget child, double left, Unit leftUnit, double top, Unit topUnit) {
     Assert.notNull(child);
     setChildPosition(child);
@@ -116,7 +118,7 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
     setChildTop(child, top, topUnit);
     add(child);
   }
-  
+
   public void addLeftTop(Widget child, int left, int top) {
     addLeftTop(child, left, Unit.PX, top, Unit.PX);
   }
@@ -131,7 +133,7 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
     setChildBottom(child, bottom, bottomUnit);
     add(child);
   }
-  
+
   public void addLeftWidthTopBottom(Widget child, int left, int width, int top, int bottom) {
     addLeftWidthTopBottom(child, left, Unit.PX, width, Unit.PX, top, Unit.PX, bottom, Unit.PX);
   }
@@ -148,7 +150,7 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
   public void addRightBottom(Widget child, int right, int bottom) {
     addRightBottom(child, right, Unit.PX, bottom, Unit.PX);
   }
-  
+
   public void addRightTop(Widget child, double right, Unit rightUnit, double top, Unit topUnit) {
     Assert.notNull(child);
     setChildPosition(child);
@@ -187,6 +189,11 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
     return "complex";
   }
 
+  @Override
+  public void insert(Widget w, int beforeIndex) {
+    insert(w, getElement(), beforeIndex, true);
+  }
+
   public void onResize() {
     for (Widget child : getChildren()) {
       if (child instanceof RequiresResize) {
@@ -194,7 +201,7 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
       }
     }
   }
-  
+
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
@@ -210,7 +217,7 @@ public class Complex extends ComplexPanel implements HasId, ProvidesResize, Requ
   private void setChildHeight(Widget child, double value, Unit unit) {
     child.getElement().getStyle().setHeight(value, unit);
   }
-  
+
   private void setChildLeft(Widget child, double value, Unit unit) {
     child.getElement().getStyle().setLeft(value, unit);
   }

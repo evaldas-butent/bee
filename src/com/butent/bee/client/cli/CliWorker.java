@@ -73,11 +73,8 @@ import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
-import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
-import com.butent.bee.client.tree.Tree;
-import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.FormFactory;
@@ -298,7 +295,7 @@ public class CliWorker {
     } else if (z.equals("tables")) {
       BeeKeeper.getRpc().makeGetRequest(Service.DB_TABLES);
     } else if (z.equals("tiles")) {
-      showTiles();
+      BeeKeeper.getScreen().showInfo();
     } else if (z.startsWith("tran") || z.startsWith("detec")) {
       translate(arr, z.startsWith("detec"));
     } else if (z.equals("uc") || "unicode".startsWith(z)) {
@@ -2331,21 +2328,6 @@ public class CliWorker {
             PropertyUtils.restoreExtended((String) response.getResponse()));
       }
     });
-  }
-
-  private static void showTiles() {
-    Widget tiles = BeeKeeper.getScreen().getScreenPanel().getCenter();
-    if (!(tiles instanceof TilePanel)) {
-      Global.showDialog("no tiles vailable");
-    }
-
-    TreeItem item = ((TilePanel) tiles).getTree(null, true);
-    item.setOpenRecursive(true, false);
-
-    Tree tree = new Tree();
-    tree.addItem(item);
-
-    Global.inform(tree);
   }
 
   private static void showUnits(String[] arr) {

@@ -7,7 +7,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Split;
-import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.shared.BeeResource;
 
 /**
@@ -16,13 +15,9 @@ import com.butent.bee.shared.BeeResource;
 
 public interface Screen extends Module, NotificationListener {
 
-  void activatePanel(TilePanel np);
-
   void addCommandItem(Widget widget);  
   
   void closeWidget(Widget widget);
-
-  TilePanel getActivePanel();
 
   int getActivePanelHeight();
 
@@ -34,19 +29,17 @@ public interface Screen extends Module, NotificationListener {
   
   Split getScreenPanel();
 
-  boolean isTemporaryDetach();
-
   void setRootPanel(LayoutPanel rootPanel);
-
+  
   void showGrid(Object data, String... cols);
 
-  void showResource(BeeResource resource);
+  void showInfo();
 
+  void showResource(BeeResource resource);
+  
   void updateActivePanel(Widget w);
 
   void updateActivePanel(Widget w, ScrollBars scroll);
-
-  void updateActiveQuietly(Widget w, ScrollBars scroll);
 
   void updateCommandPanel(Widget w);
   

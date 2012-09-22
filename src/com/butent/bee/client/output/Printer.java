@@ -151,6 +151,7 @@ public class Printer {
         if (end == start && Browser.isChrome()) {
           BeeKeeper.getLog().warning("google is evil");
           // http://code.google.com/p/chromium/issues/detail?id=50186
+          // waiting for chrome 24
         }
       }
     });

@@ -1,11 +1,11 @@
 package com.butent.bee.client.screen;
 
+import com.google.common.base.Objects;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -19,14 +19,15 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Complex;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.layout.Scroll;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -38,6 +39,37 @@ public class Mobile extends ScreenImpl {
 
   public Mobile() {
     super();
+  }
+
+  @Override
+  public void closeWidget(Widget widget) {
+    Assert.notNull(widget, "closeWidget: widget is null");
+
+    if (Objects.equal(widget, getActiveWidget())) {
+      getScreenPanel().remove(widget);
+    } else {
+      notifyWarning("closeWidget: widget not found");
+    }
+  }
+  
+  @Override
+  public int getActivePanelHeight() {
+    return getScreenPanel().getCenterHeight();
+  }
+
+  @Override
+  public int getActivePanelWidth() {
+    return getScreenPanel().getCenterWidth();
+  }
+  
+  @Override
+  public Widget getActiveWidget() {
+    return getScreenPanel().getCenter();
+  }
+
+  @Override
+  public void showInfo() {
+    Global.inform(getActivePanelWidth(), getActivePanelHeight());
   }
 
   @Override
@@ -53,12 +85,8 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
-  public void updateActivePanel(Widget w, ScrollBars scroll) {
-    if (scroll == null || scroll == ScrollBars.NONE || w instanceof ScrollPanel) {
-      super.updateActivePanel(w, scroll);
-    } else {
-      super.updateActivePanel(new Scroll(w), ScrollBars.NONE);
-    }
+  public void updateActivePanel(Widget widget, ScrollBars scroll) {
+    getScreenPanel().updateCenter(widget, scroll);
   }
 
   protected int addLogToggle(BeeLayoutPanel panel) {
@@ -85,7 +113,7 @@ public class Mobile extends ScreenImpl {
 
     w = initNorth();
     if (w != null) {
-      p.addNorth(w, 40);
+      p.addNorth(w, 60);
     }
 
     w = initSouth();
@@ -119,13 +147,26 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
+  protected Widget initCenter() {
+    return null;
+  }
+  
+  @Override
   protected Widget initNorth() {
-    Complex p = new Complex();
-
+    Complex panel = new Complex();
+    panel.addStyleName("bee-NorthContainer");
+    
+    panel.addLeftTop(Global.getSearchWidget(), 40, 2);
+    
+    Flow menuContainer = new Flow();
+    menuContainer.addStyleName("bee-MainMenu");
+    panel.addLeftTop(menuContainer, 10, 30);
+    setMenuPanel(menuContainer);
+    
     setNotification(new Notification());
-    p.addRightTop(getNotification(), 1, 1);
+    panel.addRightTop(getNotification(), 1, 1);
 
-    return p;
+    return panel;
   }
 
   @Override

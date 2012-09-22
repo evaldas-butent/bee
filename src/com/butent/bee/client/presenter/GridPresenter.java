@@ -223,6 +223,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     return getGridView().getActiveRow();
   }
 
+  @Override
+  public String getCaption() {
+    return getView().getCaption();
+  }
+  
   public List<BeeColumn> getDataColumns() {
     return getDataProvider().getColumns();
   }

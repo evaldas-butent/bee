@@ -105,6 +105,7 @@ public class BeeConst {
   public static final char HEAVY_CHECK_MARK = '\u2714';
   public static final char BALLOT = '\u2717';
   public static final char HEAVY_BALLOT = '\u2718';
+  public static final char DROP_DOWN = '\u25bc';
 
   public static final String CHAR_FALSE = "fFnN0";
   public static final String CHAR_TRUE = "tTyY1";

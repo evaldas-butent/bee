@@ -72,6 +72,8 @@ public class Global implements Module {
   private static final Search SEARCH = new Search();
 
   private static final Reports REPORTS = new Reports();
+
+  private static boolean temporaryDetach = false;
   
   public static void addReport(String caption, Command command) {
     REPORTS.addReport(caption, command);
@@ -380,6 +382,10 @@ public class Global implements Module {
     return getVarBoolean(VAR_DEBUG);
   }
 
+  public static boolean isTemporaryDetach() {
+    return temporaryDetach;
+  }
+
   public static boolean isVar(String name) {
     return VARS.containsKey(name);
   }
@@ -391,7 +397,7 @@ public class Global implements Module {
   public static boolean nativeConfirm(Object... obj) {
     return MSG_BOXEN.nativeConfirm(obj);
   }
-
+  
   public static <E extends Enum<?> & HasCaption> void registerCaptions(Class<E> clazz) {
     Assert.notNull(clazz);
     registerCaptions(NameUtils.getClassName(clazz), clazz);
@@ -402,9 +408,13 @@ public class Global implements Module {
     Assert.notNull(clazz);
     CAPTIONS.put(BeeUtils.normalize(key), clazz);
   }
-  
+
   public static void sayHuh(Object... obj) {
     MSG_BOXEN.showInfo("Huh ?", obj);
+  }
+
+  public static void setTemporaryDetach(boolean temporaryDetach) {
+    Global.temporaryDetach = temporaryDetach;
   }
 
   public static void setVar(String name, Variable var) {

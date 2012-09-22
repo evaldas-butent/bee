@@ -519,6 +519,18 @@ public class DomUtils {
     }
     return null;
   }
+
+  public static Widget getChildById(HasWidgets parent, String id) {
+    Assert.notNull(parent);
+    Assert.notEmpty(id);
+
+    for (Widget child : parent) {
+      if (idEquals(child, id)) {
+        return child;
+      }
+    }
+    return null;
+  }
   
   public static int getChildOffsetHeight(Widget parent, String id) {
     Widget child = getChild(parent, id);
@@ -1199,7 +1211,8 @@ public class DomUtils {
   }
 
   public static Widget getWidget(String id) {
-    return getPhysicalChild(BeeKeeper.getScreen().getScreenPanel(), id);
+    Widget root = BeeKeeper.getScreen().getScreenPanel();
+    return (root == null) ? null : getPhysicalChild(root, id);
   }
 
   public static int getWidgetCount(HasWidgets container) {
@@ -1232,7 +1245,7 @@ public class DomUtils {
   }
 
   public static boolean idEquals(Element el, String id) {
-    if (el == null) {
+    if (el == null || BeeUtils.isEmpty(id)) {
       return false;
     } else {
       return BeeUtils.same(el.getId(), id);

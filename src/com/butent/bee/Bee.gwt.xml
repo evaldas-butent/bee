@@ -52,5 +52,8 @@
    
   <source path='client'/>
   <source path='shared'/>
-  <super-source path='translatable'/> 
+  <super-source path='translatable'/>
+  
+  <add-linker name="xsiframe"/>
+  <set-configuration-property name="devModeRedirectEnabled" value="true"/>   
 </module>

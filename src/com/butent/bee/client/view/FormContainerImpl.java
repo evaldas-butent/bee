@@ -4,7 +4,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
@@ -155,6 +154,11 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     }
   }
 
+  @Override
+  public String getCaption() {
+    return hasHeader() ? getHeader().getCaption() : null;
+  }
+  
   public int getCommandHeight() {
     return commandHeight;
   }
@@ -372,7 +376,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   protected void onUnload() {
-    if (!BeeKeeper.getScreen().isTemporaryDetach() && getViewPresenter() != null) {
+    if (!Global.isTemporaryDetach() && getViewPresenter() != null) {
       getViewPresenter().onViewUnload();
     }
     super.onUnload();

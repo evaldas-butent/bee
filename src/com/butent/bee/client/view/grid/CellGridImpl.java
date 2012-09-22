@@ -1304,7 +1304,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   @Override
   protected void onUnload() {
-    if (!BeeKeeper.getScreen().isTemporaryDetach()) {
+    if (!Global.isTemporaryDetach()) {
       if (getNewRowPopup() != null) {
         getNewRowPopup().unload();
       }

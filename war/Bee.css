@@ -28,7 +28,7 @@ body, select {
   -webkit-box-orient: horizontal;
 }
 
-.flexBox-vertical, .bee-TreeView, .bee-TabbedPages-container {
+.flexBox-vertical, .bee-TreeView, .bee-TabbedPages-container, .bee-Workspace-container {
   display: box;
   display: -moz-box;
   display: -webkit-box;
@@ -79,7 +79,7 @@ body, select {
   -webkit-box-pack: justify;
 }
 
-.flexible, .bee-TreeView-tree, .bee-TabbedPages-contentPanel {
+.flexible, .bee-TreeView-tree, .bee-TabbedPages-contentPanel, .bee-Workspace-contentPanel {
   box-flex: 1;
   -moz-box-flex: 1;
   -webkit-box-flex: 1;
@@ -488,7 +488,7 @@ body, select {
 }
 
 .bee-Popup {
-  border: 2px solid activeborder;
+  border: 2px solid #b4b4b4;
   border-radius: 6px;
   padding: 5px;
   background-color: #eee;
@@ -702,7 +702,7 @@ body, select {
 
 .bee-DialogBox {
   background-color: WhiteSmoke;
-  border: 1px solid activeborder;
+  border: 1px solid #b4b4b4;
   border-radius: 2px;
 }
 
@@ -1167,7 +1167,7 @@ body, select {
 }
 
 .bee-ModalForm, .bee-NewRow, .bee-EditRow, .bee-ReportOptions {
-  border: 1px solid activeborder;
+  border: 1px solid #b4b4b4;
   border-radius: 2px;
 }
 
@@ -1494,7 +1494,7 @@ body, select {
 }
 .bee-DebugToggle {
   position: absolute;
-  right: 5px;
+  left: 50px;
   top: 10px;
 }
 .bee-AdminShell {
@@ -1504,9 +1504,79 @@ body, select {
   top: 40px;
   bottom: 1px;
 }
-.bee-SplitControls {
-/*   display: none; */
+
+.bee-Workspace-tab {
+  display: inline-block;
+  height: 25px;
+  color: #6D6D6D;
+  font: 13px/25px Arial;
+  background-color: #F2F2F2;
+  border: 1px solid #E4E4E4;
+  padding: 0 10px;
+  cursor: pointer;
 }
+.bee-Workspace-tabSelected {
+  background-color: white;
+  border-bottom-color: transparent;
+  z-index: 1;
+  cursor: default;
+}
+.bee-Workspace-one {
+  border-color: transparent !important;
+}
+.bee-Workspace-one .bee-Workspace-caption {
+  display: none;
+}
+
+.bee-Workspace-dropDown {
+  padding-left: 3px;
+  cursor: pointer;
+  color: #999;
+}
+.bee-Workspace-dropDown:hover {
+  color: #222;
+}
+
+.bee-Workspace-actionPopup {
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 2px;
+}
+.bee-Workspace-actionMenu-item {
+  width: 16px;
+  height: 16px;
+  padding: 2px 4px;
+  cursor: pointer;
+}
+
+.bee-Workspace-action-split {
+  border: 1px solid #bbb;
+}
+.bee-Workspace-action-split:hover {
+  border-color: #00b;
+}
+.bee-Workspace-action-north {
+  width: 14px;
+  height: 7px;
+  border-bottom-width: 8px;
+}
+.bee-Workspace-action-south {
+  width: 14px;
+  height: 7px;
+  border-top-width: 8px;
+}
+.bee-Workspace-action-west {
+  width: 7px;
+  height: 14px;
+  border-right-width: 8px;
+}
+.bee-Workspace-action-east {
+  width: 7px;
+  height: 14px;
+  border-left-width: 8px;
+}
+
 .bee-MainSearchOptionsContainer {
   display: none;
 }

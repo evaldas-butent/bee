@@ -9,6 +9,7 @@ import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
+import com.butent.bee.shared.ui.HasCaption;
 
 import java.util.EnumSet;
 
@@ -27,6 +28,16 @@ public class NewRowPresenter extends AbstractPresenter {
 
     header.setViewPresenter(this);
     formView.setViewPresenter(this);
+  }
+  
+  @Override
+  public String getCaption() {
+    for (Widget child : container) {
+      if (child instanceof HasCaption) {
+        return ((HasCaption) child).getCaption();
+      }
+    }
+    return null;
   }
   
   @Override

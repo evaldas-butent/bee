@@ -19,12 +19,13 @@ import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.HasCaption;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public interface GridCallback extends WidgetCallback, ParentRowEvent.Handler {
+public interface GridCallback extends WidgetCallback, ParentRowEvent.Handler, HasCaption {
 
   int DELETE_CANCEL = -1;
   int DELETE_DEFAULT = 0;
@@ -61,8 +62,6 @@ public interface GridCallback extends WidgetCallback, ParentRowEvent.Handler {
   int beforeDeleteRows(GridPresenter presenter, IsRow activeRow, Collection<RowInfo> selectedRows);
 
   void beforeRefresh(GridPresenter presenter);
-
-  String getCaption();
 
   String getDeleteRowMessage();
 

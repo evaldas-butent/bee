@@ -1,17 +1,7 @@
 package com.butent.bee.client.composite;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.HasAllKeyHandlers;
-import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.event.dom.client.KeyPressEvent;
-import com.google.gwt.event.dom.client.KeyPressHandler;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.BeforeSelectionEvent;
 import com.google.gwt.event.logical.shared.BeforeSelectionHandler;
 import com.google.gwt.event.logical.shared.HasBeforeSelectionHandlers;
@@ -24,7 +14,6 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HasWordWrap;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -32,6 +21,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.CellVector;
 import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.ui.AcceptsCaptions;
 import com.butent.bee.client.ui.UiHelper;
@@ -49,48 +39,23 @@ import java.util.List;
 public class TabBar extends Composite implements HasBeforeSelectionHandlers<Integer>,
     HasSelectionHandlers<Integer>, HasId, HasItems, AcceptsCaptions {
 
-  public interface Tab extends HasAllKeyHandlers, HasClickHandlers, HasWordWrap, HasEnabled {
-    boolean hasWordWrap();
-  }
-
-  private class DelegatePanel extends Composite implements Tab {
+  private class Tab extends Simple implements HasEnabled {
     private boolean enabled = true;
 
-    private DelegatePanel(Widget widget) {
-      DomUtils.makeFocusable(widget);
-      initWidget(widget);
+    private Tab(Widget widget) {
+      super();
+      setWidget(widget);
 
+      DomUtils.makeFocusable(this);
       sinkEvents(Event.ONCLICK | Event.ONKEYDOWN);
     }
 
-    public HandlerRegistration addClickHandler(ClickHandler handler) {
-      return addHandler(handler, ClickEvent.getType());
+    @Override
+    public String getIdPrefix() {
+      return "tab";
     }
 
-    public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
-      return addHandler(handler, KeyDownEvent.getType());
-    }
-
-    public HandlerRegistration addKeyPressHandler(KeyPressHandler handler) {
-      return addDomHandler(handler, KeyPressEvent.getType());
-    }
-
-    public HandlerRegistration addKeyUpHandler(KeyUpHandler handler) {
-      return addDomHandler(handler, KeyUpEvent.getType());
-    }
-
-    public boolean getWordWrap() {
-      if (hasWordWrap()) {
-        return ((HasWordWrap) getWidget()).getWordWrap();
-      } else {
-        return false;
-      }
-    }
-
-    public boolean hasWordWrap() {
-      return getWidget() instanceof HasWordWrap;
-    }
-
+    @Override
     public boolean isEnabled() {
       return enabled;
     }
@@ -143,19 +108,6 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     public void setEnabled(boolean enabled) {
       this.enabled = enabled;
     }
-
-    public void setWordWrap(boolean wrap) {
-      if (hasWordWrap()) {
-        ((HasWordWrap) getWidget()).setWordWrap(wrap);
-      } else {
-        Assert.unsupported("Widget does not implement HasWordWrap");
-      }
-    }
-
-    @Override
-    protected Widget getWidget() {
-      return super.getWidget();
-    }
   }
 
   private static final String DEFAULT_STYLE_PREFIX = "bee-TabBar-";
@@ -174,7 +126,8 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
 
   private final String stylePrefix;
 
-  private DelegatePanel selectedTab = null;
+  private Tab selectedTab = null;
+
   public TabBar(boolean vertical) {
     this(DEFAULT_STYLE_PREFIX, vertical);
   }
@@ -241,7 +194,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
 
   public void focusTab(int index) {
     checkTabIndex(index, 0);
-    DomUtils.setFocus(getTabWidget(index), true);
+    DomUtils.setFocus(getWrapper(index), true);
   }
 
   public String getId() {
@@ -276,13 +229,6 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
       return null;
     }
     return selectedTab.getWidget();
-  }
-
-  public Tab getTab(int index) {
-    if (index < 0 || index >= getItemCount()) {
-      return null;
-    }
-    return getWrapper(index);
   }
 
   public Widget getTabWidget(int index)  {
@@ -386,19 +332,19 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   public void setTabEnabled(int index, boolean enabled) {
     checkTabIndex(index, 0);
 
-    DelegatePanel delPanel = getWrapper(index);
-    delPanel.setEnabled(enabled);
-    setStyleName(delPanel.getElement(), stylePrefix + STYLE_DISABLED, !enabled);
+    Tab wrapper = getWrapper(index);
+    wrapper.setEnabled(enabled);
+    setStyleName(wrapper.getElement(), stylePrefix + STYLE_DISABLED, !enabled);
   }
 
   protected void insertTabWidget(Widget widget, int beforeIndex) {
     checkInsertBeforeTabIndex(beforeIndex);
 
-    DelegatePanel delWidget = new DelegatePanel(widget);
-    delWidget.addStyleName(stylePrefix + STYLE_ITEM);
-    delWidget.addStyleName(getStyle(STYLE_ITEM));
+    Tab wrapper = new Tab(widget);
+    wrapper.addStyleName(stylePrefix + STYLE_ITEM);
+    wrapper.addStyleName(getStyle(STYLE_ITEM));
 
-    panel.insert(delWidget, beforeIndex);
+    panel.insert(wrapper, beforeIndex);
   }
 
   private void checkInsertBeforeTabIndex(int beforeIndex) {
@@ -422,8 +368,8 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     return BeeConst.UNDEF;
   }
   
-  private DelegatePanel getWrapper(int index) {
-    return (DelegatePanel) panel.getWidget(index);
+  private Tab getWrapper(int index) {
+    return (Tab) panel.getWidget(index);
   }
 
   private void setSelectionStyle(Widget item, boolean selected) {

@@ -3,6 +3,7 @@ package com.butent.bee.client.layout;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
@@ -15,9 +16,14 @@ public class Simple extends SimplePanel implements HasId, RequiresResize, Provid
 
   public Simple() {
     super();
-    DomUtils.createId(this, getIdPrefix());
+    init();
   }
   
+  public Simple(Widget child) {
+    super(child);
+    init();
+  }
+
   public String getId() {
     return DomUtils.getId(this);
   }
@@ -35,5 +41,9 @@ public class Simple extends SimplePanel implements HasId, RequiresResize, Provid
 
   public void setId(String id) {
     DomUtils.setId(this, id);
+  }
+  
+  private void init() {
+    DomUtils.createId(this, getIdPrefix());
   }
 }

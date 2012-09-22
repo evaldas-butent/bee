@@ -9,7 +9,6 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
-import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.JsData;
@@ -34,7 +33,6 @@ import com.butent.bee.client.render.RenderableColumn;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridCallback;
-import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -126,8 +124,6 @@ public class GridFactory {
 
   private static final Map<String, GridDescription> descriptionCache = Maps.newHashMap();
   private static final Map<String, GridCallback> gridCallbacks = Maps.newHashMap();
-
-  private static Widget loadingWidget = null;
 
   public static void clearDescriptionCache() {
     descriptionCache.clear();
@@ -356,7 +352,6 @@ public class GridFactory {
   }
 
   public static void openGrid(String gridName, GridCallback gridCallback, GridOptions gridOptions) {
-    BeeKeeper.getScreen().updateActivePanel(ensureLoadingWidget());
     createGrid(gridName, gridCallback, EnumSet.of(UiOption.ROOT), gridOptions, SHOW);
   }
 
@@ -456,13 +451,6 @@ public class GridFactory {
     }
 
     presenterCallback.onCreate(presenter);
-  }
-
-  private static Widget ensureLoadingWidget() {
-    if (loadingWidget == null) {
-      loadingWidget = new BeeImage(Global.getImages().loading());
-    }
-    return loadingWidget;
   }
 
   private static void getInitialRowSet(final GridDescription gridDescription,

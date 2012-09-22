@@ -108,6 +108,11 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     return getView().getContent().getActiveRow();
   }
 
+  @Override
+  public String getCaption() {
+    return getView().getCaption();
+  }
+  
   public Provider getDataProvider() {
     return dataProvider;
   }

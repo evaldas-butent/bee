@@ -1,14 +1,10 @@
 package com.butent.bee.client.screen;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.HasHorizontalAlignment;
-import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -22,22 +18,16 @@ import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
-import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Complex;
-import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
-import com.butent.bee.client.layout.TilePanel;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.utils.ServiceCommand;
-import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
-import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.Service;
@@ -50,52 +40,10 @@ import com.butent.bee.shared.utils.NameUtils;
 
 public class ScreenImpl implements Screen {
   
-  private class BlankTile extends CustomWidget {
-    private BlankTile() {
-      super(Document.get().createDivElement());
-      setStyleName("bee-BlankTile");
-    }
-
-    @Override
-    public String getIdPrefix() {
-      return "blank";
-    }
-  }
-
-  private class SplitCommand extends Command {
-    Direction direction = null;
-    boolean close = false;
-
-    public SplitCommand(boolean close) {
-      super();
-      this.close = close;
-    }
-
-    public SplitCommand(Direction direction) {
-      super();
-      this.direction = direction;
-    }
-
-    @Override
-    public void execute() {
-      if (close) {
-        closePanel();
-      } else {
-        createPanel(direction);
-      }
-    }
-  }
-
-  private static final String ACTIVE_BLANK = "bee-activeBlank";
-  private static final String ACTIVE_CONTENT = "bee-activeContent";
-  
   private LayoutPanel rootPanel;
 
-  private int minTileSize = 20;
-  private boolean temporaryDetach = false;
-
   private Split screenPanel = null;
-  private TilePanel activePanel = null;
+  private Workspace workspace = null;
 
   private HasWidgets commandPanel = null;
   private HasWidgets menuPanel = null;
@@ -110,89 +58,53 @@ public class ScreenImpl implements Screen {
   public ScreenImpl() {
   }
 
-  public void activatePanel(TilePanel np) {
-    Assert.notNull(np);
-
-    TilePanel op = getActivePanel();
-    if (op == np) {
-      return;
-    }
-
-    deactivatePanel();
-
-    if (!isRootTile(np)) {
-      Widget w = np.getCenter();
-
-      if (w instanceof BlankTile) {
-        w.addStyleName(ACTIVE_BLANK);
-      } else if (w != null) {
-        np.getWidgetContainerElement(w).addClassName(ACTIVE_CONTENT);
-      }
-    }
-
-    setActivePanel(np);
-  }
-  
+  @Override
   public void addCommandItem(Widget widget) {
     Assert.notNull(widget);
-    widget.addStyleName("bee-MainCommandPanelItem");
-    getCommandPanel().add(widget);
+    if (getCommandPanel() == null) {
+      BeeKeeper.getLog().severe(getName(), "command panel not available");
+    } else {
+      widget.addStyleName("bee-MainCommandPanelItem");
+      getCommandPanel().add(widget);
+    }
   }
 
+  @Override
   public void closeWidget(Widget widget) {
     Assert.notNull(widget, "closeWidget: view widget is null");
-
-    TilePanel panel = getPanel(widget);
-    if (panel == null) {
-      notifyWarning("closeWidget: panel not found");
-      return;
-    }
-
-    if (panel != getActivePanel()) {
-      activatePanel(panel);
-    }
-    closePanel();
+    getWorkspace().closeWidget(widget);
   }
 
+  @Override
   public void end() {
   }
 
-  public TilePanel getActivePanel() {
-    return activePanel;
-  }
-
+  @Override
   public int getActivePanelHeight() {
-    TilePanel p = getActivePanel();
-    Assert.notNull(p);
-    return p.getOffsetHeight();
+    return getWorkspace().getActivePanel().getOffsetHeight();
   }
 
+  @Override
   public int getActivePanelWidth() {
-    TilePanel p = getActivePanel();
-    Assert.notNull(p);
-    return p.getOffsetWidth();
+    return getWorkspace().getActivePanel().getOffsetWidth();
   }
 
   @Override
   public Widget getActiveWidget() {
-    TilePanel p = getActivePanel();
-    if (p != null) {
-      Widget w = p.getCenter();
-      if (w != null && !(w instanceof BlankTile)) {
-        return w;
-      }
-    }
-    return null;
+    return getWorkspace().getActiveContent();
   }
 
+  @Override
   public HasWidgets getCommandPanel() {
     return commandPanel;
   }
 
+  @Override
   public String getName() {
     return NameUtils.getClassName(getClass());
   }
 
+  @Override
   public int getPriority(int p) {
     switch (p) {
       case PRIORITY_INIT:
@@ -206,132 +118,95 @@ public class ScreenImpl implements Screen {
     }
   }
 
+  @Override
   public Split getScreenPanel() {
     return screenPanel;
   }
 
+  @Override
   public void init() {
   }
 
-  public boolean isTemporaryDetach() {
-    return temporaryDetach;
-  }
-
+  @Override
   public void notifyInfo(String... messages) {
     if (getNotification() != null) {
       getNotification().info(messages);
     }
   }
 
+  @Override
   public void notifySevere(String... messages) {
     if (getNotification() != null) {
       getNotification().severe(messages);
     }
   }
 
+  @Override
   public void notifyWarning(String... messages) {
     if (getNotification() != null) {
       getNotification().warning(messages);
     }
   }
 
+  @Override
   public void setRootPanel(LayoutPanel rootPanel) {
     this.rootPanel = rootPanel;
   }
 
+  @Override
   public void showGrid(Object data, String... cols) {
-    updateActiveQuietly(Global.simpleGrid(data, cols), ScrollBars.BOTH);
+    Widget grid = Global.simpleGrid(data, cols);
+    if (grid != null) {
+      updateActivePanel(grid, ScrollBars.BOTH);
+    }
   }
 
+  @Override
+  public void showInfo() {
+    getWorkspace().showInfo();
+  }
+
+  @Override
   public void showResource(BeeResource resource) {
     Assert.notNull(resource);
     updateActivePanel(new ResourceEditor(resource));
   }
-
+  
+  @Override
   public void start() {
     createUi();
   }
 
+  @Override
   public void updateActivePanel(Widget w) {
     updateActivePanel(w, ScrollBars.NONE);
   }
 
+  @Override
   public void updateActivePanel(Widget w, ScrollBars scroll) {
-    Assert.notNull(w);
-
-    TilePanel p = getActivePanel();
-    Assert.notNull(p, "panel not available");
-
-    deactivatePanel();
-    p.clear();
-    p.add(w, scroll);
-    activatePanel(p);
+    getWorkspace().updateActivePanel(w, scroll);
   }
 
-  public void updateActiveQuietly(Widget w, ScrollBars scroll) {
-    if (w != null) {
-      updateActivePanel(w, scroll);
-    }
-  }
-
+  @Override
   public void updateCommandPanel(Widget w) {
     updatePanel(getCommandPanel(), w);
   }
 
+  @Override
   public void updateMenu(Widget w) {
     updatePanel(getMenuPanel(), w);
   }
 
+  @Override
   public void updateSignature(String userSign) {
     if (getSignature() != null) {
       getSignature().getElement().setInnerHTML(userSign);
     }
   }
 
-  protected void closePanel() {
-    TilePanel op = getActivePanel();
-    Assert.notNull(op, "active panel not available");
-
-    if (!(op.getCenter() instanceof BlankTile)) {
-      deactivatePanel();
-      op.clear();
-      op.add(new BlankTile());
-      activatePanel(op);
-      return;
-    }
-
-    if (!(op.getParent() instanceof TilePanel)) {
-      return;
-    }
-
-    TilePanel parent = (TilePanel) op.getParent();
-    TilePanel np = null;
-
-    for (TilePanel w : parent.getPanels()) {
-      if (w != op) {
-        np = w;
-        break;
-      }
-    }
-
-    Assert.notNull(np, "sibling panel not found");
-
-    deactivatePanel();
-
-    setTemporaryDetach(true);
-    np.move(parent);
-    setTemporaryDetach(false);
-
-    while (parent.getCenter() instanceof TilePanel) {
-      parent = (TilePanel) parent.getCenter();
-    }
-
-    activatePanel(parent);
-  }
-
   protected void createUi() {
     Widget w;
-    Split p = new Split(2);
+    Split p = new Split(0);
     p.addStyleName("bee-Screen");
 
     w = initNorth();
@@ -356,7 +231,7 @@ public class ScreenImpl implements Screen {
 
     w = initCenter();
     if (w != null) {
-      p.add(w, ScrollBars.BOTH);
+      p.add(w);
     }
 
     getRootPanel().add(p);
@@ -382,11 +257,9 @@ public class ScreenImpl implements Screen {
   }
 
   protected Widget initCenter() {
-    TilePanel p = new TilePanel();
-    p.add(new BlankTile());
-
-    setActivePanel(p);
-    return p;
+    Workspace area = new Workspace();
+    setWorkspace(area);
+    return area;
   }
 
   protected Widget initEast() {
@@ -440,37 +313,17 @@ public class ScreenImpl implements Screen {
   }
 
   protected Widget initSouth() {
-    BeeLayoutPanel p = new BeeLayoutPanel();
-
-    Horizontal hor = new Horizontal();
-    hor.addStyleName("bee-SplitControls");
-
-    hor.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
-
-    hor.add(new BeeButton("N", new SplitCommand(Direction.NORTH)));
-    hor.add(new BeeButton("S", new SplitCommand(Direction.SOUTH)));
-    hor.add(new BeeButton("E", new SplitCommand(Direction.EAST)));
-    hor.add(new BeeButton("W", new SplitCommand(Direction.WEST)));
-
-    BeeImage close = new BeeImage(Global.getImages().close(), new SplitCommand(true));
-    hor.add(close);
-    hor.setCellWidth(close, 32);
-    hor.setCellHorizontalAlignment(close, HasHorizontalAlignment.ALIGN_RIGHT);
-
-    p.add(hor);
-    p.setWidgetRightWidth(hor, 240, Unit.PX, 200, Unit.PX);
-
-    return p;
+    return null;
   }
-
+  
   protected Widget initWest() {
     TabbedPages tp = new TabbedPages();
 
     tp.add(Global.getFavorites(), new BeeImage(Global.getImages().bookmark()));
-    tp.addTabStyle(tp.getWidgetCount() - 1, "bee-FavoriteTab");
+    tp.setTabStyle(tp.getPageCount() - 1, "bee-FavoriteTab", true);
 
     tp.add(Global.getReports(), "Ataskaitos");
-    tp.addTabStyle(tp.getWidgetCount() - 1, "bee-ReportTab");
+    tp.setTabStyle(tp.getPageCount() - 1, "bee-ReportTab", true);
 
     Flow admPanel = new Flow();
     admPanel.addStyleName("bee-AdminPanel");
@@ -500,11 +353,15 @@ public class ScreenImpl implements Screen {
     Shell shell = new Shell();
     shell.addStyleName("bee-AdminShell");
     admPanel.add(shell);
-    
+
     tp.add(admPanel, "Admin");
-    tp.addTabStyle(tp.getWidgetCount() - 1, "bee-AdminTab");
+    tp.setTabStyle(tp.getPageCount() - 1, "bee-AdminTab", true);
 
     return tp;
+  }
+
+  protected void setMenuPanel(HasWidgets menuPanel) {
+    this.menuPanel = menuPanel;
   }
 
   protected void setNotification(Notification notification) {
@@ -514,11 +371,11 @@ public class ScreenImpl implements Screen {
   protected void setScreenPanel(Split screenPanel) {
     this.screenPanel = screenPanel;
   }
-
+  
   protected void setSignature(Widget signature) {
     this.signature = signature;
   }
-  
+
   private Widget createLogo() {
     BeeImage logo = new BeeImage(Global.getImages().logo2().getSafeUri());
     logo.addStyleName("bee-Logo");
@@ -540,58 +397,6 @@ public class ScreenImpl implements Screen {
     return container;
   }
 
-  private void createPanel(Direction direction) {
-    TilePanel p = getActivePanel();
-    Assert.notNull(p);
-
-    int z = direction.isHorizontal() ? p.getCenterWidth() : p.getCenterHeight();
-    z = Math.round((z - p.getSplitterSize()) / 2);
-    if (z < getMinTileSize()) {
-      Global.showError(Global.CONSTANTS.no(), z);
-      return;
-    }
-
-    deactivatePanel();
-
-    TilePanel center = new TilePanel();
-    Widget w = p.getCenter();
-    if (w != null) {
-      ScrollBars scroll = p.getWidgetScroll(w);
-
-      setTemporaryDetach(true);
-      p.remove(w);
-      setTemporaryDetach(false);
-
-      center.add(w, scroll);
-      center.onLayout();
-    }
-
-    TilePanel tp = new TilePanel();
-    BlankTile bt = new BlankTile();
-    tp.add(bt);
-
-    p.insert(tp, direction, z, null, null, p.getSplitterSize());
-    p.add(center);
-
-    activatePanel(tp);
-  }
-
-  private void deactivatePanel() {
-    TilePanel op = getActivePanel();
-
-    if (op != null && !isRootTile(op)) {
-      Widget w = op.getCenter();
-
-      if (w instanceof BlankTile) {
-        w.removeStyleName(ACTIVE_BLANK);
-      } else if (w != null) {
-        op.getWidgetContainerElement(w).removeClassName(ACTIVE_CONTENT);
-      }
-    }
-
-    setActivePanel(null);
-  }
-
   private BeeCheckBox getLogToggle() {
     return logToggle;
   }
@@ -604,29 +409,8 @@ public class ScreenImpl implements Screen {
     return menuPanel;
   }
 
-  private int getMinTileSize() {
-    return minTileSize;
-  }
-
-  private TilePanel getPanel(Widget w) {
-    for (Widget p = w; p != null; p = p.getParent()) {
-      if (p instanceof TilePanel) {
-        return (TilePanel) p;
-      }
-    }
-    return null;
-  }
-
-  private boolean isRootTile(TilePanel p) {
-    if (p == null) {
-      return false;
-    } else {
-      return !(p.getParent() instanceof TilePanel);
-    }
-  }
-
-  private void setActivePanel(TilePanel p) {
-    activePanel = p;
+  private Workspace getWorkspace() {
+    return workspace;
   }
 
   private void setCommandPanel(HasWidgets commandPanel) {
@@ -637,14 +421,10 @@ public class ScreenImpl implements Screen {
     this.logToggle = logToggle;
   }
 
-  private void setMenuPanel(HasWidgets menuPanel) {
-    this.menuPanel = menuPanel;
+  private void setWorkspace(Workspace workspace) {
+    this.workspace = workspace;
   }
-
-  private void setTemporaryDetach(boolean temporaryDetach) {
-    this.temporaryDetach = temporaryDetach;
-  }
-
+  
   private void updatePanel(HasWidgets p, Widget w) {
     if (p == null) {
       notifyWarning("updatePanel: panel is null");

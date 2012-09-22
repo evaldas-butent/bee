@@ -1346,6 +1346,25 @@ public class StyleUtils {
     makeRelative(obj.getElement());
   }
 
+  public static void occupy(Element el) {
+    Assert.notNull(el);
+    occupy(el.getStyle());
+  }
+  
+  public static void occupy(Style st) {
+    Assert.notNull(st);
+    st.setPosition(Position.ABSOLUTE);
+    st.setLeft(0, Unit.PX);
+    st.setRight(0, Unit.PX);
+    st.setTop(0, Unit.PX);
+    st.setBottom(0, Unit.PX);
+  }
+
+  public static void occupy(UIObject obj) {
+    Assert.notNull(obj);
+    occupy(obj.getElement());
+  }
+  
   public static Pair<Double, Unit> parseCssLength(String input) {
     Assert.notEmpty(input);
     Double value = null;

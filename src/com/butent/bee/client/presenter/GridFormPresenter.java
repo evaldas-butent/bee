@@ -50,6 +50,11 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     this.editSave = editSave;
   }
 
+  @Override
+  public String getCaption() {
+    return header.getCaption();
+  }
+  
   public FormView getForm() {
     for (Widget child : container) {
       if (child instanceof FormView) {

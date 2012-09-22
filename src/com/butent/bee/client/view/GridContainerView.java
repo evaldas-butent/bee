@@ -10,6 +10,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.ui.HasCaption;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,7 +20,8 @@ import java.util.List;
  * and get it's content.
  */
 
-public interface GridContainerView extends View, HasAllDragAndDropHandlers, HasGridView, Printable {
+public interface GridContainerView extends View, HasAllDragAndDropHandlers, HasGridView, Printable,
+    HasCaption {
 
   void bind();
 
@@ -28,6 +30,6 @@ public interface GridContainerView extends View, HasAllDragAndDropHandlers, HasG
       GridFactory.GridOptions gridOptions);
 
   List<String> getFavorite();
-  
+
   HeaderView getHeader();
 }

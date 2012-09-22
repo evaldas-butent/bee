@@ -1,7 +1,8 @@
 package com.butent.bee.client.layout;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -12,97 +13,148 @@ import com.google.gwt.event.logical.shared.HasSelectionHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.layout.client.Layout.AnimationCallback;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.user.client.ui.AnimatedLayout;
-import com.google.gwt.user.client.ui.DeckLayoutPanel;
+import com.google.gwt.user.client.ui.ProvidesResize;
+import com.google.gwt.user.client.ui.RequiresResize;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.utils.Command;
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
-public class TabbedPages extends Flow implements AnimatedLayout,
+public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
     HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer> {
+  
+  private static class Deck extends Complex {
 
-  private class PageHandler implements BeforeSelectionHandler<Integer> {
-    public void onBeforeSelection(BeforeSelectionEvent<Integer> event) {
-      String id = DomUtils.getId(getWidget(event.getItem()));
-      if (BeeUtils.isEmpty(id)) {
+    private String visibleId = null;
+    private final Set<String> pendingResize = Sets.newHashSet();
+
+    private Deck() {
+      super(Position.RELATIVE);
+    }
+
+    @Override
+    public String getIdPrefix() {
+      return "deck";
+    }
+
+    @Override
+    public void insert(Widget w, int beforeIndex) {
+      DomUtils.ensureId(w, "dc");
+      StyleUtils.occupy(w);
+      StyleUtils.hideDisplay(w);
+
+      super.insert(w, beforeIndex);
+    }
+
+    @Override
+    public void onResize() {
+      pendingResize.clear();
+
+      for (Widget child : getChildren()) {
+        if (child instanceof RequiresResize) {
+          String id = DomUtils.getId(child);
+          if (BeeUtils.same(id, getVisibleId())) {
+            ((RequiresResize) child).onResize();
+            BeeKeeper.getLog().debug("resize visible", id);
+          } else {
+            pendingResize.add(id);
+          }
+        }
+      }
+    }
+
+    @Override
+    public boolean remove(Widget w) {
+      boolean removed = super.remove(w);
+
+      if (removed) {
+        String id = DomUtils.getId(w);
+        if (BeeUtils.same(id, getVisibleId())) {
+          setVisibleId(null);
+        }
+        pendingResize.remove(id);
+      }
+
+      return removed;
+    }
+
+    private String getVisibleId() {
+      return visibleId;
+    }
+
+    private Widget getVisibleWidget() {
+      return BeeUtils.isEmpty(getVisibleId()) ? null : DomUtils.getChildById(this, getVisibleId()); 
+    }
+    
+    private void setVisibleId(String visibleId) {
+      this.visibleId = visibleId;
+    }
+
+    private void showWidget(int index) {
+      Widget widget = getWidget(index);
+      if (DomUtils.idEquals(widget, getVisibleId())) {
         return;
       }
-      Command onPage = pageCommands.get(id);
-      if (onPage != null) {
-        onPage.execute();
+      
+      if (!BeeUtils.isEmpty(getVisibleId())) {
+        StyleUtils.hideDisplay(getVisibleWidget());
+      }
+
+      StyleUtils.unhideDisplay(widget);
+      String id = DomUtils.getId(widget);
+      setVisibleId(id);
+      
+      if (pendingResize.remove(id)) {
+        ((RequiresResize) widget).onResize();
+        BeeKeeper.getLog().debug("resize pending", id);
       }
     }
   }
 
   private class Tab extends Simple implements HasClickHandlers {
-    private boolean replacingWidget = false;
 
-    public Tab(Widget child) {
+    private Tab(Widget child) {
       setWidget(child);
       setStyleName(getStylePrefix() + "tab");
     }
 
+    @Override
     public HandlerRegistration addClickHandler(ClickHandler handler) {
       return addDomHandler(handler, ClickEvent.getType());
     }
-    
+
     @Override
     public String getIdPrefix() {
       return "tab";
     }
 
-    @Override
-    public boolean remove(Widget w) {
-      int index = tabs.indexOf(this);
-      if (replacingWidget || index < 0) {
-        return super.remove(w);
-      } else {
-        return TabbedPages.this.remove(index);
-      }
-    }
-
-    public void setSelected(boolean selected) {
+    private void setSelected(boolean selected) {
       setStyleName(getStylePrefix() + "tabSelected", selected);
-    }
-
-    @Override
-    public void setWidget(Widget w) {
-      replacingWidget = true;
-      super.setWidget(w);
-      replacingWidget = false;
     }
   }
 
-  public static final String DEFAULT_STYLE_PREFIX = "bee-TabbedPages-";
-
+  private static final String DEFAULT_STYLE_PREFIX = "bee-TabbedPages-";
   private static final String CONTENT_STYLE_SUFFIX = "content";
 
-  private final DeckLayoutPanel deckPanel = new DeckLayoutPanel();
-  private final Flow tabBar = new Flow();
+  private final String stylePrefix;
 
-  private final List<Tab> tabs = Lists.newArrayList();
+  private final Flow tabBar = new Flow();
+  private final Deck deckPanel = new Deck();
+
   private int selectedIndex = BeeConst.UNDEF;
 
-  private final Map<String, Command> pageCommands = Maps.newHashMap();
-
-  private final String stylePrefix;
-  
   public TabbedPages() {
     this(DEFAULT_STYLE_PREFIX);
   }
-  
+
   public TabbedPages(String stylePrefix) {
     super();
     this.stylePrefix = stylePrefix;
@@ -122,30 +174,16 @@ public class TabbedPages extends Flow implements AnimatedLayout,
     Assert.untouchable(getClass().getName() + ": cannot add widget without tab");
   }
 
-  public void add(Widget child, SafeHtml html) {
-    add(child, html.asString(), true);
+  public void add(Widget content, String text) {
+    add(content, text, false);
   }
 
-  public void add(Widget child, String text) {
-    insert(child, text, getWidgetCount());
+  public void add(Widget content, String text, boolean asHtml) {
+    add(content, createTabWidget(text, asHtml));
   }
 
-  public void add(Widget child, String text, Command onPage) {
-    add(child, text);
-    addCommand(child, onPage);
-  }
-
-  public void add(Widget child, String text, boolean asHtml) {
-    insert(child, text, asHtml, getWidgetCount());
-  }
-
-  public void add(Widget child, Widget tab) {
-    insert(child, tab, getWidgetCount());
-  }
-
-  public void add(Widget child, Widget tab, Command onPage) {
-    add(child, tab);
-    addCommand(child, onPage);
+  public void add(Widget content, Widget tab) {
+    insertPage(content, new Tab(tab));
   }
 
   public HandlerRegistration addBeforeSelectionHandler(BeforeSelectionHandler<Integer> handler) {
@@ -156,34 +194,12 @@ public class TabbedPages extends Flow implements AnimatedLayout,
     return addHandler(handler, SelectionEvent.getType());
   }
 
-  public void addTabStyle(int index, String style) {
-    checkIndex(index);
-    tabs.get(index).addStyleName(style);
-  }
-  
-  public void animate(int duration) {
-    animate(duration, null);
+  public int getContentIndex(Widget content) {
+    return deckPanel.getWidgetIndex(content);
   }
 
-  public void animate(int duration, AnimationCallback callback) {
-    deckPanel.animate(duration, callback);
-  }
-
-  @Override
-  public void clear() {
-    Iterator<Widget> it = iterator();
-    while (it.hasNext()) {
-      it.next();
-      it.remove();
-    }
-  }
-
-  public void forceLayout() {
-    deckPanel.forceLayout();
-  }
-
-  public int getAnimationDuration() {
-    return deckPanel.getAnimationDuration();
+  public Widget getContentWidget(int index) {
+    return deckPanel.getWidget(index);
   }
 
   @Override
@@ -191,107 +207,71 @@ public class TabbedPages extends Flow implements AnimatedLayout,
     return "tabbed";
   }
 
+  public int getPageCount() {
+    return deckPanel.getWidgetCount();
+  }
+
   public int getSelectedIndex() {
     return selectedIndex;
   }
 
+  public Widget getSelectedWidget() {
+    return (getSelectedIndex() >= 0) ? getContentWidget(getSelectedIndex()) : null;
+  }
+
   public Widget getTabWidget(int index) {
     checkIndex(index);
-    return tabs.get(index).getWidget();
+    return getTab(index).getWidget();
   }
 
-  public Widget getTabWidget(Widget child) {
-    checkChild(child);
-    return getTabWidget(getWidgetIndex(child));
+  public void insert(Widget content, String text, boolean asHtml, int beforeIndex) {
+    insert(content, createTabWidget(text, asHtml), beforeIndex);
   }
 
-  @Override
-  public Widget getWidget(int index) {
-    return deckPanel.getWidget(index);
+  public void insert(Widget content, String text, int beforeIndex) {
+    insert(content, text, false, beforeIndex);
   }
 
-  @Override
-  public int getWidgetCount() {
-    return deckPanel.getWidgetCount();
-  }
-
-  @Override
-  public int getWidgetIndex(Widget child) {
-    return deckPanel.getWidgetIndex(child);
-  }
-
-  public void insert(Widget child, SafeHtml html, int beforeIndex) {
-    insert(child, html.asString(), true, beforeIndex);
-  }
-
-  public void insert(Widget child, String text, boolean asHtml, int beforeIndex) {
-    Widget contents;
-    if (asHtml) {
-      contents = new Html(text);
-    } else {
-      contents = new BeeLabel(text);
-    }
-    insert(child, contents, beforeIndex);
-  }
-
-  public void insert(Widget child, String text, int beforeIndex) {
-    insert(child, text, false, beforeIndex);
-  }
-
-  public void insert(Widget child, Widget tab, int beforeIndex) {
-    insert(child, new Tab(tab), beforeIndex);
-  }
-
-  public boolean isAnimationVertical() {
-    return deckPanel.isAnimationVertical();
+  public void insert(Widget content, Widget tab, int beforeIndex) {
+    insertPage(content, new Tab(tab), beforeIndex);
   }
   
   @Override
-  public Iterator<Widget> iterator() {
-    return deckPanel.iterator();
+  public void onResize() {
+    for (Widget child : getChildren()) {
+      if (child instanceof RequiresResize) {
+        ((RequiresResize) child).onResize();
+      }
+    }
   }
 
-  @Override
-  public boolean remove(int index) {
-    if ((index < 0) || (index >= getWidgetCount())) {
-      return false;
-    }
+  public void removePage(int index) {
+    checkIndex(index);
 
-    Widget child = getWidget(index);
-
-    tabBar.remove(index);
-    Tab tab = tabs.remove(index);
-    tab.getWidget().removeFromParent();
+    int height = isAttached() ? tabBar.getOffsetHeight() : BeeConst.UNDEF;
     
-    deckPanel.remove(child);
-    child.removeStyleName(stylePrefix + CONTENT_STYLE_SUFFIX);
+    tabBar.remove(index);
+    deckPanel.remove(index);
 
     if (index == getSelectedIndex()) {
       setSelectedIndex(BeeConst.UNDEF);
-      if (getWidgetCount() > 0) {
-        selectTab(0);
+      if (getPageCount() > 0) {
+        selectPage(Math.min(index, getPageCount() - 1));
       }
     } else if (index < getSelectedIndex()) {
       setSelectedIndex(getSelectedIndex() - 1);
     }
-    return true;
-  }
 
-  @Override
-  public boolean remove(Widget w) {
-    int index = getWidgetIndex(w);
-    if (BeeConst.isUndef(index)) {
-      return false;
+    if (isAttached()) {
+      checkLayout(height);
     }
-
-    return remove(index);
   }
 
-  public void selectTab(int index) {
-    selectTab(index, true);
+  public void selectPage(int index) {
+    selectPage(index, true);
   }
 
-  public void selectTab(int index, boolean fireEvents) {
+  public void selectPage(int index, boolean fireEvents) {
     checkIndex(index);
     if (index == getSelectedIndex()) {
       return;
@@ -305,11 +285,11 @@ public class TabbedPages extends Flow implements AnimatedLayout,
     }
 
     if (!BeeConst.isUndef(getSelectedIndex())) {
-      tabs.get(getSelectedIndex()).setSelected(false);
+      getTab(getSelectedIndex()).setSelected(false);
     }
 
     deckPanel.showWidget(index);
-    tabs.get(index).setSelected(true);
+    getTab(index).setSelected(true);
 
     setSelectedIndex(index);
 
@@ -318,103 +298,76 @@ public class TabbedPages extends Flow implements AnimatedLayout,
     }
   }
 
-  public void selectTab(Widget child) {
-    selectTab(getWidgetIndex(child));
-  }
-
-  public void selectTab(Widget child, boolean fireEvents) {
-    selectTab(getWidgetIndex(child), fireEvents);
-  }
-
-  public void setAnimationDuration(int duration) {
-    deckPanel.setAnimationDuration(duration);
-  }
-
-  public void setAnimationVertical(boolean isVertical) {
-    deckPanel.setAnimationVertical(isVertical);
-  }
-
-  public void setTabHtml(int index, SafeHtml html) {
-    setTabHtml(index, html.asString());
-  }
-
-  public void setTabHtml(int index, String html) {
+  public void setTabStyle(int index, String style, boolean add) {
     checkIndex(index);
-    tabs.get(index).setWidget(new Html(html));
+    getTab(index).setStyleName(style, add);
   }
 
-  public void setTabText(int index, String text) {
-    checkIndex(index);
-    tabs.get(index).setWidget(new BeeLabel(text));
-  }
-
-  @Override
-  protected void doAttachChildren() {
-    super.doAttachChildren();
-    tabBar.onAttach();
-  }
-
-  @Override
-  protected void doDetachChildren() {
-    super.doDetachChildren();
-    tabBar.onDetach();
-  }
-
-  private void addCommand(Widget child, Command onPage) {
-    if (onPage == null) {
-      return;
-    }
-    String id = DomUtils.getId(child);
-    Assert.notEmpty(id, "page widget has no id");
-
-    if (pageCommands.isEmpty()) {
-      addBeforeSelectionHandler(new PageHandler());
-    }
-    pageCommands.put(id, onPage);
-  }
-
-  private void checkChild(Widget child) {
-    Assert.nonNegative(getWidgetIndex(child), "Child is not a part of this panel");
-  }
-
-  private void checkIndex(int index) {
-    Assert.betweenExclusive(index, 0, getWidgetCount(), "Index out of bounds");
-  }
-
-  private String getStylePrefix() {
+  protected String getStylePrefix() {
     return stylePrefix;
   }
 
-  private void insert(final Widget child, Tab tab, int beforeIndex) {
-    Assert.notNull(child, "widget is null");
-    Assert.notNull(tab, "tab is null");
-    Assert.betweenInclusive(beforeIndex, 0, getWidgetCount(), "beforeIndex out of bounds");
-    
-    int index = beforeIndex;
-    int x = getWidgetIndex(child);
-    if (!BeeConst.isUndef(x)) {
-      remove(child);
-      if (x < index) {
-        index--;
+  private void checkIndex(int index) {
+    Assert.betweenExclusive(index, 0, getPageCount(), "page index out of bounds");
+  }
+  
+  private void checkLayout(final int height) {
+    Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
+      @Override
+      public void execute() {
+        if (tabBar.getOffsetHeight() != height) {
+          BeeKeeper.getLog().debug(height, tabBar.getOffsetHeight());
+          deckPanel.onResize();
+        }
       }
-    }
+    });
+  }
+  
+  private Widget createTabWidget(String text, boolean asHtml) {
+    return asHtml ? new Html(text) : new BeeLabel(text);
+  }
+  
+  private Tab getTab(int index) {
+    return (Tab) tabBar.getWidget(index);
+  }
 
-    tabs.add(index, tab);
-    tabBar.insert(tab, index);
+  private void insertPage(Widget content, Tab tab) {
+    insertPage(content, tab, getPageCount());
+  }
+  
+  private void insertPage(Widget content, Tab tab, int before) {
+    Assert.notNull(content, "page content is null");
+    Assert.notNull(tab, "page tab is null");
+    Assert.betweenInclusive(before, 0, getPageCount(), "insert page: beforeIndex out of bounds");
+    
+    int height = isAttached() ? tabBar.getOffsetHeight() : BeeConst.UNDEF;
+    tabBar.insert(tab, before);
+   
+    final String tabId = tab.getId();
 
     tab.addClickHandler(new ClickHandler() {
+      @Override
       public void onClick(ClickEvent event) {
-        selectTab(child);
+        for (int i = 0; i < getPageCount(); i++) {
+          if (getTab(i).getId().equals(tabId)) {
+            selectPage(i);
+            break;
+          }
+        }
       }
     });
 
-    deckPanel.insert(child, index);
-    child.addStyleName(stylePrefix + CONTENT_STYLE_SUFFIX);
+    deckPanel.insert(content, before);
+    content.addStyleName(stylePrefix + CONTENT_STYLE_SUFFIX);
 
     if (BeeConst.isUndef(getSelectedIndex())) {
-      selectTab(0);
-    } else if (getSelectedIndex() >= index) {
+      selectPage(0);
+    } else if (getSelectedIndex() >= before) {
       setSelectedIndex(getSelectedIndex() + 1);
+    }
+    
+    if (isAttached()) {
+      checkLayout(height);
     }
   }
 

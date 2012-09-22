@@ -20,7 +20,6 @@ import com.google.gwt.user.client.ui.HasHTML;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.IndexedPanel;
-import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.ProvidesResize;
 import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.Widget;
@@ -40,9 +39,8 @@ import java.util.NoSuchElementException;
  * header for each child which the user can click to display.
  */
 
-public class Stack extends ResizeComposite implements HasWidgets,
-    ProvidesResize, IndexedPanel.ForIsWidget, AnimatedLayout,
-    HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>, HasId {
+public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize, IndexedPanel,
+    AnimatedLayout, HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>, HasId {
 
   private class Header extends Composite implements HasClickHandlers {
     private Header(Widget child) {
@@ -96,14 +94,6 @@ public class Stack extends ResizeComposite implements HasWidgets,
     DomUtils.createId(this, getIdPrefix());
   }
 
-  public void add(IsWidget widget, IsWidget header, double headerSize) {
-    this.add(widget.asWidget(), header.asWidget(), headerSize);
-  }
-
-  public void add(IsWidget widget, String header, boolean asHtml, double headerSize) {
-    this.add(widget.asWidget(), header, asHtml, headerSize);
-  }
-  
   public void add(Widget w) {
     Assert.unsupported("Single-argument add() is not supported for Stack");
   }
@@ -225,10 +215,6 @@ public class Stack extends ResizeComposite implements HasWidgets,
 
   public int getWidgetCount() {
     return layoutPanel.getWidgetCount() / 2;
-  }
-
-  public int getWidgetIndex(IsWidget child) {
-    return getWidgetIndex(asWidgetOrNull(child));
   }
 
   public int getWidgetIndex(Widget child) {

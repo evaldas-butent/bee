@@ -17,6 +17,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.TabBar;
@@ -234,6 +235,11 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     return calendarId;
   }
 
+  @Override
+  public String getCaption() {
+    return header.getCaption();
+  }
+
   public String getEventSource() {
     return null;
   }
@@ -353,7 +359,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   @Override
   protected void onUnload() {
-    if (!BeeKeeper.getScreen().isTemporaryDetach()) {
+    if (!Global.isTemporaryDetach()) {
       if (getAppointmentEventRegistration() != null) {
         getAppointmentEventRegistration().removeHandler();
         setAppointmentEventRegistration(null);

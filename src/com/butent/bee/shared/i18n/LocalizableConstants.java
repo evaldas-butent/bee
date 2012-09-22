@@ -14,6 +14,7 @@ public interface LocalizableConstants extends Constants {
   String newPassword();
   String newPasswordIsRequired();
   String newPasswordsDoesNotMatch();
+  String newTab();
   String no();
   String ok();
   String oldPassword();

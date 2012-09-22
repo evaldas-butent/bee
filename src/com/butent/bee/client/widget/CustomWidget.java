@@ -14,6 +14,11 @@ public class CustomWidget extends Widget implements HasId {
     init();
   }
 
+  public CustomWidget(Element element, String style) {
+    this(element);
+    setStyleName(style);
+  }
+  
   public String getId() {
     return DomUtils.getId(this);
   }

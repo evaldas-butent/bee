@@ -106,6 +106,11 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     }
   }
 
+  @Override
+  public String getCaption() {
+    return null;
+  }
+
   public List<BeeColumn> getDataColumns() {
     return dataColumns;
   }

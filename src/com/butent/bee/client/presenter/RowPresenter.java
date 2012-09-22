@@ -35,6 +35,11 @@ public class RowPresenter extends AbstractPresenter implements Printable {
   }
   
   @Override
+  public String getCaption() {
+    return header.getCaption();
+  }
+  
+  @Override
   public Element getPrintElement() {
     return getWidget().getElement();
   }
