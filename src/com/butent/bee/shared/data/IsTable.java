@@ -55,10 +55,6 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   RowType createRow(long id);
 
-  IsData fromJson(String data);
-
-  IsData fromJson(String data, double version);
-
   IsCell getCell(int rowIndex, int colIndex);
 
   ColType getColumn(int colIndex);

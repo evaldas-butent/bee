@@ -205,16 +205,6 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
 
   public abstract RowType createRow(long id);
 
-  public IsData fromJson(String data) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  public IsData fromJson(String data, double version) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
   public Boolean getBoolean(int rowIndex, int colIndex) {
     return getRow(rowIndex).getBoolean(colIndex);
   }
@@ -684,11 +674,6 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   public abstract void sort(List<Pair<Integer, Boolean>> sortInfo);
 
   public abstract void sortByRowId(boolean ascending);
-
-  public String toJson() {
-    // TODO Auto-generated method stub
-    return null;
-  }
 
   @Override
   public String toString() {

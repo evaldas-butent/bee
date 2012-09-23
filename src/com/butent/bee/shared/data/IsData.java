@@ -14,6 +14,7 @@ import java.util.List;
  */
 
 public interface IsData {
+  
   Boolean getBoolean(int rowIndex, int colIndex);
 
   String getColumnId(int colIndex);
@@ -35,6 +36,7 @@ public interface IsData {
   JustDate getDate(int rowIndex, int colIndex);
 
   DateTime getDateTime(int rowIndex, int colIndex);
+
   BigDecimal getDecimal(int rowIndex, int colIndex);
 
   List<Value> getDistinctValues(int colIndex);
@@ -72,6 +74,4 @@ public interface IsData {
   Object getTableProperty(String key);
 
   Value getValue(int rowIndex, int colIndex);
-
-  String toJson();
 }

@@ -561,8 +561,6 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     calendar.setAppointments(appointments);
     calendar.resumeLayout();
-
-    BeeKeeper.getLog().debug(getCalendarId(), "loaded", appointments.size(), "appointments");
   }
 
   private void setDate(JustDate date) {

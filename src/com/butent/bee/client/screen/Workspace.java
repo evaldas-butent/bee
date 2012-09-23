@@ -22,6 +22,7 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -53,7 +54,8 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     }
   }
 
-  private class TabWidget extends Span {
+  private class TabWidget extends Span implements HasCaption {
+
     private TabWidget(String caption) {
       super();
       InlineLabel label = new InlineLabel(caption);
@@ -74,8 +76,17 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
       });
     }
 
+    @Override
+    public String getCaption() {
+      return getCaptionWidget().getText();
+    }
+
+    private InlineLabel getCaptionWidget() {
+      return (InlineLabel) getWidget(0);
+    }
+    
     private void setCaption(String caption) {
-      ((InlineLabel) getWidget(0)).setText(caption);
+      getCaptionWidget().setText(caption);
     }
   }
 
@@ -297,8 +308,24 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     for (Widget p = tile; p instanceof TilePanel && BeeUtils.isEmpty(caption); p = p.getParent()) {
       caption = ((TilePanel) p).getCaption();
     }
+    if (BeeUtils.isEmpty(caption)) {
+      caption = Global.CONSTANTS.newTab();
+    }
+    
+    TabWidget tab = (TabWidget) getTabWidget(getSelectedIndex());
+    if (caption.equals(tab.getCaption())) {
+      return;
+    }
+    
+    boolean checkSize = isAttached() && getPageCount() > 1;
+    if (checkSize) {
+      saveLayout();
+    }
 
-    ((TabWidget) getTabWidget(getSelectedIndex())).setCaption(BeeUtils.notEmpty(caption,
-        Global.CONSTANTS.newTab()));
+    tab.setCaption(caption);
+
+    if (checkSize) {
+      checkLayout();
+    }
   }
 }

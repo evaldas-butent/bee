@@ -1342,22 +1342,11 @@ public enum FormWidget {
 
   private Relation createRelation(String viewName, Map<String, String> attributes,
       List<Element> children) {
-    boolean debug = Global.isDebug();
-
     Relation relation = XmlUtils.getRelation(attributes, children);
 
     String source = attributes.get(UiConstants.ATTR_SOURCE);
     List<String> renderColumns =
         NameUtils.toList(attributes.get(RendererDescription.ATTR_RENDER_COLUMNS));
-
-    if (debug) {
-      if (!BeeUtils.isEmpty(source)) {
-        BeeKeeper.getLog().debug(UiConstants.ATTR_SOURCE, source);
-      }
-      if (!BeeUtils.isEmpty(renderColumns)) {
-        BeeKeeper.getLog().debug(RendererDescription.ATTR_RENDER_COLUMNS, renderColumns);
-      }
-    }
 
     Holder<String> sourceHolder = Holder.of(source);
     Holder<List<String>> listHolder = Holder.of(renderColumns);
@@ -1376,28 +1365,14 @@ public enum FormWidget {
       return null;
     }
 
-    if (debug) {
-      BeeKeeper.getLog().debugCollection(relation.getInfo());
-    }
-
     source = sourceHolder.get();
     renderColumns = listHolder.get();
 
     if (!BeeUtils.isEmpty(source)) {
       attributes.put(UiConstants.ATTR_SOURCE, source);
-      if (debug) {
-        BeeKeeper.getLog().debug(UiConstants.ATTR_SOURCE, source);
-      }
     }
     if (!BeeUtils.isEmpty(renderColumns)) {
       attributes.put(RendererDescription.ATTR_RENDER_COLUMNS, XmlHelper.getList(renderColumns));
-      if (debug) {
-        BeeKeeper.getLog().debug(RendererDescription.ATTR_RENDER_COLUMNS, renderColumns);
-      }
-    }
-
-    if (debug) {
-      BeeKeeper.getLog().addSeparator();
     }
 
     return relation;

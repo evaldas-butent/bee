@@ -197,12 +197,11 @@ class MouseDragHandler implements MouseMoveHandler, MouseDownHandler, MouseUpHan
     }
     Widget sender = (Widget) event.getSource();
     Element elem = sender.getElement();
-    // TODO optimize for the fact that elem is at (0,0)
+
     int x = event.getRelativeX(elem);
     int y = event.getRelativeY(elem);
 
     if (dragging == ACTIVELY_DRAGGING || dragging == DRAGGING_NO_MOVEMENT_YET) {
-      // TODO remove Safari workaround after GWT issue 1807 fixed
       if (sender != capturingWidget) {
         // In Safari 1.3.2 MAC, other mouse events continue to arrive even when capturing
         return;
@@ -245,7 +244,7 @@ class MouseDragHandler implements MouseMoveHandler, MouseDownHandler, MouseUpHan
     }
     Widget sender = (Widget) event.getSource();
     Element elem = sender.getElement();
-    // TODO optimize for the fact that elem is at (0,0)
+
     int x = event.getRelativeX(elem);
     int y = event.getRelativeY(elem);
 
@@ -268,7 +267,6 @@ class MouseDragHandler implements MouseMoveHandler, MouseDownHandler, MouseUpHan
         return;
       }
 
-      // TODO Remove Safari workaround after GWT issue 1807 fixed
       if (sender != capturingWidget) {
         // In Safari 1.3.2 MAC does not honor capturing widget for mouse up
         Location location = new WidgetLocation(sender, null);
@@ -309,7 +307,7 @@ class MouseDragHandler implements MouseMoveHandler, MouseDownHandler, MouseUpHan
     event.preventDefault();
     Widget sender = (Widget) event.getSource();
     Element elem = sender.getElement();
-    // TODO optimize for the fact that elem is at (0,0)
+
     int x = event.getTouches().get(0).getRelativeX(elem);
     int y = event.getTouches().get(0).getRelativeY(elem);
 
@@ -355,7 +353,6 @@ class MouseDragHandler implements MouseMoveHandler, MouseDownHandler, MouseUpHan
       return;
     }
 
-    // TODO verify that multiple onTocuhStart events are fired for overlapping draggables
     if (mouseDownWidget != null) {
       // For multiple overlapping draggable widgets, ignore all but first onTouchStart
       return;

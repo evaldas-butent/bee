@@ -28,8 +28,6 @@ public class DragContext {
 
   /**
    * The boundary panel for this drag controller.
-   * 
-   * TODO replace context.dragController.getBoundaryPanel() with context.boundaryPanel
    */
   public final AbsolutePanel boundaryPanel;
 
@@ -62,8 +60,6 @@ public class DragContext {
   /**
    * The drop controller which participated in the final drop, or <code>null</code> before the final
    * drop has occurred, or when the drag controller does not utilize drop controllers.
-   * 
-   * TODO use setter methods to handle the finalDropController/vetoException dependencies
    */
   public DropController finalDropController;
 

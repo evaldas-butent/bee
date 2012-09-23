@@ -20,7 +20,6 @@ import com.google.gwt.safecss.shared.SafeStylesUtils;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.UIObject;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -2548,7 +2547,6 @@ public class StyleUtils {
       }
 
       if (ok) {
-        BeeKeeper.getLog().debug(el.getTagName(), el.getClassName(), el.getId(), name, value);
         return value;
       }
     }

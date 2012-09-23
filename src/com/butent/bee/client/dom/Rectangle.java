@@ -20,15 +20,15 @@ public class Rectangle implements Transformable, HasDimensions {
   private static final Unit DEFAULT_UNIT = Unit.PX;
 
   public static Rectangle createFromAbsoluteCoordinates(Element element) {
-    Rectangle rectangle = new Rectangle();
-    rectangle.setFromAbsoluteCoordinates(element);
-    return rectangle;
+    Assert.notNull(element);
+    return new Rectangle(element.getAbsoluteLeft(), element.getAbsoluteTop(),
+        element.getOffsetWidth(), element.getOffsetHeight());
   }
 
   public static Rectangle createFromParentOffset(Element element) {
-    Rectangle rectangle = new Rectangle();
-    rectangle.setFromParentOffset(element);
-    return rectangle;
+    Assert.notNull(element);
+    return new Rectangle(element.getOffsetLeft(), element.getOffsetTop(),
+        element.getOffsetWidth(), element.getOffsetHeight());
   }
 
   private Unit leftUnit = null;
@@ -52,11 +52,6 @@ public class Rectangle implements Transformable, HasDimensions {
     setFromStyle(style);
   }
 
-  public Rectangle(Double leftValue, Double topValue, Double widthValue, Double heightValue) {
-    this(leftValue, DEFAULT_UNIT, topValue, DEFAULT_UNIT, widthValue, DEFAULT_UNIT,
-        heightValue, DEFAULT_UNIT);
-  }
-
   public Rectangle(Double leftValue, Unit leftUnit, Double topValue, Unit topUnit,
       Double widthValue, Unit widthUnit, Double heightValue, Unit heightUnit) {
     this.leftValue = leftValue;
@@ -71,7 +66,8 @@ public class Rectangle implements Transformable, HasDimensions {
   }
 
   public Rectangle(int leftValue, int topValue, int widthValue, int heightValue) {
-    this((double) leftValue, (double) topValue, (double) widthValue, (double) heightValue);
+    this((double) leftValue, DEFAULT_UNIT, (double) topValue, DEFAULT_UNIT,
+        (double) widthValue, DEFAULT_UNIT, (double) heightValue, DEFAULT_UNIT);
   }
 
   public void applyTo(Element el) {
@@ -189,17 +185,9 @@ public class Rectangle implements Transformable, HasDimensions {
         && getTopValue() != null && BeeUtils.isNonNegative(getHeightValue());
   }
 
-  public void setHeight(Double value) {
-    setHeight(value, DEFAULT_UNIT);
-  }
-
   public void setHeight(Double value, Unit unit) {
     setHeightValue(value);
     setHeightUnit(unit);
-  }
-
-  public void setHeight(int value) {
-    setHeight((double) value);
   }
 
   public void setHeightUnit(Unit heightUnit) {
@@ -210,17 +198,9 @@ public class Rectangle implements Transformable, HasDimensions {
     this.heightValue = heightValue;
   }
 
-  public void setLeft(Double value) {
-    setLeft(value, DEFAULT_UNIT);
-  }
-
   public void setLeft(Double value, Unit unit) {
     setLeftValue(value);
     setLeftUnit(unit);
-  }
-
-  public void setLeft(int value) {
-    setLeft((double) value);
   }
 
   public void setLeftUnit(Unit leftUnit) {
@@ -231,17 +211,9 @@ public class Rectangle implements Transformable, HasDimensions {
     this.leftValue = leftValue;
   }
 
-  public void setTop(Double value) {
-    setTop(value, DEFAULT_UNIT);
-  }
-
   public void setTop(Double value, Unit unit) {
     setTopValue(value);
     setTopUnit(unit);
-  }
-
-  public void setTop(int value) {
-    setTop((double) value);
   }
 
   public void setTopUnit(Unit topUnit) {
@@ -252,17 +224,9 @@ public class Rectangle implements Transformable, HasDimensions {
     this.topValue = topValue;
   }
 
-  public void setWidth(Double value) {
-    setWidth(value, DEFAULT_UNIT);
-  }
-
   public void setWidth(Double value, Unit unit) {
     setWidthValue(value);
     setWidthUnit(unit);
-  }
-
-  public void setWidth(int value) {
-    setWidth((double) value);
   }
 
   public void setWidthUnit(Unit widthUnit) {
@@ -291,24 +255,6 @@ public class Rectangle implements Transformable, HasDimensions {
             StyleUtils.buildWidth(getWidthValue(), getWidthUnit()) : null,
         (getHeightValue() != null) ? 
             StyleUtils.buildHeight(getHeightValue(), getHeightUnit()) : null).asString();
-  }
-
-  private void setFromAbsoluteCoordinates(Element element) {
-    Assert.notNull(element);
-
-    setLeft(element.getAbsoluteLeft());
-    setTop(element.getAbsoluteTop());
-    setWidth(element.getOffsetWidth());
-    setHeight(element.getOffsetHeight());
-  }
-
-  private void setFromParentOffset(Element element) {
-    Assert.notNull(element);
-
-    setLeft(element.getOffsetLeft());
-    setTop(element.getOffsetTop());
-    setWidth(element.getOffsetWidth());
-    setHeight(element.getOffsetHeight());
   }
 
   private void setFromStyle(Style style) {

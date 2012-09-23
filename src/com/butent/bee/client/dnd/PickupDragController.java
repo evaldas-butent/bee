@@ -66,9 +66,6 @@ public class PickupDragController extends AbstractDragController {
     Location initialDraggableParentLocation;
   }
 
-  /**
-   * TODO Decide if 100ms is a good number.
-   */
   private static final int CACHE_TIME_MILLIS = 100;
 
   /**
