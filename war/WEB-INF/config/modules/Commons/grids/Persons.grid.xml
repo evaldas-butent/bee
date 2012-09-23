@@ -2,15 +2,16 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="Persons" viewName="Persons" caption="Asmenys"
-  editForm="Person" editMode="true"
+  editForm="Person"
   >
   <columns>
-    <DataColumn name="FirstName" source="FirstName" caption="Vardas" />
-    <DataColumn name="LasName" source="LastName" caption="Pavardė" />
-    <DataColumn name="Phone" source="Phone" caption="Tel." />
-    <DataColumn name="Email" source="Email" caption="El. paštas" />
-    <DataColumn name="Address" source="Address" caption="Adresas" />
-    <DataColumn name="City" source="CityName" caption="Miestas" />
-    <DataColumn name="Country" source="CountryName" caption="Šalis" />
+    <DataColumn name="FirstName" />
+    <DataColumn name="LastName" />
+    <DataColumn name="Phone" />
+    <DataColumn name="Mobile" />
+    <DataColumn name="Email" />
+    <DataColumn name="Address" />
+    <DataColumn name="CityName" caption="Miestas" />
+    <DataColumn name="CountryName" caption="Šalis" />
   </columns>
 </Grid>

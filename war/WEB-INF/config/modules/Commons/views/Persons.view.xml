@@ -10,6 +10,8 @@
     <SimpleColumn name="DateOfBirth" />
     <SimpleJoin name="Contact" joinType="LEFT">
       <SimpleColumn name="Phone" />
+      <SimpleColumn name="Mobile" />
+      <SimpleColumn name="Fax" />
       <SimpleColumn name="Email" />
       <SimpleColumn name="Address" />
       <SimpleColumn name="PostIndex" />

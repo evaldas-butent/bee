@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Grid xmlns="http://www.butent.com/grid"
   
-  name="CompanyPersons" viewName="CompanyPersons" caption="Kontaktiniai asmenys"
+  name="CompanyPersons"
+  viewName="CompanyPersons"
+  minColumnWidth="100"
   >
   <columns>
-    <RelColumn name="Person" />
+    <RelColumn name="Person" minWidth="200" />
     <DataColumn name="Position" />
     <DataColumn name="Phone" />
     <DataColumn name="Email" />

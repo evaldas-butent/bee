@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Grid xmlns="http://www.butent.com/grid"
   
-  name="PersonCompanies" viewName="CompanyPersons" caption="Įmonių kontaktai"
+  name="PersonCompanies"
+  viewName="CompanyPersons"
+  caption="Įmonių kontaktai"
+  minColumnWidth="100"
   >
   <columns>
     <RelColumn name="Company" />

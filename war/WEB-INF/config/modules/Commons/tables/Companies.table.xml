@@ -7,9 +7,22 @@
   >
   <Fields>
     <Relation name="Owner" relation="Companies" />
-    <String name="Name" precision="100" notNull="true" unique="true" label="Įmonė" />
-    <String name="Code" precision="30" unique="true" label="Įm.kodas" />
+    <String name="Name" precision="100" notNull="true" unique="true" label="Pavadinimas" />
+    <String name="Code" precision="30" unique="true" label="Įmonės kodas" />
     <String name="VATCode" precision="30" label="PVM kodas" />
+
+    <Relation name="CompanyType" relation="CompanyTypes" />
+    <Relation name="CompanyGroup" relation="CompanyGroups" />
+
     <Relation name="Contact" unique="true" relation="Contacts" />
+
+    <String name="ExchangeCode" precision="30" label="Biržos kodas" />
+
+    <Numeric name="CreditLimit1" precision="10" label="Kredito limitas 1" />
+    <Numeric name="CreditLimit2" precision="10" label="Kredito limitas 2" />
+    <Relation name="LimitCurrency" relation="Currencies" label="Limito valiuta" />
+    <Integer name="CreditDays" label="Kredito dienos" />
+    
+    <Text name="Notes" label="Pastabos" />
   </Fields>
 </Table>

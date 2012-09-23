@@ -3,7 +3,10 @@
 
 name="Contacts" label="Kontaktai" order="20"
 >
-  <Item name="Clients" label="Klientai" service="grid" parameters="Companies" />
+  <Item name="Companies" label="Klientai" service="grid" parameters="Companies" />
 
   <Item name="Persons" label="Asmenys" service="grid" parameters="Persons" separator="true" />
+
+  <Item name="CompanyTypes" label="Klientų tipai" service="grid" parameters="CompanyTypes" separator="true" />
+  <Item name="CompanyGroups" label="Klientų grupės" service="grid" parameters="CompanyGroups" />
 </Entry>

@@ -9,5 +9,6 @@
   <Fields>
     <String name="Name" precision="60" notNull="true" unique="true" label="Šalis" />
     <String name="Code" precision="10" unique="true" label="Kodas" />
+    <Boolean name="EUMember" label="Europos Sąjunga" />
   </Fields>
 </Table>

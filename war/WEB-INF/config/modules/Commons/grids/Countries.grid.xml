@@ -4,7 +4,8 @@
   name="Countries" viewName="Countries" caption="Šalys"
   >
   <columns>
-    <DataColumn name="Name" />
+    <DataColumn name="Name" minWidth="100" />
     <DataColumn name="Code" />
+    <DataColumn name="EUMember" caption="ES" />
   </columns>
 </Grid>

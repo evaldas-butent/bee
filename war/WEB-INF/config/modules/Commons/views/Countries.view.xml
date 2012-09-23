@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <View xmlns="http://www.butent.com/view"
 
-  name="Countries" source="Countries" newRowCaption="Nauja šalis"
+  name="Countries"
+  source="Countries"
+  newRowCaption="Nauja šalis"
+  newRowColumns="Name Code EUMember"
   >
   <Columns>
     <SimpleColumn name="Name" />
     <SimpleColumn name="Code" />
+    <SimpleColumn name="EUMember" />
   </Columns>
   <Order>
     <OrderBy column="Name" />

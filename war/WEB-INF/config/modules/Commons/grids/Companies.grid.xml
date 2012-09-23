@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="Companies" viewName="Companies" caption="Įmonės"
+  name="Companies" viewName="Companies" caption="Klientai"
   editPopup="true" newRowPopup="true"
   >
   <columns>
-    <DataColumn name="Name" source="Name" caption="Įmonė" />
-    <DataColumn name="Code" source="Code" caption="Įm. kodas" />
-    <DataColumn name="Phone" source="Phone" caption="Tel." />
-    <DataColumn name="Email" source="Email" caption="El. paštas" />
-    <DataColumn name="Address" source="Address" caption="Adresas" />
-    <DataColumn name="City" source="CityName" caption="Miestas" />
-    <DataColumn name="Country" source="CountryName" caption="Šalis" />
+    <DataColumn name="Name" />
+    <DataColumn name="TypeName" caption="Tipas" />
+    <DataColumn name="GroupName" caption="Grupė" />
+    <DataColumn name="Code" />
+    <DataColumn name="VATCode" />
+    <DataColumn name="Phone" />
+    <DataColumn name="Mobile" />
+    <DataColumn name="Email" />
+    <DataColumn name="Address" />
+    <DataColumn name="PostIndex" />
+    <DataColumn name="CityName" caption="Miestas" />
+    <DataColumn name="CountryName" caption="Šalis" />
   </columns>
 </Grid>

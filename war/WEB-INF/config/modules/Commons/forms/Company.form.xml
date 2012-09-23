@@ -2,32 +2,61 @@
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
+  xmlns:d="http://www.butent.com/decorator"
   
-  name="Company" viewName="Companies" caption="Įmonė" height="500"
+  name="Company"
+  viewName="Companies"
+  caption="Klientas"
+  width="760"
+  height="500"
   >
   <FlowPanel class="flexBox-vertical">
-    <FlexTable cellSpacing="10">
-      <row>
-        <cell>
-          <Label html="Įmonė" class="bee-required" />
-        </cell>
-        <cell colSpan="3">
-          <InputText source="Name" style="width:100%" />
-        </cell>
-      </row>
-      <row>
-        <Label html="Įm. kodas" />
-        <InputText source="Code" />
-        <Label html="PVM kodas" horizontalAlignment="right" />
-        <InputText source="VATCode" />
-      </row>
-      <row>
-        <cell colSpan="4">
-          <xi:include href="widgets/ContactInfo.widget.xml" />
-        </cell>
-      </row>
-    </FlexTable>
+    <VerticalPanel>
+      <FlowPanel style="position:relative; width: 750px; height: 90px;">
+        <InputText source="Name" caption="Pavadinimas:" style="width: 300px;" d:size="100"
+          d:unit="px" d:rootStyle="position:absolute; left: 10px; top: 10px;" />
+        <DataSelector source="CompanyType" caption="Tipas:" style="width: 80px;" d:size="50"
+          d:unit="px" d:rootStyle="position:absolute; left: 440px; top: 10px;" />
+        <DataSelector source="CompanyGroup" caption="Grupė:" style="width: 80px;" d:size="50"
+          d:unit="px" d:rootStyle="position:absolute; left: 600px; top: 10px;" />
 
-    <ChildGrid class="flexible" name="CompanyPersons" relColumn="Company" />
+        <InputText source="Code" caption="Įmonės kodas:" style="width: 160px;" d:size="100"
+          d:unit="px" d:rootStyle="position:absolute; left: 10px; top: 50px;" />
+        <InputText source="VATCode" caption="PVM kodas:" style="width: 120px;" upperCase="true"
+          d:size="80" d:unit="px" d:rootStyle="position:absolute; left: 290px; top: 50px;" />
+        <InputText source="ExchangeCode" caption="Biržos kodas:" style="width: 120px;" d:size="100"
+          d:unit="px" d:rootStyle="position:absolute; left: 510px; top: 50px;" />
+      </FlowPanel>
+      <xi:include href="widgets/ContactInfo.widget.xml" />
+    </VerticalPanel>
+
+    <TabbedPages class="flexible">
+      <page>
+        <text>Kontaktiniai asmenys</text>
+        <ChildGrid name="CompanyPersons" relColumn="Company" />
+      </page>
+      <page>
+        <text>Finansinė informacija</text>
+        <FlowPanel>
+          <InputDecimal source="CreditLimit1" caption="Kredito limitas:" style="width: 100px;"
+            d:size="100" d:unit="px" d:rootStyle="position:absolute; left: 20px; top: 20px;" />
+          <InputDecimal source="CreditLimit2" caption="Kredito limitas 2:" style="width: 100px;"
+            d:size="110" d:unit="px" d:rootStyle="position:absolute; left: 260px; top: 20px;" />
+          <DataSelector source="LimitCurrency" caption="Limito valiuta:" style="width: 40px;"
+            d:size="100" d:unit="px" d:rootStyle="position:absolute; left: 20px; top: 60px;" />
+          <InputInteger source="CreditDays" caption="Kredito dienos:" style="width: 40px;"
+            d:size="110" d:unit="px" d:rootStyle="position:absolute; left: 260px; top: 60px;" />
+        </FlowPanel>
+      </page>
+      <page>
+        <text>Dokumentai</text>
+        <Label />
+      </page>
+      <page>
+        <text>Pastabos</text>
+        <InputArea source="Notes" />
+      </page>  
+    </TabbedPages>
+
   </FlowPanel>
 </f:Form>  

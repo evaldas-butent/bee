@@ -1,38 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Disclosure xmlns="http://www.butent.com/widget" 
+<Disclosure xmlns="http://www.butent.com/widget" xmlns:d="http://www.butent.com/decorator"
   
   open="true"
   >
-  <HtmlLabel html="KONTAKTINĖ INFORMACIJA" />
+  <Label html="KONTAKTINĖ INFORMACIJA" />
 
-  <FlexTable cellSpacing="10">
-    <row>
-      <Label html="Telefonai" />
-      <InputText source="Phone" />
-      <Label html="El. paštas" horizontalAlignment="right" />
-      <InputText source="Email" />
-    </row>
-    <row>
-      <Label html="Adresas" />
-      <cell colSpan="3">
-        <InputText source="Address" style="width:100%" />
-      </cell>
-    </row>
-    <row>
-      <Label html="Pašto indeksas" />
-      <InputText source="PostIndex" />
-      <Label html="Interneto svetainė" horizontalAlignment="right" />
-      <InputText source="Website" />
-    </row>
-    <row>
-      <Label html="Miestas" />
-      <cell colSpan="2">
-        <DataSelector source="City" style="width:100%">
-          <renderToken source="CityName" />
-          <renderToken source="CountryName" prefix=", " />
-        </DataSelector>
-      </cell>
-    </row>
-  </FlexTable>
+  <FlowPanel style="position:relative; width: 700px; height: 140px;">
+    <InputText source="Phone" caption="Telefonai:" style="width: 200px;" d:size="80" d:unit="px"
+      d:rootStyle="position:absolute; left: 0; top: 0;" />
+    <InputText source="Mobile" caption="Mobilus:" style="width: 120px;" d:size="60" d:unit="px"
+      d:rootStyle="position:absolute; left: 300px; top: 0;" />
+    <InputText source="Fax" caption="Faksas:" style="width: 120px;" d:size="60" d:unit="px"
+      d:rootStyle="position:absolute; left: 500px; top: 0px;" />
+
+    <InputText source="Email" caption="El. paštas:" style="width: 200px;" d:size="80" d:unit="px"
+      d:rootStyle="position:absolute; left: 0; top: 30px;" />
+    <InputText source="Website" caption="Interneto svetainė:" style="width: 260px;" d:size="120"
+      d:unit="px" d:rootStyle="position:absolute; left: 300px; top: 30px;" />
+
+    <InputText source="Address" caption="Adresas:" style="width: 600px;" d:size="80" d:unit="px"
+      d:rootStyle="position:absolute; left: 0; top: 70px;" />
+
+    <DataSelector source="City" caption="Miestas:" style="width: 400px;" d:size="80" d:unit="px"
+      d:rootStyle="position:absolute; left: 0; top: 100px;">
+      <renderToken source="CityName" />
+      <renderToken source="CountryName" prefix=", " />
+    </DataSelector>
+    <InputText source="PostIndex" caption="Pašto indeksas:" style="width: 80px;" d:size="100"
+      d:unit="px" d:rootStyle="position:absolute; left: 500px; top: 100px;" />
+  </FlowPanel>
 </Disclosure>
 
