@@ -12,7 +12,7 @@ import com.butent.bee.client.modules.ModuleManager;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.logging.LogUtils;
 
 /**
  * The entry point class of the application, initializes <code>BeeKeeper</code> class.

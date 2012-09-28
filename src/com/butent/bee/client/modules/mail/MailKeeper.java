@@ -9,8 +9,8 @@ import com.butent.bee.client.modules.commons.ParametersHandler;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.mail.MailConstants;
-import com.butent.bee.shared.utils.LogUtils;
 
 public class MailKeeper {
 
@@ -32,7 +32,7 @@ public class MailKeeper {
                   @Override
                   public void onResponse(ResponseObject response) {
                     Assert.notNull(response);
-                    response.showLog(logger);
+                    response.log(logger);
                   }
                 });
           }

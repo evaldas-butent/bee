@@ -13,9 +13,10 @@ import com.butent.bee.server.utils.SystemInfo;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.sql.Connection;
@@ -23,7 +24,6 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -34,7 +34,7 @@ import javax.ejb.Stateless;
 
 @Stateless
 public class DataServiceBean {
-  private static Logger logger = Logger.getLogger(DataServiceBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(DataServiceBean.class);
 
   @EJB
   DataSourceBean dsb;
@@ -57,7 +57,7 @@ public class DataServiceBean {
       testJdbc(ds.getConn(), reqInfo, buff);
     } else {
       String msg = BeeUtils.concat(1, svc, dsn, "data service not recognized");
-      LogUtils.warning(logger, msg);
+      logger.warning(msg);
       buff.addWarning(msg);
     }
 

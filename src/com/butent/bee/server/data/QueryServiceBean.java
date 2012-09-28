@@ -29,12 +29,13 @@ import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -44,7 +45,6 @@ import java.sql.Statement;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -96,7 +96,7 @@ public class QueryServiceBean {
     public abstract T processUpdateCount(int updateCount);
   }
 
-  private static Logger logger = Logger.getLogger(QueryServiceBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(QueryServiceBean.class);
 
   @EJB
   DataSourceBean dsb;
@@ -123,7 +123,7 @@ public class QueryServiceBean {
           engine = con.getMetaData().getDatabaseProductName();
 
         } catch (SQLException e) {
-          LogUtils.error(logger, e);
+          logger.error(e);
           engine = null;
         } finally {
           JdbcUtils.closeConnection(con);
@@ -131,7 +131,7 @@ public class QueryServiceBean {
         sqlEngine = SqlEngine.detectEngine(engine);
 
         if (sqlEngine == null) {
-          LogUtils.severe(logger, "DSN:", dsn, "Unknown SQL engine:", engine);
+          logger.error("DSN:", dsn, "Unknown SQL engine:", engine);
         }
       }
     }
@@ -201,7 +201,7 @@ public class QueryServiceBean {
     return processSql(sql, new SqlHandler<Object>() {
       @Override
       public Object processError(SQLException ex) {
-        LogUtils.error(logger, ex);
+        logger.error(ex);
         return ex.getMessage();
       }
 
@@ -212,7 +212,7 @@ public class QueryServiceBean {
 
       @Override
       public Object processUpdateCount(int updateCount) {
-        LogUtils.info(logger, "Affected rows:", updateCount);
+        logger.debug("Affected rows:", updateCount);
         return updateCount;
       }
     });
@@ -528,7 +528,7 @@ public class QueryServiceBean {
     ResultSet rs = null;
     T result = null;
 
-    LogUtils.infoSplit(logger, "SQL:", sql);
+    logger.debug("SQL:", sql);
 
     try {
       String dsn = SqlBuilderFactory.getDsn();
@@ -542,7 +542,7 @@ public class QueryServiceBean {
 
       long start = System.nanoTime();
       boolean isResultSet = stmt.execute(sql);
-      LogUtils.infoNow(logger, String.format("[%.6f]", (System.nanoTime() - start) / 1e9));
+      logger.debug(String.format("[%.6f]", (System.nanoTime() - start) / 1e9));
 
       if (isResultSet) {
         rs = stmt.getResultSet();
@@ -633,7 +633,7 @@ public class QueryServiceBean {
     if (idIndex >= 0) {
       result.setViewName(view.getName());
     }
-    LogUtils.info(logger, "cols:", result.getNumberOfColumns(), "rows:", result.getNumberOfRows());
+    logger.debug("cols:", result.getNumberOfColumns(), "rows:", result.getNumberOfRows());
     return result;
   }
 
@@ -655,7 +655,7 @@ public class QueryServiceBean {
       }
       res.addRow(row);
     }
-    LogUtils.info(logger, "Retrieved rows:", res.getNumberOfRows());
+    logger.debug("Retrieved rows:", res.getNumberOfRows());
     return res;
   }
 }

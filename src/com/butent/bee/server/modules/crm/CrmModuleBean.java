@@ -25,6 +25,8 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.crm.CrmConstants;
@@ -36,7 +38,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -51,7 +52,7 @@ public class CrmModuleBean implements BeeModule {
   private static final Splitter USER_ID_SPLITTER =
       Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
 
-  private static Logger logger = Logger.getLogger(CrmModuleBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(CrmModuleBean.class);
 
   @EJB
   DataEditorBean deb;

@@ -8,12 +8,12 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Logger;
 
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
@@ -30,7 +30,7 @@ import javax.ejb.TransactionAttributeType;
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class IdGeneratorBean {
 
-  private static Logger logger = Logger.getLogger(IdGeneratorBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(IdGeneratorBean.class);
 
   private static final String ID_TABLE = "Sequences";
   private static final String ID_KEY = "Name";
@@ -44,8 +44,8 @@ public class IdGeneratorBean {
   @EJB
   SystemBean sys;
 
-  private int idChunk = 50;
-  private Map<String, long[]> idCache = Maps.newHashMap();
+  private final int idChunk = 50;
+  private final Map<String, long[]> idCache = Maps.newHashMap();
 
   @PreDestroy
   public void destroy() {
@@ -68,7 +68,7 @@ public class IdGeneratorBean {
       }
     }
     idCache.clear();
-    LogUtils.infoNow(logger, getClass().getSimpleName(), "destroy end");
+    logger.debug(getClass().getSimpleName(), "destroy end");
   }
 
   public long getId(String source) {

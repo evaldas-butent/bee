@@ -56,9 +56,10 @@ import com.butent.bee.shared.data.filter.IsTrueFilter;
 import com.butent.bee.shared.data.filter.VersionFilter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.ViewColumn;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -326,6 +327,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     INNER, RIGHT, LEFT, FULL;
   }
 
+  private static BeeLogger logger = LogUtils.getLogger(BeeView.class);
+
   private final String moduleName;
   private final String name;
   private final BeeTable source;
@@ -341,7 +344,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   private final Integer cacheMaximumSize;
   private final String cacheEviction;
-  
+
   private boolean hasAggregate;
   private final SqlSelect query;
   private final Map<String, ColumnInfo> columns = Maps.newLinkedHashMap();
@@ -360,7 +363,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     this.newRowForm = xmlView.newRowForm;
     this.newRowColumns = xmlView.newRowColumns;
     this.newRowCaption = xmlView.newRowCaption;
-    
+
     this.cacheMaximumSize = xmlView.cacheMaximumSize;
     this.cacheEviction = xmlView.cacheEviction;
 
@@ -521,6 +524,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     return editForm;
   }
 
+  @Override
   public List<ExtendedProperty> getExtendedInfo() {
     List<ExtendedProperty> info = Lists.newArrayList();
 
@@ -621,8 +625,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
               if (isColHidden(col)
                   || (!BeeUtils.isEmpty(activeCols) && !BeeUtils.contains(activeCols, colName))) {
-                LogUtils.warning(LogUtils.getDefaultLogger(), "view: ", getName(),
-                    "order by:", col, ". Column not in field list");
+                logger.warning("view: ", getName(), "order by:", col, ". Column not in field list");
                 continue;
               }
             } else {
@@ -635,8 +638,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
             colName = col;
 
           } else {
-            LogUtils.warning(LogUtils.getDefaultLogger(), "view: ", getName(), "order by:", col,
-                ". Column not recognized");
+            logger.warning("view: ", getName(), "order by:", col, ". Column not recognized");
             continue;
           }
           if (!ordCol.isAscending()) {
@@ -751,7 +753,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     Filter f = DataUtils.parseCondition(flt, cols, getSourceIdName(), getSourceVersionName());
 
     if (f == null) {
-      LogUtils.warning(LogUtils.getDefaultLogger(), "Error in filter expression:", flt);
+      logger.warning("Error in filter expression:", flt);
     }
     return f;
   }
@@ -784,8 +786,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           ownerAlias = alias;
           alias = table.joinTranslationField(query, ownerAlias, field, locale);
         } else {
-          LogUtils.warning(LogUtils.getDefaultLogger(),
-              "Field is not translatable:", table.getName() + "." + field.getName(),
+          logger.warning("Field is not translatable:", table.getName() + "." + field.getName(),
               "View:", getName());
           return;
         }
@@ -824,8 +825,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           field = relTable.getField(col.name);
 
           if (field.isExtended()) {
-            LogUtils.warning(LogUtils.getDefaultLogger(),
-                "Inverse join is not supported on extended fields:",
+            logger.warning("Inverse join is not supported on extended fields:",
                 relTable.getName() + "." + field.getName(), "View:", getName());
             continue;
           }

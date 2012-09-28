@@ -4,19 +4,18 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.server.utils.BeeDataSource;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.ejb.Lock;
 import javax.ejb.LockType;
 import javax.ejb.Singleton;
-import javax.ejb.Startup;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -26,14 +25,13 @@ import javax.sql.DataSource;
  */
 
 @Singleton
-@Startup
 @Lock(LockType.READ)
 public class DataSourceBean {
 
   private static final String PROPERTY_DSN = "DataSourceName";
-  private static Logger logger = Logger.getLogger(DataSourceBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(DataSourceBean.class);
 
-  private List<BeeDataSource> bds = new ArrayList<BeeDataSource>();
+  private final List<BeeDataSource> bds = new ArrayList<BeeDataSource>();
   private int defaultDataSourceIndex = -1;
 
   @PreDestroy
@@ -43,9 +41,9 @@ public class DataSourceBean {
         if (z.isOpen()) {
           try {
             z.close();
-            LogUtils.info(logger, "closed", z.getDsn());
+            logger.info("DSN closed:", z.getDsn());
           } catch (Exception ex) {
-            LogUtils.warning(logger, ex);
+            logger.warning(ex);
           }
         }
       }
@@ -92,7 +90,7 @@ public class DataSourceBean {
     }
 
     if (z == null) {
-      LogUtils.warning(logger, "dsn", dsn, "not found");
+      logger.warning("dsn", dsn, "not found");
     }
     return z;
   }
@@ -101,7 +99,7 @@ public class DataSourceBean {
   private void init() {
     String dsn = Config.getProperty(PROPERTY_DSN);
     if (BeeUtils.isEmpty(dsn)) {
-      LogUtils.severe(logger, "property", PROPERTY_DSN, "not found");
+      logger.warning("property", PROPERTY_DSN, "not found");
       return;
     }
 
@@ -127,7 +125,7 @@ public class DataSourceBean {
           ds = (DataSource) InitialContext.doLookup("java:jdbc/" + nm);
           ok = true;
         } catch (NamingException ex2) {
-          LogUtils.error(logger, ex);
+          logger.error(ex);
           ds = null;
           ok = false;
         }

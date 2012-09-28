@@ -31,6 +31,8 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -38,7 +40,6 @@ import com.butent.bee.shared.utils.Codec;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -50,7 +51,7 @@ import javax.ejb.Stateless;
 @LocalBean
 public class CommonsModuleBean implements BeeModule {
 
-  private static Logger logger = Logger.getLogger(CommonsModuleBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(CommonsModuleBean.class);
 
   private static final Splitter ID_SPLITTER =
       Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();

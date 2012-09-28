@@ -1,9 +1,8 @@
 package com.butent.bee.server;
 
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.utils.LogUtils;
-
-import java.util.logging.Logger;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -18,7 +17,7 @@ import javax.servlet.http.HttpSessionListener;
 @WebListener
 public class ServletSessionListener implements HttpSessionListener {
 
-  private static Logger logger = Logger.getLogger(ServletSessionListener.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(ServletSessionListener.class);
 
   @EJB
   DispatcherBean dispatcher;
@@ -35,7 +34,7 @@ public class ServletSessionListener implements HttpSessionListener {
       try {
         dispatcher.doLogout((String) loginName);
       } catch (EJBException e) {
-        LogUtils.warning(logger, e.getMessage());
+        logger.warning(e.getMessage());
       }
     }
   }

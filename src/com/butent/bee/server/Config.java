@@ -10,32 +10,32 @@ import com.butent.bee.server.io.Filter;
 import com.butent.bee.server.io.WildcardFilter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.io.File;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * Contains essential server configuration parameters like directory structure or files blacklist.
  */
 
 public class Config {
-  private static Logger logger = Logger.getLogger(Config.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(Config.class);
 
-  public static final File WAR_DIR;
-  public static final File WEB_INF_DIR;
+  public static File WAR_DIR;
+  public static File WEB_INF_DIR;
 
-  public static final File SOURCE_DIR;
+  public static File SOURCE_DIR;
 
-  public static final File SCHEMA_DIR;
-  public static final File CONFIG_DIR;
-  public static final File USER_DIR;
+  public static File SCHEMA_DIR;
+  public static File CONFIG_DIR;
+  public static File USER_DIR;
 
   private static Properties properties;
 
@@ -44,28 +44,6 @@ public class Config {
 
   private static List<Filter> fileBlacklist = null;
   private static List<String> textExtensions = null;
-
-  static {
-    Class<?> z = Config.class;
-    String path = z.getResource(z.getSimpleName() + ".class").getPath();
-
-    String sub = "/WEB-INF/";
-    String w = path.substring(path.indexOf('/'), path.indexOf(sub) + sub.length() - 1);
-    LogUtils.infoNow(logger, "web inf path:", w);
-
-    File dir = new File(w);
-
-    WAR_DIR = dir.getParentFile();
-    WEB_INF_DIR = dir;
-
-    SOURCE_DIR = new File(WAR_DIR.getParentFile(), "src");
-
-    SCHEMA_DIR = new File(dir, "schemas");
-    CONFIG_DIR = new File(dir, "config");
-    USER_DIR = new File(dir, "user");
-
-    properties = loadProperties("server.properties");
-  }
 
   public static String getConfigPath(String resource) {
     Assert.notEmpty(resource);
@@ -188,7 +166,7 @@ public class Config {
     }
 
     if (warn && BeeUtils.isEmpty(path)) {
-      LogUtils.warning(logger, resource, "resource not found");
+      logger.warning(resource, "resource not found");
     }
     return path;
   }
@@ -221,6 +199,28 @@ public class Config {
       return new File(USER_DIR, resource).getPath();
     }
     return null;
+  }
+
+  public static void init() {
+    Class<?> z = Config.class;
+    String path = z.getResource(z.getSimpleName() + ".class").getPath();
+  
+    String sub = "/WEB-INF/";
+    String w = path.substring(path.indexOf('/'), path.indexOf(sub) + sub.length() - 1);
+    logger.debug("web inf path:", w);
+  
+    File dir = new File(w);
+  
+    WAR_DIR = dir.getParentFile();
+    WEB_INF_DIR = dir;
+  
+    SOURCE_DIR = new File(WAR_DIR.getParentFile(), "src");
+  
+    SCHEMA_DIR = new File(dir, "schemas");
+    CONFIG_DIR = new File(dir, "config");
+    USER_DIR = new File(dir, "user");
+  
+    properties = loadProperties("server.properties");
   }
 
   public static boolean isText(File file) {

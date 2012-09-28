@@ -4,8 +4,9 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -22,7 +23,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
@@ -32,7 +32,7 @@ import javax.sql.DataSource;
  */
 
 public class JdbcUtils {
-  private static final Logger logger = Logger.getLogger(JdbcUtils.class.getName());
+  private static final BeeLogger logger = LogUtils.getLogger(JdbcUtils.class);
 
   public static void applyFetchSize(Statement stmt, int rows) throws JdbcException {
     Assert.notNull(stmt);
@@ -72,9 +72,9 @@ public class JdbcUtils {
       try {
         con.close();
       } catch (SQLException ex) {
-        LogUtils.warning(logger, ex, "Could not close JDBC Connection");
+        logger.warning(ex, "Could not close JDBC Connection");
       } catch (Exception ex) {
-        LogUtils.warning(logger, ex, "Unexpected exception on closing JDBC Connection");
+        logger.warning(ex, "Unexpected exception on closing JDBC Connection");
       }
     }
   }
@@ -84,9 +84,9 @@ public class JdbcUtils {
       try {
         rs.close();
       } catch (SQLException ex) {
-        LogUtils.warning(logger, ex, "Could not close JDBC ResultSet");
+        logger.warning(ex, "Could not close JDBC ResultSet");
       } catch (Exception ex) {
-        LogUtils.warning(logger, ex, "Unexpected exception on closing JDBC ResultSet");
+        logger.warning(ex, "Unexpected exception on closing JDBC ResultSet");
       }
     }
   }
@@ -96,9 +96,9 @@ public class JdbcUtils {
       try {
         stmt.close();
       } catch (SQLException ex) {
-        LogUtils.warning(logger, ex, "Could not close JDBC Statement");
+        logger.warning(ex, "Could not close JDBC Statement");
       } catch (Exception ex) {
-        LogUtils.warning(logger, ex, "Unexpected exception on closing JDBC Statement");
+        logger.warning(ex, "Unexpected exception on closing JDBC Statement");
       }
     }
   }
@@ -197,7 +197,7 @@ public class JdbcUtils {
         c = ((BeeResultSet) obj).getColumnCount();
       }
     } catch (SQLException ex) {
-      LogUtils.severe(logger, ex);
+      logger.error(ex);
     }
     return c;
   }
@@ -261,7 +261,7 @@ public class JdbcUtils {
     } catch (SQLFeatureNotSupportedException ex) {
       crs = JdbcConst.FEATURE_NOT_SUPPORTED;
     } catch (SQLException ex) {
-      LogUtils.warning(logger, ex);
+      logger.warning(ex);
       crs = BeeConst.ERROR;
     }
     return crs;
@@ -274,10 +274,10 @@ public class JdbcUtils {
     try {
       z = rs.getHoldability();
     } catch (SQLFeatureNotSupportedException ex) {
-      LogUtils.warning(logger, ex);
+      logger.warning(ex);
       z = BeeConst.INT_FALSE;
     } catch (SQLException ex) {
-      LogUtils.warning(logger, ex);
+      logger.warning(ex);
       z = BeeConst.INT_ERROR;
     }
     return z;
@@ -293,7 +293,7 @@ public class JdbcUtils {
     } catch (SQLFeatureNotSupportedException ex) {
       info = JdbcConst.FEATURE_NOT_SUPPORTED;
     } catch (SQLException ex) {
-      LogUtils.warning(logger, ex);
+      logger.warning(ex);
       info = ex.toString();
     }
     return info;
@@ -413,7 +413,7 @@ public class JdbcUtils {
     } catch (SQLFeatureNotSupportedException ex) {
       info = JdbcConst.FEATURE_NOT_SUPPORTED;
     } catch (SQLException ex) {
-      LogUtils.warning(logger, ex);
+      logger.warning(ex);
       info = ex.toString();
     }
     return info;
@@ -438,7 +438,7 @@ public class JdbcUtils {
     try {
       warn = conn.getWarnings();
     } catch (SQLException ex) {
-      LogUtils.warning(logger, ex);
+      logger.warning(ex);
       warn = null;
     }
 
@@ -458,7 +458,7 @@ public class JdbcUtils {
     try {
       warn = rs.getWarnings();
     } catch (SQLException ex) {
-      LogUtils.warning(logger, ex);
+      logger.warning(ex);
       warn = null;
     }
 
@@ -478,7 +478,7 @@ public class JdbcUtils {
     try {
       warn = stmt.getWarnings();
     } catch (SQLException ex) {
-      LogUtils.warning(logger, ex);
+      logger.warning(ex);
       warn = null;
     }
 
@@ -607,7 +607,7 @@ public class JdbcUtils {
 
       ok = true;
     } catch (SQLException ex) {
-      LogUtils.severe(logger, ex);
+      logger.error(ex);
       col.setProperty(ex.getClass().getSimpleName(), ex.getMessage());
     }
     return ok;
@@ -680,7 +680,7 @@ public class JdbcUtils {
     try {
       ok = conn.getMetaData().supportsPositionedUpdate();
     } catch (SQLException ex) {
-      LogUtils.warning(logger, ex);
+      logger.warning(ex);
       ok = false;
     }
     return ok;

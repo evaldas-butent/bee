@@ -7,12 +7,13 @@ import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -54,7 +55,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -106,13 +106,13 @@ public class XmlUtils {
     }
   }
 
+  private static BeeLogger logger = LogUtils.getLogger(XmlUtils.class);
+
   public static final String DEFAULT_XML_EXTENSION = "xml";
   public static final String DEFAULT_XSL_EXTENSION = "xsl";
 
   private static final String ALL_NS = "*";
   private static final String ALL_TAGS = "*";
-
-  private static Logger logger = Logger.getLogger(XmlUtils.class.getName());
 
   private static DocumentBuilder domBuilder;
 
@@ -144,7 +144,7 @@ public class XmlUtils {
       dbf.setXIncludeAware(true);
       bld = dbf.newDocumentBuilder();
     } catch (ParserConfigurationException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
       bld = null;
     }
 
@@ -155,7 +155,7 @@ public class XmlUtils {
     try {
       tf = TransformerFactory.newInstance();
     } catch (TransformerFactoryConfigurationError ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
     }
     xsltFactory = tf;
 
@@ -164,7 +164,7 @@ public class XmlUtils {
     try {
       sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
     } catch (Exception ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
     }
     schemaFactory = sf;
   }
@@ -176,7 +176,7 @@ public class XmlUtils {
   public static Document fromFileName(String fileName) {
     File fl = new File(fileName);
     if (!FileUtils.isInputFile(fl)) {
-      LogUtils.severe(logger, fileName, "not an input file");
+      logger.error(fileName, "not an input file");
       return null;
     }
 
@@ -234,14 +234,14 @@ public class XmlUtils {
     }
 
     if (doc == null) {
-      LogUtils.warning(logger, src, xsl, "cannot parse xml");
+      logger.warning(src, xsl, "cannot parse xml");
       return null;
     }
 
     NodeList lst = doc.getElementsByTagNameNS(ALL_NS, tag);
     int r = (lst == null) ? 0 : lst.getLength();
     if (r <= 0) {
-      LogUtils.warning(logger, "tag", tag, "not found in", src, xsl);
+      logger.warning("tag", tag, "not found in", src, xsl);
       return null;
     }
 
@@ -558,7 +558,7 @@ public class XmlUtils {
 
     Document doc = fromFileName(fileName);
     if (doc == null) {
-      LogUtils.warning(logger, fileName, "cannot parse xml");
+      logger.warning(fileName, "cannot parse xml");
       return null;
     }
     return getTreeInfo(doc, "0");
@@ -818,7 +818,7 @@ public class XmlUtils {
         tpInf = getNotationInfo((Notation) nd);
         break;
       default:
-        LogUtils.warning(logger, "unknown node type", tp);
+        logger.warning("unknown node type", tp);
         tpInf = PropertyUtils.createProperties(nd.toString(),
             BeeUtils.concat(1, "unknown node type", tp));
     }
@@ -865,7 +865,7 @@ public class XmlUtils {
       error = e.getMessage();
     }
     if (!BeeUtils.isEmpty(error)) {
-      LogUtils.severe(logger, resource, error);
+      logger.error(resource, error);
     }
     return ret;
   }
@@ -916,7 +916,7 @@ public class XmlUtils {
     try {
       transformer = xsltFactory.newTransformer();
     } catch (TransformerConfigurationException ex) {
-      LogUtils.severe(logger, ex);
+      logger.error(ex);
       transformer = null;
     }
     if (transformer == null) {
@@ -931,7 +931,7 @@ public class XmlUtils {
     try {
       transformer.transform(new DOMSource(nd), new StreamResult(writer));
     } catch (TransformerException ex) {
-      LogUtils.severe(logger, ex);
+      logger.error(ex);
     }
     return writer.getBuffer().toString();
   }
@@ -1057,7 +1057,7 @@ public class XmlUtils {
 
   private static boolean checkBuilder() {
     if (domBuilder == null) {
-      LogUtils.severe(logger, "Document Builder not available");
+      logger.error("Document Builder not available");
       return false;
     } else {
       return true;
@@ -1073,9 +1073,9 @@ public class XmlUtils {
     try {
       ret = domBuilder.parse(fl);
     } catch (SAXException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
     } catch (IOException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
     }
     return ret;
   }
@@ -1089,9 +1089,9 @@ public class XmlUtils {
     try {
       ret = domBuilder.parse(new InputSource(rdr));
     } catch (SAXException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
     } catch (IOException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
     }
     return ret;
   }
@@ -1103,7 +1103,7 @@ public class XmlUtils {
       Transformer transf = xsltFactory.newTransformer(xsl);
       transf.transform(src, dst);
     } catch (TransformerException ex) {
-      LogUtils.severe(logger, ex);
+      logger.error(ex);
       ok = false;
     }
     return ok;

@@ -12,6 +12,8 @@ import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.CellType;
@@ -31,7 +33,6 @@ import com.butent.bee.shared.ui.SelectorColumn;
 import com.butent.bee.shared.ui.StyleDeclaration;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import org.w3c.dom.Document;
@@ -40,7 +41,6 @@ import org.w3c.dom.Element;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -51,6 +51,8 @@ import javax.ejb.Stateless;
 
 @Stateless
 public class GridLoaderBean {
+
+  private static BeeLogger logger = LogUtils.getLogger(GridLoaderBean.class);
 
   private static final String TAG_GRID = "Grid";
   private static final String TAG_COLUMNS = "columns";
@@ -148,8 +150,6 @@ public class GridLoaderBean {
 
   private static final String ATTR_RENDER_MODE = "renderMode";
 
-  private static Logger logger = Logger.getLogger(GridLoaderBean.class.getName());
-
   @EJB
   SystemBean sys;
 
@@ -204,7 +204,7 @@ public class GridLoaderBean {
       return null;
     }
     if (!BeeUtils.same(XmlUtils.getLocalName(gridElement), TAG_GRID)) {
-      LogUtils.warning(logger, "unrecognized grid element tag name", gridElement.getTagName());
+      logger.warning("unrecognized grid element tag name", gridElement.getTagName());
       return null;
     }
 
@@ -212,7 +212,7 @@ public class GridLoaderBean {
     String viewName = gridElement.getAttribute(UiConstants.ATTR_VIEW_NAME);
 
     if (BeeUtils.isEmpty(gridName)) {
-      LogUtils.warning(logger, "Grid attribute", UiConstants.ATTR_NAME, "not found");
+      logger.warning("Grid attribute", UiConstants.ATTR_NAME, "not found");
       return null;
     }
 
@@ -224,7 +224,7 @@ public class GridLoaderBean {
       grid = new GridDescription(gridName);
     } else {
       if (!sys.isView(viewName)) {
-        LogUtils.warning(logger, "Grid", gridName, "unrecognized view name:", viewName);
+        logger.warning("Grid", gridName, "unrecognized view name:", viewName);
         return null;
       }
 
@@ -236,7 +236,7 @@ public class GridLoaderBean {
 
     List<Element> columnGroups = XmlUtils.getElementsByLocalName(gridElement, TAG_COLUMNS);
     if (columnGroups.isEmpty()) {
-      LogUtils.warning(logger, "Grid", gridName, "tag", TAG_COLUMNS, "not found");
+      logger.warning("Grid", gridName, "tag", TAG_COLUMNS, "not found");
       return null;
     }
 
@@ -245,7 +245,7 @@ public class GridLoaderBean {
       columns.addAll(XmlUtils.getChildrenElements(columnGroups.get(i)));
     }
     if (columns.isEmpty()) {
-      LogUtils.warning(logger, "Grid", gridName, "has no columns");
+      logger.warning("Grid", gridName, "has no columns");
       return null;
     }
 
@@ -257,17 +257,16 @@ public class GridLoaderBean {
       String colName = columnElement.getAttribute(UiConstants.ATTR_NAME);
 
       if (colType == null) {
-        LogUtils.warning(logger, "Grid", gridName, "column", i, colName,
+        logger.warning("Grid", gridName, "column", i, colName,
             "type", colTag, "not recognized");
         continue;
       }
       if (BeeUtils.isEmpty(colName)) {
-        LogUtils.warning(logger, "Grid", gridName, "column", i, colTag, "name not specified");
+        logger.warning("Grid", gridName, "column", i, colTag, "name not specified");
         continue;
       }
       if (grid.hasColumn(colName)) {
-        LogUtils.warning(logger, "Grid", gridName, "column", i, colTag,
-            "duplicate column name:", colName);
+        logger.warning("Grid", gridName, "column", i, colTag, "duplicate column name:", colName);
         continue;
       }
 
@@ -284,7 +283,7 @@ public class GridLoaderBean {
     }
 
     if (grid.isEmpty()) {
-      LogUtils.warning(logger, "Grid", gridName, "has no columns");
+      logger.warning("Grid", gridName, "has no columns");
       return null;
     }
     return grid;
@@ -493,7 +492,7 @@ public class GridLoaderBean {
           }
           ok = true;
         } else {
-          LogUtils.warning(logger, viewName, "unrecognized view column:", source);
+          logger.warning(viewName, "unrecognized view column:", source);
         }
         break;
 
@@ -776,7 +775,7 @@ public class GridLoaderBean {
     if (!BeeUtils.isEmpty(renderMode)) {
       dst.setRenderMode(renderMode.trim());
     }
-    
+
     String newRowForm = src.getAttribute(UiConstants.ATTR_NEW_ROW_FORM);
     if (!BeeUtils.isEmpty(newRowForm)) {
       dst.setNewRowForm(newRowForm);

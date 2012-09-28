@@ -11,12 +11,12 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.Collection;
 import java.util.List;
@@ -59,7 +59,7 @@ public class MailModuleBean implements BeeModule {
 
     if (BeeUtils.same(svc, MailConstants.SVC_RESTART_PROXY)) {
       response = proxy.initServer();
-      response.showLog(logger);
+      response.log(logger);
 
     } else {
       String msg = BeeUtils.concat(1, "Mail service not recognized:", svc);

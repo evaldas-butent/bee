@@ -18,10 +18,11 @@ import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.io.File;
@@ -29,7 +30,6 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
 
@@ -40,7 +40,7 @@ import javax.ejb.Stateless;
 
 @Stateless
 public class SystemServiceBean {
-  private static Logger logger = Logger.getLogger(SystemServiceBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(SystemServiceBean.class);
 
   public ResponseObject doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notEmpty(svc);
@@ -62,7 +62,7 @@ public class SystemServiceBean {
 
     } else {
       String msg = BeeUtils.concat(1, svc, "system service not recognized");
-      LogUtils.warning(logger, msg);
+      logger.warning(msg);
       buff.addWarning(msg);
     }
     return response;

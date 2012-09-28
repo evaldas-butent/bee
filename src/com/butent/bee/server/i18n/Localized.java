@@ -3,16 +3,17 @@ package com.butent.bee.server.i18n;
 import com.google.common.collect.Maps;
 
 import com.butent.bee.server.io.ExtensionFilter;
-import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.io.FileNameUtils.Component;
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.WildcardFilter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.Wildcards;
 
 import java.io.File;
@@ -21,7 +22,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 /**
  * Initializes or makes available particular localizations.
@@ -36,6 +36,9 @@ public class Localized {
   }
 
   public static Locale defaultLocale = Locale.getDefault();
+
+  private static BeeLogger logger = LogUtils.getLogger(Localized.class);
+
   private static Locale rootLocale = Locale.ROOT;
 
   private static Map<Locale, File> availableConstants = null;
@@ -43,8 +46,6 @@ public class Localized {
 
   private static Map<Locale, LocalizableConstants> localizedConstants = Maps.newHashMap();
   private static Map<Locale, LocalizableMessages> localizedMessages = Maps.newHashMap();
-
-  private static Logger logger = Logger.getLogger(Localized.class.getName());
 
   public static Map<Locale, File> getAvailableConstants() {
     return availableConstants;
@@ -78,19 +79,19 @@ public class Localized {
 
     Locale z = normalize(locale, availableConstants);
     if (z == null) {
-      LogUtils.severe(logger, LocalizableType.CONSTANTS, transform(locale), "not available");
+      logger.error(LocalizableType.CONSTANTS, transform(locale), "not available");
       return null;
     }
 
     Properties properties = FileUtils.readProperties(availableConstants.get(z));
-    
+
     Map<String, String> dictionary = Maps.newHashMap();
     for (String name : properties.stringPropertyNames()) {
       dictionary.put(name, properties.getProperty(name));
     }
     return dictionary;
   }
-  
+
   public static LocalizableMessages getMessages() {
     return getMessages(defaultLocale);
   }
@@ -153,7 +154,7 @@ public class Localized {
           FileUtils.readProperties(availableConstants.get(z)));
       Assert.notNull(constants);
       localizedConstants.put(z, constants);
-      LogUtils.info(logger, LocalizableType.CONSTANTS, transform(z), "loaded");
+      logger.debug(LocalizableType.CONSTANTS, transform(z), "loaded");
     }
     return constants;
   }
@@ -173,7 +174,7 @@ public class Localized {
           FileUtils.readProperties(availableMessages.get(z)));
       Assert.notNull(messages);
       localizedMessages.put(z, messages);
-      LogUtils.info(logger, LocalizableType.MESSAGES, transform(z), "loaded");
+      logger.debug(LocalizableType.MESSAGES, transform(z), "loaded");
     }
     return messages;
   }
@@ -217,14 +218,14 @@ public class Localized {
       }
 
       if (name.charAt(baseLen) != sep) {
-        LogUtils.severe(logger, type, "unrecognized localization", file.getPath());
+        logger.error(type, "unrecognized localization", file.getPath());
         continue;
       }
 
       sfx = name.substring(baseLen + 1);
       locale = I18nUtils.toLocale(sfx);
       if (locale == null) {
-        LogUtils.severe(logger, type, sfx, "locale not available", file.getPath());
+        logger.error(type, sfx, "locale not available", file.getPath());
         continue;
       }
 
@@ -233,7 +234,7 @@ public class Localized {
     }
 
     if (cnt <= 0) {
-      LogUtils.severe(logger, type, dir.getPath(), baseName, "not found");
+      logger.error(type, dir.getPath(), baseName, "not found");
     }
     return cnt > 0;
   }
@@ -249,7 +250,7 @@ public class Localized {
       default:
         Assert.untouchable();
     }
-    LogUtils.info(logger, type, "found localization", transform(locale), file.getPath());
+    logger.debug(type, "found localization", transform(locale), file.getPath());
   }
 
   private Localized() {

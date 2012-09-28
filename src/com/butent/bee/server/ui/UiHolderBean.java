@@ -13,13 +13,14 @@ import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuEntry;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import org.w3c.dom.Document;
@@ -30,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -50,7 +50,7 @@ public class UiHolderBean {
   public enum UiObject {
     GRID("grids"), FORM("forms"), MENU("menu");
 
-    private String path;
+    private final String path;
 
     private UiObject(String path) {
       this.path = path;
@@ -70,7 +70,7 @@ public class UiHolderBean {
     }
   }
 
-  private static Logger logger = Logger.getLogger(UiHolderBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(UiHolderBean.class);
 
   @EJB
   ModuleHolderBean moduleBean;
@@ -103,9 +103,9 @@ public class UiHolderBean {
 
     if (grid != null) {
       if (!BeeUtils.same(grid.getName(), gridName)) {
-        LogUtils.warning(logger, "Grid name doesn't match resource name:", gridName, resource);
+        logger.warning("Grid name doesn't match resource name:", gridName, resource);
       } else if (grid.isEmpty()) {
-        LogUtils.warning(logger, resource, "Grid has no columns defined:", gridName);
+        logger.warning(resource, "Grid has no columns defined:", gridName);
       } else {
         return grid;
       }
@@ -171,7 +171,7 @@ public class UiHolderBean {
           }
         }
         if (menu == null || !(menu instanceof MenuEntry)) {
-          LogUtils.severe(logger, "Menu parent is not valid:", "Module:", xmlMenu.getModuleName(),
+          logger.error("Menu parent is not valid:", "Module:", xmlMenu.getModuleName(),
               "; Menu:", xmlMenu.getName(), "; Parent:", parent);
         } else {
           List<Menu> items = ((MenuEntry) menu).getItems();
@@ -339,9 +339,9 @@ public class UiHolderBean {
       }
     }
     if (BeeUtils.isEmpty(cnt)) {
-      LogUtils.severe(logger, "No", obj.name(), "descriptions found");
+      logger.error("No", obj.name(), "descriptions found");
     } else {
-      LogUtils.infoNow(logger, "Loaded", cnt, obj.name(), "descriptions");
+      logger.info("Loaded", cnt, obj.name(), "descriptions");
     }
   }
 
@@ -354,11 +354,11 @@ public class UiHolderBean {
       String name = NameUtils.getClassName(object.getClass());
 
       if (cache.containsKey(key(objectName))) {
-        LogUtils.warning(logger, BeeUtils.parenthesize(moduleName),
+        logger.warning(BeeUtils.parenthesize(moduleName),
             "Dublicate", name, "name:", BeeUtils.bracket(objectName));
       } else {
         cache.put(key(objectName), object);
-        LogUtils.info(logger, BeeUtils.parenthesize(moduleName),
+        logger.debug(BeeUtils.parenthesize(moduleName),
             "Registered", name, BeeUtils.bracket(objectName));
       }
     }

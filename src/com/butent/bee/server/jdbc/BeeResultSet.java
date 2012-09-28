@@ -5,9 +5,10 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -20,7 +21,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * Manages JDBC result sets, which are objects for containing results from SQL statements to a JDBC
@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  */
 
 public class BeeResultSet implements Transformable {
-  private static final Logger logger = Logger.getLogger(BeeResultSet.class.getName());
+  private static final BeeLogger logger = LogUtils.getLogger(BeeResultSet.class);
 
   public static List<Property> getInfo(ResultSet rs) {
     Assert.notNull(rs);
@@ -60,7 +60,7 @@ public class BeeResultSet implements Transformable {
         }
       }
     } catch (SQLException ex) {
-      LogUtils.warning(logger, ex);
+      logger.warning(ex);
     }
     return lst;
   }
@@ -321,6 +321,7 @@ public class BeeResultSet implements Transformable {
     return sb.toString();
   }
 
+  @Override
   public String transform() {
     return toString();
   }
@@ -335,7 +336,7 @@ public class BeeResultSet implements Transformable {
     }
     int direction = JdbcUtils.fetchDirectionFromString(s);
     if (!JdbcUtils.validFetchDirection(direction)) {
-      LogUtils.warning(logger, "unrecognized fetch direction", s);
+      logger.warning("unrecognized fetch direction", s);
       return false;
     }
 
@@ -358,12 +359,12 @@ public class BeeResultSet implements Transformable {
         addState(State.CHANGED);
         ok = true;
       } else {
-        LogUtils.warning(logger, "fetch size not updated:", "expected", size, "getFetchSize", z);
+        logger.warning("fetch size not updated:", "expected", size, "getFetchSize", z);
         ok = false;
       }
     } catch (SQLException ex) {
       if (size < 0) {
-        LogUtils.warning(logger, ex, "Fetch Size:", size);
+        logger.warning(ex, "Fetch Size:", size);
       } else {
         handleError(ex);
       }
@@ -380,7 +381,7 @@ public class BeeResultSet implements Transformable {
 
   private void handleError(SQLException ex) {
     errors.add(ex);
-    LogUtils.error(logger, ex);
+    logger.error(ex);
     addState(State.ERROR);
   }
 

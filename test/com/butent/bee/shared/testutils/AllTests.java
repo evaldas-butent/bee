@@ -10,7 +10,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses(value = {TestBeeUtilsisEmpty.class,
     TestBeeUtilscontaintAny.class, TestBeeUtilsFilterType.class,
     TestBeeUtilsTransform.class, TestBeeUtilsIsEmpty2Par.class,
-    TestArrayUtils.class, TestLogUtils.class, TestPropertyUtils.class,
+    TestArrayUtils.class, TestPropertyUtils.class,
     TestValueUtils.class, TestTimeUtils.class, TestRowComparator.class,
     TestCodec.class, TestIsExpression.class, TestIsCondition.class,
     TestSqlCreate.class, TestSqlUtilsIsQuery.class, TestSqlInsert.class,

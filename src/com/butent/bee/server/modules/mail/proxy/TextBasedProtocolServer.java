@@ -1,7 +1,7 @@
 package com.butent.bee.server.modules.mail.proxy;
 
 import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.logging.LogUtils;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;

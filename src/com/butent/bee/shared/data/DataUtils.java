@@ -19,11 +19,12 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
@@ -52,6 +53,8 @@ public class DataUtils {
 
   public static final long NEW_ROW_ID = 0L;
   public static final long NEW_ROW_VERSION = 0L;
+
+  private static BeeLogger logger = LogUtils.getLogger(DataUtils.class);
 
   private static final Predicate<Long> IS_ID = new Predicate<Long>() {
     @Override
@@ -379,17 +382,17 @@ public class DataUtils {
   public static int getMaxInitialRowSetSize() {
     return maxInitialRowSetSize;
   }
-  
+
   public static String getMaxValue(IsColumn column) {
     if (column == null) {
       return null;
     }
-    
+
     ValueType type = column.getType();
     if (type == null) {
       return null;
     }
-    
+
     String value;
     switch (type) {
       case INTEGER:
@@ -403,7 +406,7 @@ public class DataUtils {
       case DECIMAL:
         int precision = column.getPrecision();
         int scale = column.getScale();
-        
+
         if (precision > 0 && scale <= 0) {
           value = BeeUtils.toString(Math.pow(10, precision) - 1);
         } else if (precision > 0 && scale < precision) {
@@ -423,12 +426,12 @@ public class DataUtils {
     if (column == null) {
       return null;
     }
-    
+
     ValueType type = column.getType();
     if (type == null) {
       return null;
     }
-    
+
     String value;
     switch (type) {
       case INTEGER:
@@ -442,7 +445,7 @@ public class DataUtils {
       case DECIMAL:
         int precision = column.getPrecision();
         int scale = column.getScale();
-        
+
         if (precision > 0 && scale <= 0) {
           value = BeeUtils.toString(-Math.pow(10, precision) + 1);
         } else if (precision > 0 && scale < precision) {
@@ -457,7 +460,7 @@ public class DataUtils {
     }
     return value;
   }
-  
+
   public static List<Long> getRowIds(BeeRowSet rowSet) {
     List<Long> result = Lists.newArrayList();
     for (BeeRow row : rowSet.getRows()) {
@@ -716,7 +719,7 @@ public class DataUtils {
           flt = Filter.isNot(flt);
         }
       } else {
-        LogUtils.warning(LogUtils.getDefaultLogger(), "Unknown column in expression: " + expr);
+        logger.warning("Unknown column in expression: " + expr);
       }
     }
     return flt;

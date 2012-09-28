@@ -1,8 +1,9 @@
 package com.butent.bee.server;
 
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.LogUtils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -10,7 +11,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 
 @SuppressWarnings("serial")
 public class FileServlet extends HttpServlet {
-  private static Logger logger = Logger.getLogger(FileServlet.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(FileServlet.class);
 
   private static final int DEFAULT_BUFFER_SIZE = 10240;
 
@@ -87,7 +87,7 @@ public class FileServlet extends HttpServlet {
 
     if (!BeeUtils.isEmpty(err)) {
       try {
-        LogUtils.warning(logger, err);
+        logger.warning(err);
         resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, err);
       } catch (IOException e) {
         e.printStackTrace();

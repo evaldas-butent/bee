@@ -3,8 +3,9 @@ package com.butent.bee.server.jdbc;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
 /**
  * Contains necessary attributes for a JDBC statements, which are used for sending SQL commands to
@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  */
 
 public class BeeStatement {
-  private static final Logger logger = Logger.getLogger(BeeStatement.class.getName());
+  private static final BeeLogger logger = LogUtils.getLogger(BeeStatement.class);
 
   public static List<Property> getInfo(Statement stmt) {
     Assert.notNull(stmt);
@@ -64,13 +64,13 @@ public class BeeStatement {
         }
       }
     } catch (SQLException ex) {
-      LogUtils.warning(logger, ex);
+      logger.warning(ex);
     }
 
     return lst;
   }
 
-  private Set<State> states = EnumSet.noneOf(State.class);
+  private final Set<State> states = EnumSet.noneOf(State.class);
 
   private List<SQLException> errors = new ArrayList<SQLException>();
   private int fetchDirection;
@@ -437,7 +437,7 @@ public class BeeStatement {
     }
     int direction = JdbcUtils.fetchDirectionFromString(s);
     if (!JdbcUtils.validFetchDirection(direction)) {
-      LogUtils.warning(logger, "unrecognized fetch direction", s);
+      logger.warning("unrecognized fetch direction", s);
       return false;
     }
 
@@ -460,12 +460,12 @@ public class BeeStatement {
         addState(State.CHANGED);
         ok = true;
       } else {
-        LogUtils.warning(logger, "fetch size not updated:", "expected", size, "getFetchSize", z);
+        logger.warning("fetch size not updated:", "expected", size, "getFetchSize", z);
         ok = false;
       }
     } catch (SQLException ex) {
       if (size < 0) {
-        LogUtils.warning(logger, ex, "Fetch Size:", size);
+        logger.warning(ex, "Fetch Size:", size);
       } else {
         handleError(ex);
       }
@@ -490,13 +490,13 @@ public class BeeStatement {
         addState(State.CHANGED);
         ok = true;
       } else {
-        LogUtils.warning(logger, "max field size not updated:",
+        logger.warning("max field size not updated:",
             "expected", size, "getMaxFieldSize", z);
         ok = false;
       }
     } catch (SQLException ex) {
       if (size < 0) {
-        LogUtils.warning(logger, ex, "Max Field Size:", size);
+        logger.warning(ex, "Max Field Size:", size);
       } else {
         handleError(ex);
       }
@@ -521,12 +521,12 @@ public class BeeStatement {
         addState(State.CHANGED);
         ok = true;
       } else {
-        LogUtils.warning(logger, "max rows not updated:", "expected", rows, "getMaxRows", z);
+        logger.warning("max rows not updated:", "expected", rows, "getMaxRows", z);
         ok = false;
       }
     } catch (SQLException ex) {
       if (rows < 0) {
-        LogUtils.warning(logger, ex, "Max Rows:", rows);
+        logger.warning(ex, "Max Rows:", rows);
       } else {
         handleError(ex);
       }
@@ -544,7 +544,7 @@ public class BeeStatement {
       return true;
     }
     if (!BeeUtils.isBoolean(s)) {
-      LogUtils.warning(logger, "unrecognized poolable value", s);
+      logger.warning("unrecognized poolable value", s);
       return false;
     }
 
@@ -567,13 +567,13 @@ public class BeeStatement {
         addState(State.CHANGED);
         ok = true;
       } else {
-        LogUtils.warning(logger, "query timeout not updated:",
+        logger.warning("query timeout not updated:",
             "expected", timeout, "getQueryTimeout", z);
         ok = false;
       }
     } catch (SQLException ex) {
       if (timeout < 0) {
-        LogUtils.warning(logger, ex, "Query Timeout:", timeout);
+        logger.warning(ex, "Query Timeout:", timeout);
       } else {
         handleError(ex);
       }
@@ -729,7 +729,7 @@ public class BeeStatement {
 
   private void handleError(SQLException ex) {
     errors.add(ex);
-    LogUtils.error(logger, ex);
+    logger.error(ex);
     addState(State.ERROR);
   }
 

@@ -1,7 +1,7 @@
 package com.butent.bee.server.modules.mail.proxy;
 
 import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.logging.LogUtils;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
@@ -84,7 +84,7 @@ public abstract class TextBasedProtocolServerHandler extends SimpleChannelHandle
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-    e.getCause().printStackTrace();
+    logger.debug("Logged server exception", e.getCause());
   }
 
   public abstract TextBasedProtocolClient getClientInstance(Channel inboundChannel, Object tl);

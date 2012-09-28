@@ -33,18 +33,18 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -112,7 +112,7 @@ public class DataEditorBean {
     }
   }
 
-  private static Logger logger = Logger.getLogger(DataEditorBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(DataEditorBean.class);
 
   @EJB
   SystemBean sys;
@@ -269,7 +269,7 @@ public class DataEditorBean {
 
       if (cnt < rows.length && !response.hasErrors()) {
         String err = "Optimistic lock exception";
-        LogUtils.severe(logger, err, "Deleted", cnt, "of", rows.length);
+        logger.error(err, "Deleted", cnt, "of", rows.length);
         response.addError(err);
         response.setResponse(0);
       }
@@ -565,7 +565,7 @@ public class DataEditorBean {
     BeeState state = sys.getState(stateName);
 
     if (!table.hasState(state)) {
-      LogUtils.warning(logger, "State not registered:", tblName, stateName);
+      logger.warning("State not registered:", tblName, stateName);
     } else {
       Map<Long, Boolean> bitMap = Maps.newHashMap();
 

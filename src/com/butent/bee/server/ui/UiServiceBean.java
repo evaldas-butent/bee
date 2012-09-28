@@ -45,12 +45,13 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -63,7 +64,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -78,7 +78,7 @@ import javax.ejb.Stateless;
 @LocalBean
 public class UiServiceBean {
 
-  private static Logger logger = Logger.getLogger(UiServiceBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(UiServiceBean.class);
 
   @EJB
   UiHolderBean ui;
@@ -390,13 +390,13 @@ public class UiServiceBean {
       List<Element> elements = XmlUtils.getChildrenElements(srcDoc.getDocumentElement(),
           Sets.newHashSet(DecoratorConstants.TAG_ABSTRACT, DecoratorConstants.TAG_DECORATOR));
       if (elements.isEmpty()) {
-        LogUtils.warning(logger, "no decorators found in", path);
+        logger.warning("no decorators found in", path);
       }
 
       for (Element decorator : elements) {
         dstRoot.appendChild(dstDoc.importNode(decorator, true));
       }
-      LogUtils.infoNow(logger, elements.size(), "decorators loaded from", path);
+      logger.debug(elements.size(), "decorators loaded from", path);
     }
     return ResponseObject.response(XmlUtils.toString(dstDoc, false));
   }

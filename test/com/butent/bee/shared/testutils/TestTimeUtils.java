@@ -5,7 +5,6 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.Grego;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -33,21 +32,6 @@ public class TestTimeUtils {
 
   @After
   public void tearDown() throws Exception {
-  }
-
-  @Test
-  public final void testAdd() {
-
-    DateTime date = new DateTime();
-    date.setTime(1298362388227L);
-
-    TimeUtils.add(date, 10, 1);
-
-    assertEquals("11:13:08.227", LogUtils.dateToLog(date.getTime()));
-    TimeUtils.add(date, 10, 0);
-    assertEquals("11:13:08.227", LogUtils.dateToLog(date.getTime()));
-    TimeUtils.add(date, 10, 24);
-    assertEquals("11:13:08.227", LogUtils.dateToLog(date.getTime()));
   }
 
   @Test
@@ -88,7 +72,7 @@ public class TestTimeUtils {
     DateTime start3 = new DateTime(2011, 2, 7, 10, 30, 10);
 
     assertEquals(365, TimeUtils.fieldDifference(start1, start2, TimeUtils.FIELD_DAY_OF_YEAR));
-    assertEquals(12 ,TimeUtils.fieldDifference(start1, start2, TimeUtils.FIELD_MONTH));
+    assertEquals(12, TimeUtils.fieldDifference(start1, start2, TimeUtils.FIELD_MONTH));
     assertEquals(1, TimeUtils.fieldDifference(start1, start2, TimeUtils.FIELD_YEAR));
     assertEquals(52, TimeUtils.fieldDifference(start1, start2,
         TimeUtils.FIELD_DAY_OF_WEEK_IN_MONTH));

@@ -6,16 +6,14 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils.LogLevel;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
-import com.butent.bee.shared.utils.LogUtils.LogLevel;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Used to transport data with messages between various layers.
@@ -147,7 +145,7 @@ public class ResponseObject implements BeeSerializable {
   }
 
   @SuppressWarnings("unchecked")
-  public <T> T getResponse(T def, Logger logger) {
+  public <T> T getResponse(T def, BeeLogger logger) {
     Assert.notNull(def);
     T res = def;
 
@@ -156,12 +154,11 @@ public class ResponseObject implements BeeSerializable {
         res = (T) getResponse();
 
       } else if (logger != null) {
-        LogUtils.warning(logger,
-            "Requested response type:", BeeUtils.bracket(def.getClass()),
+        logger.warning("Requested response type:", BeeUtils.bracket(def.getClass()),
             "got:", BeeUtils.bracket(getResponse().getClass()));
       }
     }
-    // TODO: showLog(logger);
+    log(logger);
 
     return res;
   }
@@ -210,6 +207,27 @@ public class ResponseObject implements BeeSerializable {
     return !hasMessages(null) && !hasResponse();
   }
 
+  public void log(BeeLogger logger) {
+    if (logger != null && hasMessages()) {
+      for (ResponseMessage message : getMessages()) {
+        switch (message.getLevel()) {
+          case DEBUG:
+            logger.debug(message.getMessage());
+            break;
+          case ERROR:
+            logger.error(message.getMessage());
+            break;
+          case INFO:
+            logger.info(message.getMessage());
+            break;
+          case WARNING:
+            logger.warning(message.getMessage());
+            break;
+        }
+      }
+    }
+  }
+
   @Override
   public String serialize() {
     Serial[] members = Serial.values();
@@ -244,27 +262,6 @@ public class ResponseObject implements BeeSerializable {
     }
     this.response = response;
     return this;
-  }
-
-  public void showLog(BeeLogger logger) {
-    if (logger != null && hasMessages()) {
-      for (ResponseMessage message : getMessages()) {
-        switch (message.getLevel()) {
-          case DEBUG:
-            logger.debug(message.getMessage());
-            break;
-          case ERROR:
-            logger.error(message.getMessage());
-            break;
-          case INFO:
-            logger.info(message.getMessage());
-            break;
-          case WARNING:
-            logger.warning(message.getMessage());
-            break;
-        }
-      }
-    }
   }
 
   private String[] getMessageArray(Level lvl) {

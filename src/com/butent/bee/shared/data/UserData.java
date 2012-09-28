@@ -9,11 +9,12 @@ import com.google.common.collect.Multimap;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -39,6 +40,8 @@ public class UserData implements BeeSerializable, HasInfo {
   public static final String FLD_FIRST_NAME = "FirstName";
   public static final String FLD_LAST_NAME = "LastName";
 
+  private static BeeLogger logger = LogUtils.getLogger(UserData.class);
+
   public static UserData restore(String s) {
     UserData data = new UserData();
     data.deserialize(s);
@@ -55,7 +58,7 @@ public class UserData implements BeeSerializable, HasInfo {
   private Map<RightsState, Multimap<RightsObjectType, String>> rights;
 
   private Map<String, String> constants;
-  
+
   public UserData(long userId, String login, String firstName, String lastName) {
     this.userId = userId;
     this.login = login;
@@ -142,7 +145,7 @@ public class UserData implements BeeSerializable, HasInfo {
   public Map<String, String> getConstants() {
     return constants;
   }
-  
+
   public String getFirstName() {
     return firstName;
   }
@@ -154,7 +157,7 @@ public class UserData implements BeeSerializable, HasInfo {
         "First Name", getFirstName(),
         "Last Name", getLastName(),
         "Locale", getLocale());
-    
+
     if (!BeeUtils.isEmpty(properties)) {
       info.add(new Property("Properties", BeeUtils.bracket(properties.size())));
       info.addAll(PropertyUtils.createProperties(properties));
@@ -166,12 +169,12 @@ public class UserData implements BeeSerializable, HasInfo {
         info.add(new Property(entry.getKey().toString(), entry.getValue().toString()));
       }
     }
-    
+
     if (!BeeUtils.isEmpty(constants)) {
       info.add(new Property("Constants", BeeUtils.bracket(constants.size())));
       info.addAll(PropertyUtils.createProperties(constants));
     }
-    
+
     return info;
   }
 
@@ -301,7 +304,7 @@ public class UserData implements BeeSerializable, HasInfo {
     Assert.notNull(state);
 
     if (!BeeUtils.contains(type.getRegisteredStates(), state)) {
-      LogUtils.severe(LogUtils.getDefaultLogger(), "State", BeeUtils.bracket(state),
+      logger.error("State", BeeUtils.bracket(state),
           "is not registered for type", BeeUtils.bracket(type));
       return false;
     }

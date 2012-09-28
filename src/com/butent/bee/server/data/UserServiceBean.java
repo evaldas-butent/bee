@@ -21,10 +21,11 @@ import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.io.IOException;
@@ -35,7 +36,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
@@ -87,7 +87,7 @@ public class UserServiceBean {
         loc = I18nUtils.toLocale(locale);
 
         if (BeeUtils.isEmpty(loc)) {
-          LogUtils.warning(logger, data.getUserSign(), "Unknown user locale:", locale);
+          logger.warning(data.getUserSign(), "Unknown user locale:", locale);
         }
       }
       if (BeeUtils.isEmpty(loc)) {
@@ -116,7 +116,7 @@ public class UserServiceBean {
         try {
           prp.load(new StringReader(properties));
         } catch (IOException e) {
-          LogUtils.error(logger, e, properties);
+          logger.error(e, properties);
         }
         for (String p : prp.stringPropertyNames()) {
           props.put(p, prp.getProperty(p));
@@ -132,7 +132,7 @@ public class UserServiceBean {
     }
   }
 
-  private static Logger logger = Logger.getLogger(UserServiceBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(UserServiceBean.class);
 
   public static final String TBL_USERS = "Users";
   public static final String TBL_ROLES = "Roles";
@@ -377,19 +377,18 @@ public class UserServiceBean {
 
       response.setResponse(data).addInfo("User logged in:",
           user + " " + BeeUtils.parenthesize(data.getUserSign()));
-      LogUtils.infoNow(logger, (Object[]) response.getNotifications());
 
     } else if (BeeUtils.isEmpty(getUsers())) {
       response.setResponse(
           new UserData(-1, user, null, null)
               .setProperty("dsn", SqlBuilderFactory.getDsn()))
           .addWarning("Anonymous user logged in:", user);
-      LogUtils.warning(logger, (Object[]) response.getWarnings());
 
     } else {
       response.addError("Login attempt by an unauthorized user:", user);
-      LogUtils.severe(logger, (Object[]) response.getErrors());
     }
+    response.log(logger);
+
     return response;
   }
 
@@ -405,15 +404,15 @@ public class UserServiceBean {
 
       if (info.isOnline()) {
         info.setOnline(false);
-        LogUtils.infoNow(logger, "User logged out:", sign);
+        logger.info("User logged out:", sign);
       } else {
-        LogUtils.warning(logger, "User was not logged in:", sign);
+        logger.warning("User was not logged in:", sign);
       }
     } else if (BeeUtils.isEmpty(getUsers())) {
-      LogUtils.warning(logger, "Anonymous user logged out:", user);
+      logger.warning("Anonymous user logged out:", user);
 
     } else {
-      LogUtils.severe(logger, "Logout attempt by an unauthorized user:", user);
+      logger.error("Logout attempt by an unauthorized user:", user);
     }
   }
 

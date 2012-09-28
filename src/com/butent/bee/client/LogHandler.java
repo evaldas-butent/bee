@@ -9,7 +9,7 @@ import com.butent.bee.client.logging.LogWidgetHandler;
 import com.butent.bee.client.utils.Duration;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.utils.LogUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.Map;
@@ -20,7 +20,7 @@ import java.util.logging.Logger;
  * Manages appearance and content of the logger object.
  */
 public class LogHandler implements Module {
-  
+
   private final Logger logger;
   private final LogArea area;
 
@@ -28,7 +28,7 @@ public class LogHandler implements Module {
 
   public LogHandler() {
     super();
-    
+
     this.logger = Logger.getLogger(BeeConst.STRING_EMPTY);
     this.area = new LogArea();
 
@@ -46,13 +46,13 @@ public class LogHandler implements Module {
   }
 
   public void debug(Object... obj) {
-    LogUtils.debug(getLogger(), obj);
+    getLogger().info(BeeUtils.concat(1, obj));
   }
 
   public void debugCollection(Collection<?> collection) {
     if (collection != null) {
       for (Object obj : collection) {
-        LogUtils.debug(getLogger(), obj);
+        getLogger().info((String) obj);
       }
     }
   }
@@ -69,7 +69,8 @@ public class LogHandler implements Module {
     debug(obj);
     addSeparator();
   }
-  
+
+  @Override
   public void end() {
   }
 
@@ -92,10 +93,12 @@ public class LogHandler implements Module {
     return logger;
   }
 
+  @Override
   public String getName() {
     return getClass().getName();
   }
 
+  @Override
   public int getPriority(int p) {
     switch (p) {
       case PRIORITY_INIT:
@@ -111,7 +114,7 @@ public class LogHandler implements Module {
 
   public int getSize() {
     Widget parent = getArea().getParent();
-    return (parent instanceof Split) ? ((Split) parent).getWidgetSize(getArea()) :  BeeConst.UNDEF;
+    return (parent instanceof Split) ? ((Split) parent).getWidgetSize(getArea()) : BeeConst.UNDEF;
   }
 
   public void hide() {
@@ -119,18 +122,19 @@ public class LogHandler implements Module {
   }
 
   public void info(Object... obj) {
-    LogUtils.info(getLogger(), obj);
+    getLogger().info(BeeUtils.concat(1, obj));
   }
 
+  @Override
   public void init() {
   }
-  
+
   public boolean isEmpty() {
-    return getArea().isEmpty(); 
+    return getArea().isEmpty();
   }
 
   public void log(Level level, Object... obj) {
-    LogUtils.log(getLogger(), level, obj);
+    getLogger().log(level, BeeUtils.concat(1, obj));
   }
 
   public void resize(int size) {
@@ -155,7 +159,7 @@ public class LogHandler implements Module {
   }
 
   public void severe(Object... obj) {
-    LogUtils.severe(getLogger(), obj);
+    getLogger().severe(BeeUtils.concat(1, obj));
   }
 
   public void show() {
@@ -167,13 +171,14 @@ public class LogHandler implements Module {
   public void stack() {
     Throwable err = new Throwable();
     err.fillInStackTrace();
-    LogUtils.stack(getLogger(), err);
+    getLogger().severe(err.toString());
   }
 
+  @Override
   public void start() {
   }
 
   public void warning(Object... obj) {
-    LogUtils.warning(getLogger(), obj);
+    getLogger().warning(BeeUtils.concat(1, obj));
   }
 }

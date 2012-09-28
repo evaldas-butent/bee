@@ -3,20 +3,20 @@ package com.butent.bee.server.utils;
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.logging.Logger;
 
 /**
  * Enables to invoke methods from a given name reference.
  */
 
 public class Reflection {
-  private static Logger logger = Logger.getLogger(Reflection.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(Reflection.class);
 
   public static void invoke(Object obj, String methodName, RequestInfo req, ResponseBuffer resp) {
     Assert.notNull(obj);
@@ -54,11 +54,11 @@ public class Reflection {
       }
 
     } catch (IllegalArgumentException ex) {
-      LogUtils.error(logger, ex, method);
+      logger.error(ex, method);
     } catch (IllegalAccessException ex) {
-      LogUtils.error(logger, ex, method);
+      logger.error(ex, method);
     } catch (InvocationTargetException ex) {
-      LogUtils.error(logger, ex, method);
+      logger.error(ex, method);
     }
   }
 

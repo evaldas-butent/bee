@@ -13,16 +13,16 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SearchResult;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -44,7 +44,7 @@ public class ModuleHolderBean {
     DELAYED, FORCED
   }
 
-  private static Logger logger = Logger.getLogger(ModuleHolderBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(ModuleHolderBean.class);
 
   private final Map<String, BeeModule> modules = Maps.newHashMap();
 
@@ -138,20 +138,20 @@ public class ModuleHolderBean {
         String moduleName = module.getName();
 
         if (BeeUtils.isEmpty(moduleName)) {
-          LogUtils.severe(logger, "Module", BeeUtils.bracket(mod), "does not have name");
+          logger.error("Module", BeeUtils.bracket(mod), "does not have name");
 
         } else if (hasModule(moduleName)) {
-          LogUtils.severe(logger, "Dublicate module name:", BeeUtils.bracket(moduleName));
+          logger.error("Dublicate module name:", BeeUtils.bracket(moduleName));
 
         } else {
           modules.put(moduleName, module);
-          LogUtils.info(logger, "Registered module:", BeeUtils.bracket(moduleName));
+          logger.info("Registered module:", BeeUtils.bracket(moduleName));
         }
       } catch (NamingException ex) {
-        LogUtils.severe(logger, "Module not found:", BeeUtils.bracket(mod));
+        logger.error("Module not found:", BeeUtils.bracket(mod));
 
       } catch (ClassCastException ex) {
-        LogUtils.severe(logger, "Not a module:", BeeUtils.bracket(mod));
+        logger.error("Not a module:", BeeUtils.bracket(mod));
       }
     }
     boolean dependencyError = true;
@@ -165,7 +165,7 @@ public class ModuleHolderBean {
         if (!BeeUtils.isEmpty(dependencies)) {
           for (String depends : dependencies) {
             if (!hasModule(depends)) {
-              LogUtils.severe(logger, "Unregistering module", BeeUtils.bracket(mod),
+              logger.error("Unregistering module", BeeUtils.bracket(mod),
                   ", because it depends on nonexistent module", BeeUtils.bracket(depends));
               modules.remove(mod);
               dependencyError = true;
@@ -176,7 +176,7 @@ public class ModuleHolderBean {
       }
     }
     if (modules.isEmpty()) {
-      LogUtils.warning(logger, "No modules registered");
+      logger.warning("No modules registered");
     }
   }
 }

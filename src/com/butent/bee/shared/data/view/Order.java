@@ -8,10 +8,11 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Transformable;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
@@ -22,13 +23,15 @@ import java.util.List;
  */
 
 public class Order implements BeeSerializable, Transformable {
-  
+
   public static final String SORT_ASCENDING = "ascending";
   public static final String SORT_DESCENDING = "descending";
-  
-  private static final Splitter ITEM_SPLITTER = 
+
+  private static BeeLogger logger = LogUtils.getLogger(Order.class);
+
+  private static final Splitter ITEM_SPLITTER =
       Splitter.on(BeeConst.CHAR_COMMA).omitEmptyStrings().trimResults();
-  
+
   public static boolean isSortAscending(String s) {
     return BeeUtils.inListSame(s, SORT_ASCENDING, BeeConst.STRING_PLUS)
         || BeeUtils.isPrefix(SORT_ASCENDING, s);
@@ -58,7 +61,8 @@ public class Order implements BeeSerializable, Transformable {
       this.sources = sources;
       this.ascending = ascending;
     }
-    
+
+    @Override
     public void deserialize(String s) {
       Assert.untouchable();
     }
@@ -71,7 +75,7 @@ public class Order implements BeeSerializable, Transformable {
       if (!(obj instanceof Column)) {
         return false;
       }
-      return BeeUtils.same(getName(), ((Column) obj).getName()) 
+      return BeeUtils.same(getName(), ((Column) obj).getName())
           && isAscending() == ((Column) obj).isAscending();
     }
 
@@ -92,6 +96,7 @@ public class Order implements BeeSerializable, Transformable {
       return ascending;
     }
 
+    @Override
     public String serialize() {
       Object[] arr = new Object[getSources().size() + 2];
       arr[0] = getName();
@@ -106,6 +111,7 @@ public class Order implements BeeSerializable, Transformable {
       this.ascending = ascending;
     }
 
+    @Override
     public String transform() {
       StringBuilder sb = new StringBuilder(getName());
       if (getSources().size() != 1 || !BeeUtils.same(getName(), getSources().get(0))) {
@@ -121,22 +127,22 @@ public class Order implements BeeSerializable, Transformable {
       return BeeUtils.same(name, id);
     }
   }
-  
+
   public static Order parse(String input, Collection<String> colNames) {
     Assert.notEmpty(input);
     Assert.notEmpty(colNames);
-    
+
     Order order = new Order();
     String name;
     boolean asc;
     String w1;
     String w2;
-    
+
     for (String item : ITEM_SPLITTER.split(input)) {
       if (item.indexOf(BeeConst.CHAR_SPACE) > 0) {
         w1 = BeeUtils.getPrefix(item, BeeConst.CHAR_SPACE);
         w2 = BeeUtils.getSuffix(item, BeeConst.CHAR_SPACE);
-        
+
         if (isSortAscending(w2)) {
           name = w1;
           asc = true;
@@ -153,7 +159,7 @@ public class Order implements BeeSerializable, Transformable {
           name = null;
           asc = false;
         }
-        
+
       } else if (BeeUtils.isPrefixOrSuffix(item, BeeConst.CHAR_PLUS)) {
         name = BeeUtils.removePrefixAndSuffix(item, BeeConst.CHAR_PLUS);
         asc = true;
@@ -165,16 +171,16 @@ public class Order implements BeeSerializable, Transformable {
         name = item;
         asc = true;
       }
-      
+
       String colName = BeeUtils.getSame(colNames, name);
       if (BeeUtils.isEmpty(colName)) {
-        LogUtils.warning(LogUtils.getDefaultLogger(), "cannot parse order item: " + item);
+        logger.warning("cannot parse order item: " + item);
         continue;
       }
-      
+
       order.add(colName, asc);
     }
-    
+
     if (order.isEmpty()) {
       return null;
     }
@@ -200,7 +206,7 @@ public class Order implements BeeSerializable, Transformable {
     this();
     add(name, ascending);
   }
-  
+
   public void add(String name, boolean ascending) {
     add(name, Lists.newArrayList(name), ascending);
   }
@@ -219,6 +225,7 @@ public class Order implements BeeSerializable, Transformable {
     columns.clear();
   }
 
+  @Override
   public void deserialize(String s) {
     if (!columns.isEmpty()) {
       columns.clear();
@@ -231,7 +238,7 @@ public class Order implements BeeSerializable, Transformable {
     for (String col : cols) {
       String[] arr = Codec.beeDeserializeCollection(col);
       Assert.minLength(arr, 3);
-      
+
       List<String> lst = Lists.newArrayList(ArrayUtils.slice(arr, 2));
       add(arr[0], lst, BeeUtils.toBoolean(arr[1]));
     }
@@ -281,7 +288,7 @@ public class Order implements BeeSerializable, Transformable {
     }
     return false;
   }
-  
+
   public boolean isEmpty() {
     return columns.isEmpty();
   }
@@ -298,6 +305,7 @@ public class Order implements BeeSerializable, Transformable {
     }
   }
 
+  @Override
   public String serialize() {
     return Codec.beeSerialize(columns);
   }
@@ -314,6 +322,7 @@ public class Order implements BeeSerializable, Transformable {
     return transform();
   }
 
+  @Override
   public String transform() {
     return BeeUtils.transformCollection(getColumns(), BeeConst.DEFAULT_LIST_SEPARATOR);
   }

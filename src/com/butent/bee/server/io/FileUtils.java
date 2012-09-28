@@ -6,10 +6,11 @@ import com.butent.bee.server.Config;
 import com.butent.bee.server.io.FileNameUtils.Component;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.utils.Wildcards;
@@ -33,7 +34,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.SortedMap;
-import java.util.logging.Logger;
 
 /**
  * Contains utility functions, necessary for operations with files, for example search, read
@@ -50,12 +50,12 @@ public class FileUtils {
   public static final Filter FILE_FILTER = new NormalFileFilter();
   public static final Filter INPUT_FILTER = new InputFileFilter();
 
+  private static BeeLogger logger = LogUtils.getLogger(FileUtils.class);
+
   private static final Charset UTF_8 = Charset.forName(BeeConst.CHARSET_UTF8);
 
   private static int defaultBufferSize = 4096;
   private static Charset defaultCharset = UTF_8;
-
-  private static Logger logger = Logger.getLogger(FileUtils.class.getName());
 
   public static void closeQuietly(Reader rdr) {
     if (rdr == null) {
@@ -65,7 +65,7 @@ public class FileUtils {
     try {
       rdr.close();
     } catch (IOException ex) {
-      LogUtils.warning(logger, ex);
+      logger.warning(ex);
     }
   }
 
@@ -77,7 +77,7 @@ public class FileUtils {
     try {
       wrt.close();
     } catch (IOException ex) {
-      LogUtils.severe(logger, ex);
+      logger.error(ex);
     }
   }
 
@@ -99,14 +99,14 @@ public class FileUtils {
   public static String fileToString(File fl, Charset cs) {
     Assert.notNull(fl);
     if (!fl.exists()) {
-      LogUtils.warning(logger, fl.getAbsolutePath(), "file not found");
+      logger.warning(fl.getAbsolutePath(), "file not found");
       return null;
     }
 
     try {
       return streamToString(new FileInputStream(fl), cs);
     } catch (FileNotFoundException ex) {
-      LogUtils.severe(logger, ex);
+      logger.error(ex);
       return null;
     }
   }
@@ -235,7 +235,7 @@ public class FileUtils {
     try {
       path = fl.getCanonicalPath();
     } catch (IOException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
       path = BeeConst.STRING_EMPTY;
     }
     return path;
@@ -312,7 +312,7 @@ public class FileUtils {
     File fl = new File(fileName.trim());
 
     if (!fl.exists()) {
-      LogUtils.warning(logger, fileName, "file not found");
+      logger.warning(fileName, "file not found");
       return null;
     }
 
@@ -321,7 +321,7 @@ public class FileUtils {
     try {
       fr = new FileReader(fl);
     } catch (IOException ex) {
-      LogUtils.error(logger, ex, fileName);
+      logger.error(ex, fileName);
     }
     return fr;
   }
@@ -404,7 +404,7 @@ public class FileUtils {
     Assert.notNull(fl);
     Assert.notNull(cs);
     if (!fl.exists()) {
-      LogUtils.warning(logger, fl.getAbsolutePath(), "file not found");
+      logger.warning(fl.getAbsolutePath(), "file not found");
       return -1;
     }
 
@@ -416,9 +416,9 @@ public class FileUtils {
       fr = new InputStreamReader(new FileInputStream(fl), cs);
       prp.load(fr);
       cnt = prp.size() - size;
-      LogUtils.info(logger, cnt, "properties loaded from", fl.getAbsolutePath());
+      logger.debug(cnt, "properties loaded from", fl.getAbsolutePath());
     } catch (IOException ex) {
-      LogUtils.error(logger, ex, fl.getAbsolutePath());
+      logger.error(ex, fl.getAbsolutePath());
       cnt = -1;
     }
 
@@ -435,7 +435,7 @@ public class FileUtils {
     try {
       cs = Charset.forName(name);
     } catch (Exception ex) {
-      LogUtils.warning(logger, ex, name);
+      logger.warning(ex, name);
       cs = null;
     }
     return BeeUtils.nvl(cs, defaultCharset);
@@ -468,7 +468,7 @@ public class FileUtils {
       fw.append(src);
       ok = true;
     } catch (IOException ex) {
-      LogUtils.error(logger, ex, dst);
+      logger.error(ex, dst);
       ok = false;
     }
 
@@ -500,7 +500,7 @@ public class FileUtils {
         }
       } while (len > 0);
     } catch (IOException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
     }
 
     closeQuietly(fr);

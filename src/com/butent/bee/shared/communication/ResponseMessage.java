@@ -4,11 +4,11 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Transformable;
+import com.butent.bee.shared.logging.LogUtils.LogLevel;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
-import com.butent.bee.shared.utils.LogUtils.LogLevel;
 
 /**
  * Manages response message object with it's date, level and message parameters and methods for

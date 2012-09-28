@@ -6,15 +6,15 @@ import com.butent.bee.server.jdbc.JdbcException;
 import com.butent.bee.server.utils.BeeDataSource;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.LogUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -25,7 +25,7 @@ import javax.ejb.Stateless;
 
 @Stateless
 public class MetaDataBean {
-  private static Logger logger = Logger.getLogger(MetaDataBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(MetaDataBean.class);
 
   @EJB
   ResultSetBean rsb;
@@ -47,7 +47,7 @@ public class MetaDataBean {
       getKeys(ds, reqInfo, buff, false);
     } else {
       String msg = BeeUtils.concat(1, svc, "meta data service not recognized");
-      LogUtils.warning(logger, msg);
+      logger.warning(msg);
       buff.addWarning(msg);
     }
   }
@@ -59,7 +59,7 @@ public class MetaDataBean {
     try {
       prp = ds.getDbInfo();
     } catch (SQLException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
       buff.addError(ex);
       ok = false;
     }
@@ -94,9 +94,9 @@ public class MetaDataBean {
 
       rs.close();
     } catch (JdbcException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
     } catch (SQLException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
     }
   }
 
@@ -109,9 +109,9 @@ public class MetaDataBean {
 
       rs.close();
     } catch (JdbcException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
     } catch (SQLException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
     }
   }
 

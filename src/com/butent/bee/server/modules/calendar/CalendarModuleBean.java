@@ -58,6 +58,8 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
@@ -72,7 +74,6 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
@@ -82,7 +83,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -102,7 +102,7 @@ public class CalendarModuleBean implements BeeModule {
   private static final Filter VALID_APPOINTMENT = Filter.and(Filter.notEmpty(COL_START_DATE_TIME),
       ComparisonFilter.compareWithColumn(COL_START_DATE_TIME, Operator.LT, COL_END_DATE_TIME));
 
-  private static Logger logger = Logger.getLogger(CalendarModuleBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(CalendarModuleBean.class);
 
   @EJB
   SystemBean sys;
@@ -165,7 +165,7 @@ public class CalendarModuleBean implements BeeModule {
     if (!BeeUtils.isEmpty(timers)) {
       for (Timer timer : timers) {
         try {
-          LogUtils.warning(logger, "Canceled timer:", timer.getInfo());
+          logger.debug("Canceled timer:", timer.getInfo());
           timer.cancel();
         } catch (NoSuchObjectLocalException e) {
         }
@@ -220,7 +220,7 @@ public class CalendarModuleBean implements BeeModule {
               timerService.createSingleActionTimer(time.getJava(),
                   new TimerConfig(BeeUtils.toLong(row.get(reminderIdName)), false)));
 
-          LogUtils.info(logger, "Created timer:", time, row.get(reminderIdName));
+          logger.debug("Created timer:", time, row.get(reminderIdName));
         }
       }
     }
@@ -839,7 +839,7 @@ public class CalendarModuleBean implements BeeModule {
       appointments.setTableProperty(VIEW_ATTENDEES, DataUtils.buildList(attendees));
     }
 
-    LogUtils.infoNow(logger, SVC_GET_CALENDAR_APPOINTMENTS, appointments.getNumberOfRows(),
+    logger.info(SVC_GET_CALENDAR_APPOINTMENTS, appointments.getNumberOfRows(),
         appointments.getViewName(), attendees.getNumberOfRows(), attendees.getViewName());
 
     return ResponseObject.response(appointments);
@@ -952,7 +952,7 @@ public class CalendarModuleBean implements BeeModule {
       }
     }
 
-    LogUtils.infoNow(logger, svc, appointments.getNumberOfRows(), appointments.getViewName());
+    logger.info(svc, appointments.getNumberOfRows(), appointments.getViewName());
     return ResponseObject.response(appointments);
   }
 
@@ -1069,7 +1069,7 @@ public class CalendarModuleBean implements BeeModule {
   @Timeout
   private void notifyEvent(Timer timer) {
     long reminderId = (Long) timer.getInfo();
-    LogUtils.warning(logger, "Fired timer:", reminderId);
+    logger.debug("Fired timer:", reminderId);
 
     IsCondition wh = SqlUtils.equal(TBL_APPOINTMENT_REMINDERS,
         sys.getIdName(TBL_APPOINTMENT_REMINDERS), reminderId);
@@ -1139,7 +1139,7 @@ public class CalendarModuleBean implements BeeModule {
         }
       }
       if (!BeeUtils.isEmpty(error)) {
-        LogUtils.severe(logger, error);
+        logger.error(error);
       }
       qs.updateData(new SqlUpdate(TBL_APPOINTMENT_REMINDERS)
           .addConstant(COL_SENT, System.currentTimeMillis())

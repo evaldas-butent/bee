@@ -5,13 +5,13 @@ import com.butent.bee.server.jdbc.JdbcException;
 import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
-import com.butent.bee.shared.utils.LogUtils;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
 
@@ -22,7 +22,7 @@ import javax.ejb.Stateless;
 @Stateless
 public class ResultSetBean {
 
-  private static final Logger logger = Logger.getLogger(ResultSetBean.class.getName());
+  private static final BeeLogger logger = LogUtils.getLogger(ResultSetBean.class.getName());
   private static final BeeColumn[] metaCols;
 
   static {
@@ -69,7 +69,7 @@ public class ResultSetBean {
         }
       }
     } catch (SQLException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
       buff.addError(ex);
     }
   }
@@ -85,7 +85,7 @@ public class ResultSetBean {
       cols = JdbcUtils.getColumns(rs);
       c = cols.length;
     } catch (JdbcException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
       buff.addError(ex);
       c = 0;
     }
@@ -113,7 +113,7 @@ public class ResultSetBean {
         }
       }
     } catch (SQLException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
       buff.addError(ex);
       buff.clearData();
     }

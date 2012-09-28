@@ -13,10 +13,9 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
-
-import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -28,7 +27,7 @@ import javax.ejb.Stateless;
 
 @Stateless
 public class DispatcherBean {
-  private static Logger logger = Logger.getLogger(DispatcherBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(DispatcherBean.class);
 
   @EJB
   ModuleHolderBean moduleBean;
@@ -87,7 +86,7 @@ public class DispatcherBean {
 
       } else {
         String msg = BeeUtils.concat(1, svc, "service type not recognized");
-        LogUtils.warning(logger, msg);
+        logger.warning(msg);
         buff.addWarning(msg);
       }
     }

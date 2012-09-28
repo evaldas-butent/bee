@@ -2,8 +2,9 @@ package com.butent.bee.server.utils;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.exceptions.BeeException;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.Property;
 
 import java.lang.reflect.Field;
@@ -15,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -24,7 +24,7 @@ import java.util.regex.PatternSyntaxException;
  */
 
 public class JvmUtils {
-  private static Logger logger = Logger.getLogger(JvmUtils.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(JvmUtils.class);
 
   public static Throwable CVF_FAILURE = null;
   private static final Field CLASSES_VECTOR_FIELD;
@@ -92,7 +92,7 @@ public class JvmUtils {
         p = Pattern.compile(nm, Pattern.CASE_INSENSITIVE);
         rx = true;
       } catch (PatternSyntaxException ex) {
-        LogUtils.warning(logger, ex, nm);
+        logger.warning(ex, nm);
       }
 
       for (Class<?> cls : loaded) {

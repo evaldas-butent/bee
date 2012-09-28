@@ -5,12 +5,12 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.LogUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -26,13 +26,13 @@ import javax.servlet.http.HttpServletResponse;
 @MultipartConfig
 public class UploadServlet extends HttpServlet {
 
-  private static Logger logger = Logger.getLogger(UploadServlet.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(UploadServlet.class);
 
   private ResponseObject dispatch(String service) {
     ResponseObject responseObject;
 
     String msg = BeeUtils.concat(1, service, "service not recognized");
-    LogUtils.warning(logger, msg);
+    logger.warning(msg);
     responseObject = ResponseObject.error(msg);
 
     return responseObject;
@@ -58,14 +58,14 @@ public class UploadServlet extends HttpServlet {
     ResponseObject responseObject;
     if (BeeUtils.isEmpty(service)) {
       String msg = BeeUtils.concat(1, prefix, "service name not specified");
-      LogUtils.severe(logger, msg);
+      logger.error(msg);
       responseObject = ResponseObject.error(msg);
     } else {
-      LogUtils.infoNow(logger, prefix, "request", service);
+      logger.info(prefix, "request", service);
       responseObject = dispatch(service);
       if (responseObject == null) {
         String msg = BeeUtils.concat(1, prefix, service, "response empty");
-        LogUtils.warning(logger, msg);
+        logger.warning(msg);
         responseObject = ResponseObject.warning(msg);
       }
     }
@@ -76,7 +76,7 @@ public class UploadServlet extends HttpServlet {
 
     String content = CommUtils.prepareContent(ctp, responseObject.serialize());
 
-    LogUtils.infoNow(logger, prefix, BeeUtils.elapsedSeconds(start), "response",
+    logger.info(prefix, BeeUtils.elapsedSeconds(start), "response",
         resp.getContentType(), content.length());
 
     try {

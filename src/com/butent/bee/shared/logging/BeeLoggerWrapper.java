@@ -1,7 +1,5 @@
 package com.butent.bee.shared.logging;
 
-import com.butent.bee.shared.utils.LogUtils;
-
 public class BeeLoggerWrapper implements BeeLogger {
 
   private final String loggerName;

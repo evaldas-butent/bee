@@ -50,11 +50,12 @@ import com.butent.bee.shared.data.XmlView.XmlColumn;
 import com.butent.bee.shared.data.XmlView.XmlSimpleColumn;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -65,7 +66,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -120,7 +120,7 @@ public class SystemBean {
   public static final String AUDIT_FLD_FIELD = "Field";
   public static final String AUDIT_FLD_VALUE = "Value";
 
-  private static Logger logger = Logger.getLogger(SystemBean.class.getName());
+  private final BeeLogger logger = LogUtils.getLogger(getClass());
 
   @EJB
   DataSourceBean dsb;
@@ -454,7 +454,7 @@ public class SystemBean {
     BeeField field = table.getField(fldName);
 
     if (!field.isExtended()) {
-      LogUtils.warning(logger, "Field is not extended:", tblName, fldName);
+      logger.warning("Field is not extended:", tblName, fldName);
       return null;
     }
     return table.joinExtField(query, tblAlias, field);
@@ -466,7 +466,7 @@ public class SystemBean {
     BeeState state = getState(stateName);
 
     if (!table.hasState(state)) {
-      LogUtils.warning(logger, "State not registered:", tblName, stateName);
+      logger.warning("State not registered:", tblName, stateName);
       return null;
     }
     return table.joinState(query, tblAlias, state);
@@ -534,7 +534,7 @@ public class SystemBean {
       BeeState state = getState(stateName);
 
       if (!table.hasState(state)) {
-        LogUtils.warning(logger, "State not registered:", tblName, stateName);
+        logger.warning("State not registered:", tblName, stateName);
       } else {
         table.verifyState(query, tblAlias, state, bits);
       }
@@ -657,7 +657,7 @@ public class SystemBean {
         }
       } else {
         tblBackup = tblName + "_BAK";
-        LogUtils.info(logger, "Checking indexes...");
+        logger.info("Checking indexes...");
         int c = 0;
         String[] keys = qs.dbIndexes(getDbName(), getDbSchema(), tblName)
             .getColumn(SqlConstants.KEY_NAME);
@@ -670,7 +670,7 @@ public class SystemBean {
               String msg = BeeUtils.concat(1, "INDEX", key.getName(),
                   BeeUtils.parenthesize(ArrayUtils.transform(key.getKeyFields())), "NOT IN",
                   BeeUtils.parenthesize(ArrayUtils.transform(keys)));
-              LogUtils.warning(logger, msg);
+              logger.warning(msg);
 
               if (diff != null) {
                 PropertyUtils.addProperty(diff, tblName, msg);
@@ -683,7 +683,7 @@ public class SystemBean {
         }
         if (!update && keys.length > c) {
           String msg = "TOO MANY INDEXES";
-          LogUtils.warning(logger, msg);
+          logger.warning(msg);
 
           if (diff != null) {
             PropertyUtils.addProperty(diff, tblName, msg);
@@ -693,7 +693,7 @@ public class SystemBean {
         }
       }
       if (!update) {
-        LogUtils.info(logger, "Checking foreign keys...");
+        logger.info("Checking foreign keys...");
         int c = 0;
         String[] fKeys = qs.dbForeignKeys(getDbName(), getDbSchema(), tblName, null)
             .getColumn(SqlConstants.KEY_NAME);
@@ -710,7 +710,7 @@ public class SystemBean {
                   BeeUtils.parenthesize(BeeUtils.concat(" ON DELETE ",
                       fKey.getKeyField() + "->" + fKey.getRefTable(), fKey.getCascade())),
                   "NOT IN", BeeUtils.parenthesize(ArrayUtils.transform(fKeys)));
-              LogUtils.warning(logger, msg);
+              logger.warning(msg);
 
               if (diff != null) {
                 PropertyUtils.addProperty(diff, tblName, msg);
@@ -723,7 +723,7 @@ public class SystemBean {
         }
         if (!update && fKeys.length > c) {
           String msg = "TOO MANY FOREIGN KEYS";
-          LogUtils.warning(logger, msg);
+          logger.warning(msg);
 
           if (diff != null) {
             PropertyUtils.addProperty(diff, tblName, msg);
@@ -733,7 +733,7 @@ public class SystemBean {
         }
       }
       if (!update) {
-        LogUtils.info(logger, "Checking triggers...");
+        logger.info("Checking triggers...");
         int c = 0;
         Set<String> triggers = Sets.newHashSet(qs.dbTriggers(getDbName(), getDbSchema(), tblName)
             .getColumn(SqlConstants.TRIGGER_NAME));
@@ -745,7 +745,7 @@ public class SystemBean {
             } else {
               String msg = BeeUtils.concat(1, "TRIGGER", trigger.getName(), "NOT IN",
                   BeeUtils.parenthesize(BeeUtils.transformCollection(triggers)));
-              LogUtils.warning(logger, msg);
+              logger.warning(msg);
 
               if (diff != null) {
                 PropertyUtils.addProperty(diff, tblName, msg);
@@ -758,7 +758,7 @@ public class SystemBean {
         }
         if (!update && triggers.size() > c) {
           String msg = "TOO MANY TRIGGERS";
-          LogUtils.warning(logger, msg);
+          logger.warning(msg);
 
           if (diff != null) {
             PropertyUtils.addProperty(diff, tblName, msg);
@@ -768,13 +768,13 @@ public class SystemBean {
         }
       }
       if (!update && table.isAuditable() && isTable(tblName)) {
-        LogUtils.info(logger, "Checking audit tables...");
+        logger.info("Checking audit tables...");
         String auditName = BeeUtils.concat("_", tblName, AUDIT_PREFIX);
 
         if (!qs.dbTableExists(dbName, dbAuditSchema, auditName)) {
           String msg = BeeUtils.concat(1, "AUDIT TABLE",
               BeeUtils.concat(".", dbAuditSchema, auditName), "DOES NOT EXIST");
-          LogUtils.warning(logger, msg);
+          logger.warning(msg);
 
           if (diff != null) {
             PropertyUtils.addProperty(diff, tblName, msg);
@@ -793,7 +793,7 @@ public class SystemBean {
         SimpleRowSet newFields = qs.dbFields(getDbName(), getDbSchema(), tblBackup);
 
         if (!update) {
-          LogUtils.info(logger, "Checking fields...");
+          logger.info("Checking fields...");
           int c = 0;
 
           for (Map<String, String> newFieldInfo : newFields) {
@@ -814,7 +814,7 @@ public class SystemBean {
 
                   String msg = BeeUtils.concat(1, "FIELD", fldName + ":",
                       info, oldFieldInfo.get(info), "!=", newFieldInfo.get(info));
-                  LogUtils.warning(logger, msg);
+                  logger.warning(msg);
 
                   if (diff != null) {
                     PropertyUtils.addProperty(diff, tblName, msg);
@@ -829,7 +829,7 @@ public class SystemBean {
               }
             } else {
               String msg = BeeUtils.concat(1, "FIELD", fldName, "DOES NOT EXIST");
-              LogUtils.warning(logger, msg);
+              logger.warning(msg);
 
               if (diff != null) {
                 PropertyUtils.addProperty(diff, tblName, msg);
@@ -841,7 +841,7 @@ public class SystemBean {
           }
           if (!update && oldFields.getNumberOfRows() > c) {
             String msg = "TOO MANY FIELDS";
-            LogUtils.warning(logger, msg);
+            logger.warning(msg);
 
             if (diff != null) {
               PropertyUtils.addProperty(diff, tblName, msg);
@@ -1040,9 +1040,9 @@ public class SystemBean {
       }
     }
     if (BeeUtils.isEmpty(cnt)) {
-      LogUtils.severe(logger, "No", obj.name(), "descriptions found");
+      logger.error("No", obj.name(), "descriptions found");
     } else {
-      LogUtils.infoNow(logger, "Loaded", cnt, obj.name(), "descriptions");
+      logger.info("Loaded", cnt, obj.name(), "descriptions");
     }
   }
 
@@ -1053,7 +1053,7 @@ public class SystemBean {
 
     if (xmlTable != null) {
       if (!BeeUtils.same(xmlTable.name, tableName)) {
-        LogUtils.warning(logger, "Table name doesn't match resource name:", xmlTable.name);
+        logger.warning("Table name doesn't match resource name:", xmlTable.name);
       } else {
         table = new BeeTable(moduleName,
             xmlTable.name, xmlTable.idName, xmlTable.versionName, xmlTable.audit);
@@ -1086,14 +1086,13 @@ public class SystemBean {
                     firstFld = keyFld;
 
                   } else if (!BeeUtils.same(firstTbl, keyTbl)) {
-                    LogUtils.warning(logger,
-                        "Key expression contains fields from different sources:",
+                    logger.warning("Key expression contains fields from different sources:",
                         firstTbl + "." + firstFld, "and", keyTbl + "." + keyFld);
                     ok = false;
                     break;
                   }
                 } else {
-                  LogUtils.warning(logger, "Unrecognized key field:", tbl, fld);
+                  logger.warning("Unrecognized key field:", tbl, fld);
                   ok = false;
                   break;
                 }
@@ -1136,7 +1135,7 @@ public class SystemBean {
           }
         }
         if (table.isEmpty()) {
-          LogUtils.warning(logger, "Table has no fields defined:", tbl);
+          logger.warning("Table has no fields defined:", tbl);
           table = null;
         }
       }
@@ -1156,17 +1155,17 @@ public class SystemBean {
 
     if (xmlView != null) {
       if (!BeeUtils.same(xmlView.name, viewName)) {
-        LogUtils.warning(logger, "View name doesn't match resource name:", xmlView.name);
+        logger.warning("View name doesn't match resource name:", xmlView.name);
       } else {
         String src = xmlView.source;
 
         if (!isTable(src)) {
-          LogUtils.warning(logger, "Unrecognized view source:", xmlView.name, src);
+          logger.warning("Unrecognized view source:", xmlView.name, src);
         } else {
           view = new BeeView(moduleName, xmlView, tableCache);
 
           if (view.isEmpty()) {
-            LogUtils.warning(logger, "View has no columns defined:", view.getName());
+            logger.warning("View has no columns defined:", view.getName());
             view = null;
           }
         }
@@ -1298,11 +1297,11 @@ public class SystemBean {
       T existingObject = cache.get(BeeUtils.normalize(objectName));
 
       if (existingObject != null) {
-        LogUtils.warning(logger, moduleName, "Dublicate", name, "name:",
+        logger.warning(moduleName, "Dublicate", name, "name:",
             BeeUtils.bracket(objectName), BeeUtils.parenthesize(existingObject.getModuleName()));
       } else {
         cache.put(BeeUtils.normalize(objectName), object);
-        LogUtils.info(logger, moduleName, "Registered", name, BeeUtils.bracket(objectName));
+        logger.debug(moduleName, "Registered", name, BeeUtils.bracket(objectName));
       }
     }
   }

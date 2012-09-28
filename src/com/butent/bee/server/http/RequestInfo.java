@@ -9,9 +9,9 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
+import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.security.Principal;
@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.DispatcherType;
@@ -118,6 +117,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
     return dsn;
   }
 
+  @Override
   public List<ExtendedProperty> getExtendedInfo() {
     if (request == null) {
       return null;
@@ -213,6 +213,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
     return method;
   }
 
+  @Override
   public String getOptions() {
     return options;
   }
@@ -306,9 +307,9 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
     return getContentLen() > 0 && CommUtils.equals(getContentType(), ContentType.XML);
   }
 
-  public void logHeaders(Logger logger) {
+  public void logHeaders(BeeLogger logger) {
     if (BeeUtils.isEmpty(getHeaders())) {
-      LogUtils.warning(logger, "headers not available");
+      logger.warning("headers not available");
       return;
     }
 
@@ -316,13 +317,13 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
     int i = 0;
 
     for (Map.Entry<String, String> el : getHeaders().entrySet()) {
-      LogUtils.info(logger, "Header", BeeUtils.progress(++i, n), el.getKey(), el.getValue());
+      logger.info("Header", BeeUtils.progress(++i, n), el.getKey(), el.getValue());
     }
   }
 
-  public void logParams(Logger logger) {
+  public void logParams(BeeLogger logger) {
     if (BeeUtils.isEmpty(getParams())) {
-      LogUtils.warning(logger, "Parameters not available");
+      logger.warning("Parameters not available");
       return;
     }
 
@@ -330,14 +331,14 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
     int i = 0;
 
     for (Map.Entry<String, String> el : getParams().entrySet()) {
-      LogUtils.info(logger, "Parameter", BeeUtils.progress(++i, n), el.getKey(), el.getValue());
+      logger.info("Parameter", BeeUtils.progress(++i, n), el.getKey(), el.getValue());
     }
   }
 
-  public void logVars(Logger logger) {
+  public void logVars(BeeLogger logger) {
     if (BeeUtils.isEmpty(getVars())) {
       if (isXml()) {
-        LogUtils.warning(logger, "Vars not available");
+        logger.warning("Vars not available");
       }
       return;
     }
@@ -346,7 +347,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
     int i = 0;
 
     for (Map.Entry<String, String> el : getVars().entrySet()) {
-      LogUtils.info(logger, "Var", BeeUtils.progress(++i, n), el.getKey(), el.getValue());
+      logger.info("Var", BeeUtils.progress(++i, n), el.getKey(), el.getValue());
     }
   }
 
@@ -393,6 +394,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
     this.method = method;
   }
 
+  @Override
   public void setOptions(String options) {
     this.options = options;
   }
@@ -428,6 +430,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
             "service", service, "dsn", dsn, "sep", separator, "opt", options), headers, params);
   }
 
+  @Override
   public String transform() {
     return toString();
   }

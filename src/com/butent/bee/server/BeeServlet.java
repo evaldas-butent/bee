@@ -8,13 +8,13 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.LogUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -32,7 +32,7 @@ import javax.servlet.http.HttpSession;
 @SuppressWarnings("serial")
 public class BeeServlet extends HttpServlet {
 
-  private static Logger logger = Logger.getLogger(BeeServlet.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(BeeServlet.class);
 
   @EJB
   DispatcherBean dispatcher;
@@ -66,7 +66,7 @@ public class BeeServlet extends HttpServlet {
 
     boolean debug = reqInfo.isDebug();
 
-    LogUtils.infoNow(logger, rid, "request", meth, svc, dsn, opt);
+    logger.info(rid, "request", meth, svc, dsn, opt);
     if (debug) {
       reqInfo.logParams(logger);
       reqInfo.logVars(logger);
@@ -74,10 +74,10 @@ public class BeeServlet extends HttpServlet {
     }
 
     if (reqInfo.getContentLen() > 0) {
-      LogUtils.info(logger, rid, "content", reqInfo.getContentTypeHeader(),
+      logger.info(rid, "content", reqInfo.getContentTypeHeader(),
           reqInfo.getContentType(), BeeUtils.bracket(reqInfo.getContentLen()));
       if (debug) {
-        LogUtils.info(logger, reqInfo.getContent());
+        logger.info(reqInfo.getContent());
       }
     }
     ResponseObject response = null;
@@ -99,7 +99,7 @@ public class BeeServlet extends HttpServlet {
         }
         if (response.hasErrors()) {
           doLogout = true;
-          LogUtils.severe(logger, (Object[]) response.getErrors());
+          response.log(logger);
         } else {
           session.setAttribute(Service.VAR_USER, req.getRemoteUser());
 
@@ -107,11 +107,11 @@ public class BeeServlet extends HttpServlet {
           resp.setHeader(Service.RPC_VAR_USER,
               Codec.encodeBase64(Codec.beeSerialize(response.getResponse())));
 
-          LogUtils.infoNow(logger, "session id:", session.getId());
+          logger.info("session id:", session.getId());
         }
       } else if (!BeeUtils.same(reqSid, session.getId())) {
         doLogout = true;
-        LogUtils.severe(logger, "session id:", "request =", reqSid, "current =", session.getId());
+        logger.error("session id:", "request =", reqSid, "current =", session.getId());
       }
     }
     if (doLogout) {
@@ -146,7 +146,7 @@ public class BeeServlet extends HttpServlet {
 
       s = CommUtils.prepareContent(ctp, Codec.beeSerialize(response));
 
-      LogUtils.infoNow(logger, BeeUtils.elapsedSeconds(start), rid, "response",
+      logger.info(BeeUtils.elapsedSeconds(start), rid, "response",
           ctp, resp.getContentType(), s.length());
 
     } else {
@@ -213,7 +213,7 @@ public class BeeServlet extends HttpServlet {
       } else {
         s = BeeConst.EMPTY;
       }
-      LogUtils.infoNow(logger, BeeUtils.elapsedSeconds(start), rid, "response",
+      logger.info(BeeUtils.elapsedSeconds(start), rid, "response",
           ctp, resp.getContentType(), cnt, cc, mc, pc, s.length());
     }
 
@@ -222,7 +222,7 @@ public class BeeServlet extends HttpServlet {
       out.print(s);
       out.flush();
     } catch (IOException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
     }
   }
 

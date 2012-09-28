@@ -23,6 +23,8 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.transport.TransportConstants;
@@ -31,7 +33,6 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -41,7 +42,7 @@ import javax.ejb.Stateless;
 @LocalBean
 public class TransportModuleBean implements BeeModule {
 
-  private static Logger logger = Logger.getLogger(TransportModuleBean.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(TransportModuleBean.class);
 
   @EJB
   DataEditorBean deb;

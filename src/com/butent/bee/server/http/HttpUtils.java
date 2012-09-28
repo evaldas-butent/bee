@@ -4,9 +4,10 @@ import com.butent.bee.server.concurrency.Counter;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.io.BufferedReader;
@@ -14,7 +15,6 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -28,7 +28,7 @@ import javax.servlet.http.Part;
 
 public class HttpUtils {
 
-  private static Logger logger = Logger.getLogger(HttpUtils.class.getName());
+  private static BeeLogger logger = LogUtils.getLogger(HttpUtils.class);
 
   public static String counterInfo(String name, Object obj) {
     if (obj instanceof Counter) {
@@ -143,7 +143,7 @@ public class HttpUtils {
       }
       stream.close();
     } catch (IOException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
       ok = false;
     }
 
@@ -176,7 +176,7 @@ public class HttpUtils {
 
       reader.close();
     } catch (IOException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
     }
 
     return sb.toString();
@@ -185,7 +185,7 @@ public class HttpUtils {
   public static String readPart(HttpServletRequest req, String name) {
     Assert.notNull(req);
     Assert.notEmpty(name);
-    
+
     String content = null;
     try {
       Part part = req.getPart(name);
@@ -193,13 +193,13 @@ public class HttpUtils {
         content = FileUtils.streamToString(part.getInputStream());
       }
     } catch (IOException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
     } catch (ServletException ex) {
-      LogUtils.error(logger, ex);
+      logger.error(ex);
     }
     return content;
   }
-  
+
   private HttpUtils() {
   }
 }
