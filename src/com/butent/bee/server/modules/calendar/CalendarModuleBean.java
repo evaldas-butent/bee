@@ -20,7 +20,6 @@ import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_COMPANY
 import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_CONTACTS;
 import static com.butent.bee.shared.modules.commons.CommonsConstants.VIEW_COMPANIES;
 
-import com.butent.bee.server.communication.MailerBean;
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -33,6 +32,7 @@ import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
 import com.butent.bee.server.modules.ParamHolderBean;
+import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.SqlDelete;
@@ -60,8 +60,13 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ParameterType;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.ReminderMethod;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
+import com.butent.bee.shared.modules.calendar.CalendarConstants.View;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -96,7 +101,7 @@ public class CalendarModuleBean implements BeeModule {
 
   private static final Filter VALID_APPOINTMENT = Filter.and(Filter.notEmpty(COL_START_DATE_TIME),
       ComparisonFilter.compareWithColumn(COL_START_DATE_TIME, Operator.LT, COL_END_DATE_TIME));
-  
+
   private static Logger logger = Logger.getLogger(CalendarModuleBean.class.getName());
 
   @EJB
@@ -108,7 +113,7 @@ public class CalendarModuleBean implements BeeModule {
   @EJB
   DataEditorBean deb;
   @EJB
-  MailerBean mail;
+  MailModuleBean mail;
   @EJB
   ParamHolderBean prm;
   @Resource
@@ -223,7 +228,7 @@ public class CalendarModuleBean implements BeeModule {
 
   @Override
   public Collection<String> dependsOn() {
-    return Lists.newArrayList(CommonsConstants.COMMONS_MODULE);
+    return Lists.newArrayList(CommonsConstants.COMMONS_MODULE, MailConstants.MAIL_MODULE);
   }
 
   @Override

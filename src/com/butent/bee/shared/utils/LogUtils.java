@@ -7,6 +7,9 @@ import com.google.common.collect.Lists;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.BeeLoggerFactory;
+import com.butent.bee.shared.logging.BeeLoggerWrapper;
 import com.butent.bee.shared.time.DateTime;
 
 import java.util.List;
@@ -18,13 +21,24 @@ import java.util.logging.Logger;
  */
 public class LogUtils {
 
+  public enum LogLevel {
+    ERROR, WARNING, INFO, DEBUG
+  }
+
   private static final Splitter WORD_SPLITTER =
       Splitter.on(CharMatcher.WHITESPACE).omitEmptyStrings().trimResults();
 
   private static Logger defaultLogger = null;
-  
-  private static int maxLineLength = 160; 
-  
+
+  private static int maxLineLength = 160;
+
+  private static BeeLoggerFactory loggerFactory;
+
+  public static BeeLogger createLogger(String name) {
+    Assert.notNull(loggerFactory);
+    return loggerFactory.getLogger(name);
+  }
+
   /**
    * @param dt the DateTime argument to convert
    * @return a human-readable String representation of DateTime
@@ -98,6 +112,15 @@ public class LogUtils {
     return defaultLogger;
   }
 
+  public static BeeLogger getLogger(String name) {
+    return new BeeLoggerWrapper(name);
+  }
+
+  public static BeeLogger getLogger(Class<?> clazz) {
+    Assert.notNull(clazz);
+    return getLogger(clazz.getName());
+  }
+
   /**
    * Logs Objects {@code obj} using INFO message level.
    * 
@@ -132,7 +155,7 @@ public class LogUtils {
     Assert.notNull(logger);
     logger.info(BeeUtils.concat(1, now(), obj));
   }
-  
+
   public static void infoSplit(Logger logger, String head, String msg) {
     infoSplit(logger, head, msg, maxLineLength);
   }
@@ -191,7 +214,7 @@ public class LogUtils {
     Assert.parameterCount(((obj == null) ? 0 : obj.length) + 2, 3);
     logger.log(level, BeeUtils.concat(1, obj));
   }
-  
+
   /**
    * @return the current time in a human-readable format.
    */
@@ -206,6 +229,10 @@ public class LogUtils {
    */
   public static void setDefaultLogger(Logger def) {
     defaultLogger = def;
+  }
+
+  public static void setLoggerFactory(BeeLoggerFactory loggerFactory) {
+    LogUtils.loggerFactory = loggerFactory;
   }
 
   /**
@@ -326,7 +353,7 @@ public class LogUtils {
     if (BeeUtils.isEmpty(msg)) {
       return;
     }
-    
+
     boolean hasHead = !BeeUtils.isEmpty(msg);
     if (maxLength <= 0 || msg.trim().length() <= maxLength) {
       if (hasHead) {
@@ -336,10 +363,10 @@ public class LogUtils {
       }
       return;
     }
-    
+
     List<String> lst = Lists.newArrayList();
     StringBuilder sb = new StringBuilder();
-    
+
     for (String word : WORD_SPLITTER.split(msg)) {
       if (sb.length() + word.length() >= maxLength) {
         if (sb.length() > 0) {
@@ -357,12 +384,12 @@ public class LogUtils {
     if (lst.isEmpty()) {
       return;
     }
-    
+
     if (lst.size() == 1) {
       logger.log(level, BeeUtils.concat(1, head, lst.get(0)));
       return;
     }
-    
+
     for (int i = 0; i < lst.size(); i++) {
       logger.log(level, BeeUtils.concat(1, head, BeeUtils.progress(i + 1, lst.size()), lst.get(i)));
     }

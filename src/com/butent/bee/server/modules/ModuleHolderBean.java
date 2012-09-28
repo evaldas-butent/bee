@@ -165,8 +165,8 @@ public class ModuleHolderBean {
         if (!BeeUtils.isEmpty(dependencies)) {
           for (String depends : dependencies) {
             if (!hasModule(depends)) {
-              LogUtils.severe(logger, "Module dependency error:", "Module", BeeUtils.bracket(mod),
-                  "depends on nonexistent module", BeeUtils.bracket(depends));
+              LogUtils.severe(logger, "Unregistering module", BeeUtils.bracket(mod),
+                  ", because it depends on nonexistent module", BeeUtils.bracket(depends));
               modules.remove(mod);
               dependencyError = true;
               break;

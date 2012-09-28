@@ -7,9 +7,8 @@ import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
-import com.butent.bee.shared.utils.LogUtils;
-
-import java.util.logging.Level;
+import com.butent.bee.shared.utils.NameUtils;
+import com.butent.bee.shared.utils.LogUtils.LogLevel;
 
 /**
  * Manages response message object with it's date, level and message parameters and methods for
@@ -18,16 +17,16 @@ import java.util.logging.Level;
 
 public class ResponseMessage implements BeeSerializable, Transformable {
   private DateTime date = null;
-  private Level level = null;
+  private LogLevel level = null;
   private String message = null;
 
-  public ResponseMessage(DateTime date, Level level, String message) {
+  public ResponseMessage(DateTime date, LogLevel level, String message) {
     this.date = date;
     this.level = level;
     this.message = message;
   }
 
-  public ResponseMessage(boolean now, Level level, String message) {
+  public ResponseMessage(boolean now, LogLevel level, String message) {
     this(now ? new DateTime() : null, level, message);
   }
 
@@ -35,7 +34,7 @@ public class ResponseMessage implements BeeSerializable, Transformable {
     this(now, null, message);
   }
 
-  public ResponseMessage(Level level, String message) {
+  public ResponseMessage(LogLevel level, String message) {
     this(null, level, message);
   }
 
@@ -51,6 +50,7 @@ public class ResponseMessage implements BeeSerializable, Transformable {
     }
   }
 
+  @Override
   public void deserialize(String s) {
     Assert.notEmpty(s);
 
@@ -74,7 +74,7 @@ public class ResponseMessage implements BeeSerializable, Transformable {
           setDate(new DateTime(Long.parseLong(v)));
           break;
         case 1:
-          setLevel(Level.parse(v));
+          setLevel(NameUtils.getEnumByName(LogLevel.class, v));
           break;
         case 2:
           setMessage(v);
@@ -91,7 +91,7 @@ public class ResponseMessage implements BeeSerializable, Transformable {
     return date;
   }
 
-  public Level getLevel() {
+  public LogLevel getLevel() {
     return level;
   }
 
@@ -99,11 +99,12 @@ public class ResponseMessage implements BeeSerializable, Transformable {
     return message;
   }
 
+  @Override
   public String serialize() {
     StringBuilder sb = new StringBuilder();
 
     Codec.serializeWithLength(sb, date);
-    Codec.serializeWithLength(sb, LogUtils.transformLevel(level));
+    Codec.serializeWithLength(sb, level);
     Codec.serializeWithLength(sb, message);
 
     return Codec.encodeBase64(sb.toString());
@@ -113,7 +114,7 @@ public class ResponseMessage implements BeeSerializable, Transformable {
     this.date = date;
   }
 
-  public void setLevel(Level level) {
+  public void setLevel(LogLevel level) {
     this.level = level;
   }
 
@@ -126,6 +127,7 @@ public class ResponseMessage implements BeeSerializable, Transformable {
     return BeeUtils.concat(1, date, level, message);
   }
 
+  @Override
   public String transform() {
     return toString();
   }

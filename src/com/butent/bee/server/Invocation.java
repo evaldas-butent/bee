@@ -130,14 +130,14 @@ public class Invocation {
 
     byte[] arr = Codec.toBytes(data);
 
-    buff.addOff("length", data.length());
-    buff.addOff("adler32.z", Checksum.adler32(arr));
-    buff.addOff("crc32.z", Checksum.crc32(arr));
+    buff.addDebug("length", data.length());
+    buff.addDebug("adler32.z", Checksum.adler32(arr));
+    buff.addDebug("crc32.z", Checksum.crc32(arr));
 
-    buff.addOff("adler32", Codec.adler32(arr));
-    buff.addOff("crc16", Codec.crc16(arr));
-    buff.addOff("crc32", Codec.crc32(arr));
-    buff.addOff("crc32d", Codec.crc32Direct(arr));
+    buff.addDebug("adler32", Codec.adler32(arr));
+    buff.addDebug("crc16", Codec.crc16(arr));
+    buff.addDebug("crc32", Codec.crc32(arr));
+    buff.addDebug("crc32d", Codec.crc32Direct(arr));
   }
 
   public void systemInfo(ResponseBuffer buff) {

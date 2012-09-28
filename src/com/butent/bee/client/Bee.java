@@ -7,10 +7,12 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
+import com.butent.bee.client.logging.ClientLoggerFactory;
 import com.butent.bee.client.modules.ModuleManager;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.utils.LogUtils;
 
 /**
  * The entry point class of the application, initializes <code>BeeKeeper</code> class.
@@ -18,8 +20,10 @@ import com.butent.bee.shared.communication.ResponseObject;
 
 public class Bee implements EntryPoint {
 
+  @Override
   public void onModuleLoad() {
     BeeConst.setClient();
+    LogUtils.setLoggerFactory(new ClientLoggerFactory());
 
     BeeKeeper bk =
         new BeeKeeper(RootLayoutPanel.get(), GWT.getModuleBaseURL() + GWT.getModuleName());
@@ -33,19 +37,20 @@ public class Bee implements EntryPoint {
     BeeKeeper.getScreen().start();
 
     BeeKeeper.getRpc().makeGetRequest(Service.LOGIN, new ResponseCallback() {
+      @Override
       public void onResponse(ResponseObject response) {
         ModuleManager.onLoad();
 
         BeeKeeper.getBus().dispatchService(Service.REFRESH_MENU);
 
         Global.getFavorites().load();
-        
+
         Data.init();
 
         TuningFactory.getTools();
 
         BeeKeeper.getBus().registerExitHandler("Don't leave me this way");
-        
+
         Global.getSearch().focus();
       }
     });

@@ -11,12 +11,12 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
+import com.butent.bee.shared.utils.LogUtils.LogLevel;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 
 /**
  * Enables server response buffer's contents management.
@@ -105,8 +105,12 @@ public class ResponseBuffer {
     }
   }
 
+  public void addDebug(Object... obj) {
+    messages.add(new ResponseMessage(LogLevel.DEBUG, BeeUtils.concat(1, obj)));
+  }
+
   public void addError(Throwable err) {
-    messages.add(new ResponseMessage(Level.SEVERE, err.toString()));
+    messages.add(new ResponseMessage(LogLevel.ERROR, err.toString()));
   }
 
   public void addErrors(List<? extends Throwable> lst) {
@@ -159,10 +163,6 @@ public class ResponseBuffer {
 
   public void addNow(Object... obj) {
     messages.add(new ResponseMessage(true, BeeUtils.concat(1, obj)));
-  }
-
-  public void addOff(Object... obj) {
-    messages.add(new ResponseMessage(Level.OFF, BeeUtils.concat(1, obj)));
   }
 
   public void addPart(String uri, String content) {
@@ -243,7 +243,7 @@ public class ResponseBuffer {
   }
 
   public void addSevere(Object... obj) {
-    messages.add(new ResponseMessage(Level.SEVERE, BeeUtils.concat(1, obj)));
+    messages.add(new ResponseMessage(LogLevel.ERROR, BeeUtils.concat(1, obj)));
   }
 
   public void addText(CharSequence s) {
@@ -258,11 +258,11 @@ public class ResponseBuffer {
   }
 
   public void addWarning(Object... obj) {
-    messages.add(new ResponseMessage(Level.WARNING, BeeUtils.concat(1, obj)));
+    messages.add(new ResponseMessage(LogLevel.WARNING, BeeUtils.concat(1, obj)));
   }
 
   public void addWarning(Throwable err) {
-    messages.add(new ResponseMessage(Level.WARNING, err.toString()));
+    messages.add(new ResponseMessage(LogLevel.WARNING, err.toString()));
   }
 
   public void addWarnings(List<?> lst) {

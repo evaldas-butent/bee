@@ -9,7 +9,6 @@ import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
 import com.butent.bee.server.InitializationBean;
-import com.butent.bee.server.communication.MailerBean;
 import com.butent.bee.server.data.BeeTable.BeeField;
 import com.butent.bee.server.data.BeeTable.BeeRelation;
 import com.butent.bee.server.data.BeeView;
@@ -23,6 +22,7 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.ExtensionFilter;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
+import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.ui.XmlSqlDesigner.DataType;
@@ -99,7 +99,7 @@ public class UiServiceBean {
   @EJB
   ModuleHolderBean mod;
   @EJB
-  MailerBean mail;
+  MailModuleBean mail;
   @EJB
   SearchBean search;
   @EJB

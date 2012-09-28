@@ -12,15 +12,14 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
-import com.butent.bee.shared.utils.LogUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
+import com.butent.bee.shared.utils.LogUtils.LogLevel;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * Contains utility functions for working with remote procedure calls, for example building query
@@ -74,32 +73,42 @@ public class RpcUtils {
       dispatchMessages(responseObject.getMessages());
     }
   }
-  
+
   public static void dispatchMessages(Collection<ResponseMessage> messages) {
     if (!BeeUtils.isEmpty(messages)) {
       for (ResponseMessage message : messages) {
-        Level level = message.getLevel();
-        if (LogUtils.isOff(level)) {
-          continue;
-        }
+        LogLevel level = message.getLevel();
 
         DateTime date = message.getDate();
         String msg;
+
         if (date == null) {
           msg = message.getMessage();
         } else {
           msg = BeeUtils.concat(1, date.toTimeString(), message.getMessage());
         }
-
         if (level == null) {
           BeeKeeper.getLog().info(msg);
         } else {
-          BeeKeeper.getLog().log(level, msg);
+          switch (level) {
+            case DEBUG:
+              BeeKeeper.getLog().debug(msg);
+              break;
+            case ERROR:
+              BeeKeeper.getLog().severe(msg);
+              break;
+            case INFO:
+              BeeKeeper.getLog().info(msg);
+              break;
+            case WARNING:
+              BeeKeeper.getLog().warning(msg);
+              break;
+          }
         }
       }
     }
   }
-  
+
   public static Collection<Property> requestInfo(RequestBuilder rb) {
     Assert.notNull(rb);
     Collection<Property> prp = new ArrayList<Property>();
