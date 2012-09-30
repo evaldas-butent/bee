@@ -287,7 +287,7 @@ public class ParametersHandler extends AbstractGridCallback {
       ref.put(++cnt, prm.getName());
       BeeRow row = new BeeRow(cnt, values);
       provider.addRow(row);
-      getGrid().insertRow(row); // TODO provider must do it
+      getGrid().insertRow(row, false); // TODO provider must do it
     }
   }
 
@@ -332,7 +332,7 @@ public class ParametersHandler extends AbstractGridCallback {
           Global.showError((Object[]) response.getErrors());
 
         } else if (response.hasResponse(Boolean.class)) {
-          boolean newMode = BeeUtils.isEmpty(id);
+          boolean newMode = (id == DataUtils.NEW_ROW_ID);
 
           String[] values = new String[columns.size()];
           values[id(MODULE)] = parameter.getModule();

@@ -144,10 +144,10 @@ public class Queries {
               int responseCount = BeeUtils.toInt((String) response.getResponse());
               String message;
               if (responseCount == requestCount) {
-                message = BeeUtils.concat(1, viewName, "deleted", responseCount, "rows");
+                message = BeeUtils.joinWords(viewName, "deleted", responseCount, "rows");
                 BeeKeeper.getLog().info(message);
               } else {
-                message = BeeUtils.concat(1, viewName, "deleted", responseCount, "rows of",
+                message = BeeUtils.joinWords(viewName, "deleted", responseCount, "rows of",
                     requestCount, "requested");
                 BeeKeeper.getLog().warning(message);
               }
@@ -230,7 +230,7 @@ public class Queries {
               BeeKeeper.getLog().info(viewName, filter, "row count:", rowCount);
               callback.onSuccess(rowCount);
             } else {
-              String message = BeeUtils.concat(1, viewName, filter, "row count response:", s);
+              String message = BeeUtils.joinWords(viewName, filter, "row count response:", s);
               BeeKeeper.getLog().severe(message);
               callback.onFailure(message);
             }

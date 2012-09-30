@@ -265,7 +265,7 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     List<Widget> children = getDirectionChildren(dir);
-    int c = BeeUtils.length(children);
+    int c = BeeUtils.size(children);
 
     PropertyUtils.addExtended(lst, dir.toString(), "Widget Count", c);
 
@@ -295,7 +295,7 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     int i = 0;
     int c = getWidgetCount();
     for (Widget w : getChildren()) {
-      String name = BeeUtils.concat(1, BeeUtils.progress(++i, c), getWidgetDirection(w));
+      String name = BeeUtils.joinWords(BeeUtils.progress(++i, c), getWidgetDirection(w));
       PropertyUtils.appendChildrenToExtended(lst, name, getChildInfo(w));
     }
     return lst;

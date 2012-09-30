@@ -1,6 +1,5 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
@@ -8,8 +7,6 @@ import com.butent.bee.shared.utils.PropertyUtils;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -101,35 +98,6 @@ public class TestPropertyUtils {
     assertEquals(true, PropertyUtils.addExtended(propExtList, "               ", "               "));
     assertEquals(false, PropertyUtils.addExtended(propExtList, "                            ", ""));
     assertEquals(false, PropertyUtils.addExtended(propExtList, "", ""));
-
-    try {
-      assertEquals(false, PropertyUtils.addExtended(null, "name1", "value1")); // runtime error
-      fail("BeeRuntimeException not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-      System.out.println("addExtended(): " + e.getMessage());
-    } catch (Exception e) {
-      fail("Java runtime error. Need BeeRuntimeException !!!");
-    }
-  }
-
-  @Test
-  public final void testAddNotEemptyPropertiesCollectionObjectArr() {
-    Collection<Property> cs = new ArrayList<Property>();
-    cs.add(new Property("one", "val1"));
-    cs.add(new Property("two", "val1"));
-
-    assertEquals(1, PropertyUtils.addNotEemptyProperties(cs, "one", 1.0));
-    assertEquals(1, PropertyUtils.addNotEemptyProperties(cs, "two", 5.0, -5));
-    assertEquals(1, PropertyUtils.addNotEemptyProperties(cs, "one", 1.0, 10, 'a'));
-
-    assertEquals(1, PropertyUtils.addNotEemptyProperties(cs, "one", 1.0, "two", null));
-    assertEquals(1, PropertyUtils.addNotEemptyProperties(cs, "two", 5.0, -5, "one", "d"));
-    assertEquals(2, PropertyUtils.addNotEemptyProperties(cs, "one", 1.0, 10, 'a', "two", 150));
-
-    assertEquals(2, PropertyUtils.addNotEemptyProperties(cs, "one", "val48", "four", "aero"));
-    assertEquals(2, PropertyUtils.addNotEemptyProperties(cs, "two", "5.0", "-5", "one", "d"));
-    assertEquals(3, PropertyUtils.addNotEemptyProperties(cs, "one", 1.0, "10", "a", "two", "150"));
   }
 
   @Test
@@ -149,17 +117,6 @@ public class TestPropertyUtils {
         "name3", 2, 1, "value2"));
     assertEquals(2, PropertyUtils.addProperties(propExtColl, false, "name1", "value1", "name2",
         null, "name3", 2, 1, "value2"));
-
-    try {
-      assertEquals(2, PropertyUtils.addProperties(propExtColl1, false, "name1", "value1", "name2",
-          null, "name3", 2, 1, "value2"));
-      fail("BeeRuntimeException not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-      System.out.println("addProperties(): " + e.getMessage());
-    } catch (Exception e) {
-      fail("Java runtime error. Need BeeRuntimeException !!!");
-    }
   }
 
   @Test
@@ -175,16 +132,6 @@ public class TestPropertyUtils {
     assertEquals(0, PropertyUtils.addProperties(propList, "", ""));
     assertEquals(1, PropertyUtils.addProperties(propList, "name1", "value1", "name2"));
     assertEquals(2, PropertyUtils.addProperties(propList, "name1", "value1", "name2", "value3"));
-
-    try {
-      assertEquals(0, PropertyUtils.addProperties(null, "name1", "value1"));
-      fail("BeeRuntimeException not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-      System.out.println("addProperties(): " + e.getMessage());
-    } catch (Exception e) {
-      fail("Java runtime error. Need BeeRuntimeException !!!");
-    }
   }
 
   @Test
@@ -198,17 +145,6 @@ public class TestPropertyUtils {
     assertEquals(true, PropertyUtils.addProperty(propList1, "               ", "               "));
     assertEquals(false, PropertyUtils.addProperty(propList1, "                            ", ""));
     assertEquals(false, PropertyUtils.addProperty(propList1, "", ""));
-
-    try {
-      assertEquals(false, PropertyUtils.addProperty(propList2, "name1", "value1")); // propList 2 =
-                                                                                    // null
-      fail("BeeRuntimeException not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-      System.out.println("addProperty(): " + e.getMessage());
-    } catch (Exception e) {
-      fail("Java runtime error. Need BeeRuntimeException !!!");
-    }
   }
 
   @Test

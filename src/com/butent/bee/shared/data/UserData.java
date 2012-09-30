@@ -13,6 +13,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -98,7 +99,7 @@ public class UserData implements BeeSerializable, HasInfo {
         case PROPERTIES:
           String[] entry = Codec.beeDeserializeCollection(value);
 
-          if (!BeeUtils.isEmpty(entry)) {
+          if (!ArrayUtils.isEmpty(entry)) {
             properties = Maps.newHashMap();
 
             for (int j = 0; j < entry.length; j += 2) {
@@ -109,7 +110,7 @@ public class UserData implements BeeSerializable, HasInfo {
         case RIGHTS:
           entry = Codec.beeDeserializeCollection(value);
 
-          if (!BeeUtils.isEmpty(entry)) {
+          if (!ArrayUtils.isEmpty(entry)) {
             rights = Maps.newHashMap();
 
             for (int j = 0; j < entry.length; j += 2) {
@@ -127,7 +128,7 @@ public class UserData implements BeeSerializable, HasInfo {
         case CONSTANTS:
           entry = Codec.beeDeserializeCollection(value);
 
-          if (!BeeUtils.isEmpty(entry)) {
+          if (!ArrayUtils.isEmpty(entry)) {
             constants = Maps.newHashMap();
             for (int j = 0; j < entry.length; j += 2) {
               constants.put(entry[j], entry[j + 1]);
@@ -206,7 +207,7 @@ public class UserData implements BeeSerializable, HasInfo {
   }
 
   public String getUserSign() {
-    return BeeUtils.notEmpty(BeeUtils.concat(1, getFirstName(), getLastName()), getLogin());
+    return BeeUtils.notEmpty(BeeUtils.joinWords(getFirstName(), getLastName()), getLogin());
   }
 
   public boolean hasEventRight(String object, RightsState state) {
@@ -304,8 +305,8 @@ public class UserData implements BeeSerializable, HasInfo {
     Assert.notNull(state);
 
     if (!BeeUtils.contains(type.getRegisteredStates(), state)) {
-      logger.error("State", BeeUtils.bracket(state),
-          "is not registered for type", BeeUtils.bracket(type));
+      logger.error("State", BeeUtils.bracket(state.name()),
+          "is not registered for type", BeeUtils.bracket(type.name()));
       return false;
     }
     if (BeeUtils.isEmpty(object)) {

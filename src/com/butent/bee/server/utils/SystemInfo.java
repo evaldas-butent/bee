@@ -55,14 +55,14 @@ public class SystemInfo {
         "Is Sealed", p.isSealed() ? Boolean.toString(true) : BeeConst.STRING_EMPTY);
 
     Annotation[] arr = p.getDeclaredAnnotations();
-    if (!BeeUtils.isEmpty(arr)) {
+    if (arr != null) {
       for (Annotation ann : arr) {
         PropertyUtils.addProperty(lst, "Declared Annotation", ClassUtils.transformAnnotation(ann));
       }
     }
 
     arr = p.getAnnotations();
-    if (!BeeUtils.isEmpty(arr)) {
+    if (arr != null) {
       for (Annotation ann : arr) {
         PropertyUtils.addProperty(lst, "Annotation", ClassUtils.transformAnnotation(ann));
       }
@@ -74,7 +74,7 @@ public class SystemInfo {
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     Package[] pArr = Package.getPackages();
-    if (!BeeUtils.isEmpty(pArr)) {
+    if (pArr != null) {
       if (pArr.length > 1) {
         PropertyUtils.addExtended(lst, "Packages", BeeUtils.bracket(pArr.length));
         Arrays.sort(pArr, ensurePackageComparator());
@@ -203,7 +203,7 @@ public class SystemInfo {
 
     StackTraceElement[] arr = t.getStackTrace();
 
-    if (!BeeUtils.isEmpty(arr)) {
+    if (arr != null) {
       for (int i = 0; i < arr.length; i++) {
         PropertyUtils.addProperty(lst, BeeUtils.bracket(i), transformStackTraceElement(arr[i]));
       }
@@ -233,7 +233,7 @@ public class SystemInfo {
     if (t == null) {
       return null;
     } else {
-      return BeeUtils.transformOptions("Id", t.getId(), "Name", t.getName());
+      return BeeUtils.transformOptions("Id", BeeUtils.toString(t.getId()), "Name", t.getName());
     }
   }
 

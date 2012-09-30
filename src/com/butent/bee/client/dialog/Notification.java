@@ -70,7 +70,7 @@ public class Notification extends Composite implements NativePreviewHandler {
       if (getLevel() == null) {
         return STYLE_DEFAULT;
       } else {
-        return "bee-Notification" + BeeUtils.proper(getLevel().getName(), null);
+        return "bee-Notification" + BeeUtils.proper(getLevel().getName());
       }
     }
   }
@@ -329,7 +329,7 @@ public class Notification extends Composite implements NativePreviewHandler {
         Element.as(getMessageContainer().getChild(i)).setInnerHTML(message.getLine(i));
       }
       if (pendingCount > 0) {
-        String msg = BeeUtils.concat(1, BeeUtils.bracket(pendingCount), "pending...");
+        String msg = BeeUtils.joinWords(BeeUtils.bracket(pendingCount), "pending...");
         Element.as(getMessageContainer().getLastChild()).setInnerHTML(msg);
       }
 

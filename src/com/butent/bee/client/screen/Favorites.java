@@ -9,7 +9,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.dialog.DialogCallback;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.widget.BeeImage;
@@ -263,7 +263,8 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
 
   public void bookmark(String viewName, final IsRow row, List<BeeColumn> sourceColumns,
       List<String> expressions) {
-    if (BeeUtils.anyEmpty(viewName, row, sourceColumns, expressions)) {
+    if (BeeUtils.isEmpty(viewName) || row == null || BeeUtils.isEmpty(sourceColumns)
+        || BeeUtils.isEmpty(expressions)) {
       return;
     }
 
@@ -282,7 +283,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
     List<String> values = DataUtils.translate(expressions, sourceColumns, row);
     String html = BeeUtils.transformCollection(values, BeeConst.STRING_SPACE);
 
-    Global.inputString("Bookmark", null, new DialogCallback<String>() {
+    Global.inputString("Bookmark", null, new StringCallback() {
       @Override
       public void onSuccess(String value) {
         addItem(group, row.getId(), value);
@@ -348,7 +349,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
     edit.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
-        Global.inputString("Pakeisti pavadinimą", null, new DialogCallback<String>() {
+        Global.inputString("Pakeisti pavadinimą", null, new StringCallback() {
           @Override
           public void onSuccess(String value) {
             updateItem(group, item.getId(), value);

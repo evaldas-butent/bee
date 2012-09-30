@@ -98,6 +98,11 @@ public class DataUtils {
 
     return Filter.or(filters);
   }
+  
+  public static long assertId(Long id) {
+    Assert.isTrue(isId(id), "invalid row id");
+    return id;
+  }
 
   public static String buildList(BeeRowSet rowSet) {
     if (rowSet == null) {
@@ -533,7 +538,7 @@ public class DataUtils {
     return row != null && row.getId() == NEW_ROW_ID;
   }
 
-  public static String join(String viewName, IsRow row, List<String> colNames, Object separator) {
+  public static String join(String viewName, IsRow row, List<String> colNames, String separator) {
     Assert.notEmpty(viewName);
     DataInfo dataInfo = Data.getDataInfo(viewName);
     if (dataInfo == null) {
@@ -543,8 +548,8 @@ public class DataUtils {
     Assert.notNull(row);
     Assert.notEmpty(colNames);
 
-    String sep = BeeUtils.normSep(separator);
     StringBuilder sb = new StringBuilder();
+    String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
 
     for (String colName : colNames) {
       int i = dataInfo.getColumnIndex(colName);
@@ -561,12 +566,12 @@ public class DataUtils {
     return sb.toString();
   }
 
-  public static String join(DataInfo dataInfo, IsRow row, Object separator) {
+  public static String join(DataInfo dataInfo, IsRow row, String separator) {
     Assert.notNull(dataInfo);
     Assert.notNull(row);
 
-    String sep = BeeUtils.normSep(separator);
     StringBuilder sb = new StringBuilder();
+    String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
 
     for (int i = 0; i < dataInfo.getColumnCount(); i++) {
       BeeColumn column = dataInfo.getColumns().get(i);
@@ -632,7 +637,7 @@ public class DataUtils {
           flt = Filter.and();
         }
       }
-      if (!BeeUtils.isEmpty(flt)) {
+      if (flt != null) {
         for (String part : parts) {
           Filter ff = parseCondition(part, columns, idColumnName, versionColumnName);
 
@@ -650,7 +655,7 @@ public class DataUtils {
           flt = parseCondition(s.replaceFirst(ptrn, "$1"), columns,
               idColumnName, versionColumnName);
 
-          if (!BeeUtils.isEmpty(flt)) {
+          if (flt != null) {
             flt = Filter.isNot(flt);
           }
         } else {
@@ -669,7 +674,7 @@ public class DataUtils {
       String s = expr.trim();
       IsColumn column = detectColumn(s, columns, idColumnName, versionColumnName);
 
-      if (!BeeUtils.isEmpty(column)) {
+      if (column != null) {
         String colName = column.getId();
         String value = s.substring(colName.length()).trim();
 
@@ -680,7 +685,7 @@ public class DataUtils {
           value = value.replaceFirst(pattern, "$1").trim();
         }
         Operator operator = Operator.detectOperator(value);
-        boolean isOperator = !BeeUtils.isEmpty(operator);
+        boolean isOperator = (operator != null);
 
         if (isOperator) {
           value = value.replaceFirst("^\\" + operator.toTextString() + "\\s*", "");

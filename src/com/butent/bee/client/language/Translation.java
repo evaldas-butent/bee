@@ -165,7 +165,7 @@ public class Translation {
   }-*/;
 
   private static String translationKey(String text, String from, String to) {
-    return BeeUtils.concat(BeeConst.DEFAULT_VALUE_SEPARATOR, text, from, to);
+    return BeeUtils.join(BeeConst.DEFAULT_VALUE_SEPARATOR, text, from, to);
   }
 
   private Translation() {

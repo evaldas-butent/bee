@@ -66,7 +66,7 @@ public class Invocation {
       }
 
       List<Property> lst = PropertyUtils.createProperties(
-          BeeUtils.concat(1, "Locale", mode), Localized.transform(lc),
+          BeeUtils.joinWords("Locale", mode), Localized.transform(lc),
           "no", Localized.getConstants(lc).no(),
           "keyNotFound", Localized.getMessages(lc).keyNotFound("test"));
 
@@ -76,7 +76,7 @@ public class Invocation {
         PropertyUtils.addProperty(lst, "Available Constants", avail.size());
         for (Map.Entry<Locale, File> entry : avail.entrySet()) {
           PropertyUtils.addProperty(lst,
-              BeeUtils.concat(2, ++idx, Localized.transform(entry.getKey())), entry.getValue());
+              BeeUtils.joinWords(++idx, Localized.transform(entry.getKey())), entry.getValue());
         }
         PropertyUtils.addProperty(lst, "Normalized",
             Localized.transform(Localized.normalize(lc, avail)));
@@ -88,7 +88,7 @@ public class Invocation {
         PropertyUtils.addProperty(lst, "Available Messages", avail.size());
         for (Map.Entry<Locale, File> entry : avail.entrySet()) {
           PropertyUtils.addProperty(lst,
-              BeeUtils.concat(2, ++idx, Localized.transform(entry.getKey())), entry.getValue());
+              BeeUtils.joinWords(++idx, Localized.transform(entry.getKey())), entry.getValue());
         }
         PropertyUtils.addProperty(lst, "Normalized",
             Localized.transform(Localized.normalize(lc, avail)));
@@ -154,7 +154,7 @@ public class Invocation {
     String root = "Current Thread";
 
     PropertyUtils.appendChildrenToExtended(lst, root, SystemInfo.getThreadInfo(ct));
-    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, root, "Stack"),
+    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(root, "Stack"),
         SystemInfo.getThreadStackInfo(ct));
 
     lst.addAll(SystemInfo.getThreadGroupInfo(ct.getThreadGroup(), true, true));

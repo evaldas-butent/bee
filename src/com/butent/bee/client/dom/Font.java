@@ -85,7 +85,7 @@ public class Font implements HasInfo, Transformable {
     if (BeeUtils.isEmpty(input)) {
       return null;
     }
-    return parse(BeeUtils.split(input, BeeConst.STRING_SPACE));
+    return parse(BeeUtils.split(input, BeeConst.CHAR_SPACE));
   }
   
   public static Font parse(String[] input) {

@@ -10,6 +10,7 @@ import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_VALUE;
 import static com.butent.bee.server.data.SystemBean.AUDIT_USER;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
@@ -40,7 +41,7 @@ class PostgreSqlBuilder extends SqlBuilder {
   protected String getAuditTrigger(String auditTable, String idName, Collection<String> fields) {
     StringBuilder body = new StringBuilder();
     String insert = "INSERT INTO " + auditTable
-        + " (" + BeeUtils.concat(",", sqlQuote(AUDIT_FLD_TIME), sqlQuote(AUDIT_FLD_USER),
+        + " (" + BeeUtils.join(",", sqlQuote(AUDIT_FLD_TIME), sqlQuote(AUDIT_FLD_USER),
             sqlQuote(AUDIT_FLD_TX), sqlQuote(AUDIT_FLD_MODE), sqlQuote(AUDIT_FLD_ID),
             sqlQuote(AUDIT_FLD_FIELD), sqlQuote(AUDIT_FLD_VALUE))
         + ") VALUES (_time,_user,TXID_CURRENT(),SUBSTRING(TG_OP,1,1),";
@@ -81,7 +82,7 @@ class PostgreSqlBuilder extends SqlBuilder {
       String relField = entry.get("relField");
       String var = "OLD." + sqlQuote(fldName);
 
-      body.append(BeeUtils.concat(1, "IF", var, "IS NOT NULL THEN",
+      body.append(BeeUtils.joinWords("IF", var, "IS NOT NULL THEN",
           new SqlDelete(relTable).setWhere(SqlUtils.equal(relTable, relField, 69))
               .getQuery().replace("69", var),
           ";END IF;"));
@@ -142,7 +143,7 @@ class PostgreSqlBuilder extends SqlBuilder {
 
     IsCondition whereClause = su.getWhere();
 
-    if (!BeeUtils.isEmpty(whereClause)) {
+    if (!isEmpty(whereClause)) {
       String wh = whereClause.getSqlString(this);
 
       if (!BeeUtils.isEmpty(wh)) {
@@ -168,18 +169,18 @@ class PostgreSqlBuilder extends SqlBuilder {
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
       case SET_PARAMETER:
-        return BeeUtils.concat(0,
+        return BeeUtils.join(BeeConst.STRING_EMPTY,
             "SELECT SET_CONFIG('", params.get("prmName"), "','", params.get("prmValue"), "',true)");
 
       case CREATE_TRIGGER:
         String procName = "trigger_" + Codec.crc32((String) params.get("name"));
 
-        return BeeUtils.concat(1,
+        return BeeUtils.joinWords(
             "CREATE OR REPLACE FUNCTION", procName, "() RETURNS TRIGGER AS",
             "$" + procName + "$", getTriggerBody(params),
             "$" + procName + "$", "LANGUAGE plpgsql;",
             "CREATE TRIGGER", params.get("name"), params.get("timing"),
-            BeeUtils.concat(" OR ", ((EnumSet<SqlTriggerEvent>) params.get("events")).toArray()),
+            BeeUtils.join(" OR ", ((EnumSet<SqlTriggerEvent>) params.get("events")).toArray()),
             "ON", params.get("table"), "FOR EACH", params.get("scope"),
             "EXECUTE PROCEDURE", procName, "();");
 
@@ -193,11 +194,11 @@ class PostgreSqlBuilder extends SqlBuilder {
         IsCondition wh = null;
 
         Object prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("s", "nspname", prm));
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("t", "relname", prm));
         }
         return new SqlSelect()
@@ -212,11 +213,11 @@ class PostgreSqlBuilder extends SqlBuilder {
         wh = null;
 
         prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("s", "nspname", prm));
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("t", "relname", prm));
         }
         return new SqlSelect()

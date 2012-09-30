@@ -5,14 +5,11 @@ import com.butent.bee.server.sql.SqlBuilderFactory;
 import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst.SqlEngine;
-import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,17 +68,16 @@ public class TestSqlDelete {
         delete.getSqlString(builder));
   }
 
-  @SuppressWarnings("unused")
   @Test
   public final void testIsEmpty() {
-    try {
-      SqlDelete del = new SqlDelete("\n \t \r");
-      fail("Exceptions not work");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
+//    try {
+//      SqlDelete del = new SqlDelete("\n \t \r");
+//      fail("Exceptions not work");
+//    } catch (BeeRuntimeException e) {
+//      assertTrue(true);
+//    } catch (Exception e) {
+//      fail("Need BeeRuntimeException: " + e.getMessage());
+//    }
     SqlDelete del = new SqlDelete("Table1");
     assertTrue(del.isEmpty());
 

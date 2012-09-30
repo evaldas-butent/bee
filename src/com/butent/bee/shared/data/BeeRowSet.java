@@ -6,6 +6,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -115,7 +116,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
         case COLUMNS:
           String[] cArr = Codec.beeDeserializeCollection(value);
 
-          if (!BeeUtils.isEmpty(cArr)) {
+          if (!ArrayUtils.isEmpty(cArr)) {
             List<BeeColumn> columns = Lists.newArrayList();
 
             for (String col : cArr) {
@@ -128,7 +129,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
         case ROWS:
           String[] data = Codec.beeDeserializeCollection(value);
 
-          if (!BeeUtils.isEmpty(data)) {
+          if (!ArrayUtils.isEmpty(data)) {
             for (String r : data) {
               addRow(BeeRow.restore(r));
             }

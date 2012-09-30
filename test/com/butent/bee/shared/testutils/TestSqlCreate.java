@@ -7,12 +7,10 @@ import com.butent.bee.server.sql.SqlCreate;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
-import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -31,17 +29,16 @@ public class TestSqlCreate {
   public void tearDown() throws Exception {
   }
 
-  @SuppressWarnings("unused")
   @Test
   public final void testIsEmpty() {
-    try {
-      SqlCreate create = new SqlCreate("\n \r \t");
-      fail("Exceptions not work");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeEception : " + e.getMessage());
-    }
+//    try {
+//      SqlCreate create = new SqlCreate("\n \r \t");
+//      fail("Exceptions not work");
+//    } catch (BeeRuntimeException e) {
+//      assertTrue(true);
+//    } catch (Exception e) {
+//      fail("Need BeeRuntimeEception : " + e.getMessage());
+//    }
 
     SqlCreate create = new SqlCreate("table");
     assertTrue(create.isEmpty());
@@ -111,7 +108,7 @@ public class TestSqlCreate {
     create3.addString("string field", 7, false);
 
     assertEquals(
-        "CREATE TEMPORARY TABLE Target (boolean field BIT NOT NULL, char CHAR(25) NOT NULL, data INTEGER, datetime BIGINT, double value DOUBLE, int field INTEGER NOT NULL, long field BIGINT, numeric field NUMERIC(10, 10), string field VARCHAR(7))",
+        "CREATE TEMPORARY TABLE Target (boolean field BIT NOT NULL, char CHAR(25) NOT NULL, data BIGINT, datetime BIGINT, double value DOUBLE, int field INTEGER NOT NULL, long field BIGINT, numeric field NUMERIC(10, 10), string field VARCHAR(7))",
         create3.getSqlString(builder3));
 
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.POSTGRESQL);
@@ -124,7 +121,7 @@ public class TestSqlCreate {
     create.addDate("data", false);
     create.getSqlString(builder);
     assertEquals(
-        "CREATE TEMPORARY TABLE \"Target\" (\"arIvykdyta\" NUMERIC(1) NOT NULL, \"kaina\" DOUBLE PRECISION, \"data\" INTEGER)",
+        "CREATE TEMPORARY TABLE \"Target\" (\"arIvykdyta\" NUMERIC(1) NOT NULL, \"kaina\" DOUBLE PRECISION, \"data\" BIGINT)",
         create.getSqlString(builder));
 
     SqlBuilderFactory.setDefaultBuilder(SqlEngine.ORACLE);
@@ -143,7 +140,7 @@ public class TestSqlCreate {
 
     create.getSqlString(builder);
     assertEquals(
-        "CREATE TABLE \"Target\" (\"arIvykdyta\" NUMERIC(1) NOT NULL, \"kaina\" BINARY_DOUBLE, \"data\" NUMERIC(10), \"kiek\" NUMERIC(10), \"millis\" NUMERIC(19), \"dateTime\" NUMERIC(19), \"pav\" NVARCHAR2(10), \"char field\" CHAR(2))",
+        "CREATE TABLE \"Target\" (\"arIvykdyta\" NUMERIC(1) NOT NULL, \"kaina\" BINARY_DOUBLE, \"data\" NUMERIC(19), \"kiek\" NUMERIC(10), \"millis\" NUMERIC(19), \"dateTime\" NUMERIC(19), \"pav\" NVARCHAR2(10), \"char field\" CHAR(2))",
         create.getSqlString(builder));
   }
 
@@ -171,7 +168,7 @@ public class TestSqlCreate {
     create4.addString("string field", 7, false);
 
     assertEquals(
-        "CREATE TEMPORARY TABLE Target (boolean field BIT NOT NULL, data INTEGER, datetime BIGINT, double value DOUBLE, long field BIGINT, numeric field NUMERIC(10, 10), string field VARCHAR(7))",
+        "CREATE TEMPORARY TABLE Target (boolean field BIT NOT NULL, data BIGINT, datetime BIGINT, double value DOUBLE, long field BIGINT, numeric field NUMERIC(10, 10), string field VARCHAR(7))",
         create4.getSqlString(builder4));
 
     IsExpression expression = create5.getField("bool2").getName();

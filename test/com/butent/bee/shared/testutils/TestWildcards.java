@@ -1,12 +1,9 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.utils.Wildcards;
 import com.butent.bee.shared.utils.Wildcards.Pattern;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -38,19 +35,7 @@ public class TestWildcards {
 
   @Test
   public final void testGetDefaultPatternString() {
-    assertEquals("abc>def<c<", Wildcards.getDefaultPattern("abc>def<c<")
-        .toString());
-
-    try {
-      assertEquals("", Wildcards.getDefaultPattern("").toString());
-      assertEquals("", Wildcards.getDefaultPattern(null).toString());
-      fail("BeeRuntimeException not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-      System.out.println("wildcards" + e.getMessage());
-    } catch (Exception e) {
-      fail("Java runtime error. Need BeeRuntimeException !!!");
-    }
+    assertEquals("abc>def<c<", Wildcards.getDefaultPattern("abc>def<c<").toString());
   }
 
   @Test
@@ -71,36 +56,13 @@ public class TestWildcards {
 
   @Test
   public final void testGetFsPatternString() {
-
-    assertEquals("abc>def<c<", Wildcards.getFsPattern("abc>def<c<")
-        .toString());
-
-    try {
-      assertEquals("", Wildcards.getFsPattern("").toString());
-      assertEquals("", Wildcards.getFsPattern(null).toString());
-      fail("BeeRuntimeException not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-      System.out.println("wildcards" + e.getMessage());
-    } catch (Exception e) {
-      fail("Java runtime error. Need BeeRuntimeException !!!");
-    }
+    assertEquals("abc>def<c<", Wildcards.getFsPattern("abc>def<c<").toString());
   }
 
   @Test
   public final void testGetFsPatternStringBoolean() {
     assertEquals("abc>def<c< (sensitive)",
         Wildcards.getFsPattern("abc>def<c<", true).toString());
-    try {
-      assertEquals("", Wildcards.getFsPattern("", true).toString());
-      assertEquals("", Wildcards.getFsPattern(null, true).toString());
-      fail("BeeRuntimeException not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-      System.out.println("wildcards" + e.getMessage());
-    } catch (Exception e) {
-      fail("Java runtime error. Need BeeRuntimeException !!!");
-    }
   }
 
   @Test
@@ -115,34 +77,13 @@ public class TestWildcards {
 
   @Test
   public final void testGetSqlPatternString() {
-    assertEquals("abc>def<c<", Wildcards.getSqlPattern("abc>def<c<")
-        .toString());
-    try {
-      assertEquals("", Wildcards.getSqlPattern("").toString());
-      assertEquals("", Wildcards.getSqlPattern(null).toString());
-      fail("BeeRuntimeException not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-      System.out.println("wildcards" + e.getMessage());
-    } catch (Exception e) {
-      fail("Java runtime error. Need BeeRuntimeException !!!");
-    }
+    assertEquals("abc>def<c<", Wildcards.getSqlPattern("abc>def<c<").toString());
   }
 
   @Test
   public final void testGetSqlPatternStringBoolean() {
     assertEquals("abc>def<c< (sensitive)",
         Wildcards.getSqlPattern("abc>def<c<", true).toString());
-    try {
-      assertEquals("", Wildcards.getSqlPattern("", true).toString());
-      assertEquals("", Wildcards.getSqlPattern(null, true).toString());
-      fail("BeeRuntimeException not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-      System.out.println("wildcards" + e.getMessage());
-    } catch (Exception e) {
-      fail("Java runtime error. Need BeeRuntimeException !!!");
-    }
   }
 
   @Test

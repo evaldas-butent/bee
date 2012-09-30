@@ -820,14 +820,14 @@ public class XmlUtils {
       default:
         logger.warning("unknown node type", tp);
         tpInf = PropertyUtils.createProperties(nd.toString(),
-            BeeUtils.concat(1, "unknown node type", tp));
+            BeeUtils.joinWords("unknown node type", tp));
     }
 
     if (!BeeUtils.isEmpty(tpInf)) {
-      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, root, getNodeName(tp)), tpInf);
+      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(root, getNodeName(tp)), tpInf);
     }
 
-    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, root, "Node"), getNodeInfo(nd));
+    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(root, "Node"), getNodeInfo(nd));
 
     if (nd.hasChildNodes()) {
       NodeList children = nd.getChildNodes();
@@ -835,7 +835,7 @@ public class XmlUtils {
       PropertyUtils.addExtended(lst, root, "Children", BeeUtils.bracket(c));
 
       for (int i = 0; i < c; i++) {
-        lst.addAll(getTreeInfo(children.item(i), BeeUtils.concat(".", root, i + 1)));
+        lst.addAll(getTreeInfo(children.item(i), BeeUtils.join(".", root, i + 1)));
       }
     }
     return lst;
@@ -1174,7 +1174,7 @@ public class XmlUtils {
     if (el == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return BeeUtils.concat(1, el.getNodeName(), el.getTagName());
+      return BeeUtils.joinWords(el.getNodeName(), el.getTagName());
     }
   }
 
@@ -1182,7 +1182,7 @@ public class XmlUtils {
     if (nd == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return BeeUtils.concat(1, nd.getNodeName(), nd.getNodeValue());
+      return BeeUtils.joinWords(nd.getNodeName(), nd.getNodeValue());
     }
   }
 
@@ -1190,7 +1190,7 @@ public class XmlUtils {
     if (ti == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return BeeUtils.concat(1, ti.getTypeName(), ti.getTypeNamespace());
+      return BeeUtils.joinWords(ti.getTypeName(), ti.getTypeNamespace());
     }
   }
 

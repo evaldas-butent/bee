@@ -20,7 +20,7 @@ import com.butent.bee.client.data.LocalProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.dialog.DialogCallback;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.output.Printer;
@@ -166,7 +166,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case CONFIGURE:
-        Global.inputString("Options", new DialogCallback<String>() {
+        Global.inputString("Options", new StringCallback() {
           @Override
           public void onSuccess(String value) {
             getView().getContent().applyOptions(value);

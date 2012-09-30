@@ -1,12 +1,9 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -91,8 +88,8 @@ public class TestJustDate {
     assertEquals(22, jd.getDom());
 
     jd = new JustDate(2011, 2, -1);
-    assertEquals(1, jd.getDom());
-    assertEquals(2, jd.getMonth());
+    assertEquals(31, jd.getDom());
+    assertEquals(1, jd.getMonth());
 
     jd = new JustDate(2011, 2, 0);
     assertEquals(1, jd.getDom());
@@ -102,23 +99,19 @@ public class TestJustDate {
   @Test
   public final void testGetDow() {
     JustDate jd = new JustDate(2011, 2, 25);
-
     assertEquals(25, jd.getDom());
 
     jd = new JustDate(2011, 2, 29);
-    assertEquals(3, jd.getDow());
+    assertEquals(2, jd.getDow());
     assertEquals(3, jd.getMonth());
 
-    jd = new JustDate(1298362388227L);
-    assertEquals(3, jd.getDow());
-
-    jd = new JustDate(2011, 2, -1);
-    assertEquals(3, jd.getDow());
+    jd = new JustDate(2011, 3, -1);
+    assertEquals(1, jd.getDow());
     assertEquals(2, jd.getMonth());
 
-    jd = new JustDate(2011, 2, 0);
-    assertEquals(3, jd.getDow());
-    assertEquals(2, jd.getMonth());
+    jd = new JustDate(2011, 3, 0);
+    assertEquals(2, jd.getDow());
+    assertEquals(3, jd.getMonth());
   }
 
   @Test
@@ -206,14 +199,8 @@ public class TestJustDate {
     assertEquals(d.getMonth(), dt.getMonth());
     assertEquals(d.getDom(), dt.getDom());
 
-    try {
-      JustDate dtf = new JustDate((Date) null);
-      assertEquals(-10800000, dtf.getDateTime().getTime());
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException " + e.getMessage());
-    }
+    JustDate dtf = new JustDate((Date) null);
+    assertEquals(dtf.getDateTime().getTimezoneOffset() * 60000, dtf.getDateTime().getTime());
   }
 
   @Test
@@ -232,14 +219,8 @@ public class TestJustDate {
     assertEquals(dt.getMonth(), jd.getMonth());
     assertEquals(dt.getDom(), jd.getDom());
 
-    try {
-      JustDate dtf = new JustDate((DateTime) null);
-      assertEquals(-10800000, dtf.getDateTime().getTime());
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException " + e.getMessage());
-    }
+    JustDate dtf = new JustDate((DateTime) null);
+    assertEquals(dtf.getDateTime().getTimezoneOffset() * 60000, dtf.getDateTime().getTime());
   }
 
   @Test
@@ -291,7 +272,7 @@ public class TestJustDate {
     String str = "46";
     JustDate jd = JustDate.parse(str);
 
-    assertEquals(46, jd.getYear());
+    assertEquals(2046, jd.getYear());
     assertEquals(1, jd.getMonth());
     assertEquals(1, jd.getDom());
 

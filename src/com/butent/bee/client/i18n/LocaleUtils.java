@@ -73,7 +73,7 @@ public class LocaleUtils {
       PropertyUtils.addExtended(lst, "Likely Region Codes", ArrayUtils.length(codes));
       i = 0;
       for (String code : codes) {
-        PropertyUtils.addExtended(lst, BeeUtils.concat(1, "Region", i++),
+        PropertyUtils.addExtended(lst, BeeUtils.joinWords("Region", i++),
             localizedNames.getRegionName(code), code);
       }
 
@@ -81,7 +81,7 @@ public class LocaleUtils {
       PropertyUtils.addExtended(lst, "Sorted Region Codes", ArrayUtils.length(codes));
       i = 0;
       for (String code : codes) {
-        PropertyUtils.addExtended(lst, BeeUtils.concat(1, "Region", i++),
+        PropertyUtils.addExtended(lst, BeeUtils.joinWords("Region", i++),
             localizedNames.getRegionName(code), code);
       }
     }

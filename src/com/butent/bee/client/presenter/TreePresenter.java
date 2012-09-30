@@ -199,7 +199,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     if (!BeeUtils.isEmpty(relationName) && relationId == null) {
       ok = false;
     }
-    if (ok && BeeUtils.isEmpty(editor)) {
+    if (ok && editor == null) {
       BeeKeeper.getScreen().notifySevere("Editor form not found");
       ok = false;
     }
@@ -293,7 +293,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   }
 
   private String evaluate(IsRow row) {
-    if (BeeUtils.allNotEmpty(evaluator, row)) {
+    if (BeeUtils.allNotNull(evaluator, row)) {
       evaluator.update(row);
       return evaluator.evaluate();
     }
@@ -356,7 +356,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     final IsRow data = getView().getSelectedItem();
 
     if (data != null) {
-      String message = BeeUtils.concat(1, "Išmesti", evaluate(data), "?");
+      String message = BeeUtils.joinWords("Išmesti", evaluate(data), "?");
       Global.getMsgBoxen().confirm(message, new Command() {
         @Override
         public void execute() {

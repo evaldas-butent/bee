@@ -91,7 +91,7 @@ public class ResponseBuffer {
   }
 
   public void addColumn(BeeColumn col) {
-    Assert.notEmpty(col);
+    Assert.notNull(col);
 
     add(col.serialize());
     setColumnCount(getColumnCount() + 1);
@@ -106,7 +106,7 @@ public class ResponseBuffer {
   }
 
   public void addDebug(Object... obj) {
-    messages.add(new ResponseMessage(LogLevel.DEBUG, BeeUtils.concat(1, obj)));
+    messages.add(new ResponseMessage(LogLevel.DEBUG, BeeUtils.joinWords(obj)));
   }
 
   public void addError(Throwable err) {
@@ -120,7 +120,7 @@ public class ResponseBuffer {
   }
 
   public void addExtended(ExtendedProperty el) {
-    Assert.notEmpty(el);
+    Assert.notNull(el);
 
     add(el.getName());
     add(el.getSub());
@@ -153,16 +153,16 @@ public class ResponseBuffer {
 
   public void addLine(Object... obj) {
     if (obj.length > 0) {
-      add(BeeUtils.concat(1, obj));
+      add(BeeUtils.joinWords(obj));
     }
   }
 
   public void addMessage(Object... obj) {
-    messages.add(new ResponseMessage(BeeUtils.concat(1, obj)));
+    messages.add(new ResponseMessage(BeeUtils.joinWords(obj)));
   }
 
   public void addNow(Object... obj) {
-    messages.add(new ResponseMessage(true, BeeUtils.concat(1, obj)));
+    messages.add(new ResponseMessage(true, BeeUtils.joinWords(obj)));
   }
 
   public void addPart(String uri, String content) {
@@ -207,7 +207,7 @@ public class ResponseBuffer {
   }
 
   public void addProperty(Property el) {
-    Assert.notEmpty(el);
+    Assert.notNull(el);
 
     add(el.getName());
     add(el.getValue());
@@ -243,7 +243,7 @@ public class ResponseBuffer {
   }
 
   public void addSevere(Object... obj) {
-    messages.add(new ResponseMessage(LogLevel.ERROR, BeeUtils.concat(1, obj)));
+    messages.add(new ResponseMessage(LogLevel.ERROR, BeeUtils.joinWords(obj)));
   }
 
   public void addText(CharSequence s) {
@@ -258,7 +258,7 @@ public class ResponseBuffer {
   }
 
   public void addWarning(Object... obj) {
-    messages.add(new ResponseMessage(LogLevel.WARNING, BeeUtils.concat(1, obj)));
+    messages.add(new ResponseMessage(LogLevel.WARNING, BeeUtils.joinWords(obj)));
   }
 
   public void addWarning(Throwable err) {

@@ -128,13 +128,13 @@ public class Duration {
   }
 
   public String toLog() {
-    return BeeUtils.concat(1, getMessage(), getStartTime(),
+    return BeeUtils.joinWords(getMessage(), getStartTime(),
         BeeUtils.bracket(getCompletedTime()));
   }
 
   @Override
   public String toString() {
-    return BeeUtils.concat(1, getMessage(), getStartTime(), getEndTime(),
+    return BeeUtils.joinWords(getMessage(), getStartTime(), getEndTime(),
         BeeUtils.bracket(getCompletedTime()));
   }
 

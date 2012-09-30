@@ -1,27 +1,18 @@
 package com.butent.bee.shared.utils;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
-import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeType;
-import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.Transformable;
-import com.butent.bee.shared.time.TimeUtils;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +22,7 @@ import java.util.Set;
  */
 public class BeeUtils {
 
-  public static <T> boolean addNotEmpty(Collection<T> col, T item) {
+  public static boolean addNotEmpty(Collection<String> col, String item) {
     if (isEmpty(item)) {
       return false;
     } else {
@@ -49,22 +40,15 @@ public class BeeUtils {
     }
   }
 
-  /**
-   * Checks if all specified objects are empty.
-   * 
-   * @param obj objects to check
-   * @return true if all of the specified objects are empty. Returns false if any of these objects
-   *         aren't empty.
-   */
-  public static boolean allEmpty(Object... obj) {
-    if (obj == null) {
+  public static boolean allEmpty(String... items) {
+    if (items == null) {
       return true;
     }
-    Assert.parameterCount(obj.length, 1);
+    Assert.parameterCount(items.length, 1);
     boolean ok = true;
 
-    for (Object z : obj) {
-      if (!isEmpty(z)) {
+    for (String s : items) {
+      if (!isEmpty(s)) {
         ok = false;
         break;
       }
@@ -72,20 +56,13 @@ public class BeeUtils {
     return ok;
   }
 
-  /**
-   * Checks if all specified objects are <b>not empty</b>.
-   * 
-   * @param obj objects to check
-   * @return true if all of the specified objects are not empty. Returns false if any of these
-   *         objects are empty.
-   */
-  public static boolean allNotEmpty(Object... obj) {
-    Assert.notNull(obj);
-    Assert.parameterCount(obj.length, 1);
+  public static boolean allNotEmpty(String... items) {
+    Assert.notNull(items);
+    Assert.parameterCount(items.length, 1);
     boolean ok = true;
 
-    for (Object z : obj) {
-      if (isEmpty(z)) {
+    for (String s : items) {
+      if (isEmpty(s)) {
         ok = false;
         break;
       }
@@ -93,63 +70,32 @@ public class BeeUtils {
     return ok;
   }
 
-  public static boolean anyEmpty(Object... obj) {
-    Assert.notNull(obj);
-    Assert.parameterCount(obj.length, 1);
+  public static boolean allNotNull(Object... items) {
+    Assert.notNull(items);
+    Assert.parameterCount(items.length, 1);
+    boolean ok = true;
+
+    for (Object obj : items) {
+      if (obj == null) {
+        ok = false;
+        break;
+      }
+    }
+    return ok;
+  }
+
+  public static boolean anyEmpty(String... items) {
+    Assert.notNull(items);
+    Assert.parameterCount(items.length, 1);
     boolean ok = false;
 
-    for (Object z : obj) {
-      if (isEmpty(z)) {
+    for (String s : items) {
+      if (isEmpty(s)) {
         ok = true;
         break;
       }
     }
     return ok;
-  }
-
-  /**
-   * Appends specified list's {@code iterable} elements to a specified StringBuilder {@code bld}.
-   * 
-   * @param bld a builder used for appending
-   * @param iterable a list to append
-   * @param sep separator used for appending the list. List elements are separated by this
-   *          separator.
-   * @return a string builder with the list elements appended.
-   */
-  public static StringBuilder append(StringBuilder bld, Iterable<?> iterable, Object sep) {
-    if (iterable != null) {
-      String z = normSep(sep);
-      Iterator<?> it = iterable.iterator();
-
-      while (it.hasNext()) {
-        bld.append(it.next());
-        if (it.hasNext()) {
-          bld.append(z);
-        }
-      }
-    }
-    return bld;
-  }
-
-  /**
-   * Appends array elements to a specified StringBuilder.
-   * 
-   * @param bld a builder used for appending
-   * @param arr array to append
-   * @param sep separator used for appending the array. Elements are separated by this separator.
-   * @return a string builder with the array elements appended.
-   */
-  public static StringBuilder append(StringBuilder bld, Object[] arr, Object sep) {
-    if (arr != null && arr.length > 0) {
-      String z = normSep(sep);
-      bld.append(arr[0]);
-
-      for (int i = 1; i < arr.length; i++) {
-        bld.append(z);
-        bld.append(arr[i]);
-      }
-    }
-    return bld;
   }
 
   /**
@@ -179,22 +125,24 @@ public class BeeUtils {
     return x >= min && x <= max;
   }
 
+  public static String bracket(int x) {
+    return bracket(toString(x));
+  }
+
   /**
-   * Surrounds the Object value {@code x} in brackets.
+   * Surrounds the String value {@code s} in brackets.
    * 
-   * @param x Object to put in brackets.
+   * @param s String to put in brackets.
    * @return a String representation of the Object surrounded by brackets.
    */
-  public static String bracket(Object x) {
-    String s = transform(x);
-
-    if (s.isEmpty()) {
+  public static String bracket(String s) {
+    if (isEmpty(s)) {
       return BeeConst.STRING_EMPTY;
     } else {
       return BeeConst.STRING_LEFT_BRACKET + s + BeeConst.STRING_RIGHT_BRACKET;
     }
   }
-  
+
   public static String buildLines(String... lines) {
     if (lines == null) {
       return null;
@@ -334,133 +282,6 @@ public class BeeUtils {
     }
   }
 
-  /**
-   * Compares the two specified Double values.
-   * 
-   * @param x1 the first Double value to be compared
-   * @param x2 the second Double value to be compared
-   * @return 0 if values are equal, -1 if {@code x1 < x2}, and 1 if @code {x1 > x2}.
-   */
-  public static int compare(double x1, double x2) {
-    if (x1 == x2 || ((Double) x1).equals(x2)) {
-      return BeeConst.COMPARE_EQUAL;
-    } else if (x1 < x2) {
-      return BeeConst.COMPARE_LESS;
-    } else {
-      return BeeConst.COMPARE_MORE;
-    }
-  }
-
-  /**
-   * Compares the two specified Integer values.
-   * 
-   * @param x1 the first Integer value to be compared
-   * @param x2 the second Integer value to be compared
-   * @return 0 if values are equal, -1 if {@code x1 < x2}, and 1 if {@code x1 > x2}.
-   */
-  public static int compare(int x1, int x2) {
-    if (x1 == x2) {
-      return BeeConst.COMPARE_EQUAL;
-    } else if (x1 < x2) {
-      return BeeConst.COMPARE_LESS;
-    } else {
-      return BeeConst.COMPARE_MORE;
-    }
-  }
-
-  public static int compare(long x1, long x2) {
-    if (x1 == x2) {
-      return BeeConst.COMPARE_EQUAL;
-    } else if (x1 < x2) {
-      return BeeConst.COMPARE_LESS;
-    } else {
-      return BeeConst.COMPARE_MORE;
-    }
-  }
-
-  /**
-   * Compares objects {@code x1} and {@code x2}. This method allows to compare values even if one or
-   * both of the specified values are {@code null}.
-   * 
-   * @param x1 first value to compare
-   * @param x2 second value to compare
-   * @return 0 if objects are equal, -1 if {@code x1 < x2}, and 1 if {@code x1 > x2}.
-   */
-  public static int compare(Object x1, Object x2) {
-    if (x1 == null) {
-      if (x2 == null) {
-        return BeeConst.COMPARE_EQUAL;
-      } else {
-        return BeeConst.COMPARE_LESS;
-      }
-    } else if (x2 == null) {
-      return BeeConst.COMPARE_MORE;
-    } else if (x1 == x2 || x1.equals(x2)) {
-      return BeeConst.COMPARE_EQUAL;
-    } else {
-      return x1.toString().compareTo(x2.toString());
-    }
-  }
-
-  /**
-   * Compares the two specified String values.
-   * 
-   * @param s1 the first String value to be compared
-   * @param s2 the second String value to be compared
-   * @return 0 if values are equal, -1 if {@code x1 < x2}, and 1 if {@code x1 > x2}.
-   */
-  public static int compare(String s1, String s2) {
-    if (isEmpty(s1)) {
-      if (isEmpty(s2)) {
-        return BeeConst.COMPARE_EQUAL;
-      } else {
-        return BeeConst.COMPARE_LESS;
-      }
-    } else if (isEmpty(s2)) {
-      return BeeConst.COMPARE_MORE;
-    } else {
-      return s1.compareTo(s2);
-    }
-  }
-
-  /**
-   * Compares two normalized String values.
-   * 
-   * @param s1 first normalized String value
-   * @param s2 second normalized String value
-   * @return 0 if values are equal, -1 if {@code s1 < s2}, and 1 if {@code s1 > s2}.
-   */
-  public static int compareNormalized(String s1, String s2) {
-    return compare(normalize(s1), normalize(s2));
-  }
-
-  /**
-   * Concats specified Objects. The first argument is the separator for the rest of the arguments.
-   * 
-   * @param x Objects to concatenate
-   * @return a String concatenized using the fist Object as a separator, an empty string if no or
-   *         only single Object is specified.
-   */
-  public static String concat(Object... x) {
-    int c = (x == null) ? 0 : x.length;
-    if (c <= 1) {
-      return BeeConst.STRING_EMPTY;
-    }
-
-    StringBuilder s = new StringBuilder();
-    String sep = normSep(x[0]);
-
-    for (int i = 1; i < c; i++) {
-      if (!isEmpty(x[i], EnumSet.of(BeeType.NUMBER))) {
-        if (s.length() > 0) {
-          s.append(sep);
-        }
-        s.append(transformGeneric(x[i], sep));
-      }
-    }
-    return s.toString();
-  }
-
   public static <T> boolean contains(Collection<? extends T> col, T item) {
     if (col == null) {
       return false;
@@ -476,7 +297,7 @@ public class BeeUtils {
       return s.indexOf(ch) >= 0;
     }
   }
-
+  
   /**
    * Checks is there are equal elements in the Collections.
    * 
@@ -488,11 +309,11 @@ public class BeeUtils {
   public static <T> boolean containsAny(Collection<T> c1, Collection<T> c2) {
     boolean ok = false;
 
-    int n1 = length(c1);
+    int n1 = size(c1);
     if (n1 <= 0) {
       return ok;
     }
-    int n2 = length(c2);
+    int n2 = size(c2);
     if (n2 <= 0) {
       return ok;
     }
@@ -514,7 +335,7 @@ public class BeeUtils {
     }
     return ok;
   }
-
+  
   /**
    * Checks if the CharSequence {@code src} contains only of the specified characters.
    * 
@@ -630,20 +451,6 @@ public class BeeUtils {
   }
 
   /**
-   * Returns the elapsed time in seconds.
-   * 
-   * @param start the start time
-   * @return the elapsed time in seconds from the specified start in brackets.
-   */
-  public static String elapsedSeconds(long start) {
-    return bracket(toSeconds(System.currentTimeMillis() - start));
-  }
-
-  public static String emptyToNull(String s) {
-    return isEmpty(s) ? null : s;
-  }
-
-  /**
    * Trims both Strings and then compares them.
    * 
    * @param s1 the String to compare
@@ -708,45 +515,6 @@ public class BeeUtils {
   }
 
   /**
-   * Filters Object {@code x} through BeeType set. Gets the type of Object {@code x} and checks if
-   * any of the set types contain it.
-   * 
-   * @param x the Object to filter
-   * @param types the set of elements to compare to
-   * @return true when types contain the type of Object, otherwise false
-   */
-  public static boolean filterType(Object x, Set<BeeType> types) {
-    Assert.notEmpty(types);
-
-    Set<BeeType> tp = Sets.newHashSet();
-
-    if (x == null) {
-      tp.add(BeeType.NULL);
-    } else if (x instanceof Boolean) {
-      tp.add(BeeType.BOOLEAN);
-    } else if (instanceOfStringType(x)) {
-      tp.add(BeeType.STRING);
-    } else if (x instanceof Character) {
-      tp.add(BeeType.CHAR);
-    } else if (x instanceof Number) {
-      tp.add(BeeType.NUMBER);
-      if (instanceOfIntegerType(x)) {
-        tp.add(BeeType.INT);
-      }
-      if (instanceOfFloatingPoint(x)) {
-        tp.add(BeeType.FLOAT);
-        tp.add(BeeType.DOUBLE);
-      }
-    } else if (TimeUtils.isDateOrDateTime(x)) {
-      tp.add(BeeType.DATE);
-    } else {
-      tp.add(BeeType.UNKNOWN);
-    }
-
-    return containsAny(types, tp);
-  }
-
-  /**
    * Looks for a fitting starting position.
    * 
    * @param start the start index
@@ -760,19 +528,6 @@ public class BeeUtils {
     } else {
       return end - len;
     }
-  }
-
-  /**
-   * Looks for a fitting starting position.
-   * 
-   * @param start the start index
-   * @param len the length
-   * @param end end index
-   * @param min the minimum starting position
-   * @return the new starting position
-   */
-  public static int fitStart(int start, int len, int end, int min) {
-    return Math.max(fitStart(start, len, end), min);
   }
 
   /**
@@ -831,24 +586,6 @@ public class BeeUtils {
     } else {
       return null;
     }
-  }
-  
-  /**
-   * Gets the key of the value from the specified Map when the Mmap contains the value.
-   * 
-   * @param map the Map to search for the value
-   * @param value the value to search for
-   * @return a key when the value is found, {@code null} if there is no such value
-   */
-  public static <K, V> K getKey(Map<K, V> map, V value) {
-    K key = null;
-    for (Map.Entry<K, V> entry : map.entrySet()) {
-      if (Objects.equal(entry.getValue(), value)) {
-        key = entry.getKey();
-        break;
-      }
-    }
-    return key;
   }
 
   /**
@@ -971,64 +708,6 @@ public class BeeUtils {
     return cs.length() >= min;
   }
 
-  /**
-   * Extended if sentence. Basic syntax : if {@code obj[i] == true} the method jumps to
-   * {@code obj[i+1]} else jumps to {@code obj[i+2]}
-   * 
-   * @param obj Objects to check
-   * @return {@code obj[i+1]} if condition {@code obj[i]} is true, or {@code obj[i+2]} if condition
-   *         is false.
-   */
-  @SuppressWarnings("unchecked")
-  public static <T> T iif(Object... obj) {
-    Assert.notNull(obj);
-    int n = obj.length;
-    Assert.parameterCount(n, 3);
-
-    T z = ((n % 2 == 1) ? (T) obj[n - 1] : null);
-
-    for (int i = 0; i < n - 1; i += 2) {
-      if (!isEmpty(obj[i])) {
-        z = (T) obj[i + 1];
-        break;
-      }
-    }
-    return z;
-  }
-
-  /**
-   * Transforms the Object to a String and increments the value by 1.
-   * 
-   * @param obj object to increment
-   * @return a String representation of the incremented Object value.
-   */
-  public static String increment(Object obj) {
-    return increment(transform(obj));
-  }
-
-  /**
-   * Transforms the String to Integer and increments it by 1.
-   * 
-   * @param s a string to increment
-   * @return a String representation of the incremented String value.
-   */
-  public static String increment(String s) {
-    return Integer.toString(toInt(s) + 1);
-  }
-  
-  public static int indexOf(List<String> lst, String s) {
-    if (isEmpty(lst)) {
-      return BeeConst.UNDEF;
-    }
-
-    for (int i = 0; i < lst.size(); i++) {
-      if (same(lst.get(i), s)) {
-        return i;
-      }
-    }
-    return BeeConst.UNDEF;
-  }
-
   public static boolean inList(int x, int... lst) {
     Assert.notNull(lst);
     boolean ok = false;
@@ -1060,30 +739,6 @@ public class BeeUtils {
         continue;
       }
       if (x.trim().equals(lst[i].trim())) {
-        ok = true;
-        break;
-      }
-    }
-    return ok;
-  }
-
-  /**
-   * Checks if the String value {@code x} equals any value of {@code lst}. Note: case is ignored.
-   * 
-   * @param x a string to check
-   * @param lst a list to check in
-   * @return true if value x string is found, otherwise false
-   */
-  public static boolean inListIgnoreCase(String x, String... lst) {
-    Assert.notEmpty(x);
-    Assert.notNull(lst);
-    boolean ok = false;
-
-    for (int i = 0; i < lst.length; i++) {
-      if (lst[i] == null) {
-        continue;
-      }
-      if (x.equalsIgnoreCase(lst[i])) {
         ok = true;
         break;
       }
@@ -1133,67 +788,6 @@ public class BeeUtils {
     return new StringBuilder(src).insert(pos, c).toString();
   }
 
-  /**
-   * Inserts a CharSequence to a specified position in the specified String.
-   * 
-   * @param src the String to be inserted to
-   * @param pos position to insert to
-   * @param cs CharSequence to insert
-   * @return a String with the CharSequence inserted in the specified String.
-   */
-  public static String insert(String src, int pos, CharSequence cs) {
-    Assert.notNull(src);
-    Assert.nonNegative(pos);
-    Assert.isTrue(pos <= src.length());
-    Assert.hasLength(cs);
-
-    return new StringBuilder(src).insert(pos, cs).toString();
-  }
-
-  /**
-   * Checks if Object {@code x} is an instance of a floating point(Double or Float).
-   * 
-   * @param x the Object to check
-   * @return true if the Object is an instance of a floating point, false otherwise
-   */
-  public static boolean instanceOfFloatingPoint(Object x) {
-    if (x == null) {
-      return false;
-    } else {
-      return (x instanceof Float || x instanceof Double);
-    }
-  }
-
-  /**
-   * Checks if Object {@code x} is an instance of an integer type(Byte, Short, Integer, Long,
-   * BigInteger).
-   * 
-   * @param x Object to check
-   * @return true if the Object is an instance of an integer type, false otherwise
-   */
-  public static boolean instanceOfIntegerType(Object x) {
-    if (x == null) {
-      return false;
-    } else {
-      return (x instanceof Byte || x instanceof Short || x instanceof Integer
-          || x instanceof Long || x instanceof BigInteger);
-    }
-  }
-
-  /**
-   * Checks if Object {@code x} is an instance of a String(String, StringBuilder, StringBuffer).
-   * 
-   * @param x Object to check
-   * @return true if the Object is an instance of String type, false otherwise
-   */
-  public static boolean instanceOfStringType(Object x) {
-    if (x == null) {
-      return false;
-    } else {
-      return (x instanceof String || x instanceof StringBuilder || x instanceof StringBuffer);
-    }
-  }
-
   public static <C extends Comparable<C>> boolean intersects(Range<C> r1, Range<C> r2) {
     if (r1 == null || r2 == null) {
       return false;
@@ -1220,16 +814,6 @@ public class BeeUtils {
     return ok;
   }
 
-  /**
-   * Checks if {@code x} is a Boolean value (0 or 1).
-   * 
-   * @param x the number to check
-   * @return true if integer equals 1, false if integer is {@code <= 0 or > 1}.
-   */
-  public static boolean isBoolean(int x) {
-    return x == BeeConst.INT_TRUE || x == BeeConst.INT_FALSE;
-  }
-  
   /**
    * Checks if {@code s} is a Boolean value.
    * 
@@ -1358,55 +942,16 @@ public class BeeUtils {
     return ok;
   }
 
-  /**
-   * Checks if an Object is empty.
-   * 
-   * @param x an Object to check
-   * @return true if the Object is empty, false otherwise.
-   */
-  public static boolean isEmpty(Object x) {
-    boolean ok;
-
-    if (x == null) {
-      ok = true;
-    } else if (x instanceof String) {
-      ok = ((String) x).isEmpty() || ((String) x).trim().isEmpty();
-    } else if (x instanceof CharSequence) {
-      ok = ((CharSequence) x).length() == 0
-          || ((CharSequence) x).toString().trim().isEmpty();
-    } else if (x instanceof Number) {
-      ok = isZero(((Number) x).doubleValue());
-    } else if (x instanceof Boolean) {
-      ok = !(Boolean) x;
-    } else if (x instanceof Collection) {
-      ok = ((Collection<?>) x).isEmpty();
-    } else if (x instanceof Map) {
-      ok = ((Map<?, ?>) x).isEmpty();
-    } else if (ArrayUtils.isArray(x)) {
-      ok = ArrayUtils.length(x) <= 0;
-    } else if (x instanceof Enumeration) {
-      ok = !((Enumeration<?>) x).hasMoreElements();
-    } else if (x instanceof HasLength) {
-      ok = ((HasLength) x).getLength() <= 0;
-    } else {
-      ok = false;
-    }
-    return ok;
+  public static boolean isEmpty(Collection<?> col) {
+    return col == null || col.isEmpty();
   }
 
-  /**
-   * Checks if an Object {@code x} is empty, and if it not a BeeType.
-   * 
-   * @param orType type Set to filter.
-   * @return true if an Object is empty, false if Object contains a type in the {@code orType} or is
-   *         not empty.
-   */
-  public static boolean isEmpty(Object x, Set<BeeType> orType) {
-    if (filterType(x, orType)) {
-      return false;
-    } else {
-      return isEmpty(x);
-    }
+  public static boolean isEmpty(Map<?, ?> map) {
+    return map == null || map.isEmpty();
+  }
+
+  public static boolean isEmpty(String s) {
+    return s == null || s.trim().isEmpty();
   }
 
   public static boolean isFalse(Boolean b) {
@@ -1444,31 +989,8 @@ public class BeeUtils {
     return ok;
   }
 
-  /**
-   * Checks if an Object has the specified index.
-   * 
-   * @param obj an Object to check
-   * @param idx Objects index to check
-   * @return true if such index in the object exists, false otherwise.
-   */
-  public static boolean isIndex(Object obj, int idx) {
-    if (obj == null || idx < 0) {
-      return false;
-    } else {
-      int n = length(obj);
-      return (n > 0 && idx < n);
-    }
-  }
-
-  /**
-   * Checks if a Double value can be transformed to an Integer value.
-   * 
-   * @param x double value to transform
-   * @return true if x is more than the integer's minimum value and less than the maximum, false
-   *         otherwise.
-   */
-  public static boolean isInt(double x) {
-    return isDouble(x) && x > Integer.MIN_VALUE && x < Integer.MAX_VALUE;
+  public static boolean isIndex(Collection<?> col, int idx) {
+    return col != null && idx >= 0 && idx < col.size();
   }
 
   /**
@@ -1545,20 +1067,16 @@ public class BeeUtils {
     return (x == null) ? false : x >= 0;
   }
 
-  public static boolean isNonNegativeDouble(String s) {
-    return isDouble(s, BeeConst.DOUBLE_ZERO, true);
-  }
-
   /**
    * @param clazz the class to check for Enum constants
    * @param idx the index to check
    * @return true if an Enum with the specified index {@code idx} exists, otherwise false.
    */
-  public static boolean isOrdinal(Class<?> clazz, Integer idx) {
-    if (clazz == null || !clazz.isEnum() || idx == null || idx < 0) {
+  public static <E extends Enum<?>> boolean isOrdinal(Class<E> clazz, Integer idx) {
+    if (clazz == null || idx == null || idx < 0) {
       return false;
     }
-    return idx < ArrayUtils.length(clazz.getEnumConstants());
+    return idx < clazz.getEnumConstants().length;
   }
 
   public static boolean isPositive(Double d) {
@@ -1678,13 +1196,38 @@ public class BeeUtils {
   }
 
   /**
-   * Checks if an Integer value is zero.
+   * Joins specified Objects. The first argument is the separator for the rest of the arguments.
    * 
-   * @param x value to check
-   * @return true if {@code x==0}, otherwise false.
+   * @param sep separator
+   * @param obj Objects to join
+   * @return returns a string containing the string representation of each of {@code obj},
+   * using the separator {@code sep} between each.
    */
-  public static boolean isZero(Integer x) {
-    return x != null && x == 0;
+  public static String join(String sep, Object... obj) {
+    Assert.notNull(sep);
+    if (obj == null) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    StringBuilder sb = new StringBuilder();
+    for (Object x : obj) {
+      String s = transform(x, sep);
+      if (!s.isEmpty()) {
+        if (sb.length() > 0 && !sep.isEmpty()) {
+          sb.append(sep);
+        }
+        sb.append(s);
+      }
+    }
+    return sb.toString();
+  }
+
+  public static String joinItems(Object... obj) {
+    return join(BeeConst.DEFAULT_LIST_SEPARATOR, obj);
+  }
+
+  public static String joinWords(Object... obj) {
+    return join(BeeConst.STRING_SPACE, obj);
   }
 
   /**
@@ -1706,33 +1249,8 @@ public class BeeUtils {
     }
   }
 
-  /**
-   * Gets the length of an Object(CharSequence, Character, Collection, Map, HasLenght, Array).
-   * 
-   * @param x the value to get length from
-   * @return the length of the supported Object. If an Object is not supported it returns 0.
-   */
-  public static int length(Object x) {
-    int len;
-
-    if (x == null) {
-      len = 0;
-    } else if (x instanceof CharSequence) {
-      len = ((CharSequence) x).length();
-    } else if (x instanceof Character) {
-      len = 1;
-    } else if (x instanceof Collection) {
-      len = ((Collection<?>) x).size();
-    } else if (x instanceof Map) {
-      len = ((Map<?, ?>) x).size();
-    } else if (x instanceof HasLength) {
-      len = ((HasLength) x).getLength();
-    } else if (ArrayUtils.isArray(x)) {
-      len = ArrayUtils.length(x);
-    } else {
-      len = 0;
-    }
-    return len;
+  public static int length(String s) {
+    return (s == null) ? 0 : s.length();
   }
 
   public static String nextString(String value) {
@@ -1780,54 +1298,6 @@ public class BeeUtils {
     return s.trim().toLowerCase();
   }
 
-  /**
-   * Returns an Object as a separator. If an Object is a number it's returned spaces quantity equal
-   * to the numeric value. String, Char and CharSequence type Objects are transformed to String
-   * values and returned.
-   * 
-   * @param x the object to create a separator from
-   * @return a String separator
-   */
-  public static String normSep(Object x) {
-    String sep;
-
-    if (x instanceof String && length(x) > 0) {
-      sep = (String) x;
-    } else if (x instanceof Number) {
-      sep = space(((Number) x).intValue());
-    } else if (x instanceof Character) {
-      sep = new String(new char[] {(Character) x});
-    } else if (x instanceof CharSequence && length(x) > 0) {
-      sep = ((CharSequence) x).toString();
-    } else {
-      sep = BeeConst.DEFAULT_LIST_SEPARATOR;
-    }
-    return sep;
-  }
-
-  /**
-   * Returns an Object as a separator. If an Object is a number it's returned spaces quantity equal
-   * to the numeric value. String, Char and CharSequence type Objects are transformed to String
-   * values and returned. If an Object is none of these types it return the default Object
-   * {@code def} as a separator.
-   * 
-   * @param x the Object to create a separator from
-   * @param def the default Object value
-   * @return a String separator
-   */
-  public static String normSep(Object x, Object def) {
-    String sep;
-
-    if (x instanceof CharSequence && length(x) > 0
-        || x instanceof Integer && isPositive((Integer) x) || x instanceof Character) {
-      sep = normSep(x);
-    } else {
-      sep = normSep(def);
-    }
-
-    return sep;
-  }
-
   public static String notEmpty(String s, String def) {
     return isEmpty(s) ? def : s;
   }
@@ -1844,7 +1314,7 @@ public class BeeUtils {
   public static <T> T nvl(T o1, T o2) {
     return (o1 == null) ? o2 : o1;
   }
-  
+
   public static <T> void overwrite(final Collection<T> target, Collection<T> source) {
     Assert.notNull(target);
     if (!target.isEmpty()) {
@@ -1908,31 +1378,6 @@ public class BeeUtils {
   }
 
   /**
-   * Compares {@code x1} and {@code x2}.
-   * 
-   * @param x1 the Object to compare
-   * @param x2 the Object to compare
-   * @return 0 if both objects are equal, 1 if {@code x1} > {@code x2} and -1 if {@code x1} <
-   *         {@code x2}.
-   */
-  public static int precompare(Object x1, Object x2) {
-    if (x1 == x2) {
-      return BeeConst.COMPARE_EQUAL;
-    }
-    if (x1 == null) {
-      if (x2 == null) {
-        return BeeConst.COMPARE_EQUAL;
-      } else {
-        return BeeConst.COMPARE_LESS;
-      }
-    }
-    if (x2 == null) {
-      return BeeConst.COMPARE_MORE;
-    }
-    return BeeConst.COMPARE_UNKNOWN;
-  }
-
-  /**
    * Shows how much of the progress is done, separated by the default progress separator.
    * <p>
    * E.g. the current position is 5 of a total 10. Method returns "5/10".
@@ -1947,21 +1392,29 @@ public class BeeUtils {
   }
 
   public static String progress(int pos, int tot, String message) {
-    return concat(BeeConst.STRING_SPACE, progress(pos, tot), message);
+    return joinWords(progress(pos, tot), message);
+  }
+
+  public static String proper(Enum<?> e) {
+    return (e == null) ? BeeConst.STRING_EMPTY : proper(e.name(), BeeConst.CHAR_UNDER);
+  }
+
+  public static String proper(String s) {
+    return proper(s, null);
   }
 
   /**
    * Separates the String {@code s} to an array with a specified separator. Capitalizes each array
    * element's first letter and converts other to lower-case.
    * <p>
-   * E.g the separator is {@code "."}: {@code "this.IS.a.string"} is formed to
+   * E.g the separator is {@code '.'}: {@code "this.IS.a.string"} is formed to
    * {@code "This Is A String"}.
    * 
    * @param s the String to form
-   * @param separators used for separating {@code s}
+   * @param separator used for separating {@code s}
    * @return a new formed String
    */
-  public static String proper(String s, Object separators) {
+  public static String proper(String s, Character separator) {
     if (isEmpty(s)) {
       return BeeConst.STRING_EMPTY;
     }
@@ -1974,11 +1427,11 @@ public class BeeUtils {
       return s.trim().toUpperCase();
     }
 
-    if (separators == null) {
+    if (separator == null) {
       return s.trim().substring(0, 1).toUpperCase() + s.trim().substring(1).toLowerCase();
     }
 
-    String[] arr = split(s.trim(), separators);
+    String[] arr = split(s.trim(), separator);
     StringBuilder z = new StringBuilder();
 
     for (String x : arr) {
@@ -1989,15 +1442,7 @@ public class BeeUtils {
     }
     return z.toString();
   }
-
-  public static String quote(String s) {
-    if (s == null) {
-      return BeeConst.STRING_QUOT + BeeConst.STRING_QUOT;
-    } else {
-      return BeeConst.STRING_QUOT + s.trim() + BeeConst.STRING_QUOT;
-    }
-  }
-
+  
   public static double randomDouble(double min, double max) {
     Assert.isTrue(max > min);
     return min + Math.random() * (max - min);
@@ -2038,8 +1483,9 @@ public class BeeUtils {
    */
   public static String randomString(int len, CharSequence characters) {
     Assert.isPositive(len);
-    Assert.hasLength(characters);
+    Assert.notNull(characters);
     int cnt = characters.length();
+    Assert.isPositive(cnt);
     if (cnt == 1) {
       return replicate(characters.charAt(0), len);
     }
@@ -2197,29 +1643,6 @@ public class BeeUtils {
   }
 
   /**
-   * Removes a corresponding Map entry from the Map where value {@code V} equals the Map's element
-   * value.
-   * 
-   * @param map a Map to remove the Map entry from
-   * @param value the value to search from
-   * @return a Map with the value removed.
-   */
-  public static <V> int removeValue(Map<?, V> map, V value) {
-    int c = 0;
-    if (length(map) <= 0) {
-      return c;
-    }
-
-    for (Iterator<V> it = map.values().iterator(); it.hasNext();) {
-      if (Objects.equal(it.next(), value)) {
-        it.remove();
-        c++;
-      }
-    }
-    return c;
-  }
-
-  /**
    * Replaces the specified part of the {@code src} with a {@code c} value.
    * 
    * @param src the source String to replace
@@ -2242,8 +1665,9 @@ public class BeeUtils {
    * @return a new String after the replacement.
    */
   public static String replace(String src, int start, int end, String str) {
-    Assert.isIndex(src, start);
-    Assert.isIndex(src, end - 1);
+    int len = length(src);
+    Assert.isIndex(start, len);
+    Assert.isIndex(end - 1, len);
     Assert.notNull(str);
 
     return new StringBuilder(src).replace(start, end, str).toString();
@@ -2426,7 +1850,11 @@ public class BeeUtils {
     }
     return z;
   }
-  
+
+  public static int size(Collection<?> col) {
+    return (col == null) ? 0 : col.size();
+  }
+
   public static int snap(int x, int to) {
     if (x == 0 || to <= 1) {
       return x;
@@ -2455,10 +1883,10 @@ public class BeeUtils {
    * Splits {@code str} with a specified separator {@code separator}.
    * 
    * @param str a string to split
-   * @param separators a separator used for splitting
+   * @param separator a separator used for splitting
    * @return a String array splitted using the separator.
    */
-  public static String[] split(String str, Object separators) {
+  public static String[] split(String str, char separator) {
     if (str == null) {
       return null;
     }
@@ -2467,43 +1895,13 @@ public class BeeUtils {
       return BeeConst.EMPTY_STRING_ARRAY;
     }
 
-    String sep = normSep(separators, BeeConst.STRING_SPACE);
-    int z = sep.length();
-    char ch = sep.charAt(0);
-
-    if (z == 1 && str.indexOf(ch) < 0) {
+    if (str.indexOf(separator) < 0) {
       return new String[] {str.trim()};
     }
+    
+    Splitter splitter = Splitter.on(separator).omitEmptyStrings().trimResults();
+    List<String> lst = Lists.newArrayList(splitter.split(str));
 
-    List<String> lst = new ArrayList<String>();
-    int i = 0;
-    int start = 0;
-
-    boolean match = false;
-    boolean ok;
-
-    while (i < len) {
-      if (z == 1) {
-        ok = (str.charAt(i) == ch);
-      } else {
-        ok = (sep.indexOf(str.charAt(i)) >= 0);
-      }
-
-      if (ok) {
-        if (match) {
-          lst.add(str.substring(start, i).trim());
-          match = false;
-        }
-        start = ++i;
-      } else {
-        match = true;
-        i++;
-      }
-    }
-
-    if (match) {
-      lst.add(str.substring(start, i).trim());
-    }
     return lst.toArray(new String[lst.size()]);
   }
 
@@ -2655,27 +2053,6 @@ public class BeeUtils {
   }
 
   /**
-   * Converts a String value {@code s} to Float.
-   * 
-   * @param s a string to convert
-   * @return a corresponding Float value
-   * @throws NumberFormatException ex
-   */
-  public static float toFloat(String s) {
-    if (isEmpty(s)) {
-      return BeeConst.FLOAT_ZERO;
-    }
-    float i;
-
-    try {
-      i = Float.parseFloat(s.trim());
-    } catch (NumberFormatException ex) {
-      i = BeeConst.FLOAT_ZERO;
-    }
-    return i;
-  }
-
-  /**
    * Converts {@code b} to Integer.
    * 
    * @param b value to convert
@@ -2802,17 +2179,6 @@ public class BeeUtils {
     return Math.max(x, 0);
   }
 
-  /**
-   * Converts milliseconds {@code millis} to seconds. E.g 6010 is converted to 6.010.
-   * 
-   * @param millis value to convert
-   * @return seconds.
-   */
-  public static String toSeconds(long millis) {
-    return Long.toString(millis / 1000) + BeeConst.STRING_POINT
-        + toLeadingZeroes((int) (millis % 1000), 3);
-  }
-
   public static String toString(BigDecimal bd) {
     if (bd == null) {
       return null;
@@ -2865,26 +2231,34 @@ public class BeeUtils {
     return Long.toString(x);
   }
 
+  public static String transform(Object x) {
+    return transform(x, null);
+  }
+  
   /**
    * Transforms an Object {@code x} to a String representation. In general, this method returns a
    * string that "textually represents" this object. String type Objects are trimmed.
    * 
    * @param x value to transform.
+   * @param sep separator for transforming Collections, Maps and Arrays.
    * @return a string that "textually represents" this object.
    */
-  public static String transform(Object x) {
-    String s;
-
+  public static String transform(Object x, String sep) {
     if (x == null) {
-      s = BeeConst.STRING_EMPTY;
+      return BeeConst.STRING_EMPTY;
     } else if (x instanceof String) {
-      s = ((String) x).trim();
+      return ((String) x).trim();
     } else if (x instanceof Transformable) {
-      s = ((Transformable) x).transform();
+      return ((Transformable) x).transform();
+    } else if (x instanceof Collection) {
+      return transformCollection((Collection<?>) x, sep);
+    } else if (x instanceof Map) {
+      return transformMap((Map<?, ?>) x, sep);
+    } else if (ArrayUtils.isArray(x)) {
+      return ArrayUtils.transform(x, sep);
     } else {
-      s = x.toString();
+      return x.toString();
     }
-    return s;
   }
 
   /**
@@ -2892,97 +2266,24 @@ public class BeeUtils {
    * {@code sep}. Each level of recursion use the next separator.
    * 
    * @param col a Collection to transform.
-   * @param sep separators used to transform. Uses a default separator if none are specified.
+   * @param separator separator used to transform. Uses a default separator if none are specified.
    * @return a String representation of the Collection {@code col}.
    */
-  public static String transformCollection(Collection<?> col, Object... sep) {
+  public static String transformCollection(Collection<?> col, String separator) {
     if (isEmpty(col)) {
       return BeeConst.STRING_EMPTY;
     }
 
-    int cSep = (sep == null) ? 0 : sep.length;
-    String z = cSep > 0 ? normSep(sep[0]) : BeeConst.DEFAULT_LIST_SEPARATOR;
-
+    String sep = nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
     StringBuilder sb = new StringBuilder();
-    Object[] nextSep;
-
-    if (cSep > 1) {
-      nextSep = new Object[cSep - 1];
-      for (int i = 0; i < cSep - 1; i++) {
-        nextSep[i] = sep[i + 1];
-      }
-    } else {
-      nextSep = new String[] {z};
-    }
 
     for (Object el : col) {
       if (sb.length() > 0) {
-        sb.append(z);
+        sb.append(sep);
       }
-      sb.append(transformGeneric(el, nextSep));
+      sb.append(transform(el));
     }
     return sb.toString();
-  }
-
-  /**
-   * Transforms an Enumeration {@code src} to a String representation using the specified separators
-   * {@code sep}. Each level of recursion use the next separator.
-   * 
-   * @param src an Enumeration to transform.
-   * @param sep separators used to transform. Uses a default separator if none are specified.
-   * @return String representation of the Enumeration {@code src}.
-   */
-  public static String transformEnumeration(Enumeration<?> src, Object... sep) {
-    if (isEmpty(src)) {
-      return BeeConst.STRING_EMPTY;
-    }
-    int cSep = (sep == null) ? 0 : sep.length;
-    String z = cSep > 0 ? normSep(sep[0]) : BeeConst.DEFAULT_LIST_SEPARATOR;
-
-    StringBuilder sb = new StringBuilder();
-    Object el;
-    Object[] nextSep;
-
-    if (cSep > 1) {
-      nextSep = new Object[cSep - 1];
-      for (int i = 0; i < cSep - 1; i++) {
-        nextSep[i] = sep[i + 1];
-      }
-    } else {
-      nextSep = new String[] {z};
-    }
-
-    while (src.hasMoreElements()) {
-      el = src.nextElement();
-      if (sb.length() > 0) {
-        sb.append(z);
-      }
-      sb.append(transformGeneric(el, nextSep));
-    }
-    return sb.toString();
-  }
-
-  /**
-   * Transforms an Object {@code x} to a String representation using the specified separator
-   * {@code sep}. Each level of recursion use the next separator.
-   * 
-   * @param x an Object to transform.
-   * @param sep separators for transforming Collections,Maps,Arrays and Enumerations. Uses a default
-   *          separator if none are specified.
-   * @return a String representation of the Object {@code x}.
-   */
-  public static String transformGeneric(Object x, Object... sep) {
-    if (x instanceof Collection) {
-      return transformCollection((Collection<?>) x, sep);
-    } else if (x instanceof Map) {
-      return transformMap((Map<?, ?>) x, sep);
-    } else if (ArrayUtils.isArray(x)) {
-      return ArrayUtils.transform(x, sep);
-    } else if (x instanceof Enumeration) {
-      return transformEnumeration((Enumeration<?>) x, sep);
-    } else {
-      return transform(x);
-    }
   }
 
   /**
@@ -2990,38 +2291,25 @@ public class BeeUtils {
    * {@code sep}. Each level of recursion use the next separator.
    * 
    * @param map a Map to transform.
-   * @param sep separators used to transform. Uses a default separator if none are specified.
+   * @param separator separator used to transform. Uses a default separator if none are specified.
    * @return String representation of the Map {@code map}.
    */
-  public static String transformMap(Map<?, ?> map, Object... sep) {
+  public static String transformMap(Map<?, ?> map, String separator) {
     if (isEmpty(map)) {
       return BeeConst.STRING_EMPTY;
     }
-    int cSep = (sep == null) ? 0 : sep.length;
-    String z = cSep > 0 ? normSep(sep[0]) : BeeConst.DEFAULT_LIST_SEPARATOR;
 
+    String sep = nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
     StringBuilder sb = new StringBuilder();
 
-    Object key, value;
-    Object[] nextSep;
-
-    if (cSep > 1) {
-      nextSep = new Object[cSep - 1];
-      for (int i = 0; i < cSep - 1; i++) {
-        nextSep[i] = sep[i + 1];
-      }
-    } else {
-      nextSep = new String[] {z};
-    }
-
     for (Map.Entry<?, ?> el : map.entrySet()) {
-      key = el.getKey();
-      value = el.getValue();
+      Object key = el.getKey();
+      Object value = el.getValue();
 
       if (sb.length() > 0) {
-        sb.append(z);
+        sb.append(sep);
       }
-      sb.append(NameUtils.addName(transform(key), transformGeneric(value, nextSep)));
+      sb.append(NameUtils.addName(transform(key), transform(value)));
     }
     return sb.toString();
   }
@@ -3041,34 +2329,21 @@ public class BeeUtils {
     }
   }
 
-  /**
-   * Transforms Objects {@code opt} to a String representation. {@code opt} are coupled of two. A
-   * default separator is used.
-   * <p>
-   * E.g {@code transformOption("name", "John", "name2", "Dan") results in
-   * "name=John;name2=Dan"}.
-   * </p>
-   * 
-   * @param opt Objects to transform
-   * @return a String representation of Objects {@code opt}.
-   */
-  public static String transformOptions(Object... opt) {
-    Assert.notNull(opt);
-    int c = opt.length;
+  public static String transformOptions(String... options) {
+    Assert.notNull(options);
+    int c = options.length;
     Assert.parameterCount(c, 2);
 
     StringBuilder sb = new StringBuilder();
     String el;
 
     for (int i = 0; i < c - 1; i += 2) {
-      if (opt[i] instanceof String) {
-        el = NameUtils.addName((String) opt[i], opt[i + 1]);
-        if (!isEmpty(el)) {
-          if (sb.length() > 0) {
-            sb.append(BeeConst.DEFAULT_OPTION_SEPARATOR);
-          }
-          sb.append(el);
+      el = NameUtils.addName(options[i], options[i + 1]);
+      if (!isEmpty(el)) {
+        if (sb.length() > 0) {
+          sb.append(BeeConst.DEFAULT_OPTION_SEPARATOR);
         }
+        sb.append(el);
       }
     }
     return sb.toString();
@@ -3230,37 +2505,6 @@ public class BeeUtils {
     }
 
     return toInt(s.substring(start, end));
-  }
-
-  /**
-   * Returns a zero value of a specified Object {@code x}.
-   * 
-   * @param x a value to return zero
-   * @return a zero value of a specified Object {@code x}.
-   */
-  @SuppressWarnings("unchecked")
-  public static <T> T zero(T x) {
-    if (x == null) {
-      return null;
-    } else if (x instanceof Integer) {
-      return (T) Integer.valueOf(0);
-    } else if (x instanceof Byte) {
-      return (T) Byte.valueOf((byte) 0);
-    } else if (x instanceof Short) {
-      return (T) Short.valueOf((short) 0);
-    } else if (x instanceof Long) {
-      return (T) Long.valueOf(0);
-    } else if (x instanceof BigInteger) {
-      return (T) BigInteger.ZERO;
-    } else if (x instanceof BigDecimal) {
-      return (T) BigDecimal.ZERO;
-    } else if (x instanceof Float) {
-      return (T) Float.valueOf(BeeConst.FLOAT_ZERO);
-    } else if (x instanceof Double) {
-      return (T) Double.valueOf(BeeConst.DOUBLE_ZERO);
-    } else {
-      return (T) Integer.valueOf(0);
-    }
   }
 
   private BeeUtils() {

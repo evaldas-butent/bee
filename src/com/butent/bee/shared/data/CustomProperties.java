@@ -81,6 +81,6 @@ public class CustomProperties extends HashMap<String, String> implements HasInfo
   }
 
   public String transform() {
-    return BeeUtils.transformMap(this);
+    return BeeUtils.transformMap(this, null);
   }
 }

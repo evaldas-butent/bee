@@ -40,7 +40,7 @@ public class LongValue extends Value {
     if (isNull()) {
       return null;
     }
-    return value != 0;
+    return value != 0L;
   }
 
   @Override
@@ -118,6 +118,11 @@ public class LongValue extends Value {
     return getLong().hashCode();
   }
 
+  @Override
+  public boolean isEmpty() {
+    return isNull() || value == 0L;
+  }
+  
   @Override
   public boolean isNull() {
     return this == NULL_VALUE || getLong() == null;

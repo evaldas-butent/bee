@@ -35,21 +35,21 @@ public class BeeStatement {
     try {
       z = stmt.getFetchDirection();
       PropertyUtils.addProperty(lst, "Fetch Direction",
-          BeeUtils.concat(1, z, JdbcUtils.fetchDirectionAsString(z)));
+          BeeUtils.joinWords(z, JdbcUtils.fetchDirectionAsString(z)));
 
       PropertyUtils.addProperty(lst, "Fetch Size", stmt.getFetchSize());
 
       z = stmt.getResultSetType();
       PropertyUtils.addProperty(lst, "Result Set Type",
-          BeeUtils.concat(1, z, JdbcUtils.rsTypeAsString(z)));
+          BeeUtils.joinWords(z, JdbcUtils.rsTypeAsString(z)));
 
       z = stmt.getResultSetConcurrency();
       PropertyUtils.addProperty(lst, "Concurrency",
-          BeeUtils.concat(1, z, JdbcUtils.concurrencyAsString(z)));
+          BeeUtils.joinWords(z, JdbcUtils.concurrencyAsString(z)));
 
       z = stmt.getResultSetHoldability();
       PropertyUtils.addProperty(lst, "Holdability",
-          BeeUtils.concat(1, z, JdbcUtils.holdabilityAsString(z)));
+          BeeUtils.joinWords(z, JdbcUtils.holdabilityAsString(z)));
 
       PropertyUtils.addProperties(lst, "Max Field Size", stmt.getMaxFieldSize(),
           "Max Rows", stmt.getMaxRows(), "Query Timeout",

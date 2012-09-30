@@ -283,7 +283,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
 
   private String valueAsString(int v) {
     if (BeeConst.isUndef(v)) {
-      return BeeUtils.concat(1, v, BeeConst.UNKNOWN);
+      return BeeUtils.joinWords(v, BeeConst.UNKNOWN);
     } else {
       return Integer.toString(v);
     }

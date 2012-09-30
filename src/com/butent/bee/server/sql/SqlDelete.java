@@ -3,7 +3,6 @@ package com.butent.bee.server.sql;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 
@@ -34,7 +33,7 @@ public class SqlDelete extends SqlQuery<SqlDelete> implements HasTarget {
   public Collection<String> getSources() {
     Collection<String> sources = Sets.newHashSet(getTarget());
 
-    if (!BeeUtils.isEmpty(whereClause)) {
+    if (whereClause != null) {
       sources = SqlUtils.addCollection(sources, whereClause.getSources());
     }
     return sources;

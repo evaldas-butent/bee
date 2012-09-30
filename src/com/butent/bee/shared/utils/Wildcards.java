@@ -128,7 +128,7 @@ public class Wildcards {
      */
     @Override
     public String toString() {
-      return BeeUtils.concat(1, expr, sensitive ? "(sensitive)" : "", exact ? "(exact)" : "");
+      return BeeUtils.joinWords(expr, sensitive ? "(sensitive)" : "", exact ? "(exact)" : "");
     }
 
     private String[] tokenize() {

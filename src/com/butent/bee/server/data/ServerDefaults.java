@@ -4,6 +4,7 @@ import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.Defaults;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -76,6 +77,6 @@ public class ServerDefaults extends Defaults {
 
       value = BeeUtils.nextString(maxValue);
     }
-    return BeeUtils.concat(0, prefix, value);
+    return BeeUtils.join(BeeConst.STRING_EMPTY, prefix, value);
   }
 }

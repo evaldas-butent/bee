@@ -46,7 +46,7 @@ public class MetaDataBean {
     } else if (BeeUtils.same(svc, Service.DB_PRIMARY)) {
       getKeys(ds, reqInfo, buff, false);
     } else {
-      String msg = BeeUtils.concat(1, svc, "meta data service not recognized");
+      String msg = BeeUtils.joinWords(svc, "meta data service not recognized");
       logger.warning(msg);
       buff.addWarning(msg);
     }

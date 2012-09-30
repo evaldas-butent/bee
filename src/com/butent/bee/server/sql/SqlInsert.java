@@ -56,7 +56,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
    */
   public SqlInsert addExpression(String field, IsExpression value) {
     Assert.notNull(value);
-    Assert.state(BeeUtils.isEmpty(dataSource));
+    Assert.state(dataSource == null);
 
     addField(field);
 
@@ -120,7 +120,7 @@ public class SqlInsert extends SqlQuery<SqlInsert> implements HasTarget {
   public Collection<String> getSources() {
     Collection<String> sources = Sets.newHashSet(getTarget());
 
-    if (!BeeUtils.isEmpty(dataSource)) {
+    if (dataSource != null) {
       sources = SqlUtils.addCollection(sources, dataSource.getSources());
     }
     return sources;

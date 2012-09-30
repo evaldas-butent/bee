@@ -11,6 +11,7 @@ import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -63,7 +64,7 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   private Map<Integer, Map<String, Integer>> indexes = null;
 
   public SimpleRowSet(String[] cols) {
-    Assert.notEmpty(cols);
+    Assert.isPositive(ArrayUtils.length(cols));
 
     columns = HashBiMap.create(cols.length);
     rows = Lists.newArrayList();
@@ -97,7 +98,7 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
         case COLUMNS:
           String[] colData = Codec.beeDeserializeCollection(value);
 
-          if (!BeeUtils.isEmpty(colData)) {
+          if (!ArrayUtils.isEmpty(colData)) {
             columns = HashBiMap.create(colData.length / 2);
 
             for (int j = 0; j < colData.length; j += 2) {
@@ -110,7 +111,7 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
           rows = Lists.newArrayList();
           String[] rowData = Codec.beeDeserializeCollection(value);
 
-          if (!BeeUtils.isEmpty(rowData)) {
+          if (!ArrayUtils.isEmpty(rowData)) {
             for (String r : rowData) {
               rows.add(Codec.beeDeserializeCollection(r));
             }
@@ -332,7 +333,7 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
     if (cells == null) {
       return null;
     }
-    Assert.isIndex(cells, colIndex);
+    Assert.isIndex(colIndex, cells.length);
     return cells[colIndex];
   }
 

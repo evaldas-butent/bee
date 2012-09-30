@@ -12,7 +12,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RelationUtils;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.DialogCallback;
+import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.edit.SelectorEvent;
@@ -34,7 +34,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 
 class SelectorHandler implements SelectorEvent.Handler {
-  
+
   private boolean companyHandlerEnabled = false;
   private boolean vehicleHandlerEnabled = false;
 
@@ -66,7 +66,7 @@ class SelectorHandler implements SelectorEvent.Handler {
   boolean isVehicleHandlerEnabled() {
     return vehicleHandlerEnabled;
   }
-  
+
   void setCompanyHandlerEnabled(boolean companyHandlerEnabled) {
     this.companyHandlerEnabled = companyHandlerEnabled;
   }
@@ -85,24 +85,23 @@ class SelectorHandler implements SelectorEvent.Handler {
     int modelIndex = rowSet.getColumnIndex(TransportConstants.COL_MODEL_NAME);
 
     for (IsRow row : rowSet.getRows()) {
-      options.add(BeeUtils.concat(1, row.getString(numberIndex),
+      options.add(BeeUtils.joinWords(row.getString(numberIndex),
           row.getString(parentModelIndex), row.getString(modelIndex)));
     }
     options.add("Nauja");
 
-    Global.choice("Pasirinkite transporto priemonę", companyName, options,
-        new DialogCallback<Integer>() {
-          @Override
-          public void onSuccess(Integer value) {
-            if (value < rowSet.getNumberOfRows()) {
-              RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_VEHICLE, dataView.getActiveRow(),
-                  TransportConstants.VIEW_VEHICLES, rowSet.getRow(value), true);
-              dataView.refresh(false);
-            } else {
-              createVehicle(owner, dataView);
-            }
-          }
-        });
+    Global.choice("Pasirinkite transporto priemonę", companyName, options, new ChoiceCallback() {
+      @Override
+      public void onSuccess(int value) {
+        if (value < rowSet.getNumberOfRows()) {
+          RelationUtils.updateRow(VIEW_APPOINTMENTS, COL_VEHICLE, dataView.getActiveRow(),
+              TransportConstants.VIEW_VEHICLES, rowSet.getRow(value), true);
+          dataView.refresh(false);
+        } else {
+          createVehicle(owner, dataView);
+        }
+      }
+    });
   }
 
   private void createVehicle(IsRow owner, final DataView dataView) {

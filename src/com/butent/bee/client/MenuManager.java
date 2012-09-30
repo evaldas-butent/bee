@@ -209,7 +209,7 @@ public class MenuManager implements Module {
   private void collectMenuInfo(TreeItem treeItem, Menu menu) {
     treeItem.addItem("Name: " + menu.getName());
 
-    if (!BeeUtils.isEmpty(menu.getOrder())) {
+    if (menu.getOrder() != null) {
       treeItem.addItem("Order: " + menu.getOrder());
     }
     if (menu.hasSeparator()) {
@@ -328,7 +328,7 @@ public class MenuManager implements Module {
     if (w instanceof MenuBar) {
       ((MenuBar) w).prepare();
     } else if (w instanceof BeeCellList) {
-      int cnt = BeeUtils.length(entries);
+      int cnt = BeeUtils.size(entries);
       if (cnt > 0) {
         ((BeeCellList<Menu>) w).setRowData(0, entries);
         ((BeeCellList<Menu>) w).setRowCount(cnt);

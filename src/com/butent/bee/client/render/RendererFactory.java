@@ -141,7 +141,7 @@ public class RendererFactory {
 
   private static AbstractCellRenderer createRenderer(List<RenderableToken> tokens,
       List<? extends IsColumn> dataColumns) {
-    if (BeeUtils.anyEmpty(tokens, dataColumns)) {
+    if (BeeUtils.isEmpty(tokens) || BeeUtils.isEmpty(dataColumns)) {
       return null;
     }
     

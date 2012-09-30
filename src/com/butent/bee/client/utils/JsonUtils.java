@@ -27,7 +27,7 @@ public class JsonUtils {
     if (value.isBoolean() != null) {
       return !value.isBoolean().booleanValue();
     } else if (value.isNumber() != null) {
-      return BeeUtils.isEmpty(value.isNumber().doubleValue());
+      return BeeUtils.isZero(value.isNumber().doubleValue());
     } else if (value.isString() != null) {
       return BeeUtils.isEmpty(value.isString().stringValue());
     } else if (value.isArray() != null) {

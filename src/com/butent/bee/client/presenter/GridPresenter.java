@@ -3,6 +3,7 @@ package com.butent.bee.client.presenter;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -19,12 +20,14 @@ import com.butent.bee.client.data.LocalProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.dialog.DialogCallback;
+import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Command;
@@ -36,6 +39,7 @@ import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
+import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridCallback;
@@ -47,6 +51,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
@@ -68,8 +73,7 @@ import java.util.Set;
 
 public class GridPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasSearch, HasDataProvider,
-    HasActiveRow,
-    HasGridView {
+    HasActiveRow, HasGridView {
 
   private class DeleteCallback extends Command {
     private final IsRow activeRow;
@@ -82,8 +86,6 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     @Override
     public void execute() {
-      Assert.state(!BeeUtils.allEmpty(activeRow, rows));
-
       int count = (rows == null) ? 0 : rows.size();
       GridCallback gcb = getGridCallback();
 
@@ -187,6 +189,25 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   public void addRow() {
+    if (getGridView().isChild() && !DataUtils.isId(getGridView().getRelId())) {
+      FormView form = UiHelper.getForm(getWidget());
+
+      if (form != null && form.getViewPresenter() instanceof HasGridView) {
+        GridView rootGrid = ((HasGridView) form.getViewPresenter()).getGridView();
+        if (rootGrid != null) {
+          rootGrid.formSwitchToEdit(new Scheduler.ScheduledCommand() {
+            @Override
+            public void execute() {
+              if (DataUtils.isId(getGridView().getRelId())) {
+                handleAction(Action.ADD);
+              }
+            }
+          });
+        }
+      }
+      return;
+    }
+    
     if (getGridCallback() != null && !getGridCallback().beforeAddRow(this)) {
       return;
     }
@@ -227,7 +248,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   public String getCaption() {
     return getView().getCaption();
   }
-  
+
   public List<BeeColumn> getDataColumns() {
     return getDataProvider().getColumns();
   }
@@ -290,7 +311,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case CONFIGURE:
-        Global.inputString("Options", new DialogCallback<String>() {
+        Global.inputString("Options", new StringCallback() {
           @Override
           public void onSuccess(String value) {
             getGridView().applyOptions(value);
@@ -339,21 +360,26 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
-  public void onReadyForInsert(ReadyForInsertEvent event) {
+  public void onReadyForInsert(final ReadyForInsertEvent event) {
     setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
 
     Queries.insert(getViewName(), event.getColumns(), event.getValues(), new RowCallback() {
       @Override
       public void onFailure(String... reason) {
         setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
-        showFailure("Insert Row", reason);
-        getGridView().finishNewRow(null);
+        if (event.getCallback() == null) {
+          showFailure("Insert Row", reason);
+        } else {
+          event.getCallback().onFailure(reason);
+        }
       }
 
       @Override
       public void onSuccess(BeeRow result) {
         BeeKeeper.getBus().fireEvent(new RowInsertEvent(getViewName(), result));
-        getGridView().finishNewRow(result);
+        if (event.getCallback() != null) {
+          event.getCallback().onSuccess(result);
+        }
       }
     });
   }
@@ -435,14 +461,21 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       getGridCallback().beforeRefresh(this);
     }
 
-    Filter filter = ViewHelper.getFilter(this, getDataProvider());
-    if (filter != null && getGridView().getGrid().getRowCount() <= 0) {
-      setLastFilter(null);
-      getDataProvider().onFilterChange(null, updateActiveRow);
-    } else if (Objects.equal(filter, getLastFilter())) {
-      getDataProvider().refresh(updateActiveRow);
+    if (getGridView().isChild() && !DataUtils.isId(getGridView().getRelId())) {
+      if (getGridView().getGrid().getRowCount() > 0) {
+        getDataProvider().clear();
+      }
+
     } else {
-      getDataProvider().onFilterChange(filter, updateActiveRow);
+      Filter filter = ViewHelper.getFilter(this, getDataProvider());
+      if (filter != null && getGridView().getGrid().getRowCount() <= 0) {
+        setLastFilter(null);
+        getDataProvider().onFilterChange(null, updateActiveRow);
+      } else if (Objects.equal(filter, getLastFilter())) {
+        getDataProvider().refresh(updateActiveRow);
+      } else {
+        getDataProvider().onFilterChange(filter, updateActiveRow);
+      }
     }
   }
 
@@ -552,9 +585,9 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
       deleteCallback.execute();
 
     } else {
-      Global.choice("Išmesti", null, options, new DialogCallback<Integer>() {
+      Global.choice("Išmesti", null, options, new ChoiceCallback() {
         @Override
-        public void onSuccess(Integer value) {
+        public void onSuccess(int value) {
           if (value == 0) {
             deleteRow(activeRow, false);
 

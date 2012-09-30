@@ -1,6 +1,5 @@
 package com.butent.bee.shared.modules.calendar;
 
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -58,7 +57,7 @@ public class CalendarConstants {
 
     @Override
     public String getCaption() {
-      return BeeUtils.proper(this.name(), BeeConst.CHAR_UNDER);
+      return BeeUtils.proper(this);
     }
   }
 

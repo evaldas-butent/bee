@@ -68,7 +68,7 @@ public class CacheManager implements HandlesAllDataEvents {
       int idx = 0;
       for (CachedQuery query : queries) {
         PropertyUtils.appendChildrenToExtended(info,
-            BeeUtils.concat(1, pfx, "query", BeeUtils.progress(++idx, queries.size())),
+            BeeUtils.joinWords(pfx, "query", BeeUtils.progress(++idx, queries.size())),
             query.getInfo());
       }
       return info;
@@ -336,7 +336,8 @@ public class CacheManager implements HandlesAllDataEvents {
       Entry entry = get(key);
 
       if (entry == null) {
-        if (BeeUtils.isZero(dataInfo.getCacheMaximumSize())) {
+        Integer maxSize = dataInfo.getCacheMaximumSize();
+        if (maxSize != null && maxSize == 0) {
           return;
         }
         entry = new Entry(dataInfo);

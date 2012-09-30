@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.server.sql.SqlCreate.SqlField;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
@@ -14,11 +15,13 @@ import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
@@ -57,7 +60,7 @@ public abstract class SqlBuilder {
 
     List<SqlField> fieldList = sc.getFields();
 
-    if (!BeeUtils.isEmpty(sc.getDataSource())) {
+    if (sc.getDataSource() != null) {
       query.append(" AS ").append(sc.getDataSource().getSqlString(this));
     } else {
       query.append(" (");
@@ -131,7 +134,7 @@ public abstract class SqlBuilder {
     }
     query.append(") ");
 
-    if (!BeeUtils.isEmpty(si.getDataSource())) {
+    if (si.getDataSource() != null) {
       query.append(si.getDataSource().getSqlString(this));
     } else {
       List<IsExpression> valueList = si.getValues();
@@ -204,7 +207,7 @@ public abstract class SqlBuilder {
 
       IsExpression alias = fldEntry[SqlSelect.FIELD_ALIAS];
 
-      if (!BeeUtils.isEmpty(alias)) {
+      if (alias != null) {
         query.append(" AS ").append(alias.getSqlString(this));
       }
     }
@@ -219,7 +222,7 @@ public abstract class SqlBuilder {
     }
     IsCondition whereClause = ss.getWhere();
 
-    if (!BeeUtils.isEmpty(whereClause)) {
+    if (whereClause != null) {
       String wh = whereClause.getSqlString(this);
 
       if (!BeeUtils.isEmpty(wh)) {
@@ -241,7 +244,7 @@ public abstract class SqlBuilder {
     }
     IsCondition havingClause = ss.getHaving();
 
-    if (!BeeUtils.isEmpty(havingClause)) {
+    if (havingClause != null) {
       query.append(" HAVING ")
           .append(havingClause.getSqlString(this));
     }
@@ -281,7 +284,7 @@ public abstract class SqlBuilder {
 
     switch ((SqlTriggerType) params.get("type")) {
       case AUDIT:
-        body = getAuditTrigger(BeeUtils.concat(".",
+        body = getAuditTrigger(BeeUtils.join(".",
             sqlQuote((String) triggerParams.get("auditSchema")),
             sqlQuote((String) triggerParams.get("auditTable"))),
             sqlQuote((String) triggerParams.get("idName")),
@@ -345,7 +348,7 @@ public abstract class SqlBuilder {
     }
     IsCondition whereClause = su.getWhere();
 
-    if (!BeeUtils.isEmpty(whereClause)) {
+    if (whereClause != null) {
       String wh = whereClause.getSqlString(this);
 
       if (!BeeUtils.isEmpty(wh)) {
@@ -355,6 +358,36 @@ public abstract class SqlBuilder {
     return query.toString();
   }
 
+  protected boolean isEmpty(Object x) {
+    boolean ok;
+
+    if (x == null) {
+      ok = true;
+    } else if (x instanceof String) {
+      ok = ((String) x).isEmpty() || ((String) x).trim().isEmpty();
+    } else if (x instanceof CharSequence) {
+      ok = ((CharSequence) x).length() == 0
+          || ((CharSequence) x).toString().trim().isEmpty();
+    } else if (x instanceof Number) {
+      ok = BeeUtils.isZero(((Number) x).doubleValue());
+    } else if (x instanceof Boolean) {
+      ok = !(Boolean) x;
+    } else if (x instanceof Collection) {
+      ok = ((Collection<?>) x).isEmpty();
+    } else if (x instanceof Map) {
+      ok = ((Map<?, ?>) x).isEmpty();
+    } else if (ArrayUtils.isArray(x)) {
+      ok = ArrayUtils.length(x) <= 0;
+    } else if (x instanceof Enumeration) {
+      ok = !((Enumeration<?>) x).hasMoreElements();
+    } else if (x instanceof HasLength) {
+      ok = ((HasLength) x).getLength() <= 0;
+    } else {
+      ok = false;
+    }
+    return ok;
+  }
+  
   protected String sqlCondition(Operator operator, Map<String, String> params) {
     String expression = params.get("expression");
     String value = params.get("value" + 0);
@@ -362,11 +395,11 @@ public abstract class SqlBuilder {
     switch (operator) {
       case IS_NULL:
       case NOT_NULL:
-        return BeeUtils.concat(1,
+        return BeeUtils.joinWords(
             expression, "IS", (operator == Operator.NOT_NULL ? "NOT" : ""), "NULL");
 
       case IN:
-        return BeeUtils.concat(1, expression, "IN", value);
+        return BeeUtils.joinWords(expression, "IN", value);
 
       case EQ:
       case NE:
@@ -374,7 +407,7 @@ public abstract class SqlBuilder {
       case GT:
       case LE:
       case GE:
-        return BeeUtils.concat(1, expression, operator.toTextString(), value);
+        return BeeUtils.joinWords(expression, operator.toTextString(), value);
 
       case STARTS:
       case ENDS:
@@ -389,7 +422,7 @@ public abstract class SqlBuilder {
               "$1" + (operator != Operator.STARTS ? "%" : "")
                   + "$2" + (operator != Operator.ENDS ? "%" : "") + "$3");
         }
-        return BeeUtils.concat(1,
+        return BeeUtils.joinWords(
             expression, sqlKeyword(SqlKeyword.LIKE, null), value, "ESCAPE '|'");
     }
     Assert.untouchable();
@@ -402,7 +435,7 @@ public abstract class SqlBuilder {
         return "(" + params.get("expression") + " & " + params.get("value") + ")";
 
       case IF:
-        return BeeUtils.concat(1,
+        return BeeUtils.joinWords(
             "CASE WHEN", params.get("condition"),
             "THEN", params.get("ifTrue"),
             "ELSE", params.get("ifFalse"),
@@ -427,7 +460,7 @@ public abstract class SqlBuilder {
         return xpr.toString();
 
       case CAST:
-        return BeeUtils.concat(1,
+        return BeeUtils.joinWords(
             "CAST(" + params.get("expression"),
             "AS",
             sqlType((SqlDataType) params.get("type"),
@@ -522,7 +555,7 @@ public abstract class SqlBuilder {
 
       case RIGHT:
         newParams = Maps.newHashMap(params);
-        newParams.put("pos", BeeUtils.concat(1,
+        newParams.put("pos", BeeUtils.joinWords(
             sqlFunction(SqlFunction.LENGTH, params), "-", params.get("len"), "+", "1"));
 
         return sqlFunction(SqlFunction.SUBSTRING, newParams);
@@ -534,31 +567,31 @@ public abstract class SqlBuilder {
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
       case CREATE_SCHEMA:
-        return BeeUtils.concat(1, "CREATE SCHEMA", params.get("schema"));
+        return BeeUtils.joinWords("CREATE SCHEMA", params.get("schema"));
 
       case CREATE_INDEX:
-        return BeeUtils.concat(1,
-            "CREATE", BeeUtils.isEmpty(params.get("isUnique")) ? "" : "UNIQUE",
+        return BeeUtils.joinWords(
+            "CREATE", isEmpty(params.get("isUnique")) ? "" : "UNIQUE",
             "INDEX", params.get("name"),
             "ON", params.get("table"),
             BeeUtils.parenthesize(params.get("fields")));
 
       case ADD_CONSTRAINT:
-        return BeeUtils.concat(1,
+        return BeeUtils.joinWords(
             "ALTER TABLE", params.get("table"),
             "ADD CONSTRAINT", params.get("name"),
             sqlKeyword((SqlKeyword) params.get("type"), params));
 
       case PRIMARY_KEY:
-        return BeeUtils.concat(1, "PRIMARY KEY", BeeUtils.parenthesize(params.get("fields")));
+        return BeeUtils.joinWords("PRIMARY KEY", BeeUtils.parenthesize(params.get("fields")));
 
       case FOREIGN_KEY:
-        String foreign = BeeUtils.concat(1,
+        String foreign = BeeUtils.joinWords(
             "FOREIGN KEY", BeeUtils.parenthesize(params.get("fields")),
             "REFERENCES", params.get("refTable"), BeeUtils.parenthesize(params.get("refFields")));
 
-        if (!BeeUtils.isEmpty(params.get("cascade"))) {
-          foreign = BeeUtils.concat(1, foreign, "ON DELETE",
+        if (params.get("cascade") != null) {
+          foreign = BeeUtils.joinWords(foreign, "ON DELETE",
               sqlKeyword((SqlKeyword) params.get("cascade"), params));
         }
         return foreign;
@@ -577,11 +610,11 @@ public abstract class SqlBuilder {
         IsCondition wh = null;
 
         Object prm = params.get("dbName");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.equal("t", "catalog_name", prm);
         }
         prm = params.get("schema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("t", "schema_name", prm));
         }
         return new SqlSelect()
@@ -594,15 +627,15 @@ public abstract class SqlBuilder {
         wh = null;
 
         prm = params.get("dbName");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.equal("t", "table_catalog", prm);
         }
         prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("t", "table_schema", prm));
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("t", "table_name", prm));
         }
         return new SqlSelect()
@@ -616,15 +649,15 @@ public abstract class SqlBuilder {
         wh = null;
 
         prm = params.get("dbName");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.equal("c", "table_catalog", prm);
         }
         prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("c", "table_schema", prm));
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("c", "table_name", prm));
         }
         return new SqlSelect()
@@ -644,19 +677,19 @@ public abstract class SqlBuilder {
         wh = null;
 
         prm = params.get("dbName");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.equal("k", "constraint_catalog", prm);
         }
         prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("k", "constraint_schema", prm));
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("k", "table_name", prm));
         }
         prm = params.get("keyTypes");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           IsCondition typeWh = null;
 
           for (SqlKeyword type : (SqlKeyword[]) prm) {
@@ -678,7 +711,7 @@ public abstract class SqlBuilder {
               typeWh = SqlUtils.or(typeWh, SqlUtils.equal("k", "constraint_type", tp));
             }
           }
-          if (!BeeUtils.isEmpty(typeWh)) {
+          if (!isEmpty(typeWh)) {
             wh = SqlUtils.and(wh, typeWh);
           }
         }
@@ -694,23 +727,23 @@ public abstract class SqlBuilder {
         wh = null;
 
         prm = params.get("dbName");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh,
               SqlUtils.equal("c", "constraint_catalog", prm),
               SqlUtils.equal("t", "table_catalog", prm));
         }
         prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh,
               SqlUtils.equal("c", "constraint_schema", prm),
               SqlUtils.equal("t", "table_schema", prm));
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("t", "table_name", prm));
         }
         prm = params.get("refTable");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("r", "table_name", prm));
         }
         return new SqlSelect()
@@ -733,19 +766,19 @@ public abstract class SqlBuilder {
         wh = null;
 
         prm = params.get("dbName");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh,
               SqlUtils.equal("t", "trigger_catalog", prm),
               SqlUtils.equal("t", "event_object_catalog", prm));
         }
         prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh,
               SqlUtils.equal("t", "trigger_schema", prm),
               SqlUtils.equal("t", "event_object_schema", prm));
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("t", "event_object_table", prm));
         }
         return new SqlSelect()
@@ -759,12 +792,12 @@ public abstract class SqlBuilder {
         return "DROP TABLE " + params.get("table");
 
       case DROP_FOREIGNKEY:
-        return BeeUtils.concat(1,
+        return BeeUtils.joinWords(
             "ALTER TABLE", params.get("table"),
             "DROP CONSTRAINT", params.get("name"));
 
       case RENAME_TABLE:
-        return BeeUtils.concat(1,
+        return BeeUtils.joinWords(
             "ALTER TABLE", params.get("nameFrom"), "RENAME TO", params.get("nameTo"));
 
       case SET_PARAMETER:

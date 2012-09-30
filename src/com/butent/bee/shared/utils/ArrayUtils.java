@@ -20,21 +20,6 @@ public class ArrayUtils {
     return indexOf(arr, value) >= 0;
   }
 
-  /**
-   * Copies an array. The specified {@code newLength} determines the length of the array.
-   * 
-   * @param original the original array
-   * @param newLength number of elements to be copied
-   * @return a new array
-   */
-  public static Object[] copyOf(Object[] original, int newLength) {
-    Object[] copy = create(newLength);
-    if (newLength > 0) {
-      System.arraycopy(original, 0, copy, 0, Math.min(original.length, newLength));
-    }
-    return copy;
-  }
-  
   public static String[] copyOf(String[] original) {
     if (original == null) {
       return null;
@@ -44,35 +29,6 @@ public class ArrayUtils {
       copy[i] = original[i];
     }
     return copy;
-  }
-
-  /**
-   * Copies an array from specified index to a specified index. If specified {@code to} is longer
-   * than the array, all elements from index from are copied.
-   * 
-   * @param src the array to be copied
-   * @param from index from which to start
-   * @param to end index
-   * @return a new array
-   */
-  public static Object[] copyOfRange(Object[] src, int from, int to) {
-    int dstLen = to - from;
-    Object[] dst = create(dstLen);
-    if (dstLen > 0) {
-      System.arraycopy(src, from, dst, 0, Math.min(src.length - from, dstLen));
-    }
-    return dst;
-  }
-
-  /**
-   * Creates a new empty array with specified size.
-   * 
-   * @param size the size of the new array
-   * @return a new empty array.
-   */
-  public static Object[] create(int size) {
-    Assert.nonNegative(size);
-    return new Object[size];
   }
 
   /**
@@ -146,26 +102,6 @@ public class ArrayUtils {
   }
 
   /**
-   * Inserts a value to the specified index of an array.
-   * 
-   * @param source the array to insert to
-   * @param index index to insert to
-   * @param value value to insert
-   * @return an array with the value inserted in specified index
-   */
-  public static Object[] insert(Object[] source, int index, Object value) {
-    Assert.notNull(source);
-    Assert.betweenInclusive(index, 0, source.length);
-    Object[] result = copyOf(source, source.length + 1);
-
-    result[index] = value;
-    for (int i = index + 1; i < source.length + 1; i++) {
-      result[i] = source[i - 1];
-    }
-    return result;
-  }
-
-  /**
    * Checks if the specified object is an array.
    * 
    * @param obj object to be checked
@@ -173,6 +109,10 @@ public class ArrayUtils {
    */
   public static boolean isArray(Object obj) {
     return obj instanceof Object[] || isPrimitiveArray(obj);
+  }
+
+  public static boolean isEmpty(String[] arr) {
+    return arr == null || arr.length == 0;
   }
 
   /**
@@ -207,38 +147,39 @@ public class ArrayUtils {
   /**
    * Joins an array with the specified separator. Each array element is joined by the separator.
    * 
-   * @param arr array to join
    * @param separator separator to join with
+   * @param arr array to join
    * @return a new string which contains all array elements joined by the specified separator
    */
-  public static String join(Object[] arr, Object separator) {
-    return join(arr, separator, -1, -1);
+  public static String join(String separator, String[] arr) {
+    return join(separator, arr, -1, -1);
   }
 
   /**
    * Joins an array with the specified separator from the specified index. Each array element is
    * joined by the separator.
    * 
-   * @param arr array to join
    * @param separator separator to join with
+   * @param arr array to join
    * @param fromIndex the array index to start from
    * @return a new string which contains all array elements joined by the specified separator
    */
-  public static String join(Object[] arr, Object separator, int fromIndex) {
-    return join(arr, separator, fromIndex, -1);
+  public static String join(String separator, String[] arr, int fromIndex) {
+    return join(separator, arr, fromIndex, -1);
   }
 
   /**
    * Joins an array with the specified separator from the specified index to a specified to index.
    * Each array element is joined by the separator.
    * 
-   * @param arr array to join
    * @param separator separator to join with
+   * @param arr array to join
    * @param fromIndex the array index to start from
    * @param toIndex an array index to stop joining
    * @return a new string which contains all array elements joined by the specified separator
    */
-  public static String join(Object[] arr, Object separator, int fromIndex, int toIndex) {
+  public static String join(String separator, String[] arr, int fromIndex, int toIndex) {
+    Assert.notNull(separator);
     int len = length(arr);
     int fr = (fromIndex > 0) ? fromIndex : 0;
     int to = (toIndex >= 0 && toIndex <= len) ? toIndex : len;
@@ -247,14 +188,14 @@ public class ArrayUtils {
       return BeeConst.STRING_EMPTY;
     }
 
-    String sep = BeeUtils.normSep(separator);
     StringBuilder sb = new StringBuilder();
-
     for (int i = fr; i < to; i++) {
       if (sb.length() > 0) {
-        sb.append(sep);
+        sb.append(separator);
       }
-      sb.append(BeeUtils.transform(arr[i]));
+      if (arr[i] != null) {
+        sb.append(arr[i].trim());
+      }
     }
     return sb.toString();
   }
@@ -294,36 +235,14 @@ public class ArrayUtils {
   }
 
   /**
-   * Removes an element in the specified {@code index} from the array.
+   * Copies the specified range of the {@code source} array into a new array. Implements JavaScript
+   * array.slice method. Null-safe.
    * 
-   * @param source array to remove from
-   * @param index the element in the index to remove
-   * @return a new array with the value from the specified index removed.
-   */
-  public static Object[] remove(Object[] source, int index) {
-    Assert.isIndex(source, index);
-    Object[] result;
-
-    if (index == 0) {
-      result = copyOfRange(source, 1, source.length);
-    } else {
-      result = copyOf(source, source.length - 1);
-      for (int i = index; i < source.length - 1; i++) {
-        result[i] = source[i + 1];
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Copies the specified range of the {@code source} array into a new array.
-   * Implements JavaScript array.slice method. Null-safe.
-   * 
-   * @param source array to slice 
+   * @param source array to slice
    * @param start specifies where to start the selection (The first element has an index of 0).
-   *        Negative value selects from the end of an array.
-   * @return a new array containing all elements from the start position to the end of
-   *         the original array.
+   *          Negative value selects from the end of an array.
+   * @return a new array containing all elements from the start position to the end of the original
+   *         array.
    */
   public static String[] slice(String[] source, int start) {
     if (source == null) {
@@ -331,16 +250,16 @@ public class ArrayUtils {
     }
     return slice(source, start, source.length);
   }
-  
+
   /**
-   * Copies the specified range of the {@code source} array into a new array.
-   * Implements JavaScript array.slice method. Null-safe.
+   * Copies the specified range of the {@code source} array into a new array. Implements JavaScript
+   * array.slice method. Null-safe.
    * 
-   * @param source array to slice 
+   * @param source array to slice
    * @param start specifies where to start the selection (The first element has an index of 0).
-   *        Negative value selects from the end of an array.
-   * @param end specifies where to end the selection.
-   *        Negative value selects from the end of an array.    
+   *          Negative value selects from the end of an array.
+   * @param end specifies where to end the selection. Negative value selects from the end of an
+   *          array.
    * @return a new array containing the specified range from the original array.
    */
   public static String[] slice(String[] source, int start, int end) {
@@ -351,13 +270,13 @@ public class ArrayUtils {
     if (srcLen <= 0 || start >= srcLen || end <= -srcLen) {
       return BeeConst.EMPTY_STRING_ARRAY;
     }
-    
+
     int p1 = (start >= 0) ? start : Math.max(srcLen + start, 0);
     int p2 = (end >= 0) ? Math.min(srcLen, end) : Math.max(srcLen + end, 0);
     if (p1 >= p2) {
       return BeeConst.EMPTY_STRING_ARRAY;
     }
-    
+
     int len = p2 - p1;
     String[] arr = new String[len];
     for (int i = 0; i < len; i++) {
@@ -366,42 +285,32 @@ public class ArrayUtils {
     return arr;
   }
 
+  public static String transform(Object arr) {
+    return transform(arr, null); 
+  }
+  
   /**
-   * Transforms an array recursively using the specified separators. Each recursive level uses the
-   * next separator. If there are no separators defined, it uses the default ", " separator.
+   * Transforms an array into string using the specified separator.
    * 
    * @param arr the array to transform
-   * @param sep separator list
+   * @param separator separator list
    * @return a String joined from the specified array.
    */
-  public static String transform(Object arr, Object... sep) {
-    if (BeeUtils.isEmpty(arr)) {
+  public static String transform(Object arr, String separator) {
+    int r = length(arr);
+    if (r <= 0) {
       return BeeConst.STRING_EMPTY;
     }
-    int cSep = (sep == null) ? 0 : sep.length;
-    String z = cSep > 0 ? BeeUtils.normSep(sep[0]) : BeeConst.DEFAULT_LIST_SEPARATOR;
 
+    String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
     StringBuilder sb = new StringBuilder();
-    Object el;
-    Object[] nextSep;
-
-    if (cSep > 1) {
-      nextSep = new Object[cSep - 1];
-      for (int i = 0; i < cSep - 1; i++) {
-        nextSep[i] = sep[i + 1];
-      }
-    } else {
-      nextSep = new String[]{z};
-    }
-
-    int r = length(arr);
 
     for (int i = 0; i < r; i++) {
-      el = get(arr, i);
+      Object el = get(arr, i);
       if (i > 0) {
-        sb.append(z);
+        sb.append(sep);
       }
-      sb.append(BeeUtils.transformGeneric(el, nextSep));
+      sb.append(BeeUtils.transform(el));
     }
     return sb.toString();
   }

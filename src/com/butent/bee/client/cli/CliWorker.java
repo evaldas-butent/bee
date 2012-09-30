@@ -44,8 +44,9 @@ import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.decorator.TuningFactory;
+import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.dialog.DialogCallback;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.ComputedStyles;
@@ -141,8 +142,7 @@ public class CliWorker {
     }
 
     String v = line.trim();
-    String[] arr = BeeUtils.split(v, BeeConst.STRING_SPACE);
-    Assert.notEmpty(arr);
+    String[] arr = BeeUtils.split(v, BeeConst.CHAR_SPACE);
 
     String z = arr[0].toLowerCase();
     String args = (arr.length > 1) ? v.substring(z.length()).trim() : BeeConst.STRING_EMPTY;
@@ -214,7 +214,7 @@ public class CliWorker {
     } else if (z.equals("fs")) {
       getFs();
     } else if (z.equals("gen")) {
-      BeeKeeper.getRpc().sendText(Service.GENERATE, BeeUtils.concat(1, arr[1], arr[2],
+      BeeKeeper.getRpc().sendText(Service.GENERATE, BeeUtils.joinWords(arr[1], arr[2],
           ArrayUtils.getQuietly(arr, 3), ArrayUtils.getQuietly(arr, 4)));
     } else if (z.equals("geo")) {
       showGeo();
@@ -408,7 +408,7 @@ public class CliWorker {
   }
 
   private static void doAjaxKeys(String[] arr) {
-    if (BeeUtils.length(arr) == 3) {
+    if (ArrayUtils.length(arr) == 3) {
       String loc = arr[1];
       String key = arr[2];
 
@@ -645,12 +645,12 @@ public class CliWorker {
   private static void doLike(String[] arr) {
     int len = ArrayUtils.length(arr);
     if (len < 3) {
-      Global.sayHuh(ArrayUtils.join(arr, 1));
+      Global.sayHuh(ArrayUtils.join(BeeConst.STRING_SPACE, arr));
       return;
     }
 
     String mode = ArrayUtils.getQuietly(arr, 0);
-    String input = ArrayUtils.join(arr, 1, 1, len - 1);
+    String input = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 1, len - 1);
     String expr = ArrayUtils.getQuietly(arr, len - 1);
 
     boolean sens = mode.indexOf('+') > 0;
@@ -662,28 +662,28 @@ public class CliWorker {
       if (sens || insens) {
         match = Wildcards.isSqlLike(input, expr, sens);
       } else {
-        defCase = BeeUtils.concat(1, "sql", BooleanValue.pack(Wildcards.isSqlCaseSensitive()));
+        defCase = BeeUtils.joinWords("sql", BooleanValue.pack(Wildcards.isSqlCaseSensitive()));
         match = Wildcards.isSqlLike(input, expr);
       }
     } else if (BeeUtils.containsSame(mode, "f")) {
       if (sens || insens) {
         match = Wildcards.isFsLike(input, expr, sens);
       } else {
-        defCase = BeeUtils.concat(1, "fs", BooleanValue.pack(Wildcards.isFsCaseSensitive()));
+        defCase = BeeUtils.joinWords("fs", BooleanValue.pack(Wildcards.isFsCaseSensitive()));
         match = Wildcards.isFsLike(input, expr);
       }
     } else {
       if (sens || insens) {
         match = Wildcards.isLike(input, expr, sens);
       } else {
-        defCase = BeeUtils.concat(1, "def",
+        defCase = BeeUtils.joinWords("def",
             BooleanValue.pack(Wildcards.isDefaultCaseSensitive()));
         match = Wildcards.isLike(input, expr);
       }
     }
     Global.showDialog(mode, NameUtils.addName("input", input), NameUtils.addName("pattern", expr),
-        NameUtils.addName("case", BeeUtils.iif(sens, "sensitive", insens, "insensitive", defCase)),
-        NameUtils.addName("match", match));
+        NameUtils.addName("case", sens ? "sensitive" : (insens ? "insensitive" : defCase)),
+        NameUtils.addName("match", BeeUtils.toString(match)));
   }
 
   private static void doLocale(String[] arr) {
@@ -694,11 +694,11 @@ public class CliWorker {
     }
 
     String lang = ArrayUtils.getQuietly(arr, 2);
-    BeeKeeper.getRpc().invoke("localeInfo", ContentType.TEXT, BeeUtils.concat(1, mode, lang));
+    BeeKeeper.getRpc().invoke("localeInfo", ContentType.TEXT, BeeUtils.joinWords(mode, lang));
   }
 
   private static void doLog(String[] arr) {
-    if (BeeUtils.length(arr) > 1) {
+    if (ArrayUtils.length(arr) > 1) {
       String z = arr[1];
 
       if (BeeUtils.inList(z, BeeConst.STRING_ZERO, BeeConst.STRING_MINUS)) {
@@ -836,7 +836,7 @@ public class CliWorker {
   }-*/;
 
   private static void getKeys(String[] arr) {
-    int parCnt = BeeUtils.length(arr) - 1;
+    int parCnt = ArrayUtils.length(arr) - 1;
     if (parCnt <= 0) {
       Global.showError("getKeys", "table not specified");
       return;
@@ -851,14 +851,14 @@ public class CliWorker {
   }
 
   private static void getResource(String[] arr) {
-    if (BeeUtils.length(arr) < 2) {
-      Global.sayHuh(ArrayUtils.join(arr, 1));
+    if (ArrayUtils.length(arr) < 2) {
+      Global.sayHuh(ArrayUtils.join(BeeConst.STRING_SPACE, arr));
       return;
     }
 
     if (BeeUtils.same(arr[0], "download")) {
-      String url =
-          GWT.getModuleBaseURL() + "file/" + Codec.encodeBase64(ArrayUtils.join(arr, 1, 1));
+      String url = GWT.getModuleBaseURL() + "file/" 
+          + Codec.encodeBase64(ArrayUtils.join(BeeConst.STRING_SPACE, arr, 1));
       Window.open(url, "", "");
       return;
     }
@@ -1132,8 +1132,7 @@ public class CliWorker {
 
     for ( var i = 0; i < 6; i++) {
       for ( var j = 0; j < 6; j++) {
-        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', '
-            + Math.floor(255 - 42.5 * j) + ', 0)';
+        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j) + ', 0)';
         ctx.fillRect(j * 25, i * 25, 25, 25);
       }
     }
@@ -1145,7 +1144,7 @@ public class CliWorker {
     boolean nav = false;
     boolean scr = false;
 
-    for (int i = 1; i < BeeUtils.length(arr); i++) {
+    for (int i = 1; i < ArrayUtils.length(arr); i++) {
       switch (arr[i].toLowerCase().charAt(0)) {
         case 'w':
           wnd = true;
@@ -1216,7 +1215,7 @@ public class CliWorker {
 
     String v;
 
-    for (int i = 1; i < BeeUtils.length(arr); i++) {
+    for (int i = 1; i < ArrayUtils.length(arr); i++) {
       if (arr[i].length() < 3 || arr[i].charAt(1) != '=') {
         options.add(arr[i]);
         continue;
@@ -1261,34 +1260,32 @@ public class CliWorker {
       }
     }
 
-    Global.choice(caption, prompt, options,
-        new DialogCallback<Integer>() {
-          @Override
-          public void onCancel() {
-            BeeKeeper.getLog().info("cancel");
-          }
+    Global.choice(caption, prompt, options, new ChoiceCallback() {
+      @Override
+      public void onCancel() {
+        BeeKeeper.getLog().info("cancel");
+      }
 
-          @Override
-          public void onSuccess(Integer value) {
-            BeeKeeper.getLog().info("success", value);
-          }
+      @Override
+      public void onSuccess(int value) {
+        BeeKeeper.getLog().info("success", value);
+      }
 
-          @Override
-          public void onTimeout(Integer value) {
-            BeeKeeper.getLog().info("timeout", value);
-          }
+      @Override
+      public void onTimeout() {
+        BeeKeeper.getLog().info("timeout");
+      }
 
-        }, defaultValue, timeout, cancelHtml,
-        new WidgetInitializer() {
-          @Override
-          public Widget initialize(Widget widget, String name) {
-            if (BeeUtils.containsSame(name, widgetName.get())) {
-              StyleUtils.updateAppearance(widget, null, widgetStyle.get());
-              BeeKeeper.getLog().info(name, StyleUtils.getCssText(widget));
-            }
-            return widget;
-          }
-        });
+    }, defaultValue, timeout, cancelHtml, new WidgetInitializer() {
+      @Override
+      public Widget initialize(Widget widget, String name) {
+        if (BeeUtils.containsSame(name, widgetName.get())) {
+          StyleUtils.updateAppearance(widget, null, widgetStyle.get());
+          BeeKeeper.getLog().info(name, StyleUtils.getCssText(widget));
+        }
+        return widget;
+      }
+    });
   }
 
   private static void showClientLocation() {
@@ -1506,7 +1503,7 @@ public class CliWorker {
   }
 
   private static void showElement(String v, String[] arr) {
-    if (BeeUtils.length(arr) < 2) {
+    if (ArrayUtils.length(arr) < 2) {
       Global.sayHuh(v);
       return;
     }
@@ -1536,7 +1533,7 @@ public class CliWorker {
   }
 
   private static void showFunctions(String v, String[] arr) {
-    if (BeeUtils.length(arr) < 2) {
+    if (ArrayUtils.length(arr) < 2) {
       Global.sayHuh(v);
       return;
     }
@@ -1618,7 +1615,7 @@ public class CliWorker {
 
     String v;
 
-    for (int i = 1; i < BeeUtils.length(arr); i++) {
+    for (int i = 1; i < ArrayUtils.length(arr); i++) {
       if (arr[i].length() < 2) {
         continue;
       }
@@ -1675,7 +1672,7 @@ public class CliWorker {
     }
 
     Global.inputString(caption, prompt,
-        new DialogCallback<String>(required) {
+        new StringCallback(required) {
           @Override
           public void onCancel() {
             BeeKeeper.getLog().info("cancel");
@@ -1936,7 +1933,7 @@ public class CliWorker {
 
     panel.add(new BeeLabel(NameUtils.addName("steps", steps)), 10, 36);
     panel.add(new BeeLabel(NameUtils.addName("millis", millis)), 10, 53);
-    panel.add(new BeeLabel(NameUtils.addName("max", max)), 10, 70);
+    panel.add(new BeeLabel(NameUtils.addName("max", BeeUtils.toString(max))), 10, 70);
 
     final Progress prg = new Progress(max, value);
     panel.add(prg, 120, 40);
@@ -1955,7 +1952,8 @@ public class CliWorker {
         }
 
         prg.setValue(v);
-        lbl.setText(BeeUtils.concat(3, BeeUtils.round(v, 1), BeeUtils.round(prg.getPosition(), 3)));
+        lbl.setText(BeeUtils.join(BeeUtils.space(3), BeeUtils.round(v, 1),
+            BeeUtils.round(prg.getPosition(), 3)));
       }
     };
     timer.scheduleRepeating(millis);
@@ -1964,7 +1962,7 @@ public class CliWorker {
   }
 
   private static void showProperties(String v, String[] arr) {
-    if (BeeUtils.length(arr) < 2) {
+    if (ArrayUtils.length(arr) < 2) {
       Global.sayHuh(v);
       return;
     }
@@ -2391,7 +2389,7 @@ public class CliWorker {
   }
 
   private static void showVars(String[] arr) {
-    int len = BeeUtils.length(arr);
+    int len = ArrayUtils.length(arr);
     if (len > 1) {
       String[] vars = new String[len - 1];
       for (int i = 0; i < len - 1; i++) {
@@ -2496,7 +2494,7 @@ public class CliWorker {
     if (parCnt == 1) {
       if (key.equals(BeeConst.STRING_MINUS)) {
         BeeKeeper.getStorage().clear();
-        Global.inform(BeeUtils.concat(1, len, "items cleared"));
+        Global.inform(BeeUtils.joinWords(len, "items cleared"));
       } else {
         String z = BeeKeeper.getStorage().getItem(key);
         if (z == null) {
@@ -2508,7 +2506,7 @@ public class CliWorker {
       return;
     }
 
-    String value = ArrayUtils.join(arr, 1, 2);
+    String value = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 2);
 
     if (key.equals(BeeConst.STRING_MINUS)) {
       BeeKeeper.getStorage().removeItem(value);
@@ -2520,7 +2518,7 @@ public class CliWorker {
   }
 
   private static void style(String v, String[] arr) {
-    if (BeeUtils.length(arr) < 2) {
+    if (ArrayUtils.length(arr) < 2) {
       JsStyleSheetList sheets = JsBrowser.getDocument().getStyleSheets();
       int sheetCnt = (sheets == null) ? 0 : sheets.getLength();
 
@@ -2631,14 +2629,14 @@ public class CliWorker {
   }
 
   private static void translate(final String[] arr, boolean detect) {
-    int len = BeeUtils.length(arr);
+    int len = ArrayUtils.length(arr);
     if (len < 2) {
       Global.sayHuh((Object[]) arr);
       return;
     }
 
     if (detect) {
-      final String detText = ArrayUtils.join(arr, 1, 1, len);
+      final String detText = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 1, len);
       Translation.detect(detText, new DetectionCallback() {
         @Override
         protected void onCallback(DetectionResult result) {
@@ -2660,7 +2658,7 @@ public class CliWorker {
     Language dst = Language.getByCode(arr[len - 1]);
 
     if (dst == null) {
-      text = ArrayUtils.join(arr, 1, 1, len);
+      text = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 1, len);
       codeFrom = BeeConst.STRING_EMPTY;
       codeTo = LocaleUtils.getLanguageCode(LocaleInfo.getCurrentLocale());
     } else {
@@ -2674,10 +2672,10 @@ public class CliWorker {
       } else {
         Language src = Language.getByCode(arr[len - 2]);
         if (src == null) {
-          text = ArrayUtils.join(arr, 1, 1, len - 1);
+          text = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 1, len - 1);
           codeFrom = BeeConst.STRING_EMPTY;
         } else {
-          text = ArrayUtils.join(arr, 1, 1, len - 2);
+          text = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 1, len - 2);
           codeFrom = src.getLangCode();
         }
       }
@@ -2706,7 +2704,7 @@ public class CliWorker {
 
       for (final Element elem : elements) {
         String elTxt = elem.getInnerText();
-        if (BeeUtils.length(elTxt) < 3) {
+        if (!BeeUtils.hasLength(elTxt, 3)) {
           continue;
         }
 
@@ -2726,7 +2724,7 @@ public class CliWorker {
       return;
     }
 
-    final String info = ArrayUtils.join(arr, 1, 1, len);
+    final String info = ArrayUtils.join(BeeConst.STRING_SPACE, arr, 1, len);
 
     TranslationCallback callback = new TranslationCallback() {
       @Override
@@ -2744,7 +2742,7 @@ public class CliWorker {
 
   private static void unicode(String[] arr) {
     StringBuilder sb = new StringBuilder();
-    int len = BeeUtils.length(arr);
+    int len = ArrayUtils.length(arr);
 
     if (len < 2 || len == 2 && BeeUtils.isDigit(ArrayUtils.getQuietly(arr, 1))) {
       int n = (len < 2) ? 10 : BeeUtils.toInt(arr[1]);
@@ -2756,7 +2754,7 @@ public class CliWorker {
       for (int i = 1; i < len; i++) {
         String s = arr[i];
 
-        if (s.length() > 1 && BeeUtils.inListIgnoreCase(s.substring(0, 1), "u", "x")
+        if (s.length() > 1 && BeeUtils.inListSame(s.substring(0, 1), "u", "x")
             && BeeUtils.isHexString(s.substring(1))) {
           sb.append(BeeUtils.fromHex(s.substring(1)));
         } else if (s.length() > 2 && BeeUtils.startsSame(s, "0x")

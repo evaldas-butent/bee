@@ -14,6 +14,7 @@ import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -40,7 +41,7 @@ public class DsnService extends CompositeService {
               if (response.hasResponse()) {
                 dsns = Codec.beeDeserializeCollection((String) response.getResponse());
               }
-              if (!BeeUtils.isEmpty(dsns)) {
+              if (!ArrayUtils.isEmpty(dsns)) {
                 dsn = new Variable("Choose DSN", BeeType.STRING, BeeKeeper.getUser().getDsn(),
                     BeeWidget.LIST, dsns);
 

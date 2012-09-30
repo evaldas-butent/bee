@@ -90,7 +90,7 @@ public class CommonsEventHandler {
               new SelectionCallback() {
                 @Override
                 public void onSelection(List<IsRow> rows) {
-                  if (!BeeUtils.isEmpty(itemId)) {
+                  if (DataUtils.isId(itemId)) {
                     List<Long> categoryList = Lists.newArrayList();
 
                     for (IsRow row : rows) {
@@ -164,8 +164,8 @@ public class CommonsEventHandler {
         }
       }
       if (!indexes.isEmpty()) {
-        if (!BeeUtils.isEmpty(itemId)) {
-          Global.confirm(BeeUtils.concat(1, "Pašalinti", indexes.size(), "kategorijas?"),
+        if (DataUtils.isId(itemId)) {
+          Global.confirm(BeeUtils.joinWords("Pašalinti", indexes.size(), "kategorijas?"),
               new Command() {
                 @Override
                 public void execute() {
@@ -193,7 +193,7 @@ public class CommonsEventHandler {
       categories.clear();
       widget.clear();
 
-      if (!BeeUtils.isEmpty(itemId)) {
+      if (DataUtils.isId(itemId)) {
         Filter flt = ComparisonFilter.isEqual(CommonsConstants.COL_ITEM, new LongValue(itemId));
 
         Queries.getRowSet(CommonsConstants.TBL_ITEM_CATEGORIES, null, flt, null,
@@ -421,7 +421,7 @@ public class CommonsEventHandler {
     }
 
     private String getCategoryValue(IsRow category, String colName) {
-      if (BeeUtils.allNotEmpty(category, categoryTree, categoryTree.getDataColumns())) {
+      if (BeeUtils.allNotNull(category, categoryTree, categoryTree.getDataColumns())) {
         return category.getString(DataUtils.getColumnIndex(colName, categoryTree.getDataColumns()));
       }
       return null;

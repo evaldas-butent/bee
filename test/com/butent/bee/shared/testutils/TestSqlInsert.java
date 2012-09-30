@@ -7,13 +7,11 @@ import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst.SqlEngine;
-import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -70,17 +68,17 @@ public class TestSqlInsert {
     insert.addFields("field1", "field2", "field3");
     assertEquals(3, insert.getFieldCount());
 
-    try {
-      insert.addFields("field4", null);
-      assertEquals(4, insert.getFieldCount());
-      fail("BeeRuntimeException not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-      System.out
-          .println("public final void getField(): " + e.getMessage());
-    } catch (Exception e) {
-      fail("Java runtime error. Need BeeRuntimeException !!!");
-    }
+//    try {
+//      insert.addFields("field4", null);
+//      assertEquals(4, insert.getFieldCount());
+//      fail("BeeRuntimeException not works");
+//    } catch (BeeRuntimeException e) {
+//      assertTrue(true);
+//      System.out
+//          .println("public final void getField(): " + e.getMessage());
+//    } catch (Exception e) {
+//      fail("Java runtime error. Need BeeRuntimeException !!!");
+//    }
   }
 
   @Test

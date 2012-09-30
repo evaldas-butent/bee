@@ -1016,7 +1016,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     boolean pageSizeChanged = updatePageSize();
     if (redraw && !pageSizeChanged) {
-      render();
+      render(true);
     }
   }
 
@@ -1359,7 +1359,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     setRenderMode(rm);
   }
 
-  public void insertRow(IsRow rowValue) {
+  public void insertRow(IsRow rowValue, boolean focus) {
     Assert.notNull(rowValue);
 
     int rc = getRowCount();
@@ -1404,7 +1404,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     if (getActiveColumnIndex() < 0) {
       this.activeColumnIndex = 0;
     }
-    render();
+    render(focus);
   }
 
   public boolean isColumnReadOnly(String columnId) {
@@ -1759,7 +1759,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   public void refresh() {
     maybeUpdateColumnWidths();
-    render();
+    render(true);
   }
 
   public void refreshCellContent(long rowId, String source) {
@@ -3634,7 +3634,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
-  private void render() {
+  private void render(boolean focus) {
     RenderMode mode = getEffectiveRenderMode();
 
     if (RenderMode.CONTENT.equals(mode)) {
@@ -3663,7 +3663,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     fireEvent(new ActiveRowChangeEvent(getActiveRow()));
 
-    if (isRowWithinBounds(getActiveRowIndex()) && getActiveColumnIndex() >= 0) {
+    if (focus && isRowWithinBounds(getActiveRowIndex()) && getActiveColumnIndex() >= 0) {
       Scheduler.get().scheduleDeferred(new ScheduledCommand() {
         public void execute() {
           Element cellElement = getActiveCellElement();

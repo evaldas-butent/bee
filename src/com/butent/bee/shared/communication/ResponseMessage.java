@@ -124,7 +124,7 @@ public class ResponseMessage implements BeeSerializable, Transformable {
 
   @Override
   public String toString() {
-    return BeeUtils.concat(1, date, level, message);
+    return BeeUtils.joinWords(date, level, message);
   }
 
   @Override

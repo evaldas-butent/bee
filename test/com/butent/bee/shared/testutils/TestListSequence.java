@@ -1,12 +1,9 @@
 package com.butent.bee.shared.testutils;
 
 import com.butent.bee.shared.ListSequence;
-import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -74,24 +71,6 @@ public class TestListSequence {
 
   @Test
   public final void testInsert() {
-    try {
-      ls.insert(5, ".");
-      fail("Exceptions not woks " + ls.getLength());
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      ls.insert(-1, ".");
-      fail("Exceptions not woks");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
     String[] exp1a = {"this", "is", "the", "junit", "test"};
     String[] exp1b = {".", "this", "is", "the", "junit", "test"};
     String[] exp1c = {".", "this", "is", "the", "junit", "test", "!"};
@@ -133,29 +112,10 @@ public class TestListSequence {
 
     ls.remove(1);
     assertArrayEquals(exp1c, ls.getArray(pr).getA());
-
-    try {
-      ls.remove(-1);
-      fail("Exceptions not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need bee runtime exception" + e.getMessage());
-    }
-
-    try {
-      ls.remove(10);
-      fail("Exceptions not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need bee runtime exception" + e.getMessage());
-    }
   }
 
   @Test
   public final void testSet() {
-
     String[] exp1a = {"this", "the", "junit", "test"};
     String[] exp1b = {"there", "the", "junit", "test"};
     String[] exp1c = {"there", "the", "junit", "mod"};
@@ -169,24 +129,6 @@ public class TestListSequence {
 
     ls.set(3, "mod");
     assertArrayEquals(exp1c, ls.getArray(pr).getA());
-
-    try {
-      ls.set(-1, ".");
-      fail("Exceptiions not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      ls.set(10, ".");
-      fail("Exceptiions not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
   }
 
   @Test
@@ -208,10 +150,6 @@ public class TestListSequence {
     String[] pr = {};
 
     ls.setValues(exp1);
-
-    assertArrayEquals(exp1, ls.getArray(pr).getA());
-
-    exp1[0] = "123";
     assertArrayEquals(exp1, ls.getArray(pr).getA());
   }
 }

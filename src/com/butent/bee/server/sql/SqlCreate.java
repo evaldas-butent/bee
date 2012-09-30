@@ -24,7 +24,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
 
     private SqlField(String name, SqlDataType type, int precision, int scale, boolean notNull) {
       Assert.notEmpty(name);
-      Assert.notEmpty(type);
+      Assert.notNull(type);
 
       this.name = name;
       this.type = type;
@@ -188,7 +188,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
    */
   public SqlCreate addField(String field, SqlDataType type, int precision, int scale,
       boolean notNull) {
-    Assert.state(BeeUtils.isEmpty(dataSource));
+    Assert.state(dataSource == null);
     Assert.notEmpty(field);
     Assert.state(!hasField(field), "Field " + field + " already exist");
 
@@ -283,7 +283,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
   public Collection<String> getSources() {
     Collection<String> sources = null;
 
-    if (!BeeUtils.isEmpty(dataSource)) {
+    if (dataSource != null) {
       sources = dataSource.getSources();
     }
     return sources;
@@ -304,7 +304,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
    * @return true if the field exists, otherwise false.
    */
   public boolean hasField(String field) {
-    return !BeeUtils.isEmpty(getField(field));
+    return getField(field) != null;
   }
 
   /**
@@ -314,7 +314,7 @@ public class SqlCreate extends SqlQuery<SqlCreate> implements HasTarget {
    */
   @Override
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(fieldList) && BeeUtils.isEmpty(dataSource);
+    return BeeUtils.isEmpty(fieldList) && dataSource == null;
   }
 
   /**

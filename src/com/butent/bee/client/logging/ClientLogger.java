@@ -14,21 +14,21 @@ public class ClientLogger implements BeeLogger {
 
   @Override
   public void debug(Object... messages) {
-    logger.config(BeeUtils.concat(1, messages));
+    logger.config(BeeUtils.joinWords(messages));
   }
 
   @Override
   public void error(Object... messages) {
-    logger.severe(BeeUtils.concat(1, messages));
+    logger.severe(BeeUtils.joinWords(messages));
   }
 
   @Override
   public void info(Object... messages) {
-    logger.info(BeeUtils.concat(1, messages));
+    logger.info(BeeUtils.joinWords(messages));
   }
 
   @Override
   public void warning(Object... messages) {
-    logger.warning(BeeUtils.concat(1, messages));
+    logger.warning(BeeUtils.joinWords(messages));
   }
 }

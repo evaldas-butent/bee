@@ -11,6 +11,7 @@ import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -300,7 +301,7 @@ public class TestIsExpression {
         SqlDataType.DATE, 5, 10), "TB1");
 
     assertEquals(
-        "SELECT Table1.field1, CAST(Table1.field2 AS INTEGER) AS TB1 FROM Table1",
+        "SELECT Table1.field1, CAST(Table1.field2 AS BIGINT) AS TB1 FROM Table1",
         s.getQuery());
 
     s = new SqlSelect();
@@ -391,7 +392,7 @@ public class TestIsExpression {
         SqlDataType.DATE, 5, 10), "TB1");
 
     assertEquals(
-        "SELECT [Table1].[field1], CAST([Table1].[field2] AS INTEGER) AS [TB1] FROM [Table1]",
+        "SELECT [Table1].[field1], CAST([Table1].[field2] AS BIGINT) AS [TB1] FROM [Table1]",
         s.getQuery());
 
     s = new SqlSelect();
@@ -773,7 +774,6 @@ public class TestIsExpression {
 
   @Test
   public void testConstantExpressionGeneric() {
-    Date d = new Date(1298362388227L);
     JustDate jd = new JustDate(1298362388227L);
     DateTime dt = new DateTime(1298362388227L);
 
@@ -787,12 +787,8 @@ public class TestIsExpression {
         ce2.getSqlString(SqlBuilderFactory.getBuilder()));
 
     IsExpression ce3 = SqlUtils.constant(jd);
-    assertEquals("15027",
+    assertEquals(BeeUtils.toString(jd.getTime()),
         ce3.getSqlString(SqlBuilderFactory.getBuilder()));
-
-    IsExpression ce4 = SqlUtils.constant(d);
-    assertEquals("15027",
-        ce4.getSqlString(SqlBuilderFactory.getBuilder()));
 
     IsExpression ce5 = SqlUtils.constant(dt);
     assertEquals("1298362388227",
@@ -947,6 +943,8 @@ public class TestIsExpression {
 
   @Test
   public final void testTemporaryName() {
+    SqlBuilderFactory.setDefaultBuilder(SqlEngine.GENERIC);
+
     SqlSelect select1 = new SqlSelect();
     select1.addFields("Table1", "field1", "field2");
     select1.addFrom("Table1");

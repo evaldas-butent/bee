@@ -75,11 +75,6 @@ public abstract class RowList<RowType extends IsRow, ColType extends IsColumn> e
   }
 
   @Override
-  protected void assertRowIndex(int rowIndex) {
-    Assert.isIndex(getRows(), rowIndex);
-  }
-
-  @Override
   protected void insertRow(int rowIndex, RowType row) {
     Assert.betweenInclusive(rowIndex, 0, getNumberOfRows());
     getRows().insert(rowIndex, row);

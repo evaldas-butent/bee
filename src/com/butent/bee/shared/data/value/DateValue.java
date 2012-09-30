@@ -122,6 +122,11 @@ public class DateValue extends Value {
   }
 
   @Override
+  public boolean isEmpty() {
+    return isNull(); 
+  }
+  
+  @Override
   public boolean isNull() {
     return this == NULL_VALUE || getDate() == null;
   }

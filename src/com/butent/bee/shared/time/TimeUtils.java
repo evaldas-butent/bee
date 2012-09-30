@@ -7,6 +7,7 @@ import com.google.common.primitives.Ints;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.RangeOptions;
 
@@ -148,11 +149,11 @@ public class TimeUtils {
     return BeeConst.COMPARE_EQUAL;
   }
 
-  public static int countFields(CharSequence cs) {
-    if (BeeUtils.isEmpty(cs)) {
+  public static int countFields(String s) {
+    if (BeeUtils.isEmpty(s)) {
       return 0;
     }
-    return Iterables.size(FIELD_SPLITTER.split(cs));
+    return Iterables.size(FIELD_SPLITTER.split(s));
   }
 
   /**
@@ -166,16 +167,16 @@ public class TimeUtils {
     return fieldDifference(start, end, FIELD_DATE);
   }
 
-  public static String dateToString(int year, int month, int dom, char sep) {
-    return yearToString(year) + sep + monthToString(month) + sep + dayOfMonthToString(dom);
-  }
-
   public static String dateToString(HasDateValue date, char sep) {
     if (date == null) {
       return BeeConst.STRING_EMPTY;
     } else {
       return dateToString(date.getYear(), date.getMonth(), date.getDom(), sep);
     }
+  }
+
+  public static String dateToString(int year, int month, int dom, char sep) {
+    return yearToString(year) + sep + monthToString(month) + sep + dayOfMonthToString(dom);
   }
 
   public static int dayDiff(HasDateValue start, HasDateValue end) {
@@ -187,6 +188,16 @@ public class TimeUtils {
 
   public static String dayOfMonthToString(int dom) {
     return padTwo(dom);
+  }
+
+  /**
+   * Returns the elapsed time in seconds.
+   * 
+   * @param start the start time
+   * @return the elapsed time in seconds from the specified start in brackets.
+   */
+  public static String elapsedSeconds(long start) {
+    return BeeUtils.bracket(toSeconds(System.currentTimeMillis() - start));
   }
 
   public static JustDate endOfMonth(HasYearMonth ref) {
@@ -396,14 +407,14 @@ public class TimeUtils {
     return new JustDate(ref.getDate().getDays() + increment);
   }
 
-  public static DateTime nextHour(int increment) {
-    return nextHour(new DateTime(), increment);
-  }
-
   public static DateTime nextHour(DateTime ref, int increment) {
     Assert.notNull(ref);
     long millis = (ref.getTime() / MILLIS_PER_HOUR + 1) * MILLIS_PER_HOUR;
     return new DateTime(millis + MILLIS_PER_HOUR * increment);
+  }
+
+  public static DateTime nextHour(int increment) {
+    return nextHour(new DateTime(), increment);
   }
 
   public static String normalize(AbstractDate x) {
@@ -438,19 +449,19 @@ public class TimeUtils {
   }
 
   /**
-   * Parses a CharSequence {@code cs} to an array. Used for constructing Date etc.
+   * Parses a String {@code s} to an array. Used for constructing Date etc.
    * 
-   * @param cs the CharSequence to parse
+   * @param s the String to parse
    * @return an Integer array with the parsed fields.
    */
-  public static int[] parseFields(CharSequence cs) {
-    if (BeeUtils.isEmpty(cs)) {
+  public static int[] parseFields(String s) {
+    if (BeeUtils.isEmpty(s)) {
       return null;
     }
     int[] arr = new int[7];
     int idx = 0;
 
-    for (String z : FIELD_SPLITTER.split(cs)) {
+    for (String z : FIELD_SPLITTER.split(s)) {
       arr[idx++] = BeeUtils.toInt(z);
       if (idx >= arr.length) {
         break;
@@ -532,10 +543,6 @@ public class TimeUtils {
     return new DateTime(today());
   }
 
-  public static DateTime startOfDay(int increment) {
-    return startOfDay(today(), increment);
-  }
-
   public static DateTime startOfDay(HasDateValue ref) {
     return startOfDay(ref, 0);
   }
@@ -543,6 +550,10 @@ public class TimeUtils {
   public static DateTime startOfDay(HasDateValue ref, int increment) {
     Assert.notNull(ref);
     return new DateTime(ref.getYear(), ref.getMonth(), ref.getDom() + increment);
+  }
+
+  public static DateTime startOfDay(int increment) {
+    return startOfDay(today(), increment);
   }
 
   public static JustDate startOfMonth() {
@@ -729,6 +740,17 @@ public class TimeUtils {
   }
 
   /**
+   * Converts milliseconds {@code millis} to seconds. E.g 6010 is converted to 6.010.
+   * 
+   * @param millis value to convert
+   * @return seconds.
+   */
+  public static String toSeconds(long millis) {
+    return Long.toString(millis / 1000) + BeeConst.STRING_POINT
+        + BeeUtils.toLeadingZeroes((int) (millis % 1000), 3);
+  }
+  
+  /**
    * @param year the number to transform
    * @return a textual representation of {@code year}.
    */
@@ -741,7 +763,7 @@ public class TimeUtils {
   }
 
   private static String fieldName(int field) {
-    if (BeeUtils.isIndex(FIELD_NAME, field)) {
+    if (ArrayUtils.isIndex(FIELD_NAME, field)) {
       return FIELD_NAME[field];
     } else {
       return "Field " + field;
@@ -811,7 +833,7 @@ public class TimeUtils {
         break;
 
       default:
-        Assert.unsupported(BeeUtils.concat(1, "delta" + fieldName(field) + "not supported"));
+        Assert.unsupported(BeeUtils.joinWords("delta" + fieldName(field) + "not supported"));
     }
     return delta;
   }

@@ -3,7 +3,9 @@ package com.butent.bee.client.view.add;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
+import com.butent.bee.client.Callback;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.IsRow;
 
 import java.util.List;
 
@@ -29,16 +31,23 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> {
 
   private final List<BeeColumn> columns;
   private final List<String> values;
+  private final Callback<IsRow> callback;
 
-  public ReadyForInsertEvent(List<BeeColumn> columns, List<String> values) {
+  public ReadyForInsertEvent(List<BeeColumn> columns, List<String> values,
+      Callback<IsRow> callback) {
     super();
     this.columns = columns;
     this.values = values;
+    this.callback = callback;
   }
 
   @Override
   public Type<Handler> getAssociatedType() {
     return TYPE;
+  }
+  
+  public Callback<IsRow> getCallback() {
+    return callback;
   }
 
   public List<BeeColumn> getColumns() {

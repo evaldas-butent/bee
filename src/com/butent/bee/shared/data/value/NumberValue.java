@@ -118,6 +118,11 @@ public class NumberValue extends Value {
   }
 
   @Override
+  public boolean isEmpty() {
+    return isNull() || BeeUtils.isZero(value);
+  }
+  
+  @Override
   public boolean isNull() {
     return this == NULL_VALUE || getDouble() == null;
   }

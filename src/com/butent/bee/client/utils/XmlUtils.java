@@ -285,8 +285,8 @@ public class XmlUtils {
 
       for (int i = 0; i < c; i++) {
         attr = (Attr) attributes.item(i);
-        pfx = BeeUtils.concat(1, "Attr", BeeUtils.progress(i + 1, c));
-        PropertyUtils.addProperty(lst, BeeUtils.concat(1, pfx, attr.getName()), attr.getValue());
+        pfx = BeeUtils.joinWords("Attr", BeeUtils.progress(i + 1, c));
+        PropertyUtils.addProperty(lst, BeeUtils.joinWords(pfx, attr.getName()), attr.getValue());
         if (detailed) {
           PropertyUtils.appendChildrenToProperties(lst, pfx, getNodeInfo(attr));
         }
@@ -504,7 +504,7 @@ public class XmlUtils {
 
   public static List<Property> getTextInfo(Text txt) {
     Assert.notNull(txt);
-    return PropertyUtils.createProperties(BeeUtils.concat(1, "Length", txt.getLength()),
+    return PropertyUtils.createProperties(BeeUtils.joinWords("Length", txt.getLength()),
         txt.getData());
   }
 
@@ -541,11 +541,11 @@ public class XmlUtils {
         break;
       default:
         tpInf = PropertyUtils.createProperties(nd.toString(),
-            BeeUtils.concat(1, "unknown node type", tp));
+            BeeUtils.joinWords("unknown node type", tp));
     }
 
     if (!BeeUtils.isEmpty(tpInf)) {
-      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, root, getNodeName(tp)), tpInf);
+      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(root, getNodeName(tp)), tpInf);
     }
 
     if (nd.hasChildNodes()) {
@@ -554,7 +554,7 @@ public class XmlUtils {
       PropertyUtils.addExtended(lst, BeeUtils.notEmpty(root, getNodeName(tp)), "Children",
           BeeUtils.bracket(c));
       for (int i = 0; i < c; i++) {
-        lst.addAll(getTreeInfo(children.item(i), BeeUtils.concat(".", root, i), detailed));
+        lst.addAll(getTreeInfo(children.item(i), BeeUtils.join(".", root, i), detailed));
       }
     }
     return lst;

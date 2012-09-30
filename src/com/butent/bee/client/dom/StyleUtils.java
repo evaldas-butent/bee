@@ -24,6 +24,7 @@ import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
@@ -550,7 +551,7 @@ public class StyleUtils {
   }
 
   public static String buildClasses(String... styleNames) {
-    return BeeUtils.concat(CLASS_NAME_SEPARATOR, styleNames);
+    return ArrayUtils.join(String.valueOf(CLASS_NAME_SEPARATOR), styleNames);
   }
 
   public static SafeStyles buildFontFamily(String family) {

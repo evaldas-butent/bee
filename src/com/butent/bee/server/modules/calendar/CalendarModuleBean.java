@@ -73,6 +73,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.time.YearMonth;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -194,11 +195,11 @@ public class CalendarModuleBean implements BeeModule {
         long offset = BeeUtils.toInt(row.get(COL_HOURS)) * TimeUtils.MILLIS_PER_HOUR
             + BeeUtils.toInt(row.get(COL_MINUTES)) * TimeUtils.MILLIS_PER_MINUTE;
 
-        if (BeeUtils.isEmpty(offset)) {
+        if (offset == 0) {
           offset = BeeUtils.toInt(row.get("defHours")) * TimeUtils.MILLIS_PER_HOUR
               + BeeUtils.toInt(row.get("defMinutes")) * TimeUtils.MILLIS_PER_MINUTE;
         }
-        if (!BeeUtils.isEmpty(offset)) {
+        if (offset != 0) {
           start = BeeUtils.toLong(row.get(COL_START_DATE_TIME)) - offset;
         }
       }
@@ -274,7 +275,7 @@ public class CalendarModuleBean implements BeeModule {
       response = doReport(reqInfo);
 
     } else {
-      String msg = BeeUtils.concat(1, "Calendar service not recognized:", svc);
+      String msg = BeeUtils.joinWords("Calendar service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
     }
@@ -1131,7 +1132,7 @@ public class CalendarModuleBean implements BeeModule {
                     TimeUtils.toDateTimeOrNull(data.get(COL_START_DATE_TIME)).toString()));
 
             if (resp.hasErrors()) {
-              error = BeeUtils.concat("\n", resp.getErrors());
+              error = ArrayUtils.join("\n", resp.getErrors());
             }
           }
         } else {
@@ -1324,7 +1325,7 @@ public class CalendarModuleBean implements BeeModule {
     updateChildren(TBL_APPOINTMENT_ATTENDEES, COL_APPOINTMENT, appId,
         COL_ATTENDEE, oldAttendees, newAttendees);
 
-    if (!BeeUtils.allEmpty(oldReminders, newReminders)) {
+    if (!oldReminders.isEmpty() || !newReminders.isEmpty()) {
       updateChildren(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, appId,
           COL_REMINDER_TYPE, oldReminders, newReminders);
 

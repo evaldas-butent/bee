@@ -176,7 +176,7 @@ public class UiHelper {
     if (constant instanceof HasCaption) {
       return ((HasCaption) constant).getCaption();
     } else {
-      return BeeUtils.proper(constant.name(), BeeConst.CHAR_UNDER);
+      return BeeUtils.proper(constant);
     }
   }
 
@@ -188,7 +188,7 @@ public class UiHelper {
       if (constant instanceof HasCaption) {
         result.add(((HasCaption) constant).getCaption());
       } else {
-        result.add(BeeUtils.proper(constant.name(), BeeConst.CHAR_UNDER));
+        result.add(BeeUtils.proper(constant));
       }
     }
     return result;

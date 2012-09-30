@@ -636,7 +636,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
       String newValue = getEditor().getNormalizedValue();
       Boolean ok = validate(oldValue, newValue, getRowValue(), ValidationOrigin.CELL);
 
-      if (BeeUtils.isEmpty(ok)) {
+      if (!BeeUtils.isTrue(ok)) {
         if (ok == null) {
           closeEditor(keyCode, hasModifiers);
         }

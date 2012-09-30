@@ -86,7 +86,7 @@ public class CrmModuleBean implements BeeModule {
       response = doTaskEvent(BeeUtils.removePrefix(svc, CrmConstants.CRM_TASK_PREFIX), reqInfo);
 
     } else {
-      String msg = BeeUtils.concat(1, "CRM service not recognized:", svc);
+      String msg = BeeUtils.joinWords("CRM service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
     }
@@ -232,7 +232,7 @@ public class CrmModuleBean implements BeeModule {
       }
     }
     if (response == null) {
-      String msg = BeeUtils.concat(1, "Project service not recognized:", svc);
+      String msg = BeeUtils.joinWords("Project service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
 
@@ -330,7 +330,7 @@ public class CrmModuleBean implements BeeModule {
           }
           if (!response.hasErrors()) {
             response = registerTaskEvent(taskId, time, reqInfo, event,
-                BeeUtils.concat(" -> ", usr.getUserSign(oldUser), usr.getUserSign(newUser)));
+                BeeUtils.join(" -> ", usr.getUserSign(oldUser), usr.getUserSign(newUser)));
 
             if (!response.hasErrors()
                 && !BeeUtils.isEmpty(reqInfo.getParameter(CrmConstants.VAR_TASK_OBSERVE))) {
@@ -351,7 +351,7 @@ public class CrmModuleBean implements BeeModule {
 
           if (!response.hasErrors()) {
             response = registerTaskEvent(taskId, time, reqInfo, event,
-                BeeUtils.concat(" -> ",
+                BeeUtils.join(" -> ",
                     TimeUtils.toDateTimeOrNull(oldTerm), TimeUtils.toDateTimeOrNull(newTerm)));
           }
           break;
@@ -366,7 +366,7 @@ public class CrmModuleBean implements BeeModule {
             String colName = col.getId();
             String oldValue = rs.getShadowString(0, colName);
             String value = rs.getString(0, colName);
-            prm.put(CrmConstants.VAR_TASK_COMMENT, BeeUtils.concat(" -> ", oldValue, value));
+            prm.put(CrmConstants.VAR_TASK_COMMENT, BeeUtils.join(" -> ", oldValue, value));
 
             if (response == null || !response.hasErrors()) {
               response = registerTaskEvent(taskId, time, reqInfo, event, colName);
@@ -399,7 +399,7 @@ public class CrmModuleBean implements BeeModule {
         ctx.setRollbackOnly();
       }
     } else {
-      String msg = BeeUtils.concat(1, "Task service not recognized:", svc);
+      String msg = BeeUtils.joinWords("Task service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
     }
@@ -437,7 +437,7 @@ public class CrmModuleBean implements BeeModule {
               SqlUtils.equal(CrmConstants.TBL_PROJECT_USERS, CrmConstants.COL_PROJECT, projectId),
               SqlUtils.equal(CrmConstants.TBL_PROJECT_USERS, CrmConstants.COL_USER, userId))));
     }
-    if (newVisit || BeeUtils.isEmpty(response.getResponse(-1, logger))) {
+    if (newVisit || response.getResponse(-1, logger) == 0) {
       response = qs.insertDataWithResponse(new SqlInsert(CrmConstants.TBL_PROJECT_USERS)
           .addConstant(CrmConstants.COL_PROJECT, projectId)
           .addConstant(CrmConstants.COL_USER, userId)
@@ -493,7 +493,7 @@ public class CrmModuleBean implements BeeModule {
                   SqlUtils.equal(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_TASK, taskId),
                   SqlUtils.equal(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_USER, userId))));
     }
-    if (newVisit || BeeUtils.isEmpty(response.getResponse(-1, logger))) {
+    if (newVisit || response.getResponse(-1, logger) == 0) {
       response = qs.insertDataWithResponse(new SqlInsert(CrmConstants.TBL_TASK_USERS)
           .addConstant(CrmConstants.COL_TASK, taskId)
           .addConstant(CrmConstants.COL_USER, userId)

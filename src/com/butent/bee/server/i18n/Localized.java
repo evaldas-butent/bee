@@ -145,7 +145,7 @@ public class Localized {
     }
 
     Locale z = normalize(locale, availableConstants);
-    Assert.notNull(z, BeeUtils.concat(1, LocalizableType.CONSTANTS, transform(locale),
+    Assert.notNull(z, BeeUtils.joinWords(LocalizableType.CONSTANTS, transform(locale),
         "not available"));
 
     LocalizableConstants constants = localizedConstants.get(z);
@@ -165,7 +165,7 @@ public class Localized {
     }
 
     Locale z = normalize(locale, availableMessages);
-    Assert.notNull(z, BeeUtils.concat(1, LocalizableType.MESSAGES, transform(locale),
+    Assert.notNull(z, BeeUtils.joinWords(LocalizableType.MESSAGES, transform(locale),
         "not available"));
 
     LocalizableMessages messages = localizedMessages.get(z);

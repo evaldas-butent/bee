@@ -224,7 +224,7 @@ public class ParamHolderBean {
   private BeeParameter getModuleParameter(String module, String name) {
     Assert.notEmpty(name);
     Assert.state(hasModuleParameter(module, name),
-        "Unknown parameter: " + BeeUtils.concat(".", module, name));
+        "Unknown parameter: " + BeeUtils.join(".", module, name));
     Map<String, BeeParameter> params = getParameters(module);
 
     return params.get(BeeUtils.normalize(name));

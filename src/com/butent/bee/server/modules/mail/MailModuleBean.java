@@ -62,7 +62,7 @@ public class MailModuleBean implements BeeModule {
       response.log(logger);
 
     } else {
-      String msg = BeeUtils.concat(1, "Mail service not recognized:", svc);
+      String msg = BeeUtils.joinWords("Mail service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
     }

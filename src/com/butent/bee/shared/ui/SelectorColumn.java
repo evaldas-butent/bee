@@ -6,6 +6,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -111,7 +112,7 @@ public class SelectorColumn implements BeeSerializable, HasInfo {
           break;
         case RENDER_COLUMNS:
           String[] cols = Codec.beeDeserializeCollection(value);
-          if (BeeUtils.isEmpty(cols)) {
+          if (ArrayUtils.isEmpty(cols)) {
             setRenderColumns(null);
           } else {
             setRenderColumns(Lists.newArrayList(cols));

@@ -98,7 +98,7 @@ public class SystemBean {
 
     public String getFileName(String objName) {
       Assert.notEmpty(objName);
-      return BeeUtils.concat(".", objName, name().toLowerCase(), XmlUtils.DEFAULT_XML_EXTENSION);
+      return BeeUtils.join(".", objName, name().toLowerCase(), XmlUtils.DEFAULT_XML_EXTENSION);
     }
 
     public String getPath() {
@@ -151,7 +151,7 @@ public class SystemBean {
     List<Property> diff = Lists.newArrayList();
     Collection<String> tables;
 
-    if (BeeUtils.isEmpty(tbls)) {
+    if (ArrayUtils.isEmpty(tbls)) {
       initTables();
       tables = getTableNames();
     } else {
@@ -215,13 +215,13 @@ public class SystemBean {
           }
         }
       }
-      if (BeeUtils.isEmpty(union)) {
+      if (union == null) {
         union = ss;
       } else {
         union.addUnion(ss);
       }
     }
-    if (BeeUtils.isEmpty(union)) {
+    if (union == null) {
       return ResponseObject.error("No tables support state: ", stateName);
     }
     return ResponseObject.response(qs.getViewData(union, null));
@@ -332,7 +332,7 @@ public class SystemBean {
     Assert.state(isView(viewName), "Not a view: " + viewName);
     BeeView view = viewCache.get(BeeUtils.normalize(viewName));
 
-    if (BeeUtils.isEmpty(view)) {
+    if (view == null) {
       view = getDefaultView(viewName);
       register(view, viewCache);
     }
@@ -420,9 +420,10 @@ public class SystemBean {
 
     for (BeeTable table : getTables()) {
       for (BeeForeignKey fKey : table.getForeignKeys()) {
-        Assert.state(isTable(fKey.getRefTable()), BeeUtils.concat(1,
-            "Unknown field", BeeUtils.bracket(table.getName() + "." + fKey.getKeyField()),
-            "relation:", BeeUtils.bracket(fKey.getRefTable())));
+        Assert.state(isTable(fKey.getRefTable()),
+            BeeUtils.joinWords(
+                "Unknown field", BeeUtils.bracket(table.getName() + "." + fKey.getKeyField()),
+                "relation:", BeeUtils.bracket(fKey.getRefTable())));
       }
     }
     initDatabase();
@@ -524,7 +525,7 @@ public class SystemBean {
     long userId = usr.getCurrentUserId();
     long[] userRoles = usr.getUserRoles(userId);
 
-    if (BeeUtils.isEmpty(userRoles)) {
+    if (userRoles == null || userRoles.length == 0) {
       return query.setWhere(SqlUtils.sqlFalse());
     }
     long[] bits = Longs.concat(new long[] {-userId}, userRoles);
@@ -549,8 +550,8 @@ public class SystemBean {
     if (!qs.dbSchemaExists(dbName, dbAuditSchema)) {
       makeStructureChanges(SqlUtils.createSchema(dbAuditSchema));
     }
-    String auditName = BeeUtils.concat("_", table.getName(), AUDIT_PREFIX);
-    String auditPath = BeeUtils.concat(".", dbAuditSchema, auditName);
+    String auditName = BeeUtils.join("_", table.getName(), AUDIT_PREFIX);
+    String auditPath = BeeUtils.join(".", dbAuditSchema, auditName);
 
     if (!qs.dbTableExists(dbName, dbAuditSchema, auditName)) {
       makeStructureChanges(
@@ -616,7 +617,7 @@ public class SystemBean {
       if (field.isExtended()) {
         SqlCreate sc = table.createExtTable(newTables.get(tblName), field);
 
-        if (!BeeUtils.isEmpty(sc)) {
+        if (sc != null) {
           newTables.put(tblName, sc);
         }
       } else {
@@ -628,7 +629,7 @@ public class SystemBean {
         tblName = table.getTranslationTable(field);
         SqlCreate sc = table.createTranslationTable(newTables.get(tblName), field);
 
-        if (!BeeUtils.isEmpty(sc)) {
+        if (sc != null) {
           newTables.put(tblName, sc);
         }
       }
@@ -637,7 +638,7 @@ public class SystemBean {
       tblName = table.getStateTable(state);
       SqlCreate sc = table.createStateTable(newTables.get(tblName), state);
 
-      if (!BeeUtils.isEmpty(sc)) {
+      if (sc != null) {
         newTables.put(tblName, sc);
       }
     }
@@ -667,7 +668,7 @@ public class SystemBean {
             if (ArrayUtils.contains(keys, key.getName())) {
               c++;
             } else {
-              String msg = BeeUtils.concat(1, "INDEX", key.getName(),
+              String msg = BeeUtils.joinWords("INDEX", key.getName(),
                   BeeUtils.parenthesize(ArrayUtils.transform(key.getKeyFields())), "NOT IN",
                   BeeUtils.parenthesize(ArrayUtils.transform(keys)));
               logger.warning(msg);
@@ -706,8 +707,8 @@ public class SystemBean {
             if (ArrayUtils.contains(fKeys, fKey.getName())) {
               c++;
             } else {
-              String msg = BeeUtils.concat(1, "FOREIGN KEY", fKey.getName(),
-                  BeeUtils.parenthesize(BeeUtils.concat(" ON DELETE ",
+              String msg = BeeUtils.joinWords("FOREIGN KEY", fKey.getName(),
+                  BeeUtils.parenthesize(BeeUtils.join(" ON DELETE ",
                       fKey.getKeyField() + "->" + fKey.getRefTable(), fKey.getCascade())),
                   "NOT IN", BeeUtils.parenthesize(ArrayUtils.transform(fKeys)));
               logger.warning(msg);
@@ -743,8 +744,8 @@ public class SystemBean {
             if (triggers.contains(trigger.getName())) {
               c++;
             } else {
-              String msg = BeeUtils.concat(1, "TRIGGER", trigger.getName(), "NOT IN",
-                  BeeUtils.parenthesize(BeeUtils.transformCollection(triggers)));
+              String msg = BeeUtils.joinWords("TRIGGER", trigger.getName(), "NOT IN",
+                  BeeUtils.parenthesize(BeeUtils.transform(triggers)));
               logger.warning(msg);
 
               if (diff != null) {
@@ -769,11 +770,11 @@ public class SystemBean {
       }
       if (!update && table.isAuditable() && isTable(tblName)) {
         logger.info("Checking audit tables...");
-        String auditName = BeeUtils.concat("_", tblName, AUDIT_PREFIX);
+        String auditName = BeeUtils.join("_", tblName, AUDIT_PREFIX);
 
         if (!qs.dbTableExists(dbName, dbAuditSchema, auditName)) {
-          String msg = BeeUtils.concat(1, "AUDIT TABLE",
-              BeeUtils.concat(".", dbAuditSchema, auditName), "DOES NOT EXIST");
+          String msg = BeeUtils.joinWords("AUDIT TABLE",
+              BeeUtils.join(".", dbAuditSchema, auditName), "DOES NOT EXIST");
           logger.warning(msg);
 
           if (diff != null) {
@@ -812,7 +813,7 @@ public class SystemBean {
                 if (!BeeUtils.same(info, SqlConstants.TBL_NAME)
                     && !Objects.equal(oldFieldInfo.get(info), newFieldInfo.get(info))) {
 
-                  String msg = BeeUtils.concat(1, "FIELD", fldName + ":",
+                  String msg = BeeUtils.joinWords("FIELD", fldName + ":",
                       info, oldFieldInfo.get(info), "!=", newFieldInfo.get(info));
                   logger.warning(msg);
 
@@ -828,7 +829,7 @@ public class SystemBean {
                 break;
               }
             } else {
-              String msg = BeeUtils.concat(1, "FIELD", fldName, "DOES NOT EXIST");
+              String msg = BeeUtils.joinWords("FIELD", fldName, "DOES NOT EXIST");
               logger.warning(msg);
 
               if (diff != null) {
@@ -918,7 +919,7 @@ public class SystemBean {
   private void initDatabase() {
     dbName = qs.dbName();
     dbSchema = qs.dbSchema();
-    dbAuditSchema = BeeUtils.concat("_", dbSchema, AUDIT_PREFIX);
+    dbAuditSchema = BeeUtils.join("_", dbSchema, AUDIT_PREFIX);
     String[] dbTables = qs.dbTables(dbName, dbSchema, null).getColumn(SqlConstants.TBL_NAME);
 
     for (BeeTable table : getTables()) {
@@ -973,7 +974,7 @@ public class SystemBean {
         for (String tblName : fields.keySet()) {
           table.addTrigger(tblName, SqlTriggerType.AUDIT,
               ImmutableMap.of("auditSchema", dbAuditSchema,
-                  "auditTable", BeeUtils.concat("_", table.getName(), AUDIT_PREFIX),
+                  "auditTable", BeeUtils.join("_", table.getName(), AUDIT_PREFIX),
                   "idName", table.getIdName(),
                   "fields", fields.get(tblName)),
               SqlTriggerTiming.AFTER,
@@ -985,7 +986,7 @@ public class SystemBean {
   }
 
   private void initObjects(SysObject obj) {
-    Assert.notEmpty(obj);
+    Assert.notNull(obj);
 
     switch (obj) {
       case TABLE:
@@ -1039,7 +1040,7 @@ public class SystemBean {
         }
       }
     }
-    if (BeeUtils.isEmpty(cnt)) {
+    if (cnt <= 0) {
       logger.error("No", obj.name(), "descriptions found");
     } else {
       logger.info("Loaded", cnt, obj.name(), "descriptions");
@@ -1290,7 +1291,7 @@ public class SystemBean {
   }
 
   private <T extends BeeObject> void register(T object, Map<String, T> cache) {
-    if (!BeeUtils.isEmpty(object)) {
+    if (object != null) {
       String name = NameUtils.getClassName(object.getClass());
       String objectName = object.getName();
       String moduleName = BeeUtils.parenthesize(object.getModuleName());

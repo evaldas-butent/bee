@@ -807,7 +807,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       return;
     }
 
-    fireEvent(new ReadyForInsertEvent(columns, values));
+    fireEvent(new ReadyForInsertEvent(columns, values, null));
   }
 
   @Override

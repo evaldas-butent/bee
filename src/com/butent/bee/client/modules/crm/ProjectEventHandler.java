@@ -43,7 +43,6 @@ import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.ListSequence;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -340,7 +339,7 @@ public class ProjectEventHandler {
     public void onSelection(SelectionEvent<IsRow> event) {
       String text = "";
 
-      if (BeeUtils.allNotEmpty(event.getSelectedItem(), stageTree, stageTree.getDataColumns())) {
+      if (BeeUtils.allNotNull(event.getSelectedItem(), stageTree, stageTree.getDataColumns())) {
         text = event.getSelectedItem()
             .getString(DataUtils.getColumnIndex("Description", stageTree.getDataColumns()));
       }
@@ -390,7 +389,7 @@ public class ProjectEventHandler {
               new SelectionCallback() {
                 @Override
                 public void onSelection(List<IsRow> rows) {
-                  if (!BeeUtils.isEmpty(projectId)) {
+                  if (DataUtils.isId(projectId)) {
                     List<Long> usrList = Lists.newArrayList();
 
                     for (IsRow row : rows) {
@@ -399,7 +398,7 @@ public class ProjectEventHandler {
                     doRequest(CrmConstants.SVC_ADD_OBSERVERS, getUsers(usrList));
 
                   } else {
-                    updateUsers(new ListSequence<IsRow>(rows), result.getColumns());
+                    updateUsers(rows, result.getColumns());
                   }
                 }
               });
@@ -458,8 +457,8 @@ public class ProjectEventHandler {
         }
       }
       if (!indexes.isEmpty()) {
-        if (!BeeUtils.isEmpty(projectId)) {
-          Global.confirm(BeeUtils.concat(1, "Pašalinti", indexes.size(), "stebėtojus?"),
+        if (DataUtils.isId(projectId)) {
+          Global.confirm(BeeUtils.joinWords("Pašalinti", indexes.size(), "stebėtojus?"),
               new Command() {
                 @Override
                 public void execute() {
@@ -487,7 +486,7 @@ public class ProjectEventHandler {
       users.clear();
       widget.clear();
 
-      if (!BeeUtils.isEmpty(projectId)) {
+      if (DataUtils.isId(projectId)) {
         Filter flt = ComparisonFilter.isEqual(CrmConstants.COL_PROJECT, new LongValue(projectId));
 
         Queries.getRowSet(CrmConstants.TBL_PROJECT_USERS, null, flt, null, new RowSetCallback() {
@@ -496,7 +495,7 @@ public class ProjectEventHandler {
             if (result.isEmpty()) {
               return;
             }
-            updateUsers(result.getRows(), result.getColumns());
+            updateUsers(result.getRows().getList(), result.getColumns());
           }
         });
       }
@@ -506,14 +505,14 @@ public class ProjectEventHandler {
       this.widget = widget;
     }
 
-    private void updateUsers(ListSequence<? extends IsRow> rows, List<BeeColumn> columns) {
+    private void updateUsers(List<? extends IsRow> rows, List<BeeColumn> columns) {
       int firstNameIndex = DataUtils.getColumnIndex(CrmConstants.COL_FIRST_NAME, columns);
       int lastNameIndex = DataUtils.getColumnIndex(CrmConstants.COL_LAST_NAME, columns);
       int userIndex = DataUtils.getColumnIndex(CrmConstants.COL_USER, columns);
 
       if (!BeeUtils.isEmpty(rows)) {
         for (IsRow row : rows) {
-          String usr = BeeUtils.concat(1, row.getString(firstNameIndex),
+          String usr = BeeUtils.joinWords(row.getString(firstNameIndex),
               row.getString(lastNameIndex));
 
           if (userIndex < 0) {
@@ -521,7 +520,7 @@ public class ProjectEventHandler {
           } else {
             users.add(row.getLong(userIndex));
             int lastAccessIndex = DataUtils.getColumnIndex(CrmConstants.COL_LAST_ACCESS, columns);
-            usr = BeeUtils.concat(1, usr, BeeUtils.parenthesize(row.getDateTime(lastAccessIndex)));
+            usr = BeeUtils.joinWords(usr, BeeUtils.parenthesize(row.getDateTime(lastAccessIndex)));
           }
           widget.addItem(usr);
         }
@@ -650,7 +649,7 @@ public class ProjectEventHandler {
 
   private static void doEvent(final ProjectEvent ev, final FormView form) {
     IsRow row = form.getActiveRow();
-    Assert.notEmpty(row.getId());
+    Assert.state(DataUtils.isId(row.getId()));
 
     if (!availableEvent(ev, row.getInteger(form.getDataIndex(CrmConstants.COL_EVENT)), form)) {
       Global.showError("Veiksmas neleidžiamas");

@@ -6,6 +6,7 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -289,7 +290,7 @@ public class JdbcUtils {
 
     try {
       int z = rs.getHoldability();
-      info = BeeUtils.concat(1, z, holdabilityAsString(z));
+      info = BeeUtils.joinWords(z, holdabilityAsString(z));
     } catch (SQLFeatureNotSupportedException ex) {
       info = JdbcConst.FEATURE_NOT_SUPPORTED;
     } catch (SQLException ex) {
@@ -361,7 +362,7 @@ public class JdbcUtils {
     }
 
     String[] cols = getColNames(rs);
-    if (BeeUtils.isEmpty(cols)) {
+    if (ArrayUtils.isEmpty(cols)) {
       return null;
     }
 
@@ -409,7 +410,7 @@ public class JdbcUtils {
 
     try {
       int z = rs.getType();
-      info = BeeUtils.concat(1, z, rsTypeAsString(z));
+      info = BeeUtils.joinWords(z, rsTypeAsString(z));
     } catch (SQLFeatureNotSupportedException ex) {
       info = JdbcConst.FEATURE_NOT_SUPPORTED;
     } catch (SQLException ex) {
@@ -725,7 +726,7 @@ public class JdbcUtils {
 
   public static String transform(SQLException ex) {
     Assert.notNull(ex);
-    return BeeUtils.concat(1, ex.getSQLState(), ex.getErrorCode(), ex.toString());
+    return BeeUtils.joinWords(ex.getSQLState(), ex.getErrorCode(), ex.toString());
   }
 
   public static List<String> unchain(SQLException x) {

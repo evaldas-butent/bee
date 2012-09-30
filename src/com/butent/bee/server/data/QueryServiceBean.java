@@ -35,6 +35,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
@@ -71,7 +72,7 @@ public class QueryServiceBean {
       String error = null;
 
       Map<String, String> params = prm.getMap(CommonsConstants.COMMONS_MODULE,
-          BeeUtils.concat(0, CommonsConstants.PRM_SQL_MESSAGES,
+          BeeUtils.join(BeeConst.STRING_EMPTY, CommonsConstants.PRM_SQL_MESSAGES,
               SqlBuilderFactory.getBuilder().getEngine()));
 
       if (!BeeUtils.isEmpty(params)) {
@@ -175,7 +176,7 @@ public class QueryServiceBean {
 
   public boolean dbSchemaExists(String dbName, String schema) {
     Assert.notEmpty(schema);
-    return !BeeUtils.isEmpty(dbSchemas(dbName, schema));
+    return !ArrayUtils.isEmpty(dbSchemas(dbName, schema));
   }
 
   public String[] dbSchemas(String dbName, String schema) {
@@ -380,7 +381,7 @@ public class QueryServiceBean {
     Assert.notNull(si);
 
     String target = si.getTarget();
-    boolean requiresId = BeeUtils.isEmpty(si.getDataSource()) && sys.isTable(target);
+    boolean requiresId = (si.getDataSource() == null) && sys.isTable(target);
     long id = 0;
 
     Assert.state(requiresId || !si.isEmpty());
@@ -416,7 +417,7 @@ public class QueryServiceBean {
     SimpleRowSet res;
     SqlSelect ss = query.copyOf().resetOrder();
 
-    if (BeeUtils.allEmpty(ss.getGroupBy(), ss.getUnion())) {
+    if (BeeUtils.isEmpty(ss.getGroupBy()) && BeeUtils.isEmpty(ss.getUnion())) {
       res = getData(ss.resetFields().addCount("cnt"));
     } else {
       res = getData(new SqlSelect().addCount("cnt").addFrom(ss, "als"));
@@ -521,7 +522,7 @@ public class QueryServiceBean {
 
   private <T> T processSql(String sql, SqlHandler<T> callback) {
     Assert.notEmpty(sql);
-    Assert.notEmpty(callback);
+    Assert.notNull(callback);
 
     Connection con = null;
     Statement stmt = null;
@@ -569,7 +570,7 @@ public class QueryServiceBean {
     int versionIndex = -1;
 
     for (BeeColumn col : rsCols) {
-      if (!BeeUtils.isEmpty(view)) {
+      if (view != null) {
         String colName = col.getId();
 
         if (view.hasColumn(colName)) {

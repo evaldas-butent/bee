@@ -116,7 +116,7 @@ public class RangeRenderer extends AbstractCellRenderer implements HasItems {
       low = range.hasLowerBound() ? range.lowerEndpoint().toString() : BeeConst.STRING_EMPTY;
       upp = range.hasUpperBound() ? range.upperEndpoint().toString() : BeeConst.STRING_EMPTY;
       
-      result.add(BeeUtils.concat(separator, low + separator + upp, entry.getValue()));
+      result.add(BeeUtils.join(separator, low + separator + upp, entry.getValue()));
     }
     return result;
   }

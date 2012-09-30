@@ -559,6 +559,6 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
         getRowValue(), getDataColumn(), getDataIndex(), getDataType(), isNullable(),
         getMinValue(), getMaxValue(), getCaption(), getForm());
 
-    return !BeeUtils.isEmpty(ValidationHelper.validateCell(cellValidation, this, origin));
+    return BeeUtils.isTrue(ValidationHelper.validateCell(cellValidation, this, origin));
   }
 }

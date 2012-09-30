@@ -1,11 +1,9 @@
 package com.butent.bee.shared.testutils;
 
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.exceptions.BeeRuntimeException;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -26,33 +24,6 @@ public class TestService {
 
   @Test
   public final void testIsDataService() {
-    try {
-      Service.isDataService("");
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      Service.isDataService("\t \r \r");
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      Service.isDataService(null);
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
     assertTrue(Service.isDataService("rpc_data_"));
     assertTrue(Service.isDataService("rpc_data_complex"));
     assertTrue(Service.isDataService("rpc_data_win"));
@@ -66,33 +37,6 @@ public class TestService {
 
   @Test
   public final void testIsDbMetaService() {
-    try {
-      Service.isDbMetaService("");
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      Service.isDbMetaService("\t \r \r");
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      Service.isDbMetaService(null);
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
     assertTrue(Service.isDbMetaService("rpc_db_meta_"));
     assertTrue(Service.isDbMetaService("rpc_db_meta__complex"));
     assertTrue(Service.isDbMetaService("rpc_db_meta_win"));
@@ -106,33 +50,6 @@ public class TestService {
 
   @Test
   public final void testIsDbService() {
-    try {
-      Service.isDbService("");
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      Service.isDbService("\t \r \r");
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      Service.isDbService(null);
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
     assertTrue(Service.isDbService("rpc_db_"));
     assertTrue(Service.isDbService("rpc_db__complex"));
     assertTrue(Service.isDbService("rpc_db_win"));
@@ -169,33 +86,6 @@ public class TestService {
 
   @Test
   public final void testIsRpcService() {
-    try {
-      Service.isRpcService("");
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      Service.isRpcService("\t \r \r");
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      Service.isRpcService(null);
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
     assertTrue(Service.isRpcService("rpc_db_"));
     assertTrue(Service.isRpcService("rpc_db__complex"));
     assertTrue(Service.isRpcService("rpc_db_win"));
@@ -210,33 +100,6 @@ public class TestService {
 
   @Test
   public final void testIsSysService() {
-    try {
-      Service.isSysService("");
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      Service.isSysService("\t \r \r");
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      Service.isSysService(null);
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
     assertTrue(Service.isSysService("rpc_sys_"));
     assertTrue(Service.isSysService("rpc_sys__complex"));
     assertTrue(Service.isSysService("rpc_sys_win"));
@@ -251,33 +114,6 @@ public class TestService {
 
   @Test
   public final void testIsUiService() {
-    try {
-      Service.isUiService("");
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      Service.isUiService("\t \r \r");
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
-    try {
-      Service.isUiService(null);
-      fail("exception not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntimeException: " + e.getMessage());
-    }
-
     assertTrue(Service.isUiService("ui_"));
     assertTrue(Service.isUiService("ui__complex"));
     assertTrue(Service.isUiService("ui_win"));
@@ -289,5 +125,4 @@ public class TestService {
     assertFalse(Service.isUiService("aui_"));
     assertFalse(Service.isUiService("a ui_"));
   }
-
 }

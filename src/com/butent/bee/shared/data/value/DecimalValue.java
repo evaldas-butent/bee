@@ -116,6 +116,11 @@ public class DecimalValue extends Value {
   }
 
   @Override
+  public boolean isEmpty() {
+    return isNull() || BigDecimal.ZERO.equals(value); 
+  }
+  
+  @Override
   public boolean isNull() {
     return this == NULL_VALUE || getDecimal() == null;
   }

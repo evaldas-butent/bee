@@ -239,14 +239,14 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
   }
 
   TreeItem getTree(String prefix) {
-    TreeItem root = new TreeItem(BeeUtils.concat(1, prefix, getId()));
+    TreeItem root = new TreeItem(BeeUtils.joinWords(prefix, getId()));
 
     for (Widget child : getChildren()) {
       if (isSplitter(child)) {
         continue;
       }
 
-      String s = BeeUtils.concat(1, getWidgetDirection(child).brief(),
+      String s = BeeUtils.joinWords(getWidgetDirection(child).brief(),
           getWidgetWidth(child), getWidgetHeight(child));
 
       if (child instanceof TilePanel) {
@@ -255,7 +255,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
         }
         root.addItem(((TilePanel) child).getTree(s));
       } else {
-        root.addItem(BeeUtils.concat(1, s, NameUtils.getName(child), DomUtils.getId(child)));
+        root.addItem(BeeUtils.joinWords(s, NameUtils.getName(child), DomUtils.getId(child)));
       }
     }
     return root;

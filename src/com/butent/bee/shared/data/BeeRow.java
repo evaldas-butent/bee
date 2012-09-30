@@ -74,7 +74,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
         case VALUES:
           String[] vals = Codec.beeDeserializeCollection(value);
 
-          if (!BeeUtils.isEmpty(vals)) {
+          if (!ArrayUtils.isEmpty(vals)) {
             setValues(new StringArray(vals));
           }
           break;
@@ -83,7 +83,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
           if (!BeeUtils.isEmpty(value)) {
             String[] shArr = Codec.beeDeserializeCollection(value);
 
-            if (!BeeUtils.isEmpty(shArr)) {
+            if (!ArrayUtils.isEmpty(shArr)) {
               Map<Integer, String> shMap = new HashMap<Integer, String>(shArr.length / 2);
 
               for (int j = 0; j < shArr.length; j += 2) {

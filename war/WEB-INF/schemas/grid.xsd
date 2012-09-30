@@ -63,7 +63,6 @@
     <xs:attribute name="editSave" type="xs:boolean" default="true" />
     <xs:attribute name="editShowId" type="xs:boolean" />
     <xs:attribute name="editInPlace" type="xs:normalizedString" />
-    <xs:attribute name="editNewRow" type="xs:boolean" />
     <xs:attribute name="editPopup" type="xs:boolean" />
     <xs:attribute name="enabledActions" type="ui:viewActions" />
     <xs:attribute name="disabledActions" type="ui:viewActions" />

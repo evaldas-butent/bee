@@ -41,7 +41,7 @@ public class CellValidationBus implements HasCellValidationHandlers {
       for (CellValidateEvent.Handler handler : handlers) {
         ok = handler.validateCell(event);
 
-        if (!BeeUtils.isEmpty(ok)) {
+        if (BeeUtils.isTrue(ok)) {
           if (event.isCanceled()) {
             break;
           }

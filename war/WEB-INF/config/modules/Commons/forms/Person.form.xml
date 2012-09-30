@@ -8,9 +8,9 @@
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="10">
       <row>
-        <Label html="Vardas" />
+        <Label html="Vardas" class="bee-required" />
         <InputText style="width: 200px" source="FirstName" />
-        <Label html="Pavardė" class="bee-required" />
+        <Label html="Pavardė" />
         <InputText style="width: 200px" source="LastName" />
         <Label html="Gimimo data" style="width: 100px" horizontalAlignment="right" />
         <InputDate source="DateOfBirth" style="width: 80px" />

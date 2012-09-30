@@ -34,7 +34,7 @@ public class Tablet extends Mobile {
 
     @Override
     public void execute() {
-      String opt = BeeUtils.concat(1, "t" + type,
+      String opt = BeeUtils.joinWords("t" + type,
         "c" + minCount.getValue() + "-" + maxCount.getValue(),
         "r" + minRadius.getValue() + "-" + maxRadius.getValue(),
         "s" + colorStep.getValue(),

@@ -383,7 +383,7 @@ public class DomUtils {
     }
 
     for (int i = 0; i < MAX_GENERATIONS; i++) {
-      lst.add(BeeUtils.concat(1, transformClass(p), p.getElement().getId(), p.getStyleName()));
+      lst.add(BeeUtils.joinWords(transformClass(p), p.getElement().getId(), p.getStyleName()));
 
       p = p.getParent();
       if (p == null) {
@@ -761,16 +761,16 @@ public class DomUtils {
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     if (obj instanceof Element) {
-      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Element"),
+      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "Element"),
           getElementInfo((Element) obj));
     }
     if (obj instanceof Node) {
-      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Node"),
+      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "Node"),
           getNodeInfo((Node) obj));
     }
 
     if (obj instanceof Widget) {
-      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Widget"),
+      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "Widget"),
           getWidgetInfo((Widget) obj));
     }
     if (obj instanceof UIObject) {
@@ -782,7 +782,7 @@ public class DomUtils {
       String p;
 
       for (Widget child : (HasWidgets) obj) {
-        p = BeeUtils.concat(BeeConst.DEFAULT_PROPERTY_SEPARATOR, prefix, i++);
+        p = BeeUtils.join(BeeConst.DEFAULT_PROPERTY_SEPARATOR, prefix, i++);
         PropertyUtils.appendExtended(lst, getInfo(child, p, depth - 1));
       }
     }
@@ -1131,22 +1131,22 @@ public class DomUtils {
     Assert.notNull(obj);
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
-    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "UI Object"),
+    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "UI Object"),
         getUIObjectInfo(obj));
 
     Element el = obj.getElement();
-    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Element"),
+    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "Element"),
         getElementInfo(el));
 
     Style st = el.getStyle();
     if (st != null) {
-      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Style"),
+      PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "Style"),
           StyleUtils.getStyleInfo(st));
     }
-    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Computed"),
+    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "Computed"),
         new ComputedStyles(el).getInfo());
 
-    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Node"),
+    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "Node"),
         getNodeInfo(el));
 
     return lst;
@@ -1224,7 +1224,7 @@ public class DomUtils {
     Assert.notNull(w);
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
-    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.concat(1, prefix, "Widget"),
+    PropertyUtils.appendChildrenToExtended(lst, BeeUtils.joinWords(prefix, "Widget"),
         getWidgetInfo(w));
     PropertyUtils.appendExtended(lst, getUIObjectExtendedInfo(w, prefix));
 
@@ -1861,7 +1861,7 @@ public class DomUtils {
     if (el == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return BeeUtils.concat(1, el.getTagName(), el.getId(), el.getClassName());
+      return BeeUtils.joinWords(el.getTagName(), el.getId(), el.getClassName());
     }
   }
 
@@ -1869,7 +1869,7 @@ public class DomUtils {
     if (obj == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return BeeUtils.concat(1, NameUtils.getName(obj), obj.getElement().getId(),
+      return BeeUtils.joinWords(NameUtils.getName(obj), obj.getElement().getId(),
           obj.getStyleName());
     }
   }
@@ -1878,7 +1878,7 @@ public class DomUtils {
     if (w == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return BeeUtils.concat(1, NameUtils.getName(w), w.getElement().getId(), w.getStyleName());
+      return BeeUtils.joinWords(NameUtils.getName(w), w.getElement().getId(), w.getStyleName());
     }
   }
   
@@ -1949,7 +1949,7 @@ public class DomUtils {
     if (nd == null) {
       return BeeConst.STRING_EMPTY;
     } else {
-      return BeeUtils.concat(1, nd.getNodeName(), nd.getNodeValue());
+      return BeeUtils.joinWords(nd.getNodeName(), nd.getNodeValue());
     }
   }
 

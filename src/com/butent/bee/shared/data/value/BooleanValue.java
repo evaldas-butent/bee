@@ -148,6 +148,11 @@ public class BooleanValue extends Value {
   }
 
   @Override
+  public boolean isEmpty() {
+    return !BeeUtils.isTrue(value); 
+  }
+  
+  @Override
   public boolean isNull() {
     return this == NULL_VALUE || getBoolean() == null;
   }

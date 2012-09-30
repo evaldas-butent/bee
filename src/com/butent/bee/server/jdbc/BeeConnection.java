@@ -42,11 +42,11 @@ public class BeeConnection {
 
       z = conn.getHoldability();
       PropertyUtils.addProperty(lst, "Holdability",
-          BeeUtils.concat(1, z, JdbcUtils.holdabilityAsString(z)));
+          BeeUtils.joinWords(z, JdbcUtils.holdabilityAsString(z)));
 
       z = conn.getTransactionIsolation();
       PropertyUtils.addProperty(lst, "Transaction Isolation",
-          BeeUtils.concat(1, z, JdbcUtils.transactionIsolationAsString(z)));
+          BeeUtils.joinWords(z, JdbcUtils.transactionIsolationAsString(z)));
 
       PropertyUtils.addProperty(lst, "Read Only", conn.isReadOnly());
 

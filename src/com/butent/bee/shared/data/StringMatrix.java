@@ -136,11 +136,6 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
   }
 
   @Override
-  protected void assertRowIndex(int rowIndex) {
-    Assert.isIndex(rows, rowIndex);
-  }
-
-  @Override
   protected void insertRow(int rowIndex, StringRow row) {
     Assert.betweenInclusive(rowIndex, 0, getNumberOfRows());
     getRows().insert(rowIndex, row);

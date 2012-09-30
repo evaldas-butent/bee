@@ -4,7 +4,7 @@
   xmlns:w="http://www.butent.com/widget"
   
   name="UserProjects" viewName="UserProjects" caption="Projektai"
-  editForm="Project" editMode="true" newRowForm="NewProject" editNewRow="true"
+  editForm="Project" editMode="true" newRowForm="NewProject"
   cacheData="false"
   >
   <north size="40">

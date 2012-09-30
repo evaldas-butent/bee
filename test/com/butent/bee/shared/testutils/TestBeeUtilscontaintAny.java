@@ -21,7 +21,6 @@ import java.util.Set;
 /**
  * Tests {@link com.butent.bee.shared.utils.BeeUtils#containsAny(Collection, Collection)}.
  */
-@SuppressWarnings("unused")
 @RunWith(value = Parameterized.class)
 public class TestBeeUtilscontaintAny extends TestCase {
 
@@ -31,9 +30,6 @@ public class TestBeeUtilscontaintAny extends TestCase {
   private static Set<BeeType> testc3 = Sets.newHashSet();
   private static Set<BeeType> testc4 = Sets.newHashSet();
 
-  private static Set<BeeType> testc5 = Sets.newHashSet();
-  private static Set<BeeType> testc6 = Sets.newHashSet();
-
   @Parameters
   public static Collection<Object[]> getTestParameters() {
     return Arrays.asList(new Object[][]
@@ -41,10 +37,7 @@ public class TestBeeUtilscontaintAny extends TestCase {
         {false, testc1, testc2},
         {false, testc1, testc3},
         {false, testc3, testc1},
-        {true, testc1, testc5},
-        {true, testc5, testc1},
-        {false, testc6, testc1},
-        {false, testc6, testc2},
+        {true, testc1, testc4}
     });
   }
 
@@ -72,7 +65,9 @@ public class TestBeeUtilscontaintAny extends TestCase {
     testc2.add(b.FLOAT);
     testc2.add(b.INT);
 
-    testc6.add(a.UNKNOWN);
+    testc3.add(a.UNKNOWN);
+    
+    testc4.add(a.DOUBLE);
   }
 
   @Override

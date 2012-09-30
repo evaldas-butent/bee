@@ -1,6 +1,5 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.Grego;
 import com.butent.bee.shared.time.JustDate;
@@ -10,13 +9,11 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Method;
 import java.util.Date;
 
 /**
@@ -108,56 +105,6 @@ public class TestTimeUtils {
     assertEquals(1, TimeUtils.fieldDifference(start5, start6, TimeUtils.FIELD_DAY_OF_WEEK));
   }
 
-  @SuppressWarnings({"rawtypes", "unused"})
-  @Test
-  public final void testFieldName() {
-
-    int index = -1;
-    Method m[] = null;
-    try {
-      Class c = TimeUtils.class;
-      m = c.getDeclaredMethods();
-      for (int i = 0; i < m.length; i++) {
-        System.out.println(m[i].toString());
-        if (m[i]
-            .toString()
-            .equals(
-                "private static java.lang.String com.butent.bee.shared.utils.TimeUtils.fieldName(int)")) {
-          index = i;
-        }
-      }
-    } catch (Throwable e) {
-      fail("Method not found");
-    }
-
-    try {
-      Class cls = Class.forName("com.butent.bee.shared.utils.TimeUtils");
-      Class partypes[] = new Class[1];
-      partypes[0] = String.class;
-
-      Method meth = m[index];// cls.getMethod("private static java.lang.String transformString",
-      // partypes);
-      System.out.println(meth.toString());
-      meth.setAccessible(true);
-
-      Integer arglist[] = new Integer[1];
-      arglist[0] = -5;
-
-      assertEquals("Field -5", meth.invoke(null, (Object[]) arglist));
-
-      arglist[0] = 0;
-      assertEquals("ERA", meth.invoke(null, (Object[]) arglist));
-
-      arglist[0] = 100;
-      assertEquals("Field 100", meth.invoke(null, (Object[]) arglist));
-
-      arglist[0] = 5;
-      assertEquals("DAY_OF_MONTH", meth.invoke(null, (Object[]) arglist));
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
-
   @Test
   public final void testFieldsToDay() {
     assertEquals(15075, Grego.fieldsToDay(2011, 04, 11));
@@ -231,16 +178,6 @@ public class TestTimeUtils {
     assertEquals(first, TimeUtils.toDate(first));
     assertEquals(true, TimeUtils.toDate(dt).compareTo(first) == 0);
     assertEquals(true, TimeUtils.toDate(d).compareTo(first) == 0);
-
-    try {
-      assertEquals(null, TimeUtils.toDate(null));
-      fail("BeeRuntimeException not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-      System.out.println("toDate" + e.getMessage());
-    } catch (Exception e) {
-      fail("Java runtime error. Need BeeRuntimeException !!!");
-    }
   }
 
   @Test
@@ -256,16 +193,6 @@ public class TestTimeUtils {
     assertEquals(true, TimeUtils.toDateTime(dt).compareTo(first) == 0);
     assertEquals(true, TimeUtils.toDateTime(d).compareTo(first) == 0);
     assertEquals(true, TimeUtils.toDateTime(second).compareTo(first2) == 0);
-
-    try {
-      assertEquals(null, TimeUtils.toDateTime(null));
-      fail("BeeRuntimeException not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-      System.out.println("toDate" + e.getMessage());
-    } catch (Exception e) {
-      fail("Java runtime error. Need BeeRuntimeException !!!");
-    }
   }
 
   @Test
@@ -279,32 +206,11 @@ public class TestTimeUtils {
     assertEquals(first, TimeUtils.toJava(first));
     assertEquals(true, TimeUtils.toJava(dt).compareTo(first) == 0);
     assertEquals(true, TimeUtils.toJava(d).compareTo(first2) == 0);
-
-    try {
-      assertEquals(null, TimeUtils.toJava(null));
-      fail("BeeRuntimeException not works");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-      System.out.println("toDate" + e.getMessage());
-    } catch (Exception e) {
-      fail("Java runtime error. Need BeeRuntimeException !!!");
-    }
   }
 
   @Test
   public final void testYearToString() {
     assertEquals("1995", TimeUtils.yearToString(1995));
     assertEquals("0", TimeUtils.yearToString(0));
-
-    try {
-      assertEquals("-1995", TimeUtils.yearToString(-1995));
-
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-      System.out.println("yearstostring" + e.getMessage());
-    } catch (Exception e) {
-      fail("Java runtime error. Need BeeRuntimeException !!!"
-          + e.getMessage());
-    }
   }
 }

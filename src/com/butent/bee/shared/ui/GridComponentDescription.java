@@ -141,12 +141,6 @@ public class GridComponentDescription implements BeeSerializable, HasInfo {
     return style;
   }
 
-  public boolean isEmpty() {
-    return (getStyle() == null || getStyle().isEmpty())
-        && BeeUtils.allEmpty(getHeight(), getMinHeight(), getMaxHeight(), getPadding(),
-            getBorderWidth(), getMargin());
-  }
-
   public String serialize() {
     Serial[] members = Serial.values();
     Object[] arr = new Object[members.length];

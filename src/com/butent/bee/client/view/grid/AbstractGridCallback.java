@@ -32,7 +32,7 @@ public class AbstractGridCallback implements GridCallback {
 
   public static Pair<String, String> deleteRowsMessage(int selectedRows) {
     return Pair.of("Išmesti aktyvią eilutę",
-        BeeUtils.concat(1, "Išmesti", selectedRows, "pažymėtas eilutes"));
+        BeeUtils.joinWords("Išmesti", selectedRows, "pažymėtas eilutes"));
   }
 
   private GridPresenter gridPresenter = null;

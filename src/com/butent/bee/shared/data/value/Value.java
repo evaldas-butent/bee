@@ -169,6 +169,8 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
   @Override
   public abstract int hashCode();
 
+  public abstract boolean isEmpty();
+  
   public abstract boolean isNull();
 
   @Override
@@ -190,17 +192,18 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
   }
 
   public abstract String transform();
-
+  
   protected int precompareTo(Value o) {
-    int diff = BeeUtils.precompare(this, o);
-
-    if (diff == BeeConst.COMPARE_UNKNOWN) {
-      if (isNull()) {
-        diff = o.isNull() ? BeeConst.COMPARE_EQUAL : BeeConst.COMPARE_LESS;
-      } else if (o.isNull()) {
-        diff = BeeConst.COMPARE_MORE;
-      }
+    if (this == o) {
+      return BeeConst.COMPARE_EQUAL;
+    } else if (o == null) {
+      return BeeConst.COMPARE_MORE;
+    } else if (isNull()) {
+      return o.isNull() ? BeeConst.COMPARE_EQUAL : BeeConst.COMPARE_LESS;
+    } else if (o.isNull()) {
+      return BeeConst.COMPARE_MORE;
+    } else {
+      return BeeConst.COMPARE_UNKNOWN;
     }
-    return diff;
   }
 }

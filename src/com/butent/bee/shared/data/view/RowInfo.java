@@ -1,8 +1,10 @@
 package com.butent.bee.shared.data.view;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Transformable;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -94,7 +96,7 @@ public class RowInfo implements BeeSerializable, Comparable<RowInfo>, Transforma
 
   @Override
   public String toString() {
-    return BeeUtils.concat(0, "ID=", getId(), ", VERSION=" + getVersion());
+    return BeeUtils.join(BeeConst.STRING_EMPTY, "ID=", getId(), ", VERSION=", getVersion());
   }
 
   public String transform() {
@@ -102,7 +104,7 @@ public class RowInfo implements BeeSerializable, Comparable<RowInfo>, Transforma
   }
 
   private void setId(long id) {
-    Assert.notEmpty(id);
+    Assert.isTrue(DataUtils.isId(id));
     this.id = id;
   }
 }

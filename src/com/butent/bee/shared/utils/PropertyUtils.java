@@ -77,28 +77,6 @@ public class PropertyUtils {
   }
 
   /**
-   * Adds a non empty Property to the specified collection {@code lst}.
-   * 
-   * @param lst a collection to add the new Property to
-   * @param x the name and value added in pairs
-   * @return the amount of added Properties.
-   */
-  public static int addNotEemptyProperties(Collection<Property> lst, Object... x) {
-    Assert.notNull(lst);
-    int c = (x == null) ? 0 : x.length;
-    Assert.parameterCount(c + 1, 3);
-    int r = 0;
-
-    for (int i = 0; i < c - 1; i += 2) {
-      if (x[i] instanceof String && validName((String) x[i]) && !BeeUtils.isEmpty(x[i + 1])) {
-        lst.add(new Property((String) x[i], transformValue(x[i + 1])));
-        r++;
-      }
-    }
-    return r;
-  }
-
-  /**
    * Adds valid ExtendedProperties to the specified collection {@code lst}. If {@code subMd} is set
    * to {@code false} only name and value are required. If {@code subMd} is set to {@code true} then
    * name, sub and value are required.
@@ -267,7 +245,7 @@ public class PropertyUtils {
         dst.addAll(src);
       } else {
         for (Property el : src) {
-          addProperty(dst, BeeUtils.concat(1, root, el.getName()), el.getValue());
+          addProperty(dst, BeeUtils.joinWords(root, el.getName()), el.getValue());
         }
       }
     }
@@ -306,7 +284,7 @@ public class PropertyUtils {
       if (BeeUtils.isEmpty(prefix)) {
         s = (cnt > 1) ? BeeUtils.progress(idx, cnt) : null;
       } else {
-        s = (cnt > 1) ? BeeUtils.concat(1, prefix, idx) : prefix;
+        s = (cnt > 1) ? BeeUtils.joinWords(prefix, idx) : prefix;
       }
       
       appendChildrenToProperties(dst, s, item.getInfo());
@@ -328,7 +306,7 @@ public class PropertyUtils {
 
     if (src != null && !src.isEmpty()) {
       for (ExtendedProperty el : src) {
-        dst.add(new ExtendedProperty(BeeUtils.concat(1, prefix, el.getName()),
+        dst.add(new ExtendedProperty(BeeUtils.joinWords(prefix, el.getName()),
             el.getSub(), el.getValue()));
       }
     }
@@ -358,7 +336,7 @@ public class PropertyUtils {
    */
   public static List<Property> createProperties(String prefix, String[] values) {
     List<Property> lst = Lists.newArrayList();
-    if (BeeUtils.isEmpty(values)) {
+    if (ArrayUtils.isEmpty(values)) {
       return lst;
     }
 
@@ -526,7 +504,7 @@ public class PropertyUtils {
     } else if (v instanceof String) {
       return transformString((String) v);
     } else {
-      return BeeUtils.transformGeneric(v);
+      return BeeUtils.transform(v);
     }
   }
 

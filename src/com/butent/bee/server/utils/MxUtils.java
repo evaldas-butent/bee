@@ -205,7 +205,7 @@ public class MxUtils {
     Assert.notNull(ti);
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
-    String root = BeeUtils.concat(1, "Thread Id", ti.getThreadId(), msg);
+    String root = BeeUtils.joinWords("Thread Id", ti.getThreadId(), msg);
 
     PropertyUtils.addChildren(lst, root, "Blocked Count", ti.getBlockedCount(),
         "Blocked Time", ti.getBlockedTime(), "Lock Info", transformLockInfo(ti.getLockInfo()),
@@ -216,7 +216,7 @@ public class MxUtils {
         "Is Suspended", ti.isSuspended());
 
     MonitorInfo[] monitors = ti.getLockedMonitors();
-    if (!BeeUtils.isEmpty(monitors)) {
+    if (monitors != null) {
       if (monitors.length > 1) {
         PropertyUtils.addExtended(lst, root, "Locked Monitors", BeeUtils.bracket(monitors.length));
       }
@@ -227,7 +227,7 @@ public class MxUtils {
     }
 
     LockInfo[] lckArr = ti.getLockedSynchronizers();
-    if (!BeeUtils.isEmpty(lckArr)) {
+    if (lckArr != null) {
       if (lckArr.length > 1) {
         PropertyUtils.addExtended(lst, root, "Locked Synchronizers",
             BeeUtils.bracket(lckArr.length));
@@ -239,7 +239,7 @@ public class MxUtils {
     }
 
     StackTraceElement[] stack = ti.getStackTrace();
-    if (!BeeUtils.isEmpty(stack)) {
+    if (stack != null) {
       if (stack.length > 1) {
         PropertyUtils.addExtended(lst, root, "Stack Trace", BeeUtils.bracket(stack.length));
       }
@@ -274,21 +274,21 @@ public class MxUtils {
         "Is Thread Cpu Time Supported", mxb.isThreadCpuTimeSupported());
 
     long[] idArr = mxb.findDeadlockedThreads();
-    if (!BeeUtils.isEmpty(idArr)) {
+    if (idArr != null) {
       for (int i = 0; i < idArr.length; i++) {
         PropertyUtils.addExtended(lst, root, "Deadlocked Thread", idArr[i]);
       }
     }
 
     idArr = mxb.findMonitorDeadlockedThreads();
-    if (!BeeUtils.isEmpty(idArr)) {
+    if (idArr != null) {
       for (int i = 0; i < idArr.length; i++) {
         PropertyUtils.addExtended(lst, root, "Monitor Deadlocked Thread", idArr[i]);
       }
     }
 
     ThreadInfo[] tiArr = mxb.dumpAllThreads(true, true);
-    if (!BeeUtils.isEmpty(tiArr)) {
+    if (tiArr != null) {
       if (mxb.isThreadCpuTimeSupported() && mxb.isThreadCpuTimeEnabled()) {
         ThreadInfo ti;
         for (int i = 0; i < tiArr.length; i++) {
@@ -296,7 +296,7 @@ public class MxUtils {
           long id = ti.getThreadId();
 
           PropertyUtils.addChildren(lst,
-              BeeUtils.concat(1, "Thread Id", id, BeeUtils.progress(i + 1, tiArr.length)),
+              BeeUtils.joinWords("Thread Id", id, BeeUtils.progress(i + 1, tiArr.length)),
               "Thread Cpu Time", mxb.getThreadCpuTime(id),
               "Thread User Time", mxb.getThreadUserTime(id));
         }

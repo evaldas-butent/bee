@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -42,7 +43,7 @@ public class CompoundFilter extends Filter {
     if (!isEmpty() && type == CompoundType.NOT) {
       Assert.unsupported();
     }
-    if (!BeeUtils.isEmpty(filters)) {
+    if (filters != null) {
       for (Filter filter : filters) {
         if (filter != null) {
           subFilters.add(filter);
@@ -70,7 +71,7 @@ public class CompoundFilter extends Filter {
         case SUBFILTERS:
           String[] filters = Codec.beeDeserializeCollection(value);
 
-          if (!BeeUtils.isEmpty(filters)) {
+          if (!ArrayUtils.isEmpty(filters)) {
             for (String flt : filters) {
               add(Filter.restore(flt));
             }

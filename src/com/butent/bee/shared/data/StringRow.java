@@ -239,6 +239,6 @@ public class StringRow extends AbstractRow {
 
   @Override
   protected void assertIndex(int index) {
-    Assert.isIndex(values, index);
+    Assert.isIndex(index, getNumberOfCells());
   }
 }

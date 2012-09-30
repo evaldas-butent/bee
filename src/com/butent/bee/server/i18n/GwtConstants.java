@@ -136,7 +136,7 @@ public class GwtConstants extends GwtLocalizable {
       return BeeUtils.split(str, BeeConst.CHAR_COMMA);
     }
 
-    Assert.untouchable(BeeUtils.concat(1, "type", type, "not supported"));
+    Assert.untouchable(BeeUtils.joinWords("type", type, "not supported"));
     return null;
   }
 }

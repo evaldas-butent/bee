@@ -21,6 +21,7 @@ import com.butent.bee.client.visualization.visualizations.MotionChart;
 import com.butent.bee.client.visualization.visualizations.OrgChart;
 import com.butent.bee.client.visualization.visualizations.Table;
 import com.butent.bee.client.visualization.visualizations.corechart.CoreChart;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
@@ -39,7 +40,7 @@ public class Showcase {
 
     VisualizationUtils.loadVisualizationApi(new Runnable() {
       public void run() {
-        BeeKeeper.getLog().info(BeeUtils.elapsedSeconds(start), "api loaded");
+        BeeKeeper.getLog().info(TimeUtils.elapsedSeconds(start), "api loaded");
         LeftTabPanel panel = new LeftTabPanel();
 
         panel.add(new AnnotatedDemo(), "AnnotatedTimeLine");
@@ -68,7 +69,7 @@ public class Showcase {
 
         panel.init("AreaChart");
         BeeKeeper.getScreen().updateActivePanel(panel, ScrollBars.BOTH);
-        BeeKeeper.getLog().info(BeeUtils.elapsedSeconds(start), "showcase ready");
+        BeeKeeper.getLog().info(TimeUtils.elapsedSeconds(start), "showcase ready");
       }
     }, AnnotatedTimeLine.PACKAGE, CoreChart.PACKAGE, Gauge.PACKAGE, GeoMap.PACKAGE,
         ImageChart.PACKAGE, ImageLineChart.PACKAGE, ImageAreaChart.PACKAGE, ImageBarChart.PACKAGE,

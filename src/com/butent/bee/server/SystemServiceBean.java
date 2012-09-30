@@ -20,6 +20,8 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -61,7 +63,7 @@ public class SystemServiceBean {
       getDigest(reqInfo, buff);
 
     } else {
-      String msg = BeeUtils.concat(1, svc, "system service not recognized");
+      String msg = BeeUtils.joinWords(svc, "system service not recognized");
       logger.warning(msg);
       buff.addWarning(msg);
     }
@@ -254,7 +256,7 @@ public class SystemServiceBean {
 
     if (resFile.isDirectory()) {
       String[] arr = FileUtils.getFiles(resFile);
-      int n = BeeUtils.length(arr);
+      int n = ArrayUtils.length(arr);
 
       if (n > 0) {
         buff.addProperties(PropertyUtils.createProperties("file", arr));
@@ -298,7 +300,7 @@ public class SystemServiceBean {
 
     boolean ok = FileUtils.saveToFile(content, uri);
     if (ok) {
-      buff.addMessage("saved", content.length(), BeeUtils.elapsedSeconds(start));
+      buff.addMessage("saved", content.length(), TimeUtils.elapsedSeconds(start));
     } else {
       buff.addSevere("error saving to", uri);
     }

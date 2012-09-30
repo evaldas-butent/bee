@@ -19,6 +19,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.menu.MenuConstants;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -146,7 +147,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
       switch (member) {
         case ATTRIBUTES:
           String[] attr = Codec.beeDeserializeCollection(value);
-          if (!BeeUtils.isEmpty(attr)) {
+          if (!ArrayUtils.isEmpty(attr)) {
             getAttributes().clear();
             for (int j = 0; j < attr.length; j += 2) {
               getAttributes().put(attr[j], attr[j + 1]);
@@ -156,7 +157,7 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
 
         case SELECTOR_COLUMNS:
           String[] cols = Codec.beeDeserializeCollection(value);
-          if (!BeeUtils.isEmpty(cols)) {
+          if (!ArrayUtils.isEmpty(cols)) {
             getSelectorColumns().clear();
             for (int j = 0; j < cols.length; j++) {
               BeeUtils.addNotNull(getSelectorColumns(), SelectorColumn.restore(cols[j]));
@@ -575,7 +576,8 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
       List<String> selectorColumnNames) {
     String result = null;
 
-    if (BeeUtils.allEmpty(source, renderColumns, displCols, searchCols, selectorColumnNames)) {
+    if (BeeUtils.isEmpty(source) && BeeUtils.isEmpty(renderColumns) && BeeUtils.isEmpty(displCols)
+        && BeeUtils.isEmpty(searchCols) && BeeUtils.isEmpty(selectorColumnNames)) {
       List<String> columnNames = sourceInfo.getColumnNames(false);
       for (String colName : columnNames) {
         result = deduceViewName(sourceInfo, colName);

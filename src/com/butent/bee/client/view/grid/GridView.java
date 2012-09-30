@@ -1,5 +1,7 @@
 package com.butent.bee.client.view.grid;
 
+import com.google.gwt.core.client.Scheduler;
+
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
@@ -38,6 +40,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   void formCancel();
 
   void formConfirm();
+  
+  void formSwitchToEdit(Scheduler.ScheduledCommand command);
 
   List<BeeColumn> getDataColumns();
 
@@ -52,6 +56,8 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
   long getRelId();
 
   Collection<RowInfo> getSelectedRows();
+  
+  boolean isChild();
 
   boolean isReadOnly();
 

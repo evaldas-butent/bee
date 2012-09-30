@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -53,7 +54,7 @@ public class RenderableToken implements BeeSerializable, HasInfo {
       return null;
     }
     String[] tokens = Codec.beeDeserializeCollection(s);
-    if (BeeUtils.isEmpty(tokens)) {
+    if (ArrayUtils.isEmpty(tokens)) {
       return null;
     }
     

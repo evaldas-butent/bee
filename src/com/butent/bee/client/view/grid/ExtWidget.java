@@ -46,7 +46,7 @@ public class ExtWidget {
     String tagName = XmlUtils.getLocalName(root);
     Direction direction = NameUtils.getEnumByName(Direction.class, tagName);
     if (!Split.validDirection(direction, false)) {
-      BeeKeeper.getLog().severe("ext widget: invalid root tag name", BeeUtils.quote(tagName));
+      BeeKeeper.getLog().severe("ext widget: invalid root tag name", tagName);
       return null;
     }
 

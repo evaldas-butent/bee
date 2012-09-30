@@ -58,7 +58,7 @@ public class UiHolderBean {
 
     public String getFileName(String objName) {
       Assert.notEmpty(objName);
-      return BeeUtils.concat(".", objName, name().toLowerCase(), XmlUtils.DEFAULT_XML_EXTENSION);
+      return BeeUtils.join(".", objName, name().toLowerCase(), XmlUtils.DEFAULT_XML_EXTENSION);
     }
 
     public String getPath() {
@@ -200,7 +200,7 @@ public class UiHolderBean {
   }
 
   private Menu getVisibleMenu(String parent, Menu entry) {
-    String ref = BeeUtils.concat(".", parent, entry.getName());
+    String ref = BeeUtils.join(".", parent, entry.getName());
 
     if (usr.hasModuleRight(entry.getModuleName(), RightsState.VISIBLE)
         && usr.hasMenuRight(ref, RightsState.VISIBLE)) {
@@ -269,7 +269,7 @@ public class UiHolderBean {
     boolean ok = (xmlMenu != null);
     if (ok) {
       xmlMenu.setModuleName(moduleName);
-      register(xmlMenu, menuCache, BeeUtils.concat(".", xmlMenu.getParent(), menuName), moduleName);
+      register(xmlMenu, menuCache, BeeUtils.join(".", xmlMenu.getParent(), menuName), moduleName);
     } else {
       unregister(menuName, menuCache);
     }
@@ -277,7 +277,7 @@ public class UiHolderBean {
   }
 
   private void initObjects(UiObject obj) {
-    Assert.notEmpty(obj);
+    Assert.notNull(obj);
 
     switch (obj) {
       case GRID:
@@ -338,7 +338,7 @@ public class UiHolderBean {
         }
       }
     }
-    if (BeeUtils.isEmpty(cnt)) {
+    if (cnt == 0) {
       logger.error("No", obj.name(), "descriptions found");
     } else {
       logger.info("Loaded", cnt, obj.name(), "descriptions");
@@ -350,7 +350,7 @@ public class UiHolderBean {
   }
 
   private <T> void register(T object, Map<String, T> cache, String objectName, String moduleName) {
-    if (!BeeUtils.isEmpty(object)) {
+    if (object != null) {
       String name = NameUtils.getClassName(object.getClass());
 
       if (cache.containsKey(key(objectName))) {

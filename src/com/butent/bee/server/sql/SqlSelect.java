@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.SqlConstants.SqlFunction;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -364,7 +365,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
    * @return object's SqlSelect instance
    */
   public SqlSelect addFields(String source, String... fields) {
-    Assert.minLength(fields, 1);
+    Assert.minLength(ArrayUtils.length(fields), 1);
 
     for (String fld : fields) {
       addField(SqlUtils.field(source, fld), null);
@@ -664,10 +665,10 @@ public class SqlSelect extends HasFrom<SqlSelect> {
 
     Collection<String> sources = super.getSources();
 
-    if (!BeeUtils.isEmpty(whereClause)) {
+    if (whereClause != null) {
       sources = SqlUtils.addCollection(sources, whereClause.getSources());
     }
-    if (!BeeUtils.isEmpty(havingClause)) {
+    if (havingClause != null) {
       sources = SqlUtils.addCollection(sources, havingClause.getSources());
     }
     if (!BeeUtils.isEmpty(unionList)) {
@@ -868,7 +869,7 @@ public class SqlSelect extends HasFrom<SqlSelect> {
       String[] orderEntry = new String[3];
       orderEntry[ORDER_SRC] = source;
       orderEntry[ORDER_FLD] = ord;
-      orderEntry[ORDER_DESC] = BeeUtils.isEmpty(desc) ? "" : " DESC";
+      orderEntry[ORDER_DESC] = BeeUtils.isTrue(desc) ? " DESC" : "";
 
       if (BeeUtils.isEmpty(orderList)) {
         orderList = Lists.newArrayList();

@@ -119,6 +119,11 @@ public class IntegerValue extends Value {
   }
 
   @Override
+  public boolean isEmpty() {
+    return isNull() || value == 0;
+  }
+
+  @Override
   public boolean isNull() {
     return this == NULL_VALUE || getInteger() == null;
   }

@@ -1,5 +1,6 @@
 package com.butent.bee.shared.data.filter;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
@@ -49,7 +50,7 @@ public class ColumnValueFilter extends ComparisonFilter {
     if (ValueType.isString(getValue().getType())) {
       value = "\"" + value + "\"";
     }
-    return BeeUtils.concat(0, getColumn(), getOperator().toTextString(), value);
+    return BeeUtils.join(BeeConst.STRING_EMPTY, getColumn(), getOperator().toTextString(), value);
   }
 
   @Override

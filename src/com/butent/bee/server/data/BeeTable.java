@@ -220,7 +220,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
     private BeeKey(KeyTypes keyType, String tblName, String... keyFields) {
       Assert.notEmpty(tblName);
-      Assert.notEmpty(keyFields);
+      Assert.notNull(keyFields);
 
       this.tblName = tblName;
       String keyName = getTable();
@@ -295,7 +295,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     }
 
     public boolean hasEditableRelation() {
-      return isUnique() && BeeUtils.isEmpty(getCascade());
+      return isUnique() && getCascade() == null;
     }
 
     @Override
@@ -323,8 +323,8 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       this.events = events;
       this.scope = scope;
 
-      this.name = TRIGGER_PREFIX + Codec.crc32(BeeUtils.concat(1, tblName, type,
-          BeeUtils.transformMap(parameters), timing, events, scope));
+      this.name = TRIGGER_PREFIX + Codec.crc32(BeeUtils.joinWords(tblName, type,
+          BeeUtils.transform(parameters), timing, events, scope));
     }
 
     public EnumSet<SqlTriggerEvent> getEvents() {
@@ -370,7 +370,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       Assert.state(hasField(field) && field.isExtended());
       SqlCreate sc = query;
 
-      if (BeeUtils.isEmpty(query)) {
+      if (query == null) {
         String tblName = field.getStorageTable();
 
         sc = new SqlCreate(tblName, false)
@@ -396,7 +396,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       Assert.state(hasField(field) && field.isExtended());
       SqlInsert si = query;
 
-      if (BeeUtils.isEmpty(query)) {
+      if (query == null) {
         si = new SqlInsert(getExtTable(field))
             .addConstant(extVersionName, System.currentTimeMillis())
             .addConstant(extIdName, rootId);
@@ -447,7 +447,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       Assert.state(hasField(field) && field.isExtended());
       SqlUpdate su = query;
 
-      if (BeeUtils.isEmpty(query)) {
+      if (query == null) {
         String tblName = getExtTable(field);
 
         su = new SqlUpdate(tblName)
@@ -503,7 +503,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
                   SqlUtils.notEqual(SqlUtils.bitAnd(stateAlias, fld, mask), 0)));
         }
       }
-      if (BeeUtils.isEmpty(wh)) {
+      if (wh == null) {
         wh = state.isChecked() ? SqlUtils.sqlTrue() : SqlUtils.sqlFalse();
       }
       return wh;
@@ -515,7 +515,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       SqlCreate sc = query;
 
       if (isStateActive(state)) {
-        if (BeeUtils.isEmpty(sc)) {
+        if (sc == null) {
           String tblName = getStateTable(state);
 
           sc = new SqlCreate(tblName, false)
@@ -604,9 +604,9 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       Assert.state(hasState(state));
       Set<String> fldList = Sets.newLinkedHashSet();
 
-      if (!BeeUtils.isEmpty(flds)) {
+      if (flds != null) {
         for (String fld : flds) {
-          if (fld.matches(BeeUtils.concat("_", state.getName(), "[0-9]+", "[0-9]+"))) {
+          if (fld.matches(BeeUtils.join("_", state.getName(), "[0-9]+", "[0-9]+"))) {
             fldList.add(fld);
           }
         }
@@ -642,7 +642,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       for (long bit : bits) {
         if ((bit < 0 && !state.supportsUsers())
             || (bit > 0 && !state.supportsRoles())
-            || BeeUtils.isEmpty(bit)) {
+            || bit == 0) {
           continue;
         }
         flds.add(getStateField(state, bit));
@@ -672,7 +672,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       for (long bit : bits.keySet()) {
         if ((bit < 0 && !state.supportsUsers())
             || (bit > 0 && !state.supportsRoles())
-            || BeeUtils.isEmpty(bit)) {
+            || bit == 0) {
           continue;
         }
         String fld = getStateField(state, bit);
@@ -698,9 +698,9 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       long to = from + bitCount - 1;
 
       if (bit < 0) {
-        return BeeUtils.concat("_", state.getName(), to, from); // User field
+        return BeeUtils.join("_", state.getName(), to, from); // User field
       } else {
-        return BeeUtils.concat("_", state.getName(), from, to); // Role field
+        return BeeUtils.join("_", state.getName(), from, to); // Role field
       }
     }
 
@@ -721,7 +721,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       SqlCreate sc = query;
       String tblName = getTranslationTable(field);
 
-      if (BeeUtils.isEmpty(sc)) {
+      if (sc == null) {
         sc = new SqlCreate(tblName, false)
             .addLong(translationIdName, true)
             .addLong(translationVersionName, true)
@@ -758,7 +758,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       Assert.notEmpty(locale);
       SqlInsert si = query;
 
-      if (BeeUtils.isEmpty(query)) {
+      if (query == null) {
         si = new SqlInsert(getTranslationTable(field))
             .addConstant(translationLocaleName, locale)
             .addConstant(translationVersionName, System.currentTimeMillis())
@@ -818,7 +818,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       Assert.notEmpty(locale);
       SqlUpdate su = query;
 
-      if (BeeUtils.isEmpty(query)) {
+      if (query == null) {
         String tblName = getTranslationTable(field);
 
         su = new SqlUpdate(tblName)
@@ -921,7 +921,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     info.add(new ExtendedProperty("Fields", BeeUtils.toString(fields.size())));
     int i = 0;
     for (Map.Entry<String, BeeField> entry : fields.entrySet()) {
-      String key = BeeUtils.concat(1, "Field", ++i, entry.getKey());
+      String key = BeeUtils.joinWords("Field", ++i, entry.getKey());
       BeeField field = entry.getValue();
 
       PropertyUtils.addChildren(info, key, "Name", field.getName(), "Type", field.getType(),
@@ -941,7 +941,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     info.add(new ExtendedProperty("Foreign Keys", BeeUtils.toString(foreignKeys.size())));
     i = 0;
     for (Map.Entry<String, BeeForeignKey> entry : foreignKeys.entrySet()) {
-      String key = BeeUtils.concat(1, "Foreign Key", ++i, entry.getKey());
+      String key = BeeUtils.joinWords("Foreign Key", ++i, entry.getKey());
       BeeForeignKey fk = entry.getValue();
 
       PropertyUtils.addChildren(info, key, "Table", fk.getTable(), "Name", fk.getName(),
@@ -951,7 +951,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     info.add(new ExtendedProperty("Keys", BeeUtils.toString(keys.size())));
     i = 0;
     for (Map.Entry<String, BeeKey> entry : keys.entrySet()) {
-      String key = BeeUtils.concat(1, "Key", ++i, entry.getKey());
+      String key = BeeUtils.joinWords("Key", ++i, entry.getKey());
       BeeKey bk = entry.getValue();
 
       PropertyUtils.addChildren(info, key, "Table", bk.getTable(), "Name", bk.getName(),
@@ -959,7 +959,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       String[] keyFields = bk.getKeyFields();
       int cnt = ArrayUtils.length(keyFields);
       for (int k = 0; k < cnt; k++) {
-        info.add(new ExtendedProperty(key, BeeUtils.concat(1, "Key Field",
+        info.add(new ExtendedProperty(key, BeeUtils.joinWords("Key Field",
             BeeUtils.progress(k + 1, cnt)), keyFields[k]));
       }
     }
@@ -967,7 +967,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     info.add(new ExtendedProperty("States", BeeUtils.toString(states.size())));
     i = 0;
     for (BeeState state : states) {
-      String key = BeeUtils.concat(1, "State", ++i);
+      String key = BeeUtils.joinWords("State", ++i);
       PropertyUtils.addChildren(info, key, "Name", state.getName(),
           "UserMode", state.supportsUsers(),
           "RoleMode", state.supportsRoles(),
@@ -977,12 +977,12 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
     info.add(new ExtendedProperty("Triggers", BeeUtils.toString(triggers.size())));
     i = 0;
     for (Map.Entry<String, BeeTrigger> entry : triggers.entrySet()) {
-      String key = BeeUtils.concat(1, "Trigger", ++i, entry.getKey());
+      String key = BeeUtils.joinWords("Trigger", ++i, entry.getKey());
       BeeTrigger trigger = entry.getValue();
 
       PropertyUtils.addChildren(info, key, "Table", trigger.getTable(), "Name", trigger.getName(),
           "Timing", trigger.getTiming(), "Event", trigger.getEvents(), "Scope", trigger.getScope(),
-          "Content", BeeUtils.transformMap(trigger.getParameters()));
+          "Content", BeeUtils.transform(trigger.getParameters()));
     }
 
     return info;
@@ -994,7 +994,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   }
 
   public BeeField getField(String fldName) {
-    Assert.state(hasField(fldName), BeeUtils.concat(1, "Unknown field name:", getName(), fldName));
+    Assert.state(hasField(fldName), BeeUtils.joinWords("Unknown field name:", getName(), fldName));
     return fields.get(BeeUtils.normalize(fldName));
   }
 
@@ -1067,7 +1067,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   }
 
   public boolean hasField(BeeField field) {
-    if (BeeUtils.isEmpty(field) || !hasField(field.getName())) {
+    if (field == null || !hasField(field.getName())) {
       return false;
     }
     return getField(field.getName()) == field;
@@ -1106,7 +1106,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   }
 
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(getFieldCount());
+    return fields.isEmpty();
   }
 
   @Override
@@ -1166,7 +1166,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
     Assert.state(!hasField(fieldName)
         && !BeeUtils.inListSame(fieldName, getIdName(), getVersionName()),
-        BeeUtils.concat(1, "Dublicate field name:", getName(), fieldName));
+        BeeUtils.joinWords("Dublicate field name:", getName(), fieldName));
 
     fields.put(BeeUtils.normalize(fieldName), field);
   }

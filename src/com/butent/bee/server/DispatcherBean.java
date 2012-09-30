@@ -85,7 +85,7 @@ public class DispatcherBean {
         response = uiBean.doService(reqInfo);
 
       } else {
-        String msg = BeeUtils.concat(1, svc, "service type not recognized");
+        String msg = BeeUtils.joinWords(svc, "service type not recognized");
         logger.warning(msg);
         buff.addWarning(msg);
       }

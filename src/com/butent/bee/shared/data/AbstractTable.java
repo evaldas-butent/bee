@@ -127,7 +127,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   }
 
   public int addColumns(Collection<ColType> columnsToAdd) {
-    Assert.hasLength(columnsToAdd);
+    Assert.notEmpty(columnsToAdd);
     int lastIndex = BeeConst.UNDEF;
     for (ColType column : columnsToAdd) {
       lastIndex = addColumn(column);
@@ -714,7 +714,9 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     Assert.isIndex(columns, colIndex);
   }
 
-  protected abstract void assertRowIndex(int rowIndex);
+  protected void assertRowIndex(int rowIndex) {
+    Assert.isIndex(rowIndex, getNumberOfRows());
+  }
 
   protected void cloneColumns(IsTable<RowType, ColType> cloneTable) {
     cloneTable.setColumns(getColumns());

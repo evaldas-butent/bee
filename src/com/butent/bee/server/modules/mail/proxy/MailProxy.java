@@ -117,7 +117,7 @@ public class MailProxy {
     Number serverPort = prm.getNumber(MAIL_MODULE, protocol + "ServerPort");
     Number bindPort = prm.getNumber(MAIL_MODULE, protocol + "BindPort");
 
-    boolean ok = BeeUtils.allNotEmpty(server, serverPort, bindPort);
+    boolean ok = !BeeUtils.isEmpty(server) && BeeUtils.allNotNull(serverPort, bindPort);
 
     switch (protocol) {
       case POP3:

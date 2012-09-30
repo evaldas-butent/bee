@@ -295,7 +295,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
           if (hasColumn(col)) {
             ColumnInfo info = getColumnInfo(col);
             Assert.state(!history.contains(info.getName()),
-                BeeUtils.concat(1, "Parsing cycle detected.",
+                BeeUtils.joinWords("Parsing cycle detected.",
                     "View:", BeeView.this.getName(), "Column:", info.getName()));
 
             if (info.expression == null) {
@@ -539,7 +539,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
     int i = 0;
     for (String col : columns.keySet()) {
-      String key = BeeUtils.concat(1, "Column", ++i, col);
+      String key = BeeUtils.joinWords("Column", ++i, col);
 
       PropertyUtils.addChildren(info, key,
           "Table", getColumnTable(col), "Alias", getColumnSource(col),
@@ -555,9 +555,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       info.add(new ExtendedProperty("Orders", BeeUtils.toString(order.getSize())));
       i = 0;
       for (Order.Column ordCol : order.getColumns()) {
-        String key = BeeUtils.concat(1, "Order", ++i, ordCol.isAscending() ? "" : "DESC");
-        PropertyUtils.addChildren(info, key,
-            "Sources", BeeUtils.transformCollection(ordCol.getSources()));
+        String key = BeeUtils.joinWords("Order", ++i, ordCol.isAscending() ? "" : "DESC");
+        PropertyUtils.addChildren(info, key, "Sources", BeeUtils.transform(ordCol.getSources()));
       }
     }
     return info;
@@ -736,7 +735,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   }
 
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(getColumnCount());
+    return getColumnCount() == 0;
   }
 
   public boolean isReadOnly() {
@@ -771,9 +770,9 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       String aggregateType, boolean hidden, String parent, XmlExpression expression, String label) {
 
     Assert.state(!BeeUtils.inListSame(colName, getSourceIdName(), getSourceVersionName()),
-        BeeUtils.concat(1, "Reserved column name:", getName(), colName));
+        BeeUtils.joinWords("Reserved column name:", getName(), colName));
     Assert.state(!hasColumn(colName),
-        BeeUtils.concat(1, "Dublicate column name:", getName(), colName));
+        BeeUtils.joinWords("Dublicate column name:", getName(), colName));
 
     String ownerAlias = null;
     SqlFunction aggregate = null;
@@ -820,7 +819,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
         if (col instanceof XmlExternalJoin) {
           relTable = tables.get(BeeUtils.normalize(((XmlExternalJoin) col).source));
-          Assert.notEmpty(relTable);
+          Assert.notNull(relTable);
           als = relAls;
           field = relTable.getField(col.name);
 

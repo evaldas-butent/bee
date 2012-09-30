@@ -58,7 +58,7 @@ public class SqlUtils {
   }
 
   public static IsExpression concat(Object... members) {
-    Assert.minLength(members, 2);
+    Assert.minLength(ArrayUtils.length(members), 2);
     Assert.noNulls(members);
     return new FunctionExpression(SqlFunction.CONCAT, getMemberMap(members));
   }
@@ -193,7 +193,7 @@ public class SqlUtils {
   }
 
   public static IsExpression divide(Object... members) {
-    Assert.minLength(members, 2);
+    Assert.minLength(ArrayUtils.length(members), 2);
     Assert.noNulls(members);
     return new FunctionExpression(SqlFunction.DIVIDE, getMemberMap(members));
   }
@@ -232,7 +232,7 @@ public class SqlUtils {
   }
 
   public static IsExpression expression(Object... members) {
-    Assert.minLength(members, 1);
+    Assert.minLength(ArrayUtils.length(members), 1);
     Assert.noNulls(members);
     return new FunctionExpression(SqlFunction.BULK, getMemberMap(members));
   }
@@ -240,11 +240,11 @@ public class SqlUtils {
   public static IsExpression field(String source, String field) {
     Assert.notEmpty(source);
     Assert.notEmpty(field);
-    return name(BeeUtils.concat(".", source, field));
+    return name(BeeUtils.join(".", source, field));
   }
 
   public static IsExpression[] fields(String source, String... fields) {
-    Assert.minLength(fields, 1);
+    Assert.minLength(ArrayUtils.length(fields), 1);
 
     int len = ArrayUtils.length(fields);
     IsExpression[] list = new IsExpression[len];
@@ -271,7 +271,7 @@ public class SqlUtils {
   }
 
   public static IsCondition inList(IsExpression expr, Object... values) {
-    Assert.minLength(values, 1);
+    Assert.minLength(ArrayUtils.length(values), 1);
     HasConditions cond = or();
 
     for (Object value : values) {
@@ -317,7 +317,7 @@ public class SqlUtils {
   }
 
   public static IsCondition joinUsing(String src1, String src2, String... flds) {
-    Assert.minLength(flds, 1);
+    Assert.minLength(ArrayUtils.length(flds), 1);
 
     IsCondition cond = null;
 
@@ -394,7 +394,7 @@ public class SqlUtils {
   }
 
   public static IsExpression minus(Object... members) {
-    Assert.minLength(members, 2);
+    Assert.minLength(ArrayUtils.length(members), 2);
     Assert.noNulls(members);
     return new FunctionExpression(SqlFunction.MINUS, getMemberMap(members));
   }
@@ -430,7 +430,7 @@ public class SqlUtils {
   }
 
   public static IsExpression multiply(Object... members) {
-    Assert.minLength(members, 2);
+    Assert.minLength(ArrayUtils.length(members), 2);
     Assert.noNulls(members);
     return new FunctionExpression(SqlFunction.MULTIPLY, getMemberMap(members));
   }
@@ -491,7 +491,7 @@ public class SqlUtils {
   }
 
   public static IsExpression nvl(Object... members) {
-    Assert.minLength(members, 2);
+    Assert.minLength(ArrayUtils.length(members), 2);
     Assert.noNulls(members);
     return new FunctionExpression(SqlFunction.NVL, getMemberMap(members));
   }
@@ -501,7 +501,7 @@ public class SqlUtils {
   }
 
   public static IsExpression plus(Object... members) {
-    Assert.minLength(members, 2);
+    Assert.minLength(ArrayUtils.length(members), 2);
     Assert.noNulls(members);
     return new FunctionExpression(SqlFunction.PLUS, getMemberMap(members));
   }
@@ -547,7 +547,7 @@ public class SqlUtils {
   public static IsExpression sqlCase(IsExpression expr, Object... pairs) {
     Assert.noNulls(expr, pairs);
     Assert.parameterCount(pairs.length, 3);
-    Assert.notEmpty(pairs.length % 2);
+    Assert.isOdd(pairs.length);
 
     Map<String, Object> params = Maps.newHashMap();
     params.put("expression", expr);
@@ -632,7 +632,7 @@ public class SqlUtils {
       String... fields) {
     IsExpression fldList;
 
-    if (BeeUtils.isEmpty(fields)) {
+    if (ArrayUtils.isEmpty(fields)) {
       fldList = name(name);
     } else {
       List<Object> flds = Lists.newArrayList();
@@ -655,7 +655,7 @@ public class SqlUtils {
   private static Map<String, Object> getMemberMap(Object... members) {
     Map<String, Object> params = Maps.newHashMap();
 
-    if (!BeeUtils.isEmpty(members)) {
+    if (members != null) {
       for (int i = 0; i < members.length; i++) {
         params.put("member" + i, members[i]);
       }

@@ -6,6 +6,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasOptions;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -80,7 +81,7 @@ public class RendererDescription implements BeeSerializable, HasInfo, HasOptions
     if (getItems() != null) {
       info.add(new Property("Items", BeeUtils.bracket(getItems().size())));
       for (int i = 0; i < getItems().size(); i++) {
-        info.add(new Property(BeeUtils.concat(1, "Item", i + 1), getItems().get(i)));
+        info.add(new Property(BeeUtils.joinWords("Item", i + 1), getItems().get(i)));
       }
     }
 
@@ -202,7 +203,7 @@ public class RendererDescription implements BeeSerializable, HasInfo, HasOptions
         case ITEMS:
           String[] data = Codec.beeDeserializeCollection(value);
 
-          if (BeeUtils.isEmpty(data)) {
+          if (ArrayUtils.isEmpty(data)) {
             setItems(null);
           } else {
             setItems(Lists.newArrayList(data));

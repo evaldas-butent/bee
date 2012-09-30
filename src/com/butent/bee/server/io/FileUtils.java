@@ -9,6 +9,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
@@ -254,9 +255,9 @@ public class FileUtils {
       Charset cs = charsets.get(key);
 
       PropertyUtils.addChildren(lst,
-          BeeUtils.concat(1, BeeUtils.progress(i, charsets.size()), key),
+          BeeUtils.joinWords(BeeUtils.progress(i, charsets.size()), key),
           "Name", cs.name(),
-          "Aliases", BeeUtils.transformCollection(cs.aliases()),
+          "Aliases", BeeUtils.transform(cs.aliases()),
           "Can Encode", cs.canEncode(),
           "Display Name", cs.displayName(),
           "Registered", cs.isRegistered());
@@ -339,7 +340,7 @@ public class FileUtils {
     List<Property> lst = new ArrayList<Property>();
 
     File[] roots = File.listRoots();
-    int n = BeeUtils.length(roots);
+    int n = ArrayUtils.length(roots);
     if (n <= 0) {
       PropertyUtils.addProperty(lst, "Roots", BeeUtils.bracket(n));
       return lst;
@@ -447,11 +448,11 @@ public class FileUtils {
     return prp;
   }
 
-  public static boolean saveToFile(CharSequence src, String dst) {
+  public static boolean saveToFile(String src, String dst) {
     return saveToFile(src, dst, defaultCharset);
   }
 
-  public static boolean saveToFile(CharSequence src, String dst, Charset cs) {
+  public static boolean saveToFile(String src, String dst, Charset cs) {
     Assert.notEmpty(src);
     Assert.notEmpty(dst);
 

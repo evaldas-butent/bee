@@ -52,7 +52,7 @@ public class RequestFilter implements Filter {
       HttpUtils.incrCounter(cc);
       HttpUtils.incrCounter(sc);
 
-      context.log(BeeUtils.concat(1, "filter", System.nanoTime(),
+      context.log(BeeUtils.joinWords("filter", System.nanoTime(),
           HttpUtils.counterInfo("counter", COUNTER),
           NameUtils.addName("rid", rid),
           HttpUtils.counterInfo(HttpConst.ATTRIBUTE_REQUEST_COUNTER, rc),

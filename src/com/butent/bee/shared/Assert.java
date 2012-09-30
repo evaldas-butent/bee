@@ -15,6 +15,7 @@ import java.util.Map;
 public class Assert {
 
   public static final String ASSERTION_FAILED = "[Assertion failed] - ";
+  public static final String IS_EMPTY = ASSERTION_FAILED + "argument must not be null or empty";
 
   public static int betweenExclusive(int x, int min, int max) {
     if (!BeeUtils.betweenExclusive(x, min, max)) {
@@ -53,17 +54,6 @@ public class Assert {
       throw new KeyNotFoundException(key);
     }
     return key;
-  }
-
-  public static <T> T hasLength(T obj) {
-    return hasLength(obj, ASSERTION_FAILED + "argument has zero length");
-  }
-
-  public static <T> T hasLength(T obj, String msg) {
-    if (BeeUtils.length(obj) <= 0) {
-      throw new BeeRuntimeException(msg);
-    }
-    return obj;
   }
 
   public static int isEven(int x) {
@@ -109,24 +99,18 @@ public class Assert {
     return idx;
   }
 
-  public static int isIndex(Object obj, int idx) {
-    notNull(obj);
-    nonNegative(idx);
-
-    int n = BeeUtils.length(obj);
-
-    if (n <= 0) {
+  public static int isIndex(int idx, int size) {
+    if (size <= 0) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx
           + " references empty object");
-    } else if (idx >= n) {
-      throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx + " must be < " + n);
+    } else if (idx >= size) {
+      throw new BeeRuntimeException(ASSERTION_FAILED + "index " + idx + " must be < " + size);
     }
     return idx;
   }
 
-  public static int isIndex(Object obj, int idx, String msg) {
-    notNull(obj);
-    if (idx < 0 || idx >= BeeUtils.length(obj)) {
+  public static int isIndex(int idx, int size, String msg) {
+    if (idx < 0 || idx >= size) {
       throw new BeeRuntimeException(msg);
     }
     return idx;
@@ -198,36 +182,32 @@ public class Assert {
     }
   }
 
-  public static <T> T lengthEquals(T obj, int size) {
-    notNull(obj);
-    int len = BeeUtils.length(obj);
+  public static String[] lengthEquals(String[] arr, int size) {
+    notNull(arr);
+    int len = arr.length;
 
     if (size >= 0 && len != size) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "length " + len
           + " must be equal to " + size);
     }
-    return obj;
+    return arr;
   }
 
-  public static <T> T lengthInclusive(T obj, int min, int max) {
-    notNull(obj);
-    int len = BeeUtils.length(obj);
-
+  public static void lengthInclusive(int len, int min, int max) {
     if (min > 0 && len < min) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "length " + len + " must be >= " + min);
     }
     if (max > 0 && len > max) {
       throw new BeeRuntimeException(ASSERTION_FAILED + "length " + len + " must be <= " + max);
     }
-    return obj;
   }
 
-  public static <T> T maxLength(T obj, int max) {
-    return lengthInclusive(obj, -1, max);
+  public static void maxLength(int len, int max) {
+    lengthInclusive(len, -1, max);
   }
 
-  public static <T> T minLength(T obj, int min) {
-    return lengthInclusive(obj, min, -1);
+  public static void minLength(int len, int min) {
+    lengthInclusive(len, min, -1);
   }
 
   public static int nonNegative(int x) {
@@ -247,7 +227,7 @@ public class Assert {
     }
     for (int i = 0; i < obj.length; i++) {
       if (obj[i] == null) {
-        throw new BeeRuntimeException(BeeUtils.concat(1, message, BeeUtils.bracket(i)));
+        throw new BeeRuntimeException(BeeUtils.joinWords(message, BeeUtils.bracket(i)));
       }
     }
   }
@@ -256,15 +236,37 @@ public class Assert {
     noNullElements(ASSERTION_FAILED + "arguments must not be null", obj);
   }
 
-  public static <T> T notEmpty(T obj) {
-    return notEmpty(obj, ASSERTION_FAILED + "argument must not be null or empty");
+  public static <T extends Collection<?>> T notEmpty(T col) {
+    return notEmpty(col, IS_EMPTY);
   }
 
-  public static <T> T notEmpty(T obj, String message) {
-    if (BeeUtils.isEmpty(obj)) {
+  public static <T extends Map<?, ?>> T notEmpty(T map) {
+    return notEmpty(map, IS_EMPTY);
+  }
+  
+  public static String notEmpty(String s) {
+    return notEmpty(s, IS_EMPTY);
+  }
+
+  public static <T extends Collection<?>> T notEmpty(T col, String message) {
+    if (BeeUtils.isEmpty(col)) {
       throw new BeeRuntimeException(message);
     }
-    return obj;
+    return col;
+  }
+
+  public static <T extends Map<?, ?>> T notEmpty(T map, String message) {
+    if (BeeUtils.isEmpty(map)) {
+      throw new BeeRuntimeException(message);
+    }
+    return map;
+  }
+
+  public static String notEmpty(String s, String message) {
+    if (BeeUtils.isEmpty(s)) {
+      throw new BeeRuntimeException(message);
+    }
+    return s;
   }
 
   public static void notImplemented() {

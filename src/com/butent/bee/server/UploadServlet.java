@@ -7,6 +7,7 @@ import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class UploadServlet extends HttpServlet {
   private ResponseObject dispatch(String service) {
     ResponseObject responseObject;
 
-    String msg = BeeUtils.concat(1, service, "service not recognized");
+    String msg = BeeUtils.joinWords(service, "service not recognized");
     logger.warning(msg);
     responseObject = ResponseObject.error(msg);
 
@@ -57,14 +58,14 @@ public class UploadServlet extends HttpServlet {
 
     ResponseObject responseObject;
     if (BeeUtils.isEmpty(service)) {
-      String msg = BeeUtils.concat(1, prefix, "service name not specified");
+      String msg = BeeUtils.joinWords(prefix, "service name not specified");
       logger.error(msg);
       responseObject = ResponseObject.error(msg);
     } else {
       logger.info(prefix, "request", service);
       responseObject = dispatch(service);
       if (responseObject == null) {
-        String msg = BeeUtils.concat(1, prefix, service, "response empty");
+        String msg = BeeUtils.joinWords(prefix, service, "response empty");
         logger.warning(msg);
         responseObject = ResponseObject.warning(msg);
       }
@@ -76,7 +77,7 @@ public class UploadServlet extends HttpServlet {
 
     String content = CommUtils.prepareContent(ctp, responseObject.serialize());
 
-    logger.info(prefix, BeeUtils.elapsedSeconds(start), "response",
+    logger.info(prefix, TimeUtils.elapsedSeconds(start), "response",
         resp.getContentType(), content.length());
 
     try {

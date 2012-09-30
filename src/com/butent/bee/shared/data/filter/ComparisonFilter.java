@@ -1,6 +1,7 @@
 package com.butent.bee.shared.data.filter;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.value.Value;
@@ -241,7 +242,7 @@ public abstract class ComparisonFilter extends Filter {
 
   @Override
   public String toString() {
-    return BeeUtils.concat(0, column, operator.toTextString(), value);
+    return BeeUtils.join(BeeConst.STRING_EMPTY, column, operator.toTextString(), value);
   }
 
   protected boolean isOperatorMatch(Value v1, Value v2) {

@@ -80,7 +80,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
         PropertyUtils.addExtended(result, "parameters", BeeUtils.bracket(params.size()));
         idx = 0;
         for (Parameter param : params) {
-          PropertyUtils.addChildren(result, BeeUtils.concat(1, "param", ++idx),
+          PropertyUtils.addChildren(result, BeeUtils.joinWords("param", ++idx),
               "Name", param.getName(),
               "Default", param.getDefaultValue(),
               "Required", param.isRequired());
@@ -90,7 +90,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
         PropertyUtils.addExtended(result, "constants", BeeUtils.bracket(constants.size()));
         idx = 0;
         for (Map.Entry<String, String> entry : constants.entrySet()) {
-          result.add(new ExtendedProperty(BeeUtils.concat(1, DecoratorConstants.TAG_CONST, ++idx),
+          result.add(new ExtendedProperty(BeeUtils.joinWords(DecoratorConstants.TAG_CONST, ++idx),
               entry.getKey(), entry.getValue()));
         }
       }
@@ -99,7 +99,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
         idx = 0;
         for (Map.Entry<String, String> entry : css.entrySet()) {
           PropertyUtils.addExtended(result,
-              BeeUtils.concat(1, DecoratorConstants.TAG_STYLE, ++idx),
+              BeeUtils.joinWords(DecoratorConstants.TAG_STYLE, ++idx),
               entry.getKey(), entry.getValue());
         }
       }
@@ -113,7 +113,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
         PropertyUtils.addExtended(result, "handlers", BeeUtils.bracket(handlers.size()));
         idx = 0;
         for (Handler handler : handlers) {
-          PropertyUtils.addExtended(result, BeeUtils.concat(1, DecoratorConstants.TAG_HANDLER,
+          PropertyUtils.addExtended(result, BeeUtils.joinWords(DecoratorConstants.TAG_HANDLER,
               ++idx),
               handler.getType(), handler.getBody());
         }

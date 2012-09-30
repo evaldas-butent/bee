@@ -20,7 +20,7 @@ class SqlCommand extends SqlQuery<SqlCommand> {
   private final Map<String, Object> parameters;
 
   public SqlCommand(SqlKeyword command, Map<String, Object> parameters) {
-    Assert.notEmpty(command);
+    Assert.notNull(command);
 
     this.command = command;
     this.parameters = parameters;
@@ -50,7 +50,7 @@ class SqlCommand extends SqlQuery<SqlCommand> {
 
   @Override
   public String getSqlString(SqlBuilder builder) {
-    Assert.notEmpty(builder);
+    Assert.notNull(builder);
     Map<String, Object> params = Maps.newHashMap();
 
     if (!BeeUtils.isEmpty(parameters)) {
@@ -68,7 +68,7 @@ class SqlCommand extends SqlQuery<SqlCommand> {
 
   @Override
   public boolean isEmpty() {
-    return BeeUtils.isEmpty(command);
+    return command == null;
   }
 
   @Override

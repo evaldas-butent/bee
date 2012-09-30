@@ -28,6 +28,7 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -265,7 +266,7 @@ public class Search {
           String[] arr = Codec.beeDeserializeCollection((String) response.getResponse());
           final List<SearchResult> results = Lists.newArrayList();
 
-          if (!BeeUtils.isEmpty(arr)) {
+          if (arr != null) {
             for (String s : arr) {
               SearchResult result = SearchResult.restore(s);
               if (result != null) {
@@ -294,7 +295,7 @@ public class Search {
     BeeKeeper.getBus().fireEvent(event);
 
     if (BeeUtils.isEmpty(event.getResult())) {
-      return DataUtils.join(dataInfo, row, 1);
+      return DataUtils.join(dataInfo, row, BeeConst.STRING_SPACE);
     } else {
       return event.getResult();
     }

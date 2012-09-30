@@ -71,7 +71,7 @@ public class ColumnNotEmptyFilter extends Filter {
   public boolean isMatch(List<? extends IsColumn> columns, IsRow row) {
     int columnIndex = getColumnIndex(column, columns);
     Value columnValue = row.getValue(columnIndex, columns.get(columnIndex).getType());
-    return !columnValue.isNull() && !BeeUtils.isEmpty(columnValue.getObjectValue());
+    return !columnValue.isEmpty();
   }
 
   @Override
@@ -81,6 +81,6 @@ public class ColumnNotEmptyFilter extends Filter {
 
   @Override
   public String toString() {
-    return BeeUtils.concat(1, column, "NOT EMPTY");
+    return BeeUtils.joinWords(column, "NOT EMPTY");
   }
 }

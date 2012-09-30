@@ -115,7 +115,7 @@ public class Order implements BeeSerializable, Transformable {
     public String transform() {
       StringBuilder sb = new StringBuilder(getName());
       if (getSources().size() != 1 || !BeeUtils.same(getName(), getSources().get(0))) {
-        sb.append(BeeConst.CHAR_EQ).append(BeeUtils.transformCollection(getSources()));
+        sb.append(BeeConst.CHAR_EQ).append(BeeUtils.transform(getSources()));
       }
       if (!isAscending()) {
         sb.append(BeeConst.CHAR_SPACE).append(SORT_DESCENDING);
@@ -231,13 +231,13 @@ public class Order implements BeeSerializable, Transformable {
       columns.clear();
     }
     String[] cols = Codec.beeDeserializeCollection(s);
-    if (BeeUtils.isEmpty(cols)) {
+    if (ArrayUtils.isEmpty(cols)) {
       return;
     }
 
     for (String col : cols) {
       String[] arr = Codec.beeDeserializeCollection(col);
-      Assert.minLength(arr, 3);
+      Assert.minLength(ArrayUtils.length(arr), 3);
 
       List<String> lst = Lists.newArrayList(ArrayUtils.slice(arr, 2));
       add(arr[0], lst, BeeUtils.toBoolean(arr[1]));

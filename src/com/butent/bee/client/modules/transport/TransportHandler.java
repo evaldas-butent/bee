@@ -167,7 +167,7 @@ public class TransportHandler {
                     public void onSuccess(BeeRowSet res) {
                       for (BeeRow row : res.getRows()) {
                         BeeKeeper.getBus().fireEvent(new RowInsertEvent(res.getViewName(), row));
-                        presenter.getGridView().getGrid().insertRow(row);
+                        presenter.getGridView().getGrid().insertRow(row, false);
                       }
                     }
                   });
@@ -277,7 +277,7 @@ public class TransportHandler {
     }
 
     private String getTypeValue(IsRow type, String colName) {
-      if (BeeUtils.allNotEmpty(type, typeTree, typeTree.getDataColumns())) {
+      if (BeeUtils.allNotNull(type, typeTree, typeTree.getDataColumns())) {
         return type.getString(DataUtils.getColumnIndex(colName, typeTree.getDataColumns()));
       }
       return null;
@@ -527,7 +527,7 @@ public class TransportHandler {
     }
 
     private String getModelValue(IsRow model, String colName) {
-      if (BeeUtils.allNotEmpty(model, modelTree, modelTree.getDataColumns())) {
+      if (BeeUtils.allNotNull(model, modelTree, modelTree.getDataColumns())) {
         return model.getString(DataUtils.getColumnIndex(colName, modelTree.getDataColumns()));
       }
       return null;

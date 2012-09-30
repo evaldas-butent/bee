@@ -9,6 +9,7 @@ import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_USER;
 import static com.butent.bee.server.data.SystemBean.AUDIT_FLD_VALUE;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
@@ -38,7 +39,7 @@ class MsSqlBuilder extends SqlBuilder {
   protected String getAuditTrigger(String auditTable, String idName, Collection<String> fields) {
     StringBuilder body = new StringBuilder();
     String insert = "INSERT INTO " + auditTable
-        + " (" + BeeUtils.concat(",", sqlQuote(AUDIT_FLD_TIME), sqlQuote(AUDIT_FLD_USER),
+        + " (" + BeeUtils.join(",", sqlQuote(AUDIT_FLD_TIME), sqlQuote(AUDIT_FLD_USER),
             sqlQuote(AUDIT_FLD_TX), sqlQuote(AUDIT_FLD_MODE), sqlQuote(AUDIT_FLD_ID),
             sqlQuote(AUDIT_FLD_FIELD), sqlQuote(AUDIT_FLD_VALUE))
         + ") SELECT @_time,@_user,@_transaction,@_mode,";
@@ -82,7 +83,7 @@ class MsSqlBuilder extends SqlBuilder {
     Assert.notNull(sc);
     Assert.state(!sc.isEmpty());
 
-    if (BeeUtils.isEmpty(sc.getDataSource())) {
+    if (sc.getDataSource() == null) {
       return super.getCreate(sc);
     }
     return sc.getDataSource().getSqlString(this).replaceFirst(" FROM ",
@@ -111,7 +112,7 @@ class MsSqlBuilder extends SqlBuilder {
     int limit = ss.getLimit();
     int offset = ss.getOffset();
 
-    if (BeeUtils.allEmpty(limit, offset)) {
+    if (limit <= 0 && offset <= 0) {
       return sql;
     }
     String top = "";
@@ -120,7 +121,7 @@ class MsSqlBuilder extends SqlBuilder {
     boolean hasUnion = !BeeUtils.isEmpty(ss.getUnion());
 
     if (BeeUtils.isPositive(limit)) {
-      top = BeeUtils.concat(1, "TOP", offset + limit);
+      top = BeeUtils.joinWords("TOP", offset + limit);
     }
     if (BeeUtils.isPositive(offset)) {
       String order = "ORDER BY (SELECT 0)";
@@ -131,24 +132,24 @@ class MsSqlBuilder extends SqlBuilder {
         sql = sql.substring(0, idx);
       }
       idAlias = sqlQuote(SqlUtils.uniqueName());
-      numbering = BeeUtils.concat(1,
+      numbering = BeeUtils.joinWords(
           "ROW_NUMBER() OVER", BeeUtils.parenthesize(order), "AS", idAlias + ",");
     }
     if (hasUnion) {
       String queryAlias = sqlQuote(SqlUtils.uniqueName());
 
-      sql = BeeUtils.concat(1,
+      sql = BeeUtils.joinWords(
           "SELECT", top, numbering, queryAlias + ".*",
           "FROM", BeeUtils.parenthesize(sql), queryAlias);
     } else {
       String select = "SELECT " + (ss.isDistinctMode() ? "DISTINCT " : "");
-      sql = BeeUtils.concat(1,
+      sql = BeeUtils.joinWords(
           select, top, numbering, sql.substring(select.length()));
     }
     if (!BeeUtils.isEmpty(idAlias)) {
       String queryAlias = sqlQuote(SqlUtils.uniqueName());
 
-      sql = BeeUtils.concat(1,
+      sql = BeeUtils.joinWords(
           "SELECT", queryAlias + ".*",
           "FROM", BeeUtils.parenthesize(sql), queryAlias,
           "WHERE", queryAlias + "." + idAlias, ">", offset);
@@ -176,7 +177,7 @@ class MsSqlBuilder extends SqlBuilder {
 
     IsCondition whereClause = su.getWhere();
 
-    if (!BeeUtils.isEmpty(whereClause)) {
+    if (whereClause != null) {
       String wh = whereClause.getSqlString(this);
 
       if (!BeeUtils.isEmpty(wh)) {
@@ -249,7 +250,7 @@ class MsSqlBuilder extends SqlBuilder {
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
       case SET_PARAMETER:
-        String cmd = BeeUtils.concat(0,
+        String cmd = BeeUtils.join(BeeConst.STRING_EMPTY,
             "DECLARE @tmpVar BINARY(128);SET @tmpVar=",
             sqlTransform(params.get("prmValue")), ";SET CONTEXT_INFO @tmpVar");
         return "EXEC(" + sqlTransform(cmd) + ")";
@@ -258,16 +259,16 @@ class MsSqlBuilder extends SqlBuilder {
         String text = super.sqlKeyword(option, params);
         String field = (String) params.get("fields");
 
-        if (!BeeUtils.isEmpty(params.get("isUnique")) && !field.contains(",")) {
-          text = BeeUtils.concat(1, text, "WHERE", field, "IS NOT NULL");
+        if (!isEmpty(params.get("isUnique")) && !field.contains(",")) {
+          text = BeeUtils.joinWords(text, "WHERE", field, "IS NOT NULL");
         }
         return text;
 
       case CREATE_TRIGGER:
-        return BeeUtils.concat(1,
+        return BeeUtils.joinWords(
             "CREATE TRIGGER", params.get("name"), "ON", params.get("table"),
             ((SqlTriggerTiming) params.get("timing") == SqlTriggerTiming.BEFORE) ? "FOR" : "AFTER",
-            BeeUtils.concat(",", ((EnumSet<SqlTriggerEvent>) params.get("events")).toArray()),
+            BeeUtils.join(",", ((EnumSet<SqlTriggerEvent>) params.get("events")).toArray()),
             "AS ", getTriggerBody(params));
 
       case DB_NAME:
@@ -282,11 +283,11 @@ class MsSqlBuilder extends SqlBuilder {
             SqlUtils.less("p", "index_id", 2));
 
         Object prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("s", "name", prm));
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("o", "name", prm));
         }
         return new SqlSelect()
@@ -304,11 +305,11 @@ class MsSqlBuilder extends SqlBuilder {
             SqlUtils.equal("o", "is_ms_shipped", 0));
 
         prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("s", "name", prm));
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("o", "name", prm));
         }
         return new SqlSelect()
@@ -324,11 +325,11 @@ class MsSqlBuilder extends SqlBuilder {
         wh = null;
 
         prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("s", "name", prm));
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("o", "name", prm));
         }
         return new SqlSelect()
@@ -347,7 +348,7 @@ class MsSqlBuilder extends SqlBuilder {
         return "#" + params.get("name");
 
       case RENAME_TABLE:
-        return BeeUtils.concat(1,
+        return BeeUtils.joinWords(
             "sp_rename", params.get("nameFrom"), ",", params.get("nameTo"));
 
       default:

@@ -143,7 +143,8 @@ public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue
 
   @Override
   public String toString() {
-    return BeeUtils.transformOptions("caption", caption, "type", type, "value", value);
+    return BeeUtils.transformOptions("caption", caption, "type", BeeUtils.transform(type),
+        "value", value);
   }
 
   public String transform() {

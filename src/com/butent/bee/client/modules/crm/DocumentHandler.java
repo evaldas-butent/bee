@@ -208,7 +208,7 @@ public class DocumentHandler {
     }
 
     private String getCategoryValue(IsRow category, String colName) {
-      if (BeeUtils.allNotEmpty(category, categoryTree, categoryTree.getDataColumns())) {
+      if (BeeUtils.allNotNull(category, categoryTree, categoryTree.getDataColumns())) {
         return category.getString(DataUtils.getColumnIndex(colName, categoryTree.getDataColumns()));
       }
       return null;

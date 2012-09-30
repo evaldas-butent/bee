@@ -26,7 +26,7 @@ public class CrmConstants {
     EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED, DELETED;
 
     public String getCaption() {
-      return BeeUtils.proper(this.name(), null);
+      return BeeUtils.proper(this);
     }
   }
 
@@ -35,7 +35,7 @@ public class CrmConstants {
     FORWARDED, EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED, DELETED;
 
     public String getCaption() {
-      return BeeUtils.proper(this.name(), null);
+      return BeeUtils.proper(this);
     }
   }
 

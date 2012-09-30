@@ -76,7 +76,7 @@ public class IdGeneratorBean {
 
     long[] ids = idCache.get(source);
 
-    if (BeeUtils.isEmpty(ids) || ids[NEXT_ID_INDEX] >= ids[LAST_ID_INDEX]) {
+    if (ids == null || ids[NEXT_ID_INDEX] >= ids[LAST_ID_INDEX]) {
       ids = prepareId(source);
     }
     return ++ids[NEXT_ID_INDEX];
@@ -92,7 +92,7 @@ public class IdGeneratorBean {
 
     long lastId;
 
-    if (BeeUtils.isEmpty(qs.updateData(su))) {
+    if (qs.updateData(su) == 0) {
       String idFld = sys.getIdName(source);
 
       lastId = BeeUtils.unbox(qs.getLong(new SqlSelect().addMax(source, idFld).addFrom(source)));

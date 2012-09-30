@@ -59,14 +59,14 @@ public class MessageBoxes {
   private static final int CHOICE_MAX_HORIZONTAL_ITEMS = 10;
   private static final int CHOICE_MAX_HORIZONTAL_CHARS = 100;
 
-  public void alert(Object... obj) {
-    Assert.notNull(obj);
-    Assert.parameterCount(obj.length, 1);
-    Window.alert(BeeUtils.concat(BeeConst.CHAR_EOL, obj));
+  public void alert(String... lines) {
+    Assert.notNull(lines);
+    Assert.parameterCount(lines.length, 1);
+    Window.alert(BeeUtils.buildLines(lines));
   }
 
   public void choice(String caption, String prompt, List<String> options,
-      final DialogCallback<Integer> callback, final int defaultValue, final int timeout,
+      final ChoiceCallback callback, final int defaultValue, final int timeout,
       String cancelHtml, WidgetInitializer initializer) {
     Assert.notEmpty(options);
     Assert.notNull(callback);
@@ -147,7 +147,7 @@ public class MessageBoxes {
         if (selectedIndex.isNotNull() && !cancelIndex.contains(selectedIndex.get())) {
           callback.onSuccess(selectedIndex.get());
         } else if (State.EXPIRED.equals(state.get())) {
-          callback.onTimeout(defaultValue);
+          callback.onTimeout();
         } else {
           callback.onCancel();
         }
@@ -266,15 +266,15 @@ public class MessageBoxes {
     if (!BeeUtils.isEmpty(dialogStyleName)) {
       panel.addStyleName(dialogStyleName);
     }
-    
+
     panel.setWidget(content);
     panel.setAnimationEnabled(true);
     panel.center();
-    
+
     panel.setHideOnEscape(true);
     panel.setHideOnSave(true);
     panel.setOnSave(command);
-    
+
     DomUtils.makeFocusable(panel);
     DomUtils.setFocus(panel, true);
   }
@@ -288,10 +288,10 @@ public class MessageBoxes {
     confirm(caption, Lists.newArrayList(message), command, dialogStyleName);
   }
 
-  public boolean nativeConfirm(Object... obj) {
-    Assert.notNull(obj);
-    Assert.parameterCount(obj.length, 1);
-    return Window.confirm(BeeUtils.concat(BeeConst.CHAR_EOL, obj));
+  public boolean nativeConfirm(String... lines) {
+    Assert.notNull(lines);
+    Assert.parameterCount(lines.length, 1);
+    return Window.confirm(BeeUtils.buildLines(lines));
   }
 
   public void showError(Object... x) {

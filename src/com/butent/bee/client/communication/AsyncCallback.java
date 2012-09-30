@@ -69,13 +69,13 @@ public class AsyncCallback implements RequestCallback {
     }
 
     if (statusCode != Response.SC_OK) {
-      msg = BeeUtils.concat(1, NameUtils.addName(Service.RPC_VAR_QID, id),
+      msg = BeeUtils.joinWords(NameUtils.addName(Service.RPC_VAR_QID, id),
           NameUtils.addName(Service.RPC_VAR_SVC, svc));
       if (!BeeUtils.isEmpty(msg)) {
         BeeKeeper.getLog().severe(msg);
       }
 
-      msg = BeeUtils.concat(1, BeeUtils.bracket(statusCode), resp.getStatusText());
+      msg = BeeUtils.joinWords(BeeUtils.bracket(statusCode), resp.getStatusText());
       BeeKeeper.getLog().severe("response status", msg);
 
       if (info != null) {
@@ -112,7 +112,7 @@ public class AsyncCallback implements RequestCallback {
       BeeKeeper.getLog().info("response", NameUtils.addName(Service.RPC_VAR_QID, id),
           NameUtils.addName(Service.RPC_VAR_SVC, svc));
 
-      BeeKeeper.getLog().info(NameUtils.addName(Service.RPC_VAR_CTP, ctp),
+      BeeKeeper.getLog().info(NameUtils.addName(Service.RPC_VAR_CTP, BeeUtils.transform(ctp)),
           NameUtils.addName("len", len), NameUtils.addName(Service.RPC_VAR_CNT, cnt));
       BeeKeeper.getLog().info(NameUtils.addName(Service.RPC_VAR_COLS, cc),
           NameUtils.addName(Service.RPC_VAR_MSG_CNT, mc),
@@ -135,9 +135,7 @@ public class AsyncCallback implements RequestCallback {
     if (debug) {
       Header[] headers = resp.getHeaders();
       for (int i = 0; i < headers.length; i++) {
-        if (!BeeUtils.isEmpty(headers[i])) {
-          BeeKeeper.getLog().info("Header", i + 1, headers[i].getName(), headers[i].getValue());
-        }
+        BeeKeeper.getLog().info("Header", i + 1, headers[i].getName(), headers[i].getValue());
       }
       if (info != null) {
         info.setRespInfo(RpcUtils.responseInfo(resp));

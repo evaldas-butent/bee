@@ -1892,7 +1892,7 @@ public enum FormWidget {
 
     if (image != null) {
       face.setImage(image);
-    } else if (!BeeUtils.isEmpty(face)) {
+    } else if (face != null) {
       face.setHTML(html);
     }
   }

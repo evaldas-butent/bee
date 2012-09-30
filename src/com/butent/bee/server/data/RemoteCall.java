@@ -213,7 +213,7 @@ public class RemoteCall {
     } catch (JAXBException e) {
       String err;
 
-      if (!BeeUtils.isEmpty(e.getLinkedException())) {
+      if (e.getLinkedException() != null) {
         err = e.getLinkedException().getMessage();
       } else {
         err = e.getMessage();
@@ -239,7 +239,7 @@ public class RemoteCall {
     } catch (JAXBException e) {
       String err;
 
-      if (!BeeUtils.isEmpty(e.getLinkedException())) {
+      if (e.getLinkedException() != null) {
         err = e.getLinkedException().getMessage();
       } else {
         err = e.getMessage();

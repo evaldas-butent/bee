@@ -17,6 +17,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -78,12 +79,11 @@ public class ModuleHolderBean {
   }
 
   public String getResourcePath(String moduleName, String... resources) {
-    Assert.notNull(resources);
-    Assert.notEmpty(resources);
-    String resource = BeeUtils.concat("/", resources);
+    Assert.isTrue(!ArrayUtils.isEmpty(resources));
+    String resource = ArrayUtils.join("/", resources);
 
     if (!BeeUtils.isEmpty(moduleName)) {
-      resource = BeeUtils.concat("/",
+      resource = BeeUtils.join("/",
           BeeUtils.normalize(PROPERTY_MODULES), getModule(moduleName).getResourcePath(), resource);
     }
     return resource;

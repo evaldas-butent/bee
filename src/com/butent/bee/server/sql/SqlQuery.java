@@ -23,7 +23,7 @@ abstract class SqlQuery<T> implements IsQuery {
    */
   @Override
   public String getSqlString(SqlBuilder builder) {
-    Assert.notEmpty(builder);
+    Assert.notNull(builder);
     return builder.getQuery(this);
   }
 

@@ -198,7 +198,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
   }
 
   public String getHeadersAsString() {
-    return BeeUtils.transformMap(headers);
+    return BeeUtils.transform(headers);
   }
 
   public String getId() {
@@ -252,7 +252,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
   }
 
   public String getParamsAsString() {
-    return BeeUtils.transformMap(params);
+    return BeeUtils.transform(params);
   }
 
   public String getQuery() {
@@ -276,7 +276,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
   }
 
   public String getVarsAsString() {
-    return BeeUtils.transformMap(vars);
+    return BeeUtils.transform(vars);
   }
 
   public boolean hasParameter(int idx) {
@@ -425,8 +425,8 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
 
   @Override
   public String toString() {
-    return BeeUtils.concat(BeeConst.DEFAULT_ROW_SEPARATOR,
-        BeeUtils.transformOptions("counter", COUNTER, "method", method, "id", id,
+    return BeeUtils.join(BeeConst.DEFAULT_ROW_SEPARATOR,
+        BeeUtils.transformOptions("counter", BeeUtils.toString(COUNTER), "method", method, "id", id,
             "service", service, "dsn", dsn, "sep", separator, "opt", options), headers, params);
   }
 
@@ -455,7 +455,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
     }
 
     Enumeration<String> lst = req.getAttributeNames();
-    if (BeeUtils.isEmpty(lst)) {
+    if (lst == null) {
       return null;
     }
 
@@ -477,7 +477,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
     }
 
     Cookie[] arr = req.getCookies();
-    if (BeeUtils.isEmpty(arr)) {
+    if (arr == null) {
       return null;
     }
 
@@ -540,7 +540,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
     List<Locale> lst = new ArrayList<Locale>();
 
     Enumeration<Locale> z = req.getLocales();
-    if (BeeUtils.isEmpty(z)) {
+    if (z == null) {
       loc = req.getLocale();
       if (loc != null) {
         lst.add(loc);
@@ -617,7 +617,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
     String[] arr;
 
     Enumeration<String> lst = sc.getAttributeNames();
-    if (!BeeUtils.isEmpty(lst)) {
+    if (lst != null) {
       while (lst.hasMoreElements()) {
         nm = lst.nextElement();
 
@@ -671,7 +671,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
         root, "Servlet Context Name", sc.getServletContextName());
 
     lst = sc.getInitParameterNames();
-    if (!BeeUtils.isEmpty(lst)) {
+    if (lst != null) {
       while (lst.hasMoreElements()) {
         nm = lst.nextElement();
         PropertyUtils.addExtended(info, root + " init parameter", nm, sc.getInitParameter(nm));
@@ -691,7 +691,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
     String nm;
 
     Enumeration<String> lst = hs.getAttributeNames();
-    if (!BeeUtils.isEmpty(lst)) {
+    if (lst != null) {
       while (lst.hasMoreElements()) {
         nm = lst.nextElement();
         PropertyUtils.addExtended(info, root + " attribute", nm, hs.getAttribute(nm));

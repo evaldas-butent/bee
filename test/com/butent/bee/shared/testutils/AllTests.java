@@ -7,11 +7,9 @@ import org.junit.runners.Suite.SuiteClasses;
  * Contains the Test Suite.
  */
 @RunWith(value = org.junit.runners.Suite.class)
-@SuiteClasses(value = {TestBeeUtilsisEmpty.class,
-    TestBeeUtilscontaintAny.class, TestBeeUtilsFilterType.class,
-    TestBeeUtilsTransform.class, TestBeeUtilsIsEmpty2Par.class,
-    TestArrayUtils.class, TestPropertyUtils.class,
-    TestValueUtils.class, TestTimeUtils.class, TestRowComparator.class,
+@SuiteClasses(value = {TestBeeUtilscontaintAny.class,
+    TestBeeUtilsTransform.class, TestArrayUtils.class, TestPropertyUtils.class,
+    TestValueUtils.class, TestTimeUtils.class,
     TestCodec.class, TestIsExpression.class, TestIsCondition.class,
     TestSqlCreate.class, TestSqlUtilsIsQuery.class, TestSqlInsert.class,
     TestSqlUpdate.class, TestSqlDelete.class, TestSqlSelect.class,

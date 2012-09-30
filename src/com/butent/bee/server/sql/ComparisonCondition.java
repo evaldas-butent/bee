@@ -33,7 +33,7 @@ class ComparisonCondition implements IsCondition {
   public Collection<String> getSources() {
     Collection<String> sources = null;
 
-    if (!BeeUtils.isEmpty(values)) {
+    if (values != null) {
       for (IsSql value : values) {
         if (value instanceof HasSource) {
           sources = SqlUtils.addCollection(sources, ((HasSource) value).getSources());
@@ -45,11 +45,11 @@ class ComparisonCondition implements IsCondition {
 
   @Override
   public String getSqlString(SqlBuilder builder) {
-    Assert.notEmpty(builder);
+    Assert.notNull(builder);
     Map<String, String> params = Maps.newHashMap();
     params.put("expression", expression.getSqlString(builder));
 
-    if (!BeeUtils.isEmpty(values)) {
+    if (values != null) {
       int i = 0;
 
       for (IsSql value : values) {

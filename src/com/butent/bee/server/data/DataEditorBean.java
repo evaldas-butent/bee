@@ -27,6 +27,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.SqlConstants.SqlKeyword;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -38,6 +39,7 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -188,7 +190,7 @@ public class DataEditorBean {
       Assert.notNull(tblInfo);
       id = row.getId();
 
-      if (!BeeUtils.isEmpty(id)) {
+      if (DataUtils.isId(id)) {
         tblInfo.id = id;
         tblInfo.version = row.getVersion();
 
@@ -220,7 +222,7 @@ public class DataEditorBean {
     } else {
       row.setVersion(tblInfo.version);
 
-      if (BeeUtils.isEmpty(row.getId())) {
+      if (row.getId() == DataUtils.NEW_ROW_ID) {
         row.setId(id);
         sys.postViewEvent(new ViewInsertEvent(rs.getViewName(), rs.getColumns(), row));
       } else {
@@ -374,7 +376,7 @@ public class DataEditorBean {
                     .addFields(relation, sys.getIdName(relation))
                     .addFrom(relation));
 
-                if (BeeUtils.isEmpty(rs) && BeeUtils.isPositive(refCount)) {
+                if (ArrayUtils.isEmpty(rs) && BeeUtils.isPositive(refCount)) {
                   ResponseObject resp = generateData(relation, random.nextInt(refCount) + 1,
                       refCount, childCount, cache);
                   response.addMessages(resp.getMessages());
@@ -389,7 +391,7 @@ public class DataEditorBean {
                 }
                 relations.put(relation, rs);
               }
-              if (!BeeUtils.isEmpty(rs)) {
+              if (!ArrayUtils.isEmpty(rs)) {
                 if (uniqueKeys.containsKey(fldName)) {
                   List<String> key = uniqueKeys.get(fldName);
                   List<String[]> unq;
@@ -580,7 +582,7 @@ public class DataEditorBean {
       }
       SqlUpdate su = table.updateState(id, state, bitMap);
 
-      if (!BeeUtils.isEmpty(su) && qs.updateData(su) == 0) {
+      if (su != null && qs.updateData(su) == 0) {
         qs.updateData(table.insertState(id, state, bitMap));
       }
     }
@@ -633,7 +635,7 @@ public class DataEditorBean {
         TableInfo relInfo = null;
 
         for (TableInfo info : updates.values()) {
-          if (BeeUtils.same(BeeUtils.concat(".", tblInfo.tableAlias, fldInfo.fieldName),
+          if (BeeUtils.same(BeeUtils.join(".", tblInfo.tableAlias, fldInfo.fieldName),
               info.relation)) {
             relInfo = info;
             break;
@@ -643,7 +645,7 @@ public class DataEditorBean {
 
         if (response.hasErrors()) {
           break;
-        } else if (BeeUtils.isEmpty(relInfo.id)) {
+        } else if (!DataUtils.isId(relInfo.id)) {
           fldInfo.newValue = id;
         } else {
           continue;
@@ -665,7 +667,7 @@ public class DataEditorBean {
       String idName = sys.getIdName(tblName);
       String verName = sys.getVersionName(tblName);
 
-      if (BeeUtils.isEmpty(id)) { // INSERT
+      if (!DataUtils.isId(id)) { // INSERT
         SqlInsert si = new SqlInsert(tblName).addConstant(verName, version);
 
         for (FieldInfo col : baseUpdate) {
@@ -799,7 +801,7 @@ public class DataEditorBean {
     SqlSelect ss = view.getQuery().resetFields();
 
     for (TableInfo tblInfo : updates.values()) {
-      if (BeeUtils.allEmpty(id, tblInfo.relation)) {
+      if (id == 0 && BeeUtils.isEmpty(tblInfo.relation)) {
         id = tblInfo.id;
       }
       String idName = sys.getIdName(tblInfo.tableName);
@@ -817,7 +819,7 @@ public class DataEditorBean {
         }
       }
     }
-    Assert.notEmpty(id);
+    Assert.state(DataUtils.isId(id));
     Map<String, String> res =
         qs.getRow(ss.setWhere(view.getCondition(ComparisonFilter.compareId(id))));
 
@@ -866,7 +868,7 @@ public class DataEditorBean {
       String fld = view.getColumnField(srcName);
       ok = registerField(srcName, new FieldInfo(als, null, fld, null, null, null),
           updates, view, response);
-      relation = BeeUtils.concat(".", BeeUtils.notEmpty(view.getColumnOwner(srcName), als), fld);
+      relation = BeeUtils.join(".", BeeUtils.notEmpty(view.getColumnOwner(srcName), als), fld);
     }
     if (ok) {
       if (!updates.containsKey(tblAlias)) {

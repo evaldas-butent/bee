@@ -14,6 +14,7 @@ import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.cache.ReplacementPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -100,7 +101,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
     if (o == null) {
       return BeeConst.COMPARE_MORE;
     }
-    return BeeUtils.compareNormalized(getViewName(), o.getViewName());
+    return BeeUtils.compare(getViewName(), o.getViewName());
   }
 
   public boolean containsAllViewColumns(Collection<String> columnNames) {
@@ -154,7 +155,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
     getColumns().clear();
     String[] cArr = Codec.beeDeserializeCollection(arr[index++]);
-    if (!BeeUtils.isEmpty(cArr)) {
+    if (!ArrayUtils.isEmpty(cArr)) {
       for (String col : cArr) {
         getColumns().add(BeeColumn.restore(col));
       }
@@ -162,7 +163,7 @@ public class DataInfo implements BeeSerializable, Comparable<DataInfo>, HasExten
 
     getViewColumns().clear();
     cArr = Codec.beeDeserializeCollection(arr[index++]);
-    if (!BeeUtils.isEmpty(cArr)) {
+    if (!ArrayUtils.isEmpty(cArr)) {
       for (String col : cArr) {
         getViewColumns().add(ViewColumn.restore(col));
       }

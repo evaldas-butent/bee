@@ -60,7 +60,7 @@ public class ResponseObject implements BeeSerializable {
   private boolean isArrayType = false;
 
   public ResponseObject addError(Object... err) {
-    messages.add(new ResponseMessage(LogLevel.ERROR, BeeUtils.concat(1, err)));
+    messages.add(new ResponseMessage(LogLevel.ERROR, BeeUtils.joinWords(err)));
     return this;
   }
 
@@ -75,7 +75,7 @@ public class ResponseObject implements BeeSerializable {
   }
 
   public ResponseObject addInfo(Object... obj) {
-    messages.add(new ResponseMessage(LogLevel.INFO, BeeUtils.concat(1, obj)));
+    messages.add(new ResponseMessage(LogLevel.INFO, BeeUtils.joinWords(obj)));
     return this;
   }
 
@@ -87,7 +87,7 @@ public class ResponseObject implements BeeSerializable {
   }
 
   public ResponseObject addWarning(Object... obj) {
-    messages.add(new ResponseMessage(LogLevel.WARNING, BeeUtils.concat(1, obj)));
+    messages.add(new ResponseMessage(LogLevel.WARNING, BeeUtils.joinWords(obj)));
     return this;
   }
 
@@ -106,7 +106,7 @@ public class ResponseObject implements BeeSerializable {
           messages.clear();
           String[] cArr = Codec.beeDeserializeCollection(value);
 
-          if (!BeeUtils.isEmpty(cArr)) {
+          if (cArr != null) {
             for (String msg : cArr) {
               messages.add(new ResponseMessage(msg, true));
             }
@@ -154,8 +154,8 @@ public class ResponseObject implements BeeSerializable {
         res = (T) getResponse();
 
       } else if (logger != null) {
-        logger.warning("Requested response type:", BeeUtils.bracket(def.getClass()),
-            "got:", BeeUtils.bracket(getResponse().getClass()));
+        logger.warning("Requested response type:", BeeUtils.bracket(def.getClass().toString()),
+            "got:", BeeUtils.bracket(getResponse().getClass().toString()));
       }
     }
     log(logger);

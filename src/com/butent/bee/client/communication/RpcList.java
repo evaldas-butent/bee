@@ -143,7 +143,7 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_ERR_MSG)) {
           s = el.getErrMsg();
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_USR_DATA)) {
-          s = Codec.escapeUnicode(BeeUtils.transformMap(el.getUserData()));
+          s = Codec.escapeUnicode(BeeUtils.transform(el.getUserData()));
 
         } else {
           s = BeeConst.STRING_EMPTY;

@@ -1,13 +1,10 @@
 package com.butent.bee.shared.testutils;
 
-import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.utils.Wildcards;
 import com.butent.bee.shared.utils.Wildcards.Pattern;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import org.junit.After;
 import org.junit.Before;
@@ -52,7 +49,7 @@ public class TestWildcardsPattern {
     a = Wildcards.getPattern("File*.txt=5", '*', '.', true, null);
     assertEquals("File*.txt=5 (sensitive)", a.toString());
 
-    a = Wildcards.getPattern("File*.txt5=", ';', '>', true, null);
+    a = Wildcards.getPattern("File*.txt5=", ';', '>', true, '=');
     assertEquals("File*.txt5 (sensitive) (exact)", a.toString());
 
     a = Wildcards.getPattern("File*.txt5", ';', '>', true, null);
@@ -63,18 +60,5 @@ public class TestWildcardsPattern {
 
     Object[] mas = {"abcd", ">", "efgh", ">", "opkg", "<", "asdda", ">"};
     assertArrayEquals(mas, a.getTokens());
-  }
-
-  @SuppressWarnings("unused")
-  @Test
-  public final void testPattern() {
-    try {
-      Pattern a = Wildcards.getPattern(null, '\0', '\0', false, null);
-      fail("Exceptions not work");
-    } catch (BeeRuntimeException e) {
-      assertTrue(true);
-    } catch (Exception e) {
-      fail("Need BeeRuntime Exception");
-    }
   }
 }

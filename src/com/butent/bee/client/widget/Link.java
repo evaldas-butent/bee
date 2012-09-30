@@ -88,9 +88,9 @@ public class Link extends Anchor implements HasId {
     update(value, BeeConst.DEFAULT_VALUE_SEPARATOR);
   }
 
-  public void update(String value, Object separator) {
+  public void update(String value, String separator) {
     Assert.notEmpty(value);
-    String sep = BeeUtils.normSep(separator, BeeConst.DEFAULT_VALUE_SEPARATOR);
+    String sep = BeeUtils.notEmpty(separator, BeeConst.DEFAULT_VALUE_SEPARATOR);
     String html;
     String href;
 

@@ -2,6 +2,7 @@ package com.butent.bee.client;
 
 import com.butent.bee.client.dom.Features;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 
@@ -31,7 +32,7 @@ public class Storage implements Module {
     if (BeeUtils.isDigit(v)) {
       Enum<?>[] arr = def.getClass().getEnumConstants();
       int idx = BeeUtils.toInt(v);
-      if (BeeUtils.isIndex(arr, idx)) {
+      if (ArrayUtils.isIndex(arr, idx)) {
         return arr[idx];
       }
     }

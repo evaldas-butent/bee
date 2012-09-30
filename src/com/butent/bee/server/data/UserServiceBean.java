@@ -86,11 +86,11 @@ public class UserServiceBean {
       if (!BeeUtils.isEmpty(locale)) {
         loc = I18nUtils.toLocale(locale);
 
-        if (BeeUtils.isEmpty(loc)) {
+        if (loc == null) {
           logger.warning(data.getUserSign(), "Unknown user locale:", locale);
         }
       }
-      if (BeeUtils.isEmpty(loc)) {
+      if (loc == null) {
         loc = Localized.defaultLocale;
       }
       data.setLocale(loc.toString());
@@ -171,7 +171,7 @@ public class UserServiceBean {
 
   public String getCurrentUser() {
     Principal p = ctx.getCallerPrincipal();
-    Assert.notEmpty(p);
+    Assert.notNull(p);
     return p.getName().toLowerCase();
   }
 
@@ -329,7 +329,7 @@ public class UserServiceBean {
 
       UserInfo oldInfo = expiredCache.get(login);
 
-      if (!BeeUtils.isEmpty(oldInfo)) {
+      if (oldInfo != null) {
         user.setLocale(oldInfo.getUserData().getLocale())
             .setOnline(oldInfo.isOnline());
       }
@@ -372,7 +372,7 @@ public class UserServiceBean {
           .setRights(getUserRights(getUserId(user)));
 
       qs.updateData(new SqlUpdate(TBL_USERS)
-          .addConstant(FLD_HOST, BeeUtils.concat(1, host, agent))
+          .addConstant(FLD_HOST, BeeUtils.joinWords(host, agent))
           .setWhere(SqlUtils.equal(TBL_USERS, sys.getIdName(TBL_USERS), getUserId(user))));
 
       response.setResponse(data).addInfo("User logged in:",

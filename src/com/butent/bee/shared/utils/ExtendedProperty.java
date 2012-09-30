@@ -120,7 +120,7 @@ public class ExtendedProperty extends Property {
    */
   @Override
   public String toString() {
-    return BeeUtils.concat(BeeConst.DEFAULT_VALUE_SEPARATOR, BeeUtils.concat(
+    return BeeUtils.join(BeeConst.DEFAULT_VALUE_SEPARATOR, BeeUtils.join(
         BeeConst.DEFAULT_PROPERTY_SEPARATOR, getName(), getSub()),
         BeeUtils.transform(getValue()));
   }

@@ -37,17 +37,17 @@ public class BeeResultSet implements Transformable {
     int z;
     try {
       z = rs.getType();
-      PropertyUtils.addProperty(lst, "Type", BeeUtils.concat(1, z, JdbcUtils.rsTypeAsString(z)));
+      PropertyUtils.addProperty(lst, "Type", BeeUtils.joinWords(z, JdbcUtils.rsTypeAsString(z)));
 
       z = rs.getConcurrency();
       PropertyUtils.addProperty(lst, "Concurrency",
-          BeeUtils.concat(1, z, JdbcUtils.concurrencyAsString(z)));
+          BeeUtils.joinWords(z, JdbcUtils.concurrencyAsString(z)));
 
       PropertyUtils.addProperty(lst, "Holdability", JdbcUtils.getHoldabilityInfo(rs));
 
       z = rs.getFetchDirection();
       PropertyUtils.addProperty(lst, "Fetch Direction",
-          BeeUtils.concat(1, z, JdbcUtils.fetchDirectionAsString(z)));
+          BeeUtils.joinWords(z, JdbcUtils.fetchDirectionAsString(z)));
 
       PropertyUtils.addProperty(lst, "Fetch Size", rs.getFetchSize());
       PropertyUtils.addProperty(lst, "Cursor Name", JdbcUtils.getCursorName(rs));
@@ -174,12 +174,12 @@ public class BeeResultSet implements Transformable {
     List<ExtendedProperty> lst = new ArrayList<ExtendedProperty>();
 
     PropertyUtils.addProperties(lst, false,
-        "type", BeeUtils.concat(1, getType(), JdbcUtils.rsTypeAsString(getType())),
-        "fetch direction", BeeUtils.concat(1, getFetchDirection(),
+        "type", BeeUtils.joinWords(getType(), JdbcUtils.rsTypeAsString(getType())),
+        "fetch direction", BeeUtils.joinWords(getFetchDirection(),
             JdbcUtils.fetchDirectionAsString(getFetchDirection())),
-        "concurrency", BeeUtils.concat(1, getConcurrency(),
+        "concurrency", BeeUtils.joinWords(getConcurrency(),
             JdbcUtils.concurrencyAsString(getConcurrency())),
-        "holdability", BeeUtils.concat(1, getHoldability(),
+        "holdability", BeeUtils.joinWords(getHoldability(),
             JdbcUtils.holdabilityAsString(getHoldability())),
         "cursor name", getCursorName(),
         "fetch size", valueAsString(getFetchSize()),
@@ -190,7 +190,7 @@ public class BeeResultSet implements Transformable {
         "column count", valueAsString(getColumnCount()));
 
     BeeColumn[] arr = getColumns();
-    if (!BeeUtils.isEmpty(arr)) {
+    if (arr != null) {
       for (BeeColumn col : arr) {
         PropertyUtils.appendExtended(lst, col.getExtendedInfo());
       }
@@ -316,7 +316,7 @@ public class BeeResultSet implements Transformable {
       if (sb.length() > 0) {
         sb.append(BeeConst.DEFAULT_ROW_SEPARATOR);
       }
-      sb.append(BeeUtils.concat(1, el.getName(), el.getSub(), el.getValue()));
+      sb.append(BeeUtils.joinWords(el.getName(), el.getSub(), el.getValue()));
     }
     return sb.toString();
   }
@@ -459,7 +459,7 @@ public class BeeResultSet implements Transformable {
 
   private String valueAsString(int v) {
     if (BeeConst.isUndef(v)) {
-      return BeeUtils.concat(1, v, BeeConst.UNKNOWN);
+      return BeeUtils.joinWords(v, BeeConst.UNKNOWN);
     } else {
       return Integer.toString(v);
     }

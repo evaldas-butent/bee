@@ -16,6 +16,7 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -56,7 +57,7 @@ public class DataServiceBean {
     } else if (BeeUtils.same(svc, Service.DB_JDBC)) {
       testJdbc(ds.getConn(), reqInfo, buff);
     } else {
-      String msg = BeeUtils.concat(1, svc, dsn, "data service not recognized");
+      String msg = BeeUtils.joinWords(svc, dsn, "data service not recognized");
       logger.warning(msg);
       buff.addWarning(msg);
     }
@@ -478,10 +479,10 @@ public class DataServiceBean {
       DateTime end = new DateTime();
 
       buff.addLine(enter.toTimeString(), start.toTimeString(), end.toTimeString());
-      buff.addLine(ret, rc, BeeUtils.bracket(BeeUtils.toSeconds(end.getTime() - start.getTime())),
+      buff.addLine(ret, rc, BeeUtils.bracket(TimeUtils.toSeconds(end.getTime() - start.getTime())),
           "type", JdbcUtils.getTypeInfo(rs));
-      buff.addLine("memory", NameUtils.addName("executeQuery", memQ1 - memQ2),
-          NameUtils.addName(ret, memC1 - memC2));
+      buff.addLine("memory", NameUtils.addName("executeQuery", BeeUtils.toString(memQ1 - memQ2)),
+          NameUtils.addName(ret, BeeUtils.toString(memC1 - memC2)));
     } else if (BeeConst.JDBC_META_DATA.equals(ret)) {
       buff.addExtendedPropertiesColumns();
       buff.appendProperties("Connection", BeeConnection.getInfo(conn));

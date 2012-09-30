@@ -979,7 +979,7 @@ public class EventUtils {
       return BeeConst.STRING_EMPTY;
     }
     return BeeUtils.transformOptions("source", DomUtils.transform(ev.getSource()),
-        "target", DomUtils.transform(ev.getTarget()), "auto", ev.isAutoClosed());
+        "target", DomUtils.transform(ev.getTarget()), "auto", BeeUtils.toString(ev.isAutoClosed()));
   }
 
   public static String transformEvent(NativeEvent ev) {

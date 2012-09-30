@@ -68,10 +68,10 @@ public class TimeOfDayValue extends Value {
   }
 
   private TimeOfDayValue() {
-    this.hours = -1;
-    this.minutes = -1;
-    this.seconds = -1;
-    this.milliseconds = -1;
+    this.hours = BeeConst.UNDEF;
+    this.minutes = BeeConst.UNDEF;
+    this.seconds = BeeConst.UNDEF;
+    this.milliseconds = BeeConst.UNDEF;
   }
 
   @Override
@@ -194,6 +194,11 @@ public class TimeOfDayValue extends Value {
     return Objects.hashCode(getHours(), getMinutes(), getSeconds(), getMilliseconds());
   }
 
+  @Override
+  public boolean isEmpty() {
+    return isNull() || BeeConst.isUndef(getHours());
+  }
+  
   @Override
   public boolean isNull() {
     return (this == NULL_VALUE);

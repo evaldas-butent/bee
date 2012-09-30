@@ -138,7 +138,7 @@ public class Codec {
    * @return an encoded String
    */
   public static String adler32(byte[] arr) {
-    Assert.hasLength(arr);
+    assertHasLength(arr);
     int s1 = 1;
     int s2 = 0;
 
@@ -306,7 +306,7 @@ public class Codec {
    * @return an encoded String
    */
   public static String crc16(byte[] arr) {
-    Assert.hasLength(arr);
+    assertHasLength(arr);
     int crc = 0;
 
     for (byte b : arr) {
@@ -333,7 +333,7 @@ public class Codec {
    * @return an encoded String
    */
   public static String crc32(byte[] arr) {
-    Assert.hasLength(arr);
+    assertHasLength(arr);
     int crc = 0xffffffff;
 
     for (byte b : arr) {
@@ -360,7 +360,7 @@ public class Codec {
    * @return an encoded String
    */
   public static String crc32Direct(byte[] arr) {
-    Assert.hasLength(arr);
+    assertHasLength(arr);
     int crc = 0xffffffff;
     int poly = 0xEDB88320;
 
@@ -829,7 +829,7 @@ public class Codec {
    * @return a Hex representation of the {@code bytes} array
    */
   public static String toHex(byte[] bytes) {
-    if (BeeUtils.isEmpty(bytes)) {
+    if (bytes == null || bytes.length == 0) {
       return null;
     }
     char[] arr = new char[bytes.length * 2];
@@ -859,7 +859,7 @@ public class Codec {
    * @return a Hex representation of the character array {@code arr}
    */
   public static String toHex(char[] arr) {
-    if (BeeUtils.isEmpty(arr)) {
+    if (arr == null || arr.length == 0) {
       return null;
     } else if (arr.length == 1) {
       return toHex(arr[0]);
@@ -895,6 +895,11 @@ public class Codec {
     }
   }
 
+  private static void assertHasLength(byte[] arr) {
+    Assert.notNull(arr);
+    Assert.isPositive(arr.length);
+  }
+  
   private Codec() {
   }
 }

@@ -76,7 +76,7 @@ public class AnnotatedDemo implements LeftTabPanel.WidgetProvider {
     chart.addRangeChangeHandler(new RangeChangeHandler() {
       @Override
       public void onRangeChange(RangeChangeEvent event) {
-        rangeStatus.setText(BeeUtils.concat(1, event.getStart(), event.getEnd()));
+        rangeStatus.setText(BeeUtils.joinWords(event.getStart(), event.getEnd()));
       }
     });
     chart.addReadyHandler(new ReadyDemo(status));

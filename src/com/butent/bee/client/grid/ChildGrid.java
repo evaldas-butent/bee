@@ -45,7 +45,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   private final int parentIndex;
   private final String relSource;
 
-  private GridFactory.GridOptions gridOptions;
+  private final GridFactory.GridOptions gridOptions;
 
   private GridCallback gridCallback = null;
   private GridDescription gridDescription = null;
@@ -71,23 +71,17 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     addStyleName("bee-ChildGrid");
   }
 
-  public GridFactory.GridOptions getGridOptions() {
-    return gridOptions;
-  }
-
   @Override
   public String getIdPrefix() {
     return "child-grid";
   }
 
+  @Override
   public String getParentId() {
     return parentId;
   }
 
-  public GridPresenter getPresenter() {
-    return presenter;
-  }
-
+  @Override
   public boolean isEnabled() {
     if (getPresenter() == null) {
       return false;
@@ -95,6 +89,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     return getPresenter().getView().isEnabled();
   }
 
+  @Override
   public void launch() {
     GridFactory.getGrid(gridName, new Callback<GridDescription>() {
       @Override
@@ -108,6 +103,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     });
   }
 
+  @Override
   public void onParentRow(ParentRowEvent event) {
     if (getGridCallback() != null) {
       getGridCallback().onParentRow(event);
@@ -119,6 +115,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     resolveState();
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     if (getPresenter() != null) {
       getPresenter().getView().setEnabled(enabled);
@@ -129,10 +126,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     this.gridCallback = gridCallback;
   }
 
-  public void setGridOptions(GridFactory.GridOptions gridOptions) {
-    this.gridOptions = gridOptions;
-  }
-
+  @Override
   public void setParentId(String parentId) {
     this.parentId = parentId;
     if (isAttached()) {
@@ -184,7 +178,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
       resolveState();
     }
   }
-  
+
   private CachingPolicy getCachingPolicy() {
     return getGridDescription().getCachingPolicy(false);
   }
@@ -192,13 +186,17 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   private Filter getFilter(IsRow row) {
     return ComparisonFilter.isEqual(getRelSource(), new LongValue(getParentValue(row)));
   }
-
+  
   private GridCallback getGridCallback() {
     return gridCallback;
   }
 
   private GridDescription getGridDescription() {
     return gridDescription;
+  }
+
+  private GridFactory.GridOptions getGridOptions() {
+    return gridOptions;
   }
 
   private void getInitialRowSet(final IsRow row) {
@@ -255,6 +253,10 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
     return pendingRow;
   }
 
+  private GridPresenter getPresenter() {
+    return presenter;
+  }
+
   private String getRelSource() {
     return relSource;
   }
@@ -295,11 +297,8 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
       if (hasParentValue(getPendingRow())) {
         getPresenter().refresh(false);
       } else {
-        setEnabled(false);
-        setPendingEnabled(null);
         getPresenter().getDataProvider().clear();
       }
-
       resetState();
     }
   }

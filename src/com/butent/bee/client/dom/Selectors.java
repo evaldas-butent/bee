@@ -5,6 +5,8 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Arrays;
@@ -36,7 +38,7 @@ public class Selectors {
   public static String adjacentSiblingCombinator(String... selectors) {
     Assert.notNull(selectors);
     Assert.parameterCount(selectors.length, 2);
-    return BeeUtils.concat(" + ", selectors);
+    return ArrayUtils.join(" + ", selectors);
   }
 
   public static String attributeContains(String att, String val) {
@@ -88,13 +90,13 @@ public class Selectors {
   public static String buildSelectors(String... selectors) {
     Assert.notNull(selectors);
     Assert.parameterCount(selectors.length, 1);
-    return BeeUtils.concat(SELECTOR_SEPARATOR, selectors);
+    return ArrayUtils.join(SELECTOR_SEPARATOR, selectors);
   }
 
   public static String childCombinator(String... selectors) {
     Assert.notNull(selectors);
     Assert.parameterCount(selectors.length, 2);
-    return BeeUtils.concat(" > ", selectors);
+    return ArrayUtils.join(" > ", selectors);
   }
 
   public static String classSelector(String value) {
@@ -124,13 +126,13 @@ public class Selectors {
   public static String descendantCombinator(String... selectors) {
     Assert.notNull(selectors);
     Assert.parameterCount(selectors.length, 2);
-    return BeeUtils.concat(' ', selectors);
+    return ArrayUtils.join(BeeConst.STRING_SPACE, selectors);
   }
 
   public static String generalSiblingCombinator(String... selectors) {
     Assert.notNull(selectors);
     Assert.parameterCount(selectors.length, 2);
-    return BeeUtils.concat(" ~ ", selectors);
+    return ArrayUtils.join(" ~ ", selectors);
   }
 
   public static Element getElement(Collection<String> selectors) {

@@ -18,7 +18,7 @@ class FunctionExpression implements IsExpression {
   private final Map<String, Object> parameters;
 
   public FunctionExpression(SqlFunction function, Map<String, Object> parameters) {
-    Assert.notEmpty(function);
+    Assert.notNull(function);
 
     this.function = function;
     this.parameters = parameters;
@@ -30,7 +30,7 @@ class FunctionExpression implements IsExpression {
 
   @Override
   public String getSqlString(SqlBuilder builder) {
-    Assert.notEmpty(builder);
+    Assert.notNull(builder);
     Map<String, Object> params = Maps.newHashMap();
 
     if (!BeeUtils.isEmpty(parameters)) {

@@ -85,7 +85,7 @@ public class RpcUtils {
         if (date == null) {
           msg = message.getMessage();
         } else {
-          msg = BeeUtils.concat(1, date.toTimeString(), message.getMessage());
+          msg = BeeUtils.joinWords(date.toTimeString(), message.getMessage());
         }
         if (level == null) {
           BeeKeeper.getLog().info(msg);
@@ -138,11 +138,7 @@ public class RpcUtils {
           NameUtils.addName("Length", resp.getHeadersAsString().length()));
 
       for (int i = 0; i < c; i++) {
-        if (BeeUtils.isEmpty(h[i])) {
-          PropertyUtils.addExtended(prp, "Header", "Empty");
-        } else {
-          PropertyUtils.addExtended(prp, "Header", h[i].getName(), h[i].getValue());
-        }
+        PropertyUtils.addExtended(prp, "Header", h[i].getName(), h[i].getValue());
       }
     }
     return prp;

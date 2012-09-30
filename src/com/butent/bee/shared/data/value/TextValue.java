@@ -115,6 +115,11 @@ public class TextValue extends Value {
   }
 
   @Override
+  public boolean isEmpty() {
+    return BeeUtils.isEmpty(value);
+  }
+  
+  @Override
   public boolean isNull() {
     return this == NULL_VALUE || getString() == null;
   }

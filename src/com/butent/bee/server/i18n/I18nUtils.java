@@ -80,24 +80,24 @@ public class I18nUtils {
       locales.put(lc, "Loc");
     }
 
-    char sep = ',';
+    String sep = BeeConst.STRING_COMMA;
     for (Locale lc : BreakIterator.getAvailableLocales()) {
-      locales.put(lc, BeeUtils.concat(sep, locales.get(lc), "BrIt"));
+      locales.put(lc, BeeUtils.join(sep, locales.get(lc), "BrIt"));
     }
     for (Locale lc : Collator.getAvailableLocales()) {
-      locales.put(lc, BeeUtils.concat(sep, locales.get(lc), "Coll"));
+      locales.put(lc, BeeUtils.join(sep, locales.get(lc), "Coll"));
     }
     for (Locale lc : DateFormat.getAvailableLocales()) {
-      locales.put(lc, BeeUtils.concat(sep, locales.get(lc), "DtF"));
+      locales.put(lc, BeeUtils.join(sep, locales.get(lc), "DtF"));
     }
     for (Locale lc : DateFormatSymbols.getAvailableLocales()) {
-      locales.put(lc, BeeUtils.concat(sep, locales.get(lc), "DtFSymb"));
+      locales.put(lc, BeeUtils.join(sep, locales.get(lc), "DtFSymb"));
     }
     for (Locale lc : NumberFormat.getAvailableLocales()) {
-      locales.put(lc, BeeUtils.concat(sep, locales.get(lc), "NumF"));
+      locales.put(lc, BeeUtils.join(sep, locales.get(lc), "NumF"));
     }
     for (Locale lc : Calendar.getAvailableLocales()) {
-      locales.put(lc, BeeUtils.concat(sep, locales.get(lc), "Cal"));
+      locales.put(lc, BeeUtils.join(sep, locales.get(lc), "Cal"));
     }
 
     int i = 0;
@@ -105,13 +105,13 @@ public class I18nUtils {
       Locale lc = entry.getKey();
       String av = entry.getValue();
       lst.add(new ExtendedProperty(
-          BeeUtils.concat(3, BeeUtils.progress(++i, locales.size()), lc.toString()),
-          BeeUtils.concat(" | ", lc.getDisplayName(), lc.getDisplayName(lc),
-              (BeeUtils.count(av, sep) == 7) ? null : av),
-          BeeUtils.concat(" ; ",
-              BeeUtils.concat(" | ", lc.getDisplayLanguage(), lc.getDisplayLanguage(lc)),
-              BeeUtils.concat(" | ", lc.getDisplayCountry(), lc.getDisplayCountry(lc)),
-              BeeUtils.concat(" | ", lc.getDisplayVariant(), lc.getDisplayVariant(lc)),
+          BeeUtils.join(BeeUtils.space(3), BeeUtils.progress(++i, locales.size()), lc.toString()),
+          BeeUtils.join(" | ", lc.getDisplayName(), lc.getDisplayName(lc),
+              (BeeUtils.count(av, BeeConst.CHAR_COMMA) == 7) ? null : av),
+          BeeUtils.join(" ; ",
+              BeeUtils.join(" | ", lc.getDisplayLanguage(), lc.getDisplayLanguage(lc)),
+              BeeUtils.join(" | ", lc.getDisplayCountry(), lc.getDisplayCountry(lc)),
+              BeeUtils.join(" | ", lc.getDisplayVariant(), lc.getDisplayVariant(lc)),
               getIso3Language(lc), getIso3Country(lc))));
     }
     return lst;
@@ -128,8 +128,9 @@ public class I18nUtils {
       Locale lc;
       for (int i = 0; i < len; i++) {
         lc = locales[i];
-        lst.add(new Property(BeeUtils.concat(3, lc.toString(), BeeUtils.progress(i + 1, len)),
-            BeeUtils.concat(" | ", lc.getDisplayName(), lc.getDisplayName(lc))));
+        lst.add(new Property(BeeUtils.join(BeeUtils.space(3), lc.toString(),
+            BeeUtils.progress(i + 1, len)),
+            BeeUtils.join(" | ", lc.getDisplayName(), lc.getDisplayName(lc))));
       }
     }
 

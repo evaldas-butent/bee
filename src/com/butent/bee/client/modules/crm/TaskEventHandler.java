@@ -220,7 +220,7 @@ public class TaskEventHandler {
         public void onSuccess(BeeRowSet result) {
           for (BeeRow row : result.getRows()) {
             BeeKeeper.getBus().fireEvent(new RowInsertEvent(result.getViewName(), row));
-            presenter.getGridView().getGrid().insertRow(row);
+            presenter.getGridView().getGrid().insertRow(row, false);
           }
         }
       });
@@ -286,7 +286,7 @@ public class TaskEventHandler {
         if (!BeeUtils.isEmpty(rows)) {
           for (IsRow row : rows) {
             users.add(row);
-            widget.addItem(BeeUtils.concat(1, row.getString(firstNameIndex),
+            widget.addItem(BeeUtils.joinWords(row.getString(firstNameIndex),
                 row.getString(lastNameIndex)));
           }
         }
@@ -987,12 +987,12 @@ public class TaskEventHandler {
 
         if (BeeUtils.isPositive(minutes)) {
           Long type = dialog.getSelector();
-          if (BeeUtils.isEmpty(type)) {
+          if (!DataUtils.isId(type)) {
             Global.showError("Įveskite darbo tipą");
             return;
           }
           Long date = dialog.getDate();
-          if (BeeUtils.isEmpty(date)) {
+          if (date == null) {
             Global.showError("Įveskite atlikimo datą");
             return;
           }
@@ -1040,12 +1040,12 @@ public class TaskEventHandler {
 
         if (BeeUtils.isPositive(minutes)) {
           Long type = dialog.getSelector();
-          if (BeeUtils.isEmpty(type)) {
+          if (!DataUtils.isId(type)) {
             Global.showError("Įveskite darbo tipą");
             return;
           }
           Long date = dialog.getDate();
-          if (BeeUtils.isEmpty(date)) {
+          if (date == null) {
             Global.showError("Įveskite atlikimo datą");
             return;
           }
@@ -1062,7 +1062,7 @@ public class TaskEventHandler {
 
   private static void doEvent(final TaskEvent ev, final FormView form) {
     IsRow row = form.getActiveRow();
-    Assert.notEmpty(row.getId());
+    Assert.state(DataUtils.isId(row.getId()));
 
     if (!availableEvent(ev, row.getInteger(form.getDataIndex(CrmConstants.COL_EVENT)), form)) {
       Global.showError("Veiksmas neleidžiamas");
@@ -1123,7 +1123,7 @@ public class TaskEventHandler {
       @Override
       public void onClick(ClickEvent e) {
         Long newTerm = dialog.getDate();
-        if (BeeUtils.isEmpty(newTerm)) {
+        if (newTerm == null) {
           Global.showError("Įveskite terminą");
           return;
         }
@@ -1171,7 +1171,7 @@ public class TaskEventHandler {
       @Override
       public void onClick(ClickEvent e) {
         Long newUser = dialog.getSelector();
-        if (BeeUtils.isEmpty(newUser)) {
+        if (newUser == null) {
           Global.showError("Įveskite vykdytoją");
           return;
         }
@@ -1295,13 +1295,13 @@ public class TaskEventHandler {
           vals.add(BeeUtils.toString(term));
         }
         Long company = dialog.getSelector();
-        if (!BeeUtils.isEmpty(company) && !Objects.equal(oldCompany, company)) {
+        if (DataUtils.isId(company) && !Objects.equal(oldCompany, company)) {
           cols.add(new BeeColumn(ValueType.LONG, "Company"));
           old.add(BeeUtils.toString(oldCompany));
           vals.add(BeeUtils.toString(company));
         }
         Long person = dialog.getSelector("PERSON");
-        if (!BeeUtils.isEmpty(person) && !Objects.equal(oldPerson, person)) {
+        if (DataUtils.isId(person) && !Objects.equal(oldPerson, person)) {
           cols.add(new BeeColumn(ValueType.LONG, "CompanyPerson"));
           old.add(BeeUtils.toString(oldPerson));
           vals.add(BeeUtils.toString(person));

@@ -84,7 +84,7 @@ public class Browser {
         int valCnt = entry.getValue().size();
         int valIdx = 1;
 
-        String name = BeeUtils.concat(1, "Parameter",
+        String name = BeeUtils.joinWords("Parameter",
             (parCnt > 1) ? BeeUtils.progress(parIdx, parCnt) : BeeConst.STRING_EMPTY,
             entry.getKey(),
             (valCnt > 1) ? BeeUtils.progress(valIdx, valCnt) : BeeConst.STRING_EMPTY);

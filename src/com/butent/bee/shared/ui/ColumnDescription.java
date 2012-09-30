@@ -8,6 +8,7 @@ import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -144,7 +145,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
   private boolean relationInitialized = false;
   
   public ColumnDescription(ColType colType, String name) {
-    Assert.notEmpty(colType);
+    Assert.notNull(colType);
     Assert.notEmpty(name);
     this.colType = colType;
     this.name = name;
@@ -255,7 +256,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case DYN_STYLES:
           String[] scs = Codec.beeDeserializeCollection(value);
-          if (BeeUtils.isEmpty(scs)) {
+          if (ArrayUtils.isEmpty(scs)) {
             setDynStyles(null);
           } else {
             List<ConditionalStyleDeclaration> lst = Lists.newArrayList();
@@ -303,7 +304,7 @@ public class ColumnDescription implements BeeSerializable, HasInfo, HasOptions, 
           break;
         case RENDER_COLUMNS:
           String[] cols = Codec.beeDeserializeCollection(value);
-          if (BeeUtils.isEmpty(cols)) {
+          if (ArrayUtils.isEmpty(cols)) {
             setRenderColumns(null);
           } else {
             setRenderColumns(Lists.newArrayList(cols));

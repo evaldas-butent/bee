@@ -170,14 +170,14 @@ public class JvmUtils {
       }
 
       classes = getClasses(loader);
-      if (BeeUtils.isEmpty(classes)) {
+      if (classes == null) {
         cc = 0;
       } else {
         cc = classes.length;
       }
 
-      lst.add(new Property(loader.toString(), BeeUtils.concat(1,
-          BeeUtils.progress(li, lc), BeeUtils.bracket(cc))));
+      lst.add(new Property(loader.toString(), BeeUtils.joinWords(BeeUtils.progress(li, lc),
+          BeeUtils.bracket(cc))));
 
       if (cc <= 0) {
         continue;
@@ -238,7 +238,7 @@ public class JvmUtils {
       }
 
       classes = getClasses(loader);
-      if (BeeUtils.isEmpty(classes)) {
+      if (classes == null) {
         continue;
       }
 

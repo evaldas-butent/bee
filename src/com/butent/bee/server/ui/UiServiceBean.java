@@ -160,7 +160,7 @@ public class UiServiceBean {
       response = search.processQuery(reqInfo.getParameter(0));
 
     } else {
-      String msg = BeeUtils.concat(1, "data service not recognized:", svc);
+      String msg = BeeUtils.joinWords("data service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
     }
@@ -200,7 +200,7 @@ public class UiServiceBean {
     for (int i = 0; i < 2; i++) {
       boolean extMode = (i > 0);
       DataTypeGroup typeGroup = new DataTypeGroup();
-      typeGroup.label = BeeUtils.concat(1, "SQL", extMode ? "extended" : "", "types");
+      typeGroup.label = BeeUtils.joinWords("SQL", extMode ? "extended" : "", "types");
       typeGroup.color = (extMode ? "rgb(0,255,0)" : "rgb(255,255,255)");
       typeGroup.types = Lists.newArrayList();
 
@@ -277,7 +277,7 @@ public class UiServiceBean {
     String viewName = reqInfo.getParameter(Service.VAR_VIEW_NAME);
     Assert.notEmpty(viewName);
     String[] entries = Codec.beeDeserializeCollection(reqInfo.getParameter(Service.VAR_VIEW_ROWS));
-    Assert.notEmpty(entries);
+    Assert.isPositive(ArrayUtils.length(entries));
     RowInfo[] rows = new RowInfo[entries.length];
 
     for (int i = 0; i < entries.length; i++) {
@@ -336,7 +336,7 @@ public class UiServiceBean {
   private ResponseObject generateData(RequestInfo reqInfo) {
     ResponseObject response;
 
-    String[] arr = BeeUtils.split(reqInfo.getContent(), BeeConst.STRING_SPACE);
+    String[] arr = BeeUtils.split(reqInfo.getContent(), BeeConst.CHAR_SPACE);
     String tableName = ArrayUtils.getQuietly(arr, 0);
     int rowCount = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 1));
     int refCount = BeeUtils.toInt(ArrayUtils.getQuietly(arr, 2));
@@ -579,7 +579,7 @@ public class UiServiceBean {
         } else if (idx == 1 && BeeUtils.same(w, "all")) {
           break;
         } else if (!sys.isTable(w)) {
-          err = BeeUtils.concat(1, "Unknown table:", w);
+          err = BeeUtils.joinWords("Unknown table:", w);
           break;
         } else {
           tbls.add(w);

@@ -99,7 +99,7 @@ public class TransportModuleBean implements BeeModule {
       }
 
     } else {
-      String msg = BeeUtils.concat(1, "Transport service not recognized:", svc);
+      String msg = BeeUtils.joinWords("Transport service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
     }
@@ -314,7 +314,7 @@ public class TransportModuleBean implements BeeModule {
 
     qs.sqlDropTemp(crsTotals);
 
-    return ResponseObject.response(new String[] {BeeUtils.transformMap(res)});
+    return ResponseObject.response(new String[] {BeeUtils.transform(res)});
   }
 
   /**
@@ -387,7 +387,7 @@ public class TransportModuleBean implements BeeModule {
   private ResponseObject getTripBeforeData(long vehicle, long date) {
     String[] resp = new String[2];
 
-    if (!BeeUtils.isEmpty(date)) {
+    if (date != 0) {
       String trips = TransportConstants.VIEW_TRIPS;
       String routes = TransportConstants.VIEW_TRIP_ROUTES;
       String fuels = TransportConstants.VIEW_TRIP_FUEL_COSTS;
@@ -733,6 +733,6 @@ public class TransportModuleBean implements BeeModule {
 
     qs.sqlDropTemp(crs);
 
-    return ResponseObject.response(new String[] {BeeUtils.transformMap(res)});
+    return ResponseObject.response(new String[] {BeeUtils.transform(res)});
   }
 }

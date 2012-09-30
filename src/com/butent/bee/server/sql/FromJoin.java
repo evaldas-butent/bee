@@ -1,7 +1,6 @@
 package com.butent.bee.server.sql;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 
@@ -116,7 +115,7 @@ class FromJoin extends FromSource {
   public Collection<String> getSources() {
     Collection<String> sources = super.getSources();
 
-    if (!BeeUtils.isEmpty(on)) {
+    if (on != null) {
       sources = SqlUtils.addCollection(sources, on.getSources());
     }
     return sources;
@@ -127,7 +126,7 @@ class FromJoin extends FromSource {
     StringBuilder from = new StringBuilder(join.toSqlString())
         .append(super.getSqlString(builder));
 
-    if (!BeeUtils.isEmpty(on)) {
+    if (on != null) {
       from.append(" ON ").append(on.getSqlString(builder));
     }
     return from.toString();

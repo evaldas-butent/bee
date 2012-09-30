@@ -6,12 +6,14 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +46,7 @@ public class HttpUtils {
     }
 
     Enumeration<String> lst = req.getHeaderNames();
-    if (BeeUtils.isEmpty(lst)) {
+    if (lst == null) {
       return null;
     }
 
@@ -56,12 +58,17 @@ public class HttpUtils {
       if (BeeUtils.isEmpty(nm)) {
         continue;
       }
-
-      v = BeeUtils.notEmpty(BeeUtils.transformEnumeration(req.getHeaders(nm)), req.getHeader(nm));
-      if (BeeUtils.isEmpty(v)) {
-        continue;
+      
+      Enumeration<String> values = req.getHeaders(nm);
+      if (values != null && values.hasMoreElements()) {
+        v = BeeUtils.transform(Collections.list(values));
+      } else {
+        v = req.getHeader(nm);
       }
-      headers.put(nm, v);
+
+      if (!BeeUtils.isEmpty(v)) {
+        headers.put(nm, v);
+      }
     }
     return headers;
   }
@@ -77,7 +84,7 @@ public class HttpUtils {
 
     if (BeeUtils.isEmpty(lst)) {
       Enumeration<String> z = req.getParameterNames();
-      if (BeeUtils.isEmpty(z)) {
+      if (z == null) {
         return null;
       }
 
@@ -90,7 +97,7 @@ public class HttpUtils {
         }
 
         v = req.getParameterValues(nm);
-        if (BeeUtils.isEmpty(v)) {
+        if (ArrayUtils.isEmpty(v)) {
           v = new String[] {req.getParameter(nm)};
         }
         lst.put(nm, v);
@@ -106,7 +113,7 @@ public class HttpUtils {
     for (Map.Entry<String, String[]> el : lst.entrySet()) {
       nm = el.getKey();
       v = el.getValue();
-      if (BeeUtils.isEmpty(nm) || BeeUtils.isEmpty(v)) {
+      if (BeeUtils.isEmpty(nm) || ArrayUtils.isEmpty(v)) {
         continue;
       }
 

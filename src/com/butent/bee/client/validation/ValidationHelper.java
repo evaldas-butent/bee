@@ -22,12 +22,12 @@ public class ValidationHelper {
     event.setValidationPhase(ValidationPhase.PRE);
     Boolean ok = source.fireCellValidation(event);
 
-    if (!BeeUtils.isEmpty(ok) && !event.isCanceled()) {
+    if (BeeUtils.isTrue(ok) && !event.isCanceled()) {
       event.setValidationPhase(ValidationPhase.DEF);
       ok = validateCell(event.getCellValidation());
     }
 
-    if (!BeeUtils.isEmpty(ok) && !event.isCanceled()) {
+    if (BeeUtils.isTrue(ok) && !event.isCanceled()) {
       event.setValidationPhase(ValidationPhase.POST);
       ok = source.fireCellValidation(event);
     }
@@ -86,11 +86,11 @@ public class ValidationHelper {
 
       if (!BeeUtils.isEmpty(cv.getMinValue())
           && value.compareTo(Value.parseValue(type, cv.getMinValue(), true)) < 0) {
-        errorMessage = BeeUtils.concat(1, errorMessage, "Min reikšmė:", cv.getMinValue());
+        errorMessage = BeeUtils.joinWords(errorMessage, "Min reikšmė:", cv.getMinValue());
       }
       if (!BeeUtils.isEmpty(cv.getMaxValue())
           && value.compareTo(Value.parseValue(type, cv.getMaxValue(), true)) > 0) {
-        errorMessage = BeeUtils.concat(1, errorMessage, "Max reikšmė:", cv.getMaxValue());
+        errorMessage = BeeUtils.joinWords(errorMessage, "Max reikšmė:", cv.getMaxValue());
       }
     }
 

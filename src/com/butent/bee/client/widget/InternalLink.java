@@ -109,12 +109,12 @@ public class InternalLink extends Widget implements HasId, HasHTML, HasClickHand
     update(value, BeeConst.DEFAULT_VALUE_SEPARATOR);
   }
 
-  public void update(String value, Object separator) {
+  public void update(String value, String separator) {
     if (BeeUtils.isEmpty(value)) {
       return;
     }
 
-    String sep = BeeUtils.normSep(separator, BeeConst.DEFAULT_VALUE_SEPARATOR);
+    String sep = BeeUtils.notEmpty(separator, BeeConst.DEFAULT_VALUE_SEPARATOR);
     String html;
     String token;
 

@@ -9,8 +9,9 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.ClientDefaults;
+import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.ConfirmationCallback;
-import com.butent.bee.client.dialog.DialogCallback;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputWidgetCallback;
@@ -107,44 +108,43 @@ public class Global implements Module {
     }
   }
 
-  public static void alert(Object... obj) {
-    MSG_BOXEN.alert(obj);
+  public static void alert(String... lines) {
+    MSG_BOXEN.alert(lines);
   }
 
-  public static void choice(String caption, List<String> options,
-      DialogCallback<Integer> callback) {
+  public static void choice(String caption, List<String> options, ChoiceCallback callback) {
     choice(caption, null, options, callback, BeeConst.UNDEF, BeeConst.UNDEF, null, null);
   }
 
   public static void choice(String caption, String prompt, List<String> options,
-      DialogCallback<Integer> callback) {
+      ChoiceCallback callback) {
     choice(caption, prompt, options, callback, BeeConst.UNDEF, BeeConst.UNDEF, null, null);
   }
 
   public static void choice(String caption, String prompt, List<String> options,
-      DialogCallback<Integer> callback, int defaultValue) {
+      ChoiceCallback callback, int defaultValue) {
     choice(caption, prompt, options, callback, defaultValue, BeeConst.UNDEF, null, null);
   }
   
   public static void choice(String caption, String prompt, List<String> options,
-      DialogCallback<Integer> callback, int defaultValue, int timeout) {
+      ChoiceCallback callback, int defaultValue, int timeout) {
     choice(caption, prompt, options, callback, defaultValue, timeout, null, null);
   }
 
   public static void choice(String caption, String prompt, List<String> options,
-      DialogCallback<Integer> callback, int defaultValue, int timeout, String cancelHtml) {
+      ChoiceCallback callback, int defaultValue, int timeout, String cancelHtml) {
     choice(caption, prompt, options, callback, defaultValue, timeout, cancelHtml, null);
   }
 
   public static void choice(String caption, String prompt, List<String> options,
-      DialogCallback<Integer> callback, int defaultValue, int timeout, String cancelHtml,
+      ChoiceCallback callback, int defaultValue, int timeout, String cancelHtml,
       WidgetInitializer initializer) {
     MSG_BOXEN.choice(caption, prompt, options, callback, defaultValue, timeout, cancelHtml,
         initializer);
   }
 
   public static void choice(String caption, String prompt, List<String> options,
-      DialogCallback<Integer> callback, String cancelHtml) {
+      ChoiceCallback callback, String cancelHtml) {
     choice(caption, prompt, options, callback, BeeConst.UNDEF, BeeConst.UNDEF, cancelHtml, null);
   }
   
@@ -291,11 +291,6 @@ public class Global implements Module {
     return getVar(name).getLong();
   }
 
-  public static String getVarName(Variable var) {
-    Assert.notNull(var);
-    return BeeUtils.getKey(VARS, var);
-  }
-
   public static BeeType getVarType(String name) {
     return getVar(name).getType();
   }
@@ -316,27 +311,27 @@ public class Global implements Module {
     MSG_BOXEN.showInfo(obj);
   }
 
-  public static void inputString(String caption, DialogCallback<String> callback) {
+  public static void inputString(String caption, StringCallback callback) {
     inputString(caption, null, callback);
   }
 
-  public static void inputString(String caption, String prompt, DialogCallback<String> callback) {
+  public static void inputString(String caption, String prompt, StringCallback callback) {
     inputString(caption, prompt, callback, null);
   }
 
-  public static void inputString(String caption, String prompt, DialogCallback<String> callback,
+  public static void inputString(String caption, String prompt, StringCallback callback,
       String defaultValue) {
     inputString(caption, prompt, callback, defaultValue,
         BeeConst.UNDEF, BeeConst.DOUBLE_UNDEF, null);
   }
 
-  public static void inputString(String caption, String prompt, DialogCallback<String> callback,
+  public static void inputString(String caption, String prompt, StringCallback callback,
       String defaultValue, int maxLength, double width, Unit widthUnit) {
     inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
         BeeConst.UNDEF, DialogConstants.OK, DialogConstants.CANCEL, null);
   }
 
-  public static void inputString(String caption, String prompt, DialogCallback<String> callback,
+  public static void inputString(String caption, String prompt, StringCallback callback,
       String defaultValue, int maxLength, double width, Unit widthUnit, int timeout,
       String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
     INP_BOXEN.inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
@@ -344,7 +339,7 @@ public class Global implements Module {
   }
 
   public static void inputVars(String caption, List<String> names, ConfirmationCallback callback) {
-    Assert.notEmpty(names);
+    Assert.notNull(names);
 
     List<Variable> lst = Lists.newArrayList();
     for (String name : names) {
@@ -394,8 +389,8 @@ public class Global implements Module {
     MSG_BOXEN.showGrid(cap, data, cols);
   }
 
-  public static boolean nativeConfirm(Object... obj) {
-    return MSG_BOXEN.nativeConfirm(obj);
+  public static boolean nativeConfirm(String... lines) {
+    return MSG_BOXEN.nativeConfirm(lines);
   }
   
   public static <E extends Enum<?> & HasCaption> void registerCaptions(Class<E> clazz) {

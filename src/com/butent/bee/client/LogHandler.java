@@ -46,7 +46,7 @@ public class LogHandler implements Module {
   }
 
   public void debug(Object... obj) {
-    getLogger().info(BeeUtils.concat(1, obj));
+    getLogger().info(BeeUtils.joinWords(obj));
   }
 
   public void debugCollection(Collection<?> collection) {
@@ -122,7 +122,7 @@ public class LogHandler implements Module {
   }
 
   public void info(Object... obj) {
-    getLogger().info(BeeUtils.concat(1, obj));
+    getLogger().info(BeeUtils.joinWords(obj));
   }
 
   @Override
@@ -134,7 +134,7 @@ public class LogHandler implements Module {
   }
 
   public void log(Level level, Object... obj) {
-    getLogger().log(level, BeeUtils.concat(1, obj));
+    getLogger().log(level, BeeUtils.joinWords(obj));
   }
 
   public void resize(int size) {
@@ -159,7 +159,7 @@ public class LogHandler implements Module {
   }
 
   public void severe(Object... obj) {
-    getLogger().severe(BeeUtils.concat(1, obj));
+    getLogger().severe(BeeUtils.joinWords(obj));
   }
 
   public void show() {
@@ -179,6 +179,6 @@ public class LogHandler implements Module {
   }
 
   public void warning(Object... obj) {
-    getLogger().warning(BeeUtils.concat(1, obj));
+    getLogger().warning(BeeUtils.joinWords(obj));
   }
 }

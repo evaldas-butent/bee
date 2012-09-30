@@ -71,6 +71,7 @@ public class FileCollector extends AbstractGridCallback implements DragOverHandl
       for (FileInfo info : fileInfos) {
         addFile(info);
       }
+      getGrid().refocus();
     }
   }
 
@@ -184,7 +185,7 @@ public class FileCollector extends AbstractGridCallback implements DragOverHandl
 
     CellGrid grid = getGrid();
     if (grid != null) {
-      grid.insertRow(row);
+      grid.insertRow(row, false);
     }
   }
 

@@ -2,8 +2,6 @@ package com.butent.bee.shared;
 
 import com.google.common.base.Objects;
 
-import com.butent.bee.shared.utils.BeeUtils;
-
 public class Holder<T> {
   
   public static <T> Holder<T> absent() {
@@ -26,14 +24,6 @@ public class Holder<T> {
 
   public T get() {
     return value;
-  }
-
-  public boolean isEmpty() {
-    return BeeUtils.isEmpty(value);
-  }
-  
-  public boolean isNotEmpty() {
-    return !BeeUtils.isEmpty(value);
   }
 
   public boolean isNotNull() {

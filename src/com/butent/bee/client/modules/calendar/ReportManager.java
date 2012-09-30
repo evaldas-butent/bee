@@ -147,7 +147,7 @@ class ReportManager {
         continue;
       }
 
-      String item = BeeUtils.concat(BeeConst.DEFAULT_LIST_SEPARATOR,
+      String item = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
           Data.getString(viewName, row, COL_NAME), Data.getString(viewName, row, COL_TYPE_NAME));
       widget.addItem(item);
       attIds.add(id);
@@ -296,7 +296,7 @@ class ReportManager {
     }
     
     StringBuilder sb = new StringBuilder(report.getCaption());
-    String separator = BeeUtils.normSep(2);
+    String separator = BeeUtils.space(2);
     
     JustDate lower = Data.getDate(VIEW_REPORT_OPTIONS, row, COL_LOWER_DATE);
     if (lower != null) {
@@ -549,7 +549,7 @@ class ReportManager {
       String viewName = rowSet.getViewName();
       for (long id : attendees) {
         BeeRow row = rowSet.getRowById(id);
-        String item = BeeUtils.concat(BeeConst.DEFAULT_LIST_SEPARATOR,
+        String item = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
             Data.getString(viewName, row, COL_NAME), Data.getString(viewName, row, COL_TYPE_NAME));
         listBox.addItem(item);
       }

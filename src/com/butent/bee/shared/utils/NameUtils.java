@@ -8,9 +8,7 @@ import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeType;
 
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -30,21 +28,17 @@ public class NameUtils {
 
   private static int nameCounter = 0;
 
-  /**
-   * Adds a value to a name. Object {@code v} must be either numeric or boolean. Name and value are
-   * separated by a default separator.
-   * 
-   * @param nm name
-   * @param v a value
-   * @return a formed String
-   */
-  public static String addName(String nm, Object v) {
-    if (BeeUtils.isEmpty(v, EnumSet.of(BeeType.NUMBER, BeeType.BOOLEAN))) {
+  public static String addName(String nm, int v) {
+    return addName(nm, String.valueOf(v));
+  }
+  
+  public static String addName(String nm, String v) {
+    if (BeeUtils.isEmpty(v)) {
       return BeeConst.STRING_EMPTY;
     } else if (BeeUtils.isEmpty(nm)) {
-      return BeeUtils.transform(v);
+      return v.trim();
     } else {
-      return nm.trim() + BeeConst.DEFAULT_VALUE_SEPARATOR + BeeUtils.transform(v);
+      return nm.trim() + BeeConst.DEFAULT_VALUE_SEPARATOR + v.trim();
     }
   }
 
@@ -229,7 +223,7 @@ public class NameUtils {
    * @param name the name to check
    * @return true if the String is a correct identifier, false otherwise.
    */
-  public static boolean isIdentifier(CharSequence name) {
+  public static boolean isIdentifier(String name) {
     if (BeeUtils.isEmpty(name)) {
       return false;
     }

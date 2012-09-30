@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -190,8 +191,8 @@ public class BeeParameter implements BeeSerializable {
 
   public String getUserValue(Long userId) {
     Assert.state(supportsUsers(), "Parameter does not support user values: "
-        + BeeUtils.concat(".", getModule(), getName()));
-    Assert.notEmpty(userId);
+        + BeeUtils.join(".", getModule(), getName()));
+    Assert.isTrue(DataUtils.isId(userId));
 
     if (userValues.containsKey(userId)) {
       return userValues.get(userId);
@@ -258,8 +259,8 @@ public class BeeParameter implements BeeSerializable {
 
   public void setUserValue(Long userId, Object value) {
     Assert.state(supportsUsers(), "Parameter does not support user values: "
-        + BeeUtils.concat(".", getModule(), getName()));
-    Assert.notEmpty(userId);
+        + BeeUtils.join(".", getModule(), getName()));
+    Assert.isTrue(DataUtils.isId(userId));
 
     if (value == null) {
       userValues.remove(userId);
@@ -278,7 +279,7 @@ public class BeeParameter implements BeeSerializable {
 
   private Object getTypedValue(ParameterType tp, String expr) {
     Assert.state(getType() == tp,
-        BeeUtils.concat(1, "Parameter type mismach:", getType(), "!=", tp));
+        BeeUtils.joinWords("Parameter type mismach:", getType(), "!=", tp));
     Object val = null;
 
     switch (tp) {

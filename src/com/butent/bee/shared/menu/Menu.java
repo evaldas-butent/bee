@@ -108,7 +108,7 @@ public abstract class Menu implements BeeSerializable {
   }
 
   public Boolean hasSeparator() {
-    return !BeeUtils.isEmpty(separator);
+    return BeeUtils.isTrue(separator);
   }
 
   public void setModuleName(String moduleName) {

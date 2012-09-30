@@ -1,11 +1,14 @@
 package com.butent.bee.client;
 
+import com.google.common.collect.Lists;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.LayoutPanel;
 
-import com.butent.bee.shared.utils.RowComparator;
+import com.butent.bee.shared.Pair;
 
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * starts and stops core system modules.
@@ -70,69 +73,56 @@ public class BeeKeeper {
   }
 
   public void end() {
-    Module[] arr = orderModules(Module.PRIORITY_END);
-    if (arr == null) {
-      return;
-    }
-    for (Module mdl : arr) {
+    List<Module> list = orderModules(Module.PRIORITY_END);
+    for (Module mdl : list) {
       mdl.end();
     }
   }
 
   public void init() {
-    Module[] arr = orderModules(Module.PRIORITY_INIT);
-    if (arr == null) {
-      return;
-    }
-    for (Module mdl : arr) {
+    List<Module> list = orderModules(Module.PRIORITY_INIT);
+    for (Module mdl : list) {
       mdl.init();
     }
   }
 
   public void start() {
-    Module[] arr = orderModules(Module.PRIORITY_START);
-    if (arr == null) {
-      return;
-    }
-    for (Module mdl : arr) {
+    List<Module> list = orderModules(Module.PRIORITY_START);
+    for (Module mdl : list) {
       mdl.start();
     }
   }
 
-  private Module[] orderModules(int p) {
-    int c = modules.length;
-    if (c <= 0) {
-      return null;
-    }
+  private List<Module> orderModules(int p) {
+    List<Module> result = Lists.newArrayList();
 
-    int r = 0;
-    int z;
-    Object[][] arr = new Object[c][2];
+    List<Pair<Module, Integer>> temp = Lists.newArrayList();
 
-    for (int i = 0; i < c; i++) {
-      arr[i][0] = modules[i];
-
-      z = modules[i].getPriority(p);
-      arr[i][1] = z;
-
+    for (Module mdl : modules) {
+      int z = mdl.getPriority(p);
       if (z != Module.DO_NOT_CALL) {
-        r++;
+        temp.add(Pair.of(mdl, z));
       }
     }
-    if (r <= 0) {
-      return null;
+
+    if (temp.isEmpty()) {
+      return result;
     }
-
-    Arrays.sort(arr, new RowComparator(1));
-    Module[] ord = new Module[r];
-    r = 0;
-
-    for (int i = 0; i < c; i++) {
-      if ((Integer) arr[i][1] != Module.DO_NOT_CALL) {
-        ord[r] = (Module) arr[i][0];
-        r++;
+    if (temp.size() == 1) {
+      result.add(temp.get(0).getA());
+      return result;
+    }
+    
+    Collections.sort(temp, new Comparator<Pair<Module, Integer>>() {
+      @Override
+      public int compare(Pair<Module, Integer> o1, Pair<Module, Integer> o2) {
+        return o1.getB().compareTo(o2.getB());
       }
+    });
+    
+    for (Pair<Module, Integer> pair : temp) {
+      result.add(pair.getA());
     }
-    return ord;
+    return result;
   }
 }

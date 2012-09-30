@@ -143,7 +143,7 @@ public class InputBoxes {
   private static final String STYLE_INPUT_PRINT = "bee-InputPrint";
   private static final String STYLE_INPUT_SAVE = "bee-InputSave";
 
-  public void inputString(String caption, String prompt, final DialogCallback<String> callback,
+  public void inputString(String caption, String prompt, final StringCallback callback,
       String defaultValue, int maxLength, double width, Unit widthUnit, final int timeout,
       String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
     Assert.notNull(callback);

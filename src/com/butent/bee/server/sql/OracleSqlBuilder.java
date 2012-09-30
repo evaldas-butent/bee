@@ -1,5 +1,6 @@
 package com.butent.bee.server.sql;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.data.SqlConstants;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
@@ -41,7 +42,7 @@ class OracleSqlBuilder extends SqlBuilder {
       String relField = entry.get("relField");
       String var = ":OLD." + sqlQuote(fldName);
 
-      body.append(BeeUtils.concat(1, "IF", var, "IS NOT NULL THEN",
+      body.append(BeeUtils.joinWords("IF", var, "IS NOT NULL THEN",
           new SqlDelete(relTable).setWhere(SqlUtils.equal(relTable, relField, 69))
               .getQuery().replace("69", var),
           ";END IF;"));
@@ -56,21 +57,19 @@ class OracleSqlBuilder extends SqlBuilder {
     String sql = super.getSelect(ss);
 
     if (BeeUtils.isEmpty(ss.getFrom())) {
-      sql = BeeUtils.concat(1, sql, "FROM DUAL");
+      sql = BeeUtils.joinWords(sql, "FROM DUAL");
     }
-    if (BeeUtils.allEmpty(limit, offset)) {
+    if (limit <= 0 && offset <= 0) {
       return sql;
     }
     String idAlias = sqlQuote(SqlUtils.uniqueName());
     String queryAlias = sqlQuote(SqlUtils.uniqueName());
 
-    sql = BeeUtils.concat(1,
-        "ROWNUM AS", idAlias + ",", queryAlias + ".*",
+    sql = BeeUtils.joinWords("ROWNUM AS", idAlias + ",", queryAlias + ".*",
         "FROM", BeeUtils.parenthesize(sql), queryAlias);
 
     if (BeeUtils.isPositive(limit)) {
-      sql = BeeUtils.concat(1,
-          "/*+ FIRST_ROWS" + BeeUtils.parenthesize(offset + limit), "*/", sql,
+      sql = BeeUtils.joinWords("/*+ FIRST_ROWS" + BeeUtils.parenthesize(offset + limit), "*/", sql,
           "WHERE ROWNUM <=", offset + limit);
     }
     sql = "SELECT " + sql;
@@ -78,8 +77,7 @@ class OracleSqlBuilder extends SqlBuilder {
     if (BeeUtils.isPositive(offset)) {
       queryAlias = sqlQuote(SqlUtils.uniqueName());
 
-      sql = BeeUtils.concat(1,
-          "SELECT", queryAlias + ".*",
+      sql = BeeUtils.joinWords("SELECT", queryAlias + ".*",
           "FROM", BeeUtils.parenthesize(sql), queryAlias,
           "WHERE", queryAlias + "." + idAlias, ">", offset);
     }
@@ -104,7 +102,7 @@ class OracleSqlBuilder extends SqlBuilder {
           default:
             dataType = sqlType(type, precision, scale);
         }
-        return BeeUtils.concat(1, sql, "AS", dataType + ")");
+        return BeeUtils.joinWords(sql, "AS", dataType + ")");
 
       case BITAND:
         return "BITAND(" + params.get("expression") + ", " + params.get("value") + ")";
@@ -119,14 +117,14 @@ class OracleSqlBuilder extends SqlBuilder {
   protected String sqlKeyword(SqlKeyword option, Map<String, Object> params) {
     switch (option) {
       case SET_PARAMETER:
-        return BeeUtils.concat(0,
+        return BeeUtils.join(BeeConst.STRING_EMPTY,
             "BEGIN DBMS_SESSION.SET_CONTEXT('CLIENTCONTEXT','", params.get("prmName"), "','",
             params.get("prmValue"), "');END;");
 
       case CREATE_TRIGGER:
-        return BeeUtils.concat(1,
+        return BeeUtils.joinWords(
             "CREATE TRIGGER", params.get("name"), params.get("timing"),
-            BeeUtils.concat(" OR ", ((EnumSet<SqlTriggerEvent>) params.get("events")).toArray()),
+            BeeUtils.join(" OR ", ((EnumSet<SqlTriggerEvent>) params.get("events")).toArray()),
             "ON", params.get("table"),
             ((SqlTriggerScope) params.get("scope") == SqlTriggerScope.ROW) ? "FOR EACH ROW" : "",
             "BEGIN", getTriggerBody(params), "END;");
@@ -139,11 +137,11 @@ class OracleSqlBuilder extends SqlBuilder {
         IsCondition wh = null;
 
         Object prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.equal("t", "OWNER", prm);
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("t", "TABLE_NAME", prm));
         }
         return new SqlSelect()
@@ -157,11 +155,11 @@ class OracleSqlBuilder extends SqlBuilder {
         wh = null;
 
         prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.equal("c", "OWNER", prm);
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("c", "TABLE_NAME", prm));
         }
         return new SqlSelect()
@@ -181,15 +179,15 @@ class OracleSqlBuilder extends SqlBuilder {
         wh = null;
 
         prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.equal("k", "OWNER", prm);
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("k", "TABLE_NAME", prm));
         }
         prm = params.get("keyTypes");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           IsCondition typeWh = null;
 
           for (SqlKeyword type : (SqlKeyword[]) prm) {
@@ -211,7 +209,7 @@ class OracleSqlBuilder extends SqlBuilder {
               typeWh = SqlUtils.or(typeWh, SqlUtils.equal("k", "CONSTRAINT_TYPE", tp));
             }
           }
-          if (!BeeUtils.isEmpty(typeWh)) {
+          if (!isEmpty(typeWh)) {
             wh = SqlUtils.and(wh, typeWh);
           }
         }
@@ -227,17 +225,17 @@ class OracleSqlBuilder extends SqlBuilder {
         wh = SqlUtils.equal("c", "CONSTRAINT_TYPE", "R");
 
         prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh,
               SqlUtils.equal("c", "OWNER", prm),
               SqlUtils.equal("r", "OWNER", prm));
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("c", "TABLE_NAME", prm));
         }
         prm = params.get("refTable");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("r", "TABLE_NAME", prm));
         }
         return new SqlSelect()
@@ -254,11 +252,11 @@ class OracleSqlBuilder extends SqlBuilder {
         wh = null;
 
         prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.equal("i", "OWNER", prm);
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("i", "TABLE_NAME", prm));
         }
         return new SqlSelect()
@@ -272,11 +270,11 @@ class OracleSqlBuilder extends SqlBuilder {
         wh = null;
 
         prm = params.get("dbSchema");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.equal("t", "OWNER", prm);
         }
         prm = params.get("table");
-        if (!BeeUtils.isEmpty(prm)) {
+        if (!isEmpty(prm)) {
           wh = SqlUtils.and(wh, SqlUtils.equal("t", "TABLE_NAME", prm));
         }
         return new SqlSelect()

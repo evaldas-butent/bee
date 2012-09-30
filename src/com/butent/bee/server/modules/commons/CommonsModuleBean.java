@@ -93,7 +93,7 @@ public class CommonsModuleBean implements BeeModule {
       response = doParameterEvent(svc, reqInfo);
 
     } else {
-      String msg = BeeUtils.concat(1, "Commons service not recognized:", svc);
+      String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
     }
@@ -212,7 +212,7 @@ public class CommonsModuleBean implements BeeModule {
       }
     }
     if (response == null) {
-      String msg = BeeUtils.concat(1, "Items service not recognized:", svc);
+      String msg = BeeUtils.joinWords("Items service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
 
@@ -258,7 +258,7 @@ public class CommonsModuleBean implements BeeModule {
       response = ResponseObject.response(true);
     }
     if (response == null) {
-      String msg = BeeUtils.concat(1, "Parameters service not recognized:", svc);
+      String msg = BeeUtils.joinWords("Parameters service not recognized:", svc);
       logger.warning(msg);
       response = ResponseObject.error(msg);
 
@@ -273,8 +273,8 @@ public class CommonsModuleBean implements BeeModule {
 
     for (SqlEngine engine : SqlEngine.values()) {
       BeeParameter param = new BeeParameter(COMMONS_MODULE,
-          BeeUtils.concat(0, PRM_SQL_MESSAGES, engine), ParameterType.MAP,
-          BeeUtils.concat(1, "Duomenų bazės", engine, "klaidų pranešimai"), false, null);
+          BeeUtils.join(BeeConst.STRING_EMPTY, PRM_SQL_MESSAGES, engine), ParameterType.MAP,
+          BeeUtils.joinWords("Duomenų bazės", engine, "klaidų pranešimai"), false, null);
 
       switch (engine) {
         case GENERIC:

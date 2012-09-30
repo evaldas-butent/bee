@@ -103,7 +103,7 @@ public class Pair<A, B> implements Transformable {
    */
   @Override
   public String toString() {
-    return BeeUtils.concat(BeeConst.DEFAULT_LIST_SEPARATOR, a, b);
+    return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, a, b);
   }
 
   /**

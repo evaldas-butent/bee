@@ -80,7 +80,7 @@ public class Mobile extends ScreenImpl {
     }
 
     createUi();
-    notifyInfo(BeeUtils.concat(1, "Start Time:",
+    notifyInfo(BeeUtils.joinWords("Start Time:",
         System.currentTimeMillis() - Settings.getStartMillis(), "ms"));
   }
 

@@ -7,6 +7,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.communication.ResponseMessage;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -21,7 +22,8 @@ public class ResponseHandler {
 
   public static void showXmlInfo(int pc, int[] sizes, String content) {
     Assert.betweenInclusive(pc, 1, 3);
-    Assert.lengthEquals(sizes, pc);
+    Assert.notNull(sizes);
+    Assert.isTrue(sizes.length >= pc);
     Assert.notEmpty(content);
 
     BeeResource[] resources = new BeeResource[pc];
@@ -78,9 +80,9 @@ public class ResponseHandler {
         if (reqTxt.charAt(i) != respTxt.charAt(i)) {
           BeeKeeper.getLog().warning("charAt", i,
               "req", Integer.toHexString(reqTxt.charAt(i)),
-              BeeUtils.bracket((int) reqTxt.charAt(i)),
+              BeeUtils.bracket(reqTxt.charAt(i)),
               "resp", Integer.toHexString(respTxt.charAt(i)),
-              BeeUtils.bracket((int) respTxt.charAt(i)));
+              BeeUtils.bracket(respTxt.charAt(i)));
           break;
         }
       }
@@ -111,9 +113,9 @@ public class ResponseHandler {
     String k, v, z;
 
     for (ResponseMessage message : messages) {
-      arr = BeeUtils.split(message.getMessage(), BeeConst.STRING_SPACE);
-      if (BeeUtils.length(arr) != 2) {
-        BeeKeeper.getLog().warning(BeeUtils.length(arr), message);
+      arr = BeeUtils.split(message.getMessage(), BeeConst.CHAR_SPACE);
+      if (ArrayUtils.length(arr) != 2) {
+        BeeKeeper.getLog().warning(ArrayUtils.length(arr), message);
         continue;
       }
 

@@ -64,31 +64,6 @@ public class TestArrayUtils {
   }
 
   @Test
-  public void testCopyOf() {
-    Object mas1[] = ArrayUtils.copyOf(strMas1, 3);
-    Object mas2[] = ArrayUtils.copyOf(strMas1, 10);
-    int l1 = mas1.length;
-    int l2 = mas2.length;
-    assertEquals(3, l1);
-    assertEquals(10, l2);
-  }
-
-  @Test
-  public void testCopyOfRange() {
-    Object newstrMas1[] = ArrayUtils.copyOfRange(strMas1, 1, 3);
-    assertEquals(2, newstrMas1.length);
-    for (int i = 0; i < newstrMas1.length; i++) {
-      assertEquals(newstrMas1[i].toString(), strMas1[1 + i].toString());
-    }
-  }
-
-  @Test
-  public void testCreate() {
-    assertEquals(5, ArrayUtils.create(5).length);
-    assertEquals(0, ArrayUtils.create(0).length);
-  }
-
-  @Test
   public void testGet() {
     try {
       assertEquals(null, ArrayUtils.get(intMas2, 0));
@@ -139,22 +114,6 @@ public class TestArrayUtils {
   }
 
   @Test
-  public void testInsert() {
-    Object mas1[] = ArrayUtils.insert(strMas1, 2, "not");
-
-    int j = 0;
-    for (int i = 0; i < mas1.length; i++) {
-      if (i == 2) {
-        assertEquals("not", mas1[i].toString());
-        j--;
-      } else {
-        assertEquals(strMas1[j + i].toString(), mas1[i].toString());
-      }
-    }
-    assertEquals(strMas1.length + 1, mas1.length);
-  }
-
-  @Test
   public void testIsArray() {
     assertEquals(true, ArrayUtils.isArray(intMas1));
     assertEquals(true, ArrayUtils.isArray(intMas2));
@@ -184,17 +143,17 @@ public class TestArrayUtils {
 
   @Test
   public void testJoinObjectArrayObject() {
-    assertEquals("this;is;a;simple;test", ArrayUtils.join(strMas1, ";"));
-    assertEquals("this     is     a     simple     test", ArrayUtils.join(strMas1, 5));
-    assertEquals("thisAAisAAaAA", ArrayUtils.join(strMas3, "AA"));
+    assertEquals("this;is;a;simple;test", ArrayUtils.join(";", strMas1));
+    assertEquals("this     is     a     simple     test", ArrayUtils.join("     ", strMas1));
+    assertEquals("thisAAisAAaAA", ArrayUtils.join("AA", strMas3));
   }
 
   @Test
   public void testJoinObjectArrayObjectInt() {
-    assertEquals("a;simple;test", ArrayUtils.join(strMas1, ";", 2));
-    assertEquals("", ArrayUtils.join(strMas1, 5, 13));
-    assertEquals("thisAAisAAaAA", ArrayUtils.join(strMas3, "AA", -5));
-    assertEquals("", ArrayUtils.join(strMas3, "AA", 50));
+    assertEquals("a;simple;test", ArrayUtils.join(";", strMas1, 2));
+    assertEquals("", ArrayUtils.join("", strMas1, 5, 13));
+    assertEquals("thisAAisAAaAA", ArrayUtils.join("AA", strMas3, -5));
+    assertEquals("", ArrayUtils.join("AA", strMas3, 50));
   }
 
   @Test
@@ -210,26 +169,6 @@ public class TestArrayUtils {
     assertEquals(5, ArrayUtils.length(floatMas1));
     assertEquals(4, ArrayUtils.length(doubleMas1));
     assertEquals(0, ArrayUtils.length(null));
-  }
-
-  @Test
-  public void testRemove() {
-    Object mas1[] = ArrayUtils.remove(strMas1, 2);
-
-    int j = 0;
-    for (int i = 0; i < mas1.length; i++) {
-      if (i == 2) {
-        j++;
-      } else {
-        assertEquals(strMas1[j + i].toString(), mas1[i].toString());
-      }
-    }
-    assertEquals(strMas1.length - 1, mas1.length);
-
-    Object mas4[] = ArrayUtils.remove(strMas1, 0);
-
-    assertEquals(strMas1.length - 1, mas4.length);
-    assertEquals(strMas1[1].toString(), mas4[0].toString());
   }
 
   @Test
@@ -314,11 +253,10 @@ public class TestArrayUtils {
     Object[] testMas3 = {};
 
     assertEquals(
-        "5,5,7,-10,3;5  5  7  -10  3,this  is  a  simple  test,true  true  false  false  true;true,true,false,false,true",
-        ArrayUtils.transform(testMas2, ";", ",", 2));
-    assertEquals(
-        "5;5;7;-10;3;5;5;7;-10;3;this;is;a;simple;test;true;true;false;false;true;true;true;false;false;true",
+        "5, 5, 7, -10, 3;5, 5, 7, -10, 3, this, is, a, simple, test, true, true, false, false, true;true, true, false, false, true",
         ArrayUtils.transform(testMas2, ";"));
+    assertEquals("5, 5, 7, -10, 3 ; this, is, a, simple, test ; true, true, false, false, true",
+        ArrayUtils.transform(testMas1, " ; "));
     assertEquals("", ArrayUtils.transform(testMas3, ";"));
     assertEquals(
         "5, 5, 7, -10, 3, 5, 5, 7, -10, 3, this, is, a, simple, test, true, true, false, false, true, true, true, false, false, true",

@@ -52,7 +52,7 @@ public class FileServlet extends HttpServlet {
   private void doService(HttpServletRequest req, HttpServletResponse resp) {
     String err = null;
 
-    if (BeeUtils.isEmpty(req.getSession(false))) {
+    if (req.getSession(false) == null) {
       err = "No logged in";
     }
     String requestedFile = null;

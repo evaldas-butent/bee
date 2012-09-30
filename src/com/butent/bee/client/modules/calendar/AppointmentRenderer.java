@@ -69,32 +69,32 @@ class AppointmentRenderer {
   static {
     DEFAULT_SIMPLE_HEADER_TEMPLATE = wrap(COL_SUMMARY);
     DEFAULT_SIMPLE_BODY_TEMPLATE = BeeUtils.buildLines(wrap(COL_COMPANY_NAME),
-        BeeUtils.concat(1, wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL)),
+        BeeUtils.joinWords(wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL)),
         wrap(COL_VEHICLE_NUMBER), wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), wrap(COL_DESCRIPTION),
         wrap(KEY_REMINDERS));
 
-    DEFAULT_MULTI_HEADER_TEMPLATE = BeeUtils.concat(1, wrap(KEY_PERIOD), wrap(COL_SUMMARY));
-    DEFAULT_MULTI_BODY_TEMPLATE = BeeUtils.concat(1, wrap(COL_COMPANY_NAME),
+    DEFAULT_MULTI_HEADER_TEMPLATE = BeeUtils.joinWords(wrap(KEY_PERIOD), wrap(COL_SUMMARY));
+    DEFAULT_MULTI_BODY_TEMPLATE = BeeUtils.joinWords(wrap(COL_COMPANY_NAME),
         wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL), wrap(COL_VEHICLE_NUMBER),
         wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES));
 
-    DEFAULT_COMPACT_TEMPLATE = BeeUtils.concat(1, wrap(COL_SUMMARY),
+    DEFAULT_COMPACT_TEMPLATE = BeeUtils.joinWords(wrap(COL_SUMMARY),
         wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL), wrap(COL_VEHICLE_NUMBER));
 
     DEFAULT_TITLE_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
         BeeConst.STRING_EMPTY, wrap(COL_COMPANY_NAME),
-        BeeUtils.concat(1, wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL),
+        BeeUtils.joinWords(wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL),
             wrap(COL_VEHICLE_NUMBER)), BeeConst.STRING_EMPTY,
         wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), BeeConst.STRING_EMPTY, wrap(COL_DESCRIPTION),
-        BeeConst.STRING_EMPTY, BeeUtils.concat(1, wrap(COL_ORGANIZER_FIRST_NAME),
+        BeeConst.STRING_EMPTY, BeeUtils.joinWords(wrap(COL_ORGANIZER_FIRST_NAME),
             wrap(COL_ORGANIZER_LAST_NAME)), wrap(KEY_REMINDERS));
 
     STRING_TEMPLATE = BeeUtils.buildLines(wrap(KEY_PERIOD), wrap(COL_STATUS),
         wrap(COL_COMPANY_NAME),
-        BeeUtils.concat(1, wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL),
+        BeeUtils.joinWords(wrap(COL_VEHICLE_PARENT_MODEL), wrap(COL_VEHICLE_MODEL),
             wrap(COL_VEHICLE_NUMBER)), wrap(COL_SUMMARY),
         wrap(KEY_PROPERTIES), wrap(KEY_RESOURCES), wrap(COL_DESCRIPTION),
-        BeeUtils.concat(1, wrap(COL_ORGANIZER_FIRST_NAME), wrap(COL_ORGANIZER_LAST_NAME)),
+        BeeUtils.joinWords(wrap(COL_ORGANIZER_FIRST_NAME), wrap(COL_ORGANIZER_LAST_NAME)),
         wrap(KEY_REMINDERS));
   }
 
@@ -209,17 +209,17 @@ class AppointmentRenderer {
 
     if (!appointment.getAttendees().isEmpty()) {
       for (Long id : appointment.getAttendees()) {
-        attNames = BeeUtils.concat(CHILD_SEPARATOR, attNames, CalendarKeeper.getAttendeeName(id));
+        attNames = BeeUtils.join(CHILD_SEPARATOR, attNames, CalendarKeeper.getAttendeeName(id));
       }
     }
     if (!appointment.getProperties().isEmpty()) {
       for (Long id : appointment.getProperties()) {
-        propNames = BeeUtils.concat(CHILD_SEPARATOR, propNames, CalendarKeeper.getPropertyName(id));
+        propNames = BeeUtils.join(CHILD_SEPARATOR, propNames, CalendarKeeper.getPropertyName(id));
       }
     }
     if (!appointment.getReminders().isEmpty()) {
       for (Long id : appointment.getReminders()) {
-        remindNames = BeeUtils.concat(CHILD_SEPARATOR, remindNames,
+        remindNames = BeeUtils.join(CHILD_SEPARATOR, remindNames,
             CalendarKeeper.getReminderTypeName(id));
       }
     }

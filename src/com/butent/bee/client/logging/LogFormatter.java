@@ -22,7 +22,7 @@ public class LogFormatter extends Formatter {
     } else if (isSeparator(record)) {
       return LOG_SEPARATOR_TAG;
     } else {
-      return BeeUtils.concat(1, JsUtils.toTime(record.getMillis()),
+      return BeeUtils.joinWords(JsUtils.toTime(record.getMillis()),
           BeeUtils.clip(record.getMessage(), 256));
     }
   }

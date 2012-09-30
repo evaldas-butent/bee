@@ -5,6 +5,7 @@ import com.butent.bee.server.sql.IsExpression;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class ExchangeUtils {
@@ -41,7 +42,7 @@ public class ExchangeUtils {
   public static IsExpression exchangeFieldTo(SqlSelect query, String tbl, String amountFld,
       String currencyFld, String dateFld, Long currencyTo) {
 
-    Assert.notEmpty(currencyTo);
+    DataUtils.assertId(currencyTo);
     IsExpression date = null;
 
     if (!BeeUtils.isEmpty(dateFld)) {

@@ -23,6 +23,7 @@ import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.edit.SelectorEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
@@ -72,7 +73,7 @@ public class CalendarKeeper {
       if (event.hasView(VIEW_CALENDARS)) {
         event.setResult(DataUtils.join(VIEW_CALENDARS, event.getRow(),
             Lists.newArrayList(COL_NAME, COL_DESCRIPTION, COL_OWNER_FIRST_NAME,
-                COL_OWNER_LAST_NAME), 1));
+                COL_OWNER_LAST_NAME), BeeConst.STRING_SPACE));
 
       } else if (event.hasView(VIEW_APPOINTMENTS)) {
         event.setResult(APPOINTMENT_RENDERER.renderString(new Appointment(event.getRow())));

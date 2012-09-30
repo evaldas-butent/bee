@@ -74,7 +74,7 @@ public class MapRenderer extends AbstractCellRenderer implements HasItems {
     for (Map.Entry<String, String> entry : map.entrySet()) {
       String key = Value.parseValue(getDataType(), entry.getKey(), false).toString();
       if (!BeeUtils.isEmpty(key)) {
-        result.add(BeeUtils.concat(1, key, separator, entry.getValue()));
+        result.add(BeeUtils.joinWords(key, separator, entry.getValue()));
       }
     }
     return result;

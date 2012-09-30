@@ -10,6 +10,7 @@ import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -87,7 +88,7 @@ public class BeeServlet extends HttpServlet {
     HttpSession session = req.getSession();
 
     boolean doLogout = BeeUtils.same(svc, Service.LOGOUT)
-        || (BeeUtils.isEmpty(reqSid) && !BeeUtils.isEmpty(session.getAttribute(Service.VAR_USER)));
+        || (BeeUtils.isEmpty(reqSid) && session.getAttribute(Service.VAR_USER) != null);
 
     if (!doLogout) {
       if (BeeUtils.isEmpty(reqSid)) {
@@ -146,7 +147,7 @@ public class BeeServlet extends HttpServlet {
 
       s = CommUtils.prepareContent(ctp, Codec.beeSerialize(response));
 
-      logger.info(BeeUtils.elapsedSeconds(start), rid, "response",
+      logger.info(TimeUtils.elapsedSeconds(start), rid, "response",
           ctp, resp.getContentType(), s.length());
 
     } else {
@@ -213,7 +214,7 @@ public class BeeServlet extends HttpServlet {
       } else {
         s = BeeConst.EMPTY;
       }
-      logger.info(BeeUtils.elapsedSeconds(start), rid, "response",
+      logger.info(TimeUtils.elapsedSeconds(start), rid, "response",
           ctp, resp.getContentType(), cnt, cc, mc, pc, s.length());
     }
 
