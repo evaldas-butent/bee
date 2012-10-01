@@ -85,7 +85,7 @@ public class UploadServlet extends HttpServlet {
       writer.print(content);
       writer.flush();
     } catch (IOException ex) {
-      LogUtils.stack(logger, ex);
+      LogUtils.logStack(logger, ex);
     }
   }
 }

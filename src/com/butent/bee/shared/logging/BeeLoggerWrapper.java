@@ -1,5 +1,7 @@
 package com.butent.bee.shared.logging;
 
+import com.butent.bee.shared.logging.LogUtils.LogLevel;
+
 public class BeeLoggerWrapper implements BeeLogger {
 
   private final String loggerName;
@@ -22,6 +24,11 @@ public class BeeLoggerWrapper implements BeeLogger {
   @Override
   public void info(Object... messages) {
     getLogger().info(messages);
+  }
+
+  @Override
+  public void log(LogLevel level, Object... messages) {
+    getLogger().log(level, messages);
   }
 
   @Override

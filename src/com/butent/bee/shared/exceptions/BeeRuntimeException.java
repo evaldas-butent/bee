@@ -4,7 +4,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 
 /**
- * The class {@code BeeRuntimeException} logs runtime errors using SEVERE message level.
+ * The class {@code BeeRuntimeException} logs runtime errors using ERROR message level.
  */
 @SuppressWarnings("serial")
 public class BeeRuntimeException extends RuntimeException {
@@ -13,21 +13,21 @@ public class BeeRuntimeException extends RuntimeException {
 
   public BeeRuntimeException() {
     super();
-    logger.error(this);
+    LogUtils.logError(logger, this);
   }
 
   public BeeRuntimeException(String message) {
     super(message);
-    logger.error(this);
+    LogUtils.logError(logger, this);
   }
 
   public BeeRuntimeException(String message, Throwable cause) {
     super(message, cause);
-    logger.error(cause, message);
+    LogUtils.logError(logger, cause, message);
   }
 
   public BeeRuntimeException(Throwable cause) {
     super(cause);
-    logger.error(cause);
+    LogUtils.logError(logger, cause);
   }
 }

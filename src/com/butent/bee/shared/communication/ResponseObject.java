@@ -13,7 +13,6 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 
 /**
  * Used to transport data with messages between various layers.
@@ -129,7 +128,7 @@ public class ResponseObject implements BeeSerializable {
   }
 
   public String[] getErrors() {
-    return getMessageArray(Level.SEVERE);
+    return getMessageArray(LogLevel.ERROR);
   }
 
   public Collection<ResponseMessage> getMessages() {
@@ -137,7 +136,7 @@ public class ResponseObject implements BeeSerializable {
   }
 
   public String[] getNotifications() {
-    return getMessageArray(Level.INFO);
+    return getMessageArray(LogLevel.INFO);
   }
 
   public Object getResponse() {
@@ -168,7 +167,7 @@ public class ResponseObject implements BeeSerializable {
   }
 
   public String[] getWarnings() {
-    return getMessageArray(Level.WARNING);
+    return getMessageArray(LogLevel.WARNING);
   }
 
   public boolean hasArrayResponse(Class<?> clazz) {
@@ -176,7 +175,7 @@ public class ResponseObject implements BeeSerializable {
   }
 
   public boolean hasErrors() {
-    return hasMessages(Level.SEVERE);
+    return hasMessages(LogLevel.ERROR);
   }
 
   public boolean hasMessages() {
@@ -184,7 +183,7 @@ public class ResponseObject implements BeeSerializable {
   }
 
   public boolean hasNotifications() {
-    return hasMessages(Level.INFO);
+    return hasMessages(LogLevel.INFO);
   }
 
   public boolean hasResponse() {
@@ -196,7 +195,7 @@ public class ResponseObject implements BeeSerializable {
   }
 
   public boolean hasWarnings() {
-    return hasMessages(Level.WARNING);
+    return hasMessages(LogLevel.WARNING);
   }
 
   public boolean isArrayType() {
@@ -264,7 +263,7 @@ public class ResponseObject implements BeeSerializable {
     return this;
   }
 
-  private String[] getMessageArray(Level lvl) {
+  private String[] getMessageArray(LogLevel lvl) {
     List<String> msgs = Lists.newArrayList();
 
     for (ResponseMessage message : messages) {
@@ -275,7 +274,7 @@ public class ResponseObject implements BeeSerializable {
     return msgs.toArray(new String[0]);
   }
 
-  private boolean hasMessages(Level lvl) {
+  private boolean hasMessages(LogLevel lvl) {
     for (ResponseMessage message : messages) {
       if (lvl == null || Objects.equal(message.getLevel(), lvl)) {
         return true;

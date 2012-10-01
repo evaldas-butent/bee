@@ -175,10 +175,7 @@ public class AsyncCallback implements RequestCallback {
       }
       if (callback != null) {
         callback.onResponse(response);
-      } else {
-        BeeKeeper.getLog().warning("No callback available");
       }
-
     } else if (len == 0) {
       if (mc == 0) {
         BeeKeeper.getLog().warning("response empty");

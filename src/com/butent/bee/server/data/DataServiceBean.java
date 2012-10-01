@@ -15,6 +15,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.logging.LogUtils.LogLevel;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -24,7 +25,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Map;
-import java.util.logging.Level;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -206,7 +206,7 @@ public class DataServiceBean {
       bc.revert(conn);
       buff.addErrors(bc.getErrors());
       if (stmt == null) {
-        buff.addMessage(Level.SEVERE, "Statement not created");
+        buff.addMessage(LogLevel.ERROR, "Statement not created");
       }
       JdbcUtils.closeStatement(stmt);
       return;
@@ -241,7 +241,7 @@ public class DataServiceBean {
         }
 
       } else {
-        buff.addMessage(Level.WARNING, "Cursor name:", sCn, JdbcConst.FEATURE_NOT_SUPPORTED);
+        buff.addMessage(LogLevel.WARNING, "Cursor name:", sCn, JdbcConst.FEATURE_NOT_SUPPORTED);
       }
     }
 
@@ -281,7 +281,7 @@ public class DataServiceBean {
       } else if (BeeUtils.isInt(sFs)) {
         vu = BeeUtils.toInt(sFs);
       } else {
-        buff.addMessage(Level.WARNING, "Statement Fetch Size:", sFs, "not an integer");
+        buff.addMessage(LogLevel.WARNING, "Statement Fetch Size:", sFs, "not an integer");
         vu = BeeConst.INT_ERROR;
         ok = false;
       }
@@ -307,7 +307,7 @@ public class DataServiceBean {
         vu = BeeUtils.toInt(sMf);
         ok = true;
       } else {
-        buff.addMessage(Level.WARNING, "Statement Max Field Size:", sMf, "not an integer");
+        buff.addMessage(LogLevel.WARNING, "Statement Max Field Size:", sMf, "not an integer");
         vu = BeeConst.INT_ERROR;
         ok = false;
       }
@@ -334,7 +334,7 @@ public class DataServiceBean {
         vu = BeeUtils.toInt(sMr);
         ok = true;
       } else {
-        buff.addMessage(Level.WARNING, "Statement Max Rows:", sMr, "not an integer");
+        buff.addMessage(LogLevel.WARNING, "Statement Max Rows:", sMr, "not an integer");
         vu = BeeConst.INT_ERROR;
         ok = false;
       }
@@ -360,7 +360,7 @@ public class DataServiceBean {
         vu = BeeUtils.toInt(sQt);
         ok = true;
       } else {
-        buff.addMessage(Level.WARNING, "Statement Query Timeout:", sQt, "not an integer");
+        buff.addMessage(LogLevel.WARNING, "Statement Query Timeout:", sQt, "not an integer");
         vu = BeeConst.INT_ERROR;
         ok = false;
       }
@@ -405,7 +405,7 @@ public class DataServiceBean {
       bc.revert(conn);
       buff.addErrors(bs.getErrors());
       if (rs == null) {
-        buff.addMessage(Level.SEVERE, BeeUtils.bracket(sql), "result set not created");
+        buff.addMessage(LogLevel.ERROR, BeeUtils.bracket(sql), "result set not created");
       }
       JdbcUtils.closeResultSet(rs);
       JdbcUtils.closeStatement(stmt);
@@ -444,7 +444,7 @@ public class DataServiceBean {
       } else if (BeeUtils.isInt(rFs)) {
         vu = BeeUtils.toInt(rFs);
       } else {
-        buff.addMessage(Level.WARNING, "Result Set Fetch Size:", rFs, "not an integer");
+        buff.addMessage(LogLevel.WARNING, "Result Set Fetch Size:", rFs, "not an integer");
         vu = BeeConst.INT_ERROR;
         ok = false;
       }

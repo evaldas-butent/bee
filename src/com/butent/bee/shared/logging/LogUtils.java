@@ -1,6 +1,7 @@
 package com.butent.bee.shared.logging;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.utils.ArrayUtils;
 
 /**
  * Contains methods used for logging, changing logging level.
@@ -13,11 +14,6 @@ public class LogUtils {
 
   private static BeeLoggerFactory loggerFactory;
 
-  public static BeeLogger createLogger(String name) {
-    Assert.notNull(loggerFactory);
-    return loggerFactory.getLogger(name);
-  }
-
   public static BeeLogger getLogger(String name) {
     return new BeeLoggerWrapper(name);
   }
@@ -27,8 +23,14 @@ public class LogUtils {
     return getLogger(clazz.getName());
   }
 
-  public static void setLoggerFactory(BeeLoggerFactory loggerFactory) {
-    LogUtils.loggerFactory = loggerFactory;
+  public static void logError(BeeLogger logger, Throwable err, Object... messages) {
+    Assert.notNull(err);
+
+    if (ArrayUtils.length(messages) > 0) {
+      logger.error(messages);
+    }
+    logger.error(err);
+    logStack(logger, err);
   }
 
   /**
@@ -37,11 +39,22 @@ public class LogUtils {
    * @param logger the Logger to log to
    * @param err the error's stack trace to log
    */
-  public static void stack(BeeLogger logger, Throwable err) {
+  public static void logStack(BeeLogger logger, Throwable err) {
+    Assert.notNull(err);
     int i = 0;
+
     for (StackTraceElement el : err.getStackTrace()) {
-      logger.info("[" + ++i + "] " + el.toString());
+      logger.info(++i, ":", el);
     }
+  }
+
+  public static void setLoggerFactory(BeeLoggerFactory loggerFactory) {
+    LogUtils.loggerFactory = loggerFactory;
+  }
+
+  static BeeLogger createLogger(String name) {
+    Assert.notNull(loggerFactory);
+    return loggerFactory.getLogger(name);
   }
 
   private LogUtils() {

@@ -198,8 +198,10 @@ public class ParametersHandler extends AbstractGridCallback {
     ParameterList args = CommonsEventHandler.createArgs(CommonsConstants.SVC_SET_PARAMETER);
     args.addDataItem(CommonsConstants.VAR_PARAMETERS_MODULE, module);
     args.addDataItem(CommonsConstants.VAR_PARAMETERS, name);
-    args.addDataItem(CommonsConstants.VAR_PARAMETER_VALUE, value);
 
+    if (!BeeUtils.isEmpty(value)) {
+      args.addDataItem(CommonsConstants.VAR_PARAMETER_VALUE, value);
+    }
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
