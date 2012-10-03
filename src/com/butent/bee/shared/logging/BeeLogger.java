@@ -8,6 +8,8 @@ public interface BeeLogger {
 
   void error(Object... messages);
 
+  void error(Throwable ex, Object... messages);
+
   void info(Object... messages);
 
   void log(LogLevel level, Object... messages);

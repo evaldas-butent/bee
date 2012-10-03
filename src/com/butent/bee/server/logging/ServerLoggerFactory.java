@@ -7,6 +7,6 @@ public class ServerLoggerFactory implements BeeLoggerFactory {
 
   @Override
   public BeeLogger getLogger(String name) {
-    return new ServerLogger(name);
+    return ServerLogger.create(name);
   }
 }

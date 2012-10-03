@@ -1,7 +1,6 @@
 package com.butent.bee.shared.logging;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.utils.ArrayUtils;
 
 /**
  * Contains methods used for logging, changing logging level.
@@ -23,16 +22,6 @@ public class LogUtils {
     return getLogger(clazz.getName());
   }
 
-  public static void logError(BeeLogger logger, Throwable err, Object... messages) {
-    Assert.notNull(err);
-
-    if (ArrayUtils.length(messages) > 0) {
-      logger.error(messages);
-    }
-    logger.error(err);
-    logStack(logger, err);
-  }
-
   /**
    * Log an error stack trace with {@code logger} using INFO message level.
    * 
@@ -44,7 +33,7 @@ public class LogUtils {
     int i = 0;
 
     for (StackTraceElement el : err.getStackTrace()) {
-      logger.info(++i, ":", el);
+      logger.debug("[", ++i, "]", el);
     }
   }
 

@@ -204,22 +204,22 @@ public class Config {
   public static void init() {
     Class<?> z = Config.class;
     String path = z.getResource(z.getSimpleName() + ".class").getPath();
-  
+
     String sub = "/WEB-INF/";
     String w = path.substring(path.indexOf('/'), path.indexOf(sub) + sub.length() - 1);
-    logger.debug("web inf path:", w);
-  
+
     File dir = new File(w);
-  
+
     WAR_DIR = dir.getParentFile();
     WEB_INF_DIR = dir;
-  
+
     SOURCE_DIR = new File(WAR_DIR.getParentFile(), "src");
-  
+
     SCHEMA_DIR = new File(dir, "schemas");
     CONFIG_DIR = new File(dir, "config");
     USER_DIR = new File(dir, "user");
-  
+
+    logger.debug("web inf path:", w);
     properties = loadProperties("server.properties");
   }
 
@@ -257,18 +257,7 @@ public class Config {
     return ok;
   }
 
-  private static int getSize(Properties props) {
-    if (props == null) {
-      return 0;
-    }
-    return props.stringPropertyNames().size();
-  }
-
-  private static boolean isEmpty(Properties props) {
-    return getSize(props) <= 0;
-  }
-
-  private static Properties loadProperties(String name) {
+  public static Properties loadProperties(String name) {
     Properties def = readProperties(new File(CONFIG_DIR, name));
     Properties usr = readProperties(new File(USER_DIR, name));
 
@@ -285,6 +274,17 @@ public class Config {
       }
     }
     return result;
+  }
+
+  private static int getSize(Properties props) {
+    if (props == null) {
+      return 0;
+    }
+    return props.stringPropertyNames().size();
+  }
+
+  private static boolean isEmpty(Properties props) {
+    return getSize(props) <= 0;
   }
 
   private static Properties readProperties(File file) {

@@ -202,7 +202,7 @@ public class QueryServiceBean {
     return processSql(sql, new SqlHandler<Object>() {
       @Override
       public Object processError(SQLException ex) {
-        LogUtils.logError(logger, ex);
+        logger.error(ex);
         return ex.getMessage();
       }
 

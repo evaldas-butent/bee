@@ -29,6 +29,13 @@ public class ClientLogger implements BeeLogger {
   }
 
   @Override
+  public void error(Throwable ex, Object... messages) {
+    if (logger.isLoggable(Level.SEVERE)) {
+      logger.log(Level.SEVERE, BeeUtils.joinWords(messages), ex);
+    }
+  }
+
+  @Override
   public void info(Object... messages) {
     if (logger.isLoggable(Level.INFO)) {
       logger.info(BeeUtils.joinWords(messages));

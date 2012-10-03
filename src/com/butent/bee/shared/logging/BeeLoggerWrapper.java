@@ -13,33 +13,50 @@ public class BeeLoggerWrapper implements BeeLogger {
 
   @Override
   public void debug(Object... messages) {
-    getLogger().debug(messages);
+    if (initLogger()) {
+      logger.debug(messages);
+    }
   }
 
   @Override
   public void error(Object... messages) {
-    getLogger().error(messages);
+    if (initLogger()) {
+      logger.error(messages);
+    }
+  }
+
+  @Override
+  public void error(Throwable ex, Object... messages) {
+    if (initLogger()) {
+      logger.error(ex, messages);
+    }
   }
 
   @Override
   public void info(Object... messages) {
-    getLogger().info(messages);
+    if (initLogger()) {
+      logger.info(messages);
+    }
   }
 
   @Override
   public void log(LogLevel level, Object... messages) {
-    getLogger().log(level, messages);
+    if (initLogger()) {
+      logger.log(level, messages);
+    }
   }
 
   @Override
   public void warning(Object... messages) {
-    getLogger().warning(messages);
+    if (initLogger()) {
+      logger.warning(messages);
+    }
   }
 
-  private BeeLogger getLogger() {
+  private boolean initLogger() {
     if (logger == null) {
       logger = LogUtils.createLogger(loggerName);
     }
-    return logger;
+    return (logger != null);
   }
 }
