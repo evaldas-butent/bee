@@ -6,7 +6,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -35,7 +34,7 @@ import javax.servlet.http.HttpSession;
  * Enables to manage HTTP requests - get and set their attributes and change their parameters.
  */
 
-public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
+public class RequestInfo implements HasExtendedInfo, HasOptions {
   private static int COUNTER = 0;
 
   private String id = null;
@@ -197,10 +196,6 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
     return headers;
   }
 
-  public String getHeadersAsString() {
-    return BeeUtils.transform(headers);
-  }
-
   public String getId() {
     return id;
   }
@@ -251,10 +246,6 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
     return params;
   }
 
-  public String getParamsAsString() {
-    return BeeUtils.transform(params);
-  }
-
   public String getQuery() {
     return query;
   }
@@ -273,10 +264,6 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
 
   public Map<String, String> getVars() {
     return vars;
-  }
-
-  public String getVarsAsString() {
-    return BeeUtils.transform(vars);
   }
 
   public boolean hasParameter(int idx) {
@@ -426,13 +413,8 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
   @Override
   public String toString() {
     return BeeUtils.join(BeeConst.DEFAULT_ROW_SEPARATOR,
-        BeeUtils.transformOptions("counter", BeeUtils.toString(COUNTER), "method", method, "id", id,
+        BeeUtils.joinOptions("counter", BeeUtils.toString(COUNTER), "method", method, "id", id,
             "service", service, "dsn", dsn, "sep", separator, "opt", options), headers, params);
-  }
-
-  @Override
-  public String transform() {
-    return toString();
   }
 
   private Collection<ExtendedProperty> getAsyncContextInfo(AsyncContext ac) {
@@ -621,7 +603,11 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
       while (lst.hasMoreElements()) {
         nm = lst.nextElement();
 
-        v = BeeUtils.transform(sc.getAttribute(nm));
+        Object attribute = sc.getAttribute(nm);
+        if (attribute == null) {
+          continue;
+        }
+        v = BeeUtils.trim(attribute.toString());
         if (BeeUtils.isEmpty(v)) {
           continue;
         }
@@ -637,7 +623,7 @@ public class RequestInfo implements HasExtendedInfo, Transformable, HasOptions {
           if (c > 1) {
             for (int i = 0; i < c; i++) {
               PropertyUtils.addExtended(info, root + " attribute " + nm,
-                  BeeUtils.transform(i), arr[i]);
+                  BeeUtils.toString(i), arr[i]);
             }
             continue;
           }

@@ -1,7 +1,6 @@
 package com.butent.bee.shared.data;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.DateValue;
@@ -24,7 +23,7 @@ import java.util.List;
  * Implements {@code isRow} interface, sets behaviors for row classes.
  */
 
-public abstract class AbstractRow implements IsRow, Transformable {
+public abstract class AbstractRow implements IsRow {
   
   private long id;
   private long version = 0;
@@ -210,7 +209,8 @@ public abstract class AbstractRow implements IsRow, Transformable {
     this.version = version;
   }
 
-  public String transform() {
+  @Override
+  public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("id=").append(getId());
 
@@ -223,7 +223,7 @@ public abstract class AbstractRow implements IsRow, Transformable {
     }
 
     if (getProperties() != null) {
-      sb.append("p=").append(getProperties().transform());
+      sb.append("p=").append(getProperties());
     }
     return sb.toString();
   }

@@ -2,10 +2,7 @@ package com.butent.bee.client.dom;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
 import com.google.gwt.dom.client.ButtonElement;
 import com.google.gwt.dom.client.DivElement;
 import com.google.gwt.dom.client.Document;
@@ -40,7 +37,6 @@ import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
@@ -50,40 +46,11 @@ import com.butent.bee.shared.utils.PropertyUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Contains necessary functions for reading and changing DOM information.
  */
-
 public class DomUtils {
-  /**
-   * Enables to get and set element attribute values.
-   */
-  static final class ElementAttribute extends JavaScriptObject implements Transformable {
-    protected ElementAttribute() {
-    }
-
-    public native String getName() /*-{
-      return this.name;
-    }-*/;
-
-    public native String getValue() /*-{
-      return this.value;
-    }-*/;
-
-    public native void setName(String nm) /*-{
-      this.name = nm;
-    }-*/;
-
-    public native void setValue(String v) /*-{
-      this.value = v;
-    }-*/;
-
-    public String transform() {
-      return getName() + BeeConst.DEFAULT_VALUE_SEPARATOR + getValue();
-    }
-  }
 
   public static final String TAG_AUDIO = "audio";
   public static final String TAG_BUTTON = "button";
@@ -398,25 +365,6 @@ public class DomUtils {
     Assert.notEmpty(name);
 
     return obj.getElement().getAttribute(name);
-  }
-
-  public static Map<String, String> getAttributes(Element el, boolean includeEmptyValues) {
-    Assert.notNull(el);
-    Map<String, String> result = Maps.newHashMap();
-
-    JsArray<ElementAttribute> arr = getNativeAttributes(el);
-    if (arr == null) {
-      return result;
-    }
-
-    ElementAttribute attr;
-    for (int i = 0; i < arr.length(); i++) {
-      attr = arr.get(i);
-      if (includeEmptyValues || !BeeUtils.isEmpty(attr.getValue())) {
-        result.put(attr.getName(), attr.getValue());
-      }
-    }
-    return result;
   }
 
   public static int getCellPadding(Element elem) {
@@ -839,10 +787,6 @@ public class DomUtils {
     return nd.namespaceURI;
   }-*/;
   
-  public static native JsArray<ElementAttribute> getNativeAttributes(Element el) /*-{
-    return el.attributes;
-  }-*/;
-
   public static List<Property> getNodeInfo(Node nd) {
     Assert.notNull(nd);
     List<Property> lst = new ArrayList<Property>();
@@ -1526,30 +1470,6 @@ public class DomUtils {
     moveVerticalBy(obj.getElement(), dy);
   }
 
-  public static void preventChildSelection(Element elem, boolean recurse, String... tags) {
-    Assert.notNull(elem);
-    NodeList<Node> children = elem.getChildNodes();
-    if (children == null) {
-      return;
-    }
-    int tagCnt = (tags == null) ? 0 : tags.length;
-    Element child;
-
-    for (int i = 0; i < children.getLength(); i++) {
-      if (!Element.is(children.getItem(i))) {
-        continue;
-      }
-      child = Element.as(children.getItem(i));
-      if (tagCnt <= 0 || BeeUtils.inListSame(child.getTagName(), tags)) {
-        preventSelection(child);
-      }
-
-      if (recurse) {
-        preventChildSelection(child, recurse, tags);
-      }
-    }
-  }
-
   public static void preventSelection(Element elem) {
     Assert.notNull(elem);
     elem.addClassName(StyleUtils.NAME_UNSELECTABLE);
@@ -1825,28 +1745,6 @@ public class DomUtils {
   public static void setText(String id, String text) {
     Element elem = getElement(id);
     elem.setInnerText(text);
-  }
-
-  public static String transform(Object obj) {
-    if (obj == null) {
-      return BeeConst.STRING_EMPTY;
-    }
-
-    if (obj instanceof Element) {
-      return transformElement((Element) obj);
-    }
-    if (obj instanceof Node) {
-      return transformNode((Node) obj);
-    }
-
-    if (obj instanceof Widget) {
-      return transformWidget((Widget) obj);
-    }
-    if (obj instanceof UIObject) {
-      return transformUIObject((UIObject) obj);
-    }
-
-    return BeeUtils.transform(obj);
   }
 
   public static String transformClass(Object obj) {

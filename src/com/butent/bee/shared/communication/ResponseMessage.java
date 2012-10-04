@@ -3,7 +3,6 @@ package com.butent.bee.shared.communication;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.logging.LogUtils.LogLevel;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -15,7 +14,7 @@ import com.butent.bee.shared.utils.NameUtils;
  * getting and setting these parameters as well as serialization methods.
  */
 
-public class ResponseMessage implements BeeSerializable, Transformable {
+public class ResponseMessage implements BeeSerializable {
   private DateTime date = null;
   private LogLevel level = null;
   private String message = null;
@@ -126,10 +125,4 @@ public class ResponseMessage implements BeeSerializable, Transformable {
   public String toString() {
     return BeeUtils.joinWords(date, level, message);
   }
-
-  @Override
-  public String transform() {
-    return toString();
-  }
-
 }

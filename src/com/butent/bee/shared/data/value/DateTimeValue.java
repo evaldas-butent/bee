@@ -180,9 +180,4 @@ public class DateTimeValue extends Value {
     }
     return getDateTime().toString();
   }
-
-  @Override
-  public String transform() {
-    return toString();
-  }
 }

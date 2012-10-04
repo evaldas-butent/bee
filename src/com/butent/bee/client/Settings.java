@@ -1,13 +1,14 @@
 package com.butent.bee.client;
 
-import com.google.common.collect.Maps;
+import com.google.common.collect.Lists;
 import com.google.gwt.i18n.client.Dictionary;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Property;
 
-import java.util.Map;
+import java.util.List;
 import java.util.MissingResourceException;
 
 /**
@@ -21,6 +22,16 @@ public class Settings {
 
   public static int getActionSensitivityMillis() {
     return getPropertyInt("actionSensitivityMillis");
+  }
+
+  public static List<Property> getInfo() {
+    List<Property> info = Lists.newArrayList();
+    if (checkSettings()) {
+      for (String key : settings.keySet()) {
+        info.add(new Property(key, settings.get(key)));
+      }
+    }
+    return info;
   }
 
   public static int getLogCapacity() {
@@ -70,16 +81,6 @@ public class Settings {
     return getPropertyInt("providerSensitivityMillis");
   }
   
-  public static Map<String, String> getSettings() {
-    Map<String, String> result = Maps.newHashMap();
-    if (checkSettings()) {
-      for (String key : settings.keySet()) {
-        result.put(key, settings.get(key));
-      }
-    }
-    return result;
-  }
-
   public static long getStartMillis() {
     return getPropertyLong("startMillis");
   }

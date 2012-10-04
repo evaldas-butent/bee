@@ -145,14 +145,14 @@ public class TestArrayUtils {
   public void testJoinObjectArrayObject() {
     assertEquals("this;is;a;simple;test", ArrayUtils.join(";", strMas1));
     assertEquals("this     is     a     simple     test", ArrayUtils.join("     ", strMas1));
-    assertEquals("thisAAisAAaAA", ArrayUtils.join("AA", strMas3));
+    assertEquals("thisAAisAAa", ArrayUtils.join("AA", strMas3));
   }
 
   @Test
   public void testJoinObjectArrayObjectInt() {
     assertEquals("a;simple;test", ArrayUtils.join(";", strMas1, 2));
     assertEquals("", ArrayUtils.join("", strMas1, 5, 13));
-    assertEquals("thisAAisAAaAA", ArrayUtils.join("AA", strMas3, -5));
+    assertEquals("thisAAisAAa", ArrayUtils.join("AA", strMas3, -5));
     assertEquals("", ArrayUtils.join("AA", strMas3, 50));
   }
 
@@ -244,22 +244,5 @@ public class TestArrayUtils {
     } catch (Exception e) {
       fail("Java lang exception. Need BeeRuntimeException " + e.getMessage());
     }
-  }
-
-  @Test
-  public void testTransform() {
-    Object[] testMas1 = {intMas1, strMas1, boolMas1};
-    Object[] testMas2 = {intMas1, testMas1, boolMas1};
-    Object[] testMas3 = {};
-
-    assertEquals(
-        "5, 5, 7, -10, 3;5, 5, 7, -10, 3, this, is, a, simple, test, true, true, false, false, true;true, true, false, false, true",
-        ArrayUtils.transform(testMas2, ";"));
-    assertEquals("5, 5, 7, -10, 3 ; this, is, a, simple, test ; true, true, false, false, true",
-        ArrayUtils.transform(testMas1, " ; "));
-    assertEquals("", ArrayUtils.transform(testMas3, ";"));
-    assertEquals(
-        "5, 5, 7, -10, 3, 5, 5, 7, -10, 3, this, is, a, simple, test, true, true, false, false, true, true, true, false, false, true",
-        ArrayUtils.transform(testMas2));
   }
 }

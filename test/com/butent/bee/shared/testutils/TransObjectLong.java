@@ -3,12 +3,11 @@ package com.butent.bee.shared.testutils;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.HasLongValue;
-import com.butent.bee.shared.Transformable;
 
 /**
  * Object for testing {@link com.butent.bee.shared.HasLongValue}.
  */
-public class TransObjectLong implements BeeSerializable, Transformable, HasLength, HasLongValue {
+public class TransObjectLong implements BeeSerializable, HasLength, HasLongValue {
 
   public static final double DOUBLE_DEFAULT_VALUE = 5.0;
   public double doubleValue = 0;
@@ -61,7 +60,7 @@ public class TransObjectLong implements BeeSerializable, Transformable, HasLengt
   }
 
   @Override
-  public String transform() {
+  public String toString() {
     return Double.toString(this.digit);
   }
 }

@@ -356,7 +356,7 @@ public class BeeParameter implements BeeSerializable {
       if (val instanceof Map || val instanceof Collection) {
         expr = Codec.beeSerialize(val);
       } else {
-        expr = BeeUtils.transformNoTrim(val);
+        expr = val.toString();
       }
     }
     return expr;

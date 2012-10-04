@@ -5,7 +5,6 @@ import com.butent.bee.server.jdbc.BeeResultSet;
 import com.butent.bee.server.jdbc.JdbcException;
 import com.butent.bee.server.jdbc.JdbcUtils;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
@@ -25,7 +24,7 @@ import javax.sql.DataSource;
  * get status etc).
  */
 
-public class BeeDataSource implements Transformable {
+public class BeeDataSource {
   public static final int STATUS_ERROR = -1;
   public static final int STATUS_UNKNOWN = 0;
   public static final int STATUS_OPEN = 1;
@@ -242,7 +241,7 @@ public class BeeDataSource implements Transformable {
         continue;
       }
 
-      v = BeeUtils.join(null, NameUtils.addName("Max", rs.getInt("MAX_LEN")),
+      v = BeeUtils.joinItems(NameUtils.addName("Max", rs.getInt("MAX_LEN")),
           NameUtils.addName("Default", rs.getString("DEFAULT_VALUE")), rs.getString("DESCRIPTION"));
       PropertyUtils.addExtended(lst, "Client Property", k, BeeUtils.notEmpty(v, "(empty)"));
     }
@@ -268,7 +267,7 @@ public class BeeDataSource implements Transformable {
           continue;
         }
 
-        v = BeeUtils.join(null, NameUtils.addName("Cat", rs.getString("FUNCTION_CAT")),
+        v = BeeUtils.joinItems(NameUtils.addName("Cat", rs.getString("FUNCTION_CAT")),
             NameUtils.addName("Schem", rs.getString("FUNCTION_SCHEM")));
         PropertyUtils.addExtended(lst, "Function", k, BeeUtils.notEmpty(v, k));
       }
@@ -294,7 +293,7 @@ public class BeeDataSource implements Transformable {
           continue;
         }
 
-        v = BeeUtils.join(null, NameUtils.addName("Cat", rs.getString("PROCEDURE_CAT")),
+        v = BeeUtils.joinItems(NameUtils.addName("Cat", rs.getString("PROCEDURE_CAT")),
             NameUtils.addName("Schem", rs.getString("PROCEDURE_SCHEM")));
         PropertyUtils.addExtended(lst, "Procedure", k, BeeUtils.notEmpty(v, k));
       }
@@ -331,7 +330,7 @@ public class BeeDataSource implements Transformable {
         c = JdbcUtils.getSize(z);
         z.close();
 
-        v = "Table count " + (c > 0 ? BeeUtils.transform(c) : "unknown");
+        v = "Table count " + (c > 0 ? BeeUtils.toString(c) : "unknown");
       } catch (Exception ex) {
         s = null;
         v = ex.getMessage();
@@ -508,10 +507,6 @@ public class BeeDataSource implements Transformable {
   @Override
   public String toString() {
     return BeeUtils.joinWords("Dsn", dsn, "DataSource", ds, "Connection", conn);
-  }
-
-  public String transform() {
-    return toString();
   }
 
   private void addError(SQLException ex) {

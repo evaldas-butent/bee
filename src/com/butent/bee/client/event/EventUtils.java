@@ -84,7 +84,6 @@ import com.google.gwt.event.dom.client.TouchMoveEvent;
 import com.google.gwt.event.dom.client.TouchMoveHandler;
 import com.google.gwt.event.dom.client.TouchStartEvent;
 import com.google.gwt.event.dom.client.TouchStartHandler;
-import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.media.dom.client.MediaError;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.UIObject;
@@ -972,14 +971,6 @@ public class EventUtils {
     if (eventsToSink > 0) {
       widget.sinkEvents(eventsToSink);
     }
-  }
-
-  public static String transformCloseEvent(CloseEvent<?> ev) {
-    if (ev == null) {
-      return BeeConst.STRING_EMPTY;
-    }
-    return BeeUtils.transformOptions("source", DomUtils.transform(ev.getSource()),
-        "target", DomUtils.transform(ev.getTarget()), "auto", BeeUtils.toString(ev.isAutoClosed()));
   }
 
   public static String transformEvent(NativeEvent ev) {

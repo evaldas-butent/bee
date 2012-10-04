@@ -184,10 +184,10 @@ public class RemoteCall {
           DataRow row = new DataRow();
 
           if (prm.showId) {
-            row.id = BeeUtils.transform(r.getId());
+            row.id = BeeUtils.toString(r.getId());
           }
           if (prm.showVersion) {
-            row.version = BeeUtils.transform(new DateTime(r.getVersion()));
+            row.version = new DateTime(r.getVersion()).toString();
           }
           if (!skipColumns) {
             for (String col : data.columns) {
@@ -198,7 +198,7 @@ public class RemoteCall {
         }
       }
     } else {
-      data.error = BeeUtils.transform(rs);
+      data.error = (rs == null) ? BeeConst.NULL : rs.toString();
     }
     return buildResponse(data);
   }

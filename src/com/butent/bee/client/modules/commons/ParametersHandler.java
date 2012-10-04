@@ -208,7 +208,7 @@ public class ParametersHandler extends AbstractGridCallback {
         Assert.notNull(response);
 
         if (response.hasErrors()) {
-          Global.showError((Object[]) response.getErrors());
+          Global.showError(response.getErrors());
 
         } else if (response.hasResponse(Boolean.class)) {
           BeeParameter prm = params.get(name);
@@ -247,7 +247,7 @@ public class ParametersHandler extends AbstractGridCallback {
         Assert.notNull(response);
 
         if (response.hasErrors()) {
-          Global.showError((Object[]) response.getErrors());
+          Global.showError(response.getErrors());
 
         } else if (response.hasResponse(Boolean.class)) {
           requery();
@@ -303,7 +303,7 @@ public class ParametersHandler extends AbstractGridCallback {
         Assert.notNull(response);
 
         if (response.hasErrors()) {
-          Global.showError((Object[]) response.getErrors());
+          Global.showError(response.getErrors());
 
         } else if (response.hasResponse()) {
           params.clear();
@@ -331,7 +331,7 @@ public class ParametersHandler extends AbstractGridCallback {
         Assert.notNull(response);
 
         if (response.hasErrors()) {
-          Global.showError((Object[]) response.getErrors());
+          Global.showError(response.getErrors());
 
         } else if (response.hasResponse(Boolean.class)) {
           boolean newMode = (id == DataUtils.NEW_ROW_ID);

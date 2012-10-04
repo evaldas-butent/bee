@@ -143,7 +143,7 @@ public class BeeServlet extends HttpServlet {
 
       resp.setContentType(CommUtils.getMediaType(ctp));
       resp.setCharacterEncoding(CommUtils.getCharacterEncoding(ctp));
-      resp.setHeader(Service.RPC_VAR_CTP, ctp.transform());
+      resp.setHeader(Service.RPC_VAR_CTP, ctp.name());
 
       s = CommUtils.prepareContent(ctp, Codec.beeSerialize(response));
 
@@ -181,7 +181,7 @@ public class BeeServlet extends HttpServlet {
         }
       }
 
-      resp.setHeader(Service.RPC_VAR_CTP, ctp.transform());
+      resp.setHeader(Service.RPC_VAR_CTP, ctp.name());
 
       String mt = BeeUtils.notEmpty(buff.getMediaType(), CommUtils.getMediaType(ctp));
       if (!BeeUtils.isEmpty(mt)) {

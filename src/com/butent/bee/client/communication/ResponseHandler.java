@@ -61,7 +61,8 @@ public class ResponseHandler {
     Assert.notEmpty(respTxt);
     Assert.notEmpty(messages);
 
-    Map<String, String> reqData = info.getUserData();
+    @SuppressWarnings("unchecked")
+    Map<String, String> reqData = (Map<String, String>) info.getUserData();
     Assert.notEmpty(reqData);
 
     String reqTxt = reqData.get("data");

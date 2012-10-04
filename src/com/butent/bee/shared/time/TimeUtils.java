@@ -833,7 +833,7 @@ public class TimeUtils {
         break;
 
       default:
-        Assert.unsupported(BeeUtils.joinWords("delta" + fieldName(field) + "not supported"));
+        Assert.unsupported(BeeUtils.joinWords("delta", fieldName(field), "not supported"));
     }
     return delta;
   }

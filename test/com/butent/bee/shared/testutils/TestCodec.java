@@ -115,19 +115,6 @@ public class TestCodec {
   }
 
   @Test
-  public final void testDeserializeValues() {
-    String in1[] = {"hello", "ab", "abc"};
-    String in4[] = {"hello", "", "abc"};
-    String in3[] = {";", "ab", "abc"};
-    String in32[] = {null, null, null, "ab", "abc"};
-
-    assertArrayEquals(in1, Codec.deserializeValues("3;5;hello2;ab3;abc"));
-    assertArrayEquals(in4, Codec.deserializeValues("3;5;hello0;3;abc"));
-    assertArrayEquals(in3, Codec.deserializeValues("3;1;;2;ab3;abc"));
-    assertArrayEquals(in32, Codec.deserializeValues("5;;;;2;ab3;abc"));
-  }
-
-  @Test
   public final void testEncodeBase64() {
     String longBase64 = "";
     String longString = "";
@@ -200,33 +187,10 @@ public class TestCodec {
   }
 
   @Test
-  public final void testSerialize() {
-    TransObject obj = new TransObject();
-
-    assertEquals(";", Codec.serialize(null));
-    assertEquals("0;", Codec.serialize(""));
-    assertEquals("1;5", Codec.serialize(5));
-    assertEquals("6;string", Codec.serialize("string"));
-    assertEquals("1;c", Codec.serialize('c'));
-    assertEquals("3;2.0", Codec.serialize(2.0));
-    assertEquals("2;-1", Codec.serialize(-1));
-    assertEquals("3;5.0", Codec.serialize(obj));
-  }
-
-  @Test
   public final void testSerializeLength() {
     assertEquals("0", Codec.serializeLength(0));
     assertEquals("15", Codec.serializeLength(5));
     assertEquals("215", Codec.serializeLength(15));
-  }
-
-  @Test
-  public final void testSerializeValues() {
-    assertEquals("4;1;16;string1;67;letters",
-        Codec.serializeValues(1, "string", 6, "letters"));
-    assertEquals("2;3;5.01;1", Codec.serializeValues(5.0, 1));
-    assertEquals("1;0;", Codec.serializeValues(""));
-    assertEquals("1;;", Codec.serializeValues((Object) null));
   }
 
   @Test

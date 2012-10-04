@@ -150,7 +150,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     Tree tree = new Tree();
     tree.addItem(item);
 
-    Global.inform(tree);
+    Global.showModalWidget(tree);
   }
 
   void updateActivePanel(Widget widget, ScrollBars scroll) {

@@ -164,9 +164,4 @@ public class BooleanValue extends Value {
     }
     return Boolean.toString(value);
   }
-
-  @Override
-  public String transform() {
-    return toString();
-  }
 }

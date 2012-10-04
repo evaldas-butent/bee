@@ -81,7 +81,7 @@ public class Queries {
 
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
         Service.VAR_VIEW_WHERE, filter.serialize());
-    ParameterList parameters = new ParameterList(Service.DELETE, RpcParameter.SECTION.DATA, lst);
+    ParameterList parameters = new ParameterList(Service.DELETE, RpcParameter.Section.DATA, lst);
 
     BeeKeeper.getRpc().makePostRequest(parameters, new ResponseCallback() {
       @Override
@@ -128,7 +128,7 @@ public class Queries {
         Service.VAR_VIEW_ROWS, Codec.beeSerialize(rows));
 
     BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.DELETE_ROWS,
-        RpcParameter.SECTION.DATA, lst),
+        RpcParameter.Section.DATA, lst),
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
@@ -172,7 +172,7 @@ public class Queries {
     if (BeeUtils.isEmpty(columns)) {
       columnNames = null;
     } else {
-      columnNames = BeeUtils.transformCollection(columns, Service.VIEW_COLUMN_SEPARATOR);
+      columnNames = BeeUtils.join(Service.VIEW_COLUMN_SEPARATOR, columns);
     }
 
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
@@ -182,7 +182,7 @@ public class Queries {
     }
 
     BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.QUERY,
-        RpcParameter.SECTION.DATA, lst),
+        RpcParameter.Section.DATA, lst),
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
@@ -218,7 +218,7 @@ public class Queries {
     }
 
     BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.COUNT_ROWS,
-        RpcParameter.SECTION.DATA, lst),
+        RpcParameter.Section.DATA, lst),
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
@@ -258,7 +258,7 @@ public class Queries {
     if (BeeUtils.isEmpty(columns)) {
       columnNames = null;
     } else {
-      columnNames = BeeUtils.transformCollection(columns, Service.VIEW_COLUMN_SEPARATOR);
+      columnNames = BeeUtils.join(Service.VIEW_COLUMN_SEPARATOR, columns);
     }
 
     if (cachingPolicy != null && cachingPolicy.doRead() && BeeUtils.isEmpty(columnNames)
@@ -292,7 +292,7 @@ public class Queries {
     }
 
     return BeeKeeper.getRpc().makePostRequest(new ParameterList(Service.QUERY,
-        RpcParameter.SECTION.DATA, lst),
+        RpcParameter.Section.DATA, lst),
         new ResponseCallback() {
           @Override
           public void onResponse(ResponseObject response) {
@@ -492,7 +492,7 @@ public class Queries {
     List<Property> lst = PropertyUtils.createProperties(Service.VAR_VIEW_NAME, viewName,
         Service.VAR_VIEW_WHERE, filter.serialize(), Service.VAR_COLUMN, column,
         Service.VAR_VALUE, value.serialize());
-    ParameterList parameters = new ParameterList(Service.UPDATE, RpcParameter.SECTION.DATA, lst);
+    ParameterList parameters = new ParameterList(Service.UPDATE, RpcParameter.Section.DATA, lst);
 
     BeeKeeper.getRpc().makePostRequest(parameters, new ResponseCallback() {
       @Override

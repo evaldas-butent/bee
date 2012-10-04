@@ -120,16 +120,7 @@ public class ExtendedProperty extends Property {
    */
   @Override
   public String toString() {
-    return BeeUtils.join(BeeConst.DEFAULT_VALUE_SEPARATOR, BeeUtils.join(
-        BeeConst.DEFAULT_PROPERTY_SEPARATOR, getName(), getSub()),
-        BeeUtils.transform(getValue()));
-  }
-
-  /**
-   * Returns a String representation of the ExtendedPeoperty. See {@link #toString()}
-   */
-  @Override
-  public String transform() {
-    return toString();
+    return BeeUtils.join(BeeConst.DEFAULT_VALUE_SEPARATOR,
+        BeeUtils.join(BeeConst.DEFAULT_PROPERTY_SEPARATOR, getName(), getSub()), getValue());
   }
 }

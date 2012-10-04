@@ -868,7 +868,7 @@ public class TaskEventHandler {
           dialog.hide();
         }
         if (response.hasErrors()) {
-          Global.showError((Object[]) response.getErrors());
+          Global.showError(response.getErrors());
         } else {
           if (response.hasResponse(BeeRow.class)) {
             BeeRow row = BeeRow.restore((String) response.getResponse());
@@ -996,9 +996,9 @@ public class TaskEventHandler {
             Global.showError("Įveskite atlikimo datą");
             return;
           }
-          args.addDataItem(CrmConstants.VAR_TASK_DURATION_DATE, BeeUtils.transform(date));
-          args.addDataItem(CrmConstants.VAR_TASK_DURATION_TIME, BeeUtils.transform(minutes));
-          args.addDataItem(CrmConstants.VAR_TASK_DURATION_TYPE, BeeUtils.transform(type));
+          args.addDataItem(CrmConstants.VAR_TASK_DURATION_DATE, date);
+          args.addDataItem(CrmConstants.VAR_TASK_DURATION_TIME, minutes);
+          args.addDataItem(CrmConstants.VAR_TASK_DURATION_TYPE, type);
         }
         createRequest(args, dialog, form, EnumSet.of(Action.REFRESH), true);
       }
@@ -1049,9 +1049,9 @@ public class TaskEventHandler {
             Global.showError("Įveskite atlikimo datą");
             return;
           }
-          args.addDataItem(CrmConstants.VAR_TASK_DURATION_DATE, BeeUtils.transform(date));
-          args.addDataItem(CrmConstants.VAR_TASK_DURATION_TIME, BeeUtils.transform(minutes));
-          args.addDataItem(CrmConstants.VAR_TASK_DURATION_TYPE, BeeUtils.transform(type));
+          args.addDataItem(CrmConstants.VAR_TASK_DURATION_DATE, date);
+          args.addDataItem(CrmConstants.VAR_TASK_DURATION_TIME, minutes);
+          args.addDataItem(CrmConstants.VAR_TASK_DURATION_TYPE, type);
         }
 
         createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REFRESH), true);
@@ -1195,7 +1195,7 @@ public class TaskEventHandler {
         args.addDataItem(CrmConstants.VAR_TASK_COMMENT, comment);
 
         if (!Objects.equal(owner, oldUser) && dialog.getAnswer()) {
-          args.addDataItem(CrmConstants.VAR_TASK_OBSERVE, true);
+          args.addDataItem(CrmConstants.VAR_TASK_OBSERVE, BeeUtils.toString(true));
         }
         createRequest(args, dialog, form, EnumSet.of(Action.CLOSE, Action.REFRESH), true);
       }

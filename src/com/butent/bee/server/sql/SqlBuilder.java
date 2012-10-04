@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 
 import com.butent.bee.server.sql.SqlCreate.SqlField;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasLength;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.data.SqlConstants;
@@ -492,7 +493,7 @@ public abstract class SqlBuilder {
       case MULTIPLY:
       case DIVIDE:
       case BULK:
-        xpr = new StringBuilder(BeeUtils.transform(params.get("member" + 0)));
+        xpr = new StringBuilder(transform(params.get("member" + 0)));
         String op;
 
         switch (function) {
@@ -519,7 +520,7 @@ public abstract class SqlBuilder {
             ? BeeUtils.parenthesize(xpr.toString()) : xpr.toString();
 
       case NVL:
-        xpr = new StringBuilder(BeeUtils.transform(params.get("member" + 0)));
+        xpr = new StringBuilder(transform(params.get("member" + 0)));
 
         for (int i = 1; i < params.size(); i++) {
           xpr.append(", ").append(params.get("member" + i));
@@ -527,7 +528,7 @@ public abstract class SqlBuilder {
         return "COALESCE(" + xpr.toString() + ")";
 
       case CONCAT:
-        xpr = new StringBuilder(BeeUtils.transform(params.get("member" + 0)));
+        xpr = new StringBuilder(transform(params.get("member" + 0)));
 
         for (int i = 1; i < params.size(); i++) {
           xpr.append(" || ").append(params.get("member" + i));
@@ -843,19 +844,19 @@ public abstract class SqlBuilder {
         s = (Boolean) val ? "1" : "0";
 
       } else if (val instanceof JustDate) {
-        s = BeeUtils.transform(((JustDate) val).getTime());
+        s = BeeUtils.toString(((JustDate) val).getTime());
 
       } else if (val instanceof Date) {
-        s = BeeUtils.transform(((Date) val).getTime());
+        s = BeeUtils.toString(((Date) val).getTime());
 
       } else if (val instanceof DateTime) {
-        s = BeeUtils.transform(((DateTime) val).getTime());
+        s = BeeUtils.toString(((DateTime) val).getTime());
 
       } else if (val instanceof Number) {
-        s = BeeUtils.removeTrailingZeros(BeeUtils.transformNoTrim(val));
+        s = BeeUtils.removeTrailingZeros(val.toString());
 
       } else {
-        s = BeeUtils.transformNoTrim(val);
+        s = (val == null) ? "null" : val.toString();
 
         if (val instanceof CharSequence) {
           s = "'" + s.replace("'", "''") + "'";
@@ -888,5 +889,15 @@ public abstract class SqlBuilder {
     }
     Assert.untouchable();
     return null;
+  }
+  
+  protected String transform(Object x) {
+    if (x == null) {
+      return BeeConst.STRING_EMPTY;
+    } else if (x instanceof String) {
+      return ((String) x).trim();
+    } else {
+      return x.toString();
+    }
   }
 }

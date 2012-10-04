@@ -30,10 +30,12 @@ import com.butent.bee.shared.BeeWidget;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.Variable;
 import com.butent.bee.shared.data.Defaults;
+import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.cache.CacheManager;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -307,12 +309,8 @@ public class Global implements Module {
     return getVar(name).getWidth();
   }
 
-  public static void inform(Object... obj) {
-    MSG_BOXEN.showInfo(obj);
-  }
-
-  public static void inputString(String caption, StringCallback callback) {
-    inputString(caption, null, callback);
+  public static void inform(String... messages) {
+    MSG_BOXEN.showInfo(messages);
   }
 
   public static void inputString(String caption, String prompt, StringCallback callback) {
@@ -336,6 +334,10 @@ public class Global implements Module {
       String confirmHtml, String cancelHtml, WidgetInitializer initializer) {
     INP_BOXEN.inputString(caption, prompt, callback, defaultValue, maxLength, width, widthUnit,
         timeout, confirmHtml, cancelHtml, initializer);
+  }
+
+  public static void inputString(String caption, StringCallback callback) {
+    inputString(caption, null, callback);
   }
 
   public static void inputVars(String caption, List<String> names, ConfirmationCallback callback) {
@@ -385,14 +387,10 @@ public class Global implements Module {
     return VARS.containsKey(name);
   }
 
-  public static void modalGrid(String cap, Object data, String... cols) {
-    MSG_BOXEN.showGrid(cap, data, cols);
-  }
-
   public static boolean nativeConfirm(String... lines) {
     return MSG_BOXEN.nativeConfirm(lines);
   }
-  
+
   public static <E extends Enum<?> & HasCaption> void registerCaptions(Class<E> clazz) {
     Assert.notNull(clazz);
     registerCaptions(NameUtils.getClassName(clazz), clazz);
@@ -403,11 +401,18 @@ public class Global implements Module {
     Assert.notNull(clazz);
     CAPTIONS.put(BeeUtils.normalize(key), clazz);
   }
-
-  public static void sayHuh(Object... obj) {
-    MSG_BOXEN.showInfo("Huh ?", obj);
+  
+  public static void sayHuh(String... messages) {
+    int n = (messages == null) ? 0 : messages.length;
+    String[] arr = new String[n + 1];
+    arr[0] = "Huh ?";
+    
+    for (int i = 0; i < n; i++) {
+      arr[i + 1] = messages[i];
+    }
+    inform(arr);
   }
-
+  
   public static void setTemporaryDetach(boolean temporaryDetach) {
     Global.temporaryDetach = temporaryDetach;
   }
@@ -439,20 +444,21 @@ public class Global implements Module {
     getVar(name).setWidth(width);
   }
 
-  public static void showDialog(Object... obj) {
-    MSG_BOXEN.showInfo(obj);
+  public static void showError(String... messages) {
+    MSG_BOXEN.showError(messages);
   }
 
-  public static void showDialog(String cap, String msg, Throwable err) {
-    if (err == null) {
-      MSG_BOXEN.showInfo(cap, msg);
-    } else {
-      MSG_BOXEN.showError(cap, msg, err);
-    }
+  public static void showGrid(IsTable<?, ?> table) {
+    Assert.notNull(table, "showGrid: table is null");
+    BeeKeeper.getScreen().showGrid(GridFactory.simpleGrid(table));
   }
 
-  public static void showError(Object... obj) {
-    MSG_BOXEN.showError(obj);
+  public static void showModalGrid(String caption, IsTable<?, ?> table) {
+    MSG_BOXEN.showTable(caption, table);
+  }
+
+  public static void showModalWidget(Widget widget) {
+    MSG_BOXEN.showWidget(widget);
   }
 
   public static void showVars(String... context) {
@@ -471,18 +477,10 @@ public class Global implements Module {
     }
 
     if (names.isEmpty()) {
-      showError("no variables found", context);
+      showError("no variables found", ArrayUtils.joinWords(context));
     } else {
       inputVars("Variables", names, null);
     }
-  }
-
-  public static void showWidget(Widget widget) {
-    MSG_BOXEN.showWidget(widget);
-  }
-
-  public static Widget simpleGrid(Object data, String... columnLabels) {
-    return GridFactory.simpleGrid(data, columnLabels);
   }
 
   Global() {

@@ -2,12 +2,11 @@ package com.butent.bee.shared.testutils;
 
 import com.butent.bee.shared.HasIntValue;
 import com.butent.bee.shared.HasLength;
-import com.butent.bee.shared.Transformable;
 
 /**
  * Object for testing {@link com.butent.bee.shared.HasIntValue}.
  */
-public class TransObjectInt implements Transformable, HasLength, HasIntValue {
+public class TransObjectInt implements HasLength, HasIntValue {
 
   public static final double DOUBLE_DEFAULT_VALUE = 5.0;
   public int intValue = 0;
@@ -43,7 +42,7 @@ public class TransObjectInt implements Transformable, HasLength, HasIntValue {
   }
 
   @Override
-  public String transform() {
+  public String toString() {
     return Double.toString(this.digit);
   }
 }

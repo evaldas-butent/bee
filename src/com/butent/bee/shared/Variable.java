@@ -9,19 +9,16 @@ import java.util.List;
  * Implements operations with variables in the system.
  */
 
-public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue, Transformable {
+public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue {
+
+  private final BeeType type;
   private String caption = null;
-  private BeeType type;
   private String value = null;
 
   private BeeWidget widget = null;
   private List<String> items = null;
 
   private String width = null;
-
-  public Variable() {
-    type = BeeType.UNKNOWN;
-  }
 
   public Variable(BeeType type) {
     this(null, type, null);
@@ -109,10 +106,6 @@ public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue
     this.items = items;
   }
 
-  public void setType(BeeType type) {
-    this.type = type;
-  }
-
   public void setValue(Boolean value) {
     setValue(BeeUtils.toString(value));
   }
@@ -143,11 +136,7 @@ public class Variable implements HasBooleanValue, HasDoubleValue, HasStringValue
 
   @Override
   public String toString() {
-    return BeeUtils.transformOptions("caption", caption, "type", BeeUtils.transform(type),
+    return BeeUtils.joinOptions("caption", caption, "type", BeeUtils.toString(type),
         "value", value);
-  }
-
-  public String transform() {
-    return toString();
   }
 }

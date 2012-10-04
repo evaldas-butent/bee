@@ -281,7 +281,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
     }
 
     List<String> values = DataUtils.translate(expressions, sourceColumns, row);
-    String html = BeeUtils.transformCollection(values, BeeConst.STRING_SPACE);
+    String html = BeeUtils.join(BeeConst.STRING_SPACE, values);
 
     Global.inputString("Bookmark", null, new StringCallback() {
       @Override

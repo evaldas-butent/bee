@@ -34,7 +34,7 @@ public class HttpUtils {
 
   public static String counterInfo(String name, Object obj) {
     if (obj instanceof Counter) {
-      return NameUtils.addName(name, ((Counter) obj).transform());
+      return NameUtils.addName(name, ((Counter) obj).toString());
     } else {
       return BeeConst.STRING_EMPTY;
     }
@@ -61,7 +61,7 @@ public class HttpUtils {
       
       Enumeration<String> values = req.getHeaders(nm);
       if (values != null && values.hasMoreElements()) {
-        v = BeeUtils.transform(Collections.list(values));
+        v = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, Collections.list(values));
       } else {
         v = req.getHeader(nm);
       }

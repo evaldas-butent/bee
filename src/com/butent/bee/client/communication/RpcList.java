@@ -6,7 +6,6 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -82,7 +81,7 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
         }
 
         if (BeeUtils.same(cols[i], RpcInfo.COL_ID)) {
-          s = BeeUtils.transform(el.getId());
+          s = BeeUtils.toString(el.getId());
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_SERVICE)) {
           s = el.getService();
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_METHOD)) {
@@ -102,9 +101,9 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
           s = el.getCompletedTime();
 
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_REQ_PARAMS)) {
-          s = Codec.escapeUnicode(el.getReqParams().transform());
+          s = Codec.escapeUnicode(el.getReqParams().toString());
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_REQ_TYPE)) {
-          s = BeeUtils.transform(el.getReqType());
+          s = BeeUtils.toString(el.getReqType());
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_REQ_DATA)) {
           s = Codec.escapeUnicode(Codec.escapeHtml(el.getReqData()));
 
@@ -116,7 +115,7 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
           s = el.getSizeString(el.getReqSize());
 
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_TYPE)) {
-          s = BeeUtils.transform(el.getRespType());
+          s = BeeUtils.toString(el.getRespType());
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_DATA)) {
           s = Codec.escapeUnicode(Codec.escapeHtml(el.getRespData()));
 
@@ -130,12 +129,13 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_MSG_CNT)) {
           s = el.getSizeString(el.getRespMsgCnt());
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_MESSAGES)) {
-          s = Codec.escapeUnicode(ArrayUtils.transform(el.getRespMessages()));
+          s = (el.getRespMessages() == null) 
+              ? null : Codec.escapeUnicode(el.getRespMessages().toString());
 
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_PART_CNT)) {
           s = el.getSizeString(el.getRespPartCnt());
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_PART_SIZES)) {
-          s = ArrayUtils.transform(el.getRespPartSize());
+          s = (el.getRespPartSize() == null) ? null : el.getRespPartSize().toString(); 
 
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_RESP_INFO)) {
           s = el.getRespInfoString();
@@ -143,7 +143,8 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_ERR_MSG)) {
           s = el.getErrMsg();
         } else if (BeeUtils.same(cols[i], RpcInfo.COL_USR_DATA)) {
-          s = Codec.escapeUnicode(BeeUtils.transform(el.getUserData()));
+          s = (el.getUserData() == null)
+              ? null : Codec.escapeUnicode(el.getUserData().toString());
 
         } else {
           s = BeeConst.STRING_EMPTY;

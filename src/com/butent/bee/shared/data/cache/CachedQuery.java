@@ -156,10 +156,10 @@ class CachedQuery extends SimpleCache<Integer, Long> {
   }
 
   private String transformFilter(Filter flt) {
-    return BeeUtils.transform(flt);
+    return (flt == null) ? BeeConst.STRING_EMPTY : flt.toString();
   }
 
   private String transformOrder(Order ord) {
-    return BeeUtils.transform(ord);
+    return (ord == null) ? BeeConst.STRING_EMPTY : ord.toString();
   }
 }

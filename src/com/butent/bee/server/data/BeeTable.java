@@ -324,7 +324,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       this.scope = scope;
 
       this.name = TRIGGER_PREFIX + Codec.crc32(BeeUtils.joinWords(tblName, type,
-          BeeUtils.transform(parameters), timing, events, scope));
+          parameters, timing, events, scope));
     }
 
     public EnumSet<SqlTriggerEvent> getEvents() {
@@ -982,7 +982,7 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
 
       PropertyUtils.addChildren(info, key, "Table", trigger.getTable(), "Name", trigger.getName(),
           "Timing", trigger.getTiming(), "Event", trigger.getEvents(), "Scope", trigger.getScope(),
-          "Content", BeeUtils.transform(trigger.getParameters()));
+          "Content", trigger.getParameters());
     }
 
     return info;

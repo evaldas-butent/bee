@@ -134,9 +134,4 @@ public class NumberValue extends Value {
     }
     return BeeUtils.toString(value);
   }
-
-  @Override
-  public String transform() {
-    return toString();
-  }
 }

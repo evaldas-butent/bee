@@ -25,7 +25,6 @@ import com.butent.bee.client.BeeKeeper;
 public class CanvasDemo {
   Canvas canvas;
   Canvas backBuffer;
-  LogoGroup logoGroup;
   BallGroup ballGroup;
   Lens lens;
 
@@ -62,7 +61,6 @@ public class CanvasDemo {
     context = canvas.getContext2d();
     backBufferContext = backBuffer.getContext2d();
 
-    logoGroup = new LogoGroup(width, height, 15, 160);
     ballGroup = new BallGroup(width, height);
     lens = new Lens(35, 15, width, height, new Vector(320, 150), new Vector(1, 1));
 
@@ -80,9 +78,7 @@ public class CanvasDemo {
   void doUpdate() {
     backBufferContext.setFillStyle(redrawColor);
     backBufferContext.fillRect(0, 0, width, height);
-    logoGroup.update(mouseX, mouseY);
     ballGroup.update(mouseX, mouseY);
-    logoGroup.draw(backBufferContext);
     ballGroup.draw(backBufferContext);
 
     lens.update();

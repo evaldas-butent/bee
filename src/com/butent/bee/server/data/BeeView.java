@@ -531,7 +531,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     PropertyUtils.addProperties(info, false, "Module Name", getModuleName(), "Name", getName(),
         "Source", getSourceName(), "Source Alias", getSourceAlias(),
         "Source Id Name", getSourceIdName(), "Source Version Name", getSourceVersionName(),
-        "Filter", BeeUtils.transform(getFilter()), "Read Only", isReadOnly(),
+        "Filter", getFilter(), "Read Only", isReadOnly(),
         "Caption", getCaption(), "Edit Form", getEditForm(), "New Row Form", getNewRowForm(),
         "New Row Columns", getNewRowColumns(), "New Row Caption", getNewRowCaption(),
         "Cache Maximum Size", getCacheMaximumSize(), "Cache Eviction", getCacheEviction(),
@@ -556,7 +556,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       i = 0;
       for (Order.Column ordCol : order.getColumns()) {
         String key = BeeUtils.joinWords("Order", ++i, ordCol.isAscending() ? "" : "DESC");
-        PropertyUtils.addChildren(info, key, "Sources", BeeUtils.transform(ordCol.getSources()));
+        PropertyUtils.addChildren(info, key, "Sources", ordCol.getSources());
       }
     }
     return info;

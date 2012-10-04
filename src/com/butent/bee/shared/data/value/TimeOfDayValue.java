@@ -220,11 +220,6 @@ public class TimeOfDayValue extends Value {
     return sb.toString();
   }
 
-  @Override
-  public String transform() {
-    return toString();
-  }
-
   private int getTime() {
     return TimeUtils.getMillis(getHours(), getMinutes(), getSeconds(), getMilliseconds());
   }

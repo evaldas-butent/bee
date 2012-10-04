@@ -22,7 +22,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   private BeeUtils beeUtils;
   private final boolean allowLogging = false;
-  private TransObject obj;
 
   @Override
   public void log(String msg) {
@@ -35,7 +34,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
   @Before
   public void setUp() throws Exception {
     log("Starting test TestBeeUtilsTransform \n \r");
-    obj = new TransObject();
   }
 
   @Override
@@ -411,7 +409,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
 
   @Test
   public void testJoin() {
-    assertEquals("", BeeUtils.join(""));
     assertEquals("is:a:test", BeeUtils.join(":", "is", "a", "test"));
   }
 
@@ -696,41 +693,6 @@ public class TestBeeUtilsTransform extends TestCase implements ILogger {
     assertEquals(BeeConst.NULL, NameUtils.transformClass(null));
     assertEquals(this.getClass().getName(), NameUtils.transformClass(this));
     assertEquals("java.lang.Integer", NameUtils.transformClass(a));
-  }
-
-  @Test
-  public void testTransformNoTrim() {
-    assertEquals("  test  ", beeUtils.transformNoTrim("  test  "));
-    assertEquals("", beeUtils.transformNoTrim(""));
-    assertEquals("", beeUtils.transformNoTrim(null));
-    assertEquals("1.2", beeUtils.transformNoTrim(1.2));
-  }
-
-  @Test
-  public void testTransformObject() {
-    log("testTransformObject assert1 ");
-    assertEquals("0", BeeUtils.transform(0));
-    assertEquals("", BeeUtils.transform(null));
-
-    log(" \t\t[done] \n \r testTransformObject assert2");
-    String exp1 = Double.toString(TransObject.DOUBLE_DEFAULT_VALUE);
-
-    log("\t\t [done] \n \r testTransformObject assert3");
-    assertEquals(exp1, BeeUtils.transform(obj));
-    obj.setDigit(4.8);
-    assertEquals("4.8", BeeUtils.transform(obj));
-
-    log("\t\t [done] \n \r testTransformObject assert4");
-    assertEquals("helloWorld", BeeUtils.transform("          helloWorld        "));
-
-    log("\t\t [done] \n \r testTransformObject assert5");
-    assertEquals("helloWorld", BeeUtils.transform("          helloWorld    \n \r \t    "));
-    log("\t\t [done]");
-
-    int a[] = {1, 2, 3};
-    assertEquals("1c2c3", BeeUtils.transform(a, "c"));
-    assertEquals("class com.butent.bee.shared.BeeType",
-        BeeUtils.transform(BeeType.class, ";"));
   }
 
   @Test

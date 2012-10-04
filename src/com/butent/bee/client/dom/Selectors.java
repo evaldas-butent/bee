@@ -84,7 +84,7 @@ public class Selectors {
     Assert.notNull(selectors);
     Assert.isTrue(!selectors.isEmpty());
 
-    return BeeUtils.transformCollection(selectors, SELECTOR_SEPARATOR);
+    return BeeUtils.join(SELECTOR_SEPARATOR, selectors);
   }
 
   public static String buildSelectors(String... selectors) {

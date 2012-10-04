@@ -124,7 +124,7 @@ class OracleSqlBuilder extends SqlBuilder {
       case CREATE_TRIGGER:
         return BeeUtils.joinWords(
             "CREATE TRIGGER", params.get("name"), params.get("timing"),
-            BeeUtils.join(" OR ", ((EnumSet<SqlTriggerEvent>) params.get("events")).toArray()),
+            BeeUtils.join(" OR ", (EnumSet<SqlTriggerEvent>) params.get("events")),
             "ON", params.get("table"),
             ((SqlTriggerScope) params.get("scope") == SqlTriggerScope.ROW) ? "FOR EACH ROW" : "",
             "BEGIN", getTriggerBody(params), "END;");

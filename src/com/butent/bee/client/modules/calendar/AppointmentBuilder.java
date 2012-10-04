@@ -535,8 +535,8 @@ class AppointmentBuilder extends AbstractFormCallback {
         continue;
       }
 
-      String item = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
-          Data.getString(viewName, row, COL_NAME), Data.getString(viewName, row, COL_TYPE_NAME));
+      String item = BeeUtils.joinItems(Data.getString(viewName, row, COL_NAME),
+          Data.getString(viewName, row, COL_TYPE_NAME));
       widget.addItem(item);
       attIds.add(id);
     }
@@ -1037,8 +1037,8 @@ class AppointmentBuilder extends AbstractFormCallback {
       String viewName = attendees.getViewName();
       for (long id : resources) {
         BeeRow row = attendees.getRowById(id);
-        String item = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
-            Data.getString(viewName, row, COL_NAME), Data.getString(viewName, row, COL_TYPE_NAME));
+        String item = BeeUtils.joinItems(Data.getString(viewName, row, COL_NAME),
+            Data.getString(viewName, row, COL_TYPE_NAME));
         listBox.addItem(item);
       }
     }

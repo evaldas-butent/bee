@@ -404,15 +404,15 @@ public class TestPropertyUtils {
   }
 
   @Test
-  public final void testTransform() {
+  public final void testToString() {
     Property prop2 = new Property("root NAME6", "VALUE5");
-    assertEquals("root NAME6=VALUE5", prop2.transform().toString());
+    assertEquals("root NAME6=VALUE5", prop2.toString());
   }
 
   @Test
-  public final void testTransformExt() {
+  public final void testToStringExt() {
     Property propExt2 = new ExtendedProperty("root NAME6", "SUB5", "VALUE5");
-    assertEquals("root NAME6.SUB5=VALUE5", propExt2.transform().toString());
+    assertEquals("root NAME6.SUB5=VALUE5", propExt2.toString());
   }
 
   @SuppressWarnings({"rawtypes", "unused"})

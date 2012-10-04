@@ -165,7 +165,11 @@ public class StringRow extends AbstractRow {
 
   @Override
   public void setValue(int index, BigDecimal value) {
-    setValue(index, BeeUtils.toString(value));
+    if (value == null) {
+      clearCell(index);
+    } else {
+      setValue(index, value.toString());
+    }
   }
 
   @Override

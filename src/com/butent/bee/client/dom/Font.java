@@ -17,7 +17,6 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.RangeMap;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -28,7 +27,7 @@ import java.util.List;
  * Enables to operate with various parameters of fonts used by the system.
  */
 
-public class Font implements HasInfo, Transformable {
+public class Font implements HasInfo {
 
   private static final double UNKNOWN = -1.0;
   private static final RangeMap<Double, Unit> DEFAULT_UNITS =
@@ -405,7 +404,7 @@ public class Font implements HasInfo, Transformable {
   }
 
   @Override
-  public String transform() {
+  public String toString() {
     SafeStyles css = buildCss();
     if (css == null) {
       return "Font instance is empty"; 

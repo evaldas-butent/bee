@@ -69,7 +69,7 @@ public class Mobile extends ScreenImpl {
 
   @Override
   public void showInfo() {
-    Global.inform(getActivePanelWidth(), getActivePanelHeight());
+    Global.inform(String.valueOf(getActivePanelWidth()), String.valueOf(getActivePanelHeight()));
   }
 
   @Override

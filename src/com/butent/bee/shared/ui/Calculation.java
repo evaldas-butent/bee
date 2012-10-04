@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -17,7 +16,7 @@ import java.util.List;
  * Enables using calculation expressions and functions in user interface components.
  */
 
-public class Calculation implements BeeSerializable, HasInfo, Transformable {
+public class Calculation implements BeeSerializable, HasInfo {
 
   private enum Serial {
     EXPRESSION, FUNCTION
@@ -94,9 +93,9 @@ public class Calculation implements BeeSerializable, HasInfo, Transformable {
     return Codec.beeSerialize(new Object[] {expr, func});
   }
 
-  public String transform() {
-    return BeeUtils.transformOptions(TAG_EXPRESSION, getExpression(),
-        TAG_FUNCTION, getFunction());
+  @Override
+  public String toString() {
+    return BeeUtils.joinOptions(TAG_EXPRESSION, getExpression(), TAG_FUNCTION, getFunction());
   }
 
   protected void deserializeMembers(String[] arr) {

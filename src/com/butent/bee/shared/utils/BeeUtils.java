@@ -7,7 +7,6 @@ import com.google.common.collect.Range;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Transformable;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -40,62 +39,68 @@ public class BeeUtils {
     }
   }
 
-  public static boolean allEmpty(String... items) {
-    if (items == null) {
+  public static boolean allEmpty(String first, String second, String... rest) {
+    if (!isEmpty(first) || !isEmpty(second)) {
+      return false;
+    }
+    if (rest == null) {
       return true;
     }
-    Assert.parameterCount(items.length, 1);
-    boolean ok = true;
 
-    for (String s : items) {
+    for (String s : rest) {
       if (!isEmpty(s)) {
-        ok = false;
-        break;
+        return false;
       }
     }
-    return ok;
+    return true;
   }
 
-  public static boolean allNotEmpty(String... items) {
-    Assert.notNull(items);
-    Assert.parameterCount(items.length, 1);
-    boolean ok = true;
+  public static boolean allNotEmpty(String first, String second, String... rest) {
+    if (isEmpty(first) || isEmpty(second)) {
+      return false;
+    }
+    if (rest == null) {
+      return true;
+    }
 
-    for (String s : items) {
+    for (String s : rest) {
       if (isEmpty(s)) {
-        ok = false;
-        break;
+        return false;
       }
     }
-    return ok;
+    return true;
   }
 
-  public static boolean allNotNull(Object... items) {
-    Assert.notNull(items);
-    Assert.parameterCount(items.length, 1);
-    boolean ok = true;
+  public static boolean allNotNull(Object first, Object second, Object... rest) {
+    if (first == null || second == null) {
+      return false;
+    }
+    if (rest == null) {
+      return true;
+    }
 
-    for (Object obj : items) {
+    for (Object obj : rest) {
       if (obj == null) {
-        ok = false;
-        break;
+        return false;
       }
     }
-    return ok;
+    return true;
   }
+  
+  public static boolean anyEmpty(String first, String second, String... rest) {
+    if (isEmpty(first) || isEmpty(second)) {
+      return true;
+    }
+    if (rest == null) {
+      return false;
+    }
 
-  public static boolean anyEmpty(String... items) {
-    Assert.notNull(items);
-    Assert.parameterCount(items.length, 1);
-    boolean ok = false;
-
-    for (String s : items) {
+    for (String s : rest) {
       if (isEmpty(s)) {
-        ok = true;
-        break;
+        return true;
       }
     }
-    return ok;
+    return false;
   }
 
   /**
@@ -133,7 +138,7 @@ public class BeeUtils {
    * Surrounds the String value {@code s} in brackets.
    * 
    * @param s String to put in brackets.
-   * @return a String representation of the Object surrounded by brackets.
+   * @return a String representation of the String surrounded by brackets.
    */
   public static String bracket(String s) {
     if (isEmpty(s)) {
@@ -297,7 +302,7 @@ public class BeeUtils {
       return s.indexOf(ch) >= 0;
     }
   }
-  
+
   /**
    * Checks is there are equal elements in the Collections.
    * 
@@ -335,7 +340,7 @@ public class BeeUtils {
     }
     return ok;
   }
-  
+
   /**
    * Checks if the CharSequence {@code src} contains only of the specified characters.
    * 
@@ -708,68 +713,64 @@ public class BeeUtils {
     return cs.length() >= min;
   }
 
-  public static boolean inList(int x, int... lst) {
-    Assert.notNull(lst);
-    boolean ok = false;
+  public static boolean inList(int x, int first, int second, int... rest) {
+    if (x == first || x == second) {
+      return true;
+    }
+    if (rest == null) {
+      return false;
+    }
 
-    for (int i = 0; i < lst.length; i++) {
-      if (x == lst[i]) {
-        ok = true;
-        break;
+    for (int y : rest) {
+      if (x == y) {
+        return true;
       }
     }
-    return ok;
+    return false;
   }
 
-  /**
-   * Checks if value {@code x} is in {@code lst}.
-   * 
-   * @param x the value to check for
-   * @param lst variables to check in
-   * @return true if {@code x} was found in these variables, false if they did not contain the value
-   *         {@code x}.
-   */
-  public static boolean inList(String x, String... lst) {
-    Assert.notNull(x);
-    Assert.notNull(lst);
-    boolean ok = false;
+  public static boolean inList(String x, String first, String second, String... rest) {
+    if (x == null) {
+      return false;
+    }
+    if (first != null && equalsTrim(x, first)) {
+      return true;
+    }
+    if (second != null && equalsTrim(x, second)) {
+      return true;
+    }
 
-    for (int i = 0; i < lst.length; i++) {
-      if (lst[i] == null) {
-        continue;
-      }
-      if (x.trim().equals(lst[i].trim())) {
-        ok = true;
-        break;
+    if (rest == null) {
+      return false;
+    }
+    for (String y : rest) {
+      if (y != null && equalsTrim(x, y)) {
+        return true;
       }
     }
-    return ok;
+    return false;
   }
 
-  /**
-   * Checks if {@code x} is found in any of the {@code lst} Strings.
-   * 
-   * @param x value to search for
-   * @param lst all Strings to search
-   * @return true if {@code x} is found in {@code lst}, false otherwise.
-   */
-  public static boolean inListSame(String x, String... lst) {
-    Assert.notEmpty(x);
-    Assert.notNull(lst);
-    boolean ok = false;
+  public static boolean inListSame(String x, String first, String second, String... rest) {
+    if (x == null) {
+      return false;
+    }
+    if (first != null && same(x, first)) {
+      return true;
+    }
+    if (second != null && same(x, second)) {
+      return true;
+    }
 
-    String z = x.trim().toLowerCase();
-
-    for (int i = 0; i < lst.length; i++) {
-      if (lst[i] == null) {
-        continue;
-      }
-      if (z.equalsIgnoreCase(lst[i].trim())) {
-        ok = true;
-        break;
+    if (rest == null) {
+      return false;
+    }
+    for (String y : rest) {
+      if (y != null && same(x, y)) {
+        return true;
       }
     }
-    return ok;
+    return false;
   }
 
   /**
@@ -1196,24 +1197,25 @@ public class BeeUtils {
   }
 
   /**
-   * Joins specified Objects. The first argument is the separator for the rest of the arguments.
+   * Transforms a Collection {@code col} to a String representation using the specified separator
+   * {@code separator}.
    * 
-   * @param sep separator
-   * @param obj Objects to join
-   * @return returns a string containing the string representation of each of {@code obj},
-   * using the separator {@code sep} between each.
+   * @param separator separator used to transform. Uses a default separator if none are specified.
+   * @param col a Collection to transform.
+   * @return a String representation of the Collection {@code col}.
    */
-  public static String join(String sep, Object... obj) {
-    Assert.notNull(sep);
-    if (obj == null) {
+  public static String join(String separator, Collection<?> col) {
+    if (isEmpty(col)) {
       return BeeConst.STRING_EMPTY;
     }
 
+    String sep = nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
     StringBuilder sb = new StringBuilder();
-    for (Object x : obj) {
-      String s = transform(x, sep);
+
+    for (Object el : col) {
+      String s = transform(el);
       if (!s.isEmpty()) {
-        if (sb.length() > 0 && !sep.isEmpty()) {
+        if (sb.length() > 0) {
           sb.append(sep);
         }
         sb.append(s);
@@ -1222,12 +1224,67 @@ public class BeeUtils {
     return sb.toString();
   }
 
-  public static String joinItems(Object... obj) {
-    return join(BeeConst.DEFAULT_LIST_SEPARATOR, obj);
+  /**
+   * Joins specified Objects. The first argument is the separator for the rest of the arguments.
+   * 
+   * @param sep separator
+   * @return returns a string containing the string representation of each of {@code obj}, using the
+   *         separator {@code sep} between each.
+   */
+  public static String join(String sep, Object first, Object second, Object... rest) {
+    Assert.notNull(sep);
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(transform(first));
+
+    String s = transform(second);
+    if (!s.isEmpty()) {
+      if (sb.length() > 0 && !sep.isEmpty()) {
+        sb.append(sep);
+      }
+      sb.append(s);
+    }
+
+    if (rest != null) {
+      for (Object x : rest) {
+        s = transform(x);
+        if (!s.isEmpty()) {
+          if (sb.length() > 0 && !sep.isEmpty()) {
+            sb.append(sep);
+          }
+          sb.append(s);
+        }
+      }
+    }
+    return sb.toString();
   }
 
-  public static String joinWords(Object... obj) {
-    return join(BeeConst.STRING_SPACE, obj);
+  public static String joinItems(Object first, Object second, Object... rest) {
+    return join(BeeConst.DEFAULT_LIST_SEPARATOR, first, second, rest);
+  }
+
+  public static String joinOptions(String... options) {
+    Assert.notNull(options);
+    int c = options.length;
+    Assert.parameterCount(c, 2);
+
+    StringBuilder sb = new StringBuilder();
+    String el;
+
+    for (int i = 0; i < c - 1; i += 2) {
+      el = NameUtils.addName(options[i], options[i + 1]);
+      if (!isEmpty(el)) {
+        if (sb.length() > 0) {
+          sb.append(BeeConst.DEFAULT_OPTION_SEPARATOR);
+        }
+        sb.append(el);
+      }
+    }
+    return sb.toString();
+  }
+
+  public static String joinWords(Object first, Object second, Object... rest) {
+    return join(BeeConst.STRING_SPACE, first, second, rest);
   }
 
   /**
@@ -1263,7 +1320,7 @@ public class BeeUtils {
       suffix = "0";
     }
     int l = suffix.length();
-    suffix = BeeUtils.transform(Long.parseLong(suffix) + 1);
+    suffix = transform(Long.parseLong(suffix) + 1);
 
     return prefix + padLeft(suffix, l, '0');
   }
@@ -1442,7 +1499,7 @@ public class BeeUtils {
     }
     return z.toString();
   }
-  
+
   public static double randomDouble(double min, double max) {
     Assert.isTrue(max > min);
     return min + Math.random() * (max - min);
@@ -1898,7 +1955,7 @@ public class BeeUtils {
     if (str.indexOf(separator) < 0) {
       return new String[] {str.trim()};
     }
-    
+
     Splitter splitter = Splitter.on(separator).omitEmptyStrings().trimResults();
     List<String> lst = Lists.newArrayList(splitter.split(str));
 
@@ -2179,14 +2236,6 @@ public class BeeUtils {
     return Math.max(x, 0);
   }
 
-  public static String toString(BigDecimal bd) {
-    if (bd == null) {
-      return null;
-    } else {
-      return bd.toString();
-    }
-  }
-
   /**
    * Converts a Boolean value {@code b} to a String value.
    * 
@@ -2211,6 +2260,10 @@ public class BeeUtils {
     return removeTrailingZeros(Double.toString(x));
   }
 
+  public static String toString(Enum<?> e) {
+    return (e == null) ? BeeConst.STRING_EMPTY : e.name();
+  }
+  
   /**
    * Converts an Integer value {@code x} to a String value.
    * 
@@ -2229,124 +2282,6 @@ public class BeeUtils {
    */
   public static String toString(long x) {
     return Long.toString(x);
-  }
-
-  public static String transform(Object x) {
-    return transform(x, null);
-  }
-  
-  /**
-   * Transforms an Object {@code x} to a String representation. In general, this method returns a
-   * string that "textually represents" this object. String type Objects are trimmed.
-   * 
-   * @param x value to transform.
-   * @param sep separator for transforming Collections, Maps and Arrays.
-   * @return a string that "textually represents" this object.
-   */
-  public static String transform(Object x, String sep) {
-    if (x == null) {
-      return BeeConst.STRING_EMPTY;
-    } else if (x instanceof String) {
-      return ((String) x).trim();
-    } else if (x instanceof Transformable) {
-      return ((Transformable) x).transform();
-    } else if (x instanceof Collection) {
-      return transformCollection((Collection<?>) x, sep);
-    } else if (x instanceof Map) {
-      return transformMap((Map<?, ?>) x, sep);
-    } else if (ArrayUtils.isArray(x)) {
-      return ArrayUtils.transform(x, sep);
-    } else {
-      return x.toString();
-    }
-  }
-
-  /**
-   * Transforms a Collection {@code col} to a String representation using the specified separators
-   * {@code sep}. Each level of recursion use the next separator.
-   * 
-   * @param col a Collection to transform.
-   * @param separator separator used to transform. Uses a default separator if none are specified.
-   * @return a String representation of the Collection {@code col}.
-   */
-  public static String transformCollection(Collection<?> col, String separator) {
-    if (isEmpty(col)) {
-      return BeeConst.STRING_EMPTY;
-    }
-
-    String sep = nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
-    StringBuilder sb = new StringBuilder();
-
-    for (Object el : col) {
-      if (sb.length() > 0) {
-        sb.append(sep);
-      }
-      sb.append(transform(el));
-    }
-    return sb.toString();
-  }
-
-  /**
-   * Transforms a Map {@code map} to a String representation using the specified separators
-   * {@code sep}. Each level of recursion use the next separator.
-   * 
-   * @param map a Map to transform.
-   * @param separator separator used to transform. Uses a default separator if none are specified.
-   * @return String representation of the Map {@code map}.
-   */
-  public static String transformMap(Map<?, ?> map, String separator) {
-    if (isEmpty(map)) {
-      return BeeConst.STRING_EMPTY;
-    }
-
-    String sep = nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
-    StringBuilder sb = new StringBuilder();
-
-    for (Map.Entry<?, ?> el : map.entrySet()) {
-      Object key = el.getKey();
-      Object value = el.getValue();
-
-      if (sb.length() > 0) {
-        sb.append(sep);
-      }
-      sb.append(NameUtils.addName(transform(key), transform(value)));
-    }
-    return sb.toString();
-  }
-
-  /**
-   * Transforms an Object {@code x} to a String representation. In general, this method returns a
-   * string that "textually represents" this object. String type Objects are <b>not trimmed</b>.
-   * 
-   * @param x a value to transform
-   * @return
-   */
-  public static String transformNoTrim(Object x) {
-    if (x instanceof String) {
-      return (String) x;
-    } else {
-      return transform(x);
-    }
-  }
-
-  public static String transformOptions(String... options) {
-    Assert.notNull(options);
-    int c = options.length;
-    Assert.parameterCount(c, 2);
-
-    StringBuilder sb = new StringBuilder();
-    String el;
-
-    for (int i = 0; i < c - 1; i += 2) {
-      el = NameUtils.addName(options[i], options[i + 1]);
-      if (!isEmpty(el)) {
-        if (sb.length() > 0) {
-          sb.append(BeeConst.DEFAULT_OPTION_SEPARATOR);
-        }
-        sb.append(el);
-      }
-    }
-    return sb.toString();
   }
 
   public static String trim(String s) {
@@ -2505,6 +2440,25 @@ public class BeeUtils {
     }
 
     return toInt(s.substring(start, end));
+  }
+
+  /**
+   * Transforms an Object {@code x} to a String representation. In general, this method returns a
+   * string that "textually represents" this object. String type Objects are trimmed.
+   * 
+   * @param x value to transform.
+   * @return a string that "textually represents" this object.
+   */
+  static String transform(Object x) {
+    if (x == null) {
+      return BeeConst.STRING_EMPTY;
+    } else if (x instanceof String) {
+      return ((String) x).trim();
+    } else if (ArrayUtils.isArray(x)) {
+      return ArrayUtils.toString(x);
+    } else {
+      return x.toString();
+    }
   }
 
   private BeeUtils() {

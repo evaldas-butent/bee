@@ -41,11 +41,6 @@
     <when-property-is name='screen' value='tablet'/> 
   </replace-with>
 
-  <replace-with class='com.butent.bee.client.screen.Hello'>
-    <when-type-is class='com.butent.bee.client.Screen'/>
-    <when-property-is name='screen' value='hello'/> 
-  </replace-with>
-   
   <replace-with class='com.butent.bee.client.view.HeaderSilverImpl'> 
     <when-type-is class='com.butent.bee.client.view.HeaderImpl'/>   
   </replace-with>

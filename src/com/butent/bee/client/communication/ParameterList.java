@@ -3,13 +3,14 @@ package com.butent.bee.client.communication;
 import com.google.gwt.http.client.RequestBuilder;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.communication.RpcParameter.Section;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 
@@ -21,7 +22,8 @@ import java.util.List;
  * Contains and manages RPC parameter lists for individual requests.
  */
 @SuppressWarnings("serial")
-public class ParameterList extends ArrayList<RpcParameter> implements Transformable {
+public class ParameterList extends ArrayList<RpcParameter> {
+
   private boolean ready = false;
   private List<RpcParameter> dataItems, headerItems, queryItems;
 
@@ -44,44 +46,35 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
     }
   }
 
-  public ParameterList(String svc, Collection<Property> items) {
-    this(svc, RpcParameter.defaultSection, items);
-  }
-
-  public ParameterList(String svc, RpcParameter.SECTION section, Collection<Property> items) {
+  public ParameterList(String svc, Section section, Collection<Property> items) {
     this(svc);
+    Assert.notNull(section);
 
-    if (section != null) {
-      switch (section) {
-        case DATA:
-          addDataItems(items);
-          break;
-        case HEADER:
-          addHeaderItems(items);
-          break;
-        case QUERY:
-          addQueryItems(items);
-          break;
-        default:
-          Assert.untouchable();
-      }
+    switch (section) {
+      case DATA:
+        addDataItems(items);
+        break;
+      case HEADER:
+        addHeaderItems(items);
+        break;
+      case QUERY:
+        addQueryItems(items);
+        break;
+      default:
+        Assert.untouchable();
     }
   }
 
-  public void addDataItem(Object value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.DATA, value));
+  public void addDataItem(String name, int value) {
+    addDataItem(name, BeeUtils.toString(value));
   }
 
-  public void addDataItem(String value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.DATA, value));
-  }
-
-  public void addDataItem(String name, Object value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.DATA, name, value));
+  public void addDataItem(String name, long value) {
+    addDataItem(name, BeeUtils.toString(value));
   }
 
   public void addDataItem(String name, String value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.DATA, name, value));
+    addItem(new RpcParameter(Section.DATA, name, value));
   }
 
   public void addDataItems(Collection<Property> items) {
@@ -92,20 +85,8 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
     }
   }
 
-  public void addHeaderItem(Object value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.HEADER, value));
-  }
-
-  public void addHeaderItem(String value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.HEADER, value));
-  }
-
-  public void addHeaderItem(String name, Object value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.HEADER, name, value));
-  }
-
   public void addHeaderItem(String name, String value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.HEADER, name, value));
+    addItem(new RpcParameter(Section.HEADER, name, value));
   }
 
   public void addHeaderItems(Collection<Property> items) {
@@ -116,68 +97,43 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
     }
   }
 
-  public void addPositionalData(Object... values) {
-    Assert.notNull(values);
-    Assert.parameterCount(values.length, 1);
-    for (Object v : values) {
-      addDataItem(v);
+  public void addPositionalData(String first, String... rest) {
+    addPositionalItem(Section.DATA, first);
+    if (rest != null) {
+      for (String value : rest) {
+        addPositionalItem(Section.DATA, value);
+      }
     }
   }
 
-  public void addPositionalData(String... values) {
-    Assert.notNull(values);
-    Assert.parameterCount(values.length, 1);
-    for (Object v : values) {
-      addDataItem(v);
+  public void addPositionalHeader(String first, String... rest) {
+    addPositionalItem(Section.HEADER, first);
+    if (rest != null) {
+      for (String value : rest) {
+        addPositionalItem(Section.HEADER, value);
+      }
     }
   }
 
-  public void addPositionalHeader(Object... values) {
-    Assert.notNull(values);
-    Assert.parameterCount(values.length, 1);
-    for (Object v : values) {
-      addHeaderItem(v);
+  public void addPositionalQuery(String first, String... rest) {
+    addPositionalItem(Section.QUERY, first);
+    if (rest != null) {
+      for (String value : rest) {
+        addPositionalItem(Section.QUERY, value);
+      }
     }
   }
 
-  public void addPositionalHeader(String... values) {
-    Assert.notNull(values);
-    Assert.parameterCount(values.length, 1);
-    for (Object v : values) {
-      addHeaderItem(v);
-    }
+  public void addQueryItem(String name, int value) {
+    addQueryItem(name, BeeUtils.toString(value));
   }
-
-  public void addPositionalQuery(Object... values) {
-    Assert.notNull(values);
-    Assert.parameterCount(values.length, 1);
-    for (Object v : values) {
-      addQueryItem(v);
-    }
+ 
+  public void addQueryItem(String name, long value) {
+    addQueryItem(name, BeeUtils.toString(value));
   }
-
-  public void addPositionalQuery(String... values) {
-    Assert.notNull(values);
-    Assert.parameterCount(values.length, 1);
-    for (Object v : values) {
-      addQueryItem(v);
-    }
-  }
-
-  public void addQueryItem(Object value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.QUERY, value));
-  }
-
-  public void addQueryItem(String value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.QUERY, value));
-  }
-
-  public void addQueryItem(String name, Object value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.QUERY, name, value));
-  }
-
+  
   public void addQueryItem(String name, String value) {
-    addItem(new RpcParameter(RpcParameter.SECTION.QUERY, name, value));
+    addItem(new RpcParameter(Section.QUERY, name, value));
   }
 
   public void addQueryItems(Collection<Property> items) {
@@ -205,7 +161,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
     }
 
     int n = dataItems.size();
-    Object[] nodes = new Object[n * 2];
+    String[] nodes = new String[n * 2];
     RpcParameter item;
 
     for (int i = 0; i < n; i++) {
@@ -227,7 +183,7 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
 
     for (RpcParameter item : headerItems) {
       if (item.isReady()) {
-        if (n > 0 && BeeUtils.inListSame(item.getName(), ignore)) {
+        if (n > 0 && ArrayUtils.containsSame(ignore, item.getName())) {
           continue;
         }
         bld.setHeader(item.getName(), item.getValue());
@@ -291,13 +247,16 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
     this.service = service;
   }
 
-  public String transform() {
-    return BeeUtils.transformCollection(this, BeeConst.DEFAULT_LIST_SEPARATOR);
-  }
-
   private void addItem(RpcParameter item) {
-    Assert.state(item.isValid());
-    add(item);
+    if (item.isValid()) {
+      add(item);
+    } else {
+      BeeKeeper.getLog().severe("Invalid rpc parameter:", item);
+    }
+  }
+  
+  private void addPositionalItem(Section section, String value) {
+    addItem(new RpcParameter(section, null, value));
   }
 
   private void prepare() {
@@ -337,7 +296,8 @@ public class ParameterList extends ArrayList<RpcParameter> implements Transforma
       }
     }
     if (n > 0) {
-      queryItems.add(new RpcParameter(RpcParameter.SECTION.QUERY, Service.RPC_VAR_PRM_CNT, n));
+      queryItems.add(new RpcParameter(Section.QUERY, Service.RPC_VAR_PRM_CNT,
+          BeeUtils.toString(n)));
     }
   }
 }

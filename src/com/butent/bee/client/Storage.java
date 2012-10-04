@@ -37,7 +37,7 @@ public class Storage implements Module {
       }
     }
 
-    setItem(key, BeeUtils.transform(def.ordinal()));
+    setItem(key, BeeUtils.toString(def.ordinal()));
     return def;
   }
 
@@ -47,7 +47,7 @@ public class Storage implements Module {
       return BeeUtils.toInt(v);
     }
 
-    setItem(key, BeeUtils.transform(def));
+    setItem(key, BeeUtils.toString(def));
     return def;
   }
 

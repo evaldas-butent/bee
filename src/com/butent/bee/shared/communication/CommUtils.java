@@ -68,18 +68,7 @@ public class CommUtils {
   }
 
   public static ContentType getContentType(String s) {
-    ContentType ctp = null;
-    if (BeeUtils.isEmpty(s)) {
-      return ctp;
-    }
-
-    for (ContentType z : ContentType.values()) {
-      if (BeeUtils.same(z.transform(), s)) {
-        ctp = z;
-        break;
-      }
-    }
-    return ctp;
+    return NameUtils.getEnumByName(ContentType.class, s);
   }
 
   public static ResponseObject getFormResonse(String result) {

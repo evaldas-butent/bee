@@ -4,14 +4,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
-import com.google.gwt.core.client.JsArrayString;
-import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
-import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.grid.cell.HtmlCell;
@@ -43,8 +41,6 @@ import com.butent.bee.shared.data.ExtendedPropertiesData;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.PropertiesData;
-import com.butent.bee.shared.data.StringMatrix;
-import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
@@ -53,7 +49,6 @@ import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
-import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -207,39 +202,6 @@ public class GridFactory {
     return new RenderableColumn(cell, index, dataColumn, renderer);
   }
 
-  @SuppressWarnings("unchecked")
-  public static IsTable<?, ?> createTable(Object data, String... columnLabels) {
-    Assert.notNull(data);
-    IsTable<?, ?> table = null;
-
-    if (data instanceof IsTable) {
-      table = (IsTable<?, ?>) data;
-
-    } else if (data instanceof String[][]) {
-      table = new StringMatrix<TableColumn>((String[][]) data, columnLabels);
-
-    } else if (data instanceof JsArrayString) {
-      table = new JsData<TableColumn>((JsArrayString) data, columnLabels);
-
-    } else if (data instanceof List) {
-      Object el = BeeUtils.getQuietly((List<?>) data, 0);
-
-      if (el instanceof ExtendedProperty) {
-        table = new ExtendedPropertiesData((List<ExtendedProperty>) data, columnLabels);
-      } else if (el instanceof Property) {
-        table = new PropertiesData((List<Property>) data, columnLabels);
-      } else if (el instanceof String[]) {
-        table = new StringMatrix<TableColumn>((List<String[]>) data, columnLabels);
-      }
-
-    } else if (data instanceof Map) {
-      table = new PropertiesData((Map<?, ?>) data, columnLabels);
-    }
-
-    Assert.notNull(table, "createTable: data not recognized");
-    return table;
-  }
-
   public static void getGrid(String name, Callback<GridDescription> callback) {
     getGrid(name, callback, false);
   }
@@ -370,7 +332,7 @@ public class GridFactory {
       if (isGridDescriptionCached(name)) {
         GridDescription gridDescription = descriptionCache.get(gridDescriptionKey(name));
         if (gridDescription != null) {
-          BeeKeeper.getScreen().showGrid(gridDescription.getExtendedInfo());
+          Global.showGrid(new ExtendedPropertiesData(gridDescription.getExtendedInfo()));
           return;
         } else {
           BeeKeeper.getLog().warning("grid", name, "description was not found");
@@ -388,13 +350,10 @@ public class GridFactory {
       info.add(new Property(entry.getKey(), cc));
     }
 
-    BeeKeeper.getScreen().showGrid(info, "Grid Name", "Column Count");
+    Global.showGrid(new PropertiesData(info, "Grid Name", "Column Count"));
   }
 
-  public static Widget simpleGrid(Object data, String... columnLabels) {
-    Assert.notNull(data);
-
-    IsTable<?, ?> table = createTable(data, columnLabels);
+  public static CellGrid simpleGrid(IsTable<?, ?> table) {
     Assert.notNull(table);
 
     int c = table.getNumberOfColumns();

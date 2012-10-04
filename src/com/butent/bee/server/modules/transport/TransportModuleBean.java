@@ -164,7 +164,7 @@ public class TransportModuleBean implements BeeModule {
 
             for (int i = 0; i < rs.getNumberOfRows(); i++) {
               rowset.updateCell(rs.getLong(i, idIndex), colIndex,
-                  BeeUtils.transform(BeeUtils.unbox(rs.getDouble(i, cargoIndex))
+                  BeeUtils.toString(BeeUtils.unbox(rs.getDouble(i, cargoIndex))
                       + BeeUtils.unbox(rs.getDouble(i, servicesIndex))));
             }
           }
@@ -314,7 +314,7 @@ public class TransportModuleBean implements BeeModule {
 
     qs.sqlDropTemp(crsTotals);
 
-    return ResponseObject.response(new String[] {BeeUtils.transform(res)});
+    return ResponseObject.response(new String[] {res.toString()});
   }
 
   /**
@@ -445,8 +445,8 @@ public class TransportModuleBean implements BeeModule {
           fuel = BeeUtils.unbox(rs.getDouble(cnt, "FuelBefore")) + BeeUtils.unbox(fill)
               - BeeUtils.unbox(consume) - BeeUtils.unbox(addit);
         }
-        resp[0] = BeeUtils.transform(speedometer);
-        resp[1] = BeeUtils.transform(fuel);
+        resp[0] = BeeUtils.toString(speedometer);
+        resp[1] = BeeUtils.toString(fuel);
       }
     }
     return ResponseObject.response(resp);
@@ -733,6 +733,6 @@ public class TransportModuleBean implements BeeModule {
 
     qs.sqlDropTemp(crs);
 
-    return ResponseObject.response(new String[] {BeeUtils.transform(res)});
+    return ResponseObject.response(new String[] {res.toString()});
   }
 }

@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 
 import com.butent.bee.shared.ListSequence;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 
 import java.util.List;
@@ -32,14 +31,14 @@ public class PropertiesData extends RowList<StringRow, TableColumn> {
     }
   }
 
-  public PropertiesData(Map<?, ?> data, String... columnLabels) {
+  public PropertiesData(Map<String, String> data, String... columnLabels) {
     super();
     createColumns(columnLabels);
     
     if (data != null) {
       long id = 0;
-      for (Map.Entry<?, ?> entry : data.entrySet()) {
-        addRow(++id, BeeUtils.transform(entry.getKey()), BeeUtils.transform(entry.getValue()));
+      for (Map.Entry<String, String> entry : data.entrySet()) {
+        addRow(++id, entry.getKey(), entry.getValue());
       }
     }
   }

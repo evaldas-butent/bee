@@ -39,7 +39,8 @@ public class ServerDefaults extends Defaults {
           break;
 
         case NEXT_NUMBER:
-          value = getNextNumber(tblName, fldName, BeeUtils.transform(defValue));
+          String prefix = (defValue == null) ? null : defValue.toString().trim();
+          value = getNextNumber(tblName, fldName, prefix);
           break;
 
         default:

@@ -134,7 +134,7 @@ public class MenuManager implements Module {
 
   public void showMenuInfo() {
     if (BeeUtils.isEmpty(getRoots())) {
-      Global.showDialog("menu empty");
+      Global.inform("menu empty");
       return;
     }
     Tree tree = new Tree();

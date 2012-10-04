@@ -65,7 +65,7 @@ public class TestBeeUtilscontaintAny extends TestCase {
     testc2.add(b.FLOAT);
     testc2.add(b.INT);
 
-    testc3.add(a.UNKNOWN);
+    testc3.add(a.CHAR);
     
     testc4.add(a.DOUBLE);
   }

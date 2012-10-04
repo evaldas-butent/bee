@@ -112,7 +112,7 @@ public class AsyncCallback implements RequestCallback {
       BeeKeeper.getLog().info("response", NameUtils.addName(Service.RPC_VAR_QID, id),
           NameUtils.addName(Service.RPC_VAR_SVC, svc));
 
-      BeeKeeper.getLog().info(NameUtils.addName(Service.RPC_VAR_CTP, BeeUtils.transform(ctp)),
+      BeeKeeper.getLog().info(NameUtils.addName(Service.RPC_VAR_CTP, BeeUtils.toString(ctp)),
           NameUtils.addName("len", len), NameUtils.addName(Service.RPC_VAR_CNT, cnt));
       BeeKeeper.getLog().info(NameUtils.addName(Service.RPC_VAR_COLS, cc),
           NameUtils.addName(Service.RPC_VAR_MSG_CNT, mc),
@@ -248,7 +248,7 @@ public class AsyncCallback implements RequestCallback {
       }
 
       ResponseData table = new ResponseData(arr, columns);
-      BeeKeeper.getScreen().showGrid(table);
+      Global.showGrid(table);
 
     } else {
       for (int i = 0; i < arr.length(); i++) {

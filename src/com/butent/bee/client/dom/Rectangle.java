@@ -8,14 +8,13 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Enables to create rectangle objects and manage their size and style.
  */
 
-public class Rectangle implements Transformable, HasDimensions {
+public class Rectangle implements HasDimensions {
 
   private static final Unit DEFAULT_UNIT = Unit.PX;
 
@@ -239,10 +238,6 @@ public class Rectangle implements Transformable, HasDimensions {
 
   @Override
   public String toString() {
-    return transform();
-  }
-
-  public String transform() {
     if (isEmpty()) {
       return "Rectangle: instance is empty";
     }

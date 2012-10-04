@@ -154,8 +154,7 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void showGrid(Object data, String... cols) {
-    Widget grid = Global.simpleGrid(data, cols);
+  public void showGrid(Widget grid) {
     if (grid != null) {
       updateActivePanel(grid, ScrollBars.BOTH);
     }

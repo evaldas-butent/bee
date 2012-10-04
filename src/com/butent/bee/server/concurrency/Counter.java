@@ -1,12 +1,10 @@
 package com.butent.bee.server.concurrency;
 
-import com.butent.bee.shared.Transformable;
-
 /**
  * Enables server requests counter management in order to identify them uniquely.
  */
 
-public class Counter implements Transformable {
+public class Counter {
   private int counter;
 
   public Counter() {
@@ -26,7 +24,8 @@ public class Counter implements Transformable {
     return counter;
   }
 
-  public String transform() {
+  @Override
+  public String toString() {
     return Integer.toString(getCounter());
   }
 }

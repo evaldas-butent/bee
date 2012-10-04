@@ -8,6 +8,7 @@ import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.logging.LogUtils.LogLevel;
 import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -76,10 +77,6 @@ public class ResponseBuffer {
     }
   }
 
-  public void add(Object x) {
-    add(BeeUtils.transform(x));
-  }
-
   public void add(Object... lst) {
     if (lst.length == 0) {
       addSeparator();
@@ -106,7 +103,7 @@ public class ResponseBuffer {
   }
 
   public void addDebug(Object... obj) {
-    messages.add(new ResponseMessage(LogLevel.DEBUG, BeeUtils.joinWords(obj)));
+    messages.add(new ResponseMessage(LogLevel.DEBUG, ArrayUtils.joinWords(obj)));
   }
 
   public void addError(Throwable err) {
@@ -153,16 +150,16 @@ public class ResponseBuffer {
 
   public void addLine(Object... obj) {
     if (obj.length > 0) {
-      add(BeeUtils.joinWords(obj));
+      add(ArrayUtils.joinWords(obj));
     }
   }
 
   public void addMessage(Object... obj) {
-    messages.add(new ResponseMessage(BeeUtils.joinWords(obj)));
+    messages.add(new ResponseMessage(ArrayUtils.joinWords(obj)));
   }
 
   public void addNow(Object... obj) {
-    messages.add(new ResponseMessage(true, BeeUtils.joinWords(obj)));
+    messages.add(new ResponseMessage(true, ArrayUtils.joinWords(obj)));
   }
 
   public void addPart(String uri, String content) {
@@ -243,7 +240,7 @@ public class ResponseBuffer {
   }
 
   public void addSevere(Object... obj) {
-    messages.add(new ResponseMessage(LogLevel.ERROR, BeeUtils.joinWords(obj)));
+    messages.add(new ResponseMessage(LogLevel.ERROR, ArrayUtils.joinWords(obj)));
   }
 
   public void addText(CharSequence s) {
@@ -258,7 +255,7 @@ public class ResponseBuffer {
   }
 
   public void addWarning(Object... obj) {
-    messages.add(new ResponseMessage(LogLevel.WARNING, BeeUtils.joinWords(obj)));
+    messages.add(new ResponseMessage(LogLevel.WARNING, ArrayUtils.joinWords(obj)));
   }
 
   public void addWarning(Throwable err) {

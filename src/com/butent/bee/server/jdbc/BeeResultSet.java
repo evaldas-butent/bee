@@ -3,7 +3,6 @@ package com.butent.bee.server.jdbc;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -27,7 +26,7 @@ import java.util.Set;
  * server.
  */
 
-public class BeeResultSet implements Transformable {
+public class BeeResultSet {
   private static final BeeLogger logger = LogUtils.getLogger(BeeResultSet.class);
 
   public static List<Property> getInfo(ResultSet rs) {
@@ -319,11 +318,6 @@ public class BeeResultSet implements Transformable {
       sb.append(BeeUtils.joinWords(el.getName(), el.getSub(), el.getValue()));
     }
     return sb.toString();
-  }
-
-  @Override
-  public String transform() {
-    return toString();
   }
 
   public boolean updateFetchDirection(ResultSet rs, String s) {

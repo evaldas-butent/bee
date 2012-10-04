@@ -132,9 +132,4 @@ public class DecimalValue extends Value {
     }
     return value.toString();
   }
-
-  @Override
-  public String transform() {
-    return toString();
-  }
 }

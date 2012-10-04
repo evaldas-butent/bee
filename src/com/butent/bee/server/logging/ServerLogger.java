@@ -3,7 +3,7 @@ package com.butent.bee.server.logging;
 import com.butent.bee.server.Config;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils.LogLevel;
-import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
@@ -49,28 +49,28 @@ public class ServerLogger implements BeeLogger {
   @Override
   public void debug(Object... messages) {
     if (logger.isEnabledFor(Level.DEBUG)) {
-      logger.debug(BeeUtils.joinWords(messages));
+      logger.debug(ArrayUtils.joinWords(messages));
     }
   }
 
   @Override
   public void error(Object... messages) {
     if (logger.isEnabledFor(Level.ERROR)) {
-      logger.error(BeeUtils.joinWords(messages));
+      logger.error(ArrayUtils.joinWords(messages));
     }
   }
 
   @Override
   public void error(Throwable ex, Object... messages) {
     if (logger.isEnabledFor(Level.ERROR)) {
-      logger.error(BeeUtils.joinWords(messages), ex);
+      logger.error(ArrayUtils.joinWords(messages), ex);
     }
   }
 
   @Override
   public void info(Object... messages) {
     if (logger.isEnabledFor(Level.INFO)) {
-      logger.info(BeeUtils.joinWords(messages));
+      logger.info(ArrayUtils.joinWords(messages));
     }
   }
 
@@ -95,7 +95,7 @@ public class ServerLogger implements BeeLogger {
   @Override
   public void warning(Object... messages) {
     if (logger.isEnabledFor(Level.WARN)) {
-      logger.warn(BeeUtils.joinWords(messages));
+      logger.warn(ArrayUtils.joinWords(messages));
     }
   }
 }

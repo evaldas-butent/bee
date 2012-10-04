@@ -146,8 +146,7 @@ public class TuningFactory {
 
     String id = decorator.getId();
     if (BeeUtils.same(id, ext) || relatives != null && relatives.contains(normalize(ext))) {
-      BeeKeeper.getLog().severe("incest detected:", id, ext,
-          BeeUtils.transformCollection(relatives, BeeConst.DEFAULT_LIST_SEPARATOR));
+      BeeKeeper.getLog().severe("incest detected:", id, ext, relatives);
       return false;
     }
 

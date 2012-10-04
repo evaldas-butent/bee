@@ -34,7 +34,6 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.InputSpinner;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
@@ -147,8 +146,8 @@ class ReportManager {
         continue;
       }
 
-      String item = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
-          Data.getString(viewName, row, COL_NAME), Data.getString(viewName, row, COL_TYPE_NAME));
+      String item = BeeUtils.joinItems(Data.getString(viewName, row, COL_NAME),
+          Data.getString(viewName, row, COL_TYPE_NAME));
       widget.addItem(item);
       attIds.add(id);
     }
@@ -549,8 +548,8 @@ class ReportManager {
       String viewName = rowSet.getViewName();
       for (long id : attendees) {
         BeeRow row = rowSet.getRowById(id);
-        String item = BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR,
-            Data.getString(viewName, row, COL_NAME), Data.getString(viewName, row, COL_TYPE_NAME));
+        String item = BeeUtils.joinItems(Data.getString(viewName, row, COL_NAME),
+            Data.getString(viewName, row, COL_TYPE_NAME));
         listBox.addItem(item);
       }
     }

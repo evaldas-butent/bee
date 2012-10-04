@@ -33,7 +33,7 @@ public class TestVariable {
 
   @Test
   public final void testGetBoolean() {
-    var = new Variable();
+    var = new Variable(BeeType.STRING);
     var.setValue("10");
 
     assertFalse(var.getBoolean());
@@ -50,7 +50,7 @@ public class TestVariable {
 
   @Test
   public final void testGetDouble() {
-    var = new Variable();
+    var = new Variable(BeeType.STRING);
 
     var.setValue("xyz");
     assertEquals(0.0, var.getDouble(), 0.0);
@@ -74,7 +74,7 @@ public class TestVariable {
 
   @Test
   public final void testGetInt() {
-    var = new Variable();
+    var = new Variable(BeeType.INT);
 
     var.setValue(true);
 
@@ -104,7 +104,7 @@ public class TestVariable {
 
   @Test
   public final void testGetItems() {
-    var = new Variable();
+    var = new Variable(BeeType.STRING);
 
     assertNull(var.getItems());
 
@@ -121,7 +121,7 @@ public class TestVariable {
 
   @Test
   public final void testGetLong() {
-    var = new Variable();
+    var = new Variable(BeeType.LONG);
 
     var.setValue(true);
 
@@ -142,7 +142,7 @@ public class TestVariable {
 
   @Test
   public final void testGetString() {
-    var = new Variable();
+    var = new Variable(BeeType.STRING);
 
     var.setValue(true);
 
@@ -169,26 +169,15 @@ public class TestVariable {
 
   @Test
   public final void testGetWidth() {
-    var = new Variable();
+    var = new Variable(BeeType.STRING);
 
     var.setWidth(null);
     assertNull(var.getWidth());
   }
 
   @Test
-  public final void testSetType() {
-    var = new Variable();
-
-    assertEquals(BeeType.UNKNOWN, var.getType());
-
-    var.setType(BeeType.TEXT);
-
-    assertEquals(BeeType.TEXT, var.getType());
-  }
-
-  @Test
   public final void testSetWidget() {
-    var = new Variable();
+    var = new Variable(BeeType.STRING);
 
     assertNull(var.getWidget());
 
@@ -198,8 +187,8 @@ public class TestVariable {
 
   @Test
   public final void testVariable() {
-    var = new Variable();
-    assertEquals(BeeType.UNKNOWN, var.getType());
+    var = new Variable(BeeType.STRING);
+    assertEquals(BeeType.STRING, var.getType());
     assertNull(var.getValue());
     assertNull(var.getCaption());
     assertNull(var.getWidget());

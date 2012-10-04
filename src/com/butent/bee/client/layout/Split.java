@@ -398,7 +398,7 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     if (isSplitter(child)) {
       pfx = (child instanceof HorizontalSplitter) ? "hor" : "vert";
     } else {
-      pfx = BeeUtils.transform(direction).toLowerCase();
+      pfx = direction.name().toLowerCase();
     }
 
     container.setId(DomUtils.createUniqueId("layer-" + pfx));

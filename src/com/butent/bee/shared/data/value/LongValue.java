@@ -135,9 +135,4 @@ public class LongValue extends Value {
     }
     return BeeUtils.toString(value);
   }
-
-  @Override
-  public String transform() {
-    return toString();
-  }
 }

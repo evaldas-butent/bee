@@ -121,7 +121,7 @@ public class BeeResource implements BeeSerializable {
   public String serialize() {
     int[] arr = new int[] {
         BeeUtils.length(name), BeeUtils.length(uri),
-        BeeUtils.length(BeeUtils.transform(type)),
+        BeeUtils.length(BeeUtils.toString(type)),
         BeeUtils.length(BeeUtils.toString(readOnly)),
         BeeUtils.length(content)};
 
@@ -141,7 +141,7 @@ public class BeeResource implements BeeSerializable {
           sb.append(uri);
           break;
         case 2:
-          sb.append(BeeUtils.transform(type));
+          sb.append(BeeUtils.toString(type));
           break;
         case 3:
           sb.append(BeeUtils.toString(readOnly));

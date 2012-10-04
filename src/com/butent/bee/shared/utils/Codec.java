@@ -20,7 +20,6 @@ import java.util.Map;
  */
 public class Codec {
   private static final String SERIALIZATION_COLLECTION = "c";
-  private static final String SERIALIZATION_SEPARATOR = ";";
   private static final char[] HEX_CHARS = new char[] {
       '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
@@ -286,14 +285,14 @@ public class Codec {
       sb.append(beeSerialize(((BeeSerializable) obj).serialize()));
 
     } else {
-      String s = BeeUtils.transformNoTrim(obj);
-      String l = BeeUtils.transform(s.length());
+      String s = obj.toString();
+      String l = BeeUtils.toString(s.length());
       sb.append(l.length()).append(l).append(s);
     }
     if (items < 0) {
       return sb.toString();
     } else {
-      String s = BeeUtils.transform(items);
+      String s = BeeUtils.toString(items);
       return SERIALIZATION_COLLECTION + beeSerialize(s.length() + s + sb.toString());
     }
   }
@@ -428,44 +427,6 @@ public class Codec {
       x = Integer.parseInt(src.substring(start + 1, start + z + 1));
     }
     return Pair.of(x, z + 1);
-  }
-
-  /**
-   * Deserializes String values {@code ser} using a default serialization separator.
-   * 
-   * @param ser values to deserialize
-   * @return deserialized values in a String array
-   */
-  public static String[] deserializeValues(String ser) {
-    Assert.notEmpty(ser);
-
-    int p1 = ser.indexOf(SERIALIZATION_SEPARATOR);
-    Assert.isPositive(p1);
-
-    int n = BeeUtils.toInt(ser.substring(0, p1));
-    Assert.isPositive(n);
-
-    String[] arr = new String[n];
-    int p2, len;
-
-    for (int i = 0; i < n; i++) {
-      p2 = ser.indexOf(SERIALIZATION_SEPARATOR, p1 + 1);
-      if (p2 == p1 + 1) {
-        arr[i] = null;
-        p1 = p2;
-        continue;
-      }
-
-      len = BeeUtils.toInt(ser.substring(p1 + 1, p2));
-      if (len > 0) {
-        arr[i] = ser.substring(p2 + 1, p2 + 1 + len);
-        p1 = p2 + len;
-      } else {
-        arr[i] = BeeConst.STRING_EMPTY;
-        p1 = p2;
-      }
-    }
-    return arr;
   }
 
   /**
@@ -650,21 +611,6 @@ public class Codec {
   }
 
   /**
-   * Serializes an Object using a default serialization separator.
-   * 
-   * @param obj the Object to serialize
-   * @return a String representation of the serialized Object
-   */
-  public static String serialize(Object obj) {
-    if (obj == null) {
-      return SERIALIZATION_SEPARATOR;
-    } else {
-      String s = BeeUtils.transform(obj);
-      return s.length() + SERIALIZATION_SEPARATOR + s;
-    }
-  }
-
-  /**
    * Serializes the input length {@code len}.
    * 
    * @param len length to serialize
@@ -686,26 +632,6 @@ public class Codec {
   }
 
   /**
-   * Serializes all Objects {@code obj} using a default serialization separator.
-   * 
-   * @param obj values to serialize
-   * @return a String with serializes values
-   */
-  public static String serializeValues(Object... obj) {
-    int n = (obj == null) ? 0 : obj.length;
-    Assert.parameterCount(n, 1);
-
-    StringBuilder sb = new StringBuilder();
-    sb.append(n);
-    sb.append(SERIALIZATION_SEPARATOR);
-
-    for (int i = 0; i < n; i++) {
-      sb.append(serialize(obj[i]));
-    }
-    return sb.toString();
-  }
-
-  /**
    * Serializes an Object {@code obj} and appends it to a StringBuilder.
    * 
    * @param sb a StringBuilder to append to
@@ -722,7 +648,7 @@ public class Codec {
     if (obj instanceof BeeSerializable) {
       v = ((BeeSerializable) obj).serialize();
     } else {
-      v = BeeUtils.transformNoTrim(obj);
+      v = obj.toString();
     }
 
     int len = v.length();

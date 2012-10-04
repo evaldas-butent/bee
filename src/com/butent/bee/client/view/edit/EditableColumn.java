@@ -347,7 +347,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     boolean ok = BeeUtils.toBoolean(getEditable().evaluate());
 
     if (!ok && warn && getNotificationListener() != null) {
-      getNotificationListener().notifyWarning("Cell is read only:", getEditable().transform());
+      getNotificationListener().notifyWarning("Cell is read only:", getEditable().toString());
     }
     return ok;
   }

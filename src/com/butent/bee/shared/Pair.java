@@ -12,7 +12,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * @param <A> type of first object to pair
  * @param <B> type of second object to pair
  */
-public class Pair<A, B> implements Transformable {
+public class Pair<A, B> {
 
   public static final Splitter SPLITTER =
       Splitter.on(CharMatcher.anyOf(" ,;=")).trimResults().omitEmptyStrings().limit(2);
@@ -103,15 +103,6 @@ public class Pair<A, B> implements Transformable {
    */
   @Override
   public String toString() {
-    return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, a, b);
-  }
-
-  /**
-   * Equivalents method {@link Pair#toString()}.
-   * 
-   * @see {@link Pair#toString()}
-   */
-  public String transform() {
-    return toString();
+    return BeeUtils.join(BeeConst.STRING_COMMA, a, b);
   }
 }

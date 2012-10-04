@@ -2,7 +2,6 @@ package com.butent.bee.shared.data.filter;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -20,7 +19,7 @@ import java.util.List;
  * apply.
  */
 
-public abstract class Filter implements BeeSerializable, Transformable, RowFilter {
+public abstract class Filter implements BeeSerializable, RowFilter {
 
   public static Filter and(Filter f1, Filter f2) {
     if (f1 == null) {
@@ -212,11 +211,6 @@ public abstract class Filter implements BeeSerializable, Transformable, RowFilte
 
   @Override
   public abstract boolean isMatch(List<? extends IsColumn> columns, IsRow row);
-
-  @Override
-  public String transform() {
-    return toString();
-  }
 
   protected int getColumnIndex(String colName, List<? extends IsColumn> columns) {
     return DataUtils.getColumnIndex(colName, columns);

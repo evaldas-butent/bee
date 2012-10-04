@@ -5,6 +5,8 @@ import com.google.common.base.Objects;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 
+import java.util.Arrays;
+
 /**
  * Contains methods for processing arrays.
  */
@@ -20,6 +22,19 @@ public class ArrayUtils {
     return indexOf(arr, value) >= 0;
   }
 
+  public static boolean containsSame(String[] arr, String value) {
+    if (arr == null) {
+      return false;
+    }
+    
+    for (String s : arr) {
+      if (BeeUtils.same(s, value)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
   public static String[] copyOf(String[] original) {
     if (original == null) {
       return null;
@@ -151,7 +166,7 @@ public class ArrayUtils {
    * @param arr array to join
    * @return a new string which contains all array elements joined by the specified separator
    */
-  public static String join(String separator, String[] arr) {
+  public static String join(String separator, Object[] arr) {
     return join(separator, arr, -1, -1);
   }
 
@@ -164,7 +179,7 @@ public class ArrayUtils {
    * @param fromIndex the array index to start from
    * @return a new string which contains all array elements joined by the specified separator
    */
-  public static String join(String separator, String[] arr, int fromIndex) {
+  public static String join(String separator, Object[] arr, int fromIndex) {
     return join(separator, arr, fromIndex, -1);
   }
 
@@ -178,7 +193,7 @@ public class ArrayUtils {
    * @param toIndex an array index to stop joining
    * @return a new string which contains all array elements joined by the specified separator
    */
-  public static String join(String separator, String[] arr, int fromIndex, int toIndex) {
+  public static String join(String separator, Object[] arr, int fromIndex, int toIndex) {
     Assert.notNull(separator);
     int len = length(arr);
     int fr = (fromIndex > 0) ? fromIndex : 0;
@@ -190,14 +205,19 @@ public class ArrayUtils {
 
     StringBuilder sb = new StringBuilder();
     for (int i = fr; i < to; i++) {
-      if (sb.length() > 0) {
-        sb.append(separator);
-      }
-      if (arr[i] != null) {
-        sb.append(arr[i].trim());
+      String s = BeeUtils.transform(arr[i]);
+      if (!s.isEmpty()) {
+        if (sb.length() > 0) {
+          sb.append(separator);
+        }
+        sb.append(s);
       }
     }
     return sb.toString();
+  }
+
+  public static String joinWords(Object[] arr) {
+    return join(BeeConst.STRING_SPACE, arr);
   }
 
   /**
@@ -285,36 +305,32 @@ public class ArrayUtils {
     return arr;
   }
 
-  public static String transform(Object arr) {
-    return transform(arr, null); 
+  public static String toString(Object arr) {
+    if (arr instanceof Object[]) {
+      return Arrays.toString((Object[]) arr);
+    } else if (arr instanceof boolean[]) {
+      return Arrays.toString((boolean[]) arr);
+    } else if (arr instanceof char[]) {
+      return Arrays.toString((char[]) arr);
+    } else if (arr instanceof byte[]) {
+      return Arrays.toString((byte[]) arr);
+    } else if (arr instanceof short[]) {
+      return Arrays.toString((short[]) arr);
+    } else if (arr instanceof int[]) {
+      return Arrays.toString((int[]) arr);
+    } else if (arr instanceof long[]) {
+      return Arrays.toString((long[]) arr);
+    } else if (arr instanceof float[]) {
+      return Arrays.toString((float[]) arr);
+    } else if (arr instanceof double[]) {
+      return Arrays.toString((double[]) arr);
+    } else if (arr == null) {
+      return BeeConst.STRING_EMPTY; 
+    } else {
+      return arr.toString();
+    }
   }
   
-  /**
-   * Transforms an array into string using the specified separator.
-   * 
-   * @param arr the array to transform
-   * @param separator separator list
-   * @return a String joined from the specified array.
-   */
-  public static String transform(Object arr, String separator) {
-    int r = length(arr);
-    if (r <= 0) {
-      return BeeConst.STRING_EMPTY;
-    }
-
-    String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
-    StringBuilder sb = new StringBuilder();
-
-    for (int i = 0; i < r; i++) {
-      Object el = get(arr, i);
-      if (i > 0) {
-        sb.append(sep);
-      }
-      sb.append(BeeUtils.transform(el));
-    }
-    return sb.toString();
-  }
-
   private ArrayUtils() {
   }
 }

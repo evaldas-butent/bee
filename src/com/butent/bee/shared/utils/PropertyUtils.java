@@ -503,8 +503,10 @@ public class PropertyUtils {
       return BeeConst.STRING_EMPTY;
     } else if (v instanceof String) {
       return transformString((String) v);
+    } else if (ArrayUtils.isArray(v)) {
+      return ArrayUtils.toString(v);
     } else {
-      return BeeUtils.transform(v);
+      return v.toString();
     }
   }
 

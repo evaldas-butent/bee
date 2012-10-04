@@ -26,8 +26,7 @@ public class TestCodec {
     for (Object obj : arr) {
       String s = Codec.beeSerialize(obj);
 
-      assertEquals((obj == null) ? obj : BeeUtils.transform(obj),
-          Codec.beeDeserialize(s));
+      assertEquals((obj == null) ? obj : obj.toString(), Codec.beeDeserialize(s));
       assertNull(Codec.beeDeserializeCollection(s));
     }
 

@@ -18,7 +18,6 @@ import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.FlexTable;
-import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Vertical;
@@ -35,10 +34,8 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -294,18 +291,24 @@ public class MessageBoxes {
     return Window.confirm(BeeUtils.buildLines(lines));
   }
 
-  public void showError(Object... x) {
+  public void showError(String... messages) {
     CloseButton b = new CloseButton(DialogConstants.OK);
-    Popup box = createPopup(b, x);
+    Popup box = createPopup(b, messages);
     box.addStyleName(StyleUtils.NAME_ERROR);
 
     box.center();
     b.setFocus(true);
   }
 
-  public void showGrid(String cap, Object data, String... columnLabels) {
-    Assert.notNull(data);
-    IsTable<?, ?> table = GridFactory.createTable(data, columnLabels);
+  public void showInfo(String... messages) {
+    CloseButton b = new CloseButton(DialogConstants.OK);
+    Popup box = createPopup(b, messages);
+
+    box.center();
+    b.setFocus(true);
+  }
+
+  public void showTable(String caption, IsTable<?, ?> table) {
     Assert.notNull(table);
 
     int c = table.getNumberOfColumns();
@@ -313,15 +316,15 @@ public class MessageBoxes {
 
     int r = table.getNumberOfRows();
     if (r <= 0) {
-      BeeKeeper.getLog().warning(cap, "data table empty");
+      BeeKeeper.getLog().warning(caption, "data table empty");
       return;
     }
 
     FlexTable grid = new FlexTable();
     int index = 0;
 
-    if (!BeeUtils.isEmpty(cap)) {
-      grid.setHTML(index, 0, cap.trim());
+    if (!BeeUtils.isEmpty(caption)) {
+      grid.setHTML(index, 0, caption.trim());
       grid.alignCenter(index, 0);
       if (c > 1) {
         grid.getFlexCellFormatter().setColSpan(index, 0, c);
@@ -366,14 +369,6 @@ public class MessageBoxes {
     close.setFocus(true);
   }
 
-  public void showInfo(Object... x) {
-    CloseButton b = new CloseButton(DialogConstants.OK);
-    Popup box = createPopup(b, x);
-
-    box.center();
-    b.setFocus(true);
-  }
-
   public void showWidget(Widget widget) {
     Assert.notNull(widget);
 
@@ -384,29 +379,12 @@ public class MessageBoxes {
     box.center();
   }
 
-  private Popup createPopup(Widget bottom, Object... obj) {
-    Assert.notNull(obj);
-    int n = obj.length;
-    Assert.parameterCount(n, 1);
+  private Popup createPopup(Widget bottom, String... messages) {
+    Assert.notNull(messages);
 
     Vertical vp = new Vertical();
-
-    for (int i = 0; i < n; i++) {
-      if (obj[i] instanceof Widget) {
-        vp.add((Widget) obj[i]);
-      } else if (obj[i] instanceof String) {
-        vp.add(new BeeLabel((String) obj[i]));
-      } else if (obj[i] instanceof Collection) {
-        for (Object item : (Collection<?>) obj[i]) {
-          vp.add(new BeeLabel(BeeUtils.transform(item)));
-        }
-      } else if (ArrayUtils.isArray(obj[i])) {
-        for (int j = 0; j < ArrayUtils.length(obj[i]); j++) {
-          vp.add(new BeeLabel(BeeUtils.transform(ArrayUtils.get(obj[i], j))));
-        }
-      } else if (obj[i] != null) {
-        vp.add(new BeeLabel(BeeUtils.transform(obj[i])));
-      }
+    for (String s : messages) {
+      vp.add(new BeeLabel(s));
     }
 
     if (bottom != null) {

@@ -7,7 +7,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasExtendedInfo;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.data.Defaults.DefaultExpression;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -25,8 +24,7 @@ import java.util.List;
  * id and parameters management.
  */
 
-public class BeeColumn extends TableColumn implements BeeSerializable, Transformable,
-    HasExtendedInfo {
+public class BeeColumn extends TableColumn implements BeeSerializable, HasExtendedInfo {
 
   /**
    * Contains a list of parameters for column serialization.
@@ -273,12 +271,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, Transform
 
   @Override
   public String toString() {
-    return BeeUtils.transformCollection(getInfo(), BeeConst.DEFAULT_LIST_SEPARATOR);
-  }
-
-  @Override
-  public String transform() {
-    return toString();
+    return getInfo().toString();
   }
 
   private String valueAsString(int v) {

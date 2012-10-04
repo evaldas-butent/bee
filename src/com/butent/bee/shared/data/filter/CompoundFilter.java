@@ -178,7 +178,7 @@ public class CompoundFilter extends Filter {
     StringBuilder sb = new StringBuilder();
 
     for (Filter subFilter : subFilters) {
-      String expr = subFilter.transform();
+      String expr = subFilter.toString();
 
       if (!BeeUtils.isEmpty(expr) && sb.length() > 0) {
         sb.append(type.toTextString());

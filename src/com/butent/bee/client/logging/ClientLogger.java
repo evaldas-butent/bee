@@ -2,7 +2,7 @@ package com.butent.bee.client.logging;
 
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils.LogLevel;
-import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,28 +17,28 @@ public class ClientLogger implements BeeLogger {
   @Override
   public void debug(Object... messages) {
     if (logger.isLoggable(Level.CONFIG)) {
-      logger.config(BeeUtils.joinWords(messages));
+      logger.config(ArrayUtils.joinWords(messages));
     }
   }
 
   @Override
   public void error(Object... messages) {
     if (logger.isLoggable(Level.SEVERE)) {
-      logger.severe(BeeUtils.joinWords(messages));
+      logger.severe(ArrayUtils.joinWords(messages));
     }
   }
 
   @Override
   public void error(Throwable ex, Object... messages) {
     if (logger.isLoggable(Level.SEVERE)) {
-      logger.log(Level.SEVERE, BeeUtils.joinWords(messages), ex);
+      logger.log(Level.SEVERE, ArrayUtils.joinWords(messages), ex);
     }
   }
 
   @Override
   public void info(Object... messages) {
     if (logger.isLoggable(Level.INFO)) {
-      logger.info(BeeUtils.joinWords(messages));
+      logger.info(ArrayUtils.joinWords(messages));
     }
   }
 
@@ -63,7 +63,7 @@ public class ClientLogger implements BeeLogger {
   @Override
   public void warning(Object... messages) {
     if (logger.isLoggable(Level.WARNING)) {
-      logger.warning(BeeUtils.joinWords(messages));
+      logger.warning(ArrayUtils.joinWords(messages));
     }
   }
 }

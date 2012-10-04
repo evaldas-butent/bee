@@ -180,7 +180,7 @@ class PostgreSqlBuilder extends SqlBuilder {
             "$" + procName + "$", getTriggerBody(params),
             "$" + procName + "$", "LANGUAGE plpgsql;",
             "CREATE TRIGGER", params.get("name"), params.get("timing"),
-            BeeUtils.join(" OR ", ((EnumSet<SqlTriggerEvent>) params.get("events")).toArray()),
+            BeeUtils.join(" OR ", (EnumSet<SqlTriggerEvent>) params.get("events")),
             "ON", params.get("table"), "FOR EACH", params.get("scope"),
             "EXECUTE PROCEDURE", procName, "();");
 

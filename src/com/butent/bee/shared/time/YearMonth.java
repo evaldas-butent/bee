@@ -7,10 +7,9 @@ import com.butent.bee.client.i18n.HasDateTimeFormat;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class YearMonth implements Comparable<YearMonth>, Transformable, HasDateTimeFormat,
+public class YearMonth implements Comparable<YearMonth>, HasDateTimeFormat,
     BeeSerializable, HasYearMonth {
 
   public static final char SEPARATOR = '-';
@@ -92,15 +91,12 @@ public class YearMonth implements Comparable<YearMonth>, Transformable, HasDateT
       return year == ((YearMonth) obj).year && month == ((YearMonth) obj).month;
     }
   }
-  public String format() {
-    return transform();
-  }
 
-  public String format(DateTimeFormat dtf) {
-    if (dtf != null) {
-      return dtf.format(getDate());
+  public String format() {
+    if (getDateTimeFormat() != null) {
+      return getDateTimeFormat().format(getDate());
     } else {
-      return transform();
+      return toString();
     }
   }
 
@@ -209,14 +205,6 @@ public class YearMonth implements Comparable<YearMonth>, Transformable, HasDateT
   @Override
   public String toString() {
     return TimeUtils.yearToString(getYear()) + SEPARATOR + TimeUtils.monthToString(getMonth());
-  }
-
-  public String transform() {
-    if (getDateTimeFormat() != null) {
-      return getDateTimeFormat().format(getDate());
-    } else {
-      return toString();
-    }
   }
 
   private void checkMonth(int value) {

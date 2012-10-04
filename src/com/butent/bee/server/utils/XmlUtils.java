@@ -467,7 +467,7 @@ public class XmlUtils {
     return lst;
   }
 
-  public static Map<String, String> getElements(String xml, String... ignore) {
+  public static Map<String, String> getElements(String xml, String ignore) {
     Assert.notEmpty(xml);
     Map<String, String> ret = new HashMap<String, String>();
 
@@ -484,8 +484,6 @@ public class XmlUtils {
     Element el;
     String tg, txt;
 
-    int n = (ignore == null) ? 0 : ignore.length;
-
     for (int i = 0; i < nodes.getLength(); i++) {
       el = asElement(nodes.item(i));
       if (el == null) {
@@ -493,7 +491,7 @@ public class XmlUtils {
       }
 
       tg = getLocalName(el);
-      if (n > 0 && BeeUtils.inListSame(tg, ignore)) {
+      if (ignore != null && BeeUtils.same(tg, ignore)) {
         continue;
       }
 

@@ -233,7 +233,7 @@ public class SystemInfo {
     if (t == null) {
       return null;
     } else {
-      return BeeUtils.transformOptions("Id", BeeUtils.toString(t.getId()), "Name", t.getName());
+      return BeeUtils.joinOptions("Id", BeeUtils.toString(t.getId()), "Name", t.getName());
     }
   }
 

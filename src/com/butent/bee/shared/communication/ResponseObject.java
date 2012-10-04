@@ -7,6 +7,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils.LogLevel;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -59,7 +60,7 @@ public class ResponseObject implements BeeSerializable {
   private boolean isArrayType = false;
 
   public ResponseObject addError(Object... err) {
-    messages.add(new ResponseMessage(LogLevel.ERROR, BeeUtils.joinWords(err)));
+    messages.add(new ResponseMessage(LogLevel.ERROR, ArrayUtils.joinWords(err)));
     return this;
   }
 
@@ -74,7 +75,7 @@ public class ResponseObject implements BeeSerializable {
   }
 
   public ResponseObject addInfo(Object... obj) {
-    messages.add(new ResponseMessage(LogLevel.INFO, BeeUtils.joinWords(obj)));
+    messages.add(new ResponseMessage(LogLevel.INFO, ArrayUtils.joinWords(obj)));
     return this;
   }
 
@@ -86,7 +87,7 @@ public class ResponseObject implements BeeSerializable {
   }
 
   public ResponseObject addWarning(Object... obj) {
-    messages.add(new ResponseMessage(LogLevel.WARNING, BeeUtils.joinWords(obj)));
+    messages.add(new ResponseMessage(LogLevel.WARNING, ArrayUtils.joinWords(obj)));
     return this;
   }
 

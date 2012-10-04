@@ -125,7 +125,7 @@ public class CommonsEventHandler {
           Assert.notNull(response);
 
           if (response.hasErrors()) {
-            Global.showError((Object[]) response.getErrors());
+            Global.showError(response.getErrors());
           } else if (response.hasResponse(Integer.class)) {
             requery(itemId);
           } else {

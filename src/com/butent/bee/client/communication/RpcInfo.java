@@ -4,7 +4,6 @@ import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.utils.Duration;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -16,8 +15,6 @@ import com.butent.bee.shared.utils.ExtendedProperty;
 
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -100,7 +97,7 @@ public class RpcInfo {
 
   private String errMsg = null;
 
-  private Map<String, String> userData = null;
+  private Object userData = null;
   private ResponseCallback respCallback;
 
   public RpcInfo(RequestBuilder.Method method, String service,
@@ -122,24 +119,6 @@ public class RpcInfo {
     }
   }
 
-  public void addUserData(Object... obj) {
-    Assert.notNull(obj);
-    Assert.parameterCount(obj.length, 2);
-    Assert.isEven(obj.length);
-
-    if (userData == null) {
-      userData = new HashMap<String, String>();
-    }
-
-    for (int i = 0; i < obj.length; i += 2) {
-      if (!(obj[i] instanceof String)) {
-        BeeKeeper.getLog().warning("parameter", i, "not a string");
-        continue;
-      }
-      userData.put((String) obj[i], BeeUtils.transformNoTrim(obj[i + 1]));
-    }
-  }
-  
   public boolean cancel() {
     boolean wasPending = false;
 
@@ -297,7 +276,7 @@ public class RpcInfo {
   }
 
   public String getRespInfoString() {
-    return BeeUtils.transformCollection(getRespInfo(), BeeConst.DEFAULT_ROW_SEPARATOR);
+    return BeeUtils.join(BeeConst.DEFAULT_ROW_SEPARATOR, getRespInfo());
   }
 
   public Collection<ResponseMessage> getRespMessages() {
@@ -375,7 +354,7 @@ public class RpcInfo {
     return duration.getTimeoutAsTime();
   }
 
-  public Map<String, String> getUserData() {
+  public Object getUserData() {
     return userData;
   }
   
@@ -489,7 +468,7 @@ public class RpcInfo {
     duration.setTimeout(timeout);
   }
 
-  public void setUserData(Map<String, String> userData) {
+  public void setUserData(Object userData) {
     this.userData = userData;
   }
 

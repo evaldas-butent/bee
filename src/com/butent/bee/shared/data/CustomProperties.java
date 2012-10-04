@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.HasInfo;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -21,8 +20,7 @@ import java.util.Map;
  */
 
 @SuppressWarnings("serial")
-public class CustomProperties extends HashMap<String, String> implements HasInfo, Transformable,
-    BeeSerializable {
+public class CustomProperties extends HashMap<String, String> implements HasInfo, BeeSerializable {
 
   public static CustomProperties create() {
     return new CustomProperties();
@@ -78,9 +76,5 @@ public class CustomProperties extends HashMap<String, String> implements HasInfo
 
   public String serialize() {
     return Codec.beeSerialize(this);
-  }
-
-  public String transform() {
-    return BeeUtils.transformMap(this, null);
   }
 }

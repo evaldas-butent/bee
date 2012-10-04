@@ -131,9 +131,4 @@ public class TextValue extends Value {
     }
     return getString();
   }
-
-  @Override
-  public String transform() {
-    return toString();
-  }
 }

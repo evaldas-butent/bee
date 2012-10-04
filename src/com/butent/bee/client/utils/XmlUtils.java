@@ -66,7 +66,7 @@ public class XmlUtils {
     NODE_TYPES.put(Node.NOTATION_NODE, "Notation");
   }
 
-  public static String createString(String rootName, Object... nodes) {
+  public static String createString(String rootName, String... nodes) {
     Assert.notEmpty(rootName);
     Assert.notNull(nodes);
     Assert.parameterCount(nodes.length + 1, 3);
@@ -78,7 +78,7 @@ public class XmlUtils {
     Assert.notEmpty(rootName);
     Assert.notEmpty(names);
 
-    Object[] nodes = new Object[names.size() * 2];
+    String[] nodes = new String[names.size() * 2];
     for (int i = 0; i < names.size(); i++) {
       nodes[i * 2] = names.get(i);
       nodes[i * 2 + 1] = BeeUtils.trim(Global.getVarValue(names.get(i)));
@@ -612,26 +612,19 @@ public class XmlUtils {
     root.appendChild(el);
   }
 
-  private static Document createDoc(String rootName, Object... nodes) {
+  private static Document createDoc(String rootName, String... nodes) {
     Document doc = XMLParser.createDocument();
     Element root = doc.createElement(rootName);
 
     String tag, txt;
 
     for (int i = 0; i < nodes.length - 1; i += 2) {
-      if (!(nodes[i] instanceof String)) {
-        continue;
-      }
-      tag = ((String) nodes[i]).trim();
-      if (tag.length() <= 0) {
-        continue;
-      }
+      tag = nodes[i];
+      txt = nodes[i + 1];
 
-      txt = transformText(nodes[i + 1]);
-      if (BeeUtils.isEmpty(txt)) {
-        continue;
+      if (!BeeUtils.anyEmpty(tag, txt)) {
+        appendElementWithText(doc, root, tag.trim(), txt.trim());
       }
-      appendElementWithText(doc, root, tag, txt);
     }
 
     doc.appendChild(root);
@@ -657,16 +650,6 @@ public class XmlUtils {
       return xml;
     } else {
       return prolog + xml;
-    }
-  }
-
-  private static String transformText(Object obj) {
-    if (obj == null) {
-      return BeeConst.STRING_EMPTY;
-    } else if (obj instanceof String) {
-      return (String) obj;
-    } else {
-      return BeeUtils.transform(obj);
     }
   }
 

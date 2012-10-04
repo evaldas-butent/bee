@@ -79,7 +79,7 @@ public class TransportHandler {
     public void onClick(ClickEvent event) {
       ParameterList args = TransportHandler.createArgs(TransportConstants.SVC_GET_PROFIT);
       final FormView form = UiHelper.getForm((Widget) event.getSource());
-      args.addDataItem(idName, BeeUtils.transform(form.getActiveRow().getId()));
+      args.addDataItem(idName, form.getActiveRow().getId());
 
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
         @Override
@@ -87,7 +87,7 @@ public class TransportHandler {
           Assert.notNull(response);
 
           if (response.hasErrors()) {
-            Global.showError((Object[]) response.getErrors());
+            Global.showError(response.getErrors());
 
           } else if (response.hasArrayResponse(String.class)) {
             form.notifyInfo(Codec.beeDeserializeCollection((String) response.getResponse()));
@@ -327,7 +327,7 @@ public class TransportHandler {
                     Assert.notNull(response);
 
                     if (response.hasErrors()) {
-                      Global.showError((Object[]) response.getErrors());
+                      Global.showError(response.getErrors());
 
                     } else if (response.hasArrayResponse(String.class)) {
                       String[] r = Codec.beeDeserializeCollection((String) response.getResponse());
@@ -417,7 +417,7 @@ public class TransportHandler {
                 List<String> oldValues = Lists.newArrayList(cv.getOldValue(),
                     row.getString(updIndex));
                 List<String> newValues = Lists.newArrayList(cv.getNewValue(),
-                    BeeUtils.transform(updValue));
+                    BeeUtils.toString(updValue));
 
                 Queries.update(viewName, row.getId(), row.getVersion(), cols, oldValues, newValues,
                     new RowCallback() {

@@ -210,7 +210,7 @@ class MsSqlBuilder extends SqlBuilder {
   protected String sqlFunction(SqlFunction function, Map<String, Object> params) {
     switch (function) {
       case CONCAT:
-        StringBuilder xpr = new StringBuilder(BeeUtils.transform(params.get("member" + 0)));
+        StringBuilder xpr = new StringBuilder(transform(params.get("member" + 0)));
 
         for (int i = 1; i < params.size(); i++) {
           xpr.append(" + ").append(params.get("member" + i));
@@ -268,7 +268,7 @@ class MsSqlBuilder extends SqlBuilder {
         return BeeUtils.joinWords(
             "CREATE TRIGGER", params.get("name"), "ON", params.get("table"),
             ((SqlTriggerTiming) params.get("timing") == SqlTriggerTiming.BEFORE) ? "FOR" : "AFTER",
-            BeeUtils.join(",", ((EnumSet<SqlTriggerEvent>) params.get("events")).toArray()),
+            BeeUtils.join(",", (EnumSet<SqlTriggerEvent>) params.get("events")),
             "AS ", getTriggerBody(params));
 
       case DB_NAME:

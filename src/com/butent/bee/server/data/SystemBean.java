@@ -668,9 +668,8 @@ public class SystemBean {
             if (ArrayUtils.contains(keys, key.getName())) {
               c++;
             } else {
-              String msg = BeeUtils.joinWords("INDEX", key.getName(),
-                  BeeUtils.parenthesize(ArrayUtils.transform(key.getKeyFields())), "NOT IN",
-                  BeeUtils.parenthesize(ArrayUtils.transform(keys)));
+              String msg = BeeUtils.joinWords("INDEX", key.getName(), key.getKeyFields(), "NOT IN",
+                  keys);
               logger.warning(msg);
 
               if (diff != null) {
@@ -710,7 +709,7 @@ public class SystemBean {
               String msg = BeeUtils.joinWords("FOREIGN KEY", fKey.getName(),
                   BeeUtils.parenthesize(BeeUtils.join(" ON DELETE ",
                       fKey.getKeyField() + "->" + fKey.getRefTable(), fKey.getCascade())),
-                  "NOT IN", BeeUtils.parenthesize(ArrayUtils.transform(fKeys)));
+                  "NOT IN", fKeys);
               logger.warning(msg);
 
               if (diff != null) {
@@ -745,7 +744,7 @@ public class SystemBean {
               c++;
             } else {
               String msg = BeeUtils.joinWords("TRIGGER", trigger.getName(), "NOT IN",
-                  BeeUtils.parenthesize(BeeUtils.transform(triggers)));
+                  BeeUtils.parenthesize(triggers));
               logger.warning(msg);
 
               if (diff != null) {
@@ -920,18 +919,23 @@ public class SystemBean {
     dbName = qs.dbName();
     dbSchema = qs.dbSchema();
     dbAuditSchema = BeeUtils.join("_", dbSchema, AUDIT_PREFIX);
+
     String[] dbTables = qs.dbTables(dbName, dbSchema, null).getColumn(SqlConstants.TBL_NAME);
+    Set<String> names = Sets.newHashSet();
+    for (String name : dbTables) {
+      names.add(BeeUtils.normalize(name));
+    }
 
     for (BeeTable table : getTables()) {
       String tblName = table.getName();
-      table.setActive(BeeUtils.inListSame(tblName, dbTables));
+      table.setActive(names.contains(BeeUtils.normalize(tblName)));
 
       Map<String, String[]> tableFields = Maps.newHashMap();
 
       for (BeeState state : table.getStates()) {
         tblName = table.getStateTable(state);
 
-        if (BeeUtils.inListSame(tblName, dbTables) && !tableFields.containsKey(tblName)) {
+        if (names.contains(BeeUtils.normalize(tblName)) && !tableFields.containsKey(tblName)) {
           tableFields.put(tblName,
               qs.dbFields(getDbName(), getDbSchema(), tblName).getColumn(SqlConstants.FLD_NAME));
         }

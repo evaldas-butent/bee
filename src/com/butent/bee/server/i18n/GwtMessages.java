@@ -89,7 +89,7 @@ public class GwtMessages extends GwtLocalizable {
     if (args != null) {
       for (int i = 0; i < args.length; i++) {
         String search = "{" + i + "}";
-        String value = (args[i] == null) ? BeeConst.NULL : BeeUtils.transform(args[i]);
+        String value = (args[i] == null) ? BeeConst.NULL : args[i].toString();
         template = BeeUtils.replace(template, search, value);
       }
     }

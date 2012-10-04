@@ -9,7 +9,7 @@ import com.butent.bee.client.logging.LogWidgetHandler;
 import com.butent.bee.client.utils.Duration;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.ArrayUtils;
 
 import java.util.Collection;
 import java.util.Map;
@@ -46,7 +46,7 @@ public class LogHandler implements Module {
   }
 
   public void debug(Object... obj) {
-    getLogger().info(BeeUtils.joinWords(obj));
+    getLogger().info(ArrayUtils.joinWords(obj));
   }
 
   public void debugCollection(Collection<?> collection) {
@@ -122,7 +122,7 @@ public class LogHandler implements Module {
   }
 
   public void info(Object... obj) {
-    getLogger().info(BeeUtils.joinWords(obj));
+    getLogger().info(ArrayUtils.joinWords(obj));
   }
 
   @Override
@@ -134,7 +134,7 @@ public class LogHandler implements Module {
   }
 
   public void log(Level level, Object... obj) {
-    getLogger().log(level, BeeUtils.joinWords(obj));
+    getLogger().log(level, ArrayUtils.joinWords(obj));
   }
 
   public void resize(int size) {
@@ -159,7 +159,7 @@ public class LogHandler implements Module {
   }
 
   public void severe(Object... obj) {
-    getLogger().severe(BeeUtils.joinWords(obj));
+    getLogger().severe(ArrayUtils.joinWords(obj));
   }
 
   public void show() {
@@ -179,6 +179,6 @@ public class LogHandler implements Module {
   }
 
   public void warning(Object... obj) {
-    getLogger().warning(BeeUtils.joinWords(obj));
+    getLogger().warning(ArrayUtils.joinWords(obj));
   }
 }

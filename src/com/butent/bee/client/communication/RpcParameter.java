@@ -1,69 +1,35 @@
 package com.butent.bee.client.communication;
 
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
 /**
  * Contains necessary properties of a particular RPC parameter and methods to get and set them.
  */
-public class RpcParameter implements Transformable {
+public class RpcParameter {
   /**
    * Contains available sections of RPC parameters.
    */
-  public static enum SECTION {
+  public static enum Section {
     QUERY, HEADER, DATA
   }
 
-  public static SECTION defaultSection = SECTION.HEADER;
+  private final Section section;
+  private String name;
+  private final String value;
 
-  private SECTION section = defaultSection;
-  private String name = null;
-  private String value;
-
-  public RpcParameter(Object value) {
-    this(defaultSection, null, BeeUtils.transform(value));
-  }
-
-  public RpcParameter(SECTION section, Object value) {
-    this(section, null, BeeUtils.transform(value));
-  }
-
-  public RpcParameter(SECTION section, String value) {
-    this(section, null, value);
-  }
-
-  public RpcParameter(SECTION section, String name, Object value) {
-    this(section, name, BeeUtils.transform(value));
-  }
-
-  public RpcParameter(SECTION section, String name, String value) {
+  public RpcParameter(Section section, String name, String value) {
     super();
     this.section = section;
     this.name = name;
     this.value = value;
   }
 
-  public RpcParameter(String value) {
-    this(defaultSection, null, value);
-  }
-
-  public RpcParameter(String name, Object value) {
-    this(defaultSection, name, BeeUtils.transform(value));
-  }
-
-  public RpcParameter(String name, String value) {
-    this(defaultSection, name, value);
-  }
-
-  protected RpcParameter() {
-  }
-
   public String getName() {
     return name;
   }
 
-  public SECTION getSection() {
+  public Section getSection() {
     return section;
   }
 
@@ -87,15 +53,8 @@ public class RpcParameter implements Transformable {
     this.name = name;
   }
 
-  public void setSection(SECTION section) {
-    this.section = section;
-  }
-
-  public void setValue(String value) {
-    this.value = value;
-  }
-
-  public String transform() {
+  @Override
+  public String toString() {
     return NameUtils.addName(BeeUtils.joinWords(getSection(), getName()), getValue());
   }
 }

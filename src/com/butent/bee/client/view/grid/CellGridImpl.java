@@ -1102,7 +1102,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     boolean ok = BeeUtils.toBoolean(getRowEditable().evaluate());
 
     if (!ok && warn) {
-      notifyWarning("Row is read only:", getRowEditable().transform());
+      notifyWarning("Row is read only:", getRowEditable().toString());
     }
     return ok;
   }

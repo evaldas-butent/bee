@@ -5,12 +5,11 @@ import com.google.common.base.Objects;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.Transformable;
 
 /**
  * Used for creating Properties.
  */
-public class Property implements Comparable<Property>, Transformable, BeeSerializable {
+public class Property implements Comparable<Property>, BeeSerializable {
 
   public static String[] HEADERS = new String[] {"Property", "Value"};
   public static int HEADER_COUNT = HEADERS.length;
@@ -126,12 +125,5 @@ public class Property implements Comparable<Property>, Transformable, BeeSeriali
   @Override
   public String toString() {
     return name + BeeConst.DEFAULT_VALUE_SEPARATOR + value;
-  }
-
-  /**
-   * @return a String representation of the Object. See {@link #toString()}.
-   */
-  public String transform() {
-    return toString();
   }
 }

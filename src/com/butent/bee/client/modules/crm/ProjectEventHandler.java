@@ -418,7 +418,7 @@ public class ProjectEventHandler {
           Assert.notNull(response);
 
           if (response.hasErrors()) {
-            Global.showError((Object[]) response.getErrors());
+            Global.showError(response.getErrors());
           } else if (response.hasResponse(Integer.class)) {
             requery(projectId);
           } else {
@@ -606,7 +606,7 @@ public class ProjectEventHandler {
           dialog.hide();
         }
         if (response.hasErrors()) {
-          Global.showError((Object[]) response.getErrors());
+          Global.showError(response.getErrors());
         } else {
           if (response.hasResponse(BeeRow.class)) {
             BeeRow row = BeeRow.restore((String) response.getResponse());

@@ -257,7 +257,7 @@ public class FileUtils {
       PropertyUtils.addChildren(lst,
           BeeUtils.joinWords(BeeUtils.progress(i, charsets.size()), key),
           "Name", cs.name(),
-          "Aliases", BeeUtils.transform(cs.aliases()),
+          "Aliases", cs.aliases(),
           "Can Encode", cs.canEncode(),
           "Display Name", cs.displayName(),
           "Registered", cs.isRegistered());

@@ -637,7 +637,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   private void updateFilter() {
     Filter filter = ViewHelper.getFilter(this, getDataProvider());
     if (Objects.equal(filter, getLastFilter())) {
-      showInfo("filtras nepasikeitė", BeeUtils.transform(filter));
+      showInfo("filtras nepasikeitė", (filter == null) ? null : filter.toString());
     } else {
       setLastFilter(filter);
       getDataProvider().onFilterChange(filter, true);

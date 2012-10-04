@@ -31,7 +31,7 @@ public interface Screen extends Module, NotificationListener {
 
   void setRootPanel(LayoutPanel rootPanel);
   
-  void showGrid(Object data, String... cols);
+  void showGrid(Widget grid);
 
   void showInfo();
 

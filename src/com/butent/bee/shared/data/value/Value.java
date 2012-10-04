@@ -3,7 +3,6 @@ package com.butent.bee.shared.data.value;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -18,7 +17,7 @@ import java.math.BigDecimal;
  * {@code DateTimeValue}, {@code DateValue}, {@code NumberValue}, {@code TextValue},
  * {@code TimeOfDayValue} has {@code Value} as a superclass.
  */
-public abstract class Value implements Comparable<Value>, Transformable, BeeSerializable {
+public abstract class Value implements Comparable<Value>, BeeSerializable {
 
   public static Value getNullValueFromValueType(ValueType type) {
     switch (type) {
@@ -191,7 +190,8 @@ public abstract class Value implements Comparable<Value>, Transformable, BeeSeri
     return Codec.beeSerialize(new Object[] {getType().getTypeCode(), value});
   }
 
-  public abstract String transform();
+  @Override
+  public abstract String toString();
   
   protected int precompareTo(Value o) {
     if (this == o) {

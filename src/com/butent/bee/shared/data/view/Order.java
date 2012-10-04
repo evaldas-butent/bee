@@ -7,7 +7,6 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeSerializable;
-import com.butent.bee.shared.Transformable;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
@@ -22,7 +21,7 @@ import java.util.List;
  * Implements sorting functionality in data objects.
  */
 
-public class Order implements BeeSerializable, Transformable {
+public class Order implements BeeSerializable {
 
   public static final String SORT_ASCENDING = "ascending";
   public static final String SORT_DESCENDING = "descending";
@@ -42,7 +41,7 @@ public class Order implements BeeSerializable, Transformable {
         || BeeUtils.isPrefix(SORT_DESCENDING, s);
   }
 
-  public class Column implements BeeSerializable, Transformable {
+  public class Column implements BeeSerializable {
 
     private final String name;
     private final List<String> sources;
@@ -112,10 +111,10 @@ public class Order implements BeeSerializable, Transformable {
     }
 
     @Override
-    public String transform() {
+    public String toString() {
       StringBuilder sb = new StringBuilder(getName());
       if (getSources().size() != 1 || !BeeUtils.same(getName(), getSources().get(0))) {
-        sb.append(BeeConst.CHAR_EQ).append(BeeUtils.transform(getSources()));
+        sb.append(BeeConst.CHAR_EQ).append(getSources());
       }
       if (!isAscending()) {
         sb.append(BeeConst.CHAR_SPACE).append(SORT_DESCENDING);
@@ -319,12 +318,7 @@ public class Order implements BeeSerializable, Transformable {
 
   @Override
   public String toString() {
-    return transform();
-  }
-
-  @Override
-  public String transform() {
-    return BeeUtils.transformCollection(getColumns(), BeeConst.DEFAULT_LIST_SEPARATOR);
+    return BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, getColumns());
   }
 
   private Column find(String name) {

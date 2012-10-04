@@ -175,8 +175,9 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   }
 
   public JustDate getDate(int rowIndex, int colIndex) {
-    return TimeUtils.toDateOrNull(BeeUtils.transform(getLong(rowIndex, colIndex)
-        / TimeUtils.MILLIS_PER_DAY));
+    Long value = getLong(rowIndex, colIndex);    
+    return (value == null) 
+        ? null : TimeUtils.toDateOrNull(BeeUtils.toString(value / TimeUtils.MILLIS_PER_DAY));
   }
 
   public JustDate getDate(int rowIndex, String colName) {

@@ -60,26 +60,12 @@ public class TestPair {
   @Test
   public final void testToString() {
     Pair p = Pair.of(1.2, "a");
-    assertEquals("1.2, a", p.toString());
+    assertEquals("1.2,a", p.toString());
 
     p = Pair.of(5, null);
     assertEquals("5", p.toString());
 
     p = Pair.of(7, '\0');
-    assertEquals("7, \0", p.toString());
+    assertEquals("7,\0", p.toString());
   }
-
-  @SuppressWarnings({"rawtypes"})
-  @Test
-  public final void testTransform() {
-    Pair p = Pair.of("a", 1.2);
-    assertEquals("a, 1.2", p.transform());
-
-    p = Pair.of(null, 5);
-    assertEquals("5", p.transform());
-
-    p = Pair.of('\0', 7);
-    assertEquals("\0, 7", p.transform());
-  }
-
 }
