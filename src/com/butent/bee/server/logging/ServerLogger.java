@@ -2,6 +2,7 @@ package com.butent.bee.server.logging;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.BeeLoggerWrapper;
 import com.butent.bee.shared.logging.LogUtils.LogLevel;
 import com.butent.bee.shared.utils.ArrayUtils;
 
@@ -15,6 +16,7 @@ import java.util.Properties;
 
 public class ServerLogger implements BeeLogger {
 
+  private static final String FQCN = BeeLoggerWrapper.class.getName();
   private static final String LOG4J_PROPERTIES = "log4j.properties";
   private static boolean loadedConfiguration = false;
   private static boolean busy = false;
@@ -48,30 +50,22 @@ public class ServerLogger implements BeeLogger {
 
   @Override
   public void debug(Object... messages) {
-    if (logger.isEnabledFor(Level.DEBUG)) {
-      logger.debug(ArrayUtils.joinWords(messages));
-    }
+    logInternal(Level.DEBUG, null, messages);
   }
 
   @Override
   public void error(Object... messages) {
-    if (logger.isEnabledFor(Level.ERROR)) {
-      logger.error(ArrayUtils.joinWords(messages));
-    }
+    logInternal(Level.ERROR, null, messages);
   }
 
   @Override
   public void error(Throwable ex, Object... messages) {
-    if (logger.isEnabledFor(Level.ERROR)) {
-      logger.error(ArrayUtils.joinWords(messages), ex);
-    }
+    logInternal(Level.ERROR, ex, messages);
   }
 
   @Override
   public void info(Object... messages) {
-    if (logger.isEnabledFor(Level.INFO)) {
-      logger.info(ArrayUtils.joinWords(messages));
-    }
+    logInternal(Level.INFO, null, messages);
   }
 
   @Override
@@ -94,8 +88,12 @@ public class ServerLogger implements BeeLogger {
 
   @Override
   public void warning(Object... messages) {
-    if (logger.isEnabledFor(Level.WARN)) {
-      logger.warn(ArrayUtils.joinWords(messages));
+    logInternal(Level.WARN, null, messages);
+  }
+
+  private void logInternal(Level level, Throwable ex, Object... messages) {
+    if (logger.isEnabledFor(level)) {
+      logger.log(FQCN, level, ArrayUtils.joinWords(messages), ex);
     }
   }
 }

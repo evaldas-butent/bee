@@ -16,8 +16,10 @@ public class SMTPProtocolClientHandler extends TextBasedProtocolClientHandler {
   }
 
   @Override
-  public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+  public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
     String msg = (String) e.getMessage();
+
+    logger.debug("SMTP MR:", msg);
 
     if (state == 3) {
       if (msg.startsWith("250")) {
@@ -35,6 +37,9 @@ public class SMTPProtocolClientHandler extends TextBasedProtocolClientHandler {
   @Override
   public void writeRequested(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
     String msg = (String) e.getMessage();
+
+    logger.debug("SMTP WR:", msg);
+
     if (state == 0 && msg.toUpperCase().startsWith("DATA")) {
       state = 1;
       mailBody = "";
@@ -43,7 +48,7 @@ public class SMTPProtocolClientHandler extends TextBasedProtocolClientHandler {
       if (state == 1 && msg.equals(".\r\n")) {
         state = 3;
       } else if (state == 1) {
-        mailBody += msg;
+        mailBody += msg.startsWith("..") ? msg.substring(1) : msg;
       }
     }
     super.writeRequested(ctx, e);

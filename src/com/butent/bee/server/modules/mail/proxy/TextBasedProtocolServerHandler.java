@@ -49,8 +49,7 @@ public abstract class TextBasedProtocolServerHandler extends SimpleChannelHandle
   }
 
   @Override
-  public void channelInterestChanged(ChannelHandlerContext ctx, ChannelStateEvent e)
-      throws Exception {
+  public void channelInterestChanged(ChannelHandlerContext ctx, ChannelStateEvent e) {
     if (outboundChannel != null) {
       // If inboundChannel is not saturated anymore, continue accepting
       // the incoming traffic from the outboundChannel.
@@ -63,7 +62,7 @@ public abstract class TextBasedProtocolServerHandler extends SimpleChannelHandle
   }
 
   @Override
-  public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+  public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) {
     final Channel inboundChannel = e.getChannel();
     inboundChannel.setReadable(false);
     TextBasedProtocolClient cli = getClientInstance(inboundChannel, trafficLock);
@@ -72,7 +71,7 @@ public abstract class TextBasedProtocolServerHandler extends SimpleChannelHandle
 
     cli.getFuture().addListener(new ChannelFutureListener() {
       @Override
-      public void operationComplete(ChannelFuture future) throws Exception {
+      public void operationComplete(ChannelFuture future) {
         if (future.isSuccess()) {
           inboundChannel.setReadable(true);
         } else {
@@ -83,14 +82,14 @@ public abstract class TextBasedProtocolServerHandler extends SimpleChannelHandle
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+  public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
     logger.debug("Logged server exception", e.getCause());
   }
 
   public abstract TextBasedProtocolClient getClientInstance(Channel inboundChannel, Object tl);
 
   @Override
-  public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+  public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
     String msg = (String) e.getMessage();
 
     synchronized (trafficLock) {

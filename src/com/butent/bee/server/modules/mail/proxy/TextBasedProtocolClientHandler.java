@@ -43,8 +43,7 @@ public abstract class TextBasedProtocolClientHandler extends SimpleChannelHandle
   }
 
   @Override
-  public void channelInterestChanged(ChannelHandlerContext ctx, ChannelStateEvent e)
-      throws Exception {
+  public void channelInterestChanged(ChannelHandlerContext ctx, ChannelStateEvent e) {
     synchronized (trafficLock) {
       if (e.getChannel().isWritable()) {
         serverInChannel.setReadable(true);
@@ -53,13 +52,13 @@ public abstract class TextBasedProtocolClientHandler extends SimpleChannelHandle
   }
 
   @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+  public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
     logger.debug("Logged client exception", e.getCause());
     closeOnFlush(serverInChannel);
   }
 
   @Override
-  public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+  public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
     String msg = (String) e.getMessage();
 
     synchronized (trafficLock) {

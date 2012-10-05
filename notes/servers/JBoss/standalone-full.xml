@@ -44,6 +44,9 @@
                 </security-domain>
             </security-domains>
         </subsystem>
+...
+<!--    <subsystem xmlns="urn:jboss:domain:pojo:1.0"/> -->
+...
     </profile>
 </server>
         

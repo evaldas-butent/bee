@@ -101,7 +101,6 @@ public class MailProxy {
   }
 
   public void processMessage(String message, Protocol protocol) {
-    logger.debug("Got", protocol, "mail:", message);
     mail.storeMail(message, protocol);
   }
 

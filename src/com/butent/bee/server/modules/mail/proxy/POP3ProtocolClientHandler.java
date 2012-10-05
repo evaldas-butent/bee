@@ -16,8 +16,10 @@ public class POP3ProtocolClientHandler extends TextBasedProtocolClientHandler {
   }
 
   @Override
-  public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+  public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
     String msg = (String) e.getMessage();
+
+    logger.debug("POP3 MR:", msg);
 
     if (state == 1 && msg.equals(".")) {
       state = 0;
@@ -30,7 +32,7 @@ public class POP3ProtocolClientHandler extends TextBasedProtocolClientHandler {
         logger.error("POP3 mail receive error: " + msg);
 
       } else if (!msg.startsWith("+OK")) {
-        mailBody += msg;
+        mailBody += (msg.startsWith("..") ? msg.substring(1) : msg) + "\r\n";
       }
     }
     super.messageReceived(ctx, e);
@@ -39,6 +41,8 @@ public class POP3ProtocolClientHandler extends TextBasedProtocolClientHandler {
   @Override
   public void writeRequested(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
     String msg = (String) e.getMessage();
+
+    logger.debug("POP3 WR:", msg);
 
     if (msg.toUpperCase().startsWith("RETR")) {
       state = 1;

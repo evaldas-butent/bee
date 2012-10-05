@@ -42,8 +42,10 @@ public class LogUtils {
   }
 
   static BeeLogger createLogger(String name) {
-    Assert.notNull(loggerFactory);
-    return loggerFactory.getLogger(name);
+    if (loggerFactory != null) {
+      return loggerFactory.getLogger(name);
+    }
+    return null;
   }
 
   private LogUtils() {
