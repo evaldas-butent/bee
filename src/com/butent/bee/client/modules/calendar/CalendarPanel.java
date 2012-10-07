@@ -54,6 +54,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
@@ -68,6 +70,8 @@ import java.util.List;
 public class CalendarPanel extends Complex implements AppointmentEvent.Handler, Presenter, View,
     Printable {
 
+  private static final BeeLogger logger = LogUtils.getLogger(CalendarPanel.class);
+  
   private static final String STYLE_PANEL = "bee-cal-Panel";
   private static final String STYLE_CONTROLS = "bee-cal-Panel-controls";
 
@@ -280,7 +284,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
         break;
 
       default:
-        BeeKeeper.getLog().info(action, "not implemented");
+        logger.info(action, "not implemented");
     }
   }
 

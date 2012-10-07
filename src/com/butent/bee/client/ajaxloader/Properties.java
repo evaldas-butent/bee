@@ -3,7 +3,8 @@ package com.butent.bee.client.ajaxloader;
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 
-import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 
 import java.util.Date;
 
@@ -12,6 +13,9 @@ import java.util.Date;
  */
 
 public class Properties extends JavaScriptObject {
+
+  private static final BeeLogger logger = LogUtils.getLogger(Properties.class);
+  
   public static Properties create() {
     return JavaScriptObject.createObject().cast();
   }
@@ -141,7 +145,7 @@ public class Properties extends JavaScriptObject {
   }-*/;
 
   private void wrongType(String key, String expected, String actual) {
-    BeeKeeper.getLog().severe("Properties.get" + expected + "(" + key +
+    logger.severe("Properties.get" + expected + "(" + key +
         ") failed.  Unexpected type : " + actual + ".");
   }
 }

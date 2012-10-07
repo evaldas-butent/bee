@@ -2,7 +2,6 @@ package com.butent.bee.client.render;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
@@ -10,6 +9,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -32,6 +33,8 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
       return DataUtils.transform(row, index, type);
     }
   }
+
+  private static final BeeLogger logger = LogUtils.getLogger(JoinRenderer.class);
   
   public static final String DEFAULT_SEPARATOR = BeeConst.STRING_SPACE;
   
@@ -63,7 +66,7 @@ public class JoinRenderer extends AbstractCellRenderer implements HasItems {
     
     int index = DataUtils.getColumnIndex(item, dataColumns);
     if (BeeConst.isUndef(index)) {
-      BeeKeeper.getLog().severe(NameUtils.getName(this), "column not found:", item);
+      logger.severe(NameUtils.getName(this), "column not found:", item);
       return;
     }
     

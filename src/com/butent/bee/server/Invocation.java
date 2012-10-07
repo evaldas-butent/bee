@@ -46,7 +46,7 @@ public class Invocation {
     if (JvmUtils.CVF_FAILURE == null) {
       buff.addProperties(JvmUtils.getLoadedClasses());
     } else {
-      buff.add(JvmUtils.CVF_FAILURE);
+      buff.addError(JvmUtils.CVF_FAILURE);
     }
   }
 

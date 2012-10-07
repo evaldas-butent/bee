@@ -6,7 +6,7 @@ import com.google.common.collect.Lists;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.logging.LogUtils.LogLevel;
+import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -215,7 +215,7 @@ public class ResponseObject implements BeeSerializable {
             logger.debug(message.getMessage());
             break;
           case ERROR:
-            logger.error(message.getMessage());
+            logger.severe(message.getMessage());
             break;
           case INFO:
             logger.info(message.getMessage());

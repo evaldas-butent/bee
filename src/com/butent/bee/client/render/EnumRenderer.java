@@ -2,11 +2,12 @@ package com.butent.bee.client.render;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -15,6 +16,8 @@ import java.util.List;
 
 public class EnumRenderer extends AbstractCellRenderer implements HasValueStartIndex {
 
+  private static final BeeLogger logger = LogUtils.getLogger(EnumRenderer.class);
+  
   public static final int DEFAULT_VALUE_START_INDEX = 0;
   
   private final List<String> captions = Lists.newArrayList();
@@ -42,7 +45,7 @@ public class EnumRenderer extends AbstractCellRenderer implements HasValueStartI
     super(dataIndex, dataColumn);
     
     if (BeeUtils.isEmpty(captions)) {
-      BeeKeeper.getLog().severe(NameUtils.getName(this), ": no captions available");
+      logger.severe(NameUtils.getName(this), ": no captions available");
     } else {
       this.captions.addAll(captions);
     }

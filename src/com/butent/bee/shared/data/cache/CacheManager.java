@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasExtendedInfo;
@@ -22,6 +21,8 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -33,6 +34,8 @@ import java.util.Set;
 
 public class CacheManager implements HandlesAllDataEvents {
 
+  private static final BeeLogger logger = LogUtils.getLogger(CacheManager.class);
+  
   private class Entry implements HasExtendedInfo, HasViewName {
 
     private final DataInfo dataInfo;
@@ -99,8 +102,8 @@ public class CacheManager implements HandlesAllDataEvents {
       for (Iterator<CachedQuery> it = queries.iterator(); it.hasNext();) {
         CachedQuery query = it.next();
         if (query.containsColumn(columnId)) {
-          BeeKeeper.getLog().info("Cache", getViewName(), "update column", columnId);
-          BeeKeeper.getLog().info("invalidated query", query.getStrFilter(), query.getStrOrder());
+          logger.info("Cache", getViewName(), "update column", columnId);
+          logger.info("invalidated query", query.getStrFilter(), query.getStrOrder());
 
           query.invalidate();
           it.remove();
@@ -146,7 +149,7 @@ public class CacheManager implements HandlesAllDataEvents {
             it.remove();
           }
         }
-        BeeKeeper.getLog().info("Cache", getViewName(), "deleted row", id, "in",
+        logger.info("Cache", getViewName(), "deleted row", id, "in",
             System.currentTimeMillis() - millis);
       }
       return ok;
@@ -233,7 +236,7 @@ public class CacheManager implements HandlesAllDataEvents {
       }
       queries.clear();
 
-      BeeKeeper.getLog().info("Cache", getViewName(), "inserted row", row.getId());
+      logger.info("Cache", getViewName(), "inserted row", row.getId());
     }
 
     private void invalidate() {
@@ -277,9 +280,9 @@ public class CacheManager implements HandlesAllDataEvents {
 
       if (ok) {
         checkColumnUpdate(columnId);
-        BeeKeeper.getLog().info("Cache", getViewName(), "updated", rowId, columnId, value);
+        logger.info("Cache", getViewName(), "updated", rowId, columnId, value);
       } else {
-        BeeKeeper.getLog().warning("Cache", getViewName(), "column", columnId, "not found");
+        logger.warning("Cache", getViewName(), "column", columnId, "not found");
       }
       return ok;
     }
@@ -306,7 +309,7 @@ public class CacheManager implements HandlesAllDataEvents {
       }
 
       if (ok) {
-        BeeKeeper.getLog().info("Cache", getViewName(), "updated row", newRow.getId());
+        logger.info("Cache", getViewName(), "updated row", newRow.getId());
       }
       return ok;
     }
@@ -424,7 +427,7 @@ public class CacheManager implements HandlesAllDataEvents {
         cnt++;
       }
     }
-    BeeKeeper.getLog().info("Cache", key, "deleted", cnt, "rows", "of", event.getRows().size());
+    logger.info("Cache", key, "deleted", cnt, "rows", "of", event.getRows().size());
   }
 
   public void onRowDelete(RowDeleteEvent event) {
@@ -446,7 +449,7 @@ public class CacheManager implements HandlesAllDataEvents {
     if (contains(key)) {
       get(key).invalidate();
       entries.remove(normalizeKey(key));
-      BeeKeeper.getLog().info("Cache", key, "removed");
+      logger.info("Cache", key, "removed");
     }
   }
 

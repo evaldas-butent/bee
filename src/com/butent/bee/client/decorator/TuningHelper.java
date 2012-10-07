@@ -5,7 +5,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.Style.Unit;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.ComputedStyles;
 import com.butent.bee.client.dom.DomUtils;
@@ -13,6 +12,8 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -20,6 +21,8 @@ import java.util.List;
 
 public class TuningHelper {
   
+  private static final BeeLogger logger = LogUtils.getLogger(TuningHelper.class);
+
   private static final String CLASS_NAME = "className";
   private static final String STYLE = "style";
 
@@ -42,15 +45,15 @@ public class TuningHelper {
     }
     
     if (root == null) {
-      BeeKeeper.getLog().warning("updateActor: not an element", obj);
+      logger.warning("updateActor: not an element", obj);
       return;
     }
     if (BeeUtils.isEmpty(role)) {
-      BeeKeeper.getLog().severe("updateActor: role not specified");
+      logger.severe("updateActor: role not specified");
       return;
     }
     if (BeeUtils.isEmpty(name)) {
-      BeeKeeper.getLog().severe("updateActor: property not specified");
+      logger.severe("updateActor: property not specified");
       return;
     }
     
@@ -62,7 +65,7 @@ public class TuningHelper {
     List<Element> actors = getActors(root, role, null, null);
     if (actors.isEmpty()) {
       if (Global.isDebug()) {
-        BeeKeeper.getLog().warning("updateActor:", root.getId(), role, name, value,
+        logger.warning("updateActor:", root.getId(), role, name, value,
             "no actors found");
       }
       return;
@@ -86,7 +89,7 @@ public class TuningHelper {
       if (BeeUtils.allNotEmpty(role, value)) {
         List<Element> actors = getActors(root, role);
         if (actors.isEmpty()) {
-          BeeKeeper.getLog().warning("classes", classes, "role", role, "no actors found");
+          logger.warning("classes", classes, "role", role, "no actors found");
           continue;
         }
         for (Element actor : actors) {
@@ -109,7 +112,7 @@ public class TuningHelper {
       if (BeeUtils.allNotEmpty(role, value)) {
         List<Element> actors = getActors(root, role);
         if (actors.isEmpty()) {
-          BeeKeeper.getLog().warning("styles", styles, "role", role, "no actors found");
+          logger.warning("styles", styles, "role", role, "no actors found");
           continue;
         }
         for (Element actor : actors) {

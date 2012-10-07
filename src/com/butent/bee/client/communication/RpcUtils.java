@@ -4,12 +4,13 @@ import com.google.gwt.http.client.Header;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.logging.LogUtils.LogLevel;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogLevel;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -28,6 +29,9 @@ import java.util.Map;
  */
 
 public class RpcUtils {
+
+  private static final BeeLogger logger = LogUtils.getLogger(RpcUtils.class);
+  
   public static String addQueryString(String url, String qs) {
     Assert.notEmpty(url);
 
@@ -88,20 +92,20 @@ public class RpcUtils {
           msg = BeeUtils.joinWords(date.toTimeString(), message.getMessage());
         }
         if (level == null) {
-          BeeKeeper.getLog().info(msg);
+          logger.info(msg);
         } else {
           switch (level) {
             case DEBUG:
-              BeeKeeper.getLog().debug(msg);
+              logger.debug(msg);
               break;
             case ERROR:
-              BeeKeeper.getLog().severe(msg);
+              logger.severe(msg);
               break;
             case INFO:
-              BeeKeeper.getLog().info(msg);
+              logger.info(msg);
               break;
             case WARNING:
-              BeeKeeper.getLog().warning(msg);
+              logger.warning(msg);
               break;
           }
         }

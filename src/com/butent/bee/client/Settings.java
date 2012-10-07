@@ -5,6 +5,7 @@ import com.google.gwt.i18n.client.Dictionary;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 
@@ -36,6 +37,11 @@ public class Settings {
 
   public static int getLogCapacity() {
     return getPropertyInt("logCapacity");
+  }
+
+  public static LogLevel getLogLevel() {
+    String value = getProperty("logLevel");
+    return BeeUtils.isEmpty(value) ? null : LogLevel.parse(value);
   }
   
   public static String getProperty(String name) {

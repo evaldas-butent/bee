@@ -305,7 +305,7 @@ public class UserData implements BeeSerializable, HasInfo {
     Assert.notNull(state);
 
     if (!BeeUtils.contains(type.getRegisteredStates(), state)) {
-      logger.error("State", BeeUtils.bracket(state.name()),
+      logger.severe("State", BeeUtils.bracket(state.name()),
           "is not registered for type", BeeUtils.bracket(type.name()));
       return false;
     }

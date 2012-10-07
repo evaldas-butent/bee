@@ -7,12 +7,14 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.communication.ResponseMessage;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogLevel;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * Enables to show response's xml info and to apply unicode test to response messages.
@@ -20,6 +22,8 @@ import java.util.logging.Level;
 
 public class ResponseHandler {
 
+  private static final BeeLogger logger = LogUtils.getLogger(ResponseHandler.class);
+  
   public static void showXmlInfo(int pc, int[] sizes, String content) {
     Assert.betweenInclusive(pc, 1, 3);
     Assert.notNull(sizes);
@@ -74,12 +78,12 @@ public class ResponseHandler {
     boolean ok = (reqLen == respLen && reqTxt.equals(respTxt));
 
     if (!ok) {
-      BeeKeeper.getLog().log(reqLen == respLen ? Level.INFO : Level.WARNING,
+      logger.log(reqLen == respLen ? LogLevel.INFO : LogLevel.WARNING,
           "length req", reqLen, "resp", respLen);
 
       for (int i = 0; i < respLen && i < reqLen; i++) {
         if (reqTxt.charAt(i) != respTxt.charAt(i)) {
-          BeeKeeper.getLog().warning("charAt", i,
+          logger.warning("charAt", i,
               "req", Integer.toHexString(reqTxt.charAt(i)),
               BeeUtils.bracket(reqTxt.charAt(i)),
               "resp", Integer.toHexString(respTxt.charAt(i)),
@@ -95,7 +99,7 @@ public class ResponseHandler {
       for (int i = 0; i < reqLen; i++) {
         if (i % 10 == 0) {
           if (sb.length() > 0) {
-            BeeKeeper.getLog().info(sb);
+            logger.info(sb);
             sb.setLength(0);
           }
           sb.append(i);
@@ -106,7 +110,7 @@ public class ResponseHandler {
       }
 
       if (sb.length() > 0) {
-        BeeKeeper.getLog().info(sb);
+        logger.info(sb);
       }
     }
 
@@ -116,7 +120,7 @@ public class ResponseHandler {
     for (ResponseMessage message : messages) {
       arr = BeeUtils.split(message.getMessage(), BeeConst.CHAR_SPACE);
       if (ArrayUtils.length(arr) != 2) {
-        BeeKeeper.getLog().warning(ArrayUtils.length(arr), message);
+        logger.warning(ArrayUtils.length(arr), message);
         continue;
       }
 
@@ -132,9 +136,9 @@ public class ResponseHandler {
       }
 
       if (v.equals(z)) {
-        BeeKeeper.getLog().info(k, v);
+        logger.info(k, v);
       } else {
-        BeeKeeper.getLog().warning(k, "req", z, "resp", v);
+        logger.warning(k, "req", z, "resp", v);
       }
     }
   }

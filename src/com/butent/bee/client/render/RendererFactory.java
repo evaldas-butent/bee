@@ -2,7 +2,6 @@ package com.butent.bee.client.render;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.shared.Assert;
@@ -12,6 +11,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.ui.Relation;
@@ -24,6 +25,8 @@ import java.util.List;
 
 public class RendererFactory {
 
+  private static final BeeLogger logger = LogUtils.getLogger(RendererFactory.class);
+  
   public static AbstractCellRenderer createRenderer(String viewName, List<String> renderColumns) {
     return createRenderer(viewName, renderColumns, null);
   }
@@ -94,7 +97,7 @@ public class RendererFactory {
 
     IsColumn dataColumn = BeeUtils.getQuietly(dataColumns, dataIndex);
     if (dataColumn == null && type.requiresSource()) {
-      BeeKeeper.getLog().warning("renderer", type.getTypeCode(), "requires source");
+      logger.warning("renderer", type.getTypeCode(), "requires source");
       return null;
     }
 
@@ -117,7 +120,7 @@ public class RendererFactory {
         if (!BeeUtils.isEmpty(itemKey)) {
           renderer = new EnumRenderer(dataIndex, dataColumn, itemKey);
         } else {
-          BeeKeeper.getLog().warning("EnumRenderer: item key not specified");
+          logger.warning("EnumRenderer: item key not specified");
         }
         break;
 
@@ -126,7 +129,7 @@ public class RendererFactory {
         break;
       
       default:
-        BeeKeeper.getLog().severe("renderer", type.name(), "not supported");
+        logger.severe("renderer", type.name(), "not supported");
     }
 
     if (renderer instanceof HasValueStartIndex && description.getValueStartIndex() != null) {
@@ -169,14 +172,14 @@ public class RendererFactory {
       }
       
       if (type == null) {
-        BeeKeeper.getLog().severe("token source not recognized:", source);
+        logger.severe("token source not recognized:", source);
       } else {
         columnTokens.add(ColumnToken.create(index, type, token));
       }
     }
     
     if (columnTokens.isEmpty()) {
-      BeeKeeper.getLog().severe("cannot create TokenRenderer");
+      logger.severe("cannot create TokenRenderer");
       return null;
     }
     return new TokenRenderer(columnTokens);

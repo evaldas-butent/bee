@@ -5,7 +5,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.grid.GridFactory;
@@ -32,6 +31,8 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -42,6 +43,8 @@ public class DocumentHandler {
 
   private static class CreationHandler extends AbstractFormCallback {
 
+    private static final BeeLogger logger = LogUtils.getLogger(CreationHandler.class);
+    
     private final FileCollector collector = new FileCollector();
 
     private CreationHandler() {
@@ -141,7 +144,7 @@ public class DocumentHandler {
         if (index >= 0) {
           newRow.setValue(index, oldRow.getString(index));
         } else {
-          BeeKeeper.getLog().warning("copyValues: column", colName, "not found");
+          logger.warning("copyValues: column", colName, "not found");
         }
       }
     }

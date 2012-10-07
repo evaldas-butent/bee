@@ -21,6 +21,8 @@ import com.butent.bee.client.visualization.visualizations.MotionChart;
 import com.butent.bee.client.visualization.visualizations.OrgChart;
 import com.butent.bee.client.visualization.visualizations.Table;
 import com.butent.bee.client.visualization.visualizations.corechart.CoreChart;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -29,18 +31,21 @@ import com.butent.bee.shared.utils.BeeUtils;
  */
 
 public class Showcase {
+
+  private static final BeeLogger logger = LogUtils.getLogger(Showcase.class);
+  
   private static boolean pomInjected = false;
   private static boolean pomLoaded = false;
 
   public static void open() {
-    BeeKeeper.getLog().info("loading api");
+    logger.info("loading api");
     final long start = System.currentTimeMillis();
 
     injectPom();
 
     VisualizationUtils.loadVisualizationApi(new Runnable() {
       public void run() {
-        BeeKeeper.getLog().info(TimeUtils.elapsedSeconds(start), "api loaded");
+        logger.info(TimeUtils.elapsedSeconds(start), "api loaded");
         LeftTabPanel panel = new LeftTabPanel();
 
         panel.add(new AnnotatedDemo(), "AnnotatedTimeLine");
@@ -69,7 +74,7 @@ public class Showcase {
 
         panel.init("AreaChart");
         BeeKeeper.getScreen().updateActivePanel(panel, ScrollBars.BOTH);
-        BeeKeeper.getLog().info(TimeUtils.elapsedSeconds(start), "showcase ready");
+        logger.info(TimeUtils.elapsedSeconds(start), "showcase ready");
       }
     }, AnnotatedTimeLine.PACKAGE, CoreChart.PACKAGE, Gauge.PACKAGE, GeoMap.PACKAGE,
         ImageChart.PACKAGE, ImageLineChart.PACKAGE, ImageAreaChart.PACKAGE, ImageBarChart.PACKAGE,

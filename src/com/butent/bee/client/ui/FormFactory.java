@@ -32,6 +32,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.EditorDescription;
 import com.butent.bee.shared.ui.EditorType;
@@ -103,6 +105,8 @@ public class FormFactory {
     void onSuccess(WidgetDescription result);
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(FormFactory.class);
+  
   public static final String TAG_FORM = "Form";
 
   private static final String ATTR_TYPE = "type";
@@ -172,7 +176,7 @@ public class FormFactory {
 
     List<Element> children = XmlUtils.getChildrenElements(parent);
     if (BeeUtils.isEmpty(children)) {
-      BeeKeeper.getLog().severe(messagePrefix, "element has no children");
+      logger.severe(messagePrefix, "element has no children");
       return null;
     }
 
@@ -190,18 +194,18 @@ public class FormFactory {
     }
 
     if (count <= 0) {
-      BeeKeeper.getLog().severe(messagePrefix, "root widget not found");
+      logger.severe(messagePrefix, "root widget not found");
       return null;
     }
     if (count > 1) {
-      BeeKeeper.getLog().severe(messagePrefix, "element has", count, "root widgets");
+      logger.severe(messagePrefix, "element has", count, "root widgets");
       return null;
     }
 
     Widget widget = formWidget.create(root, viewName, columns, widgetDescriptionCallback,
         widgetCallback);
     if (widget == null) {
-      BeeKeeper.getLog().severe(messagePrefix, "cannot create root widget", formWidget);
+      logger.severe(messagePrefix, "cannot create root widget", formWidget);
     }
     return widget;
   }
@@ -351,7 +355,7 @@ public class FormFactory {
     }
     Element formElement = xmlDoc.getDocumentElement();
     if (formElement == null) {
-      BeeKeeper.getLog().severe("xml form element not found");
+      logger.severe("xml form element not found");
       return null;
     }
 

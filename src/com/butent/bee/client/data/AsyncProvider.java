@@ -24,6 +24,8 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -36,6 +38,8 @@ import java.util.Map;
 
 public class AsyncProvider extends Provider {
 
+  private static final BeeLogger logger = LogUtils.getLogger(AsyncProvider.class);
+  
   private class Callback implements Queries.RowSetCallback {
     private final Range<Integer> queryRange;
 
@@ -59,13 +63,13 @@ public class AsyncProvider extends Provider {
         if (pendingRequests.containsKey(id)) {
           pendingRequests.remove(id);
         } else {
-          BeeKeeper.getLog().info("response", id, "ignored");
+          logger.info("response", id, "ignored");
           return;
         }
       }
 
       if (getPageStart() != getDisplayOffset() || getPageSize() != getDisplayLimit()) {
-        BeeKeeper.getLog().warning("range changed:", getDisplayOffset(), getDisplayLimit(),
+        logger.warning("range changed:", getDisplayOffset(), getDisplayLimit(),
             getPageStart(), getPageSize());
         return;
       }

@@ -8,13 +8,14 @@ import com.google.common.collect.Table;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.HasWidgets;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.modules.calendar.Appointment;
 import com.butent.bee.client.modules.calendar.CalendarUtils;
 import com.butent.bee.client.modules.calendar.CalendarStyleManager;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -25,6 +26,8 @@ import java.util.List;
 
 public class CalendarLayoutManager {
 
+  private static final BeeLogger logger = LogUtils.getLogger(CalendarLayoutManager.class);
+  
   private static final double SIMPLE_MARGIN_LEFT = 0.3;
   private static final double SIMPLE_MARGIN_RIGHT = 0.3;
 
@@ -232,7 +235,7 @@ public class CalendarLayoutManager {
       }
 
       if (BeeConst.isUndef(columnStart) || columnSpan <= 0) {
-        BeeKeeper.getLog().warning("cannot lay out multi day appointment", date, days,
+        logger.warning("cannot lay out multi day appointment", date, days,
             adapter.getAppointment().getId());
         continue;
       }

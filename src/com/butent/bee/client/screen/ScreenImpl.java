@@ -23,6 +23,8 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
+import com.butent.bee.client.logging.ClientLogger;
+import com.butent.bee.client.logging.PanelHandler;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.utils.ServiceCommand;
 import com.butent.bee.client.widget.BeeCheckBox;
@@ -31,6 +33,8 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeResource;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -39,22 +43,28 @@ import com.butent.bee.shared.utils.NameUtils;
  */
 
 public class ScreenImpl implements Screen {
+
+  private static final BeeLogger logger = LogUtils.getLogger(ScreenImpl.class);
   
+  protected static PanelHandler getLogHandler() {
+    return (logger instanceof ClientLogger) ? ((ClientLogger) logger).getPanelHandler() : null;
+  }
+
   private LayoutPanel rootPanel;
-
   private Split screenPanel = null;
-  private Workspace workspace = null;
 
+  private Workspace workspace = null;
   private HasWidgets commandPanel = null;
+
   private HasWidgets menuPanel = null;
 
   private Widget signature = null;
-
   private BeeCheckBox logToggle = null;
-  private final String logVisible = "log-visible";
 
-  private Notification notification = null;
+  private final String logVisible = "log-visible";
   
+  private Notification notification = null;
+
   public ScreenImpl() {
   }
 
@@ -62,7 +72,7 @@ public class ScreenImpl implements Screen {
   public void addCommandItem(Widget widget) {
     Assert.notNull(widget);
     if (getCommandPanel() == null) {
-      BeeKeeper.getLog().severe(getName(), "command panel not available");
+      logger.severe(getName(), "command panel not available");
     } else {
       widget.addStyleName("bee-MainCommandPanelItem");
       getCommandPanel().add(widget);
@@ -164,13 +174,13 @@ public class ScreenImpl implements Screen {
   public void showInfo() {
     getWorkspace().showInfo();
   }
-
+  
   @Override
   public void showResource(BeeResource resource) {
     Assert.notNull(resource);
     updateActivePanel(new ResourceEditor(resource));
   }
-  
+
   @Override
   public void start() {
     createUi();
@@ -237,7 +247,10 @@ public class ScreenImpl implements Screen {
     setScreenPanel(p);
 
     if (getLogToggle() != null && !getLogToggle().getValue()) {
-      BeeKeeper.getLog().hide();
+      PanelHandler handler = getLogHandler();
+      if (handler != null) {
+        handler.setVisible(false);
+      }
     }
     
     RootPanel.get().add(createLogo());
@@ -262,7 +275,8 @@ public class ScreenImpl implements Screen {
   }
 
   protected Widget initEast() {
-    return BeeKeeper.getLog().getArea();
+    PanelHandler handler = getLogHandler();
+    return (handler == null) ? null : handler.getPanel();
   }
 
   protected Widget initNorth() {
@@ -310,11 +324,11 @@ public class ScreenImpl implements Screen {
 
     return panel;
   }
-
+  
   protected Widget initSouth() {
     return null;
   }
-  
+
   protected Widget initWest() {
     TabbedPages tp = new TabbedPages();
 
@@ -333,10 +347,9 @@ public class ScreenImpl implements Screen {
 
     log.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
       public void onValueChange(ValueChangeEvent<Boolean> event) {
-        if (event.getValue()) {
-          BeeKeeper.getLog().show();
-        } else {
-          BeeKeeper.getLog().hide();
+        PanelHandler handler = getLogHandler();
+        if (handler != null) {
+          handler.setVisible(event.getValue());
         }
         BeeKeeper.getStorage().setItem(getLogVisible(), BeeUtils.toString(event.getValue()));
       }
@@ -366,11 +379,11 @@ public class ScreenImpl implements Screen {
   protected void setNotification(Notification notification) {
     this.notification = notification;
   }
-
+  
   protected void setScreenPanel(Split screenPanel) {
     this.screenPanel = screenPanel;
   }
-  
+
   protected void setSignature(Widget signature) {
     this.signature = signature;
   }
@@ -395,7 +408,7 @@ public class ScreenImpl implements Screen {
     container.setWidget(logo);
     return container;
   }
-
+  
   private BeeCheckBox getLogToggle() {
     return logToggle;
   }

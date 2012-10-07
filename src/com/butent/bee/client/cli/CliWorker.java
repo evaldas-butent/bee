@@ -74,6 +74,8 @@ import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.logging.ClientLogger;
+import com.butent.bee.client.logging.PanelHandler;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.CompositeService;
@@ -108,6 +110,9 @@ import com.butent.bee.shared.data.StringMatrix;
 import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogLevel;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
@@ -125,7 +130,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 
 import elemental.js.JsBrowser;
 import elemental.js.css.JsCSSRuleList;
@@ -138,6 +142,8 @@ import elemental.js.stylesheets.JsStyleSheetList;
 
 public class CliWorker {
 
+  private static final BeeLogger logger = LogUtils.getLogger(CliWorker.class);
+  
   private static boolean cornified = false;
 
   public static void execute(String line) {
@@ -255,7 +261,7 @@ public class CliWorker {
     } else if (z.equals("md5")) {
       digest(v);
     } else if (z.equals("nf") && arr.length >= 3) {
-      BeeKeeper.getLog().info(NumberFormat.getFormat(arr[1]).format(BeeUtils.toDouble(arr[2])));
+      logger.info(NumberFormat.getFormat(arr[1]).format(BeeUtils.toDouble(arr[2])));
     } else if (z.equals("notify") && arr.length >= 2) {
       showNotes(args);
     } else if (BeeUtils.inList(z, "p", "prop")) {
@@ -332,19 +338,26 @@ public class CliWorker {
 
   private static void clear(String args) {
     if (BeeUtils.isEmpty(args) || BeeUtils.startsSame(args, "log")) {
-      BeeKeeper.getLog().clear();
+      PanelHandler handler = getLogHandler();
+      if (handler != null) {
+        handler.clear();
+      }
+
     } else if (BeeUtils.startsSame(args, "grids")) {
       GridFactory.clearDescriptionCache();
-      BeeKeeper.getLog().debugWithSeparator("grid cache cleared");
+      debugWithSeparator("grid cache cleared");
+    
     } else if (BeeUtils.startsSame(args, "forms")) {
       FormFactory.clearDescriptionCache();
-      BeeKeeper.getLog().debugWithSeparator("form cache cleared");
+      debugWithSeparator("form cache cleared");
+    
     } else if (BeeUtils.startsSame(args, "cache")) {
       Global.getCache().clear();
-      BeeKeeper.getLog().debugWithSeparator("cache cleared");
+      debugWithSeparator("cache cleared");
+    
     } else if (BeeUtils.startsSame(args, "rpc")) {
       BeeKeeper.getRpc().getRpcList().clear();
-      BeeKeeper.getLog().debugWithSeparator("rpc list cleared");
+      debugWithSeparator("rpc list cleared");
     }
   }
 
@@ -378,6 +391,11 @@ public class CliWorker {
     } catch (err) {
     }
   }-*/;
+  
+  private static void debugWithSeparator(String message) {
+    logger.debug(message);
+    logger.addSeparator();
+  }
 
   private static void digest(String v) {
     String src = null;
@@ -403,11 +421,11 @@ public class CliWorker {
     }
 
     if (src.length() > 100) {
-      BeeKeeper.getLog().info("Source length", src.length());
+      logger.info("Source length", src.length());
     } else {
-      BeeKeeper.getLog().info(Codec.escapeUnicode(src));
+      logger.info(Codec.escapeUnicode(src));
     }
-    BeeKeeper.getLog().info(BeeConst.CLIENT, Codec.md5(src));
+    logger.info(BeeConst.CLIENT, Codec.md5(src));
     BeeKeeper.getRpc().makePostRequest(Service.GET_DIGEST, ContentType.HTML, src);
   }
 
@@ -423,7 +441,7 @@ public class CliWorker {
 
     Map<String, String> keyMap = AjaxKeyRepository.getKeys();
     if (BeeUtils.isEmpty(keyMap)) {
-      BeeKeeper.getLog().warning("api key repository is empty");
+      logger.warning("api key repository is empty");
       return;
     }
 
@@ -493,120 +511,120 @@ public class CliWorker {
       msl.put(s, s);
     }
 
-    BeeKeeper.getLog().debug(size, query);
+    logger.debug(size, query);
 
     double x = 0;
     long start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += lia.indexOf((int) (Math.random() * size));
     }
-    BeeKeeper.getLog().debug("lia", System.currentTimeMillis() - start, x);
+    logger.debug("lia", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += lla.indexOf((long) (Math.random() * size));
     }
-    BeeKeeper.getLog().debug("lla", System.currentTimeMillis() - start, x);
+    logger.debug("lla", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += lda.indexOf(Math.floor(Math.random() * size));
     }
-    BeeKeeper.getLog().debug("lda", System.currentTimeMillis() - start, x);
+    logger.debug("lda", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += lsa.indexOf(Integer.toString((int) (Math.random() * size)));
     }
-    BeeKeeper.getLog().debug("lsa", System.currentTimeMillis() - start, x);
+    logger.debug("lsa", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += lil.indexOf((int) (Math.random() * size));
     }
-    BeeKeeper.getLog().debug("lil", System.currentTimeMillis() - start, x);
+    logger.debug("lil", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += lll.indexOf((long) (Math.random() * size));
     }
-    BeeKeeper.getLog().debug("lll", System.currentTimeMillis() - start, x);
+    logger.debug("lll", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += ldl.indexOf(Math.floor(Math.random() * size));
     }
-    BeeKeeper.getLog().debug("ldl", System.currentTimeMillis() - start, x);
+    logger.debug("ldl", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += lsl.indexOf(Integer.toString((int) (Math.random() * size)));
     }
-    BeeKeeper.getLog().debug("lsl", System.currentTimeMillis() - start, x);
+    logger.debug("lsl", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += (mih.get((int) (Math.random() * size)) == null) ? 0 : 1;
     }
-    BeeKeeper.getLog().debug("mih", System.currentTimeMillis() - start, x);
+    logger.debug("mih", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += (mlh.get((long) (Math.random() * size)) == null) ? 0 : 1;
     }
-    BeeKeeper.getLog().debug("mlh", System.currentTimeMillis() - start, x);
+    logger.debug("mlh", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += (mdh.get(Math.floor(Math.random() * size)) == null) ? 0 : 1;
     }
-    BeeKeeper.getLog().debug("mdh", System.currentTimeMillis() - start, x);
+    logger.debug("mdh", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += (msh.get(Integer.toString((int) (Math.random() * size))) == null) ? 0 : 1;
     }
-    BeeKeeper.getLog().debug("msh", System.currentTimeMillis() - start, x);
+    logger.debug("msh", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += (mil.get((int) (Math.random() * size)) == null) ? 0 : 1;
     }
-    BeeKeeper.getLog().debug("mil", System.currentTimeMillis() - start, x);
+    logger.debug("mil", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += (mll.get((long) (Math.random() * size)) == null) ? 0 : 1;
     }
-    BeeKeeper.getLog().debug("mll", System.currentTimeMillis() - start, x);
+    logger.debug("mll", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += (mdl.get(Math.floor(Math.random() * size)) == null) ? 0 : 1;
     }
-    BeeKeeper.getLog().debug("mdl", System.currentTimeMillis() - start, x);
+    logger.debug("mdl", System.currentTimeMillis() - start, x);
 
     x = 0;
     start = System.currentTimeMillis();
     for (int i = 0; i < query; i++) {
       x += (msl.get(Integer.toString((int) (Math.random() * size))) == null) ? 0 : 1;
     }
-    BeeKeeper.getLog().debug("msl", System.currentTimeMillis() - start, x);
-    BeeKeeper.getLog().addSeparator();
+    logger.debug("msl", System.currentTimeMillis() - start, x);
+    logger.addSeparator();
   }
 
   private static void doJdbc() {
@@ -705,27 +723,29 @@ public class CliWorker {
     if (ArrayUtils.length(arr) > 1) {
       String z = arr[1];
 
-      if (BeeUtils.inList(z, BeeConst.STRING_ZERO, BeeConst.STRING_MINUS)) {
-        BeeKeeper.getLog().hide();
+      PanelHandler handler = getLogHandler();
+      if (handler == null) {
+        logger.warning("log panel handler not available");
+        logger.addSeparator();
+      } else if (BeeUtils.inList(z, BeeConst.STRING_ZERO, BeeConst.STRING_MINUS)) {
+        handler.setVisible(false);
       } else if (BeeUtils.isDigit(z)) {
-        BeeKeeper.getLog().resize(BeeUtils.toInt(z));
+        handler.resize(BeeUtils.toInt(z));
       } else if (BeeUtils.startsSame(z, "clear")) {
-        BeeKeeper.getLog().clear();
+        handler.clear();
       } else {
-        BeeKeeper.getLog().show();
-        BeeKeeper.getLog().info((Object[]) arr);
-        BeeKeeper.getLog().addSeparator();
+        handler.setVisible(true);
+        logger.info((Object[]) arr);
+        logger.addSeparator();
       }
 
       return;
     }
 
-    Level[] levels = new Level[] {Level.FINEST, Level.FINER, Level.FINE, Level.CONFIG, Level.INFO,
-        Level.WARNING, Level.SEVERE};
-    for (Level lvl : levels) {
-      BeeKeeper.getLog().log(lvl, lvl.getName().toLowerCase());
+    for (LogLevel lvl : LogLevel.values()) {
+      logger.log(lvl, lvl.name().toLowerCase());
     }
-    BeeKeeper.getLog().addSeparator();
+    logger.addSeparator();
   }
 
   private static void doMenu() {
@@ -853,6 +873,10 @@ public class CliWorker {
     }
     BeeKeeper.getRpc().makeGetRequest(params);
   }
+  
+  private static PanelHandler getLogHandler() {
+    return (logger instanceof ClientLogger) ? ((ClientLogger) logger).getPanelHandler() : null;
+  }
 
   private static void getResource(String[] arr) {
     if (ArrayUtils.length(arr) < 2) {
@@ -877,13 +901,13 @@ public class CliWorker {
 
   private static void playAudio(final String src) {
     if (BeeUtils.isEmpty(src)) {
-      BeeKeeper.getLog().warning("source not specified");
+      logger.warning("source not specified");
       return;
     }
 
     final Audio widget = Audio.createIfSupported();
     if (widget == null) {
-      BeeKeeper.getLog().severe("audio not supported");
+      logger.severe("audio not supported");
       return;
     }
 
@@ -902,7 +926,7 @@ public class CliWorker {
 
   private static void playVideo(String args) {
     if (!Video.isSupported()) {
-      BeeKeeper.getLog().severe("video not supported");
+      logger.severe("video not supported");
       return;
     }
 
@@ -929,8 +953,12 @@ public class CliWorker {
     Element element = null;
 
     if (BeeUtils.same(args, "log")) {
-      widget = BeeKeeper.getLog().getArea();
-      if (widget == null || BeeKeeper.getLog().isEmpty()) {
+      PanelHandler handler = getLogHandler();
+      if (handler != null) {
+        widget = handler.getPanel();
+      }
+
+      if (widget == null || handler.isEmpty()) {
         Global.showError("log is empty");
         return;
       }
@@ -1192,7 +1220,7 @@ public class CliWorker {
   private static void showCaptions() {
     Set<String> keys = Global.getRegisteredCaptionKeys();
     if (BeeUtils.isEmpty(keys)) {
-      BeeKeeper.getLog().debug("no captions registered");
+      logger.debug("no captions registered");
       return;
     }
 
@@ -1269,17 +1297,17 @@ public class CliWorker {
     Global.choice(caption, prompt, options, new ChoiceCallback() {
       @Override
       public void onCancel() {
-        BeeKeeper.getLog().info("cancel");
+        logger.info("cancel");
       }
 
       @Override
       public void onSuccess(int value) {
-        BeeKeeper.getLog().info("success", value);
+        logger.info("success", value);
       }
 
       @Override
       public void onTimeout() {
-        BeeKeeper.getLog().info("timeout");
+        logger.info("timeout");
       }
 
     }, defaultValue, timeout, cancelHtml, new WidgetInitializer() {
@@ -1287,7 +1315,7 @@ public class CliWorker {
       public Widget initialize(Widget widget, String name) {
         if (BeeUtils.containsSame(name, widgetName.get())) {
           StyleUtils.updateAppearance(widget, null, widgetStyle.get());
-          BeeKeeper.getLog().info(name, StyleUtils.getCssText(widget));
+          logger.info(name, StyleUtils.getCssText(widget));
         }
         return widget;
       }
@@ -1374,7 +1402,7 @@ public class CliWorker {
     } else if (!BeeUtils.isEmpty(args)) {
       t = DateTime.parse(args);
       if (t == null) {
-        BeeKeeper.getLog().severe("cannot parse", args);
+        logger.severe("cannot parse", args);
       } else {
         d = JustDate.parse(args);
       }
@@ -1473,13 +1501,13 @@ public class CliWorker {
       }
 
       if (dtf == null || t == null) {
-        BeeKeeper.getLog().severe("cannot parse", args);
+        logger.severe("cannot parse", args);
       } else {
         String result = dtf.format(t);
-        BeeKeeper.getLog().debug("format", dtf.getPattern());
-        BeeKeeper.getLog().debug("input", t);
-        BeeKeeper.getLog().debug("result", result);
-        BeeKeeper.getLog().addSeparator();
+        logger.debug("format", dtf.getPattern());
+        logger.debug("input", t);
+        logger.debug("result", result);
+        logger.addSeparator();
       }
     }
   }
@@ -1678,7 +1706,7 @@ public class CliWorker {
           widgetStyle.set(v);
           break;
         default:
-          BeeKeeper.getLog().info("option not recognized", i, arr[i], k, v);
+          logger.info("option not recognized", i, arr[i], k, v);
       }
     }
 
@@ -1686,17 +1714,17 @@ public class CliWorker {
         new StringCallback(required) {
           @Override
           public void onCancel() {
-            BeeKeeper.getLog().info("cancel");
+            logger.info("cancel");
           }
 
           @Override
           public void onSuccess(String value) {
-            BeeKeeper.getLog().info("success", value);
+            logger.info("success", value);
           }
 
           @Override
           public void onTimeout(String value) {
-            BeeKeeper.getLog().info("timeout", value);
+            logger.info("timeout", value);
           }
 
           @Override
@@ -1713,7 +1741,7 @@ public class CliWorker {
           public Widget initialize(Widget widget, String name) {
             if (BeeUtils.containsSame(name, widgetName.get())) {
               StyleUtils.updateAppearance(widget, null, widgetStyle.get());
-              BeeKeeper.getLog().info(name, StyleUtils.getCssText(widget));
+              logger.info(name, StyleUtils.getCssText(widget));
             }
             return widget;
           }
@@ -2174,8 +2202,10 @@ public class CliWorker {
   }
 
   private static void showStack() {
-    BeeKeeper.getLog().stack();
-    BeeKeeper.getLog().addSeparator();
+    Throwable err = new Throwable();
+    err.fillInStackTrace();
+    logger.debug(err);
+    logger.addSeparator();
   }
 
   private static void showSupport() {
@@ -2636,8 +2666,8 @@ public class CliWorker {
       return;
     }
 
-    BeeKeeper.getLog().info(st);
-    BeeKeeper.getLog().addSeparator();
+    logger.info(st);
+    logger.addSeparator();
 
     if (start) {
       StyleInjector.injectAtStart(st, immediate);
@@ -2702,7 +2732,7 @@ public class CliWorker {
     }
 
     if (BeeUtils.isEmpty(text) || BeeUtils.same(text, BeeConst.STRING_ALL)) {
-      BeeKeeper.getLog().info("Translate", codeFrom, codeTo);
+      logger.info("Translate", codeFrom, codeTo);
       List<Element> elements = Lists.newArrayList();
 
       NodeList<Element> nodes = Document.get().getElementsByTagName(DomUtils.TAG_BUTTON);
@@ -2815,7 +2845,7 @@ public class CliWorker {
   }
 
   private static void whereAmI() {
-    BeeKeeper.getLog().info(BeeConst.whereAmI());
+    logger.info(BeeConst.whereAmI());
     BeeKeeper.getRpc().makeGetRequest(Service.WHERE_AM_I);
   }
 

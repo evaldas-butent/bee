@@ -10,6 +10,8 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
@@ -24,6 +26,8 @@ import java.util.List;
 @SuppressWarnings("serial")
 public class ParameterList extends ArrayList<RpcParameter> {
 
+  private static final BeeLogger logger = LogUtils.getLogger(ParameterList.class);
+  
   private boolean ready = false;
   private List<RpcParameter> dataItems, headerItems, queryItems;
 
@@ -251,7 +255,7 @@ public class ParameterList extends ArrayList<RpcParameter> {
     if (item.isValid()) {
       add(item);
     } else {
-      BeeKeeper.getLog().severe("Invalid rpc parameter:", item);
+      logger.severe("Invalid rpc parameter:", item);
     }
   }
   

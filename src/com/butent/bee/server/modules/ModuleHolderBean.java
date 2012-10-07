@@ -138,20 +138,20 @@ public class ModuleHolderBean {
         String moduleName = module.getName();
 
         if (BeeUtils.isEmpty(moduleName)) {
-          logger.error("Module", BeeUtils.bracket(mod), "does not have name");
+          logger.severe("Module", BeeUtils.bracket(mod), "does not have name");
 
         } else if (hasModule(moduleName)) {
-          logger.error("Dublicate module name:", BeeUtils.bracket(moduleName));
+          logger.severe("Dublicate module name:", BeeUtils.bracket(moduleName));
 
         } else {
           modules.put(moduleName, module);
           logger.info("Registered module:", BeeUtils.bracket(moduleName));
         }
       } catch (NamingException ex) {
-        logger.error("Module not found:", BeeUtils.bracket(mod));
+        logger.severe("Module not found:", BeeUtils.bracket(mod));
 
       } catch (ClassCastException ex) {
-        logger.error("Not a module:", BeeUtils.bracket(mod));
+        logger.severe("Not a module:", BeeUtils.bracket(mod));
       }
     }
     boolean dependencyError = true;
@@ -165,7 +165,7 @@ public class ModuleHolderBean {
         if (!BeeUtils.isEmpty(dependencies)) {
           for (String depends : dependencies) {
             if (!hasModule(depends)) {
-              logger.error("Unregistering module", BeeUtils.bracket(mod),
+              logger.severe("Unregistering module", BeeUtils.bracket(mod),
                   ", because it depends on nonexistent module", BeeUtils.bracket(depends));
               modules.remove(mod);
               dependencyError = true;

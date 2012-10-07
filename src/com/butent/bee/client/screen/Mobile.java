@@ -8,7 +8,6 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.CliWidget;
@@ -22,6 +21,7 @@ import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Split;
+import com.butent.bee.client.logging.PanelHandler;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
@@ -94,10 +94,9 @@ public class Mobile extends ScreenImpl {
 
     toggle.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
       public void onValueChange(ValueChangeEvent<Boolean> event) {
-        if (event.getValue()) {
-          BeeKeeper.getLog().show();
-        } else {
-          BeeKeeper.getLog().hide();
+        PanelHandler handler = getLogHandler();
+        if (handler != null) {
+          handler.setVisible(event.getValue());
         }
       }
     });
@@ -139,7 +138,10 @@ public class Mobile extends ScreenImpl {
     getRootPanel().add(p);
     setScreenPanel(p);
 
-    BeeKeeper.getLog().hide();
+    PanelHandler handler = getLogHandler();
+    if (handler != null) {
+      handler.setVisible(false);
+    }
   }
 
   protected int getWestWidth() {

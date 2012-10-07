@@ -67,6 +67,9 @@ import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogLevel;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -75,7 +78,6 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 
 /**
  * Handles such form events like warnings, deletions, visibility of elements etc.
@@ -202,6 +204,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(FormImpl.class);
+  
   private static final String STYLE_FORM = "bee-Form";
   private static final String STYLE_DISABLED = "bee-Form-disabled";
 
@@ -609,17 +613,17 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   @Override
   public void notifyInfo(String... messages) {
-    showNote(Level.INFO, messages);
+    showNote(LogLevel.INFO, messages);
   }
 
   @Override
   public void notifySevere(String... messages) {
-    showNote(Level.SEVERE, messages);
+    showNote(LogLevel.ERROR, messages);
   }
 
   @Override
   public void notifyWarning(String... messages) {
-    showNote(Level.WARNING, messages);
+    showNote(LogLevel.WARNING, messages);
   }
 
   @Override
@@ -710,7 +714,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     String newValue = event.getNewValue();
 
     if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
-      BeeKeeper.getLog().debug(column.getId(), "old:", oldValue, "new:", newValue);
+      logger.debug(column.getId(), "old:", oldValue, "new:", newValue);
 
       if (isAdding() || isEditing()) {
         rowValue.setValue(index, newValue);
@@ -1154,7 +1158,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
 
     if (warn) {
-      BeeKeeper.getLog().warning("editable widget not found:", columnId);
+      logger.warning("editable widget not found:", columnId);
     }
     return null;
   }
@@ -1305,7 +1309,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       Widget widget = DomUtils.getChildQuietly(this, id);
 
       if (widget == null) {
-        BeeKeeper.getLog().warning("refresh display:", id, "widget not found");
+        logger.warning("refresh display:", id, "widget not found");
       } else {
         displayWidget.refresh(widget, getActiveRow());
       }
@@ -1430,7 +1434,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     this.viewName = viewName;
   }
 
-  private void showNote(Level level, String... messages) {
+  private void showNote(LogLevel level, String... messages) {
     StyleUtils.setZIndex(getNotification(), StyleUtils.getZIndex(getRootWidget()) + 1);
     getNotification().show(level, messages);
   }

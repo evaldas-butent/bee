@@ -412,7 +412,7 @@ public class UserServiceBean {
       logger.warning("Anonymous user logged out:", user);
 
     } else {
-      logger.error("Logout attempt by an unauthorized user:", user);
+      logger.severe("Logout attempt by an unauthorized user:", user);
     }
   }
 

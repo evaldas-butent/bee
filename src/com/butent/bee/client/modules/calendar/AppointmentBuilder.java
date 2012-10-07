@@ -69,6 +69,8 @@ import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
@@ -82,6 +84,8 @@ import java.util.Set;
 
 class AppointmentBuilder extends AbstractFormCallback {
 
+  private static final BeeLogger logger = LogUtils.getLogger(AppointmentBuilder.class);
+  
   private class DateOrTimeWidgetHandler implements BlurHandler {
     @Override
     public void onBlur(BlurEvent event) {
@@ -810,7 +814,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   private Widget getWidget(String id) {
     Widget widget = DomUtils.getChildQuietly(getFormView().asWidget(), id);
     if (widget == null) {
-      BeeKeeper.getLog().warning("widget not found: id", id);
+      logger.warning("widget not found: id", id);
     }
     return widget;
   }
@@ -839,7 +843,7 @@ class AppointmentBuilder extends AbstractFormCallback {
 
     BeeRowSet themeColors = CalendarKeeper.getThemeColors();
     if (themeColors == null || themeColors.isEmpty()) {
-      BeeKeeper.getLog().warning("theme colors not found");
+      logger.warning("theme colors not found");
       return;
     }
 
@@ -883,7 +887,7 @@ class AppointmentBuilder extends AbstractFormCallback {
         }
       }
     } else {
-      BeeKeeper.getLog().warning("theme", theme, "colors not found");
+      logger.warning("theme", theme, "colors not found");
     }
   }
 
@@ -949,7 +953,7 @@ class AppointmentBuilder extends AbstractFormCallback {
     defaultRepairType = null;
 
     if (properties == null || properties.isEmpty()) {
-      BeeKeeper.getLog().warning("extended properties not available");
+      logger.warning("extended properties not available");
       return;
     }
 
@@ -989,7 +993,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   private void loadReminders() {
     BeeRowSet rowSet = CalendarKeeper.getReminderTypes();
     if (rowSet == null || rowSet.isEmpty()) {
-      BeeKeeper.getLog().warning("reminder types not available");
+      logger.warning("reminder types not available");
       return;
     }
 

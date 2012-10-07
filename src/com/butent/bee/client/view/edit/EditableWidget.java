@@ -14,7 +14,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.HasRelatedRow;
 import com.butent.bee.client.data.RelationUtils;
 import com.butent.bee.client.dom.DomUtils;
@@ -38,6 +37,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.ActiveWidgetChangeEvent;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.EditorAction;
@@ -50,6 +51,8 @@ import java.util.List;
 public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String>, FocusHandler,
     BlurHandler, EditStopEvent.Handler, HasCellValidationHandlers, EditEndEvent.HasEditEndHandler {
 
+  private static final BeeLogger logger = LogUtils.getLogger(EditableWidget.class);
+  
   private final int dataIndex;
   private final BeeColumn dataColumn;
 
@@ -142,7 +145,7 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       setEditEndHandler(handler);
       setInitialized(true);
     } else {
-      BeeKeeper.getLog().warning("editable widget: no editor", getCaption(), getWidgetId());
+      logger.warning("editable widget: no editor", getCaption(), getWidgetId());
     }
   }
 

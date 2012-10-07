@@ -59,7 +59,7 @@ public class UploadServlet extends HttpServlet {
     ResponseObject responseObject;
     if (BeeUtils.isEmpty(service)) {
       String msg = BeeUtils.joinWords(prefix, "service name not specified");
-      logger.error(msg);
+      logger.severe(msg);
       responseObject = ResponseObject.error(msg);
     } else {
       logger.info(prefix, "request", service);

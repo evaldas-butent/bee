@@ -1,17 +1,27 @@
 package com.butent.bee.client.logging;
 
 import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.logging.LogUtils.LogLevel;
+import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.utils.ArrayUtils;
 
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ClientLogger implements BeeLogger {
+  
   private final Logger logger;
 
   public ClientLogger(String name) {
-    logger = Logger.getLogger(name);
+    this.logger = Logger.getLogger(name);
+  }
+
+  public void addHandler(Handler handler) {
+    logger.addHandler(handler);
+  }
+  
+  public void addSeparator() {
+    logger.log(LogFormatter.LOG_SEPARATOR_LEVEL, LogFormatter.LOG_SEPARATOR_TAG);
   }
 
   @Override
@@ -22,17 +32,19 @@ public class ClientLogger implements BeeLogger {
   }
 
   @Override
-  public void error(Object... messages) {
-    if (logger.isLoggable(Level.SEVERE)) {
-      logger.severe(ArrayUtils.joinWords(messages));
-    }
-  }
-
-  @Override
   public void error(Throwable ex, Object... messages) {
     if (logger.isLoggable(Level.SEVERE)) {
       logger.log(Level.SEVERE, ArrayUtils.joinWords(messages), ex);
     }
+  }
+  
+  public PanelHandler getPanelHandler() {
+    for (Handler handler : logger.getHandlers()) {
+      if (handler instanceof PanelHandler) {
+        return (PanelHandler) handler;
+      }
+    }
+    return null;
   }
 
   @Override
@@ -49,7 +61,7 @@ public class ClientLogger implements BeeLogger {
         debug(messages);
         break;
       case ERROR:
-        error(messages);
+        severe(messages);
         break;
       case INFO:
         info(messages);
@@ -60,6 +72,17 @@ public class ClientLogger implements BeeLogger {
     }
   }
 
+  public void setLevel(Level lvl) {
+    logger.setLevel(lvl);
+  }
+
+  @Override
+  public void severe(Object... messages) {
+    if (logger.isLoggable(Level.SEVERE)) {
+      logger.severe(ArrayUtils.joinWords(messages));
+    }
+  }
+  
   @Override
   public void warning(Object... messages) {
     if (logger.isLoggable(Level.WARNING)) {

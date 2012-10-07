@@ -23,7 +23,6 @@ import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Disclosure;
@@ -125,6 +124,8 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.HasCapsLock;
@@ -290,6 +291,8 @@ public enum FormWidget {
     TABLE, IS_CHILD, IS_GRID, PANEL, CELL_VECTOR, INPUT, IS_CUSTOM, IS_DECORATOR
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(FormWidget.class);
+  
   public static final String ATTR_SCROLL_BARS = "scrollBars";
   public static final String ATTR_SPLITTER_SIZE = "splitterSize";
   public static final String ATTR_SIZE = "size";
@@ -1234,12 +1237,12 @@ public enum FormWidget {
     Assert.notNull(widget);
 
     if (BeeUtils.isEmpty(event)) {
-      BeeKeeper.getLog().warning("add handler:", NameUtils.getClassName(widget.getClass()),
+      logger.warning("add handler:", NameUtils.getClassName(widget.getClass()),
           DomUtils.getId(widget), "event type not specified");
       return;
     }
     if (BeeUtils.isEmpty(handler)) {
-      BeeKeeper.getLog().warning("add handler:", NameUtils.getClassName(widget.getClass()),
+      logger.warning("add handler:", NameUtils.getClassName(widget.getClass()),
           DomUtils.getId(widget), event, "event handler not specified");
       return;
     }
@@ -1353,15 +1356,8 @@ public enum FormWidget {
 
     relation.initialize(Data.getDataInfoProvider(), viewName, sourceHolder, listHolder);
     if (relation.getViewName() == null) {
-      BeeKeeper.getLog().severe("Cannot create relation");
-      BeeKeeper.getLog().severe(viewName, source, renderColumns);
-
-      BeeKeeper.getLog().info("attributes:");
-      BeeKeeper.getLog().debugMap(attributes);
-      BeeKeeper.getLog().info("relation:");
-      BeeKeeper.getLog().debugCollection(relation.getInfo());
-      BeeKeeper.getLog().addSeparator();
-
+      logger.severe("Cannot create relation:");
+      logger.severe(viewName, source, renderColumns);
       return null;
     }
 

@@ -34,6 +34,8 @@ import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.cache.CacheManager;
 import com.butent.bee.shared.i18n.LocalizableConstants;
 import com.butent.bee.shared.i18n.LocalizableMessages;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -50,6 +52,8 @@ import java.util.Set;
 
 public class Global implements Module {
 
+  private static final BeeLogger logger = LogUtils.getLogger(Global.class);
+  
   public static final String VAR_DEBUG = "debug";
 
   public static final LocalizableConstants CONSTANTS = GWT.create(LocalizableConstants.class);
@@ -84,11 +88,11 @@ public class Global implements Module {
   
   public static void addStyleSheet(String name, String text) {
     if (BeeUtils.isEmpty(name)) {
-      BeeKeeper.getLog().warning("style sheet name not specified");
+      logger.warning("style sheet name not specified");
       return;
     }
     if (BeeUtils.isEmpty(text)) {
-      BeeKeeper.getLog().warning("style sheet text not specified");
+      logger.warning("style sheet text not specified");
       return;
     }
 
@@ -194,7 +198,7 @@ public class Global implements Module {
   }
   
   public static void debug(String s) {
-    BeeKeeper.getLog().debug(s);
+    logger.debug(s);
   }
 
   public static CacheManager getCache() {
@@ -203,13 +207,13 @@ public class Global implements Module {
   
   public static String getCaption(String key, int index) {
     if (BeeUtils.isEmpty(key)) {
-      BeeKeeper.getLog().severe("Caption key not specified");
+      logger.severe("Caption key not specified");
       return null;
     }
     
     List<String> list = getCaptions(key);
     if (!BeeUtils.isIndex(list, index)) {
-      BeeKeeper.getLog().severe("cannot get caption: key", key, "index", index);
+      logger.severe("cannot get caption: key", key, "index", index);
       return null;
     } else {
       return list.get(index);
@@ -221,7 +225,7 @@ public class Global implements Module {
     Class<? extends Enum<?>> clazz = CAPTIONS.get(BeeUtils.normalize(key));
 
     if (clazz == null) {
-      BeeKeeper.getLog().severe("Captions not registered: " + key);
+      logger.severe("Captions not registered: " + key);
       return null;
     } else {
       return UiHelper.getCaptions(clazz);

@@ -9,6 +9,8 @@ import com.google.gwt.i18n.shared.DateTimeFormatInfo;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -23,6 +25,8 @@ import java.util.List;
 
 public class LocaleUtils {
 
+  private static final BeeLogger logger = LogUtils.getLogger(LocaleUtils.class);
+  
   public static final String LOCALE_SEPARATOR = "_";
 
   private static final char L10N_PREFIX = '=';
@@ -188,7 +192,7 @@ public class LocaleUtils {
     String localized = BeeKeeper.getUser().getConstant(text.substring(1));
     
     if (localized == null) {
-      BeeKeeper.getLog().warning("cannot localize:", text);
+      logger.warning("cannot localize:", text);
       return text;
     } else {
       return localized;

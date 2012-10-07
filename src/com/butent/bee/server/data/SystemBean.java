@@ -1045,7 +1045,7 @@ public class SystemBean {
       }
     }
     if (cnt <= 0) {
-      logger.error("No", obj.name(), "descriptions found");
+      logger.severe("No", obj.name(), "descriptions found");
     } else {
       logger.info("Loaded", cnt, obj.name(), "descriptions");
     }

@@ -110,7 +110,7 @@ public class MailModuleBean implements BeeModule {
 
     if (session == null) {
       String msg = "Mail session not available";
-      logger.error(msg);
+      logger.severe(msg);
       response = ResponseObject.error(msg);
     } else {
       MimeMessage message = new MimeMessage(session);

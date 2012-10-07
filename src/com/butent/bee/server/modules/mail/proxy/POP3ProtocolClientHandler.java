@@ -29,7 +29,7 @@ public class POP3ProtocolClientHandler extends TextBasedProtocolClientHandler {
       if (msg.startsWith("-ERR")) {
         state = 0;
         mailBody = "";
-        logger.error("POP3 mail receive error: " + msg);
+        logger.severe("POP3 mail receive error: " + msg);
 
       } else if (!msg.startsWith("+OK")) {
         mailBody += (msg.startsWith("..") ? msg.substring(1) : msg) + "\r\n";

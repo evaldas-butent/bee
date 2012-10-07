@@ -17,6 +17,8 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Set;
@@ -28,6 +30,9 @@ import java.util.Set;
  */
 
 public class RpcFactory implements Module {
+
+  private static final BeeLogger logger = LogUtils.getLogger(RpcFactory.class);
+
   private final String rpcUrl;
 
   private RpcList rpcList = new RpcList();
@@ -47,12 +52,12 @@ public class RpcFactory implements Module {
     boolean ok = info.cancel();
 
     if (ok) {
-      BeeKeeper.getLog().info("request", id, "canceled");
-      BeeKeeper.getLog().addSeparator();
+      logger.info("request", id, "canceled");
+      logger.addSeparator();
     } else {
-      BeeKeeper.getLog().warning("request", id, "is not pendind");
+      logger.warning("request", id, "is not pendind");
       if (states != null) {
-        BeeKeeper.getLog().debug("States:", states);
+        logger.debug("States:", states);
       }
     }
 
@@ -326,9 +331,9 @@ public class RpcFactory implements Module {
         Service.RPC_VAR_CTP, CommUtils.CONTENT_TYPE_HEADER);
 
     if (debug) {
-      BeeKeeper.getLog().info("request", id, meth.toString(), url);
+      logger.info("request", id, meth.toString(), url);
     } else {
-      BeeKeeper.getLog().info(">", id, svc);
+      logger.info(">", id, svc);
     }
 
     String content = null;
@@ -339,8 +344,8 @@ public class RpcFactory implements Module {
       info.setReqSize(size);
 
       if (debug) {
-        BeeKeeper.getLog().info("sending", ctp, cth, BeeUtils.bracket(size));
-        BeeKeeper.getLog().info(BeeUtils.clip(data, 1024));
+        logger.info("sending", ctp, cth, BeeUtils.bracket(size));
+        logger.info(BeeUtils.clip(data, 1024));
       }
     }
 
@@ -350,7 +355,7 @@ public class RpcFactory implements Module {
       info.setState(State.OPEN);
     } catch (RequestException ex) {
       info.endError(ex);
-      BeeKeeper.getLog().severe("send request error", id, ex);
+      logger.severe("send request error", id, ex);
     }
 
     rpcList.put(id, info);

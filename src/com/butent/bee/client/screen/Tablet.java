@@ -4,7 +4,6 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.cli.CliWorker;
 import com.butent.bee.client.composite.VolumeSlider;
@@ -12,6 +11,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.FontSize;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.BeeLayoutPanel;
+import com.butent.bee.client.logging.PanelHandler;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeButton;
@@ -64,10 +64,9 @@ public class Tablet extends Mobile {
 
     toggle.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
-        if (toggle.isDown()) {
-          BeeKeeper.getLog().show();
-        } else {
-          BeeKeeper.getLog().hide();
+        PanelHandler handler = getLogHandler();
+        if (handler != null) {
+          handler.setVisible(toggle.isDown());
         }
         toggle.invert();
       }

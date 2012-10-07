@@ -22,7 +22,7 @@ import javax.ejb.Stateless;
 @Stateless
 public class ResultSetBean {
 
-  private static final BeeLogger logger = LogUtils.getLogger(ResultSetBean.class.getName());
+  private static final BeeLogger logger = LogUtils.getLogger(ResultSetBean.class);
   private static final BeeColumn[] metaCols;
 
   static {
@@ -56,7 +56,7 @@ public class ResultSetBean {
       for (int i = 1; i <= rsmd.getColumnCount(); i++) {
         int sqlType = rsmd.getColumnType(i);
 
-        buff.add(i, rsmd.getColumnName(i), rsmd.getColumnLabel(i),
+        buff.addRow(i, rsmd.getColumnName(i), rsmd.getColumnLabel(i),
             rsmd.getSchemaName(i), rsmd.getCatalogName(i), rsmd.getTableName(i),
             rsmd.getColumnClassName(i), sqlType, rsmd.getColumnTypeName(i),
             JdbcUtils.sqlTypeToValueType(sqlType),

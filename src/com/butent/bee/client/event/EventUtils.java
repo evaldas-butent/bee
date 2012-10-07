@@ -98,6 +98,8 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
@@ -109,6 +111,8 @@ import java.util.Set;
 
 public class EventUtils {
 
+  private static final BeeLogger logger = LogUtils.getLogger(EventUtils.class);
+  
   public static final String EVENT_TYPE_BLUR = "blur";
 
   public static final String EVENT_TYPE_CAN_PLAY_THROUGH = "canplaythrough";
@@ -534,7 +538,7 @@ public class EventUtils {
       return true;
     }
 
-    BeeKeeper.getLog().warning("add handler:", NameUtils.getClassName(widget.getClass()),
+    logger.warning("add handler:", NameUtils.getClassName(widget.getClass()),
         DomUtils.getId(widget), type, "event not supported");
     return false;
   }
@@ -837,16 +841,16 @@ public class EventUtils {
 
     if (detailed) {
       if (!BeeUtils.isEmpty(title)) {
-        BeeKeeper.getLog().debug(title);
+        logger.debug(title);
       }
       List<Property> lst = getEventInfo(ev);
       for (Property el : lst) {
-        BeeKeeper.getLog().debug(el.getName(), el.getValue());
+        logger.debug(el.getName(), el.getValue());
       }
 
-      BeeKeeper.getLog().addSeparator();
+      logger.addSeparator();
     } else {
-      BeeKeeper.getLog().debug(title, transformEvent(ev));
+      logger.debug(title, transformEvent(ev));
     }
   }
 
@@ -1085,7 +1089,7 @@ public class EventUtils {
     String errorMessage = evalDomHandler(handler, event.getNativeEvent(),
         event.getNativeEvent().getEventTarget(), row, rowId, rowVersion);
     if (!BeeUtils.isEmpty(errorMessage)) {
-      BeeKeeper.getLog().severe(errorMessage);
+      logger.severe(errorMessage);
       BeeKeeper.getScreen().notifySevere(errorMessage);
     }
   }

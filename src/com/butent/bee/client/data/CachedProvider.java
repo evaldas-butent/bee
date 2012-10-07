@@ -3,7 +3,6 @@ package com.butent.bee.client.data;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -21,6 +20,8 @@ import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -33,6 +34,8 @@ import java.util.Set;
 
 public class CachedProvider extends Provider {
 
+  private static final BeeLogger logger = LogUtils.getLogger(CachedProvider.class);
+  
   private BeeRowSet table;
 
   private final Set<Long> filteredRowIds = Sets.newHashSet();
@@ -189,7 +192,7 @@ public class CachedProvider extends Provider {
           } else {
             index = getTable().getColumnIndex(source);
             if (index < 0) {
-              BeeKeeper.getLog().warning("onSort: source", source, "not found");
+              logger.warning("onSort: source", source, "not found");
               continue;
             }
           }
@@ -211,7 +214,7 @@ public class CachedProvider extends Provider {
   public void refresh(final boolean updateActiveRow) {
     String name = getViewName();
     if (BeeUtils.isEmpty(name)) {
-      BeeKeeper.getLog().warning("refresh: view name not available");
+      logger.warning("refresh: view name not available");
       return;
     }
 

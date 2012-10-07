@@ -7,7 +7,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dialog.Popup;
@@ -22,6 +21,8 @@ import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -90,6 +91,8 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     }
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(Workspace.class);
+  
   private static final String STYLE_PREFIX = "bee-Workspace-";
 
   Workspace() {
@@ -293,7 +296,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
   }
 
   private void showError(String message) {
-    BeeKeeper.getLog().severe(getClass().getName(), message);
+    logger.severe(getClass().getName(), message);
   }
 
   private void splitActivePanel(Direction direction) {

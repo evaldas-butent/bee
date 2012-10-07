@@ -112,7 +112,7 @@ public class BeeServlet extends HttpServlet {
         }
       } else if (!BeeUtils.same(reqSid, session.getId())) {
         doLogout = true;
-        logger.error("session id:", "request =", reqSid, "current =", session.getId());
+        logger.severe("session id:", "request =", reqSid, "current =", session.getId());
       }
     }
     if (doLogout) {

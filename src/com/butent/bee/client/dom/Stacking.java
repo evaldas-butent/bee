@@ -4,8 +4,9 @@ import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
@@ -15,6 +16,8 @@ import java.util.Map;
 
 public class Stacking {
   
+  private static final BeeLogger logger = LogUtils.getLogger(Stacking.class);
+
   private static int maxLevel = 0;
   
   private static final Map<String, Integer> widgetLevels = Maps.newHashMap();
@@ -65,11 +68,11 @@ public class Stacking {
     Integer level = widgetLevels.remove(id);
     
     if (level == null) {
-      BeeKeeper.getLog().severe("Stacking pop: id " + id + " not in widgetLevels");
+      logger.severe("Stacking pop: id " + id + " not in widgetLevels");
       for (Property prop : getInfo()) {
-        BeeKeeper.getLog().debug(prop.getName(), prop.getValue());
+        logger.debug(prop.getName(), prop.getValue());
       }
-      BeeKeeper.getLog().addSeparator();
+      logger.addSeparator();
     } else {
       maxLevel = level;
     }

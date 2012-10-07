@@ -2,10 +2,11 @@ package com.butent.bee.client.communication;
 
 import com.google.common.collect.Lists;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -19,6 +20,8 @@ import java.util.Map.Entry;
  */
 @SuppressWarnings("serial")
 public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
+
+  private static final BeeLogger logger = LogUtils.getLogger(RpcList.class);
   
   public static final String[] DEFAULT_INFO_COLUMNS = new String[] {
       RpcInfo.COL_ID, RpcInfo.COL_SERVICE, RpcInfo.COL_METHOD,
@@ -44,7 +47,7 @@ public class RpcList extends LinkedHashMap<Integer, RpcInfo> {
   public RpcInfo get(Object key) {
     RpcInfo info = super.get(key);
     if (info == null) {
-      BeeKeeper.getLog().warning("rpc id", key, "not found");
+      logger.warning("rpc id", key, "not found");
     }
     return info;
   }

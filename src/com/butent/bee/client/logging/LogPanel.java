@@ -12,9 +12,9 @@ import com.butent.bee.client.layout.Flow;
  * Manages a specific type of flow panel to contain log entries.
  */
 
-public class LogArea extends Flow {
+class LogPanel extends Flow {
 
-  public LogArea() {
+  LogPanel() {
     super();
     setStyleName("bee-LogArea");
     sinkEvents(Event.ONCLICK);

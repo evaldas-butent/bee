@@ -12,7 +12,6 @@ import com.google.gwt.user.client.EventListener;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
@@ -20,6 +19,8 @@ import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.utils.JsFunction;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasExtendedInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
@@ -221,6 +222,8 @@ class Decorator implements HasEnabled, HasExtendedInfo {
     }
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(Decorator.class);
+  
   private final boolean isAbstract;
 
   private final String id;
@@ -274,12 +277,12 @@ class Decorator implements HasEnabled, HasExtendedInfo {
 
   Widget decorate(Widget widget, Map<String, String> options) {
     if (widget == null) {
-      BeeKeeper.getLog().severe("decorator", getId(), "widget is null");
+      logger.severe("decorator", getId(), "widget is null");
       return widget;
     }
 
     if (getFields() == null) {
-      BeeKeeper.getLog().severe("decorator", getId(), "has no fields");
+      logger.severe("decorator", getId(), "has no fields");
       return widget;
     }
     if (!checkRequiredParameters(options)) {
@@ -287,7 +290,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
     }
 
     if (!hasTemplate()) {
-      BeeKeeper.getLog().severe("decorator", getId(), "has no template");
+      logger.severe("decorator", getId(), "has no template");
       return widget;
     }
 
@@ -296,24 +299,24 @@ class Decorator implements HasEnabled, HasExtendedInfo {
 
     Element root = createElement(substitutes, widgetElement);
     if (root == null) {
-      BeeKeeper.getLog().severe("decorator", getId(), "cannot create element");
+      logger.severe("decorator", getId(), "cannot create element");
       return widget;
     }
     if (BeeUtils.same(root.getTagName(), DecoratorConstants.TAG_CONTENT)) {
-      BeeKeeper.getLog().severe("decorator", getId(), "template root element equals content");
-      BeeKeeper.getLog().severe(root.toString());
+      logger.severe("decorator", getId(), "template root element equals content");
+      logger.severe(root.toString());
       return widget;
     }
 
     NodeList<Element> list = root.getElementsByTagName(DecoratorConstants.TAG_CONTENT);
     int cnt = (list == null) ? 0 : list.getLength();
     if (cnt < 1) {
-      BeeKeeper.getLog().severe("decorator", getId(), "template has no content");
-      BeeKeeper.getLog().severe(root.toString());
+      logger.severe("decorator", getId(), "template has no content");
+      logger.severe(root.toString());
       return widget;
     } else if (cnt > 1) {
-      BeeKeeper.getLog().severe("decorator", getId(), "template has", cnt, "contents");
-      BeeKeeper.getLog().severe(root.toString());
+      logger.severe("decorator", getId(), "template has", cnt, "contents");
+      logger.severe(root.toString());
       return widget;
     }
 
@@ -490,7 +493,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
     Element cutoff = getFields().isAppearanceDeep() ? null : content;
     List<Element> targets = TuningHelper.getActors(root, role, null, cutoff);
     if (targets.isEmpty()) {
-      BeeKeeper.getLog().warning("decorator", getId(), "appearance role", role, "no actors found");
+      logger.warning("decorator", getId(), "appearance role", role, "no actors found");
       return;
     }
 
@@ -525,7 +528,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
       Element cutoff = handler.isDeep() ? null : contentElement;
       List<Element> targets = TuningHelper.getActors(rootElement, role, null, cutoff);
       if (targets.isEmpty()) {
-        BeeKeeper.getLog().warning("decorator", getId(), "handler", type, "role", role,
+        logger.warning("decorator", getId(), "handler", type, "role", role,
             "no actors found");
         continue;
       }

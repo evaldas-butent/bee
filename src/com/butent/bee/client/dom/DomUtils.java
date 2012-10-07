@@ -37,6 +37,8 @@ import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
@@ -52,6 +54,8 @@ import java.util.List;
  */
 public class DomUtils {
 
+  private static final BeeLogger logger = LogUtils.getLogger(DomUtils.class);
+  
   public static final String TAG_AUDIO = "audio";
   public static final String TAG_BUTTON = "button";
   public static final String TAG_CANVAS = "canvas";
@@ -1360,10 +1364,10 @@ public class DomUtils {
     List<Property> lst = getChildrenInfo(w);
 
     for (int i = 0; i < lst.size(); i++) {
-      BeeKeeper.getLog().info(BeeUtils.progress(i + 1, lst.size()),
+      logger.info(BeeUtils.progress(i + 1, lst.size()),
           lst.get(i).getName(), lst.get(i).getValue());
     }
-    BeeKeeper.getLog().addSeparator();
+    logger.addSeparator();
   }
 
   public static void logPath(Widget w) {
@@ -1371,10 +1375,10 @@ public class DomUtils {
     List<Property> lst = getPathInfo(w);
 
     for (int i = 0; i < lst.size(); i++) {
-      BeeKeeper.getLog().info(BeeUtils.progress(i + 1, lst.size()),
+      logger.info(BeeUtils.progress(i + 1, lst.size()),
           lst.get(i).getName(), lst.get(i).getValue());
     }
-    BeeKeeper.getLog().addSeparator();
+    logger.addSeparator();
   }
   
   public static void makeFocusable(Element el) {

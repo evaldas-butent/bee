@@ -28,12 +28,16 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class RowEditor {
 
+  private static final BeeLogger logger = LogUtils.getLogger(RowEditor.class);
+  
   public static final String DIALOG_STYLE = "bee-EditRow";
 
   public static void openRow(String viewName, BeeRow row) {
@@ -61,7 +65,7 @@ public class RowEditor {
 
     String formName = dataInfo.getEditForm();
     if (BeeUtils.isEmpty(formName)) {
-      BeeKeeper.getLog().warning(viewName, "edit form not specified");
+      logger.warning(viewName, "edit form not specified");
       return;
     }
 

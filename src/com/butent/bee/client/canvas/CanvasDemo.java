@@ -17,12 +17,17 @@ import com.google.gwt.event.dom.client.TouchMoveHandler;
 import com.google.gwt.user.client.Timer;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 
 /**
  * Implements canvas demo, add elements and handlers.
  */
 
 public class CanvasDemo {
+
+  private static final BeeLogger logger = LogUtils.getLogger(CanvasDemo.class);
+  
   Canvas canvas;
   Canvas backBuffer;
   BallGroup ballGroup;
@@ -45,7 +50,7 @@ public class CanvasDemo {
     canvas = Canvas.createIfSupported();
     backBuffer = Canvas.createIfSupported();
     if (canvas == null) {
-      BeeKeeper.getLog().severe("canvas not supported");
+      logger.severe("canvas not supported");
       return;
     }
 

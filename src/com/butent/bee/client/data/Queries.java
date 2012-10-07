@@ -22,6 +22,8 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.Property;
@@ -46,6 +48,8 @@ public class Queries {
     void onSuccess(BeeRowSet result);
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(Queries.class);
+  
   private static final int RESPONSE_FROM_CACHE = 0;
 
   public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns, IsRow row) {
@@ -89,13 +93,13 @@ public class Queries {
         Assert.notNull(response);
 
         if (response.hasErrors()) {
-          BeeKeeper.getLog().severe(viewName, "delete response:", response.getErrors());
+          logger.severe(viewName, "delete response:", response.getErrors());
           if (callback != null) {
             callback.onFailure(response.getErrors());
           }
         } else {
           int responseCount = BeeUtils.toInt((String) response.getResponse());
-          BeeKeeper.getLog().info(viewName, "deleted", responseCount, "rows");
+          logger.info(viewName, "deleted", responseCount, "rows");
           if (callback != null) {
             callback.onSuccess(responseCount);
           }
@@ -135,8 +139,8 @@ public class Queries {
             Assert.notNull(response);
 
             if (response.hasErrors()) {
-              BeeKeeper.getLog().severe(viewName, "delete", requestCount, "rows");
-              BeeKeeper.getLog().severe("response:", response.getErrors());
+              logger.severe(viewName, "delete", requestCount, "rows");
+              logger.severe("response:", response.getErrors());
               if (callback != null) {
                 callback.onFailure(response.getErrors());
               }
@@ -145,11 +149,11 @@ public class Queries {
               String message;
               if (responseCount == requestCount) {
                 message = BeeUtils.joinWords(viewName, "deleted", responseCount, "rows");
-                BeeKeeper.getLog().info(message);
+                logger.info(message);
               } else {
                 message = BeeUtils.joinWords(viewName, "deleted", responseCount, "rows of",
                     requestCount, "requested");
-                BeeKeeper.getLog().warning(message);
+                logger.warning(message);
               }
               if (callback != null) {
                 if (responseCount > 0) {
@@ -227,11 +231,11 @@ public class Queries {
 
             if (BeeUtils.isDigit(s)) {
               int rowCount = BeeUtils.toInt(s);
-              BeeKeeper.getLog().info(viewName, filter, "row count:", rowCount);
+              logger.info(viewName, filter, "row count:", rowCount);
               callback.onSuccess(rowCount);
             } else {
               String message = BeeUtils.joinWords(viewName, filter, "row count response:", s);
-              BeeKeeper.getLog().severe(message);
+              logger.severe(message);
               callback.onFailure(message);
             }
           }
@@ -307,7 +311,7 @@ public class Queries {
                 Global.getCache().add(Data.getDataInfo(viewName), rs, filter, order, offset, limit);
               }
             } else {
-              BeeKeeper.getLog().severe("get RowSet invalid response:", response.getType());
+              logger.severe("get RowSet invalid response:", response.getType());
             }
           }
         });
@@ -402,14 +406,14 @@ public class Queries {
           public void onResponse(ResponseObject response) {
             if (response.hasResponse(BeeRowSet.class)) {
               BeeRowSet result = BeeRowSet.restore((String) response.getResponse());
-              BeeKeeper.getLog().info(result.getViewName(), "inserted", result.getNumberOfRows(),
+              logger.info(result.getViewName(), "inserted", result.getNumberOfRows(),
                   "rows");
               if (callback != null) {
                 callback.onSuccess(result);
               }
 
             } else {
-              BeeKeeper.getLog().severe("insert rows:", rowSet.getViewName(), "invalid response");
+              logger.severe("insert rows:", rowSet.getViewName(), "invalid response");
             }
           }
         });
@@ -502,13 +506,13 @@ public class Queries {
 
         if (BeeUtils.isDigit(s)) {
           int responseCount = BeeUtils.toInt(s);
-          BeeKeeper.getLog().info(viewName, "updated", responseCount, "rows");
+          logger.info(viewName, "updated", responseCount, "rows");
           if (callback != null) {
             callback.onSuccess(responseCount);
           }
 
         } else {
-          BeeKeeper.getLog().severe(viewName, "update response:", s);
+          logger.severe(viewName, "update response:", s);
           if (callback != null) {
             callback.onFailure(s);
           }

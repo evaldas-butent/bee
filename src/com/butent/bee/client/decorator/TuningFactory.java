@@ -15,6 +15,8 @@ import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.DecoratorConstants;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -26,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 
 public class TuningFactory {
+
+  private static final BeeLogger logger = LogUtils.getLogger(TuningFactory.class);
 
   private static final Map<String, Decorator> decorators = Maps.newHashMap();
 
@@ -43,14 +47,14 @@ public class TuningFactory {
 
     Decorator decorator = decorators.get(normalize(decoratorId));
     if (decorator == null) {
-      BeeKeeper.getLog().warning("decorator not found:", decoratorId);
+      logger.warning("decorator not found:", decoratorId);
       return widget;
     }
     if (!decorator.isEnabled()) {
       return widget;
     }
     if (decorator.isAbstract()) {
-      BeeKeeper.getLog().warning("decorator is abstract:", decoratorId);
+      logger.warning("decorator is abstract:", decoratorId);
       return widget;
     }
 
@@ -146,13 +150,13 @@ public class TuningFactory {
 
     String id = decorator.getId();
     if (BeeUtils.same(id, ext) || relatives != null && relatives.contains(normalize(ext))) {
-      BeeKeeper.getLog().severe("incest detected:", id, ext, relatives);
+      logger.severe("incest detected:", id, ext, relatives);
       return false;
     }
 
     Decorator parent = decorators.get(normalize(ext));
     if (parent == null) {
-      BeeKeeper.getLog().severe("parent decorator not found id:", id, "extends:", ext);
+      logger.severe("parent decorator not found id:", id, "extends:", ext);
       return false;
     }
 
@@ -182,7 +186,7 @@ public class TuningFactory {
 
     List<Element> elements = XmlUtils.getChildrenElements(document.getDocumentElement());
     if (elements.isEmpty()) {
-      BeeKeeper.getLog().warning("no decorators found");
+      logger.warning("no decorators found");
     }
 
     clear();
@@ -203,13 +207,13 @@ public class TuningFactory {
       tag = XmlUtils.getLocalName(element);
       if (!BeeUtils.inListSame(tag, DecoratorConstants.TAG_ABSTRACT,
           DecoratorConstants.TAG_DECORATOR)) {
-        BeeKeeper.getLog().warning("unrecognized decorator tag:", tag);
+        logger.warning("unrecognized decorator tag:", tag);
         continue;
       }
 
       id = element.getAttribute(DecoratorConstants.ATTR_ID);
       if (BeeUtils.isEmpty(id)) {
-        BeeKeeper.getLog().warning("decorator id not found");
+        logger.warning("decorator id not found");
         continue;
       }
 
@@ -259,7 +263,7 @@ public class TuningFactory {
 
       String key = normalize(id);
       if (decorators.containsKey(key)) {
-        BeeKeeper.getLog().warning("duplicate decorator id:", id);
+        logger.warning("duplicate decorator id:", id);
       } else {
         String eventTarget = element.getAttribute(DecoratorConstants.ATTR_EVENT_TARGET);
         String appearanceTarget = element.getAttribute(DecoratorConstants.ATTR_APPEARANCE_TARGET);
@@ -271,7 +275,7 @@ public class TuningFactory {
             handlers, template, eventTarget, appearanceTarget, BeeUtils.unbox(appearanceDeep)));
       }
     }
-    BeeKeeper.getLog().info("loaded", decorators.size(), "decorators");
+    logger.info("loaded", decorators.size(), "decorators");
   }
 
   private TuningFactory() {

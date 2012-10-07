@@ -34,6 +34,8 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.TextValue;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -192,6 +194,8 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
     }
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(Favorites.class);
+  
   private static final String CONTAINER_STYLE = "bee-FavoritesContainer";
   private static final String HEADER_STYLE = "bee-FavoritesHeader";
 
@@ -300,7 +304,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
 
   public void load() {
     if (!BeeKeeper.getUser().isLoggedIn()) {
-      BeeKeeper.getLog().warning(NameUtils.getName(this), "user not active");
+      logger.warning(NameUtils.getName(this), "user not active");
       return;
     }
 
@@ -416,7 +420,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
       Integer grp = row.getInteger(groupIndex);
       Group group = (grp == null) ? null : getGroup(grp);
       if (group == null) {
-        BeeKeeper.getLog().severe("favorite group id not found:", grp);
+        logger.severe("favorite group id not found:", grp);
         continue;
       }
 

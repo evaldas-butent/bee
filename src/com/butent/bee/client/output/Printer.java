@@ -10,18 +10,21 @@ import com.google.gwt.dom.client.SelectElement;
 import com.google.gwt.dom.client.Style.BorderStyle;
 import com.google.gwt.dom.client.TextAreaElement;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.utils.Browser;
 import com.butent.bee.client.widget.BeeFrame;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
 public class Printer {
 
+  private static final BeeLogger logger = LogUtils.getLogger(Printer.class);
+  
   private static final String ID_PREFIX = "p-";
 
   private static final String CSS_RULE = " body {-webkit-print-color-adjust: exact;}";
@@ -112,7 +115,7 @@ public class Printer {
 
     Element source = DomUtils.getElementQuietly(id);
     if (source == null) {
-      BeeKeeper.getLog().warning(id, "source not found");
+      logger.warning(id, "source not found");
 
     } else if (DomUtils.isTextAreaElement(source)) {
       String value = TextAreaElement.as(source).getValue();
@@ -149,7 +152,7 @@ public class Printer {
         frame.clear();
 
         if (end == start && Browser.isChrome()) {
-          BeeKeeper.getLog().warning("google is evil");
+          logger.warning("google is evil");
           // http://code.google.com/p/chromium/issues/detail?id=50186
           // waiting for chrome 24
         }

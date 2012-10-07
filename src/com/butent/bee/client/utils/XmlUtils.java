@@ -16,7 +16,6 @@ import com.google.gwt.xml.client.Text;
 import com.google.gwt.xml.client.XMLParser;
 import com.google.gwt.xml.client.impl.DOMParseException;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.StyleUtils;
@@ -25,6 +24,8 @@ import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.ui.ConditionalStyleDeclaration;
 import com.butent.bee.shared.ui.Relation;
@@ -49,6 +50,8 @@ import java.util.Map;
 
 public class XmlUtils {
 
+  private static final BeeLogger logger = LogUtils.getLogger(XmlUtils.class);
+  
   private static final Map<Short, String> NODE_TYPES = Maps.newHashMap();
 
   static {
@@ -580,7 +583,7 @@ public class XmlUtils {
     try {
       doc = XMLParser.parse(xml);
     } catch (DOMParseException ex) {
-      BeeKeeper.getLog().severe(ex.getMessage());
+      logger.severe(ex.getMessage());
       doc = null;
     }
     return doc;

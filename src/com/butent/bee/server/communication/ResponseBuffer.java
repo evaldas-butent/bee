@@ -6,7 +6,7 @@ import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.data.BeeColumn;
-import com.butent.bee.shared.logging.LogUtils.LogLevel;
+import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -16,7 +16,6 @@ import com.butent.bee.shared.utils.Property;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -63,28 +62,7 @@ public class ResponseBuffer {
       checkSeparator(s);
       buffer.append(s);
     }
-
     addSeparator();
-  }
-
-  public void add(Collection<?> lst) {
-    if (BeeUtils.isEmpty(lst)) {
-      addSeparator();
-    } else {
-      for (Iterator<?> it = lst.iterator(); it.hasNext();) {
-        add(it.next());
-      }
-    }
-  }
-
-  public void add(Object... lst) {
-    if (lst.length == 0) {
-      addSeparator();
-    } else {
-      for (int i = 0; i < lst.length; i++) {
-        add(lst[i]);
-      }
-    }
   }
 
   public void addColumn(BeeColumn col) {
@@ -156,10 +134,6 @@ public class ResponseBuffer {
 
   public void addMessage(Object... obj) {
     messages.add(new ResponseMessage(ArrayUtils.joinWords(obj)));
-  }
-
-  public void addNow(Object... obj) {
-    messages.add(new ResponseMessage(true, ArrayUtils.joinWords(obj)));
   }
 
   public void addPart(String uri, String content) {
@@ -234,6 +208,17 @@ public class ResponseBuffer {
     setContentType(ContentType.RESOURCE);
   }
 
+  public void addRow(Object... row) {
+    Assert.notNull(row);
+    if (row.length == 0) {
+      addSeparator();
+    } else {
+      for (Object obj : row) {
+        add((obj == null) ? null : obj.toString().trim());
+      }
+    }
+  }
+  
   public void addSeparator() {
     buffer.append(separator);
     count++;
@@ -284,15 +269,6 @@ public class ResponseBuffer {
       add(el.getName());
       add(el.getValue());
       add(new DateTime().toTimeString());
-    }
-  }
-
-  public void build(Object... obj) {
-    if (obj == null || obj.length == 0) {
-      return;
-    }
-    for (Object z : obj) {
-      add(z);
     }
   }
 

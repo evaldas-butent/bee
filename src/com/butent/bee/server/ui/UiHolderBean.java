@@ -171,7 +171,7 @@ public class UiHolderBean {
           }
         }
         if (menu == null || !(menu instanceof MenuEntry)) {
-          logger.error("Menu parent is not valid:", "Module:", xmlMenu.getModuleName(),
+          logger.severe("Menu parent is not valid:", "Module:", xmlMenu.getModuleName(),
               "; Menu:", xmlMenu.getName(), "; Parent:", parent);
         } else {
           List<Menu> items = ((MenuEntry) menu).getItems();
@@ -339,7 +339,7 @@ public class UiHolderBean {
       }
     }
     if (cnt == 0) {
-      logger.error("No", obj.name(), "descriptions found");
+      logger.severe("No", obj.name(), "descriptions found");
     } else {
       logger.info("Loaded", cnt, obj.name(), "descriptions");
     }

@@ -1,8 +1,9 @@
 package com.butent.bee.client.language;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.LinkedHashMap;
@@ -14,6 +15,9 @@ import java.util.Map.Entry;
  */
 
 public class Translation {
+
+  private static final BeeLogger logger = LogUtils.getLogger(Translation.class);
+  
   @SuppressWarnings("serial")
   private static Map<String, String> translationCache = new LinkedHashMap<String, String>() {
     @Override
@@ -40,7 +44,7 @@ public class Translation {
   public static void detectAndTranslate(String text, String to, TranslationCallback callback) {
     Language dst = Language.getByCode(to);
     if (dst == null) {
-      BeeKeeper.getLog().warning("Language", to, "not recognized");
+      logger.warning("Language", to, "not recognized");
       return;
     }
     translate(text, null, dst, callback);
@@ -124,12 +128,12 @@ public class Translation {
   public static void translate(String text, String from, String to, TranslationCallback callback) {
     Language src = Language.getByCode(from);
     if (src == null) {
-      BeeKeeper.getLog().warning("Language", from, "not recognized");
+      logger.warning("Language", from, "not recognized");
       return;
     }
     Language dst = Language.getByCode(to);
     if (dst == null) {
-      BeeKeeper.getLog().warning("Language", to, "not recognized");
+      logger.warning("Language", to, "not recognized");
       return;
     }
     translate(text, src, dst, callback);

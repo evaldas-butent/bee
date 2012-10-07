@@ -8,7 +8,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
@@ -19,6 +18,8 @@ import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.CustomDiv;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -38,6 +39,8 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     }
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(TilePanel.class);
+  
   private static final int MIN_SIZE = 20;
 
   private static final String ACTIVE_BLANK = "bee-activeBlank";
@@ -206,7 +209,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
       }
     }
     if (entangled == null) {
-      BeeKeeper.getLog().severe("entangled tile not found");
+      logger.severe("entangled tile not found");
       return;
     }
 

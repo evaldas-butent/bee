@@ -19,6 +19,8 @@ import com.butent.bee.client.widget.BeeCellList;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.menu.Menu;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
@@ -42,6 +44,8 @@ public class MenuManager implements Module {
     void onSelection(String parameters);
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(MenuManager.class);
+  
   private final Map<String, MenuCallback> menuCallbacks = Maps.newHashMap();
 
   private List<Menu> roots = null;
@@ -64,7 +68,7 @@ public class MenuManager implements Module {
     if (ok) {
       BeeKeeper.getScreen().updateMenu(w);
     } else {
-      BeeKeeper.getLog().severe("error creating menu");
+      logger.severe("error creating menu");
     }
     return ok;
   }

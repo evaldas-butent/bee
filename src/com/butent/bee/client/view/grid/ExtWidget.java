@@ -4,7 +4,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
@@ -13,6 +12,8 @@ import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -24,6 +25,8 @@ public class ExtWidget {
     HEADER, FOOTER, SCROLLER, CONTENT
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(ExtWidget.class);
+  
   private static final String ATTR_PRECEDES = "precedes";
   private static final String ATTR_HIDABLE = "hidable";
 
@@ -36,7 +39,7 @@ public class ExtWidget {
 
     Element root = doc.getDocumentElement();
     if (root == null) {
-      BeeKeeper.getLog().severe("ext widget: document element not found", xml);
+      logger.severe("ext widget: document element not found", xml);
       return null;
     }
     if (gridCallback != null && !gridCallback.onLoadExtWidget(root)) {
@@ -46,13 +49,13 @@ public class ExtWidget {
     String tagName = XmlUtils.getLocalName(root);
     Direction direction = NameUtils.getEnumByName(Direction.class, tagName);
     if (!Split.validDirection(direction, false)) {
-      BeeKeeper.getLog().severe("ext widget: invalid root tag name", tagName);
+      logger.severe("ext widget: invalid root tag name", tagName);
       return null;
     }
 
     int size = BeeUtils.unbox(XmlUtils.getAttributeInteger(root, FormWidget.ATTR_SIZE));
     if (size <= 0) {
-      BeeKeeper.getLog().severe("ext widget size must be positive integer");
+      logger.severe("ext widget size must be positive integer");
       return null;
     }
 

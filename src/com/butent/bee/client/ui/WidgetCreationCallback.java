@@ -3,15 +3,18 @@ package com.butent.bee.client.ui;
 import com.google.common.collect.Maps;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Map;
 
 public class WidgetCreationCallback implements FormFactory.WidgetDescriptionCallback {
 
+  private static final BeeLogger logger = LogUtils.getLogger(WidgetCreationCallback.class);
+  
   private final Map<String, String> namedWidgets = Maps.newHashMap();
   private final Map<String, String> potentialChildren = Maps.newHashMap();
 
@@ -41,7 +44,7 @@ public class WidgetCreationCallback implements FormFactory.WidgetDescriptionCall
     for (Map.Entry<String, String> entry : potentialChildren.entrySet()) {
       Widget child = DomUtils.getChildQuietly(root, entry.getKey());
       if (child == null) {
-        BeeKeeper.getLog().severe("id:", entry.getKey(), "widget not found");
+        logger.severe("id:", entry.getKey(), "widget not found");
         continue;
       }
 
@@ -49,7 +52,7 @@ public class WidgetCreationCallback implements FormFactory.WidgetDescriptionCall
         String parentId =
             BeeUtils.isEmpty(entry.getValue()) ? defaultId : namedWidgets.get(entry.getValue());
         if (BeeUtils.isEmpty(parentId)) {
-          BeeKeeper.getLog().severe("child id:", entry.getKey(), "parent name:", entry.getValue(),
+          logger.severe("child id:", entry.getKey(), "parent name:", entry.getValue(),
               "not found");
         } else {
           ((HasFosterParent) child).setParentId(parentId);
@@ -63,7 +66,7 @@ public class WidgetCreationCallback implements FormFactory.WidgetDescriptionCall
   }
 
   public void onFailure(Object... messages) {
-    BeeKeeper.getLog().severe(messages);
+    logger.severe(messages);
   }
 
   public void onSuccess(WidgetDescription result) {

@@ -35,6 +35,8 @@ import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -66,6 +68,8 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     }
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(TreePresenter.class);
+  
   private final TreeView treeView;
   private final String source;
   private final String parentName;
@@ -148,7 +152,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
         break;
 
       default:
-        BeeKeeper.getLog().info(action, "not implemented");
+        logger.info(action, "not implemented");
     }
   }
 

@@ -28,7 +28,7 @@ public class SMTPProtocolClientHandler extends TextBasedProtocolClientHandler {
 
       } else {
         state = 0;
-        logger.error("SMTP mail send error: " + msg);
+        logger.severe("SMTP mail send error: " + msg);
       }
     }
     super.messageReceived(ctx, e);

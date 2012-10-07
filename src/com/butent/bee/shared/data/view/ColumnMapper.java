@@ -161,7 +161,7 @@ public class ColumnMapper implements HasExtendedInfo {
   }
 
   private void logError(Object... obj) {
-    logger.error(NameUtils.getName(this));
-    logger.error(obj);
+    logger.severe(NameUtils.getName(this));
+    logger.severe(obj);
   }
 }

@@ -12,7 +12,6 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dom.DomUtils;
@@ -34,6 +33,8 @@ import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -44,6 +45,8 @@ import java.util.List;
 
 public class MessageBoxes {
 
+  private static final BeeLogger logger = LogUtils.getLogger(MessageBoxes.class);
+  
   private static final String STYLE_CHOICE_DIALOG = "bee-ChoiceDialog";
 
   private static final String STYLE_CHOICE_PANEL = "bee-ChoicePanel";
@@ -316,7 +319,7 @@ public class MessageBoxes {
 
     int r = table.getNumberOfRows();
     if (r <= 0) {
-      BeeKeeper.getLog().warning(caption, "data table empty");
+      logger.warning(caption, "data table empty");
       return;
     }
 

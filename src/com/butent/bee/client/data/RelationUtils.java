@@ -10,6 +10,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.UserData;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -17,6 +19,8 @@ import java.util.List;
 
 public class RelationUtils {
 
+  private static final BeeLogger logger = LogUtils.getLogger(RelationUtils.class);
+  
   public static int setDefaults(String viewName, IsRow row, Collection<String> colNames,
       List<BeeColumn> columns) {
     int result = 0;
@@ -132,7 +136,7 @@ public class RelationUtils {
     if (updateRelationColumn) {
       int index = targetInfo.getColumnIndex(targetColumn);
       if (BeeConst.isUndef(index)) {
-        BeeKeeper.getLog().warning(targetView, targetColumn, "column not found");
+        logger.warning(targetView, targetColumn, "column not found");
       } else {
         if (clear) {
           targetRow.clearCell(index);
@@ -145,7 +149,7 @@ public class RelationUtils {
 
     Collection<ViewColumn> targetColumns = targetInfo.getDescendants(targetColumn, false);
     if (targetColumns.isEmpty()) {
-      BeeKeeper.getLog().warning(targetView, targetColumn, "no descendants found");
+      logger.warning(targetView, targetColumn, "no descendants found");
       return result;
     }
 
@@ -153,7 +157,7 @@ public class RelationUtils {
     for (ViewColumn tc : targetColumns) {
       int targetIndex = targetInfo.getColumnIndex(tc.getName());
       if (BeeConst.isUndef(targetIndex)) {
-        BeeKeeper.getLog().warning(targetView, tc.getName(), "column not found");
+        logger.warning(targetView, tc.getName(), "column not found");
         continue;
       }
 

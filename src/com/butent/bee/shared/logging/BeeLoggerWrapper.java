@@ -1,7 +1,5 @@
 package com.butent.bee.shared.logging;
 
-import com.butent.bee.shared.logging.LogUtils.LogLevel;
-
 public class BeeLoggerWrapper implements BeeLogger {
 
   private final String loggerName;
@@ -12,16 +10,16 @@ public class BeeLoggerWrapper implements BeeLogger {
   }
 
   @Override
-  public void debug(Object... messages) {
+  public void addSeparator() {
     if (initLogger()) {
-      logger.debug(messages);
+      logger.addSeparator();
     }
   }
 
   @Override
-  public void error(Object... messages) {
+  public void debug(Object... messages) {
     if (initLogger()) {
-      logger.error(messages);
+      logger.debug(messages);
     }
   }
 
@@ -43,6 +41,13 @@ public class BeeLoggerWrapper implements BeeLogger {
   public void log(LogLevel level, Object... messages) {
     if (initLogger()) {
       logger.log(level, messages);
+    }
+  }
+
+  @Override
+  public void severe(Object... messages) {
+    if (initLogger()) {
+      logger.severe(messages);
     }
   }
 

@@ -1140,7 +1140,7 @@ public class CalendarModuleBean implements BeeModule {
         }
       }
       if (!BeeUtils.isEmpty(error)) {
-        logger.error(error);
+        logger.severe(error);
       }
       qs.updateData(new SqlUpdate(TBL_APPOINTMENT_REMINDERS)
           .addConstant(COL_SENT, System.currentTimeMillis())

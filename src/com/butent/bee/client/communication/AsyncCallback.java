@@ -23,6 +23,8 @@ import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.UserData;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -36,10 +38,12 @@ import java.util.List;
 
 public class AsyncCallback implements RequestCallback {
 
+  private static final BeeLogger logger = LogUtils.getLogger(AsyncCallback.class);
+  
   @Override
   public void onError(Request req, Throwable ex) {
     String msg = (ex instanceof RequestTimeoutException) ? "request timeout" : "request failure";
-    BeeKeeper.getLog().severe(msg, ex);
+    logger.severe(msg, ex);
   }
 
   @Override
@@ -61,10 +65,10 @@ public class AsyncCallback implements RequestCallback {
     String msg;
 
     if (info == null) {
-      BeeKeeper.getLog().warning("Rpc info not available");
+      logger.warning("Rpc info not available");
     }
     if (BeeUtils.isEmpty(svc)) {
-      BeeKeeper.getLog().warning("Rpc service",
+      logger.warning("Rpc service",
           BeeUtils.bracket(Service.RPC_VAR_SVC), "not available");
     }
 
@@ -72,11 +76,11 @@ public class AsyncCallback implements RequestCallback {
       msg = BeeUtils.joinWords(NameUtils.addName(Service.RPC_VAR_QID, id),
           NameUtils.addName(Service.RPC_VAR_SVC, svc));
       if (!BeeUtils.isEmpty(msg)) {
-        BeeKeeper.getLog().severe(msg);
+        logger.severe(msg);
       }
 
       msg = BeeUtils.joinWords(BeeUtils.bracket(statusCode), resp.getStatusText());
-      BeeKeeper.getLog().severe("response status", msg);
+      logger.severe("response status", msg);
 
       if (info != null) {
         info.endError(msg);
@@ -109,12 +113,12 @@ public class AsyncCallback implements RequestCallback {
     int pc = BeeUtils.toInt(resp.getHeader(Service.RPC_VAR_PART_CNT));
 
     if (debug) {
-      BeeKeeper.getLog().info("response", NameUtils.addName(Service.RPC_VAR_QID, id),
+      logger.info("response", NameUtils.addName(Service.RPC_VAR_QID, id),
           NameUtils.addName(Service.RPC_VAR_SVC, svc));
 
-      BeeKeeper.getLog().info(NameUtils.addName(Service.RPC_VAR_CTP, BeeUtils.toString(ctp)),
+      logger.info(NameUtils.addName(Service.RPC_VAR_CTP, BeeUtils.toString(ctp)),
           NameUtils.addName("len", len), NameUtils.addName(Service.RPC_VAR_CNT, cnt));
-      BeeKeeper.getLog().info(NameUtils.addName(Service.RPC_VAR_COLS, cc),
+      logger.info(NameUtils.addName(Service.RPC_VAR_COLS, cc),
           NameUtils.addName(Service.RPC_VAR_MSG_CNT, mc),
           NameUtils.addName(Service.RPC_VAR_PART_CNT, pc));
     }
@@ -124,18 +128,18 @@ public class AsyncCallback implements RequestCallback {
 
     if (BeeUtils.isHexString(hSep)) {
       sep = new String(BeeUtils.fromHex(hSep));
-      BeeKeeper.getLog().warning("response separator", BeeUtils.bracket(hSep));
+      logger.warning("response separator", BeeUtils.bracket(hSep));
     } else {
       sep = Character.toString(CommUtils.DEFAULT_INFORMATION_SEPARATOR);
       if (!BeeUtils.isEmpty(hSep)) {
-        BeeKeeper.getLog().severe("wrong response separator", BeeUtils.bracket(hSep));
+        logger.severe("wrong response separator", BeeUtils.bracket(hSep));
       }
     }
 
     if (debug) {
       Header[] headers = resp.getHeaders();
       for (int i = 0; i < headers.length; i++) {
-        BeeKeeper.getLog().info("Header", i + 1, headers[i].getName(), headers[i].getValue());
+        logger.info("Header", i + 1, headers[i].getName(), headers[i].getValue());
       }
       if (info != null) {
         info.setRespInfo(RpcUtils.responseInfo(resp));
@@ -178,7 +182,7 @@ public class AsyncCallback implements RequestCallback {
       }
     } else if (len == 0) {
       if (mc == 0) {
-        BeeKeeper.getLog().warning("response empty");
+        logger.warning("response empty");
       }
 
     } else if (Service.isInvocation(svc)) {
@@ -191,7 +195,7 @@ public class AsyncCallback implements RequestCallback {
       dispatchResource(txt);
 
     } else if (txt.indexOf(sep) < 0) {
-      BeeKeeper.getLog().info("<", id, "text", txt);
+      logger.info("<", id, "text", txt);
 
     } else {
       JsArrayString arr = splitResponse(txt, sep, cnt);
@@ -199,7 +203,7 @@ public class AsyncCallback implements RequestCallback {
     }
     duration.finish();
 
-    BeeKeeper.getLog().info("<", id, len,
+    logger.info("<", id, len,
         (info == null) ? BeeConst.STRING_EMPTY : BeeUtils.bracket(info.getCompletedTime()),
         BeeUtils.bracket(duration.getCompletedTime()));
     finalizeResponse();
@@ -208,13 +212,13 @@ public class AsyncCallback implements RequestCallback {
   private void dispatchInvocation(String svc, RpcInfo info, String txt, int mc,
       Collection<ResponseMessage> messages, int cc, int cnt, String sep) {
     if (info == null) {
-      BeeKeeper.getLog().severe("rpc info not available");
+      logger.severe("rpc info not available");
       return;
     }
 
     String method = info.getParameter(Service.RPC_VAR_METH);
     if (BeeUtils.isEmpty(method)) {
-      BeeKeeper.getLog().severe("rpc parameter [method] not found");
+      logger.severe("rpc parameter [method] not found");
       return;
     }
 
@@ -224,7 +228,7 @@ public class AsyncCallback implements RequestCallback {
       JsArrayString arr = splitResponse(txt, sep, cnt);
       dispatchResponse(svc, cc, arr);
     } else if (mc <= 0) {
-      BeeKeeper.getLog().warning("unknown invocation method", method);
+      logger.warning("unknown invocation method", method);
     }
   }
 
@@ -232,7 +236,7 @@ public class AsyncCallback implements RequestCallback {
     if (BeeUtils.same(svc, Service.GET_XML_INFO)) {
       ResponseHandler.showXmlInfo(pc, sizes, content);
     } else {
-      BeeKeeper.getLog().warning("unknown multipart response", svc);
+      logger.warning("unknown multipart response", svc);
     }
   }
 
@@ -253,18 +257,18 @@ public class AsyncCallback implements RequestCallback {
     } else {
       for (int i = 0; i < arr.length(); i++) {
         if (!BeeUtils.isEmpty(arr.get(i))) {
-          BeeKeeper.getLog().info(arr.get(i));
+          logger.info(arr.get(i));
         }
       }
 
       if (BeeUtils.same(svc, Service.WHERE_AM_I)) {
-        BeeKeeper.getLog().info(BeeConst.whereAmI());
+        logger.info(BeeConst.whereAmI());
       }
     }
   }
 
   private void finalizeResponse() {
-    BeeKeeper.getLog().addSeparator();
+    logger.addSeparator();
   }
 
   private JsArrayString splitResponse(String txt, String sep, int cnt) {

@@ -7,19 +7,14 @@ import com.butent.bee.shared.Assert;
  */
 public class LogUtils {
 
-  public enum LogLevel {
-    ERROR, WARNING, INFO, DEBUG
-  }
-
   private static BeeLoggerFactory loggerFactory;
-
-  public static BeeLogger getLogger(String name) {
-    return new BeeLoggerWrapper(name);
-  }
 
   public static BeeLogger getLogger(Class<?> clazz) {
     Assert.notNull(clazz);
-    return getLogger(clazz.getName());
+    if (loggerFactory != null) {
+      return loggerFactory.getLogger(clazz.getName());
+    }
+    return new BeeLoggerWrapper(clazz.getName());
   }
 
   /**
@@ -43,7 +38,7 @@ public class LogUtils {
 
   static BeeLogger createLogger(String name) {
     if (loggerFactory != null) {
-      return loggerFactory.getLogger(name);
+      return loggerFactory.createLogger(name);
     }
     return null;
   }

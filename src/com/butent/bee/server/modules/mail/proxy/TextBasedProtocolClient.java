@@ -61,7 +61,7 @@ public abstract class TextBasedProtocolClient {
       future = bootstrap.connect(new InetSocketAddress(host, port));
 
     } catch (Exception e) {
-      logger.error("ERROR: " + e.getCause().getMessage());
+      logger.severe("ERROR: " + e.getCause().getMessage());
     }
   }
 

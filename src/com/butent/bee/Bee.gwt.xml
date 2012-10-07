@@ -3,7 +3,7 @@
   <inherits name='com.google.gwt.user.User'/>
   <inherits name='com.google.gwt.http.HTTP'/>
   <inherits name='com.google.gwt.xml.XML'/>  
-  <inherits name='com.google.gwt.logging.Logging'/>
+  <inherits name="com.google.gwt.json.JSON"/>  
   
   <inherits name='com.google.common.collect.Collect'/>
   <inherits name='elemental.Elemental'/>
@@ -12,13 +12,6 @@
 
   <inherits name='com.butent.bee.Dnd'/>
   
-  <set-property name='gwt.logging.popupHandler' value='DISABLED'/>
-  <set-property name='gwt.logging.consoleHandler' value='DISABLED'/>
-  <set-property name='gwt.logging.developmentModeHandler' value='DISABLED'/>
-  <set-property name='gwt.logging.firebugHandler' value='DISABLED'/>
-  <set-property name='gwt.logging.systemHandler' value='DISABLED'/>
-  <set-property name='gwt.logging.hasWidgetsHandler' value='DISABLED'/>
-
   <set-property name='user.agent' value='safari'/>
 
   <extend-property name='locale' values='lt'/>
@@ -44,7 +37,11 @@
   <replace-with class='com.butent.bee.client.view.HeaderSilverImpl'> 
     <when-type-is class='com.butent.bee.client.view.HeaderImpl'/>   
   </replace-with>
-   
+
+  <replace-with class="com.google.gwt.logging.impl.LoggerImplRegular">
+    <when-type-is class="com.google.gwt.logging.impl.LoggerImplNull"/>
+  </replace-with>
+    
   <source path='client'/>
   <source path='shared'/>
   <super-source path='translatable'/>

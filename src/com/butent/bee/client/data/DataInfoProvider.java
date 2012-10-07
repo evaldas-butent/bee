@@ -14,6 +14,8 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.view.ColumnNamesProvider;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -23,6 +25,8 @@ import java.util.Map;
 public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Handler,
     DataInfo.Provider, ColumnNamesProvider {
 
+  private static final BeeLogger logger = LogUtils.getLogger(DataInfoProvider.class);
+  
   private final Map<String, DataInfo> views = Maps.newHashMap();
 
   public DataInfoProvider() {
@@ -37,7 +41,7 @@ public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Han
   public DataInfo getDataInfo(String viewName, boolean warn) {
     DataInfo dataInfo = views.get(BeeUtils.normalize(viewName));
     if (dataInfo == null && warn) {
-      BeeKeeper.getLog().severe("view", viewName, "data info not found");
+      logger.severe("view", viewName, "data info not found");
     }
     return dataInfo;
   }
@@ -59,7 +63,7 @@ public class DataInfoProvider implements HandlesDeleteEvents, RowInsertEvent.Han
             views.put(BeeUtils.normalize(dataInfo.getViewName()), dataInfo);
           }
         }
-        BeeKeeper.getLog().info("data info provider loaded", views.size(), "items");
+        logger.info("data info provider loaded", views.size(), "items");
       }
     });
   }

@@ -7,7 +7,6 @@ import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.dom.DomUtils;
@@ -23,6 +22,8 @@ import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -67,6 +68,8 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     }
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(HeaderSilverImpl.class);
+  
   private static final int HEIGHT = 30;
 
   private static final int CAPTION_LEFT = 8;
@@ -328,7 +331,7 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     String widgetId = getActionControls().get(action);
     if (BeeUtils.isEmpty(widgetId)) {
       if (visible) {
-        BeeKeeper.getLog().warning("showAction:", action.name(), "widget not found");
+        logger.warning("showAction:", action.name(), "widget not found");
       }
       return;
     }

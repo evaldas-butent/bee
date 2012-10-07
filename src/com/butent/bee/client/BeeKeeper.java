@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * starts and stops core system modules.
- * <code>Screen, RpcFactory, EventManager, LogHandler, UserInfo, Global, Storage, MenuManager
+ * <code>Screen, RpcFactory, EventManager, UserInfo, Global, Storage, MenuManager
  */
 
 public class BeeKeeper {
@@ -21,7 +21,6 @@ public class BeeKeeper {
   private static RpcFactory RPC;
   private static EventManager BUS;
 
-  private static LogHandler LOG;
   private static UserInfo USER;
   private static Global GLOB;
   private static Storage STOR;
@@ -29,10 +28,6 @@ public class BeeKeeper {
 
   public static EventManager getBus() {
     return BUS;
-  }
-
-  public static LogHandler getLog() {
-    return LOG;
   }
 
   public static MenuManager getMenu() {
@@ -63,13 +58,12 @@ public class BeeKeeper {
 
     BUS = new EventManager();
     RPC = new RpcFactory(url);
-    LOG = new LogHandler();
     USER = new UserInfo();
     GLOB = new Global();
     STOR = new Storage();
     MENU = new MenuManager();
 
-    modules = new Module[] {SCREEN, BUS, RPC, LOG, USER, GLOB, STOR, MENU};
+    modules = new Module[] {SCREEN, BUS, RPC, USER, GLOB, STOR, MENU};
   }
 
   public void end() {

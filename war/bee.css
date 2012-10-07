@@ -747,16 +747,16 @@ body, select {
   font-family: Verdana;
 }
 
-.bee-NotificationInfo {
+.bee-Notification-info {
   font-size: 1em;
 }
 
-.bee-NotificationSevere {
+.bee-Notification-error {
   background-color: #ffcccc;
   font-size: 1.4em;
 }
 
-.bee-NotificationWarning {
+.bee-Notification-warning {
   background-color: yellow;
   font-size: 1.2em;
 }

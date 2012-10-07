@@ -3,7 +3,7 @@ package com.butent.bee.server.logging;
 import com.butent.bee.server.Config;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.BeeLoggerWrapper;
-import com.butent.bee.shared.logging.LogUtils.LogLevel;
+import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.utils.ArrayUtils;
 
 import org.apache.log4j.BasicConfigurator;
@@ -49,13 +49,12 @@ public class ServerLogger implements BeeLogger {
   }
 
   @Override
-  public void debug(Object... messages) {
-    logInternal(Level.DEBUG, null, messages);
+  public void addSeparator() {
   }
 
   @Override
-  public void error(Object... messages) {
-    logInternal(Level.ERROR, null, messages);
+  public void debug(Object... messages) {
+    logInternal(Level.DEBUG, null, messages);
   }
 
   @Override
@@ -75,7 +74,7 @@ public class ServerLogger implements BeeLogger {
         debug(messages);
         break;
       case ERROR:
-        error(messages);
+        severe(messages);
         break;
       case INFO:
         info(messages);
@@ -84,6 +83,11 @@ public class ServerLogger implements BeeLogger {
         warning(messages);
         break;
     }
+  }
+
+  @Override
+  public void severe(Object... messages) {
+    logInternal(Level.ERROR, null, messages);
   }
 
   @Override

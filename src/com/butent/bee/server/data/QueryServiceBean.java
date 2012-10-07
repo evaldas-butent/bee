@@ -132,7 +132,7 @@ public class QueryServiceBean {
         sqlEngine = SqlEngine.detectEngine(engine);
 
         if (sqlEngine == null) {
-          logger.error("DSN:", dsn, "Unknown SQL engine:", engine);
+          logger.severe("DSN:", dsn, "Unknown SQL engine:", engine);
         }
       }
     }

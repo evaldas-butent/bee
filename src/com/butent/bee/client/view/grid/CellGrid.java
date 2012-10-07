@@ -30,7 +30,6 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentC
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.data.HasActiveRow;
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dom.DomUtils;
@@ -70,6 +69,8 @@ import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
 import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
@@ -831,6 +832,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     CONTAINER, RESIZER, HEADER, BODY, FOOTER;
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(CellGrid.class);
+  
   public static int defaultBodyCellHeight = 24;
   public static Edges defaultBodyCellPadding = new Edges(2, 3);
   public static Edges defaultBodyBorderWidth = new Edges(1);
@@ -1765,7 +1768,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   public void refreshCellContent(long rowId, String source) {
     int row = getRowIndex(rowId);
     if (!isRowWithinBounds(row)) {
-      BeeKeeper.getLog().warning("refreshCell: row id", rowId, "is not visible");
+      logger.warning("refreshCell: row id", rowId, "is not visible");
       return;
     }
 
@@ -2688,7 +2691,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         return i;
       }
     }
-    BeeKeeper.getLog().warning("columnId", columnId, "not found");
+    logger.warning("columnId", columnId, "not found");
     return BeeConst.UNDEF;
   }
 

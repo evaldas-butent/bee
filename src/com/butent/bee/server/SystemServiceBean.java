@@ -195,7 +195,7 @@ public class SystemServiceBean {
         for (File fl : files) {
           x = fl.isFile() ? fl.length() : 0;
           y = fl.lastModified();
-          buff.add(++idx, fl.getName(), fl.getPath(), x, y);
+          buff.addRow(++idx, fl.getName(), fl.getPath(), x, y);
 
           if (x > 0) {
             totSize += x;
@@ -204,7 +204,7 @@ public class SystemServiceBean {
             lastMod = Math.max(lastMod, y);
           }
         }
-        buff.add(0, mode, search, totSize, lastMod);
+        buff.addRow(0, mode, search, totSize, lastMod);
 
         buff.addMessage(mode, search, "found", files.size(), "files");
         return null;

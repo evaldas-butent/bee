@@ -5,7 +5,6 @@ import com.google.gwt.media.client.Video;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.images.Images;
@@ -30,11 +29,15 @@ import com.butent.bee.client.widget.Progress;
 import com.butent.bee.client.widget.TextLabel;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 public class DisplayWidget {
 
+  private static final BeeLogger logger = LogUtils.getLogger(DisplayWidget.class);
+  
   private final int dataIndex;
   private final AbstractCellRenderer renderer;
   private final WidgetDescription widgetDescription;
@@ -217,7 +220,7 @@ public class DisplayWidget {
       case CANVAS:
       case SVG:
       default:
-        BeeKeeper.getLog().warning("refresh display:", type.getTagName(), "not supported");
+        logger.warning("refresh display:", type.getTagName(), "not supported");
     }
   }
 }

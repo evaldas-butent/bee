@@ -45,6 +45,8 @@ import com.butent.bee.shared.data.cache.CachingPolicy;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.Order;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.UiConstants;
@@ -117,6 +119,8 @@ public class GridFactory {
     }
   };
 
+  private static final BeeLogger logger = LogUtils.getLogger(GridFactory.class);
+  
   private static final Map<String, GridDescription> descriptionCache = Maps.newHashMap();
   private static final Map<String, GridCallback> gridCallbacks = Maps.newHashMap();
 
@@ -324,7 +328,7 @@ public class GridFactory {
 
   public static void showGridInfo(String name) {
     if (descriptionCache.isEmpty()) {
-      BeeKeeper.getLog().warning("grid description cache is empty");
+      logger.warning("grid description cache is empty");
       return;
     }
 
@@ -335,10 +339,10 @@ public class GridFactory {
           Global.showGrid(new ExtendedPropertiesData(gridDescription.getExtendedInfo()));
           return;
         } else {
-          BeeKeeper.getLog().warning("grid", name, "description was not found");
+          logger.warning("grid", name, "description was not found");
         }
       } else {
-        BeeKeeper.getLog().warning("grid", name, "description not in cache");
+        logger.warning("grid", name, "description not in cache");
       }
     }
 
@@ -361,7 +365,7 @@ public class GridFactory {
 
     int r = table.getNumberOfRows();
     if (r <= 0) {
-      BeeKeeper.getLog().warning("data table empty");
+      logger.warning("data table empty");
       return null;
     }
 
@@ -430,7 +434,7 @@ public class GridFactory {
       }
 
       if (brs == null) {
-        BeeKeeper.getLog().severe("grid", gridDescription.getName(), "has no initial data");
+        logger.severe("grid", gridDescription.getName(), "has no initial data");
       } else {
         createPresenter(gridDescription, brs.getNumberOfRows(), brs, Provider.Type.LOCAL,
             CachingPolicy.NONE, uiOptions, gridCallback, immutableFilter, initialFilters, order,

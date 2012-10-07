@@ -20,7 +20,6 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
@@ -37,6 +36,8 @@ import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.ui.HasMaxLength;
@@ -51,6 +52,8 @@ import java.util.Set;
 
 public class UiHelper {
 
+  private static final BeeLogger logger = LogUtils.getLogger(UiHelper.class);
+  
   private static final String ALIGN_START = "start";
   private static final String ALIGN_CENTER = "center";
   private static final String ALIGN_END = "end";
@@ -574,13 +577,13 @@ public class UiHelper {
 
     Widget widget = DomUtils.getWidget(widgetId);
     if (widget == null) {
-      BeeKeeper.getLog().severe("update form:", widgetId, "widget not found");
+      logger.severe("update form:", widgetId, "widget not found");
       return;
     }
 
     FormView form = getForm(widget);
     if (form == null) {
-      BeeKeeper.getLog().severe("update form:", widgetId, columnId, value, "form not found");
+      logger.severe("update form:", widgetId, columnId, value, "form not found");
       return;
     }
 

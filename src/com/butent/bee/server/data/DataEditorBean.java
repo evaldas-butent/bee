@@ -271,7 +271,7 @@ public class DataEditorBean {
 
       if (cnt < rows.length && !response.hasErrors()) {
         String err = "Optimistic lock exception";
-        logger.error(err, "Deleted", cnt, "of", rows.length);
+        logger.severe(err, "Deleted", cnt, "of", rows.length);
         response.addError(err);
         response.setResponse(0);
       }

@@ -5,13 +5,14 @@ import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsDate;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Calculation;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -250,6 +251,8 @@ public class Evaluator extends Calculation {
     void updateRow(IsRow rowValue);
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(Evaluator.class);
+  
   public static final String CELL_OBJECT = "cell";
   public static final String ROW_OBJECT = "row";
   public static final String PROPERTY_VALUE = "value";
@@ -330,7 +333,7 @@ public class Evaluator extends Calculation {
           getParameters().getColName(), getParameters().getColIndex(),
           getParameters().getCellValues());
     } catch (JavaScriptException ex) {
-      BeeKeeper.getLog().warning("Evaluator:", ex.getMessage(), getExpression(), getFunction());
+      logger.warning("Evaluator:", ex.getMessage(), getExpression(), getFunction());
       s = null;
     }
     return s;

@@ -47,6 +47,8 @@ import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -85,6 +87,8 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(FormPresenter.class);
+  
   private final FormContainerView formContainer;
   private final Provider dataProvider;
 
@@ -200,7 +204,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
         
       default:
-        BeeKeeper.getLog().info(action, "not implemented");
+        logger.info(action, "not implemented");
     }
 
     if (getFormCallback() != null) {
@@ -249,7 +253,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
       @Override
       public void onSuccess(BeeRow row) {
-        BeeKeeper.getLog().info("cell updated:", getViewName(), rowId, columnId, newValue);
+        logger.info("cell updated:", getViewName(), rowId, columnId, newValue);
         if (rowMode) {
           BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
         } else {
@@ -364,7 +368,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   private void updateFilter() {
     Filter filter = ViewHelper.getFilter(this, getDataProvider());
     if (Objects.equal(filter, getLastFilter())) {
-      BeeKeeper.getLog().info("filter not changed", filter);
+      logger.info("filter not changed", filter);
     } else {
       lastFilter = filter;
       getDataProvider().onFilterChange(filter, true);

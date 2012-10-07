@@ -4,12 +4,13 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.Value;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 
@@ -19,6 +20,8 @@ import java.util.Map;
 
 public class MapRenderer extends AbstractCellRenderer implements HasItems {
   
+  private static final BeeLogger logger = LogUtils.getLogger(MapRenderer.class);
+
   public static final String DEFAULT_SEPARATOR = "="; 
   
   private final Map<String, String> map = Maps.newHashMap();
@@ -52,7 +55,7 @@ public class MapRenderer extends AbstractCellRenderer implements HasItems {
     }
     
     if (key == null || BeeUtils.isEmpty(value)) {
-      BeeKeeper.getLog().warning(NameUtils.getName(this), "cannot add item:", item);
+      logger.warning(NameUtils.getName(this), "cannot add item:", item);
     } else {
       map.put(key.getString(), value);
     }

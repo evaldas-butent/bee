@@ -79,7 +79,7 @@ public class Localized {
 
     Locale z = normalize(locale, availableConstants);
     if (z == null) {
-      logger.error(LocalizableType.CONSTANTS, transform(locale), "not available");
+      logger.severe(LocalizableType.CONSTANTS, transform(locale), "not available");
       return null;
     }
 
@@ -218,14 +218,14 @@ public class Localized {
       }
 
       if (name.charAt(baseLen) != sep) {
-        logger.error(type, "unrecognized localization", file.getPath());
+        logger.severe(type, "unrecognized localization", file.getPath());
         continue;
       }
 
       sfx = name.substring(baseLen + 1);
       locale = I18nUtils.toLocale(sfx);
       if (locale == null) {
-        logger.error(type, sfx, "locale not available", file.getPath());
+        logger.severe(type, sfx, "locale not available", file.getPath());
         continue;
       }
 
@@ -234,7 +234,7 @@ public class Localized {
     }
 
     if (cnt <= 0) {
-      logger.error(type, dir.getPath(), baseName, "not found");
+      logger.severe(type, dir.getPath(), baseName, "not found");
     }
     return cnt > 0;
   }

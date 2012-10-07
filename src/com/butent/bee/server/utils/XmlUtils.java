@@ -176,7 +176,7 @@ public class XmlUtils {
   public static Document fromFileName(String fileName) {
     File fl = new File(fileName);
     if (!FileUtils.isInputFile(fl)) {
-      logger.error(fileName, "not an input file");
+      logger.severe(fileName, "not an input file");
       return null;
     }
 
@@ -863,7 +863,7 @@ public class XmlUtils {
       error = e.getMessage();
     }
     if (!BeeUtils.isEmpty(error)) {
-      logger.error(resource, error);
+      logger.severe(resource, error);
     }
     return ret;
   }
@@ -1055,7 +1055,7 @@ public class XmlUtils {
 
   private static boolean checkBuilder() {
     if (domBuilder == null) {
-      logger.error("Document Builder not available");
+      logger.severe("Document Builder not available");
       return false;
     } else {
       return true;

@@ -20,11 +20,11 @@ import com.butent.bee.client.utils.Animation;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 
 /**
  * Enables using popup notifications with different levels of information (warnings, info messages,
@@ -38,19 +38,19 @@ public class Notification extends Composite implements NativePreviewHandler {
    */
 
   private class Message {
-    private final Level level;
+    private final LogLevel level;
     private final List<String> lines;
 
-    private Message(Level level, List<String> lines) {
+    private Message(LogLevel level, List<String> lines) {
       this.level = level;
       this.lines = lines;
     }
 
-    private Message(Level level, String... lines) {
+    private Message(LogLevel level, String... lines) {
       this(level, Lists.newArrayList(lines));
     }
 
-    private Level getLevel() {
+    private LogLevel getLevel() {
       return level;
     }
 
@@ -70,7 +70,7 @@ public class Notification extends Composite implements NativePreviewHandler {
       if (getLevel() == null) {
         return STYLE_DEFAULT;
       } else {
-        return "bee-Notification" + BeeUtils.proper(getLevel().getName());
+        return "bee-Notification-" + getLevel().name().toLowerCase();
       }
     }
   }
@@ -126,7 +126,8 @@ public class Notification extends Composite implements NativePreviewHandler {
   private static final String STYLE_CONTAINER = "bee-NotificationContainer";
   private static final String STYLE_MESSAGES = "bee-NotificationMessages";
   private static final String STYLE_TEXT = "bee-NotificationText";
-  private static final String STYLE_DEFAULT = "bee-NotificationInfo";
+
+  private static final String STYLE_DEFAULT = "bee-Notification-info";
 
   private final DivElement messageContainer = Document.get().createDivElement();
 
@@ -159,22 +160,6 @@ public class Notification extends Composite implements NativePreviewHandler {
     getPendingMessages().clear();
   }
 
-  public void config(String... lines) {
-    show(Level.CONFIG, lines);
-  }
-
-  public void fine(String... lines) {
-    show(Level.FINE, lines);
-  }
-
-  public void finer(String... lines) {
-    show(Level.FINER, lines);
-  }
-
-  public void finest(String... lines) {
-    show(Level.FINEST, lines);
-  }
-
   public void hide() {
     switch (getState()) {
       case PENDING:
@@ -196,7 +181,7 @@ public class Notification extends Composite implements NativePreviewHandler {
   }
 
   public void info(String... lines) {
-    show(Level.INFO, lines);
+    show(LogLevel.INFO, lines);
   }
 
   public void onPreviewNativeEvent(NativePreviewEvent event) {
@@ -218,10 +203,10 @@ public class Notification extends Composite implements NativePreviewHandler {
   }
 
   public void severe(String... lines) {
-    show(Level.SEVERE, lines);
+    show(LogLevel.ERROR, lines);
   }
 
-  public void show(Level level, String... lines) {
+  public void show(LogLevel level, String... lines) {
     Assert.notNull(level);
     Assert.notNull(lines);
     Assert.parameterCount(lines.length, 1);
@@ -237,7 +222,7 @@ public class Notification extends Composite implements NativePreviewHandler {
   }
 
   public void warning(String... lines) {
-    show(Level.WARNING, lines);
+    show(LogLevel.WARNING, lines);
   }
 
   @Override

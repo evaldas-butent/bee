@@ -14,7 +14,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.Widget;
 
-import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
@@ -92,6 +91,9 @@ import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogLevel;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.ColumnDescription;
@@ -111,7 +113,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 
 /**
  * Creates cell grid elements, connecting view and presenter elements of them.
@@ -128,6 +129,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
   }
 
+  private static final BeeLogger logger = LogUtils.getLogger(CellGridImpl.class);
+  
   private static final String STYLE_NEW_ROW_CONTAINER = "bee-GridNewRow-container";
   private static final String STYLE_NEW_ROW_LABEL_CELL = "bee-GridNewRow-labelCell";
   private static final String STYLE_NEW_ROW_LABEL = "bee-GridNewRow-label";
@@ -438,9 +441,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       if (msg == null) {
-        BeeKeeper.getLog().warning("unrecognized command", opt[i]);
+        logger.warning("unrecognized command", opt[i]);
       } else {
-        BeeKeeper.getLog().info(msg);
+        logger.info(msg);
       }
     }
 
@@ -589,7 +592,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       if (!BeeUtils.isEmpty(source)) {
         String normalized = DataUtils.getColumnName(source, dataCols, idName, versionName);
         if (BeeUtils.isEmpty(normalized)) {
-          BeeKeeper.getLog().warning("columnName:", columnName, "source:", source, "not found");
+          logger.warning("columnName:", columnName, "source:", source, "not found");
           continue;
         } else {
           if (!source.equals(normalized)) {
@@ -686,7 +689,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       if (column == null) {
-        BeeKeeper.getLog().warning("cannot create column:", columnName, colType);
+        logger.warning("cannot create column:", columnName, colType);
         continue;
       }
 
@@ -1114,17 +1117,17 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   @Override
   public void notifyInfo(String... messages) {
-    showNote(Level.INFO, messages);
+    showNote(LogLevel.INFO, messages);
   }
 
   @Override
   public void notifySevere(String... messages) {
-    showNote(Level.SEVERE, messages);
+    showNote(LogLevel.ERROR, messages);
   }
 
   @Override
   public void notifyWarning(String... messages) {
-    showNote(Level.WARNING, messages);
+    showNote(LogLevel.WARNING, messages);
   }
 
   @Override
@@ -1417,7 +1420,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     final List<String> columnNames = getNewRowColumnNames(newRowColumns);
 
     if (columnNames.isEmpty()) {
-      BeeKeeper.getLog().severe("grid", gridDescription.getName(),
+      logger.severe("grid", gridDescription.getName(),
           "new row columns not available");
       return;
     }
@@ -1577,14 +1580,14 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private EditableColumn getEditableColumn(String columnId, boolean warn) {
     if (BeeUtils.isEmpty(columnId)) {
       if (warn) {
-        BeeKeeper.getLog().warning("editable column id not specified");
+        logger.warning("editable column id not specified");
       }
       return null;
     }
 
     EditableColumn editableColumn = getEditableColumns().get(BeeUtils.normalize(columnId));
     if (editableColumn == null && warn) {
-      BeeKeeper.getLog().warning("editable column not found:", columnId);
+      logger.warning("editable column not found:", columnId);
     }
     return editableColumn;
   }
@@ -1640,7 +1643,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
         String name = BeeUtils.normalize(colName);
         if (!getEditableColumns().containsKey(name)) {
-          BeeKeeper.getLog().warning("newRowColumn", colName, "is not editable");
+          logger.warning("newRowColumn", colName, "is not editable");
           continue;
         }
 
@@ -1999,7 +2002,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return showNewRowPopup;
   }
 
-  private void showNote(Level level, String... messages) {
+  private void showNote(LogLevel level, String... messages) {
     StyleUtils.setZIndex(getNotification(), getGrid().getZIndex() + 1);
     getNotification().show(level, messages);
   }
