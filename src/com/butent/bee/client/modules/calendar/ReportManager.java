@@ -21,7 +21,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogConstants;
-import com.butent.bee.client.dialog.InputWidgetCallback;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.Flow;
@@ -165,7 +165,7 @@ class ReportManager {
 
     widget.addStyleName(CalendarStyleManager.ADD_RESOURCES);
 
-    final InputWidgetCallback callback = new InputWidgetCallback() {
+    final InputCallback callback = new InputCallback() {
       @Override
       public void onSuccess() {
         int cnt = 0;
@@ -230,7 +230,7 @@ class ReportManager {
 
     widget.addStyleName(CalendarStyleManager.ADD_RESOURCES);
 
-    final InputWidgetCallback callback = new InputWidgetCallback() {
+    final InputCallback callback = new InputCallback() {
       @Override
       public void onSuccess() {
         int cnt = 0;

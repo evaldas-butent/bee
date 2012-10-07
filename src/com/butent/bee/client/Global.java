@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.StyleInjector;
+import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -14,7 +15,7 @@ import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputBoxes;
-import com.butent.bee.client.dialog.InputWidgetCallback;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.MessageBoxes;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.images.Images;
@@ -162,20 +163,8 @@ public class Global implements Module {
     }
   }
 
-  public static void confirm(List<String> messages, Command command) {
-    MSG_BOXEN.confirm(null, messages, command);
-  }
-
-  public static void confirm(String message, Command command) {
-    MSG_BOXEN.confirm(message, command);
-  }
-
-  public static void confirm(String caption, List<String> messages, Command command) {
-    MSG_BOXEN.confirm(caption, messages, command);
-  }
-
-  public static void confirm(String caption, String message, Command command) {
-    MSG_BOXEN.confirm(caption, message, command);
+  public static void confirm(String message, InputCallback callback) {
+    MSG_BOXEN.confirm(message, callback);
   }
 
   public static void createVar(String name, String caption) {
@@ -357,26 +346,19 @@ public class Global implements Module {
     INP_BOXEN.inputVars(caption, lst, callback);
   }
 
-  public static void inputWidget(String caption, Widget input, InputWidgetCallback callback) {
+  public static void inputWidget(String caption, IsWidget input, InputCallback callback) {
     inputWidget(caption, input, callback, false, null, false);
   }
 
-  public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,
+  public static void inputWidget(String caption, IsWidget input, InputCallback callback,
       boolean enableGlass, String dialogStyle, boolean enablePrint) {
     inputWidget(caption, input, callback, enableGlass, dialogStyle, null, enablePrint);
   }
 
-  public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,
+  public static void inputWidget(String caption, IsWidget input, InputCallback callback,
       boolean enableGlass, String dialogStyle, UIObject target, boolean enablePrint) {
     INP_BOXEN.inputWidget(caption, input, callback, enableGlass, dialogStyle, target, enablePrint,
         null, null, BeeConst.UNDEF, null);
-  }
-
-  public static void inputWidget(String caption, Widget input, InputWidgetCallback callback,
-      boolean enableGlass, String dialogStyle, UIObject target, boolean enablePrint,
-      String confirmHtml, String cancelHtml, int timeout, WidgetInitializer initializer) {
-    INP_BOXEN.inputWidget(caption, input, callback, enableGlass, dialogStyle, target, enablePrint,
-        confirmHtml, cancelHtml, timeout, initializer);
   }
 
   public static boolean isDebug() {

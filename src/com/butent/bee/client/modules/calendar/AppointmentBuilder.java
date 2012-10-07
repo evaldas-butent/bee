@@ -43,7 +43,7 @@ import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.InputBoxes;
-import com.butent.bee.client.dialog.InputWidgetCallback;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.i18n.DateTimeFormat;
@@ -93,7 +93,7 @@ class AppointmentBuilder extends AbstractFormCallback {
     }
   }
 
-  private class ModalCallback extends InputWidgetCallback {
+  private class ModalCallback extends InputCallback {
     @Override
     public String getErrorMessage() {
       if (AppointmentBuilder.this.validate()) {
@@ -558,7 +558,7 @@ class AppointmentBuilder extends AbstractFormCallback {
 
     widget.addStyleName(CalendarStyleManager.ADD_RESOURCES);
 
-    final InputWidgetCallback callback = new InputWidgetCallback() {
+    final InputCallback callback = new InputCallback() {
       @Override
       public void onSuccess() {
         int cnt = 0;

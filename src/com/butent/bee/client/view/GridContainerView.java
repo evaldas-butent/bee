@@ -25,9 +25,9 @@ public interface GridContainerView extends View, HasAllDragAndDropHandlers, HasG
 
   void bind();
 
-  void create(GridDescription gridDescription, List<BeeColumn> dataColumns, int rowCount,
-      BeeRowSet rowSet, Order order, GridCallback gridCallback, Collection<UiOption> uiOptions,
-      GridFactory.GridOptions gridOptions);
+  void create(GridDescription gridDescription, List<BeeColumn> dataColumns, String relColumn,
+      int rowCount, BeeRowSet rowSet, Order order, GridCallback gridCallback,
+      Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions);
 
   List<String> getFavorite();
 

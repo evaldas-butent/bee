@@ -145,12 +145,12 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
     }
   }
 
-  public String[] getColumnLabels() {
-    String[] arr = new String[getNumberOfColumns()];
+  public List<String> getColumnLabels() {
+    List<String> labels = Lists.newArrayList();
     for (int i = 0; i < getNumberOfColumns(); i++) {
-      arr[i] = getColumnLabel(i);
+      labels.add(getColumnLabel(i));
     }
-    return arr;
+    return labels;
   }
 
   public String getShadowString(int rowIdx, int columnIdx) {

@@ -876,13 +876,10 @@ public class TaskEventHandler {
 
             if (BeeUtils.contains(actions, Action.CLOSE)) {
               form.fireEvent(new ActionEvent(actions));
-
             } else if (BeeUtils.contains(actions, Action.REFRESH)) {
               form.updateRow(row, refreshChildren);
-
-            } else {
-              form.setActiveRow(row);
             }
+
           } else if (response.hasResponse(Long.class)) {
             int dataIndex = form.getDataIndex(CrmConstants.COL_LAST_ACCESS);
             String newValue = (String) response.getResponse();

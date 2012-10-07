@@ -111,9 +111,9 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     getGridView().addEditFormHandler(this);
   }
 
-  public void create(GridDescription gridDescription, List<BeeColumn> dataColumns, int rowCount,
-      BeeRowSet rowSet, Order order, GridCallback gridCallback, Collection<UiOption> uiOptions,
-      GridFactory.GridOptions gridOptions) {
+  public void create(GridDescription gridDescription, List<BeeColumn> dataColumns, String relColumn,
+      int rowCount, BeeRowSet rowSet, Order order, GridCallback gridCallback,
+      Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
 
     int minRows = BeeUtils.unbox(gridDescription.getPagingThreshold());
     setHasPaging(UiOption.hasPaging(uiOptions) && rowCount >= minRows);
@@ -168,7 +168,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     String name = gridDescription.getName();
 
-    GridView content = new CellGridImpl(name, gridDescription.getViewName());
+    GridView content = new CellGridImpl(name, gridDescription.getViewName(), relColumn);
     content.create(dataColumns, rowCount, rowSet, gridDescription, gridCallback, hasSearch(),
         order);
 

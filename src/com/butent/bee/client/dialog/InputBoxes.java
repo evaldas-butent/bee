@@ -18,6 +18,7 @@ import com.google.gwt.user.client.ui.FocusWidget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.UIObject;
@@ -359,7 +360,7 @@ public class InputBoxes {
     }
   }
 
-  public void inputWidget(String caption, Widget widget, final InputWidgetCallback callback,
+  public void inputWidget(String caption, IsWidget widget, final InputCallback callback,
       boolean enableGlass, String dialogStyle, UIObject target, boolean enablePrint,
       String confirmHtml, String cancelHtml, final int timeout, WidgetInitializer initializer) {
 
@@ -375,12 +376,12 @@ public class InputBoxes {
     Flow panel = new Flow();
     panel.addStyleName(STYLE_INPUT_PANEL);
 
-    widget.addStyleName(STYLE_INPUT_WIDGET);
-    UiHelper.add(panel, widget, initializer, DialogConstants.WIDGET_INPUT);
+    widget.asWidget().addStyleName(STYLE_INPUT_WIDGET);
+    UiHelper.add(panel, widget.asWidget(), initializer, DialogConstants.WIDGET_INPUT);
 
     final Holder<Widget> errorDisplay = new Holder<Widget>(null);
     if (widget instanceof NotificationListener) {
-      errorDisplay.set(widget);
+      errorDisplay.set(widget.asWidget());
     } else {
       BeeLabel errorLabel = new BeeLabel();
       errorLabel.addStyleName(STYLE_INPUT_ERROR);
@@ -494,7 +495,7 @@ public class InputBoxes {
       dialog.showRelativeTo(target);
     }
 
-    UiHelper.focus(widget);
+    UiHelper.focus(widget.asWidget());
 
     if (timer != null) {
       timer.schedule(timeout);

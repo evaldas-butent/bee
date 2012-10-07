@@ -156,7 +156,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private List<BeeColumn> dataColumns = null;
 
-  private String relColumn = null;
+  private final String relColumn;
   private long relId = BeeConst.UNDEF;
 
   private final List<String> newRowDefaults = Lists.newArrayList();
@@ -165,6 +165,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private FormView newRowForm = null;
   private String newRowFormContainerId = null;
   private boolean newRowFormInitialized = false;
+  private boolean newRowFormGenerated = false;
 
   private FormView editForm = null;
   private boolean editMode = false;
@@ -188,10 +189,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private GridCallback gridCallback = null;
 
-  public CellGridImpl(String gridName, String viewName) {
+  public CellGridImpl(String gridName, String viewName, String relColumn) {
     super();
     this.gridName = gridName;
     this.dataInfo = BeeUtils.isEmpty(viewName) ? null : Data.getDataInfo(viewName);
+    this.relColumn = relColumn;
   }
 
   @Override
@@ -782,8 +784,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     final String newRowFormName = BeeUtils.notEmpty(gridDescr.getNewRowForm(),
         (getDataInfo() == null) ? null : getDataInfo().getNewRowForm());
 
-    setShowEditPopup(BeeUtils.unbox(gridDescr.getEditPopup()));
-    setShowNewRowPopup(BeeUtils.unbox(gridDescr.getNewRowPopup()));
+    setShowEditPopup(BeeUtils.nvl(gridDescr.getEditPopup(), isChild()));
+    setShowNewRowPopup(BeeUtils.nvl(gridDescr.getNewRowPopup(), isChild()));
 
     setSingleForm(!BeeUtils.isEmpty(editFormName) && BeeUtils.same(newRowFormName, editFormName));
 
@@ -831,6 +833,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     if (BeeUtils.isEmpty(newRowFormName) && !BeeUtils.isEmpty(viewName) && !isReadOnly()) {
       createDefaultNewRowForm(gridDescr);
+      setNewRowFormGenerated(true);
     }
 
     if (callback != null) {
@@ -1300,11 +1303,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   @Override
-  public void setRelColumn(String relColumn) {
-    this.relColumn = relColumn;
-  }
-
-  @Override
   public void setRelId(long relId) {
     this.relId = relId;
   }
@@ -1420,8 +1418,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     final List<String> columnNames = getNewRowColumnNames(newRowColumns);
 
     if (columnNames.isEmpty()) {
-      logger.severe("grid", gridDescription.getName(),
-          "new row columns not available");
+      logger.severe("grid", gridDescription.getName(), "new row columns not available");
       return;
     }
 
@@ -1466,6 +1463,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
             }
           }
         });
+    
+    form.setWidthValue(360.0);
+    form.setHeightValue(200.0);
 
     embraceNewRowForm(form);
   }
@@ -1767,6 +1767,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return editFormInitialized;
   }
 
+  private boolean isNewRowFormGenerated() {
+    return newRowFormGenerated;
+  }
+
   private boolean isNewRowFormInitialized() {
     return newRowFormInitialized;
   }
@@ -1921,6 +1925,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     this.newRowFormContainerId = newRowFormContainerId;
   }
 
+  private void setNewRowFormGenerated(boolean newRowFormGenerated) {
+    this.newRowFormGenerated = newRowFormGenerated;
+  }
+
   private void setNewRowFormInitialized(boolean newRowFormInitialized) {
     this.newRowFormInitialized = newRowFormInitialized;
   }
@@ -1962,7 +1970,12 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         showGrid(false);
         StyleUtils.unhideDisplay(containerId);
       } else {
-        popup.open();
+        if (isChild() && isNewRowFormGenerated()) {
+          popup.setPopupPosition(getAbsoluteLeft(), getAbsoluteTop());
+          popup.show();
+        } else {
+          popup.center();
+        }
       }
 
       if (edit) {

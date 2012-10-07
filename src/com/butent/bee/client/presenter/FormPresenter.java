@@ -20,13 +20,13 @@ import com.butent.bee.client.data.LocalProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
-import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
 import com.butent.bee.client.view.HasSearch;
@@ -59,7 +59,7 @@ import java.util.Set;
 public class FormPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, HasViewName, HasSearch, HasDataProvider, HasActiveRow {
 
-  private class DeleteCallback extends Command {
+  private class DeleteCallback extends InputCallback {
     private final long rowId;
     private final long version;
 
@@ -69,7 +69,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
 
     @Override
-    public void execute() {
+    public void onSuccess() {
       setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
 
       Queries.deleteRow(getViewName(), rowId, version, new Queries.IntCallback() {
@@ -339,8 +339,8 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private void deleteRow(long rowId, long version) {
-    Global.getMsgBoxen().confirm("Delete Record ?", new DeleteCallback(rowId, version),
-        StyleUtils.NAME_SCARY);
+    Global.getMsgBoxen().confirm(null, "Delete Record ?", new DeleteCallback(rowId, version),
+        StyleUtils.NAME_SCARY, null);
   }
 
   private FormCallback getFormCallback() {

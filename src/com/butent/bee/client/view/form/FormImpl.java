@@ -18,7 +18,9 @@ import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Global;
 import com.butent.bee.client.data.HasDataTable;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
@@ -34,6 +36,7 @@ import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.ui.WidgetDescription;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.utils.EvalHelper;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
@@ -51,6 +54,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeColumn;
+import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -209,6 +213,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private static final String STYLE_FORM = "bee-Form";
   private static final String STYLE_DISABLED = "bee-Form-disabled";
 
+  private static final String STYLE_CONFIRM_CLOSE = "bee-ConfirmFormClose";
+
   private static final String NEW_ROW_CAPTION = "Create New";
 
   private final String formName;
@@ -235,6 +241,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   private int rowCount = BeeConst.UNDEF;
 
   private IsRow activeRow = null;
+  private IsRow oldRow = null;
+
   private IsRow rowBuffer = null;
   private JavaScriptObject rowJso = null;
 
@@ -641,6 +649,51 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   @Override
+  public void onCancel(final Command command) {
+    Assert.notNull(command);
+    if (!hasData() || getOldRow() == null || getActiveRow() == null) {
+      command.execute();
+      return;
+    }
+    
+    final BeeRowSet rowSet = 
+        DataUtils.getUpdated(getViewName(), getDataColumns(), getOldRow(), getActiveRow());
+    if (rowSet == null || rowSet.isEmpty()) {
+      command.execute();
+      return;
+    }
+    
+    List<String> messages = Lists.newArrayList();
+    if (DataUtils.isNewRow(getActiveRow())) {
+      messages.add("Naujas įrašas nebus išsaugotas:");
+    } else {
+      messages.add("Pakeistos reikšmės nebus išsaugotos:");
+    }
+
+    messages.add(BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, rowSet.getColumnLabels()));
+    messages.add(BeeConst.STRING_EMPTY);
+    messages.add("Tikrai norite uždaryti formą ?");
+    
+    InputCallback callback = new InputCallback() {
+      @Override
+      public void onCancel() {
+        for (BeeColumn column : rowSet.getColumns()) {
+          if (focus(column.getId())) {
+            return;
+          }
+        }
+      }
+
+      @Override
+      public void onSuccess() {
+        command.execute();
+      }
+    };
+    
+    Global.getMsgBoxen().confirm(null, messages, callback, STYLE_CONFIRM_CLOSE, null);
+  }
+
+  @Override
   public void onCellUpdate(CellUpdateEvent event) {
     Assert.notNull(event);
 
@@ -834,14 +887,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   @Override
-  public void setActiveRow(IsRow activeRow) {
-    if (getFormCallback() != null) {
-      getFormCallback().onSetActiveRow(activeRow);
-    }
-    this.activeRow = activeRow;
-  }
-
-  @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
   }
@@ -861,6 +906,20 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
 
     getRootWidget().setStyleName(STYLE_DISABLED, !enabled);
+  }
+
+  @Override
+  public void setHeightUnit(Unit heightUnit) {
+    if (getDimensions() != null) {
+      getDimensions().setHeightUnit(heightUnit);
+    }
+  }
+
+  @Override
+  public void setHeightValue(Double heightValue) {
+    if (getDimensions() != null) {
+      getDimensions().setHeightValue(heightValue);
+    }
   }
 
   @Override
@@ -925,6 +984,20 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   @Override
+  public void setWidthUnit(Unit widthUnit) {
+    if (getDimensions() != null) {
+      getDimensions().setWidthUnit(widthUnit);
+    }
+  }
+
+  @Override
+  public void setWidthValue(Double widthValue) {
+    if (getDimensions() != null) {
+      getDimensions().setWidthValue(widthValue);
+    }
+  }
+
+  @Override
   public void start(Integer count) {
     if (hasData()) {
       if (!getTabOrder().isEmpty()) {
@@ -968,10 +1041,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     setAdding(true);
     fireEvent(new AddStartEvent(NEW_ROW_CAPTION, false));
 
-    IsRow oldRow = getActiveRow();
-    setRowBuffer(oldRow);
-    if (oldRow == null) {
-      oldRow = DataUtils.createEmptyRow(getDataColumns().size());
+    IsRow row = getActiveRow();
+    setRowBuffer(row);
+    if (row == null) {
+      row = DataUtils.createEmptyRow(getDataColumns().size());
     }
     IsRow newRow = DataUtils.createEmptyRow(getDataColumns().size());
 
@@ -980,14 +1053,14 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         continue;
       }
 
-      String carry = editableWidget.getCarryValue(oldRow);
+      String carry = editableWidget.getCarryValue(row);
       if (!BeeUtils.isEmpty(carry)) {
         newRow.setValue(editableWidget.getDataIndex(), carry);
       }
     }
 
     if (getFormCallback() != null) {
-      getFormCallback().onStartNewRow(this, oldRow, newRow);
+      getFormCallback().onStartNewRow(this, row, newRow);
     }
 
     setActiveRow(newRow);
@@ -1169,6 +1242,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private Notification getNotification() {
     return notification;
+  }
+
+  private IsRow getOldRow() {
+    return oldRow;
   }
 
   private String getPreviewId() {
@@ -1374,6 +1451,14 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     this.activeEditableIndex = activeEditableIndex;
   }
 
+  private void setActiveRow(IsRow activeRow) {
+    if (getFormCallback() != null) {
+      getFormCallback().onSetActiveRow(activeRow);
+    }
+    setOldRow((activeRow == null) ? null : DataUtils.cloneRow(activeRow));
+    this.activeRow = activeRow;
+  }
+
   private void setAdding(boolean adding) {
     this.adding = adding;
   }
@@ -1396,6 +1481,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private void setHasData(boolean hasData) {
     this.hasData = hasData;
+  }
+
+  private void setOldRow(IsRow oldRow) {
+    this.oldRow = oldRow;
   }
 
   private void setPreviewId(String previewId) {

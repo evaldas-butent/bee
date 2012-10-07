@@ -157,11 +157,11 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
   private void createPresenter(IsRow row, BeeRowSet rowSet, Filter immutableFilter,
       Map<String, Filter> initialFilters, Order order) {
 
-    GridPresenter gp = new GridPresenter(getGridDescription(), rowSet.getNumberOfRows(), rowSet,
-        Provider.Type.ASYNC, getCachingPolicy(), EnumSet.of(UiOption.CHILD), getGridCallback(),
-        immutableFilter, initialFilters, order, getGridOptions());
+    GridPresenter gp = new GridPresenter(getGridDescription(), getRelSource(),
+        rowSet.getNumberOfRows(), rowSet, Provider.Type.ASYNC, getCachingPolicy(),
+        EnumSet.of(UiOption.CHILD), getGridCallback(), immutableFilter, initialFilters, order,
+        getGridOptions());
 
-    gp.getGridView().setRelColumn(getRelSource());
     gp.getGridView().getGrid().setPageSize(BeeConst.UNDEF, false);
     gp.setEventSource(getId());
 

@@ -17,6 +17,7 @@ import com.butent.bee.client.presenter.RowPresenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Holder;
@@ -106,13 +107,20 @@ public class RowEditor {
 
     final ModalForm dialog = new ModalForm(presenter.getWidget(), formView, false, true);
     final Holder<State> state = Holder.of(State.OPEN);
+    
+    final Command close = new Command() {
+      @Override
+      public void execute() {
+        state.set(State.CANCELED);
+        dialog.hide();
+      }
+    };
 
     presenter.setActionDelegate(new HandlesActions() {
       @Override
       public void handleAction(Action action) {
         if (Action.CLOSE.equals(action)) {
-          state.set(State.CANCELED);
-          dialog.hide();
+          formView.onCancel(close);
 
         } else if (Action.SAVE.equals(action)) {
           if (validate(formView)) {
@@ -130,8 +138,7 @@ public class RowEditor {
       public void onKeyDown(KeyDownEvent event) {
         if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
           event.preventDefault();
-          state.set(State.CANCELED);
-          dialog.hide();
+          formView.onCancel(close);
 
         } else if (UiHelper.isSave(event.getNativeEvent())) {
           event.preventDefault();
@@ -156,7 +163,9 @@ public class RowEditor {
     dialog.addAttachHandler(new AttachEvent.Handler() {
       @Override
       public void onAttachOrDetach(AttachEvent event) {
-        formView.updateRow(DataUtils.cloneRow(oldRow), true);
+        if (event.isAttached()) {
+          formView.updateRow(DataUtils.cloneRow(oldRow), true);
+        }
       }
     });
 

@@ -21,6 +21,7 @@ import com.butent.bee.client.composite.MultiSelector.SelectionCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.dialog.DialogBox;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.FlexTable;
@@ -32,7 +33,6 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.ActionEvent;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.TreeView;
@@ -459,9 +459,9 @@ public class ProjectEventHandler {
       if (!indexes.isEmpty()) {
         if (DataUtils.isId(projectId)) {
           Global.confirm(BeeUtils.joinWords("Pašalinti", indexes.size(), "stebėtojus?"),
-              new Command() {
+              new InputCallback() {
                 @Override
-                public void execute() {
+                public void onSuccess() {
                   List<Long> usrList = Lists.newArrayList();
 
                   for (int idx : indexes) {
@@ -614,13 +614,10 @@ public class ProjectEventHandler {
 
             if (BeeUtils.contains(actions, Action.CLOSE)) {
               form.fireEvent(new ActionEvent(actions));
-
             } else if (BeeUtils.contains(actions, Action.REFRESH)) {
               form.updateRow(row, refreshChildren);
-
-            } else {
-              form.setActiveRow(row);
             }
+
           } else if (response.hasResponse(Long.class)) {
             int dataIndex = form.getDataIndex(CrmConstants.COL_LAST_ACCESS);
             String newValue = (String) response.getResponse();
@@ -719,9 +716,9 @@ public class ProjectEventHandler {
   }
 
   private static void doActivate(final FormView form) {
-    Global.confirm("Perduoti projektą vykdymui?", new Command() {
+    Global.confirm("Perduoti projektą vykdymui?", new InputCallback() {
       @Override
-      public void execute() {
+      public void onSuccess() {
         ParameterList args = createArgs(ProjectEvent.ACTIVATED.name());
         addEventArgs(form, args, ProjectEvent.ACTIVATED);
         createRequest(args, null, form, EnumSet.of(Action.CLOSE, Action.REFRESH), true);

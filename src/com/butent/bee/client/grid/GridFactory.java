@@ -405,9 +405,9 @@ public class GridFactory {
       Filter immutableFilter, Map<String, Filter> initialFilters,
       Order order, GridOptions gridOptions, PresenterCallback presenterCallback) {
 
-    GridPresenter presenter = new GridPresenter(gridDescription, rowCount, rowSet, providerType,
-        cachingPolicy, uiOptions, gridCallback, immutableFilter, initialFilters, order,
-        gridOptions);
+    GridPresenter presenter = new GridPresenter(gridDescription, null, rowCount, rowSet,
+        providerType, cachingPolicy, uiOptions, gridCallback, immutableFilter, initialFilters,
+        order, gridOptions);
 
     if (gridCallback != null) {
       gridCallback.onShow(presenter);

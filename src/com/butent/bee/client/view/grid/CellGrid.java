@@ -1592,7 +1592,11 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         }
 
         int keyCode = event.getKeyCode();
-        if (handleKey(keyCode, EventUtils.hasModifierKey(event), row, col, target)) {
+        boolean hasModifiers = EventUtils.hasModifierKey(event);
+        
+        if (handleKey(keyCode, hasModifiers, row, col, target)) {
+          event.preventDefault();
+        } else if (hasModifiers) {
           event.preventDefault();
         } else if (columnInfo.isSelection()) {
           event.preventDefault();
@@ -1609,7 +1613,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
         if (charCode == BeeConst.CHAR_SPACE) {
           selectRow(row, rowValue);
-        } else {
+        } else if (charCode > BeeConst.CHAR_SPACE) {
           startEditing(rowValue, col, target, charCode);
         }
         return;

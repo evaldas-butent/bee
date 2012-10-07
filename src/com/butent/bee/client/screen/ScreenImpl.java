@@ -16,6 +16,7 @@ import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.composite.ResourceEditor;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Complex;
@@ -26,7 +27,6 @@ import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.logging.ClientLogger;
 import com.butent.bee.client.logging.PanelHandler;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.utils.ServiceCommand;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
@@ -308,7 +308,12 @@ public class ScreenImpl implements Screen {
     BeeImage exit = new BeeImage(Global.getImages().exit().getSafeUri(), new Command() {
       @Override
       public void execute() {
-        Global.confirm(Global.CONSTANTS.logout(), new ServiceCommand(Service.LOGOUT));
+        Global.confirm(Global.CONSTANTS.logout(), new InputCallback() {
+          @Override
+          public void onSuccess() {
+            BeeKeeper.getBus().dispatchService(Service.LOGOUT);
+          }
+        });
       }
     });
     exit.addStyleName("bee-UserExit");

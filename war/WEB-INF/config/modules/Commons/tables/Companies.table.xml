@@ -11,8 +11,8 @@
     <String name="Code" precision="30" unique="true" label="Įmonės kodas" />
     <String name="VATCode" precision="30" label="PVM kodas" />
 
-    <Relation name="CompanyType" relation="CompanyTypes" />
-    <Relation name="CompanyGroup" relation="CompanyGroups" />
+    <Relation name="CompanyType" relation="CompanyTypes" label="Tipas" />
+    <Relation name="CompanyGroup" relation="CompanyGroups" label="Grupė" />
 
     <Relation name="Contact" unique="true" relation="Contacts" />
 

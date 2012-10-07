@@ -16,4 +16,12 @@ public interface HasDimensions {
   Unit getWidthUnit();
 
   Double getWidthValue();
+  
+  void setHeightUnit(Unit heightUnit);
+
+  void setHeightValue(Double heightValue);
+  
+  void setWidthUnit(Unit widthUnit);
+
+  void setWidthValue(Double widthValue);
 }

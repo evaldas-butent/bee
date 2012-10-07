@@ -25,6 +25,7 @@ import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.edit.SelectorEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
@@ -330,12 +331,19 @@ public class RowFactory {
     final ModalForm dialog = new ModalForm(presenter.getWidget(), formView, false, true);
     final Holder<State> state = Holder.of(State.OPEN);
 
+    final Command close = new Command() {
+      @Override
+      public void execute() {
+        state.set(State.CANCELED);
+        dialog.hide();
+      }
+    };
+    
     presenter.setActionDelegate(new HandlesActions() {
       @Override
       public void handleAction(Action action) {
         if (Action.CLOSE.equals(action)) {
-          state.set(State.CANCELED);
-          dialog.hide();
+          formView.onCancel(close);
 
         } else if (Action.SAVE.equals(action)) {
           if (validate(formView, dataInfo)) {
@@ -350,8 +358,7 @@ public class RowFactory {
       public void onKeyDown(KeyDownEvent event) {
         if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
           event.preventDefault();
-          state.set(State.CANCELED);
-          dialog.hide();
+          formView.onCancel(close);
 
         } else if (UiHelper.isSave(event.getNativeEvent())) {
           event.preventDefault();

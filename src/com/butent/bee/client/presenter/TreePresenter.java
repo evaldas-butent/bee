@@ -12,10 +12,9 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.dialog.InputWidgetCallback;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.ui.FormDescription;
-import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.CatchEvent;
 import com.butent.bee.client.view.TreeView;
@@ -238,7 +237,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     } else {
       caption = formView.getCaption();
     }
-    Global.inputWidget(caption, formView.asWidget(), new InputWidgetCallback() {
+    Global.inputWidget(caption, formView, new InputCallback() {
       final List<BeeColumn> columns = Lists.newArrayList();
       final List<String> oldValues = Lists.newArrayList();
       final List<String> values = Lists.newArrayList();
@@ -361,9 +360,9 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
 
     if (data != null) {
       String message = BeeUtils.joinWords("Išmesti", evaluate(data), "?");
-      Global.getMsgBoxen().confirm(message, new Command() {
+      Global.getMsgBoxen().confirm(null, message, new InputCallback() {
         @Override
-        public void execute() {
+        public void onSuccess() {
           Queries.deleteRow(source, data.getId(), data.getVersion(),
               new IntCallback() {
                 @Override
@@ -373,7 +372,7 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
                 }
               });
         }
-      }, StyleUtils.NAME_SCARY);
+      }, StyleUtils.NAME_SCARY, null);
     }
   }
 }

@@ -67,7 +67,5 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   void refreshCellContent(long rowId, String columnSource);
 
-  void setRelColumn(String relColumn);
-
   void setRelId(long relId);
 }

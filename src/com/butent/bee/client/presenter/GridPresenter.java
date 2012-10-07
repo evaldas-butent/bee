@@ -21,6 +21,7 @@ import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.NotificationListener;
@@ -30,7 +31,6 @@ import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetInitializer;
-import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasGridView;
@@ -77,7 +77,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasSearch, HasDataProvider,
     HasActiveRow, HasGridView {
 
-  private class DeleteCallback extends Command {
+  private class DeleteCallback extends InputCallback {
     private final IsRow activeRow;
     private final Collection<RowInfo> rows;
 
@@ -87,7 +87,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
 
     @Override
-    public void execute() {
+    public void onSuccess() {
       int count = (rows == null) ? 0 : rows.size();
       GridCallback gcb = getGridCallback();
 
@@ -169,21 +169,21 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   public GridPresenter(GridDescription gridDescription, int rowCount, BeeRowSet rowSet,
       Provider.Type providerType, CachingPolicy cachingPolicy, Collection<UiOption> uiOptions) {
-    this(gridDescription, rowCount, rowSet, providerType, cachingPolicy, uiOptions,
+    this(gridDescription, null, rowCount, rowSet, providerType, cachingPolicy, uiOptions,
         null, null, null, null, null);
   }
 
-  public GridPresenter(GridDescription gridDescription, int rowCount, BeeRowSet rowSet,
-      Provider.Type providerType, CachingPolicy cachingPolicy, Collection<UiOption> uiOptions,
-      GridCallback gridCallback, Filter immutableFilter, Map<String, Filter> initialFilters,
-      Order order, GridFactory.GridOptions gridOptions) {
+  public GridPresenter(GridDescription gridDescription, String relColumn, int rowCount,
+      BeeRowSet rowSet, Provider.Type providerType, CachingPolicy cachingPolicy,
+      Collection<UiOption> uiOptions, GridCallback gridCallback, Filter immutableFilter,
+      Map<String, Filter> initialFilters, Order order, GridFactory.GridOptions gridOptions) {
 
     if (gridCallback != null) {
       gridCallback.setGridPresenter(this);
     }
 
-    this.gridContainer = createView(gridDescription, rowSet.getColumns(), rowCount, rowSet,
-        order, gridCallback, uiOptions, gridOptions);
+    this.gridContainer = createView(gridDescription, rowSet.getColumns(), relColumn,
+        rowCount, rowSet, order, gridCallback, uiOptions, gridOptions);
 
     this.dataProvider = createProvider(gridContainer, gridDescription.getViewName(),
         rowSet.getColumns(), gridDescription.getIdName(), gridDescription.getVersionName(),
@@ -237,9 +237,9 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     DeleteCallback deleteCallback = new DeleteCallback(row, null);
 
     if (mode == GridCallback.DELETE_SILENT || mode == GridCallback.DELETE_DEFAULT && !confirm) {
-      deleteCallback.execute();
+      deleteCallback.onSuccess();
     } else {
-      Global.getMsgBoxen().confirm(message, deleteCallback, StyleUtils.NAME_SCARY);
+      Global.getMsgBoxen().confirm(null, message, deleteCallback, StyleUtils.NAME_SCARY, null);
     }
   }
 
@@ -563,12 +563,12 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private GridContainerView createView(GridDescription gridDescription, List<BeeColumn> columns,
-      int rowCount, BeeRowSet rowSet, Order order, GridCallback gridCallback,
+      String relColumn, int rowCount, BeeRowSet rowSet, Order order, GridCallback gridCallback,
       Collection<UiOption> uiOptions, GridFactory.GridOptions gridOptions) {
 
     GridContainerView view = new GridContainerImpl();
-    view.create(gridDescription, columns, rowCount, rowSet, order, gridCallback, uiOptions,
-        gridOptions);
+    view.create(gridDescription, columns, relColumn, rowCount, rowSet, order, gridCallback,
+        uiOptions, gridOptions);
 
     return view;
   }
@@ -586,7 +586,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
     if (options.isEmpty()) {
       DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
-      deleteCallback.execute();
+      deleteCallback.onSuccess();
 
     } else {
       Global.choice("Išmesti", null, options, new ChoiceCallback() {
@@ -597,7 +597,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
           } else if (value == 1) {
             DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
-            deleteCallback.execute();
+            deleteCallback.onSuccess();
           }
         }
       }, 2, BeeConst.UNDEF, DialogConstants.CANCEL, new WidgetInitializer() {

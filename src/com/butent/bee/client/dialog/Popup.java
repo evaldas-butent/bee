@@ -327,6 +327,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private boolean hideOnEscape = false;
   private boolean hideOnSave = false;
   private Scheduler.ScheduledCommand onSave = null;
+  private Scheduler.ScheduledCommand onEscape = null;
 
   private boolean isAnimationEnabled = false;
   private final ResizeAnimation resizeAnimation = new ResizeAnimation(this);
@@ -426,6 +427,10 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     return "popup";
   }
 
+  public Scheduler.ScheduledCommand getOnEscape() {
+    return onEscape;
+  }
+
   public Scheduler.ScheduledCommand getOnSave() {
     return onSave;
   }
@@ -455,11 +460,11 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   public boolean hideOnEscape() {
     return hideOnEscape;
   }
-
+  
   public boolean hideOnSave() {
     return hideOnSave;
   }
-  
+
   public boolean isAnimationEnabled() {
     return isAnimationEnabled;
   }
@@ -510,11 +515,11 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   public void setAutoHideEnabled(boolean autoHide) {
     this.autoHide = autoHide;
   }
-
+  
   public void setAutoHideOnHistoryEventsEnabled(boolean enabled) {
     this.autoHideOnHistoryEvents = enabled;
   }
-  
+
   public void setGlassEnabled(boolean enabled) {
     this.isGlassEnabled = enabled;
 
@@ -553,6 +558,10 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
   public void setModal(boolean modal) {
     this.modal = modal;
+  }
+
+  public void setOnEscape(Scheduler.ScheduledCommand onEscape) {
+    this.onEscape = onEscape;
   }
 
   public void setOnSave(Scheduler.ScheduledCommand onSave) {
@@ -840,6 +849,10 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
           if (hideOnEscape()) {
             hide(true);
           }
+          if (getOnEscape() != null) {
+            getOnEscape().execute();
+          }
+
         } else if (UiHelper.isSave(nativeEvent)) {
           if (hideOnSave()) {
             hide(true);

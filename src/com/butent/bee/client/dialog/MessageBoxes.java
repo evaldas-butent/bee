@@ -1,7 +1,7 @@
 package com.butent.bee.client.dialog;
 
 import com.google.common.collect.Lists;
-import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -18,7 +18,6 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.Flow;
-import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
@@ -55,6 +54,8 @@ public class MessageBoxes {
   private static final String STYLE_CHOICE_GROUP = "bee-ChoiceGroup-";
   private static final String STYLE_CHOICE_DEFAULT = "bee-ChoiceDefault";
   private static final String STYLE_CHOICE_CANCEL = "bee-ChoiceCancel";
+
+  private static final String STYLE_CONFIRM_MESSAGE = "bee-ConfirmMessage";
 
   private static final int CHOICE_MAX_HORIZONTAL_ITEMS = 10;
   private static final int CHOICE_MAX_HORIZONTAL_CHARS = 100;
@@ -191,29 +192,24 @@ public class MessageBoxes {
     return ok;
   }
 
-  public void confirm(String message, Command command) {
-    confirm(null, message, command);
+  public void confirm(String message, InputCallback callback) {
+    confirm(null, message, callback);
   }
 
-  public void confirm(String message, Command command, String dialogStyleName) {
-    confirm(null, message, command, dialogStyleName);
+  public void confirm(String caption, String message, InputCallback callback) {
+    confirm(caption, message, callback, null, null);
   }
 
-  public void confirm(String caption, List<String> messages, Command command) {
-    confirm(caption, messages, command, null, null);
+  public void confirm(String caption, String message, InputCallback callback, String dialogStyle,
+      String messageStyle) {
+    Assert.notEmpty(message);
+    confirm(caption, Lists.newArrayList(message), callback, dialogStyle, messageStyle);
   }
-
-  public void confirm(String caption, List<String> messages, Command command,
-      String dialogStyleName) {
-    confirm(caption, messages, command, dialogStyleName, null);
-  }
-
-  public void confirm(String caption, List<String> messages, final Command command,
-      String dialogStyleName, String messageStyleName) {
-    Assert.notNull(messages);
-    int count = messages.size();
-    Assert.isPositive(count);
-    Assert.notNull(command);
+  
+  public void confirm(String caption, List<String> messages, final InputCallback callback,
+      String dialogStyle, String messageStyle) {
+    Assert.notEmpty(messages);
+    Assert.notNull(callback);
 
     final Popup panel;
     if (BeeUtils.isEmpty(caption)) {
@@ -222,49 +218,39 @@ public class MessageBoxes {
       panel = new DialogBox(caption);
     }
 
-    Vertical content = new Vertical();
+    FlexTable content = new FlexTable();
     content.setCellSpacing(10);
-    content.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
-
+    
+    int row = 0;
     for (String message : messages) {
-      if (!BeeUtils.isEmpty(message)) {
+      if (message != null) {
         BeeLabel label = new BeeLabel(message);
-        if (!BeeUtils.isEmpty(messageStyleName)) {
-          label.addStyleName(messageStyleName);
-        }
-        content.add(label);
+        label.addStyleName(BeeUtils.notEmpty(messageStyle, STYLE_CONFIRM_MESSAGE));
+
+        content.setWidget(row++, 1, label);
       }
     }
-
-    Horizontal buttons = new Horizontal();
 
     BeeImage ok = new BeeImage(Global.getImages().ok(), new Command() {
       @Override
       public void execute() {
         panel.hide();
-        command.execute();
+        callback.onSuccess();
       }
     });
-    buttons.add(ok);
-    buttons.setCellHorizontalAlignment(ok, HasHorizontalAlignment.ALIGN_RIGHT);
-
-    Html spacer = new Html();
-    spacer.setWidth(StyleUtils.toCssLength(6, Unit.EM));
-    buttons.add(spacer);
+    content.setWidget(row, 0, ok);
 
     BeeImage cancel = new BeeImage(Global.getImages().cancel(), new Command() {
       @Override
       public void execute() {
         panel.hide();
+        callback.onCancel();
       }
     });
-    buttons.add(cancel);
-    buttons.setCellHorizontalAlignment(cancel, HasHorizontalAlignment.ALIGN_LEFT);
+    content.setWidget(row, 2, cancel);
 
-    content.add(buttons);
-
-    if (!BeeUtils.isEmpty(dialogStyleName)) {
-      panel.addStyleName(dialogStyleName);
+    if (!BeeUtils.isEmpty(dialogStyle)) {
+      panel.addStyleName(dialogStyle);
     }
 
     panel.setWidget(content);
@@ -272,20 +258,23 @@ public class MessageBoxes {
     panel.center();
 
     panel.setHideOnEscape(true);
+    panel.setOnEscape(new Scheduler.ScheduledCommand() {
+      @Override
+      public void execute() {
+        callback.onCancel();
+      }
+    });
+
     panel.setHideOnSave(true);
-    panel.setOnSave(command);
+    panel.setOnSave(new Scheduler.ScheduledCommand() {
+      @Override
+      public void execute() {
+        callback.onSuccess();
+      }
+    });
 
     DomUtils.makeFocusable(panel);
     DomUtils.setFocus(panel, true);
-  }
-
-  public void confirm(String caption, String message, Command command) {
-    confirm(caption, message, command, null);
-  }
-
-  public void confirm(String caption, String message, Command command, String dialogStyleName) {
-    Assert.notEmpty(message);
-    confirm(caption, Lists.newArrayList(message), command, dialogStyleName);
   }
 
   public boolean nativeConfirm(String... lines) {

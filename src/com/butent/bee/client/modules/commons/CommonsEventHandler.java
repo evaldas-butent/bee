@@ -19,6 +19,7 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.MultiSelector.SelectionCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.commons.ParametersHandler.ParameterFormHandler;
 import com.butent.bee.client.presenter.GridFormPresenter;
@@ -28,7 +29,6 @@ import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
-import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.edit.SelectorEvent;
@@ -166,9 +166,9 @@ public class CommonsEventHandler {
       if (!indexes.isEmpty()) {
         if (DataUtils.isId(itemId)) {
           Global.confirm(BeeUtils.joinWords("Pašalinti", indexes.size(), "kategorijas?"),
-              new Command() {
+              new InputCallback() {
                 @Override
-                public void execute() {
+                public void onSuccess() {
                   List<Long> categoryList = Lists.newArrayList();
 
                   for (int idx : indexes) {

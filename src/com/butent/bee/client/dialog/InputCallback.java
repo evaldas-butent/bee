@@ -2,7 +2,7 @@ package com.butent.bee.client.dialog;
 
 import com.butent.bee.shared.utils.BeeUtils;
 
-public abstract class InputWidgetCallback {
+public abstract class InputCallback {
 
   public String getErrorMessage() {
     return null;

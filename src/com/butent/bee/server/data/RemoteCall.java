@@ -176,7 +176,7 @@ public class RemoteCall {
     if (rs instanceof BeeRowSet) {
       BeeRowSet rowSet = (BeeRowSet) rs;
       data.affected = rowSet.getNumberOfRows();
-      data.columns = Lists.newArrayList(rowSet.getColumnLabels());
+      data.columns = rowSet.getColumnLabels();
       data.rows = Lists.newArrayList();
 
       if (prm.showId || prm.showVersion || !skipColumns) {

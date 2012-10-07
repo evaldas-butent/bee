@@ -8,6 +8,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -90,7 +91,12 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
 
     switch (action) {
       case CLOSE:
-        gridView.formCancel();
+        getForm().onCancel(new Command() {
+          @Override
+          public void execute() {
+            gridView.formCancel();
+          }
+        });
         break;
 
       case EDIT:

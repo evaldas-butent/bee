@@ -14,7 +14,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
-import com.butent.bee.client.dialog.InputWidgetCallback;
+import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.commons.ParametersHandler;
 import com.butent.bee.client.ui.FormDescription;
@@ -207,7 +207,7 @@ public class CalendarKeeper {
               SELECTOR_HANDLER.setCompanyHandlerEnabled(companyAndVehicle);
               SELECTOR_HANDLER.setVehicleHandlerEnabled(companyAndVehicle);
 
-              Global.inputWidget(getAppointmentViewInfo().getNewRowCaption(), result.asWidget(),
+              Global.inputWidget(getAppointmentViewInfo().getNewRowCaption(), result,
                   builder.getModalCallback(), glass, RowFactory.DIALOG_STYLE, true);
             }
           }
@@ -358,8 +358,8 @@ public class CalendarKeeper {
               SELECTOR_HANDLER.setCompanyHandlerEnabled(companyAndVehicle);
               SELECTOR_HANDLER.setVehicleHandlerEnabled(companyAndVehicle);
               
-              Global.inputWidget(result.getCaption(), result.asWidget(),
-                  builder.getModalCallback(), glass, RowEditor.DIALOG_STYLE, true);
+              Global.inputWidget(result.getCaption(), result, builder.getModalCallback(), glass,
+                  RowEditor.DIALOG_STYLE, true);
             }
           }
         });
@@ -515,7 +515,7 @@ public class CalendarKeeper {
 
     String caption = getSettingsForm().getCaption();
 
-    Global.inputWidget(caption, getSettingsForm().asWidget(), new InputWidgetCallback() {
+    Global.inputWidget(caption, getSettingsForm(), new InputCallback() {
       @Override
       public void onSuccess() {
         int updCount = Queries.update(VIEW_USER_CALENDARS, rowSet.getColumns(), oldRow, newRow,

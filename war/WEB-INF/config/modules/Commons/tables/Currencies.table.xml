@@ -6,9 +6,9 @@
   x="0" y="0"
   >
   <Fields>
-    <String name="Name" precision="5" notNull="true" unique="true" label="Val." />
-    <String name="Caption" precision="60" />
-    <String name="MinorName" precision="5" />
-    <String name="MinorCaption" precision="60" />
+    <String name="Name" precision="5" notNull="true" unique="true" label="Valiuta" />
+    <String name="Caption" precision="60" label="Pavadinimas" />
+    <String name="MinorName" precision="5" label="Smulki" />
+    <String name="MinorCaption" precision="60" label="Smulkios pav." />
   </Fields>
 </Table>
