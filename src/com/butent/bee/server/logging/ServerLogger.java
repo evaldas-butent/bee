@@ -1,23 +1,28 @@
 package com.butent.bee.server.logging;
 
 import com.butent.bee.server.Config;
+import com.butent.bee.server.io.FileUtils;
+import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.BeeLoggerWrapper;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.utils.ArrayUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.xml.DOMConfigurator;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.io.File;
-import java.util.Properties;
 
 public class ServerLogger implements BeeLogger {
 
   private static final String FQCN = BeeLoggerWrapper.class.getName();
-  private static final String LOG4J_PROPERTIES = "log4j.properties";
+  private static final String LOG4J_PROPERTIES = "log4j.xml";
   private static boolean loadedConfiguration = false;
   private static boolean busy = false;
 
@@ -33,12 +38,35 @@ public class ServerLogger implements BeeLogger {
   public ServerLogger(String name) {
     if (!loadedConfiguration) {
       busy = true;
+      File cfg = new File(Config.USER_DIR, LOG4J_PROPERTIES);
 
-      Properties props = Config.loadProperties(LOG4J_PROPERTIES);
+      if (!FileUtils.isInputFile(cfg)) {
+        cfg = new File(Config.CONFIG_DIR, LOG4J_PROPERTIES);
+      }
+      Document xmlProps = XmlUtils.fromFileName(cfg.getPath());
 
-      if (props != null) {
-        props.setProperty("log_dir", new File(Config.USER_DIR, "logs").getPath());
-        PropertyConfigurator.configure(props);
+      if (xmlProps != null) {
+        NodeList appenders = xmlProps.getElementsByTagName("appender");
+
+        for (int i = 0; i < appenders.getLength(); i++) {
+          NodeList childs = appenders.item(i).getChildNodes();
+
+          for (int j = 0; j < childs.getLength(); j++) {
+            Node child = childs.item(j);
+
+            if (BeeUtils.same(child.getLocalName(), "param") && child.hasAttributes()) {
+              Node prm = child.getAttributes().getNamedItem("name");
+
+              if (prm != null && BeeUtils.same(prm.getNodeValue(), "file")) {
+                prm = child.getAttributes().getNamedItem("value");
+                prm.setNodeValue(prm.getNodeValue()
+                    .replace("${logDir}", new File(Config.USER_DIR, "logs").getPath()));
+                break;
+              }
+            }
+          }
+        }
+        DOMConfigurator.configure(xmlProps.getDocumentElement());
       } else {
         BasicConfigurator.configure();
       }
