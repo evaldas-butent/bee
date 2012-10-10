@@ -59,13 +59,13 @@ public class ServerLogger implements BeeLogger {
 
               if (prm != null && BeeUtils.same(prm.getNodeValue(), "file")) {
                 prm = child.getAttributes().getNamedItem("value");
-                prm.setNodeValue(prm.getNodeValue()
-                    .replace("${logDir}", new File(Config.USER_DIR, "logs").getPath()));
+                prm.setNodeValue(new File(Config.LOG_DIR, prm.getNodeValue()).getPath());
                 break;
               }
             }
           }
         }
+
         DOMConfigurator.configure(xmlProps.getDocumentElement());
       } else {
         BasicConfigurator.configure();

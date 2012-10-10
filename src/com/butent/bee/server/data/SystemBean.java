@@ -658,7 +658,7 @@ public class SystemBean {
         }
       } else {
         tblBackup = tblName + "_BAK";
-        logger.info("Checking indexes...");
+        logger.debug("Checking indexes...");
         int c = 0;
         String[] keys = qs.dbIndexes(getDbName(), getDbSchema(), tblName)
             .getColumn(SqlConstants.KEY_NAME);
@@ -693,7 +693,7 @@ public class SystemBean {
         }
       }
       if (!update) {
-        logger.info("Checking foreign keys...");
+        logger.debug("Checking foreign keys...");
         int c = 0;
         String[] fKeys = qs.dbForeignKeys(getDbName(), getDbSchema(), tblName, null)
             .getColumn(SqlConstants.KEY_NAME);
@@ -733,7 +733,7 @@ public class SystemBean {
         }
       }
       if (!update) {
-        logger.info("Checking triggers...");
+        logger.debug("Checking triggers...");
         int c = 0;
         Set<String> triggers = Sets.newHashSet(qs.dbTriggers(getDbName(), getDbSchema(), tblName)
             .getColumn(SqlConstants.TRIGGER_NAME));
@@ -768,7 +768,7 @@ public class SystemBean {
         }
       }
       if (!update && table.isAuditable() && isTable(tblName)) {
-        logger.info("Checking audit tables...");
+        logger.debug("Checking audit tables...");
         String auditName = BeeUtils.join("_", tblName, AUDIT_PREFIX);
 
         if (!qs.dbTableExists(dbName, dbAuditSchema, auditName)) {
@@ -793,7 +793,7 @@ public class SystemBean {
         SimpleRowSet newFields = qs.dbFields(getDbName(), getDbSchema(), tblBackup);
 
         if (!update) {
-          logger.info("Checking fields...");
+          logger.debug("Checking fields...");
           int c = 0;
 
           for (Map<String, String> newFieldInfo : newFields) {

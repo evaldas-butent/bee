@@ -17,7 +17,7 @@
   </appender>
 
   <appender name="debugLogger" class="org.apache.log4j.DailyRollingFileAppender">
-    <param name="File" value="${logDir}/debug.log" />
+    <param name="File" value="debug.log" />
     <param name="DatePattern" value="_yyyy-MM(W)" />
     <layout class="org.apache.log4j.PatternLayout">
       <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %p: %l - %m%n" />
@@ -26,10 +26,10 @@
   </appender>
 
   <appender name="infoLogger" class="org.apache.log4j.DailyRollingFileAppender">
-    <param name="File" value="${logDir}/info.log" />
+    <param name="File" value="info.log" />
     <param name="DatePattern" value="_yyyy-MM(W)" />
     <layout class="org.apache.log4j.PatternLayout">
-      <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %p: %l - %m%n" />
+      <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS}: %m%n" />
     </layout>
     <filter class="org.apache.log4j.varia.LevelRangeFilter" >
       <param name="LevelMin" value="INFO" />
@@ -39,10 +39,10 @@
   </appender>
 
   <appender name="warningLogger" class="org.apache.log4j.DailyRollingFileAppender">
-    <param name="File" value="${logDir}/warning.log" />
+    <param name="File" value="warning.log" />
     <param name="DatePattern" value="_yyyy-MM(W)" />
     <layout class="org.apache.log4j.PatternLayout">
-      <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %p: %l - %m%n" />
+      <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS}: %l - %m%n" />
     </layout>
     <filter class="org.apache.log4j.varia.LevelRangeFilter" >
       <param name="LevelMin" value="WARN" />
@@ -52,10 +52,10 @@
   </appender>
 
   <appender name="errorLogger" class="org.apache.log4j.DailyRollingFileAppender">
-    <param name="File" value="${logDir}/error.log" />
+    <param name="File" value="error.log" />
     <param name="DatePattern" value="_yyyy-MM(W)" />
     <layout class="org.apache.log4j.PatternLayout">
-      <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %p: %l - %m%n" />
+      <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS}: %l - %m%n" />
     </layout>
     <filter class="org.apache.log4j.varia.LevelRangeFilter" >
       <param name="LevelMin" value="ERROR" />

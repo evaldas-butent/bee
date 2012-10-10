@@ -44,7 +44,7 @@ public class DocumentHandler {
   private static class CreationHandler extends AbstractFormCallback {
 
     private static final BeeLogger logger = LogUtils.getLogger(CreationHandler.class);
-    
+
     private final FileCollector collector = new FileCollector();
 
     private CreationHandler() {
@@ -197,6 +197,7 @@ public class DocumentHandler {
       return new DocumentGridHandler();
     }
 
+    @Override
     public void onSelection(SelectionEvent<IsRow> event) {
       if (event != null && getGridPresenter() != null) {
         Long category = null;
@@ -235,7 +236,7 @@ public class DocumentHandler {
   }
 
   private static final String DOCUMENT_VIEW_NAME = "Documents";
-  private static final String FILE_VIEW_NAME = "Files";
+  private static final String FILE_VIEW_NAME = "DocumentFiles";
 
   public static void register() {
     GridFactory.registerGridCallback("Documents", new DocumentGridHandler());

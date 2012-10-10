@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
 
-  name="Files" viewName="Files" caption="Bylos"
+  name="DocumentFiles" viewName="DocumentFiles" caption="Bylos"
   >
   <columns>
     <DataColumn name="FileDate" source="FileDate" caption="Data" />

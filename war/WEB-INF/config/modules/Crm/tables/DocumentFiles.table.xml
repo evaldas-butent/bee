@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Table xmlns="http://www.butent.com/table"
 
-  name="Files"
+  name="DocumentFiles"
   idName="FileID"
   >
   <Fields>

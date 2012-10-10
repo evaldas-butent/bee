@@ -1,6 +1,7 @@
 package com.butent.bee.shared.logging;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 
 /**
  * Contains methods used for logging, changing logging level.
@@ -10,6 +11,9 @@ public class LogUtils {
   private static BeeLoggerFactory loggerFactory;
 
   public static BeeLogger getLogger(String name) {
+    if (BeeConst.isClient()) {
+      return createLogger(name);
+    }
     return new BeeLoggerWrapper(name);
   }
 

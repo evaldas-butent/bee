@@ -614,7 +614,7 @@ public class SqlUtils {
   }
 
   public static String uniqueName() {
-    return BeeUtils.randomString(5, 5, 'a', 'z');
+    return BeeUtils.randomString(5);
   }
 
   static <T> Collection<T> addCollection(Collection<T> destination, Collection<T> source) {

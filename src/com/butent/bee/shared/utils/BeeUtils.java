@@ -86,7 +86,7 @@ public class BeeUtils {
     }
     return true;
   }
-  
+
   public static boolean anyEmpty(String first, String second, String... rest) {
     if (isEmpty(first) || isEmpty(second)) {
       return true;
@@ -1531,6 +1531,10 @@ public class BeeUtils {
     return min + z.longValue();
   }
 
+  public static String randomString(int len) {
+    return randomString(len, len, 'a', 'z');
+  }
+
   /**
    * Generates a random String with a specified length from the given characters.
    * 
@@ -2263,7 +2267,7 @@ public class BeeUtils {
   public static String toString(Enum<?> e) {
     return (e == null) ? BeeConst.STRING_EMPTY : e.name();
   }
-  
+
   /**
    * Converts an Integer value {@code x} to a String value.
    * 

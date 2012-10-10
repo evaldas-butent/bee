@@ -36,6 +36,8 @@ public class Config {
   public static File SCHEMA_DIR;
   public static File CONFIG_DIR;
   public static File USER_DIR;
+  public static File LOG_DIR;
+  public static File REPOSITORY_DIR;
 
   private static Properties properties;
 
@@ -55,7 +57,7 @@ public class Config {
   }
 
   public static List<File> getDefaultSearchDirectories() {
-    return Lists.newArrayList(USER_DIR, CONFIG_DIR, SCHEMA_DIR, WAR_DIR, SOURCE_DIR);
+    return Lists.newArrayList(USER_DIR, CONFIG_DIR, SCHEMA_DIR, WAR_DIR, SOURCE_DIR, LOG_DIR);
   }
 
   public static List<File> getDirectories(String pfx) {
@@ -109,7 +111,9 @@ public class Config {
         "War dir", WAR_DIR.isDirectory(), WAR_DIR.getAbsolutePath(),
         "Source dir", SOURCE_DIR.isDirectory(), SOURCE_DIR.getAbsolutePath(),
         "Config dir", CONFIG_DIR.isDirectory(), CONFIG_DIR.getAbsolutePath(),
-        "User dir", USER_DIR.isDirectory(), USER_DIR.getAbsolutePath());
+        "User dir", USER_DIR.isDirectory(), USER_DIR.getAbsolutePath(),
+        "Log dir", LOG_DIR.isDirectory(), LOG_DIR.getAbsolutePath(),
+        "Repository dir", REPOSITORY_DIR.isDirectory(), REPOSITORY_DIR.getAbsolutePath());
 
     if (fileBlacklist == null) {
       PropertyUtils.addExtended(lst, "File Blacklist", "not initialized");
@@ -218,6 +222,8 @@ public class Config {
     SCHEMA_DIR = new File(dir, "schemas");
     CONFIG_DIR = new File(dir, "config");
     USER_DIR = new File(dir, "user");
+    LOG_DIR = new File(USER_DIR, "logs");
+    REPOSITORY_DIR = new File(USER_DIR, "repository");
 
     logger.debug("web inf path:", w);
     properties = loadProperties("server.properties");
