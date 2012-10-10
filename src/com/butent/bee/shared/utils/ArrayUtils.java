@@ -307,7 +307,7 @@ public class ArrayUtils {
 
   public static String toString(Object arr) {
     if (arr instanceof Object[]) {
-      return Arrays.toString((Object[]) arr);
+      return Arrays.deepToString((Object[]) arr);
     } else if (arr instanceof boolean[]) {
       return Arrays.toString((boolean[]) arr);
     } else if (arr instanceof char[]) {

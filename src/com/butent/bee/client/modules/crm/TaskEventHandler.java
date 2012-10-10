@@ -362,6 +362,9 @@ public class TaskEventHandler {
       List<String> values = Lists.newArrayList();
 
       for (BeeColumn column : form.getDataColumns()) {
+        if (!column.isWritable()) {
+          continue;
+        }
         String colName = column.getId();
         String value = row.getString(form.getDataIndex(colName));
 

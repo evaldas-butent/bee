@@ -24,8 +24,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
-import com.butent.bee.client.logging.ClientLogger;
-import com.butent.bee.client.logging.PanelHandler;
+import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
@@ -46,10 +45,6 @@ public class ScreenImpl implements Screen {
 
   private static final BeeLogger logger = LogUtils.getLogger(ScreenImpl.class);
   
-  protected static PanelHandler getLogHandler() {
-    return (logger instanceof ClientLogger) ? ((ClientLogger) logger).getPanelHandler() : null;
-  }
-
   private LayoutPanel rootPanel;
   private Split screenPanel = null;
 
@@ -247,10 +242,7 @@ public class ScreenImpl implements Screen {
     setScreenPanel(p);
 
     if (getLogToggle() != null && !getLogToggle().getValue()) {
-      PanelHandler handler = getLogHandler();
-      if (handler != null) {
-        handler.setVisible(false);
-      }
+      ClientLogManager.setPanelVisible(false);
     }
     
     RootPanel.get().add(createLogo());
@@ -275,8 +267,7 @@ public class ScreenImpl implements Screen {
   }
 
   protected Widget initEast() {
-    PanelHandler handler = getLogHandler();
-    return (handler == null) ? null : handler.getPanel();
+    return ClientLogManager.getLogPanel();
   }
 
   protected Widget initNorth() {
@@ -352,10 +343,7 @@ public class ScreenImpl implements Screen {
 
     log.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
       public void onValueChange(ValueChangeEvent<Boolean> event) {
-        PanelHandler handler = getLogHandler();
-        if (handler != null) {
-          handler.setVisible(event.getValue());
-        }
+        ClientLogManager.setPanelVisible(event.getValue());
         BeeKeeper.getStorage().setItem(getLogVisible(), BeeUtils.toString(event.getValue()));
       }
     });

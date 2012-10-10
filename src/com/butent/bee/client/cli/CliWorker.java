@@ -74,8 +74,7 @@ import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
-import com.butent.bee.client.logging.ClientLogger;
-import com.butent.bee.client.logging.PanelHandler;
+import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.CompositeService;
@@ -338,10 +337,7 @@ public class CliWorker {
 
   private static void clear(String args) {
     if (BeeUtils.isEmpty(args) || BeeUtils.startsSame(args, "log")) {
-      PanelHandler handler = getLogHandler();
-      if (handler != null) {
-        handler.clear();
-      }
+      ClientLogManager.clearPanel();
 
     } else if (BeeUtils.startsSame(args, "grids")) {
       GridFactory.clearDescriptionCache();
@@ -723,18 +719,14 @@ public class CliWorker {
     if (ArrayUtils.length(arr) > 1) {
       String z = arr[1];
 
-      PanelHandler handler = getLogHandler();
-      if (handler == null) {
-        logger.warning("log panel handler not available");
-        logger.addSeparator();
-      } else if (BeeUtils.inList(z, BeeConst.STRING_ZERO, BeeConst.STRING_MINUS)) {
-        handler.setVisible(false);
+      if (BeeUtils.inList(z, BeeConst.STRING_ZERO, BeeConst.STRING_MINUS)) {
+        ClientLogManager.setPanelVisible(false);
       } else if (BeeUtils.isDigit(z)) {
-        handler.resize(BeeUtils.toInt(z));
+        ClientLogManager.setPanelSize(BeeUtils.toInt(z));
       } else if (BeeUtils.startsSame(z, "clear")) {
-        handler.clear();
+        ClientLogManager.clearPanel();
       } else {
-        handler.setVisible(true);
+        ClientLogManager.setPanelVisible(true);
         logger.info((Object[]) arr);
         logger.addSeparator();
       }
@@ -874,10 +866,6 @@ public class CliWorker {
     BeeKeeper.getRpc().makeGetRequest(params);
   }
   
-  private static PanelHandler getLogHandler() {
-    return (logger instanceof ClientLogger) ? ((ClientLogger) logger).getPanelHandler() : null;
-  }
-
   private static void getResource(String[] arr) {
     if (ArrayUtils.length(arr) < 2) {
       Global.sayHuh(ArrayUtils.join(BeeConst.STRING_SPACE, arr));
@@ -953,13 +941,9 @@ public class CliWorker {
     Element element = null;
 
     if (BeeUtils.same(args, "log")) {
-      PanelHandler handler = getLogHandler();
-      if (handler != null) {
-        widget = handler.getPanel();
-      }
-
-      if (widget == null || handler.isEmpty()) {
-        Global.showError("log is empty");
+      widget = ClientLogManager.getLogPanel();
+      if (widget == null) {
+        Global.showError("log widget not available");
         return;
       }
 

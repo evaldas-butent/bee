@@ -312,9 +312,11 @@
 }
 
 .bee-cal-ColorBar-item {
+  margin-right: 8px;
+}
+.bee-cal-ColorBar-item > div {
   width: 20px;
   height: 20px;
-  margin-right: 8px;
   color: black;
   text-align: center;
   padding-top: 2px;

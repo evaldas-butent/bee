@@ -9,12 +9,13 @@ public class LogUtils {
 
   private static BeeLoggerFactory loggerFactory;
 
+  public static BeeLogger getLogger(String name) {
+    return new BeeLoggerWrapper(name);
+  }
+
   public static BeeLogger getLogger(Class<?> clazz) {
     Assert.notNull(clazz);
-    if (loggerFactory != null) {
-      return loggerFactory.getLogger(clazz.getName());
-    }
-    return new BeeLoggerWrapper(clazz.getName());
+    return getLogger(clazz.getName());
   }
 
   /**
@@ -38,7 +39,7 @@ public class LogUtils {
 
   static BeeLogger createLogger(String name) {
     if (loggerFactory != null) {
-      return loggerFactory.createLogger(name);
+      return loggerFactory.getLogger(name);
     }
     return null;
   }

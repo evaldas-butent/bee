@@ -11,7 +11,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.FontSize;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.BeeLayoutPanel;
-import com.butent.bee.client.logging.PanelHandler;
+import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeButton;
@@ -64,10 +64,7 @@ public class Tablet extends Mobile {
 
     toggle.addClickHandler(new ClickHandler() {
       public void onClick(ClickEvent event) {
-        PanelHandler handler = getLogHandler();
-        if (handler != null) {
-          handler.setVisible(toggle.isDown());
-        }
+        ClientLogManager.setPanelVisible(toggle.isDown());
         toggle.invert();
       }
     });

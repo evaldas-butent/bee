@@ -21,7 +21,7 @@ import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Split;
-import com.butent.bee.client.logging.PanelHandler;
+import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
@@ -94,10 +94,7 @@ public class Mobile extends ScreenImpl {
 
     toggle.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
       public void onValueChange(ValueChangeEvent<Boolean> event) {
-        PanelHandler handler = getLogHandler();
-        if (handler != null) {
-          handler.setVisible(event.getValue());
-        }
+        ClientLogManager.setPanelVisible(event.getValue());
       }
     });
 
@@ -138,10 +135,7 @@ public class Mobile extends ScreenImpl {
     getRootPanel().add(p);
     setScreenPanel(p);
 
-    PanelHandler handler = getLogHandler();
-    if (handler != null) {
-      handler.setVisible(false);
-    }
+    ClientLogManager.setPanelVisible(false);
   }
 
   protected int getWestWidth() {

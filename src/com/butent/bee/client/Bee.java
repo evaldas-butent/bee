@@ -7,7 +7,7 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.decorator.TuningFactory;
-import com.butent.bee.client.logging.ClientLoggerFactory;
+import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.modules.ModuleManager;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
@@ -23,7 +23,7 @@ public class Bee implements EntryPoint {
   @Override
   public void onModuleLoad() {
     BeeConst.setClient();
-    LogUtils.setLoggerFactory(new ClientLoggerFactory());
+    LogUtils.setLoggerFactory(new ClientLogManager());
 
     BeeKeeper bk =
         new BeeKeeper(RootLayoutPanel.get(), GWT.getModuleBaseURL() + GWT.getModuleName());
