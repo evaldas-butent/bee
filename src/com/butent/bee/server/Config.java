@@ -47,6 +47,27 @@ public class Config {
   private static List<Filter> fileBlacklist = null;
   private static List<String> textExtensions = null;
 
+  static {
+    Class<?> z = Config.class;
+    String path = z.getResource(z.getSimpleName() + ".class").getPath();
+
+    String sub = "/WEB-INF/";
+    String w = path.substring(path.indexOf('/'), path.indexOf(sub) + sub.length() - 1);
+
+    File dir = new File(w);
+
+    WAR_DIR = dir.getParentFile();
+    WEB_INF_DIR = dir;
+
+    SOURCE_DIR = new File(WAR_DIR.getParentFile(), "src");
+
+    SCHEMA_DIR = new File(dir, "schemas");
+    CONFIG_DIR = new File(dir, "config");
+    USER_DIR = new File(dir, "user");
+    LOG_DIR = new File(USER_DIR, "logs");
+    REPOSITORY_DIR = new File(USER_DIR, "repository");
+  }
+
   public static String getConfigPath(String resource) {
     Assert.notEmpty(resource);
 
@@ -206,26 +227,6 @@ public class Config {
   }
 
   public static void init() {
-    Class<?> z = Config.class;
-    String path = z.getResource(z.getSimpleName() + ".class").getPath();
-
-    String sub = "/WEB-INF/";
-    String w = path.substring(path.indexOf('/'), path.indexOf(sub) + sub.length() - 1);
-
-    File dir = new File(w);
-
-    WAR_DIR = dir.getParentFile();
-    WEB_INF_DIR = dir;
-
-    SOURCE_DIR = new File(WAR_DIR.getParentFile(), "src");
-
-    SCHEMA_DIR = new File(dir, "schemas");
-    CONFIG_DIR = new File(dir, "config");
-    USER_DIR = new File(dir, "user");
-    LOG_DIR = new File(USER_DIR, "logs");
-    REPOSITORY_DIR = new File(USER_DIR, "repository");
-
-    logger.debug("web inf path:", w);
     properties = loadProperties("server.properties");
   }
 
