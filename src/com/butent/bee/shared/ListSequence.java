@@ -13,6 +13,7 @@ import java.util.List;
  * @param <T> type of object
  */
 public class ListSequence<T> extends AbstractSequence<T> {
+
   private final List<T> values = Lists.newArrayList();
 
   public ListSequence() {
@@ -32,7 +33,7 @@ public class ListSequence<T> extends AbstractSequence<T> {
   }
 
   @Override
-  public ListSequence<T> clone() {
+  public ListSequence<T> copy() {
     List<T> list = Lists.newArrayList(getList());
     return new ListSequence<T>(list);
   }

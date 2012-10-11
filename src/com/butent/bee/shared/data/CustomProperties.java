@@ -37,8 +37,7 @@ public class CustomProperties extends HashMap<String, String> implements HasInfo
     return customProperties;
   }
 
-  @Override
-  public CustomProperties clone() {
+  public CustomProperties copy() {
     CustomProperties properties = create();
     for (Map.Entry<String, String> entry : entrySet()) {
       properties.put(entry.getKey(), entry.getValue());

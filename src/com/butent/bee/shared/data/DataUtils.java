@@ -136,6 +136,9 @@ public class DataUtils {
     }
 
     BeeRow result = new BeeRow(original.getId(), original.getVersion(), arr);
+    if (!BeeUtils.isEmpty(original.getProperties())) {
+      result.setProperties(original.getProperties().copy());
+    }
     return result;
   }
 
@@ -149,6 +152,7 @@ public class DataUtils {
     for (BeeRow row : original.getRows()) {
       result.addRow(cloneRow(row));
     }
+    original.copyProperties(result);
     return result;
   }
 

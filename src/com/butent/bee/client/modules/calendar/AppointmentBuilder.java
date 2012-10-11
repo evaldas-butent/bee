@@ -1220,12 +1220,6 @@ class AppointmentBuilder extends AbstractFormCallback {
             getFormView().notifySevere(svc, ": cannot restore row");
           } else {
 
-            if (isNew) {
-              BeeKeeper.getBus().fireEvent(new RowInsertEvent(viewName, result));
-            } else {
-              BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, result));
-            }
-
             if (!BeeUtils.isEmpty(attList)) {
               result.setProperty(VIEW_APPOINTMENT_ATTENDEES, attList);
             }
@@ -1234,6 +1228,12 @@ class AppointmentBuilder extends AbstractFormCallback {
             }
             if (!BeeUtils.isEmpty(remindList)) {
               result.setProperty(VIEW_APPOINTMENT_REMINDERS, remindList);
+            }
+
+            if (isNew) {
+              BeeKeeper.getBus().fireEvent(new RowInsertEvent(viewName, result));
+            } else {
+              BeeKeeper.getBus().fireEvent(new RowUpdateEvent(viewName, result));
             }
             
             Appointment appointment = new Appointment(result);

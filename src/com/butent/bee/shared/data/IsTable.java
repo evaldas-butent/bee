@@ -43,11 +43,11 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
 
   void clearValue(int rowIndex, int colIndex);
 
-  IsTable<RowType, ColType> clone();
-
   boolean containsColumn(String columnId);
 
   boolean containsRow(long rowId);
+
+  IsTable<RowType, ColType> copy();
   
   IsTable<RowType, ColType> create();
 

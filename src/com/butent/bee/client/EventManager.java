@@ -16,6 +16,8 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.HandlesAllDataEvents;
+import com.butent.bee.shared.data.event.HandlesDeleteEvents;
+import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.ParentRowEvent;
 import com.butent.bee.shared.data.event.RowActionEvent;
@@ -142,6 +144,17 @@ public class EventManager implements Module {
     return registry;
   }
 
+  public Collection<HandlerRegistration> registerDeleteHandler(HandlesDeleteEvents handler,
+      boolean prior) {
+    Assert.notNull(handler);
+
+    List<HandlerRegistration> registry = Lists.newArrayList();
+    registry.add(registerRowDeleteHandler(handler, prior));
+    registry.add(registerMultiDeleteHandler(handler, prior));
+
+    return registry;
+  }
+  
   public void registerExitHandler(final String message) {
     Assert.notNull(message);
 
@@ -188,6 +201,17 @@ public class EventManager implements Module {
     return RowUpdateEvent.register(getBus(prior), handler);
   }
 
+  public Collection<HandlerRegistration> registerUpdateHandler(HandlesUpdateEvents handler,
+      boolean prior) {
+    Assert.notNull(handler);
+
+    List<HandlerRegistration> registry = Lists.newArrayList();
+    registry.add(registerCellUpdateHandler(handler, prior));
+    registry.add(registerRowUpdateHandler(handler, prior));
+
+    return registry;
+  }
+  
   public void removeExitHandler() {
     if (this.exitRegistry != null) {
       this.exitRegistry.removeHandler();

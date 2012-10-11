@@ -20,7 +20,7 @@ public interface IsRow extends HasCustomProperties {
 
   void clearCell(int index);
 
-  IsRow clone();
+  IsRow copy();
 
   Boolean getBoolean(int index);
 

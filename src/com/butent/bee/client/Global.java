@@ -254,7 +254,7 @@ public class Global implements Module {
   }
 
   public static Widget getSearchWidget() {
-    return SEARCH.ensureWidget();
+    return SEARCH.ensureSearchWidget();
   }
   
   public static Map<String, String> getStylesheets() {

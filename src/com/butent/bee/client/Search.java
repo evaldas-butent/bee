@@ -1,6 +1,7 @@
 package com.butent.bee.client;
 
 import com.google.common.collect.Lists;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -8,15 +9,18 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.i18n.LocaleUtils;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
@@ -33,9 +37,18 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.HasViewName;
 import com.butent.bee.shared.data.SearchResult;
+import com.butent.bee.shared.data.event.CellUpdateEvent;
+import com.butent.bee.shared.data.event.HandlesDeleteEvents;
+import com.butent.bee.shared.data.event.HandlesUpdateEvents;
+import com.butent.bee.shared.data.event.MultiDeleteEvent;
+import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowTransformEvent;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -43,7 +56,311 @@ import java.util.List;
 
 public class Search {
 
-  private static final String STYLE_PANEL = "bee-MainSearchContainer";
+  private static class ResultPanel extends Complex implements HandlesDeleteEvents,
+      HandlesUpdateEvents, HasCaption {
+
+    private static final String STYLE_RESULT_CONTAINER = "bee-SearchResultContainer";
+
+    private static final String STYLE_RESULT_HEADER = "bee-SearchResultHeader";
+    private static final String STYLE_RESULT_CAPTION = "bee-SearchResultCaption";
+    private static final String STYLE_RESULT_MESSAGE = "bee-SearchResultMessage";
+    private static final String STYLE_RESULT_CLOSE = "bee-SearchResultClose";
+
+    private static final String STYLE_RESULT_CONTENT = "bee-SearchResultContent";
+    private static final String STYLE_RESULT_VIEW = "bee-SearchResultView";
+    
+    private final String query;
+    
+    private final String messageWidgetId;
+    private int size;
+
+    private final List<HandlerRegistration> handlerRegistry = Lists.newArrayList();
+    
+    private ScheduledCommand onClose = null;
+
+    private ResultPanel(String query, List<SearchResult> results) {
+      super();
+      this.query = query;
+      this.size = results.size();
+
+      this.addStyleName(STYLE_RESULT_CONTAINER);
+
+      Flow header = new Flow();
+      header.addStyleName(STYLE_RESULT_HEADER);
+
+      InlineLabel caption = new InlineLabel(query);
+      caption.addStyleName(STYLE_RESULT_CAPTION);
+      header.add(caption);
+
+      InlineLabel message = new InlineLabel(getMessage());
+      message.addStyleName(STYLE_RESULT_MESSAGE);
+      header.add(message);
+      
+      this.messageWidgetId = message.getId();
+
+      BeeImage close = new BeeImage(Global.getImages().silverClose());
+      close.addStyleName(STYLE_RESULT_CLOSE);
+      close.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          if (getOnClose() != null)  {
+            getOnClose().execute();
+          }
+        }
+      });
+      header.add(close);
+
+      this.add(header);
+
+      Flow content = new Flow();
+      content.addStyleName(STYLE_RESULT_CONTENT);
+
+      String viewName = null;
+      DataInfo dataInfo = null;
+
+      for (SearchResult result : results) {
+        if (!result.getViewName().equals(viewName)) {
+          viewName = result.getViewName();
+          dataInfo = Data.getDataInfo(viewName);
+
+          String viewCaption = LocaleUtils.maybeLocalize(dataInfo.getCaption());
+          BeeLabel label = new BeeLabel(BeeUtils.notEmpty(viewCaption, viewName));
+          label.addStyleName(STYLE_RESULT_VIEW);
+          content.add(label);
+        }
+
+        ResultWidget widget = new ResultWidget(viewName, result.getRow());
+        widget.render(query, dataInfo);
+
+        content.add(widget);
+      }
+      this.add(content);
+      
+      this.handlerRegistry.addAll(BeeKeeper.getBus().registerDeleteHandler(this, false));
+      this.handlerRegistry.addAll(BeeKeeper.getBus().registerUpdateHandler(this, false));
+    }
+
+    @Override
+    public String getCaption() {
+      return query;
+    }
+
+    @Override
+    public String getIdPrefix() {
+      return "search-results";
+    }
+
+    @Override
+    public void onCellUpdate(CellUpdateEvent event) {
+      ResultWidget widget = findWidget(this, event.getViewName(), event.getRowId());
+      if (widget != null) {
+        widget.getRow().setVersion(event.getVersion());
+        widget.getRow().setValue(event.getColumnIndex(), event.getValue());
+        
+        DataInfo dataInfo = Data.getDataInfo(event.getViewName());
+        if (dataInfo != null) {
+          widget.render(query, dataInfo);
+        }
+      }
+    }
+
+    @Override
+    public void onMultiDelete(MultiDeleteEvent event) {
+      int count = 0;
+      for (RowInfo rowInfo : event.getRows()) {
+        ResultWidget widget = findWidget(this, event.getViewName(), rowInfo.getId());
+        if (widget != null && removeResultWidget(widget)) {
+          count++;
+        }
+      }
+      
+      if (count > 0) {
+        setSize(getSize() - count);
+        updateMessage();
+      }
+    }
+
+    @Override
+    public void onRowDelete(RowDeleteEvent event) {
+      ResultWidget widget = findWidget(this, event.getViewName(), event.getRowId());
+      if (widget != null && removeResultWidget(widget)) {
+        setSize(getSize() - 1);
+        updateMessage();
+      }
+    }
+
+    @Override
+    public void onRowUpdate(RowUpdateEvent event) {
+      ResultWidget widget = findWidget(this, event.getViewName(), event.getRowId());
+      if (widget != null) {
+        BeeRow row = DataUtils.cloneRow(event.getRow());
+        widget.setRow(row);
+        
+        DataInfo dataInfo = Data.getDataInfo(event.getViewName());
+        if (dataInfo != null) {
+          widget.render(query, dataInfo);
+        }
+      }
+    }
+
+    @Override
+    protected void onUnload() {
+      if (!Global.isTemporaryDetach()) {
+        for (HandlerRegistration entry : handlerRegistry) {
+          if (entry != null) {
+            entry.removeHandler();
+          }
+        }
+      }
+      super.onUnload();
+    }
+    
+    private ResultWidget findWidget(HasWidgets container, String viewName, long rowId) {
+      for (Widget child : container) {
+        if (child instanceof ResultWidget) {
+          ResultWidget widget = (ResultWidget) child;
+          if (widget.getRow().getId() == rowId && BeeUtils.same(widget.getViewName(), viewName)) {
+            return widget;
+          }
+
+        } else if (child instanceof HasWidgets) {
+          ResultWidget widget = findWidget((HasWidgets) child, viewName, rowId);
+          if (widget != null) {
+            return widget;
+          }
+        }
+      }
+      return null;
+    }
+    
+    private String getMessage() {
+      return BeeUtils.bracket(getSize());
+    }
+    
+    private ScheduledCommand getOnClose() {
+      return onClose;
+    }
+
+    private int getSize() {
+      return size;
+    }
+
+    private boolean removeResultWidget(ResultWidget widget) {
+      Widget container = widget.getParent();
+      if (container instanceof HasWidgets) {
+        return ((HasWidgets) container).remove(widget);
+      } else {
+        return false;
+      }
+    }
+
+    private void setOnClose(ScheduledCommand onClose) {
+      this.onClose = onClose;
+    }
+
+    private void setSize(int size) {
+      this.size = size;
+    }
+    
+    private void updateMessage() {
+      DomUtils.getElement(messageWidgetId).setInnerText(getMessage());
+    }
+  }
+  
+  private static class ResultWidget extends CustomWidget implements HasViewName {
+
+    private static final String STYLE_RESULT_ROW = "bee-SearchResultRow";
+    private static final String STYLE_RESULT_MATCH = "bee-SearchResultMatch";
+    
+    private final String viewName;
+    private BeeRow row;
+
+    private ResultWidget(String viewName, BeeRow row) {
+      super(Document.get().createPElement(), STYLE_RESULT_ROW);
+      
+      this.viewName = viewName;
+      this.row = row;
+      
+      sinkEvents(Event.ONCLICK);
+    }
+
+    @Override
+    public String getIdPrefix() {
+      return "found";
+    }
+
+    @Override
+    public String getViewName() {
+      return viewName;
+    }
+
+    @Override
+    public void onBrowserEvent(Event event) {
+      if (EventUtils.isClick(event)) {
+        RowEditor.openRow(getViewName(), getRow());
+      }
+      super.onBrowserEvent(event);
+    }
+
+    private BeeRow getRow() {
+      return row;
+    }
+    
+    private void render(String query, DataInfo dataInfo) {
+      if (isAttached()) {
+        DomUtils.clear(getElement());
+      }
+      
+      String text = transformRow(dataInfo);
+
+      String nt = text.toLowerCase();
+      String nq = query.toLowerCase();
+
+      int ql = query.length();
+
+      int start = 0;
+      int end = nt.indexOf(nq);
+
+      while (end >= 0) {
+        if (end > start) {
+          Element span = Document.get().createSpanElement();
+          span.setInnerText(text.substring(start, end));
+          getElement().appendChild(span);
+        }
+
+        Element match = Document.get().createSpanElement();
+        match.setClassName(STYLE_RESULT_MATCH);
+        match.setInnerText(text.substring(end, end + ql));
+        getElement().appendChild(match);
+
+        start = end + ql;
+        end = nt.indexOf(nq, start);
+      }
+
+      if (start < text.length()) {
+        Element span = Document.get().createSpanElement();
+        span.setInnerText(text.substring(start));
+        getElement().appendChild(span);
+      }
+    }
+
+    private void setRow(BeeRow row) {
+      this.row = row;
+    }
+
+    private String transformRow(DataInfo dataInfo) {
+      RowTransformEvent event = new RowTransformEvent(getViewName(), getRow());
+      BeeKeeper.getBus().fireEvent(event);
+
+      if (BeeUtils.isEmpty(event.getResult())) {
+        return DataUtils.join(dataInfo, getRow(), BeeConst.STRING_SPACE);
+      } else {
+        return event.getResult();
+      }
+    }
+  }
+
+  private static final String STYLE_SEARCH_PANEL = "bee-MainSearchContainer";
   private static final String STYLE_INPUT = "bee-MainSearchBox";
 
   private static final String STYLE_OPTIONS_CONTAINER = "bee-MainSearchOptionsContainer";
@@ -51,30 +368,18 @@ public class Search {
   private static final String STYLE_SUBMIT_CONTAINER = "bee-MainSearchSubmitContainer";
   private static final String STYLE_SUBMIT = "bee-MainSearchSubmit";
 
-  private static final String STYLE_RESULT_CONTAINER = "bee-SearchResultContainer";
-
-  private static final String STYLE_RESULT_HEADER = "bee-SearchResultHeader";
-  private static final String STYLE_RESULT_CAPTION = "bee-SearchResultCaption";
-  private static final String STYLE_RESULT_MESSAGE = "bee-SearchResultMessage";
-  private static final String STYLE_RESULT_CLOSE = "bee-SearchResultClose";
-
-  private static final String STYLE_RESULT_CONTENT = "bee-SearchResultContent";
-  private static final String STYLE_RESULT_VIEW = "bee-SearchResultView";
-  private static final String STYLE_RESULT_ROW = "bee-SearchResultRow";
-  private static final String STYLE_RESULT_MATCH = "bee-SearchResultMatch";
-
-  private Panel panel = null;
+  private Panel searchPanel = null;
   private InputText input = null;
 
   Search() {
     super();
   }
 
-  Widget ensureWidget() {
-    if (getPanel() == null) {
-      createPanel();
+  Widget ensureSearchWidget() {
+    if (getSearchPanel() == null) {
+      createSearchPanel();
     }
-    return getPanel();
+    return getSearchPanel();
   }
 
   void focus() {
@@ -83,9 +388,9 @@ public class Search {
     }
   }
 
-  private void createPanel() {
-    setPanel(new Flow());
-    getPanel().addStyleName(STYLE_PANEL);
+  private void createSearchPanel() {
+    setSearchPanel(new Flow());
+    getSearchPanel().addStyleName(STYLE_SEARCH_PANEL);
 
     setInput(new InputText());
     DomUtils.setSearch(getInput());
@@ -101,7 +406,7 @@ public class Search {
       }
     });
 
-    getPanel().add(getInput());
+    getSearchPanel().add(getInput());
 
     Simple optionsContainer = new Simple();
     optionsContainer.addStyleName(STYLE_OPTIONS_CONTAINER);
@@ -110,7 +415,7 @@ public class Search {
     options.addStyleName(STYLE_OPTIONS);
 
     optionsContainer.setWidget(options);
-    getPanel().add(optionsContainer);
+    getSearchPanel().add(optionsContainer);
 
     Simple submitContainer = new Simple();
     submitContainer.addStyleName(STYLE_SUBMIT_CONTAINER);
@@ -126,62 +431,15 @@ public class Search {
     });
 
     submitContainer.setWidget(submit);
-    getPanel().add(submitContainer);
-  }
-
-  private Widget createRowWidget(final String viewName, final BeeRow row, String text,
-      String query) {
-    Element element = Document.get().createPElement();
-
-    String nt = text.toLowerCase();
-    String nq = query.toLowerCase();
-
-    int ql = query.length();
-
-    int start = 0;
-    int end = nt.indexOf(nq);
-
-    while (end >= 0) {
-      if (end > start) {
-        Element span = Document.get().createSpanElement();
-        span.setInnerText(text.substring(start, end));
-        element.appendChild(span);
-      }
-
-      Element match = Document.get().createSpanElement();
-      match.setClassName(STYLE_RESULT_MATCH);
-      match.setInnerText(text.substring(end, end + ql));
-      element.appendChild(match);
-
-      start = end + ql;
-      end = nt.indexOf(nq, start);
-    }
-
-    if (start < text.length()) {
-      Element span = Document.get().createSpanElement();
-      span.setInnerText(text.substring(start));
-      element.appendChild(span);
-    }
-
-    Widget widget = new CustomWidget(element);
-    widget.addStyleName(STYLE_RESULT_ROW);
-
-    Binder.addClickHandler(widget, new ClickHandler() {
-      @Override
-      public void onClick(ClickEvent event) {
-        RowEditor.openRow(viewName, row);
-      }
-    });
-
-    return widget;
+    getSearchPanel().add(submitContainer);
   }
 
   private InputText getInput() {
     return input;
   }
 
-  private Panel getPanel() {
-    return panel;
+  private Panel getSearchPanel() {
+    return searchPanel;
   }
 
   private void processResults(String query, List<SearchResult> results) {
@@ -196,62 +454,21 @@ public class Search {
     this.input = input;
   }
 
-  private void setPanel(Panel panel) {
-    this.panel = panel;
+  private void setSearchPanel(Panel panel) {
+    this.searchPanel = panel;
   }
 
   private void showResults(String query, List<SearchResult> results) {
-    final Complex container = new Complex();
-    container.addStyleName(STYLE_RESULT_CONTAINER);
-
-    Flow header = new Flow();
-    header.addStyleName(STYLE_RESULT_HEADER);
-
-    InlineLabel caption = new InlineLabel(query);
-    caption.addStyleName(STYLE_RESULT_CAPTION);
-    header.add(caption);
-
-    InlineLabel message = new InlineLabel(BeeUtils.bracket(results.size()));
-    message.addStyleName(STYLE_RESULT_MESSAGE);
-    header.add(message);
-
-    BeeImage close = new BeeImage(Global.getImages().silverClose());
-    close.addStyleName(STYLE_RESULT_CLOSE);
-    close.addClickHandler(new ClickHandler() {
+    final ResultPanel resultPanel = new ResultPanel(query, results);
+    
+    resultPanel.setOnClose(new ScheduledCommand() {
       @Override
-      public void onClick(ClickEvent event) {
-        BeeKeeper.getScreen().closeWidget(container);
+      public void execute() {
+        BeeKeeper.getScreen().closeWidget(resultPanel);
       }
     });
-    header.add(close);
-
-    container.add(header);
-
-    Flow content = new Flow();
-    content.addStyleName(STYLE_RESULT_CONTENT);
-
-    String viewName = null;
-    DataInfo dataInfo = null;
-
-    for (SearchResult result : results) {
-      if (!result.getViewName().equals(viewName)) {
-        viewName = result.getViewName();
-        dataInfo = Data.getDataInfo(viewName);
-        
-        String viewCaption = LocaleUtils.maybeLocalize(dataInfo.getCaption());
-        BeeLabel label = new BeeLabel(BeeUtils.notEmpty(viewCaption, viewName));
-        label.addStyleName(STYLE_RESULT_VIEW);
-        content.add(label);
-      }
-
-      String text = transformRow(dataInfo, result.getRow());
-      Widget widget = createRowWidget(viewName, result.getRow(), text, query);
-
-      content.add(widget);
-    }
-    container.add(content);
-
-    BeeKeeper.getScreen().updateActivePanel(container);
+    
+    BeeKeeper.getScreen().updateActivePanel(resultPanel);
   }
 
   private void submit() {
@@ -287,17 +504,6 @@ public class Search {
           }
         }
       });
-    }
-  }
-
-  private String transformRow(DataInfo dataInfo, BeeRow row) {
-    RowTransformEvent event = new RowTransformEvent(dataInfo.getViewName(), row);
-    BeeKeeper.getBus().fireEvent(event);
-
-    if (BeeUtils.isEmpty(event.getResult())) {
-      return DataUtils.join(dataInfo, row, BeeConst.STRING_SPACE);
-    } else {
-      return event.getResult();
     }
   }
 }

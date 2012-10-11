@@ -32,9 +32,6 @@ public abstract class ArraySequence<T> extends AbstractSequence<T> {
     this.length = 0;
   }
 
-  @Override
-  public abstract ArraySequence<T> clone();
-
   /**
    * Returns the object of array contains of the index.
    * 

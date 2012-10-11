@@ -247,7 +247,7 @@ class CalendarCache implements HandlesAllDataEvents {
     Queries.getRowSet(viewName, null, new Queries.RowSetCallback() {
       @Override
       public void onSuccess(BeeRowSet result) {
-        data.put(viewName, result.clone());
+        data.put(viewName, result.copy());
         states.put(viewName, State.LOADED);
 
         List<Callback> cbs = callbacks.get(viewName);

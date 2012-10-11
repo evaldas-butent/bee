@@ -16,7 +16,7 @@ public interface IsCell extends HasCustomProperties {
 
   void clearValue();
 
-  IsCell clone();
+  IsCell copy();
 
   String getFormattedValue();
 

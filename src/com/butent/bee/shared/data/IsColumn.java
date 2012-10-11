@@ -10,7 +10,7 @@ import com.butent.bee.shared.data.value.ValueType;
 
 public interface IsColumn extends HasCustomProperties, HasPrecision, HasScale {
 
-  IsColumn clone();
+  IsColumn copy();
 
   String getId();
 

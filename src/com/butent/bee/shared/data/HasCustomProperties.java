@@ -5,6 +5,7 @@ package com.butent.bee.shared.data;
  */
 
 public interface HasCustomProperties {
+
   CustomProperties getProperties();
 
   String getProperty(String key);

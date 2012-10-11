@@ -47,9 +47,9 @@ public class BeeRow extends StringRow implements BeeSerializable {
   }
 
   @Override
-  public BeeRow clone() {
+  public BeeRow copy() {
     BeeRow result = new BeeRow(getId(), getVersion(), ArrayUtils.copyOf(getValueArray()));
-    cloneProperties(result);
+    copyProperties(result);
     return result;
   }
 

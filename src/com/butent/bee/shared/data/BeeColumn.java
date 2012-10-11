@@ -70,7 +70,7 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
   }
 
   @Override
-  public BeeColumn clone() {
+  public BeeColumn copy() {
     BeeColumn result = new BeeColumn();
 
     result.setId(getId());

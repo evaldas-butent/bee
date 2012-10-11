@@ -41,11 +41,11 @@ public class TableColumn implements HasInfo, IsColumn {
   }
 
   @Override
-  public TableColumn clone() {
+  public TableColumn copy() {
     TableColumn result = new TableColumn(type, label, id);
     result.setPattern(pattern);
     if (properties != null) {
-      result.properties = properties.clone();
+      result.properties = properties.copy();
     }
     return result;
   }

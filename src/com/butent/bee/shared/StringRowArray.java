@@ -18,7 +18,7 @@ public class StringRowArray extends ArraySequence<StringRow> {
   }
 
   @Override
-  public StringRowArray clone() {
+  public Sequence<StringRow> copy() {
     int len = getLength();
     if (len <= 0) {
       return new StringRowArray(new StringRow[0]);
@@ -26,7 +26,7 @@ public class StringRowArray extends ArraySequence<StringRow> {
 
     StringRow[] arr = new StringRow[len];
     for (int i = 0; i < len; i++) {
-      arr[i] = get(i).clone();
+      arr[i] = get(i).copy();
     }
     return new StringRowArray(arr);
   }

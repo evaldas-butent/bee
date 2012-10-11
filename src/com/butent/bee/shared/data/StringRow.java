@@ -42,10 +42,10 @@ public class StringRow extends AbstractRow {
   }
 
   @Override
-  public StringRow clone() {
-    StringRow result = new StringRow(getId(), values.clone());
+  public StringRow copy() {
+    StringRow result = new StringRow(getId(), values.copy());
     result.setVersion(getVersion());
-    cloneProperties(result);
+    copyProperties(result);
     return result;
   }
 
@@ -241,7 +241,6 @@ public class StringRow extends AbstractRow {
     this.values = values;
   }
 
-  @Override
   protected void assertIndex(int index) {
     Assert.isIndex(index, getNumberOfCells());
   }

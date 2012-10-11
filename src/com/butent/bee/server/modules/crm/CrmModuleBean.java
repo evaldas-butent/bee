@@ -276,14 +276,14 @@ public class CrmModuleBean implements BeeModule {
               response = registerTaskEvent(taskId, time, reqInfo, event, null);
 
               if (!response.hasErrors() && executor != currentUser) {
-                response = registerTaskVisit(taskId, executor, null, true);
+                response = registerTaskVisit(taskId, executor, null);
               }
               if (!response.hasErrors() && !BeeUtils.isEmpty(observers)) {
                 for (String obsId : USER_ID_SPLITTER.split(observers)) {
                   long observer = BeeUtils.toLong(obsId);
 
                   if (observer != currentUser && observer != executor) {
-                    response = registerTaskVisit(taskId, observer, null, true);
+                    response = registerTaskVisit(taskId, observer, null);
 
                     if (response.hasErrors()) {
                       break;
@@ -304,7 +304,7 @@ public class CrmModuleBean implements BeeModule {
         case VISITED:
           response =
               registerTaskVisit(BeeUtils.toLong(reqInfo.getParameter(CrmConstants.VAR_TASK_ID)),
-                  currentUser, time, false);
+                  currentUser, time);
           break;
 
         case COMMENTED:
@@ -326,7 +326,7 @@ public class CrmModuleBean implements BeeModule {
           if (!response.hasErrors()
               && !qs.sqlExists(CrmConstants.TBL_TASK_USERS, SqlUtils.and(wh,
                   SqlUtils.equal(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_USER, newUser)))) {
-            response = registerTaskVisit(taskId, newUser, null, true);
+            response = registerTaskVisit(taskId, newUser, null);
           }
           if (!response.hasErrors()) {
             response = registerTaskEvent(taskId, time, reqInfo, event,
@@ -476,29 +476,30 @@ public class CrmModuleBean implements BeeModule {
           .addConstant("EventDuration", response == null ? null : (Long) response.getResponse()));
     }
     if (!response.hasErrors()) {
-      response =
-          registerTaskVisit(taskId, currentUser, time, Objects.equal(event, TaskEvent.ACTIVATED));
+      response = registerTaskVisit(taskId, currentUser, time);
     }
     return response;
   }
 
-  private ResponseObject registerTaskVisit(long taskId, long userId, Long time, boolean newVisit) {
-    ResponseObject response = null;
+  private ResponseObject registerTaskVisit(long taskId, long userId, Long time) {
+    ResponseObject response;
 
-    if (!newVisit) {
+    HasConditions where = SqlUtils.and(
+        SqlUtils.equal(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_TASK, taskId),
+        SqlUtils.equal(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_USER, userId));
+
+    if (qs.sqlExists(CrmConstants.TBL_TASK_USERS, where)) {
       response =
           qs.updateDataWithResponse(new SqlUpdate(CrmConstants.TBL_TASK_USERS)
               .addConstant(CrmConstants.COL_LAST_ACCESS, time)
-              .setWhere(SqlUtils.and(
-                  SqlUtils.equal(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_TASK, taskId),
-                  SqlUtils.equal(CrmConstants.TBL_TASK_USERS, CrmConstants.COL_USER, userId))));
-    }
-    if (newVisit || response.getResponse(-1, logger) == 0) {
+              .setWhere(where));
+    } else {
       response = qs.insertDataWithResponse(new SqlInsert(CrmConstants.TBL_TASK_USERS)
           .addConstant(CrmConstants.COL_TASK, taskId)
           .addConstant(CrmConstants.COL_USER, userId)
           .addConstant(CrmConstants.COL_LAST_ACCESS, time));
     }
+
     if (!response.hasErrors()) {
       response = ResponseObject.response(time);
     }

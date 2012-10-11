@@ -1742,7 +1742,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         continue;
       }
 
-      IsRow rowValue = getDataItem(row).clone();
+      IsRow rowValue = getDataItem(row).copy();
       int dataIndex = getColumnInfo(col).getDataIndex();
       rowValue.setValue(dataIndex, value);
 

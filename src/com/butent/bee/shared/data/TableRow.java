@@ -30,13 +30,13 @@ public class TableRow extends AbstractRow {
   }
 
   @Override
-  public TableRow clone() {
+  public IsRow copy() {
     TableRow result = new TableRow(getId());
     result.setVersion(getVersion());
     for (IsCell cell : getCells()) {
-      result.addCell(cell.clone());
+      result.addCell(cell.copy());
     }
-    cloneProperties(result);
+    copyProperties(result);
     return result;
   }
 
@@ -78,7 +78,6 @@ public class TableRow extends AbstractRow {
     this.cells = cells;
   }
 
-  @Override
   protected void assertIndex(int index) {
     Assert.isIndex(cells, index);
   }

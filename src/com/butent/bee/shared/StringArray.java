@@ -15,7 +15,7 @@ public class StringArray extends ArraySequence<String> {
   }
 
   @Override
-  public StringArray clone() {
+  public StringArray copy() {
     int len = getLength();
     if (len <= 0) {
       return new StringArray(new String[0]);

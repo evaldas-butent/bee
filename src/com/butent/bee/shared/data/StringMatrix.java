@@ -60,9 +60,9 @@ public class StringMatrix<ColType extends IsColumn> extends AbstractTable<String
   }
 
   @Override
-  public StringMatrix<ColType> clone() {
+  public StringMatrix<ColType> copy() {
     StringMatrix<ColType> result = new StringMatrix<ColType>(rows);
-    cloneTableDescription(result);
+    copyTableDescription(result);
     return result;
   }
 

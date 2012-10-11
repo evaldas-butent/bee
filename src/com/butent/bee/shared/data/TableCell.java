@@ -67,10 +67,10 @@ public class TableCell implements IsCell {
   }
 
   @Override
-  public TableCell clone() {
+  public TableCell copy() {
     TableCell result = new TableCell(value, formattedValue);
     if (properties != null) {
-      result.properties = properties.clone();
+      result.properties = properties.copy();
     }
     return result;
   }

@@ -8,7 +8,6 @@ import com.google.common.primitives.Longs;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
-import com.butent.bee.shared.Sequence;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.value.DateTimeValue;
 import com.butent.bee.shared.data.value.DateValue;
@@ -101,6 +100,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     }
   }
 
+  @Override
   public int addColumn(ColType column) {
     assertNewColumnId(column.getId());
     columns.add(column);
@@ -114,18 +114,22 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return columns.size() - 1;
   }
 
+  @Override
   public int addColumn(ValueType type) {
     return addColumn(type, DataUtils.defaultColumnLabel(getNumberOfColumns()));
   }
 
+  @Override
   public int addColumn(ValueType type, String label) {
     return addColumn(type, label, DataUtils.defaultColumnId(getNumberOfColumns()));
   }
 
+  @Override
   public int addColumn(ValueType type, String label, String id) {
     return addColumn(createColumn(type, label, id));
   }
 
+  @Override
   public int addColumns(Collection<ColType> columnsToAdd) {
     Assert.notEmpty(columnsToAdd);
     int lastIndex = BeeConst.UNDEF;
@@ -135,15 +139,18 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return lastIndex;
   }
 
+  @Override
   public int addRow() {
     return addRow(fillRow(createRow()));
   }
 
+  @Override
   public int addRow(RowType row) {
     getRows().add(row);
     return getNumberOfRows() - 1;
   }
 
+  @Override
   public int addRows(Collection<RowType> rowsToAdd) {
     Assert.notNull(rowsToAdd);
     int lastIndex = BeeConst.UNDEF;
@@ -153,6 +160,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return lastIndex;
   }
 
+  @Override
   public int addRows(int rowCount) {
     Assert.isPositive(rowCount);
     int lastIndex = BeeConst.UNDEF;
@@ -162,25 +170,23 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return lastIndex;
   }
 
+  @Override
   public void addWarning(DataWarning warning) {
     warnings.add(warning);
   }
 
+  @Override
   public void clearCell(int rowIndex, int colIndex) {
     getRow(rowIndex).clearCell(colIndex);
   }
 
-  public abstract void clearRows();
-
+  @Override
   public void clearValue(int rowIndex, int colIndex) {
     IsCell cell = getCell(rowIndex, colIndex);
     cell.clearValue();
     cell.clearFormattedValue();
     cell.clearProperties();
   }
-
-  @Override
-  public abstract IsTable<RowType, ColType> clone();
 
   public boolean containsAllColumnIds(Collection<String> colIds) {
     for (String id : colIds) {
@@ -191,33 +197,33 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return true;
   }
 
+  @Override
   public boolean containsColumn(String columnId) {
     return getColumnIndex(columnId) >= 0;
   }
 
+  @Override
   public boolean containsRow(long rowId) {
     return getRowById(rowId) != null;
   }
 
-  public abstract IsTable<RowType, ColType> create();
-
-  public abstract ColType createColumn(ValueType type, String label, String id);
-
-  public abstract RowType createRow(long id);
-
+  @Override
   public Boolean getBoolean(int rowIndex, int colIndex) {
     return getRow(rowIndex).getBoolean(colIndex);
   }
 
+  @Override
   public IsCell getCell(int rowIndex, int colIndex) {
     return getRow(rowIndex).getCell(colIndex);
   }
 
+  @Override
   public ColType getColumn(int colIndex) {
     assertColumnIndex(colIndex);
     return columns.get(colIndex);
   }
 
+  @Override
   public ColType getColumn(String columnId) {
     return getColumn(getColumnIndex(columnId));
   }
@@ -236,30 +242,37 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return getColumnCells(getColumnIndex(columnId));
   }
 
+  @Override
   public String getColumnId(int colIndex) {
     return getColumn(colIndex).getId();
   }
 
+  @Override
   public int getColumnIndex(String columnId) {
     return DataUtils.getColumnIndex(columnId, getColumns());
   }
 
+  @Override
   public String getColumnLabel(int colIndex) {
     return getColumn(colIndex).getLabel();
   }
 
+  @Override
   public String getColumnPattern(int colIndex) {
     return getColumn(colIndex).getPattern();
   }
 
+  @Override
   public CustomProperties getColumnProperties(int colIndex) {
     return getColumn(colIndex).getProperties();
   }
 
+  @Override
   public String getColumnProperty(int colIndex, String name) {
     return getColumn(colIndex).getProperty(name);
   }
 
+  @Override
   public Range getColumnRange(int colIndex) {
     assertColumnIndex(colIndex);
     ValueType type = getColumnType(colIndex);
@@ -291,10 +304,12 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return new Range(min, max);
   }
 
+  @Override
   public List<ColType> getColumns() {
     return columns;
   }
 
+  @Override
   public ValueType getColumnType(int colIndex) {
     return getColumn(colIndex).getType();
   }
@@ -309,18 +324,22 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return values;
   }
 
+  @Override
   public JustDate getDate(int rowIndex, int colIndex) {
     return getRow(rowIndex).getDate(colIndex);
   }
 
+  @Override
   public DateTime getDateTime(int rowIndex, int colIndex) {
     return getRow(rowIndex).getDateTime(colIndex);
   }
 
+  @Override
   public BigDecimal getDecimal(int rowIndex, int colIndex) {
     return getRow(rowIndex).getDecimal(colIndex);
   }
 
+  @Override
   public List<Value> getDistinctValues(int colIndex) {
     assertColumnIndex(colIndex);
     Set<Value> values = Sets.newTreeSet();
@@ -334,10 +353,12 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return getDistinctValues(getColumnIndex(columnId));
   }
 
+  @Override
   public Double getDouble(int rowIndex, int colIndex) {
     return getRow(rowIndex).getDouble(colIndex);
   }
 
+  @Override
   public int[] getFilteredRows(RowFilter... filters) {
     Assert.notNull(filters);
     Assert.parameterCount(filters.length, 1);
@@ -360,34 +381,37 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return Ints.toArray(match);
   }
 
+  @Override
   public String getFormattedValue(int rowIndex, int colIndex) {
     return getCell(rowIndex, colIndex).getFormattedValue();
   }
 
+  @Override
   public Integer getInteger(int rowIndex, int colIndex) {
     return getRow(rowIndex).getInteger(colIndex);
   }
 
+  @Override
   public Long getLong(int rowIndex, int colIndex) {
     return getRow(rowIndex).getLong(colIndex);
   }
 
+  @Override
   public int getNumberOfColumns() {
     return columns.size();
   }
 
-  public abstract int getNumberOfRows();
-
+  @Override
   public CustomProperties getProperties(int rowIndex, int colIndex) {
     return getCell(rowIndex, colIndex).getProperties();
   }
 
+  @Override
   public String getProperty(int rowIndex, int colIndex, String name) {
     return getCell(rowIndex, colIndex).getProperty(name);
   }
 
-  public abstract RowType getRow(int rowIndex);
-
+  @Override
   public RowType getRowById(long rowId) {
     for (int i = 0; i < getNumberOfRows(); i++) {
       if (getRow(i).getId() == rowId) {
@@ -397,6 +421,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return null;
   }
 
+  @Override
   public int getRowIndex(long rowId) {
     for (int i = 0; i < getNumberOfRows(); i++) {
       if (getRow(i).getId() == rowId) {
@@ -406,16 +431,17 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return BeeConst.UNDEF;
   }
 
+  @Override
   public CustomProperties getRowProperties(int rowIndex) {
     return getRow(rowIndex).getProperties();
   }
 
+  @Override
   public String getRowProperty(int rowIndex, String name) {
     return getRow(rowIndex).getProperty(name);
   }
 
-  public abstract Sequence<RowType> getRows();
-
+  @Override
   public int[] getSortedRows(int... colIndexes) {
     Assert.notNull(colIndexes);
     Assert.parameterCount(colIndexes.length, 1);
@@ -427,6 +453,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return getSortedRows(sortInfo);
   }
 
+  @Override
   public int[] getSortedRows(List<Pair<Integer, Boolean>> sortInfo) {
     Assert.notNull(sortInfo);
     Assert.isTrue(sortInfo.size() >= 1);
@@ -448,14 +475,17 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return Ints.toArray(rowIndexes);
   }
 
+  @Override
   public String getString(int rowIndex, int colIndex) {
     return getRow(rowIndex).getString(colIndex);
   }
 
+  @Override
   public CustomProperties getTableProperties() {
     return properties;
   }
 
+  @Override
   public String getTableProperty(String key) {
     Assert.notEmpty(key);
     if (properties == null) {
@@ -464,14 +494,17 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return properties.get(key);
   }
 
+  @Override
   public Value getValue(int rowIndex, int colIndex) {
     return getCell(rowIndex, colIndex).getValue();
   }
 
+  @Override
   public List<DataWarning> getWarnings() {
     return warnings;
   }
 
+  @Override
   public void insertColumn(int colIndex, ColType column) {
     assertColumnIndex(colIndex);
     assertNewColumnId(column.getId());
@@ -485,18 +518,22 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     }
   }
 
+  @Override
   public void insertColumn(int colIndex, ValueType type) {
     insertColumn(colIndex, type, DataUtils.defaultColumnLabel(colIndex));
   }
 
+  @Override
   public void insertColumn(int colIndex, ValueType type, String label) {
     insertColumn(colIndex, type, label, DataUtils.defaultColumnId(colIndex));
   }
 
+  @Override
   public void insertColumn(int colIndex, ValueType type, String label, String id) {
     insertColumn(colIndex, createColumn(type, label, id));
   }
 
+  @Override
   public void insertRows(int rowIndex, Collection<RowType> rowsToAdd) {
     assertRowIndex(rowIndex);
     int idx = rowIndex;
@@ -505,6 +542,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     }
   }
 
+  @Override
   public void insertRows(int rowIndex, int rowCount) {
     assertRowIndex(rowIndex);
     Assert.isPositive(rowCount);
@@ -514,6 +552,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     }
   }
 
+  @Override
   public void removeColumn(int colIndex) {
     assertColumnIndex(colIndex);
     columns.remove(colIndex);
@@ -523,6 +562,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     }
   }
 
+  @Override
   public void removeColumns(int colIndex, int colCount) {
     assertColumnIndex(colIndex);
     Assert.betweenInclusive(colCount, 1, getNumberOfColumns() - colIndex);
@@ -532,8 +572,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     }
   }
 
-  public abstract void removeRow(int rowIndex);
-
+  @Override
   public boolean removeRowById(long rowId) {
     int rowIndex = getRowIndex(rowId);
     if (BeeConst.isUndef(rowIndex)) {
@@ -544,6 +583,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     }
   }
 
+  @Override
   public void removeRows(int rowIndex, int rowCount) {
     assertRowIndex(rowIndex);
     Assert.betweenInclusive(rowCount, 1, getNumberOfRows() - rowIndex);
@@ -553,68 +593,84 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     }
   }
 
+  @Override
   public void setCell(int rowIndex, int colIndex, IsCell cell) {
     getRow(rowIndex).setCell(colIndex, cell);
   }
 
+  @Override
   public void setCell(int rowIndex, int colIndex, Value value) {
     setCell(rowIndex, colIndex, new TableCell(value));
   }
 
+  @Override
   public void setCell(int rowIndex, int colIndex, Value value, String formattedValue) {
     setCell(rowIndex, colIndex, new TableCell(value, formattedValue));
   }
 
+  @Override
   public void setCell(int rowIndex, int colIndex, Value value, String formattedValue,
       CustomProperties properties) {
     setCell(rowIndex, colIndex, new TableCell(value, formattedValue, properties));
   }
 
+  @Override
   public void setColumnLabel(int colIndex, String label) {
     getColumn(colIndex).setLabel(label);
   }
 
+  @Override
   public void setColumnProperties(int colIndex, CustomProperties properties) {
     getColumn(colIndex).setProperties(properties);
   }
 
+  @Override
   public void setColumnProperty(int colIndex, String name, String value) {
     getColumn(colIndex).setProperty(name, value);
   }
 
+  @Override
   public void setColumns(List<ColType> columns) {
     this.columns = columns;
   }
 
+  @Override
   public void setFormattedValue(int rowIndex, int colIndex, String formattedValue) {
     getCell(rowIndex, colIndex).setFormattedValue(formattedValue);
   }
 
+  @Override
   public void setProperties(int rowIndex, int colIndex, CustomProperties properties) {
     getCell(rowIndex, colIndex).setProperties(properties);
   }
 
+  @Override
   public void setProperty(int rowIndex, int colIndex, String name, String value) {
     getCell(rowIndex, colIndex).setProperty(name, value);
   }
 
+  @Override
   public void setRowProperties(int rowIndex, CustomProperties properties) {
     getRow(rowIndex).setProperties(properties);
   }
 
+  @Override
   public void setRowProperty(int rowIndex, String name, String value) {
     getRow(rowIndex).setProperty(name, value);
   }
 
+  @Override
   public void setRows(Collection<RowType> rows) {
     clearRows();
     addRows(rows);
   }
 
+  @Override
   public void setTableProperties(CustomProperties properties) {
     this.properties = properties;
   }
 
+  @Override
   public void setTableProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
     Assert.notNull(propertyValue);
@@ -624,42 +680,52 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     properties.put(propertyKey, propertyValue);
   }
 
+  @Override
   public void setValue(int rowIndex, int colIndex, BigDecimal value) {
     setValue(rowIndex, colIndex, new DecimalValue(value));
   }
 
+  @Override
   public void setValue(int rowIndex, int colIndex, Boolean value) {
     setValue(rowIndex, colIndex, BooleanValue.getInstance(value));
   }
 
+  @Override
   public void setValue(int rowIndex, int colIndex, DateTime value) {
     setValue(rowIndex, colIndex, new DateTimeValue(value));
   }
 
+  @Override
   public void setValue(int rowIndex, int colIndex, Double value) {
     setValue(rowIndex, colIndex, new NumberValue(value));
   }
 
+  @Override
   public void setValue(int rowIndex, int colIndex, Integer value) {
     setValue(rowIndex, colIndex, new IntegerValue(value));
   }
 
+  @Override
   public void setValue(int rowIndex, int colIndex, JustDate value) {
     setValue(rowIndex, colIndex, new DateValue(value));
   }
 
+  @Override
   public void setValue(int rowIndex, int colIndex, Long value) {
     setValue(rowIndex, colIndex, new LongValue(value));
   }
 
+  @Override
   public void setValue(int rowIndex, int colIndex, String value) {
     setValue(rowIndex, colIndex, new TextValue(value));
   }
 
+  @Override
   public void setValue(int rowIndex, int colIndex, Value value) {
     getRow(rowIndex).setValue(colIndex, value);
   }
 
+  @Override
   public void sort(int... colIndexes) {
     Assert.notNull(colIndexes);
     Assert.parameterCount(colIndexes.length, 1);
@@ -670,10 +736,6 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     }
     sort(sortInfo);
   }
-
-  public abstract void sort(List<Pair<Integer, Boolean>> sortInfo);
-
-  public abstract void sortByRowId(boolean ascending);
 
   @Override
   public String toString() {
@@ -696,6 +758,7 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     return sb.toString();
   }
 
+  @Override
   public boolean updateRow(RowType row) {
     if (row == null) {
       return false;
@@ -718,14 +781,20 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     Assert.isIndex(rowIndex, getNumberOfRows());
   }
 
-  protected void cloneColumns(IsTable<RowType, ColType> cloneTable) {
-    cloneTable.setColumns(getColumns());
+  protected void copyColumns(IsTable<RowType, ColType> target) {
+    target.setColumns(getColumns());
   }
 
-  protected void cloneTableDescription(IsTable<RowType, ColType> cloneTable) {
-    cloneColumns(cloneTable);
-    cloneProperties(cloneTable);
-    cloneWarnings(cloneTable);
+  protected void copyProperties(IsTable<RowType, ColType> target) {
+    if (getTableProperties() != null) {
+      target.setTableProperties(getTableProperties().copy());
+    }
+  }
+
+  protected void copyTableDescription(IsTable<RowType, ColType> target) {
+    copyColumns(target);
+    copyProperties(target);
+    copyWarnings(target);
   }
 
   protected abstract void insertRow(int rowIndex, RowType row);
@@ -735,15 +804,9 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     Assert.isFalse(containsColumn(columnId));
   }
 
-  private void cloneProperties(IsTable<RowType, ColType> cloneTable) {
-    if (getTableProperties() != null) {
-      cloneTable.setTableProperties(getTableProperties().clone());
-    }
-  }
-
-  private void cloneWarnings(IsTable<RowType, ColType> cloneTable) {
+  private void copyWarnings(IsTable<RowType, ColType> target) {
     for (DataWarning warning : getWarnings()) {
-      cloneTable.getWarnings().add(warning);
+      target.getWarnings().add(warning);
     }
   }
 

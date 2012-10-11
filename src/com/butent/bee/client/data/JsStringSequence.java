@@ -8,6 +8,7 @@ import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.AbstractSequence;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Sequence;
 
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class JsStringSequence extends AbstractSequence<String> {
   }
 
   @Override
-  public JsStringSequence clone() {
+  public Sequence<String> copy() {
     JsArrayString arr = JavaScriptObject.createArray().cast();
     for (int i = 0; i < getLength(); i++) {
       arr.set(i, get(i));

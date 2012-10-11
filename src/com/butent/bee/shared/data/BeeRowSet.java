@@ -77,7 +77,7 @@ public class BeeRowSet extends RowList<BeeRow, BeeColumn> implements BeeSerializ
   }
   
   @Override
-  public BeeRowSet clone() {
+  public BeeRowSet copy() {
     return DataUtils.cloneRowSet(this);
   }
 

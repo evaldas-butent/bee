@@ -17,7 +17,6 @@ import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * Implements {@code isRow} interface, sets behaviors for row classes.
@@ -34,63 +33,57 @@ public abstract class AbstractRow implements IsRow {
     this.id = id;
   }
 
-  @SuppressWarnings("unused")
-  private AbstractRow() {
-  }
-
-  public abstract void addCell(IsCell cell);
-
+  @Override
   public void addCell(Value value) {
     addCell(new TableCell(value));
   }
 
-  public abstract void clearCell(int index);
-
   @Override
-  public abstract IsRow clone();
-
   public Boolean getBoolean(int index) {
     return getValue(index).getBoolean();
   }
 
-  public abstract IsCell getCell(int index);
-
-  public abstract List<IsCell> getCells();
-
+  @Override
   public JustDate getDate(int index) {
     return getValue(index).getDate();
   }
 
+  @Override
   public DateTime getDateTime(int index) {
     return getValue(index).getDateTime();
   }
 
+  @Override
   public BigDecimal getDecimal(int index) {
     return getValue(index).getDecimal();
   }
 
+  @Override
   public Double getDouble(int index) {
     return getValue(index).getDouble();
   }
 
+  @Override
   public long getId() {
     return id;
   }
 
+  @Override
   public Integer getInteger(int index) {
     return getValue(index).getInteger();
   }
 
+  @Override
   public Long getLong(int index) {
     return getValue(index).getLong();
   }
 
-  public abstract int getNumberOfCells();
-
+  @Override
   public CustomProperties getProperties() {
     return properties;
   }
 
+  @Override
   public String getProperty(String key) {
     Assert.notEmpty(key);
     if (properties == null) {
@@ -99,14 +92,17 @@ public abstract class AbstractRow implements IsRow {
     return properties.get(key);
   }
 
+  @Override
   public String getString(int index) {
     return getValue(index).getString();
   }
 
+  @Override
   public Value getValue(int index) {
     return getCell(index).getValue();
   }
   
+  @Override
   public Value getValue(int index, ValueType type) {
     Assert.notNull(type, "value type not specified");
 
@@ -133,30 +129,27 @@ public abstract class AbstractRow implements IsRow {
     return null;
   }
 
+  @Override
   public long getVersion() {
     return version;
   }
   
-  public abstract void insertCell(int index, IsCell cell);
-
+  @Override
   public boolean isNull(int index) {
     return getCell(index).isNull();
   }
 
-  public abstract void removeCell(int index);
-
-  public abstract void setCell(int index, IsCell cell);
-
-  public abstract void setCells(List<IsCell> cells);
-
+  @Override
   public void setId(long id) {
     this.id = id;
   }
 
+  @Override
   public void setProperties(CustomProperties properties) {
     this.properties = properties;
   }
 
+  @Override
   public void setProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
     Assert.notNull(propertyValue);
@@ -166,38 +159,47 @@ public abstract class AbstractRow implements IsRow {
     properties.put(propertyKey, propertyValue);
   }
 
+  @Override
   public void setValue(int index, BigDecimal value) {
     setValue(index, new DecimalValue(value));
   }
 
+  @Override
   public void setValue(int index, Boolean value) {
     setValue(index, BooleanValue.getInstance(value));
   }
 
+  @Override
   public void setValue(int index, DateTime value) {
     setValue(index, new DateTimeValue(value));
   }
 
+  @Override
   public void setValue(int index, Double value) {
     setValue(index, new NumberValue(value));
   }
 
+  @Override
   public void setValue(int index, Integer value) {
     setValue(index, new IntegerValue(value));
   }
 
+  @Override
   public void setValue(int index, JustDate value) {
     setValue(index, new DateValue(value));
   }
 
+  @Override
   public void setValue(int index, Long value) {
     setValue(index, new LongValue(value));
   }
   
+  @Override
   public void setValue(int index, String value) {
     setValue(index, new TextValue(value));
   }
 
+  @Override
   public void setValue(int index, Value value) {
     IsCell cell = getCell(index);
     cell.setValue(value);
@@ -205,6 +207,7 @@ public abstract class AbstractRow implements IsRow {
     cell.clearProperties();
   }
   
+  @Override
   public void setVersion(long version) {
     this.version = version;
   }
@@ -228,11 +231,9 @@ public abstract class AbstractRow implements IsRow {
     return sb.toString();
   }
 
-  protected abstract void assertIndex(int index);
-
-  protected void cloneProperties(IsRow cloneRow) {
+  protected void copyProperties(IsRow target) {
     if (getProperties() != null) {
-      cloneRow.setProperties(getProperties().clone());
+      target.setProperties(getProperties().copy());
     }
   }
 }

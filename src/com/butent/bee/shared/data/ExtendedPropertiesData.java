@@ -39,9 +39,9 @@ public class ExtendedPropertiesData extends RowList<TableRow, TableColumn> {
   }
 
   @Override
-  public ExtendedPropertiesData clone() {
+  public ExtendedPropertiesData copy() {
     ExtendedPropertiesData result = new ExtendedPropertiesData();
-    cloneTableDescription(result);
+    copyTableDescription(result);
     result.setRows(getRows().getList());
     return result;
   }
