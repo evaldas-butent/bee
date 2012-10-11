@@ -3,7 +3,8 @@
 
 name="Mail" label="Paštas" order="80"
 >
-  <Item name="Proxy" label="Perleisti pašto komponentą" service="restart_proxy" />
+  <Item name="Messages" label="Laiškai" service="grid" parameters="Messages" />
+  <Item name="Proxy" label="Perleisti pašto komponentą" service="restart_proxy" separator="true" />
 
   <Item name="Parameters" label="Pašto parametrai" service="mail_parameters" parameters="Mail"  separator="true" />
 </Entry>

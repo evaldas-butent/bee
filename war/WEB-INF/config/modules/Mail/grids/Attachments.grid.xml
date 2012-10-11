@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="Attachments" viewName="Attachments" caption="Prielipai"
+  >
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <ui:font>Verdana 12 px</ui:font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <DataColumn name="FileName" caption="Failas">
+      <render>
+        <ui:expression>row.FileName ? row.FileName : row.OriginalName</ui:expression>
+      </render>
+    </DataColumn>
+    <DataColumn name="Size" caption="Dydis" />
+    <DataColumn name="Type" caption="Tipas" />
+  </columns>
+</Grid>

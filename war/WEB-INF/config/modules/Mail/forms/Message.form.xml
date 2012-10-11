@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  
+  name="Message" caption="Laiškas" readOnly="true"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <FlexTable>
+      <row>
+        <InputDateTime caption="Data" source="Date" />
+        <InputText caption="Siuntėjas" source="Email" />
+        <InputText caption="Tema" source="Subject" />
+      </row>
+    </FlexTable>
+
+    <ChildGrid class="flexible" name="Recipients" relColumn="Message" />
+    <ChildGrid class="flexible" name="Parts" relColumn="Message" />
+    <ChildGrid class="flexible" name="Attachments" relColumn="Message" />
+  </FlowPanel>
+</f:Form>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Recipients" source="Recipients"
+  >
+  <Columns>
+    <SimpleColumn name="Message" />
+    <SimpleColumn name="Type" />
+    <SimpleJoin name="Address" joinType="LEFT">
+      <SimpleColumn name="Label" />
+      <SimpleColumn name="Email" />
+    </SimpleJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="Type" descending="true" />
+  </Order>
+</View>
+ 

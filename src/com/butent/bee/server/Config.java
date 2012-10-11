@@ -35,7 +35,7 @@ public class Config {
 
   public static File SCHEMA_DIR;
   public static File CONFIG_DIR;
-  public static File USER_DIR;
+  public static File LOCAL_DIR;
   public static File LOG_DIR;
   public static File REPOSITORY_DIR;
 
@@ -63,9 +63,10 @@ public class Config {
 
     SCHEMA_DIR = new File(dir, "schemas");
     CONFIG_DIR = new File(dir, "config");
-    USER_DIR = new File(dir, "user");
-    LOG_DIR = new File(USER_DIR, "logs");
-    REPOSITORY_DIR = new File(USER_DIR, "repository");
+    LOCAL_DIR = new File(dir, "local");
+
+    LOG_DIR = new File(LOCAL_DIR, "logs");
+    REPOSITORY_DIR = new File(LOCAL_DIR, "repository");
   }
 
   public static String getConfigPath(String resource) {
@@ -78,7 +79,7 @@ public class Config {
   }
 
   public static List<File> getDefaultSearchDirectories() {
-    return Lists.newArrayList(USER_DIR, CONFIG_DIR, SCHEMA_DIR, WAR_DIR, SOURCE_DIR, LOG_DIR);
+    return Lists.newArrayList(LOCAL_DIR, CONFIG_DIR, SCHEMA_DIR, WAR_DIR, SOURCE_DIR);
   }
 
   public static List<File> getDirectories(String pfx) {
@@ -97,8 +98,8 @@ public class Config {
         case 's':
           dir = SOURCE_DIR;
           break;
-        case 'u':
-          dir = USER_DIR;
+        case 'l':
+          dir = LOCAL_DIR;
           break;
         case 'w':
           dir = WAR_DIR;
@@ -132,7 +133,7 @@ public class Config {
         "War dir", WAR_DIR.isDirectory(), WAR_DIR.getAbsolutePath(),
         "Source dir", SOURCE_DIR.isDirectory(), SOURCE_DIR.getAbsolutePath(),
         "Config dir", CONFIG_DIR.isDirectory(), CONFIG_DIR.getAbsolutePath(),
-        "User dir", USER_DIR.isDirectory(), USER_DIR.getAbsolutePath(),
+        "Local dir", LOCAL_DIR.isDirectory(), LOCAL_DIR.getAbsolutePath(),
         "Log dir", LOG_DIR.isDirectory(), LOG_DIR.getAbsolutePath(),
         "Repository dir", REPOSITORY_DIR.isDirectory(), REPOSITORY_DIR.getAbsolutePath());
 
@@ -178,6 +179,15 @@ public class Config {
     return Lists.newArrayList(VALUE_SPLITTER.split(values));
   }
 
+  public static String getLocalPath(String resource) {
+    Assert.notEmpty(resource);
+
+    if (FileUtils.isInputFile(LOCAL_DIR, resource)) {
+      return new File(LOCAL_DIR, resource).getPath();
+    }
+    return null;
+  }
+
   public static String getPath(String resource) {
     return getPath(resource, true);
   }
@@ -185,7 +195,7 @@ public class Config {
   public static String getPath(String resource, boolean warn) {
     Assert.notEmpty(resource);
 
-    String path = getUserPath(resource);
+    String path = getLocalPath(resource);
     if (BeeUtils.isEmpty(path)) {
       path = getConfigPath(resource);
     }
@@ -215,15 +225,6 @@ public class Config {
       textExtensions = getList("TextExtensions");
     }
     return textExtensions;
-  }
-
-  public static String getUserPath(String resource) {
-    Assert.notEmpty(resource);
-
-    if (FileUtils.isInputFile(USER_DIR, resource)) {
-      return new File(USER_DIR, resource).getPath();
-    }
-    return null;
   }
 
   public static void init() {
@@ -266,7 +267,7 @@ public class Config {
 
   public static Properties loadProperties(String name) {
     Properties def = readProperties(new File(CONFIG_DIR, name));
-    Properties usr = readProperties(new File(USER_DIR, name));
+    Properties loc = readProperties(new File(LOCAL_DIR, name));
 
     Properties result;
     if (isEmpty(def)) {
@@ -275,9 +276,9 @@ public class Config {
       result = new Properties(def);
     }
 
-    if (!isEmpty(usr)) {
-      for (String key : usr.stringPropertyNames()) {
-        result.setProperty(key, usr.getProperty(key));
+    if (!isEmpty(loc)) {
+      for (String key : loc.stringPropertyNames()) {
+        result.setProperty(key, loc.getProperty(key));
       }
     }
     return result;

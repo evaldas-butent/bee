@@ -1,13 +1,12 @@
 package com.butent.bee.server.modules.mail.proxy;
 
-import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
-
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
 
 public class POP3ProtocolClientHandler extends TextBasedProtocolClientHandler {
 
+  private String user = "";
   private String mailBody = "";
   private int state = 0;
 
@@ -21,15 +20,16 @@ public class POP3ProtocolClientHandler extends TextBasedProtocolClientHandler {
 
     logger.debug("POP3 MR:", msg);
 
-    if (state == 1 && msg.equals(".")) {
-      state = 0;
-      proxy.processMessage(mailBody, Protocol.POP3);
-
-    } else if (state == 1) {
-      if (msg.startsWith("-ERR")) {
+    if (state == 1) {
+      if (msg.equals(".")) {
+        proxy.processMessage(mailBody, user);
         state = 0;
         mailBody = "";
-        logger.severe("POP3 mail receive error: " + msg);
+
+      } else if (msg.startsWith("-ERR")) {
+        state = 0;
+        mailBody = "";
+        logger.severe("POP3 mail receive error:", msg);
 
       } else if (!msg.startsWith("+OK")) {
         mailBody += (msg.startsWith("..") ? msg.substring(1) : msg) + "\r\n";
@@ -44,7 +44,9 @@ public class POP3ProtocolClientHandler extends TextBasedProtocolClientHandler {
 
     logger.debug("POP3 WR:", msg);
 
-    if (msg.toUpperCase().startsWith("RETR")) {
+    if (msg.toUpperCase().startsWith("USER")) {
+      user = msg.substring(4).trim();
+    } else if (msg.toUpperCase().startsWith("RETR")) {
       state = 1;
       mailBody = "";
     }

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="Parts" viewName="Parts" caption="Turiniai"
+  >
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <ui:font>Verdana 12 px</ui:font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <DataColumn name="ContentType" caption="Tipas" />
+    <DataColumn name="Content" caption="Turinys" />
+  </columns>
+</Grid>

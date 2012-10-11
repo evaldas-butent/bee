@@ -372,7 +372,7 @@ public class SystemBean {
         SysObject.TABLE.getPath(), SysObject.TABLE.getFileName(tableName));
 
     if (userMode) {
-      resource = Config.getUserPath(resource);
+      resource = Config.getLocalPath(resource);
     } else {
       resource = Config.getConfigPath(resource);
     }
@@ -397,7 +397,7 @@ public class SystemBean {
         SysObject.VIEW.getPath(), SysObject.VIEW.getFileName(viewName));
 
     if (userMode) {
-      resource = Config.getUserPath(resource);
+      resource = Config.getLocalPath(resource);
     } else {
       resource = Config.getConfigPath(resource);
     }
@@ -1011,7 +1011,7 @@ public class SystemBean {
       if (FileUtils.isDirectory(root)) {
         roots.add(root);
       }
-      root = new File(Config.USER_DIR, modulePath);
+      root = new File(Config.LOCAL_DIR, modulePath);
       if (FileUtils.isDirectory(root)) {
         roots.add(root);
       }

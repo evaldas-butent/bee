@@ -100,8 +100,8 @@ public class MailProxy {
     return response;
   }
 
-  public void processMessage(String message, Protocol protocol) {
-    mail.storeMail(message, protocol);
+  public void processMessage(String message, String pop3User) {
+    mail.storeMail(message, pop3User);
   }
 
   @PreDestroy

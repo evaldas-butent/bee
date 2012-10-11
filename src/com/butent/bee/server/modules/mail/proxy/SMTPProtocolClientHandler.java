@@ -1,7 +1,5 @@
 package com.butent.bee.server.modules.mail.proxy;
 
-import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
-
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
@@ -23,13 +21,12 @@ public class SMTPProtocolClientHandler extends TextBasedProtocolClientHandler {
 
     if (state == 3) {
       if (msg.startsWith("250")) {
-        state = 0;
-        proxy.processMessage(mailBody, Protocol.SMTP);
-
+        proxy.processMessage(mailBody, null);
       } else {
-        state = 0;
-        logger.severe("SMTP mail send error: " + msg);
+        logger.severe("SMTP mail send error:", msg);
       }
+      state = 0;
+      mailBody = "";
     }
     super.messageReceived(ctx, e);
   }
@@ -43,11 +40,10 @@ public class SMTPProtocolClientHandler extends TextBasedProtocolClientHandler {
     if (state == 0 && msg.toUpperCase().startsWith("DATA")) {
       state = 1;
       mailBody = "";
-
-    } else {
-      if (state == 1 && msg.equals(".\r\n")) {
+    } else if (state == 1) {
+      if (msg.equals(".\r\n")) {
         state = 3;
-      } else if (state == 1) {
+      } else {
         mailBody += msg.startsWith("..") ? msg.substring(1) : msg;
       }
     }

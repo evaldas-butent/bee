@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Recipients"
+  idName="RecipientID"
+  >
+  <Fields>
+    <Relation name="Message" relation="Messages" notNull="true" cascade="DELETE" />
+    <Relation name="Address" relation="Addresses" notNull="true" />
+    <String name="Type" precision="10" notNull="true" />
+  </Fields>
+  <Keys>
+    <Key unique="true">
+      <KeyField>Message</KeyField>
+      <KeyField>Address</KeyField>
+    </Key>
+    <Key>
+      <KeyField>Type</KeyField>
+    </Key>
+  </Keys>
+</Table>

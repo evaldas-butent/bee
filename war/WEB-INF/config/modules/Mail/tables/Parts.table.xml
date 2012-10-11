@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Parts"
+  idName="PartID"
+  >
+  <Fields>
+    <Relation name="Message" relation="Messages" notNull="true" cascade="DELETE" />
+    <String name="ContentType" precision="100" />
+    <Text name="Content" />
+  </Fields>
+</Table>

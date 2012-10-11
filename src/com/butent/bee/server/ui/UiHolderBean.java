@@ -302,7 +302,7 @@ public class UiHolderBean {
       if (FileUtils.isDirectory(root)) {
         roots.add(root);
       }
-      root = new File(Config.USER_DIR, modulePath);
+      root = new File(Config.LOCAL_DIR, modulePath);
       if (FileUtils.isDirectory(root)) {
         roots.add(root);
       }

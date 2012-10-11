@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Messages" source="Messages"
+  >
+  <Columns>
+    <SimpleColumn name="Date" />
+    <SimpleJoin name="Sender" joinType="LEFT">
+      <SimpleColumn name="Label" />
+      <SimpleColumn name="Email" />
+    </SimpleJoin>
+    <SimpleColumn name="Subject" />
+    <ExternalJoin name="Message" source="Recipients" joinType="LEFT">
+      <AggregateJoin name="Address" joinType="LEFT">
+        <AggregateColumn name="Email" alias="MinRecipient" aggregate="MIN" />
+        <AggregateColumn name="Email" alias="MaxRecipient" aggregate="MAX" />
+        <AggregateColumn name="Email" alias="CntRecipient" aggregate="COUNT_DISTINCT" />
+      </AggregateJoin>
+    </ExternalJoin>
+  </Columns>
+  <Order>
+    <OrderBy column="Date" descending="true" />
+  </Order>
+</View>
+ 
