@@ -1301,15 +1301,13 @@ public class DomUtils {
     return el.getTagName().equalsIgnoreCase(TAG_LABEL);
   }
 
-  public static boolean isOrHasChild(String id, Node nd) {
-    Assert.notEmpty(id);
-    Assert.notNull(nd);
-    
-    Element el = DOM.getElementById(id);
-    if (el == null) {
+  public static boolean isOrHasAncestor(Element el, String id) {
+    if (el == null || BeeUtils.isEmpty(id)) {
       return false;
+    } else if (BeeUtils.same(id, el.getId())) {
+      return true;
     } else {
-      return el.isOrHasChild(nd);
+      return isOrHasAncestor(el.getParentElement(), id);
     }
   }
 
@@ -1357,6 +1355,17 @@ public class DomUtils {
       return false;
     }
     return el.getTagName().equalsIgnoreCase(TAG_TH);
+  }
+  
+  public static boolean isVisible(Element el) {
+    Assert.notNull(el);
+    
+    for (Element p = el; p != null; p = p.getParentElement()) {
+      if (!UIObject.isVisible(p)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public static void logChildren(Widget w) {

@@ -2,8 +2,8 @@ package com.butent.bee.client.modules.commons;
 
 import com.butent.bee.client.data.HasDataProvider;
 import com.butent.bee.client.data.Provider;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.view.edit.SelectorEvent;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.server.data.UserServiceBean;
 import com.butent.bee.shared.data.DataUtils;

@@ -6,6 +6,7 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.modules.calendar.Appointment;
+import com.butent.bee.client.modules.calendar.CalendarWidget;
 import com.butent.bee.shared.State;
 
 public class AppointmentEvent extends Event<AppointmentEvent.Handler> {
@@ -17,7 +18,11 @@ public class AppointmentEvent extends Event<AppointmentEvent.Handler> {
   private static final Type<Handler> TYPE = new Type<Handler>();
   
   public static void fire(Appointment appointment, State state) {
-    BeeKeeper.getBus().fireEvent(new AppointmentEvent(appointment, state));
+    fire(appointment, state, null);
+  }
+
+  public static void fire(Appointment appointment, State state, CalendarWidget ignore) {
+    BeeKeeper.getBus().fireEvent(new AppointmentEvent(appointment, state, ignore));
   }
   
   public static Type<Handler> getType() {
@@ -30,11 +35,13 @@ public class AppointmentEvent extends Event<AppointmentEvent.Handler> {
 
   private final Appointment appointment;
   private final State state;
+  private final CalendarWidget ignore;
 
-  public AppointmentEvent(Appointment appointment, State state) {
+  public AppointmentEvent(Appointment appointment, State state, CalendarWidget ignore) {
     super();
     this.appointment = appointment;
     this.state = state;
+    this.ignore = ignore;
   }
 
   public Appointment getAppointment() {
@@ -52,6 +59,10 @@ public class AppointmentEvent extends Event<AppointmentEvent.Handler> {
   
   public boolean isNew() {
     return State.CREATED.equals(state);
+  }
+  
+  public boolean isRelevant(CalendarWidget calendarWidget) {
+    return (ignore == null) ? true : !ignore.equals(calendarWidget);
   }
 
   public boolean isUpdated() {

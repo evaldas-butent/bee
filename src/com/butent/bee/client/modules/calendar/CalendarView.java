@@ -5,8 +5,13 @@ import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.modules.calendar.event.AppointmentEvent;
 import com.butent.bee.client.modules.calendar.event.TimeBlockClickEvent;
 import com.butent.bee.client.modules.calendar.event.UpdateEvent;
+import com.butent.bee.shared.State;
+import com.butent.bee.shared.data.event.RowUpdateEvent;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -61,9 +66,17 @@ public abstract class CalendarView {
 
   public void updateAppointment(Appointment appointment, DateTime newStart, DateTime newEnd,
       int oldColumnIndex, int newColumnIndex, boolean refresh) {
-    if (UpdateEvent.fire(getCalendarWidget(), appointment, newStart, newEnd, oldColumnIndex,
-        newColumnIndex) || refresh) {
-      getCalendarWidget().refresh(false);
+    boolean updated = UpdateEvent.fire(getCalendarWidget(), appointment, newStart, newEnd,
+        oldColumnIndex, newColumnIndex);
+
+    if (updated) {
+      if (refresh) {
+        getCalendarWidget().refresh(false);
+      }
+
+      AppointmentEvent.fire(appointment, State.CHANGED, getCalendarWidget());
+      BeeKeeper.getBus().fireEvent(new RowUpdateEvent(CalendarConstants.VIEW_APPOINTMENTS,
+          appointment.getRow()));
     }
   }
 

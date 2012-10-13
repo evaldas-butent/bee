@@ -1,4 +1,4 @@
-package com.butent.bee.client.view.edit;
+package com.butent.bee.client.event.logical;
 
 import com.google.gwt.event.shared.EventHandler;
 import com.google.web.bindery.event.shared.Event;

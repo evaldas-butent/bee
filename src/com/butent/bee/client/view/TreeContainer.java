@@ -8,6 +8,8 @@ import com.google.gwt.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.logical.CatchEvent;
+import com.butent.bee.client.event.logical.CatchEvent.CatchHandler;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.presenter.TreePresenter;
@@ -15,7 +17,6 @@ import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
 import com.butent.bee.client.utils.Command;
-import com.butent.bee.client.view.CatchEvent.CatchHandler;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.data.IsRow;

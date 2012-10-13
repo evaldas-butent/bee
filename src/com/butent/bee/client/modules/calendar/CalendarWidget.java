@@ -148,6 +148,10 @@ public class CalendarWidget extends Composite implements HasOpenHandlers<Appoint
   public int getDisplayedDays() {
     return displayedDays;
   }
+  
+  public String getId() {
+    return getElement().getId();
+  }
 
   public CalendarSettings getSettings() {
     return settings;

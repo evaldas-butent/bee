@@ -42,6 +42,11 @@ import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.Modifiers;
+import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
+import com.butent.bee.client.event.logical.DataRequestEvent;
+import com.butent.bee.client.event.logical.ScopeChangeEvent;
+import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
+import com.butent.bee.client.event.logical.SortEvent;
 import com.butent.bee.client.grid.CellContext;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
@@ -58,15 +63,10 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.ActiveRowChangeEvent;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
-import com.butent.bee.shared.data.event.DataRequestEvent;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
-import com.butent.bee.shared.data.event.ScopeChangeEvent;
-import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
-import com.butent.bee.shared.data.event.SortEvent;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -1596,14 +1596,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         
         if (handleKey(keyCode, hasModifiers, row, col, target)) {
           event.preventDefault();
-        } else if (hasModifiers) {
-          event.preventDefault();
-        } else if (columnInfo.isSelection()) {
+        } else if (columnInfo.isSelection() && !hasModifiers) {
           event.preventDefault();
           selectRow(row, rowValue);
         } else if (keyCode == KeyCodes.KEY_ENTER || keyCode == KeyCodes.KEY_DELETE) {
           event.preventDefault();
-          startEditing(rowValue, col, target, EditorFactory.getStartKey(keyCode));
+          if (!hasModifiers) {
+            startEditing(rowValue, col, target, EditorFactory.getStartKey(keyCode));
+          }
         }
         return;
 

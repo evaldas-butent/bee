@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.view.navigation.PagerView;
@@ -15,7 +16,6 @@ import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;

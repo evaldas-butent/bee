@@ -2,16 +2,16 @@ package com.butent.bee.client.data;
 
 import com.google.gwt.event.shared.HandlerRegistration;
 
+import com.butent.bee.client.event.logical.DataRequestEvent;
+import com.butent.bee.client.event.logical.HasActiveRowChangeHandlers;
+import com.butent.bee.client.event.logical.HasSelectionCountChangeHandlers;
+import com.butent.bee.client.event.logical.HasSortHandlers;
+import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.view.HasLoadingState;
 import com.butent.bee.client.view.edit.HasEditState;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.DataRequestEvent;
 import com.butent.bee.shared.data.event.HandlesDeleteEvents;
 import com.butent.bee.shared.data.event.HandlesUpdateEvents;
-import com.butent.bee.shared.data.event.HasActiveRowChangeHandlers;
-import com.butent.bee.shared.data.event.HasSelectionCountChangeHandlers;
-import com.butent.bee.shared.data.event.HasSortHandlers;
-import com.butent.bee.shared.data.event.ScopeChangeEvent;
 import com.butent.bee.shared.ui.NavigationOrigin;
 
 import java.util.List;

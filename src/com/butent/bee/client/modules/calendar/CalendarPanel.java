@@ -26,7 +26,9 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.datepicker.DatePicker;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
@@ -68,10 +70,10 @@ import java.util.EnumSet;
 import java.util.List;
 
 public class CalendarPanel extends Complex implements AppointmentEvent.Handler, Presenter, View,
-    Printable {
+    Printable, VisibilityChangeEvent.Handler {
 
   private static final BeeLogger logger = LogUtils.getLogger(CalendarPanel.class);
-  
+
   private static final String STYLE_PANEL = "bee-cal-Panel";
   private static final String STYLE_CONTROLS = "bee-cal-Panel-controls";
 
@@ -105,7 +107,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
   private final Timer timer;
 
-  private HandlerRegistration appointmentEventRegistration;
+  private final List<HandlerRegistration> registry = Lists.newArrayList();
 
   private boolean enabled = true;
 
@@ -230,7 +232,8 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     refreshDateBox();
 
-    setAppointmentEventRegistration(AppointmentEvent.register(this));
+    registry.add(AppointmentEvent.register(this));
+    registry.add(VisibilityChangeEvent.register(this));
 
     loadAppointments();
   }
@@ -244,6 +247,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     return header.getCaption();
   }
 
+  @Override
   public String getEventSource() {
     return null;
   }
@@ -253,18 +257,22 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     return getElement();
   }
 
+  @Override
   public Presenter getViewPresenter() {
     return this;
   }
 
+  @Override
   public Widget getWidget() {
     return this;
   }
 
+  @Override
   public String getWidgetId() {
     return getId();
   }
 
+  @Override
   public void handleAction(Action action) {
     switch (action) {
       case REFRESH:
@@ -288,16 +296,22 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     }
   }
 
+  @Override
   public boolean isEnabled() {
     return enabled;
   }
 
   @Override
   public void onAppointment(AppointmentEvent event) {
-    if (event.isUpdated()) {
-      calendar.removeAppointment(event.getAppointment().getId(), false);
+    if (event.isRelevant(calendar)) {
+      if (!DomUtils.isVisible(getElement())) {
+        calendar.suspendLayout();
+      }
+      if (event.isUpdated()) {
+        calendar.removeAppointment(event.getAppointment().getId(), false);
+      }
+      calendar.addAppointment(event.getAppointment(), true);
     }
-    calendar.addAppointment(event.getAppointment(), true);
   }
 
   @Override
@@ -348,26 +362,37 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     calendar.onResize();
   }
 
+  @Override
   public void onViewUnload() {
   }
 
+  @Override
+  public void onVisibilityChange(VisibilityChangeEvent event) {
+    if (event.isVisible() && DomUtils.isOrHasAncestor(getElement(), event.getId())) {
+      calendar.resumeLayout();
+    }
+  }
+
+  @Override
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
   }
 
+  @Override
   public void setEventSource(String eventSource) {
   }
 
+  @Override
   public void setViewPresenter(Presenter viewPresenter) {
   }
 
   @Override
   protected void onUnload() {
     if (!Global.isTemporaryDetach()) {
-      if (getAppointmentEventRegistration() != null) {
-        getAppointmentEventRegistration().removeHandler();
-        setAppointmentEventRegistration(null);
+      for (HandlerRegistration hr : registry) {
+        hr.removeHandler();
       }
+      registry.clear();
 
       CalendarKeeper.saveActiveView(getSettings());
     }
@@ -445,10 +470,6 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     refreshDateBox();
 
     getSettings().setActiveView(view);
-  }
-
-  private HandlerRegistration getAppointmentEventRegistration() {
-    return appointmentEventRegistration;
   }
 
   private int getPrintHeightAdjustment() {
@@ -543,10 +564,6 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
     DateTimeFormat format = Type.MONTH.equals(calendar.getType()) ? MONTH_FORMAT : DATE_FORMAT;
 
     dateBox.setHTML(format.format(date));
-  }
-
-  private void setAppointmentEventRegistration(HandlerRegistration appointmentEventRegistration) {
-    this.appointmentEventRegistration = appointmentEventRegistration;
   }
 
   private void setAppointments(BeeRowSet rowSet) {

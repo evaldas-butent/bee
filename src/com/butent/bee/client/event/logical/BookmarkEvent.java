@@ -1,15 +1,17 @@
-package com.butent.bee.client.screen;
+package com.butent.bee.client.event.logical;
 
+import com.google.gwt.event.shared.EventHandler;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
+import com.butent.bee.client.screen.Favorites;
 import com.butent.bee.client.screen.Favorites.Group;
 import com.butent.bee.shared.Assert;
 
 public class BookmarkEvent extends Event<BookmarkEvent.Handler> {
 
-  public interface Handler {
+  public interface Handler extends EventHandler {
     void onBookmark(BookmarkEvent event);
   }
 

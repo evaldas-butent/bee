@@ -10,6 +10,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.StringCallback;
+import com.butent.bee.client.event.logical.BookmarkEvent;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.widget.BeeImage;

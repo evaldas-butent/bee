@@ -7,9 +7,9 @@ import com.google.gwt.user.client.ui.Composite;
 
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.data.event.ScopeChangeEvent;
 import com.butent.bee.shared.ui.NavigationOrigin;
 
 /**

@@ -11,7 +11,8 @@ import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.google.web.bindery.event.shared.SimpleEventBus;
 
-import com.butent.bee.client.screen.BookmarkEvent;
+import com.butent.bee.client.event.logical.BookmarkEvent;
+import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
@@ -19,7 +20,6 @@ import com.butent.bee.shared.data.event.HandlesAllDataEvents;
 import com.butent.bee.shared.data.event.HandlesDeleteEvents;
 import com.butent.bee.shared.data.event.HandlesUpdateEvents;
 import com.butent.bee.shared.data.event.MultiDeleteEvent;
-import com.butent.bee.shared.data.event.ParentRowEvent;
 import com.butent.bee.shared.data.event.RowActionEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
@@ -211,7 +211,7 @@ public class EventManager implements Module {
 
     return registry;
   }
-  
+
   public void removeExitHandler() {
     if (this.exitRegistry != null) {
       this.exitRegistry.removeHandler();

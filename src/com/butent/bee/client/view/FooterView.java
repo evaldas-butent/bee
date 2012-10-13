@@ -1,7 +1,7 @@
 package com.butent.bee.client.view;
 
+import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
 import com.butent.bee.client.output.Printable;
-import com.butent.bee.shared.data.event.SelectionCountChangeEvent;
 
 public interface FooterView extends View, SelectionCountChangeEvent.Handler, Printable {
 

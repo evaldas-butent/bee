@@ -20,6 +20,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.ElementSize;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.event.logical.VisibilityChangeEvent;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
@@ -50,7 +51,7 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
     public void insert(Widget w, int beforeIndex) {
       DomUtils.ensureId(w, "dc");
       StyleUtils.occupy(w);
-      StyleUtils.hideDisplay(w);
+      VisibilityChangeEvent.hideAndFire(w);
 
       super.insert(w, beforeIndex);
     }
@@ -105,10 +106,10 @@ public class TabbedPages extends Flow implements RequiresResize, ProvidesResize,
       }
       
       if (!BeeUtils.isEmpty(getVisibleId())) {
-        StyleUtils.hideDisplay(getVisibleWidget());
+        VisibilityChangeEvent.hideAndFire(getVisibleWidget());
       }
-
-      StyleUtils.unhideDisplay(widget);
+      VisibilityChangeEvent.showAndFire(widget);
+      
       String id = DomUtils.getId(widget);
       setVisibleId(id);
       
