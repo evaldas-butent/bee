@@ -1,7 +1,7 @@
 package com.butent.bee.server.communication;
 
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeResource;
+import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseMessage;
@@ -30,7 +30,7 @@ public class ResponseBuffer {
   private int columnCount = 0;
 
   private List<ResponseMessage> messages = new ArrayList<ResponseMessage>();
-  private List<BeeResource> parts = new ArrayList<BeeResource>();
+  private List<Resource> parts = new ArrayList<Resource>();
 
   private ContentType contentType;
 
@@ -146,7 +146,7 @@ public class ResponseBuffer {
 
   public void addPart(String uri, String content, ContentType type, boolean readOnly) {
     Assert.notNull(content);
-    parts.add(new BeeResource(uri, content, type, readOnly));
+    parts.add(new Resource(uri, content, type, readOnly));
     setContentType(ContentType.MULTIPART);
   }
 
@@ -203,7 +203,7 @@ public class ResponseBuffer {
 
   public void addResource(String uri, String content, ContentType type, boolean readOnly) {
     Assert.notNull(content);
-    buffer.append(new BeeResource(uri, content, type, readOnly).serialize());
+    buffer.append(new Resource(uri, content, type, readOnly).serialize());
     count++;
     setContentType(ContentType.RESOURCE);
   }
@@ -323,7 +323,7 @@ public class ResponseBuffer {
     return parts.size();
   }
 
-  public List<BeeResource> getParts() {
+  public List<Resource> getParts() {
     return parts;
   }
 
@@ -381,7 +381,7 @@ public class ResponseBuffer {
     this.messages = messages;
   }
 
-  public void setParts(List<BeeResource> parts) {
+  public void setParts(List<Resource> parts) {
     this.parts = parts;
   }
 

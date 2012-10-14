@@ -68,7 +68,7 @@
       <renderer type="map" separator=";" />
       <editor type="picker" height="116">
         <ui:item>123 www ; 123</ui:item>
-        <ui:item>Bitinas ; &lt;img src="test.png"&gt;</ui:item>
+        <ui:item>Bitinas ; &lt;img src="images/logo.gif"&gt;</ui:item>
         <ui:item>ccc ddd ; cd</ui:item>
         <ui:item>beehive ; &lt;a href="http://www.butent.com"&gt;Būtent&lt;/a&gt;</ui:item>
       </editor>

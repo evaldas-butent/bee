@@ -17,6 +17,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.logical.CatchEvent;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.utils.Evaluator;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
@@ -118,6 +119,11 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
     return dataColumns;
   }
 
+  @Override
+  public HeaderView getHeader() {
+    return null;
+  }
+  
   @Override
   public Widget getWidget() {
     return getView().asWidget();

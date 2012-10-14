@@ -15,7 +15,7 @@ import org.junit.runners.Suite.SuiteClasses;
     TestSqlUpdate.class, TestSqlDelete.class, TestSqlSelect.class,
     TestHasFrom.class, TestWildcardsPattern.class, TestWildcards.class,
     TestDateTime.class, TestJustDate.class, TestPair.class, TestBeeConst.class,
-    TestBeeResource.class, TestIntValue.class,
+    TestResource.class, TestIntValue.class,
     TestLongValue.class, TestListSequence.class, TestValueType.class,
     TestService.class, TestStringArray.class,
     TestVariable.class, TestBooleanValue.class, TestDateTimeValue.class,

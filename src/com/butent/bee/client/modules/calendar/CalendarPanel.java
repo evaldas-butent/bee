@@ -253,6 +253,11 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   }
 
   @Override
+  public HeaderView getHeader() {
+    return header;
+  }
+  
+  @Override
   public Element getPrintElement() {
     return getElement();
   }

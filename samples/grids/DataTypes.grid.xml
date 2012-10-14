@@ -121,7 +121,7 @@
     <DataColumn name="Sss" source="String" sortable="false">
       <editor type="picker" height="116">
         <ui:item>123 www</ui:item>
-        <ui:item>Bitinas ; &lt;img src="test.png"&gt;</ui:item>
+        <ui:item>Bitinas ; &lt;img src="images/logo.gif"&gt;</ui:item>
         <ui:item>ccc ddd</ui:item>
         <ui:item>beehive ; &lt;a href="http://www.butent.com"&gt;Būtent&lt;/a&gt;</ui:item>
       </editor>

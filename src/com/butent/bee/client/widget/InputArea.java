@@ -18,7 +18,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasTextBox;
-import com.butent.bee.shared.BeeResource;
+import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasTextDimensions;
@@ -32,7 +32,7 @@ import com.butent.bee.shared.utils.Codec;
 public class InputArea extends TextArea implements Editor, HandlesAfterSave, HasTextDimensions,
     HasInputHandlers, HasTextBox {
 
-  private BeeResource resource = null;
+  private Resource resource = null;
 
   private String digest = null;
 
@@ -47,7 +47,7 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     init();
   }
 
-  public InputArea(BeeResource resource) {
+  public InputArea(Resource resource) {
     this();
     this.resource = resource;
 
@@ -101,7 +101,7 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     }
   }
 
-  public BeeResource getResource() {
+  public Resource getResource() {
     return resource;
   }
 
@@ -186,7 +186,7 @@ public class InputArea extends TextArea implements Editor, HandlesAfterSave, Has
     this.nullable = nullable;
   }
 
-  public void setResource(BeeResource resource) {
+  public void setResource(Resource resource) {
     this.resource = resource;
   }
 

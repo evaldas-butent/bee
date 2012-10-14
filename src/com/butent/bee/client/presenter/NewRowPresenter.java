@@ -6,6 +6,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
@@ -38,6 +39,11 @@ public class NewRowPresenter extends AbstractPresenter {
       }
     }
     return null;
+  }
+  
+  @Override
+  public HeaderView getHeader() {
+    return ViewHelper.getHeader(getWidget());
   }
   
   @Override

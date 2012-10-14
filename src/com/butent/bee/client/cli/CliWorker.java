@@ -95,7 +95,7 @@ import com.butent.bee.client.widget.Progress;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeResource;
+import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
@@ -205,7 +205,7 @@ public class CliWorker {
     } else if (z.startsWith("df")) {
       showDateFormat(args);
     } else if (z.startsWith("dim")) {
-      showDimensions();
+      showDimensions(args);
     } else if (z.equals("dsn")) {
       CompositeService.doService(new DsnService().name(), DsnService.SVC_GET_DSNS);
     } else if (z.startsWith("dt")) {
@@ -1063,10 +1063,10 @@ public class CliWorker {
       public void onResponse(ResponseObject response) {
         Assert.notNull(response);
 
-        if (response.hasResponse(BeeResource.class)) {
+        if (response.hasResponse(Resource.class)) {
           final BeeLayoutPanel p = new BeeLayoutPanel();
 
-          final InputArea area = new InputArea(new BeeResource((String) response.getResponse()));
+          final InputArea area = new InputArea(new Resource((String) response.getResponse()));
           p.add(area);
           p.setWidgetTopBottom(area, 0, Unit.EM, 2, Unit.EM);
 
@@ -1080,10 +1080,10 @@ public class CliWorker {
                       public void onResponse(ResponseObject resp) {
                         Assert.notNull(resp);
 
-                        if (resp.hasResponse(BeeResource.class)) {
+                        if (resp.hasResponse(Resource.class)) {
                           p.getWidget(1).removeFromParent();
                           InputArea res =
-                              new InputArea(new BeeResource((String) resp.getResponse()));
+                              new InputArea(new Resource((String) resp.getResponse()));
                           p.add(res);
                           p.setWidgetLeftRight(res, 50, Unit.PCT, 0, Unit.EM);
                           p.setWidgetTopBottom(area, 0, Unit.EM, 0, Unit.EM);
@@ -1120,9 +1120,9 @@ public class CliWorker {
                         public void onResponse(ResponseObject resp) {
                           Assert.notNull(resp);
 
-                          if (resp.hasResponse(BeeResource.class)) {
+                          if (resp.hasResponse(Resource.class)) {
                             InputArea res =
-                                new InputArea(new BeeResource((String) resp.getResponse()));
+                                new InputArea(new Resource((String) resp.getResponse()));
                             Global.inform(res.getValue());
                           } else {
                             Global.showError("Wrong response received");
@@ -1496,21 +1496,44 @@ public class CliWorker {
     }
   }
 
-  private static void showDimensions() {
-    String caption = "Dimensions";
-    List<Property> info = PropertyUtils.createProperties(
-        "Viewport width", DomUtils.getClientWidth(),
-        "Viewport height", DomUtils.getClientHeight(),
-        "TextBox client width", DomUtils.getTextBoxClientWidth(),
-        "TextBox client height", DomUtils.getTextBoxClientHeight(),
-        "TextBox offset width", DomUtils.getTextBoxOffsetWidth(),
-        "TextBox offset height", DomUtils.getTextBoxOffsetHeight(),
-        "CheckBox client width", DomUtils.getCheckBoxClientWidth(),
-        "CheckBox client height", DomUtils.getCheckBoxClientHeight(),
-        "CheckBox offset width", DomUtils.getCheckBoxOffsetWidth(),
-        "CheckBox offset height", DomUtils.getCheckBoxOffsetHeight(),
-        "Scrollbar width", DomUtils.getScrollBarWidth(),
-        "Scrollbar height", DomUtils.getScrollBarHeight());
+  private static void showDimensions(String id) {
+    final String caption;
+    final List<Property> info;
+
+    if (BeeUtils.isEmpty(id)) {
+      caption = "Dimensions";
+      info = PropertyUtils.createProperties(
+          "Viewport width", DomUtils.getClientWidth(),
+          "Viewport height", DomUtils.getClientHeight(),
+          "TextBox client width", DomUtils.getTextBoxClientWidth(),
+          "TextBox client height", DomUtils.getTextBoxClientHeight(),
+          "TextBox offset width", DomUtils.getTextBoxOffsetWidth(),
+          "TextBox offset height", DomUtils.getTextBoxOffsetHeight(),
+          "CheckBox client width", DomUtils.getCheckBoxClientWidth(),
+          "CheckBox client height", DomUtils.getCheckBoxClientHeight(),
+          "CheckBox offset width", DomUtils.getCheckBoxOffsetWidth(),
+          "CheckBox offset height", DomUtils.getCheckBoxOffsetHeight(),
+          "Scrollbar width", DomUtils.getScrollBarWidth(),
+          "Scrollbar height", DomUtils.getScrollBarHeight());
+
+    } else {
+      Element elem = Document.get().getElementById(id);
+      if (elem == null) {
+        Global.inform("element id", id, "not found");
+        return;
+      }
+     
+      caption = id;
+      info = PropertyUtils.createProperties(
+          "Client width", elem.getClientWidth(),
+          "Client height", elem.getClientHeight(),
+          "Offset width", elem.getOffsetWidth(),
+          "Offset height", elem.getOffsetHeight(),
+          "Scroll width", elem.getScrollWidth(),
+          "Scroll height", elem.getScrollHeight(),
+          "Outer width", DomUtils.getOuterWidth(elem),
+          "Outer height", DomUtils.getOuterHeight(elem));
+    }
 
     PropertiesData table = new PropertiesData(info);
     if (showModal(info.size())) {

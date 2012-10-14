@@ -888,17 +888,6 @@ body, select {
   background-color: white;
 }
 
-.bee-GridNewRow-container {
-  margin-left: 1em;
-  margin-top: 1ex;
-}
-.bee-GridNewRow-labelCell {
-  vertical-align: top;
-}
-.bee-GridNewRow-label {
-  padding-right: 1em;
-}
-
 .bee-GridFormContainer, .bee-NewRowContainer, .bee-RowContainer {
   position: absolute;
   left: 0;
@@ -1321,7 +1310,11 @@ body, select {
 .bee-NewRow-table {
   margin: 1ex 1em;
 }
+.bee-NewRow-labelCell {
+  vertical-align: top;
+}
 .bee-NewRow-label {
+  padding-top: 2px;
   padding-right: 1em;
 }
 

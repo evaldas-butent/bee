@@ -40,6 +40,11 @@ public class RowPresenter extends AbstractPresenter implements Printable {
   }
   
   @Override
+  public HeaderView getHeader() {
+    return header;
+  }
+  
+  @Override
   public Element getPrintElement() {
     return getWidget().getElement();
   }

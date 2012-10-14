@@ -3,11 +3,13 @@ package com.butent.bee.client.dom;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.HasLength;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
@@ -17,6 +19,7 @@ import java.util.List;
 public class ComputedStyles implements HasLength, HasInfo {
 
   private static final char NAME_SEPARATOR = '-';
+  private static final int DEFAULT_PIXEL_VALUE = 0;
 
   public static String get(Element el, String p) {
     Assert.notNull(el);
@@ -31,6 +34,31 @@ public class ComputedStyles implements HasLength, HasInfo {
     return get(obj.getElement(), p);
   }
 
+  public static int getPixels(Element el, String p) {
+    String value = get(el, p);
+
+    if (BeeUtils.isEmpty(value)) {
+      return DEFAULT_PIXEL_VALUE;
+
+    } else if (BeeUtils.containsSame(value, Unit.PX.getType())) {
+      Pair<Double, Unit> cssLength = StyleUtils.parseCssLength(value);
+      if (cssLength.getA() != null && Unit.PX.equals(cssLength.getB())) {
+        return BeeUtils.toInt(cssLength.getA());
+      } else {
+        return DEFAULT_PIXEL_VALUE;
+      }
+
+    } else if (BeeUtils.isInt(value)) {
+      return BeeUtils.toInt(value);
+    
+    } else if (BeeUtils.isDouble(value)) {
+      return BeeUtils.toInt(BeeUtils.toDouble(value));
+    
+    } else {
+      return DEFAULT_PIXEL_VALUE;
+    }
+  }
+  
   private static native String getComputedStyle(Element el, String p, String c) /*-{
     if ("getComputedStyle" in $wnd) {
       return $wnd.getComputedStyle(el, null).getPropertyValue(p);

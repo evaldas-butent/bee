@@ -30,7 +30,7 @@ import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeResource;
+import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -171,7 +171,7 @@ public class ScreenImpl implements Screen {
   }
   
   @Override
-  public void showResource(BeeResource resource) {
+  public void showResource(Resource resource) {
     Assert.notNull(resource);
     updateActivePanel(new ResourceEditor(resource));
   }

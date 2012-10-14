@@ -30,7 +30,7 @@ import com.butent.bee.server.ui.XmlSqlDesigner.DataTypeGroup;
 import com.butent.bee.server.utils.XmlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeResource;
+import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
@@ -253,7 +253,7 @@ public class UiServiceBean {
         designer.tables.add(xmlTable);
       }
     }
-    return ResponseObject.response(new BeeResource(null, XmlUtils.marshal(designer, null)));
+    return ResponseObject.response(new Resource(null, XmlUtils.marshal(designer, null)));
   }
 
   private ResponseObject delete(RequestInfo reqInfo) {

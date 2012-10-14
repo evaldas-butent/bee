@@ -5,7 +5,7 @@ import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeResource;
+import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
@@ -30,11 +30,11 @@ public class ResponseHandler {
     Assert.isTrue(sizes.length >= pc);
     Assert.notEmpty(content);
 
-    BeeResource[] resources = new BeeResource[pc];
+    Resource[] resources = new Resource[pc];
     int start = 0;
 
     for (int i = 0; i < pc; i++) {
-      resources[i] = new BeeResource();
+      resources[i] = new Resource();
       resources[i].deserialize(content.substring(start, start + sizes[i]));
       start += sizes[i];
     }

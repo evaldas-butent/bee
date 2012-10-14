@@ -7,7 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Split;
-import com.butent.bee.shared.BeeResource;
+import com.butent.bee.shared.Resource;
 
 /**
  * manages the main browser window and it's main containing elements (f.e. panels).
@@ -35,7 +35,7 @@ public interface Screen extends Module, NotificationListener {
 
   void showInfo();
 
-  void showResource(BeeResource resource);
+  void showResource(Resource resource);
   
   void updateActivePanel(Widget w);
 

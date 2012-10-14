@@ -21,4 +21,6 @@ public interface FormContainerView extends View, Printable, HasCaption {
       FormCallback callback);
 
   FormView getContent();
+  
+  HeaderView getHeader();  
 }

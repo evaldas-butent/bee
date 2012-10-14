@@ -35,6 +35,7 @@ import com.butent.bee.client.view.GridContainerImpl;
 import com.butent.bee.client.view.GridContainerView;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HasSearch;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
@@ -267,6 +268,11 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     return getView().getGridView();
   }
 
+  @Override
+  public HeaderView getHeader() {
+    return getView().getHeader();
+  }
+  
   public Filter getLastFilter() {
     return lastFilter;
   }

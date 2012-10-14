@@ -15,7 +15,7 @@ import com.butent.bee.client.data.ResponseData;
 import com.butent.bee.client.utils.Duration;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeResource;
+import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
@@ -241,7 +241,7 @@ public class AsyncCallback implements RequestCallback {
   }
 
   private void dispatchResource(String src) {
-    BeeKeeper.getScreen().showResource(new BeeResource(src));
+    BeeKeeper.getScreen().showResource(new Resource(src));
   }
 
   private void dispatchResponse(String svc, int cc, JsArrayString arr) {

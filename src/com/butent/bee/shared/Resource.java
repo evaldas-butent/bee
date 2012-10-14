@@ -5,43 +5,38 @@ import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-/**
- * Enables management of resource files used by the system, mainly serialization and deserialization
- * of them.
- */
+public class Resource implements BeeSerializable {
 
-public class BeeResource implements BeeSerializable {
-  private String name = null;
   private String uri = null;
   private boolean readOnly = false;
 
   private String content = null;
   private ContentType type = null;
 
-  public BeeResource() {
+  public Resource() {
   }
 
-  public BeeResource(String src) {
+  public Resource(String src) {
     deserialize(src);
   }
 
-  public BeeResource(String uri, ContentType type) {
+  public Resource(String uri, ContentType type) {
     this(uri, null, type, false);
   }
 
-  public BeeResource(String uri, String content) {
+  public Resource(String uri, String content) {
     this(uri, content, null, false);
   }
 
-  public BeeResource(String uri, String content, boolean readOnly) {
+  public Resource(String uri, String content, boolean readOnly) {
     this(uri, content, null, readOnly);
   }
 
-  public BeeResource(String uri, String content, ContentType type) {
+  public Resource(String uri, String content, ContentType type) {
     this(uri, content, type, false);
   }
 
-  public BeeResource(String uri, String content, ContentType type, boolean readOnly) {
+  public Resource(String uri, String content, ContentType type, boolean readOnly) {
     this.uri = uri;
     this.content = content;
     this.type = type;
@@ -60,7 +55,7 @@ public class BeeResource implements BeeSerializable {
     Pair<Integer, Integer> scan;
     int len, start = 0;
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 4; i++) {
       scan = Codec.deserializeLength(src, start);
       len = scan.getA();
       start += scan.getB();
@@ -72,18 +67,15 @@ public class BeeResource implements BeeSerializable {
 
       switch (i) {
         case 0:
-          setName(v);
-          break;
-        case 1:
           setUri(v);
           break;
-        case 2:
+        case 1:
           setType(CommUtils.getContentType(v));
           break;
-        case 3:
+        case 2:
           setReadOnly(BeeUtils.toBoolean(v));
           break;
-        case 4:
+        case 3:
           setContent(v);
           break;
       }
@@ -94,10 +86,6 @@ public class BeeResource implements BeeSerializable {
 
   public String getContent() {
     return content;
-  }
-
-  public String getName() {
-    return name;
   }
 
   public ContentType getType() {
@@ -120,7 +108,7 @@ public class BeeResource implements BeeSerializable {
    */
   public String serialize() {
     int[] arr = new int[] {
-        BeeUtils.length(name), BeeUtils.length(uri),
+        BeeUtils.length(uri),
         BeeUtils.length(BeeUtils.toString(type)),
         BeeUtils.length(BeeUtils.toString(readOnly)),
         BeeUtils.length(content)};
@@ -135,32 +123,24 @@ public class BeeResource implements BeeSerializable {
 
       switch (i) {
         case 0:
-          sb.append(name);
-          break;
-        case 1:
           sb.append(uri);
           break;
-        case 2:
+        case 1:
           sb.append(BeeUtils.toString(type));
           break;
-        case 3:
+        case 2:
           sb.append(BeeUtils.toString(readOnly));
           break;
-        case 4:
+        case 3:
           sb.append(content);
           break;
       }
     }
-
     return sb.toString();
   }
 
   public void setContent(String content) {
     this.content = content;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   public void setReadOnly(boolean readOnly) {

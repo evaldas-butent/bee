@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="DataTypes"
+  source="DataTypes"
+  >
+  <Columns>
+    <SimpleColumn name="Boolean" />
+    <SimpleColumn name="Integer" />
+    <SimpleColumn name="Long" />
+    <SimpleColumn name="Double" />
+    <SimpleColumn name="Numeric" />
+    <SimpleColumn name="Currency" />
+    <SimpleColumn name="Char" />
+    <SimpleColumn name="String" />
+    <SimpleColumn name="Memo" />
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="DateTime" />
+  </Columns>
+</View>
+ 

@@ -50,19 +50,20 @@ public class RowFactory {
 
   public static final String DIALOG_STYLE = "bee-NewRow";
 
-  private static final String DEFAULT_CAPTION = "Naujas";
+  public static final String STYLE_NEW_ROW_TABLE = "bee-NewRow-table";
+  public static final String STYLE_NEW_ROW_LABEL_CELL = "bee-NewRow-labelCell";
+  public static final String STYLE_NEW_ROW_LABEL = "bee-NewRow-label";
+  public static final String STYLE_NEW_ROW_INPUT_CELL = "bee-NewRow-inputCell";
+  public static final String STYLE_NEW_ROW_INPUT = "bee-NewRow-input";
 
-  private static final String STYLE_NEW_ROW_TABLE = "bee-NewRow-table";
-  private static final String STYLE_NEW_ROW_LABEL_CELL = "bee-NewRow-labelCell";
-  private static final String STYLE_NEW_ROW_LABEL = "bee-NewRow-label";
-  private static final String STYLE_NEW_ROW_INPUT_CELL = "bee-NewRow-inputCell";
-  private static final String STYLE_NEW_ROW_INPUT = "bee-NewRow-input";
+  public static final int GENERATED_FORM_WIDTH = 360;
+  public static final int GENERATED_HEADER_HEIGHT = 30;
+  public static final int GENERATED_ROW_HEIGHT = 32;
+  public static final int GENERATED_HEIGHT_MARGIN = 20;
 
-  private static final int GENERATED_FORM_WIDTH = 360;
-  private static final int GENERATED_HEADER_HEIGHT = 30;
-  private static final int GENERATED_ROW_HEIGHT = 32;
   private static final int GENERATED_AREA_HEIGHT = 60;
-  private static final int GENERATED_HEIGHT_MARGIN = 20;
+
+  private static final String DEFAULT_CAPTION = "Naujas";
 
   public static BeeRow createEmptyRow(DataInfo dataInfo, boolean defaults) {
     BeeRow row = DataUtils.createEmptyRow(dataInfo.getColumnCount());

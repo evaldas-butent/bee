@@ -811,6 +811,12 @@ public class DomUtils {
 
     return lst;
   }
+  
+  public static int getOuterHeight(Element elem) {
+    Assert.notNull(elem);
+    return elem.getOffsetHeight() + ComputedStyles.getPixels(elem, StyleUtils.STYLE_MARGIN_TOP)
+        + ComputedStyles.getPixels(elem, StyleUtils.STYLE_MARGIN_BOTTOM);
+  }
 
   public static native String getOuterHtml(Element elem) /*-{
     if (elem == null) {
@@ -832,6 +838,12 @@ public class DomUtils {
     return new XMLSerializer().serializeToString(elem);
   }-*/;
 
+  public static int getOuterWidth(Element elem) {
+    Assert.notNull(elem);
+    return elem.getOffsetWidth() + ComputedStyles.getPixels(elem, StyleUtils.STYLE_MARGIN_LEFT)
+        + ComputedStyles.getPixels(elem, StyleUtils.STYLE_MARGIN_RIGHT);
+  }
+  
   public static Element getParentCell(Element child, boolean incl) {
     return getParentElement(child, TABLE_CELL_TAGS, incl);
   }

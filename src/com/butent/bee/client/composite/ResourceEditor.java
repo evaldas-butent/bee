@@ -13,17 +13,18 @@ import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.InputArea;
-import com.butent.bee.shared.BeeResource;
+import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ContentType;
+import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 /**
  * Implements a text area editor user interface component.
  */
-public class ResourceEditor extends Composite implements HasId {
+public class ResourceEditor extends Composite implements HasId, HasCaption {
 
   protected class SaveCommand extends Command {
     @Override
@@ -64,23 +65,26 @@ public class ResourceEditor extends Composite implements HasId {
     }
   }
 
-  private InputArea textArea = null;
-  private String uri = null;
+  private final InputArea textArea;
+  private final String uri;
+  private final String caption;
 
-  public ResourceEditor(BeeResource resource) {
+  public ResourceEditor(Resource resource) {
     BeeLayoutPanel p = new BeeLayoutPanel();
     double top = 0;
     double bottom = 0;
 
-    String caption = BeeUtils.notEmpty(resource.getName(), resource.getUri());
+    this.textArea = new InputArea(resource);
+    this.uri = resource.getUri();
 
-    if (!BeeUtils.isEmpty(caption)) {
-      BeeLabel label = new BeeLabel(caption);
-      p.add(label);
-      p.setWidgetVerticalPosition(label, Layout.Alignment.BEGIN);
-      p.setWidgetLeftRight(label, 10, Unit.PCT, 10, Unit.PX);
-      top = 2;
-    }
+    this.caption = BeeUtils.notEmpty(BeeUtils.getSuffix(uri, '/'), BeeUtils.getSuffix(uri, '\\'),
+        uri);
+
+    BeeLabel label = new BeeLabel(uri);
+    p.add(label);
+    p.setWidgetVerticalPosition(label, Layout.Alignment.BEGIN);
+    p.setWidgetLeftRight(label, 10, Unit.PX, 10, Unit.PX);
+    top = 2;
 
     if (resource.isReadOnly()) {
       BeeLabel rd = new BeeLabel("read only");
@@ -96,15 +100,16 @@ public class ResourceEditor extends Composite implements HasId {
       bottom = 2;
     }
 
-    InputArea area = new InputArea(resource);
-    p.add(area);
-    p.setWidgetTopBottom(area, top, Unit.EM, bottom, Unit.EM);
+    p.add(textArea);
+    p.setWidgetTopBottom(textArea, top, Unit.EM, bottom, Unit.EM);
 
     initWidget(p);
-
-    setTextArea(area);
-    setUri(resource.getUri());
     DomUtils.createId(this, getIdPrefix());
+  }
+
+  @Override
+  public String getCaption() {
+    return caption;
   }
 
   @Override
@@ -128,13 +133,5 @@ public class ResourceEditor extends Composite implements HasId {
   @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
-  }
-
-  public void setTextArea(InputArea textArea) {
-    this.textArea = textArea;
-  }
-
-  public void setUri(String uri) {
-    this.uri = uri;
   }
 }

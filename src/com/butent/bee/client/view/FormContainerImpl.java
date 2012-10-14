@@ -66,6 +66,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     super(-1);
   }
 
+  @Override
   public void bind() {
     if (hasHeader()) {
       getContent().getDisplay().addLoadingStateChangeHandler(getHeader());
@@ -82,6 +83,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     getContent().addAddEndHandler(this);
   }
 
+  @Override
   public void create(FormDescription formDescription, List<BeeColumn> dataColumns, int rowCount,
       FormCallback callback) {
     Assert.notNull(formDescription);
@@ -175,6 +177,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     return null;
   }
 
+  @Override
   public FormView getContent() {
     if (getCenter() == null) {
       return null;
@@ -194,6 +197,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     return null;
   }
 
+  @Override
   public HeaderView getHeader() {
     if (BeeUtils.isEmpty(getHeaderId())) {
       return null;
@@ -211,6 +215,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     return "form-container";
   }
 
+  @Override
   public Collection<PagerView> getPagers() {
     if (hasData()) {
       return ViewHelper.getPagers(this);
@@ -224,6 +229,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     return getElement();
   }
 
+  @Override
   public Collection<SearchView> getSearchers() {
     if (hasSearch()) {
       return ViewHelper.getSearchers(this);
@@ -232,10 +238,12 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     }
   }
 
+  @Override
   public Presenter getViewPresenter() {
     return viewPresenter;
   }
 
+  @Override
   public String getWidgetId() {
     return getId();
   }
@@ -248,10 +256,12 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     return !BeeUtils.isEmpty(getHeaderId());
   }
 
+  @Override
   public boolean isEnabled() {
     return enabled;
   }
 
+  @Override
   public void onActiveRowChange(ActiveRowChangeEvent event) {
     if (event == null || event.getRowValue() == null || getRowMessage() == null) {
       return;
@@ -264,6 +274,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     }
   }
 
+  @Override
   public void onAddEnd(AddEndEvent event) {
     if (event.isPopup()) {
       return;
@@ -282,6 +293,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     showNewRowCommands(false);
   }
 
+  @Override
   public void onAddStart(AddStartEvent event) {
     if (event.isPopup()) {
       return;
@@ -334,6 +346,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     this.commandHeight = commandHeight;
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     if (enabled == isEnabled()) {
       return;
@@ -342,6 +355,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
     DomUtils.enableChildren(this, enabled);
   }
 
+  @Override
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
     for (Widget child : getChildren()) {

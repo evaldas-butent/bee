@@ -18,6 +18,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RelationUtils;
+import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.DomUtils;
@@ -131,12 +132,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
   private static final BeeLogger logger = LogUtils.getLogger(CellGridImpl.class);
   
-  private static final String STYLE_NEW_ROW_CONTAINER = "bee-GridNewRow-container";
-  private static final String STYLE_NEW_ROW_LABEL_CELL = "bee-GridNewRow-labelCell";
-  private static final String STYLE_NEW_ROW_LABEL = "bee-GridNewRow-label";
-  private static final String STYLE_NEW_ROW_INPUT_CELL = "bee-GridNewRow-inputCell";
-  private static final String STYLE_NEW_ROW_INPUT = "bee-GridNewRow-input";
-
   private final String gridName;
   private final DataInfo dataInfo;
 
@@ -832,7 +827,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     if (BeeUtils.isEmpty(newRowFormName) && !BeeUtils.isEmpty(viewName) && !isReadOnly()) {
-      createDefaultNewRowForm(gridDescr);
+      generateNewRowForm(gridDescr);
       setNewRowFormGenerated(true);
     }
 
@@ -1406,68 +1401,30 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     super.onUnload();
   }
 
+  private void amendGeneratedSize(ModalForm popup, FormView form) {
+    boolean animationEnabled = popup.isAnimationEnabled();
+    popup.setAnimationEnabled(false);
+    popup.setVisible(false);
+    popup.show();
+    
+    int width = DomUtils.getOuterWidth(form.getRootWidget().getElement());
+    int height = DomUtils.getOuterHeight(form.getRootWidget().getElement())
+        + form.getViewPresenter().getHeader().getHeight() + 1;
+    
+    popup.hide();
+    popup.setAnimationEnabled(animationEnabled);
+    popup.setVisible(true);
+    
+    if (width > BeeUtils.toInt(form.getWidthValue())) {
+      StyleUtils.setWidth(popup, width);
+    }
+    StyleUtils.setHeight(popup, height);
+  }
+
   private void closeEditForm() {
     showForm(true, false);
     fireEvent(new EditFormEvent(State.CLOSED, showEditPopup()));
     getGrid().refocus();
-  }
-
-  private void createDefaultNewRowForm(GridDescription gridDescription) {
-    String newRowColumns = BeeUtils.notEmpty(gridDescription.getNewRowColumns(),
-        (getDataInfo() == null) ? null : getDataInfo().getNewRowColumns());
-    final List<String> columnNames = getNewRowColumnNames(newRowColumns);
-
-    if (columnNames.isEmpty()) {
-      logger.severe("grid", gridDescription.getName(), "new row columns not available");
-      return;
-    }
-
-    String formName = "grid-" + gridDescription.getName() + "-new-row";
-    final String rootName = "root";
-
-    FormDescription formDescription = FormFactory.createFormDescription(formName,
-        ImmutableMap.of(UiConstants.ATTR_VIEW_NAME, gridDescription.getViewName()),
-        FormWidget.FLEX_TABLE, ImmutableMap.of(UiConstants.ATTR_NAME, rootName));
-
-    FormView form = new FormImpl(formName);
-    form.create(formDescription, gridDescription.getViewName(), getDataColumns(), true,
-        new AbstractFormCallback() {
-          @Override
-          public void afterCreateEditableWidget(EditableWidget editableWidget) {
-            EditableColumn ec = getEditableColumn(editableWidget.getWidgetName(), true);
-            editableWidget.setValidationDelegate(ec);
-          }
-
-          @Override
-          public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback wdc) {
-            if (BeeUtils.same(name, rootName) && widget instanceof FlexTable) {
-              widget.addStyleName(STYLE_NEW_ROW_CONTAINER);
-              createNewRowWidgets((FlexTable) widget, columnNames, wdc);
-            }
-          }
-
-          @Override
-          public FormCallback getInstance() {
-            return null;
-          }
-
-          @Override
-          public AbstractCellRenderer getRenderer(WidgetDescription widgetDescription) {
-            EditableColumn ec = getEditableColumn(widgetDescription.getWidgetName(), true);
-            AbstractColumn<?> uiColumn = (ec == null) ? null : ec.getUiColumn();
-
-            if (uiColumn instanceof HasCellRenderer) {
-              return ((HasCellRenderer) uiColumn).getRenderer();
-            } else {
-              return null;
-            }
-          }
-        });
-    
-    form.setWidthValue(360.0);
-    form.setHeightValue(200.0);
-
-    embraceNewRowForm(form);
   }
 
   private String createFormContainer(final FormView formView, boolean edit, String caption,
@@ -1532,7 +1489,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       BeeLabel label = new BeeLabel(editableColumn.getCaption());
-      label.addStyleName(STYLE_NEW_ROW_LABEL);
+      label.addStyleName(RowFactory.STYLE_NEW_ROW_LABEL);
 
       if (editableColumn.hasDefaults()) {
         label.addStyleName(StyleUtils.NAME_HAS_DEFAULTS);
@@ -1541,13 +1498,13 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
       container.setWidget(r, 0, label);
-      container.getCellFormatter().setStyleName(r, 0, STYLE_NEW_ROW_LABEL_CELL);
+      container.getCellFormatter().setStyleName(r, 0, RowFactory.STYLE_NEW_ROW_LABEL_CELL);
 
       Editor editor = editableColumn.createEditor(true);
-      editor.asWidget().addStyleName(STYLE_NEW_ROW_INPUT);
+      editor.asWidget().addStyleName(RowFactory.STYLE_NEW_ROW_INPUT);
 
       container.setWidget(r, 1, editor.asWidget());
-      container.getCellFormatter().setStyleName(r, 1, STYLE_NEW_ROW_INPUT_CELL);
+      container.getCellFormatter().setStyleName(r, 1, RowFactory.STYLE_NEW_ROW_INPUT_CELL);
 
       if (editor.getWidgetType() != null) {
         WidgetDescription widgetDescription = new WidgetDescription(editor.getWidgetType(),
@@ -1567,6 +1524,68 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       setNewRowFormContainerId(id);
       setNewRowForm(formView);
     }
+  }
+
+  private void generateNewRowForm(GridDescription gridDescription) {
+    String newRowColumns = BeeUtils.notEmpty(gridDescription.getNewRowColumns(),
+        (getDataInfo() == null) ? null : getDataInfo().getNewRowColumns());
+    final List<String> columnNames = getNewRowColumnNames(newRowColumns);
+
+    if (columnNames.isEmpty()) {
+      logger.severe("grid", gridDescription.getName(), "new row columns not available");
+      return;
+    }
+
+    String formName = "grid-" + gridDescription.getName() + "-new-row";
+    final String rootName = "root";
+
+    FormDescription formDescription = FormFactory.createFormDescription(formName,
+        ImmutableMap.of(UiConstants.ATTR_VIEW_NAME, gridDescription.getViewName()),
+        FormWidget.FLEX_TABLE, ImmutableMap.of(UiConstants.ATTR_NAME, rootName));
+
+    FormView form = new FormImpl(formName);
+    form.create(formDescription, gridDescription.getViewName(), getDataColumns(), true,
+        new AbstractFormCallback() {
+          @Override
+          public void afterCreateEditableWidget(EditableWidget editableWidget) {
+            EditableColumn ec = getEditableColumn(editableWidget.getWidgetName(), true);
+            editableWidget.setValidationDelegate(ec);
+          }
+
+          @Override
+          public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback wdc) {
+            if (BeeUtils.same(name, rootName) && widget instanceof FlexTable) {
+              widget.addStyleName(RowFactory.STYLE_NEW_ROW_TABLE);
+              createNewRowWidgets((FlexTable) widget, columnNames, wdc);
+            }
+          }
+
+          @Override
+          public FormCallback getInstance() {
+            return null;
+          }
+
+          @Override
+          public AbstractCellRenderer getRenderer(WidgetDescription widgetDescription) {
+            EditableColumn ec = getEditableColumn(widgetDescription.getWidgetName(), true);
+            AbstractColumn<?> uiColumn = (ec == null) ? null : ec.getUiColumn();
+
+            if (uiColumn instanceof HasCellRenderer) {
+              return ((HasCellRenderer) uiColumn).getRenderer();
+            } else {
+              return null;
+            }
+          }
+        });
+    
+    double initialWidth = RowFactory.GENERATED_FORM_WIDTH;
+    double initialHeight = RowFactory.GENERATED_HEADER_HEIGHT + RowFactory.GENERATED_HEIGHT_MARGIN
+        + columnNames.size() * RowFactory.GENERATED_ROW_HEIGHT;
+
+    form.setWidthValue(initialWidth);
+    form.setHeightValue(initialHeight);
+
+    embraceNewRowForm(form);
   }
 
   private String getActiveFormContainerId() {
@@ -1956,7 +1975,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private void setSingleForm(boolean singleForm) {
     this.singleForm = singleForm;
   }
-
+  
   private boolean showEditPopup() {
     return showEditPopup;
   }
@@ -1964,6 +1983,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private void showForm(boolean edit, boolean show) {
     String containerId = edit ? getEditFormContainerId() : getNewRowFormContainerId();
     ModalForm popup = edit ? getEditPopup() : getNewRowPopup();
+    FormView form = getForm(edit);
 
     if (show) {
       if (popup == null) {
@@ -1971,8 +1991,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         StyleUtils.unhideDisplay(containerId);
       } else {
         if (isChild() && isNewRowFormGenerated()) {
-          popup.setPopupPosition(getAbsoluteLeft(), getAbsoluteTop());
-          popup.show();
+          if (!isNewRowFormInitialized()) {
+            amendGeneratedSize(popup, form);
+          }
+          popup.showAt(getAbsoluteLeft(), getAbsoluteTop(), DomUtils.getScrollBarHeight() + 1);
         } else {
           popup.center();
         }
@@ -1984,12 +2006,12 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           if (isSingleFormInstance()) {
             setNewRowFormInitialized(true);
           }
-          getForm(edit).start(null);
+          form.start(null);
         }
       } else {
         if (!isNewRowFormInitialized()) {
           setNewRowFormInitialized(true);
-          getForm(edit).start(null);
+          form.start(null);
         }
       }
       setActiveFormContainerId(containerId);
@@ -2004,7 +2026,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       setActiveFormContainerId(null);
     }
 
-    getForm(edit).setState(show ? State.OPEN : State.CLOSED);
+    form.setState(show ? State.OPEN : State.CLOSED);
   }
 
   private void showGrid(boolean show) {

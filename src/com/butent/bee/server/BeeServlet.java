@@ -3,7 +3,7 @@ package com.butent.bee.server;
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.BeeResource;
+import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
@@ -202,7 +202,7 @@ public class BeeServlet extends HttpServlet {
         StringBuilder sb = new StringBuilder();
         int pn = 0;
 
-        for (BeeResource br : buff.getParts()) {
+        for (Resource br : buff.getParts()) {
           String part = br.serialize();
           sb.append(part);
           resp.setIntHeader(CommUtils.rpcPartName(pn++), part.length());

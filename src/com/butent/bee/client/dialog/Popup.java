@@ -623,6 +623,23 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     resizeAnimation.setState(true, false, level);
   }
 
+  public void showAt(final int x, final int y, final int margin) {
+    setPopupPositionAndShow(new PositionCallback() {
+      public void setPosition(int offsetWidth, int offsetHeight) {
+        int windowLeft = Window.getScrollLeft() + margin;
+        int windowRight = Window.getClientWidth() + Window.getScrollLeft() - margin;
+
+        int windowTop = Window.getScrollTop() + margin;
+        int windowBottom = Window.getScrollTop() + Window.getClientHeight() - margin;
+        
+        int left = Math.max(Math.min(x, windowRight - offsetWidth), windowLeft);
+        int top = Math.max(Math.min(y, windowBottom - offsetHeight), windowTop);
+        
+        setPopupPosition(left, top);
+      }
+    });
+  }
+  
   public void showRelativeTo(final UIObject target) {
     setPopupPositionAndShow(new PositionCallback() {
       public void setPosition(int offsetWidth, int offsetHeight) {

@@ -30,6 +30,7 @@ import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
 import com.butent.bee.client.view.HasSearch;
+import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
@@ -119,6 +120,11 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   
   public Provider getDataProvider() {
     return dataProvider;
+  }
+
+  @Override
+  public HeaderView getHeader() {
+    return getView().getHeader();
   }
 
   public Filter getLastFilter() {

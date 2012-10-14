@@ -69,10 +69,16 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     return gridView.getGridCallback();
   }
 
+  @Override
   public GridView getGridView() {
     return gridView;
   }
 
+  @Override
+  public HeaderView getHeader() {
+    return header;
+  }
+  
   @Override
   public Element getPrintElement() {
     return getWidget().getElement();

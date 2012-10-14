@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <f:Form xmlns="http://www.butent.com/widget"
-  xmlns:f="http://www.butent.com/form" name="Widgets" caption="Layouts and Widgets">
+  xmlns:f="http://www.butent.com/form"
+  
+  name="Widgets" caption="Layouts and Widgets">
 
   <SplitPanel splitterSize="3">
     <north size="50" splitterSize="1">
@@ -31,7 +33,7 @@
               <html>url</html>
             </cell>
             <cell>
-              <Image url="test.png" />
+              <Image url="images/logo.gif" />
             </cell>
             <cell>
               <html>resource</html>
@@ -73,7 +75,7 @@
           <text>string picker</text>
           <StringPicker>
             <item>Item 1</item>
-            <item>Item 2 ; &lt;img src="test.png"&gt;</item>
+            <item>Item 2 ; &lt;img src="images/logo.gif"&gt;</item>
             <item>Item 3</item>
             <item>Item 4 ; &lt;a href="http://www.zombo.com"&gt;zombo&lt;/a&gt;</item>
           </StringPicker>
@@ -288,14 +290,6 @@
             </layer>
           </ComplexPanel>
         </page>
-
-        <page>
-          <text>iPad</text>
-          <ResizePanel>
-            <Frame url="http://butent.lt:8888/Bee/tablet.html" />
-          </ResizePanel>
-        </page>
-
       </TabbedPages>
     </center>
 
