@@ -39,7 +39,10 @@ import java.util.List;
 public class AsyncCallback implements RequestCallback {
 
   private static final BeeLogger logger = LogUtils.getLogger(AsyncCallback.class);
-  
+
+  public AsyncCallback() {
+  }
+
   @Override
   public void onError(Request req, Throwable ex) {
     String msg = (ex instanceof RequestTimeoutException) ? "request timeout" : "request failure";

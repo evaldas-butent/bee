@@ -17,7 +17,7 @@ import com.butent.bee.client.presenter.RowPresenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.utils.Command;
+import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Holder;
@@ -108,11 +108,19 @@ public class RowEditor {
     final ModalForm dialog = new ModalForm(presenter.getWidget(), formView, false, true);
     final Holder<State> state = Holder.of(State.OPEN);
     
-    final Command close = new Command() {
+    final CloseCallback close = new CloseCallback() {
       @Override
-      public void execute() {
+      public void onClose() {
         state.set(State.CANCELED);
         dialog.hide();
+      }
+
+      @Override
+      public void onSave() {
+        if (validate(formView)) {
+          state.set(State.CONFIRMED);
+          dialog.hide();
+        }
       }
     };
 
@@ -120,13 +128,10 @@ public class RowEditor {
       @Override
       public void handleAction(Action action) {
         if (Action.CLOSE.equals(action)) {
-          formView.onCancel(close);
+          formView.onClose(close);
 
         } else if (Action.SAVE.equals(action)) {
-          if (validate(formView)) {
-            state.set(State.CONFIRMED);
-            dialog.hide();
-          }
+          close.onSave();
 
         } else if (Action.PRINT.equals(action)) {
           Printer.print(presenter);
@@ -138,14 +143,11 @@ public class RowEditor {
       public void onKeyDown(KeyDownEvent event) {
         if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
           event.preventDefault();
-          formView.onCancel(close);
+          formView.onClose(close);
 
         } else if (UiHelper.isSave(event.getNativeEvent())) {
           event.preventDefault();
-          if (validate(formView)) {
-            state.set(State.CONFIRMED);
-            dialog.hide();
-          }
+          close.onSave();
         }
       }
     });

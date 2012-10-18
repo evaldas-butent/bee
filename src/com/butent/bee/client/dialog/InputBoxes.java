@@ -68,9 +68,9 @@ public class InputBoxes {
   private class KeyboardHandler implements KeyDownHandler {
 
     private final DialogBox dialog;
-    private final ConfirmationCallback callback;
+    private final DialogCallback callback;
 
-    private KeyboardHandler(DialogBox dialog, ConfirmationCallback callback) {
+    private KeyboardHandler(DialogBox dialog, DialogCallback callback) {
       super();
       this.dialog = dialog;
       this.callback = callback;
@@ -258,7 +258,7 @@ public class InputBoxes {
     }
   }
 
-  public void inputVars(String caption, List<Variable> vars, ConfirmationCallback callback) {
+  public void inputVars(String caption, List<Variable> vars, DialogCallback callback) {
     Assert.notEmpty(vars);
 
     FlexTable ft = new FlexTable();
@@ -339,9 +339,9 @@ public class InputBoxes {
     DialogBox dialog = new DialogBox(caption);
 
     BeeButton confirm = new BeeButton(DialogConstants.OK,
-        ConfirmationCallback.getConfirmCommand(dialog, callback));
+        DialogCallback.getConfirmCommand(dialog, callback));
     BeeButton cancel = new BeeButton(DialogConstants.CANCEL,
-        ConfirmationCallback.getCancelCommand(dialog, callback));
+        DialogCallback.getCancelCommand(dialog, callback));
 
     ft.setWidget(r, 0, confirm);
     ft.setWidget(r, 1, cancel);

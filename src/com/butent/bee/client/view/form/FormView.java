@@ -10,7 +10,6 @@ import com.butent.bee.shared.HasState;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.HasDimensions;
-import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
@@ -60,7 +59,7 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   boolean isRowEditable(boolean warn);
   
-  void onCancel(Command command);
+  void onClose(CloseCallback closeCallback);
 
   void prepareForInsert();
 

@@ -45,7 +45,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Popup;
@@ -644,7 +644,7 @@ public class CliWorker {
         Service.VAR_RESULT_SET_FETCH_SIZE,
         Service.VAR_JDBC_RETURN);
 
-    Global.inputVars("Jdbc Test", varNames, new ConfirmationCallback() {
+    Global.inputVars("Jdbc Test", varNames, new DialogCallback() {
       @Override
       public boolean onConfirm(Popup popup) {
         String sql = Global.getVarValue(Service.VAR_JDBC_QUERY);
@@ -2515,7 +2515,7 @@ public class CliWorker {
       final List<String> varNames = Lists.newArrayList(Service.VAR_XML_SOURCE,
           Service.VAR_XML_TRANSFORM, Service.VAR_XML_TARGET, Service.VAR_XML_RETURN);
 
-      Global.inputVars("Xml Info", varNames, new ConfirmationCallback() {
+      Global.inputVars("Xml Info", varNames, new DialogCallback() {
         @Override
         public boolean onConfirm(Popup popup) {
           String src = Global.getVarValue(Service.VAR_XML_SOURCE);

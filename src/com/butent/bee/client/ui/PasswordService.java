@@ -4,7 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import com.butent.bee.client.Global;
-import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
@@ -53,7 +53,7 @@ public class PasswordService extends CompositeService {
         vars.add(varNew2);
 
         Global.getInpBoxen().inputVars(Global.CONSTANTS.changePassword(), vars,
-            new ConfirmationCallback() {
+            new DialogCallback() {
               @Override
               public boolean onConfirm(Popup popup) {
                 return doStage(STG_SAVE_PASS);

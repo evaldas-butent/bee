@@ -201,6 +201,7 @@
       <xs:enumeration value="ok" />
       <xs:enumeration value="play" />
       <xs:enumeration value="previous" />
+      <xs:enumeration value="question" />
       <xs:enumeration value="red" />
       <xs:enumeration value="redSmall" />
       <xs:enumeration value="redo" />

@@ -300,10 +300,10 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
   private AnimationType animationType = AnimationType.CENTER;
 
-  private boolean autoHide = false;
-  private boolean autoHideOnHistoryEvents = false;
+  private final boolean autoHide;
+  private final boolean autoHideOnHistoryEvents;
 
-  private boolean modal = false;
+  private final boolean modal;
 
   private boolean showing = false;
 
@@ -512,14 +512,6 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     this.animationType = animationType;
   }
 
-  public void setAutoHideEnabled(boolean autoHide) {
-    this.autoHide = autoHide;
-  }
-  
-  public void setAutoHideOnHistoryEventsEnabled(boolean enabled) {
-    this.autoHideOnHistoryEvents = enabled;
-  }
-
   public void setGlassEnabled(boolean enabled) {
     this.isGlassEnabled = enabled;
 
@@ -554,10 +546,6 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
   public void setId(String id) {
     DomUtils.setId(this, id);
-  }
-
-  public void setModal(boolean modal) {
-    this.modal = modal;
   }
 
   public void setOnEscape(Scheduler.ScheduledCommand onEscape) {

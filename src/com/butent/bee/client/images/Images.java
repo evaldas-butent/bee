@@ -15,10 +15,6 @@ import java.util.Map;
 
 public class Images {
 
-  /**
-   * Contains a list of images used in the system.
-   */
-
   public interface Resources extends ClientBundle {
 
     @Source("accept.png")
@@ -153,6 +149,9 @@ public class Images {
     @Source("previous.png")
     ImageResource previous();
 
+    @Source("question.png")
+    ImageResource question();
+    
     @Source("red.gif")
     ImageResource red();
 
@@ -311,6 +310,8 @@ public class Images {
     map.put(key("play"), resources.play());
 
     map.put(key("previous"), resources.previous());
+
+    map.put(key("question"), resources.question());
 
     map.put(key("red"), resources.red());
     map.put(key("redSmall"), resources.redSmall());

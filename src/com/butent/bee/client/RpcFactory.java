@@ -35,8 +35,8 @@ public class RpcFactory implements Module {
 
   private final String rpcUrl;
 
-  private RpcList rpcList = new RpcList();
-  private AsyncCallback reqCallBack = new AsyncCallback();
+  private final RpcList rpcList = new RpcList();
+  private final AsyncCallback reqCallBack = new AsyncCallback();
 
   public RpcFactory(String url) {
     this.rpcUrl = url;
@@ -68,7 +68,8 @@ public class RpcFactory implements Module {
     Assert.notEmpty(svc);
     return new ParameterList(svc);
   }
-
+  
+  @Override
   public void end() {
   }
 
@@ -76,6 +77,7 @@ public class RpcFactory implements Module {
     return BeeKeeper.getUser().getDsn();
   }
 
+  @Override
   public String getName() {
     return getClass().getName();
   }
@@ -88,6 +90,7 @@ public class RpcFactory implements Module {
     }
   }
 
+  @Override
   public int getPriority(int p) {
     switch (p) {
       case PRIORITY_INIT:
@@ -113,11 +116,6 @@ public class RpcFactory implements Module {
     return rpcList;
   }
 
-  public String getService(int id) {
-    RpcInfo info = getRpcInfo(id);
-    return (info == null) ? BeeConst.STRING_EMPTY : info.getService();
-  }
-
   public Object getUserData(int id) {
     RpcInfo info = getRpcInfo(id);
 
@@ -128,6 +126,7 @@ public class RpcFactory implements Module {
     }
   }
 
+  @Override
   public void init() {
   }
 
@@ -250,14 +249,6 @@ public class RpcFactory implements Module {
     return makePostRequest(svc, ContentType.TEXT, data, callback);
   }
 
-  public void setReqCallBack(AsyncCallback reqCallBack) {
-    this.reqCallBack = reqCallBack;
-  }
-  
-  public void setRpcList(RpcList rpcList) {
-    this.rpcList = rpcList;
-  }
-
   public void setUserData(int id, Object data) {
     RpcInfo info = getRpcInfo(id);
     if (info != null) {
@@ -265,6 +256,7 @@ public class RpcFactory implements Module {
     }
   }
 
+  @Override
   public void start() {
   }
 
@@ -338,7 +330,7 @@ public class RpcFactory implements Module {
 
     String content = null;
 
-    if (!BeeUtils.isEmpty(data)) {
+    if (data != null) {
       content = CommUtils.prepareContent(ctp, data);
       int size = content.length();
       info.setReqSize(size);
@@ -346,6 +338,12 @@ public class RpcFactory implements Module {
       if (debug) {
         logger.info("sending", ctp, cth, BeeUtils.bracket(size));
         logger.info(BeeUtils.clip(data, 1024));
+      }
+      if (meth.equals(RequestBuilder.GET)) {
+        logger.severe(meth, "data is ignored");
+        if (!debug) {
+          logger.debug(BeeUtils.clip(data, 1024));
+        }
       }
     }
 

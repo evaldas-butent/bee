@@ -20,7 +20,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.HasDataTable;
-import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.DecisionCallback;
+import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
@@ -44,7 +45,6 @@ import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.ui.WidgetDescription;
-import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.utils.EvalHelper;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.validation.CellValidateEvent.Handler;
@@ -212,8 +212,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   
   private static final String STYLE_FORM = "bee-Form";
   private static final String STYLE_DISABLED = "bee-Form-disabled";
-
-  private static final String STYLE_CONFIRM_CLOSE = "bee-ConfirmFormClose";
 
   private static final String NEW_ROW_CAPTION = "Create New";
 
@@ -649,51 +647,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   @Override
-  public void onCancel(final Command command) {
-    Assert.notNull(command);
-    if (!hasData() || getOldRow() == null || getActiveRow() == null) {
-      command.execute();
-      return;
-    }
-    
-    final BeeRowSet rowSet = 
-        DataUtils.getUpdated(getViewName(), getDataColumns(), getOldRow(), getActiveRow());
-    if (rowSet == null || rowSet.isEmpty()) {
-      command.execute();
-      return;
-    }
-    
-    List<String> messages = Lists.newArrayList();
-    if (DataUtils.isNewRow(getActiveRow())) {
-      messages.add("Naujas įrašas nebus išsaugotas:");
-    } else {
-      messages.add("Pakeistos reikšmės nebus išsaugotos:");
-    }
-
-    messages.add(BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, rowSet.getColumnLabels()));
-    messages.add(BeeConst.STRING_EMPTY);
-    messages.add("Tikrai norite uždaryti formą ?");
-    
-    InputCallback callback = new InputCallback() {
-      @Override
-      public void onCancel() {
-        for (BeeColumn column : rowSet.getColumns()) {
-          if (focus(column.getId())) {
-            return;
-          }
-        }
-      }
-
-      @Override
-      public void onSuccess() {
-        command.execute();
-      }
-    };
-    
-    Global.getMsgBoxen().confirm(null, messages, callback, STYLE_CONFIRM_CLOSE, null);
-  }
-
-  @Override
   public void onCellUpdate(CellUpdateEvent event) {
     Assert.notNull(event);
 
@@ -744,6 +697,67 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
 
     refreshDisplayWidgets();
+  }
+
+  @Override
+  public void onClose(final CloseCallback closeCallback) {
+    Assert.notNull(closeCallback);
+    if (!hasData() || getOldRow() == null || getActiveRow() == null) {
+      closeCallback.onClose();
+      return;
+    }
+    
+    final BeeRowSet rowSet = 
+        DataUtils.getUpdated(getViewName(), getDataColumns(), getOldRow(), getActiveRow());
+    if (rowSet == null || rowSet.isEmpty()) {
+      closeCallback.onClose();
+      return;
+    }
+
+    final boolean isNew = DataUtils.isNewRow(getActiveRow());
+    
+    final String cap;
+    final String msg;
+
+    if (isNew) {
+      cap = "Naujo įrašo išssaugojimas";
+      msg = "Įvestos reikšmės: ";
+    } else {
+      cap = "Pakeitimų išsaugojimas";
+      msg = "Pakeistos reikšmės: ";
+    }
+
+    final List<String> messages = Lists.newArrayList();
+    messages.add(msg + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, rowSet.getColumnLabels()));
+
+    if (isNew) {
+      messages.add("Išsaugoti naują įrašą ?");
+    } else {
+      messages.add("Išsaugoti pakeitimus ?");
+    }
+    
+    DecisionCallback callback = new DecisionCallback() {
+      @Override
+      public void onCancel() {
+        for (BeeColumn column : rowSet.getColumns()) {
+          if (focus(column.getId())) {
+            return;
+          }
+        }
+      }
+
+      @Override
+      public void onConfirm() {
+        closeCallback.onSave();
+      }
+
+      @Override
+      public void onDeny() {
+        closeCallback.onClose();
+      }
+    };
+    
+    Global.getMsgBoxen().decide(cap, messages, callback, DialogConstants.DECISION_YES);
   }
   
   @Override

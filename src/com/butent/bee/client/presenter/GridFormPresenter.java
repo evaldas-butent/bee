@@ -8,10 +8,10 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
-import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.view.grid.GridView;
@@ -97,10 +97,15 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
 
     switch (action) {
       case CLOSE:
-        getForm().onCancel(new Command() {
+        getForm().onClose(new CloseCallback() {
           @Override
-          public void execute() {
+          public void onClose() {
             gridView.formCancel();
+          }
+
+          @Override
+          public void onSave() {
+            save();
           }
         });
         break;
@@ -114,9 +119,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
         break;
 
       case SAVE:
-        if (getForm().validate()) {
-          gridView.formConfirm();
-        }
+        save();
         break;
 
       case PRINT:
@@ -200,5 +203,11 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
     formHeader.addCaptionStyle(getFormStyle(STYLE_FORM_CAPTION, edit));
 
     return formHeader;
+  }
+  
+  private void save() {
+    if (getForm().validate()) {
+      gridView.formConfirm();
+    }
   }
 }

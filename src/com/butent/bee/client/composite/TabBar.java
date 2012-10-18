@@ -31,6 +31,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasItems;
+import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -122,19 +123,21 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   private static final String STYLE_SUFFIX_VERTICAL = "-vertical";
 
   private final CellVector panel;
-  private final boolean vertical;
+  private final Orientation orientation;
 
   private final String stylePrefix;
 
   private Tab selectedTab = null;
 
-  public TabBar(boolean vertical) {
-    this(DEFAULT_STYLE_PREFIX, vertical);
+  public TabBar(Orientation orientation) {
+    this(DEFAULT_STYLE_PREFIX, orientation);
   }
   
-  public TabBar(String stylePrefix, boolean vertical) {
-    this.panel = vertical ? new Vertical() : new Horizontal();
-    this.vertical = vertical;
+  public TabBar(String stylePrefix, Orientation orientation) {
+    Assert.notNull(orientation);
+
+    this.panel = orientation.isVertical() ? new Vertical() : new Horizontal();
+    this.orientation = orientation;
     this.stylePrefix = stylePrefix;
 
     initWidget(panel.asWidget());
@@ -356,7 +359,8 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
   }
   
   private String getStyle(String stem) {
-    return stylePrefix + stem + (vertical ? STYLE_SUFFIX_VERTICAL : STYLE_SUFFIX_HORIZONTAL);
+    return stylePrefix + stem 
+        + (orientation.isVertical() ? STYLE_SUFFIX_VERTICAL : STYLE_SUFFIX_HORIZONTAL);
   }
   
   private int getTabIndex(Widget wrapper) {

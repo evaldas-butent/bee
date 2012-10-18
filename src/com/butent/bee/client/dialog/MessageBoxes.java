@@ -2,12 +2,17 @@ package com.butent.bee.client.dialog;
 
 import com.google.common.collect.Lists;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
@@ -18,11 +23,13 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.Flow;
+import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.grid.CellGrid;
+import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
@@ -34,6 +41,7 @@ import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -47,7 +55,6 @@ public class MessageBoxes {
   private static final BeeLogger logger = LogUtils.getLogger(MessageBoxes.class);
   
   private static final String STYLE_CHOICE_DIALOG = "bee-ChoiceDialog";
-
   private static final String STYLE_CHOICE_PANEL = "bee-ChoicePanel";
   private static final String STYLE_CHOICE_PROMPT = "bee-ChoicePrompt";
   private static final String STYLE_CHOICE_CONTAINER = "bee-ChoiceContainer";
@@ -56,6 +63,14 @@ public class MessageBoxes {
   private static final String STYLE_CHOICE_CANCEL = "bee-ChoiceCancel";
 
   private static final String STYLE_CONFIRM_MESSAGE = "bee-ConfirmMessage";
+
+  private static final String STYLE_DECISION_DIALOG = "bee-DecisionDialog";
+  private static final String STYLE_DECISION_PANEL = "bee-DecisionPanel";
+  private static final String STYLE_DECISION_ICON = "bee-DecisionIcon";
+  private static final String STYLE_DECISION_MESSAGE = "bee-DecisionMessage";
+  private static final String STYLE_DECISION_GROUP = "bee-DecisionGroup";
+  private static final String STYLE_DECISION_OPTION = "bee-DecisionOption";
+  private static final String STYLE_DECISION_CELL = "-cell";
 
   private static final int CHOICE_MAX_HORIZONTAL_ITEMS = 10;
   private static final int CHOICE_MAX_HORIZONTAL_CHARS = 100;
@@ -100,7 +115,8 @@ public class MessageBoxes {
       vertical = len > CHOICE_MAX_HORIZONTAL_CHARS;
     }
 
-    TabBar group = new TabBar(STYLE_CHOICE_GROUP, vertical);
+    TabBar group = new TabBar(STYLE_CHOICE_GROUP,
+        vertical ? Orientation.VERTICAL : Orientation.HORIZONTAL);
 
     for (int i = 0; i < size; i++) {
       Widget widget = UiHelper.initialize(new Html(options.get(i)), initializer,
@@ -213,7 +229,7 @@ public class MessageBoxes {
 
     final Popup panel;
     if (BeeUtils.isEmpty(caption)) {
-      panel = new Popup(true, true);
+      panel = new Popup(false, true);
     } else {
       panel = new DialogBox(caption);
     }
@@ -277,6 +293,125 @@ public class MessageBoxes {
     DomUtils.setFocus(panel, true);
   }
 
+  public void decide(String caption, List<String> messages, DecisionCallback callback,
+      int defaultValue) {
+    decide(caption, messages, callback, defaultValue, null, null);
+  }
+  
+  public void decide(String caption, List<String> messages, final DecisionCallback callback,
+      int defaultValue, String dialogStyle, String messageStyle) {
+    Assert.notEmpty(messages);
+    Assert.notNull(callback);
+
+    final Popup popup;
+    final String styleName = BeeUtils.notEmpty(dialogStyle, STYLE_DECISION_DIALOG);
+    if (BeeUtils.isEmpty(caption)) {
+      popup = new Popup(false, true, styleName);
+    } else {
+      popup = new DialogBox(caption, styleName);
+    }
+
+    FlexTable panel = new FlexTable();
+    panel.addStyleName(STYLE_DECISION_PANEL);
+
+    setDecisionCell(panel, 0, 0, new BeeImage(Global.getImages().question()), STYLE_DECISION_ICON);
+    
+    int row = 0;
+    for (String message : messages) {
+      if (message != null) {
+        setDecisionCell(panel, row++, 1, new BeeLabel(message),
+            BeeUtils.notEmpty(messageStyle, STYLE_DECISION_MESSAGE));
+      }
+    }
+    
+    Horizontal group = new Horizontal();
+    
+    final BeeButton yes = new BeeButton(Global.CONSTANTS.yes(), new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        popup.hide();
+        callback.onConfirm();
+      }
+    });
+    group.add(yes);
+
+    final BeeButton no = new BeeButton(Global.CONSTANTS.no(), new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        popup.hide();
+        callback.onDeny();
+      }
+    });
+    group.add(no);
+
+    final BeeButton cancel = new BeeButton(Global.CONSTANTS.cancel(), new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        popup.hide();
+        callback.onCancel();
+      }
+    });
+    group.add(cancel);
+    
+    for (Widget widget : group) {
+      widget.addStyleName(STYLE_DECISION_OPTION);
+    }
+    
+    setDecisionCell(panel, row, 1, group, STYLE_DECISION_GROUP);
+
+    popup.setWidget(panel);
+    popup.setAnimationEnabled(true);
+    popup.center();
+
+    popup.setHideOnEscape(true);
+    popup.setOnEscape(new Scheduler.ScheduledCommand() {
+      @Override
+      public void execute() {
+        callback.onCancel();
+      }
+    });
+    
+    if (defaultValue >= 0 && defaultValue < group.getWidgetCount()) {
+      Widget widget = group.getWidget(defaultValue);
+      if (widget instanceof Focusable) {
+        ((Focusable) widget).setFocus(true);
+      }
+
+      yes.addKeyDownHandler(new KeyDownHandler() {
+        @Override
+        public void onKeyDown(KeyDownEvent event) {
+          if (event.isRightArrow() || event.isDownArrow()) {
+            no.setFocus(true);
+          } else if (event.isLeftArrow() || event.isUpArrow()) {
+            cancel.setFocus(true);
+          }
+        }
+      });
+      
+      no.addKeyDownHandler(new KeyDownHandler() {
+        @Override
+        public void onKeyDown(KeyDownEvent event) {
+          if (event.isRightArrow() || event.isDownArrow()) {
+            cancel.setFocus(true);
+          } else if (event.isLeftArrow() || event.isUpArrow()) {
+            yes.setFocus(true);
+          }
+        }
+      });
+
+      cancel.addKeyDownHandler(new KeyDownHandler() {
+        @Override
+        public void onKeyDown(KeyDownEvent event) {
+          if (event.isRightArrow() || event.isDownArrow()) {
+            yes.setFocus(true);
+          } else if (event.isLeftArrow() || event.isUpArrow()) {
+            no.setFocus(true);
+          }
+        }
+      });
+    }
+  }
+  
   public boolean nativeConfirm(String... lines) {
     Assert.notNull(lines);
     Assert.parameterCount(lines.length, 1);
@@ -370,7 +505,7 @@ public class MessageBoxes {
     box.setWidget(widget);
     box.center();
   }
-
+  
   private Popup createPopup(Widget bottom, String... messages) {
     Assert.notNull(messages);
 
@@ -389,5 +524,10 @@ public class MessageBoxes {
 
     popup.setWidget(vp);
     return popup;
+  }
+
+  private void setDecisionCell(FlexTable table, int row, int col, Widget widget, String styleName) {
+    widget.addStyleName(styleName);
+    table.setWidget(row, col, widget, styleName + STYLE_DECISION_CELL);
   }
 }

@@ -6,7 +6,7 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeType;
@@ -46,7 +46,7 @@ public class DsnService extends CompositeService {
                     BeeWidget.LIST, dsns);
 
                 Global.getInpBoxen().inputVars("Available DSN's", Lists.newArrayList(dsn),
-                    new ConfirmationCallback() {
+                    new DialogCallback() {
                       @Override
                       public boolean onConfirm(Popup popup) {
                         return doStage(SVC_SWITCH_DSN);

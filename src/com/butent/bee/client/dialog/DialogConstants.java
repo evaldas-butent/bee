@@ -22,6 +22,10 @@ public class DialogConstants {
 
   public static final String STYLE_REPORT_OPTIONS = "bee-ReportOptions";
   
+  public static final int DECISION_YES = 0;
+  public static final int DECISION_NO = 1;
+  public static final int DECISION_CANCEL = 2;
+  
   private DialogConstants() {
   }
 }

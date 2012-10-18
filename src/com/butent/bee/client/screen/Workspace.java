@@ -24,6 +24,7 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
@@ -276,7 +277,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
       }
     }
 
-    TabBar bar = new TabBar(STYLE_PREFIX + "actionMenu-", false);
+    TabBar bar = new TabBar(STYLE_PREFIX + "actionMenu-", Orientation.HORIZONTAL);
     for (TabAction action : actions) {
       bar.addItem(action.getWidget());
     }

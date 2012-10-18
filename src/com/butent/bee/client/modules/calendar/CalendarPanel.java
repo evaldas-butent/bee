@@ -64,6 +64,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
@@ -102,7 +103,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   private final CalendarWidget calendar;
   private final Html dateBox;
 
-  private final TabBar viewTabs = new TabBar(STYLE_VIEW_PREFIX, false);
+  private final TabBar viewTabs = new TabBar(STYLE_VIEW_PREFIX, Orientation.HORIZONTAL);
   private final List<CalendarConstants.View> views = Lists.newArrayList();
 
   private final Timer timer;

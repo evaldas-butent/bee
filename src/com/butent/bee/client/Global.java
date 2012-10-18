@@ -11,7 +11,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.dialog.ChoiceCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
+import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputBoxes;
@@ -333,7 +333,7 @@ public class Global implements Module {
     inputString(caption, null, callback);
   }
 
-  public static void inputVars(String caption, List<String> names, ConfirmationCallback callback) {
+  public static void inputVars(String caption, List<String> names, DialogCallback callback) {
     Assert.notNull(names);
 
     List<Variable> lst = Lists.newArrayList();

@@ -133,6 +133,7 @@ import com.butent.bee.shared.ui.HasMaxLength;
 import com.butent.bee.shared.ui.HasTextDimensions;
 import com.butent.bee.shared.ui.HasValueStartIndex;
 import com.butent.bee.shared.ui.HasVisibleLines;
+import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.RenderableToken;
 import com.butent.bee.shared.ui.RendererDescription;
@@ -925,8 +926,10 @@ public enum FormWidget {
 
       case TAB_BAR:
         stylePrefix = attributes.get(ATTR_STYLE_PREFIX);
-        boolean vert = BeeUtils.toBoolean(attributes.get(ATTR_VERTICAL));
-        widget = BeeUtils.isEmpty(stylePrefix) ? new TabBar(vert) : new TabBar(stylePrefix, vert);
+        Orientation orientation = BeeUtils.toBoolean(attributes.get(ATTR_VERTICAL))
+            ? Orientation.VERTICAL : Orientation.HORIZONTAL;
+        widget = BeeUtils.isEmpty(stylePrefix) 
+            ? new TabBar(orientation) : new TabBar(stylePrefix, orientation);
         break;
 
       case TABBED_PAGES:

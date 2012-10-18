@@ -1573,8 +1573,31 @@ body, select {
 .bee-ConfirmMessage {
   max-width: 400px;
 }
-.bee-ConfirmFormClose {
-  background-color: #ffc;
+
+.bee-DecisionDialog {
+  border: 2px solid #b4b4b4;
+  border-radius: 2px;
+}  
+.bee-DecisionDialog .bee-Dialog-caption {
+  background-color: #e8e8e8;
+  padding: 1px 45px 1px 8px;
+  border-bottom: 1px solid #ddd;
+  line-height: 27px;
+}
+.bee-DecisionPanel {
+  background-color: #eee;
+  padding: 10px 4px 10px 4px;
+}
+.bee-DecisionMessage {
+  max-width: 360px;
+  margin-left: 10px;
+}
+.bee-DecisionGroup {
+  margin-left: 100px;
+  margin-top: 20px;
+}
+.bee-DecisionOption {
+  min-width: 90px;
 }
 
 .bee-MainSearchOptionsContainer {

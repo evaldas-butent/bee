@@ -567,6 +567,11 @@ public abstract class HtmlTable extends Panel implements HasClickHandlers,
     }
   }
 
+  public void setWidget(int row, int column, Widget widget, String cellStyleName) {
+    setWidget(row, column, widget);
+    getCellFormatter().addStyleName(row, column, cellStyleName);
+  }
+  
   protected void checkCellBounds(int row, int column) {
     checkRowBounds(row);
     Assert.nonNegative(column, "Column " + column + " must be non-negative");

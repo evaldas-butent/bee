@@ -2,10 +2,10 @@ package com.butent.bee.client.dialog;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
-public abstract class ConfirmationCallback {
+public abstract class DialogCallback {
   
   public static ScheduledCommand getCancelCommand(final Popup popup,
-      final ConfirmationCallback callback) {
+      final DialogCallback callback) {
 
     return new ScheduledCommand() {
       @Override
@@ -20,7 +20,7 @@ public abstract class ConfirmationCallback {
   }
 
   public static ScheduledCommand getConfirmCommand(final Popup popup,
-      final ConfirmationCallback callback) {
+      final DialogCallback callback) {
 
     return new ScheduledCommand() {
       @Override

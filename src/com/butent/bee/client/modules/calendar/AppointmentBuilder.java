@@ -75,6 +75,7 @@ import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -235,7 +236,7 @@ class AppointmentBuilder extends AbstractFormCallback {
 
   private String buildInfoWidgetId = null;
 
-  private final TabBar colorWidget = new TabBar(STYLE_COLOR_BAR_PREFIX, false);
+  private final TabBar colorWidget = new TabBar(STYLE_COLOR_BAR_PREFIX, Orientation.HORIZONTAL);
 
   private boolean saving = false;
 
