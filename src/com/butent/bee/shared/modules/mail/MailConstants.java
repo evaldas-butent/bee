@@ -10,6 +10,7 @@ public class MailConstants {
   public static final String MAIL_METHOD = MAIL_MODULE + "Method";
 
   public static final String SVC_RESTART_PROXY = "restart_proxy";
+  public static final String SVC_GET_MESSAGE = "get_message";
 
   public static final String TBL_ADDRESSES = "Addresses";
 

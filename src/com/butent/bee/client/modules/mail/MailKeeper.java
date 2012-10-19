@@ -5,10 +5,11 @@ import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.commons.ParametersHandler;
+import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.shared.modules.mail.MailConstants;
 
 public class MailKeeper {
-  
+
   public static void register() {
     BeeKeeper.getMenu().registerMenuCallback("mail_parameters", new MenuManager.MenuCallback() {
       @Override
@@ -23,6 +24,8 @@ public class MailKeeper {
             BeeKeeper.getRpc().makeGetRequest(createArgs(MailConstants.SVC_RESTART_PROXY));
           }
         });
+
+    FormFactory.registerFormCallback("Message", new MessageHandler());
   }
 
   static ParameterList createArgs(String name) {

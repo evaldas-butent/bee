@@ -2,6 +2,7 @@ package com.butent.bee.shared.logging;
 
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Contains methods used for logging, changing logging level.
@@ -33,7 +34,7 @@ public class LogUtils {
     int i = 0;
 
     for (StackTraceElement el : err.getStackTrace()) {
-      logger.debug("[", ++i, "]", el);
+      logger.debug(BeeUtils.bracket(++i), el);
     }
   }
 

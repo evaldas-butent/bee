@@ -14,3 +14,4 @@
 2012.10.11 slf4j-api.1.7.1
 2012.10.11 logback-core-1.0.7.jar
 2012.10.11 logback-classic-1.0.7.jar
+2012.10.16 jsoup-1.7.1.jar

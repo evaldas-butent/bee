@@ -1,11 +1,16 @@
 package com.butent.bee.server.modules.mail;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
+import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_FILES;
 import static com.butent.bee.shared.modules.mail.MailConstants.COL_ADDRESS;
 import static com.butent.bee.shared.modules.mail.MailConstants.COL_FILE;
 import static com.butent.bee.shared.modules.mail.MailConstants.COL_MESSAGE;
+import static com.butent.bee.shared.modules.mail.MailConstants.MAIL_METHOD;
 import static com.butent.bee.shared.modules.mail.MailConstants.MAIL_MODULE;
+import static com.butent.bee.shared.modules.mail.MailConstants.SVC_GET_MESSAGE;
+import static com.butent.bee.shared.modules.mail.MailConstants.SVC_RESTART_PROXY;
 import static com.butent.bee.shared.modules.mail.MailConstants.TBL_ADDRESSES;
 import static com.butent.bee.shared.modules.mail.MailConstants.TBL_ATTACHMENTS;
 import static com.butent.bee.shared.modules.mail.MailConstants.TBL_HEADERS;
@@ -24,22 +29,26 @@ import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.SearchResult;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ParameterType;
-import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
 import com.butent.bee.shared.utils.BeeUtils;
+
+import org.jsoup.Jsoup;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.ejb.EJB;
@@ -57,6 +66,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeUtility;
 import javax.mail.internet.ParseException;
 
 @Stateless
@@ -89,11 +99,14 @@ public class MailModuleBean implements BeeModule {
   @Override
   public ResponseObject doService(RequestInfo reqInfo) {
     ResponseObject response = null;
-    String svc = reqInfo.getParameter(MailConstants.MAIL_METHOD);
+    String svc = reqInfo.getParameter(MAIL_METHOD);
 
-    if (BeeUtils.same(svc, MailConstants.SVC_RESTART_PROXY)) {
+    if (BeeUtils.same(svc, SVC_RESTART_PROXY)) {
       response = proxy.initServer();
       response.log(logger);
+
+    } else if (BeeUtils.same(svc, SVC_GET_MESSAGE)) {
+      response = getMessage(BeeUtils.toLong(reqInfo.getParameter("id")));
 
     } else {
       String msg = BeeUtils.joinWords("Mail service not recognized:", svc);
@@ -229,7 +242,7 @@ public class MailModuleBean implements BeeModule {
             .addConstant("Type", entry.getKey().toString()));
       }
       try {
-        storePart(id, message, 0);
+        storePart(id, message, null);
       } catch (MessagingException e) {
         logger.error(e);
         return;
@@ -248,6 +261,33 @@ public class MailModuleBean implements BeeModule {
           .addConstant(COL_ADDRESS, pop3Address)
           .addConstant("Type", RecipientType.BCC.toString()));
     }
+  }
+
+  private ResponseObject getMessage(Long id) {
+    Assert.notNull(id);
+    Map<String, SimpleRowSet> packet = Maps.newHashMap();
+
+    packet.put(TBL_PARTS, qs.getData(new SqlSelect()
+        .addFields(TBL_PARTS, "Content", "HtmlContent")
+        .addFrom(TBL_PARTS)
+        .setWhere(SqlUtils.equal(TBL_PARTS, COL_MESSAGE, id))));
+
+    packet.put(TBL_RECIPIENTS, qs.getData(new SqlSelect()
+        .addFields(TBL_RECIPIENTS, "Type")
+        .addFields(TBL_ADDRESSES, "Label", "Email")
+        .addFrom(TBL_RECIPIENTS)
+        .addFromInner(TBL_ADDRESSES, sys.joinTables(TBL_ADDRESSES, TBL_RECIPIENTS, COL_ADDRESS))
+        .setWhere(SqlUtils.equal(TBL_RECIPIENTS, COL_MESSAGE, id))
+        .addOrderDesc(TBL_RECIPIENTS, "Type")));
+
+    packet.put(TBL_ATTACHMENTS, qs.getData(new SqlSelect()
+        .addFields(TBL_ATTACHMENTS, "FileName")
+        .addFields(TBL_FILES, "Hash", "Name", "Size", "Mime")
+        .addFrom(TBL_ATTACHMENTS)
+        .addFromInner(TBL_FILES, sys.joinTables(TBL_FILES, TBL_ATTACHMENTS, COL_FILE))
+        .setWhere(SqlUtils.equal(TBL_ATTACHMENTS, COL_MESSAGE, id))));
+
+    return ResponseObject.response(packet);
   }
 
   private Long storeAddress(Address address) {
@@ -281,17 +321,29 @@ public class MailModuleBean implements BeeModule {
     return id;
   }
 
-  private void storePart(Long messageId, Part part, int level)
+  private void storePart(Long messageId, Part part, Pair<String, String> alternative)
       throws MessagingException, IOException {
 
     if (part.isMimeType("multipart/*")) {
       Multipart multiPart = (Multipart) part.getContent();
+      boolean hasAlternative = (alternative == null && part.isMimeType("multipart/alternative"));
 
+      if (hasAlternative) {
+        alternative = Pair.of(null, null);
+      }
       for (int i = 0; i < multiPart.getCount(); i++) {
-        storePart(messageId, multiPart.getBodyPart(i), level + 1);
+        storePart(messageId, multiPart.getBodyPart(i), alternative);
+      }
+      if (hasAlternative) {
+        qs.insertData(new SqlInsert(TBL_PARTS)
+            .addConstant(COL_MESSAGE, messageId)
+            .addConstant("ContentType", alternative.getB() != null ? "text/html" : "text/plain")
+            .addConstant("Content",
+                alternative.getA() != null ? alternative.getA() : stripHtml(alternative.getB()))
+            .addConstant("HtmlContent", alternative.getB()));
       }
     } else if (part.isMimeType("message/*")) {
-      storePart(messageId, (Message) part.getContent(), level + 1);
+      storePart(messageId, (Message) part.getContent(), alternative);
     } else {
       String contentType = part.getContentType();
 
@@ -303,9 +355,17 @@ public class MailModuleBean implements BeeModule {
       String disposition = part.getDisposition();
       String fileName = part.getFileName();
 
+      if (!BeeUtils.isEmpty(fileName)) {
+        try {
+          fileName = MimeUtility.decodeText(part.getFileName());
+        } catch (UnsupportedEncodingException ex) {
+        }
+      }
       if (!(part.isMimeType("text/*"))
           || BeeUtils.same(disposition, Part.ATTACHMENT)
-          || !BeeUtils.isEmpty(fileName)) {
+          || !BeeUtils.isEmpty(fileName)
+          || (alternative != null
+              && !part.isMimeType("text/plain") && !part.isMimeType("text/html"))) {
 
         Long fileId = fs.storeFile(part.getInputStream(), fileName, contentType);
 
@@ -313,12 +373,31 @@ public class MailModuleBean implements BeeModule {
             .addConstant(COL_MESSAGE, messageId)
             .addConstant(COL_FILE, fileId)
             .addConstant("FileName", fileName));
+
+      } else if (alternative != null) {
+        if (part.isMimeType("text/plain") && alternative.getA() == null) {
+          alternative.setA((String) part.getContent());
+        } else if (part.isMimeType("text/html") && alternative.getB() == null) {
+          alternative.setB((String) part.getContent());
+        }
       } else {
+        String htmlContent = null;
+        String content = (String) part.getContent();
+
+        if (part.isMimeType("text/html")) {
+          htmlContent = content;
+          content = stripHtml(htmlContent);
+        }
         qs.insertData(new SqlInsert(TBL_PARTS)
             .addConstant(COL_MESSAGE, messageId)
             .addConstant("ContentType", contentType)
-            .addConstant("Content", part.getContent()));
+            .addConstant("Content", content)
+            .addConstant("HtmlContent", htmlContent));
       }
     }
+  }
+
+  private String stripHtml(String content) {
+    return Jsoup.parse(content).text();
   }
 }

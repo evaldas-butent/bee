@@ -4,6 +4,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -41,7 +42,9 @@ public abstract class TextBasedProtocolServerHandler extends SimpleChannelHandle
   public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) {
     if (outboundChannel != null) {
       try {
+        ChannelFactory fac = outboundChannel.getFactory();
         closeOnFlush(outboundChannel);
+        fac.releaseExternalResources();
       } catch (Exception ex) {
       }
     }

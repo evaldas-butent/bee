@@ -7,7 +7,7 @@ import org.jboss.netty.channel.MessageEvent;
 public class POP3ProtocolClientHandler extends TextBasedProtocolClientHandler {
 
   private String user = "";
-  private String mailBody = "";
+  private StringBuilder mailBody = null;
   private int state = 0;
 
   public POP3ProtocolClientHandler(Channel inboundChannel, Object tl, MailProxy proxy) {
@@ -22,17 +22,17 @@ public class POP3ProtocolClientHandler extends TextBasedProtocolClientHandler {
 
     if (state == 1) {
       if (msg.equals(".")) {
-        proxy.processMessage(mailBody, user);
+        proxy.processMessage(mailBody.toString(), user);
         state = 0;
-        mailBody = "";
+        mailBody = null;
 
       } else if (msg.startsWith("-ERR")) {
         state = 0;
-        mailBody = "";
+        mailBody = null;
         logger.severe("POP3 mail receive error:", msg);
 
       } else if (!msg.startsWith("+OK")) {
-        mailBody += (msg.startsWith("..") ? msg.substring(1) : msg) + "\r\n";
+        mailBody.append(msg.startsWith("..") ? msg.substring(1) : msg).append("\r\n");
       }
     }
     super.messageReceived(ctx, e);
@@ -48,7 +48,7 @@ public class POP3ProtocolClientHandler extends TextBasedProtocolClientHandler {
       user = msg.substring(4).trim();
     } else if (msg.toUpperCase().startsWith("RETR")) {
       state = 1;
-      mailBody = "";
+      mailBody = new StringBuilder();
     }
     super.writeRequested(ctx, e);
   }

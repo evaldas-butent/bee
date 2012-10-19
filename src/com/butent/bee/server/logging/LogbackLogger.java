@@ -1,9 +1,13 @@
 package com.butent.bee.server.logging;
 
+import com.google.common.base.Strings;
+
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.BeeLoggerWrapper;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.utils.ArrayUtils;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import org.slf4j.LoggerFactory;
 import org.slf4j.spi.LocationAwareLogger;
@@ -32,7 +36,34 @@ public class LogbackLogger implements BeeLogger {
   @Override
   public void error(Throwable ex, Object... messages) {
     if (logger.isErrorEnabled()) {
-      logInternal(LocationAwareLogger.ERROR_INT, ex, messages);
+      if (ArrayUtils.length(messages) > 0) {
+        severe(messages);
+      }
+      if (ex != null) {
+        String sep = System.getProperty("line.separator");
+        StringBuilder sb = new StringBuilder(ex.toString());
+        int i = 0;
+        boolean skip = false;
+
+        for (StackTraceElement el : ex.getStackTrace()) {
+          i++;
+          if (BeeUtils.startsWith(el.getClassName(), "com.butent")
+              && !BeeUtils.isEmpty(el.getFileName())) {
+            skip = false;
+            sb.append(sep)
+                .append(BeeUtils.space(5)).append(BeeConst.STRING_LEFT_BRACKET)
+                .append(Strings.padStart(Integer.toString(i), 3, BeeConst.CHAR_SPACE))
+                .append(BeeConst.STRING_RIGHT_BRACKET).append(BeeConst.CHAR_SPACE)
+                .append(el);
+          } else if (!skip) {
+            skip = true;
+            sb.append(sep)
+                .append(BeeUtils.space(5)).append("[...]");
+          }
+        }
+        severe(sb.toString());
+      }
+      // logInternal(LocationAwareLogger.ERROR_INT, ex, messages);
     }
   }
 

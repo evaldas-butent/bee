@@ -1,0 +1,70 @@
+.bee-Message-Sender {
+  display: inline-block;
+}
+
+.bee-Message-AddressName {
+  font-weight: bold;
+}
+
+.bee-Message-AddressMail {
+  margin-left: 5px;
+}
+
+.bee-Message-Date {
+  float: right;
+  color: gray;
+}
+
+.bee-Message-Recipients {
+  color: gray;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.bee-Message-Recipients:hover {
+  background-color: whiteSmoke;
+}  
+
+.bee-Message-RecipientsCaption {
+  color: gray;
+  float: right;
+}
+
+.bee-Message-Attachments {
+  float: right;
+  cursor: pointer;
+  color: #0A8DE9;
+}
+
+.bee-Message-RecipientsPopup, .bee-Message-AttachmentsPopup {
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 2px;
+}
+
+.bee-Message-AttachmentsMenu-item {
+  padding: 2px 4px;
+  cursor: pointer;
+  color: #0A8DE9;
+}
+
+.bee-Message-AttachmentsMenu-item:hover {
+  background-color: whiteSmoke;
+}  
+
+.bee-Message-Envelope {
+  padding-bottom: 10px;
+  border-bottom: 1px solid lightgray;
+}
+
+.bee-Message-Parts {
+  overflow: auto;
+  margin-top: 10px;
+}
+
+.bee-Message-PartSeparator {
+  height: 0;
+  border-width: 1px 0 0 0;
+  border-style: dashed;
+}

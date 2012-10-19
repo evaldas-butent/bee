@@ -1,5 +1,7 @@
 package com.butent.bee.server.modules.commons;
 
+import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_FILES;
+
 import com.butent.bee.server.Config;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
@@ -21,6 +23,7 @@ import java.io.OutputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
@@ -65,13 +68,21 @@ public class FileStorageBean {
     }
     String hash = Codec.toHex(md.digest());
 
-    Long id = qs.getLong(new SqlSelect()
-        .addFields("Files", sys.getIdName("Files"))
-        .addFrom("Files")
-        .setWhere(SqlUtils.equal("Files", "Hash", hash)));
+    Long id = null;
+    File target = null;
 
-    File target = new File(tmp.getParent(), hash);
+    Map<String, String> data = qs.getRow(new SqlSelect()
+        .addFields(TBL_FILES, "Repository", sys.getIdName(TBL_FILES))
+        .addFrom(TBL_FILES)
+        .setWhere(SqlUtils.equal(TBL_FILES, "Hash", hash)));
 
+    if (data != null) {
+      id = BeeUtils.toLong(data.get(sys.getIdName(TBL_FILES)));
+      target = new File(data.get("Repository"));
+      target.getParentFile().mkdirs();
+    } else {
+      target = new File(tmp.getParent(), hash);
+    }
     if (target.exists()) {
       tmp.delete();
 
@@ -84,7 +95,7 @@ public class FileStorageBean {
           tmp.getPath(), "to:", target.getPath()));
     }
     if (id == null) {
-      id = qs.insertData(new SqlInsert("Files")
+      id = qs.insertData(new SqlInsert(TBL_FILES)
           .addConstant("Hash", hash)
           .addConstant("Repository", target.getPath())
           .addConstant("Name", fileName)

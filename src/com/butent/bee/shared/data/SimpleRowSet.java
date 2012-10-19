@@ -43,10 +43,12 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   private class RowSetIterator implements Iterator<Map<String, String>> {
     private int index = -1;
 
+    @Override
     public boolean hasNext() {
       return index < (getNumberOfRows() - 1);
     }
 
+    @Override
     public Map<String, String> next() {
       if (index >= getNumberOfRows()) {
         Assert.untouchable();
@@ -54,13 +56,14 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
       return getRow(++index);
     }
 
+    @Override
     public void remove() {
       throw new UnsupportedOperationException();
     }
   }
 
-  private BiMap<String, Integer> columns;
-  private List<String[]> rows;
+  private BiMap<String, Integer> columns = HashBiMap.create(0);
+  private List<String[]> rows = Lists.newArrayListWithExpectedSize(0);
   private Map<Integer, Map<String, Integer>> indexes = null;
 
   public SimpleRowSet(String[] cols) {
@@ -175,8 +178,8 @@ public class SimpleRowSet implements Iterable<Map<String, String>>, BeeSerializa
   }
 
   public JustDate getDate(int rowIndex, int colIndex) {
-    Long value = getLong(rowIndex, colIndex);    
-    return (value == null) 
+    Long value = getLong(rowIndex, colIndex);
+    return (value == null)
         ? null : TimeUtils.toDateOrNull(BeeUtils.toString(value / TimeUtils.MILLIS_PER_DAY));
   }
 

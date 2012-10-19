@@ -46,9 +46,9 @@ import com.butent.bee.client.data.JsData;
 import com.butent.bee.client.decorator.TuningFactory;
 import com.butent.bee.client.dialog.ChoiceCallback;
 import com.butent.bee.client.dialog.DialogCallback;
-import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.Popup;
+import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.ComputedStyles;
 import com.butent.bee.client.dom.Dimensions;
 import com.butent.bee.client.dom.DomUtils;
@@ -95,10 +95,10 @@ import com.butent.bee.client.widget.Progress;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -142,7 +142,7 @@ import elemental.js.stylesheets.JsStyleSheetList;
 public class CliWorker {
 
   private static final BeeLogger logger = LogUtils.getLogger(CliWorker.class);
-  
+
   private static boolean cornified = false;
 
   public static void execute(String line) {
@@ -342,15 +342,15 @@ public class CliWorker {
     } else if (BeeUtils.startsSame(args, "grids")) {
       GridFactory.clearDescriptionCache();
       debugWithSeparator("grid cache cleared");
-    
+
     } else if (BeeUtils.startsSame(args, "forms")) {
       FormFactory.clearDescriptionCache();
       debugWithSeparator("form cache cleared");
-    
+
     } else if (BeeUtils.startsSame(args, "cache")) {
       Global.getCache().clear();
       debugWithSeparator("cache cleared");
-    
+
     } else if (BeeUtils.startsSame(args, "rpc")) {
       BeeKeeper.getRpc().getRpcList().clear();
       debugWithSeparator("rpc list cleared");
@@ -387,7 +387,7 @@ public class CliWorker {
     } catch (err) {
     }
   }-*/;
-  
+
   private static void debugWithSeparator(String message) {
     logger.debug(message);
     logger.addSeparator();
@@ -865,7 +865,7 @@ public class CliWorker {
     }
     BeeKeeper.getRpc().makeGetRequest(params);
   }
-  
+
   private static void getResource(String[] arr) {
     if (ArrayUtils.length(arr) < 2) {
       Global.sayHuh(ArrayUtils.join(BeeConst.STRING_SPACE, arr));
@@ -873,9 +873,9 @@ public class CliWorker {
     }
 
     if (BeeUtils.same(arr[0], "download")) {
-      String url = GWT.getModuleBaseURL() + "file/" 
-          + Codec.encodeBase64(ArrayUtils.join(BeeConst.STRING_SPACE, arr, 1));
-      Window.open(url, "", "");
+      String url = GWT.getModuleBaseURL() + "file/"
+          + Codec.encodeBase64(Codec.beeSerialize(Pair.of(arr[1], null)));
+      Window.Location.replace(url);
       return;
     }
 
@@ -1150,7 +1150,8 @@ public class CliWorker {
 
     for ( var i = 0; i < 6; i++) {
       for ( var j = 0; j < 6; j++) {
-        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', ' + Math.floor(255 - 42.5 * j) + ', 0)';
+        ctx.fillStyle = 'rgb(' + Math.floor(255 - 42.5 * i) + ', '
+            + Math.floor(255 - 42.5 * j) + ', 0)';
         ctx.fillRect(j * 25, i * 25, 25, 25);
       }
     }
@@ -1522,7 +1523,7 @@ public class CliWorker {
         Global.inform("element id", id, "not found");
         return;
       }
-     
+
       caption = id;
       info = PropertyUtils.createProperties(
           "Client width", elem.getClientWidth(),
@@ -1949,7 +1950,7 @@ public class CliWorker {
       }
     }
   }
-  
+
   private static void showProgress(String[] arr) {
     if (!Features.supportsElementProgress()) {
       Global.showError("progress element not supported");
@@ -2049,7 +2050,7 @@ public class CliWorker {
       Global.showGrid(table);
     }
   }
-  
+
   private static void showRpc() {
     if (BeeKeeper.getRpc().getRpcList().isEmpty()) {
       Global.inform("RpcList empty");
@@ -2436,7 +2437,7 @@ public class CliWorker {
       int px = Rulers.getIntPixels(value, u, font, BeeUtils.unbox(containerSize));
       info.add(new Property(u.getType(), BeeUtils.toString(px)));
     }
-    
+
     PropertiesData table = new PropertiesData(info);
     if (showModal(info.size())) {
       Global.showModalGrid("Pixels", table);
@@ -2838,11 +2839,11 @@ public class CliWorker {
     byte[] bytes = Codec.toBytes(s);
 
     int id = BeeKeeper.getRpc().invoke("stringInfo", ContentType.TEXT, s);
-    
+
     Map<String, String> data = Maps.newHashMap();
     data.put("length", BeeUtils.toString(s.length()));
     data.put("data", s);
-    
+
     data.put("adler32", Codec.adler32(bytes));
     data.put("crc16", Codec.crc16(bytes));
     data.put("crc32", Codec.crc32(bytes));

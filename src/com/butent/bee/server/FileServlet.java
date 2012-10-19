@@ -1,7 +1,13 @@
 package com.butent.bee.server;
 
+import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.io.FileUtils;
+import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -11,7 +17,9 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Map;
 
+import javax.ejb.EJB;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +34,9 @@ public class FileServlet extends HttpServlet {
   private static BeeLogger logger = LogUtils.getLogger(FileServlet.class);
 
   private static final int DEFAULT_BUFFER_SIZE = 10240;
+
+  @EJB
+  QueryServiceBean qs;
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -49,64 +60,77 @@ public class FileServlet extends HttpServlet {
     }
   }
 
+  private void doError(HttpServletResponse resp, String err) {
+    try {
+      logger.severe(err);
+      resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, err);
+    } catch (IOException e) {
+      logger.error(e);
+    }
+  }
+
   private void doService(HttpServletRequest req, HttpServletResponse resp) {
-    String err = null;
+    Pair<String, String> data = null;
 
-    if (req.getSession(false) == null) {
-      err = "No logged in";
+    String requestedData = req.getPathInfo();
+
+    if (requestedData != null) {
+      requestedData = requestedData.substring(1);
     }
-    String requestedFile = null;
-
-    if (BeeUtils.isEmpty(err)) {
-      requestedFile = req.getPathInfo();
-
-      if (requestedFile != null) {
-        requestedFile = requestedFile.substring(1);
-      }
-      if (BeeUtils.isEmpty(requestedFile)) {
-        err = "No file name provided";
-      }
-    }
-
-    if (BeeUtils.isEmpty(err)) {
+    if (BeeUtils.isEmpty(requestedData)) {
+      doError(resp, "No request data provided");
+      return;
+    } else {
       try {
-        requestedFile = Codec.decodeBase64(requestedFile);
+        data = Pair.restore(Codec.decodeBase64(requestedData));
       } catch (Exception e) {
-        err = e.getMessage();
+        doError(resp, e.getMessage());
+        return;
       }
     }
     String path = null;
+    String hash = data.getB();
+    String fileName = BeeUtils.notEmpty(data.getA(), hash);
+    String mimeType = null;
 
-    if (BeeUtils.isEmpty(err)) {
-      path = Config.getPath(requestedFile);
+    if (!BeeUtils.isEmpty(hash)) {
+      Map<String, String> row = qs.getRow(new SqlSelect()
+          .addFields(CommonsConstants.TBL_FILES, "Repository", "Name", "Mime")
+          .addFrom(CommonsConstants.TBL_FILES)
+          .setWhere(SqlUtils.equal(CommonsConstants.TBL_FILES, "Hash", hash)));
 
-      if (path == null) {
-        err = "Resource not found: " + requestedFile;
+      if (row != null) {
+        path = row.get("Repository");
+        fileName = BeeUtils.notEmpty(fileName, row.get("Name"));
+        mimeType = row.get("Mime");
       }
+    } else if (!BeeUtils.isEmpty(fileName)) {
+      path = Config.getPath(fileName, false);
+      fileName = new File(fileName).getName();
     }
-
-    if (!BeeUtils.isEmpty(err)) {
-      try {
-        logger.warning(err);
-        resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, err);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+    if (path == null) {
+      doError(resp, BeeUtils.joinWords("File not found:", fileName));
       return;
     }
     File file = new File(path);
 
-    String contentType = getServletContext().getMimeType(file.getName());
-
-    if (contentType == null) {
-      contentType = "application/octet-stream";
+    if (!FileUtils.isInputFile(file)) {
+      doError(resp, BeeUtils.joinWords("File was removed:", fileName));
+      return;
     }
+    if (mimeType == null) {
+      mimeType = getServletContext().getMimeType(fileName);
+    }
+    if (mimeType == null) {
+      mimeType = "application/octet-stream";
+    }
+    mimeType = BeeUtils.join("; ", mimeType, "name=\"" + fileName + "\"");
 
     resp.reset();
     resp.setBufferSize(DEFAULT_BUFFER_SIZE);
-    resp.setContentType(contentType);
+    resp.setContentType(mimeType);
     resp.setHeader("Content-Length", String.valueOf(file.length()));
-    resp.setHeader("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
+    resp.setHeader("Content-Disposition", "inline; filename=\"" + fileName + "\"");
 
     BufferedInputStream input = null;
     BufferedOutputStream output = null;
@@ -121,7 +145,7 @@ public class FileServlet extends HttpServlet {
         output.write(buffer, 0, length);
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       close(output);
       close(input);

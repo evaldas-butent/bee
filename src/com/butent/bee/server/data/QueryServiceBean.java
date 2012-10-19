@@ -59,7 +59,6 @@ import javax.ejb.TransactionAttributeType;
 
 @Stateless
 @LocalBean
-@TransactionAttribute(TransactionAttributeType.MANDATORY)
 public class QueryServiceBean {
 
   /**
@@ -196,6 +195,7 @@ public class QueryServiceBean {
     return getData(SqlUtils.dbTriggers(dbName, dbSchema, table));
   }
 
+  @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public Object doSql(String sql) {
     Assert.notEmpty(sql);
 
@@ -373,10 +373,12 @@ public class QueryServiceBean {
     return sqlCount(sys.getView(viewName).getQuery(filter));
   }
 
+  @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public long insertData(SqlInsert si) {
     return insertDataWithResponse(si).getResponse(-1L, logger);
   }
 
+  @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public ResponseObject insertDataWithResponse(SqlInsert si) {
     Assert.notNull(si);
 
@@ -456,10 +458,12 @@ public class QueryServiceBean {
         .setWhere(SqlUtils.equal(source, sys.getIdName(source), id)));
   }
 
+  @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public int updateData(IsQuery query) {
     return updateDataWithResponse(query).getResponse(-1, logger);
   }
 
+  @TransactionAttribute(TransactionAttributeType.MANDATORY)
   public ResponseObject updateDataWithResponse(IsQuery query) {
     Assert.notNull(query);
     Assert.state(!query.isEmpty());
