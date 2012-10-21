@@ -21,6 +21,7 @@ import com.butent.bee.client.modules.commons.ParametersHandler;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.utils.Command;
+import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -343,7 +344,7 @@ public class CalendarKeeper {
           public void onSuccess(FormDescription formDescription, FormView result) {
             if (result != null) {
               result.start(null);
-              result.updateRow(appointment.getRow(), false);
+              result.updateRow(DataUtils.cloneRow(appointment.getRow()), false);
 
               builder.setAttenddes(appointment.getAttendees());
               builder.setProperties(appointment.getProperties());
@@ -516,6 +517,11 @@ public class CalendarKeeper {
     String caption = getSettingsForm().getCaption();
 
     Global.inputWidget(caption, getSettingsForm(), new InputCallback() {
+      @Override
+      public void onClose(CloseCallback closeCallback) {
+        getSettingsForm().onClose(closeCallback);
+      }
+
       @Override
       public void onSuccess() {
         int updCount = Queries.update(VIEW_USER_CALENDARS, rowSet.getColumns(), oldRow, newRow,

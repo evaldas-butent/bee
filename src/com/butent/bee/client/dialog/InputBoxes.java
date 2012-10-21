@@ -1,7 +1,7 @@
 package com.butent.bee.client.dialog;
 
 import com.google.common.base.Supplier;
-import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -29,13 +29,13 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
+import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
@@ -143,6 +143,7 @@ public class InputBoxes {
 
   private static final String STYLE_INPUT_PRINT = "bee-InputPrint";
   private static final String STYLE_INPUT_SAVE = "bee-InputSave";
+  private static final String STYLE_INPUT_CLOSE = "bee-InputClose";
 
   public void inputString(String caption, String prompt, final StringCallback callback,
       String defaultValue, int maxLength, double width, Unit widthUnit, final int timeout,
@@ -151,7 +152,7 @@ public class InputBoxes {
 
     final Holder<State> state = Holder.of(State.OPEN);
 
-    final DialogBox dialog = new DialogBox(caption);
+    final DialogBox dialog = DialogBox.create(caption);
     UiHelper.initialize(dialog, initializer, DialogConstants.WIDGET_DIALOG);
 
     final Timer timer = (timeout > 0) ? new DialogTimer(dialog, state) : null;
@@ -336,7 +337,7 @@ public class InputBoxes {
       r++;
     }
 
-    DialogBox dialog = new DialogBox(caption);
+    DialogBox dialog = DialogBox.create(caption);
 
     BeeButton confirm = new BeeButton(DialogConstants.OK,
         DialogCallback.getConfirmCommand(dialog, callback));
@@ -362,16 +363,13 @@ public class InputBoxes {
 
   public void inputWidget(String caption, IsWidget widget, final InputCallback callback,
       boolean enableGlass, String dialogStyle, UIObject target, boolean enablePrint,
-      String confirmHtml, String cancelHtml, final int timeout, WidgetInitializer initializer) {
+      WidgetInitializer initializer) {
 
     Assert.notNull(widget);
+    Assert.notNull(callback);
 
-    final Holder<State> state = Holder.of(State.OPEN);
-
-    final DialogBox dialog = new DialogBox(caption, dialogStyle);
+    final DialogBox dialog = DialogBox.withoutCloseBox(caption, dialogStyle);
     UiHelper.initialize(dialog, initializer, DialogConstants.WIDGET_DIALOG);
-
-    final Timer timer = (timeout > 0) ? new DialogTimer(dialog, state) : null;
 
     Flow panel = new Flow();
     panel.addStyleName(STYLE_INPUT_PANEL);
@@ -390,103 +388,68 @@ public class InputBoxes {
       UiHelper.add(panel, errorDisplay, initializer, DialogConstants.WIDGET_ERROR);
     }
 
-    final Supplier<String> errorSupplier = new Supplier<String>() {
-      public String get() {
-        return (callback == null) ? null : callback.getErrorMessage();
-      }
-    };
-
-    addCommandGroup(dialog, panel, confirmHtml, cancelHtml, initializer, state, errorDisplay,
-        errorSupplier);
-
     if (enablePrint) {
-      BeeImage print = new BeeImage(Global.getImages().silverPrint(),
-          new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-              Printer.print(dialog);
-            }
-          });
+      BeeImage print = new BeeImage(Global.getImages().silverPrint(), new ScheduledCommand() {
+        @Override
+        public void execute() {
+          Printer.print(dialog);
+        }
+      });
 
       print.addStyleName(STYLE_INPUT_PRINT);
       UiHelper.initialize(print, initializer, DialogConstants.WIDGET_PRINT);
-
       dialog.addChild(print);
     }
 
-    if (BeeUtils.isEmpty(confirmHtml) && callback != null) {
-      BeeImage save = new BeeImage(Global.getImages().silverSave(),
-          new Scheduler.ScheduledCommand() {
-            @Override
-            public void execute() {
-              String message = errorSupplier.get();
-              if (BeeUtils.isEmpty(message)) {
-                state.set(State.CONFIRMED);
-                dialog.hide();
-              } else {
-                showError(errorDisplay.get(), message);
-              }
-            }
-          });
-
-      save.addStyleName(STYLE_INPUT_SAVE);
-      UiHelper.initialize(save, initializer, DialogConstants.WIDGET_SAVE);
-
-      dialog.addChild(save);
-    }
-
-    Binder.addKeyDownHandler(dialog, new KeyDownHandler() {
-      public void onKeyDown(KeyDownEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
-          event.preventDefault();
-          state.set(State.CANCELED);
+    final ScheduledCommand onSave = new ScheduledCommand() {
+      @Override
+      public void execute() {
+        String message = callback.getErrorMessage();
+        if (BeeUtils.isEmpty(message)) {
           dialog.hide();
-          return;
-        } else if (UiHelper.isSave(event.getNativeEvent())) {
-          String message = errorSupplier.get();
-          if (BeeUtils.isEmpty(message)) {
-            event.preventDefault();
-            state.set(State.CONFIRMED);
+          callback.onSuccess();
+        } else {
+          showError(errorDisplay.get(), message);
+        }
+      }
+    };
+
+    BeeImage save = new BeeImage(Global.getImages().silverSave(), onSave);
+    save.addStyleName(STYLE_INPUT_SAVE);
+    UiHelper.initialize(save, initializer, DialogConstants.WIDGET_SAVE);
+    dialog.addChild(save);
+
+    final ScheduledCommand onClose = new ScheduledCommand() {
+      @Override
+      public void execute() {
+        callback.onClose(new CloseCallback() {
+          @Override
+          public void onClose() {
             dialog.hide();
-            return;
-          } else {
-            showError(errorDisplay.get(), message);
+            callback.onCancel();
           }
-        }
 
-        if (timer != null) {
-          timer.schedule(timeout);
-        }
-      }
-    });
-
-    dialog.addCloseHandler(new CloseHandler<Popup>() {
-      public void onClose(CloseEvent<Popup> event) {
-        if (timer != null) {
-          timer.cancel();
-        }
-
-        if (callback != null) {
-          switch (state.get()) {
-            case CONFIRMED:
-              callback.onSuccess();
-              break;
-            case EXPIRED:
-              callback.onTimeout();
-              break;
-            default:
-              callback.onCancel();
+          @Override
+          public void onSave() {
+            onSave.execute();
           }
-        }
+        });
       }
-    });
+    };
+
+    BeeImage close = new BeeImage(Global.getImages().silverClose(), onClose);
+    close.addStyleName(STYLE_INPUT_CLOSE);
+    UiHelper.initialize(close, initializer, DialogConstants.WIDGET_CLOSE);
+    dialog.addChild(close);
+
+    dialog.setOnSave(onSave);
+    dialog.setOnEscape(onClose);
 
     UiHelper.setWidget(dialog, panel, initializer, DialogConstants.WIDGET_PANEL);
 
     if (enableGlass) {
       dialog.enableGlass();
     }
-
     dialog.setAnimationEnabled(true);
 
     if (target == null) {
@@ -496,10 +459,6 @@ public class InputBoxes {
     }
 
     UiHelper.focus(widget.asWidget());
-
-    if (timer != null) {
-      timer.schedule(timeout);
-    }
   }
 
   private boolean addCommandGroup(final Popup dialog, HasWidgets panel, String confirmHtml,

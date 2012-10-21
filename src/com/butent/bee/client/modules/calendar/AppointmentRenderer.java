@@ -120,7 +120,7 @@ class AppointmentRenderer {
     template = BeeUtils.notEmpty(bodyTemplate,
         multi ? DEFAULT_MULTI_BODY_TEMPLATE : DEFAULT_SIMPLE_BODY_TEMPLATE);
     String body = parseTemplate(template, substitutes, separator);
-    if (BeeUtils.allEmpty(header, body)) {
+    if (BeeUtils.allEmpty(header, body) || !multi && BeeUtils.isEmpty(body)) {
       body = renderEmpty(appointmentWidget.getAppointment());
     }
     appointmentWidget.setBodyHtml(body);

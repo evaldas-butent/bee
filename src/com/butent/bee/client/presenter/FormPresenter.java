@@ -20,7 +20,7 @@ import com.butent.bee.client.data.LocalProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
-import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils;
@@ -60,7 +60,7 @@ import java.util.Set;
 public class FormPresenter extends AbstractPresenter implements ReadyForInsertEvent.Handler,
     ReadyForUpdateEvent.Handler, HasViewName, HasSearch, HasDataProvider, HasActiveRow {
 
-  private class DeleteCallback extends InputCallback {
+  private class DeleteCallback extends ConfirmationCallback {
     private final long rowId;
     private final long version;
 
@@ -70,7 +70,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
 
     @Override
-    public void onSuccess() {
+    public void onConfirm() {
       setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
 
       Queries.deleteRow(getViewName(), rowId, version, new Queries.IntCallback() {

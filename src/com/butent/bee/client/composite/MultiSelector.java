@@ -47,6 +47,8 @@ public class MultiSelector extends DialogBox {
     Assert.isTrue(!rowSet.isEmpty());
     Assert.notEmpty(columnNames);
     Assert.notNull(selectionCallback);
+    
+    addDefaultCloseBox();
 
     this.selectionCallback = selectionCallback;
     

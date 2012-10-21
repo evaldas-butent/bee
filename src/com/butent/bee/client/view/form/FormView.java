@@ -51,6 +51,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   
   String getFormName();
 
+  IsRow getOldRow();
+  
   Widget getRootWidget();
   
   JavaScriptObject getRowJso();

@@ -16,7 +16,7 @@ import com.butent.bee.client.Screen;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.composite.ResourceEditor;
-import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Notification;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.layout.Complex;
@@ -299,9 +299,9 @@ public class ScreenImpl implements Screen {
     BeeImage exit = new BeeImage(Global.getImages().exit().getSafeUri(), new Command() {
       @Override
       public void execute() {
-        Global.confirm(Global.CONSTANTS.logout(), new InputCallback() {
+        Global.confirm(Global.CONSTANTS.logout(), new ConfirmationCallback() {
           @Override
-          public void onSuccess() {
+          public void onConfirm() {
             BeeKeeper.getBus().dispatchService(Service.LOGOUT);
           }
         });

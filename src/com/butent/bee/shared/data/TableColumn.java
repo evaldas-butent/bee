@@ -41,6 +41,14 @@ public class TableColumn implements HasInfo, IsColumn {
   }
 
   @Override
+  public void clearProperty(String key) {
+    Assert.notEmpty(key);
+    if (properties != null) {
+      properties.remove(key);
+    }
+  }
+  
+  @Override
   public TableColumn copy() {
     TableColumn result = new TableColumn(type, label, id);
     result.setPattern(pattern);
@@ -50,10 +58,12 @@ public class TableColumn implements HasInfo, IsColumn {
     return result;
   }
 
+  @Override
   public String getId() {
     return id;
   }
 
+  @Override
   public List<Property> getInfo() {
     List<Property> lst = PropertyUtils.createProperties("Id", getId(), "Type", getType(),
         "Label", getLabel(), "Pattern", getPattern());
@@ -63,22 +73,27 @@ public class TableColumn implements HasInfo, IsColumn {
     return lst;
   }
 
+  @Override
   public String getLabel() {
     return label;
   }
 
+  @Override
   public String getPattern() {
     return pattern;
   }
 
+  @Override
   public int getPrecision() {
     return precision;
   }
 
+  @Override
   public CustomProperties getProperties() {
     return properties;
   }
   
+  @Override
   public String getProperty(String key) {
     Assert.notEmpty(key);
     if (properties == null) {
@@ -87,34 +102,42 @@ public class TableColumn implements HasInfo, IsColumn {
     return properties.get(key);
   }
 
+  @Override
   public int getScale() {
     return scale;
   }
 
+  @Override
   public ValueType getType() {
     return type;
   }
 
+  @Override
   public void setId(String id) {
     this.id = id;
   }
 
+  @Override
   public void setLabel(String label) {
     this.label = label;
   }
 
+  @Override
   public void setPattern(String pattern) {
     this.pattern = pattern;
   }
 
+  @Override
   public void setPrecision(int precision) {
     this.precision = precision;
   }
   
+  @Override
   public void setProperties(CustomProperties properties) {
     this.properties = properties;
   }
 
+  @Override
   public void setProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
     Assert.notNull(propertyValue);
@@ -124,10 +147,12 @@ public class TableColumn implements HasInfo, IsColumn {
     properties.put(propertyKey, propertyValue);
   }
 
+  @Override
   public void setScale(int scale) {
     this.scale = scale;
   }
   
+  @Override
   public void setType(ValueType type) {
     this.type = type;
   }

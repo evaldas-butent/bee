@@ -11,6 +11,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.ClientDefaults;
 import com.butent.bee.client.dialog.ChoiceCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.DialogConstants;
@@ -163,7 +164,7 @@ public class Global implements Module {
     }
   }
 
-  public static void confirm(String message, InputCallback callback) {
+  public static void confirm(String message, ConfirmationCallback callback) {
     MSG_BOXEN.confirm(message, callback);
   }
 
@@ -358,7 +359,7 @@ public class Global implements Module {
   public static void inputWidget(String caption, IsWidget input, InputCallback callback,
       boolean enableGlass, String dialogStyle, UIObject target, boolean enablePrint) {
     INP_BOXEN.inputWidget(caption, input, callback, enableGlass, dialogStyle, target, enablePrint,
-        null, null, BeeConst.UNDEF, null);
+        null);
   }
 
   public static boolean isDebug() {

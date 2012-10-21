@@ -89,7 +89,7 @@ public class MessageBoxes {
 
     final Holder<State> state = Holder.of(State.OPEN);
 
-    final DialogBox dialog = new DialogBox(caption, STYLE_CHOICE_DIALOG);
+    final DialogBox dialog = DialogBox.create(caption, STYLE_CHOICE_DIALOG);
     UiHelper.initialize(dialog, initializer, DialogConstants.WIDGET_DIALOG);
 
     final Timer timer = (timeout > 0) ? new DialogTimer(dialog, state) : null;
@@ -208,21 +208,21 @@ public class MessageBoxes {
     return ok;
   }
 
-  public void confirm(String message, InputCallback callback) {
+  public void confirm(String message, ConfirmationCallback callback) {
     confirm(null, message, callback);
   }
 
-  public void confirm(String caption, String message, InputCallback callback) {
+  public void confirm(String caption, String message, ConfirmationCallback callback) {
     confirm(caption, message, callback, null, null);
   }
 
-  public void confirm(String caption, String message, InputCallback callback, String dialogStyle,
+  public void confirm(String caption, String message, ConfirmationCallback callback, String dialogStyle,
       String messageStyle) {
     Assert.notEmpty(message);
     confirm(caption, Lists.newArrayList(message), callback, dialogStyle, messageStyle);
   }
   
-  public void confirm(String caption, List<String> messages, final InputCallback callback,
+  public void confirm(String caption, List<String> messages, final ConfirmationCallback callback,
       String dialogStyle, String messageStyle) {
     Assert.notEmpty(messages);
     Assert.notNull(callback);
@@ -231,7 +231,7 @@ public class MessageBoxes {
     if (BeeUtils.isEmpty(caption)) {
       panel = new Popup(false, true);
     } else {
-      panel = new DialogBox(caption);
+      panel = DialogBox.create(caption);
     }
 
     FlexTable content = new FlexTable();
@@ -251,7 +251,7 @@ public class MessageBoxes {
       @Override
       public void execute() {
         panel.hide();
-        callback.onSuccess();
+        callback.onConfirm();
       }
     });
     content.setWidget(row, 0, ok);
@@ -285,7 +285,7 @@ public class MessageBoxes {
     panel.setOnSave(new Scheduler.ScheduledCommand() {
       @Override
       public void execute() {
-        callback.onSuccess();
+        callback.onConfirm();
       }
     });
 
@@ -308,7 +308,7 @@ public class MessageBoxes {
     if (BeeUtils.isEmpty(caption)) {
       popup = new Popup(false, true, styleName);
     } else {
-      popup = new DialogBox(caption, styleName);
+      popup = DialogBox.create(caption, styleName);
     }
 
     FlexTable panel = new FlexTable();

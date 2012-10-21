@@ -1,6 +1,6 @@
 package com.butent.bee.client.dialog;
 
-import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.client.view.form.CloseCallback;
 
 public abstract class InputCallback {
 
@@ -11,13 +11,9 @@ public abstract class InputCallback {
   public void onCancel() {
   }
 
-  public abstract void onSuccess();
-
-  public void onTimeout() {
-    if (BeeUtils.isEmpty(getErrorMessage())) {
-      onSuccess();
-    } else {
-      onCancel();
-    }
+  public void onClose(CloseCallback closeCallback) {
+    closeCallback.onClose();
   }
+
+  public abstract void onSuccess();
 }

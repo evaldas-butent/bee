@@ -492,6 +492,8 @@ public class TaskEventHandler {
 
     public TaskDialog(String caption) {
       super(caption);
+      addDefaultCloseBox();
+
       Absolute panel = new Absolute(Position.RELATIVE);
       setWidget(panel);
       container = new FlexTable();

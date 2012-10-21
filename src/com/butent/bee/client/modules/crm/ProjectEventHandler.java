@@ -20,8 +20,8 @@ import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.MultiSelector.SelectionCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.DialogBox;
-import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.logical.ActionEvent;
@@ -174,6 +174,8 @@ public class ProjectEventHandler {
 
     public ProjectDialog(String caption) {
       super(caption);
+      addDefaultCloseBox();
+
       Absolute panel = new Absolute(Position.RELATIVE);
       setWidget(panel);
       container = new FlexTable();
@@ -459,9 +461,9 @@ public class ProjectEventHandler {
       if (!indexes.isEmpty()) {
         if (DataUtils.isId(projectId)) {
           Global.confirm(BeeUtils.joinWords("Pašalinti", indexes.size(), "stebėtojus?"),
-              new InputCallback() {
+              new ConfirmationCallback() {
                 @Override
-                public void onSuccess() {
+                public void onConfirm() {
                   List<Long> usrList = Lists.newArrayList();
 
                   for (int idx : indexes) {
@@ -716,9 +718,9 @@ public class ProjectEventHandler {
   }
 
   private static void doActivate(final FormView form) {
-    Global.confirm("Perduoti projektą vykdymui?", new InputCallback() {
+    Global.confirm("Perduoti projektą vykdymui?", new ConfirmationCallback() {
       @Override
-      public void onSuccess() {
+      public void onConfirm() {
         ParameterList args = createArgs(ProjectEvent.ACTIVATED.name());
         addEventArgs(form, args, ProjectEvent.ACTIVATED);
         createRequest(args, null, form, EnumSet.of(Action.CLOSE, Action.REFRESH), true);

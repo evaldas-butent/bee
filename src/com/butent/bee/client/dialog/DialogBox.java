@@ -1,6 +1,6 @@
 package com.butent.bee.client.dialog;
 
-import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.NativeEvent;
@@ -26,46 +26,46 @@ public class DialogBox extends Popup implements Printable {
   private static final String STYLE_CONTENT = "bee-Dialog-content";
   private static final String STYLE_CLOSE = "bee-Dialog-close";
 
+  public static DialogBox create(String caption) {
+    return create(caption, STYLE_DIALOG);
+  }
+  
+  public static DialogBox create(String caption, String styleName) {
+    DialogBox dialog = new DialogBox(caption, styleName);
+    dialog.addDefaultCloseBox();
+    return dialog;
+  }
+
+  public static DialogBox withoutCloseBox(String caption, String styleName) {
+    return new DialogBox(caption, styleName);
+  }
+  
   private final Complex container = new Complex(Position.RELATIVE);
   private final Vertical layout = new Vertical();
   private final Widget header;
 
-  public DialogBox(boolean autoHide, boolean modal, String caption, String styleName) {
-    super(autoHide, modal, BeeUtils.notEmpty(styleName, STYLE_DIALOG));
-    
-    this.header = new Html(LocaleUtils.maybeLocalize(caption));
-    header.addStyleName(STYLE_CAPTION);
-    
-    this.layout.addStyleName(STYLE_LAYOUT);
-
-    this.layout.add(header);
-    this.container.add(layout);
-
-    BeeImage close = new BeeImage(Global.getImages().silverClose(),
-        new Scheduler.ScheduledCommand() {
-          @Override
-          public void execute() {
-            hide();
-          }
-        });
-    close.addStyleName(STYLE_CLOSE);
-    this.container.add(close);
-
-    enableDragging();
-  }
-
-  public DialogBox(String caption, String styleName) {
-    this(false, true, caption, styleName);
-  }
-
-  public DialogBox(String caption) {
+  protected DialogBox(String caption) {
     this(caption, STYLE_DIALOG);
   }
 
-  public void addChild(Widget widget) {
-    this.container.add(widget);
+  protected DialogBox(String caption, String styleName) {
+    super(false, true, BeeUtils.notEmpty(styleName, STYLE_DIALOG));
+
+    this.header = new Html(LocaleUtils.maybeLocalize(caption));
+    header.addStyleName(STYLE_CAPTION);
+
+    layout.addStyleName(STYLE_LAYOUT);
+
+    layout.add(header);
+    container.add(layout);
+    
+    enableDragging();
   }
 
+  public void addChild(Widget widget) {
+    container.add(widget);
+  }
+  
   @Override
   public String getIdPrefix() {
     return "dialog";
@@ -88,6 +88,18 @@ public class DialogBox extends Popup implements Printable {
     layout.add(w);
 
     super.setWidget(container);
+  }
+  
+  protected void addDefaultCloseBox() {
+    BeeImage close = new BeeImage(Global.getImages().silverClose(), new ScheduledCommand() {
+      @Override
+      public void execute() {
+        hide();
+      }
+    });
+    
+    close.addStyleName(STYLE_CLOSE);
+    addChild(close);
   }
 
   @Override

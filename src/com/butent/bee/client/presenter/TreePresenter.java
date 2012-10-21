@@ -12,6 +12,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.IntCallback;
 import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.logical.CatchEvent;
@@ -19,6 +20,7 @@ import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.TreeView;
+import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
@@ -275,6 +277,11 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
       }
 
       @Override
+      public void onClose(CloseCallback closeCallback) {
+        formView.onClose(closeCallback);
+      }
+
+      @Override
       public void onSuccess() {
         if (addMode) {
           if (getView().getSelectedItem() != null) {
@@ -366,9 +373,9 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
 
     if (data != null) {
       String message = BeeUtils.joinWords("Išmesti", evaluate(data), "?");
-      Global.getMsgBoxen().confirm(null, message, new InputCallback() {
+      Global.getMsgBoxen().confirm(null, message, new ConfirmationCallback() {
         @Override
-        public void onSuccess() {
+        public void onConfirm() {
           Queries.deleteRow(source, data.getId(), data.getVersion(),
               new IntCallback() {
                 @Override

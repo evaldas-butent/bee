@@ -511,6 +511,11 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   @Override
+  public IsRow getOldRow() {
+    return oldRow;
+  }
+
+  @Override
   public int getPageSize() {
     return 1;
   }
@@ -698,7 +703,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
     refreshDisplayWidgets();
   }
-
+  
   @Override
   public void onClose(final CloseCallback closeCallback) {
     Assert.notNull(closeCallback);
@@ -714,27 +719,15 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       return;
     }
 
-    final boolean isNew = DataUtils.isNewRow(getActiveRow());
+    boolean isNew = DataUtils.isNewRow(getActiveRow());
     
-    final String cap;
-    final String msg;
+    List<String> messages = Lists.newArrayList();
 
-    if (isNew) {
-      cap = "Naujo įrašo išssaugojimas";
-      msg = "Įvestos reikšmės: ";
-    } else {
-      cap = "Pakeitimų išsaugojimas";
-      msg = "Pakeistos reikšmės: ";
-    }
+    String msg = isNew ? Global.CONSTANTS.newValues() : Global.CONSTANTS.changedValues();
+    messages.add(msg + BeeConst.STRING_SPACE 
+        + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, rowSet.getColumnLabels()));
 
-    final List<String> messages = Lists.newArrayList();
-    messages.add(msg + BeeUtils.join(BeeConst.DEFAULT_LIST_SEPARATOR, rowSet.getColumnLabels()));
-
-    if (isNew) {
-      messages.add("Išsaugoti naują įrašą ?");
-    } else {
-      messages.add("Išsaugoti pakeitimus ?");
-    }
+    messages.add(isNew ? Global.CONSTANTS.createNewRow() : Global.CONSTANTS.saveChanges());
     
     DecisionCallback callback = new DecisionCallback() {
       @Override
@@ -757,9 +750,10 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
       }
     };
     
+    String cap = (getViewPresenter() == null) ? getCaption() : getViewPresenter().getCaption();
     Global.getMsgBoxen().decide(cap, messages, callback, DialogConstants.DECISION_YES);
   }
-  
+
   @Override
   public void onEditEnd(EditEndEvent event, EditEndEvent.HasEditEndHandler source) {
     Assert.notNull(event);
@@ -1256,10 +1250,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   private Notification getNotification() {
     return notification;
-  }
-
-  private IsRow getOldRow() {
-    return oldRow;
   }
 
   private String getPreviewId() {

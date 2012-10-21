@@ -378,19 +378,19 @@ public class CalendarModuleBean implements BeeModule {
     long appId = ((BeeRow) response.getResponse()).getId();
 
     if (!BeeUtils.isEmpty(propIds)) {
-      for (long propId : DataUtils.parseList(propIds)) {
+      for (long propId : DataUtils.parseIdList(propIds)) {
         insertAppointmentProperty(appId, propId);
       }
     }
 
     if (!BeeUtils.isEmpty(attIds)) {
-      for (long attId : DataUtils.parseList(attIds)) {
+      for (long attId : DataUtils.parseIdList(attIds)) {
         insertAppointmentAttendee(appId, attId);
       }
     }
 
     if (!BeeUtils.isEmpty(rtIds)) {
-      for (long rtId : DataUtils.parseList(rtIds)) {
+      for (long rtId : DataUtils.parseIdList(rtIds)) {
         insertAppointmentReminder(appId, rtId);
       }
     }
@@ -437,8 +437,8 @@ public class CalendarModuleBean implements BeeModule {
       return response;
     }
 
-    List<Long> attendeeTypes = DataUtils.parseList(atpList);
-    List<Long> attendees = DataUtils.parseList(attList);
+    List<Long> attendeeTypes = DataUtils.parseIdList(atpList);
+    List<Long> attendees = DataUtils.parseIdList(attList);
 
     Report report = Report.values()[paramRep];
     BeeRowSet result;
@@ -527,19 +527,19 @@ public class CalendarModuleBean implements BeeModule {
 
       if (!children.isEmpty()) {
         row.setProperty(VIEW_APPOINTMENT_ATTENDEES,
-            DataUtils.buildList(DataUtils.getDistinct(children, aaIndex)));
+            DataUtils.buildIdList(DataUtils.getDistinct(children, aaIndex)));
       }
 
       children = DataUtils.filterRows(appProps, COL_APPOINTMENT, appId);
       if (!children.isEmpty()) {
         row.setProperty(VIEW_APPOINTMENT_PROPS,
-            DataUtils.buildList(DataUtils.getDistinct(children, apIndex)));
+            DataUtils.buildIdList(DataUtils.getDistinct(children, apIndex)));
       }
 
       children = DataUtils.filterRows(appRemind, COL_APPOINTMENT, appId);
       if (!children.isEmpty()) {
         row.setProperty(VIEW_APPOINTMENT_REMINDERS,
-            DataUtils.buildList(DataUtils.getDistinct(children, arIndex)));
+            DataUtils.buildIdList(DataUtils.getDistinct(children, arIndex)));
       }
     }
 
@@ -837,7 +837,7 @@ public class CalendarModuleBean implements BeeModule {
     BeeRowSet appointments = getAppointments(appFilter, null, attIds);
 
     if (!attendees.isEmpty()) {
-      appointments.setTableProperty(VIEW_ATTENDEES, DataUtils.buildList(attendees));
+      appointments.setTableProperty(VIEW_ATTENDEES, DataUtils.buildIdList(attendees));
     }
 
     logger.info(SVC_GET_CALENDAR_APPOINTMENTS, appointments.getNumberOfRows(),
@@ -911,7 +911,7 @@ public class CalendarModuleBean implements BeeModule {
     BeeRowSet appProps = qs.getViewData(VIEW_APPOINTMENT_PROPS, in);
     BeeRowSet appRemind = qs.getViewData(VIEW_APPOINTMENT_REMINDERS, in);
 
-    List<Long> resources = DataUtils.parseList(attIds);
+    List<Long> resources = DataUtils.parseIdList(attIds);
 
     List<BeeRow> children;
     int attIndex = appAtts.getColumnIndex(COL_ATTENDEE);
@@ -938,18 +938,18 @@ public class CalendarModuleBean implements BeeModule {
       }
 
       row.setProperty(VIEW_APPOINTMENT_ATTENDEES,
-          DataUtils.buildList(DataUtils.getDistinct(children, attIndex)));
+          DataUtils.buildIdList(DataUtils.getDistinct(children, attIndex)));
 
       children = DataUtils.filterRows(appProps, COL_APPOINTMENT, id);
       if (!children.isEmpty()) {
         row.setProperty(VIEW_APPOINTMENT_PROPS,
-            DataUtils.buildList(DataUtils.getDistinct(children, propIndex)));
+            DataUtils.buildIdList(DataUtils.getDistinct(children, propIndex)));
       }
 
       children = DataUtils.filterRows(appRemind, COL_APPOINTMENT, id);
       if (!children.isEmpty()) {
         row.setProperty(VIEW_APPOINTMENT_REMINDERS,
-            DataUtils.buildList(DataUtils.getDistinct(children, remindIndex)));
+            DataUtils.buildIdList(DataUtils.getDistinct(children, remindIndex)));
       }
     }
 
@@ -1316,9 +1316,9 @@ public class CalendarModuleBean implements BeeModule {
         DataUtils.getDistinct(qs.getViewData(VIEW_APPOINTMENT_REMINDERS, appFilter),
             COL_REMINDER_TYPE);
 
-    List<Long> newProperties = DataUtils.parseList(propIds);
-    List<Long> newAttendees = DataUtils.parseList(attIds);
-    List<Long> newReminders = DataUtils.parseList(rtIds);
+    List<Long> newProperties = DataUtils.parseIdList(propIds);
+    List<Long> newAttendees = DataUtils.parseIdList(attIds);
+    List<Long> newReminders = DataUtils.parseIdList(rtIds);
 
     updateChildren(TBL_APPOINTMENT_PROPS, COL_APPOINTMENT, appId,
         COL_PROPERTY, oldProperties, newProperties);

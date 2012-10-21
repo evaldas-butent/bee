@@ -396,11 +396,6 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     NativeEvent nativeEvent = event.getNativeEvent();
 
     switch (keyCode) {
-      case KeyCodes.KEY_ESCAPE:
-        event.preventDefault();
-        reset();
-        break;
-
       case KeyCodes.KEY_ENTER:
       case KeyCodes.KEY_TAB:
       case KeyCodes.KEY_UP:

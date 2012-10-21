@@ -6,7 +6,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.ValueUpdater;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
@@ -1449,11 +1448,21 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     if (asPopup) {
       ModalForm popup = new ModalForm(container, formView, true, true);
-      popup.setOnSave(new Scheduler.ScheduledCommand() {
+
+      popup.setOnSave(new ScheduledCommand() {
         @Override
         public void execute() {
           if (gfp.isActionEnabled(Action.SAVE) && formView.checkForUpdate(false)) {
             gfp.handleAction(Action.SAVE);
+          }
+        }
+      });
+
+      popup.setOnEscape(new ScheduledCommand() {
+        @Override
+        public void execute() {
+          if (formView.checkForUpdate(false)) {
+            gfp.handleAction(Action.CLOSE);
           }
         }
       });

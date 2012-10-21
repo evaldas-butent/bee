@@ -20,6 +20,7 @@ import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dialog.Popup;
@@ -493,8 +494,8 @@ class ReportManager {
           Data.setValue(viewName, newRow, COL_UPPER_HOUR, vUh);
         }
         
-        Data.setValue(viewName, newRow, COL_ATTENDEE_TYPES, DataUtils.buildList(attendeeTypes));
-        Data.setValue(viewName, newRow, COL_ATTENDEES, DataUtils.buildList(attendees));
+        Data.setValue(viewName, newRow, COL_ATTENDEE_TYPES, DataUtils.buildIdList(attendeeTypes));
+        Data.setValue(viewName, newRow, COL_ATTENDEES, DataUtils.buildIdList(attendees));
         
         reportOptions.put(report, newRow);
         doReport(report, newRow);
@@ -508,19 +509,25 @@ class ReportManager {
     attendeeTypes.clear();
     String idList = Data.getString(viewName, options, COL_ATTENDEE_TYPES);
     if (!BeeUtils.isEmpty(idList)) {
-      attendeeTypes.addAll(DataUtils.parseList(idList));
+      attendeeTypes.addAll(DataUtils.parseIdList(idList));
       refreshAttendeeTypeWidget(atpList);
     }
 
     attendees.clear();
     idList = Data.getString(viewName, options, COL_ATTENDEES);
     if (!BeeUtils.isEmpty(idList)) {
-      attendees.addAll(DataUtils.parseList(idList));
+      attendees.addAll(DataUtils.parseIdList(idList));
       refreshAttendeeWidget(attList);
     }
-
-    Global.inputWidget(report.getCaption(), container, null, true,
-        DialogConstants.STYLE_REPORT_OPTIONS, false);
+    
+    DialogBox dialog = DialogBox.create(report.getCaption(),
+        DialogConstants.STYLE_REPORT_OPTIONS);
+    dialog.setWidget(container);
+    
+    dialog.setAnimationEnabled(true);
+    dialog.center();
+    
+    caption.setFocus(true);
   }
 
   private void refreshAttendeeTypeWidget(BeeListBox listBox) {

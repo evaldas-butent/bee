@@ -12,7 +12,7 @@
     <form name="Kategorijos koregavimas">
       <FlowPanel>
         <Label html="Kategorija" class="bee-required" />
-        <InputText source="Name" style="width: 20em" />
+        <InputText source="Name" />
       </FlowPanel>
     </form>
   </DataTree>

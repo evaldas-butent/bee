@@ -39,6 +39,14 @@ public abstract class AbstractRow implements IsRow {
   }
 
   @Override
+  public void clearProperty(String key) {
+    Assert.notEmpty(key);
+    if (properties != null) {
+      properties.remove(key);
+    }
+  }
+  
+  @Override
   public Boolean getBoolean(int index) {
     return getValue(index).getBoolean();
   }

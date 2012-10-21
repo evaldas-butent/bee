@@ -5,30 +5,30 @@
   idName="AppointmentID"
   >
   <Fields>
-    <Relation name="AppointmentType" relation="AppointmentTypes" />
+    <Relation name="AppointmentType" relation="AppointmentTypes" label="Tipas" />
 
-    <String name="Summary" precision="100" />
-    <Text name="Description" />
+    <String name="Summary" precision="100" label="Santrauka" />
+    <Text name="Description" label="Aprašymas" />
 
     <String name="Location" precision="100" />
     <String name="HtmlLink" precision="200" />
 
-    <Relation name="Color" relation="Colors" />
-    <Relation name="Style" relation="AppointmentStyles" />
+    <Relation name="Color" relation="Colors" label="Spalva" />
+    <Relation name="Style" relation="AppointmentStyles" label="Stilius" />
 
-    <Integer name="Status" defValue="0" />
+    <Integer name="Status" defValue="0" label="Būsena" />
 
     <DateTime name="Created" defExpr="CURRENT_TIME" />
     <Relation name="Creator" relation="Users" defExpr="CURRENT_USER" />
 
-    <Relation name="Organizer" relation="CompanyPersons" />
+    <Relation name="Organizer" relation="CompanyPersons" label="Atsakingas asmuo" />
 
     <Date name="StartDate" />
-    <DateTime name="StartDateTime" />
+    <DateTime name="StartDateTime" label="Pradžia" />
     <Relation name="StartTimeZone" relation="TimeZones" />
 
     <Date name="EndDate" />
-    <DateTime name="EndDateTime" />
+    <DateTime name="EndDateTime" label="Pabaiga" />
     <Relation name="EndTimeZone" relation="TimeZones" />
 
     <Text name="Recurrence" />
@@ -47,8 +47,8 @@
 
     <Boolean name="UseDefaultReminders" />
     
-    <Relation name="Company" relation="Companies" />
-    <Relation name="Vehicle" relation="Vehicles" />
+    <Relation name="Company" relation="Companies" label="Klientas" />
+    <Relation name="Vehicle" relation="Vehicles" label="Automobilis" />
     
     <DateTime name="EffectiveStart" />
     <DateTime name="EffectiveEnd" />

@@ -5,6 +5,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.Assert;
@@ -29,6 +30,7 @@ import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Contains a set of utility functions for data management, for example {@code parseExpression}.
@@ -104,15 +106,15 @@ public class DataUtils {
     return id;
   }
 
-  public static String buildList(BeeRowSet rowSet) {
+  public static String buildIdList(BeeRowSet rowSet) {
     if (rowSet == null) {
       return null;
     } else {
-      return buildList(getRowIds(rowSet));
+      return buildIdList(getRowIds(rowSet));
     }
   }
 
-  public static String buildList(Collection<Long> ids) {
+  public static String buildIdList(Collection<Long> ids) {
     if (BeeUtils.isEmpty(ids)) {
       return null;
     } else {
@@ -120,11 +122,11 @@ public class DataUtils {
     }
   }
 
-  public static String buildList(Long... ids) {
+  public static String buildIdList(Long... ids) {
     if (ids == null) {
       return null;
     } else {
-      return buildList(Lists.newArrayList(ids));
+      return buildIdList(Lists.newArrayList(ids));
     }
   }
 
@@ -533,6 +535,10 @@ public class DataUtils {
   public static boolean hasId(IsRow row) {
     return row != null && isId(row.getId());
   }
+  
+  public static boolean isEmpty(BeeRowSet rowSet) {
+    return rowSet == null || rowSet.isEmpty();
+  }
 
   public static boolean isId(Long id) {
     return id != null && id > 0;
@@ -743,7 +749,7 @@ public class DataUtils {
     return (dataInfo == null) ? null : dataInfo.parseFilter(input);
   }
 
-  public static List<Long> parseList(String input) {
+  public static List<Long> parseIdList(String input) {
     List<Long> result = Lists.newArrayList();
     if (BeeUtils.isEmpty(input)) {
       return result;
@@ -758,6 +764,21 @@ public class DataUtils {
     return result;
   }
 
+  public static Set<Long> parseIdSet(String input) {
+    Set<Long> result = Sets.newHashSet();
+    if (BeeUtils.isEmpty(input)) {
+      return result;
+    }
+
+    for (String s : ID_SPLITTER.split(input)) {
+      Long id = BeeUtils.toLongOrNull(s);
+      if (isId(id)) {
+        result.add(id);
+      }
+    }
+    return result;
+  }
+  
   public static Order parseOrder(String input, DataInfo.Provider provider, String viewName) {
     if (BeeUtils.isEmpty(input)) {
       return null;
@@ -800,6 +821,15 @@ public class DataUtils {
       return false;
     } else {
       return r1.getId() == r2.getId() && r1.getVersion() == r2.getVersion();
+    }
+  }
+  
+  public static boolean sameIdSet(String s, Collection<Long> col) {
+    Set<Long> set = parseIdSet(s);
+    if (col == null) {
+      return set.isEmpty();
+    } else {
+      return set.size() == col.size() && set.containsAll(col);
     }
   }
 

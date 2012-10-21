@@ -6,6 +6,8 @@ package com.butent.bee.shared.data;
 
 public interface HasCustomProperties {
 
+  void clearProperty(String key);
+
   CustomProperties getProperties();
 
   String getProperty(String key);

@@ -719,7 +719,7 @@ body, select {
   line-height: 27px;
 }
 
-.bee-Dialog-close {
+.bee-Dialog-close, .bee-InputClose {
   position: absolute;
   top: 2px;
   right: 2px;
@@ -1407,6 +1407,9 @@ body, select {
   cursor: pointer;
 }
 
+.bee-ReportOptions {
+  background-color: #cfc;
+}
 .bee-ReportOptions .bee-Dialog-caption {
   background-color: #eee;
   padding: 1px 45px 1px 8px;
@@ -1415,8 +1418,7 @@ body, select {
   line-height: 27px;
 }
 .bee-ReportOptions .bee-Dialog-content {
-  background-color: #cfc;
-  padding: 2ex 1em 1ex 1em;
+  margin: 2ex 1em 1ex 1em;
 }
 
 ::-webkit-scrollbar {
@@ -1575,7 +1577,7 @@ body, select {
 }
 
 .bee-DecisionDialog {
-  border: 2px solid #b4b4b4;
+  border: 1px solid #b4b4b4;
   border-radius: 2px;
 }  
 .bee-DecisionDialog .bee-Dialog-caption {
@@ -1585,7 +1587,7 @@ body, select {
   line-height: 27px;
 }
 .bee-DecisionPanel {
-  background-color: #eee;
+  background-color: WhiteSmoke;
   padding: 10px 4px 10px 4px;
 }
 .bee-DecisionMessage {

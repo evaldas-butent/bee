@@ -577,7 +577,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
 
     String property = rowSet.getTableProperty(CalendarConstants.VIEW_ATTENDEES);
     if (!BeeUtils.isEmpty(property)) {
-      calendar.setAttendees(DataUtils.parseList(property));
+      calendar.setAttendees(DataUtils.parseIdList(property));
     }
 
     List<Appointment> appointments = Lists.newArrayList();

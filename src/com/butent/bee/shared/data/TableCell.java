@@ -54,14 +54,25 @@ public class TableCell implements IsCell {
     this.properties = properties;
   }
 
+  @Override
   public void clearFormattedValue() {
     setFormattedValue(null);
   }
 
+  @Override
   public void clearProperties() {
     setProperties(null);
   }
 
+  @Override
+  public void clearProperty(String key) {
+    Assert.notEmpty(key);
+    if (properties != null) {
+      properties.remove(key);
+    }
+  }
+  
+  @Override
   public void clearValue() {
     setValue(Value.getNullValueFromValueType(getType()));
   }
@@ -75,14 +86,17 @@ public class TableCell implements IsCell {
     return result;
   }
 
+  @Override
   public String getFormattedValue() {
     return formattedValue;
   }
 
+  @Override
   public CustomProperties getProperties() {
     return properties;
   }
 
+  @Override
   public String getProperty(String key) {
     Assert.notEmpty(key);
     if (properties == null) {
@@ -91,26 +105,32 @@ public class TableCell implements IsCell {
     return properties.get(key);
   }
 
+  @Override
   public ValueType getType() {
     return value.getType();
   }
 
+  @Override
   public Value getValue() {
     return value;
   }
 
+  @Override
   public boolean isNull() {
     return value.isNull();
   }
 
+  @Override
   public void setFormattedValue(String formattedValue) {
     this.formattedValue = formattedValue;
   }
 
+  @Override
   public void setProperties(CustomProperties properties) {
     this.properties = properties;
   }
 
+  @Override
   public void setProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
     Assert.notNull(propertyValue);
@@ -120,10 +140,12 @@ public class TableCell implements IsCell {
     properties.put(propertyKey, propertyValue);
   }
 
+  @Override
   public void setValue(Value value) {
     this.value = value;
   }
 
+  @Override
   public void setValue(Value value, String formattedValue) {
     this.value = value;
     this.formattedValue = formattedValue;

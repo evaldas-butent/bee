@@ -21,7 +21,7 @@ import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.ChoiceCallback;
-import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dialog.NotificationListener;
@@ -78,7 +78,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     ReadyForUpdateEvent.Handler, SaveChangesEvent.Handler, HasSearch, HasDataProvider,
     HasActiveRow, HasGridView {
 
-  private class DeleteCallback extends InputCallback {
+  private class DeleteCallback extends ConfirmationCallback {
     private final IsRow activeRow;
     private final Collection<RowInfo> rows;
 
@@ -88,7 +88,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
 
     @Override
-    public void onSuccess() {
+    public void onConfirm() {
       int count = (rows == null) ? 0 : rows.size();
       GridCallback gcb = getGridCallback();
 
@@ -238,7 +238,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     DeleteCallback deleteCallback = new DeleteCallback(row, null);
 
     if (mode == GridCallback.DELETE_SILENT || mode == GridCallback.DELETE_DEFAULT && !confirm) {
-      deleteCallback.onSuccess();
+      deleteCallback.onConfirm();
     } else {
       Global.getMsgBoxen().confirm(null, message, deleteCallback, StyleUtils.NAME_SCARY, null);
     }
@@ -592,7 +592,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     }
     if (options.isEmpty()) {
       DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
-      deleteCallback.onSuccess();
+      deleteCallback.onConfirm();
 
     } else {
       Global.choice("Išmesti", null, options, new ChoiceCallback() {
@@ -603,7 +603,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
           } else if (value == 1) {
             DeleteCallback deleteCallback = new DeleteCallback(activeRow, selectedRows);
-            deleteCallback.onSuccess();
+            deleteCallback.onConfirm();
           }
         }
       }, 2, BeeConst.UNDEF, DialogConstants.CANCEL, new WidgetInitializer() {
