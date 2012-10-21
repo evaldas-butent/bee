@@ -12,6 +12,7 @@
     <SimpleColumn name="Subject" />
     <ExternalJoin name="Message" source="Recipients" joinType="LEFT">
       <AggregateJoin name="Address" joinType="LEFT">
+        <HiddenColumn name="Email" alias="Recipient" />
         <AggregateColumn name="Email" alias="MinRecipient" aggregate="MIN" />
         <AggregateColumn name="Email" alias="MaxRecipient" aggregate="MAX" />
         <AggregateColumn name="Email" alias="CntRecipient" aggregate="COUNT_DISTINCT" />

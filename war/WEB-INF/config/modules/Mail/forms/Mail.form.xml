@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<f:Form xmlns="http://www.butent.com/widget"
+  xmlns:f="http://www.butent.com/form"
+  xmlns:ui="http://www.butent.com/ui"
+  
+  name="Mail" caption="Laiškai" readOnly="true"
+  >
+  <FlowPanel class="flexBox-vertical">
+    <SimplePanel>
+      <TabBar name="DisplayMode" stylePrefix="bee-Messages-DisplayMode-">
+        <tab><Label html="Gautieji" /></tab>
+        <tab><Label html="Siųstieji" /></tab>
+        <tab><Label html="Juodraščiai" /></tab>
+        <tab><Label html="Šiukšlinė" /></tab>
+      </TabBar>
+    </SimplePanel>
+
+    <SplitPanel class="flexible" splitterSize="1">
+      <west size="300">
+        <GridPanel name="Messages" />
+      </west>
+      
+      <center>
+        <Label html="Ča būs kontientas..." />
+      </center>
+    </SplitPanel>
+  </FlowPanel>
+</f:Form>

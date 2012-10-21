@@ -156,12 +156,9 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     Assert.lengthEquals(arr, 2);
     String clazz = arr[0];
     String data = arr[1];
-    Filter flt = null;
 
-    if (data != null) {
-      flt = Filter.getFilter(clazz);
-      flt.deserialize(data);
-    }
+    Filter flt = Filter.getFilter(clazz);
+    flt.deserialize(data);
     return flt;
   }
 

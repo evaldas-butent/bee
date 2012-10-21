@@ -68,3 +68,36 @@
   border-width: 1px 0 0 0;
   border-style: dashed;
 }
+
+
+.bee-Messages-DisplayMode-panel {
+  padding: 10px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.bee-Messages-DisplayMode-item {
+  padding: 4px 8px 4px 8px;
+  cursor: pointer;
+  background-color: WhiteSmoke;
+  color: #444;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-left: 0;
+  outline: none;
+}
+
+.bee-Messages-DisplayMode-panel td:first-child .bee-Messages-DisplayMode-item {
+  border-left: 1px solid #ccc;
+  border-radius: 5px 0 0 5px;
+}
+
+.bee-Messages-DisplayMode-panel td:last-child .bee-Messages-DisplayMode-item {
+  border-radius: 0 5px 5px 0;
+}
+
+.bee-Messages-DisplayMode-item-selected {
+  cursor: default;
+  color: white;
+  background-color: #0A8DE9;
+}
