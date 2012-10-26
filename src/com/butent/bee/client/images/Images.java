@@ -74,12 +74,15 @@ public class Images {
     @Source("ascending.gif")
     ImageResource ascending();
 
+    @Source("attachment.png")
+    ImageResource attachment();
+
     @Source("bookmark.png")
     ImageResource bookmark();
 
     @Source("bookmark_add.png")
     ImageResource bookmarkAdd();
-    
+
     @Source("cancel.png")
     ImageResource cancel();
 
@@ -94,7 +97,7 @@ public class Images {
 
     @Source("descending.gif")
     ImageResource descending();
-    
+
     @Source("edit.png")
     ImageResource edit();
 
@@ -106,7 +109,7 @@ public class Images {
 
     @Source("exit.gif")
     ImageResource exit();
-    
+
     @Source("first.png")
     ImageResource first();
 
@@ -151,7 +154,7 @@ public class Images {
 
     @Source("question.png")
     ImageResource question();
-    
+
     @Source("red.gif")
     ImageResource red();
 
@@ -181,7 +184,7 @@ public class Images {
 
     @Source("settings.png")
     ImageResource settings();
-    
+
     @Source("silver/edit_add_small.png")
     ImageResource silverAdd();
 
@@ -193,7 +196,7 @@ public class Images {
 
     @Source("silver/configure_small.png")
     ImageResource silverConfigure();
-    
+
     @Source("silver/edit_delete_small.png")
     ImageResource silverDelete();
 
@@ -271,6 +274,8 @@ public class Images {
 
     map.put(key("ascending"), resources.ascending());
 
+    map.put(key("attachment"), resources.attachment());
+
     map.put(key("bookmark"), resources.bookmark());
     map.put(key("bookmark_add"), resources.bookmarkAdd());
 
@@ -306,7 +311,7 @@ public class Images {
     map.put(key("noes"), resources.noes());
 
     map.put(key("ok"), resources.ok());
-    
+
     map.put(key("play"), resources.play());
 
     map.put(key("previous"), resources.previous());

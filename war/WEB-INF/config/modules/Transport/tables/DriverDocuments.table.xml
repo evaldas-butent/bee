@@ -7,7 +7,7 @@
   >
   <Fields>
     <Relation name="Driver" notNull="true" relation="Drivers" />
-    <Relation name="Document" notNull="true" unique="true" relation="Documents" />
+    <Relation name="Document" notNull="true" unique="true" relation="Documents" editable="true" />
     <String name="Note" precision="50" />
   </Fields>
 </Table>

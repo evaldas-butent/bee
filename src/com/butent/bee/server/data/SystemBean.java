@@ -949,7 +949,7 @@ public class SystemBean {
       Map<String, List<Map<String, String>>> tr = Maps.newHashMap();
 
       for (BeeField field : table.getFields()) {
-        if (field instanceof BeeRelation && ((BeeRelation) field).hasEditableRelation()) {
+        if (field instanceof BeeRelation && ((BeeRelation) field).isEditable()) {
           String tblName = field.getStorageTable();
           String relTable = ((BeeRelation) field).getRelation();
 

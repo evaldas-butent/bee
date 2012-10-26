@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+
+  name="Accounts" viewName="Accounts" caption="Paskyros"
+  >
+  <header borderWidth="1 0" />
+  <body height="20" borderWidth="0">
+    <style>
+      <ui:font>Verdana 12 px</ui:font>
+    </style>
+  </body>
+  <footer borderWidth="0" />
+
+  <columns>
+    <DataColumn name="Description" caption="Pavadinimas" />
+    <DataColumn name="Main" caption="Pagr." />
+    <RelColumn name="Address" caption="Adresas">
+      <renderToken source="Label" suffix=" " />
+      <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+    </RelColumn>
+    <DataColumn name="Login" caption="Prisijungimo vardas" />
+    <DataColumn name="Password" caption="Slaptažodis" />
+    <DataColumn name="StoreType" caption="Serverio tipas">
+      <editor type="list">
+        <ui:item>POP3</ui:item>
+        <ui:item>IMAP</ui:item>
+      </editor>
+    </DataColumn>
+    <DataColumn name="StoreServer" caption="Serveris" />
+    <DataColumn name="StorePort" caption="Prievadas" />
+    <DataColumn name="TransportServer" caption="SMTP serveris" />
+    <DataColumn name="TransportPort" caption="SMTP prievadas" />
+  </columns>
+</Grid>

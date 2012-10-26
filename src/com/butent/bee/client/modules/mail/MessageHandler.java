@@ -6,6 +6,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Ints;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -54,6 +56,7 @@ public class MessageHandler extends AbstractFormCallback {
   private Label attachmentsWidget;
   private final List<String[]> attachments = Lists.newArrayList();
   private Widget partsWidget;
+  private Widget waitingWidget;
 
   @Override
   public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
@@ -64,7 +67,7 @@ public class MessageHandler extends AbstractFormCallback {
         @Override
         public void onClick(ClickEvent event) {
           event.stopPropagation();
-          final Popup popup = new Popup(true, true, "bee-Message-RecipientsPopup");
+          final Popup popup = new Popup(true, true, "bee-mail-RecipientsPopup");
           FlexTable ft = new FlexTable();
           ft.setCellSpacing(5);
           List<Pair<String, String>> types = Lists.newArrayList();
@@ -75,20 +78,20 @@ public class MessageHandler extends AbstractFormCallback {
           for (Pair<String, String> type : types) {
             if (recipients.containsKey(type.getA())) {
               int c = ft.getRowCount();
-              ft.getCellFormatter().setStyleName(c, 0, "bee-Message-RecipientsCaption");
+              ft.getCellFormatter().setStyleName(c, 0, "bee-mail-RecipientsType");
               ft.setText(c, 0, type.getB());
               FlowPanel fp = new FlowPanel();
 
               for (Pair<String, String> address : recipients.get(type.getA())) {
                 FlowPanel adr = new FlowPanel();
-                adr.setStyleName("bee-Message-Recipient");
+                adr.setStyleName("bee-mail-Recipient");
                 InlineLabel nm = new InlineLabel(BeeUtils.notEmpty(address.getA(), address.getB()));
-                nm.setStyleName("bee-Message-AddressName");
+                nm.setStyleName("bee-mail-RecipientLabel");
                 adr.add(nm);
 
                 if (!BeeUtils.isEmpty(address.getA())) {
                   nm = new InlineLabel(address.getB());
-                  nm.setStyleName("bee-Message-AddressMail");
+                  nm.setStyleName("bee-mail-RecipientEmail");
                   adr.add(nm);
                 }
                 fp.add(adr);
@@ -107,8 +110,8 @@ public class MessageHandler extends AbstractFormCallback {
         @Override
         public void onClick(ClickEvent event) {
           event.stopPropagation();
-          final Popup popup = new Popup(true, true, "bee-Message-AttachmentsPopup");
-          TabBar bar = new TabBar("bee-Message-AttachmentsMenu-", Orientation.VERTICAL);
+          final Popup popup = new Popup(true, true, "bee-mail-AttachmentsPopup");
+          TabBar bar = new TabBar("bee-mail-AttachmentsMenu-", Orientation.VERTICAL);
 
           for (String[] item : attachments) {
             bar.addItem(BeeUtils.joinWords(item[NAME], BeeUtils.parenthesize(item[SIZE])));
@@ -130,6 +133,9 @@ public class MessageHandler extends AbstractFormCallback {
       });
     } else if (BeeUtils.same(name, "Parts")) {
       partsWidget = widget;
+
+    } else if (BeeUtils.same(name, "WaitingForContent")) {
+      waitingWidget = widget;
     }
   }
 
@@ -140,12 +146,20 @@ public class MessageHandler extends AbstractFormCallback {
 
   @Override
   public void onStartEdit(FormView form, IsRow row) {
+    requery(row.getId(), null);
+  }
+
+  void requery(Long messageId, Long addressId) {
+    partsWidget.setVisible(false);
+    waitingWidget.setVisible(true);
     recipientsWidget.setText(null);
     attachmentsWidget.setText(null);
-    partsWidget.getElement().setInnerText("Waiting for content...");
 
     ParameterList params = MailKeeper.createArgs(SVC_GET_MESSAGE);
-    params.addDataItem("id", row.getId());
+    if (addressId != null) {
+      params.addDataItem("AccountAddress", addressId);
+    }
+    params.addDataItem("Message", messageId);
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
@@ -162,9 +176,9 @@ public class MessageHandler extends AbstractFormCallback {
         recipients.clear();
         String txt = null;
 
-        for (Map<String, String> recipient : packet.get(TBL_RECIPIENTS)) {
-          Pair<String, String> names = Pair.of(recipient.get("Label"), recipient.get("Email"));
-          recipients.put(BeeUtils.normalize(recipient.get("Type")), names);
+        for (Map<String, String> address : packet.get(TBL_RECIPIENTS)) {
+          Pair<String, String> names = Pair.of(address.get("Label"), address.get("Email"));
+          recipients.put(BeeUtils.normalize(address.get("Type")), names);
           txt = BeeUtils.join(", ", txt, BeeUtils.notEmpty(names.getA(), names.getB()));
         }
         recipientsWidget.setText(BeeUtils.joinWords("Skirta:", txt));
@@ -195,16 +209,22 @@ public class MessageHandler extends AbstractFormCallback {
         attachmentsWidget.setText(txt);
 
         String content = null;
+        Element sep = Document.get().createHRElement();
+        sep.setClassName("bee-mail-PartSeparator");
 
         for (Map<String, String> part : packet.get(TBL_PARTS)) {
           txt = part.get("HtmlContent");
 
           if (txt == null && part.get("Content") != null) {
-            txt = "<pre>" + part.get("Content") + "</pre>";
+            Element pre = Document.get().createPreElement();
+            pre.setInnerHTML(part.get("Content"));
+            txt = pre.getString();
           }
-          content = BeeUtils.join("<hr class=\"bee-Message-PartSeparator\">", content, txt);
+          content = BeeUtils.join(sep.getString(), content, txt);
         }
+        waitingWidget.setVisible(false);
         partsWidget.getElement().setInnerHTML(content);
+        partsWidget.setVisible(true);
       }
     });
   }

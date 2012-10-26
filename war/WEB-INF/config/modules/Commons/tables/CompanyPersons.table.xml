@@ -9,7 +9,7 @@
     <Relation name="Company" notNull="true" relation="Companies" cascade="DELETE" label="Įmonė" />
     <Relation name="Person" notNull="true" relation="Persons" cascade="DELETE" label="Vardas, pavardė" />
     <String name="Position" precision="50" label="Pareigos" />
-    <Relation name="Contact" unique="true" relation="Contacts" />
+    <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
   </Fields>
   <Keys>
     <Key unique="true">

@@ -137,6 +137,8 @@ public class XmlTable {
     public String relationField;
     @XmlAttribute
     public String cascade;
+    @XmlAttribute
+    public boolean editable;
   }
 
   /**

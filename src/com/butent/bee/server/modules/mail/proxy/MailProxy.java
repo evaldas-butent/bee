@@ -4,6 +4,7 @@ import static com.butent.bee.shared.modules.mail.MailConstants.MAIL_MODULE;
 
 import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
@@ -38,53 +39,11 @@ public class MailProxy {
   private POP3ProtocolServer pop3Proxy;
   private SMTPProtocolServer smtpProxy;
 
-  public Integer getBindPort(Protocol protocol) {
-    Integer bindPort = null;
-
-    switch (protocol) {
-      case POP3:
-        bindPort = pop3BindPort;
-        break;
-      case SMTP:
-        bindPort = smtpBindPort;
-        break;
-    }
-    return bindPort;
-  }
-
-  public String getServerName(Protocol protocol) {
-    String serverName = null;
-
-    switch (protocol) {
-      case POP3:
-        serverName = pop3ServerName;
-        break;
-      case SMTP:
-        serverName = smtpServerName;
-        break;
-    }
-    return serverName;
-  }
-
-  public Integer getServerPort(Protocol protocol) {
-    Integer serverPort = null;
-
-    switch (protocol) {
-      case POP3:
-        serverPort = pop3ServerPort;
-        break;
-      case SMTP:
-        serverPort = smtpServerPort;
-        break;
-    }
-    return serverPort;
-  }
-
   @Lock(LockType.WRITE)
   public ResponseObject initServer() {
     teardownServer();
     ResponseObject response = new ResponseObject();
-
+  
     if (initParameters(Protocol.POP3)) {
       pop3Proxy = new POP3ProtocolServer(this);
       response.addInfo("POP3 proxy started");
@@ -100,8 +59,59 @@ public class MailProxy {
     return response;
   }
 
-  public void processMessage(String message, String pop3User) {
-    mail.storeMail(message, pop3User);
+  Integer getBindPort(Protocol protocol) {
+    Integer bindPort = null;
+
+    switch (protocol) {
+      case POP3:
+        bindPort = pop3BindPort;
+        break;
+      case IMAP:
+        Assert.notImplemented();
+        break;
+      case SMTP:
+        bindPort = smtpBindPort;
+        break;
+    }
+    return bindPort;
+  }
+
+  String getServerName(Protocol protocol) {
+    String serverName = null;
+
+    switch (protocol) {
+      case POP3:
+        serverName = pop3ServerName;
+        break;
+      case IMAP:
+        Assert.notImplemented();
+        break;
+      case SMTP:
+        serverName = smtpServerName;
+        break;
+    }
+    return serverName;
+  }
+
+  Integer getServerPort(Protocol protocol) {
+    Integer serverPort = null;
+
+    switch (protocol) {
+      case POP3:
+        serverPort = pop3ServerPort;
+        break;
+      case IMAP:
+        Assert.notImplemented();
+        break;
+      case SMTP:
+        serverPort = smtpServerPort;
+        break;
+    }
+    return serverPort;
+  }
+
+  void processMessage(String message, String recipient) {
+    mail.storeMail(message, recipient);
   }
 
   @PreDestroy
@@ -127,6 +137,10 @@ public class MailProxy {
         }
         break;
 
+      case IMAP:
+        Assert.notImplemented();
+        break;
+
       case SMTP:
         if (ok) {
           smtpServerName = server;
@@ -145,6 +159,10 @@ public class MailProxy {
         pop3ServerPort = 0;
         pop3BindPort = 0;
         pop3Proxy = null;
+        break;
+
+      case IMAP:
+        Assert.notImplemented();
         break;
 
       case SMTP:

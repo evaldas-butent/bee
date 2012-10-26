@@ -159,6 +159,7 @@
       <xs:extension base="longType">
         <xs:attribute name="relation" type="type:tableNameType" use="required" />
         <xs:attribute name="cascade" type="cascadeType" />
+        <xs:attribute name="editable" type="xs:boolean" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

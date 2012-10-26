@@ -179,6 +179,7 @@
       <xs:enumeration value="arrowRight" />
       <xs:enumeration value="arrowUp" />
       <xs:enumeration value="ascending" />
+      <xs:enumeration value="attachment" />
       <xs:enumeration value="bookmark" />
       <xs:enumeration value="bookmark_add" />
       <xs:enumeration value="cancel" />

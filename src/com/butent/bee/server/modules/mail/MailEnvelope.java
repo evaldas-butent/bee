@@ -3,12 +3,16 @@ package com.butent.bee.server.modules.mail;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
+import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.ArrayUtils;
+import com.butent.bee.shared.utils.NameUtils;
 
 import java.util.Enumeration;
 
 import javax.mail.Address;
+import javax.mail.Message;
 import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -19,11 +23,16 @@ public class MailEnvelope {
   private final DateTime date;
   private final Address sender;
   private final String subject;
-  private final Multimap<RecipientType, Address> recipients = HashMultimap.create();
+  private final Multimap<AddressType, Address> recipients = HashMultimap.create();
   private final String header;
 
-  public MailEnvelope(MimeMessage msg) throws MessagingException {
+  public MailEnvelope(Message message) throws MessagingException {
+    Assert.state(message instanceof MimeMessage,
+        "Unknown message type: " + message.getClass().getName());
+
+    MimeMessage msg = (MimeMessage) message;
     messageId = msg.getMessageID();
+    Assert.notEmpty(messageId, "Message-ID is missing");
     date = new DateTime(msg.getReceivedDate() == null ? msg.getSentDate() : msg.getReceivedDate());
     sender = ArrayUtils.getQuietly(msg.getFrom(), 0);
     subject = msg.getSubject();
@@ -35,7 +44,7 @@ public class MailEnvelope {
 
       if (addresses != null) {
         for (Address address : addresses) {
-          recipients.put(type, address);
+          recipients.put(NameUtils.getEnumByName(AddressType.class, type.toString()), address);
         }
       }
     }
@@ -63,7 +72,7 @@ public class MailEnvelope {
     return messageId;
   }
 
-  public Multimap<RecipientType, Address> getRecipients() {
+  public Multimap<AddressType, Address> getRecipients() {
     return recipients;
   }
 

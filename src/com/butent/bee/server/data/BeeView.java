@@ -152,7 +152,7 @@ public class BeeView implements BeeObject, HasExtendedInfo {
       if (!BeeUtils.isEmpty(getParent())) {
         ColumnInfo parent = getColumnInfo(getParent());
 
-        if (!((BeeRelation) parent.field).hasEditableRelation()) {
+        if (!((BeeRelation) parent.field).isEditable()) {
           level = 1;
         }
         level = level + parent.getLevel();

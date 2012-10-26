@@ -9,14 +9,14 @@
     <FlowPanel class="bee-Message-Envelope">
       <FlowPanel>
         <FlowPanel name="Sender" class="bee-Message-Sender">
-          <TextLabel source="Label" inline="true" class="bee-Message-AddressName">
+          <TextLabel source="SenderLabel" inline="true" class="bee-Message-AddressName">
             <render>
-              <ui:expression>row.Label ? row.Label : row.Email</ui:expression>
+              <ui:expression>row.SenderLabel ? row.SenderLabel : row.SenderEmail</ui:expression>
             </render>
           </TextLabel>
-          <TextLabel source="Email" inline="true" class="bee-Message-AddressMail">
+          <TextLabel source="SenderEmail" inline="true" class="bee-Message-AddressMail">
             <render>
-              <ui:expression>row.Label ? row.Email : ''</ui:expression>
+              <ui:expression>row.SenderLabel ? row.SenderEmail : ''</ui:expression>
             </render>
           </TextLabel>
         </FlowPanel>

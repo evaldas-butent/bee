@@ -19,8 +19,8 @@
     <String name="Cmr" precision="20" />
     <Numeric name="Price" precision="15" scale="5" />
     <Relation name="Currency" relation="Currencies" />
-    <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" />
-    <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" />
+    <Relation name="LoadingPlace" unique="true" relation="CargoPlaces" editable="true" />
+    <Relation name="UnloadingPlace" unique="true" relation="CargoPlaces" editable="true" />
     <Text name="Notes" />
   </Fields>
 </Table>

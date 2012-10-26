@@ -1,40 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Grid xmlns="http://www.butent.com/grid"
-  xmlns:ui="http://www.butent.com/ui"
 
-  name="Messages" viewName="Messages" editForm="Message" hasHeaders="false"
-    disabledActions="add delete refresh"
+  name="Messages" viewName="Messages" hasHeaders="false" readOnly="true"
   >
-  <header borderWidth="1 0" />
-  <body height="20" borderWidth="0">
-    <style>
-      <ui:font>Verdana 12 px</ui:font>
-    </style>
-  </body>
-  <footer borderWidth="0" />
+  <body height="40" borderWidth="0 0 1 0" />
 
   <columns>
-    <DataColumn name="Date" caption="Data" />
-    <DataColumn name="Email" caption="Siuntėjas" />
-    <DataColumn name="Subject" caption="Tema">
-      <style>
-        <bodyStyle><ui:font>bold</ui:font></bodyStyle>
-      </style>
-    </DataColumn>
-    <CalcColumn name="Recipients" type="string" caption="Gavėjai">
-      <render>
-        <ui:function>
-          if (!row.MinRecipient) {
-            return row.MaxRecipient;
-          
-          } else if(!row.MaxRecipient || row.MinRecipient == row.MaxRecipient) {
-            return row.MinRecipient;
-          
-          } else {
-            return row.MinRecipient+ ", " + row.MaxRecipient + (row.CntRecipient > 2 ? ", ...": "");
-          }
-        </ui:function>
-      </render>
-    </CalcColumn>
+    <CalcColumn name="Envelope" type="string" cell="html" width="280" />
   </columns>
 </Grid>

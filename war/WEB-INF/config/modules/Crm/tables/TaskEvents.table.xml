@@ -12,7 +12,7 @@
     <Text name="Comment" />
     <Integer name="Event" notNull="true" />
     <String name="EventNote" precision="100" />
-    <Relation name="EventDuration" unique="true" relation="EventDurations" />
+    <Relation name="EventDuration" unique="true" relation="EventDurations" editable="true" />
   </Fields>
   <Keys>
     <Key>

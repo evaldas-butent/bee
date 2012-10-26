@@ -1,82 +1,130 @@
-.bee-Message-Sender {
-  display: inline-block;
+.bee-mail-Container {
+  margin: 5px;
 }
 
-.bee-Message-AddressName {
-  font-weight: bold;
+.bee-mail-Headers {
+  margin-top: 5px;
+  margin-right: 5px;
 }
 
-.bee-Message-AddressMail {
+.bee-mail-Content {
+  margin-top: 5px;
   margin-left: 5px;
 }
 
-.bee-Message-Date {
+.bee-mail-WaitingForContent {
+  margin-top: 10px;
+}
+
+.bee-mail-EmptySelection {
+  text-align: center;
+  margin-top: 3ex;
+  font-family: Georgia;
+  font-size: larger;
+  color: teal;
+}
+
+.bee-mail-HeaderAddress, .bee-mail-SenderLabel, .bee-mail-RecipientLabel {
+  color: black;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.bee-mail-SenderEmail, .bee-mail-RecipientEmail {
+  margin-left: 5px;
+  display: inline-block;
+}
+
+.bee-mail-UnreadImage {
+  margin-right: 5px;
+}
+
+.bee-mail-AttachmentImage {
+  margin-left: 5px;
+}
+
+.bee-mail-AttachmentCount {
+  display: inline-block;
+}
+
+.bee-mail-HeaderDate {
+  float: right;
+  color: #0A8DE9;
+}
+
+.bee-mail-Date {
   float: right;
   color: gray;
 }
 
-.bee-Message-Recipients {
+.bee-mail-HeaderSubject {
+  color: black;
+  margin-top: 5px;
+}
+
+.bee-mail-Subject {
+  color: black;
+  display: inline-block;
+}
+
+.bee-mail-Recipients {
   color: gray;
   cursor: pointer;
   display: inline-block;
 }
 
-.bee-Message-Recipients:hover {
+.bee-mail-Recipients:hover {
   background-color: whiteSmoke;
 }  
 
-.bee-Message-RecipientsCaption {
+.bee-mail-RecipientsType {
   color: gray;
   float: right;
 }
 
-.bee-Message-Attachments {
+.bee-mail-Attachments {
   float: right;
   cursor: pointer;
   color: #0A8DE9;
 }
 
-.bee-Message-RecipientsPopup, .bee-Message-AttachmentsPopup {
+.bee-mail-RecipientsPopup, .bee-mail-AttachmentsPopup {
   background-color: white;
   border: 1px solid rgba(0, 0, 0, 0.2);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   padding: 2px;
 }
 
-.bee-Message-AttachmentsMenu-item {
+.bee-mail-AttachmentsMenu-item {
   padding: 2px 4px;
   cursor: pointer;
   color: #0A8DE9;
 }
 
-.bee-Message-AttachmentsMenu-item:hover {
+.bee-mail-AttachmentsMenu-item:hover {
   background-color: whiteSmoke;
 }  
 
-.bee-Message-Envelope {
+.bee-mail-Envelope {
   padding-bottom: 10px;
   border-bottom: 1px solid lightgray;
 }
 
-.bee-Message-Parts {
-  overflow: auto;
+.bee-mail-Parts {
   margin-top: 10px;
 }
 
-.bee-Message-PartSeparator {
+.bee-mail-PartSeparator {
   height: 0;
   border-width: 1px 0 0 0;
   border-style: dashed;
 }
 
-
-.bee-Messages-DisplayMode-panel {
-  padding: 10px;
-  margin-left: auto;
-  margin-right: auto;
+.bee-mail-DisplayMode-panel {
+  float: right;
 }
 
-.bee-Messages-DisplayMode-item {
+.bee-mail-DisplayMode-item {
   padding: 4px 8px 4px 8px;
   cursor: pointer;
   background-color: WhiteSmoke;
@@ -87,16 +135,16 @@
   outline: none;
 }
 
-.bee-Messages-DisplayMode-panel td:first-child .bee-Messages-DisplayMode-item {
+.bee-mail-DisplayMode-panel td:first-child .bee-mail-DisplayMode-item {
   border-left: 1px solid #ccc;
   border-radius: 5px 0 0 5px;
 }
 
-.bee-Messages-DisplayMode-panel td:last-child .bee-Messages-DisplayMode-item {
+.bee-mail-DisplayMode-panel td:last-child .bee-mail-DisplayMode-item {
   border-radius: 0 5px 5px 0;
 }
 
-.bee-Messages-DisplayMode-item-selected {
+.bee-mail-DisplayMode-item-selected {
   cursor: default;
   color: white;
   background-color: #0A8DE9;

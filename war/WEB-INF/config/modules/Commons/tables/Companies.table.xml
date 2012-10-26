@@ -14,7 +14,7 @@
     <Relation name="CompanyType" relation="CompanyTypes" label="Tipas" />
     <Relation name="CompanyGroup" relation="CompanyGroups" label="Grupė" />
 
-    <Relation name="Contact" unique="true" relation="Contacts" />
+    <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
 
     <String name="ExchangeCode" precision="30" label="Biržos kodas" />
 

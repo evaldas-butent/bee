@@ -274,12 +274,14 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
   public class BeeRelation extends BeeField {
     private final String relation;
     private final SqlKeyword cascade;
+    private final boolean editable;
 
     private BeeRelation(XmlRelation xmlField, boolean extended) {
       super(xmlField, extended);
 
       this.relation = xmlField.relation;
       this.cascade = NameUtils.getEnumByName(SqlKeyword.class, xmlField.cascade);
+      this.editable = xmlField.editable;
 
       Assert.notEmpty(this.relation);
 
@@ -294,8 +296,8 @@ public class BeeTable implements BeeObject, HasExtFields, HasStates, HasTranslat
       return relation;
     }
 
-    public boolean hasEditableRelation() {
-      return isUnique() && getCascade() == null;
+    public boolean isEditable() {
+      return editable;
     }
 
     @Override

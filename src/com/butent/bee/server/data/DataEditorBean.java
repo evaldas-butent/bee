@@ -358,7 +358,7 @@ public class DataEditorBean {
           if (field instanceof BeeRelation) {
             String relation = ((BeeRelation) field).getRelation();
 
-            if (((BeeRelation) field).hasEditableRelation()) {
+            if (((BeeRelation) field).isEditable()) {
               cache.remove(BeeUtils.normalize(relation));
               ResponseObject resp = generateData(relation, 1, refCount, childCount, cache);
               response.addMessages(resp.getMessages());

@@ -1,27 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
-  xmlns:ui="http://www.butent.com/ui"
   
   name="Mail" caption="Laiškai" readOnly="true"
   >
-  <FlowPanel class="flexBox-vertical">
-    <SimplePanel>
-      <TabBar name="DisplayMode" stylePrefix="bee-Messages-DisplayMode-">
+  <FlowPanel class="bee-mail-Container flexBox-vertical">
+    <HorizontalPanel style="width: 100%; padding-bottom: 5px; border-bottom: 1px solid lightgray;">
+      <ListBox name="Accounts" />
+      <Image name="Create" resource="silverEdit" />
+      <Image name="Trash" resource="silverDelete" />
+      <TabBar name="DisplayMode" stylePrefix="bee-mail-DisplayMode-">
         <tab><Label html="Gautieji" /></tab>
         <tab><Label html="Siųstieji" /></tab>
         <tab><Label html="Juodraščiai" /></tab>
         <tab><Label html="Šiukšlinė" /></tab>
       </TabBar>
-    </SimplePanel>
+    </HorizontalPanel>
 
     <SplitPanel class="flexible" splitterSize="1">
       <west size="300">
-        <GridPanel name="Messages" />
+        <GridPanel name="Messages" class="bee-mail-Headers" />
       </west>
       
       <center>
-        <Label html="Ča būs kontientas..." />
+        <FlowPanel class="bee-mail-Content flexBox-vertical">
+          <Label name="EmptySelection" class="bee-mail-EmptySelection"
+            html="Nepasirinktas joks laiškas" />
+
+          <FlowPanel name="Message" class="flexible flexBox-vertical" style="display: none;">
+            <FlowPanel class="bee-mail-Envelope">
+              <FlowPanel>
+                <TextLabel name="SenderLabel" class="bee-mail-SenderLabel" />
+                <TextLabel name="SenderEmail" class="bee-mail-SenderEmail" />
+                <DateTimeLabel name="MessageDate" class="bee-mail-Date"
+                  format="EEEE, y 'm'. MMMM d 'd'. HH:mm" />
+              </FlowPanel>
+
+              <SimplePanel>
+                <TextLabel name="Recipients" class="bee-mail-Recipients" />
+              </SimplePanel>
+
+              <FlowPanel>
+                <TextLabel name="MessageSubject" class="bee-mail-Subject" />
+                <TextLabel name="Attachments" class="bee-mail-Attachments" />
+              </FlowPanel>
+            </FlowPanel>
+
+            <FlowPanel class="flexible" style="overflow: auto;">
+              <Image name="WaitingForContent" class="bee-mail-WaitingForContent" resource="loading" />
+              <HtmlLabel name="Parts" class="bee-mail-Parts" style="display: none;" />
+            </FlowPanel>
+          </FlowPanel>
+        </FlowPanel>
       </center>
     </SplitPanel>
   </FlowPanel>

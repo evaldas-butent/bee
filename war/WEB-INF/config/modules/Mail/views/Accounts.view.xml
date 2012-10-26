@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<View xmlns="http://www.butent.com/view"
+
+  name="Accounts" source="Accounts"
+  >
+  <Columns>
+    <SimpleColumn name="User" />
+    <SimpleColumn name="Description" />
+    <SimpleColumn name="Main" />
+    <SimpleColumn name="Address" />
+    <SimpleJoin name="Address" joinType="INNER">
+      <SimpleColumn name="Email" />
+      <SimpleColumn name="Label" />
+    </SimpleJoin>
+    <SimpleColumn name="Login" />
+    <SimpleColumn name="Password" />
+    <SimpleColumn name="StoreType" />
+    <SimpleColumn name="StoreServer" />
+    <SimpleColumn name="StorePort" />
+    <SimpleColumn name="TransportServer" />
+    <SimpleColumn name="TransportPort" />
+  </Columns>
+</View>
+ 

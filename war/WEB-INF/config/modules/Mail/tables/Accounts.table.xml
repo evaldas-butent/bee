@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Accounts"
+  idName="AccountID"
+  >
+  <Fields>
+    <Relation name="User" relation="Users" notNull="true" cascade="DELETE" />
+    <String name="Description" precision="100" notNull="true" unique="true" />
+    <Boolean name="Main" />
+    <Relation name="Address" relation="Addresses" notNull="true" unique="true" />
+    <String name="Login" precision="50" />
+    <String name="Password" precision="50" notNull="true"  />
+    <String name="StoreType" precision="5" notNull="true" />
+    <String name="StoreServer" precision="50" notNull="true" />
+    <Integer name="StorePort" />
+    <String name="TransportServer" precision="50" />
+    <Integer name="TransportPort" />
+  </Fields>
+  <Keys>
+    <Key>
+      <KeyField>Login</KeyField>
+    </Key>
+  </Keys>
+</Table>

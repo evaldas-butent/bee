@@ -5,18 +5,29 @@
   >
   <Columns>
     <SimpleColumn name="Date" />
-    <SimpleJoin name="Sender" joinType="LEFT">
-      <SimpleColumn name="Label" />
-      <SimpleColumn name="Email" />
-    </SimpleJoin>
     <SimpleColumn name="Subject" />
+    <HiddenColumn name="Sender" />
+    <HiddenColumn name="Status" alias="SenderStatus" />
+
+    <SimpleJoin name="Sender" joinType="LEFT">
+      <SimpleColumn name="Label" alias="SenderLabel" />
+      <SimpleColumn name="Email" alias="SenderEmail" />
+    </SimpleJoin>
+
     <ExternalJoin name="Message" source="Recipients" joinType="LEFT">
+      <HiddenColumn name="Address" />
+      <HiddenColumn name="Status" />
+      <AggregateColumn name="Unread" aggregate="MAX" />
+      <AggregateColumn name="Address" alias="RecipientCount" aggregate="COUNT_DISTINCT" />
+
       <AggregateJoin name="Address" joinType="LEFT">
-        <HiddenColumn name="Email" alias="Recipient" />
-        <AggregateColumn name="Email" alias="MinRecipient" aggregate="MIN" />
-        <AggregateColumn name="Email" alias="MaxRecipient" aggregate="MAX" />
-        <AggregateColumn name="Email" alias="CntRecipient" aggregate="COUNT_DISTINCT" />
+        <AggregateColumn name="Label" alias="RecipientLabel" aggregate="MAX" />
+        <AggregateColumn name="Email" alias="RecipientEmail" aggregate="MAX" />
       </AggregateJoin>
+    </ExternalJoin>
+
+    <ExternalJoin name="Message" source="Attachments" joinType="LEFT">
+      <AggregateColumn name="File" alias="AttachmentCount" aggregate="COUNT_DISTINCT" />
     </ExternalJoin>
   </Columns>
   <Order>

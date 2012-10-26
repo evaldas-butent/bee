@@ -3,9 +3,9 @@
 
 name="Mail" label="Paštas" order="80"
 >
-  <Item name="Messages" label="Laiškai" service="grid" parameters="Messages" />
-  <Item name="Mail" label="Laiškai2" service="form" parameters="Mail" />
-  <Item name="Proxy" label="Perleisti pašto komponentą" service="restart_proxy" separator="true" />
+  <Item name="Mail" label="Laiškai" service="form" parameters="Mail" />
+  <Item name="Accounts" label="Paskyros" service="grid" parameters="Accounts" />
 
+  <Item name="Proxy" label="Perleisti pašto komponentą" service="restart_proxy" separator="true" />
   <Item name="Parameters" label="Pašto parametrai" service="mail_parameters" parameters="Mail"  separator="true" />
 </Entry>

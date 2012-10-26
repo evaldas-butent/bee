@@ -25,14 +25,18 @@ public class POP3ProtocolClientHandler extends TextBasedProtocolClientHandler {
         proxy.processMessage(mailBody.toString(), user);
         state = 0;
         mailBody = null;
+      } else {
+        mailBody.append(msg.startsWith("..") ? msg.substring(1) : msg).append("\r\n");
+      }
+    } else if (state == 2) {
+      if (msg.startsWith("+OK")) {
+        state = 1;
+        mailBody = new StringBuilder();
 
       } else if (msg.startsWith("-ERR")) {
         state = 0;
         mailBody = null;
         logger.severe("POP3 mail receive error:", msg);
-
-      } else if (!msg.startsWith("+OK")) {
-        mailBody.append(msg.startsWith("..") ? msg.substring(1) : msg).append("\r\n");
       }
     }
     super.messageReceived(ctx, e);
@@ -47,8 +51,7 @@ public class POP3ProtocolClientHandler extends TextBasedProtocolClientHandler {
     if (msg.toUpperCase().startsWith("USER")) {
       user = msg.substring(4).trim();
     } else if (msg.toUpperCase().startsWith("RETR")) {
-      state = 1;
-      mailBody = new StringBuilder();
+      state = 2;
     }
     super.writeRequested(ctx, e);
   }

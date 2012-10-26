@@ -9,6 +9,6 @@
     <String name="FirstName" precision="30" notNull="true" label="Vardas" />
     <String name="LastName" precision="30" label="Pavardė" />
     <Date name="DateOfBirth" label="Gimimo data" />
-    <Relation name="Contact" unique="true" relation="Contacts" />
+    <Relation name="Contact" unique="true" relation="Contacts" editable="true" />
   </Fields>
 </Table>
