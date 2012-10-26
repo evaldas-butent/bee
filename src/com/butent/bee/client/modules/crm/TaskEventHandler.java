@@ -40,11 +40,12 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.HeaderView;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.view.grid.GridCallback;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeLabel;
@@ -351,34 +352,27 @@ public class TaskEventHandler {
     }
 
     @Override
-    public boolean onPrepareForInsert(FormView form, final DataView dataView, IsRow row) {
-      Assert.noNulls(dataView, row);
-
+    public boolean onReadyForInsert(final ReadyForInsertEvent event) {
       if (executors.isEmpty()) {
-        dataView.notifySevere("Pasirinkite vykdytoją");
+        event.getCallback().onFailure("Pasirinkite vykdytoją");
         return false;
       }
-      List<BeeColumn> columns = Lists.newArrayList();
-      List<String> values = Lists.newArrayList();
 
-      for (BeeColumn column : form.getDataColumns()) {
-        if (!column.isWritable()) {
-          continue;
-        }
-        String colName = column.getId();
-        String value = row.getString(form.getDataIndex(colName));
+      List<String> missing = Lists.newArrayList();
 
-        if (!BeeUtils.isEmpty(value) || BeeUtils.same(colName, CrmConstants.COL_EXECUTOR)) {
-          columns.add(column);
-          values.add(value);
-
-        } else if (BeeUtils.inListSame(colName, "StartTime", "FinishTime", "Description")) {
-          dataView.notifySevere(colName + ": value required");
-          return false;
+      for (String colName : new String[] {"StartTime", "FinishTime", "Description"}) {
+        if (!DataUtils.contains(event.getColumns(), colName)) {
+          missing.add(colName);
         }
       }
-      BeeRowSet rs = new BeeRowSet(VIEW_TASKS, columns);
-      rs.addRow(0, values.toArray(new String[0]));
+
+      if (!missing.isEmpty()) {
+        event.getCallback().onFailure(missing.toString(), "value required");
+        return false;
+      }
+      
+      BeeRowSet rs = new BeeRowSet(VIEW_TASKS, event.getColumns());
+      rs.addRow(0, event.getValues().toArray(new String[0]));
 
       ParameterList args = createParams(TaskEvent.ACTIVATED.name());
       args.addDataItem(CrmConstants.VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -387,32 +381,40 @@ public class TaskEventHandler {
       if (!observers.isEmpty()) {
         args.addDataItem(CrmConstants.VAR_TASK_OBSERVERS, joinUsers(observers));
       }
+      
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
         @Override
         public void onResponse(ResponseObject response) {
           Assert.notNull(response);
 
           if (response.hasErrors()) {
-            dataView.notifySevere(response.getErrors());
+            event.getCallback().onFailure(response.getErrors());
 
           } else if (response.hasResponse(Integer.class)) {
-            dataView.notifyInfo("New tasks created", (String) response.getResponse());
-            dataView.getViewPresenter().handleAction(Action.REFRESH);
-            dataView.finishNewRow(null);
+            event.getCallback().onSuccess(null);
             resetUsers();
+            
+            GridView gridView = getGridView();
+            if (gridView != null) {
+              gridView.notifyInfo("New tasks created", (String) response.getResponse());
+              gridView.getViewPresenter().handleAction(Action.REFRESH);
+            }
 
           } else {
-            dataView.notifySevere("Unknown response");
+            event.getCallback().onFailure("Unknown response");
           }
         }
       });
       return false;
     }
-
+    
     @Override
     public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
       resetUsers();
-      newRow.setValue(form.getDataIndex(CrmConstants.COL_OWNER), BeeKeeper.getUser().getUserId());
+      Long userId = BeeKeeper.getUser().getUserId();
+      newRow.setValue(form.getDataIndex(CrmConstants.COL_OWNER), userId);
+      newRow.setValue(form.getDataIndex(CrmConstants.COL_EXECUTOR), userId);
+
       newRow.setValue(form.getDataIndex("StartTime"), System.currentTimeMillis());
       newRow.setValue(form.getDataIndex(CrmConstants.COL_EVENT), TaskEvent.ACTIVATED.ordinal());
       newRow.setValue(form.getDataIndex(CrmConstants.COL_PRIORITY), Priority.MEDIUM.ordinal());

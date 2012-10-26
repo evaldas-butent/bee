@@ -16,8 +16,8 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.utils.FileUtils.FileInfo;
-import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.TreeView;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.view.grid.GridCallback;
@@ -65,45 +65,39 @@ public class DocumentHandler {
     }
 
     @Override
-    public boolean onPrepareForInsert(final FormView form, final DataView dataView, IsRow row) {
-      Assert.noNulls(dataView, row);
+    public boolean onReadyForInsert(final ReadyForInsertEvent event) {
+      Assert.notNull(event);
 
       if (getCollector().getFiles().isEmpty()) {
-        dataView.notifyWarning("Pasirinkite bylas");
+        event.getCallback().onFailure("Pasirinkite bylas");
+        return false;
+      }
+      
+      List<String> required = Lists.newArrayList(CrmConstants.COL_DOCUMENT_DATE,
+          CrmConstants.COL_TYPE, CrmConstants.COL_GROUP, CrmConstants.COL_CATEGORY,
+          CrmConstants.COL_NAME);
+      List<String> empty = Lists.newArrayList();
+      
+      for (String colName : required) {
+        if (!DataUtils.contains(event.getColumns(), colName)) {
+          empty.add(colName);
+        }
+      }
+      
+      if (!empty.isEmpty()) {
+        event.getCallback().onFailure(empty.toString(), "value required");
         return false;
       }
 
-      List<BeeColumn> columns = Lists.newArrayList();
-      List<String> values = Lists.newArrayList();
-
-      for (BeeColumn column : form.getDataColumns()) {
-        if (!column.isWritable()) {
-          continue;
-        }
-
-        String colName = column.getId();
-        String value = row.getString(form.getDataIndex(colName));
-
-        if (!BeeUtils.isEmpty(value)) {
-          columns.add(column);
-          values.add(value);
-        } else if (BeeUtils.inListSame(colName, CrmConstants.COL_DOCUMENT_DATE,
-            CrmConstants.COL_TYPE, CrmConstants.COL_GROUP, CrmConstants.COL_CATEGORY,
-            CrmConstants.COL_NAME)) {
-          dataView.notifySevere(colName + ": value required");
-          return false;
-        }
-      }
-
-      Queries.insert(DOCUMENT_VIEW_NAME, columns, values, new RowCallback() {
+      Queries.insert(DOCUMENT_VIEW_NAME, event.getColumns(), event.getValues(), new RowCallback() {
         @Override
         public void onFailure(String... reason) {
-          dataView.notifySevere(reason);
+          event.getCallback().onFailure(reason);
         }
 
         @Override
         public void onSuccess(BeeRow result) {
-          dataView.finishNewRow(result);
+          event.getCallback().onSuccess(result);
           sendFiles(result.getId());
         }
       });

@@ -1,17 +1,12 @@
 package com.butent.bee.client.data;
 
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.AttachEvent;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dialog.ModalForm;
-import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.RowPresenter;
 import com.butent.bee.client.ui.FormDescription;
@@ -20,9 +15,7 @@ import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -38,7 +31,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class RowEditor {
 
   private static final BeeLogger logger = LogUtils.getLogger(RowEditor.class);
-  
+
   public static final String DIALOG_STYLE = "bee-EditRow";
 
   public static void openRow(String viewName, BeeRow row) {
@@ -104,22 +97,33 @@ public class RowEditor {
       final IsRow oldRow, UIObject target, final RowCallback callback) {
 
     final RowPresenter presenter = new RowPresenter(formView);
-
     final ModalForm dialog = new ModalForm(presenter.getWidget(), formView, false, true);
-    final Holder<State> state = Holder.of(State.OPEN);
-    
+
     final CloseCallback close = new CloseCallback() {
       @Override
       public void onClose() {
-        state.set(State.CANCELED);
         dialog.hide();
+        if (callback != null) {
+          callback.onCancel();
+        }
       }
 
       @Override
       public void onSave() {
         if (validate(formView)) {
-          state.set(State.CONFIRMED);
-          dialog.hide();
+          int upd = update(dataInfo, oldRow, formView.getActiveRow(), formView, new RowCallback() {
+            @Override
+            public void onSuccess(BeeRow result) {
+              dialog.hide();
+              if (callback != null) {
+                callback.onSuccess(result);
+              }
+            }
+          });
+          
+          if (upd == 0) {
+            onClose();
+          }
         }
       }
     };
@@ -139,29 +143,24 @@ public class RowEditor {
       }
     });
 
-    Binder.addKeyDownHandler(dialog, new KeyDownHandler() {
-      public void onKeyDown(KeyDownEvent event) {
-        if (event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
-          event.preventDefault();
-          formView.onClose(close);
-
-        } else if (UiHelper.isSave(event.getNativeEvent())) {
-          event.preventDefault();
-          close.onSave();
+    dialog.setOnSave(new Scheduler.ScheduledCommand() {
+      @Override
+      public void execute() {
+        if (formView.checkOnSave()) {
+          presenter.handleAction(Action.SAVE);
         }
       }
     });
 
-    dialog.addCloseHandler(new CloseHandler<Popup>() {
-      public void onClose(CloseEvent<Popup> event) {
-        if (State.CONFIRMED.equals(state.get())) {
-          update(dataInfo, oldRow, formView.getActiveRow(), callback);
-        } else if (callback != null) {
-          callback.onCancel();
+    dialog.setOnEscape(new Scheduler.ScheduledCommand() {
+      @Override
+      public void execute() {
+        if (formView.checkOnClose()) {
+          presenter.handleAction(Action.CLOSE);
         }
       }
     });
-    
+
     dialog.addAttachHandler(new AttachEvent.Handler() {
       @Override
       public void onAttachOrDetach(AttachEvent event) {
@@ -181,9 +180,15 @@ public class RowEditor {
   }
 
   private static int update(final DataInfo dataInfo, IsRow oldRow, IsRow newRow,
-      final RowCallback callback) {
+      final NotificationListener notificationListener, final RowCallback callback) {
+
     return Queries.update(dataInfo.getViewName(), dataInfo.getColumns(), oldRow, newRow,
         new RowCallback() {
+          @Override
+          public void onFailure(String... reason) {
+            notificationListener.notifySevere(reason);
+          }
+
           @Override
           public void onSuccess(BeeRow result) {
             BeeKeeper.getBus().fireEvent(new RowUpdateEvent(dataInfo.getViewName(), result));
@@ -195,7 +200,7 @@ public class RowEditor {
   }
 
   private static boolean validate(FormView formView) {
-    return formView.validate();
+    return formView.validate(formView, true);
   }
 
   private RowEditor() {

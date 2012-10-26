@@ -14,6 +14,7 @@ import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
+import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
@@ -518,8 +519,20 @@ public class CalendarKeeper {
 
     Global.inputWidget(caption, getSettingsForm(), new InputCallback() {
       @Override
+      public String getErrorMessage() {
+        if (getSettingsForm().checkOnSave() 
+            && getSettingsForm().validate(getSettingsForm(), true)) {
+          return null;
+        } else {
+          return InputBoxes.SILENT_ERROR;
+        }
+      }
+
+      @Override
       public void onClose(CloseCallback closeCallback) {
-        getSettingsForm().onClose(closeCallback);
+        if (getSettingsForm().checkOnClose()) {
+          getSettingsForm().onClose(closeCallback);
+        }
       }
 
       @Override

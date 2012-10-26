@@ -290,15 +290,17 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
 
     } else {
       getPresenter().getGridView().getGrid().deactivate();
-      getPresenter().getGridView().ensureGridVisible();
 
       updateFilter(getPendingRow());
-
-      if (hasParentValue(getPendingRow())) {
-        getPresenter().refresh(false);
-      } else {
-        getPresenter().getDataProvider().clear();
+      
+      if (!getPresenter().getGridView().isAdding()) {
+        if (hasParentValue(getPendingRow())) {
+          getPresenter().refresh(false);
+        } else {
+          getPresenter().getDataProvider().clear();
+        }
       }
+
       resetState();
     }
   }

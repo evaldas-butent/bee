@@ -614,14 +614,8 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   public void showAt(final int x, final int y, final int margin) {
     setPopupPositionAndShow(new PositionCallback() {
       public void setPosition(int offsetWidth, int offsetHeight) {
-        int windowLeft = Window.getScrollLeft() + margin;
-        int windowRight = Window.getClientWidth() + Window.getScrollLeft() - margin;
-
-        int windowTop = Window.getScrollTop() + margin;
-        int windowBottom = Window.getScrollTop() + Window.getClientHeight() - margin;
-        
-        int left = Math.max(Math.min(x, windowRight - offsetWidth), windowLeft);
-        int top = Math.max(Math.min(y, windowBottom - offsetHeight), windowTop);
+        int left = fitLeft(x, offsetWidth, margin);
+        int top = fitTop(y, offsetHeight, margin);
         
         setPopupPosition(left, top);
       }
@@ -700,7 +694,21 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     }
     return false;
   }
+  
+  private int fitLeft(int left, int width, int margin) {
+    int windowLeft = Window.getScrollLeft() + margin;
+    int windowRight = Window.getClientWidth() + Window.getScrollLeft() - margin;
 
+    return Math.max(Math.min(left, windowRight - width), windowLeft);
+  }
+
+  private int fitTop(int top, int height, int margin) {
+    int windowTop = Window.getScrollTop() + margin;
+    int windowBottom = Window.getScrollTop() + Window.getClientHeight() - margin;
+    
+    return Math.max(Math.min(top, windowBottom - height), windowTop);
+  }
+  
   private List<Element> getAutoHidePartners() {
     return autoHidePartners;
   }
@@ -794,6 +802,10 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     } else {
       top += relativeObject.getOffsetHeight();
     }
+    
+    left = fitLeft(left, offsetWidth, 2);
+    top = fitTop(top, offsetHeight, 2);
+    
     setPopupPosition(left, top);
   }
 

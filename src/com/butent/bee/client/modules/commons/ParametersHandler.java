@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
@@ -12,6 +13,9 @@ import com.butent.bee.client.data.LocalProvider;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.view.grid.CellGrid;
 import com.butent.bee.client.view.grid.GridCallback;
@@ -22,7 +26,6 @@ import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
-import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
@@ -128,39 +131,52 @@ public class ParametersHandler extends AbstractGridCallback {
   }
 
   @Override
-  public boolean onPrepareForInsert(GridView gridView, List<? extends IsColumn> cols,
-      List<String> values) {
+  public boolean onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
 
     Map<String, String> data = Maps.newHashMap();
 
-    for (int i = 0; i < cols.size(); i++) {
-      data.put(cols.get(i).getId(), values.get(i));
+    for (int i = 0; i < event.getColumns().size(); i++) {
+      data.put(event.getColumns().get(i).getId(), event.getValues().get(i));
     }
+
     if (params.containsKey(data.get(NAME))) {
-      gridView.notifySevere("Dublicate parameter name:", data.get(NAME));
+      String[] msg = new String[] {"Dublicate parameter name:", data.get(NAME)};
+      if (event.getCallback() == null) {
+        gridView.notifySevere(msg);
+      } else {
+        event.getCallback().onFailure(msg);
+      }
+
     } else {
       update(gridView, 0, new BeeParameter(module, data.get(NAME),
           NameUtils.getEnumByName(ParameterType.class, data.get(TYPE)),
-          data.get(DESCRIPTION), BeeUtils.toBoolean(data.get(USER_MODE)), data.get(VALUE)));
+          data.get(DESCRIPTION), BeeUtils.toBoolean(data.get(USER_MODE)), data.get(VALUE)),
+          event.getCallback());
     }
     return false;
   }
 
   @Override
-  public boolean onPrepareForUpdate(GridView gridView, long id, long version,
-      List<? extends IsColumn> cols, List<String> oldValues, List<String> newValues) {
+  public boolean onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event) {
+    return onSaveChanges(gridView, SaveChangesEvent.of(event));
+  }
+
+  @Override
+  public boolean onSaveChanges(GridView gridView, SaveChangesEvent event) {
 
     String prmName = gridView.getActiveRow().getString(id(NAME));
 
-    if (cols.size() == 1 && BeeUtils.same(cols.get(0).getId(), USER_VALUE)) {
-      return change(gridView, id, prmName, newValues.get(0));
+    if (event.getColumns().size() == 1 
+        && BeeUtils.same(event.getColumns().get(0).getId(), USER_VALUE)) {
+      return change(gridView, event.getRowId(), prmName, event.getNewValues().get(0),
+          event.getCallback());
     }
     BeeParameter prm = params.get(prmName);
 
     Map<String, String> data = Maps.newHashMap();
 
-    for (int i = 0; i < cols.size(); i++) {
-      data.put(cols.get(i).getId(), newValues.get(i));
+    for (int i = 0; i < event.getColumns().size(); i++) {
+      data.put(event.getColumns().get(i).getId(), event.getNewValues().get(i));
     }
     if (data.containsKey(TYPE)) {
       prm.setType(NameUtils.getEnumByName(ParameterType.class, data.get(TYPE)));
@@ -174,7 +190,8 @@ public class ParametersHandler extends AbstractGridCallback {
     if (data.containsKey(VALUE)) {
       prm.setValue(data.get(VALUE));
     }
-    update(gridView, id, prm);
+
+    update(gridView, event.getRowId(), prm, event.getCallback());
     return false;
   }
 
@@ -194,7 +211,8 @@ public class ParametersHandler extends AbstractGridCallback {
   }
 
   private boolean change(final GridView gridView, final long id, final String name,
-      final String value) {
+      final String value, final Callback<IsRow> callback) {
+
     ParameterList args = CommonsEventHandler.createArgs(CommonsConstants.SVC_SET_PARAMETER);
     args.addDataItem(CommonsConstants.VAR_PARAMETERS_MODULE, module);
     args.addDataItem(CommonsConstants.VAR_PARAMETERS, name);
@@ -208,7 +226,11 @@ public class ParametersHandler extends AbstractGridCallback {
         Assert.notNull(response);
 
         if (response.hasErrors()) {
-          Global.showError(response.getErrors());
+          if (callback == null) {
+            Global.showError(response.getErrors());
+          } else {
+            callback.onFailure(response.getErrors());
+          }
 
         } else if (response.hasResponse(Boolean.class)) {
           BeeParameter prm = params.get(name);
@@ -221,9 +243,17 @@ public class ParametersHandler extends AbstractGridCallback {
           }
           gridView.getGrid().onCellUpdate(new CellUpdateEvent(null, id, 0, USER_VALUE,
               id(USER_VALUE), value));
+          if (callback != null) {
+            callback.onSuccess(null);
+          }
 
         } else {
-          Global.showError("Unknown response");
+          String msg = "Unknown response";
+          if (callback == null) {
+            Global.showError(msg);
+          } else {
+            callback.onFailure(msg);
+          }
         }
       }
     });
@@ -321,7 +351,9 @@ public class ParametersHandler extends AbstractGridCallback {
     });
   }
 
-  private void update(final GridView gridView, final long id, final BeeParameter parameter) {
+  private void update(final GridView gridView, final long id, final BeeParameter parameter,
+      final Callback<IsRow> callback) {
+
     ParameterList args = CommonsEventHandler.createArgs(CommonsConstants.SVC_CREATE_PARAMETER);
     args.addDataItem(CommonsConstants.VAR_PARAMETERS, Codec.beeSerialize(parameter));
 
@@ -331,7 +363,11 @@ public class ParametersHandler extends AbstractGridCallback {
         Assert.notNull(response);
 
         if (response.hasErrors()) {
-          Global.showError(response.getErrors());
+          if (callback == null) {
+            Global.showError(response.getErrors());
+          } else {
+            callback.onFailure(response.getErrors());
+          }
 
         } else if (response.hasResponse(Boolean.class)) {
           boolean newMode = (id == DataUtils.NEW_ROW_ID);
@@ -352,12 +388,27 @@ public class ParametersHandler extends AbstractGridCallback {
             ref.put(++cnt, parameter.getName());
             BeeRow newRow = new BeeRow(cnt, values);
             provider.addRow(newRow);
-            gridView.finishNewRow(newRow);
+            if (callback == null) {
+              gridView.finishNewRow(newRow);
+            } else {
+              callback.onSuccess(newRow);
+            }
+
           } else {
-            gridView.getGrid().onRowUpdate(new RowUpdateEvent(null, new BeeRow(id, values)));
+            BeeRow row = new BeeRow(id, values);
+            gridView.getGrid().onRowUpdate(new RowUpdateEvent(null, row));
+            if (callback != null) {
+              callback.onSuccess(row);
+            }
           }
+
         } else {
-          Global.showError("Unknown response");
+          String msg = "Unknown response";
+          if (callback == null) {
+            Global.showError(msg);
+          } else {
+            callback.onFailure(msg);
+          }
         }
       }
     });

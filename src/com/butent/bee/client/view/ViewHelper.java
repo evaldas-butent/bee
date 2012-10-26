@@ -2,10 +2,12 @@ package com.butent.bee.client.view;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.gwt.user.client.ui.HasOneWidget;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.Provider;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.search.SearchView;
 import com.butent.bee.shared.Assert;
@@ -35,6 +37,27 @@ public class ViewHelper {
       }
     }
     return Filter.and(filters);
+  }
+
+  public static Collection<GridView> getGrids(Widget root) {
+    Collection<GridView> grids = Sets.newHashSet();
+
+    if (root instanceof GridView) {
+      grids.add((GridView) root);
+
+    } else if (root instanceof HasGridView) {
+      grids.add(((HasGridView) root).getGridView());
+    
+    } else if (root instanceof HasWidgets) {
+      for (Widget child : (HasWidgets) root) {
+        grids.addAll(getGrids(child));
+      }
+
+    } else if (root instanceof HasOneWidget) {
+      grids.addAll(getGrids(((HasOneWidget) root).getWidget()));
+    }
+    
+    return grids;
   }
 
   public static HeaderView getHeader(Widget container) {
@@ -89,7 +112,7 @@ public class ViewHelper {
   public static boolean hasHeader(Widget container) {
     return getHeader(container) != null;
   }
-  
+
   private ViewHelper() {
   }
 }

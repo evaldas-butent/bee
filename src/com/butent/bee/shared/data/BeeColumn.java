@@ -71,14 +71,11 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
 
   @Override
   public BeeColumn copy() {
-    BeeColumn result = new BeeColumn();
+    BeeColumn result = new BeeColumn(getType(), getLabel(), getId());
 
-    result.setId(getId());
-    result.setType(getType());
-    result.setLabel(getLabel());
     result.setPattern(getPattern());
     if (getProperties() != null) {
-      result.setProperties(getProperties());
+      result.setProperties(getProperties().copy());
     }
 
     result.setIndex(getIndex());

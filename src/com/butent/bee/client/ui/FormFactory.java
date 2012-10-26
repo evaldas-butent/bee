@@ -16,7 +16,8 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.utils.XmlUtils;
-import com.butent.bee.client.view.DataView;
+import com.butent.bee.client.view.HasGridView;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.form.FormImpl;
 import com.butent.bee.client.view.form.FormView;
@@ -50,7 +51,7 @@ import java.util.Map;
 
 public class FormFactory {
 
-  public interface FormCallback extends WidgetCallback {
+  public interface FormCallback extends WidgetCallback, ReadyForInsertEvent.Handler, HasGridView {
 
     void afterAction(Action action, FormPresenter presenter);
 
@@ -73,8 +74,6 @@ public class FormFactory {
     BeeRowSet getRowSet();
 
     boolean hasFooter(int rowCount);
-
-    boolean onPrepareForInsert(FormView form, DataView dataView, IsRow row);
 
     void onSetActiveRow(IsRow row);
 

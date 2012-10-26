@@ -4,10 +4,14 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.Callback;
+import com.butent.bee.client.data.ParentRowCreator;
+import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -15,11 +19,17 @@ import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.shared.data.IsRow;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 
 import java.util.Set;
 
-public class GridFormPresenter extends AbstractPresenter implements HasGridView, Printable {
+public class GridFormPresenter extends AbstractPresenter implements HasGridView, Printable,
+    ParentRowCreator {
+
+  private static final BeeLogger logger = LogUtils.getLogger(GridFormPresenter.class);
 
   public static final String STYLE_FORM_CONTAINER = "bee-GridFormContainer";
   public static final String STYLE_FORM_HEADER = "bee-GridFormHeader";
@@ -52,10 +62,16 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
   }
 
   @Override
+  public boolean createParentRow(NotificationListener notificationListener,
+      Callback<IsRow> callback) {
+    return gridView.createParentRow(notificationListener, callback);
+  }
+
+  @Override
   public String getCaption() {
     return header.getCaption();
   }
-  
+
   public FormView getForm() {
     for (Widget child : container) {
       if (child instanceof FormView) {
@@ -78,7 +94,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
   public HeaderView getHeader() {
     return header;
   }
-  
+
   @Override
   public Element getPrintElement() {
     return getWidget().getElement();
@@ -141,7 +157,7 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
   public boolean isActionEnabled(Action action) {
     return header.isActionEnabled(action);
   }
-  
+
   @Override
   public boolean onPrint(Element source, Element target) {
     boolean ok;
@@ -204,9 +220,43 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
 
     return formHeader;
   }
-  
+
   private void save() {
-    if (getForm().validate()) {
+    final FormView form = getForm();
+    if (!form.validate(form, true)) {
+      return;
+    }
+
+    if (gridView.isAdding() && gridView.likeAMotherlessChild()) {
+      FormView parentForm = UiHelper.getForm(gridView.asWidget());
+      if (parentForm == null) {
+        logger.severe(getCaption(), "parent form not found");
+        return;
+      }
+
+      if (parentForm.getViewPresenter() instanceof ParentRowCreator) {
+        ((ParentRowCreator) parentForm.getViewPresenter()).createParentRow(form,
+            new Callback<IsRow>() {
+              @Override
+              public void onFailure(String... reason) {
+                form.notifySevere(reason);
+              }
+
+              @Override
+              public void onSuccess(IsRow result) {
+                if (gridView.likeAMotherlessChild()) {
+                  logger.severe(getCaption(), "parent row not created");
+                } else {
+                  gridView.formConfirm();
+                }
+              }
+            });
+
+      } else {
+        logger.severe(getCaption(), "cannot create parent row");
+      }
+
+    } else {
       gridView.formConfirm();
     }
   }

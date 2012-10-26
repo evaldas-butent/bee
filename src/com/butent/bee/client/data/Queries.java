@@ -521,13 +521,13 @@ public class Queries {
     });
   }
 
-  public static int updateCell(String viewName, long rowId, long version, BeeColumn column,
+  public static boolean updateCell(String viewName, long rowId, long version, BeeColumn column,
       String oldValue, String newValue, RowCallback callback) {
     Assert.notEmpty(viewName);
     Assert.notNull(column);
 
-    if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
-      return 0;
+    if (BeeUtils.equalsTrimRight(oldValue, newValue)) {
+      return false;
     }
 
     BeeRowSet rs = new BeeRowSet(column);
@@ -537,7 +537,7 @@ public class Queries {
     rs.getRow(0).preliminaryUpdate(0, newValue);
 
     update(rs, false, callback);
-    return 1;
+    return true;
   }
 
   private static void checkRowSet(BeeRowSet rowSet) {

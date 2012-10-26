@@ -9,7 +9,10 @@ import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.ui.WidgetCallback;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
@@ -86,12 +89,12 @@ public interface GridCallback extends WidgetCallback, ParentRowEvent.Handler, Ha
 
   boolean onLoadExtWidget(Element root);
 
-  boolean onPrepareForInsert(GridView gridView, List<? extends IsColumn> columns,
-      List<String> values);
+  boolean onReadyForInsert(GridView gridView, ReadyForInsertEvent event);
 
-  boolean onPrepareForUpdate(GridView gridView, long rowId, long version,
-      List<? extends IsColumn> columns, List<String> oldValues, List<String> newValues);
+  boolean onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event);
 
+  boolean onSaveChanges(GridView gridView, SaveChangesEvent event);
+  
   void onShow(GridPresenter presenter);
 
   boolean onStartNewRow(GridView gridView, IsRow oldRow, IsRow newRow);

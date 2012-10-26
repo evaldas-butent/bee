@@ -130,6 +130,25 @@ public class DataUtils {
     }
   }
 
+  public static BeeColumn cloneColumn(IsColumn original) {
+    Assert.notNull(original);
+    if (original instanceof BeeColumn) {
+      return ((BeeColumn) original).copy();
+    }
+    
+    BeeColumn result = new BeeColumn(original.getType(), original.getLabel(), original.getId());
+
+    result.setPattern(original.getPattern());
+    if (original.getProperties() != null) {
+      result.setProperties(original.getProperties().copy());
+    }
+
+    result.setPrecision(original.getPrecision());
+    result.setScale(original.getScale());
+
+    return result;
+  }
+  
   public static BeeRow cloneRow(IsRow original) {
     Assert.notNull(original);
     String[] arr = new String[original.getNumberOfCells()];

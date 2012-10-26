@@ -30,8 +30,8 @@ import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
-import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.TreeView;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.view.grid.GridCallback;
@@ -39,7 +39,6 @@ import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
-import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
@@ -265,33 +264,30 @@ public class CommonsEventHandler {
     }
 
     @Override
-    public boolean onPrepareForInsert(FormView form, final DataView dataView, IsRow row) {
-      Assert.noNulls(dataView, row);
+    public boolean onReadyForInsert(final ReadyForInsertEvent event) {
+      Assert.notNull(event);
+      
+      String price = null;
+      String currency = null;
 
-      List<BeeColumn> columns = Lists.newArrayList();
-      List<String> values = Lists.newArrayList();
+      for (int i = 0; i < event.getColumns().size(); i++) {
+        String colName = event.getColumns().get(i).getId();
+        String value = event.getValues().get(i);
 
-      for (BeeColumn column : form.getDataColumns()) {
-        if (!column.isWritable()) {
-          continue;
-        }
-        String colName = column.getId();
-        String value = row.getString(form.getDataIndex(colName));
-
-        if (!BeeUtils.isEmpty(value)) {
-          columns.add(column);
-          values.add(value);
-
-        } else if (BeeUtils.inListSame(colName, CommonsConstants.COL_NAME, "Unit")
-            || (BeeUtils.same(colName, "Currency")
-            && !BeeUtils.isEmpty(row.getString(form.getDataIndex("Price"))))) {
-
-          dataView.notifySevere(colName + ": value required");
-          return false;
+        if (BeeUtils.same(colName, "Price")) {
+          price = value;
+        } else if (BeeUtils.same(colName, "Currency")) {
+          currency = value;
         }
       }
-      BeeRowSet rs = new BeeRowSet("Items", columns);
-      rs.addRow(0, values.toArray(new String[0]));
+      
+      if (!BeeUtils.isEmpty(price) && BeeUtils.isEmpty(currency)) {
+        event.getCallback().onFailure("Currency required");
+        return false;
+      }
+
+      BeeRowSet rs = new BeeRowSet("Items", event.getColumns());
+      rs.addRow(0, event.getValues().toArray(new String[0]));
 
       ParameterList args = createArgs(CommonsConstants.SVC_ITEM_CREATE);
       args.addDataItem(CommonsConstants.VAR_ITEM_DATA, Codec.beeSerialize(rs));
@@ -305,13 +301,13 @@ public class CommonsEventHandler {
           Assert.notNull(response);
 
           if (response.hasErrors()) {
-            dataView.notifySevere(response.getErrors());
+            event.getCallback().onFailure(response.getErrors());
 
           } else if (response.hasResponse(BeeRow.class)) {
-            dataView.finishNewRow(BeeRow.restore((String) response.getResponse()));
+            event.getCallback().onSuccess(BeeRow.restore((String) response.getResponse()));
 
           } else {
-            dataView.notifySevere("Unknown response");
+            event.getCallback().onFailure("Unknown response");
           }
         }
       });

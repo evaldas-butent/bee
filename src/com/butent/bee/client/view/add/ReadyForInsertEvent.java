@@ -20,7 +20,7 @@ public class ReadyForInsertEvent extends GwtEvent<ReadyForInsertEvent.Handler> {
    */
 
   public interface Handler extends EventHandler {
-    void onReadyForInsert(ReadyForInsertEvent event);
+    boolean onReadyForInsert(ReadyForInsertEvent event);
   }
 
   private static final Type<Handler> TYPE = new Type<Handler>();

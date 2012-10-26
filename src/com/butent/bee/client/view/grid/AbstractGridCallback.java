@@ -10,7 +10,10 @@ import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
+import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.IsColumn;
@@ -181,17 +184,20 @@ public class AbstractGridCallback implements GridCallback {
   }
 
   @Override
-  public boolean onPrepareForInsert(GridView gridView, List<? extends IsColumn> columns,
-      List<String> values) {
+  public boolean onReadyForInsert(GridView gridView, ReadyForInsertEvent event) {
     return true;
   }
 
   @Override
-  public boolean onPrepareForUpdate(GridView gridView, long rowId, long version,
-      List<? extends IsColumn> columns, List<String> oldValues, List<String> newValues) {
+  public boolean onReadyForUpdate(GridView gridView, ReadyForUpdateEvent event) {
     return true;
   }
-
+  
+  @Override
+  public boolean onSaveChanges(GridView gridView, SaveChangesEvent event) {
+    return true;
+  }
+  
   @Override
   public void onShow(GridPresenter presenter) {
   }

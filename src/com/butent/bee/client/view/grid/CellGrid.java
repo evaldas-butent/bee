@@ -969,6 +969,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     DomUtils.createId(this, getIdPrefix());
   }
 
+  @Override
   public HandlerRegistration addActiveRowChangeHandler(ActiveRowChangeEvent.Handler handler) {
     return addHandler(handler, ActiveRowChangeEvent.getType());
   }
@@ -983,27 +984,33 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     insertColumn(getColumnCount(), columnId, dataIndex, source, col, header, footer);
   }
 
+  @Override
   public HandlerRegistration addDataRequestHandler(DataRequestEvent.Handler handler) {
     return addHandler(handler, DataRequestEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addEditStartHandler(EditStartEvent.Handler handler) {
     return addHandler(handler, EditStartEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addLoadingStateChangeHandler(LoadingStateChangeEvent.Handler handler) {
     return addHandler(handler, LoadingStateChangeEvent.TYPE);
   }
 
+  @Override
   public HandlerRegistration addScopeChangeHandler(ScopeChangeEvent.Handler handler) {
     return addHandler(handler, ScopeChangeEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addSelectionCountChangeHandler(
       SelectionCountChangeEvent.Handler handler) {
     return addHandler(handler, SelectionCountChangeEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addSortHandler(SortEvent.Handler handler) {
     return addHandler(handler, SortEvent.getType());
   }
@@ -1127,12 +1134,14 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return BeeConst.UNDEF;
   }
 
+  @Override
   public void fireLoadingStateChange(LoadingStateChangeEvent.LoadingState loadingState) {
     if (loadingState != null) {
       fireEvent(new LoadingStateChangeEvent(loadingState));
     }
   }
 
+  @Override
   public IsRow getActiveRow() {
     int index = getActiveRowIndex();
     if (isRowWithinBounds(index)) {
@@ -1217,18 +1226,22 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return lst;
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "cell-grid";
   }
 
+  @Override
   public int getPageSize() {
     return pageSize;
   }
 
+  @Override
   public int getPageStart() {
     return pageStart;
   }
@@ -1242,10 +1255,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return null;
   }
 
+  @Override
   public int getRowCount() {
     return rowCount;
   }
 
+  @Override
   public List<IsRow> getRowData() {
     return rowData;
   }
@@ -1258,6 +1273,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return selectedRows;
   }
 
+  @Override
   public Order getSortOrder() {
     return sortOrder;
   }
@@ -1418,10 +1434,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     return info.isColReadOnly();
   }
 
+  @Override
   public boolean isEditing() {
     return editing;
   }
 
+  @Override
   public boolean isEnabled() {
     return enabled;
   }
@@ -1623,6 +1641,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
+  @Override
   public void onCellUpdate(CellUpdateEvent event) {
     Assert.notNull(event);
     long rowId = event.getRowId();
@@ -1685,6 +1704,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
+  @Override
   public void onMultiDelete(MultiDeleteEvent event) {
     Assert.notNull(event);
     for (RowInfo rowInfo : event.getRows()) {
@@ -1692,11 +1712,13 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
+  @Override
   public void onRowDelete(RowDeleteEvent event) {
     Assert.notNull(event);
     deleteRow(event.getRowId());
   }
 
+  @Override
   public void onRowUpdate(RowUpdateEvent event) {
     Assert.notNull(event);
     IsRow newRow = event.getRow();
@@ -1781,6 +1803,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
+  @Override
   public void reset() {
     getRenderedRows().clear();
 
@@ -1928,10 +1951,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     info.setWidth(width);
   }
 
+  @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
   }
@@ -1984,6 +2009,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     getHeaderComponent().setFont(fontDeclaration);
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
@@ -2004,6 +2030,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     this.minCellWidth = minCellWidth;
   }
 
+  @Override
   public void setPageSize(int size, boolean fireScopeChange) {
     if (size == getPageSize()) {
       return;
@@ -2016,6 +2043,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
+  @Override
   public void setPageStart(int start, boolean fireScopeChange, boolean fireDataRequest,
       NavigationOrigin origin) {
     Assert.nonNegative(start);
@@ -2037,6 +2065,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     this.readOnly = readOnly;
   }
 
+  @Override
   public void setRowCount(int count, boolean fireScopeChange) {
     Assert.nonNegative(count);
     if (count == getRowCount()) {
@@ -2067,6 +2096,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
   }
 
+  @Override
   public void setRowData(List<? extends IsRow> rows, boolean refresh) {
     getRowData().clear();
     if (!BeeUtils.isEmpty(rows)) {
@@ -2086,6 +2116,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     this.rowStyles = rowStyles;
   }
 
+  @Override
   public void updateActiveRow(List<? extends IsRow> rows) {
     Assert.notNull(rows);
     int oldRow = getActiveRowIndex();

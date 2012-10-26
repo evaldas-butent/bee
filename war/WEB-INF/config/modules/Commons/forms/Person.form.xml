@@ -3,7 +3,7 @@
   xmlns:f="http://www.butent.com/form"
   xmlns:xi="http://www.w3.org/2001/XInclude"
   
-  name="Person" viewName="Persons" caption="Asmuo"
+  name="Person" viewName="Persons" caption="Asmuo" width="800"
   >
   <FlowPanel class="flexBox-vertical">
     <FlexTable cellSpacing="10">

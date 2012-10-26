@@ -101,7 +101,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   private class ModalCallback extends InputCallback {
     @Override
     public String getErrorMessage() {
-      if (AppointmentBuilder.this.validate()) {
+      if (getFormView().checkOnSave() && AppointmentBuilder.this.validate()) {
         return null;
       } else {
         return InputBoxes.SILENT_ERROR;
@@ -111,6 +111,9 @@ class AppointmentBuilder extends AbstractFormCallback {
     @Override
     public void onClose(final CloseCallback closeCallback) {
       Assert.notNull(closeCallback);
+      if (!getFormView().checkOnClose()) {
+        return;
+      }
 
       IsRow oldRow = getFormView().getOldRow();
       IsRow newRow = getFormView().getActiveRow();
@@ -160,13 +163,13 @@ class AppointmentBuilder extends AbstractFormCallback {
 
       DateTime oldStart = Data.getDateTime(VIEW_APPOINTMENTS, oldRow, COL_START_DATE_TIME);
       DateTime newStart = getStart();
-      if (oldStart != null && newStart != null && !oldStart.equals(newStart)) {
+      if (!Objects.equal(oldStart, newStart)) {
         changes.add("Pradžia");
       }
       
       DateTime oldEnd = Data.getDateTime(VIEW_APPOINTMENTS, oldRow, COL_END_DATE_TIME);
-      DateTime newEnd = getEnd();
-      if (oldEnd != null && newEnd != null && !oldEnd.equals(newEnd)) {
+      DateTime newEnd = getEnd(newStart);
+      if (!Objects.equal(oldEnd, newEnd)) {
         changes.add("Pabaiga");
       }
       
@@ -231,9 +234,7 @@ class AppointmentBuilder extends AbstractFormCallback {
     @Override
     public void onValueChange(ValueChangeEvent<String> event) {
       updateDuration(event.getValue());
-      if (getEnd() == null) {
-        checkOverlap();
-      }
+      checkOverlap(true);
     }
   }
 
@@ -254,7 +255,7 @@ class AppointmentBuilder extends AbstractFormCallback {
             resources.remove(index);
             refreshResourceWidget();
             if (isOverlapVisible()) {
-              checkOverlap();
+              checkOverlap(false);
             }
           }
         }
@@ -567,7 +568,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   void setAttenddes(List<Long> attendees) {
     BeeUtils.overwrite(resources, attendees);
     refreshResourceWidget();
-    checkOverlap();
+    checkOverlap(false);
   }
 
   void setColor(Long color) {
@@ -689,7 +690,7 @@ class AppointmentBuilder extends AbstractFormCallback {
         if (cnt > 0) {
           refreshResourceWidget();
           if (!isOverlapVisible()) {
-            checkOverlap();
+            checkOverlap(false);
           }
         }
       }
@@ -723,10 +724,6 @@ class AppointmentBuilder extends AbstractFormCallback {
     });
   }
 
-  private void checkOverlap() {
-    checkOverlap(false);
-  }
-  
   private void checkOverlap(boolean whenPeriodChanged) {
     if (resources.isEmpty()) {
       hideOverlap();
@@ -745,13 +742,7 @@ class AppointmentBuilder extends AbstractFormCallback {
     }
 
     DateTime start = getStart();
-    DateTime end = getEnd();
-    if (end == null) {
-      int duration = getDuration();
-      if (duration > 0) {
-        end = new DateTime(start.getTime() + duration * TimeUtils.MILLIS_PER_MINUTE);
-      }
-    }
+    DateTime end = getEnd(start);
     if (start == null || end == null || TimeUtils.isLeq(end, start)) {
       hideOverlap();
       return;
@@ -816,23 +807,26 @@ class AppointmentBuilder extends AbstractFormCallback {
     return result;
   }
 
-  private DateTime getEnd() {
+  private DateTime getEnd(DateTime start) {
     HasDateValue datePart = BeeUtils.isEmpty(getEndDateWidgetId()) 
         ? null : getInputDate(getEndDateWidgetId()).getDate();
     DateTime timePart = BeeUtils.isEmpty(getEndTimeWidgetId()) 
         ? null : getInputTime(getEndTimeWidgetId()).getDateTime();
 
-    if (datePart == null) {
-      if (timePart != null && TimeUtils.minutesSinceDayStarted(timePart) > 0
-          && !BeeUtils.isEmpty(getStartDateWidgetId())) {
-        datePart = getInputDate(getStartDateWidgetId()).getDate();
-      }
-      if (datePart == null) {
+    if (datePart == null && timePart != null && TimeUtils.minutesSinceDayStarted(timePart) > 0) {
+      datePart = start;
+    }
+
+    if (datePart != null) {
+      return TimeUtils.combine(datePart, timePart);
+    } else {
+      int duration = getDuration();
+      if (start != null && duration > 0) {
+        return new DateTime(start.getTime() + duration * TimeUtils.MILLIS_PER_MINUTE);
+      } else {
         return null;
       }
     }
-
-    return TimeUtils.combine(datePart, timePart);
   }
 
   private String getEndDateWidgetId() {
@@ -1182,7 +1176,7 @@ class AppointmentBuilder extends AbstractFormCallback {
       resources.remove(index);
       refreshResourceWidget();
       if (isOverlapVisible()) {
-        checkOverlap();
+        checkOverlap(false);
       }
 
     } else {
@@ -1290,13 +1284,8 @@ class AppointmentBuilder extends AbstractFormCallback {
     DateTime start = getStart();
     Data.setValue(viewName, row, COL_START_DATE_TIME, start);
 
-    DateTime end = getEnd();
-    if (end == null) {
-      long millis = start.getTime() + getDuration() * TimeUtils.MILLIS_PER_MINUTE;
-      Data.setValue(viewName, row, COL_END_DATE_TIME, millis);
-    } else {
-      Data.setValue(viewName, row, COL_END_DATE_TIME, end);
-    }
+    DateTime end = getEnd(start);
+    Data.setValue(viewName, row, COL_END_DATE_TIME, end);
 
     if (!colors.isEmpty()) {
       int index = colorWidget.getSelectedTab();
@@ -1544,7 +1533,7 @@ class AppointmentBuilder extends AbstractFormCallback {
   }
 
   private boolean validate() {
-    if (!getFormView().validate()) {
+    if (!getFormView().validate(getFormView(), true)) {
       return false;
     }
 
@@ -1579,19 +1568,17 @@ class AppointmentBuilder extends AbstractFormCallback {
     }
 
     DateTime start = getStart();
-    DateTime end = getEnd();
+    DateTime end = getEnd(start);
 
     if (start == null) {
       getFormView().notifySevere("Įveskite planuojamą pradžios laiką");
       return false;
     }
-
     if (end == null) {
-      if (getDuration() <= 0) {
-        getFormView().notifySevere("Įveskite trukmę arba planuojamą pabaigos laiką");
-        return false;
-      }
-    } else if (TimeUtils.isLeq(end, start)) {
+      getFormView().notifySevere("Įveskite trukmę arba planuojamą pabaigos laiką");
+      return false;
+    }
+    if (TimeUtils.isLeq(end, start)) {
       getFormView().notifySevere("Pabaigos laikas turi būti didesnis už pradžios laiką");
       return false;
     }

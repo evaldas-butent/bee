@@ -34,8 +34,8 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.TreeView;
+import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
@@ -109,28 +109,23 @@ public class ProjectEventHandler {
     }
 
     @Override
-    public boolean onPrepareForInsert(FormView form, final DataView dataView, IsRow row) {
-      Assert.noNulls(dataView, row);
+    public boolean onReadyForInsert(final ReadyForInsertEvent event) {
+      List<String> missing = Lists.newArrayList();
 
-      List<BeeColumn> columns = Lists.newArrayList();
-      List<String> values = Lists.newArrayList();
-
-      for (BeeColumn column : form.getDataColumns()) {
-        String colName = column.getId();
-        String value = row.getString(form.getDataIndex(colName));
-
-        if (!BeeUtils.isEmpty(value)) {
-          columns.add(column);
-          values.add(value);
-
-        } else if (BeeUtils.inListSame(colName, "ProjectType", "StartDate", "FinishDate",
-            CrmConstants.COL_NAME)) {
-          dataView.notifySevere(colName + ": value required");
-          return false;
+      for (String colName : new String[] {"ProjectType", "StartDate", "FinishDate",
+          CrmConstants.COL_NAME}) {
+        if (!DataUtils.contains(event.getColumns(), colName)) {
+          missing.add(colName);
         }
       }
-      BeeRowSet rs = new BeeRowSet(VIEW_PROJECTS, columns);
-      rs.addRow(0, values.toArray(new String[0]));
+
+      if (!missing.isEmpty()) {
+        event.getCallback().onFailure(missing.toString(), "value required");
+        return false;
+      }
+      
+      BeeRowSet rs = new BeeRowSet(VIEW_PROJECTS, event.getColumns());
+      rs.addRow(0, event.getValues().toArray(new String[0]));
 
       ParameterList args = createArgs(ProjectEvent.CREATED.name());
       args.addDataItem(CrmConstants.VAR_PROJECT_DATA, Codec.beeSerialize(rs));
@@ -144,13 +139,13 @@ public class ProjectEventHandler {
           Assert.notNull(response);
 
           if (response.hasErrors()) {
-            dataView.notifySevere(response.getErrors());
+            event.getCallback().onFailure(response.getErrors());
 
           } else if (response.hasResponse(BeeRow.class)) {
-            dataView.finishNewRow(BeeRow.restore((String) response.getResponse()));
+            event.getCallback().onSuccess(BeeRow.restore((String) response.getResponse()));
 
           } else {
-            dataView.notifySevere("Unknown response");
+            event.getCallback().onFailure("Unknown response");
           }
         }
       });

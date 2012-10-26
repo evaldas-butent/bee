@@ -1,7 +1,7 @@
 package com.butent.bee.client.view.grid;
 
-import com.google.gwt.core.client.Scheduler;
-
+import com.butent.bee.client.data.ParentRowCreator;
+import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
@@ -26,14 +26,12 @@ import java.util.List;
 
 public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandlers,
     HasReadyForInsertHandlers, HasReadyForUpdateHandlers, HasSaveChangesHandlers,
-    HasEditFormHandlers {
+    HasEditFormHandlers, ParentRowCreator {
 
   void applyOptions(String options);
 
   void create(List<BeeColumn> dataColumns, int rowCount, BeeRowSet rowSet,
       GridDescription gridDescription, GridCallback gridCallback, boolean hasSearch, Order order);
-
-  void ensureGridVisible();
 
   int estimatePageSize(int containerWidth, int containerHeight);
 
@@ -41,8 +39,6 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   void formConfirm();
   
-  void formSwitchToEdit(Scheduler.ScheduledCommand command);
-
   List<BeeColumn> getDataColumns();
 
   FormView getForm(boolean edit);
@@ -57,7 +53,7 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   Collection<RowInfo> getSelectedRows();
   
-  boolean isChild();
+  boolean isAdding();
 
   boolean isReadOnly();
 
@@ -65,7 +61,12 @@ public interface GridView extends DataView, HasAddStartHandlers, HasAddEndHandle
 
   boolean isRowSelected(long rowId);
 
+  boolean likeAMotherlessChild();
+
   void refreshCellContent(long rowId, String columnSource);
 
   void setRelId(long relId);
+  
+  boolean validateFormData(FormView form, NotificationListener notificationListener,
+      boolean focusOnError);
 }

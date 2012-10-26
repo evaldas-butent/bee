@@ -4,6 +4,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.HasDataTable;
+import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.event.logical.ActionEvent;
 import com.butent.bee.client.event.logical.ActiveWidgetChangeEvent;
 import com.butent.bee.shared.HasState;
@@ -26,19 +27,21 @@ import java.util.List;
  * Contains necessary methods for form implementing classes.
  */
 
-public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,  
+public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
-    ActionEvent.HasActionHandlers, HasDimensions, HasState, HasCaption  {
+    ActionEvent.HasActionHandlers, HasDimensions, HasState, HasCaption {
 
   void applyOptions(String options);
 
-  boolean checkForUpdate(boolean reset);
-  
+  boolean checkOnClose();
+
+  boolean checkOnSave();
+
   void create(FormDescription formDescription, String viewName, List<BeeColumn> dataColumns,
       boolean addStyle, FormCallback callback);
 
   boolean focus(String source);
-  
+
   RowInfo getActiveRowInfo();
 
   List<BeeColumn> getDataColumns();
@@ -48,19 +51,19 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   HasDataTable getDisplay();
 
   FormCallback getFormCallback();
-  
+
   String getFormName();
 
   IsRow getOldRow();
-  
+
   Widget getRootWidget();
-  
+
   JavaScriptObject getRowJso();
 
   Widget getWidgetBySource(String source);
 
   boolean isRowEditable(boolean warn);
-  
+
   void onClose(CloseCallback closeCallback);
 
   void prepareForInsert();
@@ -68,12 +71,12 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
   void refreshCellContent(String columnSource);
 
   void refreshChildWidgets(IsRow row);
-  
+
   void start(Integer rowCount);
 
   void updateCell(String columnId, String newValue);
 
   void updateRow(IsRow row, boolean refreshChildren);
-  
-  boolean validate();
+
+  boolean validate(NotificationListener notificationListener, boolean focusOnError);
 }
