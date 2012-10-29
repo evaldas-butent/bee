@@ -41,8 +41,10 @@ public interface IsTable<RowType extends IsRow, ColType extends IsColumn> extend
   
   void clearRows();
 
-  void clearValue(int rowIndex, int colIndex);
+  void clearTableProperty(String key);
 
+  void clearValue(int rowIndex, int colIndex);
+  
   boolean containsColumn(String columnId);
 
   boolean containsRow(long rowId);

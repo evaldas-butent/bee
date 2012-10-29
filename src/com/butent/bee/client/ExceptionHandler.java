@@ -16,7 +16,7 @@ public class ExceptionHandler implements UncaughtExceptionHandler {
 
   @Override
   public void onUncaughtException(Throwable err) {
-    logger.error(err.fillInStackTrace(), "Uncaught Exception");
+    logger.error(err, "Uncaught Exception");
 
     Throwable cause = err.getCause();
     int i = 0;

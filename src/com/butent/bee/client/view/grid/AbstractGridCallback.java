@@ -20,6 +20,8 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
@@ -30,8 +32,10 @@ import java.util.List;
 import java.util.Map;
 
 public class AbstractGridCallback implements GridCallback {
-
+  
   public static final String DELETE_ROW_MESSAGE = "Išmesti eilutę ?";
+
+  protected static final BeeLogger logger = LogUtils.getLogger(AbstractGridCallback.class);
 
   public static Pair<String, String> deleteRowsMessage(int selectedRows) {
     return Pair.of("Išmesti aktyvią eilutę",

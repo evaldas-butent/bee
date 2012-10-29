@@ -105,11 +105,13 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       this(new SimpleRenderer(dataIndex, dataType));
     }
 
+    @Override
     public void onBlur(BlurEvent event) {
       updateDisplay(getText());
       setEditing(false);
     }
 
+    @Override
     public void onEditStop(EditStopEvent event) {
       if (renderer != null) {
         if (event.isChanged()) {
@@ -120,6 +122,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       }
     }
 
+    @Override
     public void onFocus(FocusEvent event) {
       setText(getDisplayValue());
       setEditing(true);
@@ -142,10 +145,101 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
   }
 
+  protected class InputWidget extends InputText {
+
+    private InputWidget() {
+      super();
+
+      addMouseWheelHandler(inputEvents);
+
+      sinkEvents(Event.ONBLUR | Event.ONCLICK | Event.KEYEVENTS);
+    }
+
+    @Override
+    public void onBrowserEvent(Event event) {
+      boolean showing = getSelector().isShowing();
+      int type = event.getTypeInt();
+
+      boolean consumed = false;
+
+      switch (type) {
+        case Event.ONBLUR:
+          if (showing || isAdding()) {
+            return;
+          } else {
+            deactivate();
+          }
+          break;
+
+        case Event.ONCLICK:
+          if (isEmbedded() && !isActive()) {
+            start(EditorFactory.START_MOUSE_CLICK);
+          } else if (!showing) {
+            clearDisplay();
+            askOracle();
+          }
+          break;
+
+        case Event.ONKEYDOWN:
+          if (isEmbedded() && !isActive()) {
+            int keyCode = event.getKeyCode();
+
+            switch (keyCode) {
+              case KeyCodes.KEY_BACKSPACE:
+                if (!BeeUtils.isEmpty(getDisplayValue())) {
+                  start(SHOW_SELECTOR);
+                }
+                consumed = true;
+                break;
+              case KeyCodes.KEY_DELETE:
+                consumed = true;
+                if (isNullable() && !BeeUtils.isEmpty(getDisplayValue())) {
+                  setSelection(null);
+                }
+                break;
+            }
+
+          } else {
+            inputEvents.onKeyDown(event);
+            consumed = inputEvents.isConsumed();
+          }
+          break;
+
+        case Event.ONKEYPRESS:
+          if (isEmbedded() && !isActive()) {
+            consumed = true;
+            int charCode = event.getCharCode();
+
+            if (charCode > BeeConst.CHAR_SPACE
+                && Codec.isValidUnicodeChar(BeeUtils.toChar(charCode))) {
+              start(charCode);
+              consumed = true;
+            }
+          } else {
+            consumed = inputEvents.isConsumed();
+          }
+          break;
+
+        case Event.ONKEYUP:
+          inputEvents.onKeyUp(event);
+          consumed = inputEvents.isConsumed();
+          break;
+      }
+
+      if (consumed) {
+        event.preventDefault();
+        inputEvents.consume();
+      } else {
+        super.onBrowserEvent(event);
+      }
+    }
+  }
+  
   private class InputEvents implements MouseWheelHandler {
 
     private boolean consumed = false;
 
+    @Override
     public void onMouseWheel(MouseWheelEvent event) {
       if (!isEnabled() || !isActive() || !getSelector().isShowing()) {
         return;
@@ -262,7 +356,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       this.consumed = consumed;
     }
   }
-
+  
   /**
    * Handles suggestion display.
    */
@@ -508,6 +602,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private static final char SHOW_SELECTOR = '*';
 
   private final Callback callback = new Callback() {
+    @Override
     public void onSuggestionsReady(Request request, Response response) {
       DataSelector.this.getInput().removeStyleName(STYLE_WAITING);
       
@@ -530,7 +625,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private final SelectionOracle oracle;
   private final Operator searchType;
 
-  private final InputText input;
+  private final InputWidget input;
   private final Selector selector;
 
   private final List<String> choiceColumns = Lists.newArrayList();
@@ -575,7 +670,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     ITEM_TYPE itemType = relation.getItemType();
 
-    this.input = new InputText();
+    this.input = new InputWidget();
     this.selector = new Selector(itemType, this.input);
 
     this.choiceColumns.addAll(relation.getChoiceColumns());
@@ -623,35 +718,31 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         dataInfo.getNewRowCaption());
     this.newRowEnabled = relation.isNewRowEnabled();
 
-    input.addStyleName(STYLE_SELECTOR);
-    if (embedded) {
-      input.addStyleName(STYLE_EMBEDDED);
-    }
-
-    initWidget(input);
-
-    input.addMouseWheelHandler(inputEvents);
     Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
 
-    sinkEvents(Event.ONBLUR | Event.ONCLICK | Event.KEYEVENTS);
+    init(input, embedded);
 
     SelectorEvent.fire(this, State.INITIALIZED);
   }
 
+  @Override
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
-    return addDomHandler(handler, BlurEvent.getType());
+    return getInput().addDomHandler(handler, BlurEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
-    return addDomHandler(handler, FocusEvent.getType());
+    return getInput().addDomHandler(handler, FocusEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
-    return addDomHandler(handler, KeyDownEvent.getType());
+    return getInput().addDomHandler(handler, KeyDownEvent.getType());
   }
 
   public Collection<HandlerRegistration> addSimpleHandler(AbstractCellRenderer renderer) {
@@ -672,6 +763,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         addEditStopHandler(handler));
   }
 
+  @Override
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
   }
@@ -680,6 +772,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return choiceColumns;
   }
 
+  @Override
   public EditorAction getDefaultFocusAction() {
     return EditorAction.SELECT;
   }
@@ -688,10 +781,12 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return getInput().getText();
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "selector";
   }
@@ -708,6 +803,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return newRowForm;
   }
 
+  @Override
   public String getNormalizedValue() {
     return getEditorValue();
   }
@@ -716,22 +812,27 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return oracle;
   }
 
+  @Override
   public IsRow getRelatedRow() {
     return selectedRow;
   }
 
+  @Override
   public int getTabIndex() {
     return getInput().getTabIndex();
   }
 
+  @Override
   public TextBoxBase getTextBox() {
     return getInput();
   }
 
+  @Override
   public String getValue() {
     return getEditorValue();
   }
 
+  @Override
   public int getVisibleLines() {
     return visibleLines;
   }
@@ -741,6 +842,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return FormWidget.DATA_SELECTOR;
   }
 
+  @Override
   public boolean handlesKey(int keyCode) {
     return isActive();
   }
@@ -749,6 +851,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return adding;
   }
 
+  @Override
   public boolean isEditing() {
     return getInput().isEditing();
   }
@@ -757,10 +860,12 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return embedded;
   }
   
+  @Override
   public boolean isEnabled() {
     return getInput().isEnabled();
   }
 
+  @Override
   public boolean isNullable() {
     return getInput().isNullable();
   }
@@ -770,86 +875,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return getInput().isOrHasPartner(node)
         || getSelector().getPopup().getElement().isOrHasChild(node);
   }
-  
+
   @Override
-  public void onBrowserEvent(Event event) {
-    boolean showing = getSelector().isShowing();
-    int type = event.getTypeInt();
-
-    boolean consumed = false;
-
-    switch (type) {
-      case Event.ONBLUR:
-        if (showing || isAdding()) {
-          return;
-        } else {
-          deactivate();
-        }
-        break;
-
-      case Event.ONCLICK:
-        if (isEmbedded() && !isActive()) {
-          start(EditorFactory.START_MOUSE_CLICK);
-        } else if (!showing) {
-          clearDisplay();
-          askOracle();
-        }
-        break;
-
-      case Event.ONKEYDOWN:
-        if (isEmbedded() && !isActive()) {
-          int keyCode = event.getKeyCode();
-
-          switch (keyCode) {
-            case KeyCodes.KEY_BACKSPACE:
-              if (!BeeUtils.isEmpty(getDisplayValue())) {
-                start(SHOW_SELECTOR);
-              }
-              consumed = true;
-              break;
-            case KeyCodes.KEY_DELETE:
-              consumed = true;
-              if (isNullable() && !BeeUtils.isEmpty(getDisplayValue())) {
-                setSelection(null);
-              }
-              break;
-          }
-
-        } else {
-          inputEvents.onKeyDown(event);
-          consumed = inputEvents.isConsumed();
-        }
-        break;
-
-      case Event.ONKEYPRESS:
-        if (isEmbedded() && !isActive()) {
-          consumed = true;
-          int charCode = event.getCharCode();
-
-          if (charCode > BeeConst.CHAR_SPACE
-              && Codec.isValidUnicodeChar(BeeUtils.toChar(charCode))) {
-            start(charCode);
-            consumed = true;
-          }
-        } else {
-          consumed = inputEvents.isConsumed();
-        }
-        break;
-
-      case Event.ONKEYUP:
-        inputEvents.onKeyUp(event);
-        consumed = inputEvents.isConsumed();
-        break;
-    }
-
-    if (consumed) {
-      event.preventDefault();
-      inputEvents.consume();
-    } else {
-      super.onBrowserEvent(event);
-    }
-  }
-
   public void setAccessKey(char key) {
     getInput().setAccessKey(key);
   }
@@ -870,22 +897,27 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     getInput().setValue(value, false);
   }
 
+  @Override
   public void setEditing(boolean editing) {
     getInput().setEditing(editing);
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     getInput().setEnabled(enabled);
   }
 
+  @Override
   public void setFocus(boolean focused) {
     getInput().setFocus(focused);
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
+  @Override
   public void setNullable(boolean nullable) {
     getInput().setNullable(nullable);
   }
@@ -894,33 +926,39 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     setSelectedRow(row);
     setEditorValue(row == null ? null : BeeUtils.toString(row.getId()));
 
-    getSelector().hide();
+    hideSelector();
     deactivate();
 
     SelectorEvent.fire(this, State.CHANGED);
     fireEvent(new EditStopEvent(State.CHANGED, KeyCodes.KEY_TAB, false));
   }
 
+  @Override
   public void setTabIndex(int index) {
     getInput().setTabIndex(index);
   }
 
+  @Override
   public void setUpperCase(boolean upperCase) {
     getInput().setUpperCase(upperCase);
   }
   
+  @Override
   public void setValue(String newValue) {
     setEditorValue(newValue);
   }
 
+  @Override
   public void setValue(String value, boolean fireEvents) {
     setEditorValue(value);
   }
 
+  @Override
   public void setVisibleLines(int lines) {
     this.visibleLines = lines;
   }
 
+  @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
     SelectorEvent.fire(this, State.OPEN);
@@ -958,16 +996,55 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     setActive(true);
   }
 
+  @Override
   public String validate() {
     return null;
   }
 
+  protected void clearDisplay() {
+    setDisplayValue(BeeConst.STRING_EMPTY);
+  }
+  
+  protected void exit(boolean hideSelector, State state, Integer keyCode, boolean hasModifiers) {
+    if (hideSelector) {
+      hideSelector();
+    }
+    deactivate();
+
+    SelectorEvent.fire(this, state);
+    fireEvent(new EditStopEvent(state, keyCode, hasModifiers));
+  }
+  
+  protected InputWidget getInput() {
+    return input;
+  }
+  
+  protected void hideSelector() {
+    getSelector().hide();
+  }
+  
+  protected void init(InputWidget inputWidget, boolean embed) {
+    inputWidget.addStyleName(STYLE_SELECTOR);
+    if (embed) {
+      inputWidget.addStyleName(STYLE_EMBEDDED);
+    }
+
+    initWidget(inputWidget);
+  }
+  
   @Override
   protected void onUnload() {
     if (!Global.isTemporaryDetach()) {
       getOracle().onUnload();
     }
     super.onUnload();
+  }
+
+  protected void reset() {
+    setWaiting(false);
+
+    getInput().removeStyleName(STYLE_WAITING);
+    getInput().removeStyleName(STYLE_NOT_FOUND);
   }
 
   private void addCells(Element rowElement, BeeRow row) {
@@ -1053,30 +1130,13 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     getOracle().requestSuggestions(request, getCallback());
   }
 
-  private void clearDisplay() {
-    setDisplayValue(BeeConst.STRING_EMPTY);
-  }
-
   private void deactivate() {
     setActive(false);
-    setWaiting(false);
-
-    getInput().removeStyleName(STYLE_WAITING);
-    getInput().removeStyleName(STYLE_NOT_FOUND);
+    reset();
   }
 
   private void exit(boolean hideSelector, State state) {
     exit(hideSelector, state, null, false);
-  }
-
-  private void exit(boolean hideSelector, State state, Integer keyCode, boolean hasModifiers) {
-    if (hideSelector) {
-      getSelector().hide();
-    }
-    deactivate();
-
-    SelectorEvent.fire(this, state);
-    fireEvent(new EditStopEvent(state, keyCode, hasModifiers));
   }
 
   private Callback getCallback() {
@@ -1093,10 +1153,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private String getEditorValue() {
     return editorValue;
-  }
-
-  private InputText getInput() {
-    return input;
   }
 
   private Request getLastRequest() {

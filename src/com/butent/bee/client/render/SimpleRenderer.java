@@ -25,7 +25,7 @@ public class SimpleRenderer extends AbstractCellRenderer {
     if (row == null) {
       return null;
     } else {
-      return DataUtils.transform(row, getDataIndex(), getDataType());
+      return DataUtils.render(row, getDataIndex(), getDataType());
     }
   }
 }

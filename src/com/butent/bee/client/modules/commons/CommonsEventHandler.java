@@ -1,52 +1,40 @@
 package com.butent.bee.client.modules.commons;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.common.collect.Sets;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.composite.MultiSelector;
-import com.butent.bee.client.composite.MultiSelector.SelectionCallback;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.Queries.RowSetCallback;
-import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.commons.ParametersHandler.ParameterFormHandler;
 import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.GridPresenter;
-import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
-import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
-import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.view.grid.GridCallback;
-import com.butent.bee.client.widget.BeeListBox;
+import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
-import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
@@ -56,207 +44,12 @@ import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 public class CommonsEventHandler {
 
-  private static class CategoryCollector {
-    private Long itemId;
-    private final List<Long> categories = Lists.newArrayList();
-    private BeeListBox widget;
-
-    private void addCategories() {
-      CompoundFilter flt = null;
-
-      if (!isEmpty()) {
-        flt = Filter.and();
-
-        for (Long categoryId : categories) {
-          flt.add(ComparisonFilter.compareId(Operator.NE, categoryId));
-        }
-      }
-      Queries.getRowSet(CommonsConstants.TBL_CATEGORIES, null, flt, null, new RowSetCallback() {
-        @Override
-        public void onSuccess(final BeeRowSet result) {
-          if (result.isEmpty()) {
-            Global.showError("No more heroes any more");
-            return;
-          }
-          MultiSelector selector = new MultiSelector("Kategorijos", result,
-              Lists.newArrayList(CommonsConstants.COL_NAME),
-              new SelectionCallback() {
-                @Override
-                public void onSelection(List<IsRow> rows) {
-                  if (DataUtils.isId(itemId)) {
-                    List<Long> categoryList = Lists.newArrayList();
-
-                    for (IsRow row : rows) {
-                      categoryList.add(row.getId());
-                    }
-                    doRequest(CommonsConstants.SVC_ADD_CATEGORIES, getCategories(categoryList));
-
-                  } else {
-                    Map<Long, String> data = Maps.newLinkedHashMap();
-                    int nameIndex = result.getColumnIndex(CommonsConstants.COL_NAME);
-
-                    for (IsRow row : rows) {
-                      data.put(row.getId(), row.getString(nameIndex));
-                    }
-                    updateCategories(data);
-                  }
-                }
-              });
-          selector.center();
-        }
-      });
-    }
-
-    private void doRequest(String service, String ids) {
-      ParameterList args = createArgs(service);
-      args.addDataItem(CommonsConstants.VAR_ITEM_ID, itemId);
-      args.addDataItem(CommonsConstants.VAR_ITEM_CATEGORIES, ids);
-
-      BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-        @Override
-        public void onResponse(ResponseObject response) {
-          Assert.notNull(response);
-
-          if (response.hasErrors()) {
-            Global.showError(response.getErrors());
-          } else if (response.hasResponse(Integer.class)) {
-            requery(itemId);
-          } else {
-            Global.showError("Unknown response");
-          }
-        }
-      });
-    }
-
-    private String getCategories() {
-      return getCategories(categories);
-    }
-
-    private String getCategories(List<Long> categoryList) {
-      StringBuilder sb = new StringBuilder();
-
-      for (Long categoryId : categoryList) {
-        if (sb.length() > 0) {
-          sb.append(BeeConst.CHAR_COMMA);
-        }
-        sb.append(categoryId);
-      }
-      return sb.toString();
-    }
-
-    private boolean isEmpty() {
-      return categories.isEmpty();
-    }
-
-    private void removeCategories() {
-      final List<Integer> indexes = Lists.newArrayList();
-
-      for (int i = 0; i < widget.getItemCount(); i++) {
-        if (widget.isItemSelected(i)) {
-          indexes.add(i);
-        }
-      }
-      if (!indexes.isEmpty()) {
-        if (DataUtils.isId(itemId)) {
-          Global.confirm(BeeUtils.joinWords("Pašalinti", indexes.size(), "kategorijas?"),
-              new ConfirmationCallback() {
-                @Override
-                public void onConfirm() {
-                  List<Long> categoryList = Lists.newArrayList();
-
-                  for (int idx : indexes) {
-                    categoryList.add(categories.get(idx));
-                  }
-                  doRequest(CommonsConstants.SVC_REMOVE_CATEGORIES, getCategories(categoryList));
-                }
-              });
-        } else {
-          Collections.reverse(indexes);
-
-          for (int idx : indexes) {
-            categories.remove(idx);
-            widget.removeItem(idx);
-          }
-        }
-      }
-    }
-
-    private void requery(Long item) {
-      this.itemId = item;
-      categories.clear();
-      widget.clear();
-
-      if (DataUtils.isId(itemId)) {
-        Filter flt = ComparisonFilter.isEqual(CommonsConstants.COL_ITEM, new LongValue(itemId));
-
-        Queries.getRowSet(CommonsConstants.TBL_ITEM_CATEGORIES, null, flt, null,
-            new RowSetCallback() {
-              @Override
-              public void onSuccess(BeeRowSet result) {
-                if (result.isEmpty()) {
-                  return;
-                }
-                Map<Long, String> data = Maps.newLinkedHashMap();
-                int nameIndex = result.getColumnIndex(CommonsConstants.COL_NAME);
-                int idIndex = result.getColumnIndex(CommonsConstants.COL_CATEGORY);
-
-                for (IsRow row : result.getRows()) {
-                  data.put(row.getLong(idIndex), row.getString(nameIndex));
-                }
-                updateCategories(data);
-              }
-            });
-      }
-    }
-
-    private void setWidget(BeeListBox widget) {
-      this.widget = widget;
-    }
-
-    private void updateCategories(Map<Long, String> data) {
-      if (!BeeUtils.isEmpty(data)) {
-        for (Map.Entry<Long, String> row : data.entrySet()) {
-          categories.add(row.getKey());
-          widget.addItem(row.getValue());
-        }
-      }
-    }
-  }
-
   private static class ItemFormHandler extends AbstractFormCallback {
-    private final CategoryCollector categories = new CategoryCollector();
-
-    @Override
-    public void afterCreateWidget(final String name, final Widget widget,
-        WidgetDescriptionCallback callback) {
-
-      if (BeeUtils.same(name, "Categories") && widget instanceof BeeListBox) {
-        categories.setWidget((BeeListBox) widget);
-
-      } else if (BeeUtils.same(name, "AddCategories")
-          && widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            categories.addCategories();
-          }
-        });
-      } else if (BeeUtils.same(name, "RemoveCategories")
-          && widget instanceof HasClickHandlers) {
-        ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
-          @Override
-          public void onClick(ClickEvent event) {
-            categories.removeCategories();
-          }
-        });
-      }
-    }
 
     @Override
     public FormCallback getInstance() {
@@ -266,7 +59,7 @@ public class CommonsEventHandler {
     @Override
     public boolean onReadyForInsert(final ReadyForInsertEvent event) {
       Assert.notNull(event);
-      
+
       String price = null;
       String currency = null;
 
@@ -280,7 +73,7 @@ public class CommonsEventHandler {
           currency = value;
         }
       }
-      
+
       if (!BeeUtils.isEmpty(price) && BeeUtils.isEmpty(currency)) {
         event.getCallback().onFailure("Currency required");
         return false;
@@ -291,9 +84,12 @@ public class CommonsEventHandler {
 
       ParameterList args = createArgs(CommonsConstants.SVC_ITEM_CREATE);
       args.addDataItem(CommonsConstants.VAR_ITEM_DATA, Codec.beeSerialize(rs));
+      
+      String categories = 
+          getFormView().getActiveRow().getProperty(CommonsConstants.PROP_CATEGORIES);
 
-      if (!categories.isEmpty()) {
-        args.addDataItem(CommonsConstants.VAR_ITEM_CATEGORIES, categories.getCategories());
+      if (!BeeUtils.isEmpty(categories)) {
+        args.addDataItem(CommonsConstants.VAR_ITEM_CATEGORIES, categories);
       }
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
         @Override
@@ -315,14 +111,35 @@ public class CommonsEventHandler {
     }
 
     @Override
-    public void onStartEdit(FormView form, IsRow row) {
-      categories.requery(row.getId());
+    public boolean onStartEdit(final FormView form, final IsRow row,
+        final Scheduler.ScheduledCommand focusCommand) {
+ 
+      Filter flt = ComparisonFilter.isEqual(CommonsConstants.COL_ITEM, new LongValue(row.getId()));
+
+      Queries.getRowSet(CommonsConstants.TBL_ITEM_CATEGORIES, null, flt, null,
+          new RowSetCallback() {
+            @Override
+            public void onSuccess(BeeRowSet result) {
+              if (!result.isEmpty()) {
+                List<Long> categ = Lists.newArrayList();
+
+                int index = result.getColumnIndex(CommonsConstants.COL_CATEGORY);
+                for (IsRow r : result.getRows()) {
+                  categ.add(r.getLong(index));
+                }
+                row.setProperty(CommonsConstants.PROP_CATEGORIES, DataUtils.buildIdList(categ));
+              }
+              
+              form.updateRow(row, true);
+              focusCommand.execute();
+            }
+          });
+
+      return false;
     }
 
     @Override
     public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-      categories.requery(null);
-
       if (form.getViewPresenter() instanceof GridFormPresenter) {
         GridCallback gcb = ((GridFormPresenter) form.getViewPresenter()).getGridCallback();
 
@@ -332,11 +149,11 @@ public class CommonsEventHandler {
           if (grd.showServices()) {
             newRow.setValue(form.getDataIndex(CommonsConstants.COL_SERVICE), 1);
           }
-          final IsRow category = grd.getSelectedCategory();
 
+          IsRow category = grd.getSelectedCategory();
           if (category != null) {
-            categories.updateCategories(ImmutableMap.of(category.getId(),
-                grd.getCategoryValue(category, CommonsConstants.COL_NAME)));
+            newRow.setProperty(CommonsConstants.PROP_CATEGORIES,
+                BeeUtils.toString(category.getId()));
           }
         }
       }
@@ -345,22 +162,13 @@ public class CommonsEventHandler {
 
   private static class ItemGridHandler extends AbstractGridCallback
       implements SelectionHandler<IsRow> {
-
+    
     private static final String FILTER_KEY = "f1";
     private final boolean services;
     private IsRow selectedCategory = null;
-    private TreePresenter categoryTree = null;
 
     private ItemGridHandler(boolean showServices) {
       this.services = showServices;
-    }
-
-    @Override
-    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
-      if (widget instanceof TreeView && BeeUtils.same(name, "Categories")) {
-        ((TreeView) widget).addSelectionHandler(this);
-        categoryTree = ((TreeView) widget).getTreePresenter();
-      }
     }
 
     @Override
@@ -389,6 +197,53 @@ public class CommonsEventHandler {
       gridDescription.setFilter(filter);
       return true;
     }
+    
+    @Override
+    public boolean onSaveChanges(GridView gridView, SaveChangesEvent event) {
+      String oldCateg = event.getOldRow().getProperty(CommonsConstants.PROP_CATEGORIES);
+      String newCateg = event.getNewRow().getProperty(CommonsConstants.PROP_CATEGORIES);
+      
+      if (!BeeUtils.same(oldCateg, newCateg)) {
+        Set<Long> oldValues = DataUtils.parseIdSet(oldCateg);
+        Set<Long> newValues = DataUtils.parseIdSet(newCateg);
+        
+        Set<Long> insert = Sets.newHashSet(newValues);
+        insert.removeAll(oldValues);
+
+        Set<Long> delete = Sets.newHashSet(oldValues);
+        delete.removeAll(newValues);
+        
+        long itemId = event.getRowId();
+        
+        if (!delete.isEmpty()) {
+          ParameterList args = createArgs(CommonsConstants.SVC_REMOVE_CATEGORIES);
+          args.addDataItem(CommonsConstants.VAR_ITEM_ID, itemId);
+          args.addDataItem(CommonsConstants.VAR_ITEM_CATEGORIES, DataUtils.buildIdList(delete));
+
+          BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              logger.debug(CommonsConstants.SVC_REMOVE_CATEGORIES, response.getResponse());
+            }
+          });
+        }
+
+        if (!insert.isEmpty()) {
+          ParameterList args = createArgs(CommonsConstants.SVC_ADD_CATEGORIES);
+          args.addDataItem(CommonsConstants.VAR_ITEM_ID, itemId);
+          args.addDataItem(CommonsConstants.VAR_ITEM_CATEGORIES, DataUtils.buildIdList(insert));
+
+          BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+            @Override
+            public void onResponse(ResponseObject response) {
+              logger.debug(CommonsConstants.SVC_ADD_CATEGORIES, response.getResponse());
+            }
+          });
+        }
+      }
+      
+      return super.onSaveChanges(gridView, event);
+    }
 
     @Override
     public void onSelection(SelectionEvent<IsRow> event) {
@@ -414,13 +269,6 @@ public class CommonsEventHandler {
 
     public boolean showServices() {
       return services;
-    }
-
-    private String getCategoryValue(IsRow category, String colName) {
-      if (BeeUtils.allNotNull(category, categoryTree, categoryTree.getDataColumns())) {
-        return category.getString(DataUtils.getColumnIndex(colName, categoryTree.getDataColumns()));
-      }
-      return null;
     }
 
     private Filter getFilter(Long category) {

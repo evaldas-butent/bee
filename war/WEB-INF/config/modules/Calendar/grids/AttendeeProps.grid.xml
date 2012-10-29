@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
 
   name="AttendeeProps" viewName="AttendeeProps" newRowCaption="Naujas"
-  hasHeaders="false" hasFooters="false"
+  headerMode="grid" hasFooters="false"
   >
   <columns>
     <DataColumn name="GroupName" caption="Grupė" minWidth="80" />

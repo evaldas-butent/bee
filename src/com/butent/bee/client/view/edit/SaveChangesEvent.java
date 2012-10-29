@@ -6,7 +6,6 @@ import com.google.gwt.event.shared.GwtEvent;
 
 import com.butent.bee.client.Callback;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
@@ -28,24 +27,14 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> {
   public static SaveChangesEvent of(ReadyForUpdateEvent event) {
     Assert.notNull(event);
 
-    long rid;
-    long ver;
-    if (event.getRowValue() == null) {
-      rid = BeeConst.UNDEF;
-      ver = BeeConst.UNDEF;
-    } else {
-      rid = event.getRowValue().getId();
-      ver = event.getRowValue().getVersion();
-    }
-    
-    return new SaveChangesEvent(rid, ver,
+    return new SaveChangesEvent(event.getRowValue(), DataUtils.cloneRow(event.getRowValue()),
         Lists.newArrayList(DataUtils.cloneColumn(event.getColumn())),
         Lists.newArrayList(event.getOldValue()), Lists.newArrayList(event.getNewValue()),
         event.getCallback());
   }
 
-  private final long rowId;
-  private final long version;
+  private final IsRow oldRow;
+  private final IsRow newRow;
   
   private final List<BeeColumn> columns;
   
@@ -54,11 +43,11 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> {
   
   private final Callback<IsRow> callback;
   
-  public SaveChangesEvent(long rowId, long version, List<BeeColumn> columns,
+  public SaveChangesEvent(IsRow oldRow, IsRow newRow, List<BeeColumn> columns,
       List<String> oldValues, List<String> newValues, Callback<IsRow> callback) {
     super();
-    this.rowId = rowId;
-    this.version = version;
+    this.oldRow = oldRow;
+    this.newRow = newRow;
     this.columns = columns;
     this.oldValues = oldValues;
     this.newValues = newValues;
@@ -78,8 +67,16 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> {
     return columns;
   }
 
+  public IsRow getNewRow() {
+    return newRow;
+  }
+
   public List<String> getNewValues() {
     return newValues;
+  }
+
+  public IsRow getOldRow() {
+    return oldRow;
   }
 
   public List<String> getOldValues() {
@@ -87,11 +84,11 @@ public class SaveChangesEvent extends GwtEvent<SaveChangesEvent.Handler> {
   }
 
   public long getRowId() {
-    return rowId;
+    return newRow.getId();
   }
 
   public long getVersion() {
-    return version;
+    return newRow.getVersion();
   }
 
   @Override

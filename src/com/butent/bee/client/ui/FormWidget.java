@@ -28,6 +28,7 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.InputTime;
+import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.composite.StringPicker;
@@ -206,6 +207,7 @@ public enum FormWidget {
   LIST_BOX("ListBox", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE)),
   LONG_LABEL("LongLabel", EnumSet.of(Type.DISPLAY)),
   METER("Meter", EnumSet.of(Type.DISPLAY)),
+  MULTI_SELECTOR("MultiSelector", EnumSet.of(Type.FOCUSABLE, Type.EDITABLE, Type.DISPLAY)),
   ORDERED_LIST("OrderedList", null),
   PROGRESS("Progress", EnumSet.of(Type.DISPLAY)),
   RADIO("Radio", EnumSet.of(Type.EDITABLE)),
@@ -538,7 +540,7 @@ public enum FormWidget {
         break;
 
       case DATA_SELECTOR:
-        relation = createRelation(viewName, attributes, children);
+        relation = createRelation(viewName, attributes, children, Relation.RenderMode.TARGET);
         if (relation != null) {
           widget = new DataSelector(relation, true);
           if (BeeConst.isTrue(attributes.get(HasCapsLock.ATTR_UPPER_CASE))) {
@@ -841,6 +843,17 @@ public enum FormWidget {
           z = attributes.get(ATTR_OPTIMUM);
           if (BeeUtils.isDouble(z)) {
             ((Meter) widget).setOptimum(BeeUtils.toDouble(z));
+          }
+        }
+        break;
+
+      case MULTI_SELECTOR:
+        relation = createRelation(null, attributes, children, Relation.RenderMode.SOURCE);
+        String property = attributes.get(UiConstants.ATTR_PROPERTY);
+        if (relation != null && !BeeUtils.isEmpty(property)) {
+          widget = new MultiSelector(relation, true, property);
+          if (BeeConst.isTrue(attributes.get(HasCapsLock.ATTR_UPPER_CASE))) {
+            ((MultiSelector) widget).setUpperCase(true);
           }
         }
         break;
@@ -1194,7 +1207,7 @@ public enum FormWidget {
       ((Launchable) widget).launch();
     }
 
-    widgetDescriptionCallback.onSuccess(widgetDescription);
+    widgetDescriptionCallback.onSuccess(widgetDescription, widget);
 
     String decoratorId = attributes.containsKey(ATTR_DECORATOR)
         ? attributes.get(ATTR_DECORATOR) : attributes.get(ATTR_DEFAULT_DECORATOR);
@@ -1211,7 +1224,7 @@ public enum FormWidget {
   public String getTagName() {
     return tagName;
   }
-
+  
   public boolean isChild() {
     return hasType(Type.IS_CHILD);
   }
@@ -1347,7 +1360,7 @@ public enum FormWidget {
   }
 
   private Relation createRelation(String viewName, Map<String, String> attributes,
-      List<Element> children) {
+      List<Element> children, Relation.RenderMode renderMode) {
     Relation relation = XmlUtils.getRelation(attributes, children);
 
     String source = attributes.get(UiConstants.ATTR_SOURCE);
@@ -1357,7 +1370,7 @@ public enum FormWidget {
     Holder<String> sourceHolder = Holder.of(source);
     Holder<List<String>> listHolder = Holder.of(renderColumns);
 
-    relation.initialize(Data.getDataInfoProvider(), viewName, sourceHolder, listHolder);
+    relation.initialize(Data.getDataInfoProvider(), viewName, sourceHolder, listHolder, renderMode);
     if (relation.getViewName() == null) {
       logger.severe("Cannot create relation:");
       logger.severe(viewName, source, renderColumns);

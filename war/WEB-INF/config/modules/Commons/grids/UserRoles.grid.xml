@@ -2,7 +2,7 @@
 <Grid xmlns="http://www.butent.com/grid"
   
   name="UserRoles" viewName="UserRoles" caption="Rolės"
-  hasHeaders="false"
+  headerMode="grid"
   >
   <columns>
     <RelColumn name="Role" caption="Rolė" width="100" />

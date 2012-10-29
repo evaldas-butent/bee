@@ -75,7 +75,6 @@ public class CrmConstants {
   public static final String COL_FIRST_NAME = "FirstName";
   public static final String COL_LAST_NAME = "LastName";
 
-  public static final String COL_USER_ID = "UserID";
   public static final String COL_EVENT = "Event";
   public static final String COL_PRIORITY = "Priority";
 
@@ -109,6 +108,9 @@ public class CrmConstants {
   public static final String COL_DOCUMENT_DATE = "DocumentDate";
   public static final String COL_DOCUMENT_COUNT = "DocumentCount";
 
+  public static final String PROP_EXECUTORS = "Executors";
+  public static final String PROP_OBSERVERS = "Observers";
+  
   private CrmConstants() {
   }
 }

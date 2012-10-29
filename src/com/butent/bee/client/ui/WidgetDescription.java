@@ -41,6 +41,7 @@ public class WidgetDescription implements HasInfo {
   private Collection<ConditionalStyleDeclaration> dynStyles = null;
 
   private String source = null;
+  private String rowProperty = null;
   private Relation relation = null;
 
   private RendererDescription rendererDescription = null;
@@ -122,6 +123,7 @@ public class WidgetDescription implements HasInfo {
         "Caption", getCaption(),
         "Read Only", getReadOnly(),
         "Source", getSource(),
+        "Row Property", getRowProperty(),
         "Min Value", getMinValue(),
         "Max Value", getMaxValue(),
         "Required", getRequired(),
@@ -225,6 +227,10 @@ public class WidgetDescription implements HasInfo {
     return required;
   }
 
+  public String getRowProperty() {
+    return rowProperty;
+  }
+
   public String getSource() {
     return source;
   }
@@ -279,6 +285,8 @@ public class WidgetDescription implements HasInfo {
         setReadOnly(BeeUtils.toBooleanOrNull(value));
       } else if (BeeUtils.same(key, UiConstants.ATTR_SOURCE)) {
         setSource(value.trim());
+      } else if (BeeUtils.same(key, UiConstants.ATTR_PROPERTY)) {
+        setRowProperty(value.trim());
 
       } else if (BeeUtils.same(key, ATTR_MIN_VALUE)) {
         setMinValue(value.trim());
@@ -372,10 +380,14 @@ public class WidgetDescription implements HasInfo {
     this.required = required;
   }
 
+  public void setRowProperty(String rowProperty) {
+    this.rowProperty = rowProperty;
+  }
+
   public void setSource(String source) {
     this.source = source;
   }
-
+  
   public void setUpdateMode(RefreshType updateMode) {
     this.updateMode = updateMode;
   }
@@ -383,7 +395,7 @@ public class WidgetDescription implements HasInfo {
   public void setValidation(Calculation validation) {
     this.validation = validation;
   }
-  
+
   public void updateFrom(EditableColumn editableColumn) {
     Assert.notNull(editableColumn);
 

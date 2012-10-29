@@ -4,6 +4,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
@@ -140,11 +141,15 @@ public class TableColumn implements HasInfo, IsColumn {
   @Override
   public void setProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
-    Assert.notNull(propertyValue);
-    if (properties == null) {
-      properties = CustomProperties.create();
+
+    if (BeeUtils.isEmpty(propertyValue)) {
+      clearProperty(propertyKey);
+    } else {
+      if (properties == null) {
+        properties = CustomProperties.create();
+      }
+      properties.put(propertyKey, propertyValue);
     }
-    properties.put(propertyKey, propertyValue);
   }
 
   @Override

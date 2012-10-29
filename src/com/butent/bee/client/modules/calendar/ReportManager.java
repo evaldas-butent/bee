@@ -597,7 +597,6 @@ class ReportManager {
     gridDescription.setCaption(caption);
     gridDescription.setReadOnly(true);
 
-    gridDescription.setHasHeaders(true);
     gridDescription.setHasFooters(false);
 
     for (int i = 0; i < rowSet.getNumberOfColumns(); i++) {

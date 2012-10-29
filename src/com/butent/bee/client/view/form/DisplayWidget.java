@@ -9,6 +9,7 @@ import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.render.AbstractCellRenderer;
+import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.widget.BeeButton;
@@ -58,7 +59,7 @@ public class DisplayWidget {
       return BeeConst.STRING_EMPTY;
     }
   }
-
+  
   public String getWidgetId() {
     return widgetDescription.getWidgetId();
   }
@@ -67,7 +68,21 @@ public class DisplayWidget {
     return widgetDescription.getWidgetType();
   }
 
+  public boolean hasSource(String source) {
+    if (BeeUtils.isEmpty(source)) {
+      return false;
+    } else {
+      return BeeUtils.inListSame(source, widgetDescription.getSource(), 
+          widgetDescription.getRowProperty());
+    }
+  }
+
   public void refresh(Widget widget, IsRow row) {
+    if (widget instanceof HandlesRendering) {
+      ((HandlesRendering) widget).render(row);
+      return;
+    }
+    
     String value = getValue(row);
     FormWidget type = getWidgetType();
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="Messages" viewName="Messages" hasHeaders="false" readOnly="true"
+  name="Messages" viewName="Messages" headerMode="none" readOnly="true"
   >
   <body height="40" borderWidth="0 0 1 0" />
 

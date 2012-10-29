@@ -705,25 +705,44 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:element name="DataSelector" substitutionGroup="widget">
+  <xs:complexType name="selectorType">
+    <xs:complexContent>
+      <xs:extension base="inputWidget">
+        <xs:sequence>
+          <xs:choice minOccurs="0" maxOccurs="1">
+            <xs:element name="renderer" type="ui:renderer" />
+            <xs:element name="render" type="ui:calcType" />
+            <xs:element name="renderToken" type="ui:renderableToken" maxOccurs="unbounded" />
+          </xs:choice>
+          <xs:group ref="ui:selector" minOccurs="0" maxOccurs="1" />
+          <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="selectorColumn" type="ui:selectorColumn" />
+          </xs:choice>
+        </xs:sequence>
+        <xs:attributeGroup ref="ui:relation" />
+        <xs:attribute name="itemKey" type="xs:normalizedString" />
+        <xs:attribute name="renderColumns" type="type:nameList" />
+        <xs:attribute name="upperCase" type="xs:boolean" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="DataSelector" substitutionGroup="widget" >
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="inputWidget">
-          <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="1">
-              <xs:element name="renderer" type="ui:renderer" />
-              <xs:element name="render" type="ui:calcType" />
-              <xs:element name="renderToken" type="ui:renderableToken" maxOccurs="unbounded" />
-            </xs:choice>
-            <xs:group ref="ui:selector" minOccurs="0" maxOccurs="1" />
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="selectorColumn" type="ui:selectorColumn" />
-            </xs:choice>
-          </xs:sequence>
-          <xs:attributeGroup ref="ui:relation" />
-          <xs:attribute name="itemKey" type="xs:normalizedString" />
-          <xs:attribute name="renderColumns" type="type:nameList" />
-          <xs:attribute name="upperCase" type="xs:boolean" />
+        <xs:extension base="selectorType">
+          <xs:attribute name="viewName" type="type:nameType" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="MultiSelector" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="selectorType">
+          <xs:attribute name="viewName" type="type:nameType" use="required" />
+          <xs:attribute name="property" type="type:nameType" use="required" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -873,7 +892,7 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:complexType name="HtmlList">
+  <xs:complexType name="htmlList">
     <xs:complexContent>
       <xs:extension base="widgetType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -883,7 +902,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:element name="OrderedList" type="HtmlList" substitutionGroup="widget" />
-  <xs:element name="UnorderedList" type="HtmlList" substitutionGroup="widget" />
+  <xs:element name="OrderedList" type="htmlList" substitutionGroup="widget" />
+  <xs:element name="UnorderedList" type="htmlList" substitutionGroup="widget" />
 
 </xs:schema>

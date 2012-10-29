@@ -123,7 +123,7 @@ public class DataUtils {
   }
 
   public static String buildIdList(Long... ids) {
-    if (ids == null) {
+    if (ids == null || ids.length == 0) {
       return null;
     } else {
       return buildIdList(Lists.newArrayList(ids));
@@ -567,6 +567,30 @@ public class DataUtils {
     return row != null && row.getId() == NEW_ROW_ID;
   }
 
+  public static String join(DataInfo dataInfo, IsRow row, String separator) {
+    Assert.notNull(dataInfo);
+    Assert.notNull(row);
+
+    StringBuilder sb = new StringBuilder();
+    String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
+
+    for (int i = 0; i < dataInfo.getColumnCount(); i++) {
+      BeeColumn column = dataInfo.getColumns().get(i);
+      if (dataInfo.hasRelation(column.getId())) {
+        continue;
+      }
+
+      String value = render(row, i, column.getType());
+      if (!BeeUtils.isEmpty(value)) {
+        if (sb.length() > 0) {
+          sb.append(sep);
+        }
+        sb.append(value.trim());
+      }
+    }
+    return sb.toString();
+  }
+
   public static String join(String viewName, IsRow row, List<String> colNames, String separator) {
     Assert.notEmpty(viewName);
     DataInfo dataInfo = Data.getDataInfo(viewName);
@@ -584,31 +608,7 @@ public class DataUtils {
       int i = dataInfo.getColumnIndex(colName);
       Assert.nonNegative(i, "column not found: " + colName);
 
-      String value = transform(row, i, dataInfo.getColumns().get(i).getType());
-      if (!BeeUtils.isEmpty(value)) {
-        if (sb.length() > 0) {
-          sb.append(sep);
-        }
-        sb.append(value.trim());
-      }
-    }
-    return sb.toString();
-  }
-
-  public static String join(DataInfo dataInfo, IsRow row, String separator) {
-    Assert.notNull(dataInfo);
-    Assert.notNull(row);
-
-    StringBuilder sb = new StringBuilder();
-    String sep = BeeUtils.nvl(separator, BeeConst.DEFAULT_LIST_SEPARATOR);
-
-    for (int i = 0; i < dataInfo.getColumnCount(); i++) {
-      BeeColumn column = dataInfo.getColumns().get(i);
-      if (dataInfo.hasRelation(column.getId())) {
-        continue;
-      }
-
-      String value = transform(row, i, column.getType());
+      String value = render(row, i, dataInfo.getColumns().get(i).getType());
       if (!BeeUtils.isEmpty(value)) {
         if (sb.length() > 0) {
           sb.append(sep);
@@ -807,6 +807,16 @@ public class DataUtils {
     return (dataInfo == null) ? null : dataInfo.parseOrder(input);
   }
 
+  public static String render(IsRow row, int index, ValueType type) {
+    if (row.isNull(index)) {
+      return null;
+    } else if (type == null || ValueType.isString(type)) {
+      return row.getString(index);
+    } else {
+      return row.getValue(index, type).toString();
+    }
+  }
+
   public static List<BeeRow> restoreRows(String s) {
     if (BeeUtils.isEmpty(s)) {
       return null;
@@ -832,7 +842,7 @@ public class DataUtils {
       return r1.getId() == r2.getId();
     }
   }
-
+  
   public static boolean sameIdAndVersion(IsRow r1, IsRow r2) {
     if (r1 == null) {
       return r2 == null;
@@ -842,7 +852,7 @@ public class DataUtils {
       return r1.getId() == r2.getId() && r1.getVersion() == r2.getVersion();
     }
   }
-  
+
   public static boolean sameIdSet(String s, Collection<Long> col) {
     Set<Long> set = parseIdSet(s);
     if (col == null) {
@@ -884,16 +894,6 @@ public class DataUtils {
 
   public static void setValue(BeeRowSet rowSet, IsRow row, String columnId, String value) {
     row.setValue(getColumnIndex(columnId, rowSet.getColumns()), value);
-  }
-
-  public static String transform(IsRow row, int index, ValueType type) {
-    if (row.isNull(index)) {
-      return null;
-    } else if (type == null || ValueType.isString(type)) {
-      return row.getString(index);
-    } else {
-      return row.getValue(index, type).toString();
-    }
   }
 
   public static List<String> translate(List<String> input, List<? extends IsColumn> columns,

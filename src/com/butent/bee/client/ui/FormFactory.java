@@ -2,6 +2,7 @@ package com.butent.bee.client.ui;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
@@ -81,7 +82,7 @@ public class FormFactory {
 
     void onStart(FormView form);
 
-    void onStartEdit(FormView form, IsRow row);
+    boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand);
 
     void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow);
 
@@ -101,7 +102,7 @@ public class FormFactory {
 
     void onFailure(Object... messages);
 
-    void onSuccess(WidgetDescription result);
+    void onSuccess(WidgetDescription result, Widget widget);
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(FormFactory.class);

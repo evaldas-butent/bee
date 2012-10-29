@@ -67,9 +67,19 @@ public class RendererFactory {
       Calculation calculation, List<RenderableToken> tokens, String itemKey,
       List<String> renderColumns, List<? extends IsColumn> dataColumns, int dataIndex,
       Relation relation) {
+    
+    List<? extends IsColumn> columns;
+    int index;
 
-    return getRenderer(description, calculation, tokens, itemKey, renderColumns, dataColumns,
-        getDataIndex(description, calculation, itemKey, dataColumns, dataIndex, relation));
+    if (relation != null && relation.renderSource()) {
+      columns = Data.getColumns(relation.getViewName());
+      index = BeeConst.UNDEF;
+    } else {
+      columns = dataColumns;
+      index = getDataIndex(description, calculation, itemKey, dataColumns, dataIndex, relation); 
+    }
+
+    return getRenderer(description, calculation, tokens, itemKey, renderColumns, columns, index);
   }
 
   private static AbstractCellRenderer createRenderer(Calculation calculation,
@@ -215,7 +225,7 @@ public class RendererFactory {
       return dataIndex;
     }
 
-    int index = DataUtils.getColumnIndex(relation.getOriginalSource(), dataColumns);
+    int index = DataUtils.getColumnIndex(relation.getOriginalTarget(), dataColumns);
     if (!BeeConst.isUndef(index) && ValueType.isNumeric(dataColumns.get(index).getType())) {
       return index;
     } else {

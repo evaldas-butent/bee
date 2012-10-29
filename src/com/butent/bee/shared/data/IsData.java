@@ -27,7 +27,7 @@ public interface IsData {
 
   CustomProperties getColumnProperties(int colIndex);
 
-  Object getColumnProperty(int colIndex, String name);
+  String getColumnProperty(int colIndex, String name);
 
   Range getColumnRange(int colIndex);
 
@@ -57,11 +57,11 @@ public interface IsData {
 
   CustomProperties getProperties(int rowIndex, int colIndex);
 
-  Object getProperty(int rowIndex, int colIndex, String name);
+  String getProperty(int rowIndex, int colIndex, String name);
 
   CustomProperties getRowProperties(int rowIndex);
 
-  Object getRowProperty(int rowIndex, String name);
+  String getRowProperty(int rowIndex, String name);
 
   int[] getSortedRows(int... colIndexes);
 
@@ -71,7 +71,7 @@ public interface IsData {
 
   CustomProperties getTableProperties();
 
-  Object getTableProperty(String key);
+  String getTableProperty(String key);
 
   Value getValue(int rowIndex, int colIndex);
 }

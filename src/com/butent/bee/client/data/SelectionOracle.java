@@ -247,10 +247,20 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     return dataInfo;
   }
 
+  public BeeRowSet getViewData() {
+    return viewData;
+  }
+
+  @Override
   public String getViewName() {
     return dataInfo.getViewName();
   }
 
+  public Order getViewOrder() {
+    return viewOrder;
+  }
+
+  @Override
   public void onCellUpdate(CellUpdateEvent event) {
     if (isEventRelevant(event)
         && getViewData().updateCell(event.getRowId(), event.getColumnIndex(), event.getValue())) {
@@ -258,6 +268,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
   }
 
+  @Override
   public void onMultiDelete(MultiDeleteEvent event) {
     if (isEventRelevant(event)) {
       boolean changed = false;
@@ -273,6 +284,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
   }
 
+  @Override
   public void onRowDelete(RowDeleteEvent event) {
     if (isEventRelevant(event) && getViewData().removeRowById(event.getRowId())) {
       resetState();
@@ -280,6 +292,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
   }
 
+  @Override
   public void onRowInsert(RowInsertEvent event) {
     if (isEventRelevant(event) && !getViewData().containsRow(event.getRowId())) {
       getViewData().addRow(event.getRow());
@@ -288,6 +301,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
   }
 
+  @Override
   public void onRowUpdate(RowUpdateEvent event) {
     if (isEventRelevant(event) && getViewData().updateRow(event.getRow())) {
       resetState();
@@ -386,10 +400,6 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     return translator;
   }
 
-  private BeeRowSet getViewData() {
-    return viewData;
-  }
-
   private boolean hasTranslator() {
     return getTranslator() != null && !getTranslator().isEmpty();
   }
@@ -400,6 +410,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
     Queries.getRowSet(getViewName(), null, getFilter(null), viewOrder, cachingPolicy,
         new Queries.RowSetCallback() {
+          @Override
           public void onSuccess(BeeRowSet result) {
             setViewData(result);
             checkPendingRequest();
@@ -484,6 +495,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
 
     Queries.getRowSet(getViewName(), null, getFilter(filter), viewOrder,
         offset, limit, new Queries.RowSetCallback() {
+          @Override
           public void onSuccess(BeeRowSet result) {
             if (getPendingRequest() == null) {
               return;

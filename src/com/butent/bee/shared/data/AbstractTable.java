@@ -20,6 +20,7 @@ import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -180,6 +181,14 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
     getRow(rowIndex).clearCell(colIndex);
   }
 
+  @Override
+  public void clearTableProperty(String key) {
+    Assert.notEmpty(key);
+    if (properties != null) {
+      properties.remove(key);
+    }
+  }
+  
   @Override
   public void clearValue(int rowIndex, int colIndex) {
     IsCell cell = getCell(rowIndex, colIndex);
@@ -673,11 +682,15 @@ public abstract class AbstractTable<RowType extends IsRow, ColType extends IsCol
   @Override
   public void setTableProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
-    Assert.notNull(propertyValue);
-    if (properties == null) {
-      properties = CustomProperties.create();
+
+    if (BeeUtils.isEmpty(propertyValue)) {
+      clearTableProperty(propertyKey);
+    } else {
+      if (properties == null) {
+        properties = CustomProperties.create();
+      }
+      properties.put(propertyKey, propertyValue);
     }
-    properties.put(propertyKey, propertyValue);
   }
 
   @Override

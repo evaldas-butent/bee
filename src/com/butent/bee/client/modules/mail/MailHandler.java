@@ -33,8 +33,6 @@ import com.butent.bee.client.dialog.DialogConstants;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.logical.ActiveRowChangeEvent;
 import com.butent.bee.client.grid.GridPanel;
-import com.butent.bee.client.layout.Direction;
-import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.ui.AbstractFormCallback;
@@ -215,9 +213,6 @@ public class MailHandler extends AbstractFormCallback {
     public void onShow(GridPresenter presenter) {
       messagesPresenter = presenter;
 
-      if (messagesPresenter.getView() instanceof Split) {
-        ((Split) messagesPresenter.getView()).setDirectionSize(Direction.NORTH, 0);
-      }
       messagesPresenter.getGridView().getGrid()
           .addActiveRowChangeHandler(new ContentHandler(messagesPresenter.getDataColumns()));
       refresh();

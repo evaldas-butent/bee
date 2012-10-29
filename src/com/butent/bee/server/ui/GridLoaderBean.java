@@ -91,7 +91,7 @@ public class GridLoaderBean {
   private static final String ATTR_MIN_COLUMN_WIDTH = "minColumnWidth";
   private static final String ATTR_MAX_COLUMN_WIDTH = "maxColumnWidth";
 
-  private static final String ATTR_HAS_HEADERS = "hasHeaders";
+  private static final String ATTR_HEADER_MODE = "headerMode";
   private static final String ATTR_HAS_FOOTERS = "hasFooters";
   private static final String ATTR_FOOTER_EVENTS = "footerEvents";
 
@@ -177,7 +177,7 @@ public class GridLoaderBean {
       if (readOnly) {
         columnDescription.setReadOnly(true);
       } else if (ColType.RELATED.equals(colType)) {
-        columnDescription.setRelation(Relation.create(null, null, null, null, null));
+        columnDescription.setRelation(Relation.create());
       }
 
       gridDescription.addColumn(columnDescription);
@@ -697,9 +697,9 @@ public class GridLoaderBean {
       dst.setAutoFit(autoFit);
     }
 
-    Boolean hasHeaders = XmlUtils.getAttributeBoolean(src, ATTR_HAS_HEADERS);
-    if (hasHeaders != null) {
-      dst.setHasHeaders(hasHeaders);
+    String headerMode = src.getAttribute(ATTR_HEADER_MODE);
+    if (!BeeUtils.isEmpty(headerMode)) {
+      dst.setHeaderMode(headerMode);
     }
     Boolean hasFooters = XmlUtils.getAttributeBoolean(src, ATTR_HAS_FOOTERS);
     if (hasFooters != null) {

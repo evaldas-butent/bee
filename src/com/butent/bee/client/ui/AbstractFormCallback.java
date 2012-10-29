@@ -1,5 +1,6 @@
 package com.butent.bee.client.ui;
 
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
@@ -109,7 +110,8 @@ public abstract class AbstractFormCallback implements FormFactory.FormCallback {
   }
   
   @Override
-  public void onStartEdit(FormView form, IsRow row) {
+  public boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand) {
+    return true;
   }
 
   @Override

@@ -184,6 +184,7 @@
       <xs:enumeration value="bookmark_add" />
       <xs:enumeration value="cancel" />
       <xs:enumeration value="close" />
+      <xs:enumeration value="closeSmall" />
       <xs:enumeration value="configure" />
       <xs:enumeration value="delete" />
       <xs:enumeration value="descending" />
@@ -374,7 +375,6 @@
   </xs:simpleType>
   
   <xs:attributeGroup name="relation">
-    <xs:attribute name="viewName" type="type:nameType" />
     <xs:attribute name="choiceColumns" type="type:nameList" />
     <xs:attribute name="searchableColumns" type="type:nameList" />
     <xs:attribute name="filter" type="xs:normalizedString" />

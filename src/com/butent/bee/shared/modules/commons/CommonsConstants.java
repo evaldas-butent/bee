@@ -108,6 +108,8 @@ public class CommonsConstants {
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
 
+  public static final String PROP_CATEGORIES = "CategList";
+  
   private CommonsConstants() {
   }
 }

@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Ints;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -145,8 +146,9 @@ public class MessageHandler extends AbstractFormCallback {
   }
 
   @Override
-  public void onStartEdit(FormView form, IsRow row) {
+  public boolean onStartEdit(FormView form, IsRow row, Scheduler.ScheduledCommand focusCommand) {
     requery(row.getId(), null);
+    return true;
   }
 
   void requery(Long messageId, Long addressId) {

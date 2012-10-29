@@ -8,7 +8,7 @@
     <row>
       <Label html="Pavadinimas:" class="bee-required" />
       <cell colSpan="3">
-        <InputText source="Name" style="width: 100%;" />
+        <InputText source="Name" style="width: 500px;" />
       </cell>
     </row>
 
@@ -31,13 +31,10 @@
 
     <row>
       <Label html="Kategorijos:" />
-      <cell colSpan="2">
-        <ListBox name="Categories" multiSelect="true" minSize="2" maxSize="10" style="width: 100%;" />
+      <cell colSpan="3">
+        <MultiSelector viewName="CategoryTree" property="CategList"
+          renderColumns="ParentName Name" style="width: 500px;" />
       </cell>
-      <VerticalPanel>
-        <Image name="AddCategories" resource="add" />
-        <Image name="RemoveCategories" resource="delete" />
-      </VerticalPanel>
     </row>
   </FlexTable>
 </f:Form>  

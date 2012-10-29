@@ -89,6 +89,9 @@ public class Images {
     @Source("close.png")
     ImageResource close();
 
+    @Source("closeSmall.png")
+    ImageResource closeSmall();
+    
     @Source("configure.png")
     ImageResource configure();
 
@@ -281,6 +284,7 @@ public class Images {
 
     map.put(key("cancel"), resources.cancel());
     map.put(key("close"), resources.close());
+    map.put(key("closeSmall"), resources.closeSmall());
 
     map.put(key("configure"), resources.configure());
 

@@ -13,10 +13,8 @@ import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
-import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
-import com.butent.bee.client.data.Queries.RowSetCallback;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.event.logical.ParentRowEvent;
 import com.butent.bee.client.grid.ColumnFooter;
@@ -44,16 +42,12 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
-import com.butent.bee.shared.data.filter.CompoundFilter;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.value.ValueType;
@@ -131,51 +125,52 @@ public class TransportHandler {
   private static class CargoTripsGridHandler extends AbstractGridCallback {
     @Override
     public boolean beforeAddRow(final GridPresenter presenter) {
-      CompoundFilter filter = Filter.and();
-      filter.add(Filter.isEmpty("DateTo"));
-      int index = presenter.getDataProvider().getColumnIndex("Trip");
-
-      for (IsRow row : presenter.getGridView().getGrid().getRowData()) {
-        filter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(index)));
-      }
-      Queries.getRowSet(TransportConstants.VIEW_TRIPS, null, filter, null, new RowSetCallback() {
-        @Override
-        public void onSuccess(BeeRowSet result) {
-          if (result.isEmpty()) {
-            presenter.getGridView().notifyWarning("No trips available");
-            return;
-          }
-          MultiSelector selector = new MultiSelector("Galimi reisai", result,
-              Lists.newArrayList("TripNo", "VehicleNumber", "DateFrom"),
-              new MultiSelector.SelectionCallback() {
-                @Override
-                public void onSelection(List<IsRow> rows) {
-                  String cargo = BeeUtils.toString(presenter.getGridView().getRelId());
-
-                  List<BeeColumn> columns =
-                      Lists.newArrayList(new BeeColumn(ValueType.LONG, "Cargo"),
-                          new BeeColumn(ValueType.LONG, "Trip"));
-                  BeeRowSet rowSet = new BeeRowSet(TransportConstants.VIEW_CARGO_TRIPS, columns);
-
-                  for (IsRow row : rows) {
-                    rowSet.addRow(new BeeRow(DataUtils.NEW_ROW_ID,
-                        new String[] {cargo, BeeUtils.toString(row.getId())}));
-                  }
-
-                  Queries.insertRowSet(rowSet, new RowSetCallback() {
-                    @Override
-                    public void onSuccess(BeeRowSet res) {
-                      for (BeeRow row : res.getRows()) {
-                        BeeKeeper.getBus().fireEvent(new RowInsertEvent(res.getViewName(), row));
-                        presenter.getGridView().getGrid().insertRow(row, false);
-                      }
-                    }
-                  });
-                }
-              });
-          selector.center();
-        }
-      });
+      // TODO
+//      CompoundFilter filter = Filter.and();
+//      filter.add(Filter.isEmpty("DateTo"));
+//      int index = presenter.getDataProvider().getColumnIndex("Trip");
+//
+//      for (IsRow row : presenter.getGridView().getGrid().getRowData()) {
+//        filter.add(ComparisonFilter.compareId(Operator.NE, row.getLong(index)));
+//      }
+//      Queries.getRowSet(TransportConstants.VIEW_TRIPS, null, filter, null, new RowSetCallback() {
+//        @Override
+//        public void onSuccess(BeeRowSet result) {
+//          if (result.isEmpty()) {
+//            presenter.getGridView().notifyWarning("No trips available");
+//            return;
+//          }
+//          MultiSelector selector = new MultiSelector("Galimi reisai", result,
+//              Lists.newArrayList("TripNo", "VehicleNumber", "DateFrom"),
+//              new MultiSelector.SelectionCallback() {
+//                @Override
+//                public void onSelection(List<IsRow> rows) {
+//                  String cargo = BeeUtils.toString(presenter.getGridView().getRelId());
+//
+//                  List<BeeColumn> columns =
+//                      Lists.newArrayList(new BeeColumn(ValueType.LONG, "Cargo"),
+//                          new BeeColumn(ValueType.LONG, "Trip"));
+//                  BeeRowSet rowSet = new BeeRowSet(TransportConstants.VIEW_CARGO_TRIPS, columns);
+//
+//                  for (IsRow row : rows) {
+//                    rowSet.addRow(new BeeRow(DataUtils.NEW_ROW_ID,
+//                        new String[] {cargo, BeeUtils.toString(row.getId())}));
+//                  }
+//
+//                  Queries.insertRowSet(rowSet, new RowSetCallback() {
+//                    @Override
+//                    public void onSuccess(BeeRowSet res) {
+//                      for (BeeRow row : res.getRows()) {
+//                        BeeKeeper.getBus().fireEvent(new RowInsertEvent(res.getViewName(), row));
+//                        presenter.getGridView().getGrid().insertRow(row, false);
+//                      }
+//                    }
+//                  });
+//                }
+//              });
+//          selector.center();
+//        }
+//      });
       return false;
     }
 

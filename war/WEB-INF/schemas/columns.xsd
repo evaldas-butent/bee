@@ -89,6 +89,7 @@
             <xs:element name="selectorColumn" type="ui:selectorColumn" />
           </xs:choice>
         </xs:sequence>
+        <xs:attribute name="viewName" type="type:nameType" />
         <xs:attributeGroup ref="ui:relation" />
       </xs:extension>
     </xs:complexContent>

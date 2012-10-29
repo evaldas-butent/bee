@@ -23,7 +23,7 @@ import java.math.BigDecimal;
  */
 
 public abstract class AbstractRow implements IsRow {
-  
+
   private long id;
   private long version = 0;
 
@@ -45,7 +45,7 @@ public abstract class AbstractRow implements IsRow {
       properties.remove(key);
     }
   }
-  
+
   @Override
   public Boolean getBoolean(int index) {
     return getValue(index).getBoolean();
@@ -109,7 +109,7 @@ public abstract class AbstractRow implements IsRow {
   public Value getValue(int index) {
     return getCell(index).getValue();
   }
-  
+
   @Override
   public Value getValue(int index, ValueType type) {
     Assert.notNull(type, "value type not specified");
@@ -127,7 +127,7 @@ public abstract class AbstractRow implements IsRow {
         return new TextValue(getString(index));
       case TIMEOFDAY:
         return new TimeOfDayValue(getString(index));
-      case INTEGER:   
+      case INTEGER:
         return new IntegerValue(getInteger(index));
       case LONG:
         return new LongValue(getLong(index));
@@ -141,7 +141,7 @@ public abstract class AbstractRow implements IsRow {
   public long getVersion() {
     return version;
   }
-  
+
   @Override
   public boolean isNull(int index) {
     return getCell(index).isNull();
@@ -160,11 +160,15 @@ public abstract class AbstractRow implements IsRow {
   @Override
   public void setProperty(String propertyKey, String propertyValue) {
     Assert.notEmpty(propertyKey);
-    Assert.notNull(propertyValue);
-    if (properties == null) {
-      properties = CustomProperties.create();
+
+    if (BeeUtils.isEmpty(propertyValue)) {
+      clearProperty(propertyKey);
+    } else {
+      if (properties == null) {
+        properties = CustomProperties.create();
+      }
+      properties.put(propertyKey, propertyValue);
     }
-    properties.put(propertyKey, propertyValue);
   }
 
   @Override
@@ -201,7 +205,7 @@ public abstract class AbstractRow implements IsRow {
   public void setValue(int index, Long value) {
     setValue(index, new LongValue(value));
   }
-  
+
   @Override
   public void setValue(int index, String value) {
     setValue(index, new TextValue(value));
@@ -214,7 +218,7 @@ public abstract class AbstractRow implements IsRow {
     cell.clearFormattedValue();
     cell.clearProperties();
   }
-  
+
   @Override
   public void setVersion(long version) {
     this.version = version;

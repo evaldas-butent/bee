@@ -99,6 +99,7 @@ import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.CellType;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.NavigationOrigin;
+import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.ui.UiConstants;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 import com.butent.bee.shared.ui.GridDescription;
@@ -476,7 +477,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     setDataColumns(dataCols);
 
-    boolean hasHeaders = !BeeUtils.isFalse(gridDescr.hasHeaders());
+    boolean hasHeaders = gridDescr.hasColumnHeaders();
     boolean hasFooters = hasSearch;
     if (hasFooters && BeeUtils.isFalse(gridDescr.hasFooters())) {
       hasFooters = false;
@@ -585,7 +586,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           Holder<List<String>> listHolder = Holder.of(renderColumns);
 
           columnDescr.getRelation().initialize(Data.getDataInfoProvider(), viewName,
-              sourceHolder, listHolder);
+              sourceHolder, listHolder, Relation.RenderMode.TARGET);
 
           source = sourceHolder.get();
           renderColumns = listHolder.get();
@@ -594,7 +595,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           columnDescr.setRenderColumns(renderColumns);
           columnDescr.setRelationInitialized(true);
         }
-        originalSource = columnDescr.getRelation().getOriginalSource();
+        originalSource = columnDescr.getRelation().getOriginalTarget();
       } else {
         originalSource = null;
       }
@@ -933,16 +934,17 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     final FormView form = getForm(!isAdding());
     Assert.notNull(form, "formConfirm: active form is null");
 
-    IsRow row = form.getActiveRow();
-    Assert.notNull(row, "formConfirm: active row is null");
+    IsRow oldRow = form.getOldRow();
+    IsRow newRow = form.getActiveRow();
+    Assert.notNull(newRow, "formConfirm: active row is null");
 
     if (!validateFormData(form, form, true)) {
       return;
     }
 
     if (isAdding()) {
-      if (DataUtils.isNewRow(row)) {
-        prepareForInsert(row, form, new Callback<IsRow>() {
+      if (DataUtils.isNewRow(newRow)) {
+        prepareForInsert(newRow, form, new Callback<IsRow>() {
           @Override
           public void onFailure(String... reason) {
             form.notifySevere(reason);
@@ -955,7 +957,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         });
 
       } else {
-        boolean changed = saveChanges(row, new Callback<IsRow>() {
+        boolean changed = saveChanges(oldRow, newRow, new Callback<IsRow>() {
           @Override
           public void onFailure(String... reason) {
             form.notifySevere(reason);
@@ -973,7 +975,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
 
     } else {
-      boolean changed = saveChanges(row, getSaveChangesCallback());
+      boolean changed = saveChanges(oldRow, newRow, getSaveChangesCallback());
       if (!changed) {
         closeEditForm();
       }
@@ -1199,7 +1201,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     IsRow rowValue = event.getRowValue();
     String columnId = event.getColumnId();
-    EditableColumn editableColumn = getEditableColumn(columnId, false);
+    final EditableColumn editableColumn = getEditableColumn(columnId, false);
 
     boolean useForm = useFormForEdit(columnId);
     boolean editable = !isReadOnly();
@@ -1238,7 +1240,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       }
       updateEditFormMessage(presenter, rowValue);
 
-      boolean enableForm = editable;
+      final boolean enableForm;
 
       if (presenter.hasAction(Action.EDIT)) {
         presenter.showAction(Action.EDIT, editable && hasEditMode());
@@ -1247,35 +1249,50 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         }
         enableForm = false;
 
-      } else if (presenter.hasAction(Action.SAVE)) {
-        presenter.showAction(Action.SAVE, editable && hasEditSave());
+      } else {
+        if (presenter.hasAction(Action.SAVE)) {
+          presenter.showAction(Action.SAVE, editable && hasEditSave());
+        }
+        enableForm = editable;        
       }
 
       getEditForm().setEnabled(enableForm);
 
-      IsRow row = DataUtils.cloneRow(rowValue);
-      getEditForm().updateRow(row, true);
+      ScheduledCommand focusCommand = new ScheduledCommand() {
+        @Override
+        public void execute() {
+          if (editableColumn != null && enableForm) {
+            String source = editableColumn.getColumnId();
+            Widget widget = getEditForm().getWidgetBySource(source);
 
-      if (editableColumn != null && enableForm) {
-        String source = editableColumn.getColumnId();
-        Widget widget = getEditForm().getWidgetBySource(source);
+            if (widget == null && getDataInfo() != null) {
+              String relSource = getDataInfo().getRelationSource(source);
+              if (!BeeUtils.isEmpty(relSource) && !BeeUtils.same(source, relSource)) {
+                widget = getEditForm().getWidgetBySource(relSource);
+              }
+            }
 
-        if (widget == null && getDataInfo() != null) {
-          String relSource = getDataInfo().getRelationSource(source);
-          if (!BeeUtils.isEmpty(relSource) && !BeeUtils.same(source, relSource)) {
-            widget = getEditForm().getWidgetBySource(relSource);
+            if (widget instanceof Focusable && widget.isVisible()) {
+              ((Focusable) widget).setFocus(true);
+            } else {
+              UiHelper.focus(getEditForm().asWidget());
+            }
           }
         }
-
-        if (widget instanceof Focusable && widget.isVisible()) {
-          ((Focusable) widget).setFocus(true);
-        } else {
-          UiHelper.focus(getEditForm().asWidget());
-        }
-      }
-
+      };
+      
+      IsRow row = DataUtils.cloneRow(rowValue);
+      
+      boolean start;
       if (getEditForm().getFormCallback() != null) {
-        getEditForm().getFormCallback().onStartEdit(getEditForm(), row);
+        start = getEditForm().getFormCallback().onStartEdit(getEditForm(), row, focusCommand);
+      } else {
+        start = true;
+      }
+      
+      if (start) {
+        getEditForm().updateRow(row, true);
+        focusCommand.execute();
       }
       return;
     }
@@ -1608,7 +1625,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
             editor.getId(), columnName);
 
         widgetDescription.updateFrom(editableColumn);
-        callback.onSuccess(widgetDescription);
+        callback.onSuccess(widgetDescription, editor.asWidget());
       }
       r++;
     }
@@ -1946,16 +1963,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     fireEvent(event);
   }
 
-  private boolean saveChanges(IsRow newRow, Callback<IsRow> callback) {
-    long rowId = newRow.getId();
-    IsRow oldRow = getGrid().getRowById(rowId);
-    if (oldRow == null) {
-      notifySevere("Old row not found", "id = " + rowId);
-      return false;
-    }
-    String oldValue;
-    String newValue;
-
+  private boolean saveChanges(IsRow oldRow, IsRow newRow, Callback<IsRow> callback) {
     List<BeeColumn> columns = Lists.newArrayList();
     List<String> oldValues = Lists.newArrayList();
     List<String> newValues = Lists.newArrayList();
@@ -1966,8 +1974,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         continue;
       }
 
-      oldValue = oldRow.getString(i);
-      newValue = newRow.getString(i);
+      String oldValue = oldRow.getString(i);
+      String newValue = newRow.getString(i);
 
       if (!BeeUtils.equalsTrimRight(oldValue, newValue)) {
         columns.add(dataColumn);
@@ -1975,18 +1983,19 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
         newValues.add(newValue);
       }
     }
-    if (columns.isEmpty()) {
-      return false;
-    }
 
-    SaveChangesEvent event = 
-        new SaveChangesEvent(rowId, newRow.getVersion(), columns, oldValues, newValues, callback);
-    
+    SaveChangesEvent event = new SaveChangesEvent(oldRow, newRow, columns, oldValues, newValues,
+        callback);
     if (getGridCallback() != null && !getGridCallback().onSaveChanges(this, event)) {
       return false;
     }
-    fireEvent(event);
-    return true;
+
+    if (columns.isEmpty()) {
+      return false;
+    } else {
+      fireEvent(event);
+      return true;
+    }
   }
 
   private void setActiveFormContainerId(String activeFormContainerId) {

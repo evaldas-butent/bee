@@ -77,6 +77,19 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     return filter;
   }
 
+  public static Filter idNotIn(Collection<Long> values) {
+    Assert.notNull(values);
+    if (values.isEmpty()) {
+      return null;
+    }
+
+    CompoundFilter filter = and();
+    for (Long value : values) {
+      filter.add(ComparisonFilter.compareId(Operator.NE, value));
+    }
+    return filter;
+  }
+  
   public static Filter in(String column, Collection<Long> values) {
     Assert.notEmpty(column);
     Assert.notNull(values);

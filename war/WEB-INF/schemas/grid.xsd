@@ -43,7 +43,7 @@
     <xs:attribute name="maxColumnWidth" type="columnWidth" />
     <xs:attribute name="autoFit" type="type:intOrBoolean" />
     <xs:attribute name="showColumnWidths" type="xs:boolean" />
-    <xs:attribute name="hasHeaders" type="xs:boolean" default="true" />
+    <xs:attribute name="headerMode" type="headerMode" />
     <xs:attribute name="hasFooters" type="xs:boolean" default="true" />
     <xs:attribute name="footerEvents" type="ui:eventList" />
     <xs:attribute name="cacheData" type="xs:boolean" />
@@ -111,6 +111,15 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="full" />
       <xs:enumeration value="content" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="headerMode">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="all" />
+      <xs:enumeration value="grid" />
+      <xs:enumeration value="column" />
+      <xs:enumeration value="none" />
     </xs:restriction>
   </xs:simpleType>
 

@@ -124,7 +124,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     boolean readOnly = BeeUtils.isTrue(gridDescription.isReadOnly());
 
     HeaderView header;
-    if (UiOption.hasHeader(uiOptions)) {
+    if (gridDescription.hasGridHeader()) {
       header = GWT.create(HeaderImpl.class);
 
       String caption = (gridCallback == null) ? null : gridCallback.getCaption();

@@ -1602,6 +1602,48 @@ body, select {
   min-width: 90px;
 }
 
+.bee-MultiSelector-container {
+  width: 300px;
+  background-color: #fff;
+  background-image: -webkit-linear-gradient(top, #eee 1%, #fff 15%);
+  border: 1px solid #aaa;
+}
+.bee-MultiSelector-container-active {
+  border: 1px solid #5897fb;
+  box-shadow : 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.bee-MultiSelector-choice {
+  display: inline-block;
+  background-color: #e4e4e4;
+  background-image: -webkit-linear-gradient(top, #f4f4f4 20%, #f0f0f0 50%, #e8e8e8 52%, #eeeeee 100%);
+  background-clip : padding-box;
+  border: 1px solid #aaa;
+  border-radius : 3px;
+  box-shadow : 0 0 2px #fff inset, 0 1px 0 rgba(0, 0, 0, 0.05);
+  padding: 3px 20px 3px 5px;
+  margin: 3px 0 3px 5px;
+  position: relative;
+}
+.bee-MultiSelector-label {
+  color: #333;
+  line-height: 13px;
+}
+.bee-MultiSelector-close {
+  position: absolute;
+  right: 5px;
+  top: 7px;
+}
+
+.bee-MultiSelector-input {
+  width: 100px;
+  margin-left: 5px;
+  margin-top: 3px;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
 .bee-MainSearchOptionsContainer {
   display: none;
 }

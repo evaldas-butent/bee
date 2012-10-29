@@ -163,6 +163,9 @@ public class ParametersHandler extends AbstractGridCallback {
 
   @Override
   public boolean onSaveChanges(GridView gridView, SaveChangesEvent event) {
+    if (event.getColumns().isEmpty()) {
+      return false;
+    }
 
     String prmName = gridView.getActiveRow().getString(id(NAME));
 

@@ -6,7 +6,7 @@
   name="Task" viewName="Tasks" caption="Užduotis">
 
   <FlowPanel class="flexBox-horizontal">
-    <FlowPanel class="flexBox-vertical">
+    <FlowPanel>
       <FlexTable cellSpacing="10">
         <row>
           <Label html="Būsena" />
@@ -50,25 +50,29 @@
           <Label html="Autorius:" horizontalAlignment="right" />
           <TextLabel class="bee-display" renderColumns="OwnerFirstName OwnerLastName" />
         </row>
+
+        <row>
+          <Label html="Stebėtojai:" />
+          <cell colSpan="3">
+            <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName" />
+          </cell>
+        </row>
+
       </FlexTable>
 
-      <ChildGrid name="TaskObservers" relColumn="Task" class="flexible" style="margin: 2ex 10px;" />
-      
-      <FlowPanel class="flexBox-vertical-center">
-        <FlowPanel>
-          <Button name="COMMENTED" html="Naujas komentaras" />
-          <Button name="FORWARDED" html="Persiųsti" />
-          <Button name="EXTENDED" html="Keisti terminą" />
-          <Button name="UPDATED" html="Koreguoti" />
-        </FlowPanel>
+      <FlowPanel style="margin-left: 1em; margin-top: 2ex;">
+        <Button name="COMMENTED" html="Naujas komentaras" />
+        <Button name="FORWARDED" html="Persiųsti" />
+        <Button name="EXTENDED" html="Keisti terminą" />
+        <Button name="UPDATED" html="Koreguoti" />
+      </FlowPanel>
 
-        <FlowPanel style="margin: 2ex 0;">
-          <Button name="SUSPENDED" html="Sustabdyti" />
-          <Button name="CANCELED" html="Nutraukti" />
-          <Button name="COMPLETED" html="Užbaigti" />
-          <Button name="APPROVED" html="Patvirtinti" />
-          <Button name="RENEWED" html="Grąžinti vykdymui" />
-        </FlowPanel>
+      <FlowPanel style="margin-left: 1em; margin-top: 2ex;">
+        <Button name="SUSPENDED" html="Sustabdyti" />
+        <Button name="CANCELED" html="Nutraukti" />
+        <Button name="COMPLETED" html="Užbaigti" />
+        <Button name="APPROVED" html="Patvirtinti" />
+        <Button name="RENEWED" html="Grąžinti vykdymui" />
       </FlowPanel>
     </FlowPanel>
 
