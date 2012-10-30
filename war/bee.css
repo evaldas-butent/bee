@@ -1325,15 +1325,6 @@ body, select {
   -webkit-filter: contrast(200%);
 }
 
-.bee-SelectionCounter {
-  position: absolute;
-  top: 6px;
-  width: 32px;
-  right: 6px;
-  background-color: #aff;
-  text-align: center;
-}
-
 .bee-SearchResultHeader {
   height: 32px;
   background-color: #eee;
@@ -1644,9 +1635,39 @@ body, select {
   outline: none;
 }
 
-.bee-MainSearchOptionsContainer {
-  display: none;
+.bee-SimplePager-container {
+  background-color: Snow;
+  border: 1px solid SkyBlue;
+  border-radius: 7px;
+  border-spacing: 2px;
+  padding-top: 1px;
+}
+.bee-SimplePager-disabledButton {
+  opacity: 0.4;
+}
+.bee-SimplePager-info {
+  color: MediumBlue;
+}
+
+.bee-FooterContainer {
+  display: -webkit-flex;
+  -webkit-align-items: center;
+}
+.bee-SimplePager {
+  margin-left: 5px;
+  margin-right: 3px;
 }
 .bee-FooterSearch {
-/*   display: none; */
+  -webkit-flex: 1;
+  margin-left: 5px;
+}
+.bee-SelectionCounter {
+  color: #00f;
+  font-size: large;
+  margin-left: 3px;
+  margin-right: 5px;
+}
+
+.bee-MainSearchOptionsContainer {
+  display: none;
 }

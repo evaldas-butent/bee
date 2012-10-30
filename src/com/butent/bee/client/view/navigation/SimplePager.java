@@ -1,10 +1,7 @@
 package com.butent.bee.client.view.navigation;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.i18n.client.NumberFormat;
-import com.google.gwt.resources.client.ClientBundle;
-import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 
 import com.butent.bee.client.Global;
@@ -20,31 +17,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.ui.NavigationOrigin;
 import com.butent.bee.shared.utils.BeeUtils;
 
-/**
- * Implements a user interface component, which enables organizing information on the screen into
- * several pages.
- */
-
 public class SimplePager extends AbstractPager {
-
-  /**
-   * Specifies which CSS style resources to use.
-   */
-  public interface Resources extends ClientBundle {
-    @Source("SimplePager.css")
-    Style pagerStyle();
-  }
-
-  /**
-   * Specifies which styling aspects have to be implemented on simple pager implementations.
-   */
-  public interface Style extends CssResource {
-    String container();
-
-    String disabledButton();
-
-    String pageInfo();
-  }
 
   private class GoCommand extends Command {
     private Navigation goTo;
@@ -92,31 +65,18 @@ public class SimplePager extends AbstractPager {
     FIRST, REWIND, PREV, NEXT, FORWARD, LAST
   }
 
-  public static NumberFormat numberFormat = NumberFormat.getFormat("#,###");
-  public static String positionSeparator = " - ";
-  public static String rowCountSeparator = " / ";
+  private static final String STYLE_PREFIX = "bee-SimplePager-";
+  private static final String STYLE_CONTAINER = STYLE_PREFIX + "container";
+  private static final String STYLE_DISABLED_BUTTON = STYLE_PREFIX + "disabledButton";
+  private static final String STYLE_INFO = STYLE_PREFIX + "info";
+  
+  private static final NumberFormat NUMBER_FORMAT = NumberFormat.getFormat("#,###");
+  private static final String POSITION_SEPARATOR = " - ";
+  private static final String ROW_COUNT_SEPARATOR = " / ";
 
-  public static int minRowCountForFastNavigation = 100;
-  public static int minFastPages = 3;
-  public static int maxFastPages = 20;
-
-  private static Resources DEFAULT_RESOURCES = null;
-  private static Style DEFAULT_STYLE = null;
-
-  private static Resources getDefaultResources() {
-    if (DEFAULT_RESOURCES == null) {
-      DEFAULT_RESOURCES = GWT.create(Resources.class);
-    }
-    return DEFAULT_RESOURCES;
-  }
-
-  private static Style getDefaultStyle() {
-    if (DEFAULT_STYLE == null) {
-      DEFAULT_STYLE = getDefaultResources().pagerStyle();
-      DEFAULT_STYLE.ensureInjected();
-    }
-    return DEFAULT_STYLE;
-  }
+  private static final int MIN_ROW_COUNT_FOR_FAST_NAVIGATION = 100;
+  private static final int MIN_FAST_PAGES = 3;
+  private static final int MAX_FAST_PAGES = 20;
 
   private final BeeImage widgetFirst;
   private final BeeImage widgetRewind;
@@ -125,64 +85,65 @@ public class SimplePager extends AbstractPager {
   private final BeeImage widgetForw;
   private final BeeImage widgetLast;
 
-  private final Html widgetInfo = new Html();
+  private final Html widgetInfo;
   
   private final boolean showPageSize;
+  
+  private int maxRowCount;
 
   public SimplePager(int maxRowCount) {
     this(maxRowCount, true);
   }
   
   public SimplePager(int maxRowCount, boolean showPageSize) {
-    this(maxRowCount, showPageSize, maxRowCount >= minRowCountForFastNavigation);
+    this(maxRowCount, showPageSize, maxRowCount >= MIN_ROW_COUNT_FOR_FAST_NAVIGATION);
   }
 
   public SimplePager(int maxRowCount, boolean showPageSize, boolean showFastNavigation) {
-    this(maxRowCount, showPageSize, showFastNavigation, getDefaultStyle());
-  }
-
-  public SimplePager(int maxRowCount, boolean showPageSize, boolean showFastNavigation,
-      Style style) {
-
-    String s = style.disabledButton();
-    widgetFirst = new BeeImage(Global.getImages().first(), new GoCommand(Navigation.FIRST), s);
-    widgetPrev = new BeeImage(Global.getImages().previous(), new GoCommand(Navigation.PREV), s);
-    widgetNext = new BeeImage(Global.getImages().next(), new GoCommand(Navigation.NEXT), s);
-    widgetLast = new BeeImage(Global.getImages().last(), new GoCommand(Navigation.LAST), s);
-
-    if (showFastNavigation) {
-      widgetRewind = new BeeImage(Global.getImages().rewind(), new GoCommand(Navigation.REWIND), s);
-      widgetForw = new BeeImage(Global.getImages().forward(), new GoCommand(Navigation.FORWARD), s);
-    } else {
-      widgetRewind = null;
-      widgetForw = null;
-    }
-    
+    this.maxRowCount = maxRowCount;
     this.showPageSize = showPageSize;
 
-    Horizontal layout = new Horizontal();
-    initWidget(layout);
-    addStyleName(style.container());
+    this.widgetFirst = new BeeImage(Global.getImages().first(), new GoCommand(Navigation.FIRST),
+        STYLE_DISABLED_BUTTON);
+    this.widgetPrev = new BeeImage(Global.getImages().previous(), new GoCommand(Navigation.PREV),
+        STYLE_DISABLED_BUTTON);
+    this.widgetNext = new BeeImage(Global.getImages().next(), new GoCommand(Navigation.NEXT),
+        STYLE_DISABLED_BUTTON);
+    this.widgetLast = new BeeImage(Global.getImages().last(), new GoCommand(Navigation.LAST),
+        STYLE_DISABLED_BUTTON);
 
-    layout.setCellSpacing(2);
+    if (showFastNavigation) {
+      this.widgetRewind = new BeeImage(Global.getImages().rewind(), new GoCommand(Navigation.REWIND),
+          STYLE_DISABLED_BUTTON);
+      this.widgetForw = new BeeImage(Global.getImages().forward(), new GoCommand(Navigation.FORWARD),
+          STYLE_DISABLED_BUTTON);
+    } else {
+      this.widgetRewind = null;
+      this.widgetForw = null;
+    }
 
-    layout.add(widgetFirst);
+    Horizontal container = new Horizontal();
+    initWidget(container);
+    addStyleName(STYLE_CONTAINER);
+
+    container.add(widgetFirst);
     if (widgetRewind != null) {
-      layout.add(widgetRewind);
+      container.add(widgetRewind);
     }
-    layout.add(widgetPrev);
+    container.add(widgetPrev);
 
-    int maxWidth = Rulers.getLineWidth(createText(maxRowCount, maxRowCount, maxRowCount));
-    StyleUtils.setWidth(widgetInfo, maxWidth);
-    widgetInfo.addStyleName(style.pageInfo());
-    layout.add(widgetInfo);
-    layout.setCellHorizontalAlignment(widgetInfo, HasHorizontalAlignment.ALIGN_CENTER);
+    this.widgetInfo = new Html();
+    StyleUtils.setWidth(widgetInfo, getMaxInfoWidth(maxRowCount));
+    widgetInfo.addStyleName(STYLE_INFO);
 
-    layout.add(widgetNext);
+    container.add(widgetInfo);
+    container.setCellHorizontalAlignment(widgetInfo, HasHorizontalAlignment.ALIGN_CENTER);
+
+    container.add(widgetNext);
     if (widgetForw != null) {
-      layout.add(widgetForw);
+      container.add(widgetForw);
     }
-    layout.add(widgetLast);
+    container.add(widgetLast);
   }
 
   @Override
@@ -205,6 +166,11 @@ public class SimplePager extends AbstractPager {
     }
     if (start + length > rowCount) {
       length = Math.max(rowCount - start, 0);
+    }
+    
+    if (rowCount > getMaxRowCount()) {
+      setMaxRowCount(rowCount);
+      StyleUtils.setWidth(widgetInfo, getMaxInfoWidth(rowCount));
     }
 
     widgetInfo.setText(createText(Math.min(start + 1, rowCount),
@@ -243,17 +209,17 @@ public class SimplePager extends AbstractPager {
   private String createText(int start, int end, int rowCount) {
     StringBuilder sb = new StringBuilder(format(start));
     if (showPageSize) {
-      sb.append(positionSeparator).append(format(end));
+      sb.append(POSITION_SEPARATOR).append(format(end));
     }
-    sb.append(rowCountSeparator).append(format(rowCount));
+    sb.append(ROW_COUNT_SEPARATOR).append(format(rowCount));
     return sb.toString();
   }
 
   private String format(int x) {
-    if (numberFormat == null) {
+    if (NUMBER_FORMAT == null) {
       return BeeUtils.toString(x);
     } else {
-      return numberFormat.format(x);
+      return NUMBER_FORMAT.format(x);
     }
   }
 
@@ -273,11 +239,11 @@ public class SimplePager extends AbstractPager {
   }
 
   private int getFastStep(int pageSize, int rowCount) {
-    if (pageSize <= 0 || minFastPages <= 0 || maxFastPages <= 0
-        || rowCount <= pageSize * minFastPages) {
+    if (pageSize <= 0 || MIN_FAST_PAGES <= 0 || MAX_FAST_PAGES <= 0
+        || rowCount <= pageSize * MIN_FAST_PAGES) {
       return pageSize;
     }
-    return BeeUtils.clamp((int) Math.sqrt(rowCount / pageSize), minFastPages, maxFastPages)
+    return BeeUtils.clamp((int) Math.sqrt(rowCount / pageSize), MIN_FAST_PAGES, MAX_FAST_PAGES)
         * pageSize;
   }
 
@@ -289,6 +255,14 @@ public class SimplePager extends AbstractPager {
       int pos = pageStart + step;
       return pos - pos % pageSize;
     }
+  }
+  
+  private int getMaxInfoWidth(int rowCount) {
+    return Rulers.getLineWidth(createText(rowCount, rowCount, rowCount));
+  }
+
+  private int getMaxRowCount() {
+    return maxRowCount;
   }
 
   private int getRewindPosition(int pageStart, int pageSize, int rowCount) {
@@ -314,5 +288,9 @@ public class SimplePager extends AbstractPager {
       return;
     }
     setPageStart(getRewindPosition(start, length, rowCount));
+  }
+
+  private void setMaxRowCount(int maxRowCount) {
+    this.maxRowCount = maxRowCount;
   }
 }

@@ -27,7 +27,6 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.FlexTable.FlexCellFormatter;
 import com.butent.bee.client.layout.Absolute;
-import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
@@ -36,8 +35,6 @@ import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.form.FormView;
-import com.butent.bee.client.view.grid.AbstractGridCallback;
-import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
@@ -52,12 +49,7 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
-import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.filter.Operator;
-import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.ValueType;
-import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation;
@@ -65,125 +57,11 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 public class TaskEventHandler {
 
-  private static class ObserverHandler extends AbstractGridCallback {
-
-    private Long owner = null;
-    private Long executor = null;
-
-    private ObserverHandler() {
-    }
-
-    @Override
-    public boolean beforeAddRow(final GridPresenter presenter) {
-      if (!Objects.equal(BeeKeeper.getUser().getUserId(), getOwner())) {
-        presenter.getGridView().notifyWarning("Not an owner");
-        return false;
-      }
-
-      List<Filter> filters = Lists.newArrayList();
-      if (getOwner() != null) {
-        filters.add(excludeUser(getOwner()));
-      }
-      if (getExecutor() != null && !getExecutor().equals(getOwner())) {
-        filters.add(excludeUser(getExecutor()));
-      }
-
-      int index = presenter.getDataProvider().getColumnIndex(COL_USER);
-      for (IsRow row : presenter.getGridView().getGrid().getRowData()) {
-        filters.add(excludeUser(row.getLong(index)));
-      }
-
-      return false;
-    }
-
-    @Override
-    public int beforeDeleteRow(GridPresenter presenter, IsRow row) {
-      int result;
-      if (row == null) {
-        result = GridCallback.DELETE_CANCEL;
-      } else {
-        Long usr = BeeKeeper.getUser().getUserId();
-        Long obs = row.getLong(presenter.getDataProvider().getColumnIndex(COL_USER));
-
-        if (usr == null || obs == null || obs.equals(getOwner()) || obs.equals(getExecutor())) {
-          result = GridCallback.DELETE_CANCEL;
-        } else if (usr.equals(getOwner())) {
-          result = GridCallback.DELETE_DEFAULT;
-        } else if (usr.equals(obs)) {
-          result = GridCallback.DELETE_DEFAULT;
-        } else {
-          presenter.getGridView().notifyWarning("the only limit is yourself");
-          result = GridCallback.DELETE_CANCEL;
-        }
-      }
-      return result;
-    }
-
-    @Override
-    public int beforeDeleteRows(GridPresenter presenter, IsRow activeRow,
-        Collection<RowInfo> selectedRows) {
-      if (activeRow != null) {
-        presenter.deleteRow(activeRow, false);
-      }
-      return GridCallback.DELETE_CANCEL;
-    }
-
-    @Override
-    public void beforeRefresh(GridPresenter presenter) {
-      for (Map.Entry<String, Filter> entry : getFilters().entrySet()) {
-        presenter.getDataProvider().setParentFilter(entry.getKey(), entry.getValue());
-      }
-    }
-
-    @Override
-    public Map<String, Filter> getInitialFilters() {
-      return getFilters();
-    }
-
-    private Long getExecutor() {
-      return executor;
-    }
-
-    private Map<String, Filter> getFilters() {
-      Map<String, Filter> filters = Maps.newHashMap();
-
-      Filter filter;
-      if (getExecutor() == null) {
-        filter = null;
-      } else {
-        filter = ComparisonFilter.isNotEqual(COL_USER, new LongValue(getExecutor()));
-      }
-      filters.put(COL_EXECUTOR, filter);
-
-      if (getOwner() == null || getOwner().equals(getExecutor())) {
-        filter = null;
-      } else {
-        filter = ComparisonFilter.isNotEqual(COL_USER, new LongValue(getOwner()));
-      }
-      filters.put(COL_OWNER, filter);
-
-      return filters;
-    }
-
-    private Long getOwner() {
-      return owner;
-    }
-
-    private void setExecutor(Long executor) {
-      this.executor = executor;
-    }
-
-    private void setOwner(Long owner) {
-      this.owner = owner;
-    }
-  }
-  
   private static class TaskCreateHandler extends AbstractFormCallback {
 
     @Override
@@ -491,7 +369,6 @@ public class TaskEventHandler {
   private static class TaskEditHandler extends AbstractFormCallback {
 
     private final Map<String, Widget> formWidgets = Maps.newHashMap();
-    private ObserverHandler observerHandler = null;
 
     @Override
     public void afterCreateWidget(String name, final Widget widget,
@@ -538,17 +415,6 @@ public class TaskEventHandler {
     }
 
     @Override
-    public void beforeRefresh(FormView form, IsRow row) {
-      Long owner = (row == null) ? null : row.getLong(form.getDataIndex(COL_OWNER));
-      Long exec = (row == null) ? null : row.getLong(form.getDataIndex(COL_EXECUTOR));
-
-      if (getObserverHandler() != null) {
-        getObserverHandler().setOwner(owner);
-        getObserverHandler().setExecutor(exec);
-      }
-    }
-
-    @Override
     public FormCallback getInstance() {
       return new TaskEditHandler();
     }
@@ -590,10 +456,6 @@ public class TaskEventHandler {
         }
       });
       return false;
-    }
-
-    private ObserverHandler getObserverHandler() {
-      return observerHandler;
     }
 
     private Widget getWidget(String name) {
@@ -1092,10 +954,6 @@ public class TaskEventHandler {
       }
     });
     dialog.display();
-  }
-
-  private static Filter excludeUser(long userId) {
-    return ComparisonFilter.compareId(Operator.NE, userId);
   }
 
   private TaskEventHandler() {

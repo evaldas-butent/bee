@@ -1,13 +1,11 @@
 package com.butent.bee.client.view;
 
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.logical.SelectionCountChangeEvent;
-import com.butent.bee.client.layout.Absolute;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.view.navigation.PagerView;
 import com.butent.bee.client.view.navigation.SimplePager;
@@ -24,7 +22,7 @@ import java.util.Collection;
  * Implements styling and user command capture for data footers.
  */
 
-public class FooterImpl extends Absolute implements FooterView, HasNavigation, HasSearch {
+public class FooterImpl extends Flow implements FooterView, HasNavigation, HasSearch {
 
   private static final String STYLE_CONTAINER = "bee-FooterContainer";
   private static final String STYLE_PAGER = "bee-SimplePager";
@@ -33,59 +31,48 @@ public class FooterImpl extends Absolute implements FooterView, HasNavigation, H
 
   private static final int HEIGHT = 32;
 
-  private static final int TOP = 2;
-  private static final int SPACING = 15;
-  private static final int HORIZONTAL_MARGIN = 6;
-
-  private static final int PAGER_WIDTH = 256;
-  private static final int SELECTION_COUNTER_WIDTH = 32;
-
   private Presenter viewPresenter = null;
 
   private String pagerId = null;
   private String searchId = null;
   private String selectionCounterId = null;
 
-  private boolean adjusted = false;
-
   private boolean enabled = true;
 
   public FooterImpl() {
     super();
     addStyleName(StyleUtils.WINDOW_FOOTER);
+    addStyleName(STYLE_CONTAINER);
   }
 
+  @Override
   public void create(int rowCount, boolean addPaging, boolean showPageSize, boolean addSearch) {
-    addStyleName(STYLE_CONTAINER);
-
-    int left = HORIZONTAL_MARGIN;
-
     if (addPaging) {
       SimplePager pager = new SimplePager(rowCount, showPageSize);
       pager.addStyleName(STYLE_PAGER);
-      add(pager, left, TOP);
-      left += PAGER_WIDTH + SPACING;
+      add(pager);
       setPagerId(pager.getWidgetId());
     }
 
     if (addSearch) {
       SearchBox search = new SearchBox();
       search.addStyleName(STYLE_SEARCH);
-      add(search, left, TOP);
-      StyleUtils.setRight(search, SPACING + SELECTION_COUNTER_WIDTH + HORIZONTAL_MARGIN);
+      add(search);
       setSearchId(search.getWidgetId());
     }
 
     BeeLabel selectionCounter = new BeeLabel();
     selectionCounter.addStyleName(STYLE_SELECTION_COUNTER);
     add(selectionCounter);
-    selectionCounterId = selectionCounter.getId();
+    setSelectionCounterId(selectionCounter.getId());
   }
 
+  @Override
   public int getHeight() {
     return HEIGHT;
   }
 
+  @Override
   public Collection<PagerView> getPagers() {
     return ViewHelper.getPagers(this);
   }
@@ -95,18 +82,22 @@ public class FooterImpl extends Absolute implements FooterView, HasNavigation, H
     return getElement();
   }
 
+  @Override
   public Collection<SearchView> getSearchers() {
     return ViewHelper.getSearchers(this);
   }
 
+  @Override
   public Presenter getViewPresenter() {
     return viewPresenter;
   }
 
+  @Override
   public String getWidgetId() {
     return getId();
   }
 
+  @Override
   public boolean isEnabled() {
     return enabled;
   }
@@ -127,15 +118,17 @@ public class FooterImpl extends Absolute implements FooterView, HasNavigation, H
     return true;
   }
 
+  @Override
   public void onSelectionCountChange(SelectionCountChangeEvent event) {
     Assert.notNull(event);
-    if (selectionCounterId != null) {
+    if (!BeeUtils.isEmpty(getSelectionCounterId())) {
       int cnt = event.getCount();
       String text = (cnt > 0) ? BeeUtils.toString(cnt) : BeeConst.STRING_EMPTY;
-      DomUtils.setText(selectionCounterId, text);
+      DomUtils.setText(getSelectionCounterId(), text);
     }
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     if (enabled == isEnabled()) {
       return;
@@ -144,37 +137,9 @@ public class FooterImpl extends Absolute implements FooterView, HasNavigation, H
     DomUtils.enableChildren(this, enabled);
   }
 
+  @Override
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
-  }
-
-  @Override
-  protected void onLoad() {
-    super.onLoad();
-    if (!adjusted) {
-      adjusted = true;
-      Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-        public void execute() {
-          adjust();
-        }
-      });
-    }
-  }
-
-  private void adjust() {
-    if (BeeUtils.isEmpty(getPagerId())) {
-      return;
-    }
-
-    int pagerWidth = DomUtils.getChildOffsetWidth(this, getPagerId());
-    if (pagerWidth <= 0) {
-      return;
-    }
-
-    if (!BeeUtils.isEmpty(getSearchId())) {
-      int left = HORIZONTAL_MARGIN + pagerWidth + SPACING;
-      StyleUtils.setLeft(DomUtils.getChild(this, getSearchId()), left);
-    }
   }
 
   private String getPagerId() {
@@ -185,11 +150,19 @@ public class FooterImpl extends Absolute implements FooterView, HasNavigation, H
     return searchId;
   }
 
+  private String getSelectionCounterId() {
+    return selectionCounterId;
+  }
+
   private void setPagerId(String pagerId) {
     this.pagerId = pagerId;
   }
 
   private void setSearchId(String searchId) {
     this.searchId = searchId;
+  }
+
+  private void setSelectionCounterId(String selectionCounterId) {
+    this.selectionCounterId = selectionCounterId;
   }
 }
