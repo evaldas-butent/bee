@@ -21,7 +21,7 @@ public class Horizontal extends CellVector {
 
   @Override
   public void add(Widget w) {
-    Element td = createAlignedTd();
+    Element td = createDefaultCell();
     DOM.appendChild(tableRow, td);
     add(w, td);
   }
@@ -33,7 +33,7 @@ public class Horizontal extends CellVector {
   public void insert(Widget w, int beforeIndex) {
     checkIndexBoundsForInsertion(beforeIndex);
 
-    Element td = createAlignedTd();
+    Element td = createDefaultCell();
     DOM.insertChild(tableRow, td, beforeIndex);
     insert(w, td, beforeIndex, false);
   }

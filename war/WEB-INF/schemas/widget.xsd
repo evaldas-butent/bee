@@ -159,8 +159,7 @@
           <xs:element name="cell" type="prokaryote" />
           <xs:group ref="wdht" />
         </xs:choice>
-        <xs:attribute name="borderWidth" type="xs:unsignedByte" />
-        <xs:attribute name="cellSpacing" type="xs:unsignedByte" />
+        <xs:attributeGroup ref="ui:cellAppearance" />
         <xs:attributeGroup ref="ui:alignment" />
       </xs:extension>
     </xs:complexContent>
@@ -488,7 +487,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:element name="FlexTable" substitutionGroup="widget">
+  <xs:element name="Table" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>
         <xs:extension base="widgetType">
@@ -515,9 +514,7 @@
 
             <xs:group ref="wdht" />
           </xs:choice>
-          <xs:attribute name="borderWidth" type="xs:unsignedByte" />
-          <xs:attribute name="cellPadding" type="xs:unsignedByte" />
-          <xs:attribute name="cellSpacing" type="xs:unsignedByte" />
+          <xs:attributeGroup ref="ui:cellAppearance" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -887,6 +884,7 @@
           </xs:choice>
           <xs:attribute name="stylePrefix" type="xs:normalizedString" />
           <xs:attribute name="vertical" type="xs:boolean" />
+          <xs:attributeGroup ref="ui:cellAppearance" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -904,5 +902,7 @@
 
   <xs:element name="OrderedList" type="htmlList" substitutionGroup="widget" />
   <xs:element name="UnorderedList" type="htmlList" substitutionGroup="widget" />
+
+  <xs:element name="RichTextEditor" type="display" substitutionGroup="widget" />
 
 </xs:schema>

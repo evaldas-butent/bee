@@ -6,7 +6,6 @@ import com.google.common.collect.Sets;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
@@ -71,12 +70,9 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     @Override
     public void onConfirm() {
-      setLoadingState(LoadingStateChangeEvent.LoadingState.LOADING);
-
       Queries.deleteRow(getViewName(), rowId, version, new Queries.IntCallback() {
         @Override
         public void onFailure(String... reason) {
-          setLoadingState(LoadingStateChangeEvent.LoadingState.LOADED);
           showFailure("Delete Record", reason);
         }
 
@@ -371,12 +367,6 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
   private boolean hasData() {
     return getDataProvider() != null;
-  }
-
-  private void setLoadingState(LoadingStateChangeEvent.LoadingState loadingState) {
-    if (loadingState != null) {
-      getView().getContent().getDisplay().fireLoadingStateChange(loadingState);
-    }
   }
 
   private void showFailure(String activity, String... reasons) {

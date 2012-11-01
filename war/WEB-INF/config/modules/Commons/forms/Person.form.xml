@@ -6,7 +6,7 @@
   name="Person" viewName="Persons" caption="Asmuo" width="800"
   >
   <FlowPanel class="flexBox-vertical">
-    <FlexTable cellSpacing="10">
+    <Table style="border-spacing: 10px;">
       <row>
         <Label html="Vardas" class="bee-required" />
         <InputText style="width: 200px" source="FirstName" />
@@ -20,7 +20,7 @@
           <xi:include href="widgets/ContactInfo.widget.xml" />
         </cell>
       </row>
-    </FlexTable>
+    </Table>
 
     <ChildGrid class="flexible" name="PersonCompanies" relColumn="Person" />
   </FlowPanel>

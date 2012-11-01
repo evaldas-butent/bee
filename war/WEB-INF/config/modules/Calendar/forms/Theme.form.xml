@@ -6,7 +6,7 @@
   name="Theme" viewName="Themes" caption="Spalvų tema">
 
   <FlowPanel class="flexBox-vertical">
-    <HorizontalPanel cellSpacing="32">
+    <HorizontalPanel style="border-spacing: 32px;">
       <InputText source="Name" caption="Pavadinimas:" decorator="caption-top" />
       <InputArea source="Description" caption="Aprašymas:" visibleLines="3" style="width: 200px;"
         decorator="caption-top" />

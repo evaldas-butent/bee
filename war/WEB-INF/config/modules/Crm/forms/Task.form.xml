@@ -7,7 +7,7 @@
 
   <FlowPanel class="flexBox-horizontal">
     <FlowPanel>
-      <FlexTable cellSpacing="10">
+      <Table style="border-spacing: 10px;">
         <row>
           <Label html="Būsena" />
           <TextLabel source="Event" itemKey="TaskEvent" class="bee-display" />
@@ -58,7 +58,7 @@
           </cell>
         </row>
 
-      </FlexTable>
+      </Table>
 
       <FlowPanel style="margin-left: 1em; margin-top: 2ex;">
         <Button name="COMMENTED" html="Naujas komentaras" />

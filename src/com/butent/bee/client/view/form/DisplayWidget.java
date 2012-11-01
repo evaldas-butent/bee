@@ -10,6 +10,7 @@ import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HandlesRendering;
+import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.widget.BeeButton;
@@ -53,7 +54,7 @@ public class DisplayWidget {
   public String getValue(IsRow row) {
     if (renderer != null) {
       return renderer.render(row);
-    } else if (row != null) {
+    } else if (row != null && dataIndex >= 0) {
       return row.getString(dataIndex);
     } else {
       return BeeConst.STRING_EMPTY;
@@ -206,6 +207,12 @@ public class DisplayWidget {
           } else {
             ((Progress) widget).setValue(BeeConst.DOUBLE_ZERO);
           }
+        }
+        break;
+      
+      case RICH_TEXT_EDITOR:
+        if (widget instanceof RichTextEditor) {
+          ((RichTextEditor) widget).setValue(value);
         }
         break;
 

@@ -15,6 +15,10 @@
   width: 100%;
   table-layout: fixed;
   color: #444;
+  border-collapse: collapse;
+}
+.bee-cal .calendar-header td {
+  padding: 0;
 }
 .bee-cal .calendar-header .year-cell, .bee-cal .calendar-header .date-cell {
   width: 50px;
@@ -47,6 +51,10 @@
   background: #fff;
   table-layout: fixed;
   border-top: 1px solid #ddd;
+  border-collapse: collapse;
+}
+.bee-cal .multiDayPanel td {
+  padding: 0;
 }
 .bee-cal .multiDayGrid {
   position: relative;
@@ -357,6 +365,9 @@
   left: 100px;
   border-collapse: collapse;
 }
+.bee-cal-Panel-navContainer td {
+  padding: 0;
+}
 .bee-cal-Panel-navItem {
   font-weight: bold;
 }
@@ -388,9 +399,8 @@
 }
 
 .bee-cal-Panel-view-item {
-  margin-left: 3px;
   border-radius: 3px;
-}  
+}
 .bee-cal-Panel-view-item-selected {
   cursor: default;
   background-color: #eee;

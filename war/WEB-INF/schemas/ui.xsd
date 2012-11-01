@@ -108,6 +108,11 @@
     <xs:attribute name="style" type="xs:string" />
   </xs:attributeGroup>
 
+  <xs:attributeGroup name="cellAppearance">
+    <xs:attribute name="cellClass" type="xs:normalizedString" />
+    <xs:attribute name="cellStyle" type="xs:string" />
+  </xs:attributeGroup>
+
   <xs:attributeGroup name="textArea">
     <xs:attribute name="visibleLines" type="xs:positiveInteger" />
     <xs:attribute name="characterWidth" type="xs:positiveInteger" />

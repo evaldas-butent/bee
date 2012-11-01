@@ -21,7 +21,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.grid.FlexTable;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Vertical;
@@ -62,6 +62,7 @@ public class MessageBoxes {
   private static final String STYLE_CHOICE_DEFAULT = "bee-ChoiceDefault";
   private static final String STYLE_CHOICE_CANCEL = "bee-ChoiceCancel";
 
+  private static final String STYLE_CONFIRM_CONTAINER = "bee-ConfirmContainer";
   private static final String STYLE_CONFIRM_MESSAGE = "bee-ConfirmMessage";
 
   private static final String STYLE_DECISION_DIALOG = "bee-DecisionDialog";
@@ -234,8 +235,8 @@ public class MessageBoxes {
       panel = DialogBox.create(caption);
     }
 
-    FlexTable content = new FlexTable();
-    content.setCellSpacing(10);
+    HtmlTable content = new HtmlTable();
+    content.addStyleName(STYLE_CONFIRM_CONTAINER);
     
     int row = 0;
     for (String message : messages) {
@@ -311,7 +312,7 @@ public class MessageBoxes {
       popup = DialogBox.create(caption, styleName);
     }
 
-    FlexTable panel = new FlexTable();
+    HtmlTable panel = new HtmlTable();
     panel.addStyleName(STYLE_DECISION_PANEL);
 
     setDecisionCell(panel, 0, 0, new BeeImage(Global.getImages().question()), STYLE_DECISION_ICON);
@@ -447,14 +448,14 @@ public class MessageBoxes {
       return;
     }
 
-    FlexTable grid = new FlexTable();
+    HtmlTable grid = new HtmlTable();
     int index = 0;
 
     if (!BeeUtils.isEmpty(caption)) {
       grid.setHTML(index, 0, caption.trim());
       grid.alignCenter(index, 0);
       if (c > 1) {
-        grid.getFlexCellFormatter().setColSpan(index, 0, c);
+        grid.getCellFormatter().setColSpan(index, 0, c);
       }
       index++;
     }
@@ -484,7 +485,7 @@ public class MessageBoxes {
     grid.setWidget(index, 0, close);
     grid.alignCenter(index, 0);
     if (c > 1) {
-      grid.getFlexCellFormatter().setColSpan(index, 0, c);
+      grid.getCellFormatter().setColSpan(index, 0, c);
     }
 
     Popup box = new Popup(true, true);
@@ -526,7 +527,7 @@ public class MessageBoxes {
     return popup;
   }
 
-  private void setDecisionCell(FlexTable table, int row, int col, Widget widget, String styleName) {
+  private void setDecisionCell(HtmlTable table, int row, int col, Widget widget, String styleName) {
     widget.addStyleName(styleName);
     table.setWidget(row, col, widget, styleName + STYLE_DECISION_CELL);
   }

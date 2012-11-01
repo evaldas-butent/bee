@@ -4,7 +4,7 @@
   
   name="Item" width="700" height="300"
   >
-  <FlexTable cellSpacing="10">
+  <Table style="border-spacing: 10px;">
     <row>
       <Label html="Pavadinimas:" class="bee-required" />
       <cell colSpan="3">
@@ -36,5 +36,5 @@
           renderColumns="ParentName Name" style="width: 500px;" />
       </cell>
     </row>
-  </FlexTable>
+  </Table>
 </f:Form>  

@@ -96,9 +96,6 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
   }
 
   public void bind() {
-    if (hasHeader()) {
-      getGridView().getGrid().addLoadingStateChangeHandler(getHeader());
-    }
     if (hasFooter()) {
       getGridView().getGrid().addSelectionCountChangeHandler(getFooter());
     }

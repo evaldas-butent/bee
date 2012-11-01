@@ -8,13 +8,9 @@
     <north size="50" splitterSize="1">
       <AbsolutePanel>
         <layer left="1" leftUnit="em">
-          <HorizontalPanel cellSpacing="5">
-            <cell>
-              <Button html="Login" style="background: Aquamarine;" />
-            </cell>
-            <cell>
-              <Button html="Logout" service="rpc_logout" class="-" />
-            </cell>
+          <HorizontalPanel style="border-spacing: 5px;">
+            <Button html="Login" style="background: Aquamarine;" />
+            <Button html="Logout" service="rpc_logout" class="-" />
           </HorizontalPanel>
         </layer>
 
@@ -24,11 +20,11 @@
       </AbsolutePanel>
     </north>
 
-    <west size="100">
+    <west size="150">
       <StackPanel>
         <stack headerSize="30">
           <html>&lt;big style="color: red;"&gt;Images&lt;/big&gt;</html>
-          <VerticalPanel cellSpacing="10" horizontalAlignment="center">
+          <VerticalPanel style="border-spacing: 10px;" horizontalAlignment="center">
             <cell>
               <html>url</html>
             </cell>
@@ -107,7 +103,7 @@
           </SpanPanel>
 
           <ScrollPanel>
-            <FlexTable borderWidth="1" cellPadding="3" style="borderCollapse: collapse;">
+            <Table style="border-collapse: collapse;" cellStyle="padding: 3px; border: 1px solid black;">
               <col index="0" width="20" widthUnit="%" />
 
               <row>
@@ -223,7 +219,7 @@
                   <InputText />
                 </cell>
               </row>
-            </FlexTable>
+            </Table>
           </ScrollPanel>
         </page>
 
@@ -257,6 +253,7 @@
             <layer left="10" top="20" width="80" widthUnit="%">
               <SliderBar min="-100" max="200" step="50" numLabels="10" numTicks="20" />
             </layer>
+
             <layer left="100" top="100" width="300" height="100">
               <FlowPanel>
                 <Disclosure html="disclosure">
@@ -282,7 +279,12 @@
                 </HtmlPanel>
               </FlowPanel>
             </layer>
-            <layer right="20" bottom="20">
+
+            <layer left="40" bottom="40" width="600" height="250">
+              <RichTextEditor />
+            </layer>
+
+            <layer right="5" bottom="5">
               <Toggle>
                 <upFace resource="cancel" />
                 <downFace resource="ok" />

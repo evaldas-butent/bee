@@ -706,6 +706,13 @@ body, select {
   border-radius: 2px;
 }
 
+.bee-Dialog-layout {
+  border-collapse: collapse;
+}
+.bee-Dialog-layout td {
+  padding: 0;
+}
+
 .bee-Dialog-caption {
   cursor: move;
   height: 30px;
@@ -822,20 +829,41 @@ body, select {
   bottom: 3px;
 }
 
+.bee-RichTextEditor {
+  position: relative;
+}
+.bee-RichTextEditor-embedded {
+  border: 1px solid #b4b4b4;  
+}
+
 .bee-RichTextToolbar {
-  width: 100%;
+  height: 57px;
   background-color: #e8e8e8;
   border-bottom: 1px solid #bbb;
-  padding: 3px;
-  margin: 0px;
+  padding: 3px 5px 0 5px;
 }
-
 .bee-RichTextToolbar-row {
-  width: 100%;
+  display: -webkit-flex;
+}
+.bee-RichTextToolbar-row > * {
+  -webkit-flex: 1;
+}
+.bee-RichTextToolbar-row .bee-Toggle-down, .bee-RichTextToolbar-row .bee-Toggle-down-hovering {
+  background-color: #faac58;
 }
 
-.bee-RichTextToolbar-row .bee-Toggle-down,.bee-RichTextToolbar-row .bee-Toggle-down-hovering {
-  background-color: #faac58;
+.bee-RichTextPanel {
+  position: absolute;
+  top: 57px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+.bee-RichTextArea {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: #fff;
 }
 
 .bee-DataSelector-embedded {
@@ -880,12 +908,6 @@ body, select {
 
 .bee-DataSelector-navigationCell {
   text-align: center;
-}
-
-.bee-RichTextArea {
-  width: 100%;
-  border: 0px;
-  background-color: white;
 }
 
 .bee-GridFormContainer, .bee-NewRowContainer, .bee-RowContainer {
@@ -956,6 +978,7 @@ body, select {
 
 .bee-Disclosure-header {
   cursor: pointer;
+  border-spacing: 3px;
 }
 
 .bee-Disclosure-content {
@@ -1193,7 +1216,7 @@ body, select {
 
 .bee-StackHeader {
   cursor: pointer;
-  padding-left: 2em;
+  padding-left: 1em;
   padding-top: 2px;
   border-top: 1px solid #E4E4E4;
   color: #6D6D6D;
@@ -1258,7 +1281,6 @@ body, select {
   padding: 0 10px;
   border: 1px solid #E4E4E4;
   border-radius: 2px;
-  margin-right: 2em;
   cursor: pointer;
 }
 
@@ -1270,6 +1292,7 @@ body, select {
 }
 
 .bee-ChoiceGroup-item-vertical {
+  margin-right: 4px;
   margin-bottom: 1ex;
 }
 
@@ -1285,6 +1308,9 @@ body, select {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1ex;
+}
+.bee-FavoritesGroup td {
+  padding: 5px;
 }
 .bee-FavoritesEditColumn, .bee-FavoritesDeleteColumn {
   width: 16px;
@@ -1563,6 +1589,9 @@ body, select {
   border-left-width: 8px;
 }
 
+.bee-ConfirmContainer {
+  border-spacing: 10px;
+}
 .bee-ConfirmMessage {
   max-width: 400px;
 }
@@ -1579,7 +1608,7 @@ body, select {
 }
 .bee-DecisionPanel {
   background-color: WhiteSmoke;
-  padding: 10px 4px 10px 4px;
+  padding: 10px 4px 6px 4px;
 }
 .bee-DecisionMessage {
   max-width: 360px;
@@ -1639,7 +1668,7 @@ body, select {
   background-color: Snow;
   border: 1px solid SkyBlue;
   border-radius: 7px;
-  border-spacing: 2px;
+  border-spacing: 1px;
   padding-top: 1px;
 }
 .bee-SimplePager-disabledButton {

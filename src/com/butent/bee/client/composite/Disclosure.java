@@ -102,7 +102,6 @@ public class Disclosure extends Vertical implements HasOpenHandlers<Disclosure>,
       add(iconImage);
       setWidget(widget);
 
-      setCellSpacing(3);
       setStyleName(STYLENAME_HEADER);
 
       iconImage.addClickHandler(this);

@@ -127,7 +127,7 @@
               <ui:expression>row.Name</ui:expression>
             </calc>
             <form name="Etapo koregavimas">
-              <FlexTable>
+              <Table>
                 <row>
                   <cell>
                     <Label html="Etapas" horizontalAlignment="right" class="bee-required" />
@@ -144,7 +144,7 @@
                     <InputArea source="Description" visibleLines="4" style="width: 25em" />
                   </cell>
                 </row>
-              </FlexTable>
+              </Table>
             </form>
           </ChildTree>
 

@@ -2,9 +2,9 @@ package com.butent.bee.client.layout;
 
 public interface IsHtmlTable {
   
-  void setBorderWidth(int width);
+  void setBorderSpacing(int spacing);
 
-  void setCellPadding(int padding);
-  
-  void setCellSpacing(int spacing);
+  void setDefaultCellClasses(String classes);
+
+  void setDefaultCellStyles(String styles);
 }

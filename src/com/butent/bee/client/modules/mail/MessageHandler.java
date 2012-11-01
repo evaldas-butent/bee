@@ -28,7 +28,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.dialog.Popup;
-import com.butent.bee.client.grid.FlexTable;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -69,8 +69,8 @@ public class MessageHandler extends AbstractFormCallback {
         public void onClick(ClickEvent event) {
           event.stopPropagation();
           final Popup popup = new Popup(true, true, "bee-mail-RecipientsPopup");
-          FlexTable ft = new FlexTable();
-          ft.setCellSpacing(5);
+          HtmlTable ft = new HtmlTable();
+          ft.setBorderSpacing(5);
           List<Pair<String, String>> types = Lists.newArrayList();
           types.add(Pair.of("to", "Skirta:"));
           types.add(Pair.of("cc", "Kopija:"));

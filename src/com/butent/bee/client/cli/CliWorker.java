@@ -60,8 +60,8 @@ import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
@@ -1757,8 +1757,8 @@ public class CliWorker {
   }
 
   private static void showInputTypes() {
-    FlexTable table = new FlexTable();
-    table.setCellSpacing(3);
+    HtmlTable table = new HtmlTable();
+    table.setBorderSpacing(3);
 
     String[] types = new String[] {
         "search", "tel", "url", "email", "datetime", "date", "month", "week", "time",
@@ -1865,10 +1865,9 @@ public class CliWorker {
     high = BeeUtils.clamp(high, low, max);
     optimum = BeeUtils.clamp(optimum, min, max);
 
-    FlexTable table = new FlexTable();
-    table.setCellPadding(3);
-    table.setCellSpacing(3);
-    table.setBorderWidth(1);
+    HtmlTable table = new HtmlTable();
+    table.setBorderSpacing(3);
+    table.setDefaultCellStyles("padding: 3px; border: 1px solid black;");
 
     int r = 0;
     table.setHTML(r, 0, "min");
@@ -2125,9 +2124,8 @@ public class CliWorker {
     }
     areaHtml.setHTML(html);
 
-    FlexTable table = new FlexTable();
-    table.setCellPadding(3);
-    table.setBorderWidth(1);
+    HtmlTable table = new HtmlTable();
+    table.setDefaultCellStyles("padding: 3px; border: 1px solid black;");
 
     for (int i = 0; i < info.size(); i++) {
       table.setHTML(i, 0, info.get(i).getName());

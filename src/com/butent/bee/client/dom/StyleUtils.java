@@ -18,6 +18,7 @@ import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.safecss.shared.SafeStylesUtils;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
+import com.google.gwt.user.client.ui.HasVerticalAlignment.VerticalAlignmentConstant;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.utils.JsUtils;
@@ -237,6 +238,7 @@ public class StyleUtils {
   public static final String STYLE_OUTLINE_COLOR = "outlineColor";
 
   public static final String STYLE_BORDER_COLLAPSE = "borderCollapse";
+  public static final String STYLE_BORDER_SPACING = "borderSpacing";
   public static final String STYLE_TABLE_LAYOUT = "tableLayout";
   public static final String STYLE_VERTICAL_ALIGN = "verticalAlign";
 
@@ -1527,21 +1529,6 @@ public class StyleUtils {
     setBackgroundColor(obj.getElement(), color);
   }
 
-  public static void setBorderBottomWidth(Element el, int px) {
-    Assert.notNull(el);
-    setBorderBottomWidth(el.getStyle(), px);
-  }
-
-  public static void setBorderBottomWidth(Style st, int px) {
-    Assert.notNull(st);
-    Assert.nonNegative(px);
-    st.setPropertyPx(STYLE_BORDER_BOTTOM, px);
-  }
-
-  public static void setBorderBottomWidth(UIObject obj, int px) {
-    setBorderBottomWidth(obj.getElement(), px);
-  }
-
   public static void setBorderColor(Element el, String color) {
     Assert.notNull(el);
     setBorderColor(el.getStyle(), color);
@@ -1565,54 +1552,38 @@ public class StyleUtils {
     setBorderColor(obj.getElement(), color);
   }
 
-  public static void setBorderLeftWidth(Element el, int px) {
+  public static void setBorderSpacing(Element el, int px) {
     Assert.notNull(el);
-    setBorderLeftWidth(el.getStyle(), px);
+    setBorderSpacing(el.getStyle(), px);
   }
 
-  public static void setBorderLeftWidth(Style st, int px) {
+  public static void setBorderSpacing(Style st, int px) {
     Assert.notNull(st);
     Assert.nonNegative(px);
-    st.setPropertyPx(STYLE_BORDER_LEFT, px);
+    st.setPropertyPx(STYLE_BORDER_SPACING, px);
   }
 
-  public static void setBorderLeftWidth(UIObject obj, int px) {
+  public static void setBorderSpacing(UIObject obj, int px) {
     Assert.notNull(obj);
-    setBorderLeftWidth(obj.getElement(), px);
+    setBorderSpacing(obj.getElement(), px);
   }
-
-  public static void setBorderRightWidth(Element el, int px) {
+  
+  public static void setBorderWidth(Element el, int px) {
     Assert.notNull(el);
-    setBorderRightWidth(el.getStyle(), px);
+    setBorderWidth(el.getStyle(), px);
   }
 
-  public static void setBorderRightWidth(Style st, int px) {
+  public static void setBorderWidth(Style st, int px) {
     Assert.notNull(st);
     Assert.nonNegative(px);
-    st.setPropertyPx(STYLE_BORDER_RIGHT, px);
+    st.setPropertyPx(STYLE_BORDER_WIDTH, px);
   }
 
-  public static void setBorderRightWidth(UIObject obj, int px) {
+  public static void setBorderWidth(UIObject obj, int px) {
     Assert.notNull(obj);
-    setBorderRightWidth(obj.getElement(), px);
+    setBorderWidth(obj.getElement(), px);
   }
-
-  public static void setBorderTopWidth(Element el, int px) {
-    Assert.notNull(el);
-    setBorderTopWidth(el.getStyle(), px);
-  }
-
-  public static void setBorderTopWidth(Style st, int px) {
-    Assert.notNull(st);
-    Assert.nonNegative(px);
-    st.setPropertyPx(STYLE_BORDER_TOP, px);
-  }
-
-  public static void setBorderTopWidth(UIObject obj, int px) {
-    Assert.notNull(obj);
-    setBorderTopWidth(obj.getElement(), px);
-  }
-
+  
   public static void setBottom(Element el, int px) {
     Assert.notNull(el);
     setBottom(el.getStyle(), px);
@@ -2212,19 +2183,10 @@ public class StyleUtils {
     setTextAlign(el.getStyle(), align);
   }
 
-  public static void setTextAlign(String id, HorizontalAlignmentConstant align) {
-    setTextAlign(DomUtils.getElement(id), align);
-  }
-
   public static void setTextAlign(Style st, HorizontalAlignmentConstant align) {
     Assert.notNull(st);
     Assert.notNull(align);
     st.setProperty(STYLE_TEXT_ALIGN, align.getTextAlignString());
-  }
-
-  public static void setTextAlign(UIObject obj, HorizontalAlignmentConstant align) {
-    Assert.notNull(obj);
-    setTextAlign(obj.getElement(), align);
   }
 
   public static void setTop(Element el, double value, Unit unit) {
@@ -2265,6 +2227,17 @@ public class StyleUtils {
     setTop(obj.getElement(), px);
   }
 
+  public static void setVerticalAlign(Element el, VerticalAlignmentConstant align) {
+    Assert.notNull(el);
+    setVerticalAlign(el.getStyle(), align);
+  }
+
+  public static void setVerticalAlign(Style st, VerticalAlignmentConstant align) {
+    Assert.notNull(st);
+    Assert.notNull(align);
+    st.setProperty(STYLE_VERTICAL_ALIGN, align.getVerticalAlignString());
+  }
+  
   public static void setWhiteSpace(Element el, WhiteSpace value) {
     Assert.notNull(el);
     setWhiteSpace(el.getStyle(), value);

@@ -11,7 +11,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.event.logical.BookmarkEvent;
-import com.butent.bee.client.grid.FlexTable;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.Html;
@@ -237,8 +237,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
 
     int index = 0;
     for (Group group : Group.values()) {
-      FlexTable display = new FlexTable();
-      display.setCellPadding(5);
+      HtmlTable display = new HtmlTable();
       display.addStyleName(GROUP_STYLE);
 
       display.getColumnFormatter().addStyleName(ITEM_COLUMN, ITEM_COLUMN_STYLE);
@@ -343,7 +342,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
     }
   }
 
-  private void addDisplayRow(FlexTable display, final Group group, final Item item) {
+  private void addDisplayRow(HtmlTable display, final Group group, final Item item) {
     int row = display.getRowCount();
 
     Widget widget = group.createItemWidget(item);
@@ -398,8 +397,8 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
     return new Item(itm, html.trim(), BeeUtils.unbox(ord));
   }
 
-  private FlexTable getDisplay(Group group) {
-    return (FlexTable) getWidget(group.getWidgetIndex());
+  private HtmlTable getDisplay(Group group) {
+    return (HtmlTable) getWidget(group.getWidgetIndex());
   }
 
   private Group getGroup(int index) {
@@ -439,7 +438,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
       return false;
     }
 
-    FlexTable display = getDisplay(group);
+    HtmlTable display = getDisplay(group);
     display.removeRow(group.indexOf(item));
 
     Filter filter = Filter.and(
@@ -457,7 +456,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
     }
     item.setHtml(html);
 
-    FlexTable display = getDisplay(group);
+    HtmlTable display = getDisplay(group);
     display.getWidget(group.indexOf(item), ITEM_COLUMN).getElement().setInnerHTML(html.trim());
 
     CompoundFilter filter = Filter.and();

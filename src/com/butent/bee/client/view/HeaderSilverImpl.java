@@ -3,7 +3,6 @@ package com.butent.bee.client.view;
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -83,15 +82,11 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   private static final int CLOSE_RIGHT = 2;
   private static final int CLOSE_TOP = 1;
 
-  private static final int LOADING_INDICATOR_TOP = 2;
-  private static final int LOADING_INDICATOR_RIGHT_MARGIN = 48;
-
   private static final String STYLE_CONTAINER = "bee-Header-container";
 
   private static final String STYLE_CAPTION = "bee-Header-caption";
   private static final String STYLE_MESSAGE = "bee-Header-message";
 
-  private static final String STYLE_LOADING_INDICATOR = "bee-Header-loadingIndicator";
   private static final String STYLE_CONTROL = "bee-Header-control";
   private static final String STYLE_CLOSE = "bee-Header-close";
 
@@ -99,8 +94,6 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
       BeeUtils.positive(Settings.getActionSensitivityMillis(), 300);
 
   private Presenter viewPresenter = null;
-
-  private String loadingIndicatorId = null;
 
   private final InlineLabel captionWidget = new InlineLabel();
   private final InlineLabel messageWidget = new InlineLabel();
@@ -189,13 +182,6 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
       x += w;
     }
 
-    if (hasData) {
-      BeeImage loadingIndicator = new BeeImage(Global.getImages().loading());
-      setLoadingIndicatorId(loadingIndicator.getId());
-      loadingIndicator.addStyleName(STYLE_LOADING_INDICATOR);
-      addRightTop(loadingIndicator, x + LOADING_INDICATOR_RIGHT_MARGIN, LOADING_INDICATOR_TOP);
-    }
-
     if (hasClose) {
       addRightTop(createControl(Global.getImages().silverClose(), Action.CLOSE, STYLE_CLOSE),
           CLOSE_RIGHT, CLOSE_TOP);
@@ -257,20 +243,6 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
   @Override
   public boolean isEnabled() {
     return enabled;
-  }
-
-  @Override
-  public void onLoadingStateChanged(LoadingStateChangeEvent event) {
-    if (!isAttached() || BeeUtils.isEmpty(getLoadingIndicatorId())) {
-      return;
-    }
-    Assert.notNull(event);
-
-    if (LoadingStateChangeEvent.LoadingState.LOADED.equals(event.getLoadingState())) {
-      StyleUtils.hideDisplay(getLoadingIndicatorId());
-    } else {
-      StyleUtils.unhideDisplay(getLoadingIndicatorId());
-    }
   }
 
   @Override
@@ -360,10 +332,6 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     return actionControls;
   }
 
-  private String getLoadingIndicatorId() {
-    return loadingIndicatorId;
-  }
-
   private boolean hasAction(Action action, boolean def,
       Set<Action> enabledActions, Set<Action> disabledActions) {
     if (def) {
@@ -371,9 +339,5 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
     } else {
       return BeeUtils.contains(enabledActions, action);
     }
-  }
-
-  private void setLoadingIndicatorId(String loadingIndicatorId) {
-    this.loadingIndicatorId = loadingIndicatorId;
   }
 }

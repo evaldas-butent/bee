@@ -45,7 +45,6 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.ChildGrid;
-import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.grid.GridPanel;
 import com.butent.bee.client.grid.HtmlTable;
@@ -72,6 +71,7 @@ import com.butent.bee.client.layout.Stack;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.presenter.TreePresenter;
+import com.butent.bee.client.richtext.RichTextEditor;
 import com.butent.bee.client.tree.HasTreeItems;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
@@ -174,7 +174,6 @@ public enum FormWidget {
   DECORATOR("decorator", EnumSet.of(Type.IS_DECORATOR)),
   DISCLOSURE("Disclosure", EnumSet.of(Type.HAS_CHILDREN)),
   DOUBLE_LABEL("DoubleLabel", EnumSet.of(Type.DISPLAY)),
-  FLEX_TABLE("FlexTable", EnumSet.of(Type.TABLE)),
   FLOW_PANEL("FlowPanel", EnumSet.of(Type.HAS_CHILDREN)),
   FRAME("Frame", EnumSet.of(Type.DISPLAY)),
   GRID_PANEL("GridPanel", EnumSet.of(Type.IS_GRID)),
@@ -212,6 +211,7 @@ public enum FormWidget {
   PROGRESS("Progress", EnumSet.of(Type.DISPLAY)),
   RADIO("Radio", EnumSet.of(Type.EDITABLE)),
   RESIZE_PANEL("ResizePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
+  RICH_TEXT_EDITOR("RichTextEditor", EnumSet.of(Type.DISPLAY)),
   SCROLL_PANEL("ScrollPanel", EnumSet.of(Type.HAS_ONE_CHILD)),
   SIMPLE_INLINE_PANEL("SimpleInlinePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
   SIMPLE_PANEL("SimplePanel", EnumSet.of(Type.HAS_ONE_CHILD)),
@@ -223,6 +223,7 @@ public enum FormWidget {
   SVG("Svg", EnumSet.of(Type.DISPLAY)),
   TAB_BAR("TabBar", EnumSet.of(Type.DISPLAY)),
   TABBED_PAGES("TabbedPages", EnumSet.of(Type.PANEL)),
+  TABLE("Table", EnumSet.of(Type.IS_TABLE)),
   TEXT_LABEL("TextLabel", EnumSet.of(Type.DISPLAY)),
   TOGGLE("Toggle", EnumSet.of(Type.EDITABLE)),
   UNORDERED_LIST("UnorderedList", null),
@@ -291,11 +292,11 @@ public enum FormWidget {
 
   private enum Type {
     FOCUSABLE, EDITABLE, IS_LABEL, DISPLAY, HAS_ONE_CHILD, HAS_CHILDREN, HAS_LAYERS,
-    TABLE, IS_CHILD, IS_GRID, PANEL, CELL_VECTOR, INPUT, IS_CUSTOM, IS_DECORATOR
+    IS_TABLE, IS_CHILD, IS_GRID, PANEL, CELL_VECTOR, INPUT, IS_CUSTOM, IS_DECORATOR
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(FormWidget.class);
-  
+
   public static final String ATTR_SCROLL_BARS = "scrollBars";
   public static final String ATTR_SPLITTER_SIZE = "splitterSize";
   public static final String ATTR_SIZE = "size";
@@ -322,11 +323,10 @@ public enum FormWidget {
   private static final String ATTR_BOTTOM = "bottom";
   private static final String ATTR_BOTTOM_UNIT = "bottomUnit";
 
+  private static final String ATTR_CELL_CLASS = "cellClass";
+  private static final String ATTR_CELL_STYLE = "cellStyle";
   private static final String ATTR_COL_SPAN = "colSpan";
   private static final String ATTR_ROW_SPAN = "rowSpan";
-  private static final String ATTR_CELL_PADDING = "cellPadding";
-  private static final String ATTR_CELL_SPACING = "cellSpacing";
-  private static final String ATTR_BORDER_WIDTH = "borderWidth";
   private static final String ATTR_WORD_WRAP = "wordWrap";
   private static final String ATTR_INDEX = "index";
 
@@ -605,10 +605,6 @@ public enum FormWidget {
         }
         break;
 
-      case FLEX_TABLE:
-        widget = new FlexTable();
-        break;
-
       case FLOW_PANEL:
         widget = new Flow();
         break;
@@ -876,6 +872,10 @@ public enum FormWidget {
       case RESIZE_PANEL:
         widget = new ResizePanel();
         break;
+        
+      case RICH_TEXT_EDITOR:
+        widget = new RichTextEditor(true);
+        break;
 
       case SCROLL_PANEL:
         widget = new Scroll();
@@ -941,7 +941,7 @@ public enum FormWidget {
         stylePrefix = attributes.get(ATTR_STYLE_PREFIX);
         Orientation orientation = BeeUtils.toBoolean(attributes.get(ATTR_VERTICAL))
             ? Orientation.VERTICAL : Orientation.HORIZONTAL;
-        widget = BeeUtils.isEmpty(stylePrefix) 
+        widget = BeeUtils.isEmpty(stylePrefix)
             ? new TabBar(orientation) : new TabBar(stylePrefix, orientation);
         break;
 
@@ -950,6 +950,10 @@ public enum FormWidget {
         widget = BeeUtils.isEmpty(stylePrefix) ? new TabbedPages() : new TabbedPages(stylePrefix);
         break;
 
+      case TABLE:
+        widget = new HtmlTable();
+        break;
+        
       case TEXT_LABEL:
         widget = new TextLabel(BeeUtils.toBoolean(attributes.get(ATTR_INLINE)));
         break;
@@ -1101,7 +1105,7 @@ public enum FormWidget {
       if (disablable && BeeConst.isFalse(attributes.get(ATTR_DISABLABLE))) {
         disablable = false;
       }
-      
+
       if (widget instanceof HasMaxLength && !attributes.containsKey(ATTR_MAX_LENGTH)) {
         int maxLength = UiHelper.getMaxLength(getColumn(columns, attributes));
         if (maxLength > 0) {
@@ -1224,7 +1228,7 @@ public enum FormWidget {
   public String getTagName() {
     return tagName;
   }
-  
+
   public boolean isChild() {
     return hasType(Type.IS_CHILD);
   }
@@ -1419,12 +1423,12 @@ public enum FormWidget {
     }
     return ok;
   }
-  
+
   private BeeColumn getColumn(List<BeeColumn> columns, Map<String, String> attributes) {
     if (columns == null && attributes == null) {
       return null;
     }
-    
+
     String source = attributes.get(UiConstants.ATTR_SOURCE);
     if (BeeUtils.isEmpty(source)) {
       return null;
@@ -1545,7 +1549,7 @@ public enum FormWidget {
   }
 
   private boolean isTable() {
-    return hasType(Type.TABLE);
+    return hasType(Type.IS_TABLE);
   }
 
   private void processChild(Widget parent, Element child, String viewName, List<BeeColumn> columns,
@@ -1808,18 +1812,13 @@ public enum FormWidget {
           UiHelper.setVerticalAlignment((HasVerticalAlignment) widget, value);
         }
 
-      } else if (BeeUtils.same(name, ATTR_BORDER_WIDTH) && BeeUtils.isDigit(value)) {
+      } else if (BeeUtils.same(name, ATTR_CELL_CLASS)) {
         if (widget instanceof IsHtmlTable) {
-          ((IsHtmlTable) widget).setBorderWidth(BeeUtils.toInt(value));
+          ((IsHtmlTable) widget).setDefaultCellClasses(value);
         }
-
-      } else if (BeeUtils.same(name, ATTR_CELL_PADDING)) {
-        if (widget instanceof IsHtmlTable && BeeUtils.isDigit(value)) {
-          ((IsHtmlTable) widget).setCellPadding(BeeUtils.toInt(value));
-        }
-      } else if (BeeUtils.same(name, ATTR_CELL_SPACING) && BeeUtils.isDigit(value)) {
+      } else if (BeeUtils.same(name, ATTR_CELL_STYLE)) {
         if (widget instanceof IsHtmlTable) {
-          ((IsHtmlTable) widget).setCellSpacing(BeeUtils.toInt(value));
+          ((IsHtmlTable) widget).setDefaultCellStyles(value);
         }
 
       } else if (BeeUtils.same(name, HasService.ATTR_SERVICE)) {
@@ -1860,7 +1859,7 @@ public enum FormWidget {
         if (widget instanceof HasMaxLength && BeeUtils.isPositiveInt(value)) {
           ((HasMaxLength) widget).setMaxLength(BeeUtils.toInt(value));
         }
-        
+
       } else if (BeeUtils.same(name, HasItems.ATTR_ITEM_KEY)) {
         if (widget instanceof AcceptsCaptions) {
           ((AcceptsCaptions) widget).addCaptions(value);
@@ -1946,15 +1945,13 @@ public enum FormWidget {
           element.getAttribute(UiConstants.ATTR_CLASS),
           element.getAttribute(UiConstants.ATTR_STYLE));
 
-      if (table instanceof FlexTable) {
-        String span = element.getAttribute(ATTR_COL_SPAN);
-        if (BeeUtils.toInt(span) > 1) {
-          ((FlexTable) table).getFlexCellFormatter().setColSpan(row, col, BeeUtils.toInt(span));
-        }
-        span = element.getAttribute(ATTR_ROW_SPAN);
-        if (BeeUtils.toInt(span) > 1) {
-          ((FlexTable) table).getFlexCellFormatter().setRowSpan(row, col, BeeUtils.toInt(span));
-        }
+      String span = element.getAttribute(ATTR_COL_SPAN);
+      if (BeeUtils.toInt(span) > 1) {
+        table.getCellFormatter().setColSpan(row, col, BeeUtils.toInt(span));
+      }
+      span = element.getAttribute(ATTR_ROW_SPAN);
+      if (BeeUtils.toInt(span) > 1) {
+        table.getCellFormatter().setRowSpan(row, col, BeeUtils.toInt(span));
       }
     }
   }

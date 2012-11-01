@@ -17,7 +17,7 @@ public class Vertical extends CellVector  {
   @Override
   public void add(Widget w) {
     Element tr = DOM.createTR();
-    Element td = createAlignedTd();
+    Element td = createDefaultCell();
     DOM.appendChild(tr, td);
     DOM.appendChild(getBody(), tr);
 
@@ -32,7 +32,7 @@ public class Vertical extends CellVector  {
     checkIndexBoundsForInsertion(beforeIndex);
 
     Element tr = DOM.createTR();
-    Element td = createAlignedTd();
+    Element td = createDefaultCell();
     DOM.appendChild(tr, td);
 
     DOM.insertChild(getBody(), tr, beforeIndex);

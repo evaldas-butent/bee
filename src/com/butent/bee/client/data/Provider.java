@@ -2,7 +2,6 @@ package com.butent.bee.client.data;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import com.butent.bee.client.BeeKeeper;
@@ -31,12 +30,13 @@ import java.util.Map;
  * Enables to manage ranges of data shown in user interface tables.
  */
 
-public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvents, HasViewName, DataRequestEvent.Handler {
+public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvents, HasViewName,
+    DataRequestEvent.Handler {
 
   public enum Type {
     ASYNC, CACHED, LOCAL
   }
-  
+
   private final HasDataTable display;
   private final NotificationListener notificationListener;
 
@@ -65,7 +65,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
 
     this.idColumnName = idColumnName;
     this.versionColumnName = versionColumnName;
-    
+
     this.immutableFilter = immutableFilter;
 
     this.handlerRegistry.add(display.addDataRequestHandler(this));
@@ -142,7 +142,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
   public void onDataRequest(DataRequestEvent event) {
     onRequest(false);
   }
-  
+
   public abstract void onFilterChange(Filter newFilter, boolean updateActiveRow);
 
   public abstract void onMultiDelete(MultiDeleteEvent event);
@@ -181,7 +181,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       getParentFilters().put(key, filter);
     }
   }
-  
+
   protected void acceptFilter(Filter newFilter) {
     setUserFilter(newFilter);
     getDisplay().setPageStart(0, true, false, NavigationOrigin.SYSTEM);
@@ -207,7 +207,7 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
     getDisplay().setPageStart(0, true, false, NavigationOrigin.SYSTEM);
     onRequest(true);
   }
-  
+
   protected boolean hasPaging() {
     return getPageSize() > 0;
   }
@@ -219,13 +219,9 @@ public abstract class Provider implements SortEvent.Handler, HandlesAllDataEvent
       notificationListener.notifyWarning("no rows found", filter.toString());
     }
   }
-  
+
   protected void setUserFilter(Filter userFilter) {
     this.userFilter = userFilter;
-  }
-
-  protected void startLoading() {
-    getDisplay().fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADING);
   }
 
   private Map<String, Filter> getParentFilters() {

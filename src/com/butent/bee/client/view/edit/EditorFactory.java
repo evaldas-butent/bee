@@ -155,8 +155,7 @@ public class EditorFactory {
   }
 
   public static Editor getEditor(EditorDescription description, String itemKey,
-      ValueType valueType,
-      Relation relation) {
+      ValueType valueType, Relation relation) {
     Assert.notNull(description);
     EditorType editorType = description.getType();
     Assert.notNull(editorType);
@@ -197,7 +196,7 @@ public class EditorFactory {
         break;
 
       case RICH:
-        editor = new RichTextEditor();
+        editor = new RichTextEditor(false);
         break;
 
       case SLIDER:

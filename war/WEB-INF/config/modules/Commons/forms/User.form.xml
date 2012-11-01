@@ -6,7 +6,7 @@
   width="800" height="240"
   >
   <FlowPanel class="flexBox-vertical">
-    <FlexTable cellSpacing="10">
+    <Table style="border-spacing: 10px;">
       <row>
         <Label html="Prisijungimo vardas" />
         <InputText source="Login" style="width:150px" />
@@ -29,7 +29,7 @@
         <Label html="Pareigos" horizontalAlignment="right" />
         <TextLabel source="Position" />
       </row>
-    </FlexTable>
+    </Table>
 
     <ChildGrid class="flexible" name="UserRoles" relColumn="User" style="width:300px" />
   </FlowPanel>

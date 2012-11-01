@@ -14,7 +14,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.grid.FlexTable;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.modules.calendar.Appointment;
@@ -66,7 +66,7 @@ public class MonthView extends CalendarView {
 
   private static final int PERCENT_SCALE = 3;
 
-  private final FlexTable grid = new FlexTable();
+  private final HtmlTable grid = new HtmlTable();
   private final Absolute canvas = new Absolute();
 
   private final List<AppointmentWidget> appointmentWidgets = Lists.newArrayList();

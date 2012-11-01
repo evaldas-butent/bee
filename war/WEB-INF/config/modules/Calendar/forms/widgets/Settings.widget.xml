@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<FlexTable xmlns="http://www.butent.com/widget"
-  cellSpacing="10">
+<Table xmlns="http://www.butent.com/widget" style="border-spacing: 10px;">
   
   <col index="1" width="100" />
   
@@ -45,4 +44,4 @@
     <Radio source="TimeBlockClickNumber" itemKey="TimeBlockClick" />
     <CheckBox source="ResourceView" html="Resursai" />
   </row>
-</FlexTable>
+</Table>

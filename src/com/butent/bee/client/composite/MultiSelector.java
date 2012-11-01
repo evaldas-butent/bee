@@ -3,6 +3,7 @@ package com.butent.bee.client.composite;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -111,6 +112,11 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   @Override
   public FormWidget getWidgetType() {
     return FormWidget.MULTI_SELECTOR;
+  }
+
+  @Override
+  public boolean isOrHasPartner(Node node) {
+    return super.isOrHasPartner(node) || getElement().isOrHasChild(node);
   }
 
   @Override

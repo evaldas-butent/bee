@@ -7,7 +7,6 @@ import com.butent.bee.client.event.logical.HasActiveRowChangeHandlers;
 import com.butent.bee.client.event.logical.HasSelectionCountChangeHandlers;
 import com.butent.bee.client.event.logical.HasSortHandlers;
 import com.butent.bee.client.event.logical.ScopeChangeEvent;
-import com.butent.bee.client.view.HasLoadingState;
 import com.butent.bee.client.view.edit.HasEditState;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.HandlesDeleteEvents;
@@ -20,9 +19,8 @@ import java.util.List;
  * Requires that implementing classes would have data rows and sort handlers.
  */
 
-public interface HasDataTable extends HasLoadingState, HasSortHandlers,
-    HandlesDeleteEvents, HandlesUpdateEvents, HasSelectionCountChangeHandlers, HasEditState,
-    HasActiveRowChangeHandlers, HasDataRows {
+public interface HasDataTable extends HasSortHandlers, HandlesDeleteEvents, HandlesUpdateEvents,
+    HasSelectionCountChangeHandlers, HasEditState, HasActiveRowChangeHandlers, HasDataRows {
 
   HandlerRegistration addScopeChangeHandler(ScopeChangeEvent.Handler handler);
   

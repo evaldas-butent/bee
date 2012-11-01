@@ -30,7 +30,7 @@ import com.butent.bee.client.composite.RadioGroup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
-import com.butent.bee.client.grid.FlexTable;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.UiHelper;
@@ -262,7 +262,7 @@ public class InputBoxes {
   public void inputVars(String caption, List<Variable> vars, DialogCallback callback) {
     Assert.notEmpty(vars);
 
-    FlexTable ft = new FlexTable();
+    HtmlTable table = new HtmlTable();
 
     Widget inp = null;
     String z, w;
@@ -279,7 +279,7 @@ public class InputBoxes {
 
       z = var.getCaption();
       if (!BeeUtils.isEmpty(z) && tp != BeeType.BOOLEAN) {
-        ft.setText(r, 0, z);
+        table.setText(r, 0, z);
       }
 
       w = var.getWidth();
@@ -330,7 +330,7 @@ public class InputBoxes {
         inp.setWidth(w);
       }
 
-      ft.setWidget(r, 1, inp);
+      table.setWidget(r, 1, inp);
       if (fw == null && inp instanceof FocusWidget) {
         fw = (FocusWidget) inp;
       }
@@ -344,16 +344,16 @@ public class InputBoxes {
     BeeButton cancel = new BeeButton(DialogConstants.CANCEL,
         DialogCallback.getCancelCommand(dialog, callback));
 
-    ft.setWidget(r, 0, confirm);
-    ft.setWidget(r, 1, cancel);
+    table.setWidget(r, 0, confirm);
+    table.setWidget(r, 1, cancel);
 
-    ft.getCellFormatter().setHorizontalAlignment(r, 0, HasHorizontalAlignment.ALIGN_LEFT);
-    ft.getCellFormatter().setHorizontalAlignment(r, 1, HasHorizontalAlignment.ALIGN_RIGHT);
+    table.getCellFormatter().setHorizontalAlignment(r, 0, HasHorizontalAlignment.ALIGN_LEFT);
+    table.getCellFormatter().setHorizontalAlignment(r, 1, HasHorizontalAlignment.ALIGN_RIGHT);
 
     dialog.setAnimationEnabled(true);
     dialog.addDomHandler(new KeyboardHandler(dialog, callback), KeyDownEvent.getType());
 
-    dialog.setWidget(ft);
+    dialog.setWidget(table);
     dialog.center();
 
     if (fw != null) {

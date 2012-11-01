@@ -218,8 +218,6 @@ public class CachedProvider extends Provider {
       return;
     }
 
-    startLoading();
-
     final int oldPageSize = getPageSize();
     final int oldTableSize = getTable().getNumberOfRows();
 

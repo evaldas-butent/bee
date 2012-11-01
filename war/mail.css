@@ -122,6 +122,7 @@
 
 .bee-mail-DisplayMode-panel {
   float: right;
+  border-collapse: collapse;
 }
 
 .bee-mail-DisplayMode-item {

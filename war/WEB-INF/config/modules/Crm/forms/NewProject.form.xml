@@ -5,7 +5,7 @@
   
   name="NewProject" caption="Naujas projektas">
 
-  <FlexTable cellSpacing="10">
+  <Table style="border-spacing: 10px;">
 
     <row>
       <Label html="Tipas:" class="bee-required" />
@@ -52,5 +52,5 @@
         </VerticalPanel>
       </cell>
     </row>
-  </FlexTable>
+  </Table>
 </f:Form>  

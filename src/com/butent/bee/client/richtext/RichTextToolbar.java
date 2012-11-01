@@ -22,8 +22,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.dialog.StringCallback;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.layout.Horizontal;
-import com.butent.bee.client.layout.Vertical;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.view.edit.Editor;
@@ -32,12 +31,13 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.Toggle;
+import com.butent.bee.shared.Procedure;
 
 /**
  * Handles a rich text editor toolbar with all the buttons for formatting the text.
  */
 
-public class RichTextToolbar extends Vertical implements HasEnabled {
+public class RichTextToolbar extends Flow implements HasEnabled {
 
   /**
    * Contains a list of necessary methods for text editing functions (bold, italic, justify,
@@ -137,18 +137,20 @@ public class RichTextToolbar extends Vertical implements HasEnabled {
         formatter.setJustification(RichTextArea.Justification.RIGHT);
 
       } else if (sender == insertImage) {
-        Global.inputString("Image URL", null, new StringCallback() {
+        getInput("Image URL", "http://", new Procedure<String>() {
           @Override
-          public void onSuccess(String value) {
-            formatter.insertImage(value);
-          }}, "http://");
+          public void call(String parameter) {
+            formatter.insertImage(parameter);
+          }
+        });
 
       } else if (sender == createLink) {
-        Global.inputString("Link URL", null, new StringCallback() {
+        getInput("Link URL", "http://", new Procedure<String>() {
           @Override
-          public void onSuccess(String value) {
-            formatter.createLink(value);
-          }}, "http://");
+          public void call(String parameter) {
+            formatter.createLink(parameter);
+          }
+        });
 
       } else if (sender == removeLink) {
         formatter.removeLink();
@@ -166,11 +168,12 @@ public class RichTextToolbar extends Vertical implements HasEnabled {
         updateStatus();
 
       } else if (sender == insertHtml) {
-        Global.inputString("Html", new StringCallback() {
+        getInput("Html", null, new Procedure<String>() {
           @Override
-          public void onSuccess(String value) {
-            formatter.insertHTML(value);
-          }});
+          public void call(String parameter) {
+            formatter.insertHTML(parameter);
+          }
+        });
 
       } else if (sender == undo) {
         formatter.undo();
@@ -180,7 +183,7 @@ public class RichTextToolbar extends Vertical implements HasEnabled {
     }
 
     public void onKeyDown(KeyDownEvent event) {
-      if (UiHelper.isSave(event.getNativeEvent())) {
+      if (accept != null && UiHelper.isSave(event.getNativeEvent())) {
         event.preventDefault();
         accept.execute();
       }
@@ -194,59 +197,66 @@ public class RichTextToolbar extends Vertical implements HasEnabled {
     }
   }
 
+  private static final String STYLE_ROW = "bee-RichTextToolbar-row";
+  
   private static final RichTextArea.FontSize[] fontSizesConstants = new RichTextArea.FontSize[] {
       RichTextArea.FontSize.XX_SMALL, RichTextArea.FontSize.X_SMALL,
       RichTextArea.FontSize.SMALL, RichTextArea.FontSize.MEDIUM,
       RichTextArea.FontSize.LARGE, RichTextArea.FontSize.X_LARGE,
       RichTextArea.FontSize.XX_LARGE};
 
-  private Images images = (Images) GWT.create(Images.class);
-  private EventHandler handler = new EventHandler();
+  private final Images images = (Images) GWT.create(Images.class);
+  private final EventHandler handler = new EventHandler();
 
-  private RichTextArea area;
-  private Formatter formatter;
+  private final RichTextArea area;
+  private final Formatter formatter;
 
-  private Horizontal firstRow = new Horizontal();
-  private Horizontal secondRow = new Horizontal();
+  private final Flow firstRow = new Flow();
+  private final Flow secondRow = new Flow();
 
-  private Toggle bold;
-  private Toggle italic;
-  private Toggle underline;
-  private Toggle subscript;
-  private Toggle superscript;
-  private Toggle strikethrough;
+  private final Toggle bold;
+  private final Toggle italic;
+  private final Toggle underline;
+  private final Toggle subscript;
+  private final Toggle superscript;
+  private final Toggle strikethrough;
 
-  private BeeImage indent;
-  private BeeImage outdent;
-  private BeeImage justifyLeft;
-  private BeeImage justifyCenter;
-  private BeeImage justifyRight;
-  private BeeImage hr;
-  private BeeImage ol;
-  private BeeImage ul;
-  private BeeImage insertImage;
-  private BeeImage createLink;
-  private BeeImage removeLink;
-  private BeeImage removeFormat;
-  private BeeImage insertHtml;
-  private BeeImage undo;
-  private BeeImage redo;
+  private final BeeImage indent;
+  private final BeeImage outdent;
+  private final BeeImage justifyLeft;
+  private final BeeImage justifyCenter;
+  private final BeeImage justifyRight;
+  private final BeeImage hr;
+  private final BeeImage ol;
+  private final BeeImage ul;
+  private final BeeImage insertImage;
+  private final BeeImage createLink;
+  private final BeeImage removeLink;
+  private final BeeImage removeFormat;
+  private final BeeImage insertHtml;
+  private final BeeImage undo;
+  private final BeeImage redo;
 
-  private BeeListBox backColors;
-  private BeeListBox foreColors;
-  private BeeListBox fonts;
-  private BeeListBox fontSizes;
+  private final BeeListBox backColors;
+  private final BeeListBox foreColors;
+  private final BeeListBox fonts;
+  private final BeeListBox fontSizes;
 
   private final Command accept;
+  
+  private boolean waiting = false;
 
-  public RichTextToolbar(Editor editor, RichTextArea richText) {
+  public RichTextToolbar(Editor editor, RichTextArea richText, boolean embedded) {
     this.area = richText;
     this.formatter = richText.getFormatter();
-
-    this.accept = new EditorFactory.Accept(editor);
-
-    firstRow.add(new BeeImage(Global.getImages().save(), this.accept));
-    firstRow.add(createSpacer(1.0, Unit.EM));
+    
+    if (embedded) {
+      this.accept = null;
+    } else {
+      this.accept = new EditorFactory.Accept(editor);
+      firstRow.add(new BeeImage(Global.getImages().save(), this.accept));
+      firstRow.add(createSpacer(1.0, Unit.EM));
+    }
 
     firstRow.add(undo = createButton(Global.getImages().undo(), "Undo"));
     firstRow.add(redo = createButton(Global.getImages().redo(), "Redo"));
@@ -277,29 +287,38 @@ public class RichTextToolbar extends Vertical implements HasEnabled {
 
     firstRow.add(createLink = createButton(images.createLink(), "Create Link"));
     firstRow.add(removeLink = createButton(images.removeLink(), "Remove Link"));
-    firstRow.add(createSpacer(1.0, Unit.EM));
-
-    firstRow.add(new BeeImage(Global.getImages().close(), new EditorFactory.Cancel(editor)));
+    
+    if (!embedded) {
+      firstRow.add(createSpacer(1.0, Unit.EM));
+      firstRow.add(new BeeImage(Global.getImages().close(), new EditorFactory.Cancel(editor)));
+    }
 
     secondRow.add(backColors = createColorList("Background"));
     secondRow.add(foreColors = createColorList("Foreground"));
     secondRow.add(fonts = createFontList());
     secondRow.add(fontSizes = createFontSizes());
 
+    firstRow.addStyleName(STYLE_ROW);
+    secondRow.addStyleName(STYLE_ROW);
+
     add(firstRow);
     add(secondRow);
-    firstRow.setStyleName("bee-RichTextToolbar-row");
-    secondRow.setStyleName("bee-RichTextToolbar-row");
 
     richText.addKeyDownHandler(handler);
     richText.addKeyUpHandler(handler);
     richText.addClickHandler(handler);
   }
 
+  @Override
   public boolean isEnabled() {
     return DomUtils.isEnabled(this);
   }
 
+  public boolean isWaiting() {
+    return waiting;
+  }
+
+  @Override
   public void setEnabled(boolean enabled) {
     DomUtils.enableChildren(this, enabled);
   }
@@ -340,7 +359,7 @@ public class RichTextToolbar extends Vertical implements HasEnabled {
     lb.addChangeHandler(handler);
     lb.setVisibleItemCount(1);
 
-    lb.addItem("Font", "");
+    lb.addItem("Font Name", "");
     lb.addItem("Normal", "");
     lb.addItem("Times New Roman", "Times New Roman");
     lb.addItem("Arial", "Arial");
@@ -356,7 +375,7 @@ public class RichTextToolbar extends Vertical implements HasEnabled {
     lb.addChangeHandler(handler);
     lb.setVisibleItemCount(1);
 
-    lb.addItem("Size");
+    lb.addItem("Font Size");
     lb.addItem("XX-Small");
     lb.addItem("X-Small");
     lb.addItem("Small");
@@ -382,5 +401,26 @@ public class RichTextToolbar extends Vertical implements HasEnabled {
     tb.addClickHandler(handler);
     tb.setTitle(tip);
     return tb;
+  }
+
+  private void getInput(String caption, String defaultValue, final Procedure<String> procedure) {
+    setWaiting(true);
+
+    Global.inputString(caption, null, new StringCallback() {
+      @Override
+      public void onCancel() {
+        setWaiting(false);
+        super.onCancel();
+      }
+
+      @Override
+      public void onSuccess(String value) {
+        setWaiting(false);
+        procedure.call(value);
+      }}, defaultValue);
+  }
+  
+  private void setWaiting(boolean waiting) {
+    this.waiting = waiting;
   }
 }

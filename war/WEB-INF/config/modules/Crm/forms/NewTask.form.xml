@@ -5,7 +5,7 @@
   
   name="NewTask" caption="Nauja užduotis" width="666" height="444">
 
-  <FlexTable cellSpacing="10">
+  <Table style="border-spacing: 10px;">
 
     <row>
       <Label html="Numatoma trukmė min.:" />
@@ -49,5 +49,5 @@
       </cell>
     </row>
 
-  </FlexTable>
+  </Table>
 </f:Form>  

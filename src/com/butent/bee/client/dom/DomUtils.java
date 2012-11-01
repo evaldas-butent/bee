@@ -79,8 +79,6 @@ public class DomUtils {
 
   public static final String DEFAULT_ID_PREFIX = "bee";
 
-  public static final String ATTRIBUTE_CELL_PADDING = "cellPadding";
-  public static final String ATTRIBUTE_CELL_SPACING = "cellSpacing";
   public static final String ATTRIBUTE_CHECKED = "checked";
   public static final String ATTRIBUTE_COL_SPAN = "colSpan";
   public static final String ATTRIBUTE_DEFAULT_CHECKED = "defaultChecked";
@@ -369,22 +367,6 @@ public class DomUtils {
     Assert.notEmpty(name);
 
     return obj.getElement().getAttribute(name);
-  }
-
-  public static int getCellPadding(Element elem) {
-    if (isTableElement(elem)) {
-      return elem.getPropertyInt(ATTRIBUTE_CELL_PADDING);
-    } else {
-      return 0;
-    }
-  }
-
-  public static int getCellSpacing(Element elem) {
-    if (isTableElement(elem)) {
-      return elem.getPropertyInt(ATTRIBUTE_CELL_SPACING);
-    } else {
-      return 0;
-    }
   }
 
   public static int getCheckBoxClientHeight() {

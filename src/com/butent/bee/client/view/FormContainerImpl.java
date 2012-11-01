@@ -68,9 +68,6 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
 
   @Override
   public void bind() {
-    if (hasHeader()) {
-      getContent().getDisplay().addLoadingStateChangeHandler(getHeader());
-    }
     if (hasFooter()) {
       getContent().getDisplay().addSelectionCountChangeHandler(getFooter());
     }

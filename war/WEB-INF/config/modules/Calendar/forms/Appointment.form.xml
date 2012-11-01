@@ -90,8 +90,8 @@
 
       <page>
         <text>Transportas</text>
-        <FlexTable borderWidth="1" cellPadding="3"
-          style="border-color: #ccc; border-collapse: collapse; margin-top: 2ex;">
+        <Table style="border-collapse: collapse; margin-top: 2ex;"
+          cellStyle="padding: 3px; border: 1px solid #ccc;" >
           <row>
             <DataSelector source="VehicleNumber" caption="Valst. Nr.:" />
             <TextLabel source="Vehicle" caption="Modelis:" inline="true"
@@ -138,7 +138,7 @@
               <TextLabel source="VehicleNotes" caption="Pastabos:" style="white-space: pre-wrap;" />
             </cell>  
           </row>
-        </FlexTable>
+        </Table>
       </page>
 
       <page>
@@ -148,7 +148,7 @@
 
       <page>
         <text>Papildoma informacija</text>
-        <FlexTable cellPadding="5" style="margin-top: 2ex;">
+        <Table style="margin-top: 2ex;" cellStyle="padding: 5px;">
           <row>
             <Radio source="Transparency" itemKey="Transparency" vertical="false" />
             <Radio source="Visibility" itemKey="Calendar_Visibility" vertical="false" />
@@ -189,7 +189,7 @@
             <CheckBox source="GuestsCanInviteOthers" html="Guests Can Invite Others" />
             <CheckBox source="GuestsCanSeeOtherGuests" html="Guests Can See Other Guests" />
           </row>
-        </FlexTable>
+        </Table>
       </page>
 
     </TabbedPages>

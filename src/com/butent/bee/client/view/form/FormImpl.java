@@ -9,7 +9,6 @@ import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
@@ -143,7 +142,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
                 result.getRelation());
           }
 
-          if (renderer != null) {
+          if (index >= 0 || renderer != null) {
             if (widget instanceof HandlesRendering) {
               ((HandlesRendering) widget).setRenderer(renderer);
               displayWidget = new DisplayWidget(index, null, result);
@@ -317,11 +316,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   @Override
-  public HandlerRegistration addLoadingStateChangeHandler(LoadingStateChangeEvent.Handler handler) {
-    return addHandler(handler, LoadingStateChangeEvent.TYPE);
-  }
-
-  @Override
   public HandlerRegistration addReadyForInsertHandler(ReadyForInsertEvent.Handler handler) {
     return addHandler(handler, ReadyForInsertEvent.getType());
   }
@@ -434,13 +428,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     }
 
     setAdding(false);
-  }
-
-  @Override
-  public void fireLoadingStateChange(LoadingStateChangeEvent.LoadingState loadingState) {
-    if (loadingState != null) {
-      fireEvent(new LoadingStateChangeEvent(loadingState));
-    }
   }
 
   @Override
@@ -1093,7 +1080,6 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
           fireDataRequest(NavigationOrigin.SYSTEM);
         } else {
           setActiveRow(null);
-          fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
         }
       }
     }
@@ -1484,9 +1470,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   private void refreshData(boolean refreshChildren, boolean focus) {
-    fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.PARTIALLY_LOADED);
     render(refreshChildren);
-    fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
 
     if (focus) {
       focus(0, true, false);

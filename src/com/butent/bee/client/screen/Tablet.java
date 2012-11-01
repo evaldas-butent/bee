@@ -9,7 +9,7 @@ import com.butent.bee.client.cli.CliWorker;
 import com.butent.bee.client.composite.VolumeSlider;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.FontSize;
-import com.butent.bee.client.grid.FlexTable;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.utils.Command;
@@ -81,7 +81,7 @@ public class Tablet extends Mobile {
 
   @Override
   protected Widget initWest() {
-    FlexTable grid = new FlexTable();
+    HtmlTable grid = new HtmlTable();
     int r = 0;
     int c = 2;
     int w = 70;
@@ -131,19 +131,19 @@ public class Tablet extends Mobile {
     BeeButton rect = new BeeButton("SVG Rectangles", new SvgCommand(0));
     grid.setWidget(r, 0, rect);
     grid.alignCenter(r, 0);
-    grid.getFlexCellFormatter().setColSpan(r, 0, c);
+    grid.getCellFormatter().setColSpan(r, 0, c);
     r++;
 
     BeeButton circle = new BeeButton("SVG Circles", new SvgCommand(1));
     grid.setWidget(r, 0, circle);
     grid.alignCenter(r, 0);
-    grid.getFlexCellFormatter().setColSpan(r, 0, c);
+    grid.getCellFormatter().setColSpan(r, 0, c);
     r++;
 
     BeeButton ellipse = new BeeButton("SVG Ellipses", new SvgCommand(2));
     grid.setWidget(r, 0, ellipse);
     grid.alignCenter(r, 0);
-    grid.getFlexCellFormatter().setColSpan(r, 0, c);
+    grid.getCellFormatter().setColSpan(r, 0, c);
     r++;
     
     BeeButton canvas = new BeeButton("Canvas Demo", new Command() {
@@ -154,7 +154,7 @@ public class Tablet extends Mobile {
     });
     grid.setWidget(r, 0, canvas);
     grid.alignCenter(r, 0);
-    grid.getFlexCellFormatter().setColSpan(r, 0, c);
+    grid.getCellFormatter().setColSpan(r, 0, c);
     r++;
 
     BeeButton visual = new BeeButton("Visualization", new Command() {
@@ -165,7 +165,7 @@ public class Tablet extends Mobile {
     });
     grid.setWidget(r, 0, visual);
     grid.alignCenter(r, 0);
-    grid.getFlexCellFormatter().setColSpan(r, 0, c);
+    grid.getCellFormatter().setColSpan(r, 0, c);
     r++;
 
     BeeButton cornify = new BeeButton("Cornify", new Command() {
@@ -176,7 +176,7 @@ public class Tablet extends Mobile {
     });
     grid.setWidget(r, 0, cornify);
     grid.alignCenter(r, 0);
-    grid.getFlexCellFormatter().setColSpan(r, 0, c);
+    grid.getCellFormatter().setColSpan(r, 0, c);
     r++;
 
     return grid;

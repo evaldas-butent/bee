@@ -2,6 +2,7 @@ package com.butent.bee.client.visualization.showcase;
 
 import com.google.gwt.user.client.ui.Widget;
 
+import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.visualization.DataTable;
 import com.butent.bee.client.visualization.visualizations.corechart.AreaChart;
@@ -43,7 +44,7 @@ public class AreaDemo implements LeftTabPanel.WidgetProvider {
     viz.addOnMouseOutHandler(new OnMouseOutDemo(onMouseOverAndOutStatus));
 
     Vertical result = new Vertical();
-    result.setCellSpacing(3);
+    StyleUtils.setBorderSpacing(result, 3);
 
     result.add(status);
     result.add(viz);

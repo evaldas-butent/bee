@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <HorizontalPanel xmlns="http://www.butent.com/widget">
   <cell>
-    <FlexTable>
+    <Table>
       <row>
         <cell colSpan="2">
           <Label html="Pakrovimas" horizontalAlignment="center" style="font-weight: bold;" />
@@ -39,10 +39,10 @@
           <InputText source="LoadingTerminal" />
         </cell>
       </row>
-    </FlexTable>
+    </Table>
   </cell>
   <cell>
-    <FlexTable>
+    <Table>
       <row>
         <cell colSpan="2">
           <Label html="Iškrovimas" horizontalAlignment="center" style="font-weight: bold;" />
@@ -80,8 +80,7 @@
           <InputText source="UnloadingTerminal" />
         </cell>
       </row>
-    </FlexTable>
+    </Table>
   </cell>
 </HorizontalPanel>
-  
   

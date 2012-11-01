@@ -168,7 +168,7 @@ public class RowFactory {
 
     form.setAttribute(HasDimensions.ATTR_WIDTH, BeeUtils.toString(GENERATED_FORM_WIDTH));
 
-    Element table = doc.createElement(FormWidget.FLEX_TABLE.getTagName());
+    Element table = doc.createElement(FormWidget.TABLE.getTagName());
     table.setAttribute(UiConstants.ATTR_CLASS, STYLE_NEW_ROW_TABLE);
 
     int height = GENERATED_HEADER_HEIGHT + GENERATED_HEIGHT_MARGIN;

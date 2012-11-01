@@ -1,6 +1,5 @@
 package com.butent.bee.client.layout;
 
-import com.google.gwt.dom.client.TableElement;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
@@ -12,7 +11,6 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.ui.HasIndexedWidgets;
-import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.HasId;
 
 public abstract class CellVector extends ComplexPanel implements HasId, HasIndexedWidgets,
@@ -23,6 +21,9 @@ public abstract class CellVector extends ComplexPanel implements HasId, HasIndex
 
   private HorizontalAlignmentConstant horAlign = null;
   private VerticalAlignmentConstant vertAlign = null;
+  
+  private String defaultCellClasses = null;
+  private String defaultCellStyles = null;
 
   public CellVector() {
     super();
@@ -35,8 +36,6 @@ public abstract class CellVector extends ComplexPanel implements HasId, HasIndex
 
     DomUtils.createId(table, getIdPrefix());
     
-    setCellSpacing(0);
-    setCellPadding(0);
     table.setClassName("bee-CellVector");
   }
 
@@ -51,14 +50,17 @@ public abstract class CellVector extends ComplexPanel implements HasId, HasIndex
     return getWidgetTd(getWidget(index));
   }
 
+  @Override
   public HorizontalAlignmentConstant getHorizontalAlignment() {
     return horAlign;
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public VerticalAlignmentConstant getVerticalAlignment() {
     return vertAlign;
   }
@@ -68,8 +70,9 @@ public abstract class CellVector extends ComplexPanel implements HasId, HasIndex
     return getWidgetCount() <= 0;
   }
 
-  public void setBorderWidth(int width) {
-    table.getStyle().setBorderWidth(width, Unit.PX);
+  @Override
+  public void setBorderSpacing(int spacing) {
+    StyleUtils.setBorderSpacing(table, spacing);
   }
 
   public void setCellHeight(Widget w, double height, Unit unit) {
@@ -93,14 +96,6 @@ public abstract class CellVector extends ComplexPanel implements HasId, HasIndex
     }
   }
 
-  public void setCellPadding(int padding) {
-    TableElement.as(table).setCellPadding(padding);
-  }
-
-  public void setCellSpacing(int spacing) {
-    TableElement.as(table).setCellSpacing(spacing);
-  }
-
   public void setCellVerticalAlignment(Widget w, VerticalAlignmentConstant align) {
     Element td = getWidgetTd(w);
     if (td != null) {
@@ -122,20 +117,35 @@ public abstract class CellVector extends ComplexPanel implements HasId, HasIndex
     }
   }
 
-  public void setHorizontalAlignment(HorizontalAlignmentConstant align) {
-    horAlign = align;
+  @Override
+  public void setDefaultCellClasses(String classes) {
+    this.defaultCellClasses = classes;
   }
 
+  @Override
+  public void setDefaultCellStyles(String styles) {
+    this.defaultCellStyles = styles;
+  }
+  
+  @Override
+  public void setHorizontalAlignment(HorizontalAlignmentConstant align) {
+    this.horAlign = align;
+  }
+
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
+  @Override
   public void setVerticalAlignment(VerticalAlignmentConstant align) {
-    vertAlign = align;
+    this.vertAlign = align;
   }
 
-  protected Element createAlignedTd() {
+  protected Element createDefaultCell() {
     Element td = DOM.createTD();
+
+    StyleUtils.updateAppearance(td, getDefaultCellClasses(), getDefaultCellStyles());
     
     if (getHorizontalAlignment() != null) {
       setCellHorizontalAlignment(td, getHorizontalAlignment());
@@ -170,7 +180,15 @@ public abstract class CellVector extends ComplexPanel implements HasId, HasIndex
 
   protected void setCellVerticalAlignment(Element td, VerticalAlignmentConstant align) {
     if (align != null) {
-      UiHelper.setVerticalAlignment(td, align.getVerticalAlignString());
+      StyleUtils.setVerticalAlign(td, align);
     }
+  }
+
+  private String getDefaultCellClasses() {
+    return defaultCellClasses;
+  }
+
+  private String getDefaultCellStyles() {
+    return defaultCellStyles;
   }
 }

@@ -1,6 +1,5 @@
 package com.butent.bee.client.view;
 
-import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.ui.IndexedPanel;
 
 import com.butent.bee.client.output.Printable;
@@ -15,8 +14,7 @@ import java.util.Set;
  * Contains requirements for data header implementing classes.
  */
 
-public interface HeaderView extends View, LoadingStateChangeEvent.Handler, IndexedPanel, Printable,
-    HasCaption {
+public interface HeaderView extends View, IndexedPanel, Printable, HasCaption {
 
   void create(String caption, boolean hasData, boolean readOnly, Collection<UiOption> options,
       Set<Action> enabledActions, Set<Action> disabledActions);

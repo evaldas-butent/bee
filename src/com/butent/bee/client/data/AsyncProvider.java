@@ -157,7 +157,6 @@ public class AsyncProvider extends Provider {
         callback.setRpcId(rpcId);
 
         pendingRequests.put(rpcId, callback);
-        startLoading();
       }
     }
 
@@ -365,7 +364,6 @@ public class AsyncProvider extends Provider {
     Global.getCache().remove(getViewName());
 
     if (hasPaging()) {
-      startLoading();
       Queries.getRowCount(getViewName(), getFilter(), new Queries.IntCallback() {
         @Override
         public void onSuccess(Integer result) {

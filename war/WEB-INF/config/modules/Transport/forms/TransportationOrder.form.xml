@@ -5,7 +5,7 @@
   name="TransportationOrder" viewName="TransportationOrders" caption="Pervežimo užsakymas"
   >
   <FlowPanel class="flexBox-vertical">
-    <FlexTable cellSpacing="10">
+    <Table style="border-spacing: 10px;">
       <row>
         <Label html="Data:" horizontalAlignment="right" class="bee-hasDefaults" />
         <InputDateTime source="Date" />
@@ -31,7 +31,7 @@
         <Label html="Vadybininkas:" horizontalAlignment="right" />
         <DataSelector source="Manager" />
       </row>
-    </FlexTable>
+    </Table>
 
     <ChildGrid class="flexible" name="OrderCargo" relColumn="Order" />
   </FlowPanel>

@@ -5,56 +5,36 @@
 
   name="Data" caption="Data Binding, Events, Rendering" viewName="DataTypes"
   >
-  <FlexTable borderWidth="1" cellPadding="5" style="borderCollapse: collapse;">
-    <row>
-      <cell>
+  <FlowPanel style="margin: 1ex 1em;">
+    <Table style="border-collapse: collapse;" cellStyle="padding: 5px; border: 1px solid #aaa;">
+      <row>
         <CheckBox source="Boolean" />
-      </cell>
-      <cell>
         <CheckBox source="Boolean" html="Boolean" />
-      </cell>
-      <cell>
         <Toggle source="Boolean" />
-      </cell>
-    </row>
-
-    <row>
-      <cell>
         <InputInteger source="Integer" readOnly="true" />
-      </cell>
-      <cell>
         <InputSlider source="Integer" min="-10" max="10" />
-      </cell>
-      <cell>
         <TabBar source="Integer" itemKey="Priority" />
-      </cell>
-    </row>
+      </row>
 
-    <row>
-      <cell colSpan="2">
-        <Radio source="Integer">
-          <option>0</option>
-          <option>1</option>
-          <option>2</option>
-          <option>3</option>
-          <option>4</option>
-          <option>5</option>
-          <option>6</option>
-          <option>7</option>
-          <option>8</option>
-          <option>9</option>
-        </Radio>
-      </cell>
-      <cell horizontalAlignment="right">
-        <InputSpinner source="Integer" />
-      </cell>
-    </row>
-
-    <row>
-      <cell>
+      <row>
+        <cell colSpan="2">
+          <Radio source="Integer">
+            <option>0</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+            <option>6</option>
+            <option>7</option>
+            <option>8</option>
+            <option>9</option>
+          </Radio>
+        </cell>
+        <cell horizontalAlignment="right">
+          <InputSpinner source="Integer" />
+        </cell>
         <Radio source="Integer" valueStartIndex="1" itemKey="Priority" />
-      </cell>
-      <cell>
         <ListBox source="Integer" valueNumeric="true">
           <item>aaa</item>
           <item>bbb</item>
@@ -67,8 +47,6 @@
           <item>iii</item>
           <item>jjj</item>
         </ListBox>
-      </cell>
-      <cell>
         <Image source="Integer">
           <renderer type="list">
             <ui:item>add</ui:item>
@@ -80,47 +58,21 @@
             <ui:item>yellow</ui:item>
           </renderer>
         </Image>
-      </cell>
-    </row>
+      </row>
 
-    <row>
-      <cell>
+      <row>
         <InputCurrency source="Currency" />
-      </cell>
-      <cell>
         <CurrencyLabel source="Currency" />
-      </cell>
-      <cell>
         <CurrencyLabel source="Currency" format="#,##0.00&#160;&#164;" />
-      </cell>
-    </row>
-
-    <row>
-      <cell>
         <InputDate source="Date" format="date_short" minValue="2008 7 1" maxValue="2012 9 1" />
-      </cell>
-      <cell>
         <DateLabel source="Date" />
-      </cell>
-      <cell>
         <DateLabel source="Date" format="yy.MM.dd" />
-      </cell>
-    </row>
+      </row>
 
-    <row>
-      <cell>
+      <row>
         <InputDateTime source="DateTime" />
-      </cell>
-      <cell>
         <DateTimeLabel source="DateTime" />
-      </cell>
-      <cell>
         <DateTimeLabel source="DateTime" format="iso_8601" />
-      </cell>
-    </row>
-
-    <row>
-      <cell>
         <InputDecimal scale="3" source="Numeric">
           <handler event="mousewheel">
             var v = parseFloat(target.value);
@@ -129,17 +81,11 @@
             }
           </handler>
         </InputDecimal>
-      </cell>
-      <cell>
         <DecimalLabel scale="0" source="Numeric"/>
-      </cell>
-      <cell>
         <DecimalLabel scale="5" source="Numeric"/>
-      </cell>
-    </row>
+      </row>
 
-    <row>
-      <cell>
+      <row>
         <InputDouble source="Double">
           <validation>
             <ui:function>
@@ -151,23 +97,10 @@
             </ui:function>
           </validation>
         </InputDouble>
-      </cell>
-      <cell>
         <DoubleLabel source="Double" />
-      </cell>
-      <cell>
         <DoubleLabel source="Double" format="#.000" />
-      </cell>
-    </row>
-
-    <row>
-      <cell>
         <InputLong source="Long" minValue="0" />
-      </cell>
-      <cell>
         <LongLabel source="Long" />
-      </cell>
-      <cell>
         <Progress source="Long" max="10">
           <renderer type="range">
             <ui:item>, 0, 2</ui:item>
@@ -175,34 +108,21 @@
             <ui:item>1e6, , 9</ui:item>
           </renderer>
         </Progress>
-      </cell>
-    </row>
+      </row>
 
-    <row>
-      <cell>
+      <row>
         <InputText source="Char" />
-      </cell>
-      <cell>
         <ListBox source="Char">
           <item>abc</item>
           <item>def</item>
           <item>xyz</item>
         </ListBox>
-      </cell>
-      <cell>
         <Button source="Char">
           <handler event="click">
             alert(event.type + ", " + target.id + ", " + rowId + ", " + rowVersion);
           </handler>
         </Button>
-      </cell>
-    </row>
-
-    <row>
-      <cell>
         <InputText source="String" />
-      </cell>
-      <cell>
         <TextLabel>
           <render>
             <ui:function>
@@ -210,48 +130,40 @@
             </ui:function>
           </render>
         </TextLabel>
-      </cell>
-      <cell>
         <Meter min="0" max="30" source="String">
           <render>
             <ui:expression>String(cell.value).length</ui:expression>
           </render>
         </Meter>
-      </cell>
-    </row>
+      </row>
 
-    <row>
-      <cell colSpan="3">
-        <InputArea source="Memo" visibleLines="4" characterWidth="40" />
-      </cell>
-    </row>
-    <row>
-      <cell colSpan="3">
-        <HtmlLabel source="Memo" style="width: 500px; overflow: auto; border: 1px solid gray;" />
-      </cell>
-    </row>
+      <row>
+        <cell colSpan="3">
+          <InputArea source="Memo" visibleLines="4" characterWidth="40" />
+        </cell>
+        <cell colSpan="3">
+          <HtmlLabel source="Memo" style="width: 500px; overflow: auto; border: 1px solid gray;" />
+        </cell>
+      </row>
     
-    <row>
-      <cell>
+      <row>
         <text>id, version</text>
-      </cell>
-      <cell>
         <LongLabel>
           <render>
             <ui:expression>rowId</ui:expression>
           </render>
         </LongLabel>
-      </cell>
-      <cell>
         <DateTimeLabel>
           <render>
             <ui:expression>rowVersion</ui:expression>
           </render>
         </DateTimeLabel>
-      </cell>
-    </row>
-    
-  </FlexTable>
+      </row>
+    </Table>
+
+    <br/>
+    <RichTextEditor source="Memo" style="height: 200px;" />
+  </FlowPanel>
 
   <f:rowEditable>
     <ui:expression>row.Date == null || row.Date &gt;= new Date(2005, 0, 1)</ui:expression>

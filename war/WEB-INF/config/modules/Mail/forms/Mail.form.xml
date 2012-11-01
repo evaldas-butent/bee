@@ -9,7 +9,7 @@
       <ListBox name="Accounts" />
       <Image name="Create" resource="silverEdit" />
       <Image name="Trash" resource="silverDelete" />
-      <TabBar name="DisplayMode" stylePrefix="bee-mail-DisplayMode-">
+      <TabBar name="DisplayMode" stylePrefix="bee-mail-DisplayMode-" cellStyle="padding: 0;">
         <tab><Label html="Gautieji" /></tab>
         <tab><Label html="Siųstieji" /></tab>
         <tab><Label html="Juodraščiai" /></tab>

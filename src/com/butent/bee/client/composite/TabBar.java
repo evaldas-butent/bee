@@ -21,6 +21,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.CellVector;
 import com.butent.bee.client.layout.Horizontal;
+import com.butent.bee.client.layout.IsHtmlTable;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.ui.AcceptsCaptions;
@@ -38,7 +39,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class TabBar extends Composite implements HasBeforeSelectionHandlers<Integer>,
-    HasSelectionHandlers<Integer>, HasId, HasItems, AcceptsCaptions {
+    HasSelectionHandlers<Integer>, HasId, HasItems, AcceptsCaptions, IsHtmlTable {
 
   private class Tab extends Simple implements HasEnabled {
     private boolean enabled = true;
@@ -319,6 +320,21 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     return true;
   }
 
+  @Override
+  public void setBorderSpacing(int spacing) {
+    panel.setBorderSpacing(spacing);
+  }
+
+  @Override
+  public void setDefaultCellClasses(String classes) {
+    panel.setDefaultCellClasses(classes);
+  }
+
+  @Override
+  public void setDefaultCellStyles(String styles) {
+    panel.setDefaultCellStyles(styles);
+  }
+
   public void setId(String id) {
     panel.setId(id);
   }
@@ -339,7 +355,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     wrapper.setEnabled(enabled);
     setStyleName(wrapper.getElement(), stylePrefix + STYLE_DISABLED, !enabled);
   }
-
+  
   protected void insertTabWidget(Widget widget, int beforeIndex) {
     checkInsertBeforeTabIndex(beforeIndex);
 
@@ -349,20 +365,20 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
 
     panel.insert(wrapper, beforeIndex);
   }
-
+  
   private void checkInsertBeforeTabIndex(int beforeIndex) {
     Assert.betweenInclusive(beforeIndex, 0, getItemCount());
   }
-
+  
   private void checkTabIndex(int index, int min) {
     Assert.betweenExclusive(index, min, getItemCount());
   }
-  
+
   private String getStyle(String stem) {
     return stylePrefix + stem 
         + (orientation.isVertical() ? STYLE_SUFFIX_VERTICAL : STYLE_SUFFIX_HORIZONTAL);
   }
-  
+
   private int getTabIndex(Widget wrapper) {
     for (int i = 0; i < getItemCount(); i++) {
       if (getWrapper(i) == wrapper) {
@@ -371,7 +387,7 @@ public class TabBar extends Composite implements HasBeforeSelectionHandlers<Inte
     }
     return BeeConst.UNDEF;
   }
-  
+
   private Tab getWrapper(int index) {
     return (Tab) panel.getWidget(index);
   }

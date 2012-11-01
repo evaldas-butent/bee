@@ -28,8 +28,8 @@ import com.butent.bee.client.event.logical.ActionEvent;
 import com.butent.bee.client.event.logical.DataRequestEvent;
 import com.butent.bee.client.grid.ColumnFooter;
 import com.butent.bee.client.grid.ColumnHeader;
-import com.butent.bee.client.grid.FlexTable;
 import com.butent.bee.client.grid.GridFactory;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.grid.cell.ActionCell;
 import com.butent.bee.client.grid.cell.CalculatedCell;
 import com.butent.bee.client.grid.column.AbstractColumn;
@@ -1591,7 +1591,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     return DomUtils.getId(container);
   }
 
-  private void createNewRowWidgets(FlexTable container, List<String> columnNames,
+  private void createNewRowWidgets(HtmlTable container, List<String> columnNames,
       WidgetDescriptionCallback callback) {
 
     int r = 0;
@@ -1655,7 +1655,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     FormDescription formDescription = FormFactory.createFormDescription(formName,
         ImmutableMap.of(UiConstants.ATTR_VIEW_NAME, gridDescription.getViewName()),
-        FormWidget.FLEX_TABLE, ImmutableMap.of(UiConstants.ATTR_NAME, rootName));
+        FormWidget.TABLE, ImmutableMap.of(UiConstants.ATTR_NAME, rootName));
 
     FormView form = new FormImpl(formName);
     form.create(formDescription, gridDescription.getViewName(), getDataColumns(), true,
@@ -1668,9 +1668,9 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
           @Override
           public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback wdc) {
-            if (BeeUtils.same(name, rootName) && widget instanceof FlexTable) {
+            if (BeeUtils.same(name, rootName) && widget instanceof HtmlTable) {
               widget.addStyleName(RowFactory.STYLE_NEW_ROW_TABLE);
-              createNewRowWidgets((FlexTable) widget, columnNames, wdc);
+              createNewRowWidgets((HtmlTable) widget, columnNames, wdc);
             }
           }
 

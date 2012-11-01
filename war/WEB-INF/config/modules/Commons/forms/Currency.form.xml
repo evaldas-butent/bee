@@ -5,7 +5,7 @@
   name="Currency" viewName="Currencies" caption="Valiuta" height="50" heightUnit="%" width="600"
   >
   <FlowPanel class="flexBox-vertical">
-    <FlexTable cellSpacing="10">
+    <Table style="border-spacing: 10px;">
       <row>
         <cell><Label html="Valiuta" class="bee-required" /></cell>
         <cell><InputText source="Name" /></cell>
@@ -18,7 +18,7 @@
         <cell><Label html="Smulkios pav." horizontalAlignment="right" /></cell>
         <cell><InputText source="MinorCaption" /></cell>
       </row>
-    </FlexTable>
+    </Table>
 
     <ChildGrid class="flexible" name="CurrencyRates" relColumn="Currency" />
   </FlowPanel>

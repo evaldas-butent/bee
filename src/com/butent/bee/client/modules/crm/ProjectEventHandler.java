@@ -22,8 +22,7 @@ import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.logical.ActionEvent;
-import com.butent.bee.client.grid.FlexTable;
-import com.butent.bee.client.grid.FlexTable.FlexCellFormatter;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
@@ -122,7 +121,7 @@ public class ProjectEventHandler {
   private static class ProjectDialog extends DialogBox {
     private static final String COMMENT = "comment";
     private Map<String, Widget> dialogWidgets = Maps.newHashMap();
-    private FlexTable container = null;
+    private HtmlTable container = null;
 
     public ProjectDialog(String caption) {
       super(caption);
@@ -130,19 +129,18 @@ public class ProjectEventHandler {
 
       Absolute panel = new Absolute(Position.RELATIVE);
       setWidget(panel);
-      container = new FlexTable();
+      container = new HtmlTable();
       panel.add(container);
-      container.setCellSpacing(5);
+      container.setBorderSpacing(5);
     }
 
-    public void addAction(FlexTable parent, String caption, ClickHandler clickHandler) {
+    public void addAction(HtmlTable parent, String caption, ClickHandler clickHandler) {
       int row = parent.getRowCount();
 
       BeeButton button = new BeeButton(caption);
       parent.setWidget(row, 0, button);
-      FlexCellFormatter formater = parent.getFlexCellFormatter();
-      formater.setColSpan(row, 0, 2);
-      formater.setHorizontalAlignment(row, 0, HasHorizontalAlignment.ALIGN_CENTER);
+      parent.getCellFormatter().setColSpan(row, 0, 2);
+      parent.getCellFormatter().setHorizontalAlignment(row, 0, HasHorizontalAlignment.ALIGN_CENTER);
 
       button.addClickHandler(clickHandler);
     }
@@ -151,7 +149,7 @@ public class ProjectEventHandler {
       addAction(container, caption, clickHandler);
     }
 
-    public void addComment(FlexTable parent, String caption, String value, boolean required) {
+    public void addComment(HtmlTable parent, String caption, String value, boolean required) {
       int row = parent.getRowCount();
 
       BeeLabel lbl = new BeeLabel(caption);

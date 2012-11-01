@@ -7,9 +7,9 @@
   height="70" heightUnit="%" width="80" widthUnit="%"
   >
   <FlowPanel class="flexBox-vertical">
-    <VerticalPanel cellSpacing="10">
+    <VerticalPanel style="border-spacing: 10px;">
       <cell>
-        <FlexTable>
+        <Table>
           <row>
             <Button name="profit" html="Pelnas" />
             <Label html="Krovinys" horizontalAlignment="right" class="bee-required" />
@@ -51,7 +51,7 @@
             </cell>
             <InputInteger source="Value" />
           </row>
-        </FlexTable>
+        </Table>
       </cell>
       <cell>
         <HorizontalPanel>
@@ -59,7 +59,7 @@
             <xi:include href="widgets/CargoPlaces.widget.xml" />
           </cell>
           <cell>
-            <FlexTable>
+            <Table>
               <row>
                 <cell colSpan="2">
                   <Label html="Pervežimo kaina" horizontalAlignment="center" style="font-weight: bold;" />
@@ -69,7 +69,7 @@
                 <InputCurrency source="Price"  style="font-weight: bold;" />
                 <DataSelector source="Currency" style="width: 50px; font-weight: bold" />
               </row>
-            </FlexTable>
+            </Table>
           </cell>
         </HorizontalPanel>
                 </cell>

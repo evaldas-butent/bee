@@ -23,7 +23,6 @@ import com.google.gwt.safecss.shared.SafeStylesBuilder;
 import com.google.gwt.safehtml.client.SafeHtmlTemplates;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.user.cellview.client.LoadingStateChangeEvent;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
@@ -995,11 +994,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   }
 
   @Override
-  public HandlerRegistration addLoadingStateChangeHandler(LoadingStateChangeEvent.Handler handler) {
-    return addHandler(handler, LoadingStateChangeEvent.TYPE);
-  }
-
-  @Override
   public HandlerRegistration addScopeChangeHandler(ScopeChangeEvent.Handler handler) {
     return addHandler(handler, ScopeChangeEvent.getType());
   }
@@ -1132,13 +1126,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       return ps;
     }
     return BeeConst.UNDEF;
-  }
-
-  @Override
-  public void fireLoadingStateChange(LoadingStateChangeEvent.LoadingState loadingState) {
-    if (loadingState != null) {
-      fireEvent(new LoadingStateChangeEvent(loadingState));
-    }
   }
 
   @Override
@@ -3694,8 +3681,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     for (IsRow row : getRowData()) {
       getRenderedRows().add(row.getId());
     }
-
-    fireLoadingStateChange(LoadingStateChangeEvent.LoadingState.LOADED);
 
     setZIndex(0);
 

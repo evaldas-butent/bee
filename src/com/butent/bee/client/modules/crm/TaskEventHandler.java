@@ -24,8 +24,7 @@ import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.grid.FlexTable;
-import com.butent.bee.client.grid.FlexTable.FlexCellFormatter;
+import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.ui.AbstractFormCallback;
@@ -150,27 +149,28 @@ public class TaskEventHandler {
 
     private final Map<String, Widget> dialogWidgets = Maps.newHashMap();
     
-    private FlexTable container = null;
+    private HtmlTable container = null;
 
     public TaskDialog(String caption) {
       super(caption);
       addDefaultCloseBox();
 
       Absolute panel = new Absolute(Position.RELATIVE);
-      setWidget(panel);
-      container = new FlexTable();
+
+      container = new HtmlTable();
+      container.setBorderSpacing(5);
+
       panel.add(container);
-      container.setCellSpacing(5);
+      setWidget(panel);
     }
 
-    public void addAction(FlexTable parent, String caption, ClickHandler clickHandler) {
+    public void addAction(HtmlTable parent, String caption, ClickHandler clickHandler) {
       int row = parent.getRowCount();
 
       BeeButton button = new BeeButton(caption);
       parent.setWidget(row, 0, button);
-      FlexCellFormatter formater = parent.getFlexCellFormatter();
-      formater.setColSpan(row, 0, 2);
-      formater.setHorizontalAlignment(row, 0, HasHorizontalAlignment.ALIGN_CENTER);
+      parent.getCellFormatter().setColSpan(row, 0, 2);
+      parent.getCellFormatter().setHorizontalAlignment(row, 0, HasHorizontalAlignment.ALIGN_CENTER);
 
       button.addClickHandler(clickHandler);
     }
@@ -179,7 +179,7 @@ public class TaskEventHandler {
       addAction(container, caption, clickHandler);
     }
 
-    public void addComment(FlexTable parent, String caption, boolean required, boolean showDuration) {
+    public void addComment(HtmlTable parent, String caption, boolean required, boolean showDuration) {
       int row = parent.getRowCount();
 
       BeeLabel lbl = new BeeLabel(caption);
@@ -196,16 +196,17 @@ public class TaskEventHandler {
       if (showDuration) {
         row++;
         Disclosure panel = new Disclosure(new BeeLabel("Laiko registracija"));
-        FlexTable flex = new FlexTable();
-        flex.setCellSpacing(5);
-        panel.setContentWidget(flex);
-        parent.getFlexCellFormatter().setColSpan(row, 0, 2);
+        HtmlTable table = new HtmlTable();
+        table.setBorderSpacing(5);
+
+        panel.setContentWidget(table);
+        parent.getCellFormatter().setColSpan(row, 0, 2);
         parent.setWidget(row, 0, panel);
 
-        addMinutes(flex, "Sugaišta minučių", 0, 0, 1440, 5);
-        addSelector(SELECTOR, flex, "Darbo tipas", "DurationTypes",
+        addMinutes(table, "Sugaišta minučių", 0, 0, 1440, 5);
+        addSelector(SELECTOR, table, "Darbo tipas", "DurationTypes",
             Lists.newArrayList(COL_NAME), false);
-        addDate(flex, "Atlikimo data", ValueType.DATE, false,
+        addDate(table, "Atlikimo data", ValueType.DATE, false,
             new Long(TimeUtils.today(0).getDays()));
       }
     }
@@ -214,7 +215,7 @@ public class TaskEventHandler {
       addComment(container, caption, required, showDuration);
     }
 
-    public void addDate(FlexTable parent, String caption, ValueType dateType, boolean required,
+    public void addDate(HtmlTable parent, String caption, ValueType dateType, boolean required,
         Long def) {
       int row = parent.getRowCount();
 
@@ -236,7 +237,7 @@ public class TaskEventHandler {
       addDate(container, caption, dateType, required, def);
     }
 
-    public void addMinutes(FlexTable parent, String caption, int def, int min, int max, int step) {
+    public void addMinutes(HtmlTable parent, String caption, int def, int min, int max, int step) {
       int row = parent.getRowCount();
 
       parent.setWidget(row, 0, new BeeLabel(caption));
@@ -250,7 +251,7 @@ public class TaskEventHandler {
       addMinutes(container, caption, def, min, max, step);
     }
 
-    public void addPriority(FlexTable parent, String caption, int def) {
+    public void addPriority(HtmlTable parent, String caption, int def) {
       int row = parent.getRowCount();
 
       parent.setWidget(row, 0, new BeeLabel(caption));
@@ -268,7 +269,7 @@ public class TaskEventHandler {
       addPriority(container, caption, def);
     }
 
-    public void addQuestion(FlexTable parent, String caption, boolean def) {
+    public void addQuestion(HtmlTable parent, String caption, boolean def) {
       int row = parent.getRowCount();
 
       BeeCheckBox question = new BeeCheckBox(caption);
@@ -281,7 +282,7 @@ public class TaskEventHandler {
       addQuestion(container, caption, def);
     }
 
-    public void addSelector(String id, FlexTable parent, String caption, String relView,
+    public void addSelector(String id, HtmlTable parent, String caption, String relView,
         List<String> relColumns, boolean required) {
       int row = parent.getRowCount();
 
