@@ -258,7 +258,7 @@ public class SimplePager extends AbstractPager {
   }
   
   private int getMaxInfoWidth(int rowCount) {
-    return Rulers.getLineWidth(createText(rowCount, rowCount, rowCount));
+    return Rulers.getLineWidth(null, createText(rowCount, rowCount, rowCount), false);
   }
 
   private int getMaxRowCount() {

@@ -21,6 +21,8 @@ import com.google.gwt.user.client.ui.ValueBoxBase;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.Font;
+import com.butent.bee.client.dom.Rulers;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.view.DataView;
@@ -29,11 +31,13 @@ import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasCharacterFilter;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
+import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasNumberBounds;
 import com.butent.bee.shared.HasStringValue;
 import com.butent.bee.shared.Holder;
+import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -53,7 +57,7 @@ import java.util.Set;
 public class UiHelper {
 
   private static final BeeLogger logger = LogUtils.getLogger(UiHelper.class);
-  
+
   private static final String ALIGN_START = "start";
   private static final String ALIGN_CENTER = "center";
   private static final String ALIGN_END = "end";
@@ -311,7 +315,7 @@ public class UiHelper {
         case TIMEOFDAY:
       }
     }
-    
+
     if (precision <= 0) {
       return BeeConst.UNDEF;
     } else if (ValueType.isNumeric(type)) {
@@ -349,6 +353,30 @@ public class UiHelper {
     }
     return EventUtils.isKeyDown(event.getType()) && event.getKeyCode() == KeyCodes.KEY_ENTER
         && EventUtils.hasModifierKey(event);
+  }
+
+  public static Procedure<InputText> getTextBoxResizer(final int reserve) {
+    return new Procedure<InputText>() {
+      @Override
+      public void call(InputText input) {
+        String value = input.getValue();
+
+        int oldWidth = input.getOffsetWidth();
+        int newWidth = reserve;
+
+        if (value != null && value.length() > 0) {
+          if (value.contains(BeeConst.STRING_SPACE)) {
+            value = value.replace(BeeConst.STRING_SPACE, BeeConst.HTML_NBSP);
+          }
+          Font font = Font.getComputed(input.getElement());
+          newWidth += Rulers.getAreaWidth(font, value, true);
+        }
+
+        if (newWidth != oldWidth) {
+          StyleUtils.setWidth(input, newWidth);
+        }
+      }
+    };
   }
 
   public static boolean moveFocus(Widget parent, UIObject currentObject, boolean forward) {
@@ -449,7 +477,7 @@ public class UiHelper {
 
     int pos = widget.getCursorPos();
     int len = widget.getSelectionLength();
-    
+
     if (len <= 0 && widget instanceof HasMaxLength) {
       int maxLength = ((HasMaxLength) widget).getMaxLength();
       if (maxLength > 0 && BeeUtils.hasLength(oldText, maxLength)) {

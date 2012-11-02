@@ -1,5 +1,6 @@
 package com.butent.bee.client.composite;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -18,19 +19,28 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.event.Binder;
+import com.butent.bee.client.event.InputEvent;
+import com.butent.bee.client.event.InputHandler;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HandlesRendering;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.InlineLabel;
+import com.butent.bee.client.widget.InputText;
+import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -86,6 +96,9 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   private static final String STYLE_CLOSE = STYLE_PREFIX + "close";
   private static final String STYLE_INPUT = STYLE_PREFIX + "input";
   
+  private static final int MIN_INPUT_WIDTH = 25;
+  private static final int MAX_INPUT_LENGTH = 30;
+  
   private final String rowProperty;
   
   private AbstractCellRenderer renderer;
@@ -94,9 +107,18 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   
   private String oldValue = null;
   
+  private final Procedure<InputText> inputResizer;
+  
   public MultiSelector(Relation relation, boolean embedded, String rowProperty) {
     super(relation, embedded);
     this.rowProperty = rowProperty;
+    
+    this.inputResizer = UiHelper.getTextBoxResizer(MIN_INPUT_WIDTH);
+  }
+
+  @Override
+  public EditorAction getDefaultFocusAction() {
+    return null;
   }
 
   @Override
@@ -121,20 +143,17 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
 
   @Override
   public void render(IsRow row) {
-    String value = (row == null) ? null : row.getProperty(rowProperty);
+    render((row == null) ? null : row.getProperty(rowProperty));
+  }
+  
+  public void render(String value) {
     setOldValue(value);
     setValue(value);
-
-    if (BeeUtils.isEmpty(value)) {
-      clearChoices();
-      setAdditionalFilter(null);
-      return;
-    }
     
     final List<Long> choices = DataUtils.parseIdList(value);
     if (choices.isEmpty()) {
       clearChoices();
-      setAdditionalFilter(null);
+      getOracle().clearExclusions();
       return;
     }
     
@@ -158,6 +177,14 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       }
     });
   }
+  
+  @Override
+  public void setDisplayValue(String value) {
+    if (!Objects.equal(getDisplayValue(), value)) {
+      super.setDisplayValue(value);
+      inputResizer.call(getInput());
+    }
+  }
 
   @Override
   public void setRenderer(AbstractCellRenderer renderer) {
@@ -167,8 +194,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   @Override
   public void setSelection(BeeRow row) {
     hideSelector();
-    clearDisplay();
     reset();
+    clearInput();
     
     if (row != null) {
       String label = renderer.render(row);
@@ -191,10 +218,11 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   }
 
   @Override
-  protected void init(InputWidget inputWidget, boolean embed) {
+  protected void init(final InputWidget inputWidget, boolean embed) {
     final Flow container = new Flow();
     container.addStyleName(STYLE_CONTAINER);
     
+    inputWidget.setMaxLength(MAX_INPUT_LENGTH);
     inputWidget.addStyleName(STYLE_INPUT);
     container.add(inputWidget);
     
@@ -204,10 +232,12 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
         container.addStyleName(STYLE_CONTAINER_ACTIVE);
       }
     });
+
     inputWidget.addBlurHandler(new BlurHandler() {
       @Override
       public void onBlur(BlurEvent event) {
         container.removeStyleName(STYLE_CONTAINER_ACTIVE);
+        clearInput();
       }
     });
     
@@ -216,6 +246,25 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       public void onKeyDown(KeyDownEvent event) {
         if (event.getNativeKeyCode() == KeyCodes.KEY_BACKSPACE) {
           onBackSpace();
+        }
+      }
+    });
+    
+    inputWidget.addInputHandler(new InputHandler() {
+      @Override
+      public void onInput(InputEvent event) {
+        inputResizer.call(inputWidget);
+      }
+    });
+    
+    StyleUtils.setWidth(inputWidget, MIN_INPUT_WIDTH);
+    
+    DomUtils.makeFocusable(container);
+    Binder.addClickHandler(container, new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent event) {
+        if (!isEditing()) {
+          inputWidget.setFocus(true);
         }
       }
     });
@@ -231,6 +280,10 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
     }
   }
 
+  private void clearInput() {
+    clearDisplay();
+  }
+  
   private InsertPanel getContainer() {
     return (InsertPanel) getWidget();
   }
@@ -301,7 +354,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       container.insert(new ChoiceWidget(rowId, cache.get(rowId)), container.getWidgetCount() - 1);
     }
     
-    setAdditionalFilter(Filter.idNotIn(choices));
+    getOracle().setExclusions(choices);
   }
 
   private void setOldValue(String oldValue) {
@@ -321,6 +374,6 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
     }
     
     setValue(DataUtils.buildIdList(choices));
-    setAdditionalFilter(Filter.idNotIn(choices));
+    getOracle().setExclusions(choices);
   }
 }

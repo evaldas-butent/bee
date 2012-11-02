@@ -19,7 +19,7 @@
   <header borderWidth="1 0" />
   <body height="20" borderWidth="0">
     <style>
-      <ui:font>Verdana 12 px</ui:font>
+      <ui:font>Verdana 12px</ui:font>
     </style>
   </body>
   <footer borderWidth="0" />

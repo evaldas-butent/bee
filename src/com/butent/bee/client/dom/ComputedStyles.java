@@ -1,6 +1,7 @@
 package com.butent.bee.client.dom;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
@@ -15,6 +16,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
 
 import java.util.List;
+import java.util.Map;
 
 public class ComputedStyles implements HasLength, HasInfo {
 
@@ -32,6 +34,17 @@ public class ComputedStyles implements HasLength, HasInfo {
   public static String get(UIObject obj, String p) {
     Assert.notNull(obj);
     return get(obj.getElement(), p);
+  }
+  
+  public static Map<String, String> getNormalized(Element el) {
+    Assert.notNull(el);
+    Map<String, String> result = Maps.newHashMap();
+
+    ComputedStyles cs = new ComputedStyles(el);
+    for (int i = 0; i < cs.getLength(); i++) {
+      result.put(normalize(cs.getItem(i)), cs.getValue(i));
+    }
+    return result;
   }
 
   public static int getPixels(Element el, String p) {
@@ -59,6 +72,13 @@ public class ComputedStyles implements HasLength, HasInfo {
     }
   }
   
+  public static String normalize(String s) {
+    if (s == null) {
+      return null;
+    }
+    return BeeUtils.remove(s, NAME_SEPARATOR).trim().toLowerCase();
+  }
+  
   private static native String getComputedStyle(Element el, String p, String c) /*-{
     if ("getComputedStyle" in $wnd) {
       return $wnd.getComputedStyle(el, null).getPropertyValue(p);
@@ -67,8 +87,8 @@ public class ComputedStyles implements HasLength, HasInfo {
     } else {
       return null;
     }
-  }-*/;
-  
+  }-*/; 
+
   private static native JsArrayString getComputedStyles(Element el) /*-{
     var arr = [];
 
@@ -94,15 +114,16 @@ public class ComputedStyles implements HasLength, HasInfo {
     }
 
     return arr;
-  }-*/; 
+  }-*/;
 
   private final JsArrayString styles;
-
+  
   public ComputedStyles(Element el) {
     Assert.notNull(el);
     styles = getComputedStyles(el);
   }
 
+  @Override
   public List<Property> getInfo() {
     List<Property> info = Lists.newArrayList();
     for (int i = 0; i < getLength(); i++) {
@@ -111,6 +132,7 @@ public class ComputedStyles implements HasLength, HasInfo {
     return info;
   }
 
+  @Override
   public int getLength() {
     return getStyles().length() / 2;
   }
@@ -141,12 +163,5 @@ public class ComputedStyles implements HasLength, HasInfo {
 
   private String getValue(int index) {
     return getStyles().get(index * 2 + 1);
-  }
-
-  private String normalize(String s) {
-    if (s == null) {
-      return null;
-    }
-    return BeeUtils.remove(s, NAME_SEPARATOR).trim().toLowerCase();
   }
 }

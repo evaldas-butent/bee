@@ -453,7 +453,8 @@ public class SliderBar extends Focus implements RequiresResize {
         StyleUtils.zeroLeft(label);
         int labelWidth = label.getOffsetWidth();
         if (labelWidth <= 0) {
-          labelWidth = Rulers.getLineWidth(label.getInnerHTML(), new Font(FontSize.X_SMALL));
+          labelWidth = Rulers.getLineWidth(new Font.Builder().size(FontSize.X_SMALL).build(),
+              label.getInnerHTML(), true);
         }
 
         int labelLeftOffset = lineLeftOffset + (lineWidth * i / numLabels) - (labelWidth / 2);

@@ -49,5 +49,6 @@ public class InlineHtml extends InlineHTML implements HasId {
   private void init() {
     DomUtils.createId(this, getIdPrefix());
     setWordWrap(false);
+    setStyleName("bee-InlineHtml");
   }
 }

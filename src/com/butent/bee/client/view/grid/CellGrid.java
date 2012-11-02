@@ -1081,7 +1081,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     SafeHtml cellHtml = cellBuilder.toSafeHtml();
 
     Font font = Font.merge(getHeaderComponent().getFont(), columnInfo.getHeaderFont());
-    int width = Rulers.getLineWidth(cellHtml.asString(), font);
+    int width = Rulers.getLineWidth(font, cellHtml.asString(), true);
 
     if (width > 0) {
       if (addMargins) {
@@ -2416,7 +2416,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     column.render(context, rowValue, cellBuilder);
     SafeHtml cellHtml = cellBuilder.toSafeHtml();
 
-    return Rulers.getLineWidth(cellHtml.asString(), font);
+    return Rulers.getLineWidth(font, cellHtml.asString(), true);
   }
 
   private <T extends IsRow> int estimateColumnWidth(int col, boolean ensure) {

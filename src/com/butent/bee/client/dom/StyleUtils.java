@@ -12,6 +12,7 @@ import com.google.gwt.dom.client.Style.FontStyle;
 import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.dom.client.Style.HasCssName;
 import com.google.gwt.dom.client.Style.Position;
+import com.google.gwt.dom.client.Style.TextTransform;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.safecss.shared.SafeStyles;
@@ -285,6 +286,10 @@ public class StyleUtils {
 
   public static final String STYLE_CLIP = "clip";
 
+  public static final String STYLE_LINE_HEIGHT = "lineHeight";
+  public static final String STYLE_TEXT_TRANSFORM = "textTransform";
+  public static final String STYLE_LETTER_SPACING = "letterSpacing";
+  
   public static final String VALUE_AUTO = "auto";
   public static final String VALUE_FIXED = "fixed";
   public static final String VALUE_HIDDEN = "hidden";
@@ -364,6 +369,10 @@ public class StyleUtils {
   public static final String CSS_FONT_SIZE = "font-size";
   public static final String CSS_FONT_FAMILY = "font-family";
 
+  public static final String CSS_LINE_HEIGHT = "line-height";
+  public static final String CSS_TEXT_TRANSFORM = "text-transform";
+  public static final String CSS_LETTER_SPACING = "letter-spacing";
+  
   public static final SafeStyles PREFAB_POSITION_ABSOLUTE =
       buildStyle(STYLE_POSITION, POSITION_ABSOLUTE);
 
@@ -601,6 +610,14 @@ public class StyleUtils {
     return buildLeft(left, DEFAULT_UNIT);
   }
 
+  public static SafeStyles buildLetterSpacing(String value) {
+    return buildStyle(CSS_LETTER_SPACING, value);
+  }
+
+  public static SafeStyles buildLineHeight(String value) {
+    return buildStyle(CSS_LINE_HEIGHT, value);
+  }
+  
   public static SafeStyles buildMargin(String value) {
     return buildStyle(STYLE_MARGIN, value);
   }
@@ -633,6 +650,11 @@ public class StyleUtils {
         + DEFINITION_SEPARATOR);
   }
 
+  public static SafeStyles buildTextTransform(TextTransform textTransform) {
+    Assert.notNull(textTransform);
+    return buildStyle(CSS_TEXT_TRANSFORM, textTransform.getCssName());
+  }
+  
   public static SafeStyles buildTop(double value, Unit unit) {
     return buildStyle(STYLE_TOP, toCssLength(value, unit));
   }
@@ -679,41 +701,6 @@ public class StyleUtils {
   public static void clearDisplay(UIObject obj) {
     Assert.notNull(obj);
     clearDisplay(obj.getElement());
-  }
-
-  public static void clearFont(Element el) {
-    Assert.notNull(el);
-    clearFont(el.getStyle());
-  }
-
-  public static void clearFont(String id) {
-    clearFont(DomUtils.getElement(id));
-  }
-
-  public static void clearFont(Style st) {
-    Assert.notNull(st);
-
-    if (!BeeUtils.isEmpty(st.getFontStyle())) {
-      st.clearFontStyle();
-    }
-    if (hasProperty(st, STYLE_FONT_VARIANT)) {
-      st.clearProperty(STYLE_FONT_VARIANT);
-    }
-    if (!BeeUtils.isEmpty(st.getFontWeight())) {
-      st.clearFontWeight();
-    }
-
-    if (!BeeUtils.isEmpty(st.getFontSize())) {
-      st.clearFontSize();
-    }
-    if (hasProperty(st, STYLE_FONT_FAMILY)) {
-      st.clearProperty(StyleUtils.STYLE_FONT_FAMILY);
-    }
-  }
-
-  public static void clearFont(UIObject obj) {
-    Assert.notNull(obj);
-    clearFont(obj.getElement());
   }
 
   public static void clearHeight(Element el) {
@@ -802,7 +789,8 @@ public class StyleUtils {
 
   public static void copyFont(Style src, Style dst) {
     copyProperties(src, dst, STYLE_FONT_STYLE, STYLE_FONT_VARIANT, STYLE_FONT_WEIGHT,
-        STYLE_FONT_SIZE, STYLE_FONT_FAMILY);
+        STYLE_FONT_SIZE, STYLE_FONT_FAMILY, STYLE_LINE_HEIGHT, STYLE_TEXT_TRANSFORM,
+        STYLE_LETTER_SPACING);
   }
 
   public static void copyMargin(Style src, Style dst) {
@@ -1439,6 +1427,10 @@ public class StyleUtils {
     return sb;
   }
 
+  public static TextTransform parseTextTransform(String input) {
+    return parseCssName(TextTransform.class, input);
+  }
+  
   public static Unit parseUnit(String input) {
     Assert.notEmpty(input);
 
@@ -1873,6 +1865,38 @@ public class StyleUtils {
     setLeft(obj.getElement(), px);
   }
 
+  public static void setLetterSpacing(Element el, String value) {
+    Assert.notNull(el);
+    setLetterSpacing(el.getStyle(), value);
+  }
+
+  public static void setLetterSpacing(Style st, String value) {
+    Assert.notNull(st);
+    Assert.notEmpty(value);
+    st.setProperty(STYLE_LETTER_SPACING, value);
+  }
+
+  public static void setLetterSpacing(UIObject obj, String value) {
+    Assert.notNull(obj);
+    setLetterSpacing(obj.getElement(), value);
+  }
+
+  public static void setLineHeight(Element el, String value) {
+    Assert.notNull(el);
+    setLineHeight(el.getStyle(), value);
+  }
+
+  public static void setLineHeight(Style st, String value) {
+    Assert.notNull(st);
+    Assert.notEmpty(value);
+    st.setProperty(STYLE_LINE_HEIGHT, value);
+  }
+
+  public static void setLineHeight(UIObject obj, String value) {
+    Assert.notNull(obj);
+    setLineHeight(obj.getElement(), value);
+  }
+  
   public static void setMaxHeight(Element el, double value, Unit unit) {
     Assert.notNull(el);
     setMaxHeight(el.getStyle(), value, unit);

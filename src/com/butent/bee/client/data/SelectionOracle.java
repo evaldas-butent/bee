@@ -202,6 +202,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   private BeeRowSet translator = null;
 
   private Filter additionalFilter = null;
+  private final Set<Long> exclusions = Sets.newHashSet();
 
   public SelectionOracle(Relation relation, DataInfo dataInfo) {
     Assert.notNull(relation);
@@ -227,6 +228,13 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
   public void addRowCountChangeHandler(Procedure<Integer> handler) {
     if (handler != null) {
       rowCountChangeHandlers.add(handler);
+    }
+  }
+  
+  public void clearExclusions() {
+    if (!exclusions.isEmpty()) {
+      exclusions.clear();
+      resetState();
     }
   }
 
@@ -346,6 +354,17 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
     resetState();
   }
+  
+  public void setExclusions(Collection<Long> rowIds) {
+    if (BeeUtils.isEmpty(rowIds)) {
+      clearExclusions();
+
+    } else if (!exclusions.containsAll(rowIds) || !rowIds.containsAll(exclusions)) {
+      exclusions.clear();
+      exclusions.addAll(rowIds);
+      resetState();
+    }
+  }
 
   private void checkPendingRequest() {
     if (getPendingRequest() != null) {
@@ -356,8 +375,18 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     }
   }
 
-  private Filter getFilter(Filter queryFilter) {
-    return Filter.and(Filter.and(immutableFilter, getAdditionalFilter()), queryFilter);
+  private Filter getFilter(Filter queryFilter, boolean checkExclusions) {
+    CompoundFilter result = Filter.and();
+
+    result.add(immutableFilter);
+    result.add(getAdditionalFilter());
+    result.add(queryFilter);
+    
+    if (checkExclusions && !exclusions.isEmpty()) {
+      result.add(Filter.idNotIn(exclusions));
+    }
+    
+    return result;
   }
 
   private Request getLastRequest() {
@@ -408,7 +437,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
     CachingPolicy cachingPolicy =
         Relation.Caching.GLOBAL.equals(caching) ? CachingPolicy.FULL : CachingPolicy.NONE;
 
-    Queries.getRowSet(getViewName(), null, getFilter(null), viewOrder, cachingPolicy,
+    Queries.getRowSet(getViewName(), null, getFilter(null, false), viewOrder, cachingPolicy,
         new Queries.RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {
@@ -471,11 +500,20 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       }
 
       if (filter == null) {
-        getRequestData().setRows(getViewData().getRows().getList());
+        if (exclusions.isEmpty()) {
+          getRequestData().setRows(getViewData().getRows().getList());
+        } else {
+          for (BeeRow row : getViewData().getRows()) {
+            if (!exclusions.contains(row.getId())) {
+              getRequestData().addRow(row);
+            }
+          }
+        }
+
       } else {
         List<BeeColumn> columns = getViewData().getColumns();
         for (BeeRow row : getViewData().getRows()) {
-          if (filter.isMatch(columns, row)) {
+          if (filter.isMatch(columns, row) && !exclusions.contains(row.getId())) {
             getRequestData().addRow(row);
           }
         }
@@ -493,7 +531,7 @@ public class SelectionOracle implements HandlesAllDataEvents, HasViewName {
       limit = request.getLimit() + 1;
     }
 
-    Queries.getRowSet(getViewName(), null, getFilter(filter), viewOrder,
+    Queries.getRowSet(getViewName(), null, getFilter(filter, true), viewOrder,
         offset, limit, new Queries.RowSetCallback() {
           @Override
           public void onSuccess(BeeRowSet result) {

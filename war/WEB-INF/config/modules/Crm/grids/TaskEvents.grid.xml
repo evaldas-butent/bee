@@ -7,7 +7,7 @@
 
   <body height="48" borderWidth="0">
     <style>
-      <ui:font>Tahoma 11 px</ui:font>
+      <ui:font>Tahoma 11px</ui:font>
     </style>
   </body>
 

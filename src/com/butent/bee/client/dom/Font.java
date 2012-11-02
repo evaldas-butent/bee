@@ -6,6 +6,7 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.dom.client.Style.FontStyle;
 import com.google.gwt.dom.client.Style.FontWeight;
+import com.google.gwt.dom.client.Style.TextTransform;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.safecss.shared.SafeStyles;
 import com.google.gwt.safecss.shared.SafeStylesBuilder;
@@ -16,12 +17,14 @@ import com.butent.bee.client.dom.StyleUtils.FontVariant;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasInfo;
+import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.RangeMap;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Enables to operate with various parameters of fonts used by the system.
@@ -29,34 +32,164 @@ import java.util.List;
 
 public class Font implements HasInfo {
 
-  private static final double UNKNOWN = -1.0;
-  private static final RangeMap<Double, Unit> DEFAULT_UNITS =
-    RangeMap.create(Ranges.lessThan(4.0), Unit.EM, Ranges.atLeast(4.0), Unit.PX);
-  
-  public static Font copyOf(Font original) {
-    if (original == null) {
-      return null;
+  public static class Builder {
+
+    private FontStyle style = null;
+    private FontVariant variant = null;
+    private FontWeight weight = null;
+    private FontSize absoluteSize = null;
+    private double sizeValue = UNKNOWN;
+    private Unit sizeUnit = null;
+    private String family = null;
+
+    private String lineHeight = null;
+    private TextTransform textTransform = null;
+    private String letterSpacing = null;
+
+    public Font build() {
+      Font result = new Font();
+
+      result.setStyle(style);
+      result.setVariant(variant);
+      result.setWeight(weight);
+
+      result.setAbsoluteSize(absoluteSize);
+      result.setSizeValue(sizeValue);
+      result.setSizeUnit(sizeUnit);
+
+      result.setFamily(family);
+
+      result.setLineHeight(lineHeight);
+      result.setTextTransform(textTransform);
+      result.setLetterSpacing(letterSpacing);
+
+      return result;
     }
-    return new Font(original.getStyle(), original.getVariant(), original.getWeight(),
-        original.getAbsoluteSize(), original.getSizeValue(), original.getSizeUnit(),
-        original.getFamily());
+
+    public Builder family(String value) {
+      this.family = value;
+      return this;
+    }
+
+    public Builder letterSpacing(String value) {
+      this.letterSpacing = value;
+      return this;
+    }
+
+    public Builder lineHeight(String value) {
+      this.lineHeight = value;
+      return this;
+    }
+
+    public Builder size(double value, Unit unit) {
+      this.sizeValue = value;
+      this.sizeUnit = unit;
+      return this;
+    }
+
+    public Builder size(FontSize size) {
+      this.absoluteSize = size;
+      return this;
+    }
+
+    public Builder style(FontStyle value) {
+      this.style = value;
+      return this;
+    }
+
+    public Builder textTransform(TextTransform value) {
+      this.textTransform = value;
+      return this;
+    }
+
+    public Builder variant(FontVariant value) {
+      this.variant = value;
+      return this;
+    }
+
+    public Builder weight(FontWeight value) {
+      this.weight = value;
+      return this;
+    }
   }
+
+  public static final String PREFIX_STYLE = "st:";
+  public static final String PREFIX_VARIANT = "v:";
+  public static final String PREFIX_WEIGHT = "w:";
+  public static final String PREFIX_SIZE = "x:";
+  public static final String PREFIX_FAMILY = "f:";
+
+  public static final String PREFIX_LINE_HEIGHT = "lh:";
+  public static final String PREFIX_TEXT_TRANSFORM = "tt:";
+  public static final String PREFIX_LETTER_SPACING = "ls:";
+
+  private static final double UNKNOWN = -1.0;
+
+  private static final RangeMap<Double, Unit> DEFAULT_UNITS =
+      RangeMap.create(Ranges.lessThan(4.0), Unit.EM, Ranges.atLeast(4.0), Unit.PX);
   
+  public static Font getComputed(Element el) {
+    Map<String, String> styles = ComputedStyles.getNormalized(el);
+    Font font = new Font();
+    
+    String value = styles.get(ComputedStyles.normalize(StyleUtils.STYLE_FONT_STYLE));
+    if (!BeeUtils.isEmpty(value)) {
+      font.setStyle(StyleUtils.parseFontStyle(value));
+    }
+
+    value = styles.get(ComputedStyles.normalize(StyleUtils.STYLE_FONT_WEIGHT));
+    if (!BeeUtils.isEmpty(value)) {
+      font.setWeight(StyleUtils.parseFontWeight(value));
+    }
+
+    value = styles.get(ComputedStyles.normalize(StyleUtils.STYLE_FONT_VARIANT));
+    if (!BeeUtils.isEmpty(value)) {
+      font.setVariant(StyleUtils.parseFontVariant(value));
+    }
+
+    value = styles.get(ComputedStyles.normalize(StyleUtils.STYLE_FONT_FAMILY));
+    if (!BeeUtils.isEmpty(value)) {
+      font.setFamily(value);
+    }
+    
+    value = styles.get(ComputedStyles.normalize(StyleUtils.STYLE_LINE_HEIGHT));
+    if (!BeeUtils.isEmpty(value)) {
+      font.setLineHeight(value);
+    }
+
+    value = styles.get(ComputedStyles.normalize(StyleUtils.STYLE_TEXT_TRANSFORM));
+    if (!BeeUtils.isEmpty(value)) {
+      font.setTextTransform(StyleUtils.parseTextTransform(value));
+    }
+
+    value = styles.get(ComputedStyles.normalize(StyleUtils.STYLE_LETTER_SPACING));
+    if (!BeeUtils.isEmpty(value)) {
+      font.setLetterSpacing(value);
+    }
+
+    value = styles.get(ComputedStyles.normalize(StyleUtils.STYLE_FONT_SIZE));
+    if (!BeeUtils.isEmpty(value)) {
+      font.setSize(value);
+    }
+    
+    return font;
+  }
+
   public static Font merge(Font... fonts) {
     if (fonts == null || fonts.length <= 0) {
       return null;
     }
     Font result = null;
-    
+
     for (Font font : fonts) {
       if (font == null) {
         continue;
       }
       if (result == null) {
-        result = copyOf(font);
+        result = font.copy();
         continue;
       }
-      
+
       if (font.getStyle() != null) {
         result.setStyle(font.getStyle());
       }
@@ -73,8 +206,18 @@ public class Font implements HasInfo {
         result.setSizeValue(font.getSizeValue());
         result.setSizeUnit(font.getSizeUnit());
       }
-      if (font.getFamily() != null) {
+      if (!BeeUtils.isEmpty(font.getFamily())) {
         result.setFamily(font.getFamily());
+      }
+
+      if (!BeeUtils.isEmpty(font.getLineHeight())) {
+        result.setLineHeight(font.getLineHeight());
+      }
+      if (font.getTextTransform() != null) {
+        result.setTextTransform(font.getTextTransform());
+      }
+      if (!BeeUtils.isEmpty(font.getLetterSpacing())) {
+        result.setLetterSpacing(font.getLetterSpacing());
       }
     }
     return result;
@@ -86,7 +229,7 @@ public class Font implements HasInfo {
     }
     return parse(BeeUtils.split(input, BeeConst.CHAR_SPACE));
   }
-  
+
   public static Font parse(String[] input) {
     if (input == null || input.length <= 0) {
       return null;
@@ -98,6 +241,42 @@ public class Font implements HasInfo {
         continue;
       }
 
+      if (BeeUtils.isPrefix(s, PREFIX_STYLE)) {
+        font.setStyle(StyleUtils.parseFontStyle(BeeUtils.removePrefix(s, PREFIX_STYLE)));
+        continue;
+      }
+      if (BeeUtils.isPrefix(s, PREFIX_WEIGHT)) {
+        font.setWeight(StyleUtils.parseFontWeight(BeeUtils.removePrefix(s, PREFIX_WEIGHT)));
+        continue;
+      }
+      if (BeeUtils.isPrefix(s, PREFIX_VARIANT)) {
+        font.setVariant(StyleUtils.parseFontVariant(BeeUtils.removePrefix(s, PREFIX_VARIANT)));
+        continue;
+      }
+      if (BeeUtils.isPrefix(s, PREFIX_FAMILY)) {
+        font.setFamily(BeeUtils.removePrefix(s, PREFIX_FAMILY));
+        continue;
+      }
+      
+      if (BeeUtils.isPrefix(s, PREFIX_LINE_HEIGHT)) {
+        font.setLineHeight(BeeUtils.removePrefix(s, PREFIX_LINE_HEIGHT));
+        continue;
+      }
+      if (BeeUtils.isPrefix(s, PREFIX_TEXT_TRANSFORM)) {
+        font.setTextTransform(StyleUtils.parseTextTransform(BeeUtils.removePrefix(s,
+            PREFIX_TEXT_TRANSFORM)));
+        continue;
+      }
+      if (BeeUtils.isPrefix(s, PREFIX_LETTER_SPACING)) {
+        font.setLetterSpacing(BeeUtils.removePrefix(s, PREFIX_LETTER_SPACING));
+        continue;
+      }
+
+      if (BeeUtils.isPrefix(s, PREFIX_SIZE)) {
+        font.setSize(BeeUtils.removePrefix(s, PREFIX_SIZE));
+        continue;
+      }
+      
       FontStyle fontStyle = StyleUtils.parseFontStyle(s);
       if (fontStyle != null) {
         font.setStyle(fontStyle);
@@ -110,30 +289,15 @@ public class Font implements HasInfo {
         continue;
       }
 
-      FontSize fontSize = StyleUtils.parseFontSize(s);
-      if (fontSize != null) {
-        font.setAbsoluteSize(fontSize);
-        continue;
-      }
-
       FontVariant fontVariant = StyleUtils.parseFontVariant(s);
       if (fontVariant != null) {
         font.setVariant(fontVariant);
         continue;
       }
-
-      Unit unit = StyleUtils.parseUnit(s);
-      if (unit != null) {
-        font.setSizeUnit(unit);
-        continue;
+      
+      if (!font.setSize(s)) {
+        font.setFamily(s);
       }
-
-      if (BeeUtils.isDouble(s)) {
-        font.setSizeValue(BeeUtils.toDouble(s));
-        continue;
-      }
-
-      font.setFamily(s);
     }
     return font;
   }
@@ -146,70 +310,12 @@ public class Font implements HasInfo {
   private Unit sizeUnit;
   private String family;
 
-  public Font(double sizeValue, Unit sizeUnit) {
-    this(null, null, null, null, sizeValue, sizeUnit, null);
-  }
-
-  public Font(FontSize absoluteSize) {
-    this(null, null, null, absoluteSize, UNKNOWN, null, null);
-  }
-
-  public Font(FontStyle style) {
-    this(style, null, null, null, UNKNOWN, null, null);
-  }
-
-  public Font(FontStyle style, FontVariant variant) {
-    this(style, variant, null, null, UNKNOWN, null, null);
-  }
-
-  public Font(FontStyle style, FontVariant variant, FontWeight weight) {
-    this(style, variant, weight, null, UNKNOWN, null, null);
-  }
-
-  public Font(FontStyle style, FontVariant variant, FontWeight weight,
-      double sizeValue, Unit sizeUnit) {
-    this(style, variant, weight, null, sizeValue, sizeUnit, null);
-  }
-
-  public Font(FontStyle style, FontVariant variant, FontWeight weight,
-      double sizeValue, Unit sizeUnit, String family) {
-    this(style, variant, weight, null, sizeValue, sizeUnit, family);
-  }
-
-  public Font(FontStyle style, FontVariant variant, FontWeight weight, FontSize absoluteSize) {
-    this(style, variant, weight, absoluteSize, UNKNOWN, null, null);
-  }
-
-  public Font(FontStyle style, FontVariant variant, FontWeight weight, FontSize absoluteSize,
-      String family) {
-    this(style, variant, weight, absoluteSize, UNKNOWN, null, family);
-  }
-
-  public Font(FontVariant variant) {
-    this(null, variant, null, null, UNKNOWN, null, null);
-  }
-
-  public Font(FontWeight weight) {
-    this(null, null, weight, null, UNKNOWN, null, null);
-  }
-
-  public Font(String family) {
-    this(null, null, null, null, UNKNOWN, null, family);
-  }
+  private String lineHeight;
+  private TextTransform textTransform;
+  private String letterSpacing;
 
   private Font() {
-    this(null, null, null, null, UNKNOWN, null, null);
-  }
-
-  private Font(FontStyle style, FontVariant variant, FontWeight weight, FontSize absoluteSize,
-      double sizeValue, Unit sizeUnit, String family) {
-    this.style = style;
-    this.variant = variant;
-    this.weight = weight;
-    this.absoluteSize = absoluteSize;
-    this.sizeValue = sizeValue;
-    this.sizeUnit = sizeUnit;
-    this.family = family;
+    super();
   }
 
   public void applyTo(Element el) {
@@ -241,6 +347,16 @@ public class Font implements HasInfo {
     if (!BeeUtils.isEmpty(getFamily())) {
       StyleUtils.setFontFamily(st, getFamily());
     }
+
+    if (!BeeUtils.isEmpty(getLineHeight())) {
+      StyleUtils.setLineHeight(st, getLineHeight());
+    }
+    if (getTextTransform() != null) {
+      st.setTextTransform(getTextTransform());
+    }
+    if (!BeeUtils.isEmpty(getLetterSpacing())) {
+      StyleUtils.setLetterSpacing(st, getLetterSpacing());
+    }
   }
 
   public void applyTo(UIObject obj) {
@@ -252,7 +368,7 @@ public class Font implements HasInfo {
     if (isEmpty()) {
       return null;
     }
-    
+
     SafeStylesBuilder builder = new SafeStylesBuilder();
 
     if (getStyle() != null) {
@@ -272,13 +388,44 @@ public class Font implements HasInfo {
     } else if (getSizeValue() > 0) {
       builder.append(StyleUtils.buildFontSize(getSizeValue(), DEFAULT_UNITS.get(getSizeValue())));
     }
-    
+
     if (!BeeUtils.isEmpty(getFamily())) {
       builder.append(StyleUtils.buildFontFamily(getFamily()));
     }
+
+    if (!BeeUtils.isEmpty(getLineHeight())) {
+      builder.append(StyleUtils.buildLineHeight(getLineHeight()));
+    }
+    if (getTextTransform() != null) {
+      builder.append(StyleUtils.buildTextTransform(getTextTransform()));
+    }
+    if (!BeeUtils.isEmpty(getLetterSpacing())) {
+      builder.append(StyleUtils.buildLetterSpacing(getLetterSpacing()));
+    }
+
     return builder.toSafeStyles();
   }
-  
+
+  public Font copy() {
+    Font result = new Font();
+
+    result.setStyle(getStyle());
+    result.setVariant(getVariant());
+    result.setWeight(getWeight());
+
+    result.setAbsoluteSize(getAbsoluteSize());
+    result.setSizeValue(getSizeValue());
+    result.setSizeUnit(getSizeUnit());
+
+    result.setFamily(getFamily());
+
+    result.setLineHeight(getLineHeight());
+    result.setTextTransform(getTextTransform());
+    result.setLetterSpacing(getLetterSpacing());
+
+    return result;
+  }
+
   public FontSize getAbsoluteSize() {
     return absoluteSize;
   }
@@ -314,8 +461,26 @@ public class Font implements HasInfo {
       info.add(new Property("Font Family", getFamily()));
     }
 
+    if (!BeeUtils.isEmpty(getLineHeight())) {
+      info.add(new Property("Line Height", getLineHeight()));
+    }
+    if (getTextTransform() != null) {
+      info.add(new Property("Text Transform", getTextTransform().getCssName()));
+    }
+    if (!BeeUtils.isEmpty(getLetterSpacing())) {
+      info.add(new Property("Letter Spacing", getLetterSpacing()));
+    }
+
     PropertyUtils.addWhenEmpty(info, getClass());
     return info;
+  }
+
+  public String getLetterSpacing() {
+    return letterSpacing;
+  }
+
+  public String getLineHeight() {
+    return lineHeight;
   }
 
   public Unit getSizeUnit() {
@@ -330,6 +495,10 @@ public class Font implements HasInfo {
     return style;
   }
 
+  public TextTransform getTextTransform() {
+    return textTransform;
+  }
+
   public FontVariant getVariant() {
     return variant;
   }
@@ -340,7 +509,9 @@ public class Font implements HasInfo {
 
   public boolean isEmpty() {
     return getStyle() == null && getVariant() == null && getWeight() == null
-        && getAbsoluteSize() == null && getSizeValue() <= 0 && getFamily() == null;
+        && getAbsoluteSize() == null && getSizeValue() <= 0
+        && BeeUtils.isEmpty(getFamily()) && BeeUtils.isEmpty(getLineHeight())
+        && getTextTransform() == null && BeeUtils.isEmpty(getLetterSpacing());
   }
 
   public void removeFrom(Element el) {
@@ -368,6 +539,16 @@ public class Font implements HasInfo {
     if (!BeeUtils.isEmpty(getFamily())) {
       st.clearProperty(StyleUtils.STYLE_FONT_FAMILY);
     }
+
+    if (!BeeUtils.isEmpty(getLineHeight())) {
+      st.clearLineHeight();
+    }
+    if (getTextTransform() != null) {
+      st.clearTextTransform();
+    }
+    if (!BeeUtils.isEmpty(getLetterSpacing())) {
+      st.clearProperty(StyleUtils.STYLE_LETTER_SPACING);
+    }
   }
 
   public void removeFrom(UIObject obj) {
@@ -383,6 +564,14 @@ public class Font implements HasInfo {
     this.family = family;
   }
 
+  public void setLetterSpacing(String letterSpacing) {
+    this.letterSpacing = letterSpacing;
+  }
+
+  public void setLineHeight(String lineHeight) {
+    this.lineHeight = lineHeight;
+  }
+
   public void setSizeUnit(Unit sizeUnit) {
     this.sizeUnit = sizeUnit;
   }
@@ -393,6 +582,10 @@ public class Font implements HasInfo {
 
   public void setStyle(FontStyle style) {
     this.style = style;
+  }
+
+  public void setTextTransform(TextTransform textTransform) {
+    this.textTransform = textTransform;
   }
 
   public void setVariant(FontVariant variant) {
@@ -407,8 +600,33 @@ public class Font implements HasInfo {
   public String toString() {
     SafeStyles css = buildCss();
     if (css == null) {
-      return "Font instance is empty"; 
+      return "Font instance is empty";
     }
     return css.asString();
+  }
+  
+  private boolean setSize(String input) {
+    if (BeeUtils.isEmpty(input)) {
+      return false;
+    }
+
+    if (BeeUtils.isDigit(input.trim().charAt(0))) {
+      Pair<Double, Unit> cssLength = StyleUtils.parseCssLength(input);
+      if (cssLength != null && cssLength.getA() != null) {
+        setSizeValue(cssLength.getA());
+        setSizeUnit(cssLength.getB());
+      } else if (BeeUtils.isDouble(input)) {
+        setSizeValue(BeeUtils.toDouble(input));
+      }
+      return true;
+    
+    } else {
+      FontSize fontSize = StyleUtils.parseFontSize(input);
+      if (fontSize != null) {
+        setAbsoluteSize(fontSize);
+        return true;
+      }
+    }
+    return false;
   }
 }

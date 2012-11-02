@@ -43,7 +43,6 @@ public class Rulers {
     style.setPosition(Position.ABSOLUTE);
     style.setZIndex(-100);
     style.setTop(-100, Unit.PX);
-    StyleUtils.setWordWrap(style, false);
 
     Document.get().getBody().appendChild(lineRuler);
 
@@ -55,7 +54,6 @@ public class Rulers {
     style.setPosition(Position.ABSOLUTE);
     style.setZIndex(-200);
     style.setTop(-200, Unit.PX);
-    StyleUtils.setWordWrap(style, true);
 
     Document.get().getBody().appendChild(areaRuler);
 
@@ -88,31 +86,16 @@ public class Rulers {
     Document.get().getBody().appendChild(relativeUnitRuler);
   }
 
-  public static Dimensions getAreaDimensions(String html) {
-    return getAreaDimensions(html, null);
+  public static Dimensions getAreaDimensions(Font font, String content, boolean asHtml) {
+    return getDimensions(areaRuler, font, content, asHtml);
   }
 
-  public static Dimensions getAreaDimensions(String html, Font font) {
-    Assert.notNull(html);
-    return getDimensions(areaRuler, html, font);
+  public static int getAreaHeight(Font font, String content, boolean asHtml) {
+    return getHeight(areaRuler, font, content, asHtml);
   }
 
-  public static int getAreaHeight(String html) {
-    return getAreaHeight(html, null);
-  }
-
-  public static int getAreaHeight(String html, Font font) {
-    Assert.notNull(html);
-    return getHeight(areaRuler, html, font);
-  }
-
-  public static int getAreaWidth(String html) {
-    return getAreaWidth(html, null);
-  }
-
-  public static int getAreaWidth(String html, Font font) {
-    Assert.notNull(html);
-    return getWidth(areaRuler, html, font);
+  public static int getAreaWidth(Font font, String content, boolean asHtml) {
+    return getWidth(areaRuler, font, content, asHtml);
   }
 
   public static int getIntPixels(double value, Unit unit) {
@@ -131,31 +114,16 @@ public class Rulers {
     return BeeUtils.toInt(getPixels(value, unit, font, containerSize));
   }
 
-  public static Dimensions getLineDimensions(String html) {
-    return getLineDimensions(html, null);
+  public static Dimensions getLineDimensions(Font font, String content, boolean asHtml) {
+    return getDimensions(lineRuler, font, content, asHtml);
   }
 
-  public static Dimensions getLineDimensions(String html, Font font) {
-    Assert.notNull(html);
-    return getDimensions(lineRuler, html, font);
+  public static int getLineHeight(Font font, String content, boolean asHtml) {
+    return getHeight(lineRuler, font, content, asHtml);
   }
 
-  public static int getLineHeight(String html) {
-    return getLineHeight(html, null);
-  }
-
-  public static int getLineHeight(String html, Font font) {
-    Assert.notNull(html);
-    return getHeight(lineRuler, html, font);
-  }
-
-  public static int getLineWidth(String html) {
-    return getLineWidth(html, null);
-  }
-
-  public static int getLineWidth(String html, Font font) {
-    Assert.notNull(html);
-    return getWidth(lineRuler, html, font);
+  public static int getLineWidth(Font font, String content, boolean asHtml) {
+    return getWidth(lineRuler, font, content, asHtml);
   }
 
   public static double getPixels(double value, Unit unit) {
@@ -195,12 +163,12 @@ public class Rulers {
     }
   }
 
-  private static Dimensions getDimensions(Element ruler, String html, Font font) {
-    if (html == null) {
+  private static Dimensions getDimensions(Element ruler, Font font, String content, boolean asHtml) {
+    if (content == null) {
       return null;
     }
 
-    prepareRuler(ruler, html, font);
+    prepareRuler(ruler, font, content, asHtml);
 
     int width = ruler.getOffsetWidth();
     int height = ruler.getOffsetHeight();
@@ -250,24 +218,24 @@ public class Rulers {
     return size;
   }
 
-  private static int getHeight(Element ruler, String html, Font font) {
-    if (html == null) {
+  private static int getHeight(Element ruler, Font font, String content, boolean asHtml) {
+    if (content == null) {
       return 0;
     }
 
-    prepareRuler(ruler, html, font);
+    prepareRuler(ruler, font, content, asHtml);
     int height = ruler.getOffsetHeight();
     resetRuler(ruler, font);
 
     return height;
   }
 
-  private static int getWidth(Element ruler, String html, Font font) {
-    if (html == null) {
+  private static int getWidth(Element ruler, Font font, String content, boolean asHtml) {
+    if (content == null) {
       return 0;
     }
 
-    prepareRuler(ruler, html, font);
+    prepareRuler(ruler, font, content, asHtml);
     int width = ruler.getOffsetWidth();
     resetRuler(ruler, font);
 
@@ -299,12 +267,18 @@ public class Rulers {
     }
   }
 
-  private static void prepareRuler(Element ruler, String html, Font font) {
+  private static void prepareRuler(Element ruler, Font font, String content, boolean asHtml) {
     if (font != null) {
       font.applyTo(ruler);
     }
-    if (html != null) {
-      ruler.setInnerHTML(html);
+    if (content != null) {
+      if (asHtml) {
+        StyleUtils.setWhiteSpace(ruler, StyleUtils.WhiteSpace.NORMAL);
+        ruler.setInnerHTML(content);
+      } else {
+        StyleUtils.setWhiteSpace(ruler, StyleUtils.WhiteSpace.PRE);
+        ruler.setInnerText(content);
+      }
     }
   }
 
@@ -312,6 +286,7 @@ public class Rulers {
     if (font != null) {
       font.removeFrom(ruler);
     }
+    ruler.getStyle().clearWhiteSpace();
     ruler.setInnerHTML(BeeConst.HTML_NBSP);
   }
 

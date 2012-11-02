@@ -24,7 +24,6 @@ import com.google.gwt.media.client.Audio;
 import com.google.gwt.media.client.Video;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.storage.client.StorageEvent;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.TextBox;
@@ -73,6 +72,7 @@ import com.butent.bee.client.language.TranslationCallback;
 import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Direction;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
 import com.butent.bee.client.output.Printable;
@@ -88,7 +88,7 @@ import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
-import com.butent.bee.client.widget.InlineHtml;
+import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.Meter;
 import com.butent.bee.client.widget.Progress;
@@ -104,6 +104,7 @@ import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.ExtendedPropertiesData;
+import com.butent.bee.shared.data.IsTable;
 import com.butent.bee.shared.data.PropertiesData;
 import com.butent.bee.shared.data.StringMatrix;
 import com.butent.bee.shared.data.TableColumn;
@@ -216,6 +217,8 @@ public class CliWorker {
       eval(v, arr);
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr);
+    } else if (z.equals("font") && arr.length == 2) {
+      showFont(arr[1]);
     } else if (z.equals("form") && arr.length == 2) {
       FormFactory.openForm(arr[1]);
     } else if (z.startsWith("forminf") || z.equals("ff")) {
@@ -1007,7 +1010,7 @@ public class CliWorker {
     Element root = null;
     if (p > 0 && p < command.length() - 1) {
       String id = command.substring(p + 1);
-      root = DOM.getElementById(id);
+      root = Document.get().getElementById(id);
       if (root == null) {
         Global.showError(command, id, "element id not found");
         return;
@@ -1048,13 +1051,8 @@ public class CliWorker {
       info.add(new Property(BeeUtils.progress(i + 1, cnt),
           DomUtils.transformElement(nodes.getItem(i))));
     }
-    PropertiesData table = new PropertiesData(info);
-
-    if (showModal(cnt)) {
-      Global.showModalGrid("Selectors", table);
-    } else {
-      Global.showGrid(table);
-    }
+    
+    showTable("Selectors", new PropertiesData(info));
   }
 
   private static void rebuildSomething(String args) {
@@ -1536,12 +1534,7 @@ public class CliWorker {
           "Outer height", DomUtils.getOuterHeight(elem));
     }
 
-    PropertiesData table = new PropertiesData(info);
-    if (showModal(info.size())) {
-      Global.showModalGrid(caption, table);
-    } else {
-      Global.showGrid(table);
-    }
+    showTable(caption, new PropertiesData(info));
   }
 
   private static void showElement(String v, String[] arr) {
@@ -1550,7 +1543,7 @@ public class CliWorker {
       return;
     }
 
-    JavaScriptObject obj = DOM.getElementById(arr[1]);
+    JavaScriptObject obj = Document.get().getElementById(arr[1]);
     if (obj == null) {
       Global.showError(arr[1], "element id not found");
       return;
@@ -1567,17 +1560,23 @@ public class CliWorker {
     JsData<?> table = new JsData<TableColumn>(prp, "property", "type", "value");
     table.sort(0);
 
-    if (showModal(table.getNumberOfRows())) {
-      Global.showModalGrid(v, table);
-    } else {
-      Global.showGrid(table);
-    }
+    showTable(v, table);
   }
 
   private static void showExtData(List<ExtendedProperty> data, String... columnLabels) {
     Global.showGrid(new ExtendedPropertiesData(data, columnLabels));
   }
 
+  private static void showFont(String id) {
+    Element el = Document.get().getElementById(id);
+    if (el == null) {
+      Global.showError(id, "element not found");
+      return;
+    }
+    
+    showTable(id, new PropertiesData(Font.getComputed(el).getInfo()));
+  }
+  
   private static void showFunctions(String v, String[] arr) {
     if (ArrayUtils.length(arr) < 2) {
       Global.sayHuh(v);
@@ -1586,7 +1585,7 @@ public class CliWorker {
 
     JavaScriptObject obj;
     if (arr[1].startsWith("#")) {
-      obj = DOM.getElementById(arr[1].substring(1));
+      obj = Document.get().getElementById(arr[1].substring(1));
     } else {
       obj = JsUtils.eval(arr[1]);
     }
@@ -1610,11 +1609,7 @@ public class CliWorker {
     JsData<?> table = new JsData<TableColumn>(fnc, "function");
     table.sort(0);
 
-    if (BeeUtils.same(arr[0], "f") && showModal(table.getNumberOfRows())) {
-      Global.showModalGrid(v, table);
-    } else {
-      Global.showGrid(table);
-    }
+    showTable(v, table);
   }
 
   private static void showGeo() {
@@ -1635,13 +1630,8 @@ public class CliWorker {
         "Is Client", GWT.isClient(),
         "Is Prod Mode", GWT.isProdMode(),
         "Is Script", GWT.isScript());
-
-    PropertiesData table = new PropertiesData(info);
-    if (showModal(info.size())) {
-      Global.showModalGrid("GWT", table);
-    } else {
-      Global.showGrid(table);
-    }
+    
+    showTable("GWT", new PropertiesData(info));
   }
 
   private static void showInputBox(String[] arr) {
@@ -2023,7 +2013,7 @@ public class CliWorker {
 
     JavaScriptObject obj;
     if (arr[1].startsWith("#")) {
-      obj = DOM.getElementById(arr[1].substring(1));
+      obj = Document.get().getElementById(arr[1].substring(1));
     } else {
       obj = JsUtils.eval(arr[1]);
     }
@@ -2042,12 +2032,8 @@ public class CliWorker {
 
     JsData<?> table = new JsData<TableColumn>(prp, "property", "type", "value");
     table.sort(0);
-
-    if (BeeUtils.same(arr[0], "p") && showModal(table.getNumberOfRows())) {
-      Global.showModalGrid(v, table);
-    } else {
-      Global.showGrid(table);
-    }
+    
+    showTable(v, table);
   }
 
   private static void showRpc() {
@@ -2089,8 +2075,8 @@ public class CliWorker {
     }
 
     Font font = (len > pos) ? Font.parse(ArrayUtils.slice(arr, pos)) : null;
-    Dimensions lineDim = Rulers.getLineDimensions(html, font);
-    Dimensions areaDim = Rulers.getAreaDimensions(html, font);
+    Dimensions lineDim = Rulers.getLineDimensions(font, html, false);
+    Dimensions areaDim = Rulers.getAreaDimensions(font, html, true);
 
     int lineW = -1;
     int lineH = -1;
@@ -2106,39 +2092,39 @@ public class CliWorker {
       areaH = BeeUtils.toInt(areaDim.getHeightValue());
     }
 
-    List<Property> info = PropertyUtils.createProperties("Line Width", lineW, "Line Height", lineH,
-        "Area Width", areaW, "Area Height", areaH);
+    List<Property> info = PropertyUtils.createProperties("Text Width", lineW, "Text Height", lineH,
+        "Html Width", areaW, "Html Height", areaH);
     if (font != null) {
       info.addAll(font.getInfo());
     }
 
-    InlineHtml lineHtml = new InlineHtml();
+    InlineLabel span = new InlineLabel();
     if (font != null) {
-      font.applyTo(lineHtml);
+      font.applyTo(span);
     }
-    lineHtml.setHTML(html);
+    StyleUtils.setWhiteSpace(span, StyleUtils.WhiteSpace.PRE);
+    span.setText(html);
 
-    Html areaHtml = new Html();
+    Html div = new Html();
     if (font != null) {
-      font.applyTo(areaHtml);
+      font.applyTo(div);
     }
-    areaHtml.setHTML(html);
+    div.setHTML(html);
 
     HtmlTable table = new HtmlTable();
     table.setDefaultCellStyles("padding: 3px; border: 1px solid black;");
+    StyleUtils.collapseBorders(table);
 
     for (int i = 0; i < info.size(); i++) {
       table.setHTML(i, 0, info.get(i).getName());
       table.setHTML(i, 1, info.get(i).getValue());
     }
 
-    Absolute panel = new Absolute();
-    panel.setPixelSize(Math.max(Math.max(lineH, areaH) + 40, 256),
-        lineH + areaH + 20 + info.size() * 32);
+    Flow panel = new Flow();
 
-    panel.add(lineHtml, 10, 5);
-    panel.add(areaHtml, 10, lineH + 10);
-    panel.add(table, 10, lineH + areaH + 20);
+    panel.add(span);
+    panel.add(div);
+    panel.add(table);
 
     Global.showModalWidget(panel);
   }
@@ -2368,7 +2354,15 @@ public class CliWorker {
 
     BeeKeeper.getScreen().updateActivePanel(widget);
   }
-
+  
+  private static void showTable(String caption, IsTable<?, ?> table) {
+    if (showModal(table.getNumberOfRows())) {
+      Global.showModalGrid(caption, table);
+    } else {
+      Global.showGrid(table);
+    }
+  }
+  
   private static void showTableInfo(String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_TABLE_INFO);
     if (!BeeUtils.isEmpty(args)) {
@@ -2436,12 +2430,7 @@ public class CliWorker {
       info.add(new Property(u.getType(), BeeUtils.toString(px)));
     }
 
-    PropertiesData table = new PropertiesData(info);
-    if (showModal(info.size())) {
-      Global.showModalGrid("Pixels", table);
-    } else {
-      Global.showGrid(table);
-    }
+    showTable("Pixels", new PropertiesData(info));
   }
 
   private static void showVars(String[] arr) {
