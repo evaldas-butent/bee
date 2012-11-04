@@ -48,7 +48,7 @@ public class Query extends JavaScriptObject {
    * Contains a list of possible visualization query methods.
    */
 
-  public static enum SendMethod {
+  public enum SendMethod {
     XHR("xhr"), SCRIPT_INJECTION("scriptInjection"), MAKE_REQUEST("makeRequest"), AUTO("auto");
 
     private String strValue;

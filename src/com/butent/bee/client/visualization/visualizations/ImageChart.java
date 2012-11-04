@@ -25,7 +25,7 @@ public class ImageChart extends Visualization<ImageChart.Options> {
     /**
      * Contains a list of possible priorities in image chart.
      */
-    public static enum Priority {
+    public enum Priority {
       LOW, MEDIUM, HIGH
     }
 

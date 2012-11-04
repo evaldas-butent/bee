@@ -1,17 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
   xmlns:ui="http://www.butent.com/ui"
-
+  xmlns:w="http://www.butent.com/widget"
+  
   name="Tasks" viewName="Tasks" caption="Užduotys"
+  editForm="Task" editShowId="true" newRowForm="NewTask"
+  cacheData="false"
   >
+  <north size="60">
+    <w:FlowPanel style="background-color: #f8f8f8;">
+      <w:FlowPanel>
+        <w:CheckBox name="Scheduled" html="Suplanuotos" />
+        <w:CheckBox name="Executing" html="Vykdomos" />
+        <w:CheckBox name="Suspended" html="Sustabdytos" />
+        <w:CheckBox name="Completed" html="Įvykdytos" />
+        <w:CheckBox name="Canceled" html="Nutrauktos" />
+        <w:CheckBox name="Approved" html="Baigtos" />
+      </w:FlowPanel>
+      <w:FlowPanel style="float: left;">
+        <w:CheckBox name="Overdue" html="Tik vėluojančios" />
+        <w:CheckBox name="Updated" html="Tik pasikeitusios" />
+        <w:CheckBox name="Selected" html="Tik pažymėtos" />
+      </w:FlowPanel>
+      <w:Button name="Filter" html="Filtruoti" style="float: right;"/>
+    </w:FlowPanel>
+  </north>
+  
   <columns>
+    <DataColumn name="Selected" caption="Paž." />
+    <CalcColumn name="Mode" type="string" caption="&#160;" cell="html"
+      horizontalAlignment="center" width="15" options="greenSmall, yellowSmall" />
     <IdColumn name="Id" caption="ID" />
-    <DataColumn name="Priority" caption="Prioritetas" itemKey="Priority"/> 
-    <DataColumn name="Description" caption="Užduotis" />
-    <RelColumn name="Company" caption="Įmonė" />
-    <DataColumn name="Event" caption="Būsena" itemKey="TaskEvent" />
-    <RelColumn name="Owner" caption="Vadovas" />
-    <RelColumn name="Executor" caption="Vykdytojas" />
-    <DataColumn name="FinishTime" caption="Pabaigos laikas" />
+
+    <DataColumn name="Priority" itemKey="Priority" />
+    <DataColumn name="Summary" />
+    <DataColumn name="Description" />
+
+    <DataColumn name="CompanyName" caption="Įmonė" />
+    <DataColumn name="Contact" renderColumns="ContactFirstName ContactLastName" />
+
+    <DataColumn name="Status" itemKey="TaskEvent" />
+
+    <DataColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName" />
+    <DataColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName" readOnly="true" />
+
+    <DataColumn name="FinishTime" readOnly="true" />
   </columns>
+
+  <rowStyle>
+    <ui:inline>color: red;</ui:inline>
+    <ui:expression>row.Event == 0 &amp;&amp; row.FinishTime &lt; new Date()</ui:expression>
+  </rowStyle>
+  <rowStyle>
+    <ui:inline>color: gray;</ui:inline>
+    <ui:expression>row.Event > 0</ui:expression>
+  </rowStyle>
 </Grid>

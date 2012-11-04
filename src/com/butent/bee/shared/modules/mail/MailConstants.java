@@ -2,11 +2,11 @@ package com.butent.bee.shared.modules.mail;
 
 public class MailConstants {
 
-  public static enum AddressType {
+  public enum AddressType {
     TO, CC, BCC
   }
 
-  public static enum Protocol {
+  public enum Protocol {
     POP3, IMAP, SMTP
   }
 

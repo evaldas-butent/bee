@@ -567,6 +567,18 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   }
 
   @Override
+  public Widget getWidgetByName(String name) {
+    Assert.notEmpty(name);
+    String id = creationCallback.getWidgetIdByName(name);
+
+    if (BeeUtils.isEmpty(id)) {
+      logger.warning("widget name", name, "not found");
+      return null;
+    }
+    return getWidgetById(id);
+  }
+
+  @Override
   public Widget getWidgetBySource(String source) {
     Assert.notEmpty(source);
 
@@ -902,26 +914,26 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
   public int refreshBySource(String source) {
     Assert.notEmpty(source);
     Set<String> refreshed = Sets.newHashSet();
-    
-    for (DisplayWidget displayWidget : getDisplayWidgets()) {
-      if (displayWidget.hasSource(source)) {
-        String id = displayWidget.getWidgetId();
-        Widget widget = DomUtils.getChildQuietly(this, id);
 
-        if (widget != null) {
-          displayWidget.refresh(widget, getActiveRow());
-          refreshed.add(id);
-        }
-      }
-    }
-    
     for (EditableWidget editableWidget : getEditableWidgets()) {
-      if (editableWidget.hasSource(source) && !refreshed.contains(editableWidget.getWidgetId())) {
+      if (editableWidget.hasSource(source)) {
         String id = editableWidget.getWidgetId();
         Widget widget = DomUtils.getChildQuietly(this, id);
 
         if (widget != null) {
           editableWidget.refresh(getActiveRow());
+          refreshed.add(id);
+        }
+      }
+    }
+    
+    for (DisplayWidget displayWidget : getDisplayWidgets()) {
+      if (displayWidget.hasSource(source)  && !refreshed.contains(displayWidget.getWidgetId())) {
+        String id = displayWidget.getWidgetId();
+        Widget widget = DomUtils.getChildQuietly(this, id);
+
+        if (widget != null) {
+          displayWidget.refresh(widget, getActiveRow());
           refreshed.add(id);
         }
       }

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="Relations"
+  idName="RelationID"
+  >
+  <Fields>
+    <String name="Table1" precision="20" notNull="true" />
+    <Long name="Row1" notNull="true" />
+    <String name="Table2" precision="20" notNull="true" />
+    <Long name="Row2" notNull="true" />
+  </Fields>
+  
+  <Keys>
+    <Key><KeyField>Table1</KeyField></Key>
+    <Key><KeyField>Row1</KeyField></Key>
+    <Key><KeyField>Table2</KeyField></Key>
+    <Key><KeyField>Row2</KeyField></Key>
+  </Keys>
+</Table>

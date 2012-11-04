@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Table xmlns="http://www.butent.com/table"
+
+  name="TaskTemplates"
+  idName="TaskTemplateID"
+  >
+  <Fields>
+    <String name="Name" notNull="true" precision="100" label="Pavadinimas" />
+
+    <String name="Summary" precision="100" label="Tema" />
+    <Text name="Description" label="Aprašymas" />
+    <Integer name="Priority" label="Prioritetas" />
+
+    <String name="ExpectedDuration" precision="10" label="Numatoma trukmė" />
+
+    <Relation name="Company" relation="Companies" label="Įmonė" />
+    <Relation name="Contact" relation="CompanyPersons" label="Kontaktinis asmuo" />
+
+    <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="Priminimas" />
+  </Fields>
+</Table>

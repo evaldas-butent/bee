@@ -13,12 +13,6 @@ import com.google.common.collect.Table;
 import com.google.common.eventbus.Subscribe;
 
 import static com.butent.bee.shared.modules.calendar.CalendarConstants.*;
-import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_CONTACT;
-import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_EMAIL;
-import static com.butent.bee.shared.modules.commons.CommonsConstants.COL_PHONE;
-import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_COMPANY_PERSONS;
-import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_CONTACTS;
-import static com.butent.bee.shared.modules.commons.CommonsConstants.VIEW_COMPANIES;
 
 import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
@@ -63,11 +57,11 @@ import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.AppointmentStatus;
-import com.butent.bee.shared.modules.calendar.CalendarConstants.ReminderMethod;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.Report;
 import com.butent.bee.shared.modules.calendar.CalendarConstants.View;
 import com.butent.bee.shared.modules.calendar.CalendarSettings;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.commons.CommonsConstants.ReminderMethod;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
@@ -1081,23 +1075,27 @@ public class CalendarModuleBean implements BeeModule {
 
     Map<String, String> data = qs.getRow(new SqlSelect()
         .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
-        .addFields(TBL_CONTACTS, COL_PHONE, COL_EMAIL)
+        .addFields(CommonsConstants.TBL_CONTACTS, CommonsConstants.COL_PHONE,
+            CommonsConstants.COL_EMAIL)
         .addFields(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, COL_MESSAGE)
         .addFields(TBL_REMINDER_TYPES, COL_REMINDER_METHOD, COL_TEMPLATE_CAPTION, COL_TEMPLATE)
-        .addField(personContacts, COL_EMAIL, personEmail)
-        .addField(personContacts, COL_PHONE, personPhone)
+        .addField(personContacts, CommonsConstants.COL_EMAIL, personEmail)
+        .addField(personContacts, CommonsConstants.COL_PHONE, personPhone)
         .addFrom(TBL_APPOINTMENTS)
         .addFromInner(TBL_APPOINTMENT_REMINDERS,
             sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
         .addFromInner(TBL_REMINDER_TYPES,
             sys.joinTables(TBL_REMINDER_TYPES, TBL_APPOINTMENT_REMINDERS, COL_REMINDER_TYPE))
-        .addFromLeft(VIEW_COMPANIES, sys.joinTables(VIEW_COMPANIES, TBL_APPOINTMENTS, COL_COMPANY))
-        .addFromLeft(TBL_CONTACTS, sys.joinTables(TBL_CONTACTS, VIEW_COMPANIES, COL_CONTACT))
-        .addFromLeft(TBL_COMPANY_PERSONS,
-            sys.joinTables(TBL_COMPANY_PERSONS, TBL_APPOINTMENT_REMINDERS, COL_RECIPIENT))
-        .addFromLeft(TBL_CONTACTS, personContacts,
-            SqlUtils.join(personContacts, sys.getIdName(TBL_CONTACTS),
-                TBL_COMPANY_PERSONS, COL_CONTACT))
+        .addFromLeft(CommonsConstants.VIEW_COMPANIES,
+            sys.joinTables(CommonsConstants.VIEW_COMPANIES, TBL_APPOINTMENTS, COL_COMPANY))
+        .addFromLeft(CommonsConstants.TBL_CONTACTS, sys.joinTables(CommonsConstants.TBL_CONTACTS,
+            CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_CONTACT))
+        .addFromLeft(CommonsConstants.TBL_COMPANY_PERSONS,
+            sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, TBL_APPOINTMENT_REMINDERS,
+                COL_RECIPIENT))
+        .addFromLeft(CommonsConstants.TBL_CONTACTS, personContacts,
+            SqlUtils.join(personContacts, sys.getIdName(CommonsConstants.TBL_CONTACTS),
+                CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.COL_CONTACT))
         .setWhere(SqlUtils.and(wh,
             SqlUtils.more(TBL_APPOINTMENTS, COL_START_DATE_TIME,
                 System.currentTimeMillis() - TimeUtils.MILLIS_PER_MINUTE),
@@ -1121,7 +1119,8 @@ public class CalendarModuleBean implements BeeModule {
             BeeUtils.toIntOrNull(data.get(COL_REMINDER_METHOD)));
 
         if (method == ReminderMethod.EMAIL) {
-          String email = BeeUtils.notEmpty(data.get(personEmail), data.get(COL_EMAIL));
+          String email = BeeUtils.notEmpty(data.get(personEmail),
+              data.get(CommonsConstants.COL_EMAIL));
 
           if (BeeUtils.isEmpty(email)) {
             error = "No recipient email address specified";

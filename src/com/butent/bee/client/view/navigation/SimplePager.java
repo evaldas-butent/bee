@@ -61,7 +61,7 @@ public class SimplePager extends AbstractPager {
   /**
    * Contains possible navigation options like first, previous, next, last etc.
    */
-  private static enum Navigation {
+  private enum Navigation {
     FIRST, REWIND, PREV, NEXT, FORWARD, LAST
   }
 

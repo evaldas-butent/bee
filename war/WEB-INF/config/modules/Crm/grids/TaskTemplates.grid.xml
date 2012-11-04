@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Grid xmlns="http://www.butent.com/grid"
+  xmlns:ui="http://www.butent.com/ui"
+  xmlns:w="http://www.butent.com/widget"
+  
+  name="TaskTemplates" viewName="TaskTemplates" caption="Užduočių šablonai"
+  >
+  <columns>
+    <DataColumn name="Name" />
+    <DataColumn name="Priority" itemKey="Priority" />
+    <DataColumn name="Summary" />
+    <DataColumn name="ExpectedDuration" />
+    <DataColumn name="Description" />
+    <RelColumn name="Company" />
+    <RelColumn name="Contact" renderColumns="ContactFirstName ContactLastName"
+      choiceColumns="CompanyName FirstName LastName" />
+    <RelColumn name="Reminder" newRowEnabled="false" />
+  </columns>
+</Grid>

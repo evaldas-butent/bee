@@ -65,6 +65,10 @@ public class DisplayWidget {
     return widgetDescription.getWidgetId();
   }
 
+  public String getWidgetName() {
+    return widgetDescription.getWidgetName();
+  }
+
   public FormWidget getWidgetType() {
     return widgetDescription.getWidgetType();
   }

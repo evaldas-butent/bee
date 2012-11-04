@@ -120,6 +120,14 @@ public class TimeUtils {
         timePart.getHour(), timePart.getMinute(), timePart.getSecond(), timePart.getMillis());
   }
 
+  public static DateTime combine(HasDateValue datePart, int timePartMillis) {
+    if (datePart == null) {
+      return null;
+    }
+    return new DateTime(datePart.getYear(), datePart.getMonth(), datePart.getDom(),
+        0, 0, 0, timePartMillis);
+  }
+  
   public static int compare(HasDateValue d1, HasDateValue d2) {
     if (d1 == null) {
       if (d2 == null) {

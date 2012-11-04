@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.crm;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.MenuManager;
+import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.shared.modules.crm.CrmConstants;
 
 public class CrmKeeper {
@@ -15,6 +16,8 @@ public class CrmKeeper {
       }
     });
 
+    SelectorEvent.register(new TaskSelectorHandler());
+    
     ProjectEventHandler.register();
     BeeKeeper.getMenu().registerMenuCallback("project_list", new MenuManager.MenuCallback() {
       public void onSelection(String parameters) {

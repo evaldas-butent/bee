@@ -554,6 +554,35 @@ public class DateTime extends AbstractDate implements Comparable<DateTime> {
     return true;
   }
 
+  public String toCompactString() {
+    String timeString = toCompactTimeString();
+    if (timeString.isEmpty()) {
+      return toDateString();
+    } else {
+      StringBuilder sb = new StringBuilder();
+      sb.append(toDateString()).append(DATE_TIME_SEPARATOR).append(timeString);
+      return sb.toString();
+    }
+  }
+  
+  public String toCompactTimeString() {
+    if (getMillis() != 0) {
+      return toTimeString();
+    }
+    if (getHour() == 0 && getMinute() == 0 && getSecond() == 0) {
+      return BeeConst.STRING_EMPTY;
+    }
+
+    StringBuilder sb = new StringBuilder(TimeUtils.padTwo(getHour()));
+    if (getMinute() != 0 || getSecond() != 0) {
+      sb.append(TIME_FIELD_SEPARATOR).append(TimeUtils.padTwo(getMinute()));
+    }
+    if (getSecond() != 0) {
+      sb.append(TIME_FIELD_SEPARATOR).append(TimeUtils.padTwo(getSecond()));
+    }
+    return sb.toString();
+  }
+  
   /**
    * Converts the {@code DateTime} in date to {@code String}.
    * 

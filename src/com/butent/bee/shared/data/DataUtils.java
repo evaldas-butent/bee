@@ -812,6 +812,8 @@ public class DataUtils {
       return null;
     } else if (type == null || ValueType.isString(type)) {
       return row.getString(index);
+    } else if (ValueType.DATETIME.equals(type)) {
+      return row.getDateTime(index).toCompactString();
     } else {
       return row.getValue(index, type).toString();
     }

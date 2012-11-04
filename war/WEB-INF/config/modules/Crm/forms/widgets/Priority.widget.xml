@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ListBox xmlns="http://www.butent.com/widget"
-  source="Priority" name="Priority" valueNumeric="true" itemKey="Priority"
-  style="min-width: 80px; color: darkblue; letter-spacing: 5px; font-size: medium; padding-left: 3px;"
-/>
+<Radio xmlns="http://www.butent.com/widget" source="Priority" itemKey="Priority" />
   
   

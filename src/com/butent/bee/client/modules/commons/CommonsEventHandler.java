@@ -38,6 +38,7 @@ import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
+import com.butent.bee.shared.modules.commons.CommonsConstants.ReminderMethod;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.ui.GridDescription;
@@ -312,6 +313,7 @@ public class CommonsEventHandler {
     Global.registerCaptions(RightsObjectType.class);
     Global.registerCaptions(RightsState.class);
     Global.registerCaptions(ParameterType.class);
+    Global.registerCaptions(ReminderMethod.class);
   }
 
   static ParameterList createArgs(String name) {

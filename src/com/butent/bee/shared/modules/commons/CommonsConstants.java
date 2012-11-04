@@ -8,7 +8,7 @@ import java.util.Set;
 
 public class CommonsConstants {
 
-  public static enum RightsObjectType implements HasCaption {
+  public enum RightsObjectType implements HasCaption {
     EVENT("Įvykis", EnumSet.of(RightsState.ENABLED)),
     FORM("Forma", EnumSet.of(RightsState.VISIBLE, RightsState.ENABLED)),
     GRID("Lentelė", EnumSet.of(RightsState.VISIBLE, RightsState.ENABLED)),
@@ -33,7 +33,7 @@ public class CommonsConstants {
     }
   }
 
-  public static enum RightsState implements HasCaption {
+  public enum RightsState implements HasCaption {
     VISIBLE("Matomas", true),
     ENABLED("Leidžiamas", true),
     MARKED("Pažymėtas", true);
@@ -56,6 +56,15 @@ public class CommonsConstants {
     }
   }
 
+  public enum ReminderMethod implements HasCaption {
+    EMAIL, SMS;
+
+    @Override
+    public String getCaption() {
+      return this.name().toLowerCase();
+    }
+  }
+  
   public static final String COMMONS_MODULE = "Commons";
   public static final String COMMONS_METHOD = COMMONS_MODULE + "Method";
 
@@ -86,7 +95,11 @@ public class CommonsConstants {
   public static final String TBL_ITEM_CATEGORIES = "ItemCategories";
   public static final String TBL_CONTACTS = "Contacts";
   public static final String TBL_COMPANY_PERSONS = "CompanyPersons";
+  public static final String TBL_COMPANIES = "Companies";
+  public static final String TBL_PERSONS = "Persons";
 
+  public static final String TBL_RELATIONS = "Relations";
+  
   public static final String VIEW_COMPANIES = "Companies";
 
   public static final String COL_NAME = "Name";
@@ -103,6 +116,11 @@ public class CommonsConstants {
 
   public static final String COL_CITY_NAME = "CityName";
   public static final String COL_COUNTRY_NAME = "CountryName";
+
+  public static final String COL_TABLE_1 = "Table1";
+  public static final String COL_ROW_1 = "Row1";
+  public static final String COL_TABLE_2 = "Table2";
+  public static final String COL_ROW_2 = "Row2";
 
   public static final String FORM_NEW_COMPANY = "Company";
 

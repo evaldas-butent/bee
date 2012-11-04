@@ -1,6 +1,5 @@
 package com.butent.bee.server.modules.crm;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -25,10 +24,10 @@ import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
-import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
+import com.butent.bee.shared.modules.calendar.CalendarConstants;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -74,10 +73,7 @@ public class CrmModuleBean implements BeeModule {
     ResponseObject response = null;
     String svc = reqInfo.getParameter(CRM_METHOD);
 
-    if (BeeUtils.isPrefix(svc, CRM_PROJECT_PREFIX)) {
-      response = doProjectEvent(BeeUtils.removePrefix(svc, CRM_PROJECT_PREFIX), reqInfo);
-
-    } else if (BeeUtils.isPrefix(svc, CRM_TASK_PREFIX)) {
+    if (BeeUtils.isPrefix(svc, CRM_TASK_PREFIX)) {
       response = doTaskEvent(BeeUtils.removePrefix(svc, CRM_TASK_PREFIX), reqInfo);
 
     } else {
@@ -107,127 +103,37 @@ public class CrmModuleBean implements BeeModule {
   public void init() {
   }
 
-  private ResponseObject doProjectEvent(String svc, RequestInfo reqInfo) {
-    ResponseObject response = null;
+  private ResponseObject createTaskRelations(long taskId, Map<String, String> properties) {
+    int count = 0;
+    if (BeeUtils.isEmpty(properties)) {
+      return ResponseObject.response(count);
+    }
 
-    if (BeeUtils.same(svc, SVC_ADD_OBSERVERS)) {
-      int cnt = 0;
-      long projectId = BeeUtils.toLong(reqInfo.getParameter(VAR_PROJECT_ID));
-      String observers = reqInfo.getParameter(VAR_PROJECT_OBSERVERS);
+    for (Map.Entry<String, String> entry : properties.entrySet()) {
+      String tableName = translateTaskPropertyNameToTableName(entry.getKey());
+      if (BeeUtils.isEmpty(tableName)) {
+        continue;
+      }
 
-      for (long obsId : DataUtils.parseIdList(observers)) {
-        response = registerProjectVisit(projectId, obsId, null, true);
-        if (response.hasErrors()) {
-          break;
+      List<Long> idList = DataUtils.parseIdList(entry.getValue());
+      if (idList.isEmpty()) {
+        continue;
+      }
+
+      for (long relId : idList) {
+        ResponseObject ro = qs.insertDataWithResponse(new SqlInsert(CommonsConstants.TBL_RELATIONS)
+            .addConstant(CommonsConstants.COL_TABLE_1, TBL_TASKS)
+            .addConstant(CommonsConstants.COL_ROW_1, taskId)
+            .addConstant(CommonsConstants.COL_TABLE_2, tableName)
+            .addConstant(CommonsConstants.COL_ROW_2, relId));
+        if (ro.hasErrors()) {
+          return ro;
         }
-        cnt++;
-      }
-      if (!response.hasErrors()) {
-        response = ResponseObject.response(cnt);
-      }
-    } else if (BeeUtils.same(svc, SVC_REMOVE_OBSERVERS)) {
-      long projectId = BeeUtils.toLong(reqInfo.getParameter(VAR_PROJECT_ID));
-      String observers = reqInfo.getParameter(VAR_PROJECT_OBSERVERS);
 
-      HasConditions usrClause = SqlUtils.or();
-      IsCondition cond = SqlUtils.and(SqlUtils.equal(TBL_PROJECT_USERS, COL_PROJECT, projectId),
-          usrClause);
-
-      for (long obsId : DataUtils.parseIdList(observers)) {
-        usrClause.add(SqlUtils.equal(TBL_PROJECT_USERS, COL_USER, obsId));
-      }
-      response = qs.updateDataWithResponse(new SqlDelete(TBL_PROJECT_USERS)
-          .setWhere(cond));
-
-    } else {
-      long time = System.currentTimeMillis();
-      long currentUser = usr.getCurrentUserId();
-      ProjectEvent event;
-
-      try {
-        event = ProjectEvent.valueOf(svc);
-      } catch (Exception e) {
-        event = null;
-      }
-      if (event != null) {
-        switch (event) {
-          case CREATED:
-            BeeRowSet rs = BeeRowSet.restore(reqInfo.getParameter(VAR_PROJECT_DATA));
-            String observers = reqInfo.getParameter(VAR_PROJECT_OBSERVERS);
-            response = deb.commitRow(rs, false);
-
-            if (!response.hasErrors()) {
-              long projectId = ((BeeRow) response.getResponse()).getId();
-              response = registerProjectEvent(projectId, time, reqInfo, event, null);
-
-              if (!response.hasErrors() && !BeeUtils.isEmpty(observers)) {
-                for (long obsId : DataUtils.parseIdList(observers)) {
-                  if (obsId != currentUser) {
-                    response = registerProjectVisit(projectId, obsId, null, true);
-                    if (response.hasErrors()) {
-                      break;
-                    }
-                  }
-                }
-              }
-              if (!response.hasErrors()) {
-                rs = qs.getViewData(rs.getViewName(), ComparisonFilter.compareId(projectId));
-
-                if (rs.isEmpty()) {
-                  String msg = "Optimistic lock exception";
-                  logger.warning(msg);
-                  response = ResponseObject.error(msg);
-                } else {
-                  response.setResponse(rs.getRow(0));
-                }
-              }
-            }
-            break;
-
-          case VISITED:
-            response = registerProjectVisit(BeeUtils.toLong(reqInfo.getParameter(VAR_PROJECT_ID)),
-                currentUser, time, false);
-            break;
-
-          case COMMENTED:
-            response = registerProjectEvent(BeeUtils.toLong(reqInfo.getParameter(VAR_PROJECT_ID)),
-                time, reqInfo, event, null);
-            break;
-
-          case ACTIVATED:
-          case SUSPENDED:
-          case CANCELED:
-          case COMPLETED:
-          case RENEWED:
-            rs = BeeRowSet.restore(reqInfo.getParameter(VAR_PROJECT_DATA));
-            long projectId = rs.getRow(0).getId();
-
-            response = deb.commitRow(rs, false);
-
-            if (!response.hasErrors()) {
-              response = registerProjectEvent(projectId, time, reqInfo, event, null);
-            }
-            break;
-
-          case DELETED:
-            Assert.untouchable();
-            break;
-
-          case EXTENDED:
-          case UPDATED:
-            break;
-        }
+        count++;
       }
     }
-    if (response == null) {
-      String msg = BeeUtils.joinWords("Project service not recognized:", svc);
-      logger.warning(msg);
-      response = ResponseObject.error(msg);
-
-    } else if (response.hasErrors()) {
-      ctx.setRollbackOnly();
-    }
-    return response;
+    return ResponseObject.response(count);
   }
 
   private ResponseObject doTaskEvent(String svc, RequestInfo reqInfo) {
@@ -243,19 +149,21 @@ public class CrmModuleBean implements BeeModule {
 
     long time = System.currentTimeMillis();
     long currentUser = usr.getCurrentUserId();
-    
+
     long taskId;
 
     switch (event) {
       case ACTIVATED:
         BeeRowSet rs = BeeRowSet.restore(reqInfo.getParameter(VAR_TASK_DATA));
-        String executors = reqInfo.getParameter(VAR_TASK_EXECUTORS);
-        String observers = reqInfo.getParameter(VAR_TASK_OBSERVERS);
+        BeeRow row = rs.getRow(0);
+
+        Map<String, String> properties = row.getProperties();
+
+        String executors = properties.get(PROP_EXECUTORS);
+        String observers = properties.get(PROP_OBSERVERS);
 
         int exIndex = DataUtils.getColumnIndex(COL_EXECUTOR, rs.getColumns());
         int cnt = 0;
-        
-        BeeRow row = rs.getRow(0);
 
         for (long executor : DataUtils.parseIdList(executors)) {
           rs.clearRows();
@@ -282,13 +190,18 @@ public class CrmModuleBean implements BeeModule {
                   }
                 }
               }
+            }
 
-              if (response.hasErrors()) {
-                break;
-              }
+            if (!response.hasErrors()) {
+              response = createTaskRelations(taskId, properties);
             }
           }
+
+          if (response.hasErrors()) {
+            break;
+          }
         }
+
         if (!response.hasErrors()) {
           response = ResponseObject.response(cnt);
         }
@@ -297,8 +210,22 @@ public class CrmModuleBean implements BeeModule {
       case VISITED:
         taskId = getTaskId(reqInfo);
         response = registerTaskVisit(taskId, currentUser, time);
+
         if (!response.hasErrors()) {
-          response = ResponseObject.response(getTaskUsers(taskId, null));
+          Map<String, String> taskProperties = Maps.newHashMap();
+          
+          String taskUsers = getTaskUsers(taskId, 
+              DataUtils.parseIdSet(reqInfo.getParameter(VAR_TASK_DATA)));
+          if (!BeeUtils.isEmpty(taskUsers)) {
+            taskProperties.put(PROP_OBSERVERS, taskUsers);
+          }
+          
+          Map<String, List<Long>> taskRelations = getTaskRelations(taskId);
+          for (Map.Entry<String, List<Long>> entry : taskRelations.entrySet()) {
+            taskProperties.put(entry.getKey(), DataUtils.buildIdList(entry.getValue()));
+          }
+          
+          response = ResponseObject.response(taskProperties);
         }
         break;
 
@@ -347,7 +274,7 @@ public class CrmModuleBean implements BeeModule {
         }
         break;
 
-      case UPDATED:
+      case EDITED:
         rs = BeeRowSet.restore(reqInfo.getParameter(VAR_TASK_DATA));
         taskId = rs.getRow(0).getId();
         Map<String, String> prm = Maps.newHashMap();
@@ -397,7 +324,54 @@ public class CrmModuleBean implements BeeModule {
     return BeeUtils.toLong(reqInfo.getParameter(VAR_TASK_ID));
   }
 
-  private String getTaskUsers(long taskId, List<Long> exclude) {
+  private Map<String, List<Long>> getTaskRelations(long taskId) {
+    Map<String, List<Long>> result = Maps.newHashMap();
+
+    SqlSelect query = new SqlSelect().addFrom(CommonsConstants.TBL_RELATIONS)
+        .addFields(CommonsConstants.TBL_RELATIONS,
+            CommonsConstants.COL_TABLE_1, CommonsConstants.COL_ROW_1,
+            CommonsConstants.COL_TABLE_2, CommonsConstants.COL_ROW_2)
+        .setWhere(SqlUtils.or(
+            SqlUtils.and(
+                SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
+                    CommonsConstants.COL_TABLE_1, TBL_TASKS),
+                SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
+                    CommonsConstants.COL_ROW_1, taskId)),
+            SqlUtils.and(
+                SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
+                    CommonsConstants.COL_TABLE_2, TBL_TASKS),
+                SqlUtils.equal(CommonsConstants.TBL_RELATIONS,
+                    CommonsConstants.COL_ROW_2, taskId)
+                )));
+
+    for (Map<String, String> row : qs.getData(query)) {
+      String t1 = row.get(CommonsConstants.COL_TABLE_1);
+      long r1 = BeeUtils.toLong(row.get(CommonsConstants.COL_ROW_1));
+      String t2 = row.get(CommonsConstants.COL_TABLE_2);
+      long r2 = BeeUtils.toLong(row.get(CommonsConstants.COL_ROW_2));
+      
+      String key;
+      long id;
+      
+      if (BeeUtils.same(t1, TBL_TASKS) && r1 == taskId) {
+        key = t2;
+        id = r2;
+      } else {
+        key = t1;
+        id = r1;
+      }
+      
+      if (result.containsKey(key)) {
+        result.get(key).add(id);
+      } else {
+        result.put(key, Lists.newArrayList(id));
+      }
+    }
+
+    return result;
+  }
+
+  private String getTaskUsers(long taskId, Collection<Long> exclude) {
     SqlSelect query = new SqlSelect().addFrom(TBL_TASK_USERS).addFields(TBL_TASK_USERS, COL_USER);
 
     IsCondition condition = SqlUtils.equal(TBL_TASK_USERS, COL_TASK, taskId);
@@ -410,51 +384,8 @@ public class CrmModuleBean implements BeeModule {
       }
       query.setWhere(where);
     }
-    
+
     return DataUtils.buildIdList(qs.getLongColumn(query));
-  }
-
-  private ResponseObject registerProjectEvent(long projectId, long time, RequestInfo reqInfo,
-      ProjectEvent event, String eventNote) {
-    ResponseObject response = null;
-    long currentUser = usr.getCurrentUserId();
-
-    response = qs.insertDataWithResponse(new SqlInsert("ProjectEvents")
-        .addConstant(COL_PROJECT, projectId)
-        .addConstant("Publisher", currentUser)
-        .addConstant("PublishTime", time)
-        .addConstant("Comment", reqInfo.getParameter(VAR_PROJECT_COMMENT))
-        .addConstant(COL_EVENT, event.ordinal())
-        .addConstant("EventNote", eventNote));
-
-    if (!response.hasErrors()) {
-      response = registerProjectVisit(projectId, currentUser, time,
-          Objects.equal(event, ProjectEvent.CREATED));
-    }
-    return response;
-  }
-
-  private ResponseObject registerProjectVisit(long projectId, long userId, Long time,
-      boolean newVisit) {
-    ResponseObject response = null;
-
-    if (!newVisit) {
-      response = qs.updateDataWithResponse(new SqlUpdate(TBL_PROJECT_USERS)
-          .addConstant(COL_LAST_ACCESS, time)
-          .setWhere(SqlUtils.and(
-              SqlUtils.equal(TBL_PROJECT_USERS, COL_PROJECT, projectId),
-              SqlUtils.equal(TBL_PROJECT_USERS, COL_USER, userId))));
-    }
-    if (newVisit || response.getResponse(-1, logger) == 0) {
-      response = qs.insertDataWithResponse(new SqlInsert(TBL_PROJECT_USERS)
-          .addConstant(COL_PROJECT, projectId)
-          .addConstant(COL_USER, userId)
-          .addConstant(COL_LAST_ACCESS, time));
-    }
-    if (!response.hasErrors()) {
-      response = ResponseObject.response(time);
-    }
-    return response;
   }
 
   private ResponseObject registerTaskEvent(long taskId, long time, RequestInfo reqInfo,
@@ -511,5 +442,19 @@ public class CrmModuleBean implements BeeModule {
       response = ResponseObject.response(time);
     }
     return response;
+  }
+
+  private String translateTaskPropertyNameToTableName(String propertyName) {
+    if (BeeUtils.same(propertyName, PROP_COMPANIES)) {
+      return CommonsConstants.TBL_COMPANIES;
+    } else if (BeeUtils.same(propertyName, PROP_PERSONS)) {
+      return CommonsConstants.TBL_PERSONS;
+    } else if (BeeUtils.same(propertyName, PROP_APPOINTMENTS)) {
+      return CalendarConstants.TBL_APPOINTMENTS;
+    } else if (BeeUtils.same(propertyName, PROP_TASKS)) {
+      return TBL_TASKS;
+    } else {
+      return null;
+    }
   }
 }

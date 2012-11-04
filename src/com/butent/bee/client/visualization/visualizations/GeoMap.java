@@ -26,7 +26,7 @@ public class GeoMap extends Visualization<GeoMap.Options> implements Selectable 
    * Contains a list for available data mode for geo map visualization.
    */
 
-  public static enum DataMode {
+  public enum DataMode {
     MARKERS, REGIONS
   }
 

@@ -5,18 +5,19 @@
   source="Tasks"
   >
   <Columns>
-    <SimpleColumn name="Priority" />
+    <SimpleColumn name="Summary" />
     <SimpleColumn name="Description" />
-    <SimpleJoin name="ProjectStage" joinType="LEFT">
-      <SimpleColumn name="Project" />
-      <SimpleJoin name="Project" joinType="LEFT">
-        <SimpleColumn name="Name" alias="ProjectName" />
-      </SimpleJoin>
-    </SimpleJoin>
+    <SimpleColumn name="Priority" />
+
+    <SimpleColumn name="Created" />
     <SimpleColumn name="StartTime" />
     <SimpleColumn name="FinishTime" />
+    <SimpleColumn name="Completed" />
+    <SimpleColumn name="Confirmed" />
     <SimpleColumn name="ExpectedDuration" />
-    <SimpleColumn name="Event" />
+
+    <SimpleColumn name="Status" />
+
     <SimpleColumn name="Owner" />
     <SimpleJoin name="Owner" joinType="LEFT">
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
@@ -26,6 +27,7 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
+
     <SimpleColumn name="Executor" />
     <SimpleJoin name="Executor" joinType="LEFT">
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
@@ -35,17 +37,37 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
+
     <SimpleColumn name="Company" />
     <SimpleJoin name="Company" joinType="LEFT">
       <SimpleColumn alias="CompanyName" name="Name" />
     </SimpleJoin>
-    <SimpleColumn name="CompanyPerson" />
-    <SimpleJoin name="CompanyPerson" joinType="LEFT">
+
+    <SimpleColumn name="Contact" />
+    <SimpleJoin name="Contact" joinType="LEFT">
+      <SimpleJoin name="Company" joinType="LEFT">
+        <SimpleColumn alias="ContactCompanyName" name="Name" />
+      </SimpleJoin>
       <SimpleJoin name="Person" joinType="LEFT">
-        <SimpleColumn alias="PersonFirstName" name="FirstName" />
-        <SimpleColumn alias="PersonLastName" name="LastName" />
+        <SimpleColumn alias="ContactFirstName" name="FirstName" />
+        <SimpleColumn alias="ContactLastName" name="LastName" />
       </SimpleJoin>
     </SimpleJoin>
+
+    <SimpleColumn name="Reminder" />
+    <SimpleJoin name="Reminder" joinType="LEFT">
+      <SimpleColumn alias="ReminderName" name="Name" />
+    </SimpleJoin>
+
+    <ExternalJoin source="TaskUsers" name="Task" joinType="LEFT">
+      <HiddenColumn name="User" />
+      <AggregateColumn name="LastAccess" aggregate="MAX" />
+      <AggregateColumn name="Selected" aggregate="COUNT" />
+    </ExternalJoin>
+
+    <ExternalJoin source="TaskEvents" name="Task" joinType="LEFT">
+      <AggregateColumn alias="LastPublish" name="PublishTime" aggregate="MAX" />
+    </ExternalJoin>
   </Columns>
 </View>
  

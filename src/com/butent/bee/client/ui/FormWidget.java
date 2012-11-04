@@ -461,6 +461,7 @@ public enum FormWidget {
     String step;
     boolean inline;
     String stylePrefix;
+    BeeColumn column;
 
     Relation relation = null;
     Widget widget = null;
@@ -763,7 +764,12 @@ public enum FormWidget {
 
       case INPUT_TIME:
         format = attributes.get(UiConstants.ATTR_FORMAT);
-        widget = new InputTime(Format.getDateTimeFormat(format, Format.getDefaultTimeFormat()));
+        column = getColumn(columns, attributes);
+        ValueType type = (column != null && ValueType.TEXT.equals(column.getType()))
+            ? ValueType.TEXT : ValueType.DATETIME;
+        
+        widget = new InputTime(type,
+            Format.getDateTimeFormat(format, Format.getDefaultTimeFormat()));
         break;
 
       case INTEGER_LABEL:
@@ -801,7 +807,7 @@ public enum FormWidget {
         if (BeeUtils.isBoolean(isNum)) {
           ((BeeListBox) widget).setValueNumeric(BeeUtils.toBoolean(isNum));
         } else {
-          BeeColumn column = getColumn(columns, attributes);
+          column = getColumn(columns, attributes);
           if (column != null && ValueType.isNumeric(column.getType())) {
             ((BeeListBox) widget).setValueNumeric(true);
           }
@@ -845,9 +851,8 @@ public enum FormWidget {
 
       case MULTI_SELECTOR:
         relation = createRelation(null, attributes, children, Relation.RenderMode.SOURCE);
-        String property = attributes.get(UiConstants.ATTR_PROPERTY);
-        if (relation != null && !BeeUtils.isEmpty(property)) {
-          widget = new MultiSelector(relation, true, property);
+        if (relation != null) {
+          widget = new MultiSelector(relation, true, attributes.get(UiConstants.ATTR_PROPERTY));
           if (BeeConst.isTrue(attributes.get(HasCapsLock.ATTR_UPPER_CASE))) {
             ((MultiSelector) widget).setUpperCase(true);
           }

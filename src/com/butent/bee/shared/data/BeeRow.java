@@ -9,6 +9,7 @@ import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -46,6 +47,10 @@ public class BeeRow extends StringRow implements BeeSerializable {
     setVersion(version);
   }
 
+  public BeeRow(long id, long version, List<String> data) {
+    this(id, version, data.toArray(new String[0]));
+  }
+  
   @Override
   public BeeRow copy() {
     BeeRow result = new BeeRow(getId(), getVersion(), ArrayUtils.copyOf(getValueArray()));

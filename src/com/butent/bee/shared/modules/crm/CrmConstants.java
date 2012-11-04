@@ -6,8 +6,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class CrmConstants {
 
-  public static enum Priority implements HasCaption {
-    LOW("*"), MEDIUM("**"), HIGH("***");
+  public enum Priority implements HasCaption {
+    LOW("Žemas"), MEDIUM("Vidutinis"), HIGH("Aukštas");
     
     private final String caption;
 
@@ -21,7 +21,7 @@ public class CrmConstants {
     }
   }
 
-  public static enum ProjectEvent implements HasCaption {
+  public enum ProjectEvent implements HasCaption {
     CREATED, ACTIVATED, SUSPENDED, COMPLETED, CANCELED,
     EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED, DELETED;
 
@@ -30,12 +30,29 @@ public class CrmConstants {
     }
   }
 
-  public static enum TaskEvent implements HasCaption {
-    ACTIVATED, SUSPENDED, COMPLETED, APPROVED, CANCELED,
-    FORWARDED, EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED, DELETED;
+  public enum TaskEvent implements HasCaption {
+    ACTIVATED("Vykdoma"),
+    SUSPENDED("Sustabdyta"),
+    COMPLETED("Įvykdyta"),
+    APPROVED("Patvirtinta"),
+    CANCELED("Atšaukta"),
+    FORWARDED("Persiųsta"),
+    EXTENDED("Termino keitimas"),
+    RENEWED("Atnaujinta"),
+    COMMENTED("Komentaras"),
+    VISITED("Peržiūrėta"),
+    EDITED("Koreguota"),
+    DELETED("Panaikinta");
 
+    private final String caption;
+
+    private TaskEvent(String caption) {
+      this.caption = caption;
+    }
+
+    @Override
     public String getCaption() {
-      return BeeUtils.proper(this);
+      return caption;
     }
   }
 
@@ -52,8 +69,6 @@ public class CrmConstants {
   public static final String VAR_TASK_DURATION_DATE = Service.RPC_VAR_PREFIX + "task_duration_date";
   public static final String VAR_TASK_DURATION_TIME = Service.RPC_VAR_PREFIX + "task_duration_time";
   public static final String VAR_TASK_DURATION_TYPE = Service.RPC_VAR_PREFIX + "task_duration_type";
-  public static final String VAR_TASK_EXECUTORS = Service.RPC_VAR_PREFIX + "task_executors";
-  public static final String VAR_TASK_OBSERVERS = Service.RPC_VAR_PREFIX + "task_observers";
 
   public static final String VAR_PROJECT_ID = Service.RPC_VAR_PREFIX + "project_id";
   public static final String VAR_PROJECT_DATA = Service.RPC_VAR_PREFIX + "project_data";
@@ -63,9 +78,13 @@ public class CrmConstants {
   public static final String SVC_ADD_OBSERVERS = "AddObservers";
   public static final String SVC_REMOVE_OBSERVERS = "RemoveObservers";
 
+  public static final String TBL_TASKS = "Tasks";
   public static final String TBL_TASK_USERS = "TaskUsers";
   public static final String TBL_PROJECT_USERS = "ProjectUsers";
 
+  public static final String VIEW_TASKS = "Tasks";
+  public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
+  
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
 
@@ -86,6 +105,7 @@ public class CrmConstants {
   public static final String COL_USER = "User";
 
   public static final String COL_NAME = "Name";
+  public static final String COL_SUMMARY = "Summary";
   public static final String COL_DESCRIPTION = "Description";
 
   public static final String COL_PARENT = "Parent";
@@ -108,8 +128,25 @@ public class CrmConstants {
   public static final String COL_DOCUMENT_DATE = "DocumentDate";
   public static final String COL_DOCUMENT_COUNT = "DocumentCount";
 
+  public static final String COL_COMPANY = "Company";
+  public static final String COL_CONTACT = "Contact";
+  
+  public static final String COL_REMINDER = "Reminder";
+  public static final String COL_STATUS = "Status";
+  public static final String COL_EXPECTED_DURATION = "ExpectedDuration";
+  
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_OBSERVERS = "Observers";
+
+  public static final String PROP_COMPANIES = "Companies";
+  public static final String PROP_PERSONS = "Persons";
+  public static final String PROP_APPOINTMENTS = "Appointments";
+  public static final String PROP_TASKS = "Tasks";
+
+  public static final String GRID_TASKS = "Tasks";
+
+  public static final String FORM_NEW_TASK = "NewTask";
+  public static final String FORM_TASK = "Task";
   
   private CrmConstants() {
   }

@@ -68,7 +68,7 @@ public class IntensityMap extends Visualization<IntensityMap.Options> implements
    * Contains a list of possible regions for intensity map.
    */
 
-  public static enum Region {
+  public enum Region {
     AFRICA, ASIA, EUROPE, MIDDLE_EAST, SOUTH_AMERICA, USA, WORLD
   }
 

@@ -65,6 +65,10 @@ public class WidgetCreationCallback implements FormFactory.WidgetDescriptionCall
   public WidgetDescription getLastWidgetDescription() {
     return lastWidgetDescription; 
   }
+  
+  public String getWidgetIdByName(String name) {
+    return namedWidgets.get(name);
+  }
 
   @Override
   public void onFailure(Object... messages) {

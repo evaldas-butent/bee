@@ -69,7 +69,7 @@ public class Table extends Visualization<Table.Options> implements Selectable {
      * Contains a list of possible policies (disable, enable, event).
      */
 
-    public static enum Policy {
+    public enum Policy {
       DISABLE, ENABLE, EVENT;
 
       @Override

@@ -5,7 +5,7 @@ import com.butent.bee.shared.ui.HasCaption;
 
 public class TransportConstants {
 
-  public static enum OrderStatus implements HasCaption {
+  public enum OrderStatus implements HasCaption {
     CREATED("Naujas"),
     ACTIVATED("Aktyvus"),
     CONFIRMED("Patvirtintas"),

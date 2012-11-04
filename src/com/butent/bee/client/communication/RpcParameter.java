@@ -10,7 +10,7 @@ public class RpcParameter {
   /**
    * Contains available sections of RPC parameters.
    */
-  public static enum Section {
+  public enum Section {
     QUERY, HEADER, DATA
   }
 

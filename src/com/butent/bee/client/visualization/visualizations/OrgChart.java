@@ -63,7 +63,7 @@ public class OrgChart extends Visualization<OrgChart.Options> implements Selecta
    * Contains a list of possible size options (small, medium, large).
    */
 
-  public static enum Size {
+  public enum Size {
     LARGE, MEDIUM, SMALL
   }
 

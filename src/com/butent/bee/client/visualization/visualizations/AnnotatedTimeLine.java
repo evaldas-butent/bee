@@ -30,7 +30,7 @@ public class AnnotatedTimeLine extends Visualization<AnnotatedTimeLine.Options> 
    * Contains available annotated legend positions (for example new row or same row).
    */
 
-  public static enum AnnotatedLegendPosition {
+  public enum AnnotatedLegendPosition {
     NEW_ROW, SAME_ROW;
 
     @Override
@@ -51,7 +51,7 @@ public class AnnotatedTimeLine extends Visualization<AnnotatedTimeLine.Options> 
    * Contains available highlight dot modes (nearest or last).
    */
 
-  public static enum HighlightDotMode {
+  public enum HighlightDotMode {
     LAST("last"), NEAREST("nearest");
     private final String parameter;
 
@@ -237,7 +237,7 @@ public class AnnotatedTimeLine extends Visualization<AnnotatedTimeLine.Options> 
    * Contains available scale types for annotated time line chart.
    */
 
-  public static enum ScaleType {
+  public enum ScaleType {
     ALLFIXED("allfixed"),
     ALLMAXIMIZE("allmaximize"),
     FIXED("fixed"),
@@ -258,7 +258,7 @@ public class AnnotatedTimeLine extends Visualization<AnnotatedTimeLine.Options> 
    * Contains available window modes (for example opaque ,transparent, window).
    */
 
-  public static enum WindowMode {
+  public enum WindowMode {
     OPAQUE("opaque"),
     TRANSPARENT("transparent"),
     WINDOW("window");

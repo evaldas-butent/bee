@@ -132,7 +132,6 @@ public class CalendarKeeper {
 
   public static void register() {
     Global.registerCaptions(AppointmentStatus.class);
-    Global.registerCaptions(ReminderMethod.class);
     Global.registerCaptions(ResponseStatus.class);
     Global.registerCaptions(Transparency.class);
     Global.registerCaptions("Calendar_Visibility", Visibility.class);

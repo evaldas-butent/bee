@@ -3,7 +3,6 @@
 
   name="TaskEvents"
   idName="TaskEventID"
-  x="559" y="5"
   >
   <Fields>
     <Relation name="Task" notNull="true" relation="Tasks" cascade="DELETE" />

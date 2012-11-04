@@ -65,7 +65,7 @@ public class MapVisualization extends Visualization<MapVisualization.Options>
    * Contains a list of possible map types.
    */
 
-  public static enum Type {
+  public enum Type {
     HYBRID, NORMAL, SATELLITE
   }
 

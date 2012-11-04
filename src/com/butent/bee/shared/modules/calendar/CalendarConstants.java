@@ -25,15 +25,6 @@ public class CalendarConstants {
     }
   }
 
-  public enum ReminderMethod implements HasCaption {
-    EMAIL, SMS;
-
-    @Override
-    public String getCaption() {
-      return this.name().toLowerCase();
-    }
-  }
-
   public enum Report implements HasCaption {
     BUSY_MONTHS("Užimtumas mėnesiais"),
     BUSY_HOURS("Užimtumas valandomis"),

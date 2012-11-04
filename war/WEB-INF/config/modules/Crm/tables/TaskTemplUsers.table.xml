@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Table xmlns="http://www.butent.com/table"
   
-  name="TaskUsers"
-  idName="TaskUserID"
+  name="TaskTemplUsers"
+  idName="TaskTemplUserID"
   >
   <Fields>
-    <Relation name="Task" notNull="true" relation="Tasks" cascade="DELETE" />
+    <Relation name="Template" notNull="true" relation="TaskTemplates" cascade="DELETE" />
     <Relation name="User" notNull="true" relation="Users" cascade="DELETE" />
-    <DateTime name="LastAccess" />
-    <Boolean name="Selected" />
+    <Boolean name="Executor" />
   </Fields>
   <Keys>
     <Key unique="true">
-      <KeyField>Task</KeyField>
+      <KeyField>Template</KeyField>
       <KeyField>User</KeyField>
     </Key>
   </Keys>

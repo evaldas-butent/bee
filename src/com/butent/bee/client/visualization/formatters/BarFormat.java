@@ -12,7 +12,7 @@ public class BarFormat extends JavaScriptObject {
   /**
    * Enlists possible base colors for color mixing.
    */
-  public static enum Color {
+  public enum Color {
     RED, GREEN, BLUE;
 
     @Override

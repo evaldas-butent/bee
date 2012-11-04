@@ -3,6 +3,7 @@ package com.butent.bee.client.modules.crm;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -22,6 +23,9 @@ import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.InputDate;
+import com.butent.bee.client.composite.InputTime;
+import com.butent.bee.client.data.Data;
+import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.dialog.DialogBox;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.HtmlTable;
@@ -46,9 +50,12 @@ import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation;
@@ -59,48 +66,59 @@ import com.butent.bee.shared.utils.NameUtils;
 import java.util.List;
 import java.util.Map;
 
-public class TaskEventHandler {
+class TaskEventHandler {
 
-  private static class TaskCreateHandler extends AbstractFormCallback {
+  private static class TaskBuilder extends AbstractFormCallback {
 
+    private static final String NAME_START_DATE = "Start_Date";
+    private static final String NAME_START_TIME = "Start_Time";
+    private static final String NAME_END_DATE = "End_Date";
+    private static final String NAME_END_TIME = "End_Time";
+    
     @Override
     public FormCallback getInstance() {
-      return new TaskCreateHandler();
+      return new TaskBuilder();
     }
 
     @Override
     public boolean onReadyForInsert(final ReadyForInsertEvent event) {
-      IsRow row = getFormView().getActiveRow();
-      String executors = row.getProperty(PROP_EXECUTORS);
-      String observers = row.getProperty(PROP_OBSERVERS);
+      IsRow activeRow = getFormView().getActiveRow();
 
-      if (BeeUtils.isEmpty(executors)) {
+      DateTime start = getStart();
+      DateTime end = getEnd(start, Data.getString(VIEW_TASKS, activeRow, COL_EXPECTED_DURATION));
+
+      if (end == null) {
+        event.getCallback().onFailure("Įveskite pabaigos laiką arba",
+            "pradžios laiką ir numatomą trukmę");
+        return false;
+      }
+      if (start != null && TimeUtils.isLeq(end, start)) {
+        event.getCallback().onFailure("Pabaigos laikas turi būti didesnis už pradžios laiką");
+        return false;
+      }
+      
+      if (Data.isNull(VIEW_TASKS, activeRow, COL_SUMMARY)) {
+        event.getCallback().onFailure("Įveskite temą");
+        return false;
+      }
+
+      if (BeeUtils.isEmpty(activeRow.getProperty(PROP_EXECUTORS))) {
         event.getCallback().onFailure("Pasirinkite vykdytoją");
         return false;
       }
 
-      List<String> missing = Lists.newArrayList();
-      for (String colName : new String[] {COL_START_TIME, COL_FINISH_TIME, COL_DESCRIPTION}) {
-        if (!DataUtils.contains(event.getColumns(), colName)) {
-          missing.add(colName);
-        }
+      BeeRow newRow = DataUtils.cloneRow(activeRow);
+      
+      if (start != null) {
+        Data.setValue(VIEW_TASKS, newRow, COL_START_TIME, start);
       }
-
-      if (!missing.isEmpty()) {
-        event.getCallback().onFailure(missing.toString(), "value required");
-        return false;
-      }
-
-      BeeRowSet rs = new BeeRowSet(VIEW_TASKS, event.getColumns());
-      rs.addRow(0, event.getValues().toArray(new String[0]));
+      Data.setValue(VIEW_TASKS, newRow, COL_FINISH_TIME, end);
+      
+      BeeRowSet rowSet = Queries.createRowSetForInsert(VIEW_TASKS, getFormView().getDataColumns(),
+          newRow, Sets.newHashSet(COL_EXECUTOR), true);
 
       ParameterList args = createParams(TaskEvent.ACTIVATED);
-      args.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rs));
-      args.addDataItem(VAR_TASK_EXECUTORS, executors);
-
-      if (!BeeUtils.isEmpty(observers)) {
-        args.addDataItem(VAR_TASK_OBSERVERS, observers);
-      }
+      args.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rowSet));
 
       BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
         @Override
@@ -126,20 +144,52 @@ public class TaskEventHandler {
       });
       return false;
     }
+    
+    private HasDateValue getDate(String widgetName) {
+      Widget widget = getFormView().getWidgetByName(widgetName);
+      if (widget instanceof InputDate) {
+        return ((InputDate) widget).getDate();
+      } else {
+        return null;
+      }
+    }
 
-    @Override
-    public void onStartNewRow(FormView form, IsRow oldRow, IsRow newRow) {
-      Long userId = BeeKeeper.getUser().getUserId();
-      newRow.setValue(form.getDataIndex(COL_OWNER), userId);
-      newRow.setValue(form.getDataIndex(COL_EXECUTOR), userId);
-
-      newRow.setValue(form.getDataIndex(COL_START_TIME), TimeUtils.nextHour(0));
-      newRow.setValue(form.getDataIndex(COL_EVENT), TaskEvent.ACTIVATED.ordinal());
-      newRow.setValue(form.getDataIndex(COL_PRIORITY), Priority.MEDIUM.ordinal());
+    private DateTime getEnd(DateTime start, String duration) {
+      HasDateValue datePart = getDate(NAME_END_DATE);
+      if (datePart != null) {
+        return TimeUtils.combine(datePart, getMillis(NAME_END_TIME));
+      }
+      
+      if (start != null) {
+        int millis = TimeUtils.parseTime(duration);
+        if (millis > 0) {
+          return TimeUtils.combine(start, millis);
+        }
+      }
+      return null;
+    }
+    
+    private int getMillis(String widgetName) {
+      Widget widget = getFormView().getWidgetByName(widgetName);
+      if (widget instanceof InputTime) {
+        return TimeUtils.parseTime(((InputTime) widget).getValue());
+      } else {
+        return 0;
+      }
+    }
+    
+    private DateTime getStart() {
+      HasDateValue datePart = getDate(NAME_START_DATE);
+      if (datePart == null) {
+        return null;
+      } else {
+        return TimeUtils.combine(datePart, getMillis(NAME_START_TIME));
+      }
     }
   }
 
   private static class TaskDialog extends DialogBox {
+
     private static final String DATE = "date";
     private static final String QUESTION = "question";
     private static final String COMMENT = "comment";
@@ -151,7 +201,7 @@ public class TaskEventHandler {
     
     private HtmlTable container = null;
 
-    public TaskDialog(String caption) {
+    private TaskDialog(String caption) {
       super(caption);
       addDefaultCloseBox();
 
@@ -164,7 +214,7 @@ public class TaskEventHandler {
       setWidget(panel);
     }
 
-    public void addAction(HtmlTable parent, String caption, ClickHandler clickHandler) {
+    private void addAction(HtmlTable parent, String caption, ClickHandler clickHandler) {
       int row = parent.getRowCount();
 
       BeeButton button = new BeeButton(caption);
@@ -175,11 +225,11 @@ public class TaskEventHandler {
       button.addClickHandler(clickHandler);
     }
 
-    public void addAction(String caption, ClickHandler clickHandler) {
+    private void addAction(String caption, ClickHandler clickHandler) {
       addAction(container, caption, clickHandler);
     }
 
-    public void addComment(HtmlTable parent, String caption, boolean required, boolean showDuration) {
+    private void addComment(HtmlTable parent, String caption, boolean required, boolean showDuration) {
       int row = parent.getRowCount();
 
       BeeLabel lbl = new BeeLabel(caption);
@@ -211,11 +261,11 @@ public class TaskEventHandler {
       }
     }
 
-    public void addComment(String caption, boolean required, boolean showDuration) {
+    private void addComment(String caption, boolean required, boolean showDuration) {
       addComment(container, caption, required, showDuration);
     }
 
-    public void addDate(HtmlTable parent, String caption, ValueType dateType, boolean required,
+    private void addDate(HtmlTable parent, String caption, ValueType dateType, boolean required,
         Long def) {
       int row = parent.getRowCount();
 
@@ -233,11 +283,11 @@ public class TaskEventHandler {
       dialogWidgets.put(DATE, date);
     }
 
-    public void addDate(String caption, ValueType dateType, boolean required, Long def) {
+    private void addDate(String caption, ValueType dateType, boolean required, Long def) {
       addDate(container, caption, dateType, required, def);
     }
 
-    public void addMinutes(HtmlTable parent, String caption, int def, int min, int max, int step) {
+    private void addMinutes(HtmlTable parent, String caption, int def, int min, int max, int step) {
       int row = parent.getRowCount();
 
       parent.setWidget(row, 0, new BeeLabel(caption));
@@ -247,11 +297,11 @@ public class TaskEventHandler {
       dialogWidgets.put(MINUTES, minutes);
     }
 
-    public void addMinutes(String caption, int def, int min, int max, int step) {
+    private void addMinutes(String caption, int def, int min, int max, int step) {
       addMinutes(container, caption, def, min, max, step);
     }
 
-    public void addPriority(HtmlTable parent, String caption, int def) {
+    private void addPriority(HtmlTable parent, String caption, int def) {
       int row = parent.getRowCount();
 
       parent.setWidget(row, 0, new BeeLabel(caption));
@@ -265,11 +315,11 @@ public class TaskEventHandler {
       dialogWidgets.put(PRIORITY, list);
     }
 
-    public void addPriority(String caption, int def) {
+    private void addPriority(String caption, int def) {
       addPriority(container, caption, def);
     }
 
-    public void addQuestion(HtmlTable parent, String caption, boolean def) {
+    private void addQuestion(HtmlTable parent, String caption, boolean def) {
       int row = parent.getRowCount();
 
       BeeCheckBox question = new BeeCheckBox(caption);
@@ -278,11 +328,11 @@ public class TaskEventHandler {
       dialogWidgets.put(QUESTION, question);
     }
 
-    public void addQuestion(String caption, boolean def) {
+    private void addQuestion(String caption, boolean def) {
       addQuestion(container, caption, def);
     }
 
-    public void addSelector(String id, HtmlTable parent, String caption, String relView,
+    private void addSelector(String id, HtmlTable parent, String caption, String relView,
         List<String> relColumns, boolean required) {
       int row = parent.getRowCount();
 
@@ -299,17 +349,17 @@ public class TaskEventHandler {
       dialogWidgets.put(id, selector);
     }
 
-    public void addSelector(String caption, String relView, List<String> relColumns,
+    private void addSelector(String caption, String relView, List<String> relColumns,
         boolean required) {
       addSelector(SELECTOR, caption, relView, relColumns, required);
     }
 
-    public void addSelector(String id, String caption, String relView, List<String> relColumns,
+    private void addSelector(String id, String caption, String relView, List<String> relColumns,
         boolean required) {
       addSelector(id, container, caption, relView, relColumns, required);
     }
 
-    public void display() {
+    private void display() {
       center();
 
       for (Widget widget : container) {
@@ -320,46 +370,46 @@ public class TaskEventHandler {
       }
     }
 
-    public boolean getAnswer() {
+    private boolean getAnswer() {
       if (dialogWidgets.containsKey(QUESTION)) {
         return ((BeeCheckBox) dialogWidgets.get(QUESTION)).getValue();
       }
       return false;
     }
 
-    public String getComment() {
+    private String getComment() {
       if (dialogWidgets.containsKey(COMMENT)) {
         return ((InputArea) dialogWidgets.get(COMMENT)).getValue();
       }
       return null;
     }
 
-    public Long getDate() {
+    private Long getDate() {
       if (dialogWidgets.containsKey(DATE)) {
         return BeeUtils.toLongOrNull(((InputDate) dialogWidgets.get(DATE)).getNormalizedValue());
       }
       return null;
     }
 
-    public int getMinutes() {
+    private int getMinutes() {
       if (dialogWidgets.containsKey(MINUTES)) {
         return ((InputSpinner) dialogWidgets.get(MINUTES)).getIntValue();
       }
       return 0;
     }
 
-    public int getPriority() {
+    private int getPriority() {
       if (dialogWidgets.containsKey(PRIORITY)) {
         return BeeUtils.toInt(((BeeListBox) dialogWidgets.get(PRIORITY)).getValue());
       }
       return 0;
     }
 
-    public Long getSelector() {
+    private Long getSelector() {
       return getSelector(SELECTOR);
     }
 
-    public Long getSelector(String id) {
+    private Long getSelector(String id) {
       if (dialogWidgets.containsKey(id)) {
         return BeeUtils.toLongOrNull(((DataSelector) dialogWidgets.get(id)).getNormalizedValue());
       }
@@ -367,9 +417,13 @@ public class TaskEventHandler {
     }
   }
 
-  private static class TaskEditHandler extends AbstractFormCallback {
+  private static class TaskEditor extends AbstractFormCallback {
 
     private final Map<String, Widget> formWidgets = Maps.newHashMap();
+
+    private TaskEditor() {
+      super();
+    }
 
     @Override
     public void afterCreateWidget(String name, final Widget widget,
@@ -396,7 +450,7 @@ public class TaskEventHandler {
         return;
       }
 
-      Integer idx = row.getInteger(form.getDataIndex(COL_EVENT));
+      Integer idx = row.getInteger(form.getDataIndex(COL_STATUS));
       if (BeeUtils.isOrdinal(TaskEvent.class, idx)) {
         Long owner = row.getLong(form.getDataIndex(COL_OWNER));
         Long executor = row.getLong(form.getDataIndex(COL_EXECUTOR));
@@ -417,7 +471,7 @@ public class TaskEventHandler {
 
     @Override
     public FormCallback getInstance() {
-      return new TaskEditHandler();
+      return new TaskEditor();
     }
 
     @Override
@@ -426,29 +480,22 @@ public class TaskEventHandler {
       ParameterList args = createParams(TaskEvent.VISITED);
       args.addDataItem(VAR_TASK_ID, row.getId());
       
-      final Long owner = row.getLong(form.getDataIndex(COL_OWNER));
-      final Long executor = row.getLong(form.getDataIndex(COL_EXECUTOR));
+      String exclude = DataUtils.buildIdList(row.getLong(form.getDataIndex(COL_OWNER)),
+          row.getLong(form.getDataIndex(COL_EXECUTOR)));
+      if (!BeeUtils.isEmpty(exclude)) {
+        args.addDataItem(VAR_TASK_DATA, exclude);
+      }
 
       sendRequest(args, new Callback<ResponseObject>() {
         @Override
         public void onFailure(String... reason) {
-          row.clearProperty(PROP_OBSERVERS);
           form.updateRow(row, true);
-
           form.notifySevere(reason);
         }
 
         @Override
         public void onSuccess(ResponseObject result) {
-          if (result.hasResponse(String.class)) {
-            List<Long> observers = DataUtils.parseIdList((String) result.getResponse());
-            observers.remove(owner);
-            observers.remove(executor);
-            
-            row.setProperty(PROP_OBSERVERS, DataUtils.buildIdList(observers));
-          } else {
-            row.clearProperty(PROP_OBSERVERS);
-          }
+          row.setProperties(CustomProperties.restore((String) result.getResponse()));
 
           form.updateRow(row, true);
           if (focusCommand != null) {
@@ -468,9 +515,7 @@ public class TaskEventHandler {
     }
   }
 
-  private static final String VIEW_TASKS = "UserTasks";
-
-  public static boolean availableEvent(TaskEvent ev, Integer status, Long owner, Long executor) {
+  static boolean availableEvent(TaskEvent ev, Integer status, Long owner, Long executor) {
     long user = BeeKeeper.getUser().getUserId();
 
     if (user != owner) {
@@ -496,7 +541,7 @@ public class TaskEventHandler {
       case EXTENDED:
       case SUSPENDED:
       case COMPLETED:
-      case UPDATED:
+      case EDITED:
         return status == TaskEvent.ACTIVATED.ordinal();
 
       case CANCELED:
@@ -509,9 +554,9 @@ public class TaskEventHandler {
     return true;
   }
 
-  public static void register() {
-    FormFactory.registerFormCallback("NewTask", new TaskCreateHandler());
-    FormFactory.registerFormCallback("Task", new TaskEditHandler());
+  static void register() {
+    FormFactory.registerFormCallback(FORM_NEW_TASK, new TaskBuilder());
+    FormFactory.registerFormCallback(FORM_TASK, new TaskEditor());
   }
 
   private static boolean availableEvent(TaskEvent ev, int status, FormView form) {
@@ -526,19 +571,6 @@ public class TaskEventHandler {
     return args;
   }
 
-  private static void sendRequest(ParameterList args, final Callback<ResponseObject> callback) {
-    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
-      @Override
-      public void onResponse(ResponseObject response) {
-        if (response.hasErrors()) {
-          callback.onFailure(response.getErrors());
-        } else {
-          callback.onSuccess(response);
-        }
-      }
-    });
-  }
-
   private static void doApprove(final FormView form) {
     final TaskDialog dialog = new TaskDialog("Užduoties patvirtinimas");
     dialog.addComment("Komentaras", false, false);
@@ -547,13 +579,13 @@ public class TaskEventHandler {
       public void onClick(ClickEvent e) {
         String comment = dialog.getComment();
         IsRow data = form.getActiveRow();
-        int evOld = data.getInteger(form.getDataIndex(COL_EVENT));
+        int evOld = data.getInteger(form.getDataIndex(COL_STATUS));
         TaskEvent event = TaskEvent.APPROVED;
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, COL_EVENT));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, COL_STATUS));
         rs.setViewName(VIEW_TASKS);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, COL_EVENT, BeeUtils.toString(event.ordinal()));
+        rs.preliminaryUpdate(0, COL_STATUS, BeeUtils.toString(event.ordinal()));
 
         ParameterList args = createParams(event);
         args.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -580,13 +612,13 @@ public class TaskEventHandler {
           return;
         }
         IsRow data = form.getActiveRow();
-        int evOld = data.getInteger(form.getDataIndex(COL_EVENT));
+        int evOld = data.getInteger(form.getDataIndex(COL_STATUS));
         TaskEvent event = TaskEvent.CANCELED;
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, COL_EVENT));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, COL_STATUS));
         rs.setViewName(VIEW_TASKS);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, COL_EVENT, BeeUtils.toString(event.ordinal()));
+        rs.preliminaryUpdate(0, COL_STATUS, BeeUtils.toString(event.ordinal()));
 
         ParameterList args = createParams(event);
         args.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -651,8 +683,8 @@ public class TaskEventHandler {
         TaskEvent event = TaskEvent.COMPLETED;
         TaskEvent ev = event;
         IsRow data = form.getActiveRow();
-        int evOld = data.getInteger(form.getDataIndex(COL_EVENT));
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, COL_EVENT));
+        int evOld = data.getInteger(form.getDataIndex(COL_STATUS));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, COL_STATUS));
         rs.setViewName(VIEW_TASKS);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
@@ -661,7 +693,7 @@ public class TaskEventHandler {
             BeeKeeper.getUser().getUserId())) {
           ev = TaskEvent.APPROVED;
         }
-        rs.preliminaryUpdate(0, COL_EVENT, BeeUtils.toString(ev.ordinal()));
+        rs.preliminaryUpdate(0, COL_STATUS, BeeUtils.toString(ev.ordinal()));
 
         ParameterList args = createParams(event);
         args.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -695,7 +727,7 @@ public class TaskEventHandler {
     IsRow row = form.getActiveRow();
     Assert.state(DataUtils.isId(row.getId()));
 
-    if (!availableEvent(ev, row.getInteger(form.getDataIndex(COL_EVENT)), form)) {
+    if (!availableEvent(ev, row.getInteger(form.getDataIndex(COL_STATUS)), form)) {
       Global.showError("Veiksmas neleidžiamas");
       return;
     }
@@ -704,7 +736,7 @@ public class TaskEventHandler {
         doComment(form);
         break;
 
-      case UPDATED:
+      case EDITED:
         doUpdate(form);
         break;
 
@@ -841,12 +873,12 @@ public class TaskEventHandler {
       public void onClick(ClickEvent e) {
         String comment = dialog.getComment();
         IsRow data = form.getActiveRow();
-        int evOld = data.getInteger(form.getDataIndex(COL_EVENT));
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, COL_EVENT));
+        int evOld = data.getInteger(form.getDataIndex(COL_STATUS));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, COL_STATUS));
         rs.setViewName(VIEW_TASKS);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, COL_EVENT,
+        rs.preliminaryUpdate(0, COL_STATUS,
             BeeUtils.toString(TaskEvent.ACTIVATED.ordinal()));
 
         ParameterList args = createParams(TaskEvent.RENEWED);
@@ -874,13 +906,13 @@ public class TaskEventHandler {
           return;
         }
         IsRow data = form.getActiveRow();
-        int evOld = data.getInteger(form.getDataIndex(COL_EVENT));
+        int evOld = data.getInteger(form.getDataIndex(COL_STATUS));
         TaskEvent event = TaskEvent.SUSPENDED;
-        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, COL_EVENT));
+        BeeRowSet rs = new BeeRowSet(new BeeColumn(ValueType.INTEGER, COL_STATUS));
         rs.setViewName(VIEW_TASKS);
 
         rs.addRow(data.getId(), data.getVersion(), new String[] {BeeUtils.toString(evOld)});
-        rs.preliminaryUpdate(0, COL_EVENT, BeeUtils.toString(event.ordinal()));
+        rs.preliminaryUpdate(0, COL_STATUS, BeeUtils.toString(event.ordinal()));
 
         ParameterList args = createParams(event);
         args.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rs));
@@ -947,7 +979,7 @@ public class TaskEventHandler {
           for (int i = 0; i < vals.size(); i++) {
             row.preliminaryUpdate(i, vals.get(i));
           }
-          ParameterList args = createParams(TaskEvent.UPDATED);
+          ParameterList args = createParams(TaskEvent.EDITED);
           args.addDataItem(VAR_TASK_DATA, Codec.beeSerialize(rs));
 
           sendRequest(args, null);
@@ -955,6 +987,19 @@ public class TaskEventHandler {
       }
     });
     dialog.display();
+  }
+
+  private static void sendRequest(ParameterList args, final Callback<ResponseObject> callback) {
+    BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasErrors()) {
+          callback.onFailure(response.getErrors());
+        } else {
+          callback.onSuccess(response);
+        }
+      }
+    });
   }
 
   private TaskEventHandler() {

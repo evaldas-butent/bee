@@ -7,6 +7,8 @@ import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Widget;
 
+import static com.butent.bee.shared.modules.crm.CrmConstants.*;
+
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Provider;
@@ -38,9 +40,6 @@ import com.butent.bee.shared.data.value.IntegerValue;
 import com.butent.bee.shared.data.value.LongValue;
 import com.butent.bee.shared.data.value.Value;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.modules.crm.CrmConstants;
-import com.butent.bee.shared.modules.crm.CrmConstants.ProjectEvent;
-import com.butent.bee.shared.modules.crm.CrmConstants.TaskEvent;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
@@ -51,7 +50,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class TaskList {
+class TaskList {
 
   private static class GridHandler extends AbstractGridCallback {
 
@@ -79,8 +78,8 @@ public class TaskList {
 
           {
             setOptions(column.getOptions());
-            laIndex = DataUtils.getColumnIndex(CrmConstants.COL_LAST_ACCESS, dataColumns);
-            lpIndex = DataUtils.getColumnIndex(CrmConstants.COL_LAST_PUBLISH, dataColumns);
+            laIndex = DataUtils.getColumnIndex(COL_LAST_ACCESS, dataColumns);
+            lpIndex = DataUtils.getColumnIndex(COL_LAST_PUBLISH, dataColumns);
           }
 
           @Override
@@ -148,7 +147,7 @@ public class TaskList {
 
       } else if (widget instanceof Editor) {
         if (Type.DELEGATED.equals(getType()) && BeeUtils.same(name, "Completed")) {
-          ((Editor) widget).setValue(BeeConst.STRING_TRUE);
+//          ((Editor) widget).setValue(BeeConst.STRING_TRUE);
         }
         this.filterWidgets.put(BeeUtils.normalize(name), (Editor) widget);
       }
@@ -157,11 +156,8 @@ public class TaskList {
     @Override
     public boolean beforeCreateColumn(String columnId, List<? extends IsColumn> dataColumns,
         ColumnDescription columnDescription) {
-
-      return getType().equals(Type.ASSIGNED)
-          && !BeeUtils.same(columnId, CrmConstants.COL_EXECUTOR)
-          || getType().equals(Type.DELEGATED)
-          && !BeeUtils.same(columnId, CrmConstants.COL_OWNER);
+      return getType().equals(Type.ASSIGNED) && !BeeUtils.same(columnId, COL_EXECUTOR)
+          || getType().equals(Type.DELEGATED) && !BeeUtils.same(columnId, COL_OWNER);
     }
 
     @Override
@@ -169,9 +165,9 @@ public class TaskList {
       Provider provider = presenter.getDataProvider();
 
       if (!TaskEventHandler.availableEvent(TaskEvent.DELETED,
-          row.getInteger(provider.getColumnIndex(CrmConstants.COL_EVENT)),
-          row.getLong(provider.getColumnIndex(CrmConstants.COL_OWNER)),
-          row.getLong(provider.getColumnIndex(CrmConstants.COL_EXECUTOR)))) {
+          row.getInteger(provider.getColumnIndex(COL_STATUS)),
+          row.getLong(provider.getColumnIndex(COL_OWNER)),
+          row.getLong(provider.getColumnIndex(COL_EXECUTOR)))) {
 
         presenter.getGridView().notifyWarning("Verboten");
         return GridCallback.DELETE_CANCEL;
@@ -203,14 +199,13 @@ public class TaskList {
     @Override
     public Map<String, Filter> getInitialFilters() {
       CompoundFilter filter = Filter.or();
-      filter.add(Filter.and(getEventFilter(TaskEvent.ACTIVATED),
-          ComparisonFilter.isLessEqual(CrmConstants.COL_START_TIME,
-              new LongValue(new DateTime().getTime()))));
-      filter.add(getEventFilter(TaskEvent.SUSPENDED));
-
-      if (Type.DELEGATED.equals(getType())) {
-        filter.add(getEventFilter(TaskEvent.COMPLETED));
-      }
+//      filter.add(Filter.and(getStatusFilter(TaskEvent.ACTIVATED),
+//          ComparisonFilter.isLessEqual(COL_START_TIME, new LongValue(new DateTime().getTime()))));
+//      filter.add(getStatusFilter(TaskEvent.SUSPENDED));
+//
+//      if (Type.DELEGATED.equals(getType())) {
+//        filter.add(getStatusFilter(TaskEvent.COMPLETED));
+//      }
 
       Map<String, Filter> result = Maps.newHashMap();
       result.put(FILTER_KEY, filter);
@@ -222,22 +217,19 @@ public class TaskList {
       if (getUserId() != null && getType() != null) {
         Value user = new LongValue(getUserId());
         CompoundFilter filter = Filter.and();
-        filter.add(Filter.or(Filter.isEmpty("ProjectStage"),
-            ComparisonFilter.isEqual("ProjectEvent",
-                new IntegerValue(ProjectEvent.ACTIVATED.ordinal()))));
 
         switch (getType()) {
           case ASSIGNED:
-            filter.add(ComparisonFilter.isEqual(CrmConstants.COL_EXECUTOR, user));
+            filter.add(ComparisonFilter.isEqual(COL_EXECUTOR, user));
             break;
           case DELEGATED:
-            filter.add(ComparisonFilter.isEqual(CrmConstants.COL_OWNER, user),
-                ComparisonFilter.isNotEqual(CrmConstants.COL_EXECUTOR, user));
+            filter.add(ComparisonFilter.isEqual(COL_OWNER, user),
+                ComparisonFilter.isNotEqual(COL_EXECUTOR, user));
             break;
           case OBSERVED:
-            filter.add(ComparisonFilter.isEqual(CrmConstants.COL_USER, user),
-                ComparisonFilter.isNotEqual(CrmConstants.COL_OWNER, user),
-                ComparisonFilter.isNotEqual(CrmConstants.COL_EXECUTOR, user));
+            filter.add(ComparisonFilter.isEqual(COL_USER, user),
+                ComparisonFilter.isNotEqual(COL_OWNER, user),
+                ComparisonFilter.isNotEqual(COL_EXECUTOR, user));
             break;
         }
         gridDescription.setFilter(filter);
@@ -245,43 +237,34 @@ public class TaskList {
       return true;
     }
 
-    private Filter getEventFilter(TaskEvent te) {
-      if (te == null) {
-        return null;
-      } else {
-        return ComparisonFilter.isEqual(CrmConstants.COL_EVENT, new IntegerValue(te.ordinal()));
-      }
-    }
-
     private Filter getFilter() {
       CompoundFilter andFilter = Filter.and();
       Value now = new LongValue(new DateTime().getTime());
 
       if (isChecked("Updated")) {
-        andFilter.add(Filter.or(Filter.isEmpty(CrmConstants.COL_LAST_ACCESS),
-            ComparisonFilter.compareWithColumn(CrmConstants.COL_LAST_ACCESS, Operator.LT,
-                CrmConstants.COL_LAST_PUBLISH)));
+        andFilter.add(Filter.or(Filter.isEmpty(COL_LAST_ACCESS),
+            ComparisonFilter.compareWithColumn(COL_LAST_ACCESS, Operator.LT, COL_LAST_PUBLISH)));
       }
       if (isChecked("Overdue")) {
-        andFilter.add(ComparisonFilter.isLess(CrmConstants.COL_FINISH_TIME, now),
-            getEventFilter(TaskEvent.ACTIVATED));
+        andFilter.add(ComparisonFilter.isLess(COL_FINISH_TIME, now),
+            getStatusFilter(TaskEvent.ACTIVATED));
       } else {
         CompoundFilter orFilter = Filter.or();
 
         if (isChecked("Scheduled")) {
-          orFilter.add(ComparisonFilter.isMore(CrmConstants.COL_START_TIME, now));
+          orFilter.add(ComparisonFilter.isMore(COL_START_TIME, now));
         }
         if (isChecked("Executing")) {
-          Filter flt = getEventFilter(TaskEvent.ACTIVATED);
+          Filter flt = getStatusFilter(TaskEvent.ACTIVATED);
 
           if (!isChecked("Scheduled")) {
-            flt = Filter.and(flt, ComparisonFilter.isLessEqual(CrmConstants.COL_START_TIME, now));
+            flt = Filter.and(flt, ComparisonFilter.isLessEqual(COL_START_TIME, now));
           }
           orFilter.add(flt);
         }
         for (TaskEvent te : TaskEvent.values()) {
           if (isChecked(te.name())) {
-            orFilter.add(getEventFilter(te));
+            orFilter.add(getStatusFilter(te));
           }
         }
         if (!orFilter.isEmpty()) {
@@ -289,6 +272,14 @@ public class TaskList {
         }
       }
       return andFilter.isEmpty() ? null : andFilter;
+    }
+
+    private Filter getStatusFilter(TaskEvent te) {
+      if (te == null) {
+        return null;
+      } else {
+        return ComparisonFilter.isEqual(COL_STATUS, new IntegerValue(te.ordinal()));
+      }
     }
 
     private Type getType() {
@@ -346,7 +337,7 @@ public class TaskList {
     if (type == null) {
       Global.showError("Type not recognized:", args);
     } else {
-      GridFactory.openGrid("UserTasks", new GridHandler(type));
+      GridFactory.openGrid(GRID_TASKS, new GridHandler(type));
     }
   }
 

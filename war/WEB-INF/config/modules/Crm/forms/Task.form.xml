@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Form [
+  <!ENTITY inline "display: inline-block;">
+
+  <!ENTITY section "margin-top: 2px;">
+  <!ENTITY header "font-variant: small-caps;">
+  <!ENTITY separator "<br/>">
+
+  <!ENTITY lbl1 "&inline; width: 100px; padding-top: 2px;">
+  <!ENTITY inp2 "&inline; width: 140px;">
+  <!ENTITY inp2x "&inline; width: 440px;">
+  <!ENTITY lbl3 "&inline; width: 128px; padding-top: 2px; margin-left: 10px;">
+  <!ENTITY inp4 "&inline;">
+]>
 <f:Form xmlns="http://www.butent.com/widget"
   xmlns:f="http://www.butent.com/form"
   xmlns:ui="http://www.butent.com/ui"
@@ -6,59 +19,107 @@
   name="Task" viewName="Tasks" caption="Užduotis">
 
   <FlowPanel class="flexBox-horizontal">
-    <FlowPanel>
-      <Table style="border-spacing: 10px;">
-        <row>
-          <Label html="Būsena" />
-          <TextLabel source="Event" itemKey="TaskEvent" class="bee-display" />
-          <Label html="Prioritetas:" horizontalAlignment="right" />
-          <TextLabel source="Priority" itemKey="Priority" class="bee-display" />
-        </row>
+    <FlowPanel style="margin: 5px;">
+      <FlowPanel style="&section;">
+        <Label html="Būsena:" style="&lbl1;" />
+        <ListBox source="Status" itemKey="TaskEvent" style="&inp2;" />
+        <Label html="Prioritetas:" style="&lbl3;" />
+        <ListBox source="Priority" itemKey="Priority" style="&inp4;" />
+      </FlowPanel>
 
-        <row>
-          <InlineLabel />
-          <cell colSpan="2">
-            <Label html="Numatoma trukmė min.:" horizontalAlignment="right" />
-          </cell>
-          <LongLabel source="ExpectedDuration" class="bee-display" />
-        </row>
+      <FlowPanel style="&section;">
+        <Label html="Vadovas:" style="&lbl1;" />
+        <DataSelector source="Owner" style="&inp2;" />
+        <Label html="Įmonė:" style="&lbl3;" />
+        <DataSelector source="Company" style="&inp4; width: 140px;" />
+      </FlowPanel>
 
-        <row>
-          <Label html="Pradžia:" />
-          <DateTimeLabel source="StartTime" class="bee-display" />
-          <Label html="Įmonė:" horizontalAlignment="right" />
-          <TextLabel source="CompanyName" class="bee-display" />
-        </row>
+      <FlowPanel style="&section;">
+        <Label html="Vykdytojas:" style="&lbl1;" />
+        <DataSelector source="Executor" style="&inp2;" />
+        <Label html="Kontaktinis asmuo:" style="&lbl3;" />
+        <DataSelector source="Contact" style="&inp4; width: 140px;" />
+      </FlowPanel>
 
-        <row>
-          <Label html="Terminas:" />
-          <DateTimeLabel source="FinishTime" class="bee-display" />
-          <Label html="Asmuo:" horizontalAlignment="right" />
-          <TextLabel renderColumns="PersonFirstName PersonLastName" class="bee-display" />
-        </row>
+      <FlowPanel style="&section;">
+        <Label html="Įkelta:" style="&lbl1;" />
+        <InputDateTime source="Created" style="&inp2;" />
+        <Label html="Numatoma trukmė:" style="&lbl3;" />
+        <InputTime source="ExpectedDuration" step="30" style="&inp4; width: 50px;" />
+      </FlowPanel>
 
-        <row>
-          <Label html="Užduotis:" />
-          <cell colSpan="3">
-            <TextLabel source="Description" class="bee-display" style="width: 100%; min-height: 60px;" />
-          </cell>
-        </row>
+      <FlowPanel style="&section;">
+        <Label html="Pradžios data:" style="&lbl1;" />
+        <InputDateTime source="StartTime" style="&inp2;" />
+        <Label html="Įvykdymo data:" style="&lbl3;" />
+        <InputDateTime source="Completed" step="30" style="&inp4; width: 100px;" />
+      </FlowPanel>
 
-        <row>
-          <Label html="Vykdytojas:" />
-          <TextLabel class="bee-display" renderColumns="ExecutorFirstName ExecutorLastName" />
-          <Label html="Autorius:" horizontalAlignment="right" />
-          <TextLabel class="bee-display" renderColumns="OwnerFirstName OwnerLastName" />
-        </row>
+      <FlowPanel style="&section;">
+        <Label html="Pabaigos data:" style="&lbl1;" />
+        <InputDateTime source="FinishTime" style="&inp2;" />
+        <Label html="Patvirtinimo data:" style="&lbl3;" />
+        <InputDateTime source="Confirmed" style="&inp4; width: 100px;" />
+      </FlowPanel>
 
-        <row>
-          <Label html="Stebėtojai:" />
-          <cell colSpan="3">
-            <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName" />
-          </cell>
-        </row>
+      <FlowPanel style="&section;">
+        <Label html="Priminimas:" style="&lbl1;" />
+        <DataSelector source="Reminder" renderColumns="ReminderName" newRowEnabled="false"
+          style="&inp2;" />
+      </FlowPanel>
 
-      </Table>
+      &separator;
+      <FlowPanel style="&section;">
+        <Label html="Tema:" class="bee-required" style="&lbl1;" />
+        <InputText source="Summary" style="&inp2x;" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
+        <Label html="Aprašymas:" style="width: 100px; float: left;" />
+        <InputArea source="Description" style="width: 440px; height: 60px;" />
+      </FlowPanel>
+
+      &separator;
+      <FlowPanel style="&section;">
+        <Label html="Bylos:" style="&header;" />
+      </FlowPanel>
+
+      &separator;
+      <FlowPanel style="&section;">
+        <Label html="Stebėtojai:" style="&lbl1;" />
+        <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
+          style="&inp2x;" />
+      </FlowPanel>
+
+      &separator;
+      <FlowPanel style="&section;">
+        <Label html="Susijusi su:" style="&header;" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
+        <Label html="Įmonės:" style="&lbl1;" />
+        <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
+          style="&inp2x;" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
+        <Label html="Asmenys:" style="&lbl1;" />
+        <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
+          style="&inp2x;" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
+        <Label html="Įvykiai:" style="&lbl1;" />
+        <MultiSelector viewName="Appointments" property="Appointments"
+          renderColumns="StartDateTime Summary" newRowEnabled="false" style="&inp2x;" />
+      </FlowPanel>
+
+      <FlowPanel style="&section;">
+        <Label html="Užduotys:" style="&lbl1;" />
+        <MultiSelector viewName="Tasks" property="Tasks" 
+          renderColumns="FinishTime Summary ExecutorFirstName ExecutorLastName"
+          newRowEnabled="false" style="&inp2x;" />
+      </FlowPanel>
 
       <FlowPanel style="margin-left: 1em; margin-top: 2ex;">
         <Button name="COMMENTED" html="Naujas komentaras" />

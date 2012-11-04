@@ -60,6 +60,8 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   JavaScriptObject getRowJso();
 
+  Widget getWidgetByName(String name);
+
   Widget getWidgetBySource(String source);
 
   boolean isRowEditable(boolean warn);

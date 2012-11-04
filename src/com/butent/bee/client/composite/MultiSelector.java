@@ -207,6 +207,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       updateValue();
       setFocus(true);
       
+      setSelectedRow(row);
       SelectorEvent.fire(this, State.CHANGED);
     }
   }
@@ -232,7 +233,6 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
         container.addStyleName(STYLE_CONTAINER_ACTIVE);
       }
     });
-
     inputWidget.addBlurHandler(new BlurHandler() {
       @Override
       public void onBlur(BlurEvent event) {
@@ -260,11 +260,13 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
     StyleUtils.setWidth(inputWidget, MIN_INPUT_WIDTH);
     
     DomUtils.makeFocusable(container);
+
     Binder.addClickHandler(container, new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         if (!isEditing()) {
           inputWidget.setFocus(true);
+          inputWidget.onMouseClick();
         }
       }
     });

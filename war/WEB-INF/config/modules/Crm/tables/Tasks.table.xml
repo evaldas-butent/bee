@@ -3,21 +3,30 @@
 
   name="Tasks"
   idName="TaskID"
-  x="741" y="101"
   >
   <Fields>
-    <Integer name="Priority" notNull="true" />
-    <Text name="Description" notNull="true" />
-    <DateTime name="StartTime" notNull="true" />
-    <DateTime name="FinishTime" notNull="true" />
-    <DateTime name="ExpectedDuration" />
-    <Integer name="Event" notNull="true" />
-    <Relation name="Owner" notNull="true" relation="Users" />
-    <Relation name="Executor" notNull="true" relation="Users" />
-    <Relation name="Company" relation="Companies" />
-    <Relation name="CompanyPerson" relation="CompanyPersons" />
-    <Relation name="ProjectStage" relation="ProjectStages" />
+    <String name="Summary" notNull="true" precision="100" label="Tema" />
+    <Text name="Description" label="Aprašymas" />
+    <Integer name="Priority" notNull="true" defValue="1" label="Prioritetas" />
+
+    <DateTime name="Created" defExpr="CURRENT_TIME" label="Įkelta" />
+    <DateTime name="StartTime" label="Pradžios data" />
+    <DateTime name="FinishTime" notNull="true" label="Pabaigos data" />
+    <DateTime name="Completed" label="Įvykdymo data" />
+    <DateTime name="Confirmed" label="Patvirtinimo data" />
+    <String name="ExpectedDuration" precision="10" label="Numatoma trukmė" />
+
+    <Relation name="Owner" notNull="true" relation="Users" defExpr="CURRENT_USER" label="Vadovas" />
+    <Relation name="Executor" notNull="true" relation="Users" label="Vykdytojas" />
+
+    <Relation name="Company" relation="Companies" label="Įmonė" />
+    <Relation name="Contact" relation="CompanyPersons" label="Kontaktinis asmuo" />
+
+    <Relation name="Reminder" relation="ReminderTypes" cascade="SET_NULL" label="Priminimas" />
+
+    <Integer name="Status" notNull="true" defValue="0" label="Būsena" />
   </Fields>
+
   <Keys>
     <Key>
       <KeyField>Priority</KeyField>
@@ -29,7 +38,7 @@
       <KeyField>FinishTime</KeyField>
     </Key>
     <Key>
-      <KeyField>Event</KeyField>
+      <KeyField>Status</KeyField>
     </Key>
   </Keys>
 </Table>

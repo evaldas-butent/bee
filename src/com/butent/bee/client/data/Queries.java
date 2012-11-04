@@ -52,7 +52,13 @@ public class Queries {
   
   private static final int RESPONSE_FROM_CACHE = 0;
 
-  public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns, IsRow row) {
+  public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
+      IsRow row) {
+    return createRowSetForInsert(viewName, columns, row, null, false);
+  }
+  
+  public static BeeRowSet createRowSetForInsert(String viewName, List<BeeColumn> columns,
+      IsRow row, Collection<String> alwaysInclude, boolean addProperties) {
     List<BeeColumn> newColumns = Lists.newArrayList();
     List<String> values = Lists.newArrayList();
 
@@ -63,19 +69,23 @@ public class Queries {
       }
 
       String value = row.getString(i);
-      if (BeeUtils.isEmpty(value)) {
-        continue;
+      if (!BeeUtils.isEmpty(value) 
+          || alwaysInclude != null && alwaysInclude.contains(column.getId())) {
+        newColumns.add(column);
+        values.add(value);
       }
-
-      newColumns.add(column);
-      values.add(value);
     }
     if (newColumns.isEmpty()) {
       return null;
     }
 
+    BeeRow newRow = new BeeRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
+    if (addProperties && row.getProperties() != null) {
+      newRow.setProperties(row.getProperties().copy());
+    }
+
     BeeRowSet rs = new BeeRowSet(viewName, newColumns);
-    rs.addRow(DataUtils.NEW_ROW_ID, DataUtils.NEW_ROW_VERSION, values);
+    rs.addRow(newRow);
     return rs;
   }
 

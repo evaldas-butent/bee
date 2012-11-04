@@ -41,7 +41,7 @@ public class ModuleHolderBean {
   private static final String PROPERTY_MODULES = "Modules";
   private static final String MODULE_BEAN_PREFIX = "ModuleBean";
 
-  private static enum TABLE_ACTIVATION_MODE {
+  private enum TABLE_ACTIVATION_MODE {
     DELAYED, FORCED
   }
 

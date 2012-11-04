@@ -716,31 +716,24 @@
             <xs:element name="selectorColumn" type="ui:selectorColumn" />
           </xs:choice>
         </xs:sequence>
+        <xs:attribute name="viewName" type="type:nameType" />
         <xs:attributeGroup ref="ui:relation" />
         <xs:attribute name="itemKey" type="xs:normalizedString" />
         <xs:attribute name="renderColumns" type="type:nameList" />
         <xs:attribute name="upperCase" type="xs:boolean" />
+        <xs:attribute name="property" type="type:nameType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:element name="DataSelector" substitutionGroup="widget" >
-    <xs:complexType>
-      <xs:complexContent>
-        <xs:extension base="selectorType">
-          <xs:attribute name="viewName" type="type:nameType" />
-        </xs:extension>
-      </xs:complexContent>
-    </xs:complexType>
-  </xs:element>
+  <xs:element name="DataSelector" type="selectorType" substitutionGroup="widget" />
 
   <xs:element name="MultiSelector" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="selectorType">
+        <xs:restriction base="selectorType">
           <xs:attribute name="viewName" type="type:nameType" use="required" />
-          <xs:attribute name="property" type="type:nameType" use="required" />
-        </xs:extension>
+        </xs:restriction>
       </xs:complexContent>
     </xs:complexType>
   </xs:element>

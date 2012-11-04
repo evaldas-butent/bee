@@ -19,8 +19,7 @@ name="Calendar" label="Kalendorius" order="70"
   <Item name="Themes" label="Temos" service="grid" parameters="Themes" />
   <Item name="AppointmentStyles" label="=appointmentStyles" service="grid" parameters="AppointmentStyles" />
 
-  <Item name="ReminderTypes" label="Priminimų tipai" service="grid" parameters="ReminderTypes" separator="true" />
-  <Item name="TimeZones" label="Laiko juostos" service="grid" parameters="TimeZones" />
+  <Item name="TimeZones" label="Laiko juostos" service="grid" parameters="TimeZones" separator="true" />
 
   <Item name="Configuration" label="Nustatymai" service="grid" parameters="Configuration" separator="true" />
 </Entry>

@@ -15,7 +15,9 @@
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
+
     <SimpleColumn name="LastAccess" />
+    <SimpleColumn name="Selected" />
   </Columns>
   <Order>
     <OrderBy column="LastName" />

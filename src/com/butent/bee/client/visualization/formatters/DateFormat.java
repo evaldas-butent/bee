@@ -11,7 +11,7 @@ public class DateFormat extends JavaScriptObject {
   /**
    * Contains possible date formats in visualizations.
    */
-  public static enum FormatType {
+  public enum FormatType {
     SHORT, MEDIUM, LONG;
 
     @Override

@@ -97,7 +97,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   private final Popup popup;
   private DatePicker datePicker;
 
-  private final ValueType dateType;
+  private final ValueType dataType;
   private DateTimeFormat format;
 
   private int stepValue = BeeConst.UNDEF;
@@ -112,14 +112,12 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
 
   public InputDate(ValueType type, DateTimeFormat format) {
     Assert.notNull(type, "input date: type not specified");
-    Assert.isTrue(ValueType.isDateOrDateTime(type),
-        "input date: invalid type " + type.getTypeCode());
 
     this.box = new InputText();
     this.popup = new Popup(true, false, STYLE_POPUP);
 
     this.format = format;
-    this.dateType = type;
+    this.dataType = type;
 
     initWidget(box);
     setStyleName(getDefaultStyleName());
@@ -128,6 +126,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
 
     popup.addAutoHidePartner(getBox().getElement());
     popup.addCloseHandler(new CloseHandler<Popup>() {
+      @Override
       public void onClose(CloseEvent<Popup> event) {
         if (event.isAutoClosed()) {
           getBox().setFocus(true);
@@ -138,22 +137,27 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     sinkEvents(Event.ONCLICK + Event.ONKEYPRESS + Event.ONBLUR + Event.ONMOUSEWHEEL);
   }
   
+  @Override
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return addDomHandler(handler, BlurEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return addDomHandler(handler, FocusEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
   }
@@ -163,49 +167,65 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     if (BeeUtils.isEmpty(v)) {
       return null;
     }
-    return AbstractDate.parse(getDateTimeFormat(), v, getDateType());
+    
+    ValueType type = ValueType.isDateOrDateTime(getDataType()) ? getDataType() : ValueType.DATETIME;
+    return AbstractDate.parse(getDateTimeFormat(), v, type);
   }
 
+  @Override
   public DateTimeFormat getDateTimeFormat() {
     return format;
   }
 
+  @Override
   public EditorAction getDefaultFocusAction() {
     return null;
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "date-box";
   }
 
+  @Override
   public int getMaxLength() {
     return getBox().getMaxLength();
   }
 
+  @Override
   public String getNormalizedValue() {
-    HasDateValue date = getDate();
-    if (date == null) {
-      return null;
+    if (ValueType.isDateOrDateTime(getDataType())) {
+      HasDateValue date = getDate();
+      if (date == null) {
+        return null;
+      }
+      return date.serialize();
+    } else {
+      return getValue();
     }
-    return date.serialize();
   }
 
+  @Override
   public int getStepValue() {
     return stepValue;
   }
 
+  @Override
   public int getTabIndex() {
     return getBox().getTabIndex();
   }
 
+  @Override
   public TextBoxBase getTextBox() {
     return getBox();
   }
 
+  @Override
   public String getValue() {
     return getBox().getValue();
   }
@@ -215,18 +235,22 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     return isDateTime() ? FormWidget.INPUT_DATE_TIME : FormWidget.INPUT_DATE;
   }
 
+  @Override
   public boolean handlesKey(int keyCode) {
     return false;
   }
 
+  @Override
   public boolean isEditing() {
     return editing;
   }
 
+  @Override
   public boolean isEnabled() {
     return getBox().isEnabled();
   }
 
+  @Override
   public boolean isNullable() {
     return getBox().isNullable();
   }
@@ -272,6 +296,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     super.onBrowserEvent(event);
   }
 
+  @Override
   public void setAccessKey(char key) {
     getBox().setAccessKey(key);
   }
@@ -296,56 +321,73 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     setValue(newValue);
   }
 
+  @Override
   public void setDateTimeFormat(DateTimeFormat format) {
     this.format = format;
   }
 
+  @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     getBox().setEnabled(enabled);
   }
 
+  @Override
   public void setFocus(boolean focused) {
     getBox().setFocus(focused);
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
+  @Override
   public void setMaxLength(int maxLength) {
     getBox().setMaxLength(maxLength);
   }
 
+  @Override
   public void setNullable(boolean nullable) {
     getBox().setNullable(nullable);
   }
 
+  @Override
   public void setStepValue(int stepValue) {
     this.stepValue = stepValue;
   }
 
+  @Override
   public void setTabIndex(int index) {
     getBox().setTabIndex(index);
   }
 
+  @Override
   public void setValue(String value) {
     setValue(value, false);
   }
 
+  @Override
   public void setValue(String value, boolean fireEvents) {
-    HasDateValue oldValue = getDate();
-    HasDateValue newValue = AbstractDate.restore(value, getDateType());
-    setValue(newValue);
+    if (ValueType.isDateOrDateTime(getDataType())) {
+      HasDateValue oldValue = getDate();
+      HasDateValue newValue = AbstractDate.restore(value, getDataType());
+      setValue(newValue);
 
-    if (fireEvents && !TimeUtils.equals(oldValue, newValue)) {
-      ValueChangeEvent.fire(this, value);
+      if (fireEvents && !TimeUtils.equals(oldValue, newValue)) {
+        ValueChangeEvent.fire(this, value);
+      }
+
+    } else {
+      getBox().setValue(value, fireEvents);
     }
   }
 
+  @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
     setValue(oldValue);
@@ -357,6 +399,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     UiHelper.doEditorAction(getBox(), getBox().getValue(), charCode, action);
   }
 
+  @Override
   public String validate() {
     String v = getBox().getValue();
     if (BeeUtils.isEmpty(v)) {
@@ -380,7 +423,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
       }
     }
 
-    if (AbstractDate.parse(v, getDateType()) == null) {
+    if (ValueType.isDateOrDateTime(getDataType()) && AbstractDate.parse(v, getDataType()) == null) {
       if (msg == null) {
         msg = "error parsing " + v.trim();
       }
@@ -422,8 +465,8 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
     return box;
   }
   
-  protected ValueType getDateType() {
-    return dateType;
+  protected ValueType getDataType() {
+    return dataType;
   }
 
   protected String getDefaultStyleName() {
@@ -642,7 +685,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
       return false;
     }
 
-    switch (getDateType()) {
+    switch (getDataType()) {
       case DATE:
         if (!TimeUtils.sameDate(newDate, oldDate)) {
           setValue(newDate.getDate());
@@ -728,7 +771,7 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   }
 
   private boolean isDateTime() {
-    return ValueType.DATETIME.equals(getDateType());
+    return ValueType.DATETIME.equals(getDataType());
   }
 
   private void showDatePicker() {

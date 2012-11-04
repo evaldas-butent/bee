@@ -12,12 +12,12 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 public class InputTime extends InputDate {
 
-  public InputTime() {
-    this(Format.getDefaultTimeFormat());
+  public InputTime(ValueType type) {
+    super(type, Format.getDefaultTimeFormat());
   }
 
-  public InputTime(DateTimeFormat format) {
-    super(ValueType.DATETIME, format);
+  public InputTime(ValueType type, DateTimeFormat format) {
+    super(type, format);
   }
 
   @Override

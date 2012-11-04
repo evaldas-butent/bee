@@ -61,6 +61,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     initSource(source);
   }
 
+  @Override
   public boolean acceptChar(char charCode) {
     if (getCharMatcher() == null) {
       return true;
@@ -69,34 +70,41 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     }
   }
 
+  @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addInputHandler(InputHandler handler) {
     return Binder.addInputHandler(this, handler);
   }
-
+  
   public CharMatcher getCharMatcher() {
     return charMatcher;
   }
 
+  @Override
   public EditorAction getDefaultFocusAction() {
     return EditorAction.SELECT;
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "txt";
   }
 
+  @Override
   public int getMaxLength() {
     return getInputElement().getMaxLength();
   }
 
+  @Override
   public String getNormalizedValue() {
     String v = getValue();
     if (BeeUtils.isEmpty(v) && isNullable()) {
@@ -114,6 +122,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     return source;
   }
 
+  @Override
   public TextBoxBase getTextBox() {
     return this;
   }
@@ -127,6 +136,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     return FormWidget.INPUT_TEXT;
   }
   
+  @Override
   public boolean handlesKey(int keyCode) {
     return false;
   }
@@ -140,10 +150,12 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     }
   }
 
+  @Override
   public boolean isEditing() {
     return editing;
   }
 
+  @Override
   public boolean isNullable() {
     return nullable;
   }
@@ -187,18 +199,22 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     this.charMatcher = charMatcher;
   }
 
+  @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
+  @Override
   public void setMaxLength(int maxLength) {
     getInputElement().setMaxLength(maxLength);
   }
 
+  @Override
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
   }
@@ -207,6 +223,7 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     this.source = source;
   }
 
+  @Override
   public void setUpperCase(boolean upperCase) {
     this.upperCase = upperCase;
   }
@@ -222,11 +239,13 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     getInputElement().setSize(length);
   }
 
+  @Override
   public void startEdit(String value, char charCode, EditorAction onEntry, Element sourceElement) {
     EditorAction action = (onEntry == null) ? getDefaultEntryAction() : onEntry;
     UiHelper.doEditorAction(this, value, charCode, action);
   }
 
+  @Override
   public String validate() {
     return null;
   }

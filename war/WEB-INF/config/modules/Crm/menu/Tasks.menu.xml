@@ -7,5 +7,9 @@ name="Tasks" label="Užduotys" order="30"
   <Item name="Delegated" label="Deleguotos" service="task_list" parameters="d" />
   <Item name="Observed" label="Stebimos" service="task_list" parameters="o" />
 
+  <Item name="NewTask" label="Nauja užduotis" service="new_task" separator="true" />
+
+  <Item name="TaskTemplates" label="Užduočių šablonai" service="grid" parameters="TaskTemplates" separator="true" />
+
   <Item name="DurationTypes" label="Darbų tipai" service="grid" parameters="DurationTypes" separator="true" />
 </Entry>
