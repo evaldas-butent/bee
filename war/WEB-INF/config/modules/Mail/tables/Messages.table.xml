@@ -6,11 +6,11 @@
   >
   <Fields>
     <String name="UniqueId" precision="100" notNull="true" unique="true" />
-    <Relation name="Header" relation="Headers" unique="true" editable="true" />
     <DateTime name="Date" notNull="true" />
     <Relation name="Sender" relation="Addresses" notNull="true" />
     <String name="Subject" precision="100" />
     <Numeric name="Status" precision="1" notNull="true" />
+    <Numeric name="AttachmentCount" precision="2" />
   </Fields>
   <Keys>
     <Key>

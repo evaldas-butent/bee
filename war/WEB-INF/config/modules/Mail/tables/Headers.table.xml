@@ -5,6 +5,7 @@
   idName="HeaderID"
   >
   <Fields>
+    <Relation name="Message" relation="Messages" unique="true" notNull="true" cascade="DELETE" />
     <Text name="Header" />
   </Fields>
 </Table>

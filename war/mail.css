@@ -1,15 +1,6 @@
-.bee-mail-Container {
-  margin: 5px;
-}
-
 .bee-mail-Headers {
   margin-top: 5px;
   margin-right: 5px;
-}
-
-.bee-mail-Content {
-  margin-top: 5px;
-  margin-left: 5px;
 }
 
 .bee-mail-WaitingForContent {
@@ -110,7 +101,7 @@
   border-bottom: 1px solid lightgray;
 }
 
-.bee-mail-Parts {
+.bee-mail-Content {
   margin-top: 10px;
 }
 

@@ -91,7 +91,7 @@ public class Images {
 
     @Source("closeSmall.png")
     ImageResource closeSmall();
-    
+
     @Source("configure.png")
     ImageResource configure();
 
@@ -148,6 +148,9 @@ public class Images {
 
     @Source("ok.png")
     ImageResource ok();
+
+    @Source("plane.png")
+    ImageResource plane();
 
     @Source("play.png")
     ImageResource play();
@@ -315,6 +318,8 @@ public class Images {
     map.put(key("noes"), resources.noes());
 
     map.put(key("ok"), resources.ok());
+
+    map.put(key("plane"), resources.plane());
 
     map.put(key("play"), resources.play());
 

@@ -3,6 +3,7 @@ package com.butent.bee.shared.communication;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
+import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeSerializable;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -70,7 +71,7 @@ public class ResponseObject implements BeeSerializable {
     while (cause.getCause() != null) {
       cause = cause.getCause();
     }
-    addError(cause.getMessage());
+    addError(cause.toString());
     return this;
   }
 
@@ -222,6 +223,27 @@ public class ResponseObject implements BeeSerializable {
             break;
           case WARNING:
             logger.warning(message.getMessage());
+            break;
+        }
+      }
+    }
+  }
+
+  public void notify(NotificationListener notificator) {
+    if (notificator != null && hasMessages()) {
+      for (ResponseMessage message : getMessages()) {
+        switch (message.getLevel()) {
+          case DEBUG:
+            Assert.unsupported();
+            break;
+          case ERROR:
+            notificator.notifySevere(message.getMessage());
+            break;
+          case INFO:
+            notificator.notifyInfo(message.getMessage());
+            break;
+          case WARNING:
+            notificator.notifyWarning(message.getMessage());
             break;
         }
       }

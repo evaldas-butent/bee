@@ -727,7 +727,8 @@
   </xs:complexType>
 
   <xs:element name="DataSelector" type="selectorType" substitutionGroup="widget" />
-
+  <xs:element name="MultiSelector" type="selectorType" substitutionGroup="widget" />
+<!-- 
   <xs:element name="MultiSelector" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>
@@ -737,7 +738,7 @@
       </xs:complexContent>
     </xs:complexType>
   </xs:element>
-
+ -->
   <xs:element name="HtmlPanel" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>

@@ -9,4 +9,33 @@
     <Relation name="File" relation="Files" notNull="true" />
     <String name="FileName" precision="100" />
   </Fields>
+  <Triggers>
+    <Trigger events="INSERT DELETE" scope="ROW" timing="AFTER">
+      <PostgreSql>
+        <![CDATA[
+DECLARE _cnt BIGINT;
+        _id BIGINT;
+BEGIN
+  IF (TG_OP='INSERT') THEN
+    _cnt:=1;
+    _id:=NEW."Message";
+  ELSE
+    IF (TG_OP='DELETE') THEN
+      _cnt:=-1;
+      _id:=OLD."Message";
+    ELSE
+      _cnt:=0;
+      _id:=-1;
+    END IF;
+  END IF;
+
+  UPDATE "Messages" SET "AttachmentCount"=COALESCE("AttachmentCount", 0)+_cnt WHERE "MessageID"=_id;
+  RETURN NULL;
+END;
+        ]]>
+      </PostgreSql>
+      <MsSql></MsSql>
+      <Oracle></Oracle>
+    </Trigger>
+  </Triggers>
 </Table>

@@ -64,7 +64,7 @@ public class CommonsConstants {
       return this.name().toLowerCase();
     }
   }
-  
+
   public static final String COMMONS_MODULE = "Commons";
   public static final String COMMONS_METHOD = COMMONS_MODULE + "Method";
 
@@ -99,7 +99,7 @@ public class CommonsConstants {
   public static final String TBL_PERSONS = "Persons";
 
   public static final String TBL_RELATIONS = "Relations";
-  
+
   public static final String VIEW_COMPANIES = "Companies";
 
   public static final String COL_NAME = "Name";
@@ -125,9 +125,10 @@ public class CommonsConstants {
   public static final String FORM_NEW_COMPANY = "Company";
 
   public static final String PRM_SQL_MESSAGES = "SQLMessages";
+  public static final String PRM_AUDIT_OFF = "DisableAuditing";
 
   public static final String PROP_CATEGORIES = "CategList";
-  
+
   private CommonsConstants() {
   }
 }

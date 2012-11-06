@@ -1,11 +1,12 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Grid xmlns="http://www.butent.com/grid"
 
-  name="Messages" viewName="Messages" headerMode="none" readOnly="true"
+  name="Messages" viewName="Messages" headerMode="none" readOnly="true" 
+  asyncThreshold="0" pagingThreshold="0" searchThreshold="0"
   >
   <body height="40" borderWidth="0 0 1 0" />
 
   <columns>
-    <CalcColumn name="Envelope" type="string" cell="html" width="280" />
+    <CalcColumn name="Envelope" type="string" cell="html" width="275" />
   </columns>
 </Grid>

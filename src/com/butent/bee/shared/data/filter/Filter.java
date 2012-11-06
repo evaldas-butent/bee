@@ -89,7 +89,7 @@ public abstract class Filter implements BeeSerializable, RowFilter {
     }
     return filter;
   }
-  
+
   public static Filter in(String column, Collection<Long> values) {
     Assert.notEmpty(column);
     Assert.notNull(values);

@@ -4,6 +4,7 @@ import com.butent.bee.server.Config;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.BeeLoggerFactory;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -35,5 +36,10 @@ public class LogbackFactory implements BeeLoggerFactory {
   @Override
   public BeeLogger getLogger(String name) {
     return new LogbackLogger(name);
+  }
+
+  @Override
+  public BeeLogger getRootLogger() {
+    return new LogbackLogger(Logger.ROOT_LOGGER_NAME);
   }
 }

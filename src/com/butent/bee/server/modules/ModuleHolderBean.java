@@ -6,6 +6,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+
 import com.butent.bee.server.Config;
 import com.butent.bee.server.data.BeeTable;
 import com.butent.bee.server.data.SystemBean;
@@ -16,7 +18,6 @@ import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.BeeParameter;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.NameUtils;
@@ -51,6 +52,8 @@ public class ModuleHolderBean {
 
   @EJB
   SystemBean sys;
+  @EJB
+  ParamHolderBean prm;
 
   public ResponseObject doModule(RequestInfo reqInfo) {
     Assert.notNull(reqInfo);
@@ -95,6 +98,8 @@ public class ModuleHolderBean {
   }
 
   public void initModules() {
+    prm.refreshParameters(COMMONS_MODULE);
+
     TABLE_ACTIVATION_MODE mode = NameUtils.getEnumByName(TABLE_ACTIVATION_MODE.class,
         Config.getProperty("TableActivationMode"));
 
@@ -123,7 +128,7 @@ public class ModuleHolderBean {
 
   @PostConstruct
   private void init() {
-    Collection<String> mods = Sets.newHashSet(CommonsConstants.COMMONS_MODULE);
+    Collection<String> mods = Sets.newHashSet(COMMONS_MODULE);
     String moduleList = Config.getProperty(PROPERTY_MODULES);
 
     if (!BeeUtils.isEmpty(moduleList)) {

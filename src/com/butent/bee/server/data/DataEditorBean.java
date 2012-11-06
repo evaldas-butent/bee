@@ -428,7 +428,7 @@ public class DataEditorBean {
                         .addFrom(ss, "subq")
                         .addFromLeft(tblName, join)
                         .setWhere(SqlUtils.isNull(tblName, sys.getIdName(tblName)))
-                        .setLimit(rowCount))
+                        .setLimit(1000000))
                         .getRows();
 
                     uniques.put(key, unq);

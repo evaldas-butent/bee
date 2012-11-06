@@ -2,6 +2,7 @@ package com.butent.bee.server.modules.mail;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
@@ -13,6 +14,7 @@ import com.butent.bee.server.modules.commons.FileStorageBean;
 import com.butent.bee.server.modules.mail.proxy.MailProxy;
 import com.butent.bee.server.sql.HasConditions;
 import com.butent.bee.server.sql.IsCondition;
+import com.butent.bee.server.sql.SqlDelete;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
@@ -21,6 +23,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
@@ -31,13 +34,18 @@ import com.butent.bee.shared.modules.ParameterType;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
+import com.butent.bee.shared.modules.mail.MailConstants.MessageStatus;
 import com.butent.bee.shared.modules.mail.MailConstants.Protocol;
+import com.butent.bee.shared.time.DateTime;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
 
 import org.jsoup.Jsoup;
+import org.jsoup.examples.HtmlToPlainText;
+import org.jsoup.safety.Whitelist;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -47,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -66,7 +75,9 @@ import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import javax.mail.internet.ParseException;
 
@@ -149,8 +160,42 @@ public class MailModuleBean implements BeeModule {
     } else if (BeeUtils.same(svc, SVC_CHECK_MAIL)) {
       response = checkMail(BeeUtils.toLongOrNull(reqInfo.getParameter("AccountAddress")));
 
+    } else if (BeeUtils.same(svc, SVC_SEND_MAIL)) {
+      response = new ResponseObject();
+      boolean save = BeeUtils.toBoolean(reqInfo.getParameter("Save"));
+      Long draftId = BeeUtils.toLongOrNull(reqInfo.getParameter("DraftId"));
+      Long sender = BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SENDER));
+      Set<Long> to = DataUtils.parseIdSet(reqInfo.getParameter(AddressType.TO.name()));
+      Set<Long> cc = DataUtils.parseIdSet(reqInfo.getParameter(AddressType.CC.name()));
+      Set<Long> bcc = DataUtils.parseIdSet(reqInfo.getParameter(AddressType.BCC.name()));
+      String subject = reqInfo.getParameter(COL_SUBJECT);
+      String content = reqInfo.getParameter(COL_CONTENT);
+
+      if (draftId != null) {
+        qs.updateData(new SqlDelete(TBL_MESSAGES)
+            .setWhere(SqlUtils.equal(TBL_MESSAGES, sys.getIdName(TBL_MESSAGES), draftId)));
+      }
+      if (!save) {
+        try {
+          sendMail(sender, to, cc, bcc, subject, content);
+          response.addInfo("Laiškas išsiųstas");
+        } catch (MessagingException e) {
+          save = true;
+          logger.error(e);
+          response.addError(e);
+        }
+      }
+      if (save) {
+        try {
+          saveMail(sender, to, cc, bcc, subject, content);
+        } catch (MessagingException e) {
+          logger.error(e);
+          response.addError(e);
+        }
+        response.addInfo("Laiškas išsaugotas juodraščiuose");
+      }
     } else if (BeeUtils.same(svc, SVC_REMOVE_MESSAGES)) {
-      response = removeMessages(BeeUtils.toLongOrNull(reqInfo.getParameter("Sender")),
+      response = removeMessages(BeeUtils.toLongOrNull(reqInfo.getParameter(COL_SENDER)),
           BeeUtils.toLongOrNull(reqInfo.getParameter("Recipient")),
           Codec.beeDeserializeCollection(reqInfo.getParameter("Messages")),
           BeeUtils.toBoolean(reqInfo.getParameter("Purge")));
@@ -271,6 +316,25 @@ public class MailModuleBean implements BeeModule {
     }
   }
 
+  private void addContent(MimeMessage message, String content) throws MessagingException {
+    if (hasHtml(content)) {
+      MimeMultipart mp = new MimeMultipart("alternative");
+
+      MimeBodyPart p = new MimeBodyPart();
+      p.setText(stripHtml(content), BeeConst.CHARSET_UTF8);
+      mp.addBodyPart(p);
+
+      p = new MimeBodyPart();
+      p.setText(content, BeeConst.CHARSET_UTF8, "html");
+      mp.addBodyPart(p);
+
+      message.setContent(mp);
+    } else {
+      message.setText(content, BeeConst.CHARSET_UTF8);
+    }
+    message.saveChanges();
+  }
+
   private int checkMail(Protocol type, String host, Integer port, String user, String password,
       Long addressId) throws MessagingException {
     Assert.notNull(type);
@@ -319,6 +383,13 @@ public class MailModuleBean implements BeeModule {
     return c;
   }
 
+  private String cleanHtml(String dirtyHtml) {
+    if (dirtyHtml != null) {
+      return Jsoup.clean(dirtyHtml, Whitelist.relaxed());
+    }
+    return dirtyHtml;
+  }
+
   private ResponseObject getAccounts(Long user) {
     Assert.notNull(user);
 
@@ -327,6 +398,32 @@ public class MailModuleBean implements BeeModule {
         .addFrom(TBL_ACCOUNTS)
         .setWhere(SqlUtils.equal(TBL_ACCOUNTS, "User", user))
         .addOrder(TBL_ACCOUNTS, "Description")));
+  }
+
+  private Address getAddress(Long id) {
+    return ArrayUtils.getQuietly(getAddresses(Lists.newArrayList(id)), 0);
+  }
+
+  private Address[] getAddresses(Collection<Long> ids) {
+    List<Address> addresses = Lists.newArrayList();
+
+    if (!BeeUtils.isEmpty(ids)) {
+      SimpleRowSet rs = qs.getData(new SqlSelect()
+          .addFields(TBL_ADDRESSES, sys.getIdName(TBL_ADDRESSES), "Email", "Label")
+          .addFrom(TBL_ADDRESSES)
+          .setWhere(SqlUtils.inList(TBL_ADDRESSES, sys.getIdName(TBL_ADDRESSES), ids.toArray())));
+
+      Assert.state(ids.size() == rs.getNumberOfRows(), "Address count mismatch");
+
+      for (Map<String, String> address : rs) {
+        try {
+          addresses.add(new InternetAddress(address.get("Email"), address.get("Label"),
+              BeeConst.CHARSET_UTF8));
+        } catch (UnsupportedEncodingException e) {
+        }
+      }
+    }
+    return addresses.toArray(new Address[0]);
   }
 
   private ResponseObject getMessage(Long id, Long addressId) {
@@ -344,17 +441,25 @@ public class MailModuleBean implements BeeModule {
     Map<String, SimpleRowSet> packet = Maps.newHashMap();
 
     packet.put(TBL_RECIPIENTS, qs.getData(new SqlSelect()
-        .addFields(TBL_RECIPIENTS, "Type")
+        .addFields(TBL_RECIPIENTS, "Type", COL_ADDRESS)
         .addFields(TBL_ADDRESSES, "Label", "Email")
         .addFrom(TBL_RECIPIENTS)
         .addFromInner(TBL_ADDRESSES, sys.joinTables(TBL_ADDRESSES, TBL_RECIPIENTS, COL_ADDRESS))
         .setWhere(wh)
         .addOrderDesc(TBL_RECIPIENTS, "Type")));
 
-    packet.put(TBL_PARTS, qs.getData(new SqlSelect()
-        .addFields(TBL_PARTS, "Content", "HtmlContent")
+    String[] cols = new String[] {COL_CONTENT, "HtmlContent"};
+    SimpleRowSet rs = qs.getData(new SqlSelect()
+        .addFields(TBL_PARTS, cols)
         .addFrom(TBL_PARTS)
-        .setWhere(SqlUtils.equal(TBL_PARTS, COL_MESSAGE, id))));
+        .setWhere(SqlUtils.equal(TBL_PARTS, COL_MESSAGE, id)));
+
+    SimpleRowSet newRs = new SimpleRowSet(cols);
+
+    for (String[] row : rs.getRows()) {
+      newRs.addRow(new String[] {row[0], cleanHtml(row[1])});
+    }
+    packet.put(TBL_PARTS, newRs);
 
     packet.put(TBL_ATTACHMENTS, qs.getData(new SqlSelect()
         .addFields(TBL_ATTACHMENTS, "FileName")
@@ -365,6 +470,13 @@ public class MailModuleBean implements BeeModule {
         .setWhere(SqlUtils.equal(TBL_ATTACHMENTS, COL_MESSAGE, id))));
 
     return ResponseObject.response(packet);
+  }
+
+  private boolean hasHtml(String content) {
+    if (content != null) {
+      return !Jsoup.isValid(content, Whitelist.none());
+    }
+    return false;
   }
 
   private ResponseObject removeMessages(Long sender, Long recipient, String[] messages,
@@ -381,7 +493,7 @@ public class MailModuleBean implements BeeModule {
         wh.add(SqlUtils.equal(TBL_MESSAGES, idName, BeeUtils.toLong(id)));
       }
       su = new SqlUpdate(TBL_MESSAGES)
-          .setWhere(SqlUtils.and(wh, SqlUtils.equal(TBL_MESSAGES, "Sender", sender)));
+          .setWhere(SqlUtils.and(wh, SqlUtils.equal(TBL_MESSAGES, COL_SENDER, sender)));
 
     } else if (recipient != null) {
       for (String id : messages) {
@@ -392,9 +504,109 @@ public class MailModuleBean implements BeeModule {
     } else {
       Assert.untouchable("Unknown recipient");
     }
-    su.addConstant("Status", purge ? STATUS_PURGED : STATUS_DELETED);
+    su.addConstant(COL_STATUS, purge
+        ? MessageStatus.PURGED.ordinal() : MessageStatus.DELETED.ordinal());
 
     return qs.updateDataWithResponse(su);
+  }
+
+  private void saveMail(Long sender, Set<Long> to, Set<Long> cc, Set<Long> bcc, String subject,
+      String content) throws MessagingException {
+
+    Long id = qs.insertData(new SqlInsert(TBL_MESSAGES)
+        .addConstant("UniqueId", BeeUtils.randomString(50))
+        .addConstant("Date", new DateTime())
+        .addConstant(COL_SENDER, sender)
+        .addConstant(COL_STATUS, MessageStatus.DRAFT.ordinal())
+        .addConstant(COL_SUBJECT, subject));
+
+    Set<Long> allRecipients = Sets.newHashSet();
+
+    for (AddressType type : AddressType.values()) {
+      Set<Long> recipients = null;
+
+      switch (type) {
+        case TO:
+          recipients = to;
+          break;
+        case CC:
+          recipients = cc;
+          break;
+        case BCC:
+          recipients = bcc;
+          break;
+      }
+      if (!BeeUtils.isEmpty(recipients)) {
+        for (Long recipient : recipients) {
+          if (allRecipients.add(recipient)) {
+            qs.insertData(new SqlInsert(TBL_RECIPIENTS)
+                .addConstant(COL_MESSAGE, id)
+                .addConstant(COL_ADDRESS, recipient)
+                .addConstant("Type", type.name())
+                .addConstant(COL_STATUS, MessageStatus.PURGED.ordinal()));
+          }
+        }
+      }
+    }
+    MimeMessage msg = new MimeMessage((Session) null);
+    addContent(msg, content);
+
+    try {
+      storePart(id, msg, null);
+    } catch (IOException e) {
+      throw new MessagingException(e.toString());
+    }
+  }
+
+  private void sendMail(Long addressId, Set<Long> to, Set<Long> cc, Set<Long> bcc, String subject,
+      String content) throws MessagingException {
+
+    Map<String, String> data = null;
+
+    if (addressId != null) {
+      data = qs.getRow(new SqlSelect()
+          .addFields(TBL_ACCOUNTS, "TransportServer", "TransportPort")
+          .addFields(TBL_ADDRESSES, "Email")
+          .addFrom(TBL_ACCOUNTS)
+          .addFromInner(TBL_ADDRESSES, sys.joinTables(TBL_ADDRESSES, TBL_ACCOUNTS, COL_ADDRESS))
+          .setWhere(SqlUtils.equal(TBL_ACCOUNTS, COL_ADDRESS, addressId)));
+    }
+    if (data == null) {
+      throw new MessagingException("Unknown user account: " + addressId);
+    }
+    Session session = Session.getInstance(new Properties(), null);
+    Transport transport = null;
+    MimeMessage message = new MimeMessage(session);
+
+    try {
+      if (!BeeUtils.isEmpty(to)) {
+        message.setRecipients(RecipientType.TO, getAddresses(to));
+      }
+      if (!BeeUtils.isEmpty(cc)) {
+        message.setRecipients(RecipientType.CC, getAddresses(cc));
+      }
+      if (!BeeUtils.isEmpty(bcc)) {
+        message.setRecipients(RecipientType.BCC, getAddresses(bcc));
+      }
+      message.setSender(getAddress(addressId));
+      message.setSentDate(TimeUtils.toJava(new DateTime()));
+      message.setSubject(subject, BeeConst.CHARSET_UTF8);
+
+      addContent(message, content);
+
+      transport = session.getTransport(Protocol.SMTP.name().toLowerCase());
+      Integer port = BeeUtils.toIntOrNull(data.get("TransportPort"));
+      transport.connect(data.get("TransportServer"), BeeUtils.isNonNegative(port) ? port : -1,
+          null, null);
+
+      transport.sendMessage(message, message.getAllRecipients());
+      storeMail(message, null);
+
+    } finally {
+      if (transport != null) {
+        transport.close();
+      }
+    }
   }
 
   private Long storeAddress(Address address) throws AddressException {
@@ -442,27 +654,32 @@ public class MailModuleBean implements BeeModule {
 
     if (id == null) {
       Long sender = storeAddress(envelope.getSender());
-      Long header = qs.insertData(new SqlInsert(TBL_HEADERS)
-          .addConstant("Header", envelope.getHeader()));
 
       id = qs.insertData(new SqlInsert(TBL_MESSAGES)
-          .addConstant("Header", header)
           .addConstant("UniqueId", envelope.getMessageId())
           .addConstant("Date", envelope.getDate())
-          .addConstant("Sender", sender)
-          .addConstant("Status", STATUS_NEUTRAL)
-          .addConstant("Subject", envelope.getSubject()));
+          .addConstant(COL_SENDER, sender)
+          .addConstant(COL_STATUS, MessageStatus.NEUTRAL.ordinal())
+          .addConstant(COL_SUBJECT, envelope.getSubject()));
+
+      qs.insertData(new SqlInsert(TBL_HEADERS)
+          .addConstant(COL_MESSAGE, id)
+          .addConstant("Header", envelope.getHeader()));
+
+      Set<Long> allAddresses = Sets.newHashSet();
 
       for (Entry<AddressType, Address> entry : envelope.getRecipients().entries()) {
         Long adr = storeAddress(entry.getValue());
         userExists = userExists || (adr == addressId);
 
-        qs.insertData(new SqlInsert(TBL_RECIPIENTS)
-            .addConstant(COL_MESSAGE, id)
-            .addConstant(COL_ADDRESS, adr)
-            .addConstant("Type", entry.getKey().name())
-            .addConstant("Status", STATUS_NEUTRAL)
-            .addConstant("Unread", true));
+        if (allAddresses.add(adr)) {
+          qs.insertData(new SqlInsert(TBL_RECIPIENTS)
+              .addConstant(COL_MESSAGE, id)
+              .addConstant(COL_ADDRESS, adr)
+              .addConstant("Type", entry.getKey().name())
+              .addConstant(COL_STATUS, MessageStatus.NEUTRAL.ordinal())
+              .addConstant("Unread", true));
+        }
       }
       try {
         storePart(id, message, null);
@@ -481,7 +698,7 @@ public class MailModuleBean implements BeeModule {
           .addConstant(COL_MESSAGE, id)
           .addConstant(COL_ADDRESS, addressId)
           .addConstant("Type", AddressType.BCC.name())
-          .addConstant("Status", STATUS_NEUTRAL)
+          .addConstant(COL_STATUS, MessageStatus.NEUTRAL.ordinal())
           .addConstant("Unread", true));
     }
     return stored;
@@ -504,8 +721,8 @@ public class MailModuleBean implements BeeModule {
         qs.insertData(new SqlInsert(TBL_PARTS)
             .addConstant(COL_MESSAGE, messageId)
             .addConstant("ContentType", alternative.getB() != null ? "text/html" : "text/plain")
-            .addConstant("Content",
-                alternative.getA() != null ? alternative.getA() : stripHtml(alternative.getB()))
+            .addConstant(COL_CONTENT,
+                stripHtml(alternative.getA() != null ? alternative.getA() : alternative.getB()))
             .addConstant("HtmlContent", alternative.getB()));
       }
     } else if (part.isMimeType("message/*")) {
@@ -527,7 +744,7 @@ public class MailModuleBean implements BeeModule {
         } catch (UnsupportedEncodingException ex) {
         }
       }
-      if (!(part.isMimeType("text/*"))
+      if (!part.isMimeType("text/*")
           || BeeUtils.same(disposition, Part.ATTACHMENT)
           || !BeeUtils.isEmpty(fileName)
           || (alternative != null
@@ -552,18 +769,20 @@ public class MailModuleBean implements BeeModule {
 
         if (part.isMimeType("text/html")) {
           htmlContent = content;
-          content = stripHtml(htmlContent);
         }
         qs.insertData(new SqlInsert(TBL_PARTS)
             .addConstant(COL_MESSAGE, messageId)
             .addConstant("ContentType", contentType)
-            .addConstant("Content", content)
+            .addConstant(COL_CONTENT, stripHtml(content))
             .addConstant("HtmlContent", htmlContent));
       }
     }
   }
 
   private String stripHtml(String content) {
-    return Jsoup.parse(content).text();
+    if (hasHtml(content)) {
+      return new HtmlToPlainText().getPlainText(Jsoup.parse(content));
+    }
+    return content;
   }
 }

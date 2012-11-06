@@ -160,6 +160,49 @@ public class ParamHolderBean {
         ? parameter.getTime(usr.getCurrentUserId()) : parameter.getTime();
   }
 
+  public void refreshParameters(String module) {
+    modules.put(module, new TreeMap<String, BeeParameter>());
+    Collection<BeeParameter> defaults = moduleBean.getModuleDefaultParameters(module);
+  
+    if (!BeeUtils.isEmpty(defaults)) {
+      for (BeeParameter param : defaults) {
+        putModuleParameter(param);
+      }
+    }
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_PARAMS, FLD_NAME, FLD_TYPE, FLD_DESCRIPTION, FLD_USER_MODE, FLD_VALUE)
+        .addFrom(TBL_PARAMS)
+        .setWhere(SqlUtils.equal(TBL_PARAMS, FLD_MODULE, module)));
+  
+    boolean hasUserParameters = false;
+  
+    for (Map<String, String> row : data) {
+      BeeParameter parameter = new BeeParameter(module, row.get(FLD_NAME),
+          NameUtils.getEnumByName(ParameterType.class, row.get(FLD_TYPE)),
+          row.get(FLD_DESCRIPTION), BeeUtils.toBoolean(row.get(FLD_USER_MODE)), row.get(FLD_VALUE));
+      putModuleParameter(parameter);
+  
+      if (!hasUserParameters) {
+        hasUserParameters = parameter.supportsUsers();
+      }
+    }
+    if (hasUserParameters) {
+      data = qs.getData(new SqlSelect()
+          .addFields(TBL_PARAMS, FLD_NAME)
+          .addFields(TBL_USER_PARAMS, UserServiceBean.FLD_USER, FLD_VALUE)
+          .addFrom(TBL_PARAMS)
+          .addFromInner(TBL_USER_PARAMS,
+              SqlUtils.join(TBL_PARAMS, sys.getIdName(TBL_PARAMS), TBL_USER_PARAMS, FLD_PARAM))
+          .setWhere(SqlUtils.and(SqlUtils.equal(TBL_PARAMS, FLD_MODULE, module),
+              SqlUtils.notNull(TBL_PARAMS, FLD_USER_MODE))));
+  
+      for (Map<String, String> row : data) {
+        getModuleParameter(module, row.get(FLD_NAME))
+            .setUserValue(BeeUtils.toLong(row.get(UserServiceBean.FLD_USER)), row.get(FLD_VALUE));
+      }
+    }
+  }
+
   @Lock(LockType.WRITE)
   public void removeParameters(String module, String... names) {
     Assert.noNulls((Object[]) names);
@@ -238,49 +281,6 @@ public class ParamHolderBean {
   private void putModuleParameter(BeeParameter parameter) {
     Map<String, BeeParameter> params = getParameters(parameter.getModule());
     params.put(BeeUtils.normalize(parameter.getName()), parameter);
-  }
-
-  private void refreshParameters(String module) {
-    modules.put(module, new TreeMap<String, BeeParameter>());
-    Collection<BeeParameter> defaults = moduleBean.getModuleDefaultParameters(module);
-
-    if (!BeeUtils.isEmpty(defaults)) {
-      for (BeeParameter param : defaults) {
-        putModuleParameter(param);
-      }
-    }
-    SimpleRowSet data = qs.getData(new SqlSelect()
-        .addFields(TBL_PARAMS, FLD_NAME, FLD_TYPE, FLD_DESCRIPTION, FLD_USER_MODE, FLD_VALUE)
-        .addFrom(TBL_PARAMS)
-        .setWhere(SqlUtils.equal(TBL_PARAMS, FLD_MODULE, module)));
-
-    boolean hasUserParameters = false;
-
-    for (Map<String, String> row : data) {
-      BeeParameter parameter = new BeeParameter(module, row.get(FLD_NAME),
-          NameUtils.getEnumByName(ParameterType.class, row.get(FLD_TYPE)),
-          row.get(FLD_DESCRIPTION), BeeUtils.toBoolean(row.get(FLD_USER_MODE)), row.get(FLD_VALUE));
-      putModuleParameter(parameter);
-
-      if (!hasUserParameters) {
-        hasUserParameters = parameter.supportsUsers();
-      }
-    }
-    if (hasUserParameters) {
-      data = qs.getData(new SqlSelect()
-          .addFields(TBL_PARAMS, FLD_NAME)
-          .addFields(TBL_USER_PARAMS, UserServiceBean.FLD_USER, FLD_VALUE)
-          .addFrom(TBL_PARAMS)
-          .addFromInner(TBL_USER_PARAMS,
-              SqlUtils.join(TBL_PARAMS, sys.getIdName(TBL_PARAMS), TBL_USER_PARAMS, FLD_PARAM))
-          .setWhere(SqlUtils.and(SqlUtils.equal(TBL_PARAMS, FLD_MODULE, module),
-              SqlUtils.notNull(TBL_PARAMS, FLD_USER_MODE))));
-
-      for (Map<String, String> row : data) {
-        getModuleParameter(module, row.get(FLD_NAME))
-            .setUserValue(BeeUtils.toLong(row.get(UserServiceBean.FLD_USER)), row.get(FLD_VALUE));
-      }
-    }
   }
 
   private long storeParameter(BeeParameter parameter) {

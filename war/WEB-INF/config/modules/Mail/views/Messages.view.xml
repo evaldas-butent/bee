@@ -4,11 +4,13 @@
   name="Messages" source="Messages"
   >
   <Columns>
-    <SimpleColumn name="Date" />
-    <SimpleColumn name="Subject" />
-    <HiddenColumn name="Sender" />
     <HiddenColumn name="Status" alias="SenderStatus" />
 
+    <SimpleColumn name="Date" />
+    <SimpleColumn name="Subject" />
+    <SimpleColumn name="AttachmentCount" />
+    <SimpleColumn name="Sender" />
+    
     <SimpleJoin name="Sender" joinType="LEFT">
       <SimpleColumn name="Label" alias="SenderLabel" />
       <SimpleColumn name="Email" alias="SenderEmail" />
@@ -17,17 +19,14 @@
     <ExternalJoin name="Message" source="Recipients" joinType="LEFT">
       <HiddenColumn name="Address" />
       <HiddenColumn name="Status" />
+
       <AggregateColumn name="Unread" aggregate="MAX" />
-      <AggregateColumn name="Address" alias="RecipientCount" aggregate="COUNT_DISTINCT" />
+      <AggregateColumn name="Address" alias="RecipientCount" aggregate="COUNT" />
 
       <AggregateJoin name="Address" joinType="LEFT">
         <AggregateColumn name="Label" alias="RecipientLabel" aggregate="MAX" />
         <AggregateColumn name="Email" alias="RecipientEmail" aggregate="MAX" />
       </AggregateJoin>
-    </ExternalJoin>
-
-    <ExternalJoin name="Message" source="Attachments" joinType="LEFT">
-      <AggregateColumn name="File" alias="AttachmentCount" aggregate="COUNT_DISTINCT" />
     </ExternalJoin>
   </Columns>
   <Order>

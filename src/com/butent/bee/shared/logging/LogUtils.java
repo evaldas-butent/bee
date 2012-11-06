@@ -12,6 +12,8 @@ public class LogUtils {
   private static BeeLoggerFactory loggerFactory;
 
   public static BeeLogger getLogger(String name) {
+    Assert.notNull(name);
+
     if (BeeConst.isClient()) {
       return createLogger(name);
     }
@@ -21,6 +23,13 @@ public class LogUtils {
   public static BeeLogger getLogger(Class<?> clazz) {
     Assert.notNull(clazz);
     return getLogger(clazz.getName());
+  }
+
+  public static BeeLogger getRootLogger() {
+    if (loggerFactory != null) {
+      return loggerFactory.getRootLogger();
+    }
+    return null;
   }
 
   /**

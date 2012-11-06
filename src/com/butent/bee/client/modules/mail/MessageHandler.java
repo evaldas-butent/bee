@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -18,10 +19,7 @@ import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
-import static com.butent.bee.shared.modules.mail.MailConstants.SVC_GET_MESSAGE;
-import static com.butent.bee.shared.modules.mail.MailConstants.TBL_ATTACHMENTS;
-import static com.butent.bee.shared.modules.mail.MailConstants.TBL_PARTS;
-import static com.butent.bee.shared.modules.mail.MailConstants.TBL_RECIPIENTS;
+import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ParameterList;
@@ -39,24 +37,32 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class MessageHandler extends AbstractFormCallback {
 
-  private static final int NAME = 0;
-  private static final int SIZE = 1;
-  private static final int HASH = 2;
+  private static final int ATTA_NAME = 0;
+  private static final int ATTA_SIZE = 1;
+  private static final int ATTA_HASH = 2;
+
+  private static final int ADDR_ID = 0;
+  private static final int ADDR_EMAIL = 1;
+  private static final int ADDR_LABEL = 2;
+
+  private boolean isActive = false;
 
   private Label recipientsWidget;
-  private final Multimap<String, Pair<String, String>> recipients = HashMultimap.create();
+  private final Multimap<String, String[]> recipients = HashMultimap.create();
   private Label attachmentsWidget;
   private final List<String[]> attachments = Lists.newArrayList();
-  private Widget partsWidget;
+  private Label partsWidget;
   private Widget waitingWidget;
 
   @Override
@@ -72,9 +78,9 @@ public class MessageHandler extends AbstractFormCallback {
           HtmlTable ft = new HtmlTable();
           ft.setBorderSpacing(5);
           List<Pair<String, String>> types = Lists.newArrayList();
-          types.add(Pair.of("to", "Skirta:"));
-          types.add(Pair.of("cc", "Kopija:"));
-          types.add(Pair.of("bcc", "Nematoma kopija:"));
+          types.add(Pair.of(AddressType.TO.name(), "Skirta:"));
+          types.add(Pair.of(AddressType.CC.name(), "Kopija:"));
+          types.add(Pair.of(AddressType.BCC.name(), "Nematoma kopija:"));
 
           for (Pair<String, String> type : types) {
             if (recipients.containsKey(type.getA())) {
@@ -83,15 +89,16 @@ public class MessageHandler extends AbstractFormCallback {
               ft.setText(c, 0, type.getB());
               FlowPanel fp = new FlowPanel();
 
-              for (Pair<String, String> address : recipients.get(type.getA())) {
+              for (String[] address : recipients.get(type.getA())) {
                 FlowPanel adr = new FlowPanel();
                 adr.setStyleName("bee-mail-Recipient");
-                InlineLabel nm = new InlineLabel(BeeUtils.notEmpty(address.getA(), address.getB()));
+                InlineLabel nm =
+                    new InlineLabel(BeeUtils.notEmpty(address[ADDR_LABEL], address[ADDR_EMAIL]));
                 nm.setStyleName("bee-mail-RecipientLabel");
                 adr.add(nm);
 
-                if (!BeeUtils.isEmpty(address.getA())) {
-                  nm = new InlineLabel(address.getB());
+                if (!BeeUtils.isEmpty(address[ADDR_LABEL])) {
+                  nm = new InlineLabel(address[ADDR_EMAIL]);
                   nm.setStyleName("bee-mail-RecipientEmail");
                   adr.add(nm);
                 }
@@ -115,7 +122,7 @@ public class MessageHandler extends AbstractFormCallback {
           TabBar bar = new TabBar("bee-mail-AttachmentsMenu-", Orientation.VERTICAL);
 
           for (String[] item : attachments) {
-            bar.addItem(BeeUtils.joinWords(item[NAME], BeeUtils.parenthesize(item[SIZE])));
+            bar.addItem(BeeUtils.joinWords(item[ATTA_NAME], BeeUtils.parenthesize(item[ATTA_SIZE])));
           }
           bar.addSelectionHandler(new SelectionHandler<Integer>() {
             @Override
@@ -123,26 +130,69 @@ public class MessageHandler extends AbstractFormCallback {
               popup.hide();
               String[] info = attachments.get(ev.getSelectedItem());
 
-              Window.open(GWT.getModuleBaseURL() + "file/"
-                  + Codec.encodeBase64(Codec.beeSerialize(Pair.of(info[NAME], info[HASH]))),
-                  null, null);
+              Window.open(GWT.getModuleBaseURL() + "file/" + Codec.encodeBase64(Codec
+                  .beeSerialize(Pair.of(info[ATTA_NAME], info[ATTA_HASH]))), null, null);
             }
           });
           popup.setWidget(bar);
           popup.showRelativeTo(attachmentsWidget);
         }
       });
-    } else if (BeeUtils.same(name, "Parts")) {
-      partsWidget = widget;
+    } else if (widget instanceof Label && BeeUtils.same(name, "Parts")) {
+      partsWidget = (Label) widget;
 
     } else if (BeeUtils.same(name, "WaitingForContent")) {
       waitingWidget = widget;
     }
   }
 
+  public void deactivate() {
+    isActive = false;
+    partsWidget.setVisible(isActive);
+    waitingWidget.setVisible(!isActive);
+    recipientsWidget.setText(null);
+    attachmentsWidget.setText(null);
+  }
+
+  public String getAttachments() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  public Set<Long> getBcc() {
+    return getRecipients(AddressType.BCC.name());
+  }
+
+  public Set<Long> getCc() {
+    return getRecipients(AddressType.CC.name());
+  }
+
+  public String getContent() {
+    if (isActive) {
+      return partsWidget.getElement().getInnerHTML();
+    }
+    return null;
+  }
+
   @Override
   public FormCallback getInstance() {
     return new MessageHandler();
+  }
+
+  public String getRecipients() {
+    StringBuilder sb = new StringBuilder();
+
+    for (String[] recipient : recipients.values()) {
+      if (sb.length() > 0) {
+        sb.append(", ");
+      }
+      sb.append(BeeUtils.joinWords(recipient[ADDR_LABEL], "<" + recipient[ADDR_EMAIL] + ">"));
+    }
+    return sb.toString();
+  }
+
+  public Set<Long> getTo() {
+    return getRecipients(AddressType.TO.name());
   }
 
   @Override
@@ -152,10 +202,8 @@ public class MessageHandler extends AbstractFormCallback {
   }
 
   void requery(Long messageId, Long addressId) {
-    partsWidget.setVisible(false);
-    waitingWidget.setVisible(true);
-    recipientsWidget.setText(null);
-    attachmentsWidget.setText(null);
+    Assert.isPositive(messageId);
+    deactivate();
 
     ParameterList params = MailKeeper.createArgs(SVC_GET_MESSAGE);
     if (addressId != null) {
@@ -179,9 +227,13 @@ public class MessageHandler extends AbstractFormCallback {
         String txt = null;
 
         for (Map<String, String> address : packet.get(TBL_RECIPIENTS)) {
-          Pair<String, String> names = Pair.of(address.get("Label"), address.get("Email"));
-          recipients.put(BeeUtils.normalize(address.get("Type")), names);
-          txt = BeeUtils.join(", ", txt, BeeUtils.notEmpty(names.getA(), names.getB()));
+          String[] info = new String[Ints.max(ADDR_ID, ADDR_EMAIL, ADDR_LABEL)];
+          info[ADDR_ID] = address.get(COL_ADDRESS);
+          info[ADDR_EMAIL] = address.get("Email");
+          info[ADDR_LABEL] = address.get("Label");
+
+          recipients.put(address.get("Type"), info);
+          txt = BeeUtils.join(", ", txt, BeeUtils.notEmpty(info[ADDR_LABEL], info[ADDR_EMAIL]));
         }
         recipientsWidget.setText(BeeUtils.joinWords("Skirta:", txt));
 
@@ -193,10 +245,10 @@ public class MessageHandler extends AbstractFormCallback {
         for (Map<String, String> attachment : packet.get(TBL_ATTACHMENTS)) {
           long sz = BeeUtils.toLong(attachment.get("Size"));
 
-          String[] info = new String[Ints.max(NAME, SIZE, HASH)];
-          info[NAME] = BeeUtils.notEmpty(attachment.get("FileName"), attachment.get("Name"));
-          info[SIZE] = sizeToText(sz);
-          info[HASH] = attachment.get("Hash");
+          String[] info = new String[Ints.max(ATTA_NAME, ATTA_SIZE, ATTA_HASH)];
+          info[ATTA_NAME] = BeeUtils.notEmpty(attachment.get("FileName"), attachment.get("Name"));
+          info[ATTA_SIZE] = sizeToText(sz);
+          info[ATTA_HASH] = attachment.get("Hash");
 
           attachments.add(info);
           cnt++;
@@ -217,18 +269,34 @@ public class MessageHandler extends AbstractFormCallback {
         for (Map<String, String> part : packet.get(TBL_PARTS)) {
           txt = part.get("HtmlContent");
 
-          if (txt == null && part.get("Content") != null) {
+          if (txt == null && part.get(COL_CONTENT) != null) {
             Element pre = Document.get().createPreElement();
-            pre.setInnerHTML(part.get("Content"));
+            pre.setInnerHTML(part.get(COL_CONTENT));
             txt = pre.getString();
           }
           content = BeeUtils.join(sep.getString(), content, txt);
         }
-        waitingWidget.setVisible(false);
         partsWidget.getElement().setInnerHTML(content);
-        partsWidget.setVisible(true);
+        activate();
       }
     });
+  }
+
+  private void activate() {
+    isActive = true;
+    waitingWidget.setVisible(!isActive);
+    partsWidget.setVisible(isActive);
+  }
+
+  private Set<Long> getRecipients(String type) {
+    Set<Long> ids = Sets.newHashSet();
+
+    if (isActive && recipients.containsKey(type)) {
+      for (String[] r : recipients.get(type)) {
+        ids.add(BeeUtils.toLongOrNull(r[ADDR_ID]));
+      }
+    }
+    return ids;
   }
 
   private String sizeToText(long size) {

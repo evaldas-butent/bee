@@ -20,6 +20,7 @@ import com.butent.bee.server.data.BeeTable.BeeTrigger;
 import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
+import com.butent.bee.server.modules.ParamHolderBean;
 import com.butent.bee.server.sql.HasFrom;
 import com.butent.bee.server.sql.IsCondition;
 import com.butent.bee.server.sql.IsExpression;
@@ -52,6 +53,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.ViewColumn;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -130,6 +132,8 @@ public class SystemBean {
   UserServiceBean usr;
   @EJB
   ModuleHolderBean moduleBean;
+  @EJB
+  ParamHolderBean prm;
 
   private String dbName;
   private String dbSchema;
@@ -869,7 +873,7 @@ public class SystemBean {
                     .addFrom(tblName))
                 .getQuery());
 
-            Assert.state(res instanceof Number, "Error inserting data");
+            Assert.state(res instanceof Number, BeeUtils.join(": ", "Error inserting data", res));
           }
         } else {
           makeStructureChanges(SqlUtils.dropTable(tblBackup));
@@ -1055,13 +1059,15 @@ public class SystemBean {
     Assert.notEmpty(tableName);
     BeeTable table = null;
     XmlTable xmlTable = getXmlTable(moduleName, tableName);
+    boolean noAudit =
+        prm.getBoolean(CommonsConstants.COMMONS_MODULE, CommonsConstants.PRM_AUDIT_OFF);
 
     if (xmlTable != null) {
       if (!BeeUtils.same(xmlTable.name, tableName)) {
         logger.warning("Table name doesn't match resource name:", xmlTable.name);
       } else {
         table = new BeeTable(moduleName,
-            xmlTable.name, xmlTable.idName, xmlTable.versionName, xmlTable.audit);
+            xmlTable.name, xmlTable.idName, xmlTable.versionName, noAudit ? false : xmlTable.audit);
         String tbl = table.getName();
 
         for (int i = 0; i < 2; i++) {

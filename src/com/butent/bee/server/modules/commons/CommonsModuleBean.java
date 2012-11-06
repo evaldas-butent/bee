@@ -106,7 +106,9 @@ public class CommonsModuleBean implements BeeModule {
         new BeeParameter(COMMONS_MODULE,
             "ProgramTitle", ParameterType.TEXT, null, false, "BEE"),
         new BeeParameter(COMMONS_MODULE,
-            "Precission", ParameterType.NUMBER, "Precission of calculations", true, 5));
+            "Precission", ParameterType.NUMBER, "Precission of calculations", true, 5),
+        new BeeParameter(COMMONS_MODULE,
+            PRM_AUDIT_OFF, ParameterType.BOOLEAN, "Disable database level auditing", false, false));
 
     params.addAll(getSqlEngineParameters());
     return params;
