@@ -5,6 +5,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+import elemental.js.html.JsProgressElement;
+
 /**
  * Implements a progress bar user interface component for gauging actual stage of processes against
  * 100% of the process.
@@ -30,40 +32,47 @@ public class Progress extends Widget implements HasId {
     setValue(value);
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "progress";
   }
 
   public double getMax() {
-    return getElement().getPropertyDouble(DomUtils.ATTRIBUTE_MAX);
+    return getProgressElement().getMax();
   }
 
   public double getPosition() {
-    return getElement().getPropertyDouble(DomUtils.ATTRIBUTE_POSITION);
+    return getProgressElement().getPosition();
   }
 
   public double getValue() {
-    return getElement().getPropertyDouble(DomUtils.ATTRIBUTE_VALUE);
+    return getProgressElement().getValue();
   }
-
+  
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
   public void setMax(double max) {
-    getElement().setPropertyDouble(DomUtils.ATTRIBUTE_MAX, max);
+    getProgressElement().setMax(max);
   }
 
   public void setValue(double value) {
-    getElement().setPropertyDouble(DomUtils.ATTRIBUTE_VALUE, value);
+    getProgressElement().setValue(value);
   }
 
-  private void init() {
+  protected void init() {
     DomUtils.createId(this, getIdPrefix());
     setStyleName("bee-Progress");
+  }
+  
+  private JsProgressElement getProgressElement() {
+    return getElement().cast();
   }
 }

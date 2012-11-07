@@ -7,6 +7,7 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -18,7 +19,9 @@ import com.butent.bee.client.cli.Shell;
 import com.butent.bee.client.composite.ResourceEditor;
 import com.butent.bee.client.dialog.ConfirmationCallback;
 import com.butent.bee.client.dialog.Notification;
+import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
+import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Simple;
@@ -29,6 +32,9 @@ import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.DoubleLabel;
+import com.butent.bee.client.widget.InlineLabel;
+import com.butent.bee.client.widget.Progress;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Resource;
 import com.butent.bee.shared.Service;
@@ -44,7 +50,7 @@ import com.butent.bee.shared.utils.NameUtils;
 public class ScreenImpl implements Screen {
 
   private static final BeeLogger logger = LogUtils.getLogger(ScreenImpl.class);
-  
+
   private LayoutPanel rootPanel;
   private Split screenPanel = null;
 
@@ -57,8 +63,10 @@ public class ScreenImpl implements Screen {
   private BeeCheckBox logToggle = null;
 
   private final String logVisible = "log-visible";
-  
+
   private Notification notification = null;
+
+  private Panel progressPanel = null;
 
   public ScreenImpl() {
   }
@@ -75,9 +83,53 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
+  public void closeProgress(String id) {
+    if (getProgressPanel() != null && !BeeUtils.isEmpty(id)) {
+      Widget item = DomUtils.getChildById(getProgressPanel(), id);
+
+      if (item != null) {
+        getProgressPanel().remove(item);
+        if (!getProgressPanel().iterator().hasNext()) {
+          getScreenPanel().setWidgetSize(getProgressPanel(), 0);
+        }
+      }
+    }
+  }
+
+  @Override
   public void closeWidget(Widget widget) {
     Assert.notNull(widget, "closeWidget: view widget is null");
     getWorkspace().closeWidget(widget);
+  }
+
+  @Override
+  public String createProgress(String caption, double max) {
+    if (getProgressPanel() != null) {
+      if (!getProgressPanel().iterator().hasNext()) {
+        getScreenPanel().setWidgetSize(getProgressPanel(), 25);
+      }
+
+      Flow item = new Flow();
+      item.addStyleName("bee-ProgressItem");
+
+      if (!BeeUtils.isEmpty(caption)) {
+        InlineLabel label = new InlineLabel(caption.trim());
+        item.addStyleName("bee-ProgressCaption");
+        item.add(label);
+      }
+
+      Progress progress = new Progress(max);
+      item.add(progress);
+
+      DoubleLabel percent = new DoubleLabel(Format.getDefaultPercentFormat(), true);
+      item.addStyleName("bee-ProgressPercent");
+      item.add(percent);
+      
+      getProgressPanel().add(item);
+      return item.getId();
+    } else {
+      return null;
+    }
   }
 
   @Override
@@ -169,7 +221,7 @@ public class ScreenImpl implements Screen {
   public void showInfo() {
     getWorkspace().showInfo();
   }
-  
+
   @Override
   public void showResource(Resource resource) {
     Assert.notNull(resource);
@@ -202,6 +254,32 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
+  public void updateProgress(String id, double value) {
+    if (getProgressPanel() != null && !BeeUtils.isEmpty(id)) {
+      Widget item = DomUtils.getChildById(getProgressPanel(), id);
+
+      if (item instanceof HasWidgets) {
+        Double max = null;
+
+        for (Widget child : (HasWidgets) item) {
+          if (child instanceof Progress) {
+            ((Progress) child).setValue(value);
+            max = ((Progress) child).getMax();
+          }
+        }
+
+        if (max != null) {
+          for (Widget child : (HasWidgets) item) {
+            if (child instanceof DoubleLabel) {
+              ((DoubleLabel) child).setValue(value / max);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  @Override
   public void updateSignature(String userSign) {
     if (getSignature() != null) {
       getSignature().getElement().setInnerHTML(userSign);
@@ -220,7 +298,7 @@ public class ScreenImpl implements Screen {
 
     w = initSouth();
     if (w != null) {
-      p.addSouth(w, 32);
+      p.addSouth(w, 0, ScrollBars.BOTH);
     }
 
     w = initWest();
@@ -244,7 +322,7 @@ public class ScreenImpl implements Screen {
     if (getLogToggle() != null && !getLogToggle().getValue()) {
       ClientLogManager.setPanelVisible(false);
     }
-    
+
     RootPanel.get().add(createLogo());
   }
 
@@ -273,9 +351,9 @@ public class ScreenImpl implements Screen {
   protected Widget initNorth() {
     Complex panel = new Complex();
     panel.addStyleName("bee-NorthContainer");
-    
+
     panel.add(Global.getSearchWidget());
-    
+
     Flow commandContainer = new Flow();
     commandContainer.addStyleName("bee-MainCommandPanel");
     panel.add(commandContainer);
@@ -288,7 +366,7 @@ public class ScreenImpl implements Screen {
 
     Flow userContainer = new Flow();
     userContainer.addStyleName("bee-UserContainer");
-    
+
     BeeLabel user = new BeeLabel();
     user.addStyleName("bee-UserSignature");
     userContainer.add(user);
@@ -310,7 +388,7 @@ public class ScreenImpl implements Screen {
     exit.addStyleName("bee-UserExit");
     exitContainer.setWidget(exit);
     userContainer.add(exitContainer);
-    
+
     panel.add(userContainer);
 
     Notification nw = new Notification();
@@ -320,9 +398,13 @@ public class ScreenImpl implements Screen {
 
     return panel;
   }
-  
+
   protected Widget initSouth() {
-    return null;
+    Flow panel = new Flow();
+    panel.addStyleName("bee-ProgressPanel");
+    setProgressPanel(panel);
+
+    return panel;
   }
 
   protected Widget initWest() {
@@ -348,14 +430,15 @@ public class ScreenImpl implements Screen {
       }
     });
     setLogToggle(log);
-    
+
     admPanel.add(log);
 
     BeeCheckBox debug = new BeeCheckBox(Global.getVar(Global.VAR_DEBUG));
     debug.addStyleName("bee-DebugToggle");
     admPanel.add(debug);
-    
+
     Shell shell = new Shell();
+    shell.restore();
     shell.addStyleName("bee-AdminShell");
     admPanel.add(shell);
 
@@ -372,7 +455,7 @@ public class ScreenImpl implements Screen {
   protected void setNotification(Notification notification) {
     this.notification = notification;
   }
-  
+
   protected void setScreenPanel(Split screenPanel) {
     this.screenPanel = screenPanel;
   }
@@ -397,11 +480,11 @@ public class ScreenImpl implements Screen {
 
     Simple container = new Simple();
     container.addStyleName("bee-LogoContainer");
-    
+
     container.setWidget(logo);
     return container;
   }
-  
+
   private BeeCheckBox getLogToggle() {
     return logToggle;
   }
@@ -412,6 +495,10 @@ public class ScreenImpl implements Screen {
 
   private HasWidgets getMenuPanel() {
     return menuPanel;
+  }
+
+  private Panel getProgressPanel() {
+    return progressPanel;
   }
 
   private Workspace getWorkspace() {
@@ -426,10 +513,14 @@ public class ScreenImpl implements Screen {
     this.logToggle = logToggle;
   }
 
+  private void setProgressPanel(Panel progressPanel) {
+    this.progressPanel = progressPanel;
+  }
+
   private void setWorkspace(Workspace workspace) {
     this.workspace = workspace;
   }
-  
+
   private void updatePanel(HasWidgets p, Widget w) {
     if (p == null) {
       notifyWarning("updatePanel: panel is null");

@@ -6,12 +6,19 @@
   >
   <Columns>
     <SimpleColumn name="Document" />
+    <SimpleColumn name="File" />
+    <SimpleJoin name="File" joinType="LEFT">
+      <SimpleColumn alias="FileName" name="Name" />
+      <SimpleColumn alias="FileSize" name="Size" />
+      <SimpleColumn alias="FileMime" name="Mime" />
+    </SimpleJoin>
+    
     <SimpleColumn name="FileDate" />
     <SimpleColumn name="FileVersion" />
-    <SimpleColumn name="Name" />
+    <SimpleColumn name="Caption" />
     <SimpleColumn name="Description" />
-    <SimpleColumn name="Hash" />
-    <SimpleColumn name="Mime" />
+
+    <SimpleColumn name="Owner" />
     <SimpleJoin name="Owner" joinType="LEFT">
       <SimpleJoin name="CompanyPerson" joinType="LEFT">
         <SimpleJoin name="Person" joinType="LEFT">
@@ -22,8 +29,8 @@
     </SimpleJoin>
   </Columns>
   <Order>
-    <OrderBy column="FileDate" />
-    <OrderBy column="Name" />
+    <OrderBy column="File" />
+    <OrderBy column="FileVersion" />
   </Order>
 </View>
  

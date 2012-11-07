@@ -278,7 +278,6 @@ public class CrmModuleBean implements BeeModule {
         rs = BeeRowSet.restore(reqInfo.getParameter(VAR_TASK_DATA));
         taskId = rs.getRow(0).getId();
         Map<String, String> prm = Maps.newHashMap();
-        reqInfo.setParams(prm);
 
         for (BeeColumn col : rs.getColumns()) {
           String colName = col.getId();

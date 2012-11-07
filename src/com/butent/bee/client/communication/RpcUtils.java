@@ -5,6 +5,7 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.Response;
 
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ResponseMessage;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -13,6 +14,7 @@ import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.utils.BeeUtils;
+import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.Property;
@@ -51,25 +53,26 @@ public class RpcUtils {
     return sb.toString();
   }
 
-  public static String buildQueryString(String... x) {
-    Assert.notNull(x);
-    int c = x.length;
-    Assert.parameterCount(c, 2);
+  public static String buildQueryString(Map<String, String> parameters, boolean encode) {
+    if (BeeUtils.isEmpty(parameters)) {
+      return BeeConst.STRING_EMPTY;
+    }
 
-    StringBuilder s = new StringBuilder();
+    StringBuilder sb = new StringBuilder();
+    for (Map.Entry<String, String> entry : parameters.entrySet()) {
+      String key = BeeUtils.trim(entry.getKey());
+      String value = BeeUtils.trim(entry.getValue());
 
-    for (int i = 0; i < c - 1; i += 2) {
-      if (!BeeUtils.isEmpty(x[i]) && !BeeUtils.isEmpty(x[i + 1])) {
-        if (s.length() > 0) {
-          s.append(CommUtils.QUERY_STRING_PAIR_SEPARATOR);
+      if (!BeeUtils.isEmpty(key) && !BeeUtils.isEmpty(value)) {
+        if (sb.length() > 0) {
+          sb.append(CommUtils.QUERY_STRING_PAIR_SEPARATOR);
         }
 
-        s.append(x[i].trim());
-        s.append(CommUtils.QUERY_STRING_VALUE_SEPARATOR);
-        s.append(x[i + 1].trim());
+        sb.append(key).append(CommUtils.QUERY_STRING_VALUE_SEPARATOR);
+        sb.append(encode ? Codec.encodeBase64(value) : value);
       }
     }
-    return s.toString();
+    return sb.toString();
   }
 
   public static void dispatchMessages(ResponseObject responseObject) {

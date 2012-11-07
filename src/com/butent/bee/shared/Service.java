@@ -11,7 +11,6 @@ public class Service {
   public static final String RPC_SERVICE_PREFIX = "rpc_";
   public static final String UI_SERVICE_PREFIX = "ui_";
   public static final String COMPOSITE_SERVICE_PREFIX = "comp_";
-  public static final String UPLOAD_SERVICE_PREFIX = "upload_";
 
   public static final String DB_SERVICE_PREFIX = RPC_SERVICE_PREFIX + "db_";
   public static final String DB_JDBC = DB_SERVICE_PREFIX + "jdbc";
@@ -146,10 +145,10 @@ public class Service {
 
   public static final String VIEW_COLUMN_SEPARATOR = " ";
 
-  public static final String UPLOAD_URL = "upload";
-
-  public static final String NAME_SERVICE = "service";
-
+  public static final String VAR_FILE_NAME = RPC_VAR_PREFIX + "file_name";
+  public static final String VAR_FILE_TYPE = RPC_VAR_PREFIX + "file_type";
+  public static final String VAR_FILE_SIZE = RPC_VAR_PREFIX + "file_size";
+  
   /**
    * Returns true if {@code svc} value starts with {@link #DATA_SERVICE_PREFIX}.
    * 

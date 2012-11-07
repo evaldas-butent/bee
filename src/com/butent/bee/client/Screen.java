@@ -16,8 +16,12 @@ import com.butent.bee.shared.Resource;
 public interface Screen extends Module, NotificationListener {
 
   void addCommandItem(Widget widget);  
+
+  void closeProgress(String id);
   
   void closeWidget(Widget widget);
+  
+  String createProgress(String caption, double max);
 
   int getActivePanelHeight();
 
@@ -45,5 +49,7 @@ public interface Screen extends Module, NotificationListener {
   
   void updateMenu(Widget w);
 
+  void updateProgress(String id, double value);
+  
   void updateSignature(String userSign);
 }

@@ -107,6 +107,7 @@ public class CrmConstants {
   public static final String COL_NAME = "Name";
   public static final String COL_SUMMARY = "Summary";
   public static final String COL_DESCRIPTION = "Description";
+  public static final String COL_CAPTION = "Caption";
 
   public static final String COL_PARENT = "Parent";
   public static final String COL_ORDER = "Order";
@@ -118,6 +119,7 @@ public class CrmConstants {
   public static final String COL_GROUP = "Group";
   public static final String COL_GROUP_NAME = "GroupName";
 
+  public static final String COL_FILE = "File";
   public static final String COL_FILE_DATE = "FileDate";
   public static final String COL_FILE_VERSION = "FileVersion";
 

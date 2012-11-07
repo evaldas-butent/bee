@@ -5,15 +5,13 @@
   name="DocumentFiles" viewName="DocumentFiles" caption="Bylos"
   >
   <columns>
-    <DataColumn name="FileDate" source="FileDate" caption="Data" />
-    <DataColumn name="FileVersion" source="FileVersion" caption="Versija" />
-    <DataColumn name="Name" source="Name" caption="Pavadinimas" />
-    <DataColumn name="Description" source="Description" caption="Aprašymas" />
-    <DataColumn name="Mime" source="Mime" caption="Tipas" />
-    <DataColumn name="Hash" source="Hash" caption="Kodas" readOnly="true" />
-    <CalcColumn name="Owner" type="string" caption="Registratorius"
-      sortBy="OwnerLastName OwnerFirstName">
-      <renderer type="join" />
-    </CalcColumn>
+    <DataColumn name="FileDate" caption="Data" required="true" />
+    <DataColumn name="FileVersion" caption="Versija" />
+    <DataColumn name="Caption" caption="Pavadinimas" required="true" />
+    <DataColumn name="Description" caption="Aprašymas" width="100" />
+    <DataColumn name="FileName" caption="Originalus pavadinimas" readOnly="true" />
+    <DataColumn name="FileSize" caption="Dydis" readOnly="true" />
+    <DataColumn name="FileMime" caption="Tipas" />
+    <RelColumn name="Owner" caption="Registratorius" renderColumns="OwnerFirstName OwnerLastName" />
   </columns>
 </Grid>

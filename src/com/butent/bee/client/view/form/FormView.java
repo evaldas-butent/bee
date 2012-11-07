@@ -1,6 +1,7 @@
 package com.butent.bee.client.view.form;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.HasDataTable;
@@ -29,7 +30,7 @@ import java.util.List;
 
 public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
-    ActionEvent.HasActionHandlers, HasDimensions, HasState, HasCaption {
+    ActionEvent.HasActionHandlers, HasDimensions, HasState, HasCaption, HasAllDragAndDropHandlers {
 
   void applyOptions(String options);
 

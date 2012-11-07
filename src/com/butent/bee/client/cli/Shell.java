@@ -3,6 +3,7 @@ package com.butent.bee.client.cli;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.user.client.Event;
 
+import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -10,7 +11,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 public class Shell extends InputArea {
 
   private static final char EOL = '\n';
-  
+
+  private static final String STORAGE_KEY = "shell";
+
   public Shell() {
     super();
     addStyleName("bee-Shell");
@@ -40,7 +43,7 @@ public class Shell extends InputArea {
         ok = EventUtils.isClick(type) && event.getAltKey();
       }
     }
-    
+
     if (ok) {
       int pos = getCursorPos();
       int start = (pos > 0) ? getValue().lastIndexOf(EOL, pos - 1) + 1 : 0;
@@ -54,19 +57,37 @@ public class Shell extends InputArea {
       } else {
         line = getValue().substring(start);
       }
-      
+
       event.preventDefault();
       if (BeeUtils.isEmpty(line)) {
         return;
       }
-      
+
       if (pos == getValue().length()) {
         setValue(getValue() + EOL);
         setCursorPos(pos + 1);
       }
-      CliWorker.execute(line.trim());
-    } else  {
+
+      ok = CliWorker.execute(line.trim());
+      if (ok) {
+        save();
+      }
+
+    } else {
       super.onBrowserEvent(event);
+    }
+  }
+
+  public void restore() {
+    String stored = BeeKeeper.getStorage().getItem(STORAGE_KEY);
+    if (!BeeUtils.isEmpty(stored)) {
+      setValue(stored.trim());
+    }
+  }
+
+  public void save() {
+    if (!BeeUtils.isEmpty(getValue())) {    
+      BeeKeeper.getStorage().setItem(STORAGE_KEY, getValue().trim());
     }
   }
 }

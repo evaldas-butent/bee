@@ -456,6 +456,15 @@ public class HtmlTable extends Panel implements HasId, IsHtmlTable {
     getCellFormatter().addStyleName(row, column, cellStyleName);
   }
 
+  protected int insertRow(int beforeRow) {
+    if (beforeRow != getRowCount()) {
+      checkRowBounds(beforeRow);
+    }
+    Element tr = DOM.createTR();
+    DOM.insertChild(bodyElem, tr, beforeRow);
+    return beforeRow;
+  }
+
   private void checkCellBounds(int row, int column) {
     checkRowBounds(row);
     Assert.nonNegative(column, "Column " + column + " must be non-negative");
@@ -513,15 +522,6 @@ public class HtmlTable extends Panel implements HasId, IsHtmlTable {
 
   private void init() {
     DomUtils.createId(this, getIdPrefix());
-  }
-
-  private int insertRow(int beforeRow) {
-    if (beforeRow != getRowCount()) {
-      checkRowBounds(beforeRow);
-    }
-    Element tr = DOM.createTR();
-    DOM.insertChild(bodyElem, tr, beforeRow);
-    return beforeRow;
   }
 
   private boolean internalClearCell(Element td, boolean clearInnerHTML) {

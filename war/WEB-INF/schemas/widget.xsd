@@ -187,6 +187,7 @@
     <xs:attribute name="html" type="xs:string" />
     <xs:attribute name="resource" type="ui:imageResource" />
     <xs:attribute name="url" type="xs:anyURI" />
+    <xs:attributeGroup ref="ui:appearance" />
   </xs:complexType>
 
   <xs:element name="Toggle" type="customButton" substitutionGroup="widget" />
@@ -864,6 +865,19 @@
       <xs:complexContent>
         <xs:extension base="widgetType">
           <xs:attribute name="multiple" type="xs:boolean" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="FileCollector" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="widgetType">
+          <xs:sequence>
+            <xs:element name="upFace" type="buttonFace" minOccurs="0" maxOccurs="1" />
+          </xs:sequence>
+          <xs:attributeGroup ref="ui:cellAppearance" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

@@ -35,8 +35,22 @@ import javax.servlet.http.HttpSession;
  */
 
 public class RequestInfo implements HasExtendedInfo, HasOptions {
+
   private static int COUNTER = 0;
 
+  private final HttpServletRequest request;
+
+  private final String method;
+  private final String query;
+
+  private final Map<String, String> headers;
+  private final Map<String, String> params;
+  private final Map<String, String> vars;
+
+  private final int contentLen;
+  private String contentTypeHeader;
+  private String content;
+  
   private String id = null;
 
   private String service = null;
@@ -46,32 +60,19 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
   private String separator = null;
   private String options = null;
 
-  private String method = null;
-  private String query = null;
-
-  private Map<String, String> headers = null;
-  private Map<String, String> params = null;
-  private Map<String, String> vars = null;
-
-  private int contentLen = -1;
-  private String contentTypeHeader = null;
-  private String content = null;
-
-  private ContentType contentType;
-
-  private HttpServletRequest request = null;
+  private ContentType contentType = null;
 
   public RequestInfo(HttpServletRequest req) {
     super();
     COUNTER++;
 
-    request = req;
+    this.request = req;
 
-    method = req.getMethod();
-    query = req.getQueryString();
+    this.method = req.getMethod();
+    this.query = req.getQueryString();
 
-    headers = HttpUtils.getHeaders(req);
-    params = HttpUtils.getParameters(req);
+    this.headers = HttpUtils.getHeaders(req, false);
+    this.params = HttpUtils.getParameters(req, false);
 
     if (!BeeUtils.isEmpty(headers)) {
       for (Map.Entry<String, String> el : headers.entrySet()) {
@@ -84,15 +85,20 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
         setRpcInfo(el.getKey(), el.getValue());
       }
     }
-
-    contentLen = req.getContentLength();
+    
+    this.contentLen = req.getContentLength();
     if (contentLen > 0) {
-      contentTypeHeader = req.getContentType();
-      content = CommUtils.getContent(getContentType(), HttpUtils.readContent(req));
+      this.contentTypeHeader = req.getContentType();
+      this.content = CommUtils.getContent(getContentType(), HttpUtils.readContent(req));
+    } else {
+      this.contentTypeHeader = null;
+      this.content = null;
     }
 
     if (isXml()) {
-      vars = XmlUtils.getElements(content, Service.XML_TAG_DATA);
+      this.vars = XmlUtils.getElements(content, Service.XML_TAG_DATA);
+    } else {
+      this.vars = null;
     }
   }
 
@@ -353,20 +359,12 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     this.content = content;
   }
 
-  public void setContentLen(int contentLen) {
-    this.contentLen = contentLen;
-  }
-
   public void setContentTypeHeader(String contentTypeHeader) {
     this.contentTypeHeader = contentTypeHeader;
   }
 
   public void setDsn(String dsn) {
     this.dsn = dsn;
-  }
-
-  public void setHeaders(Map<String, String> headers) {
-    this.headers = headers;
   }
 
   public void setId(String id) {
@@ -377,25 +375,9 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
     this.locale = locale;
   }
 
-  public void setMethod(String method) {
-    this.method = method;
-  }
-
   @Override
   public void setOptions(String options) {
     this.options = options;
-  }
-
-  public void setParams(Map<String, String> params) {
-    this.params = params;
-  }
-
-  public void setQuery(String query) {
-    this.query = query;
-  }
-
-  public void setRequest(HttpServletRequest request) {
-    this.request = request;
   }
 
   public void setSeparator(String separator) {
@@ -404,10 +386,6 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
 
   public void setService(String svc) {
     this.service = svc;
-  }
-
-  public void setVars(Map<String, String> vars) {
-    this.vars = vars;
   }
 
   @Override
@@ -488,7 +466,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
       return null;
     }
 
-    Map<String, String> lst = HttpUtils.getHeaders(req);
+    Map<String, String> lst = HttpUtils.getHeaders(req, false);
     if (BeeUtils.isEmpty(lst)) {
       return null;
     }
@@ -566,7 +544,7 @@ public class RequestInfo implements HasExtendedInfo, HasOptions {
       return null;
     }
 
-    Map<String, String> lst = HttpUtils.getParameters(req);
+    Map<String, String> lst = HttpUtils.getParameters(req, false);
     if (BeeUtils.isEmpty(lst)) {
       return null;
     }

@@ -69,7 +69,7 @@
 
     &separator;
     <FlowPanel style="&section;">
-      <Label html="Bylos:" style="&header;" />
+      <FileCollector style="margin-left: 128px;" options="name, type" />
     </FlowPanel>
 
     &separator;

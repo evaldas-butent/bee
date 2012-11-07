@@ -27,14 +27,17 @@ public class Format {
 
   private static class NumberConstantsImpl implements NumberConstants {
 
+    @Override
     public String currencyPattern() {
       return DEFAULT_NUMBER_CONSTANTS.currencyPattern();
     }
 
+    @Override
     public String decimalPattern() {
       return DEFAULT_NUMBER_CONSTANTS.decimalPattern();
     }
 
+    @Override
     public String decimalSeparator() {
       if (defaultDecimalSeparator == null) {
         return DEFAULT_NUMBER_CONSTANTS.decimalSeparator();
@@ -43,18 +46,22 @@ public class Format {
       }
     }
 
+    @Override
     public String defCurrencyCode() {
       return DEFAULT_NUMBER_CONSTANTS.defCurrencyCode();
     }
 
+    @Override
     public String exponentialSymbol() {
       return DEFAULT_NUMBER_CONSTANTS.exponentialSymbol();
     }
 
+    @Override
     public String globalCurrencyPattern() {
       return DEFAULT_NUMBER_CONSTANTS.globalCurrencyPattern();
     }
 
+    @Override
     public String groupingSeparator() {
       if (defaultGroupingSeparator == null) {
         return DEFAULT_NUMBER_CONSTANTS.groupingSeparator();
@@ -63,42 +70,52 @@ public class Format {
       }
     }
 
+    @Override
     public String infinity() {
       return DEFAULT_NUMBER_CONSTANTS.infinity();
     }
 
+    @Override
     public String minusSign() {
       return DEFAULT_NUMBER_CONSTANTS.minusSign();
     }
 
+    @Override
     public String monetaryGroupingSeparator() {
       return DEFAULT_NUMBER_CONSTANTS.monetaryGroupingSeparator();
     }
 
+    @Override
     public String monetarySeparator() {
       return DEFAULT_NUMBER_CONSTANTS.monetarySeparator();
     }
 
+    @Override
     public String notANumber() {
       return DEFAULT_NUMBER_CONSTANTS.notANumber();
     }
 
+    @Override
     public String percent() {
       return DEFAULT_NUMBER_CONSTANTS.percent();
     }
 
+    @Override
     public String percentPattern() {
       return DEFAULT_NUMBER_CONSTANTS.percentPattern();
     }
 
+    @Override
     public String perMill() {
       return DEFAULT_NUMBER_CONSTANTS.perMill();
     }
 
+    @Override
     public String plusSign() {
       return DEFAULT_NUMBER_CONSTANTS.plusSign();
     }
 
+    @Override
     public String scientificPattern() {
       return DEFAULT_NUMBER_CONSTANTS.scientificPattern();
     }
@@ -108,6 +125,7 @@ public class Format {
       return DEFAULT_NUMBER_CONSTANTS.simpleCurrencyPattern();
     }
 
+    @Override
     public String zeroDigit() {
       return DEFAULT_NUMBER_CONSTANTS.zeroDigit();
     }
@@ -141,6 +159,8 @@ public class Format {
   private static NumberFormat defaultLongFormat = getNumberFormat("#,###");
   private static NumberFormat defaultCurrencyFormat = getNumberFormat("#,##0.00;(#)");
 
+  private static NumberFormat defaultPercentFormat = getNumberFormat("0.0%");
+  
   private static String defaultDecimalPatternInteger = "#,##0";
 
   private static DateTimeFormat defaultDateFormat =
@@ -244,6 +264,10 @@ public class Format {
         format = null;
     }
     return format;
+  }
+
+  public static NumberFormat getDefaultPercentFormat() {
+    return defaultPercentFormat;
   }
 
   public static DateTimeFormat getDefaultTimeFormat() {

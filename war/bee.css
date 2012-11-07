@@ -1696,6 +1696,58 @@ body, select {
   margin-right: 5px;
 }
 
+.bee-ProgressPanel {
+}
+.bee-ProgressItem {
+  float: left;
+  margin-left: 2em;
+  margin-top: 2px;
+}
+.bee-ProgressCaption {
+}
+.bee-ProgressItem .bee-Progress {
+  margin: 0 3px 1px 3px;
+}
+.bee-ProgressPercent {
+}
+
+.bee-FileCollector-panel {
+  border-collapse: collapse;
+}
+.bee-FileCollector-chooseCell {
+  padding-top: 4px;
+}
+.bee-FileCollector-hiddenWidget {
+  width: 1px;
+}
+.bee-FileCollector-row:hover {
+  background-color: #f2f2f2;
+}
+.bee-FileCollector-row td {
+  padding: 4px;
+  border-bottom: 1px solid #b4b4b4;
+}
+.bee-FileCollector-editing {
+  background-color: #ffa;
+}
+.bee-FileCollector-editColumn, .bee-FileCollector-deleteColumn {
+  width: 30px;
+}
+.bee-FileCollector-editCell, .bee-FileCollector-deleteCell {
+  text-align: right;
+}
+
+.bee-FileCollector-edit-panel td {
+  padding: 5px;
+}
+.bee-FileCollector-edit-name {
+  width: 300px;
+}
+.bee-FileCollector-edit-description {
+  width: 300px;
+  height: 60px;
+}
+
 .bee-MainSearchOptionsContainer {
   display: none;
 }

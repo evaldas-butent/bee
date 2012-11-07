@@ -124,30 +124,37 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     insert(widget, Direction.CENTER, 0, null, scroll, -1);
   }
 
+  @Override
   public HandlerRegistration addDragEndHandler(DragEndHandler handler) {
     return addBitlessDomHandler(handler, DragEndEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addDragEnterHandler(DragEnterHandler handler) {
     return addBitlessDomHandler(handler, DragEnterEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addDragHandler(DragHandler handler) {
     return addBitlessDomHandler(handler, DragEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addDragLeaveHandler(DragLeaveHandler handler) {
     return addBitlessDomHandler(handler, DragLeaveEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addDragOverHandler(DragOverHandler handler) {
     return addBitlessDomHandler(handler, DragOverEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addDragStartHandler(DragStartHandler handler) {
     return addBitlessDomHandler(handler, DragStartEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addDropHandler(DropHandler handler) {
     return addBitlessDomHandler(handler, DropEvent.getType());
   }
@@ -200,14 +207,17 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     insert(widget, Direction.WEST, size, null, scroll, splSize);
   }
 
+  @Override
   public void animate(int duration) {
     animate(duration, null);
   }
 
+  @Override
   public void animate(int duration, final Layout.AnimationCallback callback) {
     layoutCmd.schedule(duration, callback);
   }
 
+  @Override
   public void forceLayout() {
     layoutCmd.cancel();
     doLayout();
@@ -301,10 +311,12 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     return lst;
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "split";
   }
@@ -433,10 +445,12 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     insert(widget, Direction.WEST, size, before, sb, splSize);
   }
 
+  @Override
   public void onLayout() {
     forceLayout();
   }
 
+  @Override
   public void onResize() {
     if (providesResize()) {
       for (Widget child : getChildren()) {
@@ -497,6 +511,7 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     }
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

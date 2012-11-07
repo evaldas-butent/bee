@@ -13,6 +13,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.StyleInjector;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.ErrorEvent;
@@ -30,6 +32,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.ajaxloader.AjaxKeyRepository;
@@ -69,7 +72,6 @@ import com.butent.bee.client.language.DetectionResult;
 import com.butent.bee.client.language.Language;
 import com.butent.bee.client.language.Translation;
 import com.butent.bee.client.language.TranslationCallback;
-import com.butent.bee.client.layout.Absolute;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Flow;
@@ -82,6 +84,8 @@ import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Browser;
+import com.butent.bee.client.utils.FileInfo;
+import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
@@ -90,8 +94,8 @@ import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.client.widget.Meter;
-import com.butent.bee.client.widget.Progress;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -146,9 +150,9 @@ public class CliWorker {
 
   private static boolean cornified = false;
 
-  public static void execute(String line) {
+  public static boolean execute(String line) {
     if (BeeUtils.isEmpty(line)) {
-      return;
+      return false;
     }
 
     String v = line.trim();
@@ -314,6 +318,8 @@ public class CliWorker {
       unicode(arr);
     } else if (z.startsWith("unit")) {
       showUnits(arr);
+    } else if (z.startsWith("upl")) {
+      upload();
     } else if (z.startsWith("user")) {
       showPropData(BeeKeeper.getUser().getInfo());
     } else if (z.equals("vars")) {
@@ -335,7 +341,9 @@ public class CliWorker {
 
     } else {
       Global.inform("wtf", v);
+      return false;
     }
+    return true;
   }
 
   private static void clear(String args) {
@@ -1945,60 +1953,85 @@ public class CliWorker {
       Global.showError("progress element not supported");
       return;
     }
-
-    final int steps;
-    int millis = 250;
-
-    double max = 100;
-    double value = 0;
+    
+    final int count;
+    int maxDuration;
 
     String s = ArrayUtils.getQuietly(arr, 1);
-    if (BeeUtils.isDigit(s)) {
-      steps = BeeUtils.toInt(s);
+    if (BeeUtils.isPositiveInt(s)) {
+      count = BeeUtils.toInt(s);
     } else {
-      steps = 100;
+      count = 20;
     }
+
     s = ArrayUtils.getQuietly(arr, 2);
-    if (BeeUtils.isDigit(s)) {
-      millis = BeeUtils.toInt(s);
+    if (BeeUtils.isPositiveInt(s)) {
+      maxDuration = BeeUtils.toInt(s);
+      if (maxDuration < 100) {
+        maxDuration *= TimeUtils.MILLIS_PER_SECOND;
+      }
+    } else {
+      maxDuration = TimeUtils.MILLIS_PER_MINUTE;
     }
-    s = ArrayUtils.getQuietly(arr, 3);
-    if (BeeUtils.isDigit(s)) {
-      max = BeeUtils.toDouble(s);
+    
+    class Prog {
+      final double max;
+      final long start;
+      final long finish;
+      
+      String id = null;
+
+      private Prog(double max, long start, long finish) {
+        super();
+        this.max = max;
+        this.start = start;
+        this.finish = finish;
+      }
     }
-
-    Absolute panel = new Absolute();
-    panel.add(new BeeLabel("indeterminate"), 10, 8);
-    panel.add(new Progress(), 120, 10);
-
-    panel.add(new BeeLabel(NameUtils.addName("steps", steps)), 10, 36);
-    panel.add(new BeeLabel(NameUtils.addName("millis", millis)), 10, 53);
-    panel.add(new BeeLabel(NameUtils.addName("max", BeeUtils.toString(max))), 10, 70);
-
-    final Progress prg = new Progress(max, value);
-    panel.add(prg, 120, 40);
-    final BeeLabel lbl = new BeeLabel();
-    panel.add(lbl, 160, 70);
-
+    
+    final long now = System.currentTimeMillis();
+    
+    final List<Prog> list = Lists.newArrayList();
+    for (int i = 0; i < count; i++) {
+      double max = BeeUtils.randomDouble(100, 10000);
+      long start = now + BeeUtils.randomInt(0, maxDuration / 2);
+      long finish = start + BeeUtils.randomInt(maxDuration / 5, maxDuration);
+      
+      list.add(new Prog(max, start, finish));
+    }
+    
     Timer timer = new Timer() {
+      private int closed = 0;
+
       @Override
       public void run() {
-        double v = prg.getValue();
-        double x = prg.getMax();
+        long time = System.currentTimeMillis();
 
-        v += x / steps;
-        if (v > x) {
-          v = 0;
+        for (Prog prog : list) {
+          if (prog.id == null) {
+            if (prog.start < time && prog.finish > time) {
+              String caption = BeeUtils.toString(prog.start - now) +
+                  "-" + BeeUtils.toString(prog.finish - now); 
+              prog.id = BeeKeeper.getScreen().createProgress(caption, prog.max);
+            }
+
+          } else if (prog.finish > time) {
+            double value = prog.max * (time - prog.start) / (prog.finish - prog.start);
+            BeeKeeper.getScreen().updateProgress(prog.id, value);
+            
+          } else {
+            BeeKeeper.getScreen().closeProgress(prog.id);
+            prog.id = null;
+            
+            closed++;
+            if (closed >= count) {
+              cancel();
+            }
+          }
         }
-
-        prg.setValue(v);
-        lbl.setText(BeeUtils.join(BeeUtils.space(3), BeeUtils.round(v, 1),
-            BeeUtils.round(prg.getPosition(), 3)));
       }
     };
-    timer.scheduleRepeating(millis);
-
-    BeeKeeper.getScreen().updateActivePanel(panel, ScrollBars.BOTH);
+    timer.scheduleRepeating(100);
   }
 
   private static void showPropData(List<Property> data, String... columnLabels) {
@@ -2837,6 +2870,32 @@ public class CliWorker {
     data.put("crc32d", Codec.crc32Direct(bytes));
 
     BeeKeeper.getRpc().setUserData(id, data);
+  }
+  
+  private static void upload() {
+    final Popup popup = new Popup(true, true);
+
+    final InputFile widget = new InputFile(true);
+    widget.addChangeHandler(new ChangeHandler() {
+      @Override
+      public void onChange(ChangeEvent event) {
+        popup.hide();
+        List<FileInfo> files = FileUtils.getFileInfo(widget.getFiles());
+        
+        for (final FileInfo fi : files) {
+          logger.debug("uploading", fi.getName(), fi.getType(), fi.getSize());
+          FileUtils.upload(fi, new Callback<Long>() {
+            @Override
+            public void onSuccess(Long result) {
+              logger.debug("uploaded", fi.getName(), ", result:", result);
+            }
+          });
+        }
+      }
+    });
+    
+    popup.setWidget(widget);
+    popup.center();
   }
 
   private static void whereAmI() {

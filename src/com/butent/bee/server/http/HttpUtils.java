@@ -40,19 +40,18 @@ public class HttpUtils {
     }
   }
 
-  public static Map<String, String> getHeaders(HttpServletRequest req) {
+  public static Map<String, String> getHeaders(HttpServletRequest req, boolean decode) {
+    Map<String, String> headers = new HashMap<String, String>();
     if (req == null) {
-      return null;
+      return headers;
     }
 
     Enumeration<String> lst = req.getHeaderNames();
     if (lst == null) {
-      return null;
+      return headers;
     }
 
-    Map<String, String> headers = new HashMap<String, String>();
     String nm, v;
-
     while (lst.hasMoreElements()) {
       nm = lst.nextElement();
       if (BeeUtils.isEmpty(nm)) {
@@ -67,15 +66,16 @@ public class HttpUtils {
       }
 
       if (!BeeUtils.isEmpty(v)) {
-        headers.put(nm, v);
+        headers.put(nm, decode ? Codec.decodeBase64(v) : v);
       }
     }
     return headers;
   }
 
-  public static Map<String, String> getParameters(HttpServletRequest req) {
+  public static Map<String, String> getParameters(HttpServletRequest req, boolean decode) {
+    Map<String, String> params = new HashMap<String, String>();
     if (req == null) {
-      return null;
+      return params;
     }
 
     Map<String, String[]> lst = req.getParameterMap();
@@ -85,7 +85,7 @@ public class HttpUtils {
     if (BeeUtils.isEmpty(lst)) {
       Enumeration<String> z = req.getParameterNames();
       if (z == null) {
-        return null;
+        return params;
       }
 
       lst = new HashMap<String, String[]>();
@@ -105,10 +105,8 @@ public class HttpUtils {
     }
 
     if (BeeUtils.isEmpty(lst)) {
-      return null;
+      return params;
     }
-
-    Map<String, String> params = new HashMap<String, String>();
 
     for (Map.Entry<String, String[]> el : lst.entrySet()) {
       nm = el.getKey();
@@ -118,7 +116,7 @@ public class HttpUtils {
       }
 
       for (int i = 0; i < v.length; i++) {
-        params.put(nm, v[i]);
+        params.put(nm, decode ? Codec.decodeBase64(v[i]) : v[i]);
       }
     }
     return params;

@@ -5,13 +5,12 @@
   idName="FileID"
   >
   <Fields>
+    <Relation name="Document" relation="Documents" notNull="true" />
+    <Relation name="File" relation="Files" notNull="true" />
+    <String name="Caption" precision="100" />
+    <Text name="Description" />
     <DateTime name="FileDate" notNull="true" />
     <String name="FileVersion" precision="30" />
-    <Relation name="Document" notNull="true" relation="Documents" />
-    <String name="Name" precision="100" notNull="true" />
-    <Text name="Description" />
-    <String name="Hash" precision="100" />
-    <String name="Mime" precision="100" />
-    <Relation name="Owner" notNull="true" relation="Users" />
+    <Relation name="Owner" notNull="true" relation="Users" defExpr="CURRENT_USER" />
   </Fields>
 </Table>

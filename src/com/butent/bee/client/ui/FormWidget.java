@@ -26,6 +26,7 @@ import com.google.gwt.xml.client.Element;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Disclosure;
+import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.InputTime;
 import com.butent.bee.client.composite.MultiSelector;
@@ -174,6 +175,7 @@ public enum FormWidget {
   DECORATOR("decorator", EnumSet.of(Type.IS_DECORATOR)),
   DISCLOSURE("Disclosure", EnumSet.of(Type.HAS_CHILDREN)),
   DOUBLE_LABEL("DoubleLabel", EnumSet.of(Type.DISPLAY)),
+  FILE_COLLECTOR("FileCollector", null),
   FLOW_PANEL("FlowPanel", EnumSet.of(Type.HAS_CHILDREN)),
   FRAME("Frame", EnumSet.of(Type.DISPLAY)),
   GRID_PANEL("GridPanel", EnumSet.of(Type.IS_GRID)),
@@ -604,6 +606,10 @@ public enum FormWidget {
         } else {
           widget = new DoubleLabel(format, inline);
         }
+        break;
+        
+      case FILE_COLLECTOR:
+        widget = new FileCollector();
         break;
 
       case FLOW_PANEL:

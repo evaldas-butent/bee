@@ -5,9 +5,8 @@
   
   name="NewDocument">
 
-  <FlowPanel class="flexBox-vertical">
+  <FlowPanel>
     <xi:include href="widgets/DocumentFields.widget.xml" />
-    <InputFile name="input" multiple="true" style="visibility: hidden;" />
-    <GridPanel name="NewFiles" class="flexible" style="margin: 1ex 10px;" />
+    <FileCollector style="margin: 1ex 10px;" options="date, version, name, description, type" />
   </FlowPanel>
 </f:Form>

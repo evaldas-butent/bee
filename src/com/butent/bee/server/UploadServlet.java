@@ -1,10 +1,12 @@
 package com.butent.bee.server;
 
 import com.butent.bee.server.http.HttpUtils;
+import com.butent.bee.server.modules.commons.FileStorageBean;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.communication.ContentType;
-import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -12,7 +14,9 @@ import com.butent.bee.shared.utils.BeeUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Map;
 
+import javax.ejb.EJB;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
@@ -29,63 +33,70 @@ public class UploadServlet extends HttpServlet {
 
   private static BeeLogger logger = LogUtils.getLogger(UploadServlet.class);
 
-  private ResponseObject dispatch(String service) {
-    ResponseObject responseObject;
-
-    String msg = BeeUtils.joinWords(service, "service not recognized");
-    logger.warning(msg);
-    responseObject = ResponseObject.error(msg);
-
-    return responseObject;
-  }
-
+  @EJB
+  FileStorageBean fs;
+  
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
-    doService(req, resp);
+    Assert.untouchable();
   }
 
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
-    doService(req, resp);
+    handleFileUpload(req, resp);
   }
 
-  private void doService(HttpServletRequest req, HttpServletResponse resp) {
+  private void handleFileUpload(HttpServletRequest req, HttpServletResponse resp) {
     long start = System.currentTimeMillis();
-    String service = HttpUtils.readPart(req, Service.NAME_SERVICE);
     String prefix = getClass().getSimpleName() + ":";
+    
+    Map<String, String> parameters = HttpUtils.getHeaders(req, false);
+    parameters.putAll(HttpUtils.getParameters(req, true));
+    
+    String fileName = parameters.get(Service.VAR_FILE_NAME);
+    String mimeType = parameters.get(Service.VAR_FILE_TYPE);
+    Long fileSize = BeeUtils.toLongOrNull(parameters.get(Service.VAR_FILE_SIZE));
+    
+    String response;
+    
+    if (BeeUtils.isEmpty(fileName)) {
+      response = BeeUtils.joinWords(prefix, "file name not specified");
+      logger.severe(response);
 
-    ResponseObject responseObject;
-    if (BeeUtils.isEmpty(service)) {
-      String msg = BeeUtils.joinWords(prefix, "service name not specified");
-      logger.severe(msg);
-      responseObject = ResponseObject.error(msg);
     } else {
-      logger.info(prefix, "request", service);
-      responseObject = dispatch(service);
-      if (responseObject == null) {
-        String msg = BeeUtils.joinWords(prefix, service, "response empty");
-        logger.warning(msg);
-        responseObject = ResponseObject.warning(msg);
+      if (BeeUtils.isEmpty(mimeType)) {
+        logger.warning(prefix, "mime type not specified:", fileName, "size:", fileSize);
+      }
+
+      try {
+        Long fileId = fs.storeFile(req.getInputStream(), fileName, mimeType);
+        if (DataUtils.isId(fileId)) {
+          response = BeeUtils.toString(fileId);
+          logger.info(prefix, TimeUtils.elapsedSeconds(start), "stored", fileName,
+              "type", mimeType, "size", fileSize, "id", fileId);
+        } else {
+          response = BeeUtils.joinWords(prefix, fileName, "not stored");
+          logger.warning(response);
+        }
+
+      } catch (IOException ex) {
+        logger.error(ex);
+        response = prefix + BeeUtils.notEmpty(ex.getMessage(), ex.getClass().getSimpleName());
       }
     }
 
-    ContentType ctp = CommUtils.formResponseContentType;
+    ContentType ctp = ContentType.TEXT;
     resp.setContentType(CommUtils.getMediaType(ctp));
     resp.setCharacterEncoding(CommUtils.getCharacterEncoding(ctp));
 
-    String content = CommUtils.prepareContent(ctp, responseObject.serialize());
-
-    logger.info(prefix, TimeUtils.elapsedSeconds(start), "response",
-        resp.getContentType(), content.length());
-
     try {
       PrintWriter writer = resp.getWriter();
-      writer.print(content);
+      writer.print(response);
       writer.flush();
     } catch (IOException ex) {
-      LogUtils.logStack(logger, ex);
+      logger.error(ex);
     }
   }
 }

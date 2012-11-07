@@ -12,7 +12,8 @@ import java.util.logging.LogRecord;
  */
 
 public class LogFormatter extends Formatter {
-  public static Level LOG_SEPARATOR_LEVEL = Level.FINE;
+
+  public static Level LOG_SEPARATOR_LEVEL = Level.INFO;
   public static String LOG_SEPARATOR_TAG = "-";
 
   @Override
@@ -34,5 +35,4 @@ public class LogFormatter extends Formatter {
       return LOG_SEPARATOR_TAG.equals(record.getMessage());
     }
   }
-
 }
