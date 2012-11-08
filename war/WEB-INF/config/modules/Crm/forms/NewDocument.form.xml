@@ -7,6 +7,6 @@
 
   <FlowPanel>
     <xi:include href="widgets/DocumentFields.widget.xml" />
-    <FileCollector style="margin: 1ex 10px;" options="date, version, name, description, type" />
+    <FileCollector style="margin: 1ex 10px;" visibleColumns="all" editableColumns="all" />
   </FlowPanel>
 </f:Form>

@@ -1697,9 +1697,10 @@ body, select {
 }
 
 .bee-ProgressPanel {
+  border-top: 1px solid #b4b4b4;
 }
 .bee-ProgressItem {
-  float: left;
+  display: inline-block;
   margin-left: 2em;
   margin-top: 2px;
 }
@@ -1714,16 +1715,16 @@ body, select {
 .bee-FileCollector-panel {
   border-collapse: collapse;
 }
-.bee-FileCollector-chooseCell {
+.bee-FileCollector-faceCell {
   padding-top: 4px;
 }
 .bee-FileCollector-hiddenWidget {
   width: 1px;
 }
-.bee-FileCollector-row:hover {
+.bee-FileCollector-Row:hover {
   background-color: #f2f2f2;
 }
-.bee-FileCollector-row td {
+.bee-FileCollector-Row td {
   padding: 4px;
   border-bottom: 1px solid #b4b4b4;
 }
@@ -1737,13 +1738,13 @@ body, select {
   text-align: right;
 }
 
-.bee-FileCollector-edit-panel td {
+.bee-FileCollector-editor-panel td {
   padding: 5px;
 }
-.bee-FileCollector-edit-name {
+.bee-FileCollector-editor-name {
   width: 300px;
 }
-.bee-FileCollector-edit-description {
+.bee-FileCollector-editor-description {
   width: 300px;
   height: 60px;
 }

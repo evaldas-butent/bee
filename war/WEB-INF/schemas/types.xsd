@@ -146,4 +146,31 @@
       <xs:enumeration value="RANDOM" />
     </xs:restriction>
   </xs:simpleType>
+  
+  <xs:simpleType name="fileInfoColumn">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="date" />
+      <xs:enumeration value="version" />
+      <xs:enumeration value="name" />
+      <xs:enumeration value="description" />
+      <xs:enumeration value="size" />
+      <xs:enumeration value="type" />
+      <xs:enumeration value="edit" />
+      <xs:enumeration value="delete" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="fileInfoColumns">
+    <xs:union>
+      <xs:simpleType>
+        <xs:list itemType="fileInfoColumn" />
+      </xs:simpleType>
+      <xs:simpleType>
+        <xs:restriction base="xs:string" >
+          <xs:enumeration value="all" />
+          <xs:enumeration value="none" />
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:union>
+  </xs:simpleType>
 </xs:schema>

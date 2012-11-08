@@ -430,5 +430,4 @@
       <xs:enumeration value="button" />
     </xs:restriction>
   </xs:simpleType>
-
 </xs:schema>

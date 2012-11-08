@@ -16,11 +16,13 @@ public class ValueLabel<T> extends BeeLabel implements TakesValue<T> {
     super(inline);
     this.renderer = renderer;
   }
-
+  
+  @Override
   public T getValue() {
     return value;
   }
 
+  @Override
   public void setValue(T value) {
     this.value = value;
     setText(renderer.render(value));

@@ -69,7 +69,9 @@
 
     &separator;
     <FlowPanel style="&section;">
-      <FileCollector style="margin-left: 128px;" options="name, type" />
+      <FileCollector style="margin-left: 128px;">
+        <face resource="attachment" />
+      </FileCollector>
     </FlowPanel>
 
     &separator;

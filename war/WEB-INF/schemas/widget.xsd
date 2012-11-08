@@ -875,8 +875,10 @@
       <xs:complexContent>
         <xs:extension base="widgetType">
           <xs:sequence>
-            <xs:element name="upFace" type="buttonFace" minOccurs="0" maxOccurs="1" />
+            <xs:element name="face" type="buttonFace" minOccurs="0" maxOccurs="1" />
           </xs:sequence>
+          <xs:attribute name="visibleColumns" type="type:fileInfoColumns" />
+          <xs:attribute name="editableColumns" type="type:fileInfoColumns" />
           <xs:attributeGroup ref="ui:cellAppearance" />
         </xs:extension>
       </xs:complexContent>

@@ -27,8 +27,8 @@ import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
 import com.butent.bee.client.view.grid.GridCallback;
 import com.butent.bee.shared.Assert;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -154,15 +154,13 @@ public class DocumentHandler {
 
     private void sendFiles(final long docId) {
       final String viewName = FILE_VIEW_NAME;
-      final BeeRowSet rowSet = new BeeRowSet(viewName, Data.getColumns(viewName));
+      final List<BeeColumn> columns = Data.getColumns(viewName);
 
       for (final FileInfo fileInfo : getCollector().getFiles()) {
         FileUtils.upload(fileInfo, new Callback<Long>() {
           @Override
           public void onSuccess(Long result) {
-            rowSet.clearRows();
-
-            BeeRow row = DataUtils.createEmptyRow(rowSet.getNumberOfColumns());
+            BeeRow row = DataUtils.createEmptyRow(columns.size());
 
             Data.setValue(viewName, row, COL_DOCUMENT, docId);
             Data.setValue(viewName, row, COL_FILE, result);
@@ -175,9 +173,7 @@ public class DocumentHandler {
                 BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
             Data.setValue(viewName, row, COL_DESCRIPTION, fileInfo.getDescription());
             
-            rowSet.addRow(row);
-            
-            Queries.insert(viewName, rowSet.getColumns(), row, null);
+            Queries.insert(viewName, columns, row, null);
           }
         });
       }

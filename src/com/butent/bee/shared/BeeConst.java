@@ -40,6 +40,8 @@ public class BeeConst {
   public static final String DEFAULT = "default";
   public static final String ERROR = "error";
   public static final String NULL = "null";
+  public static final String ALL = "all";
+  public static final String NONE = "none";
 
   public static final String DEFAULT_LIST_SEPARATOR = ", ";
   public static final String DEFAULT_VALUE_SEPARATOR = "=";

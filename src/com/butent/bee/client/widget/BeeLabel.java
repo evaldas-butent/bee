@@ -49,14 +49,17 @@ public class BeeLabel extends Label implements HasId {
     setHorizontalAlignment(align);
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "lbl";
   }
   
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

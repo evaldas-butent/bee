@@ -145,6 +145,7 @@ import com.butent.bee.shared.utils.NameUtils;
 import com.butent.bee.shared.utils.XmlHelper;
 
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -388,6 +389,9 @@ public enum FormWidget {
   private static final String ATTR_PLACEHOLDER = "placeholder";
   private static final String ATTR_MAX_LENGTH = "maxLength";
 
+  private static final String ATTR_VISIBLE_COLUMNS = "visibleColumns";
+  private static final String ATTR_EDITABLE_COLUMNS = "editableColumns";
+
   private static final String TAG_CSS = "css";
   private static final String TAG_HANDLER = "handler";
 
@@ -416,6 +420,8 @@ public enum FormWidget {
   private static final String TAG_UP_DISABLED_FACE = "upDisabledFace";
   private static final String TAG_DOWN_DISABLED_FACE = "downDisabledFace";
 
+  private static final String TAG_FACE = "face";
+  
   public static FormWidget getByTagName(String tagName) {
     if (!BeeUtils.isEmpty(tagName)) {
       for (FormWidget widget : FormWidget.values()) {
@@ -609,7 +615,21 @@ public enum FormWidget {
         break;
         
       case FILE_COLLECTOR:
-        widget = new FileCollector();
+        Widget face = null;
+        for (Iterator<Element> it = children.iterator(); it.hasNext();) {
+          Element child = it.next();
+          if (BeeUtils.same(XmlUtils.getLocalName(child), TAG_FACE)) {
+            face = createFace(child);
+            it.remove();
+          }
+        }
+        if (face == null) {
+          face = FileCollector.getDefaultFace();
+        }
+        
+        widget = new FileCollector(face,
+            FileCollector.parseColumns(attributes.get(ATTR_VISIBLE_COLUMNS)),
+            FileCollector.parseColumns(attributes.get(ATTR_EDITABLE_COLUMNS)));
         break;
 
       case FLOW_PANEL:
@@ -1279,6 +1299,25 @@ public enum FormWidget {
     }
 
     EventUtils.addDomHandler(widget, event, handler);
+  }
+  
+  private Widget createFace(Element element) {
+    Pair<String, BeeImage> faceOptions = getFaceOptions(element);
+    final Widget result;
+    
+    if (faceOptions.getB() != null) {
+      result = faceOptions.getB();
+    } else if (!BeeUtils.isEmpty(faceOptions.getA())) {
+      result = new BeeButton(faceOptions.getA());
+    } else {
+      result = null;
+    }
+    
+    if (result != null) {
+      StyleUtils.updateAppearance(result, element.getAttribute(UiConstants.ATTR_CLASS),
+          element.getAttribute(UiConstants.ATTR_STYLE));
+    }
+    return result;
   }
 
   private HeaderAndContent createHeaderAndContent(Element parent, String viewName,

@@ -106,7 +106,7 @@ public class ScreenImpl implements Screen {
   public String createProgress(String caption, double max) {
     if (getProgressPanel() != null) {
       if (!getProgressPanel().iterator().hasNext()) {
-        getScreenPanel().setWidgetSize(getProgressPanel(), 25);
+        getScreenPanel().setWidgetSize(getProgressPanel(), 32);
       }
 
       Flow item = new Flow();
