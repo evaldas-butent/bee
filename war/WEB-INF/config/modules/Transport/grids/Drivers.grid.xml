@@ -18,7 +18,12 @@
     <DataColumn name="CompanyName" />
     <DataColumn name="Position" />
     <DataColumn name="Phone" />
-    <DataColumn name="Email" />
+
+    <RelColumn name="Email" caption="El.paštas">
+      <renderToken source="Label" suffix=" " />
+      <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+    </RelColumn>
+
     <DataColumn name="Experience" caption="Stažas nuo" />
     <DataColumn name="Notes" caption="Pastabos" />
   </columns>

@@ -6,7 +6,7 @@
   >
   <Fields>
     <Relation name="Message" relation="Messages" notNull="true" cascade="DELETE" />
-    <Relation name="Address" relation="Addresses" notNull="true" />
+    <Relation name="Address" relation="Emails" notNull="true" />
     <String name="Type" precision="10" notNull="true" />
     <Numeric name="Status" precision="1" notNull="true" />
     <Boolean name="Unread" />

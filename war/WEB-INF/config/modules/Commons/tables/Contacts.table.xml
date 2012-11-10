@@ -9,7 +9,7 @@
     <String name="Phone" precision="50" label="Tel." />
     <String name="Mobile" precision="50" label="Mob." />
     <String name="Fax" precision="50" label="Fax" />
-    <String name="Email" precision="50" label="El.paštas" />
+    <Relation name="Email" relation="Emails" unique="true" label="El.paštas" />
     <String name="Website" precision="100" label="Interneto svetainė" />
     <String name="Address" precision="100" label="Adresas" />
     <String name="PostIndex" precision="20" label="Pašto indeksas" />

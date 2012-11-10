@@ -45,6 +45,7 @@ import com.butent.bee.client.ui.FormFactory.FormViewCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
+import com.butent.bee.client.utils.FileInfo;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
@@ -90,11 +91,11 @@ public class MailHandler extends AbstractFormCallback {
     private final int subject;
 
     public ContentHandler(List<BeeColumn> dataColumns) {
-      unread = DataUtils.getColumnIndex("Unread", dataColumns);
+      unread = DataUtils.getColumnIndex(COL_UNREAD, dataColumns);
       sender = DataUtils.getColumnIndex(COL_SENDER, dataColumns);
       senderLabel = DataUtils.getColumnIndex("SenderLabel", dataColumns);
       senderEmail = DataUtils.getColumnIndex("SenderEmail", dataColumns);
-      date = DataUtils.getColumnIndex("Date", dataColumns);
+      date = DataUtils.getColumnIndex(COL_DATE, dataColumns);
       subject = DataUtils.getColumnIndex(COL_SUBJECT, dataColumns);
     }
 
@@ -140,13 +141,13 @@ public class MailHandler extends AbstractFormCallback {
     private final int attachmentCount;
 
     public EnvelopeRenderer(List<? extends IsColumn> dataColumns) {
-      unread = DataUtils.getColumnIndex("Unread", dataColumns);
+      unread = DataUtils.getColumnIndex(COL_UNREAD, dataColumns);
       senderEmail = DataUtils.getColumnIndex("SenderEmail", dataColumns);
       senderLabel = DataUtils.getColumnIndex("SenderLabel", dataColumns);
       recipientEmail = DataUtils.getColumnIndex("RecipientEmail", dataColumns);
       recipientLabel = DataUtils.getColumnIndex("RecipientLabel", dataColumns);
       recipientCount = DataUtils.getColumnIndex("RecipientCount", dataColumns);
-      dateIdx = DataUtils.getColumnIndex("Date", dataColumns);
+      dateIdx = DataUtils.getColumnIndex(COL_DATE, dataColumns);
       subjectIdx = DataUtils.getColumnIndex("Subject", dataColumns);
       attachmentCount = DataUtils.getColumnIndex("AttachmentCount", dataColumns);
     }
@@ -399,7 +400,7 @@ public class MailHandler extends AbstractFormCallback {
     accountsWidget.clear();
 
     ParameterList params = MailKeeper.createArgs(SVC_GET_ACCOUNTS);
-    params.addDataItem("User", BeeKeeper.getUser().getUserId());
+    params.addDataItem(COL_USER, BeeKeeper.getUser().getUserId());
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
@@ -434,7 +435,7 @@ public class MailHandler extends AbstractFormCallback {
         Set<Long> bcc = null;
         String subject = null;
         String content = null;
-        String attachments = null;
+        Map<Long, FileInfo> attachments = null;
 
         switch (mode) {
           case NEW:
@@ -484,6 +485,7 @@ public class MailHandler extends AbstractFormCallback {
                 "Tema: " + SafeHtmlUtils.htmlEscape(subjectWidget.getText()),
                 "Kam: " + SafeHtmlUtils.htmlEscape(messageHandler.getRecipients()),
                 "<br>" + messageHandler.getContent());
+
             attachments = messageHandler.getAttachments();
             subject = subjectWidget.getText();
 
@@ -533,7 +535,7 @@ public class MailHandler extends AbstractFormCallback {
             switch (currentMode) {
               case INBOX:
                 ParameterList params = MailKeeper.createArgs(SVC_CHECK_MAIL);
-                params.addDataItem("AccountAddress", address.getLong());
+                params.addDataItem(COL_ADDRESS, address.getLong());
 
                 BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
                   @Override

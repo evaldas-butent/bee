@@ -87,7 +87,11 @@
       <SimpleJoin name="Contact" joinType="LEFT">
         <SimpleColumn alias="CompanyPhone" name="Phone" />
         <SimpleColumn alias="CompanyMobile" name="Mobile" />
-        <SimpleColumn alias="CompanyEmail" name="Email" />
+
+        <SimpleJoin name="Email" joinType="LEFT">
+          <SimpleColumn name="Email" alias="CompanyEmail" />
+          <SimpleColumn name="Label" alias="CompanyLabel" />
+        </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>
     

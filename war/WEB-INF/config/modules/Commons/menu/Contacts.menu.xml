@@ -9,4 +9,6 @@ name="Contacts" label="Kontaktai" order="20"
 
   <Item name="CompanyTypes" label="Klientų tipai" service="grid" parameters="CompanyTypes" separator="true" />
   <Item name="CompanyGroups" label="Klientų grupės" service="grid" parameters="CompanyGroups" />
+
+  <Item name="Emails" label="El.pašto adresai" service="grid" parameters="Emails" separator="true" />
 </Entry>

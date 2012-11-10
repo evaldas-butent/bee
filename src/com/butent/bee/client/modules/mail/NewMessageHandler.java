@@ -4,13 +4,17 @@ import com.google.common.collect.Maps;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.MultiSelector;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dialog.Popup;
@@ -18,6 +22,8 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.utils.FileInfo;
+import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -35,6 +41,7 @@ public class NewMessageHandler extends AbstractFormCallback {
   private final Map<String, String> defaultRecipients = Maps.newHashMap();
   private final String defaultSubject;
   private final String defaultContent;
+  private final Map<Long, FileInfo> defaultAttachments;
 
   private final Map<String, MultiSelector> recipientWidgets = Maps.newHashMap();
   private Editor subjectWidget;
@@ -43,10 +50,12 @@ public class NewMessageHandler extends AbstractFormCallback {
   private final Long sender;
   private final Long draftId;
 
+  private final Map<String, Long> attachments = Maps.newLinkedHashMap();
+
   private final MailHandler mailHandler;
 
   public NewMessageHandler(Long sender, Long draftId, Set<Long> to, Set<Long> cc, Set<Long> bcc,
-      String subject, String content, String attachments, MailHandler mailHandler) {
+      String subject, String content, Map<Long, FileInfo> attach, MailHandler mailHandler) {
 
     Assert.notNull(sender);
     this.sender = sender;
@@ -56,6 +65,14 @@ public class NewMessageHandler extends AbstractFormCallback {
     this.defaultSubject = subject;
     this.defaultContent = content;
 
+    if (!BeeUtils.isEmpty(attach)) {
+      this.defaultAttachments = attach;
+    } else {
+      this.defaultAttachments = Maps.newHashMap();
+    }
+    for (Long id : defaultAttachments.keySet()) {
+      attachments.put(defaultAttachments.get(id).getName(), id);
+    }
     if (draftId == null) {
       if (to != null) {
         to.remove(sender);
@@ -103,6 +120,39 @@ public class NewMessageHandler extends AbstractFormCallback {
           saveMode = true;
         }
       });
+    } else if (widget instanceof FileCollector && BeeUtils.same(name, "Attachments")) {
+      if (!BeeUtils.isEmpty(defaultAttachments)) {
+        ((FileCollector) widget).addFiles(defaultAttachments.values());
+      }
+      ((FileCollector) widget).addSelectionHandler(new SelectionHandler<FileInfo>() {
+        @Override
+        public void onSelection(SelectionEvent<FileInfo> ev) {
+          final String fileName = ev.getSelectedItem().getName();
+
+          if (attachments.containsKey(fileName)) {
+            attachments.remove(fileName);
+          } else {
+            attachments.put(fileName, 0L);
+
+            FileUtils.upload(ev.getSelectedItem(), new Callback<Long>() {
+              @Override
+              public void onFailure(String... reason) {
+                if (attachments.containsKey(fileName)) {
+                  attachments.put(fileName, -1L);
+                  super.onFailure(reason);
+                }
+              }
+
+              @Override
+              public void onSuccess(Long id) {
+                if (attachments.containsKey(fileName)) {
+                  attachments.put(fileName, id);
+                }
+              }
+            });
+          }
+        }
+      });
     }
   }
 
@@ -124,6 +174,10 @@ public class NewMessageHandler extends AbstractFormCallback {
       return true;
     }
     if (!BeeUtils.same(defaultContent, contentWidget.getValue())) {
+      return true;
+    }
+    if (!BeeUtils.same(DataUtils.buildIdList(defaultAttachments.keySet()),
+        DataUtils.buildIdList(attachments.values()))) {
       return true;
     }
     return false;
@@ -150,6 +204,11 @@ public class NewMessageHandler extends AbstractFormCallback {
     params.addDataItem(COL_SUBJECT, subjectWidget.getValue());
     params.addDataItem(COL_CONTENT, contentWidget.getValue());
 
+    String ids = DataUtils.buildIdList(attachments.values());
+
+    if (!BeeUtils.isEmpty(ids)) {
+      params.addDataItem("Attachments", ids);
+    }
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
       public void onResponse(ResponseObject response) {
@@ -180,6 +239,9 @@ public class NewMessageHandler extends AbstractFormCallback {
 
     } else if (BeeUtils.isEmpty(contentWidget.getValue())) {
       error = "Laiško turinys tuščias";
+
+    } else if (attachments.values().contains(0L)) {
+      error = "Yra nebaigtų krauti prielipų";
     }
     if (!BeeUtils.isEmpty(error)) {
       getFormView().notifySevere(error);

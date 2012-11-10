@@ -8,11 +8,11 @@
     <Relation name="User" relation="Users" notNull="true" cascade="DELETE" />
     <String name="Description" precision="100" notNull="true" unique="true" />
     <Boolean name="Main" />
-    <Relation name="Address" relation="Addresses" notNull="true" unique="true" />
+    <Relation name="Address" relation="Emails" notNull="true" unique="true" />
     <String name="Login" precision="50" />
-    <String name="Password" precision="50" notNull="true"  />
-    <String name="StoreType" precision="5" notNull="true" />
-    <String name="StoreServer" precision="50" notNull="true" />
+    <String name="Password" precision="50"  />
+    <String name="StoreType" precision="5" notNull="true" defValue="POP3" />
+    <String name="StoreServer" precision="50" />
     <Integer name="StorePort" />
     <String name="TransportServer" precision="50" />
     <Integer name="TransportPort" />

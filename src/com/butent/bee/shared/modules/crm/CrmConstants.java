@@ -8,7 +8,7 @@ public class CrmConstants {
 
   public enum Priority implements HasCaption {
     LOW("Žemas"), MEDIUM("Vidutinis"), HIGH("Aukštas");
-    
+
     private final String caption;
 
     private Priority(String caption) {
@@ -25,6 +25,7 @@ public class CrmConstants {
     CREATED, ACTIVATED, SUSPENDED, COMPLETED, CANCELED,
     EXTENDED, RENEWED, COMMENTED, VISITED, UPDATED, DELETED;
 
+    @Override
     public String getCaption() {
       return BeeUtils.proper(this);
     }
@@ -84,7 +85,7 @@ public class CrmConstants {
 
   public static final String VIEW_TASKS = "Tasks";
   public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
-  
+
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
 
@@ -123,20 +124,17 @@ public class CrmConstants {
   public static final String COL_FILE_DATE = "FileDate";
   public static final String COL_FILE_VERSION = "FileVersion";
 
-  public static final String COL_SIZE = "Size";
-  public static final String COL_MIME = "Mime";
-
   public static final String COL_DOCUMENT = "Document";
   public static final String COL_DOCUMENT_DATE = "DocumentDate";
   public static final String COL_DOCUMENT_COUNT = "DocumentCount";
 
   public static final String COL_COMPANY = "Company";
   public static final String COL_CONTACT = "Contact";
-  
+
   public static final String COL_REMINDER = "Reminder";
   public static final String COL_STATUS = "Status";
   public static final String COL_EXPECTED_DURATION = "ExpectedDuration";
-  
+
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_OBSERVERS = "Observers";
 
@@ -149,7 +147,7 @@ public class CrmConstants {
 
   public static final String FORM_NEW_TASK = "NewTask";
   public static final String FORM_TASK = "Task";
-  
+
   private CrmConstants() {
   }
 }

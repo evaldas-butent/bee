@@ -1,12 +1,13 @@
 package com.butent.bee.server.modules.commons;
 
-import static com.butent.bee.shared.modules.commons.CommonsConstants.TBL_FILES;
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
+import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -48,11 +49,8 @@ public class FileStorageBean {
     } catch (NoSuchAlgorithmException e) {
       throw new BeeRuntimeException(e);
     }
-    JustDate dt = new JustDate();
-    File tmp = new File(Config.REPOSITORY_DIR, BeeUtils.join(File.separator,
-        dt.getYear(), dt.getMonth(), dt.getDom(), "tmp_" + BeeUtils.randomString(10)));
+    File tmp = File.createTempFile("bee_", null);
     tmp.deleteOnExit();
-    tmp.getParentFile().mkdirs();
     OutputStream out = new DigestOutputStream(new FileOutputStream(tmp), md);
 
     byte buffer[] = new byte[8 * 1024];
@@ -68,21 +66,32 @@ public class FileStorageBean {
     }
     String hash = Codec.toHex(md.digest());
 
+    String idName = sys.getIdName(TBL_FILES);
     Long id = null;
-    File target = null;
+    JustDate dt = new JustDate();
+    File target = new File(Config.REPOSITORY_DIR,
+        BeeUtils.join(File.separator, dt.getYear(), dt.getMonth(), dt.getDom()));
+    target = new File(target, hash);
 
     Map<String, String> data = qs.getRow(new SqlSelect()
-        .addFields(TBL_FILES, "Repository", sys.getIdName(TBL_FILES))
+        .addFields(TBL_FILES, COL_FILE_REPO, idName)
         .addFrom(TBL_FILES)
-        .setWhere(SqlUtils.equal(TBL_FILES, "Hash", hash)));
+        .setWhere(SqlUtils.equal(TBL_FILES, COL_FILE_HASH, hash)));
 
     if (data != null) {
-      id = BeeUtils.toLong(data.get(sys.getIdName(TBL_FILES)));
-      target = new File(data.get("Repository"));
-      target.getParentFile().mkdirs();
-    } else {
-      target = new File(tmp.getParent(), hash);
+      id = BeeUtils.toLong(data.get(idName));
+      File oldTarget = new File(data.get(COL_FILE_REPO));
+
+      if (oldTarget.exists()) {
+        target = oldTarget;
+      } else {
+        qs.updateData(new SqlUpdate(TBL_FILES)
+            .addConstant(COL_FILE_REPO, target.getPath())
+            .setWhere(SqlUtils.equal(TBL_FILES, idName, id)));
+      }
     }
+    target.getParentFile().mkdirs();
+
     if (target.exists()) {
       tmp.delete();
 
@@ -96,11 +105,11 @@ public class FileStorageBean {
     }
     if (id == null) {
       id = qs.insertData(new SqlInsert(TBL_FILES)
-          .addConstant("Hash", hash)
-          .addConstant("Repository", target.getPath())
-          .addConstant("Name", fileName)
-          .addConstant("Size", target.length())
-          .addConstant("Mime", mimeType));
+          .addConstant(COL_FILE_HASH, hash)
+          .addConstant(COL_FILE_REPO, target.getPath())
+          .addConstant(COL_FILE_NAME, fileName)
+          .addConstant(COL_FILE_SIZE, target.length())
+          .addConstant(COL_FILE_TYPE, mimeType));
     }
     return id;
   }

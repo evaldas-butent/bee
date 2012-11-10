@@ -9,6 +9,10 @@
     <RelColumn name="Person" minWidth="200" />
     <DataColumn name="Position" />
     <DataColumn name="Phone" />
-    <DataColumn name="Email" />
+
+    <RelColumn name="EmailId" choiceColumns="Email Label">
+      <renderToken source="Label" suffix=" " />
+      <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+    </RelColumn>
   </columns>
 </Grid>

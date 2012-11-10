@@ -13,7 +13,10 @@ import com.butent.bee.server.data.DataEditorBean;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.server.data.ViewEvent.ViewDeleteEvent;
+import com.butent.bee.server.data.ViewEvent.ViewInsertEvent;
 import com.butent.bee.server.data.ViewEvent.ViewModifyEvent;
+import com.butent.bee.server.data.ViewEvent.ViewUpdateEvent;
 import com.butent.bee.server.data.ViewEventHandler;
 import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.modules.BeeModule;
@@ -26,8 +29,10 @@ import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.BeeConst.SqlEngine;
 import com.butent.bee.shared.communication.ResponseObject;
+import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SearchResult;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
@@ -46,6 +51,8 @@ import javax.ejb.EJB;
 import javax.ejb.EJBContext;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 
 @Stateless
 @LocalBean
@@ -77,7 +84,7 @@ public class CommonsModuleBean implements BeeModule {
   @Override
   public List<SearchResult> doSearch(String query) {
     return qs.getSearchResults(VIEW_COMPANIES,
-        Filter.anyContains(Sets.newHashSet(COL_NAME, COL_CODE, COL_PHONE, COL_EMAIL,
+        Filter.anyContains(Sets.newHashSet(COL_NAME, COL_CODE, COL_PHONE, COL_EMAIL_ADDRESS,
             COL_ADDRESS, COL_CITY_NAME, COL_COUNTRY_NAME), query));
   }
 
@@ -139,6 +146,37 @@ public class CommonsModuleBean implements BeeModule {
       public void refreshRightsCache(ViewModifyEvent event) {
         if (usr.isRightsTable(event.getViewName()) && event.isAfter()) {
           usr.initRights();
+        }
+      }
+    });
+    sys.registerViewEventHandler(new ViewEventHandler() {
+      @Subscribe
+      public void storeEmail(ViewModifyEvent event) {
+        if (BeeUtils.same(event.getViewName(), TBL_EMAILS) && event.isBefore()
+            && !(event instanceof ViewDeleteEvent)) {
+
+          List<BeeColumn> cols;
+          BeeRow row;
+
+          if (event instanceof ViewInsertEvent) {
+            cols = ((ViewInsertEvent) event).getColumns();
+            row = ((ViewInsertEvent) event).getRow();
+          } else {
+            cols = ((ViewUpdateEvent) event).getColumns();
+            row = ((ViewUpdateEvent) event).getRow();
+          }
+          int idx = DataUtils.getColumnIndex(COL_EMAIL_ADDRESS, cols);
+
+          if (idx != BeeConst.UNDEF) {
+            String email = BeeUtils.normalize(row.getString(idx));
+
+            try {
+              new InternetAddress(email, true).validate();
+              row.setValue(idx, email);
+            } catch (AddressException ex) {
+              event.addErrorMessage(BeeUtils.joinWords("Wrong address:", ex.getMessage()));
+            }
+          }
         }
       }
     });

@@ -9,6 +9,6 @@
     <Text name="Repository" notNull="true" />
     <String name="Name" precision="100" />
     <Long name="Size" />
-    <String name="Mime" precision="100" />
+    <String name="Type" precision="100" />
   </Fields>
 </Table>

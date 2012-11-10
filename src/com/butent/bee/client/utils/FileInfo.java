@@ -15,12 +15,12 @@ import elemental.html.File;
 public class FileInfo implements HasInfo, HasCaption {
 
   private final File file;
-  
+
   private final String name;
   private String type;
   private final long size;
   private final DateTime lastModified;
-  
+
   private DateTime fileDate = null;
   private String fileVersion = null;
 
@@ -33,9 +33,17 @@ public class FileInfo implements HasInfo, HasCaption {
     this.name = file.getName();
     this.type = file.getType();
     this.size = BeeUtils.toLong(file.getSize());
-    
+
     double millis = FileUtils.getLastModifiedMillis(file);
     this.lastModified = (millis > 0) ? new DateTime(BeeUtils.toLong(millis)) : null;
+  }
+
+  public FileInfo(String name, long size, DateTime lastModified) {
+    Assert.notEmpty(name);
+    this.file = null;
+    this.name = name;
+    this.size = size;
+    this.lastModified = lastModified;
   }
 
   @Override

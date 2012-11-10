@@ -30,9 +30,12 @@
         style="&display; width: 200px;" d:size="80" d:unit="px"
         d:rootStyle="&absolute; left: 460px; top: 0;" />
 
-      <TextLabel source="CompanyEmail" caption="El. Paštas:" inline="true"
+      <TextLabel source="CompanyEmail" caption="El.paštas:" inline="true"
         style="&display; width: 200px;" d:size="80" d:unit="px"
-        d:rootStyle="&absolute; left: 460px; top: 30px;" />
+        d:rootStyle="&absolute; left: 460px; top: 30px;">
+        <renderToken source="CompanyLabel" suffix=" " />
+        <renderToken source="CompanyEmail" prefix="&lt;" suffix="&gt;" />
+      </TextLabel>
     </FlowPanel>
 
     <FlowPanel style="&relative; height: 30px;">

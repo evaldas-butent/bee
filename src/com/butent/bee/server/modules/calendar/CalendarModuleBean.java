@@ -1070,17 +1070,18 @@ public class CalendarModuleBean implements BeeModule {
         sys.getIdName(TBL_APPOINTMENT_REMINDERS), reminderId);
 
     String personContacts = SqlUtils.uniqueName();
-    String personEmail = SqlUtils.uniqueName();
     String personPhone = SqlUtils.uniqueName();
+    String personEmails = SqlUtils.uniqueName();
+    String personEmail = SqlUtils.uniqueName();
 
     Map<String, String> data = qs.getRow(new SqlSelect()
         .addFields(TBL_APPOINTMENTS, COL_START_DATE_TIME)
-        .addFields(CommonsConstants.TBL_CONTACTS, CommonsConstants.COL_PHONE,
-            CommonsConstants.COL_EMAIL)
+        .addFields(CommonsConstants.TBL_CONTACTS, CommonsConstants.COL_PHONE)
+        .addFields(CommonsConstants.TBL_EMAILS, CommonsConstants.COL_EMAIL_ADDRESS)
         .addFields(TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT, COL_MESSAGE)
         .addFields(TBL_REMINDER_TYPES, COL_REMINDER_METHOD, COL_TEMPLATE_CAPTION, COL_TEMPLATE)
-        .addField(personContacts, CommonsConstants.COL_EMAIL, personEmail)
         .addField(personContacts, CommonsConstants.COL_PHONE, personPhone)
+        .addField(personEmails, CommonsConstants.COL_EMAIL_ADDRESS, personEmail)
         .addFrom(TBL_APPOINTMENTS)
         .addFromInner(TBL_APPOINTMENT_REMINDERS,
             sys.joinTables(TBL_APPOINTMENTS, TBL_APPOINTMENT_REMINDERS, COL_APPOINTMENT))
@@ -1090,12 +1091,17 @@ public class CalendarModuleBean implements BeeModule {
             sys.joinTables(CommonsConstants.VIEW_COMPANIES, TBL_APPOINTMENTS, COL_COMPANY))
         .addFromLeft(CommonsConstants.TBL_CONTACTS, sys.joinTables(CommonsConstants.TBL_CONTACTS,
             CommonsConstants.VIEW_COMPANIES, CommonsConstants.COL_CONTACT))
+        .addFromLeft(CommonsConstants.TBL_EMAILS, sys.joinTables(CommonsConstants.TBL_EMAILS,
+            CommonsConstants.TBL_CONTACTS, CommonsConstants.COL_EMAIL))
         .addFromLeft(CommonsConstants.TBL_COMPANY_PERSONS,
             sys.joinTables(CommonsConstants.TBL_COMPANY_PERSONS, TBL_APPOINTMENT_REMINDERS,
                 COL_RECIPIENT))
         .addFromLeft(CommonsConstants.TBL_CONTACTS, personContacts,
             SqlUtils.join(personContacts, sys.getIdName(CommonsConstants.TBL_CONTACTS),
                 CommonsConstants.TBL_COMPANY_PERSONS, CommonsConstants.COL_CONTACT))
+        .addFromLeft(CommonsConstants.TBL_EMAILS, personEmails,
+            SqlUtils.join(personEmails, sys.getIdName(CommonsConstants.TBL_EMAILS),
+                CommonsConstants.TBL_CONTACTS, CommonsConstants.COL_EMAIL))
         .setWhere(SqlUtils.and(wh,
             SqlUtils.more(TBL_APPOINTMENTS, COL_START_DATE_TIME,
                 System.currentTimeMillis() - TimeUtils.MILLIS_PER_MINUTE),
@@ -1120,7 +1126,7 @@ public class CalendarModuleBean implements BeeModule {
 
         if (method == ReminderMethod.EMAIL) {
           String email = BeeUtils.notEmpty(data.get(personEmail),
-              data.get(CommonsConstants.COL_EMAIL));
+              data.get(CommonsConstants.COL_EMAIL_ADDRESS));
 
           if (BeeUtils.isEmpty(email)) {
             error = "No recipient email address specified";

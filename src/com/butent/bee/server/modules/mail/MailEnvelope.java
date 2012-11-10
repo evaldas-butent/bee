@@ -32,7 +32,6 @@ public class MailEnvelope {
 
     MimeMessage msg = (MimeMessage) message;
     messageId = msg.getMessageID();
-    Assert.notEmpty(messageId, "Message-ID is missing");
     date = new DateTime(msg.getReceivedDate() == null ? msg.getSentDate() : msg.getReceivedDate());
     sender = ArrayUtils.getQuietly(msg.getFrom(), 0);
     subject = msg.getSubject();

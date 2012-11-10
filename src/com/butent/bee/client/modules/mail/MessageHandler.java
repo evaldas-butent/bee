@@ -30,6 +30,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.utils.FileInfo;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
@@ -37,6 +38,7 @@ import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.SimpleRowSet;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.modules.mail.MailConstants.AddressType;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -48,9 +50,9 @@ import java.util.Set;
 
 public class MessageHandler extends AbstractFormCallback {
 
-  private static final int ATTA_NAME = 0;
-  private static final int ATTA_SIZE = 1;
-  private static final int ATTA_HASH = 2;
+  private static final int ATTA_ID = 0;
+  private static final int ATTA_NAME = 1;
+  private static final int ATTA_SIZE = 2;
 
   private static final int ADDR_ID = 0;
   private static final int ADDR_EMAIL = 1;
@@ -122,7 +124,8 @@ public class MessageHandler extends AbstractFormCallback {
           TabBar bar = new TabBar("bee-mail-AttachmentsMenu-", Orientation.VERTICAL);
 
           for (String[] item : attachments) {
-            bar.addItem(BeeUtils.joinWords(item[ATTA_NAME], BeeUtils.parenthesize(item[ATTA_SIZE])));
+            bar.addItem(BeeUtils.joinWords(item[ATTA_NAME],
+                BeeUtils.parenthesize(sizeToText(BeeUtils.toLong(item[ATTA_SIZE])))));
           }
           bar.addSelectionHandler(new SelectionHandler<Integer>() {
             @Override
@@ -131,7 +134,7 @@ public class MessageHandler extends AbstractFormCallback {
               String[] info = attachments.get(ev.getSelectedItem());
 
               Window.open(GWT.getModuleBaseURL() + "file/" + Codec.encodeBase64(Codec
-                  .beeSerialize(Pair.of(info[ATTA_NAME], info[ATTA_HASH]))), null, null);
+                  .beeSerialize(Pair.of(info[ATTA_NAME], info[ATTA_ID]))), null, null);
             }
           });
           popup.setWidget(bar);
@@ -154,9 +157,14 @@ public class MessageHandler extends AbstractFormCallback {
     attachmentsWidget.setText(null);
   }
 
-  public String getAttachments() {
-    // TODO Auto-generated method stub
-    return null;
+  public Map<Long, FileInfo> getAttachments() {
+    Map<Long, FileInfo> attach = Maps.newLinkedHashMap();
+
+    for (final String[] att : attachments) {
+      attach.put(BeeUtils.toLong(att[ATTA_ID]),
+          new FileInfo(att[ATTA_NAME], BeeUtils.toLong(att[ATTA_SIZE]), null));
+    }
+    return attach;
   }
 
   public Set<Long> getBcc() {
@@ -207,9 +215,9 @@ public class MessageHandler extends AbstractFormCallback {
 
     ParameterList params = MailKeeper.createArgs(SVC_GET_MESSAGE);
     if (addressId != null) {
-      params.addDataItem("AccountAddress", addressId);
+      params.addDataItem(COL_ADDRESS, addressId);
     }
-    params.addDataItem("Message", messageId);
+    params.addDataItem(COL_MESSAGE, messageId);
 
     BeeKeeper.getRpc().makePostRequest(params, new ResponseCallback() {
       @Override
@@ -229,10 +237,10 @@ public class MessageHandler extends AbstractFormCallback {
         for (Map<String, String> address : packet.get(TBL_RECIPIENTS)) {
           String[] info = new String[Ints.max(ADDR_ID, ADDR_EMAIL, ADDR_LABEL)];
           info[ADDR_ID] = address.get(COL_ADDRESS);
-          info[ADDR_EMAIL] = address.get("Email");
-          info[ADDR_LABEL] = address.get("Label");
+          info[ADDR_EMAIL] = address.get(CommonsConstants.COL_EMAIL_ADDRESS);
+          info[ADDR_LABEL] = address.get(CommonsConstants.COL_EMAIL_LABEL);
 
-          recipients.put(address.get("Type"), info);
+          recipients.put(address.get(COL_ADDRESS_TYPE), info);
           txt = BeeUtils.join(", ", txt, BeeUtils.notEmpty(info[ADDR_LABEL], info[ADDR_EMAIL]));
         }
         recipientsWidget.setText(BeeUtils.joinWords("Skirta:", txt));
@@ -243,16 +251,15 @@ public class MessageHandler extends AbstractFormCallback {
         txt = null;
 
         for (Map<String, String> attachment : packet.get(TBL_ATTACHMENTS)) {
-          long sz = BeeUtils.toLong(attachment.get("Size"));
-
-          String[] info = new String[Ints.max(ATTA_NAME, ATTA_SIZE, ATTA_HASH)];
-          info[ATTA_NAME] = BeeUtils.notEmpty(attachment.get("FileName"), attachment.get("Name"));
-          info[ATTA_SIZE] = sizeToText(sz);
-          info[ATTA_HASH] = attachment.get("Hash");
+          String[] info = new String[Ints.max(ATTA_ID, ATTA_NAME, ATTA_SIZE)];
+          info[ATTA_ID] = attachment.get(COL_FILE);
+          info[ATTA_NAME] = BeeUtils.notEmpty(attachment.get(COL_ATTACHMENT_NAME),
+              attachment.get(CommonsConstants.COL_FILE_SIZE));
+          info[ATTA_SIZE] = attachment.get(CommonsConstants.COL_FILE_SIZE);
 
           attachments.add(info);
           cnt++;
-          size += sz;
+          size += BeeUtils.toLong(info[ATTA_SIZE]);
         }
         if (cnt > 0) {
           txt = BeeUtils.joinWords(cnt,
@@ -267,7 +274,7 @@ public class MessageHandler extends AbstractFormCallback {
         sep.setClassName("bee-mail-PartSeparator");
 
         for (Map<String, String> part : packet.get(TBL_PARTS)) {
-          txt = part.get("HtmlContent");
+          txt = part.get(COL_HTML_CONTENT);
 
           if (txt == null && part.get(COL_CONTENT) != null) {
             Element pre = Document.get().createPreElement();

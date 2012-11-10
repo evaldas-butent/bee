@@ -1,13 +1,16 @@
 package com.butent.bee.server;
 
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+
 import com.butent.bee.server.data.QueryServiceBean;
+import com.butent.bee.server.data.SystemBean;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.shared.Pair;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
-import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -37,6 +40,8 @@ public class FileServlet extends HttpServlet {
 
   @EJB
   QueryServiceBean qs;
+  @EJB
+  SystemBean sys;
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -89,20 +94,20 @@ public class FileServlet extends HttpServlet {
       }
     }
     String path = null;
-    String hash = data.getB();
-    String fileName = BeeUtils.notEmpty(data.getA(), hash);
+    Long fileId = BeeUtils.toLongOrNull(data.getB());
+    String fileName = data.getA();
     String mimeType = null;
 
-    if (!BeeUtils.isEmpty(hash)) {
+    if (DataUtils.isId(fileId)) {
       Map<String, String> row = qs.getRow(new SqlSelect()
-          .addFields(CommonsConstants.TBL_FILES, "Repository", "Name", "Mime")
-          .addFrom(CommonsConstants.TBL_FILES)
-          .setWhere(SqlUtils.equal(CommonsConstants.TBL_FILES, "Hash", hash)));
+          .addFields(TBL_FILES, COL_FILE_REPO, COL_FILE_NAME, COL_FILE_TYPE)
+          .addFrom(TBL_FILES)
+          .setWhere(SqlUtils.equal(TBL_FILES, sys.getIdName(TBL_FILES), fileId)));
 
       if (row != null) {
-        path = row.get("Repository");
-        fileName = BeeUtils.notEmpty(fileName, row.get("Name"));
-        mimeType = row.get("Mime");
+        path = row.get(COL_FILE_REPO);
+        fileName = BeeUtils.notEmpty(fileName, row.get(COL_FILE_NAME));
+        mimeType = row.get(COL_FILE_TYPE);
       }
     } else if (!BeeUtils.isEmpty(fileName)) {
       path = Config.getPath(fileName, false);

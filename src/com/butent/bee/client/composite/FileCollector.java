@@ -18,6 +18,10 @@ import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.DropHandler;
 import com.google.gwt.event.dom.client.HasAllDragAndDropHandlers;
 import com.google.gwt.event.dom.client.HasClickHandlers;
+import com.google.gwt.event.logical.shared.HasSelectionHandlers;
+import com.google.gwt.event.logical.shared.SelectionEvent;
+import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
@@ -54,8 +58,8 @@ import java.util.List;
 import java.util.Set;
 
 public class FileCollector extends HtmlTable implements DragOverHandler, DropHandler,
-    DragEnterHandler, DragLeaveHandler, HasOptions {
-  
+    DragEnterHandler, DragLeaveHandler, HasSelectionHandlers<FileInfo>, HasOptions {
+
   public enum Column implements HasCaption {
     DATE("date", "Data", false, false) {
       @Override
@@ -69,7 +73,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
         editor.setValue(BeeUtils.nvl(fileInfo.getFileDate(), fileInfo.getLastModified()));
         return editor;
       }
-      
+
       @Override
       void refresh(Widget widget, FileInfo fileInfo) {
         if (widget instanceof DateTimeLabel) {
@@ -77,13 +81,13 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
               fileInfo.getLastModified()));
         }
       }
-      
+
       @Override
       boolean update(Widget widget, FileInfo fileInfo) {
-        boolean changed = false; 
+        boolean changed = false;
         if (widget instanceof InputDate) {
           HasDateValue date = ((InputDate) widget).getDate();
-          
+
           if (date == null || TimeUtils.equals(date, fileInfo.getLastModified())) {
             changed = (fileInfo.getFileDate() != null);
             fileInfo.setFileDate(null);
@@ -108,14 +112,14 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
         editor.setValue(fileInfo.getFileVersion());
         return editor;
       }
-      
+
       @Override
       void refresh(Widget widget, FileInfo fileInfo) {
         if (widget instanceof BeeLabel) {
           ((BeeLabel) widget).setText(BeeUtils.trim(fileInfo.getFileVersion()));
         }
       }
-      
+
       @Override
       boolean update(Widget widget, FileInfo fileInfo) {
         if (widget instanceof InputText) {
@@ -149,13 +153,13 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
               fileInfo.getName()));
         }
       }
-      
+
       @Override
       boolean update(Widget widget, FileInfo fileInfo) {
-        boolean changed = false; 
+        boolean changed = false;
         if (widget instanceof InputText) {
           String value = BeeUtils.trim(((InputText) widget).getValue());
-          
+
           if (BeeUtils.isEmpty(value) || BeeUtils.equalsTrim(value, fileInfo.getName())) {
             changed = !BeeUtils.isEmpty(fileInfo.getCaption());
             fileInfo.setCaption(null);
@@ -167,7 +171,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
         return changed;
       }
     },
-    
+
     DESCRIPTION("description", "Aprašymas", false, false) {
       @Override
       Widget createDisplay() {
@@ -180,14 +184,14 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
         editor.setValue(BeeUtils.trim(fileInfo.getDescription()));
         return editor;
       }
-      
+
       @Override
       void refresh(Widget widget, FileInfo fileInfo) {
         if (widget instanceof BeeLabel) {
           ((BeeLabel) widget).setText(BeeUtils.trim(fileInfo.getDescription()));
         }
       }
-      
+
       @Override
       boolean update(Widget widget, FileInfo fileInfo) {
         if (widget instanceof InputArea) {
@@ -200,7 +204,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
         return false;
       }
     },
-    
+
     SIZE("size", "Dydis", false, true) {
       @Override
       Widget createDisplay() {
@@ -211,20 +215,20 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       Widget createEditor(FileInfo fileInfo) {
         return null;
       }
-      
+
       @Override
       void refresh(Widget widget, FileInfo fileInfo) {
         if (widget instanceof LongLabel) {
           ((LongLabel) widget).setValue(fileInfo.getSize());
         }
       }
-      
+
       @Override
       boolean update(Widget widget, FileInfo fileInfo) {
         return false;
       }
     },
-    
+
     TYPE("type", "Tipas", false, false) {
       @Override
       Widget createDisplay() {
@@ -237,14 +241,14 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
         editor.setValue(fileInfo.getType());
         return editor;
       }
-      
+
       @Override
       void refresh(Widget widget, FileInfo fileInfo) {
         if (widget instanceof BeeLabel) {
           ((BeeLabel) widget).setText(BeeUtils.trim(fileInfo.getType()));
         }
       }
-      
+
       @Override
       boolean update(Widget widget, FileInfo fileInfo) {
         if (widget instanceof InputText) {
@@ -257,7 +261,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
         return false;
       }
     },
-    
+
     EDIT("edit", "Koreguoti", false, true) {
       @Override
       Widget createDisplay() {
@@ -268,17 +272,17 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       Widget createEditor(FileInfo fileInfo) {
         return null;
       }
-      
+
       @Override
       void refresh(Widget widget, FileInfo fileInfo) {
       }
-      
+
       @Override
       boolean update(Widget widget, FileInfo fileInfo) {
         return false;
       }
     },
-    
+
     DELETE("delete", "Išmesti", false, true) {
       @Override
       Widget createDisplay() {
@@ -299,11 +303,11 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
         return false;
       }
     };
-    
+
     private final String label;
     private final String caption;
 
-    private final boolean alwaysVisible; 
+    private final boolean alwaysVisible;
     private final boolean readOnly;
 
     private Column(String label, String caption, boolean alwaysVisible, boolean readOnly) {
@@ -312,7 +316,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       this.alwaysVisible = alwaysVisible;
       this.readOnly = readOnly;
     }
-    
+
     @Override
     public String getCaption() {
       return caption;
@@ -328,7 +332,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
     private String getLabel() {
       return label;
-    } 
+    }
 
     private boolean isAlwaysVisible() {
       return alwaysVisible;
@@ -338,9 +342,9 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       return readOnly;
     }
   }
-  
+
   private static final String STYLE_PREFIX = "bee-FileCollector-";
-  
+
   private static final String STYLE_FACE = "face";
 
   private static final String STYLE_CELL = "Cell";
@@ -356,24 +360,25 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
   private static final int FACE_COLUMN = 0;
   private static final int INPUT_COLUMN = 1;
 
-  private static final List<Column> DEFAULT_VISIBLE_COLUMNS = Lists.newArrayList(Column.NAME, 
+  private static final List<Column> DEFAULT_VISIBLE_COLUMNS = Lists.newArrayList(Column.NAME,
       Column.SIZE, Column.EDIT, Column.DELETE);
   private static final List<Column> DEFAULT_EDITABLE_COLUMNS = Lists.newArrayList(Column.NAME);
-  
+
   public static Widget getDefaultFace() {
     return new BeeButton("Pasirinkite bylas");
   }
+
   public static List<Column> parseColumns(String input) {
     List<Column> columns = Lists.newArrayList();
     if (BeeUtils.isEmpty(input) || BeeUtils.same(input, BeeConst.NONE)) {
       return columns;
     }
-    
+
     if (BeeUtils.same(input, BeeConst.ALL)) {
       Collections.addAll(columns, Column.values());
       return columns;
     }
-    
+
     List<String> labels = NameUtils.toList(input);
     for (String label : labels) {
       for (Column column : Column.values()) {
@@ -386,7 +391,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     }
     return columns;
   }
-      
+
   private final InputFile inputFile;
 
   private final List<FileInfo> files = Lists.newArrayList();
@@ -410,7 +415,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
   public FileCollector(Widget face, List<Column> visibleColumns) {
     this(face, visibleColumns, DEFAULT_EDITABLE_COLUMNS);
   }
-  
+
   public FileCollector(Widget face, List<Column> visibleColumns, List<Column> editableColumns) {
     Assert.notNull(face);
 
@@ -424,7 +429,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
     inputFile.getElement().getStyle().setVisibility(Visibility.HIDDEN);
     inputFile.addStyleName(STYLE_PREFIX + "hiddenWidget");
-    
+
     Binder.addClickHandler(face, new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
@@ -440,16 +445,21 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     this.addStyleName(STYLE_PREFIX + "panel");
 
     getRowFormatter().addStyleName(0, STYLE_PREFIX + STYLE_FACE + STYLE_ROW);
-    
+
     initColumns(visibleColumns, editableColumns);
   }
 
-  public void addFiles(List<FileInfo> fileInfos) {
+  public void addFiles(Collection<FileInfo> fileInfos) {
     if (fileInfos != null) {
       for (FileInfo info : fileInfos) {
         addFile(info);
       }
     }
+  }
+
+  @Override
+  public HandlerRegistration addSelectionHandler(SelectionHandler<FileInfo> handler) {
+    return addHandler(handler, SelectionEvent.getType());
   }
 
   public <T extends HasAllDragAndDropHandlers & IsWidget> void bindDnd(T view) {
@@ -534,13 +544,13 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     int row = getRowCount() - 1;
     insertRow(row);
     getRowFormatter().addStyleName(row, STYLE_PREFIX + STYLE_ROW);
-    
+
     for (int col = 0; col < columns.size(); col++) {
       Column column = columns.get(col);
-      
+
       Widget widget = column.createDisplay();
       widget.addStyleName(STYLE_PREFIX + column.getLabel());
-      
+
       switch (column) {
         case EDIT:
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
@@ -553,7 +563,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
             }
           });
           break;
-          
+
         case DELETE:
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
             @Override
@@ -562,11 +572,12 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
               if (index >= 0) {
                 getFiles().remove(index);
                 removeRow(index);
+                SelectionEvent.fire(FileCollector.this, info);
               }
             }
           });
           break;
-          
+
         default:
           column.refresh(widget, info);
       }
@@ -576,6 +587,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
         getColumnFormatter().addStyleName(col, STYLE_PREFIX + column.getLabel() + STYLE_COLUMN);
       }
     }
+    SelectionEvent.fire(this, info);
   }
 
   private boolean contains(FileInfo info) {
@@ -586,26 +598,26 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     getRowFormatter().addStyleName(index, STYLE_PREFIX + STYLE_EDITING);
 
     final FileInfo fi = getFiles().get(index);
-    
+
     String pfx = STYLE_PREFIX + STYLE_EDITOR;
-    
+
     final HtmlTable panel = new HtmlTable();
     panel.addStyleName(pfx + "panel");
-    
+
     int colCaption = 0;
     final int colInput = 1;
-    
+
     int row = 0;
-    
+
     for (Column column : editable) {
       BeeLabel captionWidget = new BeeLabel(column.getCaption());
       captionWidget.addStyleName(pfx + STYLE_CAPTION);
       panel.setWidget(row, colCaption, captionWidget, pfx + STYLE_CAPTION + STYLE_CELL);
-      
+
       Widget editor = column.createEditor(fi);
       editor.addStyleName(pfx + column.getLabel());
       panel.setWidget(row, colInput, editor, pfx + column.getLabel() + STYLE_CELL);
-      
+
       panel.getRowFormatter().addStyleName(row, pfx + column.getLabel() + STYLE_ROW);
       if (row == 0) {
         panel.getColumnFormatter().addStyleName(colCaption, pfx + STYLE_CAPTION + STYLE_COLUMN);
@@ -613,7 +625,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
       row++;
     }
-    
+
     Global.inputWidget("Bylos duomenų koregavimas", panel, new InputCallback() {
       @Override
       public void onCancel() {
@@ -623,7 +635,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       @Override
       public void onSuccess() {
         getRowFormatter().removeStyleName(index, STYLE_PREFIX + STYLE_EDITING);
-        
+
         Set<Column> changedColumns = Sets.newHashSet();
         for (int i = 0; i < editable.size(); i++) {
           Column column = editable.get(i);
@@ -661,7 +673,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       getDropArea().removeClassName(StyleUtils.DROP_AREA);
     }
   }
-  
+
   private void initColumns(List<Column> visibleColumns, List<Column> editableColumns) {
     if (!BeeUtils.isEmpty(editableColumns)) {
       for (Column column : editableColumns) {
@@ -670,14 +682,14 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
         }
       }
     }
-    
+
     List<Column> vc = Lists.newArrayList();
     if (BeeUtils.isEmpty(visibleColumns)) {
       vc.addAll(DEFAULT_VISIBLE_COLUMNS);
     } else {
       vc.addAll(visibleColumns);
     }
-    
+
     for (Column column : vc) {
       if (Column.EDIT.equals(column) && editable.isEmpty()) {
         continue;
@@ -686,7 +698,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
         columns.add(column);
       }
     }
-    
+
     for (Column column : Column.values()) {
       if (column.isAlwaysVisible() && !columns.contains(column)) {
         columns.add(column);
@@ -698,7 +710,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
         columns.add(column);
       }
     }
-    
+
     if (!editable.isEmpty() && !columns.contains(Column.EDIT)) {
       columns.add(Column.EDIT);
     }
@@ -714,7 +726,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
     }
   }
-  
+
   private void setDndCounter(int dndCounter) {
     this.dndCounter = dndCounter;
   }
@@ -728,4 +740,5 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       getDropArea().addClassName(StyleUtils.DROP_AREA);
     }
   }
+
 }

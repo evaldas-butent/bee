@@ -12,6 +12,7 @@
     <SimpleJoin joinType="LEFT" name="CompanyType">
       <SimpleColumn alias="TypeName" name="Name" />
     </SimpleJoin>
+
     <SimpleColumn name="CompanyGroup" />
     <SimpleJoin joinType="LEFT" name="CompanyGroup">
       <SimpleColumn alias="GroupName" name="Name" />
@@ -21,13 +22,21 @@
       <SimpleColumn name="Phone" />
       <SimpleColumn name="Mobile" />
       <SimpleColumn name="Fax" />
-      <SimpleColumn name="Email" />
+
+      <SimpleColumn name="Email" alias="EmailId" />
+      <SimpleJoin name="Email" joinType="LEFT">
+        <SimpleColumn name="Email" />
+        <SimpleColumn name="Label" />
+      </SimpleJoin>
+
       <SimpleColumn name="Address" />
       <SimpleColumn name="PostIndex" />
       <SimpleColumn name="Website" />
+
       <SimpleColumn name="City" />
       <SimpleJoin name="City" joinType="LEFT">
         <SimpleColumn alias="CityName" name="Name" />
+
         <SimpleJoin name="Country" joinType="LEFT">
           <SimpleColumn alias="CountryName" name="Name" />
         </SimpleJoin>

@@ -9,7 +9,10 @@
     <DataColumn name="LastName" />
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
-    <DataColumn name="Email" />
+    <RelColumn name="EmailId">
+      <renderToken source="Label" suffix=" " />
+      <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+    </RelColumn>
     <DataColumn name="Address" />
     <DataColumn name="CityName" caption="Miestas" />
     <DataColumn name="CountryName" caption="Šalis" />

@@ -25,7 +25,6 @@ public class MailConstants {
   public static final String SVC_REMOVE_MESSAGES = "remove_messages";
 
   public static final String TBL_ACCOUNTS = "Accounts";
-  public static final String TBL_ADDRESSES = "Addresses";
 
   public static final String TBL_MESSAGES = "Messages";
   public static final String TBL_HEADERS = "Headers";
@@ -34,13 +33,21 @@ public class MailConstants {
   public static final String TBL_ATTACHMENTS = "Attachments";
 
   public static final String COL_MESSAGE = "Message";
+  public static final String COL_HEADER = "Header";
   public static final String COL_FILE = "File";
+  public static final String COL_ATTACHMENT_NAME = "FileName";
   public static final String COL_ADDRESS = "Address";
+  public static final String COL_ADDRESS_TYPE = "Type";
   public static final String COL_USER = "User";
+  public static final String COL_UNIQUE_ID = "UniqueId";
+  public static final String COL_DATE = "Date";
   public static final String COL_SENDER = "Sender";
   public static final String COL_SUBJECT = "Subject";
   public static final String COL_CONTENT = "Content";
+  public static final String COL_HTML_CONTENT = "HtmlContent";
+  public static final String COL_CONTENT_TYPE = "ContentType";
   public static final String COL_STATUS = "Status";
+  public static final String COL_UNREAD = "Unread";
 
   private MailConstants() {
   }

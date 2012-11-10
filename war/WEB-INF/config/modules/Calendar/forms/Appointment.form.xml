@@ -14,8 +14,11 @@
             style="width: 140px;" d:size="80" d:unit="px" />
           <TextLabel source="CompanyPhone" caption="Telefonas:" inline="true"
             d:size="80" d:unit="px" />
-          <TextLabel source="CompanyEmail" caption="El. Paštas:" inline="true"
-            d:size="80" d:unit="px" />
+          <TextLabel source="CompanyEmail" caption="El.paštas:" inline="true"
+            d:size="80" d:unit="px">
+            <renderToken source="CompanyLabel" suffix=" " />
+            <renderToken source="CompanyEmail" prefix="&lt;" suffix="&gt;" />
+          </TextLabel>
           <br/>  
           <InputText source="Summary" caption="Santrauka:"
             style="width: 220px;" decorator="caption-top" />

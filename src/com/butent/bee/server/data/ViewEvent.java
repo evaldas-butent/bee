@@ -39,8 +39,8 @@ public abstract class ViewEvent {
   }
 
   public static class ViewInsertEvent extends ViewModifyEvent {
-    private List<BeeColumn> columns;
-    private BeeRow row;
+    private final List<BeeColumn> columns;
+    private final BeeRow row;
 
     ViewInsertEvent(String viewName, List<BeeColumn> columns, BeeRow row) {
       super(viewName);
@@ -49,8 +49,6 @@ public abstract class ViewEvent {
 
       this.columns = columns;
       this.row = row;
-
-      setAfter();
     }
 
     public List<BeeColumn> getColumns() {
@@ -63,24 +61,22 @@ public abstract class ViewEvent {
   }
 
   public static class ViewUpdateEvent extends ViewModifyEvent {
-    private List<BeeColumn> columns;
-    private BeeRow row;
-  
+    private final List<BeeColumn> columns;
+    private final BeeRow row;
+
     ViewUpdateEvent(String viewName, List<BeeColumn> columns, BeeRow row) {
       super(viewName);
       Assert.notEmpty(columns);
       Assert.notNull(row);
-  
+
       this.columns = columns;
       this.row = row;
-  
-      setAfter();
     }
-  
+
     public List<BeeColumn> getColumns() {
       return columns;
     }
-  
+
     public BeeRow getRow() {
       return row;
     }
@@ -136,7 +132,7 @@ public abstract class ViewEvent {
   }
 
   public boolean isBefore() {
-    return !afterStage;
+    return !isAfter();
   }
 
   List<String> getErrorMessages() {

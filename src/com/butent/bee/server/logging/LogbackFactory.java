@@ -1,6 +1,7 @@
 package com.butent.bee.server.logging;
 
 import com.butent.bee.server.Config;
+import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.BeeLoggerFactory;
 
@@ -26,7 +27,9 @@ public class LogbackFactory implements BeeLoggerFactory {
       configurator.setContext(context);
       context.reset();
       context.putProperty("LOG_DIR", Config.LOG_DIR.getAbsolutePath().replace("\\", "/"));
-      configurator.doConfigure(new File(Config.CONFIG_DIR, LOGBACK_PROPERTIES));
+      configurator.doConfigure(FileUtils.isInputFile(Config.LOCAL_DIR, LOGBACK_PROPERTIES)
+          ? new File(Config.LOCAL_DIR, LOGBACK_PROPERTIES)
+          : new File(Config.CONFIG_DIR, LOGBACK_PROPERTIES));
     } catch (JoranException je) {
       // StatusPrinter will handle this
     }

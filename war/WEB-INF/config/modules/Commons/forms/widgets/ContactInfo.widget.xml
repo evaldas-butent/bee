@@ -13,8 +13,12 @@
     <InputText source="Fax" caption="Faksas:" style="width: 120px;" d:size="60" d:unit="px"
       d:rootStyle="position:absolute; left: 500px; top: 0px;" />
 
-    <InputText source="Email" caption="El. paštas:" style="width: 200px;" d:size="80" d:unit="px"
-      d:rootStyle="position:absolute; left: 0; top: 30px;" />
+    <DataSelector source="EmailId" caption="El.paštas:" style="width: 200px;" d:size="80" d:unit="px"
+      d:rootStyle="position:absolute; left: 0; top: 30px;">
+      <renderToken source="Label" suffix=" " />
+      <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+    </DataSelector>
+
     <InputText source="Website" caption="Interneto svetainė:" style="width: 260px;" d:size="120"
       d:unit="px" d:rootStyle="position:absolute; left: 300px; top: 30px;" />
 

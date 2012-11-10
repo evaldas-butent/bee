@@ -37,8 +37,11 @@
             <TextLabel source="Phone" class="bee-display" style="display: inline-block" />
           </FlowPanel>
           <FlowPanel>
-            <InlineLabel html="El. paštas" style="&LABEL_STYLE;" />
-            <TextLabel source="Email" class="bee-display" style="display: inline-block" />
+            <InlineLabel html="El.paštas" style="&LABEL_STYLE;" />
+            <TextLabel class="bee-display" style="display: inline-block">
+              <renderToken source="Label" suffix=" " />
+              <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
+            </TextLabel>
           </FlowPanel>
           <InlineLabel html="Stažas nuo" style="&LABEL_STYLE;" />
           <InputDate source="Experience" style="width: 7em" />

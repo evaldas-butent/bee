@@ -143,6 +143,7 @@ public class DataEditorBean {
     }
 
     ResponseObject response = new ResponseObject();
+    ViewEvent event = null;
     BeeView view = sys.getView(rs.getViewName());
     BeeRow row = rs.getRow(rowIndex);
     Map<String, TableInfo> updates = Maps.newHashMap();
@@ -154,25 +155,39 @@ public class DataEditorBean {
       response.addError("View", BeeUtils.bracket(view.getName()), "is read only.");
 
     } else {
-      for (int i = 0; i < rs.getNumberOfColumns(); i++) {
-        String colName = rs.getColumnId(i);
+      if (row.getId() == DataUtils.NEW_ROW_ID) {
+        event = new ViewInsertEvent(rs.getViewName(), rs.getColumns(), row);
+      } else {
+        event = new ViewUpdateEvent(rs.getViewName(), rs.getColumns(), row);
+      }
+      sys.postViewEvent(event);
 
-        if (!view.hasColumn(colName)) {
-          response.addError("Unknown column:", BeeUtils.bracket(colName));
-          break;
-        } else if (view.isColReadOnly(colName)) {
-          response.addError("Column:", BeeUtils.bracket(colName), "is read only.");
-          break;
-        } else {
-          String oldValue = row.getShadowString(i);
-          ValueType colType = view.getColumnType(colName).toValueType();
-          Object newValue = Value.parseValue(colType, row.getString(i), false).getObjectValue();
-          String locale = view.getColumnLocale(colName);
+      if (event.hasErrors()) {
+        for (String error : event.getErrorMessages()) {
+          response.addError(error);
+        }
+      }
+      if (!response.hasErrors()) {
+        for (int i = 0; i < rs.getNumberOfColumns(); i++) {
+          String colName = rs.getColumnId(i);
 
-          if (!registerField(colName,
-              new FieldInfo(view.getColumnSource(colName), colName, view.getColumnField(colName),
-                  oldValue, newValue, locale), updates, view, response)) {
+          if (!view.hasColumn(colName)) {
+            response.addError("Unknown column:", BeeUtils.bracket(colName));
             break;
+          } else if (view.isColReadOnly(colName)) {
+            response.addError("Column:", BeeUtils.bracket(colName), "is read only.");
+            break;
+          } else {
+            String oldValue = row.getShadowString(i);
+            ValueType colType = view.getColumnType(colName).toValueType();
+            Object newValue = Value.parseValue(colType, row.getString(i), false).getObjectValue();
+            String locale = view.getColumnLocale(colName);
+
+            if (!registerField(colName,
+                new FieldInfo(view.getColumnSource(colName), colName, view.getColumnField(colName),
+                    oldValue, newValue, locale), updates, view, response)) {
+              break;
+            }
           }
         }
       }
@@ -224,10 +239,9 @@ public class DataEditorBean {
 
       if (row.getId() == DataUtils.NEW_ROW_ID) {
         row.setId(id);
-        sys.postViewEvent(new ViewInsertEvent(rs.getViewName(), rs.getColumns(), row));
-      } else {
-        sys.postViewEvent(new ViewUpdateEvent(rs.getViewName(), rs.getColumns(), row));
       }
+      event.setAfter();
+      sys.postViewEvent(event);
     }
     return response;
   }
@@ -256,13 +270,13 @@ public class DataEditorBean {
       }
     }
     ResponseObject response;
-    ViewDeleteEvent event = new ViewDeleteEvent(view.getName(), ids);
-    sys.postViewEvent(event);
+    ViewDeleteEvent deleteEvent = new ViewDeleteEvent(view.getName(), ids);
+    sys.postViewEvent(deleteEvent);
 
-    if (event.hasErrors()) {
+    if (deleteEvent.hasErrors()) {
       response = new ResponseObject();
 
-      for (String error : event.getErrorMessages()) {
+      for (String error : deleteEvent.getErrorMessages()) {
         response.addError(error);
       }
     } else {
@@ -279,8 +293,8 @@ public class DataEditorBean {
     if (response.hasErrors()) {
       ctx.setRollbackOnly();
     } else {
-      event.setAfter();
-      sys.postViewEvent(event);
+      deleteEvent.setAfter();
+      sys.postViewEvent(deleteEvent);
     }
     return response;
   }

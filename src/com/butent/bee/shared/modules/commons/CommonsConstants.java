@@ -94,6 +94,7 @@ public class CommonsConstants {
   public static final String TBL_CATEGORIES = "CategoryTree";
   public static final String TBL_ITEM_CATEGORIES = "ItemCategories";
   public static final String TBL_CONTACTS = "Contacts";
+  public static final String TBL_EMAILS = "Emails";
   public static final String TBL_COMPANY_PERSONS = "CompanyPersons";
   public static final String TBL_COMPANIES = "Companies";
   public static final String TBL_PERSONS = "Persons";
@@ -101,6 +102,15 @@ public class CommonsConstants {
   public static final String TBL_RELATIONS = "Relations";
 
   public static final String VIEW_COMPANIES = "Companies";
+
+  public static final String COL_FILE_NAME = "Name";
+  public static final String COL_FILE_HASH = "Hash";
+  public static final String COL_FILE_REPO = "Repository";
+  public static final String COL_FILE_SIZE = "Size";
+  public static final String COL_FILE_TYPE = "Type";
+
+  public static final String COL_EMAIL_ADDRESS = "Email";
+  public static final String COL_EMAIL_LABEL = "Label";
 
   public static final String COL_NAME = "Name";
   public static final String COL_ITEM = "Item";

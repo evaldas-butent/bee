@@ -9,8 +9,8 @@
     <SimpleColumn name="Date" />
     <SimpleColumn name="Subject" />
     <SimpleColumn name="AttachmentCount" />
-    <SimpleColumn name="Sender" />
     
+    <SimpleColumn name="Sender" />
     <SimpleJoin name="Sender" joinType="LEFT">
       <SimpleColumn name="Label" alias="SenderLabel" />
       <SimpleColumn name="Email" alias="SenderEmail" />
