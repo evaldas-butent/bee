@@ -27,6 +27,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Disclosure;
 import com.butent.bee.client.composite.FileCollector;
+import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.InputTime;
 import com.butent.bee.client.composite.MultiSelector;
@@ -177,6 +178,7 @@ public enum FormWidget {
   DISCLOSURE("Disclosure", EnumSet.of(Type.HAS_CHILDREN)),
   DOUBLE_LABEL("DoubleLabel", EnumSet.of(Type.DISPLAY)),
   FILE_COLLECTOR("FileCollector", null),
+  FILE_GROUP("FileGroup", EnumSet.of(Type.DISPLAY)),
   FLOW_PANEL("FlowPanel", EnumSet.of(Type.HAS_CHILDREN)),
   FRAME("Frame", EnumSet.of(Type.DISPLAY)),
   GRID_PANEL("GridPanel", EnumSet.of(Type.IS_GRID)),
@@ -632,6 +634,11 @@ public enum FormWidget {
             FileCollector.parseColumns(attributes.get(ATTR_EDITABLE_COLUMNS)));
         break;
 
+      case FILE_GROUP:
+        widget = new FileGroup(FileGroup.parseColumns(attributes.get(ATTR_VISIBLE_COLUMNS)),
+            FileGroup.parseColumns(attributes.get(ATTR_EDITABLE_COLUMNS)));
+        break;
+        
       case FLOW_PANEL:
         widget = new Flow();
         break;

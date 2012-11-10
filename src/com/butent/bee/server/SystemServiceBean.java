@@ -7,6 +7,7 @@ import com.butent.bee.server.http.RequestInfo;
 import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.io.Filter;
+import com.butent.bee.server.modules.commons.FileStorageBean;
 import com.butent.bee.server.utils.ClassUtils;
 import com.butent.bee.server.utils.JvmUtils;
 import com.butent.bee.server.utils.XmlUtils;
@@ -18,6 +19,7 @@ import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -33,6 +35,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
 /**
@@ -42,8 +45,12 @@ import javax.ejb.Stateless;
 
 @Stateless
 public class SystemServiceBean {
+
   private static BeeLogger logger = LogUtils.getLogger(SystemServiceBean.class);
 
+  @EJB
+  FileStorageBean fs;
+  
   public ResponseObject doService(String svc, RequestInfo reqInfo, ResponseBuffer buff) {
     Assert.notEmpty(svc);
     Assert.notNull(buff);
@@ -62,6 +69,9 @@ public class SystemServiceBean {
     } else if (BeeUtils.same(svc, Service.GET_DIGEST)) {
       getDigest(reqInfo, buff);
 
+    } else if (BeeUtils.same(svc, Service.GET_FILES)) {
+      response = getFiles();
+      
     } else {
       String msg = BeeUtils.joinWords(svc, "system service not recognized");
       logger.warning(msg);
@@ -125,6 +135,15 @@ public class SystemServiceBean {
     }
     buff.addMessage(BeeConst.SERVER, "Source length", src.length());
     buff.addMessage(BeeConst.SERVER, Codec.md5(src));
+  }
+  
+  private ResponseObject getFiles() {
+    List<StoredFile> files = fs.getFiles();
+    if (files.isEmpty()) {
+      return ResponseObject.warning("file repository is empty");
+    } else {
+      return ResponseObject.response(files);
+    }
   }
 
   private ResponseObject getResource(RequestInfo reqInfo, ResponseBuffer buff) {

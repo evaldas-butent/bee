@@ -19,7 +19,7 @@ import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
-import com.butent.bee.client.utils.FileInfo;
+import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -156,7 +156,7 @@ public class DocumentHandler {
       final String viewName = FILE_VIEW_NAME;
       final List<BeeColumn> columns = Data.getColumns(viewName);
 
-      for (final FileInfo fileInfo : getCollector().getFiles()) {
+      for (final NewFileInfo fileInfo : getCollector().getFiles()) {
         FileUtils.upload(fileInfo, new Callback<Long>() {
           @Override
           public void onSuccess(Long result) {

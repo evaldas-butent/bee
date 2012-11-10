@@ -1,17 +1,23 @@
 package com.butent.bee.server.modules.commons;
 
+import com.google.common.collect.Lists;
+
 import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
 
 import com.butent.bee.server.Config;
 import com.butent.bee.server.data.QueryServiceBean;
 import com.butent.bee.server.data.SystemBean;
+import com.butent.bee.server.io.FileNameUtils;
 import com.butent.bee.server.sql.SqlInsert;
 import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
 import com.butent.bee.server.sql.SqlUtils;
+import com.butent.bee.shared.data.SimpleRowSet;
 import com.butent.bee.shared.exceptions.BeeRuntimeException;
+import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
@@ -24,6 +30,7 @@ import java.io.OutputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -40,6 +47,29 @@ public class FileStorageBean {
   QueryServiceBean qs;
   @EJB
   SystemBean sys;
+  
+  public List<StoredFile> getFiles() {
+    List<StoredFile> files = Lists.newArrayList();
+    
+    String idName = sys.getIdName(TBL_FILES);
+    String versionName = sys.getVersionName(TBL_FILES);
+    
+    SimpleRowSet data = qs.getData(new SqlSelect()
+        .addFields(TBL_FILES, idName, versionName, COL_FILE_NAME, COL_FILE_SIZE, COL_FILE_TYPE)
+        .addFrom(TBL_FILES)
+        .addOrder(TBL_FILES, versionName));
+    
+    for (Map<String, String> row : data) {
+      StoredFile sf = new StoredFile(BeeUtils.toLong(row.get(idName)),
+          row.get(COL_FILE_NAME), BeeUtils.toLong(row.get(COL_FILE_SIZE)), row.get(COL_FILE_TYPE));
+      
+      sf.setFileDate(DateTime.restore(row.get(versionName)));
+
+      sf.setIcon(FileNameUtils.getExtensionIcon(sf.getName()));
+      files.add(sf);
+    }
+    return files;
+  }
 
   public Long storeFile(InputStream is, String fileName, String mimeType) throws IOException {
     MessageDigest md = null;

@@ -81,11 +81,19 @@ public class CrmConstants {
 
   public static final String TBL_TASKS = "Tasks";
   public static final String TBL_TASK_USERS = "TaskUsers";
+  public static final String TBL_TASK_EVENTS = "TaskEvents";
+  public static final String TBL_TASK_FILES = "TaskFiles";
+
+  public static final String TBL_EVENT_DURATIONS = "EventDurations";
+
   public static final String TBL_PROJECT_USERS = "ProjectUsers";
 
   public static final String VIEW_TASKS = "Tasks";
   public static final String VIEW_TASK_TEMPLATES = "TaskTemplates";
+  public static final String VIEW_TASK_FILES = "TaskFiles";
 
+  public static final String VIEW_DURATION_TYPES = "DurationTypes";
+  
   public static final String COL_START_TIME = "StartTime";
   public static final String COL_FINISH_TIME = "FinishTime";
 
@@ -95,7 +103,6 @@ public class CrmConstants {
   public static final String COL_FIRST_NAME = "FirstName";
   public static final String COL_LAST_NAME = "LastName";
 
-  public static final String COL_EVENT = "Event";
   public static final String COL_PRIORITY = "Priority";
 
   public static final String COL_OWNER = "Owner";
@@ -121,6 +128,9 @@ public class CrmConstants {
   public static final String COL_GROUP_NAME = "GroupName";
 
   public static final String COL_FILE = "File";
+  public static final String COL_FILE_NAME = "FileName";
+  public static final String COL_FILE_SIZE = "FileSize";
+  public static final String COL_FILE_TYPE = "FileType";
   public static final String COL_FILE_DATE = "FileDate";
   public static final String COL_FILE_VERSION = "FileVersion";
 
@@ -135,6 +145,20 @@ public class CrmConstants {
   public static final String COL_STATUS = "Status";
   public static final String COL_EXPECTED_DURATION = "ExpectedDuration";
 
+  public static final String COL_PUBLISHER = "Publisher";
+  public static final String COL_PUBLISH_TIME = "PublishTime";
+  public static final String COL_COMMENT = "Comment";
+
+  public static final String COL_TASK_EVENT = "TaskEvent";
+
+  public static final String COL_DURATION_DATE = "DurationDate";
+  public static final String COL_DURATION_TYPE = "DurationType";
+  public static final String COL_DURATION = "Duration";
+
+  public static final String COL_EVENT = "Event";
+  public static final String COL_EVENT_NOTE = "EventNote";
+  public static final String COL_EVENT_DURATION = "EventDuration";
+  
   public static final String PROP_EXECUTORS = "Executors";
   public static final String PROP_OBSERVERS = "Observers";
 
@@ -142,6 +166,8 @@ public class CrmConstants {
   public static final String PROP_PERSONS = "Persons";
   public static final String PROP_APPOINTMENTS = "Appointments";
   public static final String PROP_TASKS = "Tasks";
+
+  public static final String PROP_FILES = "Files";
 
   public static final String GRID_TASKS = "Tasks";
 

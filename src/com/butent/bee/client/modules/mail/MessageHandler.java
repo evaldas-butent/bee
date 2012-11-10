@@ -30,7 +30,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
-import com.butent.bee.client.utils.FileInfo;
+import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
@@ -157,12 +157,12 @@ public class MessageHandler extends AbstractFormCallback {
     attachmentsWidget.setText(null);
   }
 
-  public Map<Long, FileInfo> getAttachments() {
-    Map<Long, FileInfo> attach = Maps.newLinkedHashMap();
+  public Map<Long, NewFileInfo> getAttachments() {
+    Map<Long, NewFileInfo> attach = Maps.newLinkedHashMap();
 
     for (final String[] att : attachments) {
       attach.put(BeeUtils.toLong(att[ATTA_ID]),
-          new FileInfo(att[ATTA_NAME], BeeUtils.toLong(att[ATTA_SIZE]), null));
+          new NewFileInfo(att[ATTA_NAME], BeeUtils.toLong(att[ATTA_SIZE]), null));
     }
     return attach;
   }

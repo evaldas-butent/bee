@@ -102,6 +102,8 @@ public class CommonsConstants {
   public static final String TBL_RELATIONS = "Relations";
 
   public static final String VIEW_COMPANIES = "Companies";
+  public static final String VIEW_COMPANY_PERSONS = "CompanyPersons";
+  public static final String VIEW_USERS = "Users";
 
   public static final String COL_FILE_NAME = "Name";
   public static final String COL_FILE_HASH = "Hash";

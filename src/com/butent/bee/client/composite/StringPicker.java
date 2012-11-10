@@ -68,6 +68,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     private BlurHandlerRegistration() {
     }
 
+    @Override
     public void removeHandler() {
       getBlurHandlers().remove(this);
     }
@@ -116,6 +117,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     sinkEvents(Event.ONKEYDOWN + Event.ONKEYPRESS + Event.ONMOUSEDOWN + Event.ONBLUR);
   }
 
+  @Override
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     Assert.notNull(handler);
     if (getBlurHandlers().values().contains(handler)) {
@@ -130,20 +132,24 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     return reg;
   }
 
+  @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return addDomHandler(handler, FocusEvent.getType());
   }
   
+  @Override
   public void addItem(String item) {
     Assert.notEmpty(item);
     data.add(item);
     refresh();
   }
 
+  @Override
   public void addItems(Collection<String> items) {
     Assert.notNull(items);
     if (!items.isEmpty()) {
@@ -152,10 +158,12 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     }
   }
 
+  @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
   }
@@ -165,26 +173,39 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     return this;
   }
 
+  @Override
+  public void clearValue() {
+    if (isNullable()) {
+      setValue(null);
+    }
+  }
+  
+  @Override
   public EditorAction getDefaultFocusAction() {
     return null;
   }
   
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "string-picker";
   }
 
+  @Override
   public int getItemCount() {
     return data.size();
   }
 
+  @Override
   public List<String> getItems() {
     return data;
   }
 
+  @Override
   public String getNormalizedValue() {
     String v = getValue();
     if (BeeUtils.isEmpty(v) && isNullable()) {
@@ -194,6 +215,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     }
   }
 
+  @Override
   public String getValue() {
     return value;
   }
@@ -203,26 +225,32 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     return FormWidget.STRING_PICKER;
   }
   
+  @Override
   public boolean handlesKey(int keyCode) {
     return BeeUtils.inList(keyCode, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN, KeyCodes.KEY_ENTER);
   }
 
+  @Override
   public boolean isEditing() {
     return editing;
   }
 
+  @Override
   public boolean isEmpty() {
     return getItemCount() <= 0;
   }
   
+  @Override
   public boolean isEnabled() {
     return enabled;
   }
 
+  @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }
   
+  @Override
   public boolean isNullable() {
     return nullable;
   }
@@ -281,18 +309,22 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     }
   }
 
+  @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
+  @Override
   public void setItems(Collection<String> items) {
     Assert.notNull(items);
     data.clear();
@@ -300,14 +332,17 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     refresh();
   }
 
+  @Override
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
   }
 
+  @Override
   public void setValue(String value) {
     setValue(value, false);
   }
 
+  @Override
   public void setValue(String value, boolean fireEvents) {
     if (BeeUtils.equalsTrimRight(value, getValue())) {
       return;
@@ -322,6 +357,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     }
   }
 
+  @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
     String v;
@@ -346,6 +382,7 @@ public class StringPicker extends CellList<String> implements Editor, HasItems, 
     });
   }
 
+  @Override
   public String validate() {
     return null;
   }

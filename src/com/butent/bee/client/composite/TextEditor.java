@@ -24,6 +24,7 @@ import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.InputArea;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.HasTextDimensions;
@@ -60,30 +61,42 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
     sinkEvents(Event.ONMOUSEDOWN);
   }
 
+  @Override
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return getArea().addDomHandler(handler, BlurEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return getArea().addEditStopHandler(handler);
   }
 
+  @Override
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return getArea().addDomHandler(handler, FocusEvent.getType());
   }
   
+  @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return getArea().addKeyDownHandler(handler);
   }
 
+  @Override
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return getArea().addValueChangeHandler(handler);
   }
   
+  @Override
+  public void clearValue() {
+    setValue(BeeConst.STRING_EMPTY);
+  }
+  
+  @Override
   public int getCharacterWidth() {
     return getArea().getCharacterWidth();
   }
 
+  @Override
   public EditorAction getDefaultFocusAction() {
     return getArea().getDefaultFocusAction();
   }
@@ -93,22 +106,27 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
     return "text-editor";
   }
   
+  @Override
   public String getNormalizedValue() {
     return getArea().getNormalizedValue();
   }
 
+  @Override
   public int getTabIndex() {
     return getArea().getTabIndex();
   }
 
+  @Override
   public TextBoxBase getTextBox() {
     return getArea();
   }
   
+  @Override
   public String getValue() {
     return getArea().getValue();
   }
 
+  @Override
   public int getVisibleLines() {
     return getArea().getVisibleLines();
   }
@@ -118,18 +136,22 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
     return FormWidget.INPUT_AREA;
   }
   
+  @Override
   public boolean handlesKey(int keyCode) {
     return getArea().handlesKey(keyCode);
   }
 
+  @Override
   public boolean isEditing() {
     return getArea().isEditing();
   }
 
+  @Override
   public boolean isEnabled() {
     return getArea().isEnabled();
   }
 
+  @Override
   public boolean isNullable() {
     return getArea().isNullable();
   }
@@ -157,51 +179,63 @@ public class TextEditor extends Absolute implements Editor, HasTextDimensions, H
     super.onBrowserEvent(event);
   }
 
+  @Override
   public void setAccessKey(char key) {
     getArea().setAccessKey(key);
   }
 
+  @Override
   public void setCharacterWidth(int width) {
     getArea().setCharacterWidth(width);
   }
 
+  @Override
   public void setEditing(boolean editing) {
     getArea().setEditing(editing);
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     DomUtils.enableChildren(this, enabled);
   }
 
+  @Override
   public void setFocus(boolean focused) {
     getArea().setFocus(focused);
   }
 
+  @Override
   public void setNullable(boolean nullable) {
     getArea().setNullable(nullable);
   }
 
+  @Override
   public void setTabIndex(int index) {
     getArea().setTabIndex(index);
   }
 
+  @Override
   public void setValue(String value) {
     getArea().setValue(value);
   }
 
+  @Override
   public void setValue(String value, boolean fireEvents) {
     getArea().setValue(value, fireEvents);
   }
 
+  @Override
   public void setVisibleLines(int lines) {
     getArea().setVisibleLines(lines);
   }
 
+  @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
     getArea().startEdit(oldValue, charCode, onEntry, sourceElement);
   }
 
+  @Override
   public String validate() {
     return getArea().validate();
   }

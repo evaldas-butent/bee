@@ -114,7 +114,6 @@ public class MonthView extends CalendarView {
   @Override
   public void doLayout() {
     grid.clear();
-    grid.removeAllRows();
 
     canvas.clear();
 

@@ -30,6 +30,7 @@ import com.butent.bee.client.view.edit.AdjustmentListener;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.EditStopEvent.Handler;
 import com.butent.bee.client.view.edit.Editor;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -116,6 +117,11 @@ public class RichTextEditor extends Flow implements Editor, AdjustmentListener,
     }
   }
 
+  @Override
+  public void clearValue() {
+    setValue(BeeConst.STRING_EMPTY);
+  }
+  
   @Override
   public EditorAction getDefaultFocusAction() {
     return null;

@@ -93,14 +93,17 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     }
   }
 
+  @Override
   public void addCaptions(Class<? extends Enum<?>> clazz) {
     addItems(UiHelper.getCaptions(clazz));
   }
 
+  @Override
   public void addCaptions(String captionKey) {
     addItems(Global.getCaptions(captionKey));
   }
 
+  @Override
   public HandlerRegistration addEditStopHandler(EditStopEvent.Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
@@ -111,6 +114,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     updateSize();
   }
 
+  @Override
   public void addItems(Collection<String> items) {
     Assert.notNull(items);
     for (String it : items) {
@@ -118,6 +122,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     }
   }
 
+  @Override
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
   }
@@ -128,22 +133,31 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     updateSize();
   }
   
+  @Override
+  public void clearValue() {
+    deselect();
+  }
+  
   public void deselect() {
     setSelectedIndex(-1);
   }
 
+  @Override
   public EditorAction getDefaultFocusAction() {
     return null;
   }
   
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "list";
   }
 
+  @Override
   public List<String> getItems() {
     List<String> items = Lists.newArrayList();
     for (int i = 0; i < getItemCount(); i++) {
@@ -160,6 +174,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     return minSize;
   }
 
+  @Override
   public String getNormalizedValue() {
     String v = getValue();
     if (BeeUtils.isEmpty(v) && isNullable()) {
@@ -173,6 +188,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     return source;
   }
 
+  @Override
   public String getValue() {
     int index = getSelectedIndex();
     if (!isIndex(index)) {
@@ -184,6 +200,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     }
   }
 
+  @Override
   public int getValueStartIndex() {
     return valueStartIndex;
   }
@@ -193,22 +210,27 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     return FormWidget.LIST_BOX;
   }
   
+  @Override
   public boolean handlesKey(int keyCode) {
     return BeeUtils.inList(keyCode, KeyCodes.KEY_UP, KeyCodes.KEY_DOWN);
   }
 
+  @Override
   public boolean isEditing() {
     return editing;
   }
   
+  @Override
   public boolean isEmpty() {
     return getItemCount() <= 0;
   }
 
+  @Override
   public boolean isIndex(int index) {
     return index >= 0 && index < getItemCount();
   }
 
+  @Override
   public boolean isNullable() {
     return nullable;
   }
@@ -256,14 +278,17 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     }
   }
 
+  @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
+  @Override
   public void setItems(Collection<String> items) {
     if (getItemCount() > 0) {
       clear();
@@ -281,6 +306,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     this.minSize = minSize;
   }
 
+  @Override
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
   }
@@ -289,10 +315,12 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     this.source = source;
   }
 
+  @Override
   public void setValue(String value) {
     setValue(value, false);
   }
 
+  @Override
   public void setValue(String value, boolean fireEvents) {
     String oldValue = getValue();
     setSelectedIndex(getIndex(value));
@@ -305,10 +333,12 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     this.valueNumeric = valueNumeric;
   }
 
+  @Override
   public void setValueStartIndex(int valueStartIndex) {
     this.valueStartIndex = valueStartIndex;
   }
 
+  @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
     if (!isEditorInitialized()) {
@@ -339,6 +369,7 @@ public class BeeListBox extends ListBox implements Editor, HasItems, HasValueSta
     }
   }
 
+  @Override
   public String validate() {
     return null;
   }

@@ -42,6 +42,8 @@ import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.communication.RpcList;
+import com.butent.bee.client.composite.FileGroup;
+import com.butent.bee.client.composite.FileGroup.Column;
 import com.butent.bee.client.composite.SliderBar;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.JsData;
@@ -84,7 +86,7 @@ import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Browser;
-import com.butent.bee.client.utils.FileInfo;
+import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.utils.XmlUtils;
@@ -114,6 +116,7 @@ import com.butent.bee.shared.data.StringMatrix;
 import com.butent.bee.shared.data.TableColumn;
 import com.butent.bee.shared.data.value.BooleanValue;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
@@ -221,6 +224,8 @@ public class CliWorker {
       eval(v, arr);
     } else if (BeeUtils.inList(z, "f", "func")) {
       showFunctions(v, arr);
+    } else if (z.equals("files") || z.startsWith("repo")) {
+      getFiles();
     } else if (z.equals("font") && arr.length == 2) {
       showFont(arr[1]);
     } else if (z.equals("form") && arr.length == 2) {
@@ -839,6 +844,32 @@ public class CliWorker {
           XmlUtils.createString(Service.XML_TAG_DATA,
               Service.VAR_CLASS_NAME, cls, Service.VAR_PACKAGE_LIST, pck));
     }
+  }
+  
+  private static void getFiles() {
+    BeeKeeper.getRpc().makeGetRequest(Service.GET_FILES, new ResponseCallback() {
+      @Override
+      public void onResponse(ResponseObject response) {
+        if (response.hasResponse()) {
+          FileGroup fileGroup = new FileGroup(Lists.newArrayList(Column.ICON, Column.NAME,
+              Column.SIZE, Column.TYPE, Column.DATE));
+          fileGroup.render((String) response.getResponse());
+          
+          if (fileGroup.isEmpty()) {
+            Global.inform("files not available");
+            return;
+          }
+          
+          long totSize = 0;
+          for (StoredFile sf : fileGroup.getFiles()) {
+            totSize += sf.getSize();
+          }
+          
+          fileGroup.setCaption("Files: " + fileGroup.getFiles().size() + " size: " + totSize);
+          BeeKeeper.getScreen().updateActivePanel(fileGroup, ScrollBars.BOTH);
+        }
+      }
+    });
   }
 
   private static void getFs() {
@@ -2880,9 +2911,9 @@ public class CliWorker {
       @Override
       public void onChange(ChangeEvent event) {
         popup.hide();
-        List<FileInfo> files = FileUtils.getFileInfo(widget.getFiles());
+        List<NewFileInfo> files = FileUtils.getFileInfo(widget.getFiles());
         
-        for (final FileInfo fi : files) {
+        for (final NewFileInfo fi : files) {
           logger.debug("uploading", fi.getName(), fi.getType(), fi.getSize());
           FileUtils.upload(fi, new Callback<Long>() {
             @Override

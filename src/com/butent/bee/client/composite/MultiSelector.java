@@ -117,6 +117,15 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   }
 
   @Override
+  public void clearValue() {
+    super.clearValue();
+    setOldValue(null);
+    
+    clearChoices();
+    getOracle().clearExclusions();
+  }
+
+  @Override
   public EditorAction getDefaultFocusAction() {
     return null;
   }
@@ -205,6 +214,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       container.insert(new ChoiceWidget(row.getId(), label), container.getWidgetCount() - 1);
       
       updateValue();
+      
+      getElement().scrollIntoView();
       setFocus(true);
       
       setSelectedRow(row);
@@ -345,6 +356,8 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
     }
     
     updateValue();
+    
+    getElement().scrollIntoView();
     setFocus(true);
   }
   

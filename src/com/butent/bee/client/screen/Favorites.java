@@ -380,7 +380,7 @@ public class Favorites extends Stack implements HandlesDeleteEvents {
     for (Group group : Group.values()) {
       if (!group.isEmpty()) {
         group.clear();
-        getDisplay(group).removeAllRows();
+        getDisplay(group).clear();
       }
     }
   }

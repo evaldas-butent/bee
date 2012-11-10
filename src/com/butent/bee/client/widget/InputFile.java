@@ -10,7 +10,10 @@ import com.google.gwt.user.client.ui.HasName;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
+
+import elemental.html.InputElement;
 
 import elemental.html.FileList;
 
@@ -36,6 +39,12 @@ public class InputFile extends Widget implements HasName, HasChangeHandlers, Has
     return addDomHandler(handler, ChangeEvent.getType());
   }
   
+  public void clear() {
+    if (!isEmpty()) {
+      getInputElement().setValue(BeeConst.STRING_EMPTY);
+    }
+  }
+  
   public void click() {
     getInputElement().click();
   }
@@ -59,6 +68,10 @@ public class InputFile extends Widget implements HasName, HasChangeHandlers, Has
     return getInputElement().getName();
   }
 
+  public boolean isEmpty() {
+    return getFiles().length() <= 0;
+  }
+  
   @Override
   public boolean isEnabled() {
     return !getInputElement().isDisabled();
@@ -84,7 +97,7 @@ public class InputFile extends Widget implements HasName, HasChangeHandlers, Has
     setStyleName("bee-InputFile");
   }
   
-  private JsInputElement getInputElement() {
-    return getElement().cast();
+  private InputElement getInputElement() {
+    return (JsInputElement) getElement().cast();
   }
 }

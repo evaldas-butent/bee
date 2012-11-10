@@ -64,26 +64,37 @@ public class Toggle extends CustomButton implements Editor {
     init(styleName);
   }
 
+  @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
   }
 
+  @Override
+  public void clearValue() {
+    setValue(null);
+  }
+  
+  @Override
   public EditorAction getDefaultFocusAction() {
     return null;
   }
   
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "toggle";
   }
 
+  @Override
   public String getNormalizedValue() {
     Boolean v = isDown();
     if (!v && isNullable()) {
@@ -96,6 +107,7 @@ public class Toggle extends CustomButton implements Editor {
     return source;
   }
 
+  @Override
   public String getValue() {
     return BooleanValue.pack(isDown());
   }
@@ -105,6 +117,7 @@ public class Toggle extends CustomButton implements Editor {
     return FormWidget.TOGGLE;
   }
   
+  @Override
   public boolean handlesKey(int keyCode) {
     return false;
   }
@@ -118,10 +131,12 @@ public class Toggle extends CustomButton implements Editor {
     return super.isDown();
   }
 
+  @Override
   public boolean isEditing() {
     return editing;
   }
 
+  @Override
   public boolean isNullable() {
     return nullable;
   }
@@ -174,14 +189,17 @@ public class Toggle extends CustomButton implements Editor {
     super.setDown(down);
   }
 
+  @Override
   public void setEditing(boolean editing) {
     this.editing = editing;
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
+  @Override
   public void setNullable(boolean nullable) {
     this.nullable = nullable;
   }
@@ -190,10 +208,12 @@ public class Toggle extends CustomButton implements Editor {
     this.source = source;
   }
 
+  @Override
   public void setValue(String value) {
     setValue(value, false);
   }
 
+  @Override
   public void setValue(String value, boolean fireEvents) {
     boolean oldValue = isDown();
     boolean newValue = BeeUtils.toBoolean(value);
@@ -204,11 +224,13 @@ public class Toggle extends CustomButton implements Editor {
     }
   }
 
+  @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
     setValue(oldValue);
   }
 
+  @Override
   public String validate() {
     return null;
   }

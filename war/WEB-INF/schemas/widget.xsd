@@ -84,6 +84,7 @@
           <xs:element name="renderToken" type="ui:renderableToken" maxOccurs="unbounded" />
         </xs:choice>
         <xs:attribute name="source" type="type:nameType" />
+        <xs:attribute name="property" type="type:nameType" />
         <xs:attribute name="format" type="xs:normalizedString" />
         <xs:attribute name="itemKey" type="xs:normalizedString" />
         <xs:attribute name="renderColumns" type="type:nameList" />
@@ -108,6 +109,7 @@
           <xs:element name="carry" type="ui:calcType" minOccurs="0" />
         </xs:sequence>
         <xs:attribute name="source" type="type:nameType" />
+        <xs:attribute name="property" type="type:nameType" />
         <xs:attribute name="caption" type="xs:string" />
         <xs:attribute name="readOnly" type="xs:boolean" />
         <xs:attribute name="format" type="xs:normalizedString" />
@@ -722,7 +724,6 @@
         <xs:attribute name="itemKey" type="xs:normalizedString" />
         <xs:attribute name="renderColumns" type="type:nameList" />
         <xs:attribute name="upperCase" type="xs:boolean" />
-        <xs:attribute name="property" type="type:nameType" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
@@ -870,16 +871,33 @@
     </xs:complexType>
   </xs:element>
 
+  <xs:complexType name="fileList">
+    <xs:complexContent>
+      <xs:extension base="widgetType">
+        <xs:attribute name="visibleColumns" type="type:fileInfoColumns" />
+        <xs:attribute name="editableColumns" type="type:fileInfoColumns" />
+        <xs:attributeGroup ref="ui:cellAppearance" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:element name="FileGroup" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="fileList">
+          <xs:attribute name="property" type="type:nameType" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
   <xs:element name="FileCollector" substitutionGroup="widget">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="widgetType">
+        <xs:extension base="fileList">
           <xs:sequence>
             <xs:element name="face" type="buttonFace" minOccurs="0" maxOccurs="1" />
           </xs:sequence>
-          <xs:attribute name="visibleColumns" type="type:fileInfoColumns" />
-          <xs:attribute name="editableColumns" type="type:fileInfoColumns" />
-          <xs:attributeGroup ref="ui:cellAppearance" />
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>

@@ -13,6 +13,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.RpcUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
+import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -42,18 +43,19 @@ public class FileUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(FileUtils.class);
 
+  private static final String OPEN_URL = "file";
   private static final String UPLOAD_URL = "upload";
   
   private static final long MIN_FILE_SIZE_FOR_PROGRESS = 100000; 
 
-  public static List<FileInfo> getFileInfo(FileList fileList) {
-    List<FileInfo> result = Lists.newArrayList();
+  public static List<NewFileInfo> getFileInfo(FileList fileList) {
+    List<NewFileInfo> result = Lists.newArrayList();
     if (fileList == null) {
       return result;
     }
 
     for (int i = 0; i < fileList.length(); i++) {
-      result.add(new FileInfo(fileList.item(i)));
+      result.add(new NewFileInfo(fileList.item(i)));
     }
     return result;
   }
@@ -69,8 +71,21 @@ public class FileUtils {
     JsClipboard clipboard = dataTransfer.cast();
     return clipboard.getFiles();
   }
+  
+  public static String getUrl(StoredFile sf) {
+    Assert.notNull(sf);
 
-  public static void upload(FileInfo fileInfo, final Callback<Long> callback) {
+    String fileName = BeeUtils.notEmpty(sf.getCaption(), sf.getName());
+    
+    Map<String, String> parameters = Maps.newHashMap();
+    parameters.put(Service.VAR_FILE_ID, BeeUtils.toString(sf.getFileId()));
+    parameters.put(Service.VAR_FILE_NAME, fileName);
+
+    return RpcUtils.addQueryString(GWT.getModuleBaseURL() + OPEN_URL,
+        RpcUtils.buildQueryString(parameters, true));
+  }
+  
+  public static void upload(NewFileInfo fileInfo, final Callback<Long> callback) {
     Assert.notNull(fileInfo);
     Assert.notNull(callback);
     
@@ -119,8 +134,7 @@ public class FileUtils {
             callback.onSuccess(fileId);
 
           } else {
-            String msg = BeeUtils.joinWords("upload", fileName, "response:",
-                response);
+            String msg = BeeUtils.joinWords("upload", fileName, "response:", response);
             logger.warning(msg);
             callback.onFailure(msg);
           }
@@ -154,9 +168,9 @@ public class FileUtils {
     return createXhr(Browser.getWindow());
   }
 
-  private static native XMLHttpRequest createXhr(Window window) /*-{
-    return new window.XMLHttpRequest();
-  }-*/;
+  private static XMLHttpRequest createXhr(Window window) {
+    return window.newXMLHttpRequest();
+  }
 
   private FileUtils() {
   }

@@ -52,18 +52,22 @@ public class InternalLink extends Widget implements HasId, HasHTML, HasClickHand
     DomUtils.createId(this, getIdPrefix());
   }
 
+  @Override
   public HandlerRegistration addClickHandler(ClickHandler handler) {
     return addHandler(handler, ClickEvent.getType());
   }
 
+  @Override
   public String getHTML() {
     return anchorElem.getInnerHTML();
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "internal-link";
   }
@@ -72,6 +76,7 @@ public class InternalLink extends Widget implements HasId, HasHTML, HasClickHand
     return targetHistoryToken;
   }
 
+  @Override
   public String getText() {
     return anchorElem.getInnerText();
   }
@@ -85,10 +90,12 @@ public class InternalLink extends Widget implements HasId, HasHTML, HasClickHand
     }
   }
 
+  @Override
   public void setHTML(String html) {
     anchorElem.setInnerHTML(html);
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
@@ -101,6 +108,7 @@ public class InternalLink extends Widget implements HasId, HasHTML, HasClickHand
     AnchorElement.as(anchorElem).setHref(href);
   }
 
+  @Override
   public void setText(String text) {
     anchorElem.setInnerText(text);
   }

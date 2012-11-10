@@ -22,6 +22,7 @@ import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.composite.DataSelector;
 import com.butent.bee.client.composite.Disclosure;
+import com.butent.bee.client.composite.FileCollector;
 import com.butent.bee.client.composite.InputDate;
 import com.butent.bee.client.composite.InputTime;
 import com.butent.bee.client.data.Data;
@@ -36,7 +37,10 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.utils.NewFileInfo;
+import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
+import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.client.widget.BeeButton;
@@ -54,6 +58,7 @@ import com.butent.bee.shared.data.CustomProperties;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
+import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
@@ -74,6 +79,15 @@ class TaskEventHandler {
     private static final String NAME_START_TIME = "Start_Time";
     private static final String NAME_END_DATE = "End_Date";
     private static final String NAME_END_TIME = "End_Time";
+
+    private static final String NAME_FILES = "Files";
+    
+    @Override
+    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+      if (widget instanceof FileCollector) {
+        ((FileCollector) widget).bindDnd(getFormView());
+      }
+    }
     
     @Override
     public FormCallback getInstance() {
@@ -128,21 +142,67 @@ class TaskEventHandler {
           if (response.hasErrors()) {
             event.getCallback().onFailure(response.getErrors());
 
-          } else if (response.hasResponse(Integer.class)) {
+          } else if (response.hasResponse(String.class)) {
+            List<Long> tasks = DataUtils.parseIdList((String) response.getResponse());
+            if (tasks.isEmpty()) {
+              event.getCallback().onFailure("No tasks created");
+              return;
+            }
+      
+            clearValue(NAME_START_DATE);
+            clearValue(NAME_START_TIME);
+            clearValue(NAME_END_DATE);
+            clearValue(NAME_END_TIME);
+
+            createFiles(tasks);
+            
             event.getCallback().onSuccess(null);
 
             GridView gridView = getGridView();
             if (gridView != null) {
-              gridView.notifyInfo("Sukurta naujų užduočių:", (String) response.getResponse());
+              gridView.notifyInfo("Sukurta naujų užduočių:", String.valueOf(tasks.size()));
               gridView.getViewPresenter().handleAction(Action.REFRESH);
             }
-
+            
           } else {
             event.getCallback().onFailure("Unknown response");
           }
         }
       });
       return false;
+    }
+    
+    private void clearValue(String widgetName) {
+      Widget widget = getFormView().getWidgetByName(widgetName);
+      if (widget instanceof Editor) {
+        ((Editor) widget).clearValue();
+      }
+    }
+
+    private void createFiles(final List<Long> tasks) {
+      Widget widget = getFormView().getWidgetByName(NAME_FILES);
+
+      if (widget instanceof FileCollector && !((FileCollector) widget).isEmpty()) {
+        List<NewFileInfo> files = Lists.newArrayList(((FileCollector) widget).getFiles());
+        
+        final List<BeeColumn> columns = Data.getColumns(VIEW_TASK_FILES,
+            Lists.newArrayList(COL_TASK, COL_FILE, COL_CAPTION));
+        
+        for (final NewFileInfo fileInfo : files) {
+          FileUtils.upload(fileInfo, new Callback<Long>() {
+            @Override
+            public void onSuccess(Long result) {
+              for (long taskId : tasks) {
+                List<String> values = Lists.newArrayList(BeeUtils.toString(taskId),
+                    BeeUtils.toString(result), fileInfo.getCaption());
+                Queries.insert(VIEW_TASK_FILES, columns, values, null);
+              }
+            }
+          });
+        }
+
+        ((FileCollector) widget).clear();        
+      }
     }
     
     private HasDateValue getDate(String widgetName) {
@@ -254,7 +314,7 @@ class TaskEventHandler {
         parent.setWidget(row, 0, panel);
 
         addMinutes(table, "Sugaišta minučių", 0, 0, 1440, 5);
-        addSelector(SELECTOR, table, "Darbo tipas", "DurationTypes",
+        addSelector(SELECTOR, table, "Darbo tipas", VIEW_DURATION_TYPES,
             Lists.newArrayList(COL_NAME), false);
         addDate(table, "Atlikimo data", ValueType.DATE, false,
             new Long(TimeUtils.today(0).getDays()));
@@ -821,7 +881,7 @@ class TaskEventHandler {
     final Long oldUser = data.getLong(form.getDataIndex(COL_EXECUTOR));
 
     final TaskDialog dialog = new TaskDialog("Užduoties persiuntimas");
-    dialog.addSelector("Vykdytojas", "Users",
+    dialog.addSelector("Vykdytojas", CommonsConstants.VIEW_USERS,
         Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME), true);
 
     if (!Objects.equal(owner, oldUser)) {
@@ -928,15 +988,15 @@ class TaskEventHandler {
     final IsRow data = form.getActiveRow();
     final int oldPriority =
         BeeUtils.unbox(data.getInteger(form.getDataIndex(COL_PRIORITY)));
-    final int oldTerm = BeeUtils.unbox(data.getInteger(form.getDataIndex("ExpectedDuration")));
-    final long oldCompany = BeeUtils.unbox(data.getLong(form.getDataIndex("Company")));
-    final long oldPerson = BeeUtils.unbox(data.getLong(form.getDataIndex("CompanyPerson")));
+    final int oldTerm = BeeUtils.unbox(data.getInteger(form.getDataIndex(COL_EXPECTED_DURATION)));
+    final long oldCompany = BeeUtils.unbox(data.getLong(form.getDataIndex(COL_COMPANY)));
+    final long oldPerson = BeeUtils.unbox(data.getLong(form.getDataIndex(COL_CONTACT)));
 
     final TaskDialog dialog = new TaskDialog("Užduoties koregavimas");
     dialog.addPriority("Prioritetas", oldPriority);
-    dialog.addMinutes("Numatoma trukmė min.", oldTerm, 0, 43200, 30);
-    dialog.addSelector("Įmonė", "Companies", Lists.newArrayList(COL_NAME), false);
-    dialog.addSelector("PERSON", "Asmuo", "CompanyPersons",
+    dialog.addMinutes("Numatoma trukmė", oldTerm, 0, 43200, 30);
+    dialog.addSelector("Įmonė", CommonsConstants.VIEW_COMPANIES, Lists.newArrayList(COL_NAME), false);
+    dialog.addSelector("PERSON", "Asmuo", CommonsConstants.VIEW_COMPANY_PERSONS,
         Lists.newArrayList(COL_FIRST_NAME, COL_LAST_NAME), false);
     dialog.addAction("Išsaugoti", new ClickHandler() {
       @Override
@@ -953,19 +1013,19 @@ class TaskEventHandler {
         }
         int term = dialog.getMinutes();
         if (!Objects.equal(oldTerm, term)) {
-          cols.add(new BeeColumn(ValueType.DATETIME, "ExpectedDuration"));
+          cols.add(new BeeColumn(ValueType.TEXT, COL_EXPECTED_DURATION));
           old.add(BeeUtils.toString(oldTerm));
           vals.add(BeeUtils.toString(term));
         }
         Long company = dialog.getSelector();
         if (DataUtils.isId(company) && !Objects.equal(oldCompany, company)) {
-          cols.add(new BeeColumn(ValueType.LONG, "Company"));
+          cols.add(new BeeColumn(ValueType.LONG, COL_COMPANY));
           old.add(BeeUtils.toString(oldCompany));
           vals.add(BeeUtils.toString(company));
         }
         Long person = dialog.getSelector("PERSON");
         if (DataUtils.isId(person) && !Objects.equal(oldPerson, person)) {
-          cols.add(new BeeColumn(ValueType.LONG, "CompanyPerson"));
+          cols.add(new BeeColumn(ValueType.LONG, COL_CONTACT));
           old.add(BeeUtils.toString(oldPerson));
           vals.add(BeeUtils.toString(person));
         }

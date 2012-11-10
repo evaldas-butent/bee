@@ -775,6 +775,12 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     setDisplayValue(BeeConst.STRING_EMPTY);
   }
 
+  @Override
+  public void clearValue() {
+    setValue(null);
+    clearDisplay();
+  }
+
   public List<String> getChoiceColumns() {
     return choiceColumns;
   }

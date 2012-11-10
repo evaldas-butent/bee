@@ -11,7 +11,7 @@
     <DataColumn name="Description" caption="Aprašymas" width="100" />
     <DataColumn name="FileName" caption="Originalus pavadinimas" readOnly="true" />
     <DataColumn name="FileSize" caption="Dydis" readOnly="true" />
-    <DataColumn name="FileMime" caption="Tipas" />
+    <DataColumn name="FileType" caption="Tipas" />
     <RelColumn name="Owner" caption="Registratorius" renderColumns="OwnerFirstName OwnerLastName" />
   </columns>
 </Grid>

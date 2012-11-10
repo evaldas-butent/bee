@@ -72,14 +72,17 @@ public class Link extends Anchor implements HasId {
     init();
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "link";
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

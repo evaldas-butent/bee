@@ -28,6 +28,7 @@ public class Service {
   public static final String GET_RESOURCE = SYS_SERVICE_PREFIX + "get_resource";
   public static final String SAVE_RESOURCE = SYS_SERVICE_PREFIX + "save_resource";
   public static final String GET_DIGEST = SYS_SERVICE_PREFIX + "get_digest";
+  public static final String GET_FILES = SYS_SERVICE_PREFIX + "get_files";
 
   public static final String INVOKE = RPC_SERVICE_PREFIX + "invoke";
 
@@ -145,6 +146,7 @@ public class Service {
 
   public static final String VIEW_COLUMN_SEPARATOR = " ";
 
+  public static final String VAR_FILE_ID = RPC_VAR_PREFIX + "file_id";
   public static final String VAR_FILE_NAME = RPC_VAR_PREFIX + "file_name";
   public static final String VAR_FILE_TYPE = RPC_VAR_PREFIX + "file_type";
   public static final String VAR_FILE_SIZE = RPC_VAR_PREFIX + "file_size";

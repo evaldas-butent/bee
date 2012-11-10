@@ -45,7 +45,7 @@ import com.butent.bee.client.ui.FormFactory.FormViewCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
-import com.butent.bee.client.utils.FileInfo;
+import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
@@ -435,7 +435,7 @@ public class MailHandler extends AbstractFormCallback {
         Set<Long> bcc = null;
         String subject = null;
         String content = null;
-        Map<Long, FileInfo> attachments = null;
+        Map<Long, NewFileInfo> attachments = null;
 
         switch (mode) {
           case NEW:

@@ -6,6 +6,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.composite.DataSelector;
+import com.butent.bee.client.composite.FileGroup;
 import com.butent.bee.client.composite.TabBar;
 import com.butent.bee.client.images.Images;
 import com.butent.bee.client.render.AbstractCellRenderer;
@@ -54,11 +55,17 @@ public class DisplayWidget {
   public String getValue(IsRow row) {
     if (renderer != null) {
       return renderer.render(row);
-    } else if (row != null && dataIndex >= 0) {
-      return row.getString(dataIndex);
-    } else {
-      return BeeConst.STRING_EMPTY;
+
+    } else if (row != null) {
+      if (dataIndex >= 0) {
+        return row.getString(dataIndex);
+      }
+      if (hasRowProperty()) {
+        return row.getProperty(widgetDescription.getRowProperty());
+      }
     }
+
+    return BeeConst.STRING_EMPTY;
   }
   
   public String getWidgetId() {
@@ -73,6 +80,10 @@ public class DisplayWidget {
     return widgetDescription.getWidgetType();
   }
 
+  public boolean hasRowProperty() {
+    return !BeeUtils.isEmpty(widgetDescription.getRowProperty());
+  }
+  
   public boolean hasSource(String source) {
     if (BeeUtils.isEmpty(source)) {
       return false;
@@ -137,6 +148,12 @@ public class DisplayWidget {
       case DOUBLE_LABEL:
         if (widget instanceof DoubleLabel) {
           ((DoubleLabel) widget).setValue(BeeUtils.toDoubleOrNull(value));
+        }
+        break;
+        
+      case FILE_GROUP:
+        if (widget instanceof FileGroup && hasRowProperty()) {
+          ((FileGroup) widget).render(value);
         }
         break;
 

@@ -20,6 +20,8 @@ import com.butent.bee.shared.ui.EditorAction;
 public interface Editor extends HasId, IsWidget, HasValue<String>, Focusable, HasAllFocusHandlers,
     HasKeyDownHandlers, HasEditState, HasEditStopHandlers, HasEnabled {
   
+  void clearValue();
+  
   EditorAction getDefaultFocusAction();
 
   String getNormalizedValue();

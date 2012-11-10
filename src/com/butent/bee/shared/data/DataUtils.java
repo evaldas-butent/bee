@@ -337,21 +337,6 @@ public class DataUtils {
     return result;
   }
 
-  public static List<BeeColumn> getColumns(List<BeeColumn> columns, String... colNames) {
-    if (colNames == null) {
-      return columns;
-    }
-
-    List<BeeColumn> result = Lists.newArrayList();
-    for (String colName : colNames) {
-      BeeColumn column = getColumn(colName, columns);
-      if (column != null) {
-        result.add(column);
-      }
-    }
-    return result;
-  }
-
   public static ValueType getColumnType(String columnId, List<? extends IsColumn> columns) {
     ValueType type = null;
     IsColumn column = getColumn(columnId, columns);

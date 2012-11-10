@@ -1,6 +1,7 @@
 package com.butent.bee.client.data;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.shared.BeeConst;
@@ -9,6 +10,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.data.view.ColumnMapper;
 import com.butent.bee.shared.data.view.DataInfo;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 
@@ -20,6 +23,8 @@ public class Data {
   private static final DataInfoProvider DATA_INFO_PROVIDER = new DataInfoProvider();
 
   private static final ColumnMapper COLUMN_MAPPER = new ColumnMapper(DATA_INFO_PROVIDER);
+  
+  private static BeeLogger logger = LogUtils.getLogger(Data.class);
   
   public static void clearCell(String viewName, IsRow row, String colName) {
     COLUMN_MAPPER.clearCell(viewName, row, colName);
@@ -56,6 +61,21 @@ public class Data {
 
   public static List<BeeColumn> getColumns(String viewName) {
     return getDataInfo(viewName).getColumns();
+  }
+
+  public static List<BeeColumn> getColumns(String viewName, List<String> colNames) {
+    List<BeeColumn> result = Lists.newArrayList();
+    DataInfo dataInfo = getDataInfo(viewName);
+    
+    for (String colName : colNames) {
+      BeeColumn column = dataInfo.getColumn(colName);
+      if (column == null) {
+        logger.severe(viewName, "column", colName, "not found");
+      } else {
+        result.add(column);
+      }
+    }
+    return result;
   }
   
   public static ValueType getColumnType(String viewName, String colName) {

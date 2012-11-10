@@ -3,10 +3,11 @@
   <!ENTITY inline "display: inline-block;">
 
   <!ENTITY section "margin-top: 2px;">
-  <!ENTITY header "font-variant: small-caps;">
+  <!ENTITY header "font-style: italic;">
   <!ENTITY separator "<br/>">
 
   <!ENTITY lbl1 "&inline; width: 100px; padding-top: 2px;">
+  <!ENTITY top1 "float: left; width: 100px; padding-top: 2px;">
   <!ENTITY inp2 "&inline; width: 140px;">
   <!ENTITY inp2x "&inline; width: 440px;">
   <!ENTITY lbl3 "&inline; width: 128px; padding-top: 2px; margin-left: 10px;">
@@ -75,18 +76,19 @@
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <Label html="Aprašymas:" style="width: 100px; float: left;" />
+        <Label html="Aprašymas:" style="&top1;" />
         <InputArea source="Description" style="width: 440px; height: 60px;" />
       </FlowPanel>
 
       &separator;
       <FlowPanel style="&section;">
-        <Label html="Bylos:" style="&header;" />
+        <Label html="Bylos:" style="&top1;" />
+        <FileGroup property="Files" />
       </FlowPanel>
 
       &separator;
       <FlowPanel style="&section;">
-        <Label html="Stebėtojai:" style="&lbl1;" />
+        <Label html="Stebėtojai:" style="&top1;" />
         <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
           style="&inp2x;" />
       </FlowPanel>
@@ -97,25 +99,25 @@
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <Label html="Įmonės:" style="&lbl1;" />
+        <Label html="Įmonės:" style="&top1;" />
         <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
           style="&inp2x;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <Label html="Asmenys:" style="&lbl1;" />
+        <Label html="Asmenys:" style="&top1;" />
         <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
           style="&inp2x;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <Label html="Įvykiai:" style="&lbl1;" />
+        <Label html="Įvykiai:" style="&top1;" />
         <MultiSelector viewName="Appointments" property="Appointments"
           renderColumns="StartDateTime Summary" newRowEnabled="false" style="&inp2x;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
-        <Label html="Užduotys:" style="&lbl1;" />
+        <Label html="Užduotys:" style="&top1;" />
         <MultiSelector viewName="Tasks" property="Tasks" 
           renderColumns="FinishTime Summary ExecutorFirstName ExecutorLastName"
           newRowEnabled="false" style="&inp2x;" />

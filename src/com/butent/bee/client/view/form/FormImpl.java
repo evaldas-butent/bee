@@ -103,8 +103,8 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         return;
       }
 
-      String id = result.getWidgetId();
-      FormWidget type = result.getWidgetType();
+      final String id = result.getWidgetId();
+      final FormWidget type = result.getWidgetType();
       if (type == null) {
         onFailure("widget type is null", id);
         return;
@@ -114,61 +114,53 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         getDisablableWidgets().add(id);
       }
 
+      final String source = result.getSource();
+      final int index;
+
+      if (!BeeUtils.isEmpty(source) && hasData()) {
+        index = getDataIndex(source);
+        if (index < 0) {
+          onFailure("widget id:", id, "source:", source, "not found");
+        }
+      } else {
+        index = BeeConst.UNDEF;
+      }
+
       DisplayWidget displayWidget = null;
 
       if (type.isDisplay()) {
-        String source = result.getSource();
-        int index = BeeConst.UNDEF;
-
-        boolean ok = true;
-        if (!BeeUtils.isEmpty(source) && hasData()) {
-          index = getDataIndex(source);
-          if (index < 0) {
-            onFailure("display source not found", source, id);
-            ok = false;
-          }
+        AbstractCellRenderer renderer = null;
+        if (getFormCallback() != null) {
+          renderer = getFormCallback().getRenderer(result);
         }
 
-        if (ok) {
-          AbstractCellRenderer renderer = null;
-          if (getFormCallback() != null) {
-            renderer = getFormCallback().getRenderer(result);
-          }
-
-          if (renderer == null) {
-            renderer = RendererFactory.getRenderer(result.getRendererDescription(),
-                result.getRender(), result.getRenderTokens(), result.getItemKey(),
-                NameUtils.toList(result.getRenderColumns()), getDataColumns(), index,
-                result.getRelation());
-          }
-
-          if (index >= 0 || renderer != null) {
-            if (widget instanceof HandlesRendering) {
-              ((HandlesRendering) widget).setRenderer(renderer);
-              displayWidget = new DisplayWidget(index, null, result);
-            } else {
-              displayWidget = new DisplayWidget(index, renderer, result);
-            }
-
-            getDisplayWidgets().add(displayWidget);
-          }
+        if (renderer == null) {
+          renderer = RendererFactory.getRenderer(result.getRendererDescription(),
+              result.getRender(), result.getRenderTokens(), result.getItemKey(),
+              NameUtils.toList(result.getRenderColumns()), getDataColumns(), index,
+              result.getRelation());
         }
+
+        if (widget instanceof HandlesRendering) {
+          ((HandlesRendering) widget).setRenderer(renderer);
+          displayWidget = new DisplayWidget(index, null, result);
+        } else {
+          displayWidget = new DisplayWidget(index, renderer, result);
+        }
+
+        getDisplayWidgets().add(displayWidget);
       }
 
-      if (type.isEditable() && hasData()) {
-        String source = BeeUtils.notEmpty(result.getSource(), result.getRowProperty());
+      if (type.isEditable()) {
+        EditableWidget editableWidget = new EditableWidget(getDataColumns(), index,
+            result, displayWidget);
+        getEditableWidgets().add(editableWidget);
 
-        if (!BeeUtils.isEmpty(source)) {
-          EditableWidget editableWidget = new EditableWidget(getDataColumns(),
-              getDataIndex(source), result, displayWidget);
-          getEditableWidgets().add(editableWidget);
+        result.setNullable(editableWidget.isNullable());
+        result.setHasDefaults(editableWidget.hasDefaults());
 
-          result.setNullable(editableWidget.isNullable());
-          result.setHasDefaults(editableWidget.hasDefaults());
-
-          if (getFormCallback() != null) {
-            getFormCallback().afterCreateEditableWidget(editableWidget);
-          }
+        if (getFormCallback() != null) {
+          getFormCallback().afterCreateEditableWidget(editableWidget);
         }
       }
 
@@ -586,7 +578,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
     if (editableWidget != null) {
       return getWidgetById(editableWidget.getWidgetId());
     }
-    
+
     DisplayWidget displayWidget = getDisplayWidgetBySource(source, false);
     return (displayWidget == null) ? null : getWidgetById(displayWidget.getWidgetId());
   }
@@ -794,7 +786,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
       if (isAdding() || isEditing()) {
         rowValue.setValue(index, newValue);
-        
+
         Set<String> refreshed = Sets.newHashSet();
 
         if (event.hasRelation() && source instanceof EditableWidget) {
@@ -926,9 +918,9 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         }
       }
     }
-    
+
     for (DisplayWidget displayWidget : getDisplayWidgets()) {
-      if (displayWidget.hasSource(source)  && !refreshed.contains(displayWidget.getWidgetId())) {
+      if (displayWidget.hasSource(source) && !refreshed.contains(displayWidget.getWidgetId())) {
         String id = displayWidget.getWidgetId();
         Widget widget = DomUtils.getChildQuietly(this, id);
 
@@ -938,7 +930,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         }
       }
     }
-    
+
     return refreshed.size();
   }
 
@@ -1514,7 +1506,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
         refreshed.add(editableWidget.getWidgetId());
       }
     }
-    return refreshed; 
+    return refreshed;
   }
 
   private Set<String> refreshEditableWidgets() {
@@ -1545,7 +1537,7 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
       refreshed.add(editableWidget.getWidgetId());
     }
-    return refreshed; 
+    return refreshed;
   }
 
   private void render(boolean refreshChildren) {

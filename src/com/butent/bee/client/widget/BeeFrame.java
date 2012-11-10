@@ -7,10 +7,14 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasId;
 
-import elemental.js.dom.JsDocument;
+import elemental.html.Window;
+
+import elemental.dom.Document;
+
+import elemental.html.IFrameElement;
+
 import elemental.js.dom.JsElement;
 import elemental.js.html.JsIFrameElement;
-import elemental.js.html.JsWindow;
 
 public class BeeFrame extends Frame implements HasId {
 
@@ -35,7 +39,7 @@ public class BeeFrame extends Frame implements HasId {
   }
   
   public Element getBody() {
-    return getContentDocument().getBody().cast();
+    return ((JsElement) getContentDocument().getBody()).cast();
   }
 
   public String getId() {
@@ -51,8 +55,8 @@ public class BeeFrame extends Frame implements HasId {
       return true;
     }
 
-    JsElement body = getContentDocument().getBody();
-    return body == null || body.getChildElementCount() <= 0;
+    Element body = getBody();
+    return body == null || body.getChildCount() <= 0;
   }
   
   public void print() {
@@ -64,7 +68,7 @@ public class BeeFrame extends Frame implements HasId {
   }
 
   public void setHtml(String html) {
-    JsDocument document = getContentDocument();
+    Document document = getContentDocument();
     
     document.open();
     document.write(html);
@@ -75,16 +79,16 @@ public class BeeFrame extends Frame implements HasId {
     DomUtils.setId(this, id);
   }
 
-  private JsDocument getContentDocument() {
+  private Document getContentDocument() {
     return getIFrameElement().getContentDocument();
   }
 
-  private JsWindow getContentWindow() {
+  private Window getContentWindow() {
     return getIFrameElement().getContentWindow(); 
   }
   
-  private JsIFrameElement getIFrameElement() {
-    return getElement().cast();
+  private IFrameElement getIFrameElement() {
+    return (JsIFrameElement) getElement().cast();
   }
   
   private void init() {

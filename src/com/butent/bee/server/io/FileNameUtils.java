@@ -1,11 +1,18 @@
 package com.butent.bee.server.io;
 
+import com.google.common.collect.Maps;
+
+import com.butent.bee.server.Config;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.io.StoredFile;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Enables operations with file names, paths, extensions, read and change them.
@@ -28,6 +35,12 @@ public class FileNameUtils {
   private static final char SYSTEM_SEPARATOR = File.separatorChar;
 
   private static final char OTHER_SEPARATOR;
+  
+  private static final Map<String, String> extensionIcons = Maps.newHashMap();
+  private static boolean extensionIconsInitialized = false;
+
+  private static BeeLogger logger = LogUtils.getLogger(FileNameUtils.class);
+  
   static {
     if (isSystemWindows()) {
       OTHER_SEPARATOR = UNIX_SEPARATOR;
@@ -137,10 +150,20 @@ public class FileNameUtils {
     }
   }
 
+  public static String getExtensionIcon(String filename) {
+    String extension = getExtension(filename);
+    if (BeeUtils.isEmpty(extension)) {
+      return null;
+    }
+    
+    ensureExtensionIcons();
+    return extensionIcons.get(BeeUtils.normalize(extension));
+  }
+
   public static String getFullPath(String filename) {
     return doGetFullPath(filename, true);
   }
-
+  
   public static String getFullPathNoEndSeparator(String filename) {
     return doGetFullPath(filename, false);
   }
@@ -501,6 +524,30 @@ public class FileNameUtils {
       return new String(array, 0, size);
     }
     return new String(array, 0, size - 1);
+  }
+  
+  private static synchronized void ensureExtensionIcons() {
+    if (extensionIconsInitialized) {
+      return;
+    }
+    
+    File dir = new File(Config.WAR_DIR, StoredFile.ICON_DIR);
+    File[] files = dir.listFiles();
+    
+    if (files != null) {
+      for (File file : files) {
+        String name = file.getName();
+        String key = removeExtension(name);
+        
+        if (!BeeUtils.same(key, name)) {
+          extensionIcons.put(BeeUtils.normalize(key), BeeUtils.trim(name));
+        }
+      }
+    }
+    
+    extensionIconsInitialized = true;
+    
+    logger.info("loaded", extensionIcons.size(), "extension icons from", dir.getPath());
   }
 
   private static boolean isSeparator(char ch) {

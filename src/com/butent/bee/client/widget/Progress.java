@@ -5,6 +5,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.shared.HasId;
 
+import elemental.html.ProgressElement;
+
 import elemental.js.html.JsProgressElement;
 
 /**
@@ -72,7 +74,7 @@ public class Progress extends Widget implements HasId {
     setStyleName("bee-Progress");
   }
   
-  private JsProgressElement getProgressElement() {
-    return getElement().cast();
+  private ProgressElement getProgressElement() {
+    return (JsProgressElement) getElement().cast();
   }
 }

@@ -22,8 +22,8 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
-import com.butent.bee.client.utils.FileInfo;
 import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -41,7 +41,7 @@ public class NewMessageHandler extends AbstractFormCallback {
   private final Map<String, String> defaultRecipients = Maps.newHashMap();
   private final String defaultSubject;
   private final String defaultContent;
-  private final Map<Long, FileInfo> defaultAttachments;
+  private final Map<Long, NewFileInfo> defaultAttachments;
 
   private final Map<String, MultiSelector> recipientWidgets = Maps.newHashMap();
   private Editor subjectWidget;
@@ -55,7 +55,7 @@ public class NewMessageHandler extends AbstractFormCallback {
   private final MailHandler mailHandler;
 
   public NewMessageHandler(Long sender, Long draftId, Set<Long> to, Set<Long> cc, Set<Long> bcc,
-      String subject, String content, Map<Long, FileInfo> attach, MailHandler mailHandler) {
+      String subject, String content, Map<Long, NewFileInfo> attach, MailHandler mailHandler) {
 
     Assert.notNull(sender);
     this.sender = sender;
@@ -124,9 +124,9 @@ public class NewMessageHandler extends AbstractFormCallback {
       if (!BeeUtils.isEmpty(defaultAttachments)) {
         ((FileCollector) widget).addFiles(defaultAttachments.values());
       }
-      ((FileCollector) widget).addSelectionHandler(new SelectionHandler<FileInfo>() {
+      ((FileCollector) widget).addSelectionHandler(new SelectionHandler<NewFileInfo>() {
         @Override
-        public void onSelection(SelectionEvent<FileInfo> ev) {
+        public void onSelection(SelectionEvent<NewFileInfo> ev) {
           final String fileName = ev.getSelectedItem().getName();
 
           if (attachments.containsKey(fileName)) {

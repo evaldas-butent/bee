@@ -268,20 +268,10 @@ public class HtmlTable extends Panel implements HasId, IsHtmlTable {
 
   @Override
   public void clear() {
-    clear(false);
-  }
-
-  public void clear(boolean clearInnerHTML) {
-    for (int row = 0; row < getRowCount(); row++) {
-      for (int col = 0; col < getCellCount(row); col++) {
-        cleanCell(row, col, clearInnerHTML);
-      }
+    int numRows = getRowCount();
+    for (int i = 0; i < numRows; i++) {
+      removeRow(0);
     }
-  }
-
-  public boolean clearCell(int row, int column) {
-    Element td = getCellFormatter().getElement(row, column);
-    return internalClearCell(td, true);
   }
 
   public int getCellCount(int row) {
@@ -383,13 +373,6 @@ public class HtmlTable extends Panel implements HasId, IsHtmlTable {
       widgetMap.removeByElement(elem);
     }
     return true;
-  }
-
-  public void removeAllRows() {
-    int numRows = getRowCount();
-    for (int i = 0; i < numRows; i++) {
-      removeRow(0);
-    }
   }
 
   public void removeRow(int row) {

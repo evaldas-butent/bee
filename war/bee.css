@@ -1712,7 +1712,7 @@ body, select {
 .bee-ProgressPercent {
 }
 
-.bee-FileCollector-panel {
+.bee-FileCollector-panel, .bee-FileGroup-panel {
   border-collapse: collapse;
 }
 .bee-FileCollector-faceCell {
@@ -1721,10 +1721,10 @@ body, select {
 .bee-FileCollector-hiddenWidget {
   width: 1px;
 }
-.bee-FileCollector-Row:hover {
+.bee-FileCollector-Row:hover, .bee-FileGroup-Row:hover {
   background-color: #f2f2f2;
 }
-.bee-FileCollector-Row td {
+.bee-FileCollector-Row td, .bee-FileGroup-Row td {
   padding: 4px;
   border-bottom: 1px solid #b4b4b4;
 }

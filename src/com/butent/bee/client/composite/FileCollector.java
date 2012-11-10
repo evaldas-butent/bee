@@ -32,7 +32,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.utils.FileInfo;
+import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeImage;
@@ -58,7 +58,7 @@ import java.util.List;
 import java.util.Set;
 
 public class FileCollector extends HtmlTable implements DragOverHandler, DropHandler,
-    DragEnterHandler, DragLeaveHandler, HasSelectionHandlers<FileInfo>, HasOptions {
+    DragEnterHandler, DragLeaveHandler, HasSelectionHandlers<NewFileInfo>, HasOptions {
 
   public enum Column implements HasCaption {
     DATE("date", "Data", false, false) {
@@ -68,14 +68,14 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
 
       @Override
-      Widget createEditor(FileInfo fileInfo) {
+      Widget createEditor(NewFileInfo fileInfo) {
         InputDate editor = new InputDate(ValueType.DATETIME);
         editor.setValue(BeeUtils.nvl(fileInfo.getFileDate(), fileInfo.getLastModified()));
         return editor;
       }
 
       @Override
-      void refresh(Widget widget, FileInfo fileInfo) {
+      void refresh(Widget widget, NewFileInfo fileInfo) {
         if (widget instanceof DateTimeLabel) {
           ((DateTimeLabel) widget).setValue(BeeUtils.nvl(fileInfo.getFileDate(),
               fileInfo.getLastModified()));
@@ -83,7 +83,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
 
       @Override
-      boolean update(Widget widget, FileInfo fileInfo) {
+      boolean update(Widget widget, NewFileInfo fileInfo) {
         boolean changed = false;
         if (widget instanceof InputDate) {
           HasDateValue date = ((InputDate) widget).getDate();
@@ -107,21 +107,21 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
 
       @Override
-      Widget createEditor(FileInfo fileInfo) {
+      Widget createEditor(NewFileInfo fileInfo) {
         InputText editor = new InputText();
         editor.setValue(fileInfo.getFileVersion());
         return editor;
       }
 
       @Override
-      void refresh(Widget widget, FileInfo fileInfo) {
+      void refresh(Widget widget, NewFileInfo fileInfo) {
         if (widget instanceof BeeLabel) {
           ((BeeLabel) widget).setText(BeeUtils.trim(fileInfo.getFileVersion()));
         }
       }
 
       @Override
-      boolean update(Widget widget, FileInfo fileInfo) {
+      boolean update(Widget widget, NewFileInfo fileInfo) {
         if (widget instanceof InputText) {
           String value = ((InputText) widget).getValue();
           if (!BeeUtils.equalsTrim(fileInfo.getFileVersion(), value)) {
@@ -140,14 +140,14 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
 
       @Override
-      Widget createEditor(FileInfo fileInfo) {
+      Widget createEditor(NewFileInfo fileInfo) {
         InputText editor = new InputText();
         editor.setValue(BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName()));
         return editor;
       }
 
       @Override
-      void refresh(Widget widget, FileInfo fileInfo) {
+      void refresh(Widget widget, NewFileInfo fileInfo) {
         if (widget instanceof BeeLabel) {
           ((BeeLabel) widget).setText(BeeUtils.notEmpty(fileInfo.getCaption(),
               fileInfo.getName()));
@@ -155,7 +155,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
 
       @Override
-      boolean update(Widget widget, FileInfo fileInfo) {
+      boolean update(Widget widget, NewFileInfo fileInfo) {
         boolean changed = false;
         if (widget instanceof InputText) {
           String value = BeeUtils.trim(((InputText) widget).getValue());
@@ -179,21 +179,21 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
 
       @Override
-      Widget createEditor(FileInfo fileInfo) {
+      Widget createEditor(NewFileInfo fileInfo) {
         InputArea editor = new InputArea();
         editor.setValue(BeeUtils.trim(fileInfo.getDescription()));
         return editor;
       }
 
       @Override
-      void refresh(Widget widget, FileInfo fileInfo) {
+      void refresh(Widget widget, NewFileInfo fileInfo) {
         if (widget instanceof BeeLabel) {
           ((BeeLabel) widget).setText(BeeUtils.trim(fileInfo.getDescription()));
         }
       }
 
       @Override
-      boolean update(Widget widget, FileInfo fileInfo) {
+      boolean update(Widget widget, NewFileInfo fileInfo) {
         if (widget instanceof InputArea) {
           String value = ((InputArea) widget).getValue();
           if (!BeeUtils.equalsTrim(fileInfo.getDescription(), value)) {
@@ -212,19 +212,19 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
 
       @Override
-      Widget createEditor(FileInfo fileInfo) {
+      Widget createEditor(NewFileInfo fileInfo) {
         return null;
       }
 
       @Override
-      void refresh(Widget widget, FileInfo fileInfo) {
+      void refresh(Widget widget, NewFileInfo fileInfo) {
         if (widget instanceof LongLabel) {
           ((LongLabel) widget).setValue(fileInfo.getSize());
         }
       }
 
       @Override
-      boolean update(Widget widget, FileInfo fileInfo) {
+      boolean update(Widget widget, NewFileInfo fileInfo) {
         return false;
       }
     },
@@ -236,21 +236,21 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
 
       @Override
-      Widget createEditor(FileInfo fileInfo) {
+      Widget createEditor(NewFileInfo fileInfo) {
         InputText editor = new InputText();
         editor.setValue(fileInfo.getType());
         return editor;
       }
 
       @Override
-      void refresh(Widget widget, FileInfo fileInfo) {
+      void refresh(Widget widget, NewFileInfo fileInfo) {
         if (widget instanceof BeeLabel) {
           ((BeeLabel) widget).setText(BeeUtils.trim(fileInfo.getType()));
         }
       }
 
       @Override
-      boolean update(Widget widget, FileInfo fileInfo) {
+      boolean update(Widget widget, NewFileInfo fileInfo) {
         if (widget instanceof InputText) {
           String value = ((InputText) widget).getValue();
           if (!BeeUtils.equalsTrim(fileInfo.getType(), value)) {
@@ -269,16 +269,16 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
 
       @Override
-      Widget createEditor(FileInfo fileInfo) {
+      Widget createEditor(NewFileInfo fileInfo) {
         return null;
       }
 
       @Override
-      void refresh(Widget widget, FileInfo fileInfo) {
+      void refresh(Widget widget, NewFileInfo fileInfo) {
       }
 
       @Override
-      boolean update(Widget widget, FileInfo fileInfo) {
+      boolean update(Widget widget, NewFileInfo fileInfo) {
         return false;
       }
     },
@@ -290,16 +290,16 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       }
 
       @Override
-      Widget createEditor(FileInfo fileInfo) {
+      Widget createEditor(NewFileInfo fileInfo) {
         return null;
       }
 
       @Override
-      void refresh(Widget widget, FileInfo fileInfo) {
+      void refresh(Widget widget, NewFileInfo fileInfo) {
       }
 
       @Override
-      boolean update(Widget widget, FileInfo fileInfo) {
+      boolean update(Widget widget, NewFileInfo fileInfo) {
         return false;
       }
     };
@@ -324,11 +324,11 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
     abstract Widget createDisplay();
 
-    abstract Widget createEditor(FileInfo fileInfo);
+    abstract Widget createEditor(NewFileInfo fileInfo);
 
-    abstract void refresh(Widget widget, FileInfo fileInfo);
+    abstract void refresh(Widget widget, NewFileInfo fileInfo);
 
-    abstract boolean update(Widget widget, FileInfo fileInfo);
+    abstract boolean update(Widget widget, NewFileInfo fileInfo);
 
     private String getLabel() {
       return label;
@@ -394,7 +394,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
   private final InputFile inputFile;
 
-  private final List<FileInfo> files = Lists.newArrayList();
+  private final List<NewFileInfo> files = Lists.newArrayList();
 
   private Element dropArea = null;
   private int dndCounter = 0;
@@ -423,7 +423,10 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     inputFile.addChangeHandler(new ChangeHandler() {
       @Override
       public void onChange(ChangeEvent event) {
-        addFiles(FileUtils.getFileInfo(FileCollector.this.inputFile.getFiles()));
+        if (!FileCollector.this.inputFile.isEmpty()) {
+          addFiles(FileUtils.getFileInfo(FileCollector.this.inputFile.getFiles()));
+          FileCollector.this.inputFile.clear();
+        }
       }
     });
 
@@ -449,16 +452,16 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     initColumns(visibleColumns, editableColumns);
   }
 
-  public void addFiles(Collection<FileInfo> fileInfos) {
+  public void addFiles(Collection<NewFileInfo> fileInfos) {
     if (fileInfos != null) {
-      for (FileInfo info : fileInfos) {
+      for (NewFileInfo info : fileInfos) {
         addFile(info);
       }
     }
   }
 
   @Override
-  public HandlerRegistration addSelectionHandler(SelectionHandler<FileInfo> handler) {
+  public HandlerRegistration addSelectionHandler(SelectionHandler<NewFileInfo> handler) {
     return addHandler(handler, SelectionEvent.getType());
   }
 
@@ -482,18 +485,22 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     }
   }
 
-  public List<FileInfo> getFiles() {
+  public List<NewFileInfo> getFiles() {
     return files;
   }
 
   @Override
   public String getIdPrefix() {
-    return "files";
+    return "collector";
   }
 
   @Override
   public String getOptions() {
     return options;
+  }
+  
+  public boolean isEmpty() {
+    return getFiles().isEmpty(); 
   }
 
   @Override
@@ -534,7 +541,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     this.options = options;
   }
 
-  private void addFile(final FileInfo info) {
+  private void addFile(final NewFileInfo info) {
     if (info == null || contains(info)) {
       return;
     }
@@ -590,14 +597,14 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     SelectionEvent.fire(this, info);
   }
 
-  private boolean contains(FileInfo info) {
+  private boolean contains(NewFileInfo info) {
     return getIndex(info.getName()) >= 0;
   }
 
   private void edit(final int index) {
     getRowFormatter().addStyleName(index, STYLE_PREFIX + STYLE_EDITING);
 
-    final FileInfo fi = getFiles().get(index);
+    final NewFileInfo fi = getFiles().get(index);
 
     String pfx = STYLE_PREFIX + STYLE_EDITOR;
 
@@ -717,7 +724,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
   }
 
   private void refresh(int row, Collection<Column> changedColumns) {
-    FileInfo info = getFiles().get(row);
+    NewFileInfo info = getFiles().get(row);
 
     for (int col = 0; col < columns.size(); col++) {
       Column column = columns.get(col);

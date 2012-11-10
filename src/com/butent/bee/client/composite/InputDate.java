@@ -161,6 +161,11 @@ public class InputDate extends Composite implements Editor, HasDateTimeFormat, H
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
   }
+  
+  @Override
+  public void clearValue() {
+    setValue(BeeConst.STRING_EMPTY);
+  }
 
   public HasDateValue getDate() {
     String v = getBox().getValue();

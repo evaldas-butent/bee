@@ -80,6 +80,11 @@ public class InputText extends TextBoxBase implements Editor, HasCharacterFilter
     return Binder.addInputHandler(this, handler);
   }
   
+  @Override
+  public void clearValue() {
+    setValue(BeeConst.STRING_EMPTY);
+  }
+  
   public CharMatcher getCharMatcher() {
     return charMatcher;
   }

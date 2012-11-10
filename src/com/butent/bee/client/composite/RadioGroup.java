@@ -142,26 +142,32 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     addButtons(opt, value);
   }
 
+  @Override
   public HandlerRegistration addBlurHandler(BlurHandler handler) {
     return addDomHandler(handler, BlurEvent.getType());
   }
 
+  @Override
   public void addCaptions(Class<? extends Enum<?>> clazz) {
     addButtons(UiHelper.getCaptions(clazz));
   }
 
+  @Override
   public void addCaptions(String captionKey) {
     addButtons(Global.getCaptions(captionKey));
   }
 
+  @Override
   public HandlerRegistration addEditStopHandler(Handler handler) {
     return addHandler(handler, EditStopEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addFocusHandler(FocusHandler handler) {
     return addDomHandler(handler, FocusEvent.getType());
   }
 
+  @Override
   public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
     return addDomHandler(handler, KeyDownEvent.getType());
   }
@@ -191,6 +197,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     setOptionCount(index + 1);
   }
 
+  @Override
   public HandlerRegistration addValueChangeHandler(ValueChangeHandler<String> handler) {
     return addHandler(handler, ValueChangeEvent.getType());
   }
@@ -201,6 +208,12 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     setOptionCount(0);
   }
 
+  @Override
+  public void clearValue() {
+    setValue(null);
+  }
+
+  @Override
   public EditorAction getDefaultFocusAction() {
     return null;
   }
@@ -219,6 +232,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     return name;
   }
 
+  @Override
   public String getNormalizedValue() {
     return getValue();
   }
@@ -233,15 +247,18 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     return BeeConst.UNDEF;
   }
 
+  @Override
   public int getTabIndex() {
     return 0;
   }
 
+  @Override
   public String getValue() {
     int index = getSelectedIndex();
     return (index >= 0) ? BeeUtils.toString(index + getValueStartIndex()) : null;
   }
 
+  @Override
   public int getValueStartIndex() {
     return valueStartIndex;
   }
@@ -251,14 +268,17 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     return FormWidget.RADIO;
   }
 
+  @Override
   public boolean handlesKey(int keyCode) {
     return false;
   }
 
+  @Override
   public boolean isEditing() {
     return false;
   }
 
+  @Override
   public boolean isEnabled() {
     for (int i = 0; i < getWidgetCount(); i++) {
       Widget widget = getWidget(i);
@@ -269,6 +289,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     return false;
   }
 
+  @Override
   public boolean isNullable() {
     return false;
   }
@@ -282,6 +303,7 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     return vertical;
   }
 
+  @Override
   public void onValueChange(ValueChangeEvent<Boolean> event) {
     Object source = event.getSource();
 
@@ -300,19 +322,24 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     }
   }
 
+  @Override
   public void setAccessKey(char key) {
   }
 
+  @Override
   public void setEditing(boolean editing) {
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     DomUtils.enableChildren(this, enabled);
   }
 
+  @Override
   public void setFocus(boolean focused) {
   }
 
+  @Override
   public void setNullable(boolean nullable) {
   }
 
@@ -328,13 +355,16 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     }
   }
 
+  @Override
   public void setTabIndex(int index) {
   }
 
+  @Override
   public void setValue(String value) {
     setValue(value, false);
   }
 
+  @Override
   public void setValue(String value, boolean fireEvents) {
     int oldIndex = getSelectedIndex();
     int newIndex = BeeConst.UNDEF;
@@ -358,14 +388,17 @@ public class RadioGroup extends Span implements Editor, ValueChangeHandler<Boole
     }
   }
 
+  @Override
   public void setValueStartIndex(int valueStartIndex) {
     this.valueStartIndex = valueStartIndex;
   }
 
+  @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
   }
 
+  @Override
   public String validate() {
     return null;
   }
