@@ -28,6 +28,7 @@ import com.google.gwt.user.client.ui.UIObject;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasRelatedRow;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.SelectionOracle;
 import com.butent.bee.client.data.SelectionOracle.Callback;
@@ -648,6 +649,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private final String newRowCaption;
   private final boolean newRowEnabled;
 
+  private final String editForm;
+  private final Boolean editModal;
+  private final boolean editEnabled;
+  
   private boolean active = false;
 
   private BeeRow selectedRow = null;
@@ -721,6 +726,16 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         dataInfo.getNewRowCaption());
     this.newRowEnabled = relation.isNewRowEnabled();
     
+    if (relation.isEditEnabled()) {
+      this.editForm = RowEditor.getFormName(relation.getEditForm(), dataInfo);
+      this.editModal = relation.isEditModal();
+      this.editEnabled = !BeeUtils.isEmpty(this.editForm);
+    } else {
+      this.editForm = null;
+      this.editModal = null;
+      this.editEnabled = false;
+    }
+
     Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
 
     init(input, embedded);
@@ -794,6 +809,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return getInput().getText();
   }
 
+  public String getEditForm() {
+    return editForm;
+  }
+
   @Override
   public String getId() {
     return DomUtils.getId(this);
@@ -864,9 +883,17 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return adding;
   }
   
+  public boolean isEditEnabled() {
+    return editEnabled;
+  }
+
   @Override
   public boolean isEditing() {
     return getInput().isEditing();
+  }
+
+  public Boolean isEditModal() {
+    return editModal;
   }
 
   public boolean isEmbedded() {

@@ -297,6 +297,16 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private static final String STYLE_POPUP = "bee-Popup";
   
   private static final int ANIMATION_DURATION = 250;
+  
+  public static boolean isActive() {
+    RootPanel root = RootPanel.get();
+    for (Widget child : root) {
+      if (child instanceof Popup && ((Popup) child).isShowing()) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   private AnimationType animationType = AnimationType.CENTER;
 

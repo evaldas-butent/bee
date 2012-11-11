@@ -297,7 +297,7 @@ public class Search {
     @Override
     public void onBrowserEvent(Event event) {
       if (EventUtils.isClick(event)) {
-        RowEditor.openRow(getViewName(), getRow(), true);
+        RowEditor.openRow(getViewName(), getRow(), false);
       }
       super.onBrowserEvent(event);
     }

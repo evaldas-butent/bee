@@ -90,7 +90,7 @@
       <FlowPanel style="&section;">
         <Label html="Stebėtojai:" style="&top1;" />
         <MultiSelector viewName="Users" property="Observers" renderColumns="FirstName LastName"
-          style="&inp2x;" />
+          editEnabled="true" style="&inp2x;" />
       </FlowPanel>
 
       &separator;
@@ -101,26 +101,27 @@
       <FlowPanel style="&section;">
         <Label html="Įmonės:" style="&top1;" />
         <MultiSelector viewName="Companies" property="Companies" renderColumns="Name"
-          style="&inp2x;" />
+          editEnabled="true" style="&inp2x;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Asmenys:" style="&top1;" />
         <MultiSelector viewName="Persons" property="Persons" renderColumns="FirstName LastName"
-          style="&inp2x;" />
+          editEnabled="true" style="&inp2x;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Įvykiai:" style="&top1;" />
         <MultiSelector viewName="Appointments" property="Appointments"
-          renderColumns="StartDateTime Summary" newRowEnabled="false" style="&inp2x;" />
+          renderColumns="StartDateTime Summary" newRowEnabled="false" editEnabled="true"
+          style="&inp2x;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Užduotys:" style="&top1;" />
         <MultiSelector viewName="Tasks" property="Tasks" 
           renderColumns="FinishTime Summary ExecutorFirstName ExecutorLastName"
-          newRowEnabled="false" style="&inp2x;" />
+          newRowEnabled="false" editEnabled="true" style="&inp2x;" />
       </FlowPanel>
 
       <FlowPanel style="margin-left: 1em; margin-top: 2ex;">

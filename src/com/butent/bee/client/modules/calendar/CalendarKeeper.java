@@ -155,6 +155,9 @@ public class CalendarKeeper {
     SelectorEvent.register(SELECTOR_HANDLER);
 
     REPORT_MANAGER.register();
+    
+    RowEditor.registerHasDelegate(VIEW_CALENDARS);
+    RowEditor.registerHasDelegate(VIEW_APPOINTMENTS);
   }
 
   public static void setDataLoaded(boolean dataLoaded) {

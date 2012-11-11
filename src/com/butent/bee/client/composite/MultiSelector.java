@@ -18,7 +18,10 @@ import com.google.gwt.user.client.ui.InsertPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.Queries;
+import com.butent.bee.client.data.RowCallback;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.Binder;
@@ -40,6 +43,7 @@ import com.butent.bee.shared.data.BeeRowSet;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.EditorAction;
 import com.butent.bee.shared.ui.Relation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -54,6 +58,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   private class ChoiceWidget extends Flow {
     
     private final long rowId;
+    private final String labelId;
 
     private ChoiceWidget(long rowId, String caption) {
       super();
@@ -63,7 +68,19 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       
       InlineLabel label = new InlineLabel(caption);
       label.addStyleName(STYLE_LABEL);
-
+      
+      if (MultiSelector.this.isEditEnabled()) {
+        label.addStyleName(RowEditor.EDITABLE_RELATION_STYLE);
+        label.addClickHandler(new ClickHandler() {
+          @Override
+          public void onClick(ClickEvent event) {
+            event.stopPropagation();
+            MultiSelector.this.editChoice(getRowId());
+          }
+        });
+      }
+      
+      this.labelId = label.getId();
       add(label);
       
       BeeImage close = new BeeImage(Global.getImages().closeSmall());
@@ -71,6 +88,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       close.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
+          event.stopPropagation();
           MultiSelector.this.removeChoice(getRowId());
         }
       });
@@ -85,6 +103,15 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
 
     private long getRowId() {
       return rowId;
+    }
+    
+    private void setCaption(String caption) {
+      for (Widget child : this) {
+        if (DomUtils.idEquals(child, labelId)) {
+          child.getElement().setInnerText(caption);
+          break;
+        }
+      }
     }
   }
 
@@ -296,6 +323,32 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
   private void clearInput() {
     clearDisplay();
   }
+
+  private void editChoice(long rowId) {
+    String viewName = getOracle().getViewName();
+    DataInfo dataInfo = Data.getDataInfo(viewName);
+
+    String formName = BeeUtils.notEmpty(getEditForm(), dataInfo.getEditForm());
+    if (BeeUtils.isEmpty(formName)) {
+      return;
+    }
+    
+    boolean modal = BeeUtils.isTrue(isEditModal());
+    RowCallback rowCallback;
+    
+    if (modal) {
+      rowCallback = new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          updateChoice(result);
+        }
+      };
+    } else {
+      rowCallback = null;
+    }
+    
+    RowEditor.openRow(formName, dataInfo, rowId, modal, getWidget(), rowCallback);
+  }
   
   private InsertPanel getContainer() {
     return (InsertPanel) getWidget();
@@ -374,6 +427,29 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
 
   private void setOldValue(String oldValue) {
     this.oldValue = oldValue;
+  }
+  
+  private void updateChoice(IsRow row) {
+    long rowId = row.getId();
+
+    if (cache.containsKey(rowId)) {
+      String label = getRenderer().render(row);
+
+      if (!BeeUtils.isEmpty(label) && !label.equals(cache.get(rowId))) {
+        cache.put(rowId, label);
+
+        InsertPanel container = getContainer();
+        int count = container.getWidgetCount();
+
+        for (int i = 0; i < count - 1; i++) {
+          Widget child = container.getWidget(i);
+          if (child instanceof ChoiceWidget && ((ChoiceWidget) child).getRowId() == rowId) {
+            ((ChoiceWidget) child).setCaption(label);
+            break;
+          }
+        }
+      }
+    }
   }
   
   private void updateValue() {
