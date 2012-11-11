@@ -7,7 +7,7 @@
   minColumnWidth="100"
   >
   <columns>
-    <RelColumn name="Company" />
+    <RelColumn name="Company" editEnabled="true" />
     <DataColumn name="Position" />
     <DataColumn name="Phone" />
 

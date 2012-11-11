@@ -6,11 +6,11 @@
   newRowForm="Appointment" editForm="Appointment"
   >
   <columns>
-    <DataColumn name="CompanyName" caption="Klientas" />
-    <DataColumn name="CompanyPhone" caption="Telefonas" />
+    <RelColumn name="CompanyName" caption="Klientas" editEnabled="true" />
+    <RelColumn name="CompanyPhone" caption="Telefonas" />
 
-    <DataColumn name="VehicleNumber" caption="Valst. Nr." />
-    <DataColumn name="VehicleModel" renderColumns="VehicleParentModel VehicleModel" caption="Modelis" />
+    <RelColumn name="VehicleNumber" caption="Valst. Nr." editEnabled="true" />
+    <RelColumn name="VehicleModel" renderColumns="VehicleParentModel VehicleModel" caption="Modelis" />
 
     <CalcColumn type="string" name="Start" sortBy="EffectiveStart StartDateTime StartDate"
       caption="Pradžia" />

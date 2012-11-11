@@ -35,8 +35,10 @@ public class RowEditor {
   private static final BeeLogger logger = LogUtils.getLogger(RowEditor.class);
 
   public static final String DIALOG_STYLE = "bee-EditRow";
+  public static final String EDITABLE_RELATION_STYLE = "bee-EditableRelation";
 
-  public static boolean openRelatedRow(Relation relation, Long rowId) {
+  public static boolean openRelatedRow(Relation relation, Long rowId, boolean modal,
+      final RowCallback rowCallback) {
     if (relation == null || !relation.isEditEnabled() || !DataUtils.isId(rowId)) {
       return false;
     }
@@ -48,12 +50,13 @@ public class RowEditor {
     if (BeeUtils.isEmpty(formName)) {
       return false;
     }
-    final boolean modal = relation.isEditModal();
+    
+    final boolean popup = BeeUtils.nvl(relation.isEditModal(), modal);
 
     Queries.getRow(viewName, rowId, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
-        openRow(formName, dataInfo, result, modal, null, null);
+        openRow(formName, dataInfo, result, popup, null, rowCallback);
       }
     });
     return true;

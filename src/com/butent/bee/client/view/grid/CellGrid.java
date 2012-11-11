@@ -1584,6 +1584,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
           activateCell(row, col);
           if (columnInfo.isActionColumn()) {
             fireEventToCell(row, col, event, eventType, target, rowValue);
+          } else if (columnInfo.getColumn().instantKarma(rowValue)) {
+            startEditing(rowValue, col, target, EditStartEvent.CLICK);
           }
         }
         return;
@@ -3794,7 +3796,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
         if (colIndexes == null || colIndexes.contains(col)) {
           String cellClasses = StyleUtils.buildClasses(rowClasses,
-              columnInfo.getClassName(ComponentType.BODY));
+              columnInfo.getClassName(ComponentType.BODY), column.getClasses());
           if (isActive && col == actCol) {
             cellClasses = StyleUtils.buildClasses(cellClasses, STYLE_ACTIVE_CELL);
           }

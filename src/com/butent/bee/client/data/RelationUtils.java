@@ -109,11 +109,6 @@ public class RelationUtils {
   }
 
   public static int updateRow(String targetView, String targetColumn, IsRow targetRow,
-      String sourceView, IsRow sourceRow) {
-    return updateRow(targetView, targetColumn, targetRow, sourceView, sourceRow, false);
-  }
-
-  public static int updateRow(String targetView, String targetColumn, IsRow targetRow,
       String sourceView, IsRow sourceRow, boolean updateRelationColumn) {
     Assert.notEmpty(targetView);
     Assert.notEmpty(targetColumn);
@@ -162,12 +157,17 @@ public class RelationUtils {
       }
 
       if (clear) {
-        targetRow.clearCell(targetIndex);
-        result++;
+        if (!targetRow.isNull(targetIndex)) {
+          targetRow.clearCell(targetIndex);
+          result++;
+        }
+
       } else {
         int sourceIndex = sourceInfo.getColumnIndexBySource(tc.getTable(), tc.getField(),
             tc.getLevel() - 1);
-        if (!BeeConst.isUndef(sourceIndex)) {
+        if (!BeeConst.isUndef(sourceIndex) && 
+            !BeeUtils.equalsTrimRight(targetRow.getString(targetIndex),
+                sourceRow.getString(sourceIndex))) {
           targetRow.setValue(targetIndex, sourceRow.getString(sourceIndex));
           result++;
         }

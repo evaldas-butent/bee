@@ -1749,6 +1749,15 @@ body, select {
   height: 60px;
 }
 
+.bee-EditableRelation:hover {
+  text-decoration: underline;
+  color: #00e;
+  cursor: pointer;
+}
+.bee-CellGridActiveCell.bee-EditableRelation {
+  text-decoration: underline;
+}
+
 .bee-MainSearchOptionsContainer {
   display: none;
 }

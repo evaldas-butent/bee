@@ -4,6 +4,7 @@
 
   name="Vehicles" source="Vehicles" caption="Transporto priemonės"
   editForm="Vehicle" newRowForm="Vehicle" newRowCaption="Nauja transporto priemonė"
+  rowCaption="Number"
   >
   <Columns>
     <SimpleColumn name="Type" />

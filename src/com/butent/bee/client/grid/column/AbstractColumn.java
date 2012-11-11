@@ -7,14 +7,12 @@ import com.google.gwt.user.cellview.client.Column;
 import com.butent.bee.shared.HasOptions;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.value.HasValueType;
-import com.butent.bee.shared.data.value.ValueType;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
 
 import java.util.List;
 
 /**
- * Is an abstract class for column classes, requires to have methods for get column type, value type
- * and value.
+ * Is an abstract class for grid column classes.
  */
 
 public abstract class AbstractColumn<C> extends Column<IsRow, C> implements HasValueType,
@@ -25,12 +23,21 @@ public abstract class AbstractColumn<C> extends Column<IsRow, C> implements HasV
 
   private String options = null;
 
+  private String classes = null;
+  
+  private boolean instantKarma = false;
+
   public AbstractColumn(Cell<C> cell) {
     super(cell);
   }
 
+  public String getClasses() {
+    return classes;
+  }
+
   public abstract ColType getColType();
 
+  @Override
   public String getOptions() {
     return options;
   }
@@ -48,8 +55,19 @@ public abstract class AbstractColumn<C> extends Column<IsRow, C> implements HasV
   @Override
   public abstract C getValue(IsRow row);
 
-  public abstract ValueType getValueType();
+  public boolean instantKarma(IsRow row) {
+    return instantKarma && getValue(row) != null;
+  }
 
+  public void setClasses(String classes) {
+    this.classes = classes;
+  }
+
+  public void setInstantKarma(boolean instantKarma) {
+    this.instantKarma = instantKarma;
+  }
+
+  @Override
   public void setOptions(String options) {
     this.options = options;
   }

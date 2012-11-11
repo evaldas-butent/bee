@@ -480,8 +480,8 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     return BeeConst.isTrue(getAttribute(UiConstants.ATTR_EDIT_ENABLED));
   }
 
-  public boolean isEditModal() {
-    return BeeConst.isTrue(getAttribute(UiConstants.ATTR_EDIT_POPUP));
+  public Boolean isEditModal() {
+    return BeeUtils.toBooleanOrNull(getAttribute(UiConstants.ATTR_EDIT_POPUP));
   }
   
   public boolean isNewRowEnabled() {

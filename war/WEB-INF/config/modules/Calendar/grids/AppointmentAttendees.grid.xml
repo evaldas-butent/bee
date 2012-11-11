@@ -5,8 +5,8 @@
   minColumnWidth="100"
   >
   <columns>
-    <DataColumn name="TypeName" caption="Tipas" />
-    <RelColumn name="AttendeeName" caption="Pavadinimas" />
+    <RelColumn name="TypeName" caption="Tipas" />
+    <RelColumn name="AttendeeName" caption="Pavadinimas" editEnabled="true" />
     
     <DataColumn name="Comment" caption="Komentaras" />
   </columns>

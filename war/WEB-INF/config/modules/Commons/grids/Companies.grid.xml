@@ -2,7 +2,6 @@
 <Grid xmlns="http://www.butent.com/grid"
 
   name="Companies" viewName="Companies" caption="Klientai"
-  editPopup="true" newRowPopup="true"
   >
   <columns>
     <DataColumn name="Name" />

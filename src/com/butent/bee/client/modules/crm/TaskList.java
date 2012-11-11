@@ -232,7 +232,7 @@ class TaskList {
                 ComparisonFilter.isNotEqual(COL_EXECUTOR, user));
             break;
         }
-        gridDescription.setFilter(filter);
+//        gridDescription.setFilter(filter);
       }
       return true;
     }

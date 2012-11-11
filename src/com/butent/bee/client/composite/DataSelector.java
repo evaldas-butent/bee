@@ -648,10 +648,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private final String newRowCaption;
   private final boolean newRowEnabled;
 
-  private final String editForm;
-  private final boolean editModal;
-  private final boolean editEnabled;
-  
   private boolean active = false;
 
   private BeeRow selectedRow = null;
@@ -725,16 +721,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
         dataInfo.getNewRowCaption());
     this.newRowEnabled = relation.isNewRowEnabled();
     
-    if (relation.isEditEnabled()) {
-      this.editForm = BeeUtils.notEmpty(relation.getEditForm(), dataInfo.getEditForm());
-      this.editModal = relation.isEditModal();
-      this.editEnabled = !BeeUtils.isEmpty(this.editForm);
-    } else {
-      this.editForm = null;
-      this.editModal = false;
-      this.editEnabled = false;
-    }
-
     Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
 
     init(input, embedded);
@@ -808,10 +794,6 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return getInput().getText();
   }
 
-  public String getEditForm() {
-    return editForm;
-  }
-
   @Override
   public String getId() {
     return DomUtils.getId(this);
@@ -882,17 +864,9 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return adding;
   }
   
-  public boolean isEditEnabled() {
-    return editEnabled;
-  }
-
   @Override
   public boolean isEditing() {
     return getInput().isEditing();
-  }
-
-  public boolean isEditModal() {
-    return editModal;
   }
 
   public boolean isEmbedded() {
