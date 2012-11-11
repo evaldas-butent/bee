@@ -181,7 +181,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     tile.activate();
   }
 
-  void close() {
+  TilePanel close() {
     boolean wasActive = isActive();
 
     if (!isBlank()) {
@@ -192,11 +192,11 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
       if (wasActive) {
         activate();
       }
-      return;
+      return this;
     }
 
     if (isRoot()) {
-      return;
+      return this;
     }
 
     TilePanel parent = (TilePanel) getParent();
@@ -210,7 +210,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     }
     if (entangled == null) {
       logger.severe("entangled tile not found");
-      return;
+      return this;
     }
 
     if (wasActive) {
@@ -227,6 +227,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
       }
       parent.activate();
     }
+    return parent;
   }
 
   boolean closeable() {
@@ -263,7 +264,15 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     }
     return root;
   }
+
+  boolean isBlank() {
+    return getCenter() instanceof BlankTile;
+  }
   
+  boolean isRoot() {
+    return !(getParent() instanceof TilePanel);
+  }
+
   void updateContent(Widget widget, ScrollBars scroll) {
     boolean wasActive = isActive();
     if (wasActive) {
@@ -282,7 +291,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     clear();
     add(new BlankTile());
   }
-
+  
   private void deactivate() {
     TilePanel tile = getActiveTile();
 
@@ -295,13 +304,9 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
   private TilePanel getRoot() {
     return isRoot() ? this : ((TilePanel) getParent()).getRoot();
   }
-  
+
   private boolean isActive() {
     return active;
-  }
-
-  private boolean isBlank() {
-    return getCenter() instanceof BlankTile;
   }
 
   private boolean isLeaf() {
@@ -311,10 +316,6 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
       }
     }
     return true;
-  }
-
-  private boolean isRoot() {
-    return !(getParent() instanceof TilePanel);
   }
 
   private void moveTo(TilePanel parent) {

@@ -10,38 +10,91 @@ import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
+import com.butent.bee.shared.data.DataUtils;
+import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.HandlesActions;
+import com.butent.bee.shared.ui.HasCaption;
+import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.EnumSet;
 
 public class RowPresenter extends AbstractPresenter implements Printable {
   
+  private static class Container extends Complex implements HasCaption {
+
+    private final DataInfo dataInfo;
+    private final String initialCaption;
+    
+    private Container(DataInfo dataInfo, String initialCaption) {
+      super();
+      this.dataInfo = dataInfo;
+      this.initialCaption = initialCaption;
+    }
+
+    @Override
+    public String getCaption() {
+      String caption = DataUtils.getRowCaption(dataInfo, getForm().getActiveRow());
+      if (BeeUtils.isEmpty(caption)) {
+        return BeeUtils.notEmpty(initialCaption, getHeader().getCaption());
+      } else {
+        return caption;
+      }
+    }
+
+    @Override
+    public String getIdPrefix() {
+      return "row-editor";
+    }
+
+    private FormView getForm() {
+      for (Widget child : getChildren()) {
+        if (child instanceof FormView) {
+          return (FormView) child;
+        }
+      }
+      return null;
+    }
+    
+    private HeaderView getHeader() {
+      for (Widget child : getChildren()) {
+        if (child instanceof HeaderView) {
+          return (HeaderView) child;
+        }
+      }
+      return null;
+    }
+  }
+  
   public static final String STYLE_CONTAINER = "bee-RowContainer";
   public static final String STYLE_HEADER = "bee-RowHeader";
   public static final String STYLE_CAPTION = "bee-RowCaption";
-
-  private final Complex container;
-  private final HeaderView header;
+  
+  private final Container container;
   
   private HandlesActions actionDelegate = null;
   
-  public RowPresenter(FormView formView) {
-    this.header = createHeader(formView.getCaption());
-    this.container = createContainer(header, formView);
+  public RowPresenter(FormView formView, DataInfo dataInfo, String initialCaption) {
+    HeaderView headerView = createHeader(formView.getCaption());
 
-    header.setViewPresenter(this);
+    this.container = new Container(dataInfo, initialCaption);
+    container.addStyleName(STYLE_CONTAINER);
+
+    container.addTopHeightFillHorizontal(headerView.asWidget(), 0, headerView.getHeight());
+    container.addTopBottomFillHorizontal(formView.asWidget(), headerView.getHeight(), 0);
+    
+    headerView.setViewPresenter(this);
     formView.setViewPresenter(this);
   }
   
   @Override
   public String getCaption() {
-    return header.getCaption();
+    return container.getCaption();
   }
   
   @Override
   public HeaderView getHeader() {
-    return header;
+    return container.getHeader();
   }
   
   @Override
@@ -68,8 +121,8 @@ public class RowPresenter extends AbstractPresenter implements Printable {
     if (container.getId().equals(source.getId())) {
       StyleUtils.setSize(target, source.getClientWidth(), source.getClientHeight());
       ok = true;
-    } else if (header.asWidget().getElement().isOrHasChild(source)) {
-      ok = header.onPrint(source, target);
+    } else if (getHeader().asWidget().getElement().isOrHasChild(source)) {
+      ok = getHeader().onPrint(source, target);
     } else {
       ok = true;
     }
@@ -79,16 +132,6 @@ public class RowPresenter extends AbstractPresenter implements Printable {
   
   public void setActionDelegate(HandlesActions actionDelegate) {
     this.actionDelegate = actionDelegate;
-  }
-
-  private Complex createContainer(HeaderView headerView, FormView formView) {
-    Complex formContainer = new Complex();
-    formContainer.addStyleName(STYLE_CONTAINER);
-
-    formContainer.addTopHeightFillHorizontal(headerView.asWidget(), 0, headerView.getHeight());
-    formContainer.addTopBottomFillHorizontal(formView.asWidget(), headerView.getHeight(), 0);
-    
-    return formContainer;
   }
 
   private HeaderView createHeader(String caption) {

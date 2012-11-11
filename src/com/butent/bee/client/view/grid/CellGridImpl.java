@@ -17,6 +17,7 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.RelationUtils;
+import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.ModalForm;
 import com.butent.bee.client.dialog.Notification;
@@ -70,7 +71,6 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.EditableWidget;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
 import com.butent.bee.client.view.edit.SaveChangesEvent;
 import com.butent.bee.client.view.form.FormImpl;
@@ -1202,6 +1202,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     IsRow rowValue = event.getRowValue();
     String columnId = event.getColumnId();
     final EditableColumn editableColumn = getEditableColumn(columnId, false);
+    
+    if (maybeOpenRelatedData(editableColumn, rowValue, event.getCharCode())) {
+      return;
+    }
 
     boolean useForm = useFormForEdit(columnId);
     boolean editable = !isReadOnly();
@@ -1297,7 +1301,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       return;
     }
 
-    if (event.getCharCode() == EditorFactory.START_KEY_DELETE) {
+    if (event.getCharCode() == EditStartEvent.DELETE) {
       if (!editableColumn.isNullable()) {
         return;
       }
@@ -1312,8 +1316,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     if (ValueType.BOOLEAN.equals(editableColumn.getDataType())
-        && BeeUtils.inList(event.getCharCode(), EditorFactory.START_MOUSE_CLICK,
-            EditorFactory.START_KEY_ENTER)) {
+        && EditStartEvent.isClickOrEnter(event.getCharCode())) {
 
       String oldValue = editableColumn.getOldValue(rowValue);
       Boolean b = !BeeUtils.toBoolean(oldValue);
@@ -1922,6 +1925,23 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   private boolean isSingleFormInstance() {
     return isSingleForm() && !showNewRowPopup() && !showEditPopup();
   }
+  
+  private boolean maybeOpenRelatedData(EditableColumn editableColumn, IsRow row, int charCode) {
+    if (editableColumn == null || !editableColumn.hasRelation()
+        || !editableColumn.getRelation().isEditEnabled()) {
+      return false;
+    }
+    if (row == null || !EditStartEvent.isClickOrEnter(charCode)) {
+      return false;
+    }
+    
+    Long id = row.getLong(editableColumn.getColIndex());
+    if (!DataUtils.isId(id)) {
+      return false;
+    }
+    
+    return RowEditor.openRelatedRow(editableColumn.getRelation(), id);
+  }
 
   private void prepareForInsert(IsRow row, FormView form, Callback<IsRow> callback) {
     List<BeeColumn> columns = Lists.newArrayList();
@@ -2210,6 +2230,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     if (getEditForm() == null) {
       return false;
     }
+    
     if (BeeUtils.isEmpty(columnId) || getEditInPlace().isEmpty()) {
       return true;
     }

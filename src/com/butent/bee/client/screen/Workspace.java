@@ -100,12 +100,12 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     super(STYLE_PREFIX);
     insertEmptyPanel(0);
   }
-
+  
   @Override
   public void onSelection(SelectionEvent<TilePanel> event) {
     updateCaption(event.getSelectedItem());
   }
-
+  
   @Override
   public void removePage(int index) {
     super.removePage(index);
@@ -119,7 +119,17 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     if (tile == null) {
       showError("closeWidget: panel not found");
     } else {
-      tile.close();
+      tile = tile.close();
+      while (tile != null && tile.isBlank() && !tile.isRoot()) {
+        tile = tile.close();
+      }
+      
+      if (getPageCount() > 1 && tile.isBlank() && tile.isRoot()) {
+        int index = getContentIndex(tile);
+        if (index >= 0) {
+          removePage(index);
+        }
+      }
     }
   }
 
@@ -139,6 +149,19 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
       showError("active panel not available");
     }
     return tile;
+  }
+
+  void openInNewPage(Widget widget, ScrollBars scroll) {
+    TilePanel tile = getActivePanel();
+    if (tile == null || !tile.isRoot() || !tile.isBlank()) {
+      int index = getSelectedIndex();
+      if (index < 0) {
+        index = getPageCount() - 1;
+      }
+      insertEmptyPanel(index + 1);
+    }
+    
+    updateActivePanel(widget, scroll);
   }
 
   void showInfo() {

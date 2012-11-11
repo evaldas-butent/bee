@@ -188,7 +188,7 @@ body, select {
   height: 25px;
   color: #6D6D6D;
   font: 13px/25px Arial;
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
   padding: 0 10px;
   border: 1px solid #E4E4E4;
   border-radius: 2px;
@@ -1197,15 +1197,15 @@ body, select {
   height: 25px;
   color: #6D6D6D;
   font: 13px/25px Arial;
-  background-color: #F2F2F2;
+  background-color: white;
   border: 1px solid #E4E4E4;
   padding: 0 10px;
   cursor: pointer;
 }
 
 .bee-TabbedPages-tabSelected {
-  background-color: white;
-  border-bottom-color: transparent;
+  background-color: #f2f2f2;
+  border-bottom-color: #f2f2f2;
   z-index: 1;
   cursor: default;
 }
@@ -1218,9 +1218,8 @@ body, select {
   cursor: pointer;
   padding-left: 1em;
   padding-top: 2px;
-  border-top: 1px solid #E4E4E4;
   color: #6D6D6D;
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
   font: 13px Arial;
 }
 .bee-StackHeader:hover {
@@ -1277,7 +1276,7 @@ body, select {
   height: 25px;
   color: #6D6D6D;
   font: 13px/25px Arial;
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
   padding: 0 10px;
   border: 1px solid #E4E4E4;
   border-radius: 2px;
@@ -1522,19 +1521,20 @@ body, select {
   height: 25px;
   color: #6D6D6D;
   font: 13px/25px Arial;
-  background-color: #F2F2F2;
+  background-color: white;
   border: 1px solid #E4E4E4;
   padding: 0 10px;
   cursor: pointer;
 }
 .bee-Workspace-tabSelected {
-  background-color: white;
-  border-bottom-color: transparent;
+  background-color: #f2f2f2;
+  border-bottom-color: #f2f2f2;
   z-index: 1;
   cursor: default;
 }
 .bee-Workspace-one {
   border-color: transparent !important;
+  background-color: transparent !important;
 }
 .bee-Workspace-one .bee-Workspace-caption {
   display: none;

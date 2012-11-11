@@ -48,18 +48,6 @@ public class FileUtils {
   
   private static final long MIN_FILE_SIZE_FOR_PROGRESS = 100000; 
 
-  public static List<NewFileInfo> getFileInfo(FileList fileList) {
-    List<NewFileInfo> result = Lists.newArrayList();
-    if (fileList == null) {
-      return result;
-    }
-
-    for (int i = 0; i < fileList.length(); i++) {
-      result.add(new NewFileInfo(fileList.item(i)));
-    }
-    return result;
-  }
-
   public static FileList getFiles(NativeEvent event) {
     Assert.notNull(event);
 
@@ -70,6 +58,18 @@ public class FileUtils {
 
     JsClipboard clipboard = dataTransfer.cast();
     return clipboard.getFiles();
+  }
+
+  public static List<NewFileInfo> getNewFileInfos(FileList fileList) {
+    List<NewFileInfo> result = Lists.newArrayList();
+    if (fileList == null) {
+      return result;
+    }
+
+    for (int i = 0; i < fileList.length(); i++) {
+      result.add(new NewFileInfo(fileList.item(i)));
+    }
+    return result;
   }
   
   public static String getUrl(StoredFile sf) {

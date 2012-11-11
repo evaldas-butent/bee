@@ -271,7 +271,7 @@ public class SystemBean {
     viewColumns = view.getViewColumns();
 
     return new DataInfo(viewName, source.getName(), source.getIdName(), source.getVersionName(),
-        view.getCaption(), view.getEditForm(),
+        view.getCaption(), view.getEditForm(), view.getRowCaption(),
         view.getNewRowForm(), view.getNewRowColumns(), view.getNewRowCaption(),
         view.getCacheMaximumSize(), view.getCacheEviction(), columns, viewColumns);
   }

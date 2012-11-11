@@ -866,7 +866,7 @@ public class CliWorker {
           }
           
           fileGroup.setCaption("Files: " + fileGroup.getFiles().size() + " size: " + totSize);
-          BeeKeeper.getScreen().updateActivePanel(fileGroup, ScrollBars.BOTH);
+          BeeKeeper.getScreen().showWidget(fileGroup, ScrollBars.BOTH, false);
         }
       }
     });
@@ -951,7 +951,7 @@ public class CliWorker {
       }
     }, ErrorEvent.getType());
 
-    BeeKeeper.getScreen().updateActivePanel(widget, ScrollBars.BOTH);
+    BeeKeeper.getScreen().showWidget(widget, ScrollBars.BOTH, false);
   }
 
   private static void playVideo(String args) {
@@ -975,7 +975,7 @@ public class CliWorker {
       }
     }, ErrorEvent.getType());
 
-    BeeKeeper.getScreen().updateActivePanel(widget, ScrollBars.BOTH);
+    BeeKeeper.getScreen().showWidget(widget, ScrollBars.BOTH, false);
   }
 
   private static void print(String args) {
@@ -1826,7 +1826,7 @@ public class CliWorker {
       row++;
     }
 
-    BeeKeeper.getScreen().updateActivePanel(table, ScrollBars.BOTH);
+    BeeKeeper.getScreen().showWidget(table, ScrollBars.BOTH, false);
   }
 
   private static void showMatrix(String[][] data, String... columnLabels) {
@@ -1923,7 +1923,7 @@ public class CliWorker {
       table.setHTML(r, 0, BeeUtils.toString(i));
       table.setWidget(r, 1, new Meter(min, max, i, low, high, optimum));
     }
-    BeeKeeper.getScreen().updateActivePanel(table, ScrollBars.BOTH);
+    BeeKeeper.getScreen().showWidget(table, ScrollBars.BOTH, false);
   }
 
   private static boolean showModal(int rowCount) {
@@ -2911,7 +2911,7 @@ public class CliWorker {
       @Override
       public void onChange(ChangeEvent event) {
         popup.hide();
-        List<NewFileInfo> files = FileUtils.getFileInfo(widget.getFiles());
+        List<NewFileInfo> files = FileUtils.getNewFileInfos(widget.getFiles());
         
         for (final NewFileInfo fi : files) {
           logger.debug("uploading", fi.getName(), fi.getType(), fi.getSize());

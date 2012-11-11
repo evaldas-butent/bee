@@ -136,6 +136,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     this.relation = columnDescr.getRelation();
   }
 
+  @Override
   public HandlerRegistration addCellValidationHandler(CellValidateEvent.Handler handler) {
     return cellValidationBus.addCellValidationHandler(handler);
   }
@@ -196,6 +197,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return getColIndex() == ((EditableColumn) obj).getColIndex();
   }
 
+  @Override
   public Boolean fireCellValidation(CellValidateEvent event) {
     return cellValidationBus.fireCellValidation(event);
   }
@@ -313,6 +315,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return validation;
   }
 
+  @Override
   public String getViewName() {
     return viewName;
   }
@@ -377,12 +380,14 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     return ok;
   }
 
+  @Override
   public void onBlur(BlurEvent event) {
     if (State.OPEN.equals(getState())) {
       closeEditor(null, false);
     }
   }
 
+  @Override
   public void onEditStop(EditStopEvent event) {
     if (event.isChanged()) {
       endEdit(event.getKeyCode(), event.hasModifiers());
@@ -395,6 +400,7 @@ public class EditableColumn implements KeyDownHandler, BlurHandler, EditStopEven
     }
   }
 
+  @Override
   public void onKeyDown(KeyDownEvent event) {
     int keyCode = event.getNativeKeyCode();
     if (getEditor() == null || getEditor().handlesKey(keyCode)) {

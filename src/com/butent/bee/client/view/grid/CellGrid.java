@@ -55,7 +55,6 @@ import com.butent.bee.client.render.RenderableColumn;
 import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.StyleDescriptor;
 import com.butent.bee.client.view.edit.EditStartEvent;
-import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.view.edit.HasEditStartHandlers;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -1578,7 +1577,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
           if (columnInfo.isActionColumn()) {
             fireEventToCell(row, col, event, eventType, target, rowValue);
           } else {
-            startEditing(rowValue, col, target, EditorFactory.START_MOUSE_CLICK);
+            startEditing(rowValue, col, target, EditStartEvent.CLICK);
           }
 
         } else {
@@ -1607,7 +1606,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
         } else if (keyCode == KeyCodes.KEY_ENTER || keyCode == KeyCodes.KEY_DELETE) {
           event.preventDefault();
           if (!hasModifiers) {
-            startEditing(rowValue, col, target, EditorFactory.getStartKey(keyCode));
+            startEditing(rowValue, col, target, EditStartEvent.getStartKey(keyCode));
           }
         }
         return;

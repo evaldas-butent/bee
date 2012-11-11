@@ -185,6 +185,10 @@ public class BeeColumn extends TableColumn implements BeeSerializable, HasExtend
     }
   }
 
+  public boolean isCharacter() {
+    return ValueType.TEXT.equals(getType()) && getPrecision() > 0;
+  }
+  
   public boolean isForeign() {
     return getLevel() > 0;
   }

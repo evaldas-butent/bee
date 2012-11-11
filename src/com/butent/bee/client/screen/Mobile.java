@@ -73,6 +73,11 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
+  public void showWidget(Widget widget, ScrollBars scroll, boolean newPanel) {
+    getScreenPanel().updateCenter(widget, scroll);
+  }
+
+  @Override
   public void start() {
     Element loading = DomUtils.getElement("loading");
     if (loading != null) {
@@ -85,8 +90,8 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
-  public void updateActivePanel(Widget widget, ScrollBars scroll) {
-    getScreenPanel().updateCenter(widget, scroll);
+  public void updateActivePanel(Widget widget) {
+    showWidget(widget, ScrollBars.NONE, false);
   }
 
   protected int addLogToggle(BeeLayoutPanel panel) {

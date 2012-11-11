@@ -86,6 +86,9 @@ public class XmlView {
   @XmlAttribute
   public String editForm;
   @XmlAttribute
+  public String rowCaption;
+
+  @XmlAttribute
   public String newRowForm;
   @XmlAttribute
   public String newRowColumns;

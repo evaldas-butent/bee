@@ -36,13 +36,13 @@
     <DataColumn name="Summary" />
     <DataColumn name="Description" />
 
-    <DataColumn name="CompanyName" caption="Įmonė" />
+    <RelColumn name="Company" editEnabled="true" />
     <DataColumn name="Contact" renderColumns="ContactFirstName ContactLastName" />
 
     <DataColumn name="Status" itemKey="TaskEvent" />
 
-    <DataColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName" />
-    <DataColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName" readOnly="true" />
+    <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName" />
+    <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName" readOnly="true" />
 
     <DataColumn name="FinishTime" readOnly="true" />
   </columns>

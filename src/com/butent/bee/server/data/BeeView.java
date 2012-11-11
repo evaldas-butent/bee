@@ -338,6 +338,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
   private final String caption;
 
   private final String editForm;
+  private final String rowCaption;
+
   private final String newRowForm;
   private final String newRowColumns;
   private final String newRowCaption;
@@ -360,6 +362,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     this.caption = xmlView.caption;
 
     this.editForm = xmlView.editForm;
+    this.rowCaption = xmlView.rowCaption;
+
     this.newRowForm = xmlView.newRowForm;
     this.newRowColumns = xmlView.newRowColumns;
     this.newRowCaption = xmlView.newRowCaption;
@@ -531,8 +535,8 @@ public class BeeView implements BeeObject, HasExtendedInfo {
     PropertyUtils.addProperties(info, false, "Module Name", getModuleName(), "Name", getName(),
         "Source", getSourceName(), "Source Alias", getSourceAlias(),
         "Source Id Name", getSourceIdName(), "Source Version Name", getSourceVersionName(),
-        "Filter", getFilter(), "Read Only", isReadOnly(),
-        "Caption", getCaption(), "Edit Form", getEditForm(), "New Row Form", getNewRowForm(),
+        "Filter", getFilter(), "Read Only", isReadOnly(), "Caption", getCaption(),
+        "Edit Form", getEditForm(), "Row Caption", getRowCaption(), "New Row Form", getNewRowForm(),
         "New Row Columns", getNewRowColumns(), "New Row Caption", getNewRowCaption(),
         "Cache Maximum Size", getCacheMaximumSize(), "Cache Eviction", getCacheEviction(),
         "Query", query.getQuery(), "Columns", columns.size());
@@ -660,6 +664,10 @@ public class BeeView implements BeeObject, HasExtendedInfo {
 
   public SqlSelect getQuery() {
     return getQuery(null, null, null);
+  }
+
+  public String getRowCaption() {
+    return rowCaption;
   }
 
   public String getSourceAlias() {

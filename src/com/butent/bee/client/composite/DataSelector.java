@@ -49,9 +49,9 @@ import com.butent.bee.client.render.RendererFactory;
 import com.butent.bee.client.render.SimpleRenderer;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.UiHelper;
+import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
-import com.butent.bee.client.view.edit.EditorFactory;
 import com.butent.bee.client.view.edit.HasTextBox;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
@@ -229,7 +229,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     
     protected void onMouseClick() {
       if (isEmbedded() && !isActive()) {
-        start(EditorFactory.START_MOUSE_CLICK);
+        start(EditStartEvent.CLICK);
       }
       if (!getSelector().isShowing()) {
         clearDisplay();
@@ -647,6 +647,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private final String newRowColumns;
   private final String newRowCaption;
   private final boolean newRowEnabled;
+
+  private final String editForm;
+  private final boolean editModal;
+  private final boolean editEnabled;
   
   private boolean active = false;
 
@@ -720,6 +724,16 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     this.newRowCaption = BeeUtils.notEmpty(relation.getNewRowCaption(),
         dataInfo.getNewRowCaption());
     this.newRowEnabled = relation.isNewRowEnabled();
+    
+    if (relation.isEditEnabled()) {
+      this.editForm = BeeUtils.notEmpty(relation.getEditForm(), dataInfo.getEditForm());
+      this.editModal = relation.isEditModal();
+      this.editEnabled = !BeeUtils.isEmpty(this.editForm);
+    } else {
+      this.editForm = null;
+      this.editModal = false;
+      this.editEnabled = false;
+    }
 
     Binder.addMouseWheelHandler(selector.getPopup(), inputEvents);
 
@@ -794,6 +808,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     return getInput().getText();
   }
 
+  public String getEditForm() {
+    return editForm;
+  }
+
   @Override
   public String getId() {
     return DomUtils.getId(this);
@@ -863,12 +881,20 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public boolean isAdding() {
     return adding;
   }
+  
+  public boolean isEditEnabled() {
+    return editEnabled;
+  }
 
   @Override
   public boolean isEditing() {
     return getInput().isEditing();
   }
-  
+
+  public boolean isEditModal() {
+    return editModal;
+  }
+
   public boolean isEmbedded() {
     return embedded;
   }
@@ -929,7 +955,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
-
+  
   @Override
   public void setNullable(boolean nullable) {
     getInput().setNullable(nullable);
@@ -950,7 +976,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public void setTabIndex(int index) {
     getInput().setTabIndex(index);
   }
-  
+
   @Override
   public void setUpperCase(boolean upperCase) {
     getInput().setUpperCase(upperCase);
@@ -965,12 +991,12 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public void setValue(String value, boolean fireEvents) {
     setEditorValue(value);
   }
-
+  
   @Override
   public void setVisibleLines(int lines) {
     this.visibleLines = lines;
   }
-
+  
   @Override
   public void startEdit(String oldValue, char charCode, EditorAction onEntry,
       Element sourceElement) {
@@ -1009,7 +1035,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     inputEvents.consume();
     setActive(true);
   }
-
+  
   @Override
   public String validate() {
     return null;
@@ -1028,11 +1054,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   protected InputWidget getInput() {
     return input;
   }
-  
+
   protected void hideSelector() {
     getSelector().hide();
   }
-  
+
   protected void init(InputWidget inputWidget, boolean embed) {
     inputWidget.addStyleName(STYLE_SELECTOR);
     if (embed) {
@@ -1041,7 +1067,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     initWidget(inputWidget);
   }
-  
+
   protected boolean isActive() {
     return active;
   }

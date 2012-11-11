@@ -424,7 +424,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       @Override
       public void onChange(ChangeEvent event) {
         if (!FileCollector.this.inputFile.isEmpty()) {
-          addFiles(FileUtils.getFileInfo(FileCollector.this.inputFile.getFiles()));
+          addFiles(FileUtils.getNewFileInfos(FileCollector.this.inputFile.getFiles()));
           FileCollector.this.inputFile.clear();
         }
       }
@@ -533,7 +533,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     setDndCounter(0);
     hideDropArea();
 
-    addFiles(FileUtils.getFileInfo(FileUtils.getFiles(event.getNativeEvent())));
+    addFiles(FileUtils.getNewFileInfos(FileUtils.getFiles(event.getNativeEvent())));
   }
 
   @Override

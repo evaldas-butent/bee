@@ -16,6 +16,7 @@ import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.dialog.InputBoxes;
 import com.butent.bee.client.dialog.InputCallback;
+import com.butent.bee.client.dom.StyleUtils.ScrollBars;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.modules.commons.ParametersHandler;
@@ -52,7 +53,7 @@ public class CalendarKeeper {
         if (DataUtils.isId(calId)) {
           String calName = event.hasRow() ?
               Data.getString(VIEW_CALENDARS, event.getRow(), COL_NAME) : event.getOptions();
-          openCalendar(calId, calName);
+          openCalendar(calId, calName, true);
         }
 
       } else if (event.hasView(VIEW_APPOINTMENTS)) {
@@ -73,7 +74,7 @@ public class CalendarKeeper {
     @Override
     public void onRowTransform(RowTransformEvent event) {
       if (event.hasView(VIEW_CALENDARS)) {
-        event.setResult(DataUtils.join(VIEW_CALENDARS, event.getRow(),
+        event.setResult(DataUtils.join(Data.getDataInfo(VIEW_CALENDARS), event.getRow(),
             Lists.newArrayList(COL_NAME, COL_DESCRIPTION, COL_OWNER_FIRST_NAME,
                 COL_OWNER_LAST_NAME), BeeConst.STRING_SPACE));
 
@@ -483,7 +484,7 @@ public class CalendarKeeper {
     });
   }
 
-  private static void openCalendar(final long id, final String name) {
+  private static void openCalendar(final long id, final String name, final boolean newPanel) {
     ensureData(new Command() {
       @Override
       public void execute() {
@@ -492,7 +493,8 @@ public class CalendarKeeper {
           public void onSuccess(BeeRowSet result) {
             CalendarSettings settings =
                 CalendarSettings.create(result.getRow(0), result.getColumns());
-            BeeKeeper.getScreen().updateActivePanel(new CalendarPanel(id, name, settings));
+            BeeKeeper.getScreen().showWidget(new CalendarPanel(id, name, settings),
+                ScrollBars.NONE, newPanel);
           }
         });
       }

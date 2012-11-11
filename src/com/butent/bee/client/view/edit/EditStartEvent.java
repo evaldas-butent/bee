@@ -1,9 +1,11 @@
 package com.butent.bee.client.view.edit;
 
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
 
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.IsRow;
 
 /**
@@ -20,10 +22,35 @@ public class EditStartEvent extends GwtEvent<EditStartEvent.Handler> {
     void onEditStart(EditStartEvent event);
   }
 
+  public static final int CLICK = 1;
+  public static final int ENTER = 2;
+  public static final int DELETE = 3;
+  
   private static final Type<Handler> TYPE = new Type<Handler>();
 
+  public static int getStartKey(int keyCode) {
+    int startKey;
+
+    switch (keyCode) {
+      case KeyCodes.KEY_ENTER:
+        startKey = ENTER;
+        break;
+      case KeyCodes.KEY_DELETE:
+        startKey = DELETE;
+        break;
+      default:
+        startKey = BeeConst.UNDEF;
+    }
+
+    return startKey;
+  }
+  
   public static Type<Handler> getType() {
     return TYPE;
+  }
+  
+  public static boolean isClickOrEnter(int code) {
+    return code == CLICK || code == ENTER;
   }
 
   private final IsRow rowValue;

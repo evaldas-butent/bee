@@ -108,12 +108,10 @@ public class GridLoaderBean {
   private static final String ATTR_NEW_ROW_DEFAULTS = "newRowDefaults";
   private static final String ATTR_NEW_ROW_POPUP = "newRowPopup";
 
-  private static final String ATTR_EDIT_FORM = "editForm";
   private static final String ATTR_EDIT_MODE = "editMode";
   private static final String ATTR_EDIT_SAVE = "editSave";
   private static final String ATTR_EDIT_SHOW_ID = "editShowId";
   private static final String ATTR_EDIT_IN_PLACE = "editInPlace";
-  private static final String ATTR_EDIT_POPUP = "editPopup";
 
   private static final String ATTR_WIDTH = "width";
   private static final String ATTR_MIN_WIDTH = "minWidth";
@@ -798,7 +796,7 @@ public class GridLoaderBean {
       dst.setNewRowPopup(newRowPopup);
     }
 
-    String editForm = src.getAttribute(ATTR_EDIT_FORM);
+    String editForm = src.getAttribute(UiConstants.ATTR_EDIT_FORM);
     if (!BeeUtils.isEmpty(editForm)) {
       dst.setEditForm(editForm);
     }
@@ -822,7 +820,7 @@ public class GridLoaderBean {
     if (!BeeUtils.isEmpty(editInPlace)) {
       dst.setEditInPlace(editInPlace.trim());
     }
-    Boolean editPopup = XmlUtils.getAttributeBoolean(src, ATTR_EDIT_POPUP);
+    Boolean editPopup = XmlUtils.getAttributeBoolean(src, UiConstants.ATTR_EDIT_POPUP);
     if (editPopup != null) {
       dst.setEditPopup(editPopup);
     }

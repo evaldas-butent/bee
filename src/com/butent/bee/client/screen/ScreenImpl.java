@@ -213,7 +213,7 @@ public class ScreenImpl implements Screen {
   @Override
   public void showGrid(Widget grid) {
     if (grid != null) {
-      updateActivePanel(grid, ScrollBars.BOTH);
+      showWidget(grid, ScrollBars.BOTH, false);
     }
   }
 
@@ -227,6 +227,15 @@ public class ScreenImpl implements Screen {
     Assert.notNull(resource);
     updateActivePanel(new ResourceEditor(resource));
   }
+  
+  @Override
+  public void showWidget(Widget widget, ScrollBars scroll, boolean newPanel) {
+    if (newPanel) {
+      getWorkspace().openInNewPage(widget, scroll);
+    } else {
+      getWorkspace().updateActivePanel(widget, scroll);
+    }
+  }
 
   @Override
   public void start() {
@@ -234,23 +243,18 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void updateActivePanel(Widget w) {
-    updateActivePanel(w, ScrollBars.NONE);
+  public void updateActivePanel(Widget widget) {
+    showWidget(widget, ScrollBars.NONE, false);
   }
 
   @Override
-  public void updateActivePanel(Widget w, ScrollBars scroll) {
-    getWorkspace().updateActivePanel(w, scroll);
+  public void updateCommandPanel(Widget widget) {
+    updatePanel(getCommandPanel(), widget);
   }
 
   @Override
-  public void updateCommandPanel(Widget w) {
-    updatePanel(getCommandPanel(), w);
-  }
-
-  @Override
-  public void updateMenu(Widget w) {
-    updatePanel(getMenuPanel(), w);
+  public void updateMenu(Widget widget) {
+    updatePanel(getMenuPanel(), widget);
   }
 
   @Override
@@ -521,17 +525,17 @@ public class ScreenImpl implements Screen {
     this.workspace = workspace;
   }
 
-  private void updatePanel(HasWidgets p, Widget w) {
-    if (p == null) {
+  private void updatePanel(HasWidgets panel, Widget widget) {
+    if (panel == null) {
       notifyWarning("updatePanel: panel is null");
       return;
     }
-    if (w == null) {
+    if (widget == null) {
       notifyWarning("updatePanel: widget is null");
       return;
     }
 
-    p.clear();
-    p.add(w);
+    panel.clear();
+    panel.add(widget);
   }
 }

@@ -73,7 +73,7 @@ public class Showcase {
         panel.add(new TableDemo(), "Table");
 
         panel.init("AreaChart");
-        BeeKeeper.getScreen().updateActivePanel(panel, ScrollBars.BOTH);
+        BeeKeeper.getScreen().showWidget(panel, ScrollBars.BOTH, false);
         logger.info(TimeUtils.elapsedSeconds(start), "showcase ready");
       }
     }, AnnotatedTimeLine.PACKAGE, CoreChart.PACKAGE, Gauge.PACKAGE, GeoMap.PACKAGE,

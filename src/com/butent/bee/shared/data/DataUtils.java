@@ -7,7 +7,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import com.butent.bee.client.data.Data;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -22,6 +21,7 @@ import com.butent.bee.shared.data.view.DataInfo;
 import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.DateTime;
 import com.butent.bee.shared.time.JustDate;
 import com.butent.bee.shared.ui.HasCaption;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -100,7 +100,7 @@ public class DataUtils {
 
     return Filter.or(filters);
   }
-  
+
   public static long assertId(Long id) {
     Assert.isTrue(isId(id), "invalid row id");
     return id;
@@ -135,7 +135,7 @@ public class DataUtils {
     if (original instanceof BeeColumn) {
       return ((BeeColumn) original).copy();
     }
-    
+
     BeeColumn result = new BeeColumn(original.getType(), original.getLabel(), original.getId());
 
     result.setPattern(original.getPattern());
@@ -148,7 +148,7 @@ public class DataUtils {
 
     return result;
   }
-  
+
   public static BeeRow cloneRow(IsRow original) {
     Assert.notNull(original);
     String[] arr = new String[original.getNumberOfCells()];
@@ -476,6 +476,32 @@ public class DataUtils {
     return value;
   }
 
+  public static String getRowCaption(DataInfo dataInfo, IsRow row) {
+    Assert.notNull(dataInfo);
+    if (row == null) {
+      return null;
+    }
+
+    List<String> colNames = Lists.newArrayList();
+    if (!BeeUtils.isEmpty(dataInfo.getRowCaption())) {
+      colNames.addAll(dataInfo.parseColumns(dataInfo.getRowCaption()));
+    }
+
+    if (colNames.isEmpty()) {
+      for (BeeColumn column : dataInfo.getColumns()) {
+        if (column.isCharacter() && column.isWritable() && !column.isNullable()) {
+          colNames.add(column.getId());
+        }
+      }
+    }
+    
+    if (colNames.isEmpty()) {
+      return null;
+    } else {
+      return join(dataInfo, row, colNames, BeeConst.STRING_SPACE);
+    }
+  }
+
   public static List<Long> getRowIds(BeeRowSet rowSet) {
     List<Long> result = Lists.newArrayList();
     for (BeeRow row : rowSet.getRows()) {
@@ -539,7 +565,7 @@ public class DataUtils {
   public static boolean hasId(IsRow row) {
     return row != null && isId(row.getId());
   }
-  
+
   public static boolean isEmpty(BeeRowSet rowSet) {
     return rowSet == null || rowSet.isEmpty();
   }
@@ -576,13 +602,8 @@ public class DataUtils {
     return sb.toString();
   }
 
-  public static String join(String viewName, IsRow row, List<String> colNames, String separator) {
-    Assert.notEmpty(viewName);
-    DataInfo dataInfo = Data.getDataInfo(viewName);
-    if (dataInfo == null) {
-      return null;
-    }
-
+  public static String join(DataInfo dataInfo, IsRow row, List<String> colNames, String separator) {
+    Assert.notNull(dataInfo);
     Assert.notNull(row);
     Assert.notEmpty(colNames);
 
@@ -591,9 +612,12 @@ public class DataUtils {
 
     for (String colName : colNames) {
       int i = dataInfo.getColumnIndex(colName);
-      Assert.nonNegative(i, "column not found: " + colName);
+      if (BeeConst.isUndef(i)) {
+        logger.warning(dataInfo.getViewName(), "column not found:", colName);
+        continue;
+      }
 
-      String value = render(row, i, dataInfo.getColumns().get(i).getType());
+      String value = render(row, i, dataInfo.getColumnType(i));
       if (!BeeUtils.isEmpty(value)) {
         if (sb.length() > 0) {
           sb.append(sep);
@@ -604,31 +628,35 @@ public class DataUtils {
     return sb.toString();
   }
 
+  public static List<String> parseColumns(List<String> input, List<? extends IsColumn> columns) {
+    return parseColumns(input, columns, null, null);
+  }
+
   public static List<String> parseColumns(List<String> input, List<? extends IsColumn> columns,
       String idColumnName, String versionColumnName) {
-    Assert.notEmpty(columns);
-    if (BeeUtils.isEmpty(input)) {
-      return null;
-    }
-
     List<String> result = Lists.newArrayList();
+    if (BeeUtils.isEmpty(input)) {
+      return result;
+    }
+    Assert.notEmpty(columns);
+
     for (String item : input) {
       String colName = getColumnName(item, columns, idColumnName, versionColumnName);
       if (!BeeUtils.isEmpty(colName) && !result.contains(colName)) {
         result.add(colName);
       }
     }
-
-    if (result.isEmpty()) {
-      return null;
-    }
     return result;
+  }
+
+  public static List<String> parseColumns(String input, List<? extends IsColumn> columns) {
+    return parseColumns(input, columns, null, null);
   }
 
   public static List<String> parseColumns(String input, List<? extends IsColumn> columns,
       String idColumnName, String versionColumnName) {
     if (BeeUtils.isEmpty(input)) {
-      return null;
+      return Lists.newArrayList();
     } else {
       return parseColumns(Lists.newArrayList(NameUtils.NAME_SPLITTER.split(input)), columns,
           idColumnName, versionColumnName);
@@ -748,6 +776,7 @@ public class DataUtils {
     if (BeeUtils.isEmpty(input)) {
       return null;
     }
+    Assert.notNull(provider);
 
     DataInfo dataInfo = provider.getDataInfo(viewName, true);
     return (dataInfo == null) ? null : dataInfo.parseFilter(input);
@@ -782,18 +811,25 @@ public class DataUtils {
     }
     return result;
   }
-  
+
   public static Order parseOrder(String input, DataInfo.Provider provider, String viewName) {
     if (BeeUtils.isEmpty(input)) {
       return null;
     }
+    Assert.notNull(provider);
 
     DataInfo dataInfo = provider.getDataInfo(viewName, true);
     return (dataInfo == null) ? null : dataInfo.parseOrder(input);
   }
 
   public static String render(IsRow row, int index, ValueType type) {
-    if (row.isNull(index)) {
+    if (row == null) {
+      return null;
+    } else if (index == ID_INDEX) {
+      return BeeUtils.toString(row.getId());
+    } else if (index == VERSION_INDEX) {
+      return new DateTime(row.getVersion()).toString();
+    } else if (row.isNull(index)) {
       return null;
     } else if (type == null || ValueType.isString(type)) {
       return row.getString(index);
@@ -829,7 +865,7 @@ public class DataUtils {
       return r1.getId() == r2.getId();
     }
   }
-  
+
   public static boolean sameIdAndVersion(IsRow r1, IsRow r2) {
     if (r1 == null) {
       return r2 == null;

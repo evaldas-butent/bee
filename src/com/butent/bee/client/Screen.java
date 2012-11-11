@@ -41,13 +41,13 @@ public interface Screen extends Module, NotificationListener {
 
   void showResource(Resource resource);
   
-  void updateActivePanel(Widget w);
+  void showWidget(Widget widget, ScrollBars scroll, boolean newPanel);
 
-  void updateActivePanel(Widget w, ScrollBars scroll);
+  void updateActivePanel(Widget widget);
 
-  void updateCommandPanel(Widget w);
+  void updateCommandPanel(Widget widget);
   
-  void updateMenu(Widget w);
+  void updateMenu(Widget widget);
 
   void updateProgress(String id, double value);
   

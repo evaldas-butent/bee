@@ -244,8 +244,8 @@ public class RowFactory {
     }
 
     if (colNames.isEmpty() && !BeeUtils.isEmpty(preferred)) {
-      List<String> list = DataUtils.parseColumns(preferred, dataInfo.getColumns(), null, null);
-      if (list != null) {
+      List<String> list = DataUtils.parseColumns(preferred, dataInfo.getColumns());
+      if (!list.isEmpty()) {
         colNames.addAll(list);
       }
     }

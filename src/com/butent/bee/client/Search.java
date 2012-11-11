@@ -297,7 +297,7 @@ public class Search {
     @Override
     public void onBrowserEvent(Event event) {
       if (EventUtils.isClick(event)) {
-        RowEditor.openRow(getViewName(), getRow());
+        RowEditor.openRow(getViewName(), getRow(), true);
       }
       super.onBrowserEvent(event);
     }
@@ -444,7 +444,7 @@ public class Search {
 
   private void processResults(String query, List<SearchResult> results) {
     if (results.size() == 1) {
-      RowEditor.openRow(results.get(0).getViewName(), results.get(0).getRow());
+      RowEditor.openRow(results.get(0).getViewName(), results.get(0).getRow(), false);
     } else {
       showResults(query, results);
     }
