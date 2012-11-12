@@ -10,7 +10,7 @@
     <AbsolutePanel style="height: 255px; left: 0; right: 0;">
       <layer top="0" bottom="0" width="240">
         <FlowPanel>
-          <DataSelector source="CompanyName" caption="Įmonė:"
+          <DataSelector source="CompanyName" caption="Įmonė:" editEnabled="true"
             style="width: 140px;" d:size="80" d:unit="px" />
           <TextLabel source="CompanyPhone" caption="Telefonas:" inline="true"
             d:size="80" d:unit="px" />
@@ -69,7 +69,7 @@
           <br/>  
           <InputDateTime source="Created" caption="Registruotas:"
             style="width: 140px;" d:size="80" d:unit="px" />
-          <DataSelector source="Creator" caption="Registravo:"
+          <DataSelector source="Creator" caption="Registravo:" editEnabled="true"
             style="width: 140px;" d:size="80" d:unit="px"/>
         </FlowPanel>
       </layer>
@@ -96,7 +96,7 @@
         <Table style="border-collapse: collapse; margin-top: 2ex;"
           cellStyle="padding: 3px; border: 1px solid #ccc;" >
           <row>
-            <DataSelector source="VehicleNumber" caption="Valst. Nr.:" />
+            <DataSelector source="VehicleNumber" caption="Valst. Nr.:" editEnabled="true" />
             <TextLabel source="Vehicle" caption="Modelis:" inline="true"
               renderColumns="VehicleParentModel VehicleModel" />
             <TextLabel source="VehicleType" caption="Tipas:" inline="true" />

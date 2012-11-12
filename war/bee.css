@@ -910,6 +910,37 @@ body, select {
   text-align: center;
 }
 
+.bee-DataSelector-editableContainer {
+  display: inline-block;
+  width: 149px;
+  border: 1px solid #aaa;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+.bee-DataSelector-editableFocus {
+  border: 1px solid #5897fb;
+  box-shadow : 0 0 3px rgba(0, 0, 0, 0.3);
+}
+
+.bee-DataSelector-editableInput {
+  width: -webkit-calc(100% - 16px);
+  border: none;
+  outline: none; 
+  padding-right: 2px;
+}
+
+.bee-DataSelector-drill {
+  display: none;
+}
+.bee-DataSelector-drillEnabled {
+  display: inline;
+  cursor: pointer;
+  color: #999;
+}
+.bee-DataSelector-drillEnabled:hover {
+  color: #00e;
+}
+
 .bee-GridFormContainer, .bee-NewRowContainer, .bee-RowContainer {
   position: absolute;
   left: 0;

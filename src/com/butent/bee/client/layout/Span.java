@@ -29,18 +29,22 @@ public class Span extends ComplexPanel implements InsertPanel, HasId {
     return "bee-Span";
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "span";
   }
 
+  @Override
   public void insert(Widget w, int beforeIndex) {
     insert(w, getElement(), beforeIndex, true);
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

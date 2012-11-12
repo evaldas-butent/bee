@@ -8,6 +8,8 @@ import com.google.gwt.dom.client.Node;
 import com.google.gwt.dom.client.TableCellElement;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -24,6 +26,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.TextBoxBase;
 import com.google.gwt.user.client.ui.UIObject;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
@@ -41,6 +44,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.SelectorEvent;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.menu.MenuBar;
 import com.butent.bee.client.menu.MenuCommand;
 import com.butent.bee.client.menu.MenuItem;
@@ -54,6 +58,7 @@ import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.EditStopEvent;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.edit.HasTextBox;
+import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputText;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
@@ -599,6 +604,13 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private static final String STYLE_NAVIGATION = STYLE_SELECTOR + "-navigation";
   private static final String STYLE_NAVIGATION_CELL = STYLE_SELECTOR + "-navigationCell";
 
+  private static final String STYLE_EDITABLE_CONTAINER = STYLE_SELECTOR + "-editableContainer";
+  private static final String STYLE_EDITABLE_FOCUS = STYLE_SELECTOR + "-editableFocus";
+  private static final String STYLE_EDITABLE_INPUT = STYLE_SELECTOR + "-editableInput";
+
+  private static final String STYLE_DRILL = STYLE_SELECTOR + "-drill";
+  private static final String STYLE_DRILL_ENABLED = STYLE_DRILL + "Enabled";
+  
   private static final int DEFAULT_VISIBLE_LINES = 10;
 
   private static final Operator DEFAULT_SEARCH_TYPE = Operator.CONTAINS;
@@ -665,6 +677,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private boolean alive = true;
   private boolean waiting = false;
   private boolean adding = false;
+  
+  private Widget drill = null;
 
   public DataSelector(Relation relation, boolean embedded) {
     super();
@@ -1065,8 +1079,47 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     if (embed) {
       inputWidget.addStyleName(STYLE_EMBEDDED);
     }
+    
+    if (embed && isEditEnabled()) {
+      final Flow container = new Flow();
+      container.addStyleName(STYLE_EDITABLE_CONTAINER);
+      
+      inputWidget.addStyleName(STYLE_EDITABLE_INPUT);
 
-    initWidget(inputWidget);
+      inputWidget.addFocusHandler(new FocusHandler() {
+        @Override
+        public void onFocus(FocusEvent event) {
+          container.addStyleName(STYLE_EDITABLE_FOCUS);
+        }
+      });
+      inputWidget.addBlurHandler(new BlurHandler() {
+        @Override
+        public void onBlur(BlurEvent event) {
+          container.removeStyleName(STYLE_EDITABLE_FOCUS);
+        }
+      });
+
+      container.add(inputWidget);
+      
+      InlineLabel label = new InlineLabel(String.valueOf(BeeConst.DRILL_DOWN));
+      label.addStyleName(STYLE_DRILL);
+      label.addClickHandler(new ClickHandler() {
+        @Override
+        public void onClick(ClickEvent event) {
+          if (BeeUtils.isLong(getEditorValue())) {
+            editRow(BeeUtils.toLong(getEditorValue()));
+          }
+        }
+      });
+      
+      setDrill(label);
+      container.add(label);
+      
+      initWidget(container);
+      
+    } else {
+      initWidget(inputWidget);
+    }
   }
 
   protected boolean isActive() {
@@ -1091,6 +1144,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     getInput().removeStyleName(STYLE_WAITING);
     getInput().removeStyleName(STYLE_NOT_FOUND);
+    
+    if (getDrill() != null) {
+      getWidget().removeStyleName(STYLE_EDITABLE_FOCUS);
+    }
   }
 
   protected void setActive(boolean active) {
@@ -1184,6 +1241,20 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     getOracle().requestSuggestions(request, getCallback());
   }
 
+  private void editRow(long rowId) {
+    String viewName = getOracle().getViewName();
+    DataInfo dataInfo = Data.getDataInfo(viewName);
+
+    String formName = BeeUtils.notEmpty(getEditForm(), dataInfo.getEditForm());
+    if (BeeUtils.isEmpty(formName)) {
+      return;
+    }
+    
+    boolean modal = BeeUtils.isTrue(isEditModal());
+
+    RowEditor.openRow(formName, dataInfo, rowId, modal, getWidget(), null);
+  }
+  
   private void exit(boolean hideSelector, State state) {
     exit(hideSelector, state, null, false);
   }
@@ -1198,6 +1269,10 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private int getColumnCount() {
     return getChoiceColumns().size();
+  }
+
+  private Widget getDrill() {
+    return drill;
   }
 
   private String getEditorValue() {
@@ -1321,8 +1396,15 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     }
   }
 
-  private void setEditorValue(String editorValue) {
-    this.editorValue = editorValue;
+  private void setDrill(Widget drill) {
+    this.drill = drill;
+  }
+
+  private void setEditorValue(String ev) {
+    if (getDrill() != null && BeeUtils.isEmpty(this.editorValue) != BeeUtils.isEmpty(ev)) {
+      getDrill().setStyleName(STYLE_DRILL_ENABLED, !BeeUtils.isEmpty(ev));
+    }
+    this.editorValue = ev;
   }
 
   private void setHasMore(boolean hasMore) {

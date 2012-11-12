@@ -23,7 +23,7 @@
 
     <FlowPanel style="&relative; height: 60px;">
       <DataSelector source="CompanyName" required="true" caption="Klientas:" style="width: 300px;"
-        choiceColumns="Name Phone Email"
+        choiceColumns="Name Phone Email" editEnabled="true"
         d:size="80" d:unit="px" d:rootStyle="&absolute; left: 0; top: 0;" />
 
       <TextLabel source="CompanyPhone" caption="Telefonas:" inline="true"
@@ -45,7 +45,7 @@
 
     <FlowPanel style="&relative; height: 90px;">
       <DataSelector source="VehicleNumber" required="true" caption="Valst. Nr.:"
-        style="width: 100px;" upperCase="true"
+        style="width: 100px;" upperCase="true" editEnabled="true"
         choiceColumns="Number ParentModelName ModelName OwnerName" d:size="80" d:unit="px"
         d:rootStyle="&absolute; left: 0; top: 0;" />
 

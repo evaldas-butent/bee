@@ -30,14 +30,14 @@
 
       <FlowPanel style="&section;">
         <Label html="Vadovas:" style="&lbl1;" />
-        <DataSelector source="Owner" style="&inp2;" />
+        <DataSelector source="Owner" editEnabled="true" style="&inp2;" />
         <Label html="Įmonė:" style="&lbl3;" />
-        <DataSelector source="Company" style="&inp4; width: 140px;" />
+        <DataSelector source="Company" editEnabled="true" style="&inp4; width: 140px;" />
       </FlowPanel>
 
       <FlowPanel style="&section;">
         <Label html="Vykdytojas:" style="&lbl1;" />
-        <DataSelector source="Executor" style="&inp2;" />
+        <DataSelector source="Executor" editEnabled="true" style="&inp2;" />
         <Label html="Kontaktinis asmuo:" style="&lbl3;" />
         <DataSelector source="Contact" style="&inp4; width: 140px;" />
       </FlowPanel>
