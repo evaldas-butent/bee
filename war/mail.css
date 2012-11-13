@@ -86,10 +86,11 @@
   padding: 2px;
 }
 
-.bee-mail-AttachmentsMenu-item {
+.bee-mail-AttachmentsMenu-item a {
   padding: 2px 4px;
   cursor: pointer;
   color: #0A8DE9;
+  text-decoration: none;
 }
 
 .bee-mail-AttachmentsMenu-item:hover {

@@ -5,6 +5,8 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
+import static com.butent.bee.shared.modules.mail.MailConstants.*;
+
 import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.server.Config;
 import com.butent.bee.server.DataSourceBean;
@@ -24,7 +26,9 @@ import com.butent.bee.server.io.FileUtils;
 import com.butent.bee.server.modules.ModuleHolderBean;
 import com.butent.bee.server.modules.mail.MailModuleBean;
 import com.butent.bee.server.sql.SqlDelete;
+import com.butent.bee.server.sql.SqlSelect;
 import com.butent.bee.server.sql.SqlUpdate;
+import com.butent.bee.server.sql.SqlUtils;
 import com.butent.bee.server.ui.XmlSqlDesigner.DataType;
 import com.butent.bee.server.ui.XmlSqlDesigner.DataTypeGroup;
 import com.butent.bee.server.utils.XmlUtils;
@@ -63,11 +67,14 @@ import org.w3c.dom.Element;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.ejb.LocalBean;
 import javax.ejb.Stateless;
+import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
 
 /**
  * Manages <code>rpc_data</code> type service requests from client side, including such services as
@@ -311,7 +318,25 @@ public class UiServiceBean {
     if (c < 3) {
       return ResponseObject.error("Syntax: mail <ToAddress>;<Subject>;<Body>");
     }
-    return mail.sendMail(to, subject, body);
+    Map<String, String> data = qs.getRow(new SqlSelect()
+        .addFields(TBL_ACCOUNTS, "TransportServer", "TransportPort", COL_ADDRESS)
+        .addFrom(TBL_ACCOUNTS)
+        .setWhere(SqlUtils.and(SqlUtils.equal(TBL_ACCOUNTS, COL_USER, usr.getCurrentUserId()),
+            SqlUtils.notNull(TBL_ACCOUNTS, "Main"))));
+
+    if (data == null) {
+      return ResponseObject.error("No default mail account for user:", usr.getCurrentUser());
+    }
+    try {
+      mail.sendMail(data.get("TransportServer"),
+          BeeUtils.toIntOrNull(data.get("TransportPort")),
+          BeeUtils.toLongOrNull(data.get(COL_ADDRESS)),
+          Sets.newHashSet(mail.storeAddress(new InternetAddress(to))),
+          null, null, subject, body, null);
+    } catch (MessagingException e) {
+      return ResponseObject.error(e);
+    }
+    return ResponseObject.info("Mail sent");
   }
 
   private ResponseObject doSql(RequestInfo reqInfo) {

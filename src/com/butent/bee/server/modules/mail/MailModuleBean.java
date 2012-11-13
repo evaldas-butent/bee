@@ -181,7 +181,19 @@ public class MailModuleBean implements BeeModule {
       }
       if (!save) {
         try {
-          sendMail(sender, to, cc, bcc, subject, content, attachments);
+          Map<String, String> data = null;
+
+          if (sender != null) {
+            data = qs.getRow(new SqlSelect()
+                .addFields(TBL_ACCOUNTS, "TransportServer", "TransportPort")
+                .addFrom(TBL_ACCOUNTS)
+                .setWhere(SqlUtils.equal(TBL_ACCOUNTS, COL_ADDRESS, sender)));
+          }
+          if (data == null) {
+            throw new MessagingException("Unknown user account: " + sender);
+          }
+          sendMail(data.get("TransportServer"), BeeUtils.toIntOrNull(data.get("TransportPort")),
+              sender, to, cc, bcc, subject, content, attachments);
           response.addInfo("Laiškas išsiųstas");
         } catch (MessagingException e) {
           save = true;
@@ -216,6 +228,8 @@ public class MailModuleBean implements BeeModule {
   public Collection<BeeParameter> getDefaultParameters() {
     List<BeeParameter> params = Lists.newArrayList(
         new BeeParameter(MAIL_MODULE,
+            "DefaultAccount", ParameterType.NUMBER, "Default mail account", false, null),
+        new BeeParameter(MAIL_MODULE,
             "POP3Server", ParameterType.TEXT, "POP3 server name", false, null),
         new BeeParameter(MAIL_MODULE,
             "POP3ServerPort", ParameterType.NUMBER, "POP3 server port number", false, null),
@@ -248,30 +262,71 @@ public class MailModuleBean implements BeeModule {
     proxy.initServer();
   }
 
-  public ResponseObject sendMail(String to, String subject, String body) {
-    ResponseObject response;
+  public void sendMail(String server, Integer port, Long sender, Set<Long> to, Set<Long> cc,
+      Set<Long> bcc, String subject, String content, Set<Long> attachments)
+      throws MessagingException {
+
     Session session = Session.getInstance(new Properties(), null);
+    Transport transport = null;
+    MimeMessage message = new MimeMessage(session);
 
-    if (session == null) {
-      String msg = "Mail session not available";
-      logger.severe(msg);
-      response = ResponseObject.error(msg);
-    } else {
-      MimeMessage message = new MimeMessage(session);
+    try {
+      if (!BeeUtils.isEmpty(to)) {
+        message.setRecipients(RecipientType.TO, getAddresses(to));
+      }
+      if (!BeeUtils.isEmpty(cc)) {
+        message.setRecipients(RecipientType.CC, getAddresses(cc));
+      }
+      if (!BeeUtils.isEmpty(bcc)) {
+        message.setRecipients(RecipientType.BCC, getAddresses(bcc));
+      }
+      Address from = getAddress(sender);
+      message.setSender(from);
+      message.setFrom(from);
+      message.setSentDate(TimeUtils.toJava(new DateTime()));
+      message.setSubject(subject, BeeConst.CHARSET_UTF8);
 
-      try {
-        message.setRecipient(RecipientType.TO, new InternetAddress(to));
-        message.setSubject(subject, BeeConst.CHARSET_UTF8);
-        message.setText(body, BeeConst.CHARSET_UTF8);
+      addContent(message, content, attachments);
 
-        Transport.send(message);
-        response = ResponseObject.response("Mail sent");
+      transport = session.getTransport(Protocol.SMTP.name().toLowerCase());
+      transport.connect(server, BeeUtils.isPositive(port) ? port : -1, null, null);
 
-      } catch (MessagingException ex) {
-        response = ResponseObject.error(ex);
+      transport.sendMessage(message, message.getAllRecipients());
+      storeMail(message, null);
+
+    } finally {
+      if (transport != null) {
+        transport.close();
       }
     }
-    return response;
+  }
+
+  public Long storeAddress(Address address) throws AddressException {
+    Assert.notNull(address);
+    String email;
+    String label = null;
+
+    if (address instanceof InternetAddress) {
+      ((InternetAddress) address).validate();
+
+      label = ((InternetAddress) address).getPersonal();
+      email = BeeUtils.normalize(((InternetAddress) address).getAddress());
+    } else {
+      email = BeeUtils.normalize(address.toString());
+    }
+    Assert.notEmpty(email);
+
+    Long id = qs.getLong(new SqlSelect()
+        .addFields(TBL_ADDRESSES, sys.getIdName(TBL_ADDRESSES))
+        .addFrom(TBL_ADDRESSES)
+        .setWhere(SqlUtils.equal(TBL_ADDRESSES, COL_EMAIL, email)));
+
+    if (id == null) {
+      id = qs.insertData(new SqlInsert(TBL_ADDRESSES)
+          .addConstant(COL_EMAIL, email)
+          .addConstant(COL_LABEL, label));
+    }
+    return id;
   }
 
   public void storeMail(String mail, String recipient) {
@@ -399,7 +454,7 @@ public class MailModuleBean implements BeeModule {
 
     try {
       store = session.getStore(type.name().toLowerCase());
-      store.connect(host, (BeeUtils.isNonNegative(port) ? port : -1), user, password);
+      store.connect(host, (BeeUtils.isPositive(port) ? port : -1), user, password);
       folder = store.getDefaultFolder();
 
       if (folder == null) {
@@ -607,85 +662,6 @@ public class MailModuleBean implements BeeModule {
     } catch (IOException e) {
       throw new MessagingException(e.toString());
     }
-  }
-
-  private void sendMail(Long addressId, Set<Long> to, Set<Long> cc, Set<Long> bcc, String subject,
-      String content, Set<Long> attachments) throws MessagingException {
-
-    Map<String, String> data = null;
-
-    if (addressId != null) {
-      data = qs.getRow(new SqlSelect()
-          .addFields(TBL_ACCOUNTS, "TransportServer", "TransportPort")
-          .addFields(TBL_ADDRESSES, COL_EMAIL)
-          .addFrom(TBL_ACCOUNTS)
-          .addFromInner(TBL_ADDRESSES, sys.joinTables(TBL_ADDRESSES, TBL_ACCOUNTS, COL_ADDRESS))
-          .setWhere(SqlUtils.equal(TBL_ACCOUNTS, COL_ADDRESS, addressId)));
-    }
-    if (data == null) {
-      throw new MessagingException("Unknown user account: " + addressId);
-    }
-    Session session = Session.getInstance(new Properties(), null);
-    Transport transport = null;
-    MimeMessage message = new MimeMessage(session);
-
-    try {
-      if (!BeeUtils.isEmpty(to)) {
-        message.setRecipients(RecipientType.TO, getAddresses(to));
-      }
-      if (!BeeUtils.isEmpty(cc)) {
-        message.setRecipients(RecipientType.CC, getAddresses(cc));
-      }
-      if (!BeeUtils.isEmpty(bcc)) {
-        message.setRecipients(RecipientType.BCC, getAddresses(bcc));
-      }
-      message.setSender(getAddress(addressId));
-      message.setSentDate(TimeUtils.toJava(new DateTime()));
-      message.setSubject(subject, BeeConst.CHARSET_UTF8);
-
-      addContent(message, content, attachments);
-
-      transport = session.getTransport(Protocol.SMTP.name().toLowerCase());
-      Integer port = BeeUtils.toIntOrNull(data.get("TransportPort"));
-      transport.connect(data.get("TransportServer"), BeeUtils.isNonNegative(port) ? port : -1,
-          null, null);
-
-      transport.sendMessage(message, message.getAllRecipients());
-      storeMail(message, null);
-
-    } finally {
-      if (transport != null) {
-        transport.close();
-      }
-    }
-  }
-
-  private Long storeAddress(Address address) throws AddressException {
-    Assert.notNull(address);
-    String email;
-    String label = null;
-
-    if (address instanceof InternetAddress) {
-      ((InternetAddress) address).validate();
-
-      label = ((InternetAddress) address).getPersonal();
-      email = BeeUtils.normalize(((InternetAddress) address).getAddress());
-    } else {
-      email = BeeUtils.normalize(address.toString());
-    }
-    Assert.notEmpty(email);
-
-    Long id = qs.getLong(new SqlSelect()
-        .addFields(TBL_ADDRESSES, sys.getIdName(TBL_ADDRESSES))
-        .addFrom(TBL_ADDRESSES)
-        .setWhere(SqlUtils.equal(TBL_ADDRESSES, COL_EMAIL, email)));
-
-    if (id == null) {
-      id = qs.insertData(new SqlInsert(TBL_ADDRESSES)
-          .addConstant(COL_EMAIL, email)
-          .addConstant(COL_LABEL, label));
-    }
-    return id;
   }
 
   private boolean storeMail(Message message, Long addressId) throws MessagingException {

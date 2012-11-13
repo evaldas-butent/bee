@@ -6,15 +6,11 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.logical.shared.SelectionEvent;
-import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
@@ -30,9 +26,11 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.client.widget.InlineLabel;
+import com.butent.bee.client.widget.Link;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -124,19 +122,18 @@ public class MessageHandler extends AbstractFormCallback {
           TabBar bar = new TabBar("bee-mail-AttachmentsMenu-", Orientation.VERTICAL);
 
           for (String[] item : attachments) {
-            bar.addItem(BeeUtils.joinWords(item[ATTA_NAME],
-                BeeUtils.parenthesize(sizeToText(BeeUtils.toLong(item[ATTA_SIZE])))));
-          }
-          bar.addSelectionHandler(new SelectionHandler<Integer>() {
-            @Override
-            public void onSelection(SelectionEvent<Integer> ev) {
-              popup.hide();
-              String[] info = attachments.get(ev.getSelectedItem());
+            Link link = new Link(BeeUtils.joinWords(item[ATTA_NAME],
+                BeeUtils.parenthesize(FileUtils.sizeToText(BeeUtils.toLong(item[ATTA_SIZE])))),
+                FileUtils.getUrl(item[ATTA_NAME], BeeUtils.toLongOrNull(item[ATTA_ID])));
 
-              Window.open(GWT.getModuleBaseURL() + "file/" + Codec.encodeBase64(Codec
-                  .beeSerialize(Pair.of(info[ATTA_NAME], info[ATTA_ID]))), null, null);
-            }
-          });
+            link.addClickHandler(new ClickHandler() {
+              @Override
+              public void onClick(ClickEvent ev) {
+                popup.hide();
+              }
+            });
+            bar.addItem(link);
+          }
           popup.setWidget(bar);
           popup.showRelativeTo(attachmentsWidget);
         }
@@ -265,7 +262,7 @@ public class MessageHandler extends AbstractFormCallback {
           txt = BeeUtils.joinWords(cnt,
               "prielip" + ((cnt % 10 == 0 || BeeUtils.betweenInclusive(cnt % 100, 11, 19))
                   ? "ų" : (cnt % 10 == 1 ? "as" : "ai")),
-              BeeUtils.parenthesize(sizeToText(size)));
+              BeeUtils.parenthesize(FileUtils.sizeToText(size)));
         }
         attachmentsWidget.setText(txt);
 
@@ -304,22 +301,5 @@ public class MessageHandler extends AbstractFormCallback {
       }
     }
     return ids;
-  }
-
-  private String sizeToText(long size) {
-    String prfx = "MB";
-    long c = 1;
-
-    for (int i = 1; i < 3; i++) {
-      if (size < c * 1024) {
-        prfx = (i == 1) ? "B" : "KB";
-        break;
-      }
-      c *= 1024;
-    }
-    if (c == 1) {
-      return size + prfx;
-    }
-    return Math.round(size * 10d / c) / 10d + prfx;
   }
 }

@@ -32,8 +32,8 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
-import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.FileUtils;
+import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
@@ -41,7 +41,6 @@ import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.client.widget.InputFile;
 import com.butent.bee.client.widget.InputText;
-import com.butent.bee.client.widget.LongLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasOptions;
@@ -208,7 +207,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     SIZE("size", "Dydis", false, true) {
       @Override
       Widget createDisplay() {
-        return new LongLabel(false);
+        return new BeeLabel();
       }
 
       @Override
@@ -218,8 +217,8 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
 
       @Override
       void refresh(Widget widget, NewFileInfo fileInfo) {
-        if (widget instanceof LongLabel) {
-          ((LongLabel) widget).setValue(fileInfo.getSize());
+        if (widget instanceof BeeLabel) {
+          ((BeeLabel) widget).setText(FileUtils.sizeToText(fileInfo.getSize()));
         }
       }
 
@@ -498,9 +497,9 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
   public String getOptions() {
     return options;
   }
-  
+
   public boolean isEmpty() {
-    return getFiles().isEmpty(); 
+    return getFiles().isEmpty();
   }
 
   @Override

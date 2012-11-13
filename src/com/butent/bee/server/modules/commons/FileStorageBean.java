@@ -34,11 +34,12 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.EJB;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+import javax.ejb.Singleton;
 
-@Stateless
-@LocalBean
+@Singleton
+@Lock(LockType.READ)
 public class FileStorageBean {
 
   private static final BeeLogger logger = LogUtils.getLogger(FileStorageBean.class);
@@ -47,22 +48,24 @@ public class FileStorageBean {
   QueryServiceBean qs;
   @EJB
   SystemBean sys;
-  
+
+  private final Object lock = new Object();
+
   public List<StoredFile> getFiles() {
     List<StoredFile> files = Lists.newArrayList();
-    
+
     String idName = sys.getIdName(TBL_FILES);
     String versionName = sys.getVersionName(TBL_FILES);
-    
+
     SimpleRowSet data = qs.getData(new SqlSelect()
         .addFields(TBL_FILES, idName, versionName, COL_FILE_NAME, COL_FILE_SIZE, COL_FILE_TYPE)
         .addFrom(TBL_FILES)
         .addOrder(TBL_FILES, versionName));
-    
+
     for (Map<String, String> row : data) {
       StoredFile sf = new StoredFile(BeeUtils.toLong(row.get(idName)),
           row.get(COL_FILE_NAME), BeeUtils.toLong(row.get(COL_FILE_SIZE)), row.get(COL_FILE_TYPE));
-      
+
       sf.setFileDate(DateTime.restore(row.get(versionName)));
 
       sf.setIcon(FileNameUtils.getExtensionIcon(sf.getName()));
@@ -103,43 +106,45 @@ public class FileStorageBean {
         BeeUtils.join(File.separator, dt.getYear(), dt.getMonth(), dt.getDom()));
     target = new File(target, hash);
 
-    Map<String, String> data = qs.getRow(new SqlSelect()
-        .addFields(TBL_FILES, COL_FILE_REPO, idName)
-        .addFrom(TBL_FILES)
-        .setWhere(SqlUtils.equal(TBL_FILES, COL_FILE_HASH, hash)));
+    synchronized (lock) {
+      Map<String, String> data = qs.getRow(new SqlSelect()
+          .addFields(TBL_FILES, COL_FILE_REPO, idName)
+          .addFrom(TBL_FILES)
+          .setWhere(SqlUtils.equal(TBL_FILES, COL_FILE_HASH, hash)));
 
-    if (data != null) {
-      id = BeeUtils.toLong(data.get(idName));
-      File oldTarget = new File(data.get(COL_FILE_REPO));
+      if (data != null) {
+        id = BeeUtils.toLong(data.get(idName));
+        File oldTarget = new File(data.get(COL_FILE_REPO));
 
-      if (oldTarget.exists()) {
-        target = oldTarget;
-      } else {
-        qs.updateData(new SqlUpdate(TBL_FILES)
-            .addConstant(COL_FILE_REPO, target.getPath())
-            .setWhere(SqlUtils.equal(TBL_FILES, idName, id)));
+        if (oldTarget.exists()) {
+          target = oldTarget;
+        } else {
+          qs.updateData(new SqlUpdate(TBL_FILES)
+              .addConstant(COL_FILE_REPO, target.getPath())
+              .setWhere(SqlUtils.equal(TBL_FILES, idName, id)));
+        }
       }
-    }
-    target.getParentFile().mkdirs();
+      target.getParentFile().mkdirs();
 
-    if (target.exists()) {
-      tmp.delete();
+      if (target.exists()) {
+        tmp.delete();
 
+        if (id == null) {
+          logger.warning("File already exists:", target.getPath());
+        }
+      } else if (!tmp.renameTo(target)) {
+        tmp.delete();
+        throw new BeeRuntimeException(BeeUtils.joinWords("Error renaming file:",
+            tmp.getPath(), "to:", target.getPath()));
+      }
       if (id == null) {
-        logger.warning("File already exists:", target.getPath());
+        id = qs.insertData(new SqlInsert(TBL_FILES)
+            .addConstant(COL_FILE_HASH, hash)
+            .addConstant(COL_FILE_REPO, target.getPath())
+            .addConstant(COL_FILE_NAME, fileName)
+            .addConstant(COL_FILE_SIZE, target.length())
+            .addConstant(COL_FILE_TYPE, mimeType));
       }
-    } else if (!tmp.renameTo(target)) {
-      tmp.delete();
-      throw new BeeRuntimeException(BeeUtils.joinWords("Error renaming file:",
-          tmp.getPath(), "to:", target.getPath()));
-    }
-    if (id == null) {
-      id = qs.insertData(new SqlInsert(TBL_FILES)
-          .addConstant(COL_FILE_HASH, hash)
-          .addConstant(COL_FILE_REPO, target.getPath())
-          .addConstant(COL_FILE_NAME, fileName)
-          .addConstant(COL_FILE_SIZE, target.length())
-          .addConstant(COL_FILE_TYPE, mimeType));
     }
     return id;
   }

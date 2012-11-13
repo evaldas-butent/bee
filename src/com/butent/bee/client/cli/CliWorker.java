@@ -86,9 +86,9 @@ import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.Browser;
-import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.JsUtils;
+import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeButton;
@@ -845,7 +845,7 @@ public class CliWorker {
               Service.VAR_CLASS_NAME, cls, Service.VAR_PACKAGE_LIST, pck));
     }
   }
-  
+
   private static void getFiles() {
     BeeKeeper.getRpc().makeGetRequest(Service.GET_FILES, new ResponseCallback() {
       @Override
@@ -854,17 +854,17 @@ public class CliWorker {
           FileGroup fileGroup = new FileGroup(Lists.newArrayList(Column.ICON, Column.NAME,
               Column.SIZE, Column.TYPE, Column.DATE));
           fileGroup.render((String) response.getResponse());
-          
+
           if (fileGroup.isEmpty()) {
             Global.inform("files not available");
             return;
           }
-          
+
           long totSize = 0;
           for (StoredFile sf : fileGroup.getFiles()) {
             totSize += sf.getSize();
           }
-          
+
           fileGroup.setCaption("Files: " + fileGroup.getFiles().size() + " size: " + totSize);
           BeeKeeper.getScreen().showWidget(fileGroup, ScrollBars.BOTH, false);
         }
@@ -915,9 +915,7 @@ public class CliWorker {
     }
 
     if (BeeUtils.same(arr[0], "download")) {
-      String url = GWT.getModuleBaseURL() + "file/"
-          + Codec.encodeBase64(Codec.beeSerialize(Pair.of(arr[1], null)));
-      Window.Location.replace(url);
+      Window.open(FileUtils.getUrl(arr[1], null), "_blank", null);
       return;
     }
 
@@ -1090,7 +1088,7 @@ public class CliWorker {
       info.add(new Property(BeeUtils.progress(i + 1, cnt),
           DomUtils.transformElement(nodes.getItem(i))));
     }
-    
+
     showTable("Selectors", new PropertiesData(info));
   }
 
@@ -1612,10 +1610,10 @@ public class CliWorker {
       Global.showError(id, "element not found");
       return;
     }
-    
+
     showTable(id, new PropertiesData(Font.getComputed(el).getInfo()));
   }
-  
+
   private static void showFunctions(String v, String[] arr) {
     if (ArrayUtils.length(arr) < 2) {
       Global.sayHuh(v);
@@ -1669,7 +1667,7 @@ public class CliWorker {
         "Is Client", GWT.isClient(),
         "Is Prod Mode", GWT.isProdMode(),
         "Is Script", GWT.isScript());
-    
+
     showTable("GWT", new PropertiesData(info));
   }
 
@@ -1984,7 +1982,7 @@ public class CliWorker {
       Global.showError("progress element not supported");
       return;
     }
-    
+
     final int count;
     int maxDuration;
 
@@ -2004,12 +2002,12 @@ public class CliWorker {
     } else {
       maxDuration = TimeUtils.MILLIS_PER_MINUTE;
     }
-    
+
     class Prog {
       final double max;
       final long start;
       final long finish;
-      
+
       String id = null;
 
       private Prog(double max, long start, long finish) {
@@ -2019,18 +2017,18 @@ public class CliWorker {
         this.finish = finish;
       }
     }
-    
+
     final long now = System.currentTimeMillis();
-    
+
     final List<Prog> list = Lists.newArrayList();
     for (int i = 0; i < count; i++) {
       double max = BeeUtils.randomDouble(100, 10000);
       long start = now + BeeUtils.randomInt(0, maxDuration / 2);
       long finish = start + BeeUtils.randomInt(maxDuration / 5, maxDuration);
-      
+
       list.add(new Prog(max, start, finish));
     }
-    
+
     Timer timer = new Timer() {
       private int closed = 0;
 
@@ -2042,18 +2040,18 @@ public class CliWorker {
           if (prog.id == null) {
             if (prog.start < time && prog.finish > time) {
               String caption = BeeUtils.toString(prog.start - now) +
-                  "-" + BeeUtils.toString(prog.finish - now); 
+                  "-" + BeeUtils.toString(prog.finish - now);
               prog.id = BeeKeeper.getScreen().createProgress(caption, prog.max);
             }
 
           } else if (prog.finish > time) {
             double value = prog.max * (time - prog.start) / (prog.finish - prog.start);
             BeeKeeper.getScreen().updateProgress(prog.id, value);
-            
+
           } else {
             BeeKeeper.getScreen().closeProgress(prog.id);
             prog.id = null;
-            
+
             closed++;
             if (closed >= count) {
               cancel();
@@ -2096,7 +2094,7 @@ public class CliWorker {
 
     JsData<?> table = new JsData<TableColumn>(prp, "property", "type", "value");
     table.sort(0);
-    
+
     showTable(v, table);
   }
 
@@ -2418,7 +2416,7 @@ public class CliWorker {
 
     BeeKeeper.getScreen().updateActivePanel(widget);
   }
-  
+
   private static void showTable(String caption, IsTable<?, ?> table) {
     if (showModal(table.getNumberOfRows())) {
       Global.showModalGrid(caption, table);
@@ -2426,7 +2424,7 @@ public class CliWorker {
       Global.showGrid(table);
     }
   }
-  
+
   private static void showTableInfo(String args) {
     ParameterList params = BeeKeeper.getRpc().createParameters(Service.GET_TABLE_INFO);
     if (!BeeUtils.isEmpty(args)) {
@@ -2902,7 +2900,7 @@ public class CliWorker {
 
     BeeKeeper.getRpc().setUserData(id, data);
   }
-  
+
   private static void upload() {
     final Popup popup = new Popup(true, true);
 
@@ -2912,7 +2910,7 @@ public class CliWorker {
       public void onChange(ChangeEvent event) {
         popup.hide();
         List<NewFileInfo> files = FileUtils.getNewFileInfos(widget.getFiles());
-        
+
         for (final NewFileInfo fi : files) {
           logger.debug("uploading", fi.getName(), fi.getType(), fi.getSize());
           FileUtils.upload(fi, new Callback<Long>() {
@@ -2924,7 +2922,7 @@ public class CliWorker {
         }
       }
     });
-    
+
     popup.setWidget(widget);
     popup.center();
   }

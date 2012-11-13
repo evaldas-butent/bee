@@ -123,6 +123,7 @@ public class NewMessageHandler extends AbstractFormCallback {
       if (!BeeUtils.isEmpty(defaultAttachments)) {
         ((FileCollector) widget).addFiles(defaultAttachments.values());
       }
+      ((FileCollector) widget).bindDnd(getFormView());
       ((FileCollector) widget).addSelectionHandler(new SelectionHandler<NewFileInfo>() {
         @Override
         public void onSelection(SelectionEvent<NewFileInfo> ev) {

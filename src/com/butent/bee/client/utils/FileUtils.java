@@ -13,7 +13,6 @@ import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.RpcUtils;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
-import com.butent.bee.shared.io.StoredFile;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.time.TimeUtils;
@@ -22,22 +21,15 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.List;
 import java.util.Map;
 
-import elemental.events.ProgressEvent;
-
+import elemental.client.Browser;
 import elemental.events.Event;
 import elemental.events.EventListener;
-
-import elemental.xml.XMLHttpRequest;
-
-import elemental.html.Window;
-
-import elemental.client.Browser;
-
-import elemental.js.dom.JsClipboard;
-
+import elemental.events.ProgressEvent;
 import elemental.html.File;
-
 import elemental.html.FileList;
+import elemental.html.Window;
+import elemental.js.dom.JsClipboard;
+import elemental.xml.XMLHttpRequest;
 
 public class FileUtils {
 
@@ -45,8 +37,8 @@ public class FileUtils {
 
   private static final String OPEN_URL = "file";
   private static final String UPLOAD_URL = "upload";
-  
-  private static final long MIN_FILE_SIZE_FOR_PROGRESS = 100000; 
+
+  private static final long MIN_FILE_SIZE_FOR_PROGRESS = 100000;
 
   public static FileList getFiles(NativeEvent event) {
     Assert.notNull(event);
@@ -71,33 +63,47 @@ public class FileUtils {
     }
     return result;
   }
-  
-  public static String getUrl(StoredFile sf) {
-    Assert.notNull(sf);
 
-    String fileName = BeeUtils.notEmpty(sf.getCaption(), sf.getName());
-    
+  public static String getUrl(String fileName, Long fileId) {
     Map<String, String> parameters = Maps.newHashMap();
-    parameters.put(Service.VAR_FILE_ID, BeeUtils.toString(sf.getFileId()));
+    parameters.put(Service.VAR_FILE_ID, BeeUtils.toString(fileId));
     parameters.put(Service.VAR_FILE_NAME, fileName);
 
     return RpcUtils.addQueryString(GWT.getModuleBaseURL() + OPEN_URL,
         RpcUtils.buildQueryString(parameters, true));
   }
-  
+
+  public static String sizeToText(Long size) {
+    long sz = BeeUtils.unbox(size);
+    String prfx = "MB";
+    long c = 1;
+
+    for (int i = 1; i < 3; i++) {
+      if (sz < c * 1024) {
+        prfx = (i == 1) ? "B" : "KB";
+        break;
+      }
+      c *= 1024;
+    }
+    if (c == 1) {
+      return sz + prfx;
+    }
+    return Math.round(sz * 10d / c) / 10d + prfx;
+  }
+
   public static void upload(NewFileInfo fileInfo, final Callback<Long> callback) {
     Assert.notNull(fileInfo);
     Assert.notNull(callback);
-    
+
     final String fileName = BeeUtils.notEmpty(fileInfo.getCaption(), fileInfo.getName());
-    final String fileType = fileInfo.getType(); 
+    final String fileType = fileInfo.getType();
     final long fileSize = fileInfo.getSize();
 
     Map<String, String> parameters = Maps.newHashMap();
     parameters.put(Service.VAR_FILE_NAME, fileName);
     parameters.put(Service.VAR_FILE_TYPE, fileType);
     parameters.put(Service.VAR_FILE_SIZE, BeeUtils.toString(fileSize));
-    
+
     final String progressId = (fileSize > MIN_FILE_SIZE_FOR_PROGRESS)
         ? BeeKeeper.getScreen().createProgress(fileName, fileSize) : null;
 
@@ -130,7 +136,7 @@ public class FileUtils {
             logger.info(TimeUtils.elapsedSeconds(start), "uploaded", fileName);
             logger.info("type:", fileType, "size:", fileSize, "id:", fileId);
             logger.addSeparator();
-            
+
             callback.onSuccess(fileId);
 
           } else {

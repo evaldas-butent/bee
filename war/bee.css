@@ -1778,6 +1778,9 @@ body, select {
   width: 300px;
   height: 60px;
 }
+.bee-FileCollector-size, .bee-FileGroup-size {
+  text-align: right;
+}
 
 .bee-EditableRelation:hover {
   text-decoration: underline;
