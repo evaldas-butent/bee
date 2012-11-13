@@ -6,5 +6,5 @@ package com.butent.bee.shared;
 
 public enum State {
   INITIALIZED, OPEN, CLOSED, ERROR, EXPIRED, CONFIRMED, CANCELED, CHANGED, PENDING,
-  LOADED, CREATED, NEW
+  LOADED, CREATED, NEW, EDITED
 }

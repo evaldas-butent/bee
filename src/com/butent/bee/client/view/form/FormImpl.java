@@ -87,8 +87,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler,
-    NativePreviewHandler {
+public class FormImpl extends Absolute implements FormView, NativePreviewHandler {
 
   private class CreationCallback extends WidgetCreationCallback {
 
@@ -1057,34 +1056,32 @@ public class FormImpl extends Absolute implements FormView, EditEndEvent.Handler
 
   @Override
   public void start(Integer count) {
-    if (hasData()) {
-      if (!getTabOrder().isEmpty()) {
-        getTabOrder().clear();
-      }
+    if (!getTabOrder().isEmpty()) {
+      getTabOrder().clear();
+    }
 
-      for (EditableWidget editableWidget : getEditableWidgets()) {
-        editableWidget.bind(this, this, this);
+    for (EditableWidget editableWidget : getEditableWidgets()) {
+      editableWidget.bind(this);
 
-        if (editableWidget.isFocusable() && editableWidget.getEditor() != null) {
-          int tabIndex = editableWidget.getEditor().getTabIndex();
-          if (tabIndex >= 0) {
-            getTabOrder().add(new TabEntry(tabIndex, getTabOrder().size(),
-                editableWidget.getWidgetId()));
-          }
+      if (editableWidget.isFocusable() && editableWidget.getEditor() != null) {
+        int tabIndex = editableWidget.getEditor().getTabIndex();
+        if (tabIndex >= 0) {
+          getTabOrder().add(new TabEntry(tabIndex, getTabOrder().size(),
+              editableWidget.getWidgetId()));
         }
       }
+    }
 
-      if (getTabOrder().size() > 1) {
-        Collections.sort(getTabOrder());
-      }
+    if (getTabOrder().size() > 1) {
+      Collections.sort(getTabOrder());
+    }
 
-      if (count != null) {
-        setRowCount(count, true);
-        if (count > 0) {
-          fireDataRequest(NavigationOrigin.SYSTEM);
-        } else {
-          setActiveRow(null);
-        }
+    if (count != null) {
+      setRowCount(count, true);
+      if (count > 0) {
+        fireDataRequest(NavigationOrigin.SYSTEM);
+      } else {
+        setActiveRow(null);
       }
     }
 

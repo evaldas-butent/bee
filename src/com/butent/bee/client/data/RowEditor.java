@@ -64,7 +64,7 @@ public class RowEditor {
     }
   }
 
-  public static boolean openRelatedRow(Relation relation, Long rowId, boolean modal,
+  public static boolean openRelatedRow(Relation relation, Long rowId, final boolean modal,
       final RowCallback rowCallback) {
     if (relation == null || !relation.isEditEnabled() || !DataUtils.isId(rowId)) {
       return false;
@@ -78,12 +78,10 @@ public class RowEditor {
       return false;
     }
     
-    final boolean popup = BeeUtils.nvl(relation.isEditModal(), modal);
-
     Queries.getRow(viewName, rowId, new RowCallback() {
       @Override
       public void onSuccess(BeeRow result) {
-        openRow(formName, dataInfo, result, popup, null, rowCallback);
+        openRow(formName, dataInfo, result, modal, null, rowCallback);
       }
     });
     return true;

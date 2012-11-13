@@ -346,6 +346,10 @@ public class UiHelper {
     }
     return initializer.initialize(widget, name);
   }
+  
+  public static boolean isModal(Widget widget) {
+    return DomUtils.getParentPopup(widget) != null;
+  }
 
   public static boolean isSave(NativeEvent event) {
     if (event == null) {

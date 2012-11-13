@@ -46,7 +46,8 @@
       <InputDate name="End_Date" style="&dateStyle;" />
       <InputTime name="End_Time" step="&timeStep;" style="&timeStyle;" />
       <Label html="Įmonė:" style="&lbl3;" />
-      <DataSelector source="Company" style="&inp4; width: 200px;" />
+      <DataSelector source="Company" editEnabled="true" editPopup="true"
+        style="&inp4; width: 200px;" />
     </FlowPanel>
 
     <FlowPanel style="&section;">

@@ -1954,10 +1954,11 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
       return false;
     }
     
-    boolean modal = (mode == EditStartEvent.ENTER);
+    boolean modal = BeeUtils.nvl(editableColumn.getRelation().isEditModal(),
+        mode == EditStartEvent.ENTER) || UiHelper.isModal(this);
     RowCallback rowCallback;
 
-    if (BeeUtils.isTrue(editableColumn.getRelation().isEditModal()) || modal) {
+    if (modal) {
       rowCallback = new RowCallback() {
         @Override
         public void onCancel() {

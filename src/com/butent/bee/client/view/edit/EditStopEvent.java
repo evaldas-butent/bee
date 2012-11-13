@@ -87,6 +87,10 @@ public class EditStopEvent extends GwtEvent<EditStopEvent.Handler> {
   public boolean isClosed() {
     return State.CLOSED.equals(getState());
   }
+
+  public boolean isEdited() {
+    return State.EDITED.equals(getState());
+  }
   
   public boolean isError() {
     return State.ERROR.equals(getState());

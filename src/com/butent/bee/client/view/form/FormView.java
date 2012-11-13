@@ -16,6 +16,7 @@ import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
 import com.butent.bee.client.view.add.HasReadyForInsertHandlers;
+import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
@@ -30,7 +31,8 @@ import java.util.List;
 
 public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEvent.Handler,
     HasAddStartHandlers, HasAddEndHandlers, HasReadyForInsertHandlers, HasReadyForUpdateHandlers,
-    ActionEvent.HasActionHandlers, HasDimensions, HasState, HasCaption, HasAllDragAndDropHandlers {
+    ActionEvent.HasActionHandlers, HasDimensions, HasState, HasCaption, HasAllDragAndDropHandlers,
+    EditEndEvent.Handler {
 
   void applyOptions(String options);
 

@@ -917,7 +917,7 @@ body, select {
   padding-left: 1px;
   padding-right: 1px;
 }
-.bee-DataSelector-editableFocus {
+.bee-DataSelector-editable-active {
   border: 1px solid #5897fb;
   box-shadow : 0 0 3px rgba(0, 0, 0, 0.3);
 }
@@ -930,15 +930,14 @@ body, select {
 }
 
 .bee-DataSelector-drill {
-  display: none;
-}
-.bee-DataSelector-drillEnabled {
-  display: inline;
   cursor: pointer;
   color: #999;
 }
-.bee-DataSelector-drillEnabled:hover {
+.bee-DataSelector-drill:hover {
   color: #00e;
+}
+.bee-DataSelector-drill-disabled {
+  display: none;
 }
 
 .bee-GridFormContainer, .bee-NewRowContainer, .bee-RowContainer {

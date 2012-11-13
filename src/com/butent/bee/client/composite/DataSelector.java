@@ -31,6 +31,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.Global;
 import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasRelatedRow;
+import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.data.RowEditor;
 import com.butent.bee.client.data.RowFactory;
 import com.butent.bee.client.data.SelectionOracle;
@@ -65,7 +66,6 @@ import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Procedure;
 import com.butent.bee.shared.State;
 import com.butent.bee.shared.data.BeeRow;
-import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.filter.Operator;
 import com.butent.bee.shared.data.value.ValueType;
@@ -605,11 +605,11 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   private static final String STYLE_NAVIGATION_CELL = STYLE_SELECTOR + "-navigationCell";
 
   private static final String STYLE_EDITABLE_CONTAINER = STYLE_SELECTOR + "-editableContainer";
-  private static final String STYLE_EDITABLE_FOCUS = STYLE_SELECTOR + "-editableFocus";
+  private static final String STYLE_EDITABLE_ACTIVE = STYLE_SELECTOR + "-editable-active";
   private static final String STYLE_EDITABLE_INPUT = STYLE_SELECTOR + "-editableInput";
 
   private static final String STYLE_DRILL = STYLE_SELECTOR + "-drill";
-  private static final String STYLE_DRILL_ENABLED = STYLE_DRILL + "Enabled";
+  private static final String STYLE_DRILL_DISABBLED = STYLE_DRILL + "-disabled";
   
   private static final int DEFAULT_VISIBLE_LINES = 10;
 
@@ -667,7 +667,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   
   private boolean active = false;
 
-  private BeeRow selectedRow = null;
+  private BeeRow relatedRow = null;
   private String editorValue = null;
 
   private Request lastRequest = null;
@@ -859,8 +859,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   }
 
   @Override
-  public IsRow getRelatedRow() {
-    return selectedRow;
+  public BeeRow getRelatedRow() {
+    return relatedRow;
   }
 
   @Override
@@ -976,8 +976,13 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     getInput().setNullable(nullable);
   }
 
+  @Override
+  public void setRelatedRow(BeeRow relatedRow) {
+    this.relatedRow = relatedRow;
+  }
+
   public void setSelection(BeeRow row) {
-    setSelectedRow(row);
+    setRelatedRow(row);
     setEditorValue(row == null ? null : BeeUtils.toString(row.getId()));
 
     hideSelector();
@@ -1001,7 +1006,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
   public void setValue(String newValue) {
     setEditorValue(newValue);
   }
-
+  
   @Override
   public void setValue(String value, boolean fireEvents) {
     setEditorValue(value);
@@ -1017,7 +1022,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       Element sourceElement) {
     SelectorEvent.fire(this, State.OPEN);
 
-    setSelectedRow(null);
+    setRelatedRow(null);
     if (!isEmbedded()) {
       setEditorValue(oldValue);
     }
@@ -1065,7 +1070,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     SelectorEvent.fire(this, state);
     fireEvent(new EditStopEvent(state, keyCode, hasModifiers));
   }
-  
+
   protected InputWidget getInput() {
     return input;
   }
@@ -1089,13 +1094,13 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       inputWidget.addFocusHandler(new FocusHandler() {
         @Override
         public void onFocus(FocusEvent event) {
-          container.addStyleName(STYLE_EDITABLE_FOCUS);
+          container.addStyleName(STYLE_EDITABLE_ACTIVE);
         }
       });
       inputWidget.addBlurHandler(new BlurHandler() {
         @Override
         public void onBlur(BlurEvent event) {
-          container.removeStyleName(STYLE_EDITABLE_FOCUS);
+          container.removeStyleName(STYLE_EDITABLE_ACTIVE);
         }
       });
 
@@ -1103,6 +1108,8 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       
       InlineLabel label = new InlineLabel(String.valueOf(BeeConst.DRILL_DOWN));
       label.addStyleName(STYLE_DRILL);
+      label.addStyleName(STYLE_DRILL_DISABBLED);
+
       label.addClickHandler(new ClickHandler() {
         @Override
         public void onClick(ClickEvent event) {
@@ -1146,16 +1153,12 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
     getInput().removeStyleName(STYLE_NOT_FOUND);
     
     if (getDrill() != null) {
-      getWidget().removeStyleName(STYLE_EDITABLE_FOCUS);
+      getWidget().removeStyleName(STYLE_EDITABLE_ACTIVE);
     }
   }
 
   protected void setActive(boolean active) {
     this.active = active;
-  }
-
-  protected void setSelectedRow(BeeRow row) {
-    this.selectedRow = row;
   }
 
   private void addCells(Element rowElement, BeeRow row) {
@@ -1240,7 +1243,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
     getOracle().requestSuggestions(request, getCallback());
   }
-
+  
   private void editRow(long rowId) {
     String viewName = getOracle().getViewName();
     DataInfo dataInfo = Data.getDataInfo(viewName);
@@ -1250,11 +1253,25 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
       return;
     }
     
-    boolean modal = BeeUtils.isTrue(isEditModal());
+    boolean modal = BeeUtils.isTrue(isEditModal()) || UiHelper.isModal(getWidget());
+    RowCallback rowCallback;
+    
+    if (modal) {
+      rowCallback = new RowCallback() {
+        @Override
+        public void onSuccess(BeeRow result) {
+          setRelatedRow(result);
+          fireEvent(new EditStopEvent(State.EDITED));
+        }
+      };
 
-    RowEditor.openRow(formName, dataInfo, rowId, modal, getWidget(), null);
+    } else {
+      rowCallback = null;
+    }
+
+    RowEditor.openRow(formName, dataInfo, rowId, modal, getWidget(), rowCallback);
   }
-  
+
   private void exit(boolean hideSelector, State state) {
     exit(hideSelector, state, null, false);
   }
@@ -1402,7 +1419,7 @@ public class DataSelector extends Composite implements Editor, HasVisibleLines, 
 
   private void setEditorValue(String ev) {
     if (getDrill() != null && BeeUtils.isEmpty(this.editorValue) != BeeUtils.isEmpty(ev)) {
-      getDrill().setStyleName(STYLE_DRILL_ENABLED, !BeeUtils.isEmpty(ev));
+      getDrill().setStyleName(STYLE_DRILL_DISABBLED, BeeUtils.isEmpty(ev));
     }
     this.editorValue = ev;
   }

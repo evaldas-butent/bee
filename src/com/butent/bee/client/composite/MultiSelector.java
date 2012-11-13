@@ -245,7 +245,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       getElement().scrollIntoView();
       setFocus(true);
       
-      setSelectedRow(row);
+      setRelatedRow(row);
       SelectorEvent.fire(this, State.CHANGED);
     }
   }
@@ -333,7 +333,7 @@ public class MultiSelector extends DataSelector implements HandlesRendering {
       return;
     }
     
-    boolean modal = BeeUtils.isTrue(isEditModal());
+    boolean modal = BeeUtils.isTrue(isEditModal()) || UiHelper.isModal(getWidget());
     RowCallback rowCallback;
     
     if (modal) {

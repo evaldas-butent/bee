@@ -72,7 +72,6 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   private final CellValidationBus cellValidationBus = new CellValidationBus();
   private HasCellValidationHandlers validationDelegate = null;
 
-  private EditEndEvent.Handler editEndHandler = null;
   private boolean initialized = false;
 
   private Editor editor = null;
@@ -127,25 +126,21 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     return cellValidationBus.addCellValidationHandler(handler);
   }
 
-  public void bind(Widget rootWidget, EditEndEvent.Handler handler, FormView formView) {
+  public void bind(FormView formView) {
     if (isInitialized()) {
       return;
     }
 
-    Assert.notNull(rootWidget);
-    Assert.notNull(handler);
-
+    Assert.notNull(formView);
     setForm(formView);
 
-    Widget widget = DomUtils.getChildQuietly(rootWidget, getWidgetId());
+    Widget widget = DomUtils.getChildQuietly(formView.asWidget(), getWidgetId());
     if (widget instanceof Editor) {
       setEditor((Editor) widget);
       getEditor().setNullable(isNullable());
 
-      if (formView != null) {
-        getEditor().addFocusHandler(this);
-        getEditor().addBlurHandler(this);
-      }
+      getEditor().addFocusHandler(this);
+      getEditor().addBlurHandler(this);
 
       if (isFocusable()) {
         getEditor().addKeyDownHandler(this);
@@ -155,7 +150,6 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
 
       getEditor().addEditStopHandler(this);
 
-      setEditEndHandler(handler);
       setInitialized(true);
     } else {
       logger.warning("editable widget: no editor", getCaption(), getWidgetId());
@@ -386,6 +380,12 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     } else if (event.isClosed()) {
       reset();
       end(event.getKeyCode(), event.hasModifiers());
+
+    } else if (event.isEdited()) {
+      if (getForm() != null 
+          && maybeUpdateRelation(getForm().getViewName(), getForm().getActiveRow(), false)) {
+        getForm().refresh(false);
+      }
     }
   }
 
@@ -479,8 +479,8 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
   }
 
   private void end(Integer keyCode, boolean hasModifiers) {
-    if (getEditEndHandler() != null) {
-      getEditEndHandler().onEditEnd(new EditEndEvent(keyCode, hasModifiers, getWidgetId()), this);
+    if (getForm() != null) {
+      getForm().onEditEnd(new EditEndEvent(keyCode, hasModifiers, getWidgetId()), this);
     }
   }
 
@@ -502,10 +502,6 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
 
   private Evaluator getEditable() {
     return editable;
-  }
-
-  private EditEndEvent.Handler getEditEndHandler() {
-    return editEndHandler;
   }
 
   private FormView getForm() {
@@ -563,10 +559,6 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
     refresh(getRowValue());
   }
 
-  private void setEditEndHandler(EditEndEvent.Handler editEndHandler) {
-    this.editEndHandler = editEndHandler;
-  }
-
   private void setEditor(Editor editor) {
     this.editor = editor;
   }
@@ -598,8 +590,8 @@ public class EditableWidget implements KeyDownHandler, ValueChangeHandler<String
       return false;
     }
 
-    if (getEditEndHandler() != null) {
-      getEditEndHandler().onEditEnd(new EditEndEvent(getRowValue(), getDataColumn(),
+    if (getForm() != null) {
+      getForm().onEditEnd(new EditEndEvent(getRowValue(), getDataColumn(),
           oldValue, newValue, getRowModeForUpdate(), hasRelation(), keyCode, hasModifiers,
           getWidgetId()), this);
     }

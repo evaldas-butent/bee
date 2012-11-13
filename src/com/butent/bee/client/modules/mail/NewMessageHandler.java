@@ -93,7 +93,6 @@ public class NewMessageHandler extends AbstractFormCallback {
   public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
     if (widget instanceof MultiSelector) {
       MultiSelector w = (MultiSelector) widget;
-      w.setEditing(true);
 
       for (AddressType type : AddressType.values()) {
         if (BeeUtils.same(name, type.name())) {
