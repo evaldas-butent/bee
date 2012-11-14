@@ -244,17 +244,19 @@ public class NameUtils {
   }
 
   public static List<String> toList(String s) {
-    if (s == null) {
-      return null;
+    if (BeeUtils.isEmpty(s)) {
+      return Lists.newArrayList();
+    } else {
+      return Lists.newArrayList(NAME_SPLITTER.split(s));
     }
-    return Lists.newArrayList(NAME_SPLITTER.split(s));
   }
 
   public static Set<String> toSet(String s) {
-    if (s == null) {
-      return null;
+    if (BeeUtils.isEmpty(s)) {
+      return Sets.newHashSet();
+    } else {
+      return Sets.newHashSet(NAME_SPLITTER.split(s));
     }
-    return Sets.newHashSet(NAME_SPLITTER.split(s));
   }
 
   /**

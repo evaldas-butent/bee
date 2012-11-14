@@ -311,7 +311,12 @@ public class RichTextToolbar extends Flow implements HasEnabled {
 
   @Override
   public boolean isEnabled() {
-    return DomUtils.isEnabled(this);
+    for (Widget child : this) {
+      if (child instanceof HasEnabled) {
+        return ((HasEnabled) child).isEnabled();
+      }
+    }
+    return true;
   }
 
   public boolean isWaiting() {

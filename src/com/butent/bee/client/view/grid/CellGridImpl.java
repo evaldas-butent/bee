@@ -10,7 +10,6 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Callback;
@@ -1288,9 +1287,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
               }
             }
 
-            if (widget instanceof Focusable && widget.isVisible()) {
-              ((Focusable) widget).setFocus(true);
-            } else {
+            if (!UiHelper.focus(widget)) {
               UiHelper.focus(getEditForm().asWidget());
             }
           }

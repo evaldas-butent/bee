@@ -55,7 +55,7 @@ import java.util.List;
 public class DomUtils {
 
   private static final BeeLogger logger = LogUtils.getLogger(DomUtils.class);
-  
+
   public static final String TAG_AUDIO = "audio";
   public static final String TAG_BUTTON = "button";
   public static final String TAG_CANVAS = "canvas";
@@ -128,9 +128,9 @@ public class DomUtils {
   private static int checkBoxClientHeight = -1;
 
   private static final String SVG_NAMESPACE = "http://www.w3.org/2000/svg";
-  
+
   private static final Collection<String> TABLE_CELL_TAGS = Sets.newHashSet(TAG_TD, TAG_TH);
-  
+
   public static void allowSelection(Element elem) {
     Assert.notNull(elem);
     elem.removeClassName(StyleUtils.NAME_UNSELECTABLE);
@@ -140,7 +140,7 @@ public class DomUtils {
     Assert.notNull(obj);
     preventSelection(obj.getElement());
   }
-  
+
   public static void clear(Node nd) {
     Assert.notNull(nd);
     while (nd.getFirstChild() != null) {
@@ -277,7 +277,7 @@ public class DomUtils {
   public static TableCellElement createTableCell() {
     return Document.get().createTDElement();
   }
-  
+
   public static Element createTableCell(String html) {
     TableCellElement elem = createTableCell();
     if (!BeeUtils.isEmpty(html)) {
@@ -289,10 +289,10 @@ public class DomUtils {
   public static TableRowElement createTableRow() {
     return Document.get().createTRElement();
   }
-  
+
   public static Element createTableRow(List<String> cellContent) {
     TableRowElement rowElement = createTableRow();
-    
+
     if (cellContent != null) {
       for (String text : cellContent) {
         rowElement.appendChild(createTableCell(text));
@@ -300,7 +300,7 @@ public class DomUtils {
     }
     return rowElement;
   }
-  
+
   public static String createUniqueId() {
     return createUniqueId(DEFAULT_ID_PREFIX);
   }
@@ -313,7 +313,7 @@ public class DomUtils {
   public static String createUniqueName() {
     return NameUtils.createUniqueName(DEFAULT_NAME_PREFIX);
   }
-  
+
   public static void enableChildren(HasWidgets parent, boolean enabled) {
     Assert.notNull(parent);
     for (Widget child : parent) {
@@ -338,10 +338,19 @@ public class DomUtils {
     return ensureId(obj.getElement(), prefix);
   }
 
+  public static boolean focus(UIObject obj) {
+    if (obj instanceof Focusable && isEnabled(obj) && isVisible(obj)) {
+      ((Focusable) obj).setFocus(true);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   public static native Element getActiveElement() /*-{
     return $doc.activeElement;
   }-*/;
-  
+
   public static List<String> getAncestry(Widget w) {
     Assert.notNull(w);
     List<String> lst = new ArrayList<String>();
@@ -396,11 +405,11 @@ public class DomUtils {
     }
     return checkBoxOffsetWidth;
   }
-  
+
   public static Widget getChild(Widget root, String id) {
     Assert.notNull(root);
     Assert.notEmpty(id);
-    
+
     if (root.isAttached()) {
       return getPhysicalChild(root, id);
     } else {
@@ -444,7 +453,7 @@ public class DomUtils {
     if (children == null) {
       return null;
     }
-    
+
     for (int i = 0; i < children.getLength(); i++) {
       Element child = children.getItem(i);
       if (BeeUtils.same(id, child.getId())) {
@@ -465,7 +474,7 @@ public class DomUtils {
     }
     return null;
   }
-  
+
   public static int getChildOffsetHeight(Widget parent, String id) {
     Widget child = getChild(parent, id);
     if (child == null) {
@@ -483,7 +492,7 @@ public class DomUtils {
       return child.getOffsetWidth();
     }
   }
-  
+
   public static Widget getChildQuietly(Widget root, String id) {
     if (root == null || BeeUtils.isEmpty(id)) {
       return null;
@@ -495,7 +504,7 @@ public class DomUtils {
       return getLogicalChild(root, id);
     }
   }
- 
+
   public static NodeList<Element> getChildren(Element parent) {
     Assert.notNull(parent);
     return parent.getElementsByTagName(ALL_TAGS);
@@ -540,7 +549,7 @@ public class DomUtils {
   public static String getDataRow(Element elem) {
     return elem.getAttribute(ATTRIBUTE_DATA_ROW);
   }
-  
+
   public static String getDataRow(UIObject obj) {
     return getAttribute(obj, ATTRIBUTE_DATA_ROW);
   }
@@ -610,7 +619,7 @@ public class DomUtils {
       return DOM.getElementById(id);
     }
   }
-  
+
   public static List<Element> getElementsByAttributeValue(Element root, String name, String value) {
     return getElementsByAttributeValue(root, name, value, null, null);
   }
@@ -619,7 +628,7 @@ public class DomUtils {
       Element excludeElement, Element cutoffElement) {
     Collection<Element> exclude = (excludeElement == null) ? null : Sets.newHashSet(excludeElement);
     Collection<Element> cutoff = (cutoffElement == null) ? null : Sets.newHashSet(cutoffElement);
-    
+
     return getElementsByAttributeValueUsingCollectionFilters(root, name, value, exclude, cutoff);
   }
 
@@ -629,8 +638,8 @@ public class DomUtils {
     if (root == null || BeeUtils.isEmpty(name)) {
       return result;
     }
-    
-    if (BeeUtils.same(root.getAttribute(name), value) 
+
+    if (BeeUtils.same(root.getAttribute(name), value)
         && (exclude == null || !exclude.contains(root))) {
       result.add(root);
     }
@@ -642,31 +651,35 @@ public class DomUtils {
     if (children == null) {
       return result;
     }
-    
+
     for (int i = 0; i < children.getLength(); i++) {
       result.addAll(getElementsByAttributeValueUsingCollectionFilters(children.getItem(i),
           name, value, exclude, cutoff));
     }
     return result;
   }
-  
+
   public static native NodeList<Element> getElementsByName(String name) /*-{
     return $doc.getElementsByName(name);
   }-*/;
-  
+
   public static List<Focusable> getFocusableChildren(Widget parent) {
     List<Focusable> result = Lists.newArrayList();
     if (parent == null) {
       return result;
     }
 
-    if (parent instanceof Focusable) {
-      result.add((Focusable) parent);
-    } else if (parent instanceof HasOneWidget) {
+    if (parent instanceof HasOneWidget) {
       result.addAll(getFocusableChildren(((HasOneWidget) parent).getWidget()));
+
     } else if (parent instanceof HasWidgets) {
       for (Widget child : (HasWidgets) parent) {
         result.addAll(getFocusableChildren(child));
+      }
+
+    } else if (parent instanceof Focusable) {
+      if (isVisible(parent)) {
+        result.add((Focusable) parent);
       }
     }
     return result;
@@ -679,7 +692,7 @@ public class DomUtils {
     }
     return null;
   }
-  
+
   public static String getHtml(String id) {
     Element elem = getElement(id);
     return elem.getInnerHTML();
@@ -772,7 +785,7 @@ public class DomUtils {
   public static native String getNamespaceUri(Node nd) /*-{
     return nd.namespaceURI;
   }-*/;
-  
+
   public static List<Property> getNodeInfo(Node nd) {
     Assert.notNull(nd);
     List<Property> lst = new ArrayList<Property>();
@@ -793,7 +806,7 @@ public class DomUtils {
 
     return lst;
   }
-  
+
   public static int getOuterHeight(Element elem) {
     Assert.notNull(elem);
     return elem.getOffsetHeight() + ComputedStyles.getPixels(elem, StyleUtils.STYLE_MARGIN_TOP)
@@ -807,16 +820,16 @@ public class DomUtils {
     if (elem.outerHTML) {
       return elem.outerHTML;
     }
-    
+
     if (elem.innerHTML) {
       var attributes = elem.attributes;
       var attrs = "";
-      for (var i = 0; i < attributes.length; i++) {
+      for ( var i = 0; i < attributes.length; i++) {
         attrs += " " + attributes[i].name + "=\"" + attributes[i].value + "\"";
       }
       return "<" + elem.tagName + attrs + ">" + elem.innerHTML + "</" + elem.tagName + ">";
     }
-    
+
     return new XMLSerializer().serializeToString(elem);
   }-*/;
 
@@ -825,7 +838,7 @@ public class DomUtils {
     return elem.getOffsetWidth() + ComputedStyles.getPixels(elem, StyleUtils.STYLE_MARGIN_LEFT)
         + ComputedStyles.getPixels(elem, StyleUtils.STYLE_MARGIN_RIGHT);
   }
-  
+
   public static Element getParentCell(Element child, boolean incl) {
     return getParentElement(child, TABLE_CELL_TAGS, incl);
   }
@@ -850,19 +863,19 @@ public class DomUtils {
     if (child == null) {
       return null;
     }
-    
+
     if (incl && BeeUtils.containsSame(tagNames, child.getTagName())) {
       return child;
     } else {
       return getParentElement(child.getParentElement(), tagNames, true);
     }
   }
-  
+
   public static Element getParentElement(Element child, String tagName, boolean incl) {
     if (child == null) {
       return null;
     }
-    
+
     if (incl && BeeUtils.same(child.getTagName(), tagName)) {
       return child;
     } else {
@@ -877,7 +890,7 @@ public class DomUtils {
       return getParentElement(obj.getElement(), tagNames, incl);
     }
   }
-  
+
   public static Element getParentElement(UIObject obj, String tagName, boolean incl) {
     if (obj == null) {
       return null;
@@ -885,7 +898,7 @@ public class DomUtils {
       return getParentElement(obj.getElement(), tagName, incl);
     }
   }
-  
+
   public static String getParentId(Element elem, boolean find) {
     Assert.notNull(elem);
 
@@ -948,7 +961,7 @@ public class DomUtils {
     if (parent == child) {
       return 0;
     }
-    
+
     int left = 0;
     Element elem = child;
     while (elem != null) {
@@ -968,7 +981,7 @@ public class DomUtils {
     if (parent == child) {
       return 0;
     }
-    
+
     int top = 0;
     Element elem = child;
     while (elem != null) {
@@ -980,7 +993,7 @@ public class DomUtils {
     }
     return top;
   }
-  
+
   public static String getRole(Element el) {
     return Assert.notNull(el).getAttribute(ATTRIBUTE_ROLE);
   }
@@ -1025,7 +1038,7 @@ public class DomUtils {
     }
     return sib;
   }
-  
+
   public static int getTabIndex(Element el) {
     Assert.notNull(el);
     return el.getTabIndex();
@@ -1116,7 +1129,7 @@ public class DomUtils {
     Assert.notNull(elem);
     return elem.getPropertyString(ATTRIBUTE_VALUE);
   }
-  
+
   public static int getValueInt(Element elem) {
     Assert.notNull(elem);
     return elem.getPropertyInt(ATTRIBUTE_VALUE);
@@ -1230,7 +1243,7 @@ public class DomUtils {
       return elem.equals(getActiveElement());
     }
   }
-  
+
   public static boolean isChecked(Element elem) {
     Assert.notNull(elem);
     InputElement input = getInputElement(elem);
@@ -1256,22 +1269,21 @@ public class DomUtils {
       return getDirection(s) != null;
     }
   }
-  
+
   public static boolean isEmpty(HasWidgets container) {
     if (container == null) {
       return true;
     }
     return !container.iterator().hasNext();
   }
-  
-  public static boolean isEnabled(HasWidgets parent) {
-    Assert.notNull(parent);
-    for (Widget child : parent) {
-      if (child instanceof HasEnabled) {
-        return ((HasEnabled) child).isEnabled();
-      }
+
+  public static boolean isEnabled(UIObject obj) {
+    Assert.notNull(obj);
+    if (obj instanceof HasEnabled) {
+      return ((HasEnabled) obj).isEnabled();
+    } else {
+      return true;
     }
-    return false;
   }
 
   public static boolean isImageElement(Element el) {
@@ -1287,7 +1299,7 @@ public class DomUtils {
     }
     return el.getTagName().equalsIgnoreCase(TAG_INPUT);
   }
-  
+
   public static boolean isLabelElement(Element el) {
     if (el == null) {
       return false;
@@ -1311,7 +1323,7 @@ public class DomUtils {
     }
     return el.getTagName().equalsIgnoreCase(TAG_SELECT);
   }
-  
+
   public static boolean isTableCellElement(Element el) {
     return isTdElement(el) || isThElement(el);
   }
@@ -1322,7 +1334,7 @@ public class DomUtils {
     }
     return el.getTagName().equalsIgnoreCase(TAG_TABLE);
   }
-  
+
   public static boolean isTableRowElement(Element el) {
     if (el == null) {
       return false;
@@ -1343,23 +1355,28 @@ public class DomUtils {
     }
     return el.getTagName().equalsIgnoreCase(TAG_TEXT_AREA);
   }
-  
+
   public static boolean isThElement(Element el) {
     if (el == null) {
       return false;
     }
     return el.getTagName().equalsIgnoreCase(TAG_TH);
   }
-  
+
   public static boolean isVisible(Element el) {
     Assert.notNull(el);
-    
+
     for (Element p = el; p != null; p = p.getParentElement()) {
       if (!UIObject.isVisible(p)) {
         return false;
       }
     }
     return true;
+  }
+
+  public static boolean isVisible(UIObject obj) {
+    Assert.notNull(obj);
+    return isVisible(obj.getElement());
   }
 
   public static void logChildren(Widget w) {
@@ -1383,14 +1400,14 @@ public class DomUtils {
     }
     logger.addSeparator();
   }
-  
+
   public static void makeFocusable(Element el) {
     Assert.notNull(el);
     if (getTabIndex(el) < 0) {
       el.setTabIndex(0);
     }
   }
-  
+
   public static void makeFocusable(UIObject obj) {
     Assert.notNull(obj);
     makeFocusable(obj.getElement());
@@ -1423,7 +1440,7 @@ public class DomUtils {
   public static void moveBy(String id, int dx, int dy) {
     moveBy(getElement(id), dx, dy);
   }
-  
+
   public static void moveBy(UIObject obj, int dx, int dy) {
     Assert.notNull(obj);
     moveBy(obj.getElement(), dx, dy);
@@ -1447,7 +1464,7 @@ public class DomUtils {
   public static void moveHorizontalBy(String id, int dx) {
     moveHorizontalBy(getElement(id), dx);
   }
-  
+
   public static void moveHorizontalBy(UIObject obj, int dx) {
     Assert.notNull(obj);
     moveHorizontalBy(obj.getElement(), dx);
@@ -1457,7 +1474,7 @@ public class DomUtils {
     Assert.notNull(el);
     moveBy(el.getStyle(), 0, dy);
   }
-  
+
   public static void moveVerticalBy(NodeList<Element> elements, int dy) {
     Assert.notNull(elements);
     if (dy == 0) {
@@ -1497,7 +1514,7 @@ public class DomUtils {
   public static void removeMax(UIObject obj) {
     removeAttribute(obj, ATTRIBUTE_MAX);
   }
-  
+
   public static void removeMin(UIObject obj) {
     removeAttribute(obj, ATTRIBUTE_MIN);
   }
@@ -1529,7 +1546,7 @@ public class DomUtils {
       StyleUtils.setHeight(st, StyleUtils.getHeight(st) + dh);
     }
   }
-  
+
   public static void resizeBy(String id, int dw, int dh) {
     resizeBy(getElement(id), dw, dh);
   }
@@ -1557,7 +1574,7 @@ public class DomUtils {
   public static void resizeHorizontalBy(Style st, int dw) {
     resizeBy(st, dw, 0);
   }
-  
+
   public static void resizeHorizontalBy(String id, int dw) {
     resizeHorizontalBy(getElement(id), dw);
   }
@@ -1571,7 +1588,7 @@ public class DomUtils {
     Assert.notNull(el);
     resizeVerticalBy(el.getStyle(), dh);
   }
-  
+
   public static void resizeVerticalBy(NodeList<Element> elements, int dh) {
     Assert.notNull(elements);
     if (dh == 0) {
@@ -1631,7 +1648,7 @@ public class DomUtils {
   public static void setDataColumn(UIObject obj, int col) {
     setAttribute(obj, ATTRIBUTE_DATA_COLUMN, col);
   }
-  
+
   public static void setDraggable(Element elem) {
     Assert.notNull(elem);
     elem.setAttribute(ATTRIBUTE_DRAGGABLE, VALUE_TRUE);
@@ -1641,7 +1658,7 @@ public class DomUtils {
     Assert.notNull(obj);
     setDraggable(obj.getElement());
   }
-  
+
   public static void setFocus(Element elem, boolean focus) {
     Assert.notNull(elem);
     if (focus) {
@@ -1655,7 +1672,7 @@ public class DomUtils {
     Assert.notNull(obj);
     setFocus(obj.getElement(), focus);
   }
-  
+
   public static void setHtml(String id, String html) {
     Element elem = getElement(id);
     elem.setInnerHTML(html);
@@ -1689,7 +1706,7 @@ public class DomUtils {
   }
 
   public static boolean setPlaceholder(Element elem, String value) {
-    if ((isInputElement(elem) || isTextAreaElement(elem)) 
+    if ((isInputElement(elem) || isTextAreaElement(elem))
         && Features.supportsAttributePlaceholder()) {
       elem.setAttribute(ATTRIBUTE_PLACEHOLDER, value);
       return true;
@@ -1702,7 +1719,7 @@ public class DomUtils {
     Assert.notNull(obj);
     return setPlaceholder(obj.getElement(), value);
   }
-  
+
   public static void setRowSpan(Element elem, int span) {
     Assert.isTrue(isTableCellElement(elem), "not a table cell element");
     Assert.isPositive(span);
@@ -1786,7 +1803,7 @@ public class DomUtils {
       return BeeUtils.joinWords(NameUtils.getName(w), w.getElement().getId(), w.getStyleName());
     }
   }
-  
+
   public static com.google.gwt.user.client.Element upcast(Element elem) {
     return (com.google.gwt.user.client.Element) elem;
   }

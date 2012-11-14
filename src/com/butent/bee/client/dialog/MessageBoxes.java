@@ -12,7 +12,6 @@ import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
@@ -373,10 +372,7 @@ public class MessageBoxes {
     });
     
     if (defaultValue >= 0 && defaultValue < group.getWidgetCount()) {
-      Widget widget = group.getWidget(defaultValue);
-      if (widget instanceof Focusable) {
-        ((Focusable) widget).setFocus(true);
-      }
+      UiHelper.focus(group.getWidget(defaultValue));
 
       yes.addKeyDownHandler(new KeyDownHandler() {
         @Override

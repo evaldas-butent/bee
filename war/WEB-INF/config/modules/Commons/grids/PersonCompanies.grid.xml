@@ -11,7 +11,7 @@
     <DataColumn name="Position" />
     <DataColumn name="Phone" />
 
-    <RelColumn name="EmailId"  choiceColumns="Email Label">
+    <RelColumn name="EmailId">
       <renderToken source="Label" suffix=" " />
       <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
     </RelColumn>

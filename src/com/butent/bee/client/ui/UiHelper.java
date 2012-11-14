@@ -166,11 +166,11 @@ public class UiHelper {
           return true;
         }
       }
-    } else if (target instanceof Focusable) {
-      ((Focusable) target).setFocus(true);
-      return true;
+      return false;
+
+    } else {
+      return DomUtils.focus(target);
     }
-    return false;
   }
 
   public static String getCaption(Class<? extends Enum<?>> clazz, int index) {

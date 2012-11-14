@@ -12,7 +12,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
-import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -45,6 +44,7 @@ import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.EvalHelper;
@@ -428,12 +428,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     }
 
     Widget widget = getWidgetBySource(source);
-    if (widget instanceof Focusable) {
-      ((Focusable) widget).setFocus(true);
-      return true;
-    } else {
-      return false;
-    }
+    return UiHelper.focus(widget);
   }
 
   @Override
@@ -1249,12 +1244,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     }
 
     Widget widget = getWidgetById(getTabOrder().get(index).getWidgetId());
-    boolean ok = widget instanceof Focusable;
-    if (ok && widget instanceof HasEnabled) {
-      ok = ((HasEnabled) widget).isEnabled();
-    }
-    if (ok) {
-      ((Focusable) widget).setFocus(true);
+    if (UiHelper.focus(widget)) {
       return;
     }
 

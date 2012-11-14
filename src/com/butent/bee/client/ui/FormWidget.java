@@ -1427,6 +1427,17 @@ public enum FormWidget {
     String source = attributes.get(UiConstants.ATTR_SOURCE);
     List<String> renderColumns =
         NameUtils.toList(attributes.get(RendererDescription.ATTR_RENDER_COLUMNS));
+    
+    if (renderColumns.isEmpty() && !children.isEmpty()) {
+      for (Element child : children) {
+        if (BeeUtils.same(XmlUtils.getLocalName(child), RenderableToken.TAG_RENDER_TOKEN)) {
+          String tokenSource = child.getAttribute(UiConstants.ATTR_SOURCE);
+          if (!BeeUtils.isEmpty(tokenSource)) {
+            renderColumns.add(tokenSource.trim());
+          }
+        }
+      }
+    }
 
     Holder<String> sourceHolder = Holder.of(source);
     Holder<List<String>> listHolder = Holder.of(renderColumns);

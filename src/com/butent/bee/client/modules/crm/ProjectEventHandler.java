@@ -9,7 +9,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -171,13 +170,7 @@ public class ProjectEventHandler {
 
     public void display() {
       center();
-
-      for (Widget widget : container) {
-        if (widget instanceof Focusable) {
-          ((Focusable) widget).setFocus(true);
-          break;
-        }
-      }
+      UiHelper.focus(container);
     }
 
     public String getComment() {

@@ -9,7 +9,7 @@
   <FlowPanel class="flexBox-vertical"
     style="margin: 5px; position: relative; width: 760px; height: 460px;">
     <FlowPanel class="bee-mail-Envelope">
-      <MultiSelector name="To" viewName="Emails" choiceColumns="Label Email"
+      <MultiSelector name="To" viewName="Emails"
          caption="Skirta" d:size="40" d:unit="px" style="display: inline-block; width: 600px;">
         <renderToken source="Label" suffix=" " />
         <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
@@ -21,16 +21,14 @@
           <Table>
             <row>
               <Label html="Paprasta" horizontalAlignment="right" />
-              <MultiSelector name="Cc" viewName="Emails" choiceColumns="Label Email"
-                 style="width: 600px">
+              <MultiSelector name="Cc" viewName="Emails" style="width: 600px">
                 <renderToken source="Label" suffix=" " />
                 <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
               </MultiSelector>
             </row>
             <row>
               <Label html="Nematoma" horizontalAlignment="right" />
-              <MultiSelector name="Bcc" viewName="Emails" choiceColumns="Label Email"
-                 style="width: 600px;">
+              <MultiSelector name="Bcc" viewName="Emails" style="width: 600px;">
                 <renderToken source="Label" suffix=" " />
                 <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
               </MultiSelector>
