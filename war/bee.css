@@ -399,18 +399,26 @@ body, select {
 
 .bee-dropArea {
   background-color: white;
-  border: 2px dashed #bbb;
-  text-align: center;
-  padding-top: 4ex;
+  position: relative;
 }
 
 .bee-dropArea:before {
-  content: "Drop Files";
-  font-size: x-large;
-  color: #bbb;
+  content: "Krepšis";
+  font-size: xx-large;
+  letter-spacing: 5px;
+  color: #999;
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  top: 5%;
+  bottom : 5%;
+  padding-left: -webkit-calc(45% - 70px);
+  padding-top: 24%;
+  border: 2px dashed #aaa;
+  border-radius: 50%;
 }
 
-.bee-dropArea > div {
+.bee-dropArea > * {
   visibility: hidden;
 }
 
