@@ -1,11 +1,17 @@
 package com.butent.bee.client.modules.commons;
 
+import com.google.common.base.Splitter;
+
+import static com.butent.bee.shared.modules.commons.CommonsConstants.*;
+
+import com.butent.bee.client.data.Data;
 import com.butent.bee.client.data.HasDataProvider;
 import com.butent.bee.client.data.Provider;
 import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.grid.GridView;
 import com.butent.bee.server.data.UserServiceBean;
+import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
@@ -22,7 +28,44 @@ public class CommonsSelectorHandler implements SelectorEvent.Handler {
   public void onDataSelector(SelectorEvent event) {
     if (BeeUtils.same(event.getRelatedViewName(), UserServiceBean.TBL_ROLES)) {
       handleRoles(event);
+    } else if (BeeUtils.same(event.getRelatedViewName(), TBL_EMAILS)) {
+      handleEmails(event);
+    } else if (BeeUtils.same(event.getRelatedViewName(), TBL_PERSONS)) {
+      handlePersons(event);
     }
+  }
+
+  private void handleEmails(SelectorEvent event) {
+    if (!event.isNewRow()) {
+      return;
+    }
+    Data.setValue(TBL_EMAILS, event.getNewRow(), COL_EMAIL_ADDRESS,
+        event.getSelector().getDisplayValue());
+    event.consume();
+  }
+
+  private void handlePersons(SelectorEvent event) {
+    if (!event.isNewRow()) {
+      return;
+    }
+    String value = event.getSelector().getDisplayValue();
+
+    if (!BeeUtils.isEmpty(value)) {
+      String firstName = null;
+      String lastName = null;
+
+      for (String val : Splitter.on(BeeConst.CHAR_SPACE).trimResults().omitEmptyStrings().limit(2)
+          .split(value)) {
+        if (BeeUtils.isEmpty(firstName)) {
+          firstName = val;
+        } else {
+          lastName = val;
+        }
+      }
+      Data.setValue(TBL_PERSONS, event.getNewRow(), COL_FIRST_NAME, firstName);
+      Data.setValue(TBL_PERSONS, event.getNewRow(), COL_LAST_NAME, lastName);
+    }
+    event.consume();
   }
 
   private void handleRoles(SelectorEvent event) {

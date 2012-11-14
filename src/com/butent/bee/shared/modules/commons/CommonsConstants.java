@@ -114,6 +114,9 @@ public class CommonsConstants {
   public static final String COL_EMAIL_ADDRESS = "Email";
   public static final String COL_EMAIL_LABEL = "Label";
 
+  public static final String COL_FIRST_NAME = "FirstName";
+  public static final String COL_LAST_NAME = "LastName";
+
   public static final String COL_NAME = "Name";
   public static final String COL_ITEM = "Item";
   public static final String COL_CATEGORY = "Category";

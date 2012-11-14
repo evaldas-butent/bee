@@ -16,10 +16,10 @@ import com.butent.bee.client.event.logical.SelectorEvent;
 import com.butent.bee.client.presenter.NewRowPresenter;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormWidget;
 import com.butent.bee.client.ui.HasDimensions;
 import com.butent.bee.client.ui.UiHelper;
-import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.view.form.CloseCallback;
 import com.butent.bee.client.view.form.FormView;
 import com.butent.bee.shared.Assert;
@@ -73,8 +73,10 @@ public class RowFactory {
 
     BeeRow row = createEmptyRow(dataInfo, true);
 
+    SelectorEvent event = SelectorEvent.fireNewRow(selector, row);
     String value = selector.getDisplayValue();
-    if (!BeeUtils.isEmpty(value)) {
+
+    if (!event.isConsumed() && !BeeUtils.isEmpty(value)) {
       for (String colName : selector.getChoiceColumns()) {
         BeeColumn column = dataInfo.getColumn(colName);
         if (column != null && column.isWritable() && ValueType.isString(column.getType())) {
@@ -83,8 +85,6 @@ public class RowFactory {
         }
       }
     }
-
-    SelectorEvent.fireNewRow(selector, row);
 
     if (BeeUtils.isEmpty(formName)) {
       List<BeeColumn> columns = getColumns(dataInfo, selector.getNewRowColumns(),

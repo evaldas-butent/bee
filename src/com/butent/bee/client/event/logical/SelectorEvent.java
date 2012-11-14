@@ -18,15 +18,17 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
   }
 
   private static final Type<Handler> TYPE = new Type<Handler>();
-  
+
   public static void fire(DataSelector selector, State state) {
     BeeKeeper.getBus().fireEventFromSource(new SelectorEvent(state), selector);
   }
 
-  public static void fireNewRow(DataSelector selector, IsRow row) {
-    BeeKeeper.getBus().fireEventFromSource(new SelectorEvent(State.NEW, row), selector);
+  public static SelectorEvent fireNewRow(DataSelector selector, IsRow row) {
+    SelectorEvent event = new SelectorEvent(State.NEW, row);
+    BeeKeeper.getBus().fireEventFromSource(event, selector);
+    return event;
   }
-  
+
   public static Type<Handler> getType() {
     return TYPE;
   }
@@ -34,13 +36,14 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
   public static HandlerRegistration register(DataSelector selector, Handler handler) {
     return BeeKeeper.getBus().addHandlerToSource(getType(), selector, handler, false);
   }
-  
+
   public static HandlerRegistration register(Handler handler) {
     return BeeKeeper.getBus().addHandler(getType(), handler, false);
   }
 
   private final State state;
   private final IsRow newRow;
+  private boolean consumed = false;
 
   public SelectorEvent(State state) {
     this(state, null);
@@ -50,6 +53,10 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
     super();
     this.state = state;
     this.newRow = newRow;
+  }
+
+  public void consume() {
+    consumed = true;
   }
 
   @Override
@@ -68,7 +75,7 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
   public String getRelatedViewName() {
     return (getSelector() == null) ? null : getSelector().getOracle().getViewName();
   }
-  
+
   public DataSelector getSelector() {
     if (getSource() instanceof DataSelector) {
       return (DataSelector) getSource();
@@ -80,7 +87,7 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
   public State getState() {
     return state;
   }
-  
+
   public long getValue() {
     if (BeeUtils.isLong(getSelector().getNormalizedValue())) {
       return BeeUtils.toLong(getSelector().getNormalizedValue());
@@ -88,7 +95,7 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
       return BeeConst.UNDEF;
     }
   }
-  
+
   public boolean isCanceled() {
     return State.CANCELED.equals(getState());
   }
@@ -101,10 +108,14 @@ public class SelectorEvent extends Event<SelectorEvent.Handler> {
     return State.CLOSED.equals(getState());
   }
 
+  public boolean isConsumed() {
+    return consumed;
+  }
+
   public boolean isNewRow() {
     return State.NEW.equals(getState());
   }
-  
+
   public boolean isOpened() {
     return State.OPEN.equals(getState());
   }
