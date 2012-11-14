@@ -2219,7 +2219,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   private void updateCell(final IsRow rowValue, final IsColumn dataColumn,
-      String oldValue, final String newValue, boolean rowMode) {
+      String oldValue, String newValue, boolean rowMode) {
 
     getGrid().preliminaryUpdate(rowValue.getId(), dataColumn.getId(), newValue);
 
@@ -2232,9 +2232,6 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
       @Override
       public void onSuccess(IsRow result) {
-        if (result != null) {
-          logger.info("updated:", result.getId(), dataColumn.getId(), newValue);
-        }
       }
     };
 

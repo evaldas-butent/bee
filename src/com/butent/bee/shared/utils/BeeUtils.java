@@ -1963,7 +1963,7 @@ public class BeeUtils {
     Splitter splitter = Splitter.on(separator).omitEmptyStrings().trimResults();
     List<String> lst = Lists.newArrayList(splitter.split(str));
 
-    return lst.toArray(new String[lst.size()]);
+    return ArrayUtils.toArray(lst);
   }
 
   /**

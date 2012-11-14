@@ -65,6 +65,7 @@ import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -353,7 +354,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
-  public boolean onReadyForUpdate(ReadyForUpdateEvent event) {
+  public boolean onReadyForUpdate(final ReadyForUpdateEvent event) {
     final long rowId = event.getRowValue().getId();
     final long version = event.getRowValue().getVersion();
     final String columnId = event.getColumn().getId();
@@ -372,26 +373,36 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     final boolean rowMode = event.isRowMode();
 
-    Queries.update(rs, rowMode, new RowCallback() {
+    RowCallback rowCallback = new RowCallback() {
       @Override
       public void onFailure(String... reason) {
-        getGridView().refreshCellContent(rowId, columnId);
-        showFailure("Update Cell", reason);
+        if (event.getCallback() != null) {
+          event.getCallback().onFailure(reason);
+        }
       }
 
       @Override
       public void onSuccess(BeeRow row) {
-        logger.info("cell updated:", getViewName(), rowId, columnId, newValue);
+        if (event.getCallback() != null) {
+          event.getCallback().onSuccess(row);
+        }
+
         if (rowMode) {
           BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
         } else {
+          String value = row.getString(0);
           BeeKeeper.getBus().fireEvent(
               new CellUpdateEvent(getViewName(), rowId, row.getVersion(), columnId,
-                  getDataProvider().getColumnIndex(columnId), newValue));
+                  getDataProvider().getColumnIndex(columnId), value));
         }
       }
-    });
+    };
     
+    if (rowMode) {
+      Queries.updateRow(rs, rowCallback);
+    } else {
+      Queries.updateCell(rs, rowCallback);
+    }
     return true;
   }
 
@@ -619,7 +630,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (reasons != null) {
       messages.addAll(Lists.newArrayList(reasons));
     }
-    getGridView().notifySevere(messages.toArray(new String[0]));
+    getGridView().notifySevere(ArrayUtils.toArray(messages));
   }
   
   private void showInfo(String... messages) {

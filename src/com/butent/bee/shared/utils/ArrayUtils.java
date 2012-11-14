@@ -6,6 +6,7 @@ import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Contains methods for processing arrays.
@@ -303,6 +304,14 @@ public class ArrayUtils {
       arr[i] = source[p1 + i];
     }
     return arr;
+  }
+  
+  public static String[] toArray(List<String> list) {
+    if (list == null) {
+      return null;
+    } else {
+      return list.toArray(new String[list.size()]);
+    }
   }
 
   public static String toString(Object arr) {

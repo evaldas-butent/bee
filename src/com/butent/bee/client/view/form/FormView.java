@@ -20,7 +20,6 @@ import com.butent.bee.client.view.edit.EditEndEvent;
 import com.butent.bee.client.view.edit.HasReadyForUpdateHandlers;
 import com.butent.bee.shared.data.BeeColumn;
 import com.butent.bee.shared.data.IsRow;
-import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.ui.HasCaption;
 
 import java.util.List;
@@ -44,8 +43,6 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
       boolean addStyle, FormCallback callback);
 
   boolean focus(String source);
-
-  RowInfo getActiveRowInfo();
 
   List<BeeColumn> getDataColumns();
 

@@ -301,7 +301,7 @@ public class TimeUtils {
     }
     return z + millis;
   }
-
+  
   public static boolean isBetween(HasDateValue dt, HasDateValue min, HasDateValue max,
       RangeOptions options) {
     Assert.notNull(options);
@@ -397,11 +397,11 @@ public class TimeUtils {
     Assert.notNull(dt);
     return dt.getHour() * MINUTES_PER_HOUR + dt.getMinute();
   }
-  
+
   public static String monthToString(int month) {
     return padTwo(month);
   }
-
+  
   public static void moveOneDayForward(JustDate date) {
     addDay(date, 1);
   }
@@ -495,11 +495,11 @@ public class TimeUtils {
         + MILLIS_PER_SECOND * arr[2] + arr[3];
     return millis;
   }
-  
+
   public static JustDate previousDay(HasDateValue ref) {
     return nextDay(ref, -1);
   }
-
+  
   /**
    * Generates a random JustDate between {@code min} and {@code max}.
    * 
@@ -756,6 +756,10 @@ public class TimeUtils {
   public static String toSeconds(long millis) {
     return Long.toString(millis / 1000) + BeeConst.STRING_POINT
         + BeeUtils.toLeadingZeroes((int) (millis % 1000), 3);
+  }
+
+  public static String toTimeString(long millis) {
+    return new DateTime(millis).toTimeString();
   }
   
   /**

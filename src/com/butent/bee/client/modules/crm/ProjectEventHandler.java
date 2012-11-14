@@ -50,6 +50,7 @@ import com.butent.bee.shared.modules.crm.CrmConstants.Priority;
 import com.butent.bee.shared.modules.crm.CrmConstants.ProjectEvent;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -84,7 +85,7 @@ public class ProjectEventHandler {
       }
       
       BeeRowSet rs = new BeeRowSet(VIEW_PROJECTS, event.getColumns());
-      rs.addRow(0, event.getValues().toArray(new String[0]));
+      rs.addRow(0, ArrayUtils.toArray(event.getValues()));
 
       ParameterList args = createArgs(ProjectEvent.CREATED.name());
       args.addDataItem(CrmConstants.VAR_PROJECT_DATA, Codec.beeSerialize(rs));

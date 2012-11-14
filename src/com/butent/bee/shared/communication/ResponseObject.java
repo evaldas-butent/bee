@@ -294,7 +294,7 @@ public class ResponseObject implements BeeSerializable {
         msgs.add(message.getMessage());
       }
     }
-    return msgs.toArray(new String[0]);
+    return ArrayUtils.toArray(msgs);
   }
 
   private boolean hasMessages(LogLevel lvl) {

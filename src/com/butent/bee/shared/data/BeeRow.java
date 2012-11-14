@@ -48,7 +48,7 @@ public class BeeRow extends StringRow implements BeeSerializable {
   }
 
   public BeeRow(long id, long version, List<String> data) {
-    this(id, version, data.toArray(new String[0]));
+    this(id, version, ArrayUtils.toArray(data));
   }
   
   @Override

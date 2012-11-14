@@ -1962,9 +1962,8 @@ public class CliWorker {
       }
 
       String lvl = lst.get(0);
-      String[] arr = new String[0];
       if (c > 1 && BeeUtils.inListSame(lvl, "w", "e", "s")) {
-        arr = lst.subList(1, c).toArray(arr);
+        String[] arr = ArrayUtils.toArray(lst.subList(1, c));
         if (BeeUtils.same(lvl, "w")) {
           BeeKeeper.getScreen().notifyWarning(arr);
         } else {
@@ -1972,7 +1971,7 @@ public class CliWorker {
         }
 
       } else {
-        BeeKeeper.getScreen().notifyInfo(lst.toArray(arr));
+        BeeKeeper.getScreen().notifyInfo(ArrayUtils.toArray(lst));
       }
     }
   }

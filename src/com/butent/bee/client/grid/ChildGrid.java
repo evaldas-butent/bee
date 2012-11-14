@@ -221,6 +221,7 @@ public class ChildGrid extends Simple implements HasEnabled, Launchable, HasFost
 
     Queries.getRowSet(getGridDescription().getViewName(), null, queryFilter, order,
         getCachingPolicy(), new Queries.RowSetCallback() {
+          @Override
           public void onSuccess(BeeRowSet rowSet) {
             createPresenter(row, rowSet, immutableFilter, initialFilters, order);
           }

@@ -222,6 +222,7 @@ public class CachedProvider extends Provider {
     final int oldTableSize = getTable().getNumberOfRows();
 
     Queries.getRowSet(name, null, getQueryFilter(null), getOrder(), new Queries.RowSetCallback() {
+      @Override
       public void onSuccess(BeeRowSet rowSet) {
         Assert.notNull(rowSet);
         setTable(rowSet);

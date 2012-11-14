@@ -40,7 +40,8 @@ public class AsyncProvider extends Provider {
 
   private static final BeeLogger logger = LogUtils.getLogger(AsyncProvider.class);
   
-  private class Callback implements Queries.RowSetCallback {
+  private class Callback extends Queries.RowSetCallback {
+
     private final Range<Integer> queryRange;
 
     private Range<Integer> displayRange;
@@ -56,6 +57,7 @@ public class AsyncProvider extends Provider {
       this.updateActiveRow = updateActiveRow;
     }
 
+    @Override
     public void onSuccess(BeeRowSet rowSet) {
       Integer id = getRpcId();
       if (id != null) {

@@ -63,6 +63,7 @@ import com.butent.bee.shared.time.HasDateValue;
 import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.Relation;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
@@ -1026,7 +1027,7 @@ class TaskEventHandler {
           Global.showError("Nėra pakeitimų");
         } else {
           BeeRowSet rs = new BeeRowSet(VIEW_TASKS, cols);
-          BeeRow row = new BeeRow(data.getId(), data.getVersion(), old.toArray(new String[0]));
+          BeeRow row = new BeeRow(data.getId(), data.getVersion(), ArrayUtils.toArray(old));
           rs.addRow(row);
 
           for (int i = 0; i < vals.size(); i++) {

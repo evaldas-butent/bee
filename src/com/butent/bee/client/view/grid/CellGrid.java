@@ -69,6 +69,7 @@ import com.butent.bee.shared.data.view.Order;
 import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
+import com.butent.bee.shared.time.TimeUtils;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.ui.ColumnDescription.ColType;
@@ -1632,6 +1633,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
   @Override
   public void onCellUpdate(CellUpdateEvent event) {
     Assert.notNull(event);
+
     long rowId = event.getRowId();
     long version = event.getVersion();
     String source = event.getColumnName();
@@ -1690,6 +1692,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     if (checkZindex && col != null) {
       bringToFront(row, col);
     }
+    
+    logger.info("grid updated cell:", rowId, source, value);
   }
 
   @Override
@@ -1711,11 +1715,13 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     Assert.notNull(event);
     IsRow newRow = event.getRow();
     Assert.notNull(newRow);
+
     long rowId = newRow.getId();
+    long version = newRow.getVersion();
 
     RowInfo selectedRowInfo = getSelectedRows().get(rowId);
     if (selectedRowInfo != null) {
-      selectedRowInfo.setVersion(newRow.getVersion());
+      selectedRowInfo.setVersion(version);
     }
 
     int row = getRowIndex(rowId);
@@ -1724,7 +1730,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
 
     IsRow rowValue = getDataItem(row);
-    rowValue.setVersion(newRow.getVersion());
+    rowValue.setVersion(version);
     for (int i = 0; i < rowValue.getNumberOfCells(); i++) {
       rowValue.setValue(i, newRow.getString(i));
     }
@@ -1733,6 +1739,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     if (getActiveRowIndex() == row && getActiveColumnIndex() >= 0) {
       bringToFront(row, getActiveColumnIndex());
     }
+
+    logger.info("grid updated row:", rowId, TimeUtils.toTimeString(version));
   }
 
   public void preliminaryUpdate(long rowId, String source, String value) {

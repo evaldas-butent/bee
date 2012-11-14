@@ -487,6 +487,7 @@ public class GridFactory {
 
     Queries.getRowSet(viewName, null, queryFilter, order, 0, limit, cachingPolicy, queryOptions,
         new Queries.RowSetCallback() {
+          @Override
           public void onSuccess(BeeRowSet rowSet) {
             Assert.notNull(rowSet);
 

@@ -46,10 +46,10 @@ import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowInsertEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.filter.Filter;
-import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Collection;
@@ -185,11 +185,9 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         break;
 
       case DELETE:
-        if (hasData()) {
-          RowInfo activeRowInfo = getView().getContent().getActiveRowInfo();
-          if (activeRowInfo != null && getView().getContent().isRowEditable(true)) {
-            deleteRow(activeRowInfo.getId(), activeRowInfo.getVersion());
-          }
+        if (hasData() && getView().getContent().isRowEditable(true)) {
+          IsRow row = getView().getContent().getActiveRow();
+          deleteRow(row.getId(), row.getVersion());
         }
         break;
 
@@ -256,7 +254,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     final boolean rowMode = event.isRowMode();
 
-    Queries.update(rs, rowMode, new RowCallback() {
+    RowCallback rowCallback = new RowCallback() {
       @Override
       public void onFailure(String... reason) {
         if (event.getCallback() != null) {
@@ -273,13 +271,19 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
         if (rowMode) {
           BeeKeeper.getBus().fireEvent(new RowUpdateEvent(getViewName(), row));
         } else {
+          String value = row.getString(0);
           BeeKeeper.getBus().fireEvent(
               new CellUpdateEvent(getViewName(), rowId, row.getVersion(), columnId,
-                  getDataProvider().getColumnIndex(columnId), newValue));
+                  getDataProvider().getColumnIndex(columnId), value));
         }
       }
-    });
+    };
     
+    if (rowMode) {
+      Queries.updateRow(rs, rowCallback);
+    } else {
+      Queries.updateCell(rs, rowCallback);
+    }
     return true;
   }
 
@@ -374,7 +378,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (reasons != null) {
       messages.addAll(Lists.newArrayList(reasons));
     }
-    getNotificationListener().notifySevere(messages.toArray(new String[0]));
+    getNotificationListener().notifySevere(ArrayUtils.toArray(messages));
   }
 
   private void updateFilter() {

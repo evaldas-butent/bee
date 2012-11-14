@@ -42,6 +42,7 @@ import com.butent.bee.shared.modules.commons.CommonsConstants.ReminderMethod;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsObjectType;
 import com.butent.bee.shared.modules.commons.CommonsConstants.RightsState;
 import com.butent.bee.shared.ui.GridDescription;
+import com.butent.bee.shared.utils.ArrayUtils;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 
@@ -81,7 +82,7 @@ public class CommonsEventHandler {
       }
 
       BeeRowSet rs = new BeeRowSet("Items", event.getColumns());
-      rs.addRow(0, event.getValues().toArray(new String[0]));
+      rs.addRow(0, ArrayUtils.toArray(event.getValues()));
 
       ParameterList args = createArgs(CommonsConstants.SVC_ITEM_CREATE);
       args.addDataItem(CommonsConstants.VAR_ITEM_DATA, Codec.beeSerialize(rs));

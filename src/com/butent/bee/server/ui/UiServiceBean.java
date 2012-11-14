@@ -39,6 +39,7 @@ import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
 import com.butent.bee.shared.data.BeeRow;
 import com.butent.bee.shared.data.BeeRowSet;
+import com.butent.bee.shared.data.DataUtils;
 import com.butent.bee.shared.data.SqlConstants.SqlDataType;
 import com.butent.bee.shared.data.XmlTable;
 import com.butent.bee.shared.data.XmlTable.XmlField;
@@ -704,7 +705,21 @@ public class UiServiceBean {
   }
 
   private ResponseObject updateCell(RequestInfo reqInfo) {
-    return deb.commitRow(BeeRowSet.restore(reqInfo.getContent()), false);
+    BeeRowSet rs = BeeRowSet.restore(reqInfo.getContent());
+    ResponseObject response = deb.commitRow(rs, false);
+    
+    if (!response.hasErrors()) {
+      long rowId = rs.getRow(0).getId();
+      BeeRowSet updated = qs.getViewData(rs.getViewName(), ComparisonFilter.compareId(rowId), null,
+          BeeConst.UNDEF, BeeConst.UNDEF, DataUtils.getColumnNames(rs.getColumns()));
+      
+      if (DataUtils.isEmpty(updated)) {
+        response = ResponseObject.error("could not read updated row");
+      } else {
+        response = ResponseObject.response(updated.getRow(0));
+      }
+    }
+    return response;
   }
 
   private ResponseObject updateRow(RequestInfo reqInfo) {

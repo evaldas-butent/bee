@@ -170,7 +170,7 @@ public class Wildcards {
       if (buffer.length() > 0) {
         lst.add(buffer.toString());
       }
-      return lst.toArray(new String[lst.size()]);
+      return ArrayUtils.toArray(lst);
     }
   }
 

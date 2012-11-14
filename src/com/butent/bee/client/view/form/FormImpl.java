@@ -74,7 +74,6 @@ import com.butent.bee.shared.data.event.MultiDeleteEvent;
 import com.butent.bee.shared.data.event.RowDeleteEvent;
 import com.butent.bee.shared.data.event.RowUpdateEvent;
 import com.butent.bee.shared.data.view.Order;
-import com.butent.bee.shared.data.view.RowInfo;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogLevel;
 import com.butent.bee.shared.logging.LogUtils;
@@ -434,14 +433,6 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   @Override
   public IsRow getActiveRow() {
     return activeRow;
-  }
-
-  @Override
-  public RowInfo getActiveRowInfo() {
-    if (getActiveRow() == null) {
-      return null;
-    }
-    return new RowInfo(getActiveRow());
   }
 
   @Override
@@ -1228,9 +1219,6 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
 
           @Override
           public void onSuccess(IsRow result) {
-            if (result != null) {
-              logger.info("updated:", result.getId(), column.getId(), newValue);
-            }
           }
         }));
   }
