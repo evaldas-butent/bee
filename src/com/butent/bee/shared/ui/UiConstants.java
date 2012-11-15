@@ -34,6 +34,7 @@ public class UiConstants {
   public static final String ATTR_EDIT_FORM = "editForm";
   public static final String ATTR_EDIT_POPUP = "editPopup";
   public static final String ATTR_EDIT_ENABLED = "editEnabled";
+  public static final String ATTR_EDIT_KEY = "editKey";
   
   public static final String ATTR_PROPERTY = "property";
   

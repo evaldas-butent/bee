@@ -778,6 +778,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
 
     getGrid().initRenderMode(gridDescr.getRenderMode());
+    
+    getGrid().setRowChangeSensitivityMillis(gridDescr.getRowChangeSensitivityMillis());
 
     initNewRowDefaults(gridDescr.getNewRowDefaults(), dataCols);
     setNewRowCaption(BeeUtils.notEmpty(gridDescr.getNewRowCaption(),
@@ -1936,13 +1938,27 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
   }
 
   private boolean maybeOpenRelatedData(final EditableColumn editableColumn, final IsRow row,
-      int mode) {
+      int charCode) {
 
     if (editableColumn == null || !editableColumn.hasRelation()
-        || !editableColumn.getRelation().isEditEnabled()) {
+        || !editableColumn.getRelation().isEditEnabled() || row == null) {
       return false;
     }
-    if (row == null || !EditStartEvent.isClickOrEnter(mode)) {
+    
+    boolean ok;
+    if (charCode == EditStartEvent.CLICK) {
+      ok = true;
+    } else {
+      Integer editKey = editableColumn.getRelation().getEditKey();
+      if (editKey == null) {
+        ok = false;
+      } else if (BeeUtils.inList(editKey, EditStartEvent.ENTER, KeyCodes.KEY_ENTER)) {
+        ok = BeeUtils.inList(charCode, EditStartEvent.ENTER, KeyCodes.KEY_ENTER);
+      } else {
+        ok = (editKey == charCode);
+      }
+    }
+    if (!ok) {
       return false;
     }
 
@@ -1952,7 +1968,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     }
     
     boolean modal = BeeUtils.nvl(editableColumn.getRelation().isEditModal(),
-        mode == EditStartEvent.ENTER) || UiHelper.isModal(this);
+        charCode != EditStartEvent.CLICK) || UiHelper.isModal(this);
     RowCallback rowCallback;
 
     if (modal) {

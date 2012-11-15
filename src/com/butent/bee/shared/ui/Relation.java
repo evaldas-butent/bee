@@ -207,6 +207,10 @@ public class Relation implements BeeSerializable, HasInfo, HasViewName {
     return getAttribute(UiConstants.ATTR_EDIT_FORM);
   }
 
+  public Integer getEditKey() {
+    return BeeUtils.toIntOrNull(getAttribute(UiConstants.ATTR_EDIT_KEY));
+  }
+  
   public Filter getFilter() {
     return filter;
   }

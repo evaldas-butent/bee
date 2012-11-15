@@ -42,7 +42,7 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
     ROW_STYLES, ROW_MESSAGE, ROW_EDITABLE, ROW_VALIDATION,
     SHOW_COLUMN_WIDTHS, MIN_COLUMN_WIDTH, MAX_COLUMN_WIDTH,
     COLUMNS, WIDGETS, FOOTER_EVENTS, AUTO_FIT, FAVORITE, CACHE_DATA, CACHE_DESCRIPTION,
-    MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE
+    MIN_NUMBER_OF_ROWS, MAX_NUMBER_OF_ROWS, RENDER_MODE, ROW_CHANGE_SENSITIVITY_MILLIS
   }
   
   public static final String HEADER_MODE_ALL = "all";
@@ -128,6 +128,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   
   private String renderMode = null;
 
+  private Integer rowChangeSensitivityMillis = null;
+  
   private List<String> widgets = Lists.newArrayList();
 
   public GridDescription(String name) {
@@ -378,6 +380,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case RENDER_MODE:
           setRenderMode(value);
           break;
+        case ROW_CHANGE_SENSITIVITY_MILLIS:
+          setRowChangeSensitivityMillis(BeeUtils.toIntOrNull(value));
+          break;
       }
     }
   }
@@ -496,7 +501,8 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         "Favorite", getFavorite(),
         "Min Number Of Rows", getMinNumberOfRows(),
         "Max Number Of Rows", getMaxNumberOfRows(),
-        "Render Mode", getRenderMode());
+        "Render Mode", getRenderMode(),
+        "Row Change Sensitivity Millis", getRowChangeSensitivityMillis());
 
     if (getStyleSheets() != null && !getStyleSheets().isEmpty()) {
       int cnt = getStyleSheets().size();
@@ -650,6 +656,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public String getRenderMode() {
     return renderMode;
+  }
+
+  public Integer getRowChangeSensitivityMillis() {
+    return rowChangeSensitivityMillis;
   }
 
   public Calculation getRowEditable() {
@@ -892,6 +902,9 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
         case RENDER_MODE:
           arr[i++] = getRenderMode();
           break;
+        case ROW_CHANGE_SENSITIVITY_MILLIS:
+          arr[i++] = getRowChangeSensitivityMillis();
+          break;
       }
     }
     return Codec.beeSerialize(arr);
@@ -1010,11 +1023,11 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setMinColumnWidth(Integer minColumnWidth) {
     this.minColumnWidth = minColumnWidth;
   }
-
+  
   public void setMinNumberOfRows(Integer minNumberOfRows) {
     this.minNumberOfRows = minNumberOfRows;
   }
-  
+
   public void setNewRowCaption(String newRowCaption) {
     this.newRowCaption = newRowCaption;
   }
@@ -1026,11 +1039,11 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
   public void setNewRowDefaults(String newRowDefaults) {
     this.newRowDefaults = newRowDefaults;
   }
-
+  
   public void setNewRowForm(String newRowForm) {
     this.newRowForm = newRowForm;
   }
-  
+
   public void setNewRowPopup(Boolean newRowPopup) {
     this.newRowPopup = newRowPopup;
   }
@@ -1053,6 +1066,10 @@ public class GridDescription implements BeeSerializable, HasExtendedInfo, HasVie
 
   public void setRenderMode(String renderMode) {
     this.renderMode = renderMode;
+  }
+
+  public void setRowChangeSensitivityMillis(Integer rowChangeSensitivityMillis) {
+    this.rowChangeSensitivityMillis = rowChangeSensitivityMillis;
   }
 
   public void setRowEditable(Calculation rowEditable) {

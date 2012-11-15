@@ -41,9 +41,9 @@
     <DataColumn name="Status" itemKey="TaskEvent" />
 
     <RelColumn name="Owner" renderColumns="OwnerFirstName OwnerLastName"
-      editEnabled="true" editPopup="true" />
+      editEnabled="true" editPopup="true" editKey="13" />
     <RelColumn name="Executor" renderColumns="ExecutorFirstName ExecutorLastName" readOnly="true"
-      editEnabled="true" editPopup="false" />
+      editEnabled="true" editPopup="false" editKey="42" />
 
     <DataColumn name="FinishTime" readOnly="true" />
   </columns>

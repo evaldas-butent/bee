@@ -396,6 +396,7 @@
     <xs:attribute name="editForm" type="type:nameType" />
     <xs:attribute name="editPopup" type="xs:boolean" />
     <xs:attribute name="editEnabled" type="xs:boolean" />
+    <xs:attribute name="editKey" type="xs:int" />
   </xs:attributeGroup>
   
   <xs:simpleType name="refreshType">

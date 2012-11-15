@@ -70,6 +70,7 @@
     <xs:attribute name="minNumberOfRows" type="xs:positiveInteger" />
     <xs:attribute name="maxNumberOfRows" type="xs:positiveInteger" />
     <xs:attribute name="renderMode" type="renderMode" />
+    <xs:attribute name="rowChangeSensitivityMillis" type="xs:nonNegativeInteger" />
   </xs:complexType>
 
   <xs:complexType name="extWidget">

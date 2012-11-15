@@ -147,6 +147,8 @@ public class GridLoaderBean {
 
   private static final String ATTR_RENDER_MODE = "renderMode";
 
+  private static final String ATTR_ROW_CHANGE_SENSITIVITY_MILLIS = "rowChangeSensitivityMillis";
+
   @EJB
   SystemBean sys;
 
@@ -773,6 +775,12 @@ public class GridLoaderBean {
       dst.setRenderMode(renderMode.trim());
     }
 
+    Integer rowChangeSensitivityMillis = 
+        XmlUtils.getAttributeInteger(src, ATTR_ROW_CHANGE_SENSITIVITY_MILLIS);
+    if (rowChangeSensitivityMillis != null) {
+      dst.setRowChangeSensitivityMillis(rowChangeSensitivityMillis);
+    }
+    
     String newRowForm = src.getAttribute(UiConstants.ATTR_NEW_ROW_FORM);
     if (!BeeUtils.isEmpty(newRowForm)) {
       dst.setNewRowForm(newRowForm);

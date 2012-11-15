@@ -822,6 +822,65 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
       schedule(millis);
     }
   }
+  
+  private class RowChangeScheduler extends Timer {
+   
+    private int sensitivityMillis;
+
+    private long lastTime = 0;
+    
+    private RowChangeScheduler(int sensitivityMillis) {
+      super();
+      this.sensitivityMillis = sensitivityMillis;
+    }
+
+    @Override
+    public void run() {
+      fireChangeEvent();
+    }
+
+    private void fireChangeEvent() {
+      CellGrid.this.fireEvent(new ActiveRowChangeEvent(CellGrid.this.getActiveRow()));
+    }
+    
+    private long getLastTime() {
+      return lastTime;
+    }
+
+    private int getSensitivityMillis() {
+      return sensitivityMillis;
+    }
+
+    private void scheduleEvent() {
+      if (getSensitivityMillis() <= 0) {
+        fireChangeEvent();
+      } else {
+        long now = System.currentTimeMillis();
+        long last = getLastTime();
+        setLastTime(now);
+        
+        long elapsed = now - last;
+        int delayMillis = getSensitivityMillis();
+        
+        if (elapsed < delayMillis) {
+          if (elapsed > 0 && elapsed < delayMillis / 2) {
+            delayMillis -= elapsed;
+          }
+          schedule(delayMillis);
+        } else {
+          fireChangeEvent();
+        }
+      }
+    }
+
+    private void setLastTime(long lastTime) {
+      this.lastTime = lastTime;
+    }
+
+    private void setSensitivityMillis(int sensitivityMillis) {
+      this.sensitivityMillis = sensitivityMillis;
+    }
+  }
 
   /**
    * Lists possible grid elements for parameter management.
@@ -855,6 +914,8 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   public static int defaultResizerShowSensitivityMillis = 100;
   public static int defaultResizerMoveSensitivityMillis = 0;
+
+  public static int defaultRowChangeSensitivityMillis = 0;
 
   public static int pageSizeCalculationReserve = 3;
 
@@ -957,6 +1018,9 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
   private final List<Long> renderedRows = Lists.newArrayList();
   private RenderMode renderMode = null;
+
+  private final RowChangeScheduler rowChangeScheduler = 
+      new RowChangeScheduler(defaultRowChangeSensitivityMillis);
   
   public CellGrid() {
     setElement(Document.get().createDivElement());
@@ -2061,6 +2125,12 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     this.readOnly = readOnly;
   }
 
+  public void setRowChangeSensitivityMillis(Integer millis) {
+    if (millis != null) {
+      rowChangeScheduler.setSensitivityMillis(millis);
+    }
+  }
+  
   @Override
   public void setRowCount(int count, boolean fireScopeChange) {
     Assert.nonNegative(count);
@@ -2196,10 +2266,6 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     onActivateCell(true);
   }
 
-  private void activateRow(int index, NavigationOrigin origin) {
-    activateRow(index, BeeConst.UNDEF, origin);
-  }
-
   private void activateRow(int index, int start, NavigationOrigin origin) {
     int rc = getRowCount();
     if (rc <= 0) {
@@ -2246,6 +2312,10 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     if (newPageStart != oldPageStart) {
       setPageStart(newPageStart, true, true, origin);
     }
+  }
+
+  private void activateRow(int index, NavigationOrigin origin) {
+    activateRow(index, BeeConst.UNDEF, origin);
   }
 
   private void bringToFront(int row, int col) {
@@ -3596,7 +3666,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
     }
 
     if (activate) {
-      fireEvent(new ActiveRowChangeEvent(getActiveRow()));
+      rowChangeScheduler.scheduleEvent();
     }
   }
 
@@ -3693,7 +3763,7 @@ public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStar
 
     setZIndex(0);
 
-    fireEvent(new ActiveRowChangeEvent(getActiveRow()));
+    rowChangeScheduler.scheduleEvent();
 
     if (focus && isRowWithinBounds(getActiveRowIndex()) && getActiveColumnIndex() >= 0) {
       Scheduler.get().scheduleDeferred(new ScheduledCommand() {
