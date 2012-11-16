@@ -99,9 +99,6 @@ public class CommonsModuleBean implements BeeModule {
     } else if (BeeUtils.isPrefix(svc, COMMONS_PARAMETERS_PREFIX)) {
       response = doParameterEvent(svc, reqInfo);
 
-    } else if (BeeUtils.isPrefix(svc, COMMONS_PARAMETERS_PREFIX)) {
-      response = doParameterEvent(svc, reqInfo);
-
     } else {
       String msg = BeeUtils.joinWords("Commons service not recognized:", svc);
       logger.warning(msg);
