@@ -9,7 +9,7 @@ import com.butent.bee.shared.time.DateTime;
  */
 public class ExtendedProperty extends Property {
 
-  public static String[] COLUMN_HEADERS = new String[] {"Name", "Sub", "Value", "Date"};
+  public static String[] COLUMN_HEADERS = new String[] {"Name", "Sub", "Value", "Time"};
   public static int COLUMN_COUNT = COLUMN_HEADERS.length;
 
   public static ExtendedProperty restore(String s) {

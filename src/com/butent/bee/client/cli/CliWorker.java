@@ -88,7 +88,7 @@ import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.WidgetInitializer;
-import com.butent.bee.client.utils.Browser;
+import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.utils.NewFileInfo;
@@ -255,6 +255,8 @@ public class CliWorker {
       showGwt();
     } else if (BeeUtils.inList(z, "h5", "html5", "supp", "support")) {
       showSupport();
+    } else if (z.startsWith("hist")) {
+//      showHistory();
     } else if (z.equals("id")) {
       showElement(v, arr);
     } else if (z.startsWith("inp") && z.contains("type")) {
@@ -1201,13 +1203,20 @@ public class CliWorker {
   }-*/;
 
   private static void showBrowser(String[] arr) {
+    boolean bro = false;
     boolean wnd = false;
     boolean loc = false;
     boolean nav = false;
     boolean scr = false;
+    boolean typ = false;
+    boolean prf = false;
+    boolean doc = false;
 
     for (int i = 1; i < ArrayUtils.length(arr); i++) {
       switch (arr[i].toLowerCase().charAt(0)) {
+        case 'b':
+          bro = true;
+          break;
         case 'w':
           wnd = true;
           break;
@@ -1220,26 +1229,49 @@ public class CliWorker {
         case 's':
           scr = true;
           break;
+        case 't':
+          typ = true;
+          break;
+        case 'p':
+          prf = true;
+          break;
+        case 'd':
+          doc = true;
+          break;
       }
     }
 
-    if (!wnd && !loc && !nav && !scr) {
-      wnd = loc = nav = scr = true;
+    if (!bro && !wnd && !loc && !nav && !scr && !typ && !prf && !doc) {
+      bro = wnd = loc = nav = scr = typ = prf = doc = true;
     }
 
     List<ExtendedProperty> info = new ArrayList<ExtendedProperty>();
 
+    if (bro) {
+      PropertyUtils.appendChildrenToExtended(info, "Browser", BrowsingContext.getBrowserInfo());
+    }
     if (wnd) {
-      PropertyUtils.appendChildrenToExtended(info, "Window", Browser.getWindowInfo());
+      PropertyUtils.appendChildrenToExtended(info, "Window", BrowsingContext.getWindowInfo());
     }
     if (loc) {
-      PropertyUtils.appendChildrenToExtended(info, "Location", Browser.getLocationInfo());
+      PropertyUtils.appendChildrenToExtended(info, "Location", BrowsingContext.getLocationInfo());
     }
     if (nav) {
-      PropertyUtils.appendChildrenToExtended(info, "Navigator", Browser.getNavigatorInfo());
+      PropertyUtils.appendChildrenToExtended(info, "Navigator", BrowsingContext.getNavigatorInfo());
     }
     if (scr) {
-      PropertyUtils.appendChildrenToExtended(info, "Screen", Browser.getScreenInfo());
+      PropertyUtils.appendChildrenToExtended(info, "Screen", BrowsingContext.getScreenInfo());
+    }
+    if (typ) {
+      PropertyUtils.appendChildrenToExtended(info, "Mime Types",
+          BrowsingContext.getSupportedMimeTypes());
+    }
+    if (prf) {
+      PropertyUtils.appendChildrenToExtended(info, "Performance",
+          BrowsingContext.getPerformanceInfo());
+    }
+    if (doc) {
+      PropertyUtils.appendChildrenToExtended(info, "Document", BrowsingContext.getDocumentInfo());
     }
 
     showExtData(info);

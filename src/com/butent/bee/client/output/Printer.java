@@ -12,7 +12,7 @@ import com.google.gwt.dom.client.TextAreaElement;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.client.utils.Browser;
+import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.widget.BeeFrame;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -151,7 +151,7 @@ public class Printer {
 
         frame.clear();
 
-        if (end == start && Browser.isChrome()) {
+        if (end == start && BrowsingContext.isChrome()) {
           logger.warning("google is evil");
           // http://code.google.com/p/chromium/issues/detail?id=50186
           // waiting for chrome 24
