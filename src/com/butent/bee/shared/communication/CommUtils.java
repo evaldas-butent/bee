@@ -1,11 +1,16 @@
 package com.butent.bee.shared.communication;
 
+import com.google.common.collect.Lists;
+
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.Codec;
 import com.butent.bee.shared.utils.NameUtils;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Contains utility functions for communication between server and client sides, for example
@@ -25,6 +30,9 @@ public class CommUtils {
   public static final String CONTENT_TYPE_HEADER = "content-type";
   public static final String CONTENT_LENGTH_HEADER = "content-length";
 
+  public static final String PATH_SEGMENT_SEPARATOR = "/";
+  public static final String PATH_IMAGES = "images";
+  
   public static ContentType defaultRequestContentType = ContentType.XML;
   public static ContentType defaultResponseContentType = ContentType.TEXT;
 
@@ -41,6 +49,14 @@ public class CommUtils {
     } else {
       return type.trim() + ";charset=" + encoding.trim();
     }
+  }
+  
+  public static String buildPath(String first, String second, String... rest) {
+    List<String> segments = Lists.newArrayList(first, second);
+    if (rest != null) {
+      segments.addAll(Arrays.asList(rest));
+    }
+    return BeeUtils.join(PATH_SEGMENT_SEPARATOR, segments);
   }
 
   public static boolean equals(ContentType z1, ContentType z2) {

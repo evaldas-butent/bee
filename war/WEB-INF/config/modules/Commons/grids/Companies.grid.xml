@@ -7,17 +7,26 @@
     <DataColumn name="Name" />
     <DataColumn name="TypeName" caption="Tipas" />
     <DataColumn name="GroupName" caption="Grupė" />
+
     <DataColumn name="Code" />
     <DataColumn name="VATCode" />
+
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
+
     <RelColumn name="EmailId">
       <renderToken source="Label" suffix=" " />
       <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
     </RelColumn>
+
     <DataColumn name="Address" />
     <DataColumn name="PostIndex" />
+
     <DataColumn name="CityName" caption="Miestas" />
     <DataColumn name="CountryName" caption="Šalis" />
+    <CalcColumn type="string" name="Flag" source="CountryCode" cell="html" width="30" caption="-"
+      sortable="false" hasFooter="false" horizontalAlignment="center">
+      <renderer type="flag" />
+    </CalcColumn>
   </columns>
 </Grid>

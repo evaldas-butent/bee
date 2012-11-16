@@ -54,18 +54,22 @@ public class BeeButton extends Button implements HasId, HasService, HasCommand {
     }
   }
 
+  @Override
   public Scheduler.ScheduledCommand getCommand() {
     return command;
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "b";
   }
 
+  @Override
   public String getService() {
     return DomUtils.getService(this);
   }
@@ -84,6 +88,7 @@ public class BeeButton extends Button implements HasId, HasService, HasCommand {
     super.onBrowserEvent(event);
   }
   
+  @Override
   public void setCommand(Scheduler.ScheduledCommand command) {
     this.command = command;
     if (command != null) {
@@ -91,10 +96,12 @@ public class BeeButton extends Button implements HasId, HasService, HasCommand {
     }
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }
 
+  @Override
   public void setService(String svc) {
     DomUtils.setService(this, svc);
     if (!BeeUtils.isEmpty(svc)) {

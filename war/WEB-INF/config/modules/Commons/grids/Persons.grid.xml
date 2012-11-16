@@ -7,14 +7,22 @@
   <columns>
     <DataColumn name="FirstName" />
     <DataColumn name="LastName" />
+
     <DataColumn name="Phone" />
     <DataColumn name="Mobile" />
+
     <RelColumn name="EmailId">
       <renderToken source="Label" suffix=" " />
       <renderToken source="Email" prefix="&lt;" suffix="&gt;" />
     </RelColumn>
+
     <DataColumn name="Address" />
+
     <DataColumn name="CityName" caption="Miestas" />
     <DataColumn name="CountryName" caption="Šalis" />
+    <CalcColumn type="string" name="Flag" source="CountryCode" cell="html" width="30" caption="-"
+      sortable="false" hasFooter="false" horizontalAlignment="center">
+      <renderer type="flag" />
+    </CalcColumn>
   </columns>
 </Grid>

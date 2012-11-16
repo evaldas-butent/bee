@@ -933,4 +933,15 @@
 
   <xs:element name="RichTextEditor" type="display" substitutionGroup="widget" />
 
+  <xs:element name="Flag" substitutionGroup="widget">
+    <xs:complexType>
+      <xs:complexContent>
+        <xs:extension base="widgetType">
+          <xs:attribute name="source" type="type:nameType" />
+          <xs:attribute name="country" type="xs:normalizedString" />
+        </xs:extension>
+      </xs:complexContent>
+    </xs:complexType>
+  </xs:element>
+
 </xs:schema>

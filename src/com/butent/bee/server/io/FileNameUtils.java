@@ -173,7 +173,7 @@ public class FileNameUtils {
       return null;
     }
     int index = indexOfLastSeparator(filename);
-    return filename.substring(index + 1);
+    return (index >= 0) ? filename.substring(index + 1) : filename;
   }
 
   public static String getPath(String filename) {
@@ -531,7 +531,7 @@ public class FileNameUtils {
       return;
     }
     
-    File dir = new File(Config.WAR_DIR, StoredFile.ICON_DIR);
+    File dir = new File(Config.IMAGES_DIR, StoredFile.ICON_DIR);
     File[] files = dir.listFiles();
     
     if (files != null) {

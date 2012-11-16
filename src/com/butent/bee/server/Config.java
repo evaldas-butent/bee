@@ -10,6 +10,7 @@ import com.butent.bee.server.io.Filter;
 import com.butent.bee.server.io.WildcardFilter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
+import com.butent.bee.shared.communication.CommUtils;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -28,16 +29,18 @@ import java.util.Set;
 public class Config {
   private static BeeLogger logger = LogUtils.getLogger(Config.class);
 
-  public static File WAR_DIR;
-  public static File WEB_INF_DIR;
+  public static final File WAR_DIR;
+  public static final File WEB_INF_DIR;
 
-  public static File SOURCE_DIR;
+  public static final File SOURCE_DIR;
 
-  public static File SCHEMA_DIR;
-  public static File CONFIG_DIR;
-  public static File LOCAL_DIR;
-  public static File LOG_DIR;
-  public static File REPOSITORY_DIR;
+  public static final File SCHEMA_DIR;
+  public static final File CONFIG_DIR;
+  public static final File LOCAL_DIR;
+  public static final File LOG_DIR;
+  public static final File REPOSITORY_DIR;
+
+  public static final File IMAGES_DIR;
 
   private static Properties properties;
 
@@ -67,6 +70,8 @@ public class Config {
 
     LOG_DIR = new File(LOCAL_DIR, "logs");
     REPOSITORY_DIR = new File(LOCAL_DIR, "repository");
+
+    IMAGES_DIR = new File(WAR_DIR, CommUtils.PATH_IMAGES);
   }
 
   public static String getConfigPath(String resource) {

@@ -91,6 +91,7 @@ import com.butent.bee.client.widget.DateLabel;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.client.widget.DoubleLabel;
+import com.butent.bee.client.widget.Flag;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.HtmlList;
 import com.butent.bee.client.widget.InlineInternalLink;
@@ -179,6 +180,7 @@ public enum FormWidget {
   DOUBLE_LABEL("DoubleLabel", EnumSet.of(Type.DISPLAY)),
   FILE_COLLECTOR("FileCollector", null),
   FILE_GROUP("FileGroup", EnumSet.of(Type.DISPLAY)),
+  FLAG("Flag", EnumSet.of(Type.DISPLAY)),
   FLOW_PANEL("FlowPanel", EnumSet.of(Type.HAS_CHILDREN)),
   FRAME("Frame", EnumSet.of(Type.DISPLAY)),
   GRID_PANEL("GridPanel", EnumSet.of(Type.IS_GRID)),
@@ -613,6 +615,15 @@ public enum FormWidget {
           widget = new DoubleLabel(inline);
         } else {
           widget = new DoubleLabel(format, inline);
+        }
+        break;
+        
+      case FLAG:
+        String country = attributes.get(Flag.ATTR_COUNTRY);
+        if (BeeUtils.isEmpty(country)) {
+          widget = new Flag();
+        } else {
+          widget = new Flag(country);
         }
         break;
         

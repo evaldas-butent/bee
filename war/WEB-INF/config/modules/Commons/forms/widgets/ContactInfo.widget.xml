@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Disclosure xmlns="http://www.butent.com/widget" xmlns:d="http://www.butent.com/decorator"
+<Disclosure xmlns="http://www.butent.com/widget"
+  xmlns:d="http://www.butent.com/decorator"
+  xmlns:ui="http://www.butent.com/ui"
   
   open="true"
   >
@@ -25,11 +27,18 @@
     <InputText source="Address" caption="Adresas:" style="width: 600px;" d:size="80" d:unit="px"
       d:rootStyle="position:absolute; left: 0; top: 70px;" />
 
-    <DataSelector source="City" caption="Miestas:" style="width: 400px;" d:size="80" d:unit="px"
+    <DataSelector source="City" caption="Miestas:" style="width: 360px;" d:size="80" d:unit="px"
       d:rootStyle="position:absolute; left: 0; top: 100px;">
       <renderToken source="CityName" />
       <renderToken source="CountryName" prefix=", " />
+      <selectorColumn source="Name" />
+      <selectorColumn source="CountryName" />
+      <selectorColumn source="CountryCode">
+        <ui:renderer type="flag" />
+      </selectorColumn>
     </DataSelector>
+    <Flag source="CountryCode" style="position:absolute; left: 460px; top: 105px;" />
+
     <InputText source="PostIndex" caption="Pašto indeksas:" style="width: 80px;" d:size="100"
       d:unit="px" d:rootStyle="position:absolute; left: 500px; top: 100px;" />
   </FlowPanel>

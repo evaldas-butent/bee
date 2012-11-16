@@ -6,7 +6,7 @@ import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.modules.calendar.CalendarKeeper;
-import com.butent.bee.client.modules.commons.CommonsEventHandler;
+import com.butent.bee.client.modules.commons.CommonsKeeper;
 import com.butent.bee.client.modules.crm.CrmKeeper;
 import com.butent.bee.client.modules.mail.MailKeeper;
 import com.butent.bee.client.modules.transport.TransportHandler;
@@ -51,7 +51,7 @@ public class ModuleManager {
     FormFactory.registerFormCallback("User", new UserFormCallback());
 
     TransportHandler.register();
-    CommonsEventHandler.register();
+    CommonsKeeper.register();
     MailKeeper.register();
 
     CrmKeeper.register();

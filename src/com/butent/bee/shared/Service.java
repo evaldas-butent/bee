@@ -29,6 +29,7 @@ public class Service {
   public static final String SAVE_RESOURCE = SYS_SERVICE_PREFIX + "save_resource";
   public static final String GET_DIGEST = SYS_SERVICE_PREFIX + "get_digest";
   public static final String GET_FILES = SYS_SERVICE_PREFIX + "get_files";
+  public static final String GET_FLAGS = SYS_SERVICE_PREFIX + "get_flags";
 
   public static final String INVOKE = RPC_SERVICE_PREFIX + "invoke";
 

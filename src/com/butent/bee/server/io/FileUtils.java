@@ -16,6 +16,7 @@ import com.butent.bee.shared.utils.Property;
 import com.butent.bee.shared.utils.PropertyUtils;
 import com.butent.bee.shared.utils.Wildcards;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -26,8 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -58,27 +57,15 @@ public class FileUtils {
   private static int defaultBufferSize = 4096;
   private static Charset defaultCharset = UTF_8;
 
-  public static void closeQuietly(Reader rdr) {
-    if (rdr == null) {
+  public static void closeQuietly(Closeable closeable) {
+    if (closeable == null) {
       return;
     }
 
     try {
-      rdr.close();
+      closeable.close();
     } catch (IOException ex) {
       logger.warning(ex);
-    }
-  }
-
-  public static void closeQuietly(Writer wrt) {
-    if (wrt == null) {
-      return;
-    }
-
-    try {
-      wrt.close();
-    } catch (IOException ex) {
-      logger.error(ex);
     }
   }
 
@@ -227,6 +214,34 @@ public class FileUtils {
   public static List<File> findFiles(File dir, Filter... filters) {
     Assert.notNull(filters);
     return findFiles(dir, Lists.newArrayList(filters));
+  }
+  
+  public static byte[] getBytes(File fl) {
+    Assert.notNull(fl);
+    if (!isInputFile(fl)) {
+      logger.severe(fl.getAbsolutePath(), "not an input file");
+      return null;
+    }
+    
+    if (fl.length() > Integer.MAX_VALUE) {
+      logger.severe(fl.getAbsolutePath(), "file is too big:", fl.length());
+      return null;
+    }
+    
+    byte[] result = new byte[(int) fl.length()];
+    
+    FileInputStream fis = null;
+    try {
+      fis = new FileInputStream(fl);
+      fis.read(result);
+    } catch (IOException ex) {
+      logger.error(ex, fl.getAbsolutePath());
+      result = null;
+    } finally {
+      closeQuietly(fis);
+    }
+    
+    return result;
   }
 
   public static String getCanonicalPath(File fl) {

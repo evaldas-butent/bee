@@ -137,6 +137,10 @@ public class RendererFactory {
       case JOIN:
         renderer = new JoinRenderer(dataColumns, description.getSeparator(), renderColumns);
         break;
+        
+      case FLAG:
+        renderer = new FlagRenderer(dataIndex);
+        break;
       
       default:
         logger.severe("renderer", type.name(), "not supported");

@@ -73,18 +73,22 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
     initCommand(cmnd);
   }
   
+  @Override
   public Scheduler.ScheduledCommand getCommand() {
     return command;
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "img";
   }
   
+  @Override
   public boolean isEnabled() {
     return enabled;
   }
@@ -99,10 +103,12 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
     }
   }
 
+  @Override
   public void setCommand(Scheduler.ScheduledCommand command) {
     this.command = command;
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     if (this.enabled == enabled) {
       return;
@@ -118,6 +124,7 @@ public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
     }
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

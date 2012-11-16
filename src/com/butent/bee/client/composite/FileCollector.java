@@ -498,6 +498,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     return options;
   }
 
+  @Override
   public boolean isEmpty() {
     return getFiles().isEmpty();
   }

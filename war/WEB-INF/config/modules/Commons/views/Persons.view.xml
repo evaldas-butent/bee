@@ -31,6 +31,7 @@
 
         <SimpleJoin name="Country" joinType="LEFT">
           <SimpleColumn alias="CountryName" name="Name" />
+          <SimpleColumn alias="CountryCode" name="Code" />
         </SimpleJoin>
       </SimpleJoin>
     </SimpleJoin>

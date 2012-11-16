@@ -71,10 +71,12 @@ public class BeeCheckBox extends CheckBox implements BooleanWidget {
     return checkedCaption;
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "cb";
   }
@@ -102,6 +104,7 @@ public class BeeCheckBox extends CheckBox implements BooleanWidget {
     this.checkedCaption = checkedCaption;
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

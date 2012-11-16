@@ -42,10 +42,12 @@ public class BeeFrame extends Frame implements HasId {
     return ((JsElement) getContentDocument().getBody()).cast();
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
   
+  @Override
   public String getIdPrefix() {
     return "frame";
   }
@@ -75,6 +77,7 @@ public class BeeFrame extends Frame implements HasId {
     document.close();
   }
   
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

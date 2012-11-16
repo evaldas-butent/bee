@@ -21,6 +21,7 @@ import com.butent.bee.client.widget.DateLabel;
 import com.butent.bee.client.widget.DateTimeLabel;
 import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.client.widget.DoubleLabel;
+import com.butent.bee.client.widget.Flag;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InlineInternalLink;
 import com.butent.bee.client.widget.IntegerLabel;
@@ -44,12 +45,17 @@ public class DisplayWidget {
   private final int dataIndex;
   private final AbstractCellRenderer renderer;
   private final WidgetDescription widgetDescription;
+  
+  private final boolean dataBound;
 
   public DisplayWidget(int dataIndex, AbstractCellRenderer renderer,
       WidgetDescription widgetDescription) {
     this.dataIndex = dataIndex;
     this.renderer = renderer;
     this.widgetDescription = widgetDescription;
+    
+    this.dataBound = dataIndex >= 0 || renderer != null 
+        || !BeeUtils.isEmpty(widgetDescription.getRowProperty());
   }
 
   public String getValue(IsRow row) {
@@ -96,6 +102,10 @@ public class DisplayWidget {
   public void refresh(Widget widget, IsRow row) {
     if (widget instanceof HandlesRendering) {
       ((HandlesRendering) widget).render(row);
+      return;
+    }
+    
+    if (!dataBound) {
       return;
     }
     
@@ -148,6 +158,12 @@ public class DisplayWidget {
       case DOUBLE_LABEL:
         if (widget instanceof DoubleLabel) {
           ((DoubleLabel) widget).setValue(BeeUtils.toDoubleOrNull(value));
+        }
+        break;
+        
+      case FLAG:
+        if (widget instanceof Flag) {
+          ((Flag) widget).render(value);
         }
         break;
         

@@ -15,7 +15,6 @@ import com.butent.bee.client.menu.MenuSelectionHandler;
 import com.butent.bee.client.menu.MenuSeparator;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
-import com.butent.bee.client.widget.BeeCellList;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -271,7 +270,7 @@ public class MenuManager implements Module {
       addEntry(rw, cnt, entry, cw);
     }
 
-    prepareWidget(rw, entries);
+    prepareWidget(rw);
     return rw;
   }
 
@@ -327,16 +326,9 @@ public class MenuManager implements Module {
     return getLayouts().get(idx);
   }
 
-  @SuppressWarnings("unchecked")
-  private void prepareWidget(Widget w, List<Menu> entries) {
+  private void prepareWidget(Widget w) {
     if (w instanceof MenuBar) {
       ((MenuBar) w).prepare();
-    } else if (w instanceof BeeCellList) {
-      int cnt = BeeUtils.size(entries);
-      if (cnt > 0) {
-        ((BeeCellList<Menu>) w).setRowData(0, entries);
-        ((BeeCellList<Menu>) w).setRowCount(cnt);
-      }
     }
   }
 }

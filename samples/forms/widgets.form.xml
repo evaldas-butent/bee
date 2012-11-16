@@ -13,6 +13,14 @@
             <Button html="Logout" service="rpc_logout" class="-" />
           </HorizontalPanel>
         </layer>
+        
+        <layer left="45" leftUnit="%">
+          <HorizontalPanel style="border-spacing: 15px;">
+            <Flag country="lt" />
+            <Flag country="lv" />
+            <Flag country="ee" />
+          </HorizontalPanel>
+        </layer>
 
         <layer right="1" rightUnit="em" top="3" topUnit="px">
           <Link html="Būtent" url="http://www.butent.com" style="fontSize: x-large;" />

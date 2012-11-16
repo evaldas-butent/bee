@@ -10,6 +10,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.ImageElement;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.dom.client.StyleInjector;
@@ -28,6 +29,7 @@ import com.google.gwt.storage.client.Storage;
 import com.google.gwt.storage.client.StorageEvent;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -69,6 +71,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.i18n.DateTimeFormat;
 import com.butent.bee.client.i18n.Format;
 import com.butent.bee.client.i18n.LocaleUtils;
+import com.butent.bee.client.images.Flags;
 import com.butent.bee.client.language.DetectionCallback;
 import com.butent.bee.client.language.DetectionResult;
 import com.butent.bee.client.language.Language;
@@ -92,7 +95,9 @@ import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeButton;
+import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.client.widget.InputArea;
@@ -137,6 +142,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import elemental.js.JsBrowser;
 import elemental.js.css.JsCSSRuleList;
@@ -226,6 +232,8 @@ public class CliWorker {
       showFunctions(v, arr);
     } else if (z.equals("files") || z.startsWith("repo")) {
       getFiles();
+    } else if (z.startsWith("flag")) {
+      showFlags(arr);
     } else if (z.equals("font") && arr.length == 2) {
       showFont(arr[1]);
     } else if (z.equals("form") && arr.length == 2) {
@@ -1604,6 +1612,77 @@ public class CliWorker {
     Global.showGrid(new ExtendedPropertiesData(data, columnLabels));
   }
 
+  private static void showFlags(String[] arr) {
+    final HtmlTable table = new HtmlTable();
+    table.setBorderSpacing(10);
+
+    if (ArrayUtils.length(arr) > 1) {
+      final int cnt = arr.length - 1;
+      final Holder<Integer> counter = Holder.of(0);
+      
+      for (int i = 1; i <= cnt; i++) {
+        Flags.get(arr[i], new Callback<String>() {
+          @Override
+          public void onFailure(String... reason) {
+            count();
+          }
+
+          @Override
+          public void onSuccess(String uri) {
+            table.setWidget(0, counter.get(), new BeeImage(uri));
+            count();
+          }
+          
+          private void count() {
+            counter.set(counter.get() + 1);
+            if (counter.get() == cnt && !table.isEmpty()) {
+              Global.showModalWidget(table);
+            }
+          }
+        });
+      }
+      
+    } else {
+      Callback<Integer> callback = new Callback<Integer>() {
+        @Override
+        public void onSuccess(Integer result) {
+          int row = 0;
+          int col = 0;
+          
+          Map<String, String> flags = new TreeMap<String, String>(Flags.getFlags());
+
+          for (Map.Entry<String, String> entry : flags.entrySet()) {
+            table.setText(row, col, entry.getKey());
+            table.getCellFormatter().setHorizontalAlignment(row, col,
+                HasHorizontalAlignment.ALIGN_RIGHT);
+            col++;
+            
+            ImageElement imageElement = Document.get().createImageElement();
+            imageElement.setSrc(entry.getValue());
+            CustomWidget widget = new CustomWidget(imageElement);
+            
+            table.setWidget(row, col, widget);
+            col++;
+            if (col > 20) {
+              row++;
+              col = 0;
+            }
+          }
+
+          if (!table.isEmpty()) {
+            BeeKeeper.getScreen().showWidget(table, ScrollBars.BOTH, false);
+          }
+        }
+      };
+      
+      if (Flags.isEmpty()) {
+        Flags.load(callback);
+      } else {
+        callback.onSuccess(null);
+      }
+    }
+  }
+  
   private static void showFont(String id) {
     Element el = Document.get().getElementById(id);
     if (el == null) {

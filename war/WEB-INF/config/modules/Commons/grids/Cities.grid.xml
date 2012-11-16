@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Grid xmlns="http://www.butent.com/grid"
+<Grid xmlns="http://www.butent.com/grid" xmlns:ui="http://www.butent.com/ui"
   
   name="Cities" viewName="Cities" caption="Miestai"
   maxColumnWidth="300"
   >
   <columns>
-    <DataColumn name="Name" />
-    <RelColumn name="Country" />
-    <VerColumn name="Version" caption="Paskutinio koregavimo data" />
+    <DataColumn name="Name" minWidth="200" />
+    <RelColumn name="Country" minWidth="100" renderColumns="CountryName">
+      <selectorColumn source="Name" />
+      <selectorColumn source="Code">
+        <ui:renderer type="flag" />
+      </selectorColumn>
+    </RelColumn>
+    <CalcColumn type="string" name="Flag" source="CountryCode" cell="html" width="30" caption="-"
+      sortable="false" hasFooter="false" horizontalAlignment="center">
+      <renderer type="flag" />
+    </CalcColumn>
   </columns>
 </Grid>

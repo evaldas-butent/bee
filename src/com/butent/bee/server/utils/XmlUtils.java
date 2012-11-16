@@ -565,12 +565,19 @@ public class XmlUtils {
   public static Element getFirstChildElement(Element parent, String tagName) {
     Assert.notNull(parent);
     Assert.notEmpty(tagName);
-
-    NodeList children = parent.getElementsByTagNameNS(ALL_NS, tagName.trim());
-    if (children == null || children.getLength() <= 0) {
+   
+    NodeList nodes = parent.getChildNodes();
+    if (isEmpty(nodes)) {
       return null;
     }
-    return (Element) children.item(0);
+
+    for (int i = 0; i < nodes.getLength(); i++) {
+      Element element = asElement(nodes.item(i));
+      if (element != null && BeeUtils.same(tagName, getLocalName(element))) {
+        return element;
+      }
+    }
+    return null;
   }
 
   public static String getLocalName(Element el) {

@@ -1,6 +1,7 @@
 package com.butent.bee.server;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import com.butent.bee.server.communication.ResponseBuffer;
 import com.butent.bee.server.http.RequestInfo;
@@ -33,6 +34,7 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -71,6 +73,8 @@ public class SystemServiceBean {
 
     } else if (BeeUtils.same(svc, Service.GET_FILES)) {
       response = getFiles();
+    } else if (BeeUtils.same(svc, Service.GET_FLAGS)) {
+      response = getFlags();
       
     } else {
       String msg = BeeUtils.joinWords(svc, "system service not recognized");
@@ -144,6 +148,39 @@ public class SystemServiceBean {
     } else {
       return ResponseObject.response(files);
     }
+  }
+  
+  private ResponseObject getFlags() {
+    Map<String, String> flags = Maps.newHashMap(); 
+
+    File dir = new File(Config.IMAGES_DIR, "flags");
+    File[] files = dir.listFiles();
+    
+    if (files != null) {
+      for (File file : files) {
+        String name = file.getName();
+        
+        String key = BeeUtils.normalize(FileNameUtils.getBaseName(name));
+        String ext = BeeUtils.normalize(FileNameUtils.getExtension(name));
+        
+        if (BeeUtils.anyEmpty(key, ext)) {
+          logger.warning("invalid flag file:", file.getPath());
+          continue;
+        }
+        
+        byte[] bytes = FileUtils.getBytes(file);
+        if (bytes == null) {
+          logger.severe("error loading flag:", file.getPath());
+          break;
+        }
+        
+        String uri = "data:image/" + ext + ";base64," + Codec.toBase64(bytes);
+        flags.put(key, uri);
+      }
+    }
+
+    logger.info("loaded", flags.size(), "flags");
+    return ResponseObject.response(flags);
   }
 
   private ResponseObject getResource(RequestInfo reqInfo, ResponseBuffer buff) {

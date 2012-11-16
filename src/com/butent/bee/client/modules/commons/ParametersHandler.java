@@ -216,7 +216,7 @@ public class ParametersHandler extends AbstractGridCallback {
   private boolean change(final GridView gridView, final long id, final String name,
       final String value, final Callback<IsRow> callback) {
 
-    ParameterList args = CommonsEventHandler.createArgs(CommonsConstants.SVC_SET_PARAMETER);
+    ParameterList args = CommonsKeeper.createArgs(CommonsConstants.SVC_SET_PARAMETER);
     args.addDataItem(CommonsConstants.VAR_PARAMETERS_MODULE, module);
     args.addDataItem(CommonsConstants.VAR_PARAMETERS, name);
 
@@ -270,7 +270,7 @@ public class ParametersHandler extends AbstractGridCallback {
       prm.add(ref.get(id));
     }
     ParameterList args =
-        CommonsEventHandler.createArgs(CommonsConstants.SVC_REMOVE_PARAMETERS);
+        CommonsKeeper.createArgs(CommonsConstants.SVC_REMOVE_PARAMETERS);
     args.addDataItem(CommonsConstants.VAR_PARAMETERS_MODULE, module);
     args.addDataItem(CommonsConstants.VAR_PARAMETERS, Codec.beeSerialize(prm));
 
@@ -327,7 +327,7 @@ public class ParametersHandler extends AbstractGridCallback {
   }
 
   private void requery() {
-    ParameterList args = CommonsEventHandler.createArgs(CommonsConstants.SVC_GET_PARAMETERS);
+    ParameterList args = CommonsKeeper.createArgs(CommonsConstants.SVC_GET_PARAMETERS);
     args.addDataItem(CommonsConstants.VAR_PARAMETERS_MODULE, module);
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {
@@ -357,7 +357,7 @@ public class ParametersHandler extends AbstractGridCallback {
   private void update(final GridView gridView, final long id, final BeeParameter parameter,
       final Callback<IsRow> callback) {
 
-    ParameterList args = CommonsEventHandler.createArgs(CommonsConstants.SVC_CREATE_PARAMETER);
+    ParameterList args = CommonsKeeper.createArgs(CommonsConstants.SVC_CREATE_PARAMETER);
     args.addDataItem(CommonsConstants.VAR_PARAMETERS, Codec.beeSerialize(parameter));
 
     BeeKeeper.getRpc().makePostRequest(args, new ResponseCallback() {

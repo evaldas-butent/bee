@@ -85,8 +85,8 @@ public class CommonsConstants {
   public static final String VAR_ITEM_DATA = Service.RPC_VAR_PREFIX + "item_data";
 
   public static final String SVC_ITEM_CREATE = COMMONS_ITEM_PREFIX + "create";
-  public static final String SVC_ADD_CATEGORIES = COMMONS_ITEM_PREFIX + "AddCategories";
-  public static final String SVC_REMOVE_CATEGORIES = COMMONS_ITEM_PREFIX + "RemoveCategories";
+  public static final String SVC_ADD_CATEGORIES = COMMONS_ITEM_PREFIX + "add_categories";
+  public static final String SVC_REMOVE_CATEGORIES = COMMONS_ITEM_PREFIX + "remove_categories";
 
   public static final String TBL_FILES = "Files";
 

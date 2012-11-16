@@ -313,6 +313,10 @@ public class HtmlTable extends Panel implements HasId, IsHtmlTable {
     checkCellBounds(row, column);
     return getWidgetImpl(row, column);
   }
+  
+  public boolean isEmpty() {
+    return getRowCount() <= 0;
+  }
 
   @Override
   public Iterator<Widget> iterator() {
