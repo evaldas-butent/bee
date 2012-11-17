@@ -9,8 +9,8 @@ import com.google.gwt.user.client.ui.Button;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.HasCommand;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasService;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -18,7 +18,7 @@ import com.butent.bee.shared.utils.BeeUtils;
  * Implements a push button user interface component.
  */
 
-public class BeeButton extends Button implements HasId, HasService, HasCommand {
+public class BeeButton extends Button implements IdentifiableWidget, HasService, HasCommand {
 
   private Scheduler.ScheduledCommand command = null;
 

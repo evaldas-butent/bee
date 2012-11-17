@@ -202,13 +202,13 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     addExtWidgets(ExtWidget.Component.HEADER);
     if (header != null) {
-      addNorth(header.asWidget(), header.getHeight());
+      addNorth(header, header.getHeight());
       setHeaderId(header.getWidgetId());
     }
 
     addExtWidgets(ExtWidget.Component.FOOTER);
     if (footer != null) {
-      addSouth(footer.asWidget(), footer.getHeight());
+      addSouth(footer, footer.getHeight());
       setFooterId(footer.getWidgetId());
     }
 
@@ -216,10 +216,10 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
     if (scroller != null) {
       addEast(scroller, getScrollerWidth());
       setScrollerId(scroller.getWidgetId());
-      add(content.asWidget(), ScrollBars.HORIZONTAL);
+      add(content, ScrollBars.HORIZONTAL);
       sinkEvents(Event.ONMOUSEWHEEL);
     } else {
-      add(content.asWidget(), ScrollBars.BOTH);
+      add(content, ScrollBars.BOTH);
     }
 
     if (gridDescription.getRowMessage() != null) {
@@ -768,7 +768,7 @@ public class GridContainerImpl extends Split implements GridContainerView, HasNa
 
     for (ExtWidget extWidget : getExtWidgets()) {
       if (extWidget.isHidable()) {
-        setWidgetSize(extWidget.getWidget(), show ? extWidget.getSize() : 0);
+        setWidgetSize(extWidget.getWidget().asWidget(), show ? extWidget.getSize() : 0);
       }
     }
 

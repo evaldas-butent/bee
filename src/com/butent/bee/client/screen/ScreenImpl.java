@@ -28,6 +28,7 @@ import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeCheckBox;
 import com.butent.bee.client.widget.BeeImage;
@@ -59,7 +60,7 @@ public class ScreenImpl implements Screen {
 
   private HasWidgets menuPanel = null;
 
-  private Widget signature = null;
+  private IdentifiableWidget signature = null;
   private BeeCheckBox logToggle = null;
 
   private final String logVisible = "log-visible";
@@ -72,13 +73,13 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void addCommandItem(Widget widget) {
+  public void addCommandItem(IdentifiableWidget widget) {
     Assert.notNull(widget);
     if (getCommandPanel() == null) {
       logger.severe(getName(), "command panel not available");
     } else {
-      widget.addStyleName("bee-MainCommandPanelItem");
-      getCommandPanel().add(widget);
+      widget.asWidget().addStyleName("bee-MainCommandPanelItem");
+      getCommandPanel().add(widget.asWidget());
     }
   }
 
@@ -97,7 +98,7 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void closeWidget(Widget widget) {
+  public void closeWidget(IdentifiableWidget widget) {
     Assert.notNull(widget, "closeWidget: view widget is null");
     getWorkspace().closeWidget(widget);
   }
@@ -147,7 +148,7 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public Widget getActiveWidget() {
+  public IdentifiableWidget getActiveWidget() {
     return getWorkspace().getActiveContent();
   }
 
@@ -211,7 +212,7 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void showGrid(Widget grid) {
+  public void showGrid(IdentifiableWidget grid) {
     if (grid != null) {
       showWidget(grid, ScrollBars.BOTH, false);
     }
@@ -229,7 +230,7 @@ public class ScreenImpl implements Screen {
   }
   
   @Override
-  public void showWidget(Widget widget, ScrollBars scroll, boolean newPanel) {
+  public void showWidget(IdentifiableWidget widget, ScrollBars scroll, boolean newPanel) {
     if (newPanel) {
       getWorkspace().openInNewPage(widget, scroll);
     } else {
@@ -243,17 +244,17 @@ public class ScreenImpl implements Screen {
   }
 
   @Override
-  public void updateActivePanel(Widget widget) {
+  public void updateActivePanel(IdentifiableWidget widget) {
     showWidget(widget, ScrollBars.NONE, false);
   }
 
   @Override
-  public void updateCommandPanel(Widget widget) {
+  public void updateCommandPanel(IdentifiableWidget widget) {
     updatePanel(getCommandPanel(), widget);
   }
 
   @Override
-  public void updateMenu(Widget widget) {
+  public void updateMenu(IdentifiableWidget widget) {
     updatePanel(getMenuPanel(), widget);
   }
 
@@ -286,12 +287,12 @@ public class ScreenImpl implements Screen {
   @Override
   public void updateSignature(String userSign) {
     if (getSignature() != null) {
-      getSignature().getElement().setInnerHTML(userSign);
+      getSignature().asWidget().getElement().setInnerHTML(userSign);
     }
   }
 
   protected void createUi() {
-    Widget w;
+    IdentifiableWidget w;
     Split p = new Split(0);
     p.addStyleName("bee-Screen");
 
@@ -338,21 +339,21 @@ public class ScreenImpl implements Screen {
     return rootPanel;
   }
 
-  protected Widget getSignature() {
+  protected IdentifiableWidget getSignature() {
     return signature;
   }
 
-  protected Widget initCenter() {
+  protected IdentifiableWidget initCenter() {
     Workspace area = new Workspace();
     setWorkspace(area);
     return area;
   }
 
-  protected Widget initEast() {
+  protected IdentifiableWidget initEast() {
     return ClientLogManager.getLogPanel();
   }
 
-  protected Widget initNorth() {
+  protected IdentifiableWidget initNorth() {
     Complex panel = new Complex();
     panel.addStyleName("bee-NorthContainer");
 
@@ -403,7 +404,7 @@ public class ScreenImpl implements Screen {
     return panel;
   }
 
-  protected Widget initSouth() {
+  protected IdentifiableWidget initSouth() {
     Flow panel = new Flow();
     panel.addStyleName("bee-ProgressPanel");
     setProgressPanel(panel);
@@ -411,7 +412,7 @@ public class ScreenImpl implements Screen {
     return panel;
   }
 
-  protected Widget initWest() {
+  protected IdentifiableWidget initWest() {
     TabbedPages tp = new TabbedPages();
 
     tp.add(Global.getFavorites(), new BeeImage(Global.getImages().bookmark()));
@@ -464,11 +465,11 @@ public class ScreenImpl implements Screen {
     this.screenPanel = screenPanel;
   }
 
-  protected void setSignature(Widget signature) {
+  protected void setSignature(IdentifiableWidget signature) {
     this.signature = signature;
   }
 
-  private Widget createLogo() {
+  private IdentifiableWidget createLogo() {
     BeeImage logo = new BeeImage(Global.getImages().logo2().getSafeUri());
     logo.addStyleName("bee-Logo");
 
@@ -525,7 +526,7 @@ public class ScreenImpl implements Screen {
     this.workspace = workspace;
   }
 
-  private void updatePanel(HasWidgets panel, Widget widget) {
+  private void updatePanel(HasWidgets panel, IdentifiableWidget widget) {
     if (panel == null) {
       notifyWarning("updatePanel: panel is null");
       return;
@@ -536,6 +537,6 @@ public class ScreenImpl implements Screen {
     }
 
     panel.clear();
-    panel.add(widget);
+    panel.add(widget.asWidget());
   }
 }

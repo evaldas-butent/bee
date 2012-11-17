@@ -9,12 +9,12 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.communication.ParameterList;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.BeeLayoutPanel;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.InputArea;
 import com.butent.bee.shared.Resource;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ContentType;
 import com.butent.bee.shared.ui.HasCaption;
@@ -24,7 +24,7 @@ import com.butent.bee.shared.utils.Codec;
 /**
  * Implements a text area editor user interface component.
  */
-public class ResourceEditor extends Composite implements HasId, HasCaption {
+public class ResourceEditor extends Composite implements IdentifiableWidget, HasCaption {
 
   protected class SaveCommand extends Command {
     @Override

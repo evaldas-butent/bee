@@ -4,13 +4,13 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.ui.HTMLPanel;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 
 /**
  * Manages a panel with HTML capabilities.
  */
 
-public class HtmlPanel extends HTMLPanel implements HasId {
+public class HtmlPanel extends HTMLPanel implements IdentifiableWidget {
 
   public HtmlPanel(SafeHtml safeHtml) {
     super(safeHtml);

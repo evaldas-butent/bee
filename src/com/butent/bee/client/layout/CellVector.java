@@ -10,10 +10,10 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.HasIndexedWidgets;
-import com.butent.bee.shared.HasId;
 
-public abstract class CellVector extends ComplexPanel implements HasId, HasIndexedWidgets,
+public abstract class CellVector extends ComplexPanel implements IdentifiableWidget, HasIndexedWidgets,
     HasAlignment, InsertPanel, IsHtmlTable {
 
   private final Element table;

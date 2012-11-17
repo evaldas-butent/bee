@@ -25,12 +25,12 @@ import com.butent.bee.client.layout.IsHtmlTable;
 import com.butent.bee.client.layout.Simple;
 import com.butent.bee.client.layout.Vertical;
 import com.butent.bee.client.ui.AcceptsCaptions;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.widget.BeeLabel;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasItems;
 import com.butent.bee.shared.ui.Orientation;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -39,7 +39,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class TabBar extends Composite implements HasBeforeSelectionHandlers<Integer>,
-    HasSelectionHandlers<Integer>, HasId, HasItems, AcceptsCaptions, IsHtmlTable {
+    HasSelectionHandlers<Integer>, IdentifiableWidget, HasItems, AcceptsCaptions, IsHtmlTable {
 
   private class Tab extends Simple implements HasEnabled {
     private boolean enabled = true;

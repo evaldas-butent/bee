@@ -10,8 +10,8 @@ import com.google.gwt.user.client.ui.HasName;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasId;
 
 import elemental.html.InputElement;
 
@@ -19,7 +19,7 @@ import elemental.html.FileList;
 
 import elemental.js.html.JsInputElement;
 
-public class InputFile extends Widget implements HasName, HasChangeHandlers, HasEnabled, HasId {
+public class InputFile extends Widget implements HasName, HasChangeHandlers, HasEnabled, IdentifiableWidget {
 
   public InputFile() {
     super();

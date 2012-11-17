@@ -4,16 +4,16 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.ui.Anchor;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Enables using hyperlink user interface component with {@code_blank} parameter.
  */
 
-public class Link extends Anchor implements HasId {
+public class Link extends Anchor implements IdentifiableWidget {
 
   private static final String DEFAULT_TARGET = "_blank";
 

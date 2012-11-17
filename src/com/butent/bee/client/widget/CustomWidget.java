@@ -4,9 +4,9 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 
-public class CustomWidget extends Widget implements HasId {
+public class CustomWidget extends Widget implements IdentifiableWidget {
 
   public CustomWidget(Element element) {
     super();

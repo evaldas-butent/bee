@@ -20,7 +20,6 @@ import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
@@ -273,8 +272,9 @@ public class HeaderSilverImpl extends Complex implements HeaderView {
 
     for (int i = 0; i < getWidgetCount(); i++) {
       Widget child = getWidget(i);
-      if (child instanceof HasId
-          && BeeUtils.containsSame(getActionControls().values(), ((HasId) child).getId())) {
+      String id = DomUtils.getId(child);
+
+      if (BeeUtils.containsSame(getActionControls().values(), id)) {
         if (child instanceof HasEnabled) {
           ((HasEnabled) child).setEnabled(enabled);
         }

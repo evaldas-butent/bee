@@ -6,7 +6,6 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Global;
 import com.butent.bee.client.Settings;
@@ -22,6 +21,7 @@ import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeCheckBox;
@@ -42,7 +42,7 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
-  public void closeWidget(Widget widget) {
+  public void closeWidget(IdentifiableWidget widget) {
     Assert.notNull(widget, "closeWidget: widget is null");
 
     if (Objects.equal(widget, getActiveWidget())) {
@@ -63,7 +63,7 @@ public class Mobile extends ScreenImpl {
   }
   
   @Override
-  public Widget getActiveWidget() {
+  public IdentifiableWidget getActiveWidget() {
     return getScreenPanel().getCenter();
   }
 
@@ -73,7 +73,7 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
-  public void showWidget(Widget widget, ScrollBars scroll, boolean newPanel) {
+  public void showWidget(IdentifiableWidget widget, ScrollBars scroll, boolean newPanel) {
     getScreenPanel().updateCenter(widget, scroll);
   }
 
@@ -90,7 +90,7 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
-  public void updateActivePanel(Widget widget) {
+  public void updateActivePanel(IdentifiableWidget widget) {
     showWidget(widget, ScrollBars.NONE, false);
   }
 
@@ -109,7 +109,7 @@ public class Mobile extends ScreenImpl {
 
   @Override
   protected void createUi() {
-    Widget w;
+    IdentifiableWidget w;
     Split p = new Split(1);
 
     w = initNorth();
@@ -148,12 +148,12 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
-  protected Widget initCenter() {
+  protected IdentifiableWidget initCenter() {
     return null;
   }
   
   @Override
-  protected Widget initNorth() {
+  protected IdentifiableWidget initNorth() {
     Complex panel = new Complex();
     panel.addStyleName("bee-NorthContainer");
     
@@ -171,7 +171,7 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
-  protected Widget initSouth() {
+  protected IdentifiableWidget initSouth() {
     BeeLayoutPanel p = new BeeLayoutPanel();
 
     int width = DomUtils.getClientWidth();
@@ -206,7 +206,7 @@ public class Mobile extends ScreenImpl {
   }
 
   @Override
-  protected Widget initWest() {
+  protected IdentifiableWidget initWest() {
     return null;
   }
 }

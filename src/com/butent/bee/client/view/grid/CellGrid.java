@@ -53,12 +53,12 @@ import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.grid.column.SelectionColumn;
 import com.butent.bee.client.render.RenderableColumn;
 import com.butent.bee.client.ui.ConditionalStyle;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.StyleDescriptor;
 import com.butent.bee.client.view.edit.EditStartEvent;
 import com.butent.bee.client.view.edit.HasEditStartHandlers;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.event.CellUpdateEvent;
@@ -88,7 +88,7 @@ import java.util.Set;
  * Manages the structure and behavior of a cell grid user interface component.
  */
 
-public class CellGrid extends Widget implements HasId, HasDataTable, HasEditStartHandlers,
+public class CellGrid extends Widget implements IdentifiableWidget, HasDataTable, HasEditStartHandlers,
     HasEnabled, HasActiveRow {
 
   /**

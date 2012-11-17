@@ -3,7 +3,6 @@ package com.butent.bee.client.modules.crm;
 import com.google.common.collect.Lists;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.crm.CrmConstants.*;
 
@@ -17,6 +16,7 @@ import com.butent.bee.client.presenter.GridFormPresenter;
 import com.butent.bee.client.presenter.TreePresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
 import com.butent.bee.client.utils.NewFileInfo;
@@ -53,7 +53,8 @@ public class DocumentHandler {
     }
 
     @Override
-    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+    public void afterCreateWidget(String name, IdentifiableWidget widget,
+        WidgetDescriptionCallback callback) {
       if (widget instanceof FileCollector) {
         this.collector = (FileCollector) widget;
         this.collector.bindDnd(getFormView());
@@ -188,7 +189,8 @@ public class DocumentHandler {
     private TreePresenter categoryTree = null;
 
     @Override
-    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+    public void afterCreateWidget(String name, IdentifiableWidget widget,
+        WidgetDescriptionCallback callback) {
       if (widget instanceof TreeView && BeeUtils.same(name, "Tree")) {
         ((TreeView) widget).addSelectionHandler(this);
         categoryTree = ((TreeView) widget).getTreePresenter();

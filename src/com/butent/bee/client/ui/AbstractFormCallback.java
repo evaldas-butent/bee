@@ -1,7 +1,6 @@
 package com.butent.bee.client.ui;
 
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.presenter.FormPresenter;
@@ -34,7 +33,8 @@ public abstract class AbstractFormCallback implements FormFactory.FormCallback {
   }
 
   @Override
-  public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
   }
 
   @Override
@@ -56,7 +56,7 @@ public abstract class AbstractFormCallback implements FormFactory.FormCallback {
   }
   
   @Override
-  public Widget createCustomWidget(String name, Element description) {
+  public IdentifiableWidget createCustomWidget(String name, Element description) {
     return null;
   }
 

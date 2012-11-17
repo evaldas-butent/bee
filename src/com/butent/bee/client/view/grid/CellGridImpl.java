@@ -53,6 +53,7 @@ import com.butent.bee.client.ui.ConditionalStyle;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
@@ -1525,8 +1526,8 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
     popup.setVisible(false);
     popup.show();
 
-    int width = DomUtils.getOuterWidth(form.getRootWidget().getElement());
-    int height = DomUtils.getOuterHeight(form.getRootWidget().getElement())
+    int width = DomUtils.getOuterWidth(form.getRootWidget().asWidget().getElement());
+    int height = DomUtils.getOuterHeight(form.getRootWidget().asWidget().getElement())
         + form.getViewPresenter().getHeader().getHeight() + 1;
 
     popup.hide();
@@ -1563,7 +1564,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
 
     final GridFormPresenter gfp = new GridFormPresenter(this, formView, formCaption, actions, edit,
         hasEditSave());
-    Widget container = gfp.getWidget();
+    Widget container = gfp.getWidget().asWidget();
 
     if (asPopup) {
       ModalForm popup = new ModalForm(container, formView, true, true);
@@ -1639,7 +1640,7 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
             editor.getId(), columnName);
 
         widgetDescription.updateFrom(editableColumn);
-        callback.onSuccess(widgetDescription, editor.asWidget());
+        callback.onSuccess(widgetDescription, editor);
       }
       r++;
     }
@@ -1681,9 +1682,10 @@ public class CellGridImpl extends Absolute implements GridView, SearchView, Edit
           }
 
           @Override
-          public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback wdc) {
+          public void afterCreateWidget(String name, IdentifiableWidget widget,
+              WidgetDescriptionCallback wdc) {
             if (BeeUtils.same(name, rootName) && widget instanceof HtmlTable) {
-              widget.addStyleName(RowFactory.STYLE_NEW_ROW_TABLE);
+              widget.asWidget().addStyleName(RowFactory.STYLE_NEW_ROW_TABLE);
               createNewRowWidgets((HtmlTable) widget, columnNames, wdc);
             }
           }

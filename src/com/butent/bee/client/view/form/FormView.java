@@ -12,6 +12,7 @@ import com.butent.bee.shared.HasState;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.HasDimensions;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.DataView;
 import com.butent.bee.client.view.add.HasAddEndHandlers;
 import com.butent.bee.client.view.add.HasAddStartHandlers;
@@ -56,7 +57,7 @@ public interface FormView extends DataView, HasDataTable, ActiveWidgetChangeEven
 
   IsRow getOldRow();
 
-  Widget getRootWidget();
+  IdentifiableWidget getRootWidget();
 
   JavaScriptObject getRowJso();
 

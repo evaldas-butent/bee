@@ -16,6 +16,7 @@ import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.presenter.Presenter;
 import com.butent.bee.client.tree.TreeItem;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.View;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.shared.logging.BeeLogger;
@@ -46,8 +47,8 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
   private static final String ACTIVE_BLANK = "bee-activeBlank";
   private static final String ACTIVE_CONTENT = "bee-activeContent";
 
-  static TilePanel getParentTile(Widget widget) {
-    for (Widget parent = widget; parent != null; parent = parent.getParent()) {
+  static TilePanel getParentTile(IdentifiableWidget widget) {
+    for (Widget parent = widget.asWidget(); parent != null; parent = parent.getParent()) {
       if (parent instanceof TilePanel) {
         return (TilePanel) parent;
       }
@@ -59,7 +60,8 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     return newTile(new BlankTile(), ScrollBars.NONE, handler);
   }
 
-  static TilePanel newTile(Widget widget, ScrollBars scroll, SelectionHandler<TilePanel> handler) {
+  static TilePanel newTile(IdentifiableWidget widget, ScrollBars scroll,
+      SelectionHandler<TilePanel> handler) {
     TilePanel tile = new TilePanel();
     tile.add(widget, scroll);
     if (handler != null) {
@@ -157,11 +159,11 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
 
     deactivate();
 
-    Widget oldCenter = getCenter();
+    IdentifiableWidget oldCenter = getCenter();
     TilePanel newCenter;
 
     if (oldCenter != null) {
-      ScrollBars scroll = getWidgetScroll(oldCenter);
+      ScrollBars scroll = getWidgetScroll(oldCenter.asWidget());
 
       Global.setTemporaryDetach(true);
       remove(oldCenter);
@@ -238,7 +240,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     return isActive() ? this : locateActiveChild(getRoot());
   }
 
-  Widget getContent() {
+  IdentifiableWidget getContent() {
     return isBlank() ? null : getCenter();
   }
 
@@ -273,7 +275,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     return !(getParent() instanceof TilePanel);
   }
 
-  void updateContent(Widget widget, ScrollBars scroll) {
+  void updateContent(IdentifiableWidget widget, ScrollBars scroll) {
     boolean wasActive = isActive();
     if (wasActive) {
       deactivate();
@@ -319,13 +321,13 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
   }
 
   private void moveTo(TilePanel parent) {
-    Widget centerWidget = getCenter();
-    ScrollBars centerScroll = getWidgetScroll(centerWidget);
+    IdentifiableWidget centerWidget = getCenter();
+    ScrollBars centerScroll = getWidgetScroll(centerWidget.asWidget());
 
-    List<Widget> children = Lists.newArrayList();
+    List<IdentifiableWidget> children = Lists.newArrayList();
     for (Widget child : getChildren()) {
       if (!isSplitter(child) && child != centerWidget) {
-        children.add(child);
+        children.add((IdentifiableWidget) child);
       }
     }
 
@@ -346,7 +348,7 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
     int[] splSizes = new int[c];
 
     for (int i = 0; i < c; i++) {
-      Widget child = children.get(i);
+      Widget child = children.get(i).asWidget();
 
       directions[i] = getWidgetDirection(child);
       sizes[i] = directions[i].isHorizontal() ? getWidgetWidth(child) : getWidgetHeight(child);
@@ -375,15 +377,15 @@ class TilePanel extends Split implements HasSelectionHandlers<TilePanel>, HasCap
       return;
     }
 
-    Widget widget = getCenter();
+    IdentifiableWidget widget = getCenter();
 
     if (widget instanceof BlankTile) {
-      widget.setStyleName(ACTIVE_BLANK, add);
+      widget.asWidget().setStyleName(ACTIVE_BLANK, add);
     } else if (widget != null) {
       if (add) {
-        getWidgetContainerElement(widget).addClassName(ACTIVE_CONTENT);
+        getWidgetContainerElement(widget.asWidget()).addClassName(ACTIVE_CONTENT);
       } else {
-        getWidgetContainerElement(widget).removeClassName(ACTIVE_CONTENT);
+        getWidgetContainerElement(widget.asWidget()).removeClassName(ACTIVE_CONTENT);
       }
     }
   }

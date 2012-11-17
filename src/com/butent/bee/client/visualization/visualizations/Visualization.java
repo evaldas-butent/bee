@@ -6,10 +6,10 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.visualization.AbstractDataTable;
 import com.butent.bee.client.visualization.AbstractDrawOptions;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.HasId;
 
 /**
  * Is an abstract class for all visualizations in this package, contains methods structure for
@@ -17,7 +17,7 @@ import com.butent.bee.shared.HasId;
  */
 
 public abstract class Visualization<OptionsType extends AbstractDrawOptions> extends Widget
-    implements HasId {
+    implements IdentifiableWidget {
   private AbstractDataTable dataTable;
   private OptionsType options;
   private JavaScriptObject jso;

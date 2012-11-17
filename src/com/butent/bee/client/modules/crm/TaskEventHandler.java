@@ -35,6 +35,7 @@ import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.FileUtils;
@@ -83,7 +84,8 @@ class TaskEventHandler {
     private static final String NAME_FILES = "Files";
     
     @Override
-    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+    public void afterCreateWidget(String name, IdentifiableWidget widget,
+        WidgetDescriptionCallback callback) {
       if (widget instanceof FileCollector) {
         ((FileCollector) widget).bindDnd(getFormView());
       }
@@ -473,14 +475,14 @@ class TaskEventHandler {
 
   private static class TaskEditor extends AbstractFormCallback {
 
-    private final Map<String, Widget> formWidgets = Maps.newHashMap();
+    private final Map<String, IdentifiableWidget> formWidgets = Maps.newHashMap();
 
     private TaskEditor() {
       super();
     }
 
     @Override
-    public void afterCreateWidget(String name, final Widget widget,
+    public void afterCreateWidget(String name, final IdentifiableWidget widget,
         WidgetDescriptionCallback callback) {
 
       if (widget instanceof HasClickHandlers) {
@@ -491,7 +493,7 @@ class TaskEventHandler {
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent e) {
-              doEvent(event, UiHelper.getForm(widget));
+              doEvent(event, UiHelper.getForm(widget.asWidget()));
             }
           });
         }
@@ -510,13 +512,13 @@ class TaskEventHandler {
         Long executor = row.getLong(form.getDataIndex(COL_EXECUTOR));
 
         for (TaskEvent ev : TaskEvent.values()) {
-          Widget widget = getWidget(ev.name());
+          IdentifiableWidget widget = getWidget(ev.name());
 
           if (widget != null) {
             if (availableEvent(ev, idx, owner, executor)) {
-              StyleUtils.unhideDisplay(widget);
+              StyleUtils.unhideDisplay(widget.asWidget());
             } else {
-              StyleUtils.hideDisplay(widget);
+              StyleUtils.hideDisplay(widget.asWidget());
             }
           }
         }
@@ -560,11 +562,11 @@ class TaskEventHandler {
       return false;
     }
 
-    private Widget getWidget(String name) {
+    private IdentifiableWidget getWidget(String name) {
       return formWidgets.get(BeeUtils.normalize(name));
     }
 
-    private void setWidget(String name, Widget widget) {
+    private void setWidget(String name, IdentifiableWidget widget) {
       formWidgets.put(BeeUtils.normalize(name), widget);
     }
   }

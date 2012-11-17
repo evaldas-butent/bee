@@ -4,11 +4,13 @@ import com.google.common.base.Objects;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.data.HasDataTable;
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.client.event.logical.ScopeChangeEvent;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.ui.IdentifiableWidget;
+import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.ui.NavigationOrigin;
 
@@ -30,6 +32,16 @@ public abstract class AbstractPager extends Composite implements PagerView {
     return display;
   }
 
+  @Override
+  public String getId() {
+    return getIdentifiableWidget().getId();
+  }
+
+  @Override
+  public String getIdPrefix() {
+    return getIdentifiableWidget().getIdPrefix();
+  }
+
   public int getPageSize() {
     return (getDisplay() == null) ? BeeConst.UNDEF : getDisplay().getPageSize();
   }
@@ -47,19 +59,20 @@ public abstract class AbstractPager extends Composite implements PagerView {
     return (getDisplay() == null) ? BeeConst.UNDEF : getDisplay().getRowCount();
   }
 
+  @Override
   public Presenter getViewPresenter() {
     return viewPresenter;
   }
 
+  @Override
   public String getWidgetId() {
     return DomUtils.getId(getWidget());
   }
 
+  @Override
   public boolean isEnabled() {
     return enabled;
   }
-
-  public abstract void onScopeChange(ScopeChangeEvent event);
 
   public void setDisplay(HasDataTable display) {
     if (changeHandler != null) {
@@ -74,20 +87,28 @@ public abstract class AbstractPager extends Composite implements PagerView {
     }
   }
 
+  @Override
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
   }
+  
+  @Override
+  public void setId(String id) {
+    getIdentifiableWidget().setId(id);
+  }
 
+  @Override
   public void setViewPresenter(Presenter viewPresenter) {
     this.viewPresenter = viewPresenter;
   }
 
+  @Override
   public void start(HasDataTable displ) {
     if (!Objects.equal(displ, getDisplay())) {
       setDisplay(displ);
     }
   }
-  
+
   protected abstract NavigationOrigin getNavigationOrigin();
 
   protected int getPage() {
@@ -117,6 +138,15 @@ public abstract class AbstractPager extends Composite implements PagerView {
     return getPageStart() > 0 && getRowCount() > 0;
   }
 
+  @Override
+  protected void initWidget(Widget widget) {
+    if (widget instanceof IdentifiableWidget) {
+      super.initWidget(widget);
+    } else {
+      Assert.unsupported("only IdentifiableWidget can be used as Pager");
+    }
+  }
+  
   protected void nextPage() {
     if (getPageSize() > 0) {
       setPageStart(getPageStart() + getPageSize());
@@ -142,5 +172,9 @@ public abstract class AbstractPager extends Composite implements PagerView {
         getDisplay().setPageStart(Math.max(0, start), true, true, getNavigationOrigin());
       }
     }
+  }
+
+  private IdentifiableWidget getIdentifiableWidget() {
+    return (getWidget() == null) ? null : (IdentifiableWidget) getWidget();
   }
 }

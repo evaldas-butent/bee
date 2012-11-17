@@ -10,14 +10,14 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Enables an user interface component, which indicates to a user how much progress a process has
  * made and how much is still left to be done.
  */
-public class ProgressBar extends Widget implements HasId, RequiresResize {
+public class ProgressBar extends Widget implements IdentifiableWidget, RequiresResize {
 
   /**
    * Requires classes implementing this interface to have TextFormatter method.

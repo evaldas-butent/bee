@@ -19,14 +19,14 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.FlowPanel;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.HasIndexedWidgets;
-import com.butent.bee.shared.HasId;
 
 /**
  * Implements a panel that formats its child widgets using the default HTML layout behavior.
  */
 
-public class Flow extends FlowPanel implements HasId, HasAllDragAndDropHandlers, HasIndexedWidgets {
+public class Flow extends FlowPanel implements IdentifiableWidget, HasAllDragAndDropHandlers, HasIndexedWidgets {
 
   public Flow() {
     DomUtils.createId(this, getIdPrefix());

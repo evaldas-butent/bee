@@ -3,13 +3,13 @@ package com.butent.bee.client.widget;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 
 /**
  * Implements a meter user interface component for gauging actual values against the target ones.
  */
 
-public class Meter extends Widget implements HasId {
+public class Meter extends Widget implements IdentifiableWidget {
 
   public Meter() {
     super();

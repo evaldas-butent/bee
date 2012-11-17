@@ -24,7 +24,7 @@ public class LogFormatter extends Formatter {
       return LOG_SEPARATOR_TAG;
     } else {
       return BeeUtils.joinWords(JsUtils.toTime(record.getMillis()),
-          BeeUtils.clip(record.getMessage(), 256));
+          BeeUtils.clip(record.getMessage(), 256), record.getThrown());
     }
   }
 

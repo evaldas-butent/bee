@@ -3,13 +3,13 @@ package com.butent.bee.client.widget;
 import com.google.gwt.user.client.ui.RadioButton;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 
 /**
  * Implements a mutually-exclusive selection radio button user interface component.
  */
 
-public class BeeRadioButton extends RadioButton implements HasId {
+public class BeeRadioButton extends RadioButton implements IdentifiableWidget {
   
   public BeeRadioButton(String name, String label) {
     super(name, label);

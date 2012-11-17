@@ -6,13 +6,13 @@ import com.google.gwt.user.client.ui.InsertPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 
 /**
  * Enables to manage span elements from Document Object Model.
  */
 
-public class Span extends ComplexPanel implements InsertPanel, HasId {
+public class Span extends ComplexPanel implements InsertPanel, IdentifiableWidget {
 
   public Span() {
     setElement(DOM.createSpan());

@@ -16,6 +16,7 @@ import com.butent.bee.client.layout.Span;
 import com.butent.bee.client.layout.TabbedPages;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.CustomDiv;
 import com.butent.bee.client.widget.InlineLabel;
@@ -39,19 +40,19 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     EAST(new CustomDiv(), "east", true, "Nauja sritis dešinėje"),
     CLOSE(new BeeImage(Global.getImages().noes()), "close", false, "Uždaryti");
 
-    private final Widget widget;
+    private final IdentifiableWidget widget;
 
-    private TabAction(Widget widget, String style, boolean split, String title) {
+    private TabAction(IdentifiableWidget widget, String style, boolean split, String title) {
       this.widget = widget;
 
-      this.widget.addStyleName(Workspace.STYLE_PREFIX + "action-" + style);
+      this.widget.asWidget().addStyleName(Workspace.STYLE_PREFIX + "action-" + style);
       if (split) {
-        this.widget.addStyleName(Workspace.STYLE_PREFIX + "action-split");
+        this.widget.asWidget().addStyleName(Workspace.STYLE_PREFIX + "action-split");
       }
-      this.widget.setTitle(title);
+      this.widget.asWidget().setTitle(title);
     }
 
-    private Widget getWidget() {
+    private IdentifiableWidget getWidget() {
       return widget;
     }
   }
@@ -114,7 +115,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     }
   }
 
-  void closeWidget(Widget widget) {
+  void closeWidget(IdentifiableWidget widget) {
     TilePanel tile = TilePanel.getParentTile(widget);
     if (tile == null) {
       showError("closeWidget: panel not found");
@@ -133,7 +134,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     }
   }
 
-  Widget getActiveContent() {
+  IdentifiableWidget getActiveContent() {
     return getActivePanel().getContent();
   }
 
@@ -151,7 +152,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     return tile;
   }
 
-  void openInNewPage(Widget widget, ScrollBars scroll) {
+  void openInNewPage(IdentifiableWidget widget, ScrollBars scroll) {
     TilePanel tile = getActivePanel();
     if (tile == null || !tile.isRoot() || !tile.isBlank()) {
       int index = getSelectedIndex();
@@ -180,7 +181,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     Global.showModalWidget(tree);
   }
 
-  void updateActivePanel(Widget widget, ScrollBars scroll) {
+  void updateActivePanel(IdentifiableWidget widget, ScrollBars scroll) {
     if (widget == null) {
       showError("widget is null");
       return;
@@ -302,7 +303,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
 
     TabBar bar = new TabBar(STYLE_PREFIX + "actionMenu-", Orientation.HORIZONTAL);
     for (TabAction action : actions) {
-      bar.addItem(action.getWidget());
+      bar.addItem(action.getWidget().asWidget());
     }
 
     final Popup popup = new Popup(true, true, STYLE_PREFIX + "actionPopup");
@@ -350,7 +351,7 @@ class Workspace extends TabbedPages implements SelectionHandler<TilePanel> {
     }
 
     tab.setCaption(caption);
-
+    
     if (checkSize) {
       checkLayout();
     }

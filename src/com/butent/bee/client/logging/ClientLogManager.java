@@ -1,8 +1,7 @@
 package com.butent.bee.client.logging;
 
-import com.google.gwt.user.client.ui.Widget;
-
 import com.butent.bee.client.Settings;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.BeeLoggerFactory;
@@ -18,7 +17,7 @@ public class ClientLogManager implements BeeLoggerFactory {
     getPanelHandler().clear();
   }
 
-  public static Widget getLogPanel() {
+  public static IdentifiableWidget getLogPanel() {
     return getPanelHandler().getPanel();
   }
 

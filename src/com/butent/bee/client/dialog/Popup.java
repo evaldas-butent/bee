@@ -26,14 +26,11 @@ import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.HasCloseHandlers;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
-import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasAnimation;
@@ -47,15 +44,15 @@ import com.butent.bee.client.dom.Stacking;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.PreviewHandler;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.List;
 
-public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers<Popup>, HasId {
+public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers<Popup>, IdentifiableWidget {
 
   public enum AnimationType {
     CENTER, ONE_WAY_CORNER, ROLL_DOWN
@@ -311,7 +308,6 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
   private AnimationType animationType = AnimationType.CENTER;
 
   private final boolean autoHide;
-  private final boolean autoHideOnHistoryEvents;
 
   private final boolean modal;
 
@@ -330,7 +326,6 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
   private boolean previewAllNativeEvents = false;
   private HandlerRegistration nativePreviewHandlerRegistration = null;
-  private HandlerRegistration historyHandlerRegistration = null;
   private HandlerRegistration resizeHandlerRegistration = null;
   
   private List<PreviewHandler> previewHandlers = null;
@@ -356,7 +351,6 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     super();
 
     this.autoHide = autoHide;
-    this.autoHideOnHistoryEvents = autoHide;
     this.modal = modal;
 
     setPopupPosition(0, 0);
@@ -481,10 +475,6 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
 
   public boolean isAutoHideEnabled() {
     return autoHide;
-  }
-
-  public boolean isAutoHideOnHistoryEventsEnabled() {
-    return autoHideOnHistoryEvents;
   }
 
   public boolean isGlassEnabled() {
@@ -735,10 +725,6 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     return glass;
   }
 
-  private HandlerRegistration getHistoryHandlerRegistration() {
-    return historyHandlerRegistration;
-  }
-
   private int getLeftPosition() {
     return leftPosition;
   }
@@ -912,10 +898,6 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
     this.glass = glass;
   }
   
-  private void setHistoryHandlerRegistration(HandlerRegistration historyHandlerRegistration) {
-    this.historyHandlerRegistration = historyHandlerRegistration;
-  }
-
   private void setLeftPosition(int leftPosition) {
     this.leftPosition = leftPosition;
   }
@@ -949,10 +931,7 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
       getNativePreviewHandlerRegistration().removeHandler();
       setNativePreviewHandlerRegistration(null);
     }
-    if (getHistoryHandlerRegistration() != null) {
-      getHistoryHandlerRegistration().removeHandler();
-      setHistoryHandlerRegistration(null);
-    }
+
     if (getResizeHandlerRegistration() != null) {
       getResizeHandlerRegistration().removeHandler();
       setResizeHandlerRegistration(null);
@@ -965,14 +944,6 @@ public class Popup extends SimplePanel implements HasAnimation, HasCloseHandlers
         }
       }));
 
-      setHistoryHandlerRegistration(History.addValueChangeHandler(new ValueChangeHandler<String>() {
-        public void onValueChange(ValueChangeEvent<String> event) {
-          if (isAutoHideOnHistoryEventsEnabled()) {
-            hide();
-          }
-        }
-      }));
-      
       setResizeHandlerRegistration(Window.addResizeHandler(new ResizeHandler() {
         public void onResize(ResizeEvent event) {
           setWindowWidth(event.getWidth());

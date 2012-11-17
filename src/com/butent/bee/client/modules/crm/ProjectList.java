@@ -21,6 +21,7 @@ import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.render.HasCellRenderer;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.grid.AbstractGridCallback;
@@ -135,7 +136,8 @@ public class ProjectList {
     }
 
     @Override
-    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+    public void afterCreateWidget(String name, IdentifiableWidget widget,
+        WidgetDescriptionCallback callback) {
       if (widget instanceof HasClickHandlers && BeeUtils.same(name, "Filter")) {
         ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
           @Override

@@ -359,16 +359,7 @@
     </xs:complexType>
   </xs:element>
 
-  <xs:complexType name="internalLink">
-    <xs:complexContent>
-      <xs:extension base="focusableWidget">
-        <xs:attribute name="historyToken" type="xs:token" />
-      </xs:extension>
-    </xs:complexContent>
-  </xs:complexType>
-
-  <xs:element name="Hyperlink" type="internalLink" substitutionGroup="widget" />
-  <xs:element name="InlineHyperlink" type="internalLink" substitutionGroup="widget" />
+  <xs:element name="Hyperlink" type="focusableWidget" substitutionGroup="widget" />
 
   <xs:element name="Label" type="labelType" substitutionGroup="widget" />
   <xs:element name="InlineLabel" type="labelType" substitutionGroup="widget" />

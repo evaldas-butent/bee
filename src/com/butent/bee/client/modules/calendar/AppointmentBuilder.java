@@ -55,6 +55,7 @@ import com.butent.bee.client.presenter.FormPresenter;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.edit.Editor;
 import com.butent.bee.client.view.form.CloseCallback;
@@ -380,15 +381,17 @@ class AppointmentBuilder extends AbstractFormCallback {
   }
 
   @Override
-  public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
+
     if (BeeUtils.same(name, NAME_SERVICE_TYPE)) {
-      setServiceTypeWidgetId(DomUtils.getId(widget));
+      setServiceTypeWidgetId(widget.getId());
       if (widget instanceof BeeListBox) {
         ((BeeListBox) widget).addKeyDownHandler(LIST_BOX_CLEANER);
       }
 
     } else if (BeeUtils.same(name, NAME_REPAIR_TYPE)) {
-      setRepairTypeWidgetId(DomUtils.getId(widget));
+      setRepairTypeWidgetId(widget.getId());
       if (widget instanceof Editor) {
         ((Editor) widget).addValueChangeHandler(propWidgetHandler);
       }
@@ -416,14 +419,14 @@ class AppointmentBuilder extends AbstractFormCallback {
       }
 
     } else if (BeeUtils.same(name, NAME_RESOURCES)) {
-      setResourceWidgetId(DomUtils.getId(widget));
+      setResourceWidgetId(widget.getId());
       if (widget instanceof BeeListBox) {
         ((BeeListBox) widget).addDoubleClickHandler(resourceWidgetHandler);
         ((BeeListBox) widget).addKeyDownHandler(resourceWidgetHandler);
       }
 
     } else if (BeeUtils.same(name, NAME_OVERLAP)) {
-      setOverlapWidgetId(DomUtils.getId(widget));
+      setOverlapWidgetId(widget.getId());
       if (widget instanceof HasClickHandlers) {
         ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
           @Override
@@ -432,38 +435,38 @@ class AppointmentBuilder extends AbstractFormCallback {
           }
         });
       }
-      widget.getElement().getStyle().setVisibility(Visibility.HIDDEN);
+      widget.asWidget().getElement().getStyle().setVisibility(Visibility.HIDDEN);
       setOverlapVisible(false);
 
     } else if (BeeUtils.same(name, NAME_START_DATE)) {
-      setStartDateWidgetId(DomUtils.getId(widget));
+      setStartDateWidgetId(widget.getId());
       if (widget instanceof Editor) {
         ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
       }
     } else if (BeeUtils.same(name, NAME_START_TIME)) {
-      setStartTimeWidgetId(DomUtils.getId(widget));
+      setStartTimeWidgetId(widget.getId());
       if (widget instanceof Editor) {
         ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
       }
 
     } else if (BeeUtils.same(name, NAME_END_DATE)) {
-      setEndDateWidgetId(DomUtils.getId(widget));
+      setEndDateWidgetId(widget.getId());
       if (widget instanceof Editor) {
         ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
       }
     } else if (BeeUtils.same(name, NAME_END_TIME)) {
-      setEndTimeWidgetId(DomUtils.getId(widget));
+      setEndTimeWidgetId(widget.getId());
       if (widget instanceof Editor) {
         ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
       }
 
     } else if (BeeUtils.same(name, NAME_HOURS)) {
-      setHourWidgetId(DomUtils.getId(widget));
+      setHourWidgetId(widget.getId());
       if (widget instanceof Editor) {
         ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
       }
     } else if (BeeUtils.same(name, NAME_MINUTES)) {
-      setMinuteWidgetId(DomUtils.getId(widget));
+      setMinuteWidgetId(widget.getId());
       if (widget instanceof Editor) {
         ((Editor) widget).addBlurHandler(dateOrTimeWidgetHandler);
       }
@@ -473,7 +476,7 @@ class AppointmentBuilder extends AbstractFormCallback {
       initColorWidget();
 
     } else if (BeeUtils.same(name, NAME_REMINDER)) {
-      setReminderWidgetId(DomUtils.getId(widget));
+      setReminderWidgetId(widget.getId());
       if (widget instanceof BeeListBox) {
         ((BeeListBox) widget).addKeyDownHandler(LIST_BOX_CLEANER);
       }
@@ -488,7 +491,7 @@ class AppointmentBuilder extends AbstractFormCallback {
         });
       }
     } else if (BeeUtils.same(name, NAME_BUILD_INFO)) {
-      setBuildInfoWidgetId(DomUtils.getId(widget));
+      setBuildInfoWidgetId(widget.getId());
     }
   }
 

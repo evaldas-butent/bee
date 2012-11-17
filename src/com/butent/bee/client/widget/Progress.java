@@ -3,7 +3,7 @@ package com.butent.bee.client.widget;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 
 import elemental.html.ProgressElement;
 
@@ -14,7 +14,7 @@ import elemental.js.html.JsProgressElement;
  * 100% of the process.
  */
 
-public class Progress extends Widget implements HasId {
+public class Progress extends Widget implements IdentifiableWidget {
 
   public Progress() {
     super();

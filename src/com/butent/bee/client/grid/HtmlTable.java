@@ -15,14 +15,14 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.IsHtmlTable;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasId;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class HtmlTable extends Panel implements HasId, IsHtmlTable {
+public class HtmlTable extends Panel implements IdentifiableWidget, IsHtmlTable {
 
   public class CellFormatter {
 

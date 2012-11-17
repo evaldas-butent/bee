@@ -43,6 +43,7 @@ import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.FormViewCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.NewFileInfo;
@@ -324,7 +325,8 @@ public class MailHandler extends AbstractFormCallback {
   private Label subjectWidget;
 
   @Override
-  public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
     if (widget instanceof BeeListBox && BeeUtils.same(name, "Accounts")) {
       initAccounts((ListBox) widget);
 

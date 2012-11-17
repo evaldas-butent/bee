@@ -22,9 +22,9 @@ import com.butent.bee.client.dialog.Popup;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.menu.MenuConstants;
 import com.butent.bee.shared.menu.MenuConstants.BAR_TYPE;
 import com.butent.bee.shared.menu.MenuConstants.ITEM_TYPE;
@@ -37,7 +37,7 @@ import java.util.List;
  * Contains menu object and core menu handling methods like {@code addItem} or {@code doCommand}.
  */
 
-public class MenuBar extends Widget implements HasId, CloseHandler<Popup> {
+public class MenuBar extends Widget implements IdentifiableWidget, CloseHandler<Popup> {
 
   /**
    * Specifies implementing classes to have an image resource.

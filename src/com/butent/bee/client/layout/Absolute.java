@@ -23,13 +23,13 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 
 /**
  * Implements a panel, which positions all of its children absolutely, allowing them to overlap.
  */
 
-public class Absolute extends AbsolutePanel implements HasId, HasAllDragAndDropHandlers {
+public class Absolute extends AbsolutePanel implements IdentifiableWidget, HasAllDragAndDropHandlers {
 
   public Absolute() {
     this(Position.ABSOLUTE);

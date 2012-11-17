@@ -5,15 +5,15 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.JsFunction;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class DecoratedWidget extends Panel implements HasId {
+public class DecoratedWidget extends Panel implements IdentifiableWidget {
 
   private final Widget widget;
   
@@ -38,10 +38,12 @@ public class DecoratedWidget extends Panel implements HasId {
     }
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "decorator";
   }
@@ -55,10 +57,12 @@ public class DecoratedWidget extends Panel implements HasId {
     return new Iterator<Widget>() {
       int counter = 0;
 
+      @Override
       public boolean hasNext() {
         return counter == 0;
       }
 
+      @Override
       public Widget next() {
         if (counter > 0) {
           throw new NoSuchElementException();
@@ -67,6 +71,7 @@ public class DecoratedWidget extends Panel implements HasId {
         return widget;
       }
 
+      @Override
       public void remove() {
         if (counter == 1) {
           DecoratedWidget.this.remove(widget);
@@ -81,6 +86,7 @@ public class DecoratedWidget extends Panel implements HasId {
     return false;
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

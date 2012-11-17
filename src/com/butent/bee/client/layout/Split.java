@@ -33,12 +33,12 @@ import com.google.gwt.user.client.ui.WidgetCollection;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.dom.StyleUtils.ScrollBars;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.HorizontalSplitter;
 import com.butent.bee.client.widget.Splitter;
 import com.butent.bee.client.widget.VerticalSplitter;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.HasExtendedInfo;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 import com.butent.bee.shared.utils.ExtendedProperty;
 import com.butent.bee.shared.utils.NameUtils;
@@ -54,7 +54,7 @@ import java.util.List;
  */
 
 public class Split extends ComplexPanel implements AnimatedLayout, RequiresResize, ProvidesResize,
-    HasId, HasExtendedInfo, HasLayoutCallback, HasAllDragAndDropHandlers {
+    IdentifiableWidget, HasExtendedInfo, HasLayoutCallback, HasAllDragAndDropHandlers {
 
   private class DockAnimateCommand extends LayoutCommand {
     public DockAnimateCommand(Layout layout) {
@@ -81,7 +81,7 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
   }
 
   private final Unit unit = Unit.PX;
-  private Widget center;
+  private IdentifiableWidget center;
   private final Layout layout;
   private final LayoutCommand layoutCmd;
 
@@ -104,13 +104,8 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     setStyleName("bee-Split");
   }
 
-  @Override
-  public void add(Widget widget) {
-    add(widget, ScrollBars.NONE);
-  }
-
-  public void add(Widget widget, Direction direction, Integer size, ScrollBars scrollBars,
-      Integer splSize) {
+  public void add(IdentifiableWidget widget, Direction direction, Integer size,
+      ScrollBars scrollBars, Integer splSize) {
     Assert.notNull(widget);
     Assert.isTrue(validDirection(direction, false));
     Assert.notNull(size);
@@ -120,8 +115,17 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     insert(widget, direction, size.doubleValue(), null, scrollBars, z);
   }
 
-  public void add(Widget widget, ScrollBars scroll) {
+  public void add(IdentifiableWidget widget, ScrollBars scroll) {
     insert(widget, Direction.CENTER, 0, null, scroll, -1);
+  }
+  
+  @Override
+  public void add(Widget widget) {
+    if (widget instanceof IdentifiableWidget) {
+      add((IdentifiableWidget) widget, ScrollBars.NONE);
+    } else {
+      Assert.unsupported("only IdentifiableWidget can be added to Split panel");
+    }
   }
 
   @Override
@@ -159,51 +163,51 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     return addBitlessDomHandler(handler, DropEvent.getType());
   }
 
-  public void addEast(Widget widget, double size) {
+  public void addEast(IdentifiableWidget widget, double size) {
     addEast(widget, size, ScrollBars.NONE);
   }
 
-  public void addEast(Widget widget, double size, ScrollBars scroll) {
+  public void addEast(IdentifiableWidget widget, double size, ScrollBars scroll) {
     addEast(widget, size, scroll, getSplitterSize());
   }
 
-  public void addEast(Widget widget, double size, ScrollBars scroll, int splSize) {
+  public void addEast(IdentifiableWidget widget, double size, ScrollBars scroll, int splSize) {
     insert(widget, Direction.EAST, size, null, scroll, splSize);
   }
 
-  public void addNorth(Widget widget, double size) {
+  public void addNorth(IdentifiableWidget widget, double size) {
     addNorth(widget, size, ScrollBars.NONE);
   }
 
-  public void addNorth(Widget widget, double size, ScrollBars scroll) {
+  public void addNorth(IdentifiableWidget widget, double size, ScrollBars scroll) {
     addNorth(widget, size, scroll, getSplitterSize());
   }
 
-  public void addNorth(Widget widget, double size, ScrollBars scroll, int splSize) {
+  public void addNorth(IdentifiableWidget widget, double size, ScrollBars scroll, int splSize) {
     insert(widget, Direction.NORTH, size, null, scroll, splSize);
   }
 
-  public void addSouth(Widget widget, double size) {
+  public void addSouth(IdentifiableWidget widget, double size) {
     addSouth(widget, size, ScrollBars.NONE);
   }
 
-  public void addSouth(Widget widget, double size, ScrollBars scroll) {
+  public void addSouth(IdentifiableWidget widget, double size, ScrollBars scroll) {
     addSouth(widget, size, scroll, getSplitterSize());
   }
 
-  public void addSouth(Widget widget, double size, ScrollBars scroll, int splSize) {
+  public void addSouth(IdentifiableWidget widget, double size, ScrollBars scroll, int splSize) {
     insert(widget, Direction.SOUTH, size, null, scroll, splSize);
   }
 
-  public void addWest(Widget widget, double size) {
+  public void addWest(IdentifiableWidget widget, double size) {
     addWest(widget, size, ScrollBars.NONE);
   }
 
-  public void addWest(Widget widget, double size, ScrollBars scroll) {
+  public void addWest(IdentifiableWidget widget, double size, ScrollBars scroll) {
     addWest(widget, size, scroll, getSplitterSize());
   }
 
-  public void addWest(Widget widget, double size, ScrollBars scroll, int splSize) {
+  public void addWest(IdentifiableWidget widget, double size, ScrollBars scroll, int splSize) {
     insert(widget, Direction.WEST, size, null, scroll, splSize);
   }
 
@@ -225,14 +229,14 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     onResize();
   }
 
-  public Widget getCenter() {
+  public IdentifiableWidget getCenter() {
     return center;
   }
 
   public int getCenterHeight() {
-    Widget c = getCenter();
+    IdentifiableWidget c = getCenter();
     if (c != null) {
-      return getWidgetHeight(c);
+      return getWidgetHeight(c.asWidget());
     }
 
     int y = getOffsetHeight();
@@ -245,9 +249,9 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
   }
 
   public int getCenterWidth() {
-    Widget c = getCenter();
+    IdentifiableWidget c = getCenter();
     if (c != null) {
-      return getWidgetWidth(c);
+      return getWidgetWidth(c.asWidget());
     }
 
     int x = getOffsetWidth();
@@ -325,13 +329,7 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     return splitterSize;
   }
 
-  public Element getWidgetContainerElement(Widget child) {
-    assertIsChild(child);
-    return ((LayoutData) child.getLayoutData()).layer.getContainerElement();
-  }
-
   public Direction getWidgetDirection(Widget child) {
-    assertIsChild(child);
     if (child.getParent() != this) {
       return null;
     }
@@ -347,18 +345,14 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
   }
 
   public int getWidgetSize(Widget child) {
-    assertIsChild(child);
     LayoutData data = (LayoutData) child.getLayoutData();
-
     return (int) data.size;
   }
 
   public int getWidgetSplitterSize(Widget child) {
-    assertIsChild(child);
     Splitter splitter = getAssociatedSplitter(child);
-
     if (splitter == null) {
-      return -1;
+      return 0;
     } else {
       return splitter.getSize();
     }
@@ -369,45 +363,41 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
   }
 
   public void hideSplitter(Widget child) {
-    assertIsChild(child);
     Splitter splitter = getAssociatedSplitter(child);
-
     if (splitter != null) {
       splitter.setVisible(false);
     }
   }
 
-  public void insert(Widget child, Direction direction, double size,
-      Widget before, ScrollBars scroll, int splSize) {
-    assertIsChild(before);
-
+  public void insert(IdentifiableWidget child, Direction direction, double size,
+      IdentifiableWidget before, ScrollBars scroll, int splSize) {
     if (before == null) {
       Assert.isTrue(center == null, "No widget may be added after the CENTER widget");
     } else {
       Assert.isTrue(direction != Direction.CENTER, "A CENTER widget must always be added last");
     }
 
-    child.removeFromParent();
+    child.asWidget().removeFromParent();
 
     WidgetCollection children = getChildren();
     if (before == null) {
-      children.add(child);
+      children.add(child.asWidget());
     } else {
-      int index = children.indexOf(before);
-      children.insert(child, index);
+      int index = children.indexOf(before.asWidget());
+      children.insert(child.asWidget(), index);
     }
 
-    Layer layer = layout.attachChild(child.getElement(),
-        (before != null) ? before.getElement() : null, child);
+    Layer layer = layout.attachChild(child.asWidget().getElement(),
+        (before != null) ? before.asWidget().getElement() : null, child);
     LayoutData data = new LayoutData(direction, size, layer);
-    child.setLayoutData(data);
+    child.asWidget().setLayoutData(data);
 
-    adopt(child);
+    adopt(child.asWidget());
 
     Element container = layer.getContainerElement();
 
     String pfx;
-    if (isSplitter(child)) {
+    if (isSplitter(child.asWidget())) {
       pfx = (child instanceof HorizontalSplitter) ? "hor" : "vert";
     } else {
       pfx = direction.name().toLowerCase();
@@ -415,7 +405,7 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
 
     container.setId(DomUtils.createUniqueId("layer-" + pfx));
 
-    if (!isSplitter(child)) {
+    if (!isSplitter(child.asWidget())) {
       if (scroll != null && !(ScrollBars.NONE.equals(scroll))) {
         StyleUtils.autoScroll(container, scroll);
       }
@@ -423,25 +413,29 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
       if (direction == Direction.CENTER) {
         center = child;
       } else if (splSize > 0) {
-        insertSplitter(child, container, before, splSize);
+        insertSplitter(child.asWidget(), container, before, splSize);
       }
     }
     animate(0);
   }
 
-  public void insertEast(Widget widget, double size, Widget before, ScrollBars sb, int splSize) {
+  public void insertEast(IdentifiableWidget widget, double size, IdentifiableWidget before,
+      ScrollBars sb, int splSize) {
     insert(widget, Direction.EAST, size, before, sb, splSize);
   }
 
-  public void insertNorth(Widget widget, double size, Widget before, ScrollBars sb, int splSize) {
+  public void insertNorth(IdentifiableWidget widget, double size, IdentifiableWidget before,
+      ScrollBars sb, int splSize) {
     insert(widget, Direction.NORTH, size, before, sb, splSize);
   }
 
-  public void insertSouth(Widget widget, double size, Widget before, ScrollBars sb, int splSize) {
+  public void insertSouth(IdentifiableWidget widget, double size, IdentifiableWidget before,
+      ScrollBars sb, int splSize) {
     insert(widget, Direction.SOUTH, size, before, sb, splSize);
   }
 
-  public void insertWest(Widget widget, double size, Widget before, ScrollBars sb, int splSize) {
+  public void insertWest(IdentifiableWidget widget, double size, IdentifiableWidget before,
+      ScrollBars sb, int splSize) {
     insert(widget, Direction.WEST, size, before, sb, splSize);
   }
 
@@ -521,16 +515,13 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
   }
 
   public void setWidgetMinSize(Widget child, int minSize) {
-    assertIsChild(child);
     Splitter splitter = getAssociatedSplitter(child);
-
     if (splitter != null) {
       splitter.setMinSize(minSize);
     }
   }
 
   public void setWidgetSize(Widget widget, double size) {
-    assertIsChild(widget);
     LayoutData data = (LayoutData) widget.getLayoutData();
 
     Assert.isTrue(data.direction != Direction.CENTER,
@@ -540,14 +531,18 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     forceLayout();
   }
 
-  public void updateCenter(Widget widget, ScrollBars scroll) {
+  public void updateCenter(IdentifiableWidget widget, ScrollBars scroll) {
     Assert.notNull(widget);
 
-    Widget w = getCenter();
+    IdentifiableWidget w = getCenter();
     if (w != null) {
-      remove(w);
+      remove(w.asWidget());
     }
     add(widget, scroll);
+  }
+
+  protected Element getWidgetContainerElement(Widget child) {
+    return ((LayoutData) child.getLayoutData()).layer.getContainerElement();
   }
 
   protected boolean isSplitter(Widget w) {
@@ -562,11 +557,6 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
   @Override
   protected void onUnload() {
     layout.onDetach();
-  }
-
-  private void assertIsChild(Widget widget) {
-    Assert.isTrue((widget == null) || (widget.getParent() == this),
-        "The specified widget is not a child of this panel");
   }
 
   private void doLayout() {
@@ -623,9 +613,7 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
   private List<Property> getChildInfo(Widget w) {
     List<Property> lst = new ArrayList<Property>();
 
-    if (w instanceof HasId) {
-      PropertyUtils.addProperty(lst, "Id", ((HasId) w).getId());
-    }
+    PropertyUtils.addProperty(lst, "Id", DomUtils.getId(w));
 
     PropertyUtils.addProperties(lst,
         "Class", NameUtils.getName(w),
@@ -667,7 +655,8 @@ public class Split extends ComplexPanel implements AnimatedLayout, RequiresResiz
     return unit;
   }
 
-  private void insertSplitter(Widget widget, Element container, Widget before, int size) {
+  private void insertSplitter(Widget widget, Element container, IdentifiableWidget before,
+      int size) {
     LayoutData ld = (LayoutData) widget.getLayoutData();
     Splitter splitter = null;
 

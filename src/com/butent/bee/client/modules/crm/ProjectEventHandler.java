@@ -28,6 +28,7 @@ import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.TreeView;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
@@ -189,7 +190,7 @@ public class ProjectEventHandler {
     private TreePresenter stageTree = null;
 
     @Override
-    public void afterCreateWidget(String name, final Widget widget,
+    public void afterCreateWidget(String name, final IdentifiableWidget widget,
         WidgetDescriptionCallback callback) {
 
       if (BeeUtils.same(name, "Stages") && widget instanceof TreeView) {
@@ -197,10 +198,10 @@ public class ProjectEventHandler {
         stageTree = ((TreeView) widget).getTreePresenter();
 
       } else if (BeeUtils.same(name, "StageDescription")) {
-        setWidget(name, widget);
+        setWidget(name, widget.asWidget());
 
       } else if (widget instanceof HasClickHandlers) {
-        setWidget(name, widget);
+        setWidget(name, widget.asWidget());
         ProjectEvent ev;
 
         try {
@@ -213,7 +214,7 @@ public class ProjectEventHandler {
           ((HasClickHandlers) widget).addClickHandler(new ClickHandler() {
             @Override
             public void onClick(ClickEvent e) {
-              doEvent(event, UiHelper.getForm(widget));
+              doEvent(event, UiHelper.getForm(widget.asWidget()));
             }
           });
         }

@@ -12,15 +12,15 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.Edges;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.HasId;
 
 /**
  * Implements a class for panels that can contain multiple child widgets and manages their creation
  * at the specific areas of the layout.
  */
 
-public class Complex extends ComplexPanel implements HasId, ProvidesResize, RequiresResize,
+public class Complex extends ComplexPanel implements IdentifiableWidget, ProvidesResize, RequiresResize,
     InsertPanel {
 
   public Complex() {

@@ -11,6 +11,7 @@ import com.butent.bee.client.data.Queries;
 import com.butent.bee.client.data.RowCallback;
 import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.layout.Complex;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.ViewHelper;
@@ -98,11 +99,11 @@ public class NewRowPresenter extends AbstractPresenter implements ParentRowCreat
 
   @Override
   public HeaderView getHeader() {
-    return ViewHelper.getHeader(getWidget());
+    return ViewHelper.getHeader(getWidget().asWidget());
   }
 
   @Override
-  public Widget getWidget() {
+  public IdentifiableWidget getWidget() {
     return container;
   }
 

@@ -66,10 +66,10 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.event.logical.CatchEvent;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.widget.InlineLabel;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
@@ -81,7 +81,7 @@ import java.util.Map;
 public class Tree extends Panel implements HasTreeItems, Focusable, HasAnimation,
     HasAllKeyHandlers, HasAllFocusHandlers, HasSelectionHandlers<TreeItem>,
     CatchEvent.HasCatchHandlers<TreeItem>, HasOpenHandlers<TreeItem>, HasCloseHandlers<TreeItem>,
-    HasAllMouseHandlers, HasEnabled, HasId {
+    HasAllMouseHandlers, HasEnabled, IdentifiableWidget {
 
   public interface Resources extends ClientBundle {
     @Source("silver/treeClosed.png")

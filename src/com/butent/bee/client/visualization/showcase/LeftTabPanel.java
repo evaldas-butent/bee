@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.layout.Horizontal;
 import com.butent.bee.client.layout.Simple;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.BeeListBox;
 import com.butent.bee.shared.utils.BeeUtils;
 
@@ -17,7 +18,7 @@ import java.util.Map;
  * Creates left side tab panel for navigation across visualization demos.
  */
 
-public class LeftTabPanel extends Composite {
+public class LeftTabPanel extends Composite implements IdentifiableWidget {
   /**
    * Requires implementing classes to have a {@code getWidget} method.
    */
@@ -55,12 +56,27 @@ public class LeftTabPanel extends Composite {
     left.addItem(title);
   }
 
+  @Override
+  public String getId() {
+    return main.getId();
+  }
+
+  @Override
+  public String getIdPrefix() {
+    return main.getIdPrefix();
+  }
+
   public void init(String name) {
     left.setAllVisible();
     if (!BeeUtils.isEmpty(name)) {
       left.setValue(name);
       setWidget(right, cogs.get(name));
     }
+  }
+
+  @Override
+  public void setId(String id) {
+    main.setId(id);
   }
 
   public void setWidget(WidgetProvider provider) {

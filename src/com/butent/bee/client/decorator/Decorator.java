@@ -16,6 +16,7 @@ import com.butent.bee.client.Global;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.JsFunction;
 import com.butent.bee.shared.BeeConst;
 import com.butent.bee.shared.HasExtendedInfo;
@@ -275,7 +276,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
     this.enabled = enabled;
   }
 
-  Widget decorate(Widget widget, Map<String, String> options) {
+  IdentifiableWidget decorate(IdentifiableWidget widget, Map<String, String> options) {
     if (widget == null) {
       logger.severe("decorator", getId(), "widget is null");
       return widget;
@@ -295,7 +296,7 @@ class Decorator implements HasEnabled, HasExtendedInfo {
     }
 
     Map<String, String> substitutes = getSubstitutes(options);
-    Element widgetElement = widget.getElement();
+    Element widgetElement = widget.asWidget().getElement();
 
     Element root = createElement(substitutes, widgetElement);
     if (root == null) {
@@ -356,9 +357,10 @@ class Decorator implements HasEnabled, HasExtendedInfo {
       onRemoved = createFunction(lifecycle.getRemoved(), substitutes);
     }
 
-    DecoratedWidget decoratedWidget = new DecoratedWidget(widget, root, onInserted, onRemoved);
+    DecoratedWidget decoratedWidget = new DecoratedWidget(widget.asWidget(), root, onInserted,
+        onRemoved);
     
-    addHandlers(decoratedWidget, widget, substitutes);
+    addHandlers(decoratedWidget.asWidget(), widget.asWidget(), substitutes);
 
     if (onCreated != null) {
       onCreated.call(root);

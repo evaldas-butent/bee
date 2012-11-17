@@ -5,14 +5,14 @@ import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.user.client.ui.InlineHTML;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 
 /**
  * Implements a user interface component that can contain arbitrary HTML and uses a span element,
  * causing it to be displayed with inline layout.
  */
 
-public class InlineHtml extends InlineHTML implements HasId {
+public class InlineHtml extends InlineHTML implements IdentifiableWidget {
 
   public InlineHtml() {
     super();
@@ -34,14 +34,17 @@ public class InlineHtml extends InlineHTML implements HasId {
     init();
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "inline";
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

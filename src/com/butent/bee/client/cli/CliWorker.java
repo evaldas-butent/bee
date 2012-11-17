@@ -23,8 +23,6 @@ import com.google.gwt.event.dom.client.ErrorHandler;
 import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.layout.client.Layout;
-import com.google.gwt.media.client.Audio;
-import com.google.gwt.media.client.Video;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.storage.client.StorageEvent;
 import com.google.gwt.user.client.Timer;
@@ -36,6 +34,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.Global;
+import com.butent.bee.client.Historian;
 import com.butent.bee.client.Settings;
 import com.butent.bee.client.ajaxloader.AjaxKeyRepository;
 import com.butent.bee.client.ajaxloader.AjaxLoader;
@@ -87,6 +86,7 @@ import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.CompositeService;
 import com.butent.bee.client.ui.DsnService;
 import com.butent.bee.client.ui.FormFactory;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetInitializer;
 import com.butent.bee.client.utils.BrowsingContext;
 import com.butent.bee.client.utils.FileUtils;
@@ -94,9 +94,11 @@ import com.butent.bee.client.utils.JsUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.client.visualization.showcase.Showcase;
+import com.butent.bee.client.widget.BeeAudio;
 import com.butent.bee.client.widget.BeeButton;
 import com.butent.bee.client.widget.BeeImage;
 import com.butent.bee.client.widget.BeeLabel;
+import com.butent.bee.client.widget.BeeVideo;
 import com.butent.bee.client.widget.CustomWidget;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.client.widget.InlineLabel;
@@ -106,7 +108,6 @@ import com.butent.bee.client.widget.Meter;
 import com.butent.bee.client.widget.Svg;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.Holder;
 import com.butent.bee.shared.Pair;
 import com.butent.bee.shared.Resource;
@@ -256,7 +257,7 @@ public class CliWorker {
     } else if (BeeUtils.inList(z, "h5", "html5", "supp", "support")) {
       showSupport();
     } else if (z.startsWith("hist")) {
-//      showHistory();
+      showPropData(Historian.getInstance().getInfo());
     } else if (z.equals("id")) {
       showElement(v, arr);
     } else if (z.startsWith("inp") && z.contains("type")) {
@@ -380,6 +381,10 @@ public class CliWorker {
     } else if (BeeUtils.startsSame(args, "rpc")) {
       BeeKeeper.getRpc().getRpcList().clear();
       debugWithSeparator("rpc list cleared");
+
+    } else if (BeeUtils.startsSame(args, "hist")) {
+      Historian.getInstance().reset();
+      debugWithSeparator("history cleared");
     }
   }
 
@@ -943,11 +948,7 @@ public class CliWorker {
       return;
     }
 
-    final Audio widget = Audio.createIfSupported();
-    if (widget == null) {
-      logger.severe("audio not supported");
-      return;
-    }
+    final BeeAudio widget = new BeeAudio();
 
     widget.getAudioElement().setSrc(src);
     widget.getAudioElement().setControls(true);
@@ -963,16 +964,10 @@ public class CliWorker {
   }
 
   private static void playVideo(String args) {
-    if (!Video.isSupported()) {
-      logger.severe("video not supported");
-      return;
-    }
-
     final String src = BeeUtils.notEmpty(args,
         "http://people.opera.com/shwetankd/webm/sunflower.webm");
 
-    final Video widget = Video.createIfSupported();
-    Assert.notNull(widget);
+    final BeeVideo widget = new BeeVideo();
     widget.getVideoElement().setSrc(src);
     widget.getVideoElement().setControls(true);
 
@@ -991,10 +986,12 @@ public class CliWorker {
     Element element = null;
 
     if (BeeUtils.same(args, "log")) {
-      widget = ClientLogManager.getLogPanel();
-      if (widget == null) {
+      IdentifiableWidget lp = ClientLogManager.getLogPanel();
+      if (lp == null) {
         Global.showError("log widget not available");
         return;
+      } else {
+        widget = lp.asWidget();
       }
 
     } else if (!BeeUtils.isEmpty(args)) {
@@ -1005,10 +1002,12 @@ public class CliWorker {
       }
 
     } else {
-      widget = BeeKeeper.getScreen().getActiveWidget();
-      if (widget == null) {
+      IdentifiableWidget iw = BeeKeeper.getScreen().getActiveWidget();
+      if (iw == null) {
         Global.showError("active widget not available");
         return;
+      } else {
+        widget = iw.asWidget();
       }
     }
 
@@ -1016,7 +1015,7 @@ public class CliWorker {
       if (widget instanceof Printable) {
         Printer.print((Printable) widget);
 
-      } else if (widget instanceof HasId) {
+      } else if (widget instanceof IdentifiableWidget) {
         final Element root = widget.getElement();
         final String id = root.getId();
 

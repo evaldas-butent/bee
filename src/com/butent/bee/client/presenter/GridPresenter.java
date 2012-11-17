@@ -26,6 +26,7 @@ import com.butent.bee.client.dialog.NotificationListener;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.grid.GridFactory;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.ui.WidgetInitializer;
@@ -258,8 +259,8 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
-  public Widget getWidget() {
-    return getView().asWidget();
+  public IdentifiableWidget getWidget() {
+    return getView();
   }
 
   @Override
@@ -510,7 +511,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
     if (getGridCallback() != null && !getGridCallback().onClose(this)) {
       return;
     }
-    BeeKeeper.getScreen().closeWidget(getView().asWidget());
+    BeeKeeper.getScreen().closeWidget(getView());
   }
 
   private Provider createProvider(GridContainerView view, String viewName, List<BeeColumn> columns,
@@ -648,7 +649,7 @@ public class GridPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   private boolean validateParent() {
-    FormView form = UiHelper.getForm(getWidget());
+    FormView form = UiHelper.getForm(getWidget().asWidget());
     if (form == null) {
       return true;
     }

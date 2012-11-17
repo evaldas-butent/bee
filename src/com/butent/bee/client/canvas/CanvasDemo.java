@@ -1,6 +1,5 @@
 package com.butent.bee.client.canvas;
 
-import com.google.gwt.canvas.client.Canvas;
 import com.google.gwt.canvas.dom.client.Context2d;
 import com.google.gwt.canvas.dom.client.CssColor;
 import com.google.gwt.dom.client.Touch;
@@ -17,6 +16,7 @@ import com.google.gwt.event.dom.client.TouchMoveHandler;
 import com.google.gwt.user.client.Timer;
 
 import com.butent.bee.client.BeeKeeper;
+import com.butent.bee.client.widget.Canvas;
 import com.butent.bee.shared.logging.BeeLogger;
 import com.butent.bee.shared.logging.LogUtils;
 
@@ -47,8 +47,8 @@ public class CanvasDemo {
   }
 
   public void start() {
-    canvas = Canvas.createIfSupported();
-    backBuffer = Canvas.createIfSupported();
+    canvas = new Canvas();
+    backBuffer = new Canvas();
     if (canvas == null) {
       logger.severe("canvas not supported");
       return;
@@ -60,7 +60,7 @@ public class CanvasDemo {
     canvas.setCoordinateSpaceHeight(height);
     backBuffer.setCoordinateSpaceWidth(width);
     backBuffer.setCoordinateSpaceHeight(height);
-
+    
     BeeKeeper.getScreen().updateActivePanel(canvas);
 
     context = canvas.getContext2d();

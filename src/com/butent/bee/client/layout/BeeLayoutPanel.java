@@ -8,11 +8,11 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.WidgetCollection;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
-public class BeeLayoutPanel extends LayoutPanel implements HasId {
+public class BeeLayoutPanel extends LayoutPanel implements IdentifiableWidget {
   
   public static Unit defaultUnit = Unit.PX;
 

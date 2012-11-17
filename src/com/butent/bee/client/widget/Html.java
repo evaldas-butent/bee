@@ -7,15 +7,15 @@ import com.google.gwt.user.client.ui.HTML;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.HasCommand;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
 /**
  * Implements a user interface component that can contain arbitrary HTML code.
  */
 
-public class Html extends HTML implements HasId, HasCommand {
+public class Html extends HTML implements IdentifiableWidget, HasCommand {
 
   private Scheduler.ScheduledCommand command = null;
 

@@ -3,7 +3,6 @@ package com.butent.bee.client.ui;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 import com.google.gwt.xml.client.XMLParser;
@@ -102,7 +101,7 @@ public class FormFactory {
 
     void onFailure(Object... messages);
 
-    void onSuccess(WidgetDescription result, Widget widget);
+    void onSuccess(WidgetDescription result, IdentifiableWidget widget);
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(FormFactory.class);
@@ -118,7 +117,7 @@ public class FormFactory {
     descriptionCache.clear();
   }
 
-  public static Widget createForm(FormDescription formDescription, String viewName,
+  public static IdentifiableWidget createForm(FormDescription formDescription, String viewName,
       List<BeeColumn> columns, WidgetDescriptionCallback widgetDescriptionCallback,
       FormCallback formCallback) {
     Assert.notNull(formDescription);
@@ -168,9 +167,10 @@ public class FormFactory {
     createFormView(formName, viewName, columns, addStyle, getFormCallback(formName), viewCallback);
   }
 
-  public static Widget createWidget(Element parent, String viewName, List<BeeColumn> columns,
-      WidgetDescriptionCallback widgetDescriptionCallback, WidgetCallback widgetCallback,
-      String messagePrefix) {
+  public static IdentifiableWidget createWidget(Element parent, String viewName,
+      List<BeeColumn> columns, WidgetDescriptionCallback widgetDescriptionCallback,
+      WidgetCallback widgetCallback, String messagePrefix) {
+
     Assert.notNull(parent);
     Assert.notNull(widgetDescriptionCallback, "createWidget: widgetDescriptionCallback is null");
 
@@ -202,8 +202,8 @@ public class FormFactory {
       return null;
     }
 
-    Widget widget = formWidget.create(root, viewName, columns, widgetDescriptionCallback,
-        widgetCallback);
+    IdentifiableWidget widget = formWidget.create(root, viewName, columns,
+        widgetDescriptionCallback, widgetCallback);
     if (widget == null) {
       logger.severe(messagePrefix, "cannot create root widget", formWidget);
     }

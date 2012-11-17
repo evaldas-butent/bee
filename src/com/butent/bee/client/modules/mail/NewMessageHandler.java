@@ -6,7 +6,6 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
-import com.google.gwt.user.client.ui.Widget;
 
 import static com.butent.bee.shared.modules.mail.MailConstants.*;
 
@@ -22,6 +21,7 @@ import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.edit.Editor;
@@ -90,7 +90,8 @@ public class NewMessageHandler extends AbstractFormCallback {
   }
 
   @Override
-  public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
     if (widget instanceof MultiSelector) {
       MultiSelector w = (MultiSelector) widget;
 

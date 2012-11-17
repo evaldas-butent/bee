@@ -3,7 +3,6 @@ package com.butent.bee.client;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.communication.ResponseCallback;
 import com.butent.bee.client.i18n.LocaleUtils;
@@ -15,6 +14,7 @@ import com.butent.bee.client.menu.MenuSelectionHandler;
 import com.butent.bee.client.menu.MenuSeparator;
 import com.butent.bee.client.tree.Tree;
 import com.butent.bee.client.tree.TreeItem;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Service;
 import com.butent.bee.shared.communication.ResponseObject;
@@ -61,7 +61,7 @@ public class MenuManager implements Module {
   }
 
   public boolean drawMenu() {
-    Widget w = createMenu(0, getRoots(), null);
+    IdentifiableWidget w = createMenu(0, getRoots(), null);
     boolean ok = (w != null);
 
     if (ok) {
@@ -154,7 +154,7 @@ public class MenuManager implements Module {
     clear();
   }
 
-  private void addEntry(Widget rw, int itemCnt, Menu item, Widget cw) {
+  private void addEntry(IdentifiableWidget rw, int itemCnt, Menu item, IdentifiableWidget cw) {
     String txt = LocaleUtils.maybeLocalize(item.getLabel());
     String svc = null;
     String opt = null;
@@ -185,11 +185,11 @@ public class MenuManager implements Module {
     } else if (rw instanceof Stack) {
       if (cw != null) {
         double header = BeeUtils.rescale(itemCnt, 10, 30, 25, 15);
-        ((Stack) rw).add(cw, txt, Math.ceil(header));
+        ((Stack) rw).add(cw.asWidget(), txt, Math.ceil(header));
       }
     } else if (rw instanceof TabbedPages) {
       if (cw != null) {
-        ((TabbedPages) rw).add(cw, txt);
+        ((TabbedPages) rw).add(cw.asWidget(), txt);
       }
 
     } else if (rw instanceof Tree) {
@@ -198,7 +198,7 @@ public class MenuManager implements Module {
       if (cw == null) {
         it.setUserObject(new MenuCommand(svc, opt));
       } else {
-        it.addItem(cw);
+        it.addItem(cw.asWidget());
       }
 
       ((Tree) rw).addItem(it);
@@ -237,7 +237,7 @@ public class MenuManager implements Module {
     }
   }
 
-  private Widget createMenu(int level, List<Menu> entries, Widget parent) {
+  private IdentifiableWidget createMenu(int level, List<Menu> entries, IdentifiableWidget parent) {
     Assert.betweenExclusive(level, MenuConstants.ROOT_MENU_INDEX, MenuConstants.MAX_MENU_DEPTH);
 
     if (BeeUtils.isEmpty(entries)) {
@@ -252,14 +252,14 @@ public class MenuManager implements Module {
         layout = getLayout(lvl--);
       }
     }
-    Widget rw = createWidget(layout, level);
+    IdentifiableWidget rw = createWidget(layout, level);
 
     boolean lastLevel = (level >= MenuConstants.MAX_MENU_DEPTH - 1);
     int cnt = entries.size();
 
     for (Menu entry : entries) {
       List<Menu> children = null;
-      Widget cw = null;
+      IdentifiableWidget cw = null;
 
       if (!lastLevel && (entry instanceof MenuEntry)) {
         children = ((MenuEntry) entry).getItems();
@@ -274,8 +274,8 @@ public class MenuManager implements Module {
     return rw;
   }
 
-  private Widget createWidget(String layout, int level) {
-    Widget w = null;
+  private IdentifiableWidget createWidget(String layout, int level) {
+    IdentifiableWidget w = null;
 
     if (BeeUtils.same(layout, MenuConstants.LAYOUT_MENU_HOR)) {
       w = new MenuBar(level, false, getBarType(false), ITEM_TYPE.LABEL);
@@ -326,7 +326,7 @@ public class MenuManager implements Module {
     return getLayouts().get(idx);
   }
 
-  private void prepareWidget(Widget w) {
+  private void prepareWidget(IdentifiableWidget w) {
     if (w instanceof MenuBar) {
       ((MenuBar) w).prepare();
     }

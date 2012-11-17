@@ -9,9 +9,9 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.layout.HasLayoutCallback;
 import com.butent.bee.client.layout.LayoutData;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 
-public abstract class Splitter extends Widget implements HasId {
+public abstract class Splitter extends Widget implements IdentifiableWidget {
 
   private static final int SENSITIVITY_MILLIS = 1;
   

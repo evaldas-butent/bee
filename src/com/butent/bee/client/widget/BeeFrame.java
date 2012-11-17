@@ -4,8 +4,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Frame;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasId;
 
 import elemental.html.Window;
 
@@ -16,7 +16,7 @@ import elemental.html.IFrameElement;
 import elemental.js.dom.JsElement;
 import elemental.js.html.JsIFrameElement;
 
-public class BeeFrame extends Frame implements HasId {
+public class BeeFrame extends Frame implements IdentifiableWidget {
 
   public BeeFrame() {
     super();

@@ -1,6 +1,5 @@
 package com.butent.bee.client.view.grid;
 
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
 
@@ -9,6 +8,7 @@ import com.butent.bee.client.layout.Direction;
 import com.butent.bee.client.layout.Split;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.data.BeeColumn;
@@ -26,7 +26,7 @@ public class ExtWidget {
   }
 
   private static final BeeLogger logger = LogUtils.getLogger(ExtWidget.class);
-  
+
   private static final String ATTR_PRECEDES = "precedes";
   private static final String ATTR_HIDABLE = "hidable";
 
@@ -59,8 +59,9 @@ public class ExtWidget {
       return null;
     }
 
-    Widget widget = FormFactory.createWidget(root, viewName, dataColumns, creationCallback,
-        gridCallback, "create ext widget:");
+    IdentifiableWidget widget =
+        FormFactory.createWidget(root, viewName, dataColumns, creationCallback,
+            gridCallback, "create ext widget:");
     if (widget == null) {
       return null;
     }
@@ -74,8 +75,8 @@ public class ExtWidget {
 
     return new ExtWidget(widget, direction, size, scrollBars, splSize, precedes, hidable);
   }
-  
-  private final Widget widget;
+
+  private final IdentifiableWidget widget;
 
   private final Direction direction;
   private final int size;
@@ -85,7 +86,8 @@ public class ExtWidget {
   private final Component precedes;
   private final boolean hidable;
 
-  private ExtWidget(Widget widget, Direction direction, int size, ScrollBars scrollBars,
+  private ExtWidget(IdentifiableWidget widget, Direction direction, int size,
+      ScrollBars scrollBars,
       Integer splSize, Component precedes, boolean hidable) {
     super();
     this.widget = widget;
@@ -117,7 +119,7 @@ public class ExtWidget {
     return getSize() + BeeUtils.toNonNegativeInt(getSplSize());
   }
 
-  public Widget getWidget() {
+  public IdentifiableWidget getWidget() {
     return widget;
   }
 

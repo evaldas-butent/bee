@@ -6,13 +6,13 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 
 /**
  * Contains a class for panels that contain only one widget.
  */
 
-public class Simple extends SimplePanel implements HasId, RequiresResize, ProvidesResize {
+public class Simple extends SimplePanel implements IdentifiableWidget, RequiresResize, ProvidesResize {
 
   public Simple() {
     super();

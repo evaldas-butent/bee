@@ -3,13 +3,13 @@ package com.butent.bee.client.layout;
 import com.google.gwt.user.client.ui.HeaderPanel;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 
 /**
  * Handles id and prefix of header content footer layout element.
  */
 
-public class HeaderContentFooter extends HeaderPanel implements HasId {
+public class HeaderContentFooter extends HeaderPanel implements IdentifiableWidget {
 
   public HeaderContentFooter() {
     super();

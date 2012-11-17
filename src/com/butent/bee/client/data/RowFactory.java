@@ -295,7 +295,7 @@ public class RowFactory {
     String cap = BeeUtils.notEmpty(caption, formView.getCaption(), DEFAULT_CAPTION);
 
     final NewRowPresenter presenter = new NewRowPresenter(formView, dataInfo, cap);
-    final ModalForm dialog = new ModalForm(presenter.getWidget(), formView, false, true);
+    final ModalForm dialog = new ModalForm(presenter.getWidget().asWidget(), formView, false, true);
 
     final CloseCallback close = new CloseCallback() {
       @Override
@@ -364,7 +364,7 @@ public class RowFactory {
       dialog.showRelativeTo(target);
     }
 
-    UiHelper.focus(formView.getRootWidget());
+    UiHelper.focus(formView.getRootWidget().asWidget());
   }
 
   private RowFactory() {

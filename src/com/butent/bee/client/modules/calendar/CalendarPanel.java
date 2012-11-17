@@ -43,6 +43,7 @@ import com.butent.bee.client.modules.calendar.view.ResourceView;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.presenter.Presenter;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiOption;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
@@ -269,7 +270,7 @@ public class CalendarPanel extends Complex implements AppointmentEvent.Handler, 
   }
 
   @Override
-  public Widget getWidget() {
+  public IdentifiableWidget getWidget() {
     return this;
   }
 

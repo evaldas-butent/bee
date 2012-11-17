@@ -2,7 +2,6 @@ package com.butent.bee.client.decorator;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Attr;
 import com.google.gwt.xml.client.Document;
 import com.google.gwt.xml.client.Element;
@@ -10,6 +9,7 @@ import com.google.gwt.xml.client.NamedNodeMap;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.WidgetDescription;
 import com.butent.bee.client.utils.XmlUtils;
 import com.butent.bee.shared.BeeConst;
@@ -39,8 +39,9 @@ public class TuningFactory {
     decorators.clear();
   }
 
-  public static Widget decorate(String decoratorId, Element element, Widget widget,
-      WidgetDescription widgetDescription) {
+  public static IdentifiableWidget decorate(String decoratorId, Element element,
+      IdentifiableWidget widget, WidgetDescription widgetDescription) {
+
     if (widget == null || BeeUtils.isEmpty(decoratorId) || !isEnabled()) {
       return widget;
     }

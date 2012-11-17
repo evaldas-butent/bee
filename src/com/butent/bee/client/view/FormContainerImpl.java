@@ -106,11 +106,11 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       footer = null;
     }
 
-    addNorth(header.asWidget(), header.getHeight());
+    addNorth(header, header.getHeight());
     setHeaderId(header.getWidgetId());
 
     if (footer != null) {
-      addSouth(footer.asWidget(), footer.getHeight());
+      addSouth(footer, footer.getHeight());
       setFooterId(footer.getWidgetId());
     }
 
@@ -143,7 +143,7 @@ public class FormContainerImpl extends Split implements FormContainerView, HasNa
       panel.setVisible(false);
     }
 
-    add(content.asWidget(), ScrollBars.BOTH);
+    add(content, ScrollBars.BOTH);
 
     if (hasData()) {
       Calculation rmc = formDescription.getRowMessage();

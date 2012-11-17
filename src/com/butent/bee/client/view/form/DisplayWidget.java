@@ -23,7 +23,6 @@ import com.butent.bee.client.widget.DecimalLabel;
 import com.butent.bee.client.widget.DoubleLabel;
 import com.butent.bee.client.widget.Flag;
 import com.butent.bee.client.widget.Html;
-import com.butent.bee.client.widget.InlineInternalLink;
 import com.butent.bee.client.widget.IntegerLabel;
 import com.butent.bee.client.widget.InternalLink;
 import com.butent.bee.client.widget.Link;
@@ -181,7 +180,7 @@ public class DisplayWidget {
 
       case HYPERLINK:
         if (!BeeUtils.isEmpty(value) && widget instanceof InternalLink) {
-          ((InternalLink) widget).update(value);
+          ((InternalLink) widget).setHTML(value);
         }
         break;
 
@@ -200,12 +199,6 @@ public class DisplayWidget {
             ((BeeImage) widget).setResource(resource);
           }
           widget.getElement().setId(getWidgetId());
-        }
-        break;
-
-      case INLINE_HYPERLINK:
-        if (!BeeUtils.isEmpty(value) && widget instanceof InlineInternalLink) {
-          ((InlineInternalLink) widget).update(value);
         }
         break;
 

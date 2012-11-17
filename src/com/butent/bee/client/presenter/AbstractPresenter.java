@@ -1,26 +1,26 @@
 package com.butent.bee.client.presenter;
 
-import com.google.gwt.user.client.ui.Widget;
-
-import com.butent.bee.shared.ui.Action;
+import com.butent.bee.client.ui.IdentifiableWidget;
 
 public abstract class AbstractPresenter implements Presenter {
 
   private String eventSource = null;
   
+  @Override
   public String getEventSource() {
     return eventSource;
   }
 
-  public Widget getWidget() {
+  @Override
+  public IdentifiableWidget getWidget() {
     return null;
   }
 
-  public abstract void handleAction(Action action);
-
+  @Override
   public void onViewUnload() {
   }
 
+  @Override
   public void setEventSource(String eventSource) {
     this.eventSource = eventSource;
   }

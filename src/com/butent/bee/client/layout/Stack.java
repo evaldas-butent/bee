@@ -25,10 +25,10 @@ import com.google.gwt.user.client.ui.ResizeComposite;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasId;
 
 import java.util.Iterator;
 import java.util.List;
@@ -40,7 +40,8 @@ import java.util.NoSuchElementException;
  */
 
 public class Stack extends ResizeComposite implements HasWidgets, ProvidesResize, IndexedPanel,
-    AnimatedLayout, HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>, HasId {
+    AnimatedLayout, HasBeforeSelectionHandlers<Integer>, HasSelectionHandlers<Integer>,
+    IdentifiableWidget {
 
   private class Header extends Composite implements HasClickHandlers {
     private Header(Widget child) {

@@ -5,8 +5,8 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.HasId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
  * Enables using definitions for user interface components.
  */
 
-public class DefinitionList extends Widget implements HasId {
+public class DefinitionList extends Widget implements IdentifiableWidget {
 
   private static final int INSERT_AT_END = -1;
   private List<Element> items = new ArrayList<Element>();

@@ -28,6 +28,7 @@ import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.validation.CellValidateEvent;
 import com.butent.bee.client.validation.CellValidation;
@@ -96,7 +97,8 @@ public class TransportHandler {
 
   private static class CargoFormHandler extends AbstractFormCallback {
     @Override
-    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+    public void afterCreateWidget(String name, IdentifiableWidget widget,
+        WidgetDescriptionCallback callback) {
       if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
         ((HasClickHandlers) widget)
             .addClickHandler(new Profit(TransportConstants.VAR_CARGO_ID));
@@ -188,7 +190,8 @@ public class TransportHandler {
 
   private static class OrderFormHandler extends AbstractFormCallback {
     @Override
-    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+    public void afterCreateWidget(String name, IdentifiableWidget widget,
+        WidgetDescriptionCallback callback) {
       if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
         ((HasClickHandlers) widget)
             .addClickHandler(new Profit(TransportConstants.VAR_ORDER_ID));
@@ -215,7 +218,8 @@ public class TransportHandler {
     private TreePresenter typeTree = null;
 
     @Override
-    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+    public void afterCreateWidget(String name, IdentifiableWidget widget,
+        WidgetDescriptionCallback callback) {
       if (widget instanceof TreeView && BeeUtils.same(name, "SparePartTypes")) {
         ((TreeView) widget).addSelectionHandler(this);
         typeTree = ((TreeView) widget).getTreePresenter();
@@ -285,7 +289,8 @@ public class TransportHandler {
 
   private static class TripFormHandler extends AbstractFormCallback {
     @Override
-    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+    public void afterCreateWidget(String name, IdentifiableWidget widget,
+        WidgetDescriptionCallback callback) {
       if (BeeUtils.same(name, "profit") && widget instanceof HasClickHandlers) {
         ((HasClickHandlers) widget)
             .addClickHandler(new Profit(TransportConstants.VAR_TRIP_ID));
@@ -466,7 +471,8 @@ public class TransportHandler {
     private TreePresenter modelTree = null;
 
     @Override
-    public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+    public void afterCreateWidget(String name, IdentifiableWidget widget,
+        WidgetDescriptionCallback callback) {
       if (widget instanceof TreeView && BeeUtils.same(name, "VehicleModels")) {
         ((TreeView) widget).addSelectionHandler(this);
         modelTree = ((TreeView) widget).getTreePresenter();

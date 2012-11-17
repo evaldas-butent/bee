@@ -6,8 +6,8 @@ import com.google.gwt.user.client.ui.HasVisibility;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.Settings;
+import com.butent.bee.client.layout.Flow;
 import com.butent.bee.client.layout.Split;
-import com.butent.bee.client.ui.HasIndexedWidgets;
 import com.butent.bee.client.widget.Html;
 import com.butent.bee.shared.BeeConst;
 
@@ -25,13 +25,13 @@ public class PanelHandler extends Handler implements HasVisibility {
   private static final String STYLENAME_DEFAULT = "bee-LogRecord";
   private static final String STYLENAME_SEPARATOR = "bee-LogSeparator";
 
-  private final HasIndexedWidgets panel;
+  private final Flow panel;
 
   private final int capacity;
 
   private int hiddenSize = BeeConst.UNDEF;
 
-  public PanelHandler(HasIndexedWidgets panel, Formatter formatter, Level level) {
+  public PanelHandler(Flow panel, Formatter formatter, Level level) {
     this.panel = panel;
     this.capacity = Settings.getLogCapacity();
 
@@ -57,8 +57,8 @@ public class PanelHandler extends Handler implements HasVisibility {
   public void flush() {
   }
 
-  public Widget getPanel() {
-    return panel.asWidget();
+  public Flow getPanel() {
+    return panel;
   }
 
   public boolean isEmpty() {

@@ -11,6 +11,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.output.Printable;
 import com.butent.bee.client.output.Printer;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.client.view.HeaderImpl;
@@ -97,11 +98,11 @@ public class GridFormPresenter extends AbstractPresenter implements HasGridView,
 
   @Override
   public Element getPrintElement() {
-    return getWidget().getElement();
+    return getWidget().asWidget().getElement();
   }
 
   @Override
-  public Widget getWidget() {
+  public IdentifiableWidget getWidget() {
     return container;
   }
 

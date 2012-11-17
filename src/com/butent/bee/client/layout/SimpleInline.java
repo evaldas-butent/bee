@@ -8,8 +8,8 @@ import com.google.gwt.user.client.ui.Panel;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.HasId;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -18,7 +18,7 @@ import java.util.NoSuchElementException;
  * Enables to manage a inline panel which contains only one child component.
  */
 
-public class SimpleInline extends Panel implements HasOneWidget, HasId {
+public class SimpleInline extends Panel implements HasOneWidget, IdentifiableWidget {
 
   private Widget widget;
 

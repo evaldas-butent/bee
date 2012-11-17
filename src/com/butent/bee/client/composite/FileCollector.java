@@ -32,6 +32,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.Binder;
 import com.butent.bee.client.event.EventUtils;
 import com.butent.bee.client.grid.HtmlTable;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.widget.BeeButton;
@@ -363,7 +364,7 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
       Column.SIZE, Column.EDIT, Column.DELETE);
   private static final List<Column> DEFAULT_EDITABLE_COLUMNS = Lists.newArrayList(Column.NAME);
 
-  public static Widget getDefaultFace() {
+  public static IdentifiableWidget getDefaultFace() {
     return new BeeButton("Pasirinkite bylas");
   }
 
@@ -407,15 +408,16 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     this(getDefaultFace());
   }
 
-  public FileCollector(Widget face) {
+  public FileCollector(IdentifiableWidget face) {
     this(face, DEFAULT_VISIBLE_COLUMNS);
   }
 
-  public FileCollector(Widget face, List<Column> visibleColumns) {
+  public FileCollector(IdentifiableWidget face, List<Column> visibleColumns) {
     this(face, visibleColumns, DEFAULT_EDITABLE_COLUMNS);
   }
 
-  public FileCollector(Widget face, List<Column> visibleColumns, List<Column> editableColumns) {
+  public FileCollector(IdentifiableWidget face, List<Column> visibleColumns,
+      List<Column> editableColumns) {
     Assert.notNull(face);
 
     this.inputFile = new InputFile(true);
@@ -432,16 +434,16 @@ public class FileCollector extends HtmlTable implements DragOverHandler, DropHan
     inputFile.getElement().getStyle().setVisibility(Visibility.HIDDEN);
     inputFile.addStyleName(STYLE_PREFIX + "hiddenWidget");
 
-    Binder.addClickHandler(face, new ClickHandler() {
+    Binder.addClickHandler(face.asWidget(), new ClickHandler() {
       @Override
       public void onClick(ClickEvent event) {
         FileCollector.this.inputFile.click();
       }
     });
 
-    face.addStyleName(STYLE_PREFIX + STYLE_FACE);
+    face.asWidget().addStyleName(STYLE_PREFIX + STYLE_FACE);
 
-    setWidget(0, FACE_COLUMN, face, STYLE_PREFIX + STYLE_FACE + STYLE_CELL);
+    setWidget(0, FACE_COLUMN, face.asWidget(), STYLE_PREFIX + STYLE_FACE + STYLE_CELL);
     setWidget(0, INPUT_COLUMN, inputFile, STYLE_PREFIX + "hiddenCell");
 
     this.addStyleName(STYLE_PREFIX + "panel");

@@ -5,13 +5,13 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.ui.Label;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 
 /**
  * Implements standard label user interface component.
  */
 
-public class BeeLabel extends Label implements HasId {
+public class BeeLabel extends Label implements IdentifiableWidget {
 
   public BeeLabel() {
     super();

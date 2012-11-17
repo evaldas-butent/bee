@@ -5,13 +5,13 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.UIObject;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.HasIdentity;
 
 /**
  * Handles a menu items separating user interface component.
  */
 
-public class MenuSeparator extends UIObject implements HasId {
+public class MenuSeparator extends UIObject implements HasIdentity {
 
   private static final String STYLENAME_DEFAULT = "bee-MenuItemSeparator";
 
@@ -25,10 +25,12 @@ public class MenuSeparator extends UIObject implements HasId {
     DomUtils.createId(this, getIdPrefix());
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "sep";
   }
@@ -37,6 +39,7 @@ public class MenuSeparator extends UIObject implements HasId {
     return parentMenu;
   }
 
+  @Override
   public void setId(String id) {
     DomUtils.setId(this, id);
   }

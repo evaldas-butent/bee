@@ -6,8 +6,8 @@ import com.google.gwt.dom.client.LIElement;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.Assert;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.HasItems;
 
 import java.util.Collection;
@@ -17,7 +17,7 @@ import java.util.List;
  * Implements a user interface component that can contain a list of HTML code items.
  */
 
-public class HtmlList extends Widget implements HasId, HasItems {
+public class HtmlList extends Widget implements IdentifiableWidget, HasItems {
 
   private static final int INSERT_AT_END = -1;
 

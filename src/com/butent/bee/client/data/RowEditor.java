@@ -166,7 +166,7 @@ public class RowEditor {
     final RowPresenter presenter = new RowPresenter(formView, dataInfo,
         DataUtils.getRowCaption(dataInfo, oldRow));
     final ModalForm dialog =
-        modal ? new ModalForm(presenter.getWidget(), formView, false, true) : null;
+        modal ? new ModalForm(presenter.getWidget().asWidget(), formView, false, true) : null;
 
     final CloseCallback close = new CloseCallback() {
       @Override
@@ -259,7 +259,7 @@ public class RowEditor {
       formView.updateRow(DataUtils.cloneRow(oldRow), true);
     }
 
-    UiHelper.focus(formView.getRootWidget());
+    UiHelper.focus(formView.getRootWidget().asWidget());
   }
 
   private static int update(final DataInfo dataInfo, IsRow oldRow, IsRow newRow,

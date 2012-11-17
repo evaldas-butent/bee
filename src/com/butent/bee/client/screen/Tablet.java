@@ -2,7 +2,6 @@ package com.butent.bee.client.screen;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.canvas.CanvasDemo;
 import com.butent.bee.client.cli.CliWorker;
@@ -12,6 +11,7 @@ import com.butent.bee.client.dom.StyleUtils.FontSize;
 import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.layout.BeeLayoutPanel;
 import com.butent.bee.client.logging.ClientLogManager;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Command;
 import com.butent.bee.client.visualization.showcase.Showcase;
 import com.butent.bee.client.widget.BeeButton;
@@ -80,7 +80,7 @@ public class Tablet extends Mobile {
   }
 
   @Override
-  protected Widget initWest() {
+  protected IdentifiableWidget initWest() {
     HtmlTable grid = new HtmlTable();
     int r = 0;
     int c = 2;

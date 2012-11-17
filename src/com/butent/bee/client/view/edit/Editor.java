@@ -7,17 +7,16 @@ import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 import com.google.gwt.user.client.ui.HasValue;
-import com.google.gwt.user.client.ui.IsWidget;
 
 import com.butent.bee.client.ui.FormWidget;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.shared.ui.EditorAction;
 
 /**
  * Contains requirements for user interface components which are able to edit data values.
  */
 
-public interface Editor extends HasId, IsWidget, HasValue<String>, Focusable, HasAllFocusHandlers,
+public interface Editor extends IdentifiableWidget, HasValue<String>, Focusable, HasAllFocusHandlers,
     HasKeyDownHandlers, HasEditState, HasEditStopHandlers, HasEnabled {
   
   void clearValue();

@@ -16,15 +16,15 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.dom.StyleUtils;
+import com.butent.bee.client.ui.HasIdentity;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.BeeConst;
-import com.butent.bee.shared.HasId;
 import com.butent.bee.shared.utils.BeeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class TreeItem extends UIObject implements HasTreeItems, HasId {
+public class TreeItem extends UIObject implements HasTreeItems, HasIdentity {
 
   private static class TreeItemAnimation extends Animation {
 
@@ -188,17 +188,20 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
     }
   }
 
+  @Override
   public TreeItem addItem(String itemHtml) {
     TreeItem ret = new TreeItem(itemHtml);
     addItem(ret);
     return ret;
   }
 
+  @Override
   public void addItem(TreeItem item) {
     maybeRemoveItemFromParent(item);
     insertItem(getChildCount(), item);
   }
 
+  @Override
   public TreeItem addItem(Widget w) {
     TreeItem ret = new TreeItem(w);
     addItem(ret);
@@ -230,10 +233,12 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
     return contentElem;
   }
 
+  @Override
   public String getId() {
     return DomUtils.getId(this);
   }
 
+  @Override
   public String getIdPrefix() {
     return "t-i";
   }
@@ -325,6 +330,7 @@ public class TreeItem extends UIObject implements HasTreeItems, HasId {
     }
   }
 
+  @Override
   public void removeItem(TreeItem item) {
     if (getChildren() == null || !getChildren().contains(item)) {
       return;

@@ -3,11 +3,11 @@ package com.butent.bee.client.images;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Callback;
 import com.butent.bee.client.communication.ResponseCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HasGridView;
 import com.butent.bee.shared.Assert;
 import com.butent.bee.shared.Pair;
@@ -153,7 +153,7 @@ public class Flags {
         Scheduler.get().scheduleDeferred(new Scheduler.ScheduledCommand() {
           @Override
           public void execute() {
-            Widget widget = BeeKeeper.getScreen().getActiveWidget();
+            IdentifiableWidget widget = BeeKeeper.getScreen().getActiveWidget();
             if (widget instanceof HasGridView) {
               ((HasGridView) widget).getGridView().refresh(false);
             }

@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.layout.Complex;
 import com.butent.bee.client.output.Printable;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.HeaderImpl;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.form.FormView;
@@ -99,11 +100,11 @@ public class RowPresenter extends AbstractPresenter implements Printable {
   
   @Override
   public Element getPrintElement() {
-    return getWidget().getElement();
+    return getWidget().asWidget().getElement();
   }
 
   @Override
-  public Widget getWidget() {
+  public IdentifiableWidget getWidget() {
     return container;
   }
 

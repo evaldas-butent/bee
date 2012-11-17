@@ -3,7 +3,6 @@ package com.butent.bee.client.presenter;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.BeeKeeper;
@@ -17,6 +16,7 @@ import com.butent.bee.client.dialog.InputCallback;
 import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.event.logical.CatchEvent;
 import com.butent.bee.client.ui.FormDescription;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.Evaluator;
 import com.butent.bee.client.view.HeaderView;
 import com.butent.bee.client.view.TreeView;
@@ -127,8 +127,8 @@ public class TreePresenter extends AbstractPresenter implements CatchEvent.Catch
   }
   
   @Override
-  public Widget getWidget() {
-    return getView().asWidget();
+  public IdentifiableWidget getWidget() {
+    return getView();
   }
 
   @Override

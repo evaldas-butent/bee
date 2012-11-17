@@ -1,6 +1,5 @@
 package com.butent.bee.client.view.grid;
 
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.xml.client.Element;
 
 import com.butent.bee.client.event.logical.ParentRowEvent;
@@ -10,6 +9,7 @@ import com.butent.bee.client.grid.column.AbstractColumn;
 import com.butent.bee.client.presenter.GridPresenter;
 import com.butent.bee.client.render.AbstractCellRenderer;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.add.ReadyForInsertEvent;
 import com.butent.bee.client.view.edit.EditableColumn;
 import com.butent.bee.client.view.edit.ReadyForUpdateEvent;
@@ -20,8 +20,6 @@ import com.butent.bee.shared.data.IsColumn;
 import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.view.RowInfo;
-import com.butent.bee.shared.logging.BeeLogger;
-import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.ui.Action;
 import com.butent.bee.shared.ui.ColumnDescription;
 import com.butent.bee.shared.ui.GridDescription;
@@ -34,8 +32,6 @@ import java.util.Map;
 public class AbstractGridCallback implements GridCallback {
   
   public static final String DELETE_ROW_MESSAGE = "Išmesti eilutę ?";
-
-  protected static final BeeLogger logger = LogUtils.getLogger(AbstractGridCallback.class);
 
   public static Pair<String, String> deleteRowsMessage(int selectedRows) {
     return Pair.of("Išmesti aktyvią eilutę",
@@ -64,7 +60,8 @@ public class AbstractGridCallback implements GridCallback {
   }
 
   @Override
-  public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
   }
 
   @Override
@@ -118,7 +115,7 @@ public class AbstractGridCallback implements GridCallback {
   }
 
   @Override
-  public Widget createCustomWidget(String name, Element description) {
+  public IdentifiableWidget createCustomWidget(String name, Element description) {
     return null;
   }
 

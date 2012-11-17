@@ -19,13 +19,13 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.ui.ResizeLayoutPanel;
 
 import com.butent.bee.client.dom.DomUtils;
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 
 /**
  * Handles id and prefix of resizable panel layout element.
  */
 
-public class ResizePanel extends ResizeLayoutPanel implements HasId, HasAllDragAndDropHandlers {
+public class ResizePanel extends ResizeLayoutPanel implements IdentifiableWidget, HasAllDragAndDropHandlers {
 
   public ResizePanel() {
     super();

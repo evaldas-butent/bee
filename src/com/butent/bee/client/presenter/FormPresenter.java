@@ -6,7 +6,6 @@ import com.google.common.collect.Sets;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.ui.Widget;
 
 import com.butent.bee.client.BeeKeeper;
 import com.butent.bee.client.Global;
@@ -26,6 +25,7 @@ import com.butent.bee.client.dom.StyleUtils;
 import com.butent.bee.client.output.Printer;
 import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.view.FormContainerImpl;
 import com.butent.bee.client.view.FormContainerView;
 import com.butent.bee.client.view.HasSearch;
@@ -158,8 +158,8 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
   }
 
   @Override
-  public Widget getWidget() {
-    return getView().asWidget();
+  public IdentifiableWidget getWidget() {
+    return getView();
   }
 
   @Override
@@ -172,7 +172,7 @@ public class FormPresenter extends AbstractPresenter implements ReadyForInsertEv
 
     switch (action) {
       case CLOSE:
-        BeeKeeper.getScreen().closeWidget(getView().asWidget());
+        BeeKeeper.getScreen().closeWidget(getView());
         break;
 
       case CONFIGURE:

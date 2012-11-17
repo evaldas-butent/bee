@@ -26,6 +26,7 @@ import com.butent.bee.client.grid.HtmlTable;
 import com.butent.bee.client.ui.AbstractFormCallback;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormFactory.WidgetDescriptionCallback;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.FileUtils;
 import com.butent.bee.client.utils.NewFileInfo;
 import com.butent.bee.client.view.form.FormView;
@@ -66,7 +67,8 @@ public class MessageHandler extends AbstractFormCallback {
   private Widget waitingWidget;
 
   @Override
-  public void afterCreateWidget(String name, Widget widget, WidgetDescriptionCallback callback) {
+  public void afterCreateWidget(String name, IdentifiableWidget widget,
+      WidgetDescriptionCallback callback) {
     if (BeeUtils.same(name, "Recipients") && widget instanceof Label) {
       recipientsWidget = (Label) widget;
 
@@ -142,7 +144,7 @@ public class MessageHandler extends AbstractFormCallback {
       partsWidget = (Label) widget;
 
     } else if (BeeUtils.same(name, "WaitingForContent")) {
-      waitingWidget = widget;
+      waitingWidget = widget.asWidget();
     }
   }
 

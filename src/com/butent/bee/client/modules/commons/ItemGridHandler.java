@@ -17,6 +17,8 @@ import com.butent.bee.shared.data.IsRow;
 import com.butent.bee.shared.data.filter.ComparisonFilter;
 import com.butent.bee.shared.data.filter.Filter;
 import com.butent.bee.shared.data.value.LongValue;
+import com.butent.bee.shared.logging.BeeLogger;
+import com.butent.bee.shared.logging.LogUtils;
 import com.butent.bee.shared.modules.commons.CommonsConstants;
 import com.butent.bee.shared.ui.GridDescription;
 import com.butent.bee.shared.utils.BeeUtils;
@@ -24,6 +26,8 @@ import com.butent.bee.shared.utils.BeeUtils;
 import java.util.Set;
 
 class ItemGridHandler extends AbstractGridCallback implements SelectionHandler<IsRow> {
+
+  private static final BeeLogger logger = LogUtils.getLogger(ItemGridHandler.class);
   
   private static final String FILTER_KEY = "f1";
   private final boolean services;

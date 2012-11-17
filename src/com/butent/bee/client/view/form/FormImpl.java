@@ -44,6 +44,7 @@ import com.butent.bee.client.ui.FormDescription;
 import com.butent.bee.client.ui.FormFactory;
 import com.butent.bee.client.ui.FormFactory.FormCallback;
 import com.butent.bee.client.ui.FormWidget;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.ui.UiHelper;
 import com.butent.bee.client.ui.WidgetCreationCallback;
 import com.butent.bee.client.ui.WidgetDescription;
@@ -95,7 +96,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     }
 
     @Override
-    public void onSuccess(WidgetDescription result, Widget widget) {
+    public void onSuccess(WidgetDescription result, IdentifiableWidget widget) {
       if (result == null) {
         onFailure("widget description is null");
         return;
@@ -211,7 +212,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
 
   private Presenter viewPresenter = null;
 
-  private Widget rootWidget = null;
+  private IdentifiableWidget rootWidget = null;
 
   private Evaluator rowEditable = null;
   private Evaluator rowValidation = null;
@@ -376,15 +377,15 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
 
     setDimensions(formDescription.getDimensions());
 
-    Widget root = FormFactory.createForm(formDescription, getViewName(), dataCols,
+    IdentifiableWidget root = FormFactory.createForm(formDescription, getViewName(), dataCols,
         creationCallback, callback);
     if (root == null) {
       return;
     }
 
     if (addStyle) {
-      StyleUtils.makeAbsolute(root);
-      root.addStyleName(STYLE_FORM);
+      StyleUtils.makeAbsolute(root.asWidget());
+      root.asWidget().addStyleName(STYLE_FORM);
     }
     setRootWidget(root);
 
@@ -491,7 +492,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   }
 
   @Override
-  public Widget getRootWidget() {
+  public IdentifiableWidget getRootWidget() {
     return rootWidget;
   }
 
@@ -948,7 +949,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
       }
     }
 
-    getRootWidget().setStyleName(STYLE_DISABLED, !enabled);
+    getRootWidget().asWidget().setStyleName(STYLE_DISABLED, !enabled);
   }
 
   @Override
@@ -1354,7 +1355,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   }
 
   private boolean isChildEditing() {
-    for (GridView gridView : ViewHelper.getGrids(getRootWidget())) {
+    for (GridView gridView : ViewHelper.getGrids(getRootWidget().asWidget())) {
       if (gridView.getGrid().isEditing()) {
         return true;
       }
@@ -1586,7 +1587,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
     this.readOnly = readOnly;
   }
 
-  private void setRootWidget(Widget rootWidget) {
+  private void setRootWidget(IdentifiableWidget rootWidget) {
     this.rootWidget = rootWidget;
   }
 
@@ -1611,7 +1612,7 @@ public class FormImpl extends Absolute implements FormView, NativePreviewHandler
   }
 
   private void showNote(LogLevel level, String... messages) {
-    StyleUtils.setZIndex(getNotification(), StyleUtils.getZIndex(getRootWidget()) + 1);
+    StyleUtils.setZIndex(getNotification(), StyleUtils.getZIndex(getRootWidget().asWidget()) + 1);
     getNotification().show(level, messages);
   }
 }

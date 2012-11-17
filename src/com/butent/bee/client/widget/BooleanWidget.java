@@ -5,12 +5,12 @@ import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasEnabled;
 
-import com.butent.bee.shared.HasId;
+import com.butent.bee.client.ui.IdentifiableWidget;
 
 /**
  * Determines which classes have to be extended for boolean widget implementing classes.
  */
 
-public interface BooleanWidget extends Focusable, TakesValue<Boolean>, HasId, HasClickHandlers,
+public interface BooleanWidget extends Focusable, TakesValue<Boolean>, IdentifiableWidget, HasClickHandlers,
     HasEnabled {
 }

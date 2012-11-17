@@ -10,13 +10,13 @@ import com.google.gwt.user.client.ui.Image;
 
 import com.butent.bee.client.dom.DomUtils;
 import com.butent.bee.client.event.EventUtils;
+import com.butent.bee.client.ui.IdentifiableWidget;
 import com.butent.bee.client.utils.HasCommand;
-import com.butent.bee.shared.HasId;
 
 /**
  * Implements an image holding user interface component, that displays the image at a given URL.
  */
-public class BeeImage extends Image implements HasEnabled, HasCommand, HasId {
+public class BeeImage extends Image implements HasEnabled, HasCommand, IdentifiableWidget {
 
   private Scheduler.ScheduledCommand command = null;
   private boolean enabled = true;
